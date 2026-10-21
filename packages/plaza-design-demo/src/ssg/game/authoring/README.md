@@ -33,7 +33,7 @@ viewers and world tools retain that common structure.
 
 ## Available authoring
 
-All 19 existing scenes have composition, ordinary content, device/controller sources and native
+All 20 existing scenes have composition, ordinary content, device/controller sources and native
 Play. Ordinary actors, interactions, readables, rest points and exits can be created, removed and
 rebound. Existing physical calculations and drawing algorithms remain code primitives with typed
 inputs; the editor changes their declared parameters rather than editing arbitrary TypeScript.
@@ -133,7 +133,7 @@ campaign location.
 Run `pnpm test:game --list` from packages/plaza-design-demo. Select relevant names, for example
 `pnpm test:game conversation source-removal`. The default runs all current checks. Test output is
 `.game-test-output/` at repository root; old migration captures are unnecessary. Browser visual
-contracts cover all 19 scenes plus selected environment/hack states; see
+contracts cover all 20 scenes plus selected environment/hack states; see
 [the test guide](../../../../scripts/game-tests/README.md).
 
 The agent checks mechanics, permissions, persistence and disposal. User feedback should address

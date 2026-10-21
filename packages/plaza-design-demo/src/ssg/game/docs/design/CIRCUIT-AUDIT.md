@@ -111,8 +111,8 @@ Panels are registered by name (`engine/host.ts:224`) and opened by an `open` ste
 |---|---|---|
 | `talk` | engine, any scene | conversations; opened by DAEMON `talk` verbs |
 | `toy` | engine | lock toys for GUARDs: rings, cipher, cryptex, morse; share `engine/toys/common.ts` |
-| `camera` | yard (`scenes/yard/camera.ts`) | the gate camera: aim, zoom reads a crate, TAG; zooming on the owned parcel runs a command |
-| `scope` | stacks (`scenes/stacks/scope.ts`) | STS-2's top-down camera over blocks A–C: zoom to read roof codes, TAG FOR LIFT runs a command; reefer slots in `camera.bindings.reefers` |
+| `camera` | yard (`engine/gameplay/mechanisms/yard-camera.ts`) | the gate camera: aim, zoom reads a crate, TAG; zooming on the owned parcel runs a command |
+| `scope` | stacks (`engine/gameplay/mechanisms/gantry-lift.ts`; was `scenes/stacks/scope.ts`) | STS-2's top-down camera over blocks A–C: zoom to read roof codes, TAG FOR LIFT runs a command; reefer slots in `camera.bindings.reefers` |
 | `cam3` | downtown (`engine/gameplay/mechanisms/street-camera.ts`) | street camera: aim, zoom, TAG, LOOP fires the lens `loop` verb, which emits `frame` (cable it to the billboard) |
 
 The toys already share one frame. **The three camera panels share nothing but the CSS**: the
@@ -185,7 +185,7 @@ behaviour; they appear in hack vision and on the schematic, and their events can
 - The picture stays code: a registered painter chosen by name (yard approach, stacks roofs,
   street feed), the same rule as registered artwork. The scope's hard-coded reefer slots move
   to data.
-- Replaces `scenes/yard/camera.ts`, `scenes/stacks/scope.ts` and `scenes/downtown/camera.ts` (now the `streetCamera` mechanism)
+- Replaced `scenes/yard/camera.ts`, `scenes/stacks/scope.ts` and `scenes/downtown/camera.ts` (now `yard-camera.ts`, `gantry-lift.ts` and the `streetCamera` mechanism under `engine/gameplay/mechanisms/`)
   and the camera bindings.
 
 ### Registered mechanisms as devices

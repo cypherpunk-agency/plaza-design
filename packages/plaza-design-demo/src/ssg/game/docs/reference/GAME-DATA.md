@@ -96,7 +96,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 - Logic parts (TIMER, SWITCH): **data**, in a shared file (`logic.json`), because every scene
   uses them and they are items the player owns.
 - Settling a save (a parcel mid-slide comes back on the hook at the chute): **code**
-  (`settleYard` in `yard/effects.ts`), next to the chute effect it mirrors.
+  (`YARD_RULES.settle` in `engine/gameplay/mechanisms/yard-rules.ts`, run by the `yardCrane` mechanism), next to the chute it mirrors.
 - Board layout defaults (`DEFAULT_DIR`, `BOARD_HOME` in `schematic.ts`): **code** for now;
   the player's own layout is saved. *Superseded:* now **data** (`layout` on each device), see below.
 - The engine (`game/engine/`): **code**, one for every scene. A scene was its data file plus
@@ -137,7 +137,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 - A scene's own clock (`SceneRules.tick(w, dt)`): **engine code** hook, run by `SceneModel.tick` while
   the scene is on screen. Capsule 7B uses it for the plug's schedule (`night` every `nightEveryMs`),
   the router's temperature and thermal reboots, and Pixel moving to the warmest spot. What it does is
-  **code** (`capsule/rules.ts`); its numbers are **data** (`tuning`). Stands in for `clock.every`.
+  **code** (the `thermal` mechanism, `engine/gameplay/mechanisms/thermal.ts`); its numbers are **data** (`tuning`). Stands in for `clock.every`.
 - A LINK that can be down (`link.when`, a condition): **data** switch on an **engine** rule: while
   it does not hold, `scan` and `connect` say `net.down` (the router is off, it scans nothing).
 - Pre-wired cables when a node connects: the engine now lays only the cables touching that node
@@ -198,17 +198,17 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 - Moth's place (`moth.json`, story Level 3, P09 and P10): all **data** on the engine as it was; no
   engine change. FRIENDNET and MOTH-PC are the scene's own `nodes` (PUZZLES had said `mothnet.json`;
   the scene id is `moth`). The rig's LINK `when: uplink` and MOTH-PC's status read two **code**
-  derived values (`moth/rules.ts`: `uplink` = the `uplink` chip is on the keyring, `journalOpen`);
+  derived values (`scenes/moth/devices.json`: `uplink` = the `uplink` chip is on the keyring, `journalOpen`);
   the goals a node or a sector ticks are code there too, as in the capsule.
 - `uplink.so` is a keyring chip (`uplink`, label "uplink.so", from the yard's parcel), not a module:
   modules are logic parts you place on the board, and keyring ids may not end in `.so`. The parcel
-  hands out it and `moth.key` in **code** (`yard/index.ts` `PARCEL`, the tray's `use`); a save that
+  hands out it and `moth.key` in **data** (the yard's `devices.json` and `gameplay.json`, the tray's `use`); a save that
   took the parcel earlier gets both when the game loads (`game.ts`).
 - Hooks outside engine/ for a new zone (Moth's place, before the merge): `game.ts` hosted it like
   the capsule (its own branches for width, name, arrival, the door's key check, first-visit lines
   and drawing); `city.ts` `DOORS.moth` (1496, the residents' door of the shuttered front at 1420,
   next to the metro stairs); `companion.ts` `WARM.moth` (the tank lid). *Superseded* by the merge:
-  Moth's place is a `SceneDef` (`moth/index.ts`), the residents' door is Downtown's exit `moth`
+  Moth's place is a `SceneDef` (`scenes/moth/`), the residents' door is Downtown's exit `moth`
   with `needs` (the key chip and the refusal's words, **data** on the exit).
 
 - **A place's life on any zone** (the beach, 2026-10-15, before the merge): a zone's view took the
@@ -225,7 +225,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   `use` instead, which already pays through `UseCtx.pay`.
 - Hooks outside engine/ for the beach (before the merge): `game.ts` hosted it beside the other
   zones (its own branches), its stairs travelled to the harbor, and `city.ts` had an edge table
-  for its left edge. *Superseded* by the merge: the beach is a `SceneDef` (`beach/index.ts`), the
+  for its left edge. *Superseded* by the merge: the beach is a `SceneDef` (`scenes/beach/`), the
   stairs an engine exit, the left edge an edge exit (landing at the harbor's exit `beach` once it
   has one). Still outside: `companion.ts` `WARM.beach` (the jukebox's top) and a map place `BEACH`.
 - **One kind of place: scenes and zones merged** (2026-10-15). "Zone" is gone; every place is a
@@ -253,7 +253,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   - First-visit lines: **data**, each scene's `intro` (a function where it depends on a touch
     screen), remembered as `flags['scene:<id>']` for every scene.
   - Downtown's street people and fixer behavior remain **code**. Their current owners are
-    `scenes/downtown/dialogue.ts`, `progression.ts` and `composition.ts`; appearance belongs in
+    `scenes/downtown/gameplay.json` and `devices.json`, the `downtown` binding provider and the `vehicleRun`, `streetCamera` and `streetLayers` mechanisms; appearance belongs in
     `art/`. Downtown's sign is a readable. The original game.ts/level.ts placement is superseded.
 - **Effects that hand over what you carry, and story flags** (the laundromat, P13): `SceneModel.carry(item,
   n)` (the save's `items`; 0 asks, negative takes) and `SceneModel.flag(name)` (a save
@@ -271,13 +271,13 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   you pay (`priceTag`: uses' `price`, the taxi stand, the fixer's hint, a `{tokens}` in a popup
   label); the balance is in the deck's CARRY tab.
 - The laundromat (P13): the washers, breaker, schedule and SUDS are **data** (`laundromat.json`); a
-  cycle's timing, the trip and the jacket are **code** (`laundromat/rules.ts`, `washer.run` /
+  cycle's timing, the trip and the jacket are **code** (`engine/controllers/laundromat.ts`, `washer.run` /
   `washer.stop` / `washer.take`, the breaker's self-reset in `tick`, `door3` derived). A running
   cycle is not saved: it comes back stopped, its load still in (`settle`).
 - **The stacks (P15) and the end of Act I** (2026-10-15): STS-2, the thermal gate, the ferry, the
   reefer and the watchdog are **data** (`stacks.json`; the scope's boxes reuse the yard's `camera`
   field); the lift's timeline, the gate's moment, the watchdog's wiring check and the ending are
-  **code** (`stacks/rules.ts`; the trolley is a pure function of the clock, `trolley`, read by the
+  **code** (the `gantryLift` mechanism, `engine/gameplay/mechanisms/gantry-lift.ts`; the trolley is a pure function of the clock, `trolley`, read by the
   drawing). The rules are made for the player (`rules(player)`, like Downtown's): two new optional
   `Player` hooks, **engine-side code** in game.ts: `cutscene(id)` (a story beat asks for a cutscene;
   the game plays it once nothing is open: `pendingCut`) and `sceneState(scene, key)` (another
@@ -294,9 +294,9 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 
 - **The sandbox** (2026-10-15, sudo only; see **Sandbox**): every bench is **data**
   (`sandbox.json`); the few effects with a counter, an item, a token or a flash are **code**
-  (`sandbox/rules.ts`), and so is what acts by the clock and the weather on its own (the night light
+  (the `sandboxBay` mechanism, `engine/gameplay/mechanisms/sandbox-bay.ts`), and so is what acts by the clock and the weather on its own (the night light
   going off at daybreak, the vent shutting in rain: its `tick`). Sudo-only is **code** in three
-  small places: `index.ts` refuses `?play=sandbox` without `?sudo`, sudo's LEVELS lists it first,
+  small places: the game's `index.ts` refuses `?play=sandbox` without `?sudo`, sudo's LEVELS lists it first,
   the deck's `reset sandbox --yes` exists only in sudo. Its place (`city.ts` `sandbox`) has no
   district and no map pin, so it is never on the map or in quick travel.
 
@@ -814,7 +814,7 @@ data gives the module, and a module some file gives must say so in `foundIn` (un
 
 ## What stays code
 
-- **Named effects** (`yard/effects.ts`): `crane.claw` (what can be grabbed, dropping into
+- **Named effects** (the yard's `gameplay.json` commands and the `yardCrane` mechanism, `engine/gameplay/mechanisms/yard-crane.ts`): `crane.claw` (what can be grabbed, dropping into
   the chute), `hatch.open` (open for `gateOpenMs`), plus the parcel's slide that the claw
   starts. The engine's `timer.wait` (wait, then raise `done`) is in `engine/rules.ts`. They read
   their wording from `texts`.
@@ -994,10 +994,10 @@ lockouts, the net, the watchdog), or `reset sandbox --yes` in the deck (that als
 board layout). The keyring, tokens and what you carry are the player's and stay.
 
 Files (relative to the game root): `scenes/sandbox/devices.json` (devices, nodes, cables,
-keyring chips `sbx.*`, watchdog and UNIT 7 dialogue); `scenes/sandbox/rules.ts` (effects,
-tick, derived state and station checks); `scenes/sandbox/scene.ts` (people and visual adapter);
-`scenes/sandbox/composition.ts`/`composition.json` (stations and independently placed machines);
-`scenes/sandbox/index.ts` (scene factory, test cards, dispenser and reset console). Raw pictures
+keyring chips `sbx.*`, watchdog and UNIT 7 dialogue); `engine/gameplay/mechanisms/sandbox-bay.ts` (effects,
+tick, derived state and station checks), with `device-pulse.ts` and `target-reset.ts`; `engine/gameplay/binding-providers/sandbox.ts` (the picture);
+`scenes/sandbox/composition.json` (stations and independently placed machines); `scenes/sandbox/scene.json` and
+`gameplay.json` (people, test cards, dispenser and reset console). Raw pictures
 live in `art/assemblies/sandbox*.ts`. Networks `sandbox` and `sandbox-back` are in `data/net.json`.
 
 Left to right, one bench per feature, each under a plate (`BAY 3·0N` and what it tests) with a

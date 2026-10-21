@@ -817,7 +817,7 @@ scaffold (Act II).
 - The jacket (washer 3's `door`, `open`): the item `maglev.pass` (HELD; what P14's brake checks),
   the keyring key chip `glove.right` (the twin of DLV-9's `glove.left`), the save flag `p13`. With
   both gloves the fixer has his line once (`flags.gloves`).
-- Code: `washer.run`, `washer.stop`, `washer.take` (laundromat/rules.ts) and two engine hooks for
+- Code: `washer.run`, `washer.stop`, `washer.take` (`engine/controllers/laundromat.ts`) and two engine hooks for
   effects, `SceneModel.carry` (items) and `SceneModel.flag` (save flags).
 
 - **Scene · spot:** the market, a laundromat between the stalls (new spot; LEVELS "more

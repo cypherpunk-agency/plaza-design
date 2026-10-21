@@ -1,7 +1,7 @@
 # Using and extending the shared game engine
 
 Current implementation guide,2026-10-20. Read [AGENTS.md](../../AGENTS.md) for working rules.
-All19 existing scenes use shared source and typed editor support. Everything remains in design;
+All 20 existing scenes use shared source and typed editor support. Everything remains in design;
 this guide describes implementation ownership, not immutable product decisions.
 Tests exercise the current engine directly; completed migration evidence is not required.
 
@@ -128,15 +128,59 @@ uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). Th
 `View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
 Check with `pnpm test:game levels`; the Tower lab (scenes/authored.json) is the example.
 
-## Recipe: a scene made of JSON only (folder scenes)
+## Recipe: make or change any scene (folder scenes)
 
-A folder scene is `scenes/<id>/` with `composition.json`, `scene.json`, `gameplay.json` and
-`devices.json`, and no TypeScript. List it in scenes/folder-scenes.ts; engine/gameplay/folder-scene.ts
-builds it on the declared path and the editor registers it generically (scene-adapters.ts,
-gameplay-scenes.ts). `scene.json` `manifest.compile` holds what scenes used to pass in code (binding
-groups, ground exits and spawn, rest heights, raised responses). Moving a scene off its own code:
-record its fingerprint first (`npx tsx scripts/scene-parity-record.mts <id>`), make the move, then
-`pnpm test:game scene-parity` proves it compiles and paints as before. The Tower lab is the example.
+Every scene is a folder scene: `scenes/<id>/` holds `composition.json`, `scene.json`, `gameplay.json`,
+`devices.json` and a README, and no TypeScript. A new scene is listed in scenes/folder-scenes.ts
+(`FOLDER_SOURCES`, `FOLDER_DIRS`); scenes/index.ts `NATIVE_SCENES` is that list.
+engine/gameplay/folder-scene.ts builds it on the declared path (declared-scene.ts) and the editor
+registers it generically. Ordinary changes are edits to those four files, through the editor.
+
+| Wanted | Where |
+| --- | --- |
+| Placement, layers, animation, what the picture asks for | composition.json (its `bindings`) |
+| Arrival, uses, people, exits, objective, `manifest.compile`, `stage` | scene.json |
+| Commands, conditions, dialogue, rewards | gameplay.json |
+| Devices, verbs, events, cables | devices.json |
+| A value the picture needs that the model decides | a binding source |
+| Rules, panels, SceneDef fields that need code | a mechanism |
+
+**Stage & compile** (editor: Scene › Stage & compile; authoring/scene-stage-authoring.ts). `scene.json`
+`stage` takes from the artwork what scenes used to hard-code (engine/gameplay/scene-stage.ts): `facing`
+and `horizon` (an artwork role's property), `shade` front/back, `lights` (`element`, `lamp`, `marker`),
+`casters`, `actors` (`clip`, `cull`), `targetAnchors` and `mechanisms`. Each entry names a role
+(`manifest.artwork`) or an artwork type, so moving the artwork moves the light with it.
+`manifest.compile` (manifest-contract.ts) holds what scenes passed in code: binding `groups`, `groundExits`,
+`groundSpawn`, `transformedExits`, `elevatedResponses`, `omitGroundRestHeight`.
+
+**Binding sources** (engine/gameplay/binding-sources.ts). A composition names a source and the engine
+supplies it every frame. Built in: `world.light`, `actor.<id>.pose` / `.clip`, `device.<id>.hover`,
+`value.<key>` (gameplay values and device observations) and `artwork.<type>.spans`. Anything else is
+`<provider>.<key>` from a registered provider.
+
+**A binding provider** works out what a picture needs once per frame from the scene as it stands
+(`ctx.engine`, `roles`, `presentation`, `shared`, `world`). Add engine/gameplay/binding-providers/<name>.ts
+exporting a function `(ctx)=>Record<string,Value>`, add one line to `BINDING_PROVIDERS` in that folder's
+index.ts, and name `<name>.<key>` in the composition's bindings. A provider that drives cues declares
+`signals` (name and starting stamp); the scene's presentation cues may then target them. Nothing else
+registers it: validation and the editor read the same table.
+
+**A mechanism** is what a scene takes from the engine beyond its documents: SceneDef fields, `rules`
+and `panels` (several are merged, `mergeRules`; a name defined twice is refused), `anchors` for engine
+targets, picture-side `presentation` state and a world binding (`world: true` rebuilds the scene with
+the city and line system). Add engine/gameplay/mechanisms/<name>.ts exporting a `SceneMechanism`
+(`label`, `requires` artwork roles, `world`, `apply`, optionally `rulesShape`, `check`, `anchors`,
+`presentation`), add one line to `SCENE_MECHANISMS` in engine/gameplay/scene-mechanisms.ts, and list
+the name in `stage.mechanisms`. The editor checkbox appears from the registry. Current set: transitPlatform,
+citySkyline, lineRide, gantryLift, dockworkerCarry, devicePulse, targetReset, sandboxBay, yardCrane,
+thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
+fixed value, a light or a shade line is stage data, not a mechanism.
+
+**Parity.** When a scene's compiled shape or picture should not change (a migration, a refactor of a
+provider or mechanism), record its fingerprint first: `npx tsx scripts/scene-parity-record.mts <id>`
+(no id records every scene; goldens in scripts/game-tests/parity/). After the change
+`pnpm test:game scene-parity` proves every recorded scene compiles and paints as before. Re-record only
+when the change is meant to alter the scene, and say so. The Tower lab is the smallest example.
 
 ## Recipe: something that moves, or a place that notices
 

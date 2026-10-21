@@ -52,7 +52,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/capsule/rules.ts",
+        "engine/gameplay/mechanisms/thermal.ts",
         "engine/controllers/capsule.ts",
         "scenes/capsule/gameplay.json"
       ]
@@ -136,7 +136,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/library/index.ts"
+        "scenes/library/scene.json"
       ]
     },
     {
@@ -153,7 +153,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/yard/effects.ts",
+        "engine/gameplay/mechanisms/yard-crane.ts",
         "engine/controllers/yard.ts",
         "scenes/yard/gameplay.json"
       ]
@@ -165,7 +165,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/moth/index.ts"
+        "scenes/moth/scene.json"
       ]
     },
     {
@@ -175,7 +175,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/beach/index.ts"
+        "scenes/beach/scene.json"
       ]
     },
     {
@@ -185,7 +185,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/harbor/index.ts"
+        "scenes/harbor/scene.json"
       ]
     },
     {
@@ -236,7 +236,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/stacks/rules.ts",
+        "engine/gameplay/mechanisms/gantry-lift.ts",
         "engine/controllers/motion.ts",
         "scenes/stacks/gameplay.json"
       ]
@@ -248,7 +248,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/warehouse/index.ts"
+        "scenes/warehouse/scene.json"
       ]
     },
     {
@@ -258,7 +258,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/market/index.ts"
+        "scenes/market/scene.json"
       ]
     },
     {
@@ -268,7 +268,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/laundromat/index.ts"
+        "scenes/laundromat/scene.json"
       ]
     },
     {
@@ -278,7 +278,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/shop/index.ts"
+        "scenes/shop/scene.json"
       ]
     },
     {
@@ -288,7 +288,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/mall/index.ts"
+        "scenes/mall/scene.json"
       ]
     },
     {
@@ -308,7 +308,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/galleriaStation/index.ts"
+        "scenes/galleriaStation/scene.json"
       ]
     },
     {
@@ -318,7 +318,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/harborStation/index.ts"
+        "scenes/harborStation/scene.json"
       ]
     },
     {
@@ -418,7 +418,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/sandbox/rules.ts",
+        "engine/gameplay/mechanisms/sandbox-bay.ts",
         "engine/controllers/sandbox.ts",
         "scenes/sandbox/gameplay.json"
       ]
@@ -430,7 +430,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/harbor-shift/index.ts"
+        "scenes/harbor-shift/scene.json"
       ]
     }
   ]
