@@ -196,9 +196,12 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
       if (options.useInScene) pick.ondblclick = () => preset ? options.presets!.add(entry, preset) : options.useInScene!.run(entry);
       pick.title = preset ? `${entry.id} · preset ${preset.id}${preset.note ? ': ' + preset.note : ''}` : `${entry.id} · ${entry.preview}`;
       pick.setAttribute('aria-pressed', String(entry.id === session.selected && (preset?.id ?? undefined) === session.preset));
-      const use = USABILITY.find(o => o.id === entry.usability)!, badge = el('small', preset ? 'Preset' : use.label); badge.className = `origin origin-${preset ? 'preset' : entry.origin}`; badge.title = preset ? `${entry.label} with saved settings` : use.hint;
+      // A tag only where it tells something: presets, pieces that need their scene, cutscene parts. Plain reusable pieces carry none.
+      const use = USABILITY.find(o => o.id === entry.usability)!;
+      const tag = preset ? ['Preset', `${entry.label} with saved settings`] : entry.origin === 'cutscene' ? ['Cutscene part', ORIGINS.find(o => o.id === 'cutscene')!.hint] : entry.usability === 'context' ? ['Scene piece', use.hint] : undefined;
+      const badge = tag ? el('small', tag[0]) : undefined; if (badge) { badge.className = 'tag'; badge.title = tag![1]; }
       const name = preset?.label ?? entry.label;
-      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', name), badge); } else { pick.textContent = name; pick.style.display = 'block'; pick.style.width = '100%'; }
+      if (options.thumbnail) { pick.className = 'asset-card'; pick.append(options.thumbnail(entry), el('span', name)); if (badge) pick.append(badge); } else { pick.textContent = name; pick.style.display = 'block'; pick.style.width = '100%'; }
       list.append(pick);
     };
     // Kits first, each followed by its presets; a preset matches the search by its own name and note, and the Kind by its own family.
