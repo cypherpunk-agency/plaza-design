@@ -61,10 +61,10 @@
       "scene": "downtown",
       "controller": "downtown",
       "inputs": [
-        "downtown.dlv.started",
         "downtown.dlv.scanned",
         "downtown.dlv.door",
-        "downtown.dlv.completed"
+        "downtown.dlv.through",
+        "downtown.dlv.back"
       ],
       "panels": [
         "cam3"
@@ -72,19 +72,11 @@
       "functions": {
         "effect:dlv.inward": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the van's mover path (devices.json dlv9.chassis); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "effect:dlv.outward": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
-        },
-        "read:dlvThrough": {
-          "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
-        },
-        "read:dlvInside": {
-          "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the van's mover path (devices.json dlv9.chassis); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "read:handle": {
           "classification": "canonical-read",
@@ -204,19 +196,19 @@
       "functions": {
         "effect:sts2.lift": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the trolley's mover path (devices.json sts2.trolley); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "effect:port.return": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the trolley's mover path (devices.json sts2.trolley); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "read:craneBusy": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Reads the trolley's mover (moving, path last run); shared source owns permissions, rewards and milestone outcomes."
         },
         "read:reeferTrajectory": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Reads the trolley's mover (moving, path last run); shared source owns permissions, rewards and milestone outcomes."
         },
         "read:portFrozen": {
           "classification": "simulation",
@@ -224,11 +216,7 @@
         },
         "read:craneReturning": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
-        },
-        "tick": {
-          "classification": "presentation",
-          "reason": "Expires only the transient cold scan highlight after its current 1200ms lifetime; no puzzle progress is evaluated here."
+          "reason": "Reads the trolley's mover (moving, path last run); shared source owns permissions, rewards and milestone outcomes."
         },
         "check": {
           "classification": "validation",

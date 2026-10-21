@@ -22,7 +22,8 @@
     "stacks.watchdog.restored",
     "stacks.crane.started",
     "stacks.crane.scan.reply",
-    "stacks.crane.warm"
+    "stacks.crane.warm",
+    "stacks.crane.cold"
   ],
   "commands": {
     "stacks.pour": {
@@ -246,6 +247,16 @@
       "actions": [
         {
           "emit": "stacks.crane.warm"
+        }
+      ]
+    },
+    "stacks.crane.cold": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "emit": "stacks.crane.cold"
         }
       ]
     }
@@ -704,12 +715,25 @@
         "cases": [
           {
             "when": {
-              "flag": "stacks:portFrozen"
+              "all": [
+                {
+                  "flag": "stacks:reeferTrajectory"
+                },
+                {
+                  "flag": "stacks:portFrozen"
+                }
+              ]
             },
             "command": "stacks.crane.scanned.muted"
           },
           {
+            "when": {
+              "flag": "stacks:reeferTrajectory"
+            },
             "command": "stacks.crane.scanned.audible"
+          },
+          {
+            "command": "stacks.crane.cold"
           }
         ]
       }
@@ -718,6 +742,14 @@
       "stacks.alarm.pulse": {
         "kind": "pulse",
         "target": "port.alarm"
+      },
+      "stacks.crane.warm": {
+        "kind": "pulse",
+        "target": "port.scanner"
+      },
+      "stacks.crane.cold": {
+        "kind": "pulse",
+        "target": "port.log"
       }
     },
     "triggers": {

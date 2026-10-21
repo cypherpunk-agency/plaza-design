@@ -7,7 +7,7 @@ import {stacksController} from '../../controllers/motion';
 import {manifestGeometry} from '../manifest-geometry';
 import {presentationActor} from '../scene-presentation';
 import {actorAppearanceSeed,bindActorAppearanceSeed} from '../actor-identity';
-import {gantryGeometry,stacksState,trolley} from '../mechanisms/gantry-lift';
+import {gantryGeometry,KIND,stacksState,trolley} from '../mechanisms/gantry-lift';
 import type {BindingContext} from '../binding-sources';
 import {provide} from '../binding-keys';
 /**
@@ -27,10 +27,14 @@ const terminalValues=(ctx:BindingContext):Record<string,Value>=>{
  const{view,rows,roles,actors,source,engine,gameplay}=ctx;
  // the foreground pass paints without an engine: the artwork's own defaults
  if(!engine)return{};
- const layout=layoutOf(roles),geometry=gantryGeometry(roles),m=engine.m,tr=trolley(m,geometry),width=manifestGeometry(source,rows,[],{groundSpawn:false}).width,horizon=Number(roles.horizon?.props.horizon??0);
+ const layout=layoutOf(roles),geometry=gantryGeometry(roles),m=engine.m,tr=trolley(m),width=manifestGeometry(source,rows,[],{groundSpawn:false}).width,horizon=Number(roles.horizon?.props.horizon??0);
  const loadVisible=view.sx(tr.x)+90>-4&&view.sx(tr.x)-90<view.viewW+4,deckReefer=stacksState(m,'boxAt')==='ferry'&&!stacksState(m,'departed')&&tr.carry!==2;
- const scratch=Object.fromEntries(['liftT0','retT0','liftKind','cold','warm'].filter(k=>m.scratch[k]!==undefined).map(k=>[k,m.scratch[k]]));
- const alarmTarget=gameplay?.native?.presentation?.['stacks.alarm.pulse']?.target,alarmPulse=alarmTarget===undefined?undefined:m.scratch['pulse.'+alarmTarget];if(alarmPulse!==undefined)scratch.alarm=alarmPulse;
+ // what the picture reads of the crane: the trolley's mover (when its trip set off, which path), and the stamps of the scanner's flashes
+ const scratch:TerminalVisual['scratch']={},mover=stacksController(m.data).mover,run=m.movers.lastRun(mover),trip=m.movers.trip(mover);
+ if(trip&&m.movers.moving(mover)){if(run==='return')scratch.retT0=trip.t0;else scratch.liftT0=trip.t0;}
+ if(run==='regular'||run==='reefer')scratch.liftKind=run==='reefer'?KIND.box:KIND.regular;
+ const pulse=(event:string)=>{const target=gameplay?.native?.presentation?.[event]?.target;return target===undefined?undefined:m.scratch['pulse.'+target];},stamp=(key:'cold'|'warm'|'alarm',event:string)=>{const at=pulse(event);if(at!==undefined)scratch[key]=at;};
+ stamp('cold','stacks.crane.cold');stamp('warm','stacks.crane.warm');stamp('alarm','stacks.alarm.pulse');
  const snapshot:TerminalVisual={width,horizon,layer:engine.layer,hover:engine.hover??'',now:m.now(),departed:!!stacksState(m,'departed'),boxAt:String(stacksState(m,'boxAt')),loaded:Number(stacksState(m,'loaded')??0),scratch,portFrozen:m.frozen(stacksController(m.data).scannerDevice),watchdogs:m.watchdogs().map(d=>({at:d.at??null,from:d.from,to:d.to,progress:d.progress})),trolley:tr,geometry,layout,light:structuredClone(light()),deckReefer,loadVisible,ferryVisible:view.sx(layout.quay)+(view.sx(width)-view.sx(layout.quay))>-4&&view.sx(layout.quay)<view.viewW+4};
  const out:Record<string,Value>={snapshot:snapshot as unknown as Value},operator=presentationActor(source.presentation,'craneOperator'),passenger=presentationActor(source.presentation,'rescuedPassenger');
  for(const r of rows.filter(r=>r.instance.type==='character.prepared')){

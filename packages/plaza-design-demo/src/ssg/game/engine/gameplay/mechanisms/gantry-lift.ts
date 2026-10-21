@@ -7,33 +7,37 @@
  * Source Case lists own lift/alarm refusals, busy eligibility and empty/airborne
  * alarm policy. Shared milestone commands own alarm counts and return outcomes;
  * source queries own status wording and the finite regular/reefer trajectory kind.
- * Remaining native work still includes the ordinary lift-start/scan tails
- * listed in STACKS-ORDINARY-MIGRATION.md; this file is not fully consolidated.
  *
- * The trajectory mechanics:
+ * The crane is a Circuit mover and a zone, in devices.json, not code: `sts2.trolley` is the trolley and
+ * its spreader (one mover with a point for each stop, taken from the artwork's roles `rest`, `slot`,
+ * `chassis`, `gate`, `hatch` and `deck` through the places this file supplies), with the paths
+ * `regular`, `reefer` and `return`: legs over, down, up, across, down, each with its time (the scene's
+ * tuning) and its `load` label. `port.beam` is the thermal gate's plane, a zone on the trolley.
+ * What is left here is the two physical orders and the reads:
  *
  * - `sts2.lift`: STS-2's spreader. Only a cable lifts (the pre-wired
  *   `ferry.watchdog:leaves → sts2.spreader lift`: the crane lifts when the
- *   Registry has cleared the ferry); a finger is refused. Untagged, it moves a
- *   regular box from the quay chassis into the ferry's hold (cold: the gate
+ *   Registry has cleared the ferry); a finger is refused. Untagged, the trolley runs its `regular` path:
+ *   a regular box from the quay chassis into the ferry's hold (cold: the gate
  *   clears it). Once 0451's slot is tagged on the crane's camera (`found`),
- *   the next lift takes the reefer out of block B, through the thermal gate,
- *   onto the ferry's deck. On the way it passes the gate: the gate raises
- *   `port.scanner:warm` (a person is warm). Wired to the alarm, the alarm
+ *   the next lift runs `reefer`: the reefer out of block B, through the thermal gate,
+ *   onto the ferry's deck. On the way the trolley crosses the gate's plane: `port.beam:enters` reports
+ *   the milestone `stacks.crane.scanned` and the source decides: a reefer is warm (the gate raises
+ *   `port.scanner:warm`: a person is warm), a regular box is cleared cold. Wired to the alarm, the alarm
  *   sounds and the box goes back. While the watchdog sits on PORT AUTHORITY
  *   nothing leaves it (the engine's freeze), so the warm is lost: the clever way.
- * - `port.alarm`: sounds; with 0451 in the air, the lift is aborted and the box
- *   returned to its slot.
+ * - `port.alarm`: sounds; with 0451 in the air, the lift is aborted: the `return` path takes the box
+ *   back to its slot from wherever the trolley is (a new path replaces the one under way).
  * - the source watchdog trigger restores a cut alarm cable and records trace
  *   through shared domain actions while PORT AUTHORITY is frozen. The cut must
- *   therefore be made while it is away and hold until the lift.
+ *   stay a clever *choice*: the watchdog restores it when it next sits on the gate.
  * - `moth.end`: the end of Act I. Flags `act1:done`, `heard:spire` (the Spire is
  *   named on the map) and `contact:moth` (Moth on your deck), the ACT II card,
  *   and NIGHT FERRY 7 leaves with Moth (`departed`; NIGHT FERRY 8 takes the berth and the
  *   crane goes on loading regular cargo).
  *
- * Where the trolley and its box are (`trolley`) is a pure function of the model's
- * clock and the lift in progress, so the drawing and the gate's timing agree.
+ * Where the trolley and its box are (`trolley`) is its mover's place and the load label of its leg, so the
+ * drawing and the gate's timing agree.
  *
  * Pure: no DOM, so node can run it (the build's check).
  */
@@ -67,126 +71,61 @@ export const X = {
 /** Heights of a box's bottom: carried, on the chassis, in its slot, on the deck, down in the hold. */
 export const H = { carry: 120, chassis: 14, slot: 58, deck: 4, hold: -64 };
 
-/** A lift's timeline (ms from the cable): the trolley moves over, lowers and hoists, travels, lowers. */
-const timeline=(data?:Pick<SceneData,'controller'>)=>{const c=stacksController(data??{});return{over:c.lift.overMs,hoist:c.lift.hoistMs,travel:c.lift.travelMs,lower:c.lift.lowerMs};};
-
 /** What the trolley carries: nothing, a regular box, or 0451. */
 export const KIND = { none: 0, regular: 1, box: 2 } as const;
+/** The `load` labels of the trolley's legs, as what hangs under the spreader. */
+const CARRY: Record<string, number> = { regular: KIND.regular, box: KIND.box };
 
-/** Linear between a and b at f (clamped), eased at both ends. */
-const ease = (f: number) => { const k = Math.max(0, Math.min(1, f)); return k * k * (3 - 2 * k); };
-const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
+const split = (key: string): [string, string] => { const i = key.indexOf('.'); return [key.slice(0, i), key.slice(i + 1)]; };
 
-/** Where a lift picks up and sets down, by kind. */
-const route = (kind:number, geometry:TerminalGeometry={X,H}) => {const {X,H}=geometry;return kind===KIND.box?{from:X.slot,to:X.deck,low:H.slot,end:H.deck}:{from:X.chassis,to:X.hatch,low:H.chassis,end:H.hold};};
-
-/** The trolley's x and its box's bottom height `ms` into a lift that started with the trolley at `x0`. */
-function liftAt(kind: number, x0: number, ms: number, geometry:TerminalGeometry={X,H},data?:Pick<SceneData,'controller'>) {
-  const T=timeline(data);
-  const {H}=geometry,r = route(kind,geometry);
-  if (ms < T.over) return { x: lerp(x0, r.from, ease(ms / T.over)), h: H.carry, load: false };
-  let u = ms - T.over;
-  if (u < T.hoist) { const k = u < T.hoist / 2 ? u / (T.hoist / 2) : 1 - (u - T.hoist / 2) / (T.hoist / 2); return { x: r.from, h: lerp(H.carry, r.low, ease(k)), load: u >= T.hoist / 2 }; }
-  u -= T.hoist;
-  // travelling at an even speed, so the box crosses the gate at a known moment
-  if (u < T.travel) return { x: lerp(r.from, r.to, u / T.travel), h: H.carry, load: true };
-  u -= T.travel;
-  if (u < T.lower) return { x: r.to, h: lerp(H.carry, r.end, ease(u / T.lower)), load: true };
-  return { x: r.to, h: H.carry, load: false };
-}
-
-/** ms into a lift at which its box crosses the thermal gate. */
-export const scanMs = (kind: number, geometry:TerminalGeometry={X,H},data?:Pick<SceneData,'controller'>) => { const T=timeline(data),{X}=geometry,r = route(kind,geometry); return T.over + T.hoist + T.travel * (X.gate - r.from) / (r.to - r.from); };
+/** The named places the trolley's stops and the thermal gate's zone are measured from: the artwork roles' places (x across, h up). */
+export const placesOf = ({X,H}:TerminalGeometry) => ({ rest: {x:X.rest,h:H.carry}, slot: {x:X.slot,h:H.slot}, chassis: {x:X.chassis,h:H.chassis}, gate: {x:X.gate,h:0}, hatch: {x:X.hatch,h:H.hold}, deck: {x:X.deck,h:H.deck} });
 
 /** Where the trolley is now, and what hangs under it: `h` is the bottom of the box (or the empty spreader). */
-export function trolley(m: SceneModel,geometry:TerminalGeometry={X,H}): { x: number; h: number; carry: number } {
-  const {X,H}=geometry,s = m.scratch, now = m.now();
-  if (s.retT0 !== undefined) {
-    const u = now - s.retT0, k = u / stacksController(m.data).returnMs;
-    if (k < 0.7) return { x: lerp(s.retX, X.slot, ease(k / 0.7)), h: H.carry, carry: KIND.box };
-    if (k < 1) return { x: X.slot, h: lerp(H.carry, H.slot, ease((k - 0.7) / 0.3)), carry: KIND.box };
-    return { x: X.slot, h: H.carry, carry: KIND.none };
-  }
-  if (s.liftT0 !== undefined) {
-    const p = liftAt(s.liftKind, s.liftX, now - s.liftT0,geometry,m.data);
-    return { x: p.x, h: p.h, carry: p.load ? s.liftKind : KIND.none };
-  }
-  return { x: s.restX ?? X.rest, h: H.carry, carry: KIND.none };
+export function trolley(m: SceneModel): { x: number; h: number; carry: number } {
+  const key = stacksController(m.data).mover, at = m.movers.place(key);
+  if (!at) throw new Error('The stacks have no trolley mover ' + key);
+  return { x: at.x, h: at.h, carry: CARRY[m.movers.load(key) ?? ''] ?? KIND.none };
 }
 
-/** Is the crane busy (a lift or a return in progress)? */
-const busy = (m: SceneModel) => m.scratch.liftT0 !== undefined || m.scratch.retT0 !== undefined;
-/** A lift's ticket: an alarm or a reload makes a lift in flight forget to land. */
-let ticket = 0;
-
 function stacksRules(_player: PlayerServices,geometry:TerminalGeometry={X,H}): SceneRules {
-const {X}=geometry;
+  const mover = (m: SceneModel) => stacksController(m.data).mover;
+  /** Send the trolley along one of its paths; its mover, its zone and its milestones do the rest. */
+  const go = (w: World, path: 'regular' | 'reefer' | 'return') => {
+    const [dev, noun] = split(mover(w.m));
+    if (w.m.runPath(dev, noun, path) !== 'started') throw new Error('STS-2 has no mover path ' + path);
+  };
   const effects: Record<string, Effect> = {
     /** STS-2's spreader: a cable lifts (the Registry's clearance), a finger does not. */
     'sts2.lift': (w) => {
-      const m = w.m;
-      const kind = m.value('stacks.liftKind');
+      const kind = w.m.value('stacks.liftKind');
       if (kind !== KIND.box && kind !== KIND.regular) throw new Error('STS-2 requires source liftKind 1 or 2');
-      const t = ++ticket, s = m.scratch;
-      s.liftT0 = m.now(); s.liftKind = kind; s.liftX = trolley(m,geometry).x; s.ticket = t;
+      go(w, kind === KIND.box ? 'reefer' : 'regular');
       w.input('stacks.crane.started');
-      // the gate: the box passes through the thermal scan
-      m.later(scanMs(kind,geometry,m.data), () => {
-        if (s.ticket !== t) return;
-        if (kind === KIND.regular) { s.cold = m.now(); w.changed(); return; }
-        s.warm = m.now();
-        // a frozen gate still sees it; it just cannot tell anyone (the engine says so: watchdog.mute)
-        w.input('stacks.crane.scanned');
-        w.changed();
-      });
-      m.later(Object.values(timeline(m.data)).reduce((sum,ms)=>sum+ms,0), () => {
-        if (s.ticket !== t) return;
-        delete s.liftT0; s.restX = route(kind,geometry).to;
-        w.input('stacks.crane.landed');
-        w.changed();
-      });
       w.changed();
-
     },
 
     /** The alarm: by hand a test; with 0451 in the air, the lift is aborted and the box goes back. */
     'port.return': (w) => {
-      const m = w.m, s = m.scratch;
-      // abort: the box goes back into its slot from wherever it is
-      s.retX = trolley(m,geometry).x; s.retT0 = m.now(); delete s.liftT0; s.ticket = ++ticket;
-      const t = s.ticket;
       // Physical trajectory is valid before a source commit can request a redraw.
+      go(w, 'return');
       w.input('stacks.crane.return.started');
-      m.later(stacksController(m.data).returnMs, () => {
-        if (s.ticket !== t) return;
-        delete s.retT0; s.restX = X.slot;
-        w.input('stacks.crane.returned');
-        w.changed();
-      });
       w.changed();
     },
-
-
   };
-
-  function tick(w: World) {
-    const m = w.m, s = m.scratch;
-    // the crane's moving: redraw is the game's; the status line wants a refresh when a lift ends
-    if (s.cold !== undefined && m.now() - s.cold > 1200) { delete s.cold; w.changed(); }
-  }
 
   return {
     effects,
     inputs:['stacks.crane.started','stacks.crane.scanned','stacks.crane.landed','stacks.crane.return.started','stacks.crane.returned'],
+    places: placesOf(geometry),
     panels: ['scope'],
     derived: {
       /** Physical trajectory occupancy; source cases own permission/refusal policy. */
-      craneBusy: (m) => busy(m),
-      reeferTrajectory: (m) => m.scratch.liftKind===KIND.box,
+      craneBusy: (m) => m.movers.moving(mover(m)),
+      reeferTrajectory: (m) => m.movers.lastRun(mover(m)) === 'reefer',
       portFrozen: (m) => m.frozen(stacksController(m.data).scannerDevice),
-      craneReturning: (m) => m.scratch.retT0 !== undefined,
+      craneReturning: (m) => m.movers.moving(mover(m)) && m.movers.lastRun(mover(m)) === 'return',
     },
-    tick,
     needs: {
       devices:[],
       texts: {

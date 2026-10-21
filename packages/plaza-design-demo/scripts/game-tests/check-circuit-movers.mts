@@ -141,5 +141,23 @@ assert.equal(easeAt([[.5, .9]], 2), 1);
   const bare = new SceneModel({say() {}, changed() {}, open() {}} as never, data as never, {effects: {}, inputs: ['seen'], places: {p: {x: 40, h: 0}}} as never, undefined, undefined, undefined, {want: 'home', at: 'a'});
   assert.equal(bare.movers.at('d.car'), 'a', 'a mover starts where the state already says'); assert.equal(bare.movers.position('d.car'), 40);
 }
+// the yard's claw hook is a mover that follows the arm's state: the same place at the same scene time however the frames fall
+{
+  const yard = (SCENES as Record<string, SceneDef>).yard, player = {save: () => ({handle: '', tokens: 0, jump: false, controlled: [], flags: {}}), persist() {}, nodes: () => 0, granted() {}, end() {}};
+  const rules = (typeof yard.rules === 'function' ? yard.rules(player as never) : yard.rules) as {places: Record<string, {x: number; h: number}>};
+  const run = (dt: number) => {
+    const y = new SceneModel({say() {}, changed() {}, open() {}} as never, yard.data!, rules as never);
+    assert.equal(y.movers.position('crane.hook'), rules.places.home.x, 'the hook starts at the home slot');
+    y.tick(dt, true); y.act('crane', 'arm', 'A-3');
+    let t = 0, at500 = NaN;
+    while (t < 2000) { y.tick(dt, true); t += dt; if (t === 500) at500 = y.movers.position('crane.hook')!; }
+    assert.equal(y.movers.position('crane.hook'), rules.places['A-3'].x, 'the hook settles on the slot the arm names');
+    return at500;
+  };
+  const a = run(10), b = run(50);
+  assert.ok(Math.abs(a - b) < 1e-6, 'the hook is where the clock says it is: ' + a + ' vs ' + b);
+  const lo = Math.min(rules.places.home.x, rules.places['A-3'].x), hi = Math.max(rules.places.home.x, rules.places['A-3'].x);
+  assert.ok(a > lo && a < hi, 'and mid-way at half a second: ' + a + ' between ' + lo + ' and ' + hi);
+}
 console.log('Circuit movers PASS: mover timing, easing, paths with legs and choices, zone crossings and floors, the Tower lift called by its lobby zone through a cable, ridden through its mover, sent by its verb, saved.');
 process.exit(0);

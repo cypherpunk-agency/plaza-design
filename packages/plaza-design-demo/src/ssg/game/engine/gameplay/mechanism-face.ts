@@ -27,10 +27,11 @@ export const mechanismDevice=(face:MechanismFace):MechanismDevice|undefined=>dev
 export const mechanismDevices=(names:readonly string[]|undefined):MechanismDevice[]=>mechanismFaces(names).flatMap(f=>{const d=mechanismDevice(f);return d?[d]:[];});
 /**
  * The numbers a mechanism reads from the scene's device document: every number in the `controller`
- * block whose kind it names, and every `tuning` value that block points at (`controller.tuning`
- * maps the mechanism's names to tuning keys). Each is editable at its path.
+ * block whose kind it names, every `tuning` value that block points at (`controller.tuning`
+ * maps the mechanism's names to tuning keys), and every `tuning` value the mover the controller names
+ * runs on (its speed, the times of its legs). Each is editable at its path.
  */
-export function mechanismNumbers(face:MechanismFace,data:Pick<SceneData,'tuning'>&{controller?:unknown}):MechanismNumber[]{
+export function mechanismNumbers(face:MechanismFace,data:Pick<SceneData,'tuning'>&{controller?:unknown;devices?:SceneData['devices']}):MechanismNumber[]{
  const controller=data.controller as Record<string,unknown>|undefined;
  if(!face.controller||!controller||controller.kind!==face.controller)return[];
  const out:MechanismNumber[]=[],seen=new Set<string>();
@@ -45,6 +46,18 @@ export function mechanismNumbers(face:MechanismFace,data:Pick<SceneData,'tuning'
  if(tuning&&typeof tuning==='object')for(const key of Object.values(tuning as Record<string,unknown>)){
   const v=typeof key==='string'?(data.tuning as Record<string,unknown>|undefined)?.[key]:undefined;
   if(typeof v==='number'&&!seen.has(key as string)){seen.add(key as string);out.push({path:['tuning',key as string],label:'tuning.'+key,value:v});}
+ }
+ const ref=controller.mover;
+ if(typeof ref==='string'&&data.devices){
+  const at=ref.indexOf('.'),mover=data.devices.find(d=>d.id===ref.slice(0,at))?.nouns.find(n=>n.id===ref.slice(at+1))?.mover,tuned=(v:unknown)=>{
+   if(Array.isArray(v)){v.forEach(tuned);return;}
+   if(!v||typeof v!=='object')return;
+   for(const[k,x]of Object.entries(v)){
+    if(typeof x==='string'&&['speed','ms','minMs','plus'].includes(k)){const n=(data.tuning as Record<string,unknown>|undefined)?.[x];if(typeof n==='number'&&!seen.has(x)){seen.add(x);out.push({path:['tuning',x],label:'tuning.'+x,value:n});}}
+    else tuned(x);
+   }
+  };
+  if(mover)tuned(mover);
  }
  return out;
 }
