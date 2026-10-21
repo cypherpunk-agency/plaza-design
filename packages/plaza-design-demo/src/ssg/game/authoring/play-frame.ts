@@ -37,7 +37,7 @@ window.addEventListener('message', async event => {
   if (event.source !== parent || event.data?.channel !== 'editor-play' || event.data.type !== 'start' || started) return;
   started = true;
   try {
-    const {sourceDocuments,deviceSource,metroState,metroSource,citySource,botReactions,fixture,composition,gameplay,sceneDocument,behavior,memory,fonts,district,manifest} = event.data.value;
+    const {sourceDocuments,deviceSource,metroState,metroSource,citySource,botReactions,fixture,composition,gameplay,sceneDocument,memory,fonts,district,manifest} = event.data.value;
     const sequenceValues=sourceDocuments?new Map<string,unknown>(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value])):undefined;
     const sequences=sequenceValues?createRuntimeSequenceDocuments(sequenceValues,createSequenceValidationContext(art,Object.fromEntries([...sequenceValues].filter(([id])=>['sequence-opening','sequence-intro','sequence-act2','sequence-taxi'].includes(id))) as Record<string,Composition>,pendingDestinations(sequenceValues))):undefined;
     const registry=sourceDocuments?pendingRegistry(new Map(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value]))):undefined;
@@ -46,7 +46,7 @@ window.addEventListener('message', async event => {
     if(district&&!['shop','library','sandbox'].includes(f.scene))throw new Error('Demo entry outside district');
     const districtContent=district?demoContent(district):undefined;
     if(manifest&&f.scene!=='shop')throw new Error('Invalid manifest pilot role');
-    const scene=manifest?manifestDemoScene(validateManifestComposition(composition),{},{},validateManifestScene(sceneDocument,validateManifestGameplay(gameplay)),validateManifestGameplay(gameplay)):districtContent?.[f.scene as 'shop'|'library'|'sandbox']??registry?.[f.scene]??pendingScene(f.scene,composition,{gameplay,sceneDocument,behavior,devices:deviceSource});
+    const scene=manifest?manifestDemoScene(validateManifestComposition(composition),{},{},validateManifestScene(sceneDocument,validateManifestGameplay(gameplay)),validateManifestGameplay(gameplay)):districtContent?.[f.scene as 'shop'|'library'|'sandbox']??registry?.[f.scene]??pendingScene(f.scene,composition,{gameplay,sceneDocument,devices:deviceSource});
     if(f.spawn!==null){if(f.spawn>scene.width-12)throw new Error('Starting X is outside the scene');scene.spawn=f.spawn;}
     if(f.weather!=='forecast')setOverride('city',f.weather);
     for(const font of fonts ?? []) { const face=new FontFace('IBM Plex Mono',font.bytes,{weight:String(font.weight)});await face.load();document.fonts.add(face); }

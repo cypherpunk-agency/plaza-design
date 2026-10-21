@@ -4,7 +4,7 @@ import type { EditorDocument } from '../../src/ssg/game/authoring/app';
 const documents: EditorDocument[] = [
   { id: 'room', kind: 'composition', revision: 'source-A', value: { version: 1, scene: 'room', instances: [] } },
   { id: 'film', kind: 'timeline', revision: 'source-B', value: { version: 1, sequences: [] } },
-  { id: 'behavior', kind: 'behavior', revision: 'source-C', value: { retained: true } },
+  { id: 'devices', kind: 'devices', revision: 'source-C', value: { retained: true } },
   { id: 'world', kind: 'world', revision: 'source-D', value: {} },
 ];
 const before = JSON.stringify(documents), edits = [{ id: 'room', value: { version: 1, scene: 'room', instances: [{ id: 'lamp' }], text: '雨' } }, { id: 'film', value: { version: 1, sequences: [{ id: 'new', composition: 'room' }] } }];
@@ -39,7 +39,7 @@ console.log('Public edit bundles: detached composition/timeline roundtrip, local
 const { ComposerModel } = await import('../../src/ssg/game/authoring/app');
 const { ArtRegistry } = await import('../../src/ssg/game/art/core/composition');
 const registry = new ArtRegistry().register({ type: 'public-test', version: 1, label: 'Test', category: 'Test', fields: {}, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }), draw() {} });
-const model = new ComposerModel(registry, {}, doc => { if (doc.kind === 'behavior') assert.equal((doc.value as { retained: boolean }).retained, true, 'Protected behavior changed'); });
+const model = new ComposerModel(registry, {}, doc => { if (doc.kind === 'devices') assert.equal((doc.value as { retained: boolean }).retained, true, 'Protected behavior changed'); });
 model.load(documents);
 const nextRoom = { version: 1, scene: 'room', instances: [{ id: 'lamp', type: 'public-test', props: {}, placement: { x: 0, h: 0 }, layer: 'backdrop', order: 0 }] };
 const nextFilm = { version: 1, sequences: [{ id: 'scene', composition: 'room', duration: 1, shots: [], text: [], fades: [], beats: [], tracks: [{ id: 'move', target: { kind: 'instance', instance: 'lamp', property: 'x' }, keys: [{ time: 0, value: 0 }, { time: 1, value: 10 }] }] }] };
@@ -54,8 +54,8 @@ const snapshot = model.list(), history = { undo: model.canUndo, redo: model.canR
 const badFilm = structuredClone(nextFilm);badFilm.sequences[0].tracks[0].target.instance = 'missing';
 assert.throws(() => model.importDocuments(readDocumentBundle(createDocumentBundle([{ id: 'room', value: nextRoom }, { id: 'film', value: badFilm }], model.list()), model.list())));
 assert.deepEqual(model.list(), snapshot);assert.deepEqual({ undo: model.canUndo, redo: model.canRedo, label: model.undoLabel }, history);assert.equal(model.dirty(), false);
-assert.throws(() => model.importDocuments([{ id: 'room', value: nextRoom }, { id: 'behavior', value: { retained: false } }]));assert.deepEqual(model.list(), snapshot);
+assert.throws(() => model.importDocuments([{ id: 'room', value: nextRoom }, { id: 'devices', value: { retained: false } }]));assert.deepEqual(model.list(), snapshot);
 assert.throws(() => model.importDocuments([{ id: 'room', value: { ...nextRoom, scene: 'other' } }]));assert.deepEqual(model.list(), snapshot);
 assert.throws(() => model.importDocuments([{ id: 'room', value: nextRoom }, { id: 'world', value: {} }]));assert.deepEqual(model.list(), snapshot);
 model.redo();assert.deepEqual(model.get('film').value, nextFilm, 'Rejected imports preserve the prior redo transaction');
-console.log('Actual public ComposerModel: related-document atomic import, one-step undo/redo, failed cross-reference/protected-behavior/scene/world import leaves state/history intact, original revisions and pending dirty state PASS');
+console.log('Actual public ComposerModel: related-document atomic import, one-step undo/redo, failed cross-reference/protected-devices/scene/world import leaves state/history intact, original revisions and pending dirty state PASS');

@@ -148,7 +148,7 @@ async function start() {
       return [...city.DISTRICTS.map(d => ({ label: d.name, places: placesIn(d.id) })), { label: 'Outside the districts', places: placesIn(null) }];
     },
     sceneLabel: scene => proposalScene(scene) ? proposalScene(scene)!.label : isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
-    sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId,...(scene==='sandbox'?['sandbox-behavior']:[])];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
+    sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
 
     worldStates: {
       // Play's starting states are the scene's saved world states. A proposal uses its base scene's.
@@ -186,7 +186,7 @@ async function start() {
       if(document.id==='network'){const values=validationSnapshot(documents);validatePendingNetwork(values,pendingRegistry(values));return;}
       if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
-      if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='devices'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
