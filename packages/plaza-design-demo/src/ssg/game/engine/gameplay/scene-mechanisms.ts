@@ -3,6 +3,8 @@ import type {SceneDef} from '../../scenes/kit';
 import type {SceneDocument} from './scene-document';
 import type {GameplayDefinition} from './types';
 import type {SceneRules} from '../rules';
+import type {MechanismDevice} from '../../data/types';
+import {deviceOfNouns,nounsOfRules} from './mechanism-parts';
 import {gantryLift} from './mechanisms/gantry-lift';
 import {dockworkerCarry} from './mechanisms/dockworker-carry';
 import {devicePulse} from './mechanisms/device-pulse';
@@ -114,7 +116,19 @@ export function mergeRules(parts:readonly SceneRules[]):SceneRules{
 /** Default-geometry rules of the named mechanisms (those that run code), or undefined when none does. */
 export function mechanismsRulesShape(names:readonly string[]|undefined):SceneRules|undefined{
  const parts=(names??[]).flatMap(n=>{const shape=SCENE_MECHANISMS[n]?.rulesShape?.();return shape?[shape]:[];});
- return parts.length?mergeRules(parts):undefined;
+ if(!parts.length)return undefined;
+ const mechanisms=(names??[]).flatMap(n=>{const m=SCENE_MECHANISMS[n],shape=m?.rulesShape?.(),d=shape&&deviceOfNouns(n,m.label,nounsOfRules(shape));return d?[d]:[];});
+ return mechanisms.length?{...mergeRules(parts),mechanisms}:mergeRules(parts);
+}
+/**
+ * The scene's rules, tagged with its mechanisms' Circuit devices (cable endpoints), when it has any.
+ * The tag is not part of the rules' value: it is a non-enumerable property, so a scene's recorded
+ * fingerprint (its rules as data) is the same with or without it.
+ */
+const tag=<T extends SceneRules>(rules:T,mechanisms:readonly MechanismDevice[]):T=>Object.defineProperty(rules,'mechanisms',{value:mechanisms,enumerable:false,configurable:true});
+export function withMechanismDevices<R extends NonNullable<SceneDef['rules']>>(rules:R,mechanisms:readonly MechanismDevice[]|undefined):R{
+ if(!mechanisms?.length)return rules;
+ return (typeof rules==='function'?(player:Parameters<Extract<R,Function>>[0])=>tag({...(rules as Extract<R,Function>)(player)},mechanisms):tag({...(rules as object)} as SceneRules,mechanisms)) as unknown as R;
 }
 /**
  * transitPlatform: a LINE 0 platform. The `stop` role is where the train's nose stops (the

@@ -415,6 +415,15 @@ export interface KeyItem {
   card?: 'slow' | 'ping';
 }
 
+/** A part of a scene mechanism's Circuit device: the signals a cable may start from and the actions it may send. */
+export interface MechanismPart { id: string; layer: Layer; function: PartFunction; verbs: string[]; events: string[] }
+/**
+ * A registered scene mechanism as a Circuit device (engine/gameplay/mechanism-parts.ts): cables may
+ * start or end on its parts. Derived from the scene's `stage.mechanisms` and carried by its rules
+ * (`SceneRules.mechanisms`), never by the device document: it is not authored, takes no layout and is
+ * not a physical device (no hack-vision node).
+ */
+export interface MechanismDevice { id: string; name: string; label: string; parts: MechanismPart[] }
 export interface SceneData {
   controller?:RegisteredSceneController;
   /** Native read-only projections and idempotent live-tick goal observations. */

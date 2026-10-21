@@ -15,7 +15,7 @@ import {validateGameplayQuerySources} from './queries';
 import {validateNativeWorkflowShape,validateNativeWorkflowBindings,nativeWorkflowEvent,nativeWorkflowTick} from './native-workflows';
 import {renderGameplayText,validateGameplayText} from './text-template';
 /** Shared device commands, observations, cables and native scene lifecycle. */
-import type {SceneData} from '../../data/types';
+import type {SceneData,MechanismDevice} from '../../data/types';
 import type {Ctx,SceneModel,Line} from '../model';
 import type {GameplayDefinition,Source,StatePort} from './types';
 import type {GameplaySession} from './session';
@@ -41,8 +41,9 @@ export function validateNativeShape(d:GameplayDefinition,condition:(v:unknown)=>
  if(b.wires!==undefined&&(!Array.isArray(b.wires)||b.wires.length>128))fail('wire list');const ids=new Set<string>(),pairs=new Set<string>();for(const raw of b.wires??[]){const w=fields(raw,['id','from','to','verb','fixed']);[w.from,w.to,w.verb].forEach(name);if(w.id!==undefined)name(w.id);const identity=w.id??w.from+'>'+w.to;if(ids.has(identity)||pairs.has(w.from+'>'+w.to))fail('duplicate wire');ids.add(identity);pairs.add(w.from+'>'+w.to);if(w.fixed!==undefined&&typeof w.fixed!=='boolean')fail('fixed');}
 }
 function noun(data:SceneData,key:string){const i=key.indexOf('.');return [...data.devices,...(data.nodes??[])].find(d=>d.id===key.slice(0,i))?.nouns.find(n=>n.id===key.slice(i+1));}
-export function nativeVocabulary(data:SceneData){return [...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]);}
-export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={}):GameplayDefinition {
+/** Every cable endpoint: the parts of the scene's devices and nodes, then those of its engine mechanisms (`SceneRules.mechanisms`, which the document does not hold). */
+export function nativeVocabulary(data:SceneData,mechanisms:readonly MechanismDevice[]=[]){return [...[...data.devices,...(data.nodes??[])].flatMap(d=>[...d.nouns.map(n=>({key:d.id+'.'+n.id,verbs:[...(n.clock?['start','stop']:[]),...(n.link?['scan',...Array.from(new Set([...(n.link.reach??[]),...(n.link.known??[])])).map(id=>'connect '+id)]:[]),...(n.verbs??[])],events:n.events??[]})),...(d.sectors??[]).filter(s=>'sequence'in s.seal).map(s=>({key:d.id+'.'+s.id,verbs:'sequence'in s.seal?s.seal.sequence:[],events:[]})),...((data.watchdog?.route??[]).includes(d.id)?[{key:d.id+'.watchdog',verbs:[],events:['arrives','leaves']}]:[])]),...mechanisms.flatMap(m=>m.parts.map(p=>({key:m.id+'.'+p.id,verbs:[...p.verbs],events:[...p.events]})))];}
+export function validateNativeBindings(d:GameplayDefinition,data:SceneData,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={},mechanisms:readonly MechanismDevice[]=[]):GameplayDefinition {
  validateResponseConversations(d,data);
  validateYardGameplayBindings(data,d);
  validateDowntownVisualBindings(data,d);
@@ -61,18 +62,18 @@ export function validateNativeBindings(d:GameplayDefinition,data:SceneData,deriv
  for(const device of data.devices){const ref=device.layout?.spot?.presence;if(ref!==undefined&&!Object.prototype.hasOwnProperty.call(d.queries??{},ref))fail('world presence query '+ref);}
  const b=d.native;if(!b)return d;for(const key of Object.values(b.reads??{}))if(!Object.prototype.hasOwnProperty.call(data.state,key)&&!derived.includes(key)&&!Object.prototype.hasOwnProperty.call(data.observations?.aliases??{},key))fail('native read '+key);
  for(const r of b.verbs){for(const c of r.cases)validateNativeSaySources(c.say,{...engineSource.texts,...data.texts}as unknown as SceneData['texts']);const n=noun(data,r.device+'.'+r.noun);if(!n?.verbs?.includes(r.verb)||!nativeBindable(n))fail('unsupported native verb');}
- const vocabulary=nativeVocabulary(data),event=(key:string)=>{const i=key.lastIndexOf(':');return i>0&&!!vocabulary.find(n=>n.key===key.slice(0,i))?.events.includes(key.slice(i+1));};
+ const vocabulary=nativeVocabulary(data,mechanisms),event=(key:string)=>{const i=key.lastIndexOf(':');return i>0&&!!vocabulary.find(n=>n.key===key.slice(0,i))?.events.includes(key.slice(i+1));};
  for(const p of Object.values(b.presentation??{}))if(!data.devices.some(d=>d.id===p.target)&&!vocabulary.some(n=>n.key===p.target))fail('presentation target '+p.target);
  for(const key of Object.values(b.events))if(!event(key))fail('native event '+key);
  for(const key of Object.values(b.goals))if(!data.goals.some(g=>g.id===key))fail('native goal '+key);
- for(const w of b.wires??[])if(!event(w.from)||!nativeVocabulary(data).find(n=>n.key===w.to)?.verbs.includes(w.verb))fail('wire endpoint '+w.id);
+ for(const w of b.wires??[])if(!event(w.from)||!vocabulary.find(n=>n.key===w.to)?.verbs.includes(w.verb))fail('wire endpoint '+w.id);
  validateNativeWorkflowBindings(d,data);
  return d;
 }
 /** Only declared default cables are authored. Player cuts/rewires continue to live in SceneSave. */
 export function projectNativeDeviceData(data:SceneData,d:GameplayDefinition):SceneData{return d.native?.wires?{...data,cables:structuredClone(d.native.wires)}:data;}
 /** Validate after all pending device and gameplay sources have been assembled. */
-export function nativeDeviceData(data:SceneData,d:GameplayDefinition,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={}):SceneData {const projected=projectSceneState(data,d);validateNativeBindings(d,projected,derived,physical,nativeReads);return projectNativeDeviceData(projected,d);}
+export function nativeDeviceData(data:SceneData,d:GameplayDefinition,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={},mechanisms:readonly MechanismDevice[]=[]):SceneData {const projected=projectSceneState(data,d);validateNativeBindings(d,projected,derived,physical,nativeReads,mechanisms);return projectNativeDeviceData(projected,d);}
 /** Read-only observations and native goal effects; scalar values have one common owner. */
 export function nativeGameplayPort(d:GameplayDefinition,port:StatePort,model:()=>SceneModel):StatePort{return{
  read(){const s=port.read(),m=model();return {...s,flags:{...s.flags,...Object.fromEntries(Object.entries(d.native?.reads??{}).map(([flag,key])=>[flag,!!m.value(key)]))}};},
@@ -82,7 +83,7 @@ export function nativeRoute(d:GameplayDefinition,c:Pick<Ctx,'dev'|'noun'|'verb'>
 /** Invoked after native watchdog/lock/seal checks. No legacy steps execute for a bound verb. */
 export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
  model.installGameplaySource(session.definition as GameplayDefinition);
- validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs,model.rules.derivedTypes);
+ validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs,model.rules.derivedTypes,model.rules.mechanisms);
  attachResponseConversations(model,session);
  const domain=()=>model.beginDomainTransaction();session.domain=domain;session.onDispose(()=>{if(session.domain===domain)session.domain=undefined;});
  const queryIds=new Set(Object.keys(session.definition.queries??{})),readContext=()=>({tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates,nativeRead:(key:string)=>model.rules.derivedTypes?.[key]?model.rules.derived?.[key]?.(model):undefined}),query=(id:string)=>queryIds.has(id)?session.query(id):undefined;session.readContext=readContext;model.gameplayQuery=query;model.gameplayQueryIds=queryIds;

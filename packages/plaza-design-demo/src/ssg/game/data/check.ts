@@ -16,7 +16,7 @@ import {observationProblems,observationAliases} from '../engine/native-observati
  */
 
 import type {
-  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, LineData, PartFunction, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
+  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, LineData, PartFunction, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData, MechanismDevice,
 } from './types';
 import { BEHAVIOUR_FUNCTION, LAYERS, PART_FUNCTIONS } from './types';
 import { moverVerbs } from '../engine/movers';
@@ -30,6 +30,8 @@ export interface CodeContract {
   devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;function?:PartFunction;events?:readonly string[]}[]}[];
   /** Verbs implemented by validated shared native routes, rather than legacy on steps. */
   nativeVerbs?: string[];
+  /** The scene's registered mechanisms as cable endpoints (engine/gameplay/mechanism-parts.ts). */
+  mechanisms?: MechanismDevice[];
   /** Named effects implemented in code. */
   effects: string[];
   /** Panels the data may open. */
@@ -593,6 +595,9 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       const [d, n] = split(key);
       // the engine's watchdog noun, on a device the watchdog visits: it raises arrives / leaves and takes no orders
       if (n === WATCH_NOUN && env.routes.has(d) && all.has(d)) return { id: WATCH_NOUN, layer: 'software', function: 'record', watch: true, events: WATCH_EVENTS, verbs: [] } as NounData & { watch: true };
+      // a registered mechanism's part: the signals it raises and the actions a cable may send it
+      const mech = env.code.mechanisms?.find((m) => m.id === d)?.parts.find((p) => p.id === n);
+      if (mech) return { id: mech.id, layer: mech.layer, function: mech.function, verbs: [...mech.verbs], events: [...mech.events] } as NounData;
       return all.get(d)?.nouns.find((x) => x.id === n);
     };
     const sealAt = (key: string) => { const [d, n] = split(key); const s = all.get(d)?.sectors?.find((x) => x.id === n); return s && 'sequence' in s.seal ? s.seal : undefined; };

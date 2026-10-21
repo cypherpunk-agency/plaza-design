@@ -175,9 +175,19 @@ citySkyline, lineRide, gantryLift, dockworkerCarry, devicePulse, targetReset, sa
 thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
 fixed value, a light or a shade line is stage data, not a mechanism. Give it a `face`
 (`{function, controller?}`): in Logic › Devices and Wiring the scene's mechanisms appear as devices
-(`mechanism:<name>`), their parts derived from `rulesShape()` (engine/gameplay/mechanism-face.ts), and the
-numbers in the `controller` block of that kind (plus the tuning it names) are editable. Cables cannot
-yet start or end on a mechanism part.
+(`mechanism-<name>`), their parts derived from `rulesShape()` (engine/gameplay/mechanism-parts.ts,
+mechanism-face.ts), and the numbers in the `controller` block of that kind (plus the tuning it names)
+are editable. Cables work on them: the scene's mechanisms are Circuit devices carried by the scene's
+rules (`SceneRules.mechanisms`, a non-enumerable tag so a scene's recorded fingerprint is unchanged;
+the build check, `nativeVocabulary(data, mechanisms)`, `validateNativeBindings`, the model and the
+editor all read it there; the device document holds no copy). A physical milestone (`inputs`) is a signal of the part `milestones`, raised when
+the mechanism emits it (`SceneModel.input`); a derived value is a part whose signal `changed` is raised
+when the value differs between ticks (only while a cable listens); each effect is an action of the part
+`effects` and runs exactly as an `effect` action would. Panels are listed but not wireable, and a
+derived value's `read` is not an action. These devices live in `SceneModel.mechanisms`, not `devices`:
+no world presence, board node or hack-vision part, no state of their own. Cables are saved like any
+other (`devices.json` `cables`, or `native.wires` for scenes whose shared gameplay owns them), listed
+in the Wiring panel and checked by data/check.ts and validateNativeBindings.
 
 State a mechanism keeps for the picture (a hook that eases, a simulation, a prepared frame) has one
 home: `ctx.shared`, the per-built-scene map `apply` receives; binding providers read it as
