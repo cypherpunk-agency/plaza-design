@@ -11,6 +11,7 @@ import {BINDING_PROVIDERS} from './binding-providers';
 import type {CityModel} from '../../world/city';
 import type {LineSystem} from '../../world/transport/line';
 import type {PresentationSignals} from './presentation-signals';
+import {bindingKeyProblem,bindingKeyScope,type BindingKeyScope} from './binding-keys';
 /**
  * Binding sources of declared scenes: the names a composition's `bindings` may use, each worked
  * out by the engine every frame. A scene's artwork asks for `actor.keeper.pose` or `world.light`;
@@ -45,6 +46,20 @@ const flatten=(nodes:readonly Instance[]):Instance[]=>nodes.flatMap(n=>[n,...fla
 export function bindingDefaults(doc:Composition):Record<string,Value>{const out:Record<string,Value>={};for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))out[source]=art.get(node.type).visualFields![field].default;return out;}
 /** The presentation signals (name and starting stamp) the composition's providers offer: the targets a scene's cues may name. */
 export function providerSignals(doc:Composition):Record<string,number>{const out:Record<string,number>={};for(const name of Object.keys(bindingDefaults(doc))){const p=providerOf(name);if(p)Object.assign(out,BINDING_PROVIDERS[p].signals);}return out;}
+/**
+ * Composition bindings a registered provider does not offer, each as a message naming the instance, its field and the binding.
+ * A provider's `keys` (binding-keys.ts) say what it offers; a hole names something of this scene (an actor, an artwork instance,
+ * a presentation flag role, a use), which must exist.
+ */
+export function unofferedBindings(doc:Composition,scene:Parameters<typeof bindingKeyScope>[1],scope:BindingKeyScope=bindingKeyScope(doc.instances,scene)):string[]{
+ const out:string[]=[];
+ for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{})){
+  const provider=providerOf(source);if(!provider)continue;
+  const problem=bindingKeyProblem(BINDING_PROVIDERS[provider].keys,source.slice(provider.length+1),scope);
+  if(problem)out.push('Instance "'+node.id+'" ('+node.type+') binds '+field+' to "'+source+'": '+problem);
+ }
+ return out;
+}
 export function unknownBindingSources(doc:Composition):string[]{return [...new Set(flatten(doc.instances).flatMap(n=>Object.values(n.bindings??{})))].filter(s=>!knownBindingSource(s));}
 const roleList=(source:SceneDocument,role:string):readonly string[]=>{const ref=(source.presentation?.actors as Record<string,unknown>|undefined)?.[role];return Array.isArray(ref)?ref as string[]:typeof ref==='string'?[ref]:[];};
 /** This frame's values for every binding the composition uses. */

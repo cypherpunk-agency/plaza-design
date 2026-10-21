@@ -7,7 +7,8 @@ import type {SceneModel} from '../../model';
 import {manifestGeometry} from '../manifest-geometry';
 import {prepareActor} from '../actor-frame';
 import {dlvX} from '../mechanisms/vehicle-run';
-import type {BindingProvider} from './index';
+import type {BindingContext} from '../binding-sources';
+import {provide} from '../binding-keys';
 /**
  * `downtown.*`: what Downtown's street paints from the scene as it stands. Nothing here advances the
  * simulation; every value is worked out from the artwork as placed, the view and (when an engine
@@ -46,7 +47,7 @@ function layoutOf(rows:readonly Resolved[],source:Parameters<typeof manifestGeom
  layouts.set(rows,{source,layout});return layout;
 }
 const homeOf=(m:SceneModel)=>m.data.devices.find(d=>d.id===downtownController(m.data).devices.vehicle)!.layout!.spot!.x;
-export const downtown:BindingProvider=ctx=>{
+const downtownValues=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,roles,source}=ctx,out:Record<string,Value>={},layout=layoutOf(rows,source);
  out.width=layout.width;out.weatherText=screenLine(sceneClimate(source.id));out.rain=0;out.city=true;
  const stall=roles.stall,alley=roles.alley;
@@ -72,3 +73,6 @@ export const downtown:BindingProvider=ctx=>{
  if(roles.vehicleHome)out['device.dlv9.position']=dlv??roles.vehicleHome.placement.x;
  return out;
 };
+/** What the provider offers: its exact keys, and fronts, windows and street people by what the composition and scene hold. */
+export const DOWNTOWN_KEYS=['width','weatherText','rain','city','stall','doorOffset','front.<instance:downtown.front>.metrics','front.<instance:downtown.front>.visible','window.<instance:downtown.window>.enabled',...SMEAR_ORDER.flatMap(id=>['smear.'+id+'.x','smear.'+id+'.color']),'pose.<actor>',...DEVICES.map(id=>'device.'+id+'.snapshot'),'device.dlv9.position'];
+export const downtown=provide(DOWNTOWN_KEYS,downtownValues);

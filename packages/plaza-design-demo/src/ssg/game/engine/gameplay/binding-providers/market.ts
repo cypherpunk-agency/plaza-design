@@ -3,6 +3,7 @@ import {prepareCharacter} from '../../../runtime/characters';
 import {TICKER} from '../../../art/signage/screens';
 import {screenLine} from '../../../world/weather';
 import type {BindingContext} from '../binding-sources';
+import {provide} from '../binding-keys';
 /**
  * The street market's artwork values:
  * - `market.weather`: the ticker's text, the weather line standing in for WEATHER.
@@ -12,7 +13,7 @@ import type {BindingContext} from '../binding-sources';
  * Clips (`market.clip.<id>`) are never set: the crowd is not seen through anything.
  */
 const holdsVendor=(type:string)=>type==='market.stall'||type==='market.booth';
-export const marketBindings=(ctx:BindingContext):Record<string,Value>=>{
+const marketValues=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,actors}=ctx,out:Record<string,Value>={weather:TICKER.map(l=>l==='WEATHER'?screenLine():l).join('   ·   ')};
  const attached=(owner:string)=>rows.find(r=>r.instance.type==='character.prepared'&&r.instance.attach?.instance===owner&&r.instance.attach.anchor==='vendor');
  for(const r of rows){
@@ -29,3 +30,4 @@ export const marketBindings=(ctx:BindingContext):Record<string,Value>=>{
  }
  return out;
 };
+export const marketBindings=provide(['weather','actor.<actor>','clip.<actor>','vendor.<instance:market.stall>','vendor.<instance:market.booth>'],marketValues);

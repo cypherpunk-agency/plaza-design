@@ -5,7 +5,7 @@ import {light} from '../../../world/light';
 import {beachVisualSnapshot} from '../../controllers/visual';
 import {presentationActor,presentationActors} from '../scene-presentation';
 import type {BindingContext} from '../binding-sources';
-import type {BindingProvider} from './index';
+import {provide,keysOf} from '../binding-keys';
 /**
  * The beach: what its model decides (the sunbed rented and billed, the free drink, the danger flag,
  * the pier's lamps: the visual controller of its devices document), where its artwork stands on screen
@@ -15,7 +15,7 @@ import type {BindingProvider} from './index';
  * arrives as the `gullShooed` signal.
  */
 export const beachSignals={gullShooed:-1e9} as const;
-const provider:BindingProvider=(ctx:BindingContext)=>{
+const provider=(ctx:BindingContext):Record<string,Value>=>{
  const {rows,roles,source,actors,engine}=ctx,cam=-ctx.view.sx(0),view={...ctx.view,sx:(wx:number,par=1)=>Math.round(wx-cam*par),cam,gy:ctx.view.y(0),flags:{}};
  const x=(role:string)=>roles[role]?.placement.x??0,bar=roles.bar,pier=roles.pier,walk=roles.boardwalk;
  const visual=engine?.m?beachVisualSnapshot(engine.m):undefined,danger=!!visual?.danger;
@@ -35,4 +35,5 @@ const provider:BindingProvider=(ctx:BindingContext)=>{
  }
  return out;
 };
-export const beachProvider:BindingProvider=Object.assign(provider,{signals:beachSignals as Readonly<Record<string,number>>});
+
+export const beachProvider=provide(['limeVisible','limeX','limeH','palette','horizon','waterline',...keysOf<ReturnType<typeof beachVisualSnapshot>>()(['rented','billingPaused','billed','freeDrink','danger','lamps']),'gullShooed','hover','barVisible','barWidth','towerVisible','pierVisible','boardwalkVisible','drinkX','drinkH','shore','lampPositions','actor.<actor>'],provider,beachSignals);

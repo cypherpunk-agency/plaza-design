@@ -13,7 +13,7 @@ import {prepareActor} from '../actor-frame';
 import {transitActorBindings} from '../transit-actors';
 import type {SceneDocument} from '../scene-document';
 import type {BindingContext} from '../binding-sources';
-import type {BindingProvider} from './index';
+import {provide} from '../binding-keys';
 /**
  * `train.*`: what the metro car paints from the ride, for the scene that names the `lineRide`
  * mechanism (mechanisms/line-ride.ts), which keeps the car's layout and each frame's prepared
@@ -53,10 +53,11 @@ export function trainValues(sc:TrainScenery,view:View,frame:TrainFrame,context:T
  for(const[key,v]of Object.entries(transitActorBindings(sc.source,sc.rows,view,{...context,trainAt:frame.visual.ride.at,regulars:frame.L.people},sc.actors)))out[key.replace(/^train\./,'')]=v;
  return out;
 }
-const provider:BindingProvider=(ctx:BindingContext)=>{
+const provider=(ctx:BindingContext):Record<string,Value>=>{
  const layout=ctx.shared?.get(TRAIN_LAYOUT_KEY) as TrainLayout|undefined;if(!layout)return{};
  const sc:TrainScenery={source:ctx.source,rows:ctx.rows,roles:ctx.roles,actors:ctx.actors,layout},context:TrainWorld={metro:ctx.world?.metro,city:ctx.world?.city};
  const frame=(ctx.shared!.get(TRAIN_FRAME_KEY) as TrainFrame|undefined)??prepareTrainFrame(sc,ctx.view,ctx.engine?.hover??null,trainVisual(ctx.view,ctx.world),context);
  return trainValues(sc,ctx.view,frame,context);
 };
-export const trainProvider:BindingProvider=provider;
+
+export const trainProvider=provide(['frame','<instance:train.windowFrame>.width','pose.<actor>','pose.<actor>.embedded'],provider);

@@ -1,5 +1,5 @@
 import type {Resolved,Value} from '../../../art/core/composition';
-import type {BindingProvider} from './index';
+import {provide} from '../binding-keys';
 import type {BindingContext} from '../binding-sources';
 import type {SceneData} from '../../../data/types';
 import type {Station} from '../../../art/assemblies/sandbox';
@@ -30,7 +30,7 @@ export function validateSandboxGeometry(data:Pick<SceneData,'controller'>,rows:r
  for(const station of c.stations){if(!(Number(get(station.zone).props.width)>0))throw Error('Sandbox station zone requires width');const sign=get(station.sign);if(typeof sign.props.title!=='string'||typeof sign.props.subtitle!=='string')throw Error('Sandbox station sign requires title and subtitle');if(station.card)get(station.card);}
 }
 function daylight(minute:number){const h=minute/60;if(h<5||h>=20)return 0;if(h<8)return(h-5)/3;if(h<17)return 1;return 1-(h-17)/3;}
-export const sandbox:BindingProvider=(ctx:BindingContext):Record<string,Value>=>{
+const sandboxValues=(ctx:BindingContext):Record<string,Value>=>{
  const engine=ctx.engine;if(!engine)return{};
  const {view,rows}=ctx,m=engine.m,wx=weatherNow(sceneClimate(ctx.source.id)),c=sandboxController(m.data),w=c?.geometry.window?rowOf(rows,c.geometry.window):undefined;
  const snapshot:SandboxSnapshot={...structuredClone(emptySandboxSnapshot),...sandboxModelSnapshot(m)};
@@ -42,3 +42,4 @@ export const sandbox:BindingProvider=(ctx:BindingContext):Record<string,Value>=>
  const hovered=engine.hover?m.spots().find(spot=>spot.id===engine.hover):undefined;if(hovered)snapshot.hoverSpot={x:hovered.x,y:hovered.y,w:hovered.w,h:hovered.h};
  return{visual:snapshot as unknown as Value,windowClip:w?[view.sx(w.placement.x),view.y(w.placement.h+Number(w.props.height)),Number(w.props.width),Number(w.props.height)]:null};
 };
+export const sandbox=provide(['visual','windowClip'],sandboxValues);

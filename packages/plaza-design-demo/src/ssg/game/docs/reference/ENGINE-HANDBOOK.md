@@ -160,10 +160,15 @@ supplies it every frame. Built in: `world.light`, `actor.<id>.pose` / `.clip`, `
 
 **A binding provider** works out what a picture needs once per frame from the scene as it stands
 (`ctx.engine`, `roles`, `presentation`, `shared`, `world`). Add engine/gameplay/binding-providers/<name>.ts
-exporting a function `(ctx)=>Record<string,Value>`, add one line to `BINDING_PROVIDERS` in that folder's
+exporting `provide(keys, (ctx)=>Record<string,Value>)` (binding-keys.ts), add one line to `BINDING_PROVIDERS` in that folder's
 index.ts, and name `<name>.<key>` in the composition's bindings. A provider that drives cues declares
 `signals` (name and starting stamp); the scene's presentation cues may then target them. Nothing else
-registers it: validation and the editor read the same table.
+registers it: validation and the editor read the same table. `keys` lists what the provider offers:
+exact keys and patterns with one typed hole (`front.<instance:downtown.front>.metrics`, `pose.<actor>`,
+`<role>` for a presentation flag role, `<use>`); `keysOf<T>()` makes a snapshot's key list complete at
+compile time. A composition binding the provider does not offer, or whose hole names nothing that
+exists, is refused when the scene is checked (also on the composer's save). check-binding-keys.mts
+runs every folder scene and fails when a provider returns a key it does not declare.
 
 **A mechanism** is what a scene takes from the engine beyond its documents: SceneDef fields, `rules`
 and `panels` (several are merged, `mergeRules`; a name defined twice is refused), `anchors` for engine

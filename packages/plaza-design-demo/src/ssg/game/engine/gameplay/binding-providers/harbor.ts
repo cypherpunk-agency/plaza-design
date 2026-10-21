@@ -9,7 +9,7 @@ import {manifestGeometry} from '../manifest-geometry';
 import {presentationActor,presentationActors,presentationFlag,type ScenePresentationActorRole} from '../scene-presentation';
 import type {SceneDocument} from '../scene-document';
 import type {BindingContext} from '../binding-sources';
-import type {BindingProvider} from './index';
+import {provide} from '../binding-keys';
 /**
  * Harbor's binding provider: where the pier stands (layout), what moves on it (cranes, forklift,
  * the tea visit), the stall vendors, the crane loads, and its people, who ride the cranes and the
@@ -37,7 +37,7 @@ export function harborVisual(layout:HarborLayout,t:number,craneCall:number,bribe
  const u=t%1500,k=u<500?u/500:u<750?1:u<1250?1-(u-750)/500:0;
  return{cranes,forklift:{x:forklift.x+forklift.travel*k*k*(3-2*k),dir:u<500||u>=1250?1:-1},bribed,weatherLine:screenLine('harbor')};
 }
-const provider:BindingProvider=(ctx:BindingContext)=>{
+const provider=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,roles,source,actors}=ctx,get=(role:string)=>roleRow(roles,role);
  const width=typeof source.manifest!.width==='number'?source.manifest!.width:Number(rows.find(r=>r.instance.id===(source.manifest!.width as {instance:string}).instance)!.props[(source.manifest!.width as {property:string}).property]);
  const L=harborLayoutOf(roles,width),fork=get('forklift'),attached=(row:Resolved,role:string)=>row.instance.attach?.instance===get(role).instance.id;
@@ -62,4 +62,5 @@ const provider:BindingProvider=(ctx:BindingContext)=>{
  out.fishPose=value(vendor('fishVendor','fish'));out.teaPose=value(vendor('teaVendor','drinks'));
  return out;
 };
-export const harborProvider:BindingProvider=Object.assign(provider,{signals:harborSignals as Readonly<Record<string,number>>});
+
+export const harborProvider=provide(['archVisible','bondedVisible','layout','visual','stackOrigins','forkliftOrigin','loads','actor.<actor>','clip.<actor>','fishPose','teaPose'],provider,harborSignals);

@@ -9,7 +9,7 @@ import {presentationActor} from '../scene-presentation';
 import {actorAppearanceSeed,bindActorAppearanceSeed} from '../actor-identity';
 import {gantryGeometry,stacksState,trolley} from '../mechanisms/gantry-lift';
 import type {BindingContext} from '../binding-sources';
-import type {BindingProvider} from './index';
+import {provide} from '../binding-keys';
 /**
  * `terminal.*`: the container terminal's picture of the gantry-lift mechanism (scene-mechanics/gantry-lift.ts).
  * `terminal.snapshot` is the terminal artwork's whole frame (crane, ferry, gate, blocks); `terminal.actor.<id>`
@@ -23,7 +23,7 @@ function layoutOf(roles:BindingContext['roles']):TerminalLayout{
  const p=(id:string)=>roles[id].placement;
  return{blocks:[0,1,2].map(i=>({x:p('block'+i).x})),ladder:p('ladder').x,quay:p('quay').x,kiosk:p('kiosk').x,bridge:{x0:p('bridge').x},boom:206};
 }
-export const terminal:BindingProvider=(ctx)=>{
+const terminalValues=(ctx:BindingContext):Record<string,Value>=>{
  const{view,rows,roles,actors,source,engine,gameplay}=ctx;
  // the foreground pass paints without an engine: the artwork's own defaults
  if(!engine)return{};
@@ -45,3 +45,4 @@ export const terminal:BindingProvider=(ctx)=>{
  }
  return out;
 };
+export const terminal=provide(['snapshot','actor.<actor>','clip.<actor>'],terminalValues);

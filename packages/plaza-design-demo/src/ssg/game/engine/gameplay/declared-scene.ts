@@ -16,7 +16,7 @@ import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
 import {compileSceneActors} from './actors';
-import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources} from './binding-sources';
+import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources,unofferedBindings} from './binding-sources';
 import {PresentationSignals} from './presentation-signals';
 import {stageContent} from './scene-stage';
 import {SCENE_MECHANISMS,mergeRules,mechanismsRulesShape,composePresentations,type MechanismPresentation} from './scene-mechanisms';
@@ -42,6 +42,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');
  const unknown=unknownBindingSources(doc);if(unknown.length)throw new Error('Unknown binding sources: '+unknown.join(', '));
+ const unoffered=unofferedBindings(doc,d);if(unoffered.length)throw new Error('Binding not offered by its provider: '+unoffered.join('; '));
  const rows=resolveComposition(art,doc,{view:frameView(0),state:{},bindings:bindingDefaults(doc),reduced:false});
  const compile=d.manifest.compile,geometry=compile?manifestGeometry(d,rows,compile.groups,compile):manifestGeometry(d,rows),bindings=geometry.bindings;
  // a scene's people are either its actors (scene.actors, with their artwork) or residents placed by the manifest

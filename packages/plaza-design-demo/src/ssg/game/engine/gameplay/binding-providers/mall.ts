@@ -4,7 +4,8 @@ import type {MallLayout} from '../../../art/assemblies/mall-details';
 import {prepareCharacter,type PreparedCharacter} from '../../../runtime/characters';
 import {light} from '../../../world/light';
 import {presentationActor,presentationActorSlots} from '../scene-presentation';
-import type {BindingProvider} from './index';
+import type {BindingContext} from '../binding-sources';
+import {provide} from '../binding-keys';
 /**
  * The Mall atrium: adaptive storeys, the escalator and the people who stand on them.
  * - `mall.snapshot`: the atrium layout (read from the `room` and `escalator` artwork roles and the manifest width), its storey heights and the light.
@@ -12,7 +13,7 @@ import type {BindingProvider} from './index';
  * - `mall.vendor.<role>`: a booth vendor (deckVendor, caseVendor) painted by the booth artwork instead of as an actor.
  * Booth-owned source bodies are hidden as actors; rebinding the booth detaches them into ordinary actor artwork.
  */
-export const mallProvider:BindingProvider=ctx=>{
+const mallValues=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,roles,actors,source}=ctx,room=roles.room,escalator=roles.escalator;
  if(!room||!escalator)throw new Error('Mall atrium requires room and escalator artwork roles');
  const w=source.manifest?.width,width=typeof w==='number'?w:Number(rows.find(r=>r.instance.id===w!.instance)!.props[w!.property]),s=room.props;
@@ -37,3 +38,4 @@ export const mallProvider:BindingProvider=ctx=>{
  for(const role of ['deckVendor','caseVendor'] as const){const id=presentationActor(source.presentation,role),p=id?actors[id]:undefined;if(p&&id&&booth(id))out['vendor.'+role]=prepareCharacter(p,view.t,{x:p.x,h:p.h??0}) as unknown as Value;}
  return out;
 };
+export const mallProvider=provide(['snapshot','actor.<actor>','clip.<actor>','vendor.deckVendor','vendor.caseVendor'],mallValues);

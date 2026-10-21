@@ -4,7 +4,8 @@ import {platformFrame} from '../../../world/transport/platform-frame';
 import {transitActorBindings} from '../transit-actors';
 import {skylineValue} from '../mechanisms/city-skyline';
 import {light} from '../../../world/light';
-import type {BindingProvider} from './index';
+import type {BindingContext} from '../binding-sources';
+import {provide} from '../binding-keys';
 /**
  * `station.*`: what a LINE 0 platform paints from the world, for the two station scenes (and later
  * Downtown's). The platform frame is the train at the stop, the departure board and whether the
@@ -18,7 +19,7 @@ import type {BindingProvider} from './index';
  * - `station.daylight`: how much daylight there is. `station.city`: the animated skyline of a scene with the `citySkyline` mechanism.
  * - `station.pose.<actor>` and `station.pose.<actor>.embedded`: prepared riders (engine/gameplay/transit-actors.ts).
  */
-export const station:BindingProvider=ctx=>{
+const stationValues=(ctx:BindingContext):Record<string,Value>=>{
  const out:Record<string,Value>={},{roof,stop}=ctx.roles,metro=ctx.world?.metro??defaultMetro,city=ctx.world?.city;
  if(roof){out.roof=roof.placement.h+Number(roof.props.under);out.roofLocal=Number(roof.props.under);if(roof.props.truss!==undefined)out.truss=roof.placement.h+Number(roof.props.truss);}
  out.daylight=light().daylight;
@@ -27,3 +28,4 @@ export const station:BindingProvider=ctx=>{
  for(const[key,value]of Object.entries(transitActorBindings(ctx.source,ctx.rows,ctx.view,{metro,city},ctx.actors)))out[key.replace(/^station\./,'')]=value;
  return out;
 };
+export const station=provide(['roof','roofLocal','truss','daylight','city','train','departure','closed','pose.<actor>','pose.<actor>.embedded'],stationValues);

@@ -1,5 +1,3 @@
-import type {Value} from '../../../art/core/composition';
-import type {BindingContext} from '../binding-sources';
 import {mallProvider} from './mall';
 import {marketBindings} from './market';
 import {laundry} from './laundry';
@@ -22,8 +20,9 @@ import {downtown} from './downtown';
 import {flagProvider} from './flag';
 import {cueProvider} from './cue';
 import {shiftProvider} from './shift';
-/** `signals`: the presentation signals the provider reads (name and starting stamp); a scene's cues may target them. */
-export type BindingProvider=((ctx:BindingContext)=>Record<string,Value>)&{signals?:Readonly<Record<string,number>>};
+/** A provider declares the `keys` it offers (binding-keys.ts) and, optionally, the presentation `signals` it reads. */
+export type {BindingProvider} from '../binding-keys';
+import type {BindingProvider} from '../binding-keys';
 export const BINDING_PROVIDERS:Readonly<Record<string,BindingProvider>>={
  mall:mallProvider,
  flag:flagProvider,
