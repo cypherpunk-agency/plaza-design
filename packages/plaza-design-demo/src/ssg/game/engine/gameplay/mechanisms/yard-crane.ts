@@ -3,7 +3,7 @@
  * its own backdrop over the street's floor and rain; CAM-1 (a camera panel over the crates); and the claw's
  * hook, a presentation controller that eases toward the arm's slot each frame. The crane, the chute and the
  * parcel's slide are source (devices.json controller, gameplay deadlines); the hook's travel and the parcel's
- * place are the picture's, read by the `yard` binding provider through the scene's shared state.
+ * place are the picture's, read by the scene's `{shared}` values (scene-values.ts) through its shared state.
  * Needs the artwork role `tray` (the parcel tray an engine target anchors to).
  */
 import type {Resolved} from '../../../art/core/composition';
@@ -22,7 +22,7 @@ import {cameraPanel} from './yard-camera';
 const find=(rows:readonly Resolved[],id:string)=>{const row=rows.find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Yard instance '+id);return row.placement;};
 function validateGeometry(c:YardController|undefined,rows:readonly Resolved[]){if(!c)return;for(const ref of Object.values(c.slots))if(!rows.some(r=>r.instance.id===ref))throw Error('Yard slot artwork reference '+ref);for(const[role,ref]of Object.entries(c.anchors))if(!rows.some(r=>r.instance.id===ref&&r.instance.type==='yard.'+role))throw Error('Yard '+role+' artwork reference '+ref);}
 
-/** Where the mechanism keeps its hook in the scene's shared state (read by the `yard` binding provider). */
+/** Where the mechanism keeps its hook in the scene's shared state (its `visual` is what the scene's `{shared: {mechanism: "yardCrane"}}` values read). */
 export const YARD_KEY='yardCrane';
 /** The hook's travel and what the frame was last prepared with; the caller (the scene) owns one. */
 export class YardPresentation{

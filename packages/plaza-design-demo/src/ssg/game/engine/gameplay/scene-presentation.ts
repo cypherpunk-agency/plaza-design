@@ -4,8 +4,8 @@ export const shiftPresentationRoles=['parcel','delivered','case','returned','par
 export type ShiftPresentationRole=typeof shiftPresentationRoles[number];
 export const scenePresentationRoles={harborShift:shiftPresentationRoles,market:['exitOpen'],beach:[],shop:[],mall:[],harbor:['bribed'],stacks:[]} as const;
 export type ScenePresentationRole=ShiftPresentationRole|'exitOpen'|'bribed';
-export type ScenePresentationActorRole='bartender'|'ashore'|'keeper'|'outside'|'far'|'gallery'|'riders'|'deckVendor'|'caseVendor'|'operator0'|'operator1'|'driver'|'watchman'|'guard'|'fishVendor'|'teaVendor'|'denGuests'|'craneOperator'|'rescuedPassenger';
-export const scenePresentationActorRoles:Readonly<Partial<Record<keyof typeof scenePresentationRoles,Readonly<Partial<Record<ScenePresentationActorRole,'one'|'many'|'slots'|'phases'>>>>>>={stacks:{craneOperator:'one',rescuedPassenger:'one'},beach:{bartender:'one',ashore:'many'},shop:{keeper:'one',outside:'many'},mall:{far:'slots',gallery:'slots',riders:'phases',deckVendor:'one',caseVendor:'one'},harbor:{operator0:'one',operator1:'one',driver:'one',watchman:'one',guard:'one',fishVendor:'one',teaVendor:'one',denGuests:'many'}};
+export type ScenePresentationActorRole='bartender'|'ashore'|'keeper'|'outside'|'far'|'gallery'|'riders'|'operator0'|'operator1'|'driver'|'watchman'|'guard'|'fishVendor'|'teaVendor'|'denGuests'|'craneOperator'|'rescuedPassenger';
+export const scenePresentationActorRoles:Readonly<Partial<Record<keyof typeof scenePresentationRoles,Readonly<Partial<Record<ScenePresentationActorRole,'one'|'many'|'slots'|'phases'>>>>>>={stacks:{craneOperator:'one',rescuedPassenger:'one'},beach:{bartender:'one',ashore:'many'},shop:{keeper:'one',outside:'many'},mall:{far:'slots',gallery:'slots',riders:'phases'},harbor:{operator0:'one',operator1:'one',driver:'one',watchman:'one',guard:'one',fishVendor:'one',teaVendor:'one',denGuests:'many'}};
 export interface ScenePresentation {kind:keyof typeof scenePresentationRoles;flags:Partial<Record<ScenePresentationRole,string>>;actors?:Partial<Record<ScenePresentationActorRole,string|string[]|Record<string,number>>>}
 export function validateScenePresentation(value:unknown,id:string,gameplay:GameplayDefinition,actorIds:readonly string[]=[]):void{
  const fail=():never=>{throw Error('Invalid registered scene presentation');};
@@ -17,10 +17,6 @@ export function validateScenePresentation(value:unknown,id:string,gameplay:Gamep
 
 }
 export function presentationFlag(p:ScenePresentation|undefined|null,flags:Readonly<Record<string,boolean>>,role:ScenePresentationRole):boolean{const ref=p?.flags[role];return ref!==undefined&&!!flags[ref];}
-export function dockworkerCarry(p:ScenePresentation|undefined|null,flags:Readonly<Record<string,boolean>>):'parcel'|'case'|null{
- const f=(role:ShiftPresentationRole)=>presentationFlag(p,flags,role);
- return (f('parcel')&&!f('delivered'))||(f('case')&&!f('returned'))?f('delivered')?'case':'parcel':null;
-}
 
 /** Source-owned actor references; absent roles never select historical IDs. */
 export function presentationActor(p:ScenePresentation|undefined|null,role:ScenePresentationActorRole):string|undefined{const ref=p?.actors?.[role];return typeof ref==='string'?ref:undefined;}

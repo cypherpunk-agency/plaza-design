@@ -1770,6 +1770,29 @@
   "companion": {
     "mode": "off"
   },
+  "stage": {
+    "values": {
+      "snapshot": {
+        "atrium": true
+      }
+    },
+    "atrium": {
+      "room": "room",
+      "escalator": "escalator"
+    },
+    "actors": {
+      "held": [
+        {
+          "type": "mall.deck-booth",
+          "anchor": "origin"
+        },
+        {
+          "type": "mall.cases-booth",
+          "anchor": "origin"
+        }
+      ]
+    }
+  },
   "presentation": {
     "kind": "mall",
     "flags": {},
@@ -1819,12 +1842,10 @@
         "gallery-9": 144
       },
       "riders": {
-        "rider-0": 0.0,
+        "rider-0": 0,
         "rider-1": 0.3333333333333333,
         "rider-2": 0.6666666666666666
-      },
-      "deckVendor": "deckTech",
-      "caseVendor": "teen"
+      }
     }
   }
 }

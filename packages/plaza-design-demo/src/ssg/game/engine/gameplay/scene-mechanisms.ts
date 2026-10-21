@@ -6,7 +6,6 @@ import type {SceneRules} from '../rules';
 import type {MechanismDevice} from '../../data/types';
 import {deviceOfNouns,nounsOfRules} from './mechanism-parts';
 import {gantryLift} from './mechanisms/gantry-lift';
-import {dockworkerCarry} from './mechanisms/dockworker-carry';
 import {devicePulse} from './mechanisms/device-pulse';
 import {targetReset} from './mechanisms/target-reset';
 import {sandboxBay} from './mechanisms/sandbox-bay';
@@ -143,5 +142,5 @@ const transitPlatform:SceneMechanism={
   return{platformStop:stop.placement.x,...(water?{horizon:Number(water.props.horizon??0)}:{}),...(water||roles.horizon?{ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},
 };
 export const SCENE_MECHANISMS:Readonly<Record<string,SceneMechanism>>={
- transitPlatform,citySkyline,lineRide,gantryLift,dockworkerCarry,devicePulse,targetReset,sandboxBay,yardCrane,thermal,vehicleRun,streetCamera,streetLayers,
+ transitPlatform,citySkyline,lineRide,gantryLift,devicePulse,targetReset,sandboxBay,yardCrane,thermal,vehicleRun,streetCamera,streetLayers,
 };

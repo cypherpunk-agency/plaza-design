@@ -76,19 +76,19 @@ for(const id of ['metro','galleriaStation','harborStation'] as const){
 }
 refused('train',bound('train.frame'),'train.frames',/does not offer it/);
 refused('train',bound(/^train\..*\.width$/),'train.nope.width',/no train\.windowFrame artwork instance "nope"/);
-// flag and cue: a role the scene's presentation does not name, a use it does not have
-refused('harborShift',bound('flag.'),'flag.notARole',/names no flag role "notARole"/);
-refused('harborShift',bound('flag.not.'),'flag.not.notARole',/names no flag role "notARole"/);
-refused('harborShift',bound('cue.'),'cue.notAUse',/no use "notAUse"/);
-refused('harborShift',bound('shift.'),'shift.trolleyY',/does not offer it/);
-refused('mall',bound('mall.actor.'),'mall.actor.nobody',/no actor "nobody"/);
-refused('laundromat',bound('laundry.'),'laundry.washer9',/does not offer it/);
+// scene values: a name the scene's stage does not declare, and held artwork that is not in the composition
+refused('harborShift',bound('scene.checked'),'scene.notAValue',/declares no value "notAValue"/);
+refused('harborShift',bound('scene.cue.'),'scene.cue.nope',/declares no value "cue.nope"/);
+refused('moth',bound('scene.fed'),'scene.fedd',/declares no value "fedd"/);
+refused('laundromat',bound('scene.w1'),'scene.washer9',/declares no value "washer9"/);
+refused('mall',bound('held.'),'held.nowhere',/no artwork instance "nowhere"/);
+refused('market',bound('held.'),'held.nowhere',/no artwork instance "nowhere"/);
 // a name no registered provider owns is still the old refusal
 assert.equal(knownBindingSource('nowhere.x'),false);
 
 // 4. The composer refuses the same edit on save (the pending registry validates the declared scene).
 const base=new Map(sourceDocuments.map(d=>[d.id,JSON.parse(fs.readFileSync('src/ssg/game/'+d.file,'utf8'))]));
-for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.window.nope.enabled'],['metro',bound('station.pose.regular.embedded'),'station.pose.nobody.embedded'],['harborShift',bound('flag.'),'flag.notARole']] as const){
+for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.window.nope.enabled'],['metro',bound('station.pose.regular.embedded'),'station.pose.nobody.embedded'],['harborShift',bound('scene.checked'),'scene.notAValue']] as const){
  const docId=scene;
  const model=new ComposerModel(art,createSequenceValidationContext(art,{}),(d,all)=>{if(d.id===docId)pendingRegistry(new Map(all.map(x=>[x.id,x.value])));});
  model.load(sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:structuredClone(base.get(d.id))})));
@@ -97,11 +97,11 @@ for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.
  assert.equal(JSON.stringify(model.edits()),before,scene+': the refused edit changed nothing');
 }
 
-// 5. The editor can list what a provider offers in a scene.
+// 5. The editor can list what a provider offers in a scene: the scene provider offers exactly the values the stage declares.
 {
- const src=FOLDER_SOURCES.harborShift,doc=art.validate(src.composition),scope=bindingKeyScope(doc.instances,src.scene as never),names=offeredNames(BINDING_PROVIDERS.flag.keys,scope);
- assert.ok(names.length&&names.every(n=>/^(not\.)?[A-Za-z]+$/.test(n)),'flag names list the scene\'s roles: '+names.join(','));
- assert.ok(offeredNames(BINDING_PROVIDERS.cue.keys,scope).every(n=>(src.scene as {uses:{id:string}[]}).uses.some(u=>u.id===n)));
+ const src=FOLDER_SOURCES.harborShift,doc=art.validate(src.composition),scope=bindingKeyScope(doc.instances,src.scene as never),names=offeredNames(BINDING_PROVIDERS.scene.keys,scope);
+ assert.deepEqual([...names].sort(),Object.keys((src.scene as {stage:{values:object}}).stage.values).sort(),'scene names list the stage values');
+ assert.ok(names.includes('cue.boss')&&names.includes('trolleyX'));
 }
 // the inspector's binding choices (art registry bindingChoices) are all offered by their providers
 let choices=0;
