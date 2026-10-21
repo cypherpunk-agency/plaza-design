@@ -305,7 +305,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
   stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
-  const linkedPanel = decodeURIComponent(location.hash.slice(1)); let linked = false;
+  // An editor link: `#characters` opens a panel; `#scene=downtown-next&compare=downtown&panel=characters` also opens a scene.
+  const linkQuery = location.hash.includes('=') ? new URLSearchParams(location.hash.slice(1)) : undefined;
+  const linkedPanel = linkQuery ? linkQuery.get('panel') ?? '' : decodeURIComponent(location.hash.slice(1)); let linked = false;
   let compareId = '', currentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
   let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
@@ -460,13 +462,16 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const value = await response.json(); if (!response.ok) throw new Error(response.status === 409 ? `Source changed outside the editor. Pending edits are kept. Export them or reload. ${value.error ?? ''}` : value.error ?? `Authoring service returned ${response.status}`); return value;
   }
   /** Opens the panel named in the URL once, on the first load. */
+  /** A link can open a scene (`#scene=downtown-next`), optionally beside another (`&compare=downtown`), once on load. */
+  let sceneLinked = false;
+  function openLinkedScene() { if (sceneLinked) return; sceneLinked = true; const scene = linkQuery?.get('scene'); if (scene) openScene(scene, linkQuery!.get('compare') ?? undefined); }
   function openLinkedPanel() { if (linked) return; linked = true; const tool = linkedPanel; const target = tool && panels.find(p => p.details.dataset.tool === tool); if (target) openPanel(target.details); }
   async function load() {
     playing = false;
     try {
       const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents); thumbnailDocuments = undefined; thumbnails?.invalidate();
       if (!documents.some(d => d.id === currentId)) currentId = documents.find(d => d.kind === 'composition')?.id ?? documents[0]?.id ?? '';
-      selectedId = ''; syncSequence(); refresh(); openLinkedPanel(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
+      selectedId = ''; syncSequence(); refresh(); openLinkedScene(); openLinkedPanel(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
     } catch (e) { notice(`Could not load authoring documents: ${message(e)}`, true); }
   }
   async function save() {
