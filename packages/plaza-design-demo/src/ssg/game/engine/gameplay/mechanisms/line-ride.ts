@@ -127,7 +127,7 @@ export const lineRide:SceneMechanism={
   shared.set(TRAIN_LAYOUT_KEY,layout);
   return{
    rules:createTrainRules(world?.metro,world?.city),
-   preparePresentation:(v,e)=>{shared.set(TRAIN_FRAME_KEY,prepareTrainFrame({source:scene,rows,roles,actors,layout},v,e.hover,trainVisual(v,world),context));},
+   presentation:{prepare:(v,e)=>{shared.set(TRAIN_FRAME_KEY,prepareTrainFrame({source:scene,rows,roles,actors,layout},v,e.hover,trainVisual(v,world),context));}},
   };
  },
 };

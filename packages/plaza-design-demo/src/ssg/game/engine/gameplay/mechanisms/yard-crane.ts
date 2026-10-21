@@ -3,7 +3,7 @@
  * its own backdrop over the street's floor and rain; CAM-1 (a camera panel over the crates); and the claw's
  * hook, a presentation controller that eases toward the arm's slot each frame. The crane, the chute and the
  * parcel's slide are source (devices.json controller, gameplay deadlines); the hook's travel and the parcel's
- * place are the picture's, read by the `yard` binding provider through `presentation.yardCrane`.
+ * place are the picture's, read by the `yard` binding provider through the scene's shared state.
  * Needs the artwork role `tray` (the parcel tray an engine target anchors to).
  */
 import type {Resolved} from '../../../art/core/composition';
@@ -15,13 +15,15 @@ import {yardController,yardRead,type YardController} from '../../controllers/yar
 import type {EngineDraw} from '../../host';
 import type {SceneModel} from '../../model';
 import type {GameplayDefinition} from '../types';
-import type {SceneMechanism,MechanismPresentation} from '../scene-mechanisms';
+import type {SceneMechanism} from '../scene-mechanisms';
 import {YARD_RULES} from './yard-rules';
 import {cameraPanel} from './yard-camera';
 
 const find=(rows:readonly Resolved[],id:string)=>{const row=rows.find(r=>r.instance.id===id);if(!row)throw new Error('Unknown Yard instance '+id);return row.placement;};
 function validateGeometry(c:YardController|undefined,rows:readonly Resolved[]){if(!c)return;for(const ref of Object.values(c.slots))if(!rows.some(r=>r.instance.id===ref))throw Error('Yard slot artwork reference '+ref);for(const[role,ref]of Object.entries(c.anchors))if(!rows.some(r=>r.instance.id===ref&&r.instance.type==='yard.'+role))throw Error('Yard '+role+' artwork reference '+ref);}
 
+/** Where the mechanism keeps its hook in the scene's shared state (read by the `yard` binding provider). */
+export const YARD_KEY='yardCrane';
 /** The hook's travel and what the frame was last prepared with; the caller (the scene) owns one. */
 export class YardPresentation{
  hookX:number;hookVisible:boolean;private prepared:YardVisual|undefined;
@@ -58,10 +60,9 @@ export const yardCrane:SceneMechanism={
  face:{function:'act',controller:'yard'},
  label:"The fixer's yard (CAM-1, the claw's hook)",requires:['tray'],world:false,ownsRoom:true,
  rulesShape:()=>YARD_RULES,
- apply:()=>({rules:YARD_RULES,panels:{camera:cameraPanel},layers:true,artworkFrame:{street:renderDowntownStreet}}),
- presentation:({rows,gameplay,data}):MechanismPresentation<YardPresentation>=>{
-  const c=yardController(data);validateGeometry(c,rows);
-  const state=new YardPresentation(rows,gameplay,c);
-  return{state,prepare:(_view,engine)=>state.prepare(engine),capture:()=>state.capture(),restore:v=>state.restore(v)};
+ apply:({rows,gameplay,content,shared})=>{
+  const c=yardController(content.data!);validateGeometry(c,rows);
+  const hook=new YardPresentation(rows,gameplay,c);shared.set(YARD_KEY,hook);
+  return{rules:YARD_RULES,panels:{camera:cameraPanel},layers:true,artworkFrame:{street:renderDowntownStreet},presentation:{prepare:(_view,engine)=>hook.prepare(engine),capture:()=>hook.capture(),restore:v=>hook.restore(v)}};
  },
 };

@@ -10,7 +10,7 @@ import type {SceneMechanism} from '../scene-mechanisms';
  * its bands) that advances once per painted frame and is saved with the scene's presentation
  * state, so it comes back where it was. The scene's `horizon` artwork role is the skyline's
  * horizon line, its width the camera range. The prepared frame is offered to the artwork as
- * `station.city` (binding-providers/station.ts, through the scene's shared frame state).
+ * `station.city` (binding-providers/station.ts, through the scene's shared state).
  */
 /** Layout initialization here needs gradients only; the controller never paints a canvas. */
 const layoutSink={createLinearGradient:()=>({addColorStop(){}}),createRadialGradient:()=>({addColorStop(){}})} as unknown as CanvasRenderingContext2D;
@@ -31,7 +31,7 @@ export class CitySession{
  snapshot():CityState{return{city:this.frame?this.city.snapshot():null,time:this.time,frame:this.frame?{...this.frame}:null};}
  restore(input:unknown){const value=validateCityState(input);this.city=new Skyline();if(value.city&&value.frame){this.city.parts(layoutSink,value.frame,{cam:0,a:0,k:0,still:false,floor:false,rain:0});this.city.restore(value.city);}this.time=value.time;this.frame=value.frame;}
 }
-/** What the mechanism keeps in the scene's shared frame state. */
+/** What the mechanism keeps in the scene's shared state under SKYLINE_KEY. */
 export interface SkylineHandle{session:CitySession;layout:SkylineLayout;prepared?:MetroCityVisual}
 export const SKYLINE_KEY='citySkyline';
 /** The skyline for this frame: the one prepared for it, else a preview from the saved state; undefined when the scene has no skyline. */
@@ -44,9 +44,10 @@ export const citySkyline:SceneMechanism={
  label:'City skyline (animated, saved with the scene)',requires:['horizon'],world:false,
  apply:({roles,width,shared})=>{
   const handle:SkylineHandle={session:new CitySession(),layout:{width,horizon:roles.horizon.placement.h}};shared.set(SKYLINE_KEY,handle);
-  return{
-   presentationState:{capture:()=>handle.session.snapshot() as unknown as Value,restore(value){handle.session.restore(value);handle.prepared=undefined;}},
-   preparePresentation:v=>{handle.prepared=handle.session.sample(handle.layout,v);},
-  };
+  return{presentation:{
+   prepare:v=>{handle.prepared=handle.session.sample(handle.layout,v);},
+   capture:()=>handle.session.snapshot() as unknown as Value,
+   restore(value){handle.session.restore(value);handle.prepared=undefined;},
+  }};
  },
 };
