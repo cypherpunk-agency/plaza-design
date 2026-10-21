@@ -81,7 +81,8 @@
         "shops": [
           {
             "tenant": "noodles",
-            "sign": ""
+            "sign": "",
+            "stall": "roast"
           },
           {
             "tenant": "phones",
@@ -122,7 +123,8 @@
         "shops": [
           {
             "tenant": "repair",
-            "sign": "FIX ANY"
+            "sign": "",
+            "stall": "electronics"
           }
         ],
         "hung": [
@@ -176,8 +178,9 @@
             "sign": ""
           },
           {
-            "tenant": "convenience",
-            "sign": ""
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fruit"
           }
         ],
         "hung": [
@@ -215,7 +218,8 @@
       },
       "placement": {
         "x": 386,
-        "h": 0
+        "h": 0,
+        "scale": 1.5
       },
       "order": 9,
       "layer": "backdrop"
@@ -234,7 +238,8 @@
           },
           {
             "tenant": "grocer",
-            "sign": ""
+            "sign": "",
+            "stall": "dried"
           }
         ],
         "hung": [
@@ -249,7 +254,7 @@
         "wall": "#1d2329"
       },
       "placement": {
-        "x": 652,
+        "x": 782,
         "h": 0
       },
       "order": 10,
@@ -269,7 +274,7 @@
         "seed": 9
       },
       "placement": {
-        "x": 762,
+        "x": 892,
         "h": 0
       },
       "order": 11,
@@ -288,8 +293,9 @@
             "sign": "CASH FOR ID"
           },
           {
-            "tenant": "laundry",
-            "sign": ""
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fish"
           }
         ],
         "hung": [
@@ -311,7 +317,7 @@
         "cages": 0.7
       },
       "placement": {
-        "x": 792,
+        "x": 922,
         "h": 0
       },
       "order": 12,
@@ -326,8 +332,9 @@
         "seed": 306,
         "shops": [
           {
-            "tenant": "noodles",
-            "sign": "DUMPLINGS"
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "herbs"
           }
         ],
         "hung": [
@@ -339,10 +346,12 @@
             "vertical": true
           }
         ],
-        "wall": "#2a1f22"
+        "wall": "#2a1f22",
+        "state": "construction",
+        "scaffold": "bamboo"
       },
       "placement": {
-        "x": 932,
+        "x": 1062,
         "h": 0
       },
       "order": 13,
@@ -352,13 +361,18 @@
       "id": "stack-6",
       "type": "building.stack",
       "props": {
-        "width": 284,
+        "width": 219,
         "floors": 12,
         "seed": 307,
         "shops": [
           {
             "tenant": "hotel",
             "sign": "BEDS · HOURLY"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "clothes"
           }
         ],
         "hung": [
@@ -379,43 +393,23 @@
         ]
       },
       "placement": {
-        "x": 1032,
+        "x": 1162,
         "h": 0
       },
       "order": 14,
       "layer": "backdrop"
     },
     {
-      "id": "stack-7",
-      "type": "building.stack",
+      "id": "site",
+      "type": "building.site",
       "props": {
-        "width": 284,
-        "floors": 9,
-        "seed": 308,
-        "shops": [
-          {
-            "tenant": "phones",
-            "sign": ""
-          },
-          {
-            "tenant": "convenience",
-            "sign": ""
-          }
-        ],
-        "hung": [
-          {
-            "text": "GOLD",
-            "color": "#ffb02e",
-            "floor": 2,
-            "from": 30,
-            "vertical": true
-          }
-        ],
-        "wall": "#29251b",
-        "cages": 0.4
+        "width": 219,
+        "notice": "SITE · KEEP OUT",
+        "picture": "COMING SOON · 900 HOMES",
+        "seed": 3
       },
       "placement": {
-        "x": 1316,
+        "x": 1381,
         "h": 0
       },
       "order": 15,

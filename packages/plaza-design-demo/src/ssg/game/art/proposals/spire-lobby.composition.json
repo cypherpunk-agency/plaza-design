@@ -1,0 +1,644 @@
+{
+  "version": 1,
+  "scene": "spire-lobby",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "city",
+      "type": "building.row",
+      "props": {
+        "width": 2000,
+        "seed": 41,
+        "parallax": 0.3,
+        "minHeight": 60,
+        "maxHeight": 160,
+        "haze": 0.6
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "lobby-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "spire"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "logic"
+    },
+    {
+      "id": "atrium",
+      "type": "interior.atrium",
+      "props": {
+        "width": 1420,
+        "height": 900,
+        "bay": 160,
+        "column": 26,
+        "seams": 0.6,
+        "galleryFrom": 360,
+        "galleries": 140,
+        "shafts": 0.6,
+        "slant": 0.3,
+        "sheen": 0.6,
+        "entry": 40,
+        "entryWidth": 110,
+        "entryHeight": 170,
+        "cut": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 280,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "seal-screen",
+      "type": "interior.slow-screen",
+      "props": {
+        "width": 320,
+        "height": 150,
+        "shows": "both",
+        "speed": 0.3,
+        "glow": 0.6,
+        "ink": "cold",
+        "caption": "",
+        "seed": 5
+      },
+      "placement": {
+        "x": 440,
+        "h": 170
+      },
+      "order": 5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sky-lifts",
+      "type": "interior.lift-bank",
+      "props": {
+        "count": 3,
+        "width": 40,
+        "height": 58,
+        "gap": 18,
+        "cycle": 1100,
+        "indicators": true,
+        "label": "DECKS",
+        "seed": 2
+      },
+      "placement": {
+        "x": 1130,
+        "h": 140
+      },
+      "order": 6,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "mezzanine",
+      "type": "interior.mezzanine",
+      "props": {
+        "width": 640,
+        "thickness": 12,
+        "rail": 26,
+        "glass": 0.5,
+        "downlights": 0.7,
+        "column": true,
+        "support": 100,
+        "clearance": 140
+      },
+      "placement": {
+        "x": 1060,
+        "h": 140
+      },
+      "order": 7,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lobby-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "spire"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "logic"
+    },
+    {
+      "id": "foot",
+      "type": "landmark.spire-foot",
+      "props": {
+        "width": 1430,
+        "portal": 50,
+        "portalWidth": 110,
+        "plinth": 4,
+        "letters": "PLAZA CENTRAL",
+        "seed": 1
+      },
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "lobby-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "plaza",
+      "type": "street.surface",
+      "props": {
+        "width": 270,
+        "ground": "#0c0d10",
+        "edge": "#cfe6f0",
+        "sheen": 0.25,
+        "kerb": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "forecourt",
+      "type": "street.surface",
+      "props": {
+        "width": 1430,
+        "ground": "#0c0d10",
+        "edge": "#cfe6f0",
+        "sheen": 0.25,
+        "kerb": true
+      },
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "lobby-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "led-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 0
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "led-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 1
+      },
+      "placement": {
+        "x": 210,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": true
+      },
+      "placement": {
+        "x": 190,
+        "h": 150
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "benches",
+      "type": "interior.benches",
+      "props": {
+        "count": 2,
+        "width": 46,
+        "gap": 18,
+        "seat": 10
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "set",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gates",
+      "type": "interior.id-gates",
+      "props": {
+        "lanes": 4,
+        "lane": 20,
+        "height": 24,
+        "glass": 0.6,
+        "cycle": 300,
+        "refuse": 0.2,
+        "seed": 4
+      },
+      "placement": {
+        "x": 800,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "set",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "escalator",
+      "type": "level.escalator",
+      "props": {
+        "run": 160,
+        "rise": 140,
+        "direction": "up",
+        "speed": 0.5
+      },
+      "placement": {
+        "x": 910,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "set",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "receptionist",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1201,
+        "archetype": "plazastaff",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 670,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "desk",
+      "type": "interior.reception",
+      "props": {
+        "width": 200,
+        "height": 24,
+        "screens": 2,
+        "glow": 0.6,
+        "plaque": ""
+      },
+      "placement": {
+        "x": 570,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "queue-bot",
+      "type": "character.resident",
+      "props": {
+        "kind": "marshal",
+        "depth": "play",
+        "act": "direct",
+        "paint": "#1e1e24",
+        "trim": "#d8b45a"
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "visitor",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1233,
+        "archetype": "office",
+        "act": "wait"
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gate-drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "scan"
+      },
+      "placement": {
+        "x": 842,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gate-guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1277,
+        "archetype": "guard",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "porter",
+      "type": "character.resident",
+      "props": {
+        "kind": "porter",
+        "depth": "play",
+        "act": "walk",
+        "range": 220
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cleaner",
+      "type": "character.resident",
+      "props": {
+        "kind": "cleaner",
+        "depth": "play",
+        "act": "walk",
+        "range": -300
+      },
+      "placement": {
+        "x": 1310,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-valet",
+      "type": "character.resident",
+      "props": {
+        "kind": "valet",
+        "depth": "play",
+        "act": "stand",
+        "seed": 4
+      },
+      "placement": {
+        "x": 1110,
+        "h": 140
+      },
+      "order": 26,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "executive",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1300,
+        "archetype": "office",
+        "act": "phone"
+      },
+      "placement": {
+        "x": 1225,
+        "h": 140
+      },
+      "order": 27,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lobby-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "door-guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 900,
+        "archetype": "guard",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 245,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "plaza-valet",
+      "type": "character.resident",
+      "props": {
+        "kind": "valet",
+        "depth": "play",
+        "act": "walk",
+        "range": 120,
+        "seed": 7
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-plaza",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-lobby",
+      "type": "level.floor",
+      "props": {
+        "width": 1050,
+        "building": "spire",
+        "label": "Lobby"
+      },
+      "placement": {
+        "x": 290,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-mezzanine",
+      "type": "level.floor",
+      "props": {
+        "width": 280,
+        "building": "spire",
+        "label": "Mezzanine"
+      },
+      "placement": {
+        "x": 1060,
+        "h": 140
+      },
+      "order": 33,
+      "layer": "logic"
+    },
+    {
+      "id": "portal-door",
+      "type": "level.door",
+      "props": {
+        "building": "spire",
+        "width": 40
+      },
+      "placement": {
+        "x": 375,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "logic"
+    }
+  ]
+}

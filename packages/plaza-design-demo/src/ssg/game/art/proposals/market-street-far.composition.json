@@ -1,0 +1,984 @@
+{
+  "version": 1,
+  "scene": "market-street-far",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "stacked",
+        "width": 2400,
+        "seed": 31,
+        "parallax": 0.2,
+        "minHeight": 170,
+        "maxHeight": 300,
+        "haze": 0.6,
+        "lit": 0.5,
+        "signs": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "stacked",
+        "width": 2200,
+        "seed": 8,
+        "parallax": 0.5,
+        "minHeight": 120,
+        "maxHeight": 200,
+        "haze": 0.3,
+        "lit": 0.6,
+        "signs": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 1.0,
+        "fill": "#0a0610",
+        "edge": 0.14
+      },
+      "placement": {
+        "x": 300,
+        "h": 20,
+        "parallax": 0.12
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "stack-0",
+      "type": "building.stack",
+      "props": {
+        "width": 120,
+        "floors": 11,
+        "seed": 301,
+        "shops": [
+          {
+            "tenant": "noodles",
+            "sign": "",
+            "stall": "roast"
+          },
+          {
+            "tenant": "phones",
+            "sign": "SIM · UNLOCK"
+          }
+        ],
+        "hung": [
+          {
+            "text": "HOTEL",
+            "color": "#ff3a5a",
+            "floor": 2,
+            "from": 100,
+            "vertical": true
+          },
+          {
+            "text": "KARAOKE",
+            "color": "#ff3df2",
+            "floor": 4,
+            "from": 20,
+            "vertical": true
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-1",
+      "type": "building.stack",
+      "props": {
+        "width": 96,
+        "floors": 9,
+        "seed": 302,
+        "shops": [
+          {
+            "tenant": "repair",
+            "sign": "",
+            "stall": "electronics"
+          }
+        ],
+        "hung": [
+          {
+            "text": "PAWN",
+            "color": "#c27bff",
+            "floor": 2,
+            "from": 70,
+            "vertical": true
+          }
+        ],
+        "wall": "#22201a"
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley-0",
+      "type": "building.alley",
+      "props": {
+        "width": 34,
+        "height": 420,
+        "depth": 0.6,
+        "light": "neon",
+        "escape": "none",
+        "steam": true,
+        "cables": true,
+        "seed": 4
+      },
+      "placement": {
+        "x": 216,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-2",
+      "type": "building.stack",
+      "props": {
+        "width": 130,
+        "floors": 12,
+        "seed": 303,
+        "shops": [
+          {
+            "tenant": "pawn",
+            "sign": ""
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fruit"
+          }
+        ],
+        "hung": [
+          {
+            "text": "CASH FOR ID",
+            "color": "#ff3a3a",
+            "floor": 3,
+            "from": 110,
+            "vertical": true
+          },
+          {
+            "text": "DOC",
+            "color": "#00ffc8",
+            "floor": 1,
+            "from": 14,
+            "vertical": true
+          }
+        ],
+        "cages": 0.8
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "podium",
+      "type": "building.stack",
+      "props": {
+        "width": 260,
+        "floors": 1,
+        "seed": 309,
+        "shops": [
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fish"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "roast"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fruit"
+          }
+        ],
+        "hung": [],
+        "shacks": false
+      },
+      "placement": {
+        "x": 386,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "market-hall",
+      "type": "landmark.market-hall",
+      "props": {
+        "width": 260,
+        "letters": "WET MARKET",
+        "seed": 5
+      },
+      "placement": {
+        "x": 258,
+        "h": 0,
+        "parallax": 0.6,
+        "scale": 1.0
+      },
+      "order": 10,
+      "layer": "distance"
+    },
+    {
+      "id": "stack-3",
+      "type": "building.stack",
+      "props": {
+        "width": 110,
+        "floors": 10,
+        "seed": 304,
+        "shops": [
+          {
+            "tenant": "bar",
+            "sign": "KARAOKE"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "dried"
+          }
+        ],
+        "hung": [
+          {
+            "text": "BEDS · HOURLY",
+            "color": "#ff3a5a",
+            "floor": 3,
+            "from": 96,
+            "vertical": true
+          }
+        ],
+        "wall": "#1d2329"
+      },
+      "placement": {
+        "x": 652,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley-1",
+      "type": "building.alley",
+      "props": {
+        "width": 30,
+        "height": 380,
+        "depth": 0.7,
+        "light": "red",
+        "escape": "none",
+        "bins": true,
+        "yard": false,
+        "seed": 9
+      },
+      "placement": {
+        "x": 762,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-4",
+      "type": "building.stack",
+      "props": {
+        "width": 140,
+        "floors": 13,
+        "seed": 305,
+        "shops": [
+          {
+            "tenant": "loans",
+            "sign": "CASH FOR ID"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fish"
+          }
+        ],
+        "hung": [
+          {
+            "text": "MAHJONG",
+            "color": "#ffb02e",
+            "floor": 2,
+            "from": 20,
+            "vertical": true
+          },
+          {
+            "text": "DENTIST",
+            "color": "#00ffc8",
+            "floor": 5,
+            "from": 120,
+            "vertical": true
+          }
+        ],
+        "cages": 0.7
+      },
+      "placement": {
+        "x": 792,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-5",
+      "type": "building.stack",
+      "props": {
+        "width": 100,
+        "floors": 8,
+        "seed": 306,
+        "shops": [
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "herbs"
+          }
+        ],
+        "hung": [
+          {
+            "text": "NOODLE",
+            "color": "#ff3a5a",
+            "floor": 2,
+            "from": 84,
+            "vertical": true
+          }
+        ],
+        "wall": "#2a1f22",
+        "state": "construction",
+        "scaffold": "bamboo"
+      },
+      "placement": {
+        "x": 932,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-6",
+      "type": "building.stack",
+      "props": {
+        "width": 284,
+        "floors": 12,
+        "seed": 307,
+        "shops": [
+          {
+            "tenant": "hotel",
+            "sign": "BEDS · HOURLY"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "clothes"
+          }
+        ],
+        "hung": [
+          {
+            "text": "MASSAGE",
+            "color": "#c27bff",
+            "floor": 3,
+            "from": 20,
+            "vertical": true
+          },
+          {
+            "text": "TAILOR",
+            "color": "#ffb02e",
+            "floor": 6,
+            "from": 100,
+            "vertical": true
+          }
+        ]
+      },
+      "placement": {
+        "x": 1032,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "site",
+      "type": "building.site",
+      "props": {
+        "width": 284,
+        "notice": "SITE · KEEP OUT",
+        "picture": "COMING SOON · 900 HOMES",
+        "seed": 3
+      },
+      "placement": {
+        "x": 1316,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1600,
+        "ground": "#050203",
+        "edge": "#ff3a5a",
+        "sheen": 0.8
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bulbs-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 200,
+        "count": 14,
+        "height": 140,
+        "seed": 3,
+        "reach": 0.9
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bulbs-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 240,
+        "count": 14,
+        "height": 156,
+        "seed": 4,
+        "reach": 0.9
+      },
+      "placement": {
+        "x": 396,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bulbs-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 220,
+        "count": 14,
+        "height": 140,
+        "seed": 5,
+        "reach": 0.9
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-0",
+      "type": "sign.screen",
+      "props": {
+        "kind": "menu",
+        "width": 60,
+        "height": 34,
+        "title": "TODAY",
+        "mount": "bracket"
+      },
+      "placement": {
+        "x": 300,
+        "h": 210
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-1",
+      "type": "sign.screen",
+      "props": {
+        "kind": "odds",
+        "width": 66,
+        "height": 40,
+        "title": "TONIGHT",
+        "mount": "wall"
+      },
+      "placement": {
+        "x": 1080,
+        "h": 220
+      },
+      "order": 22,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-2",
+      "type": "sign.camera",
+      "props": {
+        "phase": 2
+      },
+      "placement": {
+        "x": 636,
+        "h": 190
+      },
+      "order": 23,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-3",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 34,
+        "height": 26,
+        "lines": [
+          "CASH",
+          "ONLY"
+        ],
+        "header": "NOTICE"
+      },
+      "placement": {
+        "x": 366,
+        "h": 36
+      },
+      "order": 24,
+      "layer": "backdrop"
+    },
+    {
+      "id": "crowd-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 500,
+        "archetype": "vendor",
+        "act": "vend"
+      },
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 537,
+        "act": "haggle"
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 12,
+        "act": "haggle"
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 611,
+        "act": "walk",
+        "range": 300
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 648,
+        "archetype": "kid",
+        "act": "steal"
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 685,
+        "act": "phone"
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-6",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 722,
+        "act": "queue"
+      },
+      "placement": {
+        "x": 426,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-7",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 7,
+        "act": "queue"
+      },
+      "placement": {
+        "x": 448,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-8",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 9,
+        "act": "queue"
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-9",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 21,
+        "archetype": "vendor",
+        "act": "vend"
+      },
+      "placement": {
+        "x": 526,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-10",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 870,
+        "act": "talk"
+      },
+      "placement": {
+        "x": 586,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-11",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 33,
+        "act": "talk"
+      },
+      "placement": {
+        "x": 608,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-12",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 944,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "mixed"
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-13",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 981,
+        "act": "walk",
+        "range": -420
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-14",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1018,
+        "archetype": "fixer",
+        "act": "lean"
+      },
+      "placement": {
+        "x": 1300,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-15",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1055,
+        "act": "argue"
+      },
+      "placement": {
+        "x": 1380,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-16",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 44,
+        "act": "argue"
+      },
+      "placement": {
+        "x": 1410,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-17",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1129,
+        "archetype": "drifter",
+        "act": "sleep"
+      },
+      "placement": {
+        "x": 1540,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "playfield"
+    },
+    {
+      "id": "busker",
+      "type": "character.resident",
+      "props": {
+        "kind": "busker",
+        "depth": "play",
+        "act": "play"
+      },
+      "placement": {
+        "x": 356,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 1110,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "playfield"
+    },
+    {
+      "id": "litterbot",
+      "type": "character.resident",
+      "props": {
+        "kind": "litterbot",
+        "depth": "play",
+        "act": "roll",
+        "range": 260
+      },
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "playfield"
+    },
+    {
+      "id": "car-near",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "hatch",
+        "paint": "#5a2a2a",
+        "depth": "near",
+        "motion": "run",
+        "direction": "left",
+        "speed": 2.4,
+        "lane": 2000,
+        "dwell": 2400,
+        "lights": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "foreground"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "playfield"
+    }
+  ]
+}

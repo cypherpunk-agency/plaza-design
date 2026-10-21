@@ -106,7 +106,7 @@ export const alleyElement: Element = {
     if (sx + w * at.scale + 20 < 0 || sx - 20 > v.viewW) return;
     const lights: Record<string, [string, number]> = { warm: ['255,170,80', 1], neon: ['255,61,242', 0.9], cold: ['200,210,235', 0.8], red: ['230,60,50', 0.9], none: ['0,0,0', 0] };
     const [light, bright] = lights[String(p.light)] ?? lights.warm;
-    ctx.save(); ctx.translate(sx, v.y(at.h)); ctx.scale(at.scale * at.facing, at.scale);
+    ctx.save(); ctx.translate(sx, v.y(at.h));
     let lamp: ReturnType<typeof paintAlley> | undefined;
     try { lamp = paintAlley(ctx, { w, h: Number(p.height), depth: Number(p.depth), light, bright, escape: p.escape as AlleySpec['escape'], bins: p.bins !== false, steam: p.steam !== false, cables: p.cables !== false, yard: p.yard === true, seed: Number(p.seed) }, v.t); }
     finally { ctx.restore(); }

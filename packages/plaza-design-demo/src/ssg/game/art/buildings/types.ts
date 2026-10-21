@@ -21,25 +21,32 @@ import { rng } from '../core/primitives';
 import { windowLit, type Light } from '../../world/light';
 import { neonPlate } from '../signage/kit';
 import * as P from './parts';
+import { paintState, stateFields, vacant } from './state';
 import { TENANTS, TENANT_IDS, shopWindow } from './tenants';
 
-const y = (h: number) => -h;
-const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a.toFixed(3) + ')';
-const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
-const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
-const select = (label: string, options: readonly string[], value = options[0]): Field => ({ kind: 'select', label, options: [...options], default: value });
-const bool = (label: string, value: boolean): Field => ({ kind: 'boolean', label, default: value });
-const text = (label: string, value: string): Field => ({ kind: 'string', label, default: value });
-const isHex = (v: unknown) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
+export const y = (h: number) => -h;
+export const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a.toFixed(3) + ')';
+export const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
+export const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
+export const select = (label: string, options: readonly string[], value = options[0]): Field => ({ kind: 'select', label, options: [...options], default: value });
+export const bool = (label: string, value: boolean): Field => ({ kind: 'boolean', label, default: value });
+export const text = (label: string, value: string): Field => ({ kind: 'string', label, default: value });
+export const isHex = (v: unknown) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
 /** An optional colour: empty keeps the seeded one. */
-const colour = (label: string, empty = 'Seeded'): Field => ({ kind: 'json', label, default: '', editor: { kind: 'colour', empty },
+export const colour = (label: string, empty = 'Seeded'): Field => ({ kind: 'json', label, default: '', editor: { kind: 'colour', empty },
   validate: (v: Value) => { if (v !== '' && !isHex(v)) throw new Error(label + ': expected a #rrggbb colour or empty'); } });
-const rgbOf = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 3 - 1), 16)).join(',');
+export const rgbOf = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 3 - 1), 16)).join(',');
 
-interface Paint { t: number; lighting: Light; view: View; light?: (x: number, h: number, w: number, hh: number, col: string, kind: 'window' | 'screen') => void }
+export interface Paint { t: number; lighting: Light; view: View; light?: (x: number, h: number, w: number, hh: number, col: string, kind: 'window' | 'screen') => void }
 /** A placeable piece: culls itself, paints in its own frame, hands its lit windows to the light layer. */
-function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & { size: (p: Properties) => { w: number; tall: number }; paint: (x: CanvasRenderingContext2D, p: Properties, o: Paint) => void }): Element {
-  const { size, paint, ...rest } = o;
+export function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & { size: (p: Properties) => { w: number; tall: number }; paint: (x: CanvasRenderingContext2D, p: Properties, o: Paint) => void;
+  /** A building that can stand for sale, empty or under construction (state.ts): its props while vacant, and its size for the state's layer. */
+  state?: { vacant: (p: Properties) => Properties; box: (p: Properties) => { w: number; h: number; g: number; seed: number } } }): Element {
+  const { size, paint: own, state, ...rest } = o;
+  const paint = state ? (x: CanvasRenderingContext2D, p: Properties, q: Paint) => {
+    const out = vacant(p); own(x, out ? state.vacant(p) : p, q);
+    if (out) { const b = state.box(p); paintState(x, p, b.w, b.h, b.g, q, b.seed); }
+  } : own;
   return {
     ...rest, version: 1, coordinates: 'world', parts: ['backdrop'],
     draw(ctx, v, p, _s, _pass, at) {
@@ -47,7 +54,8 @@ function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & 
       if (Math.max(sx, end) + 60 < 0 || Math.min(sx, end) - 60 > v.viewW) return;
       const light = at.parallax === 1 ? (lx: number, lh: number, lw: number, hh: number, col: string, kind: 'window' | 'screen') =>
         addLight(v, { x: at.x + lx * at.scale * at.facing, h: at.h + lh * at.scale, kind, w: lw * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
-      ctx.save(); ctx.translate(sx, v.y(at.h)); ctx.scale(at.scale * at.facing, at.scale);
+      // the composition has already scaled and mirrored the canvas round the placement (core/composition.ts)
+      ctx.save(); ctx.translate(sx, v.y(at.h));
       try { paint(ctx, p, { t: v.t, lighting: v.lighting, view: v, ...(light ? { light } : {}) }); } finally { ctx.restore(); }
     },
   };
@@ -57,9 +65,13 @@ function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & 
 
 /** Faded pastel walls, dark at street-light level: mint, rose, cream, sky, as Hong Kong estates fade. */
 const STACK_WALLS = ['#1f2a26', '#2a1f22', '#29251b', '#1d2329', '#262226'];
+/** What a market stall sells; each spills its own way onto the pavement. */
+export const STALLS = ['roast', 'fish', 'fruit', 'electronics', 'dried', 'clothes', 'herbs'] as const;
+const STALL_NAMES: Record<string, string> = { roast: 'ROAST', fish: 'LIVE FISH', fruit: 'FRUIT', electronics: 'PARTS', dried: 'DRIED GOODS', clothes: 'CLOTHES', herbs: 'HERBS' };
 const shopItem: Record<string, Field> = {
   tenant: { kind: 'select', label: 'Tenant', options: TENANT_IDS, default: 'noodles' },
   sign: { kind: 'string', label: 'Name (empty: the tenant’s, - for none)', default: '' },
+  stall: { kind: 'select', label: 'Market stall instead (spills onto the street)', options: ['none', ...STALLS], default: 'none' },
 };
 const hungItem: Record<string, Field> = {
   text: { kind: 'string', label: 'Letters', default: 'HOTEL' },
@@ -80,8 +92,9 @@ export const stackElement = piece({
     canopy: bool('Covered walkway over the shops', true), shacks: bool('Shacks and antennas on the roof', true),
     shops: listOf('Shops under the walkway', shopItem, 'Add shop', () => ({ tenant: 'noodles', sign: '' })),
     hung: listOf('Signs hung over the street', hungItem, 'Add sign', rows => ({ text: 'HOTEL', color: '#ff3a5a', floor: rows.length + 1, from: 10 + rows.length * 30, vertical: true })),
-    seed: num('Seed', 1, 0, 1000000),
+    seed: num('Seed', 1, 0, 1000000), ...stateFields,
   },
+  state: { vacant: p => ({ ...p, lit: 0, shops: [], hung: [] }), box: p => ({ w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey), g: Number(p.ground), seed: Number(p.seed) }) },
   size: p => ({ w: Number(p.width), tall: Number(p.ground) + Number(p.floors) * Number(p.storey) + 40 }),
   bounds: p => { const tall = Number(p.ground) + Number(p.floors) * Number(p.storey) + 40; return { x: -10, h: tall, w: Number(p.width) + 20, tall }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, roof: { x: Number(p.width) / 2, h: Number(p.ground) + Number(p.floors) * Number(p.storey), role: 'surface' }, walkway: { x: Number(p.width) / 2, h: 66, role: 'mount' } }),
@@ -135,15 +148,20 @@ export const stackElement = piece({
     }
     // the shop floor: shutters and shops under a covered walkway with its strip lights
     const shops = (Array.isArray(p.shops) ? p.shops : []) as Properties[];
-    const names: (() => void)[] = [];
+    const names: (() => void)[] = [], stalls: (() => void)[] = [];
     x.fillStyle = '#0a0806'; x.fillRect(0, y(g), w, g);
     if (shops.length) {
       const bw = Math.floor((w - 8 - (shops.length - 1) * 6) / shops.length);
       shops.forEach((s, i) => {
-        const bx = 4 + i * (bw + 6), tenant = String(s.tenant), T = TENANTS[tenant] ?? TENANTS.empty, name = s.sign === '-' ? '' : String(s.sign || T.sign);
-        shopWindow(x, y, bx, bw, tenant, o.t, seed * 13 + i, p.canopy !== false ? undefined : { text: name, fascia: 62 });
-        if (T.lit) o.light?.(bx + bw / 2, 30, bw - 4, 46, T.col, 'window');
-        if (p.canopy !== false && name) names.push(() => neonPlate(x, o.t, bx + bw / 2, y(g - 2), { text: name, col: T.col, size: 7, h: 10, printed: !T.neon, street: true, glow: 0.1, bolts: false, phase: seed + i }));
+        const stall = typeof s.stall === 'string' && s.stall !== 'none' ? s.stall : '';
+        const bx = 4 + i * (bw + 6), tenant = String(s.tenant), T = TENANTS[tenant] ?? TENANTS.empty, name = s.sign === '-' ? '' : String(s.sign || (stall ? STALL_NAMES[stall] : T.sign));
+        const col = stall ? STALL_COL[stall] : T.col, neon = stall ? true : !!T.neon;
+        if (stall) stalls.push(() => marketStall(x, stall, bx, bw, g, o, seed * 17 + i));
+        else {
+          shopWindow(x, y, bx, bw, tenant, o.t, seed * 13 + i, p.canopy !== false ? undefined : { text: name, fascia: 62 });
+          if (T.lit) o.light?.(bx + bw / 2, 30, bw - 4, 46, T.col, 'window');
+        }
+        if (p.canopy !== false && name) names.push(() => neonPlate(x, o.t, bx + bw / 2, y(g - 2), { text: name, col, size: 7, h: 10, printed: !neon, street: true, glow: 0.1, bolts: false, phase: seed + i }));
       });
     } else P.bay(x, y, 6, w - 12, 'shutter');
     // the walkway's slab over the shop fronts, the shops' names on its edge
@@ -151,6 +169,7 @@ export const stackElement = piece({
       x.fillStyle = '#101112'; x.fillRect(-4, y(g + 6), w + 8, 8); x.fillStyle = 'rgba(150,140,128,.4)'; x.fillRect(-4, y(g + 6), w + 8, 1);
       x.fillStyle = 'rgba(230,245,240,' + (0.35 + 0.5 * (o.lighting.outdoor ? o.lighting.lamps : 1)).toFixed(3) + ')'; x.fillRect(0, y(g - 2), w, 1);
     }
+    for (const stall of stalls) stall();
     for (const name of names) name();
     // signs hung out over the street on brackets, vertical as in Mong Kok
     for (const s of (Array.isArray(p.hung) ? p.hung : []) as Properties[]) {
@@ -177,8 +196,9 @@ export const shophouseElement = piece({
     goods: select('Shop front', GOODS), board: text('Name board (empty: none)', ''),
     gallery: bool('Wooden gallery upstairs', true), shutters: select('Shutters', ['mixed', 'open', 'closed']),
     lanterns: num('Lanterns on the eave', 3, 0, 12), lantern: { kind: 'color', label: 'Lantern colour', default: '#ff6a3a' },
-    seed: num('Seed', 1, 0, 1000000),
+    seed: num('Seed', 1, 0, 1000000), ...stateFields,
   },
+  state: { vacant: p => ({ ...p, goods: 'closed', shutters: 'closed', lanterns: 0, board: '' }), box: p => ({ w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey), g: Number(p.ground), seed: Number(p.seed) }) },
   size: p => ({ w: Number(p.width), tall: Number(p.ground) + Number(p.floors) * Number(p.storey) + 30 }),
   bounds: p => { const tall = Number(p.ground) + Number(p.floors) * Number(p.storey) + 30; return { x: -8, h: tall, w: Number(p.width) + 16, tall }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, eave: { x: Number(p.width) / 2, h: Number(p.ground), role: 'mount' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),
@@ -213,14 +233,26 @@ export const shophouseElement = piece({
     }
     // the main roof: rows of curved tiles, a ridge with its ends turned up
     tileRoof(x, -6, H, w + 12, Math.min(26, 10 + Math.round(w * 0.14)), seed);
+    const ox = 7, ow = w - 14, oh = g - 12, goods = String(p.goods);
+    if (goods === 'home') {
+      // a house, not a shop: a plain timber door, one barred window, a light on now and then
+      const dw = 22, dx = Math.round(w * 0.22), wx = Math.min(w - 30, dx + dw + 14), wl = on(seed + 5);
+      x.fillStyle = '#20130a'; x.fillRect(dx, y(oh), dw, oh); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(dx + dw / 2, y(oh), 1, oh);
+      x.fillStyle = '#1a1008'; x.fillRect(dx - 2, y(oh + 2), dw + 4, 2); x.fillStyle = 'rgba(230,190,110,.5)'; x.fillRect(dx + dw - 5, y(oh / 2), 2, 2);
+      x.fillStyle = wl ? 'rgba(255,180,100,.55)' : '#0c0805'; x.fillRect(wx, y(oh - 8), 20, 20);
+      x.fillStyle = '#25160a'; for (let k = wx + 3; k < wx + 20; k += 4) x.fillRect(k, y(oh - 8), 1, 20);
+      if (wl) o.light?.(wx + 10, oh - 18, 18, 18, '255,180,100', 'window');
+      x.fillStyle = '#1a1008'; x.fillRect(ox - 4, y(2), ow + 8, 2);
+    } else {
     // the shop front under the pent roof: folding timber doors pushed aside, the room lit
-    const ox = 7, ow = w - 14, oh = g - 12, goods = String(p.goods), lit = goods !== 'closed' && (goods !== 'home' || on(seed + 5));
+    const lit = goods !== 'closed';
     x.fillStyle = lit ? 'rgba(255,170,90,.32)' : '#0c0805'; x.fillRect(ox, y(oh), ow, oh);
     if (lit) { shopGoods(x, goods, ox, ow, oh, o.t, seed); o.light?.(ox + ow / 2, oh / 2, ow - 4, oh - 6, '255,170,90', 'window'); }
     x.fillStyle = '#25160a';
     if (goods === 'closed') for (let k = ox; k < ox + ow; k += 6) { x.fillRect(k, y(oh), 5, oh); x.fillStyle = k % 12 ? '#25160a' : '#2c1a0c'; }
     else { for (let k = 0; k < 3; k++) { x.fillRect(ox + k * 3, y(oh), 2, oh); x.fillRect(ox + ow - 2 - k * 3, y(oh), 2, oh); } }
     x.fillStyle = '#1a1008'; x.fillRect(ox - 2, y(oh + 2), ow + 4, 3); x.fillRect(ox - 4, y(2), ow + 8, 2);
+    }
     // the pent roof over the street, the lanterns hung from it, the lacquered board under it
     tileRoof(x, -8, g, w + 16, eaveRise, seed + 1, true);
     const n = Number(p.lanterns);
@@ -489,4 +521,92 @@ export function paintFormRow(x: CanvasRenderingContext2D, form: string, o: { wid
     }
     dx += w + gapAfter;
   }
+}
+
+const STALL_COL: Record<string, string> = { roast: '255,120,60', fish: '80,220,255', fruit: '255,200,60', electronics: '120,255,200', dried: '255,170,90', clothes: '255,80,200', herbs: '150,230,110' };
+const TARPS = [['200,40,40', '230,220,200'], ['40,90,200', '230,220,200'], ['230,180,40', '40,30,20'], ['40,150,90', '230,220,200']];
+
+/**
+ * A Mong Kok market stall in a shop bay under the walkway: bare bulbs on cords, a striped tarp out over
+ * the pavement, goods hung from every rail and piled out front on crates, hand-written price cards,
+ * red plastic stools. It spills past the bay on both sides; `g` is the walkway's height.
+ */
+function marketStall(x: CanvasRenderingContext2D, kind: string, bx: number, bw: number, g: number, o: Paint, seed: number) {
+  const top = g - 4, t = o.t, glow = o.lighting.outdoor ? o.lighting.lamps : 1, warm = '255,200,130', [ta, tb] = TARPS[seed % TARPS.length];
+  // the back of the stall: lit warm, crowded
+  x.fillStyle = '#0c0806'; x.fillRect(bx, y(top), bw, top); x.fillStyle = rgba(warm, 0.12 + 0.12 * glow); x.fillRect(bx, y(top), bw, top);
+  if (kind === 'roast') {
+    // roast ducks and pork on hooks over a chopping block
+    x.fillStyle = 'rgba(200,40,30,.3)'; x.fillRect(bx, y(top), bw, top);
+    x.fillStyle = 'rgba(200,190,170,.6)'; x.fillRect(bx + 2, y(top - 8), bw - 4, 1);
+    for (let k = bx + 5, j = 0; k < bx + bw - 6; k += 8, j++) {
+      const sw = Math.round(Math.sin(t / 60 + j) * 0.6);
+      x.fillStyle = 'rgba(30,20,10,.9)'; x.fillRect(k + 2 + sw, y(top - 8), 1, 4);
+      x.fillStyle = j % 3 ? 'rgba(190,90,30,.95)' : 'rgba(150,60,20,.95)'; x.fillRect(k + sw, y(top - 12), 6, 13); x.fillRect(k + 1 + sw, y(top - 25), 4, 3);
+      x.fillStyle = 'rgba(255,200,120,.6)'; x.fillRect(k + 1 + sw, y(top - 14), 1, 8);
+    }
+    x.fillStyle = '#3a1a0a'; x.fillRect(bx + 4, y(26), bw - 8, 8); x.fillStyle = 'rgba(230,220,200,.7)'; x.fillRect(bx + bw / 2 - 6, y(28), 12, 2);
+  } else if (kind === 'fish') {
+    // stacked tanks lit blue, fish turning in them; polystyrene boxes of ice out front
+    for (let r = 0; r < 2; r++) for (let k = bx + 3; k < bx + bw - 14; k += 15) {
+      const ty = 24 + r * 18;
+      x.fillStyle = 'rgba(40,160,200,.45)'; x.fillRect(k, y(ty + 14), 13, 14); x.strokeStyle = 'rgba(120,220,255,.7)'; x.strokeRect(k + 0.5, y(ty + 14) + 0.5, 12, 13);
+      for (let f = 0; f < 2; f++) { const fx = k + 2 + ((t * 0.08 + f * 5 + k + r * 3) % 9); x.fillStyle = f ? 'rgba(255,140,60,.9)' : 'rgba(230,230,240,.85)'; x.fillRect(Math.round(fx), y(ty + 6 + f * 4), 3, 1); }
+      o.light?.(k + 6, ty + 7, 12, 12, '80,220,255', 'screen');
+    }
+    for (let k = bx - 4; k < bx + bw; k += 14) { x.fillStyle = 'rgba(235,235,240,.85)'; x.fillRect(k, y(12), 12, 8); x.fillStyle = 'rgba(200,230,255,.6)'; x.fillRect(k + 1, y(12), 10, 2); x.fillStyle = 'rgba(160,170,190,.8)'; x.fillRect(k + 3, y(13), 5, 1); }
+    x.fillStyle = 'rgba(200,40,40,.9)'; x.fillRect(bx + bw - 6, y(10), 8, 10);
+  } else if (kind === 'fruit') {
+    // bananas on the rail, stepped crates out on the pavement, each a pyramid of one fruit
+    for (let k = bx + 4; k < bx + bw - 4; k += 6) { x.fillStyle = 'rgba(240,210,60,.9)'; x.fillRect(k, y(top - 6), 2, 7); x.fillRect(k + 2, y(top - 8), 2, 6); }
+    for (let step = 0; step < 3; step++) for (let k = bx - 6 + step * 4, j = 0; k < bx + bw + 6 - step * 4 - 12; k += 14, j++) {
+      const ch = 6 + step * 8, c = ['230,60,40', '255,160,40', '120,200,60', '240,220,80', '200,60,120'][(j + step + seed) % 5];
+      x.fillStyle = '#3a240e'; x.fillRect(k, y(ch), 13, 6); x.fillStyle = 'rgba(255,190,90,.35)'; x.fillRect(k, y(ch), 13, 1);
+      for (let a = 0; a < 3; a++) for (let b = 0; b < 3 - a; b++) { x.fillStyle = rgba(c, 0.95); x.fillRect(Math.round(k + 2 + b * 3 + a * 1.5), y(ch + 2 + a * 2), 3, 2); }
+      if ((j + step) % 3 === 0) { x.fillStyle = 'rgba(255,230,80,.95)'; x.fillRect(k + 4, y(ch + 10), 7, 5); x.fillStyle = 'rgba(220,30,30,.9)'; x.fillRect(k + 5, y(ch + 8), 5, 1); }
+    }
+  } else if (kind === 'electronics') {
+    // a wall of phone cases, cables slung across, a stack of sets all on different channels
+    for (let r = 0; r < 4; r++) for (let k = bx + 3; k < bx + bw - 4; k += 5) { x.fillStyle = rgba(['255,61,242', '80,220,255', '255,200,60', '120,255,140', '230,230,240'][(k + r + seed) % 5], 0.75); x.fillRect(k, y(top - 4 - r * 8), 3, 6); }
+    for (let r = 0; r < 2; r++) for (let k = bx - 4 + r * 6; k < bx + bw - 12; k += 18) {
+      const ty = 4 + r * 16, ch = Math.floor(t / 47 + k + r) % 4;
+      x.fillStyle = '#121214'; x.fillRect(k, y(ty + 15), 17, 15);
+      x.fillStyle = ch === 0 ? 'rgba(200,210,230,' + (0.4 + 0.3 * hash(t + k)).toFixed(3) + ')' : rgba(['80,220,255', '255,61,242', '255,200,60'][ch - 1], 0.65); x.fillRect(k + 2, y(ty + 13), 13, 10);
+      o.light?.(k + 8, ty + 8, 13, 10, '120,200,255', 'screen');
+    }
+    x.strokeStyle = 'rgba(0,0,0,.9)'; for (let k = 0; k < 4; k++) { x.beginPath(); x.moveTo(bx + k * 9, y(top - 2)); x.quadraticCurveTo(bx + bw / 2, y(top - 20 - k * 4), bx + bw - k * 7, y(top - 2)); x.stroke(); }
+  } else if (kind === 'dried') {
+    // strings of dried things on the rail, open sacks heaped out front
+    for (let k = bx + 4, j = 0; k < bx + bw - 6; k += 7, j++) { x.strokeStyle = 'rgba(40,25,10,.9)'; x.beginPath(); x.moveTo(k + 2, y(top)); x.lineTo(k + 2, y(top - 20)); x.stroke(); for (let b = 0; b < 4; b++) { x.fillStyle = rgba(['170,60,30', '200,140,70', '120,60,30'][(j + b) % 3], 0.9); x.fillRect(k, y(top - 6 - b * 5), 5, 4); } }
+    for (let k = bx - 5, j = 0; k < bx + bw + 2; k += 13, j++) { x.fillStyle = '#5a4020'; x.fillRect(k, y(14), 12, 14); x.fillStyle = 'rgba(230,210,170,.4)'; x.fillRect(k, y(14), 12, 1); x.fillStyle = rgba(['200,40,30', '180,120,50', '230,200,140', '90,60,40'][(j + seed) % 4], 0.95); x.fillRect(k + 1, y(17), 10, 3); x.fillRect(k + 3, y(19), 6, 2); }
+  } else if (kind === 'clothes') {
+    // two rails of shirts out past the stall's edges, a mannequin
+    for (let r = 0; r < 2; r++) { x.fillStyle = 'rgba(200,190,170,.5)'; x.fillRect(bx - 4, y(top - 2 - r * 22), bw + 8, 1); for (let k = bx - 3; k < bx + bw + 3; k += 6) { x.fillStyle = rgba(['255,80,200', '80,180,255', '255,220,60', '240,240,240', '60,60,70', '230,60,60'][(k + r * 2 + seed) % 6], 0.85); x.fillRect(k, y(top - 3 - r * 22), 5, 13); x.fillRect(k - 1, y(top - 3 - r * 22), 7, 3); } }
+    x.fillStyle = 'rgba(230,220,200,.75)'; x.fillRect(bx + bw - 10, y(30), 6, 22); x.fillRect(bx + bw - 9, y(34), 4, 4);
+  } else {
+    // herbs: a red cabinet of drawers, bundles hung from the rail, jars out front
+    x.fillStyle = '#4a1210'; x.fillRect(bx + 3, y(top - 6), bw - 6, top - 20); x.fillStyle = 'rgba(255,200,120,.55)';
+    for (let r = 0; r < 4; r++) for (let k = bx + 6; k < bx + bw - 8; k += 8) x.fillRect(k + 2, y(top - 12 - r * 9), 3, 1);
+    for (let k = bx + 4, j = 0; k < bx + bw - 4; k += 9, j++) { x.fillStyle = rgba(['110,170,70', '160,140,60', '90,120,50'][j % 3], 0.9); x.fillRect(k, y(top), 4, 10); }
+    for (let k = bx - 2; k < bx + bw; k += 7) { x.fillStyle = 'rgba(220,230,220,.5)'; x.fillRect(k, y(10), 5, 8); x.fillStyle = 'rgba(150,200,90,.7)'; x.fillRect(k + 1, y(7), 3, 4); }
+  }
+  // bare bulbs on cords
+  for (let k = 0; k < 3; k++) {
+    const lx = bx + Math.round((bw * (k + 0.5)) / 3), drop = 6 + ((k + seed) % 3) * 3, sway = Math.round(Math.sin(t / 70 + k + seed) * 0.6);
+    x.fillStyle = 'rgba(0,0,0,.85)'; x.fillRect(lx, y(top), 1, drop);
+    x.fillStyle = rgba('255,235,190', 0.6 + 0.4 * glow); x.fillRect(lx - 1 + sway, y(top - drop), 3, 3);
+    o.light?.(lx, top - drop - 2, 4, 4, warm, 'screen');
+  }
+  // the striped tarp out over the pavement, scalloped
+  const ty = top - 2, tl = bx - 7, tw = bw + 14;
+  for (let k = 0; k < tw; k += 5) { x.fillStyle = rgba((k / 5) % 2 ? tb : ta, 0.85); x.fillRect(tl + k, y(ty), Math.min(5, tw - k), 5); x.fillRect(tl + k + 1, y(ty - 5), Math.max(0, Math.min(3, tw - k - 1)), 1); }
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(tl, y(ty - 6), tw, 1);
+  // price cards: yellow card, red marker
+  for (let k = 0; k < Math.max(2, Math.floor(bw / 18)); k++) {
+    const px = bx + 3 + Math.round(hash(seed + k) * (bw - 10)), ph = 18 + Math.round(hash(seed * 3 + k) * Math.max(1, top - 34));
+    x.fillStyle = 'rgba(255,230,80,.95)'; x.fillRect(px, y(ph + 5), 7, 5); x.fillStyle = 'rgba(220,30,30,.95)'; x.fillRect(px + 1, y(ph + 3), 4, 1); x.fillRect(px + 1, y(ph + 1), 5, 1);
+  }
+  // red plastic stools by the stall
+  for (const sx of [bx - 6, bx + bw + 1]) if (hash(seed + sx) < 0.6) { x.fillStyle = 'rgba(210,40,40,.95)'; x.fillRect(sx, y(9), 6, 2); x.fillRect(sx, y(7), 1, 7); x.fillRect(sx + 5, y(7), 1, 7); }
+  o.light?.(bx + bw / 2, top / 2, bw, top - 10, warm, 'window');
 }

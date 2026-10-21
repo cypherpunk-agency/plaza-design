@@ -11,10 +11,11 @@ import { addLight } from '../atmosphere/lighting';
 import { adScreen } from '../signage/screens';
 import { PACKS } from '../assemblies/construction';
 import { rng } from '../core/primitives';
-import { BAY_KINDS, FRONT_DEFAULTS, type FrontBayKind, GEAR, ROOFS, SIDES, SKINS, WINDOW_KINDS, frontAnchors, paintFront, shapeOf, wallTop, type FrontSpec, type Rect } from './front';
+import { BAY_KINDS, FRONT_DEFAULTS, type FrontBayKind, GEAR, ROOFS, SIDES, SKINS, WINDOW_KINDS, frontAnchors, paintFront, shapeOf, wallTop, type FrontSpec, type Rect, type BaySpec } from './front';
 import { ROW_SKINS, paintRow, rowLook, type RowSpec } from './row';
 import * as P from './parts';
 import { TENANT_IDS } from './tenants';
+import { paintState, stateFields, vacant } from './state';
 import { ROW_FORMS, paintFormRow } from './types';
 import { alleyElement } from './alley';
 
@@ -60,6 +61,7 @@ const frontFields: Record<string, Field> = {
   lit: num('Rooms with a light', 0.45, 0, 1, 0.05),
   seed: num('Seed', 1, 0, 1000000000),
   clear: rects('Keep clear of windows'),
+  ...stateFields,
   trim: { kind: 'color', label: 'Trim colour (rims, courses, mullions)', default: '#c2410c' },
   rooms: select('Room light behind glass', ['warm', 'cold']),
   wall: { kind: 'json', label: 'Wall colour', default: '', editor: { kind: 'colour', empty: 'The skin’s own' },
@@ -89,7 +91,11 @@ export const buildingFrontElement: Element = {
     const light = at.parallax === 1 ? (lx: number, lh: number, w: number, hh: number, col: string, kind: 'window' | 'screen') =>
       addLight(v, { x: at.x + lx * at.scale * at.facing, h: at.h + lh * at.scale, kind, w: w * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
     ctx.save(); ctx.translate(sx, v.y(at.h));
-    try { paintFront(ctx, f, { t: v.t, lighting: v.lighting, view: frameOf(v), masks: (s.masks ?? []) as Rect[], ...(light ? { light } : {}) }); }
+    const out = vacant(p), look = { t: v.t, lighting: v.lighting, view: frameOf(v), masks: (s.masks ?? []) as Rect[], ...(light ? { light } : {}) };
+    try {
+      paintFront(ctx, out ? { ...f, lit: 0, bays: f.bays === 'auto' ? 'auto' : f.bays.map(([bx, bw, k]) => [bx, bw, k === 'glass' ? 'sealed' : k] as BaySpec) } : f, look);
+      if (out) paintState(ctx, p, f.w, f.h, f.ground, { t: v.t, lighting: v.lighting, view: v, ...(light ? { light } : {}) }, f.seed);
+    }
     finally { ctx.restore(); }
   },
 };

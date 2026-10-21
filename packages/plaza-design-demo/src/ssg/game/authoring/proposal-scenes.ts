@@ -18,6 +18,18 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'market-street', base: 'tower', file: 'art/proposals/market-street.composition.json', label: 'Neon Market · reference street', district: 'market' },
   { id: 'oldq-street', base: 'tower', file: 'art/proposals/oldq-street.composition.json', label: 'Old Quarter · reference street', district: 'oldq' },
   { id: 'spire-street', base: 'tower', file: 'art/proposals/spire-street.composition.json', label: 'Spire · reference street', district: 'spire' },
+  { id: 'market-street-far', base: 'tower', file: 'art/proposals/market-street-far.composition.json', label: 'Neon Market · landmark far off', district: 'market' },
+  { id: 'oldq-street-far', base: 'tower', file: 'art/proposals/oldq-street-far.composition.json', label: 'Old Quarter · landmark far off', district: 'oldq' },
+  { id: 'undercity-street', base: 'tower', file: 'art/proposals/undercity-street.composition.json', label: 'Undercity · reference street', district: 'undercity' },
+  { id: 'fringe-street', base: 'tower', file: 'art/proposals/fringe-street.composition.json', label: 'The Fringe · reference street', district: 'fringe' },
+  { id: 'skyport-street', base: 'tower', file: 'art/proposals/skyport-street.composition.json', label: 'Skyport · reference street', district: 'skyport' },
+  // District interiors (Tommi, 2026-10-21): inside a district building, and inside its special place.
+  { id: 'market-block', base: 'tower', file: 'art/proposals/market-block.composition.json', label: 'Neon Market · inside a block', district: 'market' },
+  { id: 'market-hall-inside', base: 'tower', file: 'art/proposals/market-hall-inside.composition.json', label: 'Neon Market · inside the market hall', district: 'market' },
+  { id: 'oldq-house', base: 'tower', file: 'art/proposals/oldq-house.composition.json', label: 'Old Quarter · inside a shophouse', district: 'oldq' },
+  { id: 'oldq-church-inside', base: 'tower', file: 'art/proposals/oldq-church-inside.composition.json', label: 'Old Quarter · inside St. Agnes', district: 'oldq' },
+  { id: 'spire-lobby', base: 'tower', file: 'art/proposals/spire-lobby.composition.json', label: 'Spire · the lobby', district: 'spire' },
+  { id: 'spire-deck', base: 'tower', file: 'art/proposals/spire-deck.composition.json', label: 'Spire · a docking deck above the weather', district: 'spire' },
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 

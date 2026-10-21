@@ -1,0 +1,733 @@
+{
+  "version": 1,
+  "scene": "oldq-church-inside",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "roofs-far",
+      "type": "building.row",
+      "props": {
+        "form": "roofs",
+        "width": 1400,
+        "seed": 71,
+        "parallax": 0.2,
+        "minHeight": 40,
+        "maxHeight": 80,
+        "haze": 0.75,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "roofs-near",
+      "type": "building.row",
+      "props": {
+        "form": "roofs",
+        "width": 1300,
+        "seed": 23,
+        "parallax": 0.4,
+        "minHeight": 50,
+        "maxHeight": 100,
+        "haze": 0.5,
+        "lit": 0.35
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.8,
+        "fill": "#0a0812",
+        "edge": 0.06,
+        "traffic": false
+      },
+      "placement": {
+        "x": 150,
+        "h": 30,
+        "parallax": 0.1
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "floor-stone",
+      "type": "street.surface",
+      "props": {
+        "width": 1040,
+        "ground": "#0d0c0b",
+        "edge": "#bfb3a0",
+        "sheen": 0.15,
+        "kerb": false,
+        "cobbles": false,
+        "water": 0,
+        "seed": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "nave",
+      "type": "interior.nave",
+      "props": {
+        "width": 860,
+        "height": 236,
+        "arcade": 124,
+        "bay": 110,
+        "crossing": 550,
+        "crossingWidth": 100,
+        "apse": 210,
+        "glass": 0.8,
+        "shafts": 0.6,
+        "damp": 0.6,
+        "chandeliers": 2,
+        "chandelierFrom": 200,
+        "roof": true,
+        "seed": 7
+      },
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "rose-window",
+      "type": "interior.rose-window",
+      "props": {
+        "radius": 34,
+        "petals": 12,
+        "glass": 0.9,
+        "seed": 3
+      },
+      "placement": {
+        "x": 742,
+        "h": 102
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "confessional",
+      "type": "interior.confessional",
+      "props": {
+        "width": 70,
+        "height": 62,
+        "occupied": true,
+        "sign": ""
+      },
+      "placement": {
+        "x": 188,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "organ-loft",
+      "type": "interior.organ-loft",
+      "props": {
+        "width": 170,
+        "height": 100,
+        "columns": 1,
+        "pipes": 17
+      },
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "pews",
+      "type": "interior.pews",
+      "props": {
+        "count": 6,
+        "spacing": 44,
+        "rows": 2,
+        "kneelers": true,
+        "books": true
+      },
+      "placement": {
+        "x": 430,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "votive-stand",
+      "type": "interior.votive-stand",
+      "props": {
+        "width": 40,
+        "tiers": 3,
+        "candles": 18,
+        "lit": 0.7,
+        "box": true,
+        "notice": "CASH ONLY",
+        "price": "CANDLES 2",
+        "seed": 5
+      },
+      "placement": {
+        "x": 742,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "altar",
+      "type": "interior.church-altar",
+      "props": {
+        "width": 90,
+        "steps": 2,
+        "candles": 6,
+        "crucifix": true,
+        "lamp": true,
+        "flowers": true
+      },
+      "placement": {
+        "x": 880,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "belfry-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "belfry"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "logic"
+    },
+    {
+      "id": "tower-inside",
+      "type": "interior.bell-tower",
+      "props": {
+        "width": 180,
+        "shaft": 256,
+        "belfry": 74,
+        "flights": 4,
+        "landing": 60,
+        "bells": 3,
+        "swing": 0.2,
+        "openings": 2,
+        "louvres": 0.3,
+        "roofs": true,
+        "rope": true,
+        "door": "right",
+        "seed": 9
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "belfry-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "belfry"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "logic"
+    },
+    {
+      "id": "tower-face",
+      "type": "interior.tower-face",
+      "props": {
+        "width": 180,
+        "height": 330,
+        "door": "right",
+        "open": 0.35,
+        "plaque": "BELFRY · 112 STEPS",
+        "openings": 2,
+        "damp": 0.6,
+        "seed": 9
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-1",
+      "type": "level.stairs",
+      "props": {
+        "run": 120,
+        "rise": 64
+      },
+      "placement": {
+        "x": 24,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-1-stone",
+      "type": "interior.stair",
+      "props": {
+        "run": 120,
+        "rise": 64,
+        "material": "stone"
+      },
+      "placement": {
+        "x": 24,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-2",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 64
+      },
+      "placement": {
+        "x": 144,
+        "h": 64
+      },
+      "order": 19,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-2-stone",
+      "type": "interior.stair",
+      "props": {
+        "run": -120,
+        "rise": 64,
+        "material": "stone"
+      },
+      "placement": {
+        "x": 144,
+        "h": 64
+      },
+      "order": 20,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-3",
+      "type": "level.stairs",
+      "props": {
+        "run": 120,
+        "rise": 64
+      },
+      "placement": {
+        "x": 24,
+        "h": 128
+      },
+      "order": 21,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-3-stone",
+      "type": "interior.stair",
+      "props": {
+        "run": 120,
+        "rise": 64,
+        "material": "stone"
+      },
+      "placement": {
+        "x": 24,
+        "h": 128
+      },
+      "order": 22,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-4",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 64
+      },
+      "placement": {
+        "x": 144,
+        "h": 192
+      },
+      "order": 23,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tower-flight-4-stone",
+      "type": "interior.stair",
+      "props": {
+        "run": -120,
+        "rise": 64,
+        "material": "stone"
+      },
+      "placement": {
+        "x": 144,
+        "h": 192
+      },
+      "order": 24,
+      "layer": "set",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "loft-stairs",
+      "type": "level.stairs",
+      "props": {
+        "run": -70,
+        "rise": 100
+      },
+      "placement": {
+        "x": 410,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "set"
+    },
+    {
+      "id": "loft-stairs-timber",
+      "type": "interior.stair",
+      "props": {
+        "run": -70,
+        "rise": 100,
+        "material": "timber"
+      },
+      "placement": {
+        "x": 410,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "set"
+    },
+    {
+      "id": "priest",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 911,
+        "act": "read",
+        "garb": "robe",
+        "hair": "short",
+        "top": "#16161a",
+        "bottom": "#16161a"
+      },
+      "placement": {
+        "x": 864,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "praying-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 924,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "side",
+        "hair": "scarf"
+      },
+      "placement": {
+        "x": 528,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "praying-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 937,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "side",
+        "hair": "scarf"
+      },
+      "placement": {
+        "x": 572,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "asleep",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 948,
+        "archetype": "sleeper",
+        "act": "doze",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 52,
+        "h": 256
+      },
+      "order": 31,
+      "layer": "playfield",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "pigeon-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "walk",
+        "range": 30
+      },
+      "placement": {
+        "x": 118,
+        "h": 256
+      },
+      "order": 32,
+      "layer": "playfield",
+      "attach": {
+        "instance": "belfry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 320,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-nave",
+      "type": "level.floor",
+      "props": {
+        "width": 880,
+        "building": "",
+        "label": "Nave"
+      },
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-loft",
+      "type": "level.floor",
+      "props": {
+        "width": 170,
+        "building": "",
+        "label": "Organ loft"
+      },
+      "placement": {
+        "x": 180,
+        "h": 100
+      },
+      "order": 35,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-tower",
+      "type": "level.floor",
+      "props": {
+        "width": 180,
+        "building": "belfry",
+        "label": "Tower"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "logic"
+    },
+    {
+      "id": "landing-1",
+      "type": "level.floor",
+      "props": {
+        "width": 60,
+        "building": "belfry",
+        "label": "Landing"
+      },
+      "placement": {
+        "x": 120,
+        "h": 64
+      },
+      "order": 37,
+      "layer": "logic"
+    },
+    {
+      "id": "landing-2",
+      "type": "level.floor",
+      "props": {
+        "width": 60,
+        "building": "belfry",
+        "label": "Landing"
+      },
+      "placement": {
+        "x": 0,
+        "h": 128
+      },
+      "order": 38,
+      "layer": "logic"
+    },
+    {
+      "id": "landing-3",
+      "type": "level.floor",
+      "props": {
+        "width": 60,
+        "building": "belfry",
+        "label": "Landing"
+      },
+      "placement": {
+        "x": 120,
+        "h": 192
+      },
+      "order": 39,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-belfry",
+      "type": "level.floor",
+      "props": {
+        "width": 180,
+        "building": "belfry",
+        "label": "Belfry"
+      },
+      "placement": {
+        "x": 0,
+        "h": 256
+      },
+      "order": 40,
+      "layer": "logic"
+    },
+    {
+      "id": "door-tower",
+      "type": "level.door",
+      "props": {
+        "building": "belfry",
+        "width": 16
+      },
+      "placement": {
+        "x": 164,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "logic"
+    }
+  ]
+}

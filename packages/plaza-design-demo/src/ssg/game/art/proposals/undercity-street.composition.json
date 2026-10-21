@@ -1,0 +1,491 @@
+{
+  "version": 1,
+  "scene": "undercity-street",
+  "instances": [
+    {
+      "id": "vault-0",
+      "type": "building.vault",
+      "props": {
+        "width": 300,
+        "height": 300,
+        "ceiling": "arch",
+        "bays": 2,
+        "seed": 11,
+        "alcoves": 0.9,
+        "emergency": 1,
+        "screens": 1,
+        "marks": 0.6,
+        "chalk": "DRY ABOVE THIS LINE",
+        "floodline": 30
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "backdrop"
+    },
+    {
+      "id": "vault-1",
+      "type": "building.vault",
+      "props": {
+        "width": 280,
+        "height": 300,
+        "ceiling": "arch",
+        "bays": 2,
+        "seed": 12,
+        "alcoves": 0.8,
+        "emergency": 1,
+        "screens": 1,
+        "screenText": "NO SIGNAL",
+        "marks": 0.5,
+        "tarp": "#3a2c20",
+        "floodline": 30
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "backdrop"
+    },
+    {
+      "id": "vault-2",
+      "type": "building.vault",
+      "props": {
+        "width": 300,
+        "height": 300,
+        "ceiling": "ribbed",
+        "bays": 2,
+        "seed": 13,
+        "alcoves": 0.3,
+        "emergency": 2,
+        "screens": 0,
+        "marks": 0.8,
+        "pipes": 6,
+        "floodline": 30
+      },
+      "placement": {
+        "x": 580,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "basement",
+      "type": "landmark.flooded-basement",
+      "props": {
+        "width": 460,
+        "height": 240,
+        "racks": 6,
+        "running": 0.4,
+        "depth": 0.45,
+        "stair": "left",
+        "broken": true,
+        "raft": true,
+        "letters": "B2 · DATA HALL",
+        "seed": 7
+      },
+      "placement": {
+        "x": 880,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "vault-3",
+      "type": "building.vault",
+      "props": {
+        "width": 260,
+        "height": 300,
+        "ceiling": "flat",
+        "bays": 2,
+        "seed": 14,
+        "alcoves": 1,
+        "emergency": 1,
+        "screens": 0,
+        "marks": 0.4,
+        "chalk": "CLINIC TUESDAY",
+        "pipes": 3,
+        "floodline": 30
+      },
+      "placement": {
+        "x": 1340,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1600,
+        "ground": "#040908",
+        "edge": "#3a8a80",
+        "sheen": 0.55,
+        "kerb": true,
+        "cobbles": false,
+        "water": 44,
+        "seed": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "leds-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 280,
+        "count": 16,
+        "height": 156,
+        "seed": 5,
+        "color": "#e8e0b0",
+        "reach": 0.7
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "leds-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 260,
+        "count": 14,
+        "height": 150,
+        "seed": 9,
+        "color": "#e8e0b0",
+        "reach": 0.7
+      },
+      "placement": {
+        "x": 1340,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-0",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 58,
+        "height": 32,
+        "header": "NOTICE",
+        "lines": [
+          "PUMPS OFF",
+          "WATER IS LIVE"
+        ],
+        "post": true
+      },
+      "placement": {
+        "x": 862,
+        "h": 40
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-1",
+      "type": "sign.taped",
+      "props": {
+        "lines": [
+          "BATTERIES",
+          "CHARGED HERE"
+        ],
+        "tilt": 0.04
+      },
+      "placement": {
+        "x": 440,
+        "h": 62
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-2",
+      "type": "sign.screen",
+      "props": {
+        "kind": "broken",
+        "width": 40,
+        "height": 26,
+        "mount": "wall",
+        "seed": 4
+      },
+      "placement": {
+        "x": 1470,
+        "h": 120
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "crowd-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "ghost",
+        "act": "sit",
+        "sitting": "side",
+        "seed": 811
+      },
+      "placement": {
+        "x": 64,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "drifter",
+        "act": "sleep",
+        "seed": 823
+      },
+      "placement": {
+        "x": 182,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "ghost",
+        "act": "talk",
+        "seed": 839
+      },
+      "placement": {
+        "x": 352,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "ghost",
+        "act": "talk",
+        "seed": 857
+      },
+      "placement": {
+        "x": 374,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "drifter",
+        "act": "smoke",
+        "seed": 863
+      },
+      "placement": {
+        "x": 496,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "mixed",
+        "seed": 877
+      },
+      "placement": {
+        "x": 604,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-6",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "ghost",
+        "act": "walk",
+        "range": -320,
+        "seed": 881
+      },
+      "placement": {
+        "x": 840,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-7",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "ghost",
+        "act": "vend",
+        "seed": 907
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-8",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "ghost",
+        "act": "sit",
+        "sitting": "side",
+        "seed": 919
+      },
+      "placement": {
+        "x": 1390,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-9",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "archetype": "sleeper",
+        "act": "sleep",
+        "seed": 929
+      },
+      "placement": {
+        "x": 1520,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "playfield"
+    },
+    {
+      "id": "wreck",
+      "type": "character.resident",
+      "props": {
+        "kind": "wreck",
+        "depth": "play",
+        "act": "slump"
+      },
+      "placement": {
+        "x": 268,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "playfield"
+    },
+    {
+      "id": "crawler",
+      "type": "character.resident",
+      "props": {
+        "kind": "crawler",
+        "depth": "play",
+        "act": "scrub"
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "playfield"
+    },
+    {
+      "id": "litterbot",
+      "type": "character.resident",
+      "props": {
+        "kind": "litterbot",
+        "depth": "play",
+        "act": "roll",
+        "range": -200
+      },
+      "placement": {
+        "x": 1430,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 1290,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield"
+    }
+  ]
+}

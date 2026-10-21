@@ -22,7 +22,7 @@ export const spireElement: Element = {
   draw(ctx, v, p, _s, _pass, at) {
     const s = Number(p.size) * at.scale, sx = v.sx(at.x);
     if (sx + 80 * s < 0 || sx - 80 * s > v.viewW) return;
-    ctx.save(); ctx.translate(sx, v.y(at.h)); ctx.scale(s, s);
+    ctx.save(); ctx.translate(sx, v.y(at.h)); ctx.scale(Number(p.size), Number(p.size));
     try { drawSpire(ctx, { t: v.t, fill: String(p.fill), edge: Number(p.edge), windows: Number(p.seams), glow: p.glow !== false, traffic: p.traffic !== false, scale: s }); }
     finally { ctx.restore(); }
   },

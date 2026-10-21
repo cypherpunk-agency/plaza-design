@@ -79,7 +79,7 @@
         "seed": 401,
         "goods": "tea",
         "board": "TEA",
-        "lanterns": 3
+        "lanterns": 1
       },
       "placement": {
         "x": 0,
@@ -95,9 +95,11 @@
         "width": 64,
         "floors": 1,
         "seed": 402,
-        "goods": "tailor",
-        "board": "TAILOR",
-        "wall": "#232b2c"
+        "goods": "home",
+        "board": "",
+        "wall": "#232b2c",
+        "lanterns": 0,
+        "shutters": "closed"
       },
       "placement": {
         "x": 80,
@@ -113,9 +115,9 @@
         "width": 92,
         "floors": 2,
         "seed": 403,
-        "goods": "lanterns",
-        "board": "LANTERNS",
-        "lanterns": 5
+        "goods": "home",
+        "board": "",
+        "lanterns": 0
       },
       "placement": {
         "x": 144,
@@ -131,9 +133,9 @@
         "width": 70,
         "floors": 0,
         "seed": 404,
-        "goods": "home",
+        "goods": "closed",
         "board": "",
-        "lanterns": 1,
+        "lanterns": 0,
         "gallery": false
       },
       "placement": {
@@ -152,7 +154,8 @@
       },
       "placement": {
         "x": 314,
-        "h": 0
+        "h": 0,
+        "scale": 1.4
       },
       "order": 9,
       "layer": "backdrop"
@@ -166,11 +169,11 @@
         "seed": 405,
         "goods": "shrine",
         "board": "",
-        "lanterns": 2,
+        "lanterns": 1,
         "shutters": "closed"
       },
       "placement": {
-        "x": 522,
+        "x": 602,
         "h": 0
       },
       "order": 10,
@@ -183,12 +186,12 @@
         "width": 88,
         "floors": 1,
         "seed": 406,
-        "goods": "pottery",
-        "board": "POTTERY",
-        "lanterns": 3
+        "goods": "home",
+        "board": "",
+        "lanterns": 0
       },
       "placement": {
-        "x": 598,
+        "x": 678,
         "h": 0
       },
       "order": 11,
@@ -210,7 +213,7 @@
         "seed": 2
       },
       "placement": {
-        "x": 686,
+        "x": 766,
         "h": 0
       },
       "order": 12,
@@ -223,12 +226,12 @@
         "width": 96,
         "floors": 2,
         "seed": 407,
-        "goods": "tea",
-        "board": "SOUP",
-        "lanterns": 4
+        "goods": "lanterns",
+        "board": "LANTERNS",
+        "lanterns": 2
       },
       "placement": {
-        "x": 718,
+        "x": 798,
         "h": 0
       },
       "order": 13,
@@ -244,10 +247,11 @@
         "goods": "closed",
         "board": "",
         "lanterns": 0,
-        "wall": "#2e2a22"
+        "wall": "#2e2a22",
+        "state": "empty"
       },
       "placement": {
-        "x": 814,
+        "x": 894,
         "h": 0
       },
       "order": 14,
@@ -260,12 +264,13 @@
         "width": 84,
         "floors": 1,
         "seed": 409,
-        "goods": "tailor",
-        "board": "MEND",
-        "lanterns": 2
+        "goods": "home",
+        "board": "",
+        "lanterns": 0,
+        "shutters": "closed"
       },
       "placement": {
-        "x": 880,
+        "x": 960,
         "h": 0
       },
       "order": 15,
@@ -279,12 +284,12 @@
         "floors": 2,
         "seed": 410,
         "goods": "home",
-        "board": "ROOMS",
-        "lanterns": 3,
+        "board": "",
+        "lanterns": 0,
         "wall": "#232b2c"
       },
       "placement": {
-        "x": 964,
+        "x": 1044,
         "h": 0
       },
       "order": 16,
@@ -297,12 +302,12 @@
         "width": 72,
         "floors": 1,
         "seed": 411,
-        "goods": "lanterns",
-        "board": "",
-        "lanterns": 4
+        "goods": "tailor",
+        "board": "MEND",
+        "lanterns": 1
       },
       "placement": {
-        "x": 1064,
+        "x": 1144,
         "h": 0
       },
       "order": 17,
@@ -312,15 +317,16 @@
       "id": "house-11",
       "type": "building.shophouse",
       "props": {
-        "width": 232,
+        "width": 192,
         "floors": 1,
         "seed": 412,
-        "goods": "tea",
-        "board": "TEA",
-        "lanterns": 3
+        "goods": "closed",
+        "board": "",
+        "lanterns": 0,
+        "state": "for sale"
       },
       "placement": {
-        "x": 1136,
+        "x": 1216,
         "h": 0
       },
       "order": 18,
@@ -330,16 +336,16 @@
       "id": "house-12",
       "type": "building.shophouse",
       "props": {
-        "width": 232,
+        "width": 192,
         "floors": 2,
         "seed": 413,
-        "goods": "pottery",
+        "goods": "home",
         "board": "",
-        "lanterns": 3,
+        "lanterns": 1,
         "wall": "#3a2c16"
       },
       "placement": {
-        "x": 1368,
+        "x": 1408,
         "h": 0
       },
       "order": 19,
@@ -433,7 +439,7 @@
         ]
       },
       "placement": {
-        "x": 1350,
+        "x": 1060,
         "h": 40
       },
       "order": 24,
@@ -448,11 +454,12 @@
         "district": "oldq",
         "tech": "no",
         "seed": 700,
-        "archetype": "vendor",
-        "act": "vend"
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "mixed"
       },
       "placement": {
-        "x": 70,
+        "x": 200,
         "h": 0
       },
       "order": 25,
@@ -467,12 +474,11 @@
         "district": "oldq",
         "tech": "no",
         "seed": 741,
-        "archetype": "elder",
-        "act": "sit",
-        "sitting": "mixed"
+        "archetype": "church",
+        "act": "sweep"
       },
       "placement": {
-        "x": 200,
+        "x": 374,
         "h": 0
       },
       "order": 26,
@@ -488,10 +494,10 @@
         "tech": "no",
         "seed": 782,
         "act": "walk",
-        "range": 260
+        "range": -300
       },
       "placement": {
-        "x": 300,
+        "x": 840,
         "h": 0
       },
       "order": 27,
@@ -506,10 +512,12 @@
         "district": "oldq",
         "tech": "no",
         "seed": 823,
-        "act": "talk"
+        "archetype": "kid",
+        "act": "sit",
+        "sitting": "side"
       },
       "placement": {
-        "x": 430,
+        "x": 1000,
         "h": 0
       },
       "order": 28,
@@ -523,101 +531,7 @@
         "depth": "play",
         "district": "oldq",
         "tech": "no",
-        "seed": 61,
-        "act": "talk"
-      },
-      "placement": {
-        "x": 452,
-        "h": 0
-      },
-      "order": 29,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-5",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 905,
-        "archetype": "church",
-        "act": "sweep"
-      },
-      "placement": {
-        "x": 374,
-        "h": 0
-      },
-      "order": 30,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-6",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 946,
-        "archetype": "elder",
-        "act": "read"
-      },
-      "placement": {
-        "x": 444,
-        "h": 0
-      },
-      "order": 31,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-7",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 987,
-        "act": "lean"
-      },
-      "placement": {
-        "x": 840,
-        "h": 0
-      },
-      "order": 32,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-8",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 1028,
-        "archetype": "kid",
-        "act": "run",
-        "range": -300
-      },
-      "placement": {
-        "x": 1000,
-        "h": 0
-      },
-      "order": 33,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-9",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 1069,
+        "seed": 864,
         "archetype": "elder",
         "act": "doze",
         "sitting": "side"
@@ -626,44 +540,7 @@
         "x": 1180,
         "h": 0
       },
-      "order": 34,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-10",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 1110,
-        "act": "wait"
-      },
-      "placement": {
-        "x": 1320,
-        "h": 0
-      },
-      "order": 35,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-11",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "oldq",
-        "tech": "no",
-        "seed": 1151,
-        "act": "walk",
-        "range": -360
-      },
-      "placement": {
-        "x": 1480,
-        "h": 0
-      },
-      "order": 36,
+      "order": 29,
       "layer": "playfield"
     },
     {
@@ -678,7 +555,7 @@
         "x": 520,
         "h": 0
       },
-      "order": 37,
+      "order": 30,
       "layer": "playfield"
     },
     {
@@ -694,7 +571,7 @@
         "x": 1240,
         "h": 0
       },
-      "order": 38,
+      "order": 31,
       "layer": "playfield"
     },
     {
@@ -710,7 +587,7 @@
         "x": 404,
         "h": 0
       },
-      "order": 39,
+      "order": 32,
       "layer": "playfield"
     },
     {
@@ -725,7 +602,7 @@
         "x": 424,
         "h": 0
       },
-      "order": 40,
+      "order": 33,
       "layer": "playfield"
     },
     {
@@ -736,7 +613,7 @@
         "x": 720,
         "h": 0
       },
-      "order": 41,
+      "order": 34,
       "layer": "playfield"
     }
   ]

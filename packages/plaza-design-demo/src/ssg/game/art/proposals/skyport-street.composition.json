@@ -1,0 +1,694 @@
+{
+  "version": 1,
+  "scene": "skyport-street",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "launch-pad",
+      "type": "landmark.launch-pad",
+      "props": {
+        "size": 0.7,
+        "state": "cycle",
+        "cycle": 5400,
+        "phase": 1800,
+        "letters": "SKYPORT 9",
+        "haze": 0.35,
+        "seed": 3
+      },
+      "placement": {
+        "x": 287,
+        "h": 0,
+        "parallax": 0.3
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "air-freighter",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "freighter",
+        "depth": "far",
+        "motion": "loop",
+        "direction": "right",
+        "speed": 0.5,
+        "lane": 2400,
+        "altitude": 400,
+        "bob": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "air-shuttle",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "shuttle",
+        "depth": "far",
+        "motion": "loop",
+        "direction": "left",
+        "speed": 1.4,
+        "lane": 2600,
+        "start": 900,
+        "altitude": 300,
+        "bob": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "air-patrol",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "patrol",
+        "depth": "far",
+        "motion": "shuttle",
+        "direction": "right",
+        "speed": 1.8,
+        "lane": 1600,
+        "dwell": 600,
+        "altitude": 230,
+        "bob": 3,
+        "lights": true,
+        "strobe": 40
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "distance"
+    },
+    {
+      "id": "air-dropship",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "dropship",
+        "depth": "far",
+        "motion": "parked",
+        "start": 1240,
+        "altitude": 190,
+        "bob": 4,
+        "strobe": 120
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "distance"
+    },
+    {
+      "id": "far-0",
+      "type": "building.hangar",
+      "props": {
+        "kind": "hangar",
+        "width": 520,
+        "height": 150,
+        "roof": "arched",
+        "size": 0.5,
+        "wall": "#1a212b",
+        "open": 0.08,
+        "inside": "empty",
+        "number": "",
+        "letters": "",
+        "masts": 1,
+        "mastHeight": 260,
+        "cabin": "none",
+        "beacons": true,
+        "lit": 0.5,
+        "seed": 60
+      },
+      "placement": {
+        "x": -40,
+        "h": 0,
+        "parallax": 0.55
+      },
+      "order": 7,
+      "layer": "distance"
+    },
+    {
+      "id": "far-1",
+      "type": "building.hangar",
+      "props": {
+        "kind": "hangar",
+        "width": 640,
+        "height": 130,
+        "roof": "gabled",
+        "size": 0.5,
+        "wall": "#1a212b",
+        "open": 0.08,
+        "inside": "empty",
+        "number": "",
+        "letters": "",
+        "masts": 1,
+        "mastHeight": 260,
+        "cabin": "none",
+        "beacons": true,
+        "lit": 0.5,
+        "seed": 61
+      },
+      "placement": {
+        "x": 560,
+        "h": 0,
+        "parallax": 0.55
+      },
+      "order": 8,
+      "layer": "distance"
+    },
+    {
+      "id": "far-2",
+      "type": "building.hangar",
+      "props": {
+        "kind": "terminal",
+        "width": 600,
+        "height": 110,
+        "roof": "flat",
+        "size": 0.5,
+        "wall": "#1a212b",
+        "open": 0,
+        "inside": "empty",
+        "number": "",
+        "letters": "",
+        "masts": 1,
+        "mastHeight": 260,
+        "cabin": "none",
+        "beacons": true,
+        "lit": 0.5,
+        "seed": 62
+      },
+      "placement": {
+        "x": 1260,
+        "h": 0,
+        "parallax": 0.55
+      },
+      "order": 9,
+      "layer": "distance"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1600,
+        "ground": "#0a0c10",
+        "edge": "#ffd23a",
+        "sheen": 0.15,
+        "kerb": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hangar-07",
+      "type": "building.hangar",
+      "props": {
+        "kind": "hangar",
+        "width": 440,
+        "height": 150,
+        "roof": "arched",
+        "open": 0.14,
+        "inside": "craft",
+        "number": "07",
+        "letters": "HANGAR 07",
+        "masts": 2,
+        "mastHeight": 220,
+        "cabin": "none",
+        "seed": 7
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hangar-08",
+      "type": "building.hangar",
+      "props": {
+        "kind": "hangar",
+        "width": 380,
+        "height": 132,
+        "roof": "gabled",
+        "open": 0.06,
+        "inside": "crates",
+        "number": "08",
+        "letters": "HANGAR 08",
+        "masts": 1,
+        "mastHeight": 200,
+        "cabin": "right",
+        "cabinHeight": 250,
+        "seed": 8
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "terminal",
+      "type": "building.hangar",
+      "props": {
+        "kind": "terminal",
+        "width": 420,
+        "height": 110,
+        "roof": "flat",
+        "letters": "TERMINAL 2",
+        "masts": 1,
+        "mastHeight": 190,
+        "cabin": "none",
+        "lit": 0.7,
+        "seed": 12
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "fence",
+      "type": "street.fence",
+      "props": {
+        "width": 1600,
+        "height": 82,
+        "spacing": 96,
+        "top": "razor",
+        "density": 0.35,
+        "gate": 1000,
+        "gateWidth": 100,
+        "gateOpen": 0,
+        "gateLabel": "GATE 3",
+        "notice": "NO ENTRY/AUTHORISED STAFF",
+        "header": "RESTRICTED AREA",
+        "noticeEvery": 3,
+        "lampEvery": 4,
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "led-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 1
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "led-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 2
+      },
+      "placement": {
+        "x": 400,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "led-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 3
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "led-3",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 4
+      },
+      "placement": {
+        "x": 1240,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "led-4",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 120,
+        "seed": 5
+      },
+      "placement": {
+        "x": 1500,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-road",
+      "type": "sign.plate",
+      "props": {
+        "text": "LAUNCH ROAD",
+        "color": "170,190,210",
+        "size": 7,
+        "printed": true,
+        "bolts": true
+      },
+      "placement": {
+        "x": 661,
+        "h": 104
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-gate",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 52,
+        "height": 34,
+        "header": "CHECKPOINT",
+        "lines": [
+          "STOP AT THE LINE",
+          "HAVE ID READY"
+        ],
+        "lineHeight": 8,
+        "post": true
+      },
+      "placement": {
+        "x": 1130,
+        "h": 44
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-launch",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 56,
+        "height": 34,
+        "header": "NOTICE",
+        "lines": [
+          "DURING LAUNCHES",
+          "KEEP MOVING"
+        ],
+        "lineHeight": 8,
+        "post": true
+      },
+      "placement": {
+        "x": 470,
+        "h": 44
+      },
+      "order": 22,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-photo",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 60,
+        "height": 22,
+        "lines": [
+          "NO PHOTOGRAPHY",
+          "OF THE PERIMETER"
+        ],
+        "ink": "170,190,210",
+        "lineHeight": 8
+      },
+      "placement": {
+        "x": 1350,
+        "h": 52
+      },
+      "order": 23,
+      "layer": "backdrop"
+    },
+    {
+      "id": "truck",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "truck",
+        "paint": "#2a3038",
+        "stripe": "#ffd23a",
+        "fleetNo": "SP-14",
+        "autonomous": true,
+        "depth": "back",
+        "motion": "loop",
+        "direction": "left",
+        "speed": 1.4,
+        "lane": 2000,
+        "lights": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop"
+    },
+    {
+      "id": "crowd-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "skyport",
+        "seed": 1200,
+        "archetype": "guard",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "skyport",
+        "seed": 1247,
+        "archetype": "guard",
+        "act": "wait"
+      },
+      "placement": {
+        "x": 1160,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "skyport",
+        "seed": 1294,
+        "archetype": "guard",
+        "act": "walk",
+        "range": 520
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "skyport",
+        "seed": 1341,
+        "archetype": "technician",
+        "act": "walk",
+        "range": -320
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "skyport",
+        "seed": 1388,
+        "archetype": "technician",
+        "act": "smoke"
+      },
+      "placement": {
+        "x": 1430,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "skyport",
+        "seed": 1435,
+        "archetype": "student",
+        "act": "phone",
+        "extras": [
+          "backpack",
+          "headphones"
+        ]
+      },
+      "placement": {
+        "x": 480,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "marshal",
+      "type": "character.resident",
+      "props": {
+        "kind": "marshal",
+        "depth": "play",
+        "act": "direct"
+      },
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "playfield"
+    },
+    {
+      "id": "scandrone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "scan"
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "playfield"
+    },
+    {
+      "id": "cargodrone",
+      "type": "character.resident",
+      "props": {
+        "kind": "cargodrone",
+        "depth": "play",
+        "act": "hover"
+      },
+      "placement": {
+        "x": 1270,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "van-near",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "van",
+        "paint": "#d8dde2",
+        "stripe": "#ff2a44",
+        "autonomous": true,
+        "depth": "near",
+        "motion": "run",
+        "direction": "right",
+        "speed": 2.6,
+        "lane": 2000,
+        "dwell": 2600,
+        "lights": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "foreground"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    }
+  ]
+}

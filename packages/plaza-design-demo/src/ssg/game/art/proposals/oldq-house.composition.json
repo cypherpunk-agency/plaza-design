@@ -1,0 +1,900 @@
+{
+  "version": 1,
+  "scene": "oldq-house",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "roofs",
+        "width": 1600,
+        "seed": 61,
+        "parallax": 0.2,
+        "minHeight": 40,
+        "maxHeight": 80,
+        "haze": 0.75,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "roofs",
+        "width": 1400,
+        "seed": 17,
+        "parallax": 0.45,
+        "minHeight": 50,
+        "maxHeight": 100,
+        "haze": 0.45,
+        "lit": 0.35
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.8,
+        "fill": "#0a0812",
+        "edge": 0.06,
+        "traffic": false
+      },
+      "placement": {
+        "x": 520,
+        "h": 30,
+        "parallax": 0.1
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "house-0",
+      "type": "building.shophouse",
+      "props": {
+        "width": 84,
+        "floors": 1,
+        "seed": 501,
+        "goods": "tea",
+        "board": "TEA",
+        "lanterns": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-1",
+      "type": "building.shophouse",
+      "props": {
+        "width": 86,
+        "floors": 1,
+        "seed": 502,
+        "goods": "home",
+        "board": "",
+        "lanterns": 0,
+        "wall": "#232b2c",
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 84,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-2",
+      "type": "building.shophouse",
+      "props": {
+        "width": 80,
+        "floors": 2,
+        "seed": 503,
+        "goods": "lanterns",
+        "board": "",
+        "lanterns": 2
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-6",
+      "type": "building.shophouse",
+      "props": {
+        "width": 80,
+        "floors": 1,
+        "seed": 504,
+        "goods": "pottery",
+        "board": "",
+        "lanterns": 1
+      },
+      "placement": {
+        "x": 570,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-7",
+      "type": "building.shophouse",
+      "props": {
+        "width": 74,
+        "floors": 2,
+        "seed": 505,
+        "goods": "home",
+        "board": "",
+        "lanterns": 0,
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 650,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-8",
+      "type": "building.shophouse",
+      "props": {
+        "width": 76,
+        "floors": 1,
+        "seed": 506,
+        "goods": "shrine",
+        "board": "",
+        "lanterns": 1,
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 724,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 800,
+        "ground": "#0b0806",
+        "edge": "#ffcf8a",
+        "sheen": 0.3,
+        "cobbles": true,
+        "water": 80,
+        "seed": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 2,
+        "seed": 5,
+        "reach": 0.8
+      },
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 96,
+        "count": 3,
+        "seed": 9,
+        "reach": 0.8
+      },
+      "placement": {
+        "x": 612,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "tailor"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "logic"
+    },
+    {
+      "id": "room-shop",
+      "type": "interior.oldq-room",
+      "props": {
+        "width": 120,
+        "height": 66,
+        "kind": "tailor",
+        "floor": "tile",
+        "lamp": "bulb",
+        "cut": "left",
+        "seed": 11
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "light-well",
+      "type": "interior.light-well",
+      "props": {
+        "width": 56,
+        "height": 172,
+        "plants": 4,
+        "jar": true,
+        "bridge": 72,
+        "laundry": true,
+        "seed": 12
+      },
+      "placement": {
+        "x": 370,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-altar",
+      "type": "interior.oldq-room",
+      "props": {
+        "width": 96,
+        "height": 66,
+        "kind": "living",
+        "floor": "tile",
+        "lamp": "oil lamp",
+        "lit": 0.8,
+        "seed": 13
+      },
+      "placement": {
+        "x": 426,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-kitchen",
+      "type": "interior.oldq-room",
+      "props": {
+        "width": 48,
+        "height": 66,
+        "kind": "kitchen",
+        "floor": "stone",
+        "lamp": "none",
+        "door": "right",
+        "cut": "right",
+        "seed": 14
+      },
+      "placement": {
+        "x": 522,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "altar",
+      "type": "interior.altar",
+      "props": {
+        "width": 34,
+        "stand": "wall shelf",
+        "photos": 3,
+        "incense": 3,
+        "smoke": true,
+        "fruit": true,
+        "lamps": 2,
+        "seed": 15
+      },
+      "placement": {
+        "x": 430,
+        "h": 28
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor-1-front",
+      "type": "interior.timber-floor",
+      "props": {
+        "width": 120,
+        "thickness": 6,
+        "surface": "boards"
+      },
+      "placement": {
+        "x": 250,
+        "h": 72
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor-1-back",
+      "type": "interior.timber-floor",
+      "props": {
+        "width": 144,
+        "thickness": 6,
+        "surface": "boards"
+      },
+      "placement": {
+        "x": 426,
+        "h": 72
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-bedroom",
+      "type": "interior.oldq-room",
+      "props": {
+        "width": 120,
+        "height": 66,
+        "kind": "bedroom",
+        "floor": "timber",
+        "lamp": "bulb",
+        "lit": 0.6,
+        "cut": "left",
+        "seed": 16
+      },
+      "placement": {
+        "x": 250,
+        "h": 72
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-store",
+      "type": "interior.oldq-room",
+      "props": {
+        "width": 144,
+        "height": 66,
+        "kind": "store",
+        "floor": "timber",
+        "lamp": "bulb",
+        "lit": 0.5,
+        "cut": "right",
+        "seed": 17
+      },
+      "placement": {
+        "x": 426,
+        "h": 72
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ceiling-front",
+      "type": "interior.timber-floor",
+      "props": {
+        "width": 120,
+        "thickness": 6,
+        "surface": "boards"
+      },
+      "placement": {
+        "x": 250,
+        "h": 144
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "roof-slab",
+      "type": "interior.timber-floor",
+      "props": {
+        "width": 144,
+        "thickness": 6,
+        "surface": "tiles",
+        "wood": "#3a2a20"
+      },
+      "placement": {
+        "x": 426,
+        "h": 144
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "roof-front",
+      "type": "interior.roof-section",
+      "props": {
+        "width": 132,
+        "rise": 26,
+        "inset": 16,
+        "ends": true,
+        "moss": 0.3,
+        "seed": 18
+      },
+      "placement": {
+        "x": 244,
+        "h": 144
+      },
+      "order": 26,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "roof-terrace",
+      "type": "interior.roof-terrace",
+      "props": {
+        "width": 144,
+        "parapet": 14,
+        "plants": 4,
+        "jars": 2,
+        "laundry": true,
+        "shrine": true,
+        "seed": 19
+      },
+      "placement": {
+        "x": 426,
+        "h": 144
+      },
+      "order": 27,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "house-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "tailor"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "logic"
+    },
+    {
+      "id": "front-shop",
+      "type": "building.shophouse",
+      "props": {
+        "width": 128,
+        "floors": 1,
+        "storey": 72,
+        "ground": 72,
+        "seed": 520,
+        "wall": "#3a2c16",
+        "goods": "tailor",
+        "board": "TAILOR",
+        "lanterns": 2
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "set",
+      "attach": {
+        "instance": "house-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-home",
+      "type": "building.shophouse",
+      "props": {
+        "width": 104,
+        "floors": 1,
+        "storey": 72,
+        "ground": 72,
+        "seed": 521,
+        "wall": "#3a2c16",
+        "goods": "home",
+        "board": "",
+        "lanterns": 0,
+        "shutters": "mixed"
+      },
+      "placement": {
+        "x": 378,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "set",
+      "attach": {
+        "instance": "house-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-back",
+      "type": "building.shophouse",
+      "props": {
+        "width": 88,
+        "floors": 1,
+        "storey": 72,
+        "ground": 72,
+        "seed": 522,
+        "wall": "#3a2c16",
+        "goods": "closed",
+        "board": "",
+        "lanterns": 0,
+        "gallery": false,
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 482,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "set",
+      "attach": {
+        "instance": "house-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-up",
+      "type": "level.stairs",
+      "props": {
+        "run": 40,
+        "rise": 72
+      },
+      "placement": {
+        "x": 474,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "set",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-up-timber",
+      "type": "interior.stair",
+      "props": {
+        "run": 40,
+        "rise": 72,
+        "material": "timber"
+      },
+      "placement": {
+        "x": 474,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "set",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-roof",
+      "type": "level.stairs",
+      "props": {
+        "run": 30,
+        "rise": 72
+      },
+      "placement": {
+        "x": 532,
+        "h": 72
+      },
+      "order": 34,
+      "layer": "set",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-roof-timber",
+      "type": "interior.stair",
+      "props": {
+        "run": 30,
+        "rise": 72,
+        "material": "timber"
+      },
+      "placement": {
+        "x": 532,
+        "h": 72
+      },
+      "order": 35,
+      "layer": "set",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "grandfather",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 731,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "side",
+        "hair": "brim"
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "grandmother",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 752,
+        "archetype": "elder",
+        "act": "sweep",
+        "hair": "scarf"
+      },
+      "placement": {
+        "x": 394,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "playfield",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "child",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 763,
+        "archetype": "kid",
+        "act": "read",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 448,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 300,
+        "h": 72
+      },
+      "order": 39,
+      "layer": "playfield",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "passer-by",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 788,
+        "act": "walk",
+        "range": -160
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 800,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-shop",
+      "type": "level.floor",
+      "props": {
+        "width": 320,
+        "building": "tailor",
+        "label": "Shop"
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-upstairs",
+      "type": "level.floor",
+      "props": {
+        "width": 320,
+        "building": "tailor",
+        "label": "Upstairs"
+      },
+      "placement": {
+        "x": 250,
+        "h": 72
+      },
+      "order": 44,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-roof",
+      "type": "level.floor",
+      "props": {
+        "width": 144,
+        "building": "tailor",
+        "label": "Roof"
+      },
+      "placement": {
+        "x": 426,
+        "h": 144
+      },
+      "order": 45,
+      "layer": "logic"
+    },
+    {
+      "id": "door-shop",
+      "type": "level.door",
+      "props": {
+        "building": "tailor",
+        "width": 24
+      },
+      "placement": {
+        "x": 314,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "logic"
+    }
+  ]
+}

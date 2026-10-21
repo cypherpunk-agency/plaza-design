@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "scene": "spire-deck",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "cloud-sea",
+      "type": "deck.cloud-sea",
+      "props": {
+        "width": 4000,
+        "parallax": 0.2,
+        "horizon": 70,
+        "below": 120,
+        "banks": 5,
+        "drift": 0.3,
+        "towers": 7,
+        "towerMax": 200,
+        "haze": 0.5,
+        "cloud": "",
+        "wind": 0.4,
+        "seed": 3
+      },
+      "placement": {
+        "x": -400,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire-face",
+      "type": "deck.spire-wall",
+      "props": {
+        "width": 530,
+        "height": 1400,
+        "below": 90,
+        "seams": 0.6,
+        "seamGap": 48,
+        "panes": 0.5,
+        "edge": 0.7,
+        "corner": "right",
+        "bayFrom": 210,
+        "bayWidth": 190,
+        "bayHeight": 74,
+        "bayLit": 0.8,
+        "seed": 2
+      },
+      "placement": {
+        "x": -100,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lounge-room",
+      "type": "deck.lounge",
+      "props": {
+        "width": 340,
+        "height": 92,
+        "slab": 12,
+        "warm": 0.7,
+        "sofaFrom": 30,
+        "sofaWidth": 130,
+        "barFrom": 240,
+        "barWidth": 70,
+        "seal": true
+      },
+      "placement": {
+        "x": 60,
+        "h": 120
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lounge-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "lounge"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "logic"
+    },
+    {
+      "id": "deck",
+      "type": "deck.platform",
+      "props": {
+        "width": 1300,
+        "thickness": 14,
+        "from": 530,
+        "depth": 56,
+        "lights": 24,
+        "chase": 0.6,
+        "chaseTo": 950,
+        "mast": 80,
+        "sock": true,
+        "wind": 0.6,
+        "rail": 30
+      },
+      "placement": {
+        "x": -100,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "set"
+    },
+    {
+      "id": "pad",
+      "type": "deck.landing-pad",
+      "props": {
+        "width": 420,
+        "cycle": 2400,
+        "phase": 0,
+        "from": "right",
+        "leaves": "climbing",
+        "hover": 26,
+        "lights": true
+      },
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "set"
+    },
+    {
+      "id": "lounge-stairs",
+      "type": "level.stairs",
+      "props": {
+        "run": -110,
+        "rise": 120
+      },
+      "placement": {
+        "x": 500,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "set"
+    },
+    {
+      "id": "exec-sofa",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1401,
+        "archetype": "office",
+        "act": "sit",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 115,
+        "h": 120
+      },
+      "order": 9,
+      "layer": "playfield"
+    },
+    {
+      "id": "exec-phone",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1433,
+        "archetype": "shopper",
+        "act": "phone",
+        "sitting": "mixed"
+      },
+      "placement": {
+        "x": 175,
+        "h": 120
+      },
+      "order": 10,
+      "layer": "playfield"
+    },
+    {
+      "id": "exec-window",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1467,
+        "archetype": "office",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 250,
+        "h": 120
+      },
+      "order": 11,
+      "layer": "playfield"
+    },
+    {
+      "id": "lounge-waiter",
+      "type": "character.resident",
+      "props": {
+        "kind": "waiter",
+        "depth": "play",
+        "act": "serve"
+      },
+      "placement": {
+        "x": 325,
+        "h": 120
+      },
+      "order": 12,
+      "layer": "playfield"
+    },
+    {
+      "id": "lounge-guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1501,
+        "archetype": "guard",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 362,
+        "h": 120
+      },
+      "order": 13,
+      "layer": "playfield"
+    },
+    {
+      "id": "bay-bot",
+      "type": "character.resident",
+      "props": {
+        "kind": "servbot",
+        "depth": "play",
+        "act": "charge"
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "playfield"
+    },
+    {
+      "id": "valet",
+      "type": "character.resident",
+      "props": {
+        "kind": "valet",
+        "depth": "play",
+        "act": "stand",
+        "seed": 4
+      },
+      "placement": {
+        "x": 535,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "playfield"
+    },
+    {
+      "id": "porter",
+      "type": "character.resident",
+      "props": {
+        "kind": "porter",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 595,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "playfield"
+    },
+    {
+      "id": "marshal",
+      "type": "character.resident",
+      "props": {
+        "kind": "marshal",
+        "depth": "play",
+        "act": "direct",
+        "seed": 2
+      },
+      "placement": {
+        "x": 625,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "playfield"
+    },
+    {
+      "id": "loader",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "play",
+        "act": "carry",
+        "range": -180
+      },
+      "placement": {
+        "x": 1120,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "scan-drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "hover"
+      },
+      "placement": {
+        "x": 1010,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "playfield"
+    },
+    {
+      "id": "lounge-glass",
+      "type": "deck.glass-front",
+      "props": {
+        "width": 340,
+        "height": 92,
+        "panes": 56,
+        "glass": 0.5,
+        "reflect": 0.6
+      },
+      "placement": {
+        "x": 60,
+        "h": 120
+      },
+      "order": 21,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lounge-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor-deck",
+      "type": "level.floor",
+      "props": {
+        "width": 1200,
+        "building": "",
+        "label": "Deck"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-lounge",
+      "type": "level.floor",
+      "props": {
+        "width": 340,
+        "building": "lounge",
+        "label": "Lounge"
+      },
+      "placement": {
+        "x": 60,
+        "h": 120
+      },
+      "order": 23,
+      "layer": "logic"
+    }
+  ]
+}

@@ -1,0 +1,818 @@
+{
+  "version": 1,
+  "scene": "fringe-street",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.45,
+        "fill": "#0a0912",
+        "edge": 0.08,
+        "traffic": false
+      },
+      "placement": {
+        "x": 420,
+        "h": 110,
+        "parallax": 0.06
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "far-works",
+      "type": "environment.solar-field",
+      "props": {
+        "width": 1300,
+        "form": "sheds",
+        "rise": 130,
+        "stacks": 0.8,
+        "lit": 0.35,
+        "haze": 0.7,
+        "seed": 61
+      },
+      "placement": {
+        "x": 0,
+        "h": 0,
+        "parallax": 0.2
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "solar-field",
+      "type": "environment.solar-field",
+      "props": {
+        "width": 1500,
+        "form": "mixed",
+        "rise": 84,
+        "rows": 5,
+        "stacks": 0.4,
+        "lit": 0.3,
+        "haze": 0.4,
+        "seed": 17
+      },
+      "placement": {
+        "x": 0,
+        "h": 0,
+        "parallax": 0.45
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "shed-0",
+      "type": "building.shed",
+      "props": {
+        "width": 250,
+        "seed": 801,
+        "height": 84,
+        "roof": "sawtooth",
+        "doors": 2,
+        "open": 0.6,
+        "grow": 0.8,
+        "number": "07",
+        "stacks": 1,
+        "floods": 2,
+        "notice": "NO STAFF ON SITE"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "shed-1",
+      "type": "building.shed",
+      "props": {
+        "width": 196,
+        "seed": 802,
+        "height": 80,
+        "roof": "barrel",
+        "doors": 2,
+        "open": 0.9,
+        "grow": 0,
+        "number": "08",
+        "stacks": 2,
+        "floods": 1,
+        "notice": ""
+      },
+      "placement": {
+        "x": 262,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "cemetery",
+      "type": "landmark.data-cemetery",
+      "props": {
+        "width": 500,
+        "terraces": 3,
+        "blinking": 0.22,
+        "piles": 0.45,
+        "memorials": 3,
+        "crane": true,
+        "cycle": 2400,
+        "towers": 2,
+        "steam": true,
+        "masts": 2,
+        "fence": true,
+        "gate": 0.43,
+        "gateOpen": true,
+        "sign": "YARD 7",
+        "notice": "DECOMMISSIONED MEDIA",
+        "seed": 7
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "shed-2",
+      "type": "building.shed",
+      "props": {
+        "width": 204,
+        "seed": 803,
+        "height": 92,
+        "roof": "flat",
+        "doors": 2,
+        "open": 0,
+        "grow": 0,
+        "number": "11",
+        "stacks": 2,
+        "smoke": false,
+        "floods": 2,
+        "dead": true,
+        "dust": 0.9,
+        "notice": "CLOSED"
+      },
+      "placement": {
+        "x": 984,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "shed-3",
+      "type": "building.shed",
+      "props": {
+        "width": 268,
+        "seed": 804,
+        "height": 84,
+        "roof": "sawtooth",
+        "doors": 3,
+        "open": 0.5,
+        "grow": 0.7,
+        "number": "12",
+        "stacks": 3,
+        "floods": 2,
+        "notice": "NO STAFF ON SITE"
+      },
+      "placement": {
+        "x": 1200,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "shed-4",
+      "type": "building.shed",
+      "props": {
+        "width": 122,
+        "seed": 805,
+        "height": 78,
+        "roof": "barrel",
+        "doors": 1,
+        "open": 1,
+        "grow": 0.5,
+        "number": "13",
+        "stacks": 1,
+        "floods": 1,
+        "notice": ""
+      },
+      "placement": {
+        "x": 1478,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1600,
+        "ground": "#0b0a09",
+        "edge": "#c8bca4",
+        "sheen": 0.1,
+        "kerb": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 128,
+        "seed": 20,
+        "reach": 0.9,
+        "color": "#ffd9a5"
+      },
+      "placement": {
+        "x": 256,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 128,
+        "seed": 21,
+        "reach": 0.9,
+        "color": "#ffd9a5"
+      },
+      "placement": {
+        "x": 464,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 128,
+        "seed": 22,
+        "reach": 0.9,
+        "color": "#ffd9a5"
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-3",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 112,
+        "seed": 23,
+        "reach": 0.9
+      },
+      "placement": {
+        "x": 1222,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-4",
+      "type": "street.lamp",
+      "props": {
+        "style": "led",
+        "height": 128,
+        "seed": 24,
+        "reach": 0.9,
+        "color": "#ffd9a5"
+      },
+      "placement": {
+        "x": 1490,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-0",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 64,
+        "height": 22,
+        "lines": [
+          "AUTOMATED ZONE",
+          "NO STAFF ON SITE"
+        ],
+        "ink": "255,217,165",
+        "post": true
+      },
+      "placement": {
+        "x": 440,
+        "h": 42
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-1",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 56,
+        "height": 22,
+        "lines": [
+          "VEHICLES DO",
+          "NOT STOP"
+        ],
+        "ink": "255,217,165",
+        "post": true
+      },
+      "placement": {
+        "x": 1196,
+        "h": 42
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-2",
+      "type": "sign.plate",
+      "props": {
+        "text": "ZONE F4",
+        "color": "216,212,200",
+        "size": 8,
+        "printed": true,
+        "bolts": true
+      },
+      "placement": {
+        "x": 1040,
+        "h": 70
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tech",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "technician",
+        "district": "fringe",
+        "depth": "play",
+        "act": "walk",
+        "range": 220,
+        "seed": 1201
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "playfield"
+    },
+    {
+      "id": "visitor",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "ghost",
+        "district": "fringe",
+        "tech": "no",
+        "depth": "play",
+        "act": "smoke",
+        "seed": 1207
+      },
+      "placement": {
+        "x": 590,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "playfield"
+    },
+    {
+      "id": "crawler-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "crawler",
+        "depth": "play",
+        "seed": 1450,
+        "act": "weld"
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "playfield"
+    },
+    {
+      "id": "loader-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "play",
+        "seed": 1600,
+        "act": "carry",
+        "range": 150
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "playfield"
+    },
+    {
+      "id": "minidrone-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "minidrone",
+        "depth": "play",
+        "seed": 1720,
+        "act": "hover"
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "playfield"
+    },
+    {
+      "id": "mech-gate",
+      "type": "character.resident",
+      "props": {
+        "kind": "mech",
+        "depth": "play",
+        "seed": 2060,
+        "act": "patrol",
+        "range": 100
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "scandrone-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "seed": 5,
+        "act": "hover"
+      },
+      "placement": {
+        "x": 800,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "sweeper-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "sweeper",
+        "depth": "play",
+        "seed": 2300,
+        "act": "sweep"
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "deliverybot-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "deliverybot",
+        "depth": "play",
+        "seed": 2360,
+        "act": "roll",
+        "range": 420
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "crawler-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "crawler",
+        "depth": "play",
+        "seed": 2590,
+        "act": "scrub"
+      },
+      "placement": {
+        "x": 1290,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "android-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "android",
+        "depth": "play",
+        "seed": 2720,
+        "act": "carry",
+        "range": -180
+      },
+      "placement": {
+        "x": 1420,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "cargodrone-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "cargodrone",
+        "depth": "play",
+        "seed": 2640,
+        "act": "hover"
+      },
+      "placement": {
+        "x": 1340,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "playfield"
+    },
+    {
+      "id": "cargodrone-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "cargodrone",
+        "depth": "play",
+        "seed": 9,
+        "act": "hover"
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "playfield"
+    },
+    {
+      "id": "minidrone-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "minidrone",
+        "depth": "play",
+        "seed": 4,
+        "act": "hover"
+      },
+      "placement": {
+        "x": 1540,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "loader-back",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "back",
+        "seed": 2480,
+        "act": "walk",
+        "range": -260
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "deliverybot-back",
+      "type": "character.resident",
+      "props": {
+        "kind": "deliverybot",
+        "depth": "back",
+        "seed": 1500,
+        "act": "roll",
+        "range": 360
+      },
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "truck-back",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "truck",
+        "paint": "#2a2a30",
+        "stripe": "#ffa040",
+        "fleetNo": "F-112",
+        "qr": true,
+        "autonomous": true,
+        "depth": "back",
+        "motion": "loop",
+        "direction": "right",
+        "speed": 1.6,
+        "lane": 2600,
+        "lights": true
+      },
+      "placement": {
+        "x": -500,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "backdrop"
+    },
+    {
+      "id": "yard-tractor",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "yard",
+        "paint": "#d8a03a",
+        "autonomous": true,
+        "qr": true,
+        "fleetNo": "Y-04",
+        "depth": "back",
+        "motion": "shuttle",
+        "direction": "right",
+        "speed": 0.9,
+        "lane": 240,
+        "dwell": 500,
+        "lights": true
+      },
+      "placement": {
+        "x": 1230,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "backdrop"
+    },
+    {
+      "id": "forklift",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "forklift",
+        "autonomous": true,
+        "cargo": true,
+        "pose": 0.3,
+        "depth": "play",
+        "motion": "shuttle",
+        "direction": "left",
+        "speed": 0.5,
+        "lane": 140,
+        "dwell": 600,
+        "lights": true
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hauler",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "hauler",
+        "cargo": true,
+        "depth": "far",
+        "motion": "loop",
+        "direction": "left",
+        "speed": 1.1,
+        "lane": 3200,
+        "altitude": 300,
+        "qr": true,
+        "autonomous": true
+      },
+      "placement": {
+        "x": -800,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "backdrop"
+    },
+    {
+      "id": "drone-air",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "drone",
+        "cargo": true,
+        "depth": "back",
+        "motion": "shuttle",
+        "direction": "right",
+        "speed": 1.0,
+        "lane": 700,
+        "dwell": 400,
+        "altitude": 190
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "backdrop"
+    },
+    {
+      "id": "freighter",
+      "type": "vehicle.air",
+      "props": {
+        "kind": "freighter",
+        "depth": "far",
+        "motion": "loop",
+        "direction": "right",
+        "speed": 0.5,
+        "lane": 4000,
+        "altitude": 440,
+        "strobe": 120
+      },
+      "placement": {
+        "x": -1400,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "backdrop"
+    },
+    {
+      "id": "truck-near",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "truck",
+        "paint": "#3a3a40",
+        "autonomous": true,
+        "qr": true,
+        "depth": "near",
+        "motion": "run",
+        "direction": "left",
+        "speed": 3.0,
+        "lane": 2400,
+        "dwell": 3200,
+        "lights": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "foreground"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "playfield"
+    }
+  ]
+}
