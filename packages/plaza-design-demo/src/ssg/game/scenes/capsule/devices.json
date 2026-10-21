@@ -883,10 +883,7 @@
       "plugOn": "plugOn",
       "sun": "sun",
       "pixelAt": "pixelAt",
-      "doorOpen": "doorOpen",
-      "routerTemp": "routerTemp",
-      "bootUntil": "bootUntil",
-      "steamUntil": "steamUntil"
+      "doorOpen": "doorOpen"
     },
     "devices": {
       "pixel": "pixel"
