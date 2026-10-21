@@ -98,6 +98,7 @@ export function mergeRules(parts:readonly SceneRules[]):SceneRules{
  return{
   effects:Object.assign({},...parts.map(p=>p.effects)),
   ...(parts.some(p=>p.inputs)?{inputs:parts.flatMap(p=>p.inputs??[])}:{}),
+  ...(parts.some(p=>p.places)?{places:Object.assign({},...parts.map(p=>p.places??{}))}:{}),
   ...(parts.some(p=>p.panels)?{panels:parts.flatMap(p=>p.panels??[])}:{}),
   ...(parts.some(p=>p.derived)?{derived:Object.assign({},...parts.map(p=>p.derived??{}))}:{}),
   ...(parts.some(p=>p.derivedTypes)?{derivedTypes:Object.assign({},...parts.map(p=>p.derivedTypes??{}))}:{}),

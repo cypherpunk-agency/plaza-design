@@ -11,9 +11,9 @@
  * Pure: no DOM, no timers. The model ticks it with where things are.
  */
 
-import type { NounData, ZoneData } from '../data/types';
+import type { Coord, NounData, ZoneData } from '../data/types';
 
-interface Zone { key: string; dev: string; noun: string; data: ZoneData; inside: boolean | null; armed: boolean }
+interface Zone { key: string; dev: string; noun: string; data: ZoneData; from: number; to: number; inside: boolean | null; armed: boolean }
 
 /** A zone noticed something cross its edge. */
 export interface Crossing { dev: string; noun: string; event: 'enters' | 'leaves'; set?: string }
@@ -29,11 +29,12 @@ export class Zones {
 
   clear() { this.zones.clear(); }
 
-  add(dev: string, nouns: NounData[]) {
+  /** `coord` works out where the zone's edges are (a number, a place of the artwork, a device's spot). */
+  add(dev: string, nouns: NounData[], coord: (c: Coord, axis: 'x' | 'h') => number = (c) => c as number) {
     for (const n of nouns) {
       if (!n.zone) continue;
       const key = dev + '.' + n.id;
-      if (!this.zones.has(key)) this.zones.set(key, { key, dev, noun: n.id, data: n.zone, inside: null, armed: n.zone.armed !== false });
+      if (!this.zones.has(key)) this.zones.set(key, { key, dev, noun: n.id, data: n.zone, from: coord(n.zone.from, n.zone.axis ?? 'x'), to: coord(n.zone.to, n.zone.axis ?? 'x'), inside: null, armed: n.zone.armed !== false });
     }
   }
 
@@ -57,7 +58,7 @@ export class Zones {
       const at = locate(z.data.watch);
       if (at === undefined) continue;
       const h = z.data.axis === 'h', p = h ? at.h : at.x, q = h ? at.x : at.h, w = z.data.within;
-      const now = p >= Math.min(z.data.from, z.data.to) && p <= Math.max(z.data.from, z.data.to) && (!w || (q >= Math.min(w[0], w[1]) && q <= Math.max(w[0], w[1]))) && (z.data.building === undefined || at.building === z.data.building);
+      const now = p >= Math.min(z.from, z.to) && p <= Math.max(z.from, z.to) && (!w || (q >= Math.min(w[0], w[1]) && q <= Math.max(w[0], w[1]))) && (z.data.building === undefined || at.building === z.data.building);
       const was = z.inside;
       z.inside = now;
       if (was === null || was === now || !z.armed) continue;

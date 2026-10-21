@@ -172,22 +172,57 @@ export interface MorseToyData {
  * repeats). Engine verbs: `start`, `stop`. Saved: which event is next, how far
  * into the beat, and whether it is stopped.
  */
+/** A number, or the name of a scene tuning value (`tuning` in devices.json) that holds it. */
+export type Num = number | string;
+/**
+ * A place along one axis of the scene, in world units: a number; a `place` the scene's code measured
+ * from its artwork (a gantry's `slot`); or a `spot`, the standing place of a device (`edge`: its `left`
+ * or `right` side, default its middle), moved on by `plus`.
+ */
+export type Coord = number | { place: string; plus?: Num } | { spot: string; edge?: 'left' | 'center' | 'right'; plus?: Num };
+/** Where a mover stops: a place on its axis, or a point on both axes (`x` across the scene, `h` up it). */
+export type MoverStop = Coord | { x?: Coord; h?: Coord };
+/** How a leg eases between its ends: a named curve, or a timing table `[[time, progress], ...]` (both 0 to 1). */
+export type MoverEase = 'smooth' | 'linear' | 'ease-in' | 'ease-out' | [number, number][];
+/**
+ * One leg of a path: the mover travels to the stop `to` (leave it out to stay where it is) in `ms`
+ * (times `share`), or at `speed`, easing as `ease`. A leg lasts at least `minMs`: at its end the mover
+ * waits for the rest. `load` labels what rides along during the leg (the picture reads it); `event` is
+ * raised when the leg ends (a `milestone` of the noun may carry it on to the scene's code).
+ */
+export interface MoverLeg { to?: string; ms?: Num; share?: number; speed?: Num; minMs?: Num; ease?: MoverEase; load?: string; event?: string }
+/** A choice inside a path: when the condition (`lock=open`) holds when it is reached, the `then` steps follow, else the `else` steps. */
+export interface MoverChoice { if: string; then: MoverStep[]; else?: MoverStep[] }
+export type MoverStep = MoverLeg | MoverChoice;
 /**
  * A mover (on an act part): it travels between named stops (engine/movers.ts). Engine verbs:
- * `go <stop>` for each stop, and `return`. Events it may raise: `started`, `arrived`.
+ * `go <stop>` for each stop, and `return` (none when `wired` is false). Events it may raise: `started`,
+ * `arrived`, and the ones its paths' legs name.
  */
 export interface MoverData {
-  /** Stop name → position along the axis (world units). The first is where it starts unless `start` says. */
-  stops: Record<string, number>;
-  /** `x` across the scene (default) or `h` up it (a lift). */
+  /** Stop name → place. The first is where it starts unless `start` says. */
+  stops: Record<string, MoverStop>;
+  /** `x` across the scene (default) or `h` up it (a lift): the axis a plain stop position lies on. */
   axis?: 'x' | 'h';
-  /** World units per second. */
-  speed: number;
+  /** World units per second (a number, or a tuning name): how fast a trip or a leg without its own time goes. */
+  speed?: Num;
+  /** Every plain trip takes this many ms whatever the distance (instead of `speed`). */
+  ms?: Num;
+  /** How trips and legs without their own ease (default `smooth`). */
+  ease?: MoverEase;
   start?: string;
   /** Where it runs on the other axis: a lift shaft's x, a trolley's height (default 0). */
   across?: number;
-  /** A state key that holds the stop it is at, or `moving`. */
+  /** A state key that holds the stop it is at, or `moving` (or what `moving` says). It also puts the mover at the stop the key already names. */
   set?: string;
+  /** What `set` holds while it travels (default `moving`). */
+  moving?: string;
+  /** A state key that names the stop it should be at: whenever it changes to a stop of this mover, the mover goes there. */
+  follow?: string;
+  /** Named multi-leg trips (`runPath`): a route of legs from wherever it is. */
+  paths?: Record<string, MoverStep[]>;
+  /** False: the engine gives it no verbs (`go`, `return`); only the scene's own effects send it. Default true. */
+  wired?: boolean;
 }
 
 /**
@@ -195,8 +230,8 @@ export interface MoverData {
  * its edge (engine/zones.ts). Engine verbs: `arm`, `disarm`. Events it may raise: `enters`, `leaves`.
  */
 export interface ZoneData {
-  from: number;
-  to: number;
+  from: Coord;
+  to: Coord;
   /** `player`, or a mover as `device.noun`. */
   watch: string;
   axis?: 'x' | 'h';
@@ -259,6 +294,8 @@ export interface NounData {
   clock?: ClockData;
   mover?: MoverData;
   zone?: ZoneData;
+  /** Event → a physical milestone of the scene's code (`SceneRules.inputs`) that raising it reports: a mover's leg end, a zone's crossing. */
+  milestone?: Record<string, string>;
   /** Verb → what it does. `*` handles every verb without its own entry. */
   on?: Record<string, Case | Case[]>;
 }
