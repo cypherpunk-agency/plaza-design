@@ -21,6 +21,8 @@ import {validatePendingCity,createPendingCity} from './pending-city';
 import {mountCityAuthoring} from './city-authoring';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
 import {mountBotReactionAuthoring} from './bot-reaction-authoring';
+import {mountPlayProfileAuthoring} from './play-profile-authoring';
+import {validatePendingPlayProfiles} from './play-profile-source';
 import {manifestDemoScene,validateManifestScene,validateManifestGameplay,validateManifestComposition,validateManifestSources} from '../scenes/demo-manifest';
 import {nativeGameplayScene,nativeGameplayScenes} from './native-gameplay-scenes';
 import {pendingDestinations,validatePendingSceneCatalogue} from './pending-destinations';
@@ -187,6 +189,7 @@ async function start() {
       if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
       if(document.kind==='devices'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='profiles'){if(document.id!=='play-profiles')throw new Error('Unsupported profiles document');validatePendingPlayProfiles(document.value,validationSnapshot(documents));}
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
@@ -206,6 +209,7 @@ async function start() {
     newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene },
     workbenches: [
       {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: opening scenes, arrivals and first guidance',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
+      {id:'play-profiles',area:'world',label:'Play profiles',title:'Ways of playing: the full game, the harbor shift and the Test District',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
       {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
       {id:'scene-catalogue',area:'world',label:'Scenes',title:'Create and manage authored scenes',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-fixtures','city-source'],primaryDocumentId:'authored-scenes',mount:mountSceneCatalogue},
