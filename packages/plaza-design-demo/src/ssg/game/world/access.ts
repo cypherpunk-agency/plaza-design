@@ -22,9 +22,9 @@ export function exitPermission(exit:Pick<SceneExit,'needs'>,keys:readonly string
 export function validateExitKeyReferences(scene:{id:string;exits?:readonly Pick<SceneExit,'id'|'needs'>[]},keys:{has(id:string):boolean}){
  for(const exit of scene.exits??[])if(exit.needs&&!keys.has(exit.needs.key))throw Error('Unknown exit key reference: '+scene.id+'/'+exit.id+' -> '+exit.needs.key);
 }
-/** Taxi/map adapters share this lock; fare charging and animations retain their owners. */
-export function harborTransportPermission(destination:string,open:boolean){
-  return nativeAccess([{allowed:destination!=='harbor'||open,reason:'HARBOR CLOSED · LINE 0 DOES NOT STOP'}]);
+/** Taxi, map and metro share the city's destination locks (city.json `LOCKS`); fare charging and animations retain their owners. `lock` is the one holding the destination shut, if any. */
+export function lockedTransport(lock:{reason:string}|undefined,open:boolean){
+  return nativeAccess([{allowed:!lock||open,reason:lock?.reason??''}]);
 }
 
 /** The same exit owner supplies walking visibility, permission and world-map access. */

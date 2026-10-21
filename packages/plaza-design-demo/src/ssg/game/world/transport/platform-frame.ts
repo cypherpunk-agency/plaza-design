@@ -8,5 +8,5 @@ export function platformFrame(scene:string,stop:number,view:View,metro:LineSyste
  const station=city.stationAt(scene);
  if(!station)return{'transit.train':null,'transit.departure':{open:false,station:'',destination:'',left:0,due:0,message:''},'transit.closed':true};
  const departure=metro.departureVisual(station,view.t);
- return{'transit.train':metro.platformTrainVisual(station,view.t,stop) as unknown as Value,'transit.departure':{...departure,due:Number.isFinite(departure.due)?departure.due:0},'transit.closed':station==='harbor'&&!city.harborOpen(view.flags)};
+ return{'transit.train':metro.platformTrainVisual(station,view.t,stop) as unknown as Value,'transit.departure':{...departure,due:Number.isFinite(departure.due)?departure.due:0},'transit.closed':(()=>{const lock=metro.lockOf(station);return !!lock&&!city.lockOpen(lock,view.flags);})()};
 }

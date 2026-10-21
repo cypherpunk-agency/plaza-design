@@ -149,6 +149,11 @@
     ]
   },
   "stage": {
+    "resettable": {
+      "label": "the back yard",
+      "confirm": "this resets the back yard only (cables, parts, the parcel, its goals).",
+      "done": "back yard reset: cables, parts, the parcel, HINGE's mood. Everything else is kept."
+    },
     "mechanisms": [
       "yardCrane"
     ],

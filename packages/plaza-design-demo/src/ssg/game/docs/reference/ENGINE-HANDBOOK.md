@@ -294,6 +294,29 @@ every profile. A new player body is one entry in `AVATAR_PAINTERS` (runtime/avat
 installs the pending document before it builds the game (`installPlayProfiles`). Check:
 `pnpm test:game play-profiles`.
 
+## Recipe: a character, a lock or a review shortcut (game rules documents)
+
+The loop never names a scene, a person or a conversation. What used to be a literal in `runtime/game.ts` is a
+source document the loop reads (private Play passes the pending one through `GameRuntimeSources`):
+
+| Document (editor: World ›) | Holds | Loop reads it as |
+| --- | --- | --- |
+| `engine/gameplay/companion.json` (Companion) | the companion's id, name, painter `look` (`COMPANION_LOOKS`), `speaker`, saved `unlockFlag`, scene `modes`, `avoidPopups`, arrival `greeting`, `follow` tuning, default `pet` recipe | `companionDoc`, `companionHere()` (companion-source.ts); scenes keep `scene.json` `companion` (mode, perches, pet graphs) |
+| `engine/gameplay/critter-reactions.json` (Critter dialogue) | per critter `look`, speaker `name`, `prompt`, cycling `talk` replies | `critterReaction()`; the cat and pigeon target and reply |
+| `demo/review-stations.json` (Review stations) | review bookmarks (anchored on a use, device or person, with conversation conditions), navigator buttons, the remote-device example, the hint | `reviewStations()`, `reviewActions()`; the navigator only draws what it is given |
+| `world/city.json` `LOCKS` (City & travel) | destination locks: `unlockedBy` world flag role, `destinations` (districts, stations, taxi stands), `reason` | `city.transportPermission/transportAccess/lockOpen`; taxi, map and `placeBlocked` |
+| `world/transport/metro.json` `locked` (City & travel › station lock) | station → lock id: LINE 0 does not stop there until the lock opens | `metro.syncLocks(world, flags)` each travel tick |
+
+Scene-level flags live in `scene.json`: `stage.resettable {label, confirm, done}` makes `reset <scene id> --yes` start
+that scene over in the deck (generic command; its manual line and completion list the declared scenes),
+`stage.sudoOnly` keeps a scene out of resume and its reset out of the deck without sudo, and a person's
+`promptH` (scene people, editor: People) sets the height of their `[E] TALK` prompt. The jack cable is drawn
+for whichever scene's schematic is open and stood at. Controllers dispatch on `controller.kind` (never the scene
+id), including camera binding roles. To change any of these, edit the document; to add another critter, painter or
+review station, add an entry. Checks: `pnpm test:game companion-source critter-reactions review-stations
+scene-reset-flags city-locks loop-scene-ids`. `scene-parity` tolerates the two additive stage fields
+(`resettable`, `sudoOnly`) on recorded scenes; every other scene field still must match its golden.
+
 ## Choose verification by what changed
 
 Run from packages/plaza-design-demo:
@@ -322,6 +345,7 @@ isolated copies, not the working game's files or your recovery journal.
 | Communication | communication device-reply |
 | Demo isolation | demo-district |
 | Play profiles (ways of playing) | play-profiles demo-district play-storage |
+| Companion, critters, locks, review stations, reset flags | companion-source critter-reactions review-stations city-locks scene-reset-flags loop-scene-ids |
 | Editor bundles and source service | public-editor-build authoring-save public-document-bundle |
 
 Choose focused checks for routine work. Run the full suite for broad engine changes. Visual

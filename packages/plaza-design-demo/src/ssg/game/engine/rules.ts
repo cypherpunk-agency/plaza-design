@@ -22,7 +22,7 @@ export interface World {
   data: SceneData;
   line(key: string, vars?: Vars): Line;
   has(key: string): boolean;
-  /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, `'pixel'`). */
+  /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, the companion's speaker id). */
   say(l: Line, from?: string): FeedbackReceipt;
   receipt(l:Line,from?:string):FeedbackReceipt;
   changed(): void;

@@ -43,6 +43,10 @@ export interface SceneStage {
  targetAnchors?:string[];
  /** What the artwork asks for, as data: composition bindings `scene.<name>` (scene-values.ts). */
  values?:Record<string,ValueExpr>;
+ /** The deck's `reset <this scene> --yes` starts the scene over (its part of the save only): `label` names it ("the back yard"), `confirm` is what the deck says before `--yes`, `done` what it says after. */
+ resettable?:{label:string;confirm:string;done:string};
+ /** The scene exists only under sudo: it is never resumed otherwise and its reset is not offered. */
+ sudoOnly?:boolean;
  /** The atrium's two artwork roles: the storeys, gallery slab and escalator its `far`, `gallery` and `riders` actors stand on (scene-atrium.ts). */
  atrium?:SceneAtrium;
 }
@@ -51,12 +55,14 @@ const name=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,95}$
 export function validateSceneStage(value:unknown):SceneStage{
  const fail=(why:string):never=>{throw new Error('Invalid scene stage: '+why);};
  if(!object(value))fail('expected an object');const s=value as Record<string,unknown>;
- if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanisms','targetAnchors','values','atrium'].includes(k)))fail('unknown field');
+ if(Object.keys(s).some(k=>!['facing','horizon','shade','lights','casters','actors','mechanisms','targetAnchors','values','atrium','resettable','sudoOnly'].includes(k)))fail('unknown field');
  if(s.actors!==undefined){const a=s.actors as Record<string,unknown>;if(!object(a)||Object.keys(a).some(k=>!['clip','cull','held','hide'].includes(k)))fail('actors');for(const h of (a.held??[]) as Record<string,unknown>[])if(!object(h)||Object.keys(h).some(k=>!['type','instance','anchor'].includes(k))||(h.type===undefined)===(h.instance===undefined)||h.type!==undefined&&!name(h.type)||h.instance!==undefined&&!name(h.instance)||h.anchor!==undefined&&!name(h.anchor))fail('actors held');for(const h of (a.hide??[]) as Record<string,unknown>[]){if(!object(h)||Object.keys(h).sort().join()!=='actors,when'||!name(h.actors))fail('actors hide');validateValue(h.when,fail);}if(a.held!==undefined&&!Array.isArray(a.held)||a.hide!==undefined&&!Array.isArray(a.hide))fail('actors lists');for(const c of (a.clip??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).sort().join()!=='actors,to'||!name(c.actors)||!name(c.to))fail('actors clip');for(const c of (a.cull??[]) as Record<string,unknown>[])if(!object(c)||Object.keys(c).some(k=>!['actor','role','margin'].includes(k))||!name(c.actor)||!name(c.role)||c.margin!==undefined&&typeof c.margin!=='number')fail('actors cull');if(a.clip!==undefined&&!Array.isArray(a.clip)||a.cull!==undefined&&!Array.isArray(a.cull))fail('actors lists');}
  if(s.facing!==undefined){const f=s.facing as Record<string,unknown>;if(!object(f)||!name(f.role)||f.prop!==undefined&&!name(f.prop)||f.fallback!==undefined&&typeof f.fallback!=='number')fail('facing');}
  if(s.horizon!==undefined){const h=s.horizon as Record<string,unknown>;if(!object(h)||Object.keys(h).some(k=>k!=='role'&&k!=='prop')||!name(h.role)||h.prop!==undefined&&!name(h.prop))fail('horizon');}
  if(s.shade!==undefined){const sh=s.shade as Record<string,unknown>;if(!object(sh)||Object.keys(sh).some(k=>k!=='front'&&k!=='back'))fail('shade');const bk=sh.back as Record<string,unknown>|undefined;if(bk!==undefined&&(!object(bk)||Object.keys(bk).sort().join()!=='gaps,role'||!name(bk.role)||!name(bk.gaps)))fail('shade back');const fr=sh.front as Record<string,unknown>|undefined;if(fr!==undefined&&(!object(fr)||!name(fr.role)||fr.gapFrom!==undefined&&typeof fr.gapFrom!=='number'))fail('shade front');}
  if(s.values!==undefined)validateSceneValues(s.values,fail);
+ if(s.sudoOnly!==undefined&&s.sudoOnly!==true)fail('sudoOnly is true when present');
+ if(s.resettable!==undefined){const r=s.resettable as Record<string,unknown>;if(!object(r)||Object.keys(r).sort().join()!=='confirm,done,label'||['label','confirm','done'].some(k=>typeof r[k]!=='string'||!(r[k] as string).trim()||(r[k] as string).length>400))fail('resettable needs label, confirm and done text');}
  if(s.atrium!==undefined){const a=s.atrium as Record<string,unknown>;if(!object(a)||Object.keys(a).sort().join()!=='escalator,room'||!name(a.room)||!name(a.escalator))fail('atrium');}
  if(s.targetAnchors!==undefined&&(!Array.isArray(s.targetAnchors)||s.targetAnchors.length>16||s.targetAnchors.some(a=>!name(a))||new Set(s.targetAnchors).size!==s.targetAnchors.length))fail('targetAnchors');
  const sources=(list:unknown,what:string,keys:string[])=>{if(list===undefined)return;if(!Array.isArray(list)||list.length>16)fail(what);for(const l of list as unknown[]){const r=l as Record<string,unknown>;if(!object(r)||Object.keys(r).some(k=>!keys.includes(k))||(r.type===undefined)===(r.role===undefined)||r.type!==undefined&&!name(r.type)||r.role!==undefined&&!name(r.role))fail(what);}};
@@ -71,9 +77,11 @@ export function validateSceneStage(value:unknown):SceneStage{
 }
 const pick=(rows:readonly Resolved[],src:{type?:string;role?:string})=>rows.filter(r=>src.type?r.instance.type===src.type:r.props.role===src.role);
 /** What the stage gives the scene, from the artwork as placed. */
-export function stageContent(stage:SceneStage|undefined,rows:readonly Resolved[],roles:Readonly<Record<string,Resolved>>):Pick<SceneDef,'facing'|'horizon'|'shade'|'lights'|'casters'>{
+export function stageContent(stage:SceneStage|undefined,rows:readonly Resolved[],roles:Readonly<Record<string,Resolved>>):Pick<SceneDef,'facing'|'horizon'|'shade'|'lights'|'casters'|'resettable'|'sudoOnly'>{
  if(!stage)return{};
- const out:Pick<SceneDef,'facing'|'horizon'|'shade'|'lights'|'casters'>={};
+ const out:Pick<SceneDef,'facing'|'horizon'|'shade'|'lights'|'casters'|'resettable'|'sudoOnly'>={};
+ if(stage.resettable)out.resettable={...stage.resettable};
+ if(stage.sudoOnly)out.sudoOnly=true;
  if(stage.facing){const r=roles[stage.facing.role];out.facing=Number(r?.props[stage.facing.prop??'facing']??stage.facing.fallback??0);}
  if(stage.horizon){const r=roles[stage.horizon.role];if(r)out.horizon=stage.horizon.prop?Number(r.props[stage.horizon.prop]):r.placement.h;}
  const wall=stage.shade?.front?roles[stage.shade.front.role]:undefined;

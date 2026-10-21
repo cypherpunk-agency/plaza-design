@@ -12,9 +12,13 @@ import {deviceSceneIds,deviceDocumentId,deviceSourceIdentity,validateDeviceSourc
 import {pendingDestinations,validatePendingSceneCatalogue} from './pending-destinations';
 import {pendingScene} from './pending-scene';
 import {validateFixtureMetro} from './play-fixtures';
-import {validateMetroSource} from '../world/transport/metro-source';
+import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {validatePendingCity,createPendingCity} from './pending-city';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
+import {validateCompanionSource} from '../engine/gameplay/companion-source';
+import {validateCritterReactions} from '../engine/gameplay/critter-reactions';
+import {validateReviewStations} from '../demo/review-stations';
+import {validatePendingCompanion} from './pending-rules';
 import {validateManifestComposition,validateManifestSources} from '../scenes/demo-manifest';
 import {validateDeclaredDestinations} from '../engine/gameplay/declared-scene';
 import {nativeGameplayScenes} from './native-gameplay-scenes';
@@ -64,9 +68,12 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'play-profiles',file:'runtime/play-profiles.json',kind:'profiles',validate:validatePlayProfiles,validateContext:validatePendingPlayProfiles},
   {id:'kit-presets',file:'art/presets/kit-presets.json',kind:'presets',validate:value=>validatePresets(value,art)},
   {id:'people',file:'art/characters/people.json',kind:'people',validate:validatePeople},
-  {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource},
+  {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource,validateContext:(value,documents)=>{validateMetroLocks(validateMetroSource(value),(documents.get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
   {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'conversations',validate:validateBotReactions},
+  {id:'companion',file:'engine/gameplay/companion.json',kind:'rules',validate:validateCompanionSource,validateContext:validatePendingCompanion},
+  {id:'critter-reactions',file:'engine/gameplay/critter-reactions.json',kind:'rules',validate:validateCritterReactions},
+  {id:'review-stations',file:'demo/review-stations.json',kind:'rules',validate:validateReviewStations},
   ...nativeGameplayScenes.filter(s=>!gameplayScenes.some(g=>g.gameplayId===s.gameplayId)).map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
   ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>validatePendingSceneContent(s,value,documents)},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
   {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents),validateMetroSource(documents.get('metro-source')))},

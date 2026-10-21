@@ -1,7 +1,11 @@
 import type {CompanionPet} from '../engine/gameplay/scene-companion';
 import { drawPixel, type PixelPose as Pose } from '../art/characters/pixel';
+/** Registered companion painters, by the `look` of the companion document (engine/gameplay/companion.json). */
+export const COMPANION_LOOKS: Readonly<Record<string, typeof drawPixel>> = { pixel: drawPixel };
+/** How it follows (the companion document's `follow`). */
+export interface FollowTuning { distance: number; trail: number; lostAt: number }
 /**
- * Pixel, the robot cat: a small companion the engine draws in any scene.
+ * The companion (Pixel, the robot cat, in the shipped document): a small companion the engine draws in any scene.
  *
  * Pixel sleeps on whatever is warm. In the flat (Capsule 7B) the scene says
  * where that is (`perch`: the bed, the router, the sunny spot); outside, Pixel
@@ -9,8 +13,8 @@ import { drawPixel, type PixelPose as Pose } from '../art/characters/pixel';
  * curls up on a warm machine nearby (the scene source) or naps where it sat.
  *
  * Pixel is only a picture: it never blocks the player, never takes a prompt,
- * and has no hit box. Whether Pixel is with you is a save flag (`flags.pixel`,
- * set when you first leave the flat); where Pixel stands is not saved, it
+ * and has no hit box. Whether it is with you is a save flag (the document's
+ * `unlockFlag`, set when you first leave the flat); where it stands is not saved, it
  * simply turns up behind you.
  *
  * Native companion movement and presentation; authored conversations own the words.
@@ -54,9 +58,9 @@ export class Companion {
    * One frame. `perch`: in a home scene, where Pixel wants to be (follow the
    * warmth); without it, Pixel follows the player and naps near `warm` spots.
    */
-  update(dt: number, o: { px: number; face: number; moving: boolean; perch?: Perch | null; warm?: Perch[] }) {
+  update(dt: number, o: { px: number; face: number; moving: boolean; follow: FollowTuning; perch?: Perch | null; warm?: Perch[] }) {
     // never lost: too far behind (a door, a jump cut), turn up behind the player
-    if (!o.perch && Math.abs(this.x - o.px) > 300) this.place(o.px - o.face * 22, 0, 'sit', o.face);
+    if (!o.perch && Math.abs(this.x - o.px) > o.follow.lostAt) this.place(o.px - o.face * 22, 0, 'sit', o.face);
     this.goal = o.perch ?? this.follow(dt, o);
     this.zs = this.zs.filter((z) => (z.age += dt) < 90);
     if ((this.pose === 'sleep' || this.pose === 'sun') && Math.random() < 0.012 * dt) this.zs.push({ x: this.x + this.face * 6, h: this.h + 10, age: 0 });
@@ -89,13 +93,13 @@ export class Companion {
   }
 
   /** Outside: behind the player while they walk; sit when they stop; then a nap, on a warm machine if one is near. */
-  private follow(dt: number, o: { px: number; face: number; moving: boolean; warm?: Perch[] }): Perch {
+  private follow(dt: number, o: { px: number; face: number; moving: boolean; follow: FollowTuning; warm?: Perch[] }): Perch {
     const gap = this.x - o.px;
     if (o.moving) {
       this.idle = 0; this.napAt = null; this.decided = false;
       // keep a cat's distance: only walk once the player is a few steps away
-      if (Math.abs(gap) < 28 && Math.sign(gap) === -o.face) return { x: this.x, h: this.h, rest: 'sit' };
-      return { x: o.px - o.face * 20, h: 0, rest: 'sit' };
+      if (Math.abs(gap) < o.follow.distance && Math.sign(gap) === -o.face) return { x: this.x, h: this.h, rest: 'sit' };
+      return { x: o.px - o.face * o.follow.trail, h: 0, rest: 'sit' };
     }
     this.idle += dt;
     if (this.napAt && Math.abs(this.napAt.x - o.px) < 140) return this.napAt;
@@ -113,8 +117,8 @@ export class Companion {
 
   private hop(x: number, h: number) { this.face = x >= this.x ? 1 : -1; this.hopping = { x0: this.x, h0: this.h, x1: x, h1: h, f: 0 }; }
 
-  /** Draw Pixel, standing (or lying) on its height above the ground. Call before the player, so Pixel stays behind. */
-  draw(x: CanvasRenderingContext2D, sx: (wx: number) => number, y: (h: number) => number, t: number) { drawPixel(x, sx, y, t, { x:this.x, h:this.h, face:this.face, pose:this.pose, zs:this.zs }); }
+  /** Draw the companion, standing (or lying) on its height above the ground. Call before the player, so Pixel stays behind. */
+  draw(x: CanvasRenderingContext2D, sx: (wx: number) => number, y: (h: number) => number, t: number, paint: typeof drawPixel = drawPixel) { paint(x, sx, y, t, { x:this.x, h:this.h, face:this.face, pose:this.pose, zs:this.zs }); }
 
 
 }

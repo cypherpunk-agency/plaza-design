@@ -63,6 +63,15 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
    form.text(section,'Access '+id+' refusal',policy.reason,v=>edit('Edit access refusal',d=>{d.ACCESS[id].reason=v;}));
    form.button(section,'Remove access '+id,()=>edit('Remove unused access policy',d=>{delete d.ACCESS[id];}),d.PLACES.some(p=>p.access===id)||d.LINKS.some(l=>l.access===id));
   }
+  const locks=form.section(host,'Destination locks');
+  for(const[id,lock]of Object.entries(d.LOCKS)){
+   const section=form.section(locks,'Lock '+id);
+   form.text(section,'Lock '+id+' refusal',lock.reason,v=>edit('Edit lock refusal',d=>{d.LOCKS[id].reason=v;}));
+   for(const destination of [...new Set([...districtIds,...d.LINE,...d.STAND_IDS])])form.check(section,'Lock '+id+' holds '+destination,lock.destinations.includes(destination),on=>edit(on?'Lock a destination':'Unlock a destination',d=>{const list=new Set(d.LOCKS[id].destinations);if(on)list.add(destination);else list.delete(destination);if(!list.size)throw Error('A lock holds at least one destination');d.LOCKS[id].destinations=[...list];}));
+   form.button(section,'Remove lock '+id,()=>edit('Remove destination lock',d=>{if(Object.values(validateMetroSource(api.get('metro-source').value).locked).includes(id))throw Error('A metro station still names this lock');delete d.LOCKS[id];}));
+  }
+  let lockId='';form.text(locks,'New lock ID','',v=>{lockId=v;});
+  form.button(locks,'Add destination lock',()=>edit('Create destination lock',d=>{if(Object.prototype.hasOwnProperty.call(d.LOCKS,lockId))throw Error('Lock already exists');d.LOCKS[lockId]={unlockedBy:'HARBOR_FLAG',destinations:[districtIds[0]],reason:'ACCESS DENIED'};}));
   let policyId='';form.text(policies,'New access policy ID','',v=>{policyId=v;});
   form.button(policies,'Add access policy',()=>edit('Create exit access policy',d=>{if(Object.prototype.hasOwnProperty.call(d.ACCESS,policyId))throw Error('Access policy already exists');const scene=sceneIds.find(id=>refs[id].exits.length);if(!scene)throw Error('No exit access owners');d.ACCESS[policyId]={exit:{scene,id:refs[scene].exits[0].id},reason:'ACCESS DENIED'};}));
   const flagDocuments=()=>new Map(context.documents.map(d=>[d.id,api.get(d.id).value]));
@@ -99,7 +108,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
   const order=form.section(host,'Transport route order');for(const key of ['LINE','STAND_IDS']as const)d[key].forEach((id,i)=>form.button(order,key+' move '+id+' earlier',()=>edit('Reorder registered transport stops',d=>{[d[key][i-1],d[key][i]]=[d[key][i],d[key][i-1]];}),i===0));
   const metro=validateMetroSource(api.get('metro-source').value),platform=form.section(host,'Metro platforms');
   for(const key of ['loop','arrive','dwell','leave'] as const)form.number(platform,'Platform '+key+' frames',metro.timetable[key],n=>editMetro('Edit metro platform timing',d=>{d.timetable[key]=n;}),key==='dwell'?80:1);
-  for(const id of d.LINE){form.text(platform,'Station '+id+' name',d.STATIONS[id].name,name=>edit('Edit station name',d=>{d.STATIONS[id].name=name;}));form.number(platform,'Station '+id+' phase offset',metro.offset[id],n=>editMetro('Edit station phase',d=>{d.offset[id]=n;}),0,metro.timetable.loop-1);}
+  for(const id of d.LINE){form.text(platform,'Station '+id+' name',d.STATIONS[id].name,name=>edit('Edit station name',d=>{d.STATIONS[id].name=name;}));form.number(platform,'Station '+id+' phase offset',metro.offset[id],n=>editMetro('Edit station phase',d=>{d.offset[id]=n;}),0,metro.timetable.loop-1);form.select(platform,'Station '+id+' lock',['',...Object.keys(d.LOCKS)],metro.locked[id]??'',lock=>editMetro('Bind station lock',m=>{if(lock)m.locked[id]=lock;else delete m.locked[id];}));}
   const train=form.section(host,'Metro ride');
   for(const key of ['dwell','close','run','open'] as const)form.number(train,'Ride '+key+' frames',metro[key],n=>editMetro('Edit metro ride timing',d=>{d[key]=n;}),1);
   form.decimal(train,'Closed-station run multiplier',metro.longRun,n=>editMetro('Edit closed-station run timing',d=>{d.longRun=n;}),1,10);

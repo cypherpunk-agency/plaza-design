@@ -261,6 +261,15 @@
     }
   },
   "HARBOR_FLAG": "harbor:open",
+  "LOCKS": {
+    "harbor-lock": {
+      "unlockedBy": "HARBOR_FLAG",
+      "destinations": [
+        "harbor"
+      ],
+      "reason": "HARBOR CLOSED · LINE 0 DOES NOT STOP"
+    }
+  },
   "SIDING_OUT": [
     "A service stair. Two hundred steps, a door marked AUTHORISED PERSONNEL, not locked.",
     "The harbor. Moth booked this stop two days ago. For me."

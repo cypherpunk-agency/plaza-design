@@ -1,4 +1,4 @@
-import {harborTransportPermission} from './access';
+import {lockedTransport} from './access';
 import {validateCitySource,type CitySourceContext} from './city-source';
 import citySource from './city.json';
 import type {AccessResult} from '../engine/gameplay/access';
@@ -150,7 +150,7 @@ export interface TravelState {
 
 /** Authored world values; scene exits remain owned by their scene documents. */
 export interface CitySource {
- version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
+ version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;LOCKS:Record<string,{unlockedBy:'HARBOR_FLAG';destinations:string[];reason:string}>;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
  LINE:Station[];STATIONS:Record<Station,{name:string;scene:SceneId;up:SceneId;at?:string}>;
  TRANSPORT:{boarding:{scene:SceneId;entrance?:string};siding:{scene:SceneId;entrance?:string}};
  HARBOR_FLAG:string;SIDING_OUT:string[];DRIVER_HARBOR:string[];
@@ -235,6 +235,17 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
  const HARBOR_FLAG = data.HARBOR_FLAG;
 
  const harborOpen = (flags: Readonly<Record<string, boolean>>) => !!flags[HARBOR_FLAG];
+
+/** Destination locks (city.json `LOCKS`): a lock holds its district, station and taxi-stand destinations shut until its world flag is set. */
+ const LOCKS = data.LOCKS;
+ /** The lock that holds this destination (district, station or taxi stand id) shut, if any. */
+ const lockOf = (destination: string) => Object.values(LOCKS).find((l) => l.destinations.includes(destination));
+ /** Is the lock open: its world flag is set. */
+ const lockOpen = (id: string, flags: Readonly<Record<string, boolean>>) => !!flags[data[LOCKS[id].unlockedBy]];
+ /** May you go to this destination, given whether its lock is open (the map's single `harborOpen` bit)? */
+ const transportPermission = (destination: string, open: boolean) => lockedTransport(lockOf(destination), open);
+ /** The same, from the saved flags. */
+ const transportAccess = (destination: string, flags: Readonly<Record<string, boolean>>) => { const lock = lockOf(destination); return lockedTransport(lock, !lock || !!flags[data[lock.unlockedBy]]); };
 
 /** The taxi driver, asked for the harbor pier while it is shut. */
 /** What you say coming up from the old siding (P14): a service stair, then the pier by the harbor's metro stairs. */
@@ -378,7 +389,7 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
 
 /** Why you cannot quick-travel to a place right now ('' if you can). */
  function placeBlocked(p: Place, st: TravelState): string {
-  const harbor=harborTransportPermission(p.district??'',st.harborOpen||placeOf(st.scene).district==='harbor'),policy=accessPolicy(p.access,st);
+  const harbor=transportPermission(p.district??'',st.harborOpen||placeOf(st.scene).district===p.district),policy=accessPolicy(p.access,st);
   const access=nativeAccess([
     {allowed:seenPlace(p,st.seen),reason:'NOT VISITED YET'},
     {allowed:!p.scenes.includes(st.scene),reason:'YOU ARE HERE'},
@@ -388,8 +399,8 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
   ]);
   return access.ok?'':access.reason;
 }
- return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
+ return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
 }
 export type CityModel=ReturnType<typeof createCityModel>;
 const shippingCity=createCityModel(citySource as unknown as CitySource);
-export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;
+export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;

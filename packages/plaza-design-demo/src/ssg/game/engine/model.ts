@@ -102,7 +102,7 @@ export interface SceneHooks {
   observe?: (event: Readonly<SceneTrace>) => void;
   /**
    * A line to show. `from`: who said it, when the model knows: the device whose verb ran
-   * (or whose effect names itself), or another speaker an effect names ('pixel'). The host
+   * (or whose effect names itself), or another speaker an effect names (the companion's). The host
    * puts it as a caption over that thing; without `from` it goes to the terminal only.
    */
   say: (line: Line, from?: string, receipt?:FeedbackReceipt) => void;

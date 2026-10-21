@@ -1,5 +1,7 @@
 # Scene companion authoring
 
+The companion itself (look, speaker, default unlock flag, modes, popup avoidance, greeting, follow tuning, default pet recipe) is the document `engine/gameplay/companion.json`; the game loop holds no companion literals. This page covers the per-scene policy.
+
 All 19 native scenes declare `scene.json` companion policy: Capsule is home, eight scenes permit following, and ten are off. The source manifest compiler projects this into the existing native `SceneDef.pixel`/`perch` API and resolved companion inputs. Scene factories no longer duplicate the policy or Capsule perch mapping. Runtime `WARM` is removed.
 
 `companion.mode` is home/along/off. Along mode reads its configured saved unlock flag (`pixel` in the original scenes); home mode remains visible without that flag. Warm resting places and home perches bind existing composition instances/anchors plus offsets through the shared manifest point resolver. Their rest modes are sleep/sun/sit. Home mapping reads one existing native string state and falls back to its declared default perch for unknown values. It adds no companion puzzle state. Capsule rules continue owning the warmth preference in `pixelAt`; rebind the controller and companion home-state references together if that state identity changes.
