@@ -17,15 +17,14 @@
       "id": "skyline-far",
       "type": "building.row",
       "props": {
+        "form": "roofs",
         "width": 2400,
         "seed": 52,
         "parallax": 0.2,
-        "minHeight": 60,
-        "maxHeight": 140,
+        "minHeight": 40,
+        "maxHeight": 80,
         "haze": 0.75,
-        "lit": 0.15,
-        "skin": "stone",
-        "low": 0.7
+        "lit": 0.3
       },
       "placement": {
         "x": 0,
@@ -38,15 +37,14 @@
       "id": "skyline-near",
       "type": "building.row",
       "props": {
+        "form": "roofs",
         "width": 2200,
         "seed": 13,
         "parallax": 0.45,
-        "minHeight": 70,
-        "maxHeight": 150,
+        "minHeight": 50,
+        "maxHeight": 100,
         "haze": 0.45,
-        "lit": 0.25,
-        "skin": "timber",
-        "low": 0.8
+        "lit": 0.35
       },
       "placement": {
         "x": 0,
@@ -73,36 +71,15 @@
       "layer": "distance"
     },
     {
-      "id": "front-0",
-      "type": "building.front",
+      "id": "house-0",
+      "type": "building.shophouse",
       "props": {
-        "width": 120,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 10,
-            "width": 50,
-            "tenant": "grocer",
-            "sign": "GREENGROCER"
-          },
-          {
-            "kind": "door",
-            "from": 76,
-            "width": 24
-          }
-        ],
+        "width": 80,
+        "floors": 1,
         "seed": 401,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
+        "goods": "tea",
+        "board": "TEA",
+        "lanterns": 3
       },
       "placement": {
         "x": 0,
@@ -112,95 +89,118 @@
       "layer": "backdrop"
     },
     {
-      "id": "front-1",
-      "type": "building.front",
+      "id": "house-1",
+      "type": "building.shophouse",
       "props": {
-        "width": 100,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "door",
-            "from": 12,
-            "width": 24
-          },
-          {
-            "kind": "glass",
-            "from": 46,
-            "width": 46,
-            "tenant": "pharmacy",
-            "sign": "APOTHECARY"
-          }
-        ],
+        "width": 64,
+        "floors": 1,
         "seed": 402,
-        "skin": "stone",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "punched",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
+        "goods": "tailor",
+        "board": "TAILOR",
+        "wall": "#232b2c"
       },
       "placement": {
-        "x": 120,
+        "x": 80,
         "h": 0
       },
       "order": 6,
       "layer": "backdrop"
     },
     {
-      "id": "front-2",
-      "type": "building.front",
+      "id": "house-2",
+      "type": "building.shophouse",
       "props": {
-        "width": 140,
-        "floors": 3,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 8,
-            "width": 56,
-            "tenant": "bar",
-            "sign": "THE LANTERN"
-          },
-          {
-            "kind": "door",
-            "from": 76,
-            "width": 24
-          },
-          {
-            "kind": "shutter",
-            "from": 108,
-            "width": 24
-          }
-        ],
+        "width": 92,
+        "floors": 2,
         "seed": 403,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
+        "goods": "lanterns",
+        "board": "LANTERNS",
+        "lanterns": 5
       },
       "placement": {
-        "x": 220,
+        "x": 144,
         "h": 0
       },
       "order": 7,
       "layer": "backdrop"
     },
     {
+      "id": "house-3",
+      "type": "building.shophouse",
+      "props": {
+        "width": 70,
+        "floors": 0,
+        "seed": 404,
+        "goods": "home",
+        "board": "",
+        "lanterns": 1,
+        "gallery": false
+      },
+      "placement": {
+        "x": 236,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "church",
+      "type": "landmark.church",
+      "props": {
+        "width": 200,
+        "seed": 3
+      },
+      "placement": {
+        "x": 314,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-4",
+      "type": "building.shophouse",
+      "props": {
+        "width": 76,
+        "floors": 1,
+        "seed": 405,
+        "goods": "shrine",
+        "board": "",
+        "lanterns": 2,
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 522,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-5",
+      "type": "building.shophouse",
+      "props": {
+        "width": 88,
+        "floors": 1,
+        "seed": 406,
+        "goods": "pottery",
+        "board": "POTTERY",
+        "lanterns": 3
+      },
+      "placement": {
+        "x": 598,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
       "id": "alley-0",
       "type": "building.alley",
       "props": {
-        "width": 44,
-        "height": 200,
-        "depth": 0.6,
+        "width": 32,
+        "height": 150,
+        "depth": 0.7,
         "light": "warm",
         "escape": "none",
         "bins": false,
@@ -210,298 +210,139 @@
         "seed": 2
       },
       "placement": {
-        "x": 360,
-        "h": 0
-      },
-      "order": 8,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-3",
-      "type": "building.front",
-      "props": {
-        "width": 110,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 8,
-            "width": 44,
-            "tenant": "laundry",
-            "sign": "WASH HOUSE"
-          },
-          {
-            "kind": "door",
-            "from": 66,
-            "width": 24
-          }
-        ],
-        "seed": 404,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
-      },
-      "placement": {
-        "x": 404,
-        "h": 0
-      },
-      "order": 9,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-4",
-      "type": "building.front",
-      "props": {
-        "width": 190,
-        "floors": 4,
-        "bays": [
-          {
-            "kind": "door",
-            "from": 80,
-            "width": 30
-          }
-        ],
-        "seed": 405,
-        "skin": "stone",
-        "density": 0.05,
-        "lit": 0.3,
-        "trim": "#a07a52",
-        "windows": "punched",
-        "roof": "cornice",
-        "escape": "none",
-        "gear": [],
-        "storey": 72,
-        "ground": 70,
-        "fascia": false,
-        "columns": 4
-      },
-      "placement": {
-        "x": 514,
-        "h": 0
-      },
-      "order": 10,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-5",
-      "type": "building.front",
-      "props": {
-        "width": 120,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 10,
-            "width": 52,
-            "tenant": "repair",
-            "sign": "CLOCKS · RADIOS"
-          },
-          {
-            "kind": "door",
-            "from": 80,
-            "width": 24
-          }
-        ],
-        "seed": 406,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
-      },
-      "placement": {
-        "x": 704,
-        "h": 0
-      },
-      "order": 11,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-6",
-      "type": "building.front",
-      "props": {
-        "width": 130,
-        "floors": 3,
-        "bays": [
-          {
-            "kind": "door",
-            "from": 10,
-            "width": 24
-          },
-          {
-            "kind": "glass",
-            "from": 44,
-            "width": 56,
-            "tenant": "noodles",
-            "sign": "SOUP"
-          }
-        ],
-        "seed": 407,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
-      },
-      "placement": {
-        "x": 824,
+        "x": 686,
         "h": 0
       },
       "order": 12,
       "layer": "backdrop"
     },
     {
-      "id": "alley-1",
-      "type": "building.alley",
+      "id": "house-6",
+      "type": "building.shophouse",
       "props": {
-        "width": 38,
-        "height": 180,
-        "depth": 0.75,
-        "light": "warm",
-        "escape": "none",
-        "bins": true,
-        "steam": false,
-        "cables": false,
-        "yard": false,
-        "seed": 6
+        "width": 96,
+        "floors": 2,
+        "seed": 407,
+        "goods": "tea",
+        "board": "SOUP",
+        "lanterns": 4
       },
       "placement": {
-        "x": 954,
+        "x": 718,
         "h": 0
       },
       "order": 13,
       "layer": "backdrop"
     },
     {
-      "id": "front-7",
-      "type": "building.front",
+      "id": "house-7",
+      "type": "building.shophouse",
       "props": {
-        "width": 120,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 8,
-            "width": 50,
-            "tenant": "pawn",
-            "sign": "BUY · SELL · MEND"
-          },
-          {
-            "kind": "door",
-            "from": 78,
-            "width": 24
-          }
-        ],
+        "width": 66,
+        "floors": 1,
         "seed": 408,
-        "skin": "stone",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "punched",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
+        "goods": "closed",
+        "board": "",
+        "lanterns": 0,
+        "wall": "#2e2a22"
       },
       "placement": {
-        "x": 992,
+        "x": 814,
         "h": 0
       },
       "order": 14,
       "layer": "backdrop"
     },
     {
-      "id": "front-8",
-      "type": "building.front",
+      "id": "house-8",
+      "type": "building.shophouse",
       "props": {
-        "width": 140,
-        "floors": 3,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 8,
-            "width": 60,
-            "tenant": "hotel",
-            "sign": "ROOMS"
-          },
-          {
-            "kind": "door",
-            "from": 90,
-            "width": 24
-          }
-        ],
+        "width": 84,
+        "floors": 1,
         "seed": 409,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
+        "goods": "tailor",
+        "board": "MEND",
+        "lanterns": 2
       },
       "placement": {
-        "x": 1112,
+        "x": 880,
         "h": 0
       },
       "order": 15,
       "layer": "backdrop"
     },
     {
-      "id": "front-9",
-      "type": "building.front",
+      "id": "house-9",
+      "type": "building.shophouse",
       "props": {
-        "width": 348,
+        "width": 100,
         "floors": 2,
-        "bays": [
-          {
-            "kind": "shutter",
-            "from": 10,
-            "width": 50
-          },
-          {
-            "kind": "door",
-            "from": 80,
-            "width": 24
-          }
-        ],
         "seed": 410,
-        "skin": "timber",
-        "density": 0.05,
-        "lit": 0.5,
-        "trim": "#a07a52",
-        "windows": "framed",
-        "roof": "tiled",
-        "escape": "none",
-        "gear": [],
-        "storey": 58,
-        "ground": 70
+        "goods": "home",
+        "board": "ROOMS",
+        "lanterns": 3,
+        "wall": "#232b2c"
       },
       "placement": {
-        "x": 1252,
+        "x": 964,
         "h": 0
       },
       "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-10",
+      "type": "building.shophouse",
+      "props": {
+        "width": 72,
+        "floors": 1,
+        "seed": 411,
+        "goods": "lanterns",
+        "board": "",
+        "lanterns": 4
+      },
+      "placement": {
+        "x": 1064,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-11",
+      "type": "building.shophouse",
+      "props": {
+        "width": 232,
+        "floors": 1,
+        "seed": 412,
+        "goods": "tea",
+        "board": "TEA",
+        "lanterns": 3
+      },
+      "placement": {
+        "x": 1136,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-12",
+      "type": "building.shophouse",
+      "props": {
+        "width": 232,
+        "floors": 2,
+        "seed": 413,
+        "goods": "pottery",
+        "board": "",
+        "lanterns": 3,
+        "wall": "#3a2c16"
+      },
+      "placement": {
+        "x": 1368,
+        "h": 0
+      },
+      "order": 19,
       "layer": "backdrop"
     },
     {
@@ -512,109 +353,14 @@
         "ground": "#0b0806",
         "edge": "#ffcf8a",
         "sheen": 0.3,
-        "cobbles": true
+        "cobbles": true,
+        "water": 80
       },
       "placement": {
         "x": 0,
         "h": 0
       },
-      "order": 17,
-      "layer": "backdrop"
-    },
-    {
-      "id": "lantern-0",
-      "type": "street.lamp",
-      "props": {
-        "style": "lantern",
-        "height": 96,
-        "count": 2,
-        "seed": 10
-      },
-      "placement": {
-        "x": 96,
-        "h": 0
-      },
-      "order": 18,
-      "layer": "backdrop"
-    },
-    {
-      "id": "lantern-1",
-      "type": "street.lamp",
-      "props": {
-        "style": "lantern",
-        "height": 96,
-        "count": 3,
-        "seed": 11
-      },
-      "placement": {
-        "x": 330,
-        "h": 0
-      },
-      "order": 19,
-      "layer": "backdrop"
-    },
-    {
-      "id": "lantern-2",
-      "type": "street.lamp",
-      "props": {
-        "style": "lantern",
-        "height": 96,
-        "count": 2,
-        "seed": 12
-      },
-      "placement": {
-        "x": 560,
-        "h": 0
-      },
       "order": 20,
-      "layer": "backdrop"
-    },
-    {
-      "id": "lantern-3",
-      "type": "street.lamp",
-      "props": {
-        "style": "lantern",
-        "height": 96,
-        "count": 3,
-        "seed": 13
-      },
-      "placement": {
-        "x": 900,
-        "h": 0
-      },
-      "order": 21,
-      "layer": "backdrop"
-    },
-    {
-      "id": "lantern-4",
-      "type": "street.lamp",
-      "props": {
-        "style": "lantern",
-        "height": 96,
-        "count": 2,
-        "seed": 14
-      },
-      "placement": {
-        "x": 1150,
-        "h": 0
-      },
-      "order": 22,
-      "layer": "backdrop"
-    },
-    {
-      "id": "lantern-5",
-      "type": "street.lamp",
-      "props": {
-        "style": "lantern",
-        "height": 96,
-        "count": 3,
-        "seed": 15
-      },
-      "placement": {
-        "x": 1380,
-        "h": 0
-      },
-      "order": 23,
       "layer": "backdrop"
     },
     {
@@ -624,52 +370,20 @@
         "style": "string",
         "width": 150,
         "count": 8,
-        "height": 120,
+        "height": 110,
         "seed": 41,
         "color": "#ffcf8a",
         "reach": 0.6
       },
       "placement": {
-        "x": 480,
+        "x": 339,
         "h": 0
       },
-      "order": 24,
+      "order": 21,
       "layer": "backdrop"
     },
     {
       "id": "sign-0",
-      "type": "sign.hanging",
-      "props": {
-        "text": "GREENS",
-        "color": "255,217,165",
-        "board": "#2a1a10",
-        "drop": 8
-      },
-      "placement": {
-        "x": 60,
-        "h": 128
-      },
-      "order": 25,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-1",
-      "type": "sign.hanging",
-      "props": {
-        "text": "THE LANTERN",
-        "color": "255,207,138",
-        "board": "#3a1810",
-        "drop": 10
-      },
-      "placement": {
-        "x": 380,
-        "h": 150
-      },
-      "order": 26,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-2",
       "type": "sign.paper",
       "props": {
         "style": "board",
@@ -683,49 +397,34 @@
         "post": true
       },
       "placement": {
-        "x": 610,
-        "h": 52
+        "x": 354,
+        "h": 44
       },
-      "order": 27,
+      "order": 22,
       "layer": "backdrop"
     },
     {
-      "id": "sign-3",
+      "id": "sign-1",
       "type": "sign.paper",
       "props": {
         "style": "board",
-        "width": 60,
+        "width": 44,
         "height": 18,
         "lines": [
           "MASS 6 AND 9"
         ],
-        "ink": "255,217,165"
+        "ink": "255,217,165",
+        "post": true
       },
       "placement": {
-        "x": 700,
-        "h": 210
+        "x": 464,
+        "h": 44
       },
-      "order": 28,
+      "order": 23,
       "layer": "backdrop"
     },
     {
-      "id": "sign-4",
-      "type": "sign.hanging",
-      "props": {
-        "text": "CLOCKS",
-        "color": "255,217,165",
-        "board": "#24160c",
-        "drop": 6
-      },
-      "placement": {
-        "x": 860,
-        "h": 128
-      },
-      "order": 29,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-5",
+      "id": "sign-2",
       "type": "sign.taped",
       "props": {
         "lines": [
@@ -734,43 +433,10 @@
         ]
       },
       "placement": {
-        "x": 1010,
-        "h": 46
+        "x": 1350,
+        "h": 40
       },
-      "order": 30,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-6",
-      "type": "sign.hanging",
-      "props": {
-        "text": "MEND",
-        "color": "255,207,138",
-        "board": "#2a1a10",
-        "drop": 8
-      },
-      "placement": {
-        "x": 1120,
-        "h": 132
-      },
-      "order": 31,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-7",
-      "type": "sign.plate",
-      "props": {
-        "text": "ROOMS",
-        "color": "255,154,74",
-        "size": 9,
-        "printed": true,
-        "bolts": false
-      },
-      "placement": {
-        "x": 1300,
-        "h": 150
-      },
-      "order": 32,
+      "order": 24,
       "layer": "backdrop"
     },
     {
@@ -789,7 +455,7 @@
         "x": 70,
         "h": 0
       },
-      "order": 33,
+      "order": 25,
       "layer": "playfield"
     },
     {
@@ -809,7 +475,7 @@
         "x": 200,
         "h": 0
       },
-      "order": 34,
+      "order": 26,
       "layer": "playfield"
     },
     {
@@ -828,7 +494,7 @@
         "x": 300,
         "h": 0
       },
-      "order": 35,
+      "order": 27,
       "layer": "playfield"
     },
     {
@@ -846,7 +512,7 @@
         "x": 430,
         "h": 0
       },
-      "order": 36,
+      "order": 28,
       "layer": "playfield"
     },
     {
@@ -864,7 +530,7 @@
         "x": 452,
         "h": 0
       },
-      "order": 37,
+      "order": 29,
       "layer": "playfield"
     },
     {
@@ -880,10 +546,10 @@
         "act": "sweep"
       },
       "placement": {
-        "x": 640,
+        "x": 374,
         "h": 0
       },
-      "order": 38,
+      "order": 30,
       "layer": "playfield"
     },
     {
@@ -899,10 +565,10 @@
         "act": "read"
       },
       "placement": {
-        "x": 700,
+        "x": 444,
         "h": 0
       },
-      "order": 39,
+      "order": 31,
       "layer": "playfield"
     },
     {
@@ -920,7 +586,7 @@
         "x": 840,
         "h": 0
       },
-      "order": 40,
+      "order": 32,
       "layer": "playfield"
     },
     {
@@ -940,7 +606,7 @@
         "x": 1000,
         "h": 0
       },
-      "order": 41,
+      "order": 33,
       "layer": "playfield"
     },
     {
@@ -960,7 +626,7 @@
         "x": 1180,
         "h": 0
       },
-      "order": 42,
+      "order": 34,
       "layer": "playfield"
     },
     {
@@ -978,7 +644,7 @@
         "x": 1320,
         "h": 0
       },
-      "order": 43,
+      "order": 35,
       "layer": "playfield"
     },
     {
@@ -997,7 +663,7 @@
         "x": 1480,
         "h": 0
       },
-      "order": 44,
+      "order": 36,
       "layer": "playfield"
     },
     {
@@ -1012,7 +678,7 @@
         "x": 520,
         "h": 0
       },
-      "order": 45,
+      "order": 37,
       "layer": "playfield"
     },
     {
@@ -1028,7 +694,7 @@
         "x": 1240,
         "h": 0
       },
-      "order": 46,
+      "order": 38,
       "layer": "playfield"
     },
     {
@@ -1041,10 +707,10 @@
         "range": 40
       },
       "placement": {
-        "x": 760,
+        "x": 404,
         "h": 0
       },
-      "order": 47,
+      "order": 39,
       "layer": "playfield"
     },
     {
@@ -1056,10 +722,10 @@
         "act": "stand"
       },
       "placement": {
-        "x": 790,
+        "x": 424,
         "h": 0
       },
-      "order": 48,
+      "order": 40,
       "layer": "playfield"
     },
     {
@@ -1070,7 +736,7 @@
         "x": 720,
         "h": 0
       },
-      "order": 49,
+      "order": 41,
       "layer": "playfield"
     }
   ]

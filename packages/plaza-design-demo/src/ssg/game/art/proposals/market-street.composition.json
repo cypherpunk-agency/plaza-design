@@ -17,14 +17,14 @@
       "id": "skyline-far",
       "type": "building.row",
       "props": {
+        "form": "stacked",
         "width": 2400,
         "seed": 31,
         "parallax": 0.2,
-        "minHeight": 160,
-        "maxHeight": 320,
+        "minHeight": 170,
+        "maxHeight": 300,
         "haze": 0.6,
-        "lit": 0.3,
-        "skin": "tenement",
+        "lit": 0.5,
         "signs": 2
       },
       "placement": {
@@ -38,15 +38,14 @@
       "id": "skyline-near",
       "type": "building.row",
       "props": {
+        "form": "stacked",
         "width": 2200,
         "seed": 8,
         "parallax": 0.5,
-        "minHeight": 100,
-        "maxHeight": 190,
+        "minHeight": 120,
+        "maxHeight": 200,
         "haze": 0.3,
-        "lit": 0.45,
-        "skin": "tenement",
-        "gap": 4,
+        "lit": 0.6,
         "signs": 3
       },
       "placement": {
@@ -65,7 +64,7 @@
         "edge": 0.14
       },
       "placement": {
-        "x": 438,
+        "x": 300,
         "h": 20,
         "parallax": 0.12
       },
@@ -73,31 +72,38 @@
       "layer": "distance"
     },
     {
-      "id": "front-0",
-      "type": "building.front",
+      "id": "stack-0",
+      "type": "building.stack",
       "props": {
-        "width": 130,
-        "floors": 5,
-        "bays": [
+        "width": 120,
+        "floors": 11,
+        "seed": 301,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 8,
-            "width": 60,
-            "tenant": "noodles"
+            "tenant": "noodles",
+            "sign": ""
           },
           {
-            "kind": "door",
-            "from": 80,
-            "width": 24
+            "tenant": "phones",
+            "sign": "SIM · UNLOCK"
           }
         ],
-        "seed": 301,
-        "skin": "tenement",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some",
-        "escape": "right"
+        "hung": [
+          {
+            "text": "HOTEL",
+            "color": "#ff3a5a",
+            "floor": 2,
+            "from": 100,
+            "vertical": true
+          },
+          {
+            "text": "KARAOKE",
+            "color": "#ff3df2",
+            "floor": 4,
+            "from": 20,
+            "vertical": true
+          }
+        ]
       },
       "placement": {
         "x": 0,
@@ -107,34 +113,31 @@
       "layer": "backdrop"
     },
     {
-      "id": "front-1",
-      "type": "building.front",
+      "id": "stack-1",
+      "type": "building.stack",
       "props": {
-        "width": 110,
-        "floors": 4,
-        "bays": [
+        "width": 96,
+        "floors": 9,
+        "seed": 302,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 6,
-            "width": 46,
-            "tenant": "phones"
-          },
-          {
-            "kind": "glass",
-            "from": 58,
-            "width": 46,
-            "tenant": "repair"
+            "tenant": "repair",
+            "sign": "FIX ANY"
           }
         ],
-        "seed": 302,
-        "skin": "brick",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some"
+        "hung": [
+          {
+            "text": "PAWN",
+            "color": "#c27bff",
+            "floor": 2,
+            "from": 70,
+            "vertical": true
+          }
+        ],
+        "wall": "#22201a"
       },
       "placement": {
-        "x": 130,
+        "x": 120,
         "h": 0
       },
       "order": 6,
@@ -144,347 +147,278 @@
       "id": "alley-0",
       "type": "building.alley",
       "props": {
-        "width": 40,
-        "height": 300,
-        "depth": 0.55,
+        "width": 34,
+        "height": 420,
+        "depth": 0.6,
         "light": "neon",
-        "escape": "left",
+        "escape": "none",
         "steam": true,
         "cables": true,
         "seed": 4
       },
       "placement": {
-        "x": 240,
+        "x": 216,
         "h": 0
       },
       "order": 7,
       "layer": "backdrop"
     },
     {
-      "id": "front-2",
-      "type": "building.front",
+      "id": "stack-2",
+      "type": "building.stack",
       "props": {
-        "width": 150,
-        "floors": 5,
-        "bays": [
+        "width": 130,
+        "floors": 12,
+        "seed": 303,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 8,
-            "width": 54,
-            "tenant": "pawn"
+            "tenant": "pawn",
+            "sign": ""
           },
           {
-            "kind": "door",
-            "from": 70,
-            "width": 24
-          },
-          {
-            "kind": "glass",
-            "from": 104,
-            "width": 40,
-            "tenant": "convenience"
+            "tenant": "convenience",
+            "sign": ""
           }
         ],
-        "seed": 303,
-        "skin": "tenement",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some"
+        "hung": [
+          {
+            "text": "CASH FOR ID",
+            "color": "#ff3a3a",
+            "floor": 3,
+            "from": 110,
+            "vertical": true
+          },
+          {
+            "text": "DOC",
+            "color": "#00ffc8",
+            "floor": 1,
+            "from": 14,
+            "vertical": true
+          }
+        ],
+        "cages": 0.8
       },
       "placement": {
-        "x": 280,
+        "x": 250,
         "h": 0
       },
       "order": 8,
       "layer": "backdrop"
     },
     {
-      "id": "front-3",
-      "type": "building.front",
+      "id": "market-hall",
+      "type": "landmark.market-hall",
       "props": {
-        "width": 96,
-        "floors": 4,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 6,
-            "width": 56,
-            "tenant": "grocer"
-          },
-          {
-            "kind": "door",
-            "from": 68,
-            "width": 24
-          }
-        ],
-        "seed": 304,
-        "skin": "panel",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some"
+        "width": 260,
+        "letters": "WET MARKET",
+        "seed": 5
       },
       "placement": {
-        "x": 430,
+        "x": 386,
         "h": 0
       },
       "order": 9,
       "layer": "backdrop"
     },
     {
-      "id": "front-4",
-      "type": "building.front",
+      "id": "stack-3",
+      "type": "building.stack",
       "props": {
-        "width": 140,
-        "floors": 5,
-        "bays": [
+        "width": 110,
+        "floors": 10,
+        "seed": 304,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 8,
-            "width": 58,
             "tenant": "bar",
             "sign": "KARAOKE"
           },
           {
-            "kind": "door",
-            "from": 76,
-            "width": 24
-          },
-          {
-            "kind": "tagged",
-            "from": 108,
-            "width": 26
+            "tenant": "grocer",
+            "sign": ""
           }
         ],
-        "seed": 305,
-        "skin": "tenement",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some",
-        "escape": "left"
+        "hung": [
+          {
+            "text": "BEDS · HOURLY",
+            "color": "#ff3a5a",
+            "floor": 3,
+            "from": 96,
+            "vertical": true
+          }
+        ],
+        "wall": "#1d2329"
       },
       "placement": {
-        "x": 526,
+        "x": 652,
         "h": 0
       },
       "order": 10,
       "layer": "backdrop"
     },
     {
-      "id": "front-5",
-      "type": "building.front",
+      "id": "alley-1",
+      "type": "building.alley",
       "props": {
-        "width": 110,
-        "floors": 0,
-        "bays": [
-          {
-            "kind": "shutter",
-            "from": 10,
-            "width": 40
-          },
-          {
-            "kind": "glass",
-            "from": 58,
-            "width": 46,
-            "tenant": "noodles",
-            "sign": "DUMPLINGS"
-          }
-        ],
-        "seed": 306,
-        "skin": "concrete",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some",
-        "roof": "flat",
-        "ground": 70,
-        "gear": [
-          "ac",
-          "vent"
-        ]
+        "width": 30,
+        "height": 380,
+        "depth": 0.7,
+        "light": "red",
+        "escape": "none",
+        "bins": true,
+        "yard": false,
+        "seed": 9
       },
       "placement": {
-        "x": 666,
+        "x": 762,
         "h": 0
       },
       "order": 11,
       "layer": "backdrop"
     },
     {
-      "id": "front-6",
-      "type": "building.front",
+      "id": "stack-4",
+      "type": "building.stack",
       "props": {
-        "width": 120,
-        "floors": 5,
-        "bays": [
+        "width": 140,
+        "floors": 13,
+        "seed": 305,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 8,
-            "width": 50,
-            "tenant": "laundry"
+            "tenant": "loans",
+            "sign": "CASH FOR ID"
           },
           {
-            "kind": "door",
-            "from": 66,
-            "width": 24
-          },
-          {
-            "kind": "glass",
-            "from": 94,
-            "width": 22,
-            "tenant": "empty",
-            "sign": "-"
+            "tenant": "laundry",
+            "sign": ""
           }
         ],
-        "seed": 307,
-        "skin": "tenement",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some"
+        "hung": [
+          {
+            "text": "MAHJONG",
+            "color": "#ffb02e",
+            "floor": 2,
+            "from": 20,
+            "vertical": true
+          },
+          {
+            "text": "DENTIST",
+            "color": "#00ffc8",
+            "floor": 5,
+            "from": 120,
+            "vertical": true
+          }
+        ],
+        "cages": 0.7
       },
       "placement": {
-        "x": 776,
+        "x": 792,
         "h": 0
       },
       "order": 12,
       "layer": "backdrop"
     },
     {
-      "id": "front-7",
-      "type": "building.front",
+      "id": "stack-5",
+      "type": "building.stack",
       "props": {
-        "width": 140,
-        "floors": 4,
-        "bays": [
+        "width": 100,
+        "floors": 8,
+        "seed": 306,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 6,
-            "width": 62,
-            "tenant": "clinic",
-            "sign": "DOC 24H"
-          },
-          {
-            "kind": "door",
-            "from": 80,
-            "width": 24
-          },
-          {
-            "kind": "shutter",
-            "from": 112,
-            "width": 22
+            "tenant": "noodles",
+            "sign": "DUMPLINGS"
           }
         ],
-        "seed": 308,
-        "skin": "brick",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some"
+        "hung": [
+          {
+            "text": "NOODLE",
+            "color": "#ff3a5a",
+            "floor": 2,
+            "from": 84,
+            "vertical": true
+          }
+        ],
+        "wall": "#2a1f22"
       },
       "placement": {
-        "x": 896,
+        "x": 932,
         "h": 0
       },
       "order": 13,
       "layer": "backdrop"
     },
     {
-      "id": "alley-1",
-      "type": "building.alley",
+      "id": "stack-6",
+      "type": "building.stack",
       "props": {
-        "width": 36,
-        "height": 260,
-        "depth": 0.7,
-        "light": "red",
-        "escape": "none",
-        "bins": true,
-        "yard": true,
-        "seed": 9
+        "width": 284,
+        "floors": 12,
+        "seed": 307,
+        "shops": [
+          {
+            "tenant": "hotel",
+            "sign": "BEDS · HOURLY"
+          }
+        ],
+        "hung": [
+          {
+            "text": "MASSAGE",
+            "color": "#c27bff",
+            "floor": 3,
+            "from": 20,
+            "vertical": true
+          },
+          {
+            "text": "TAILOR",
+            "color": "#ffb02e",
+            "floor": 6,
+            "from": 100,
+            "vertical": true
+          }
+        ]
       },
       "placement": {
-        "x": 1036,
+        "x": 1032,
         "h": 0
       },
       "order": 14,
       "layer": "backdrop"
     },
     {
-      "id": "front-8",
-      "type": "building.front",
+      "id": "stack-7",
+      "type": "building.stack",
       "props": {
-        "width": 170,
-        "floors": 5,
-        "bays": [
+        "width": 284,
+        "floors": 9,
+        "seed": 308,
+        "shops": [
           {
-            "kind": "glass",
-            "from": 8,
-            "width": 52,
-            "tenant": "loans",
-            "sign": "CASH FOR ID"
-          },
-          {
-            "kind": "door",
-            "from": 72,
-            "width": 24
-          },
-          {
-            "kind": "glass",
-            "from": 108,
-            "width": 54,
             "tenant": "phones",
-            "sign": "SIM · UNLOCK"
+            "sign": ""
+          },
+          {
+            "tenant": "convenience",
+            "sign": ""
           }
         ],
-        "seed": 309,
-        "skin": "tenement",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some"
+        "hung": [
+          {
+            "text": "GOLD",
+            "color": "#ffb02e",
+            "floor": 2,
+            "from": 30,
+            "vertical": true
+          }
+        ],
+        "wall": "#29251b",
+        "cages": 0.4
       },
       "placement": {
-        "x": 1072,
+        "x": 1316,
         "h": 0
       },
       "order": 15,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-9",
-      "type": "building.front",
-      "props": {
-        "width": 358,
-        "floors": 5,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 10,
-            "width": 60,
-            "tenant": "hotel",
-            "sign": "BEDS · HOURLY"
-          },
-          {
-            "kind": "door",
-            "from": 86,
-            "width": 24
-          }
-        ],
-        "seed": 310,
-        "skin": "tenement",
-        "density": 0.95,
-        "lit": 0.7,
-        "trim": "#e8553a",
-        "balconies": "some",
-        "escape": "right"
-      },
-      "placement": {
-        "x": 1242,
-        "h": 0
-      },
-      "order": 16,
       "layer": "backdrop"
     },
     {
@@ -500,7 +434,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 17,
+      "order": 16,
       "layer": "backdrop"
     },
     {
@@ -508,17 +442,17 @@
       "type": "street.lamp",
       "props": {
         "style": "string",
-        "width": 230,
+        "width": 200,
         "count": 14,
-        "height": 150,
+        "height": 140,
         "seed": 3,
         "reach": 0.9
       },
       "placement": {
-        "x": 10,
+        "x": 20,
         "h": 0
       },
-      "order": 18,
+      "order": 17,
       "layer": "backdrop"
     },
     {
@@ -526,17 +460,17 @@
       "type": "street.lamp",
       "props": {
         "style": "string",
-        "width": 260,
+        "width": 240,
         "count": 14,
-        "height": 168,
+        "height": 156,
         "seed": 4,
         "reach": 0.9
       },
       "placement": {
-        "x": 420,
+        "x": 396,
         "h": 0
       },
-      "order": 19,
+      "order": 18,
       "layer": "backdrop"
     },
     {
@@ -544,243 +478,68 @@
       "type": "street.lamp",
       "props": {
         "style": "string",
-        "width": 200,
+        "width": 220,
         "count": 14,
-        "height": 150,
+        "height": 140,
         "seed": 5,
         "reach": 0.9
       },
       "placement": {
-        "x": 760,
+        "x": 1180,
         "h": 0
       },
-      "order": 20,
-      "layer": "backdrop"
-    },
-    {
-      "id": "bulbs-3",
-      "type": "street.lamp",
-      "props": {
-        "style": "string",
-        "width": 260,
-        "count": 14,
-        "height": 168,
-        "seed": 6,
-        "reach": 0.9
-      },
-      "placement": {
-        "x": 1120,
-        "h": 0
-      },
-      "order": 21,
-      "layer": "backdrop"
-    },
-    {
-      "id": "bulbs-4",
-      "type": "street.lamp",
-      "props": {
-        "style": "string",
-        "width": 170,
-        "count": 14,
-        "height": 150,
-        "seed": 7,
-        "reach": 0.9
-      },
-      "placement": {
-        "x": 1420,
-        "h": 0
-      },
-      "order": 22,
+      "order": 19,
       "layer": "backdrop"
     },
     {
       "id": "sign-0",
-      "type": "sign.blade",
+      "type": "sign.screen",
       "props": {
-        "text": "NOODLE",
-        "color": "255,58,90",
-        "size": 8
-      },
-      "placement": {
-        "x": 124,
-        "h": 190
-      },
-      "order": 23,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-1",
-      "type": "sign.plate",
-      "props": {
-        "text": "FIX ANY",
-        "color": "255,176,46",
-        "size": 10
+        "kind": "menu",
+        "width": 60,
+        "height": 34,
+        "title": "TODAY",
+        "mount": "bracket"
       },
       "placement": {
         "x": 300,
         "h": 210
       },
-      "order": 24,
+      "order": 20,
       "layer": "backdrop"
     },
     {
-      "id": "sign-2",
-      "type": "sign.blade",
-      "props": {
-        "text": "PAWN",
-        "color": "194,123,255",
-        "size": 9
-      },
-      "placement": {
-        "x": 420,
-        "h": 240
-      },
-      "order": 25,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-3",
-      "type": "sign.screen",
-      "props": {
-        "kind": "menu",
-        "width": 64,
-        "height": 36,
-        "title": "TODAY",
-        "mount": "bracket"
-      },
-      "placement": {
-        "x": 520,
-        "h": 260
-      },
-      "order": 26,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-4",
-      "type": "sign.plate",
-      "props": {
-        "text": "KARAOKE",
-        "color": "255,61,242",
-        "size": 10,
-        "dead": 3
-      },
-      "placement": {
-        "x": 650,
-        "h": 190
-      },
-      "order": 27,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-5",
-      "type": "sign.icon",
-      "props": {
-        "icon": "bowl",
-        "color": "255,176,46"
-      },
-      "placement": {
-        "x": 760,
-        "h": 120
-      },
-      "order": 28,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-6",
+      "id": "sign-1",
       "type": "sign.screen",
       "props": {
         "kind": "odds",
-        "width": 70,
-        "height": 44,
+        "width": 66,
+        "height": 40,
         "title": "TONIGHT",
         "mount": "wall"
       },
       "placement": {
-        "x": 900,
-        "h": 240
+        "x": 1080,
+        "h": 220
       },
-      "order": 29,
+      "order": 21,
       "layer": "backdrop"
     },
     {
-      "id": "sign-7",
-      "type": "sign.blade",
+      "id": "sign-2",
+      "type": "sign.camera",
       "props": {
-        "text": "DOC",
-        "color": "0,255,200",
-        "size": 9
+        "phase": 2
       },
       "placement": {
-        "x": 1010,
-        "h": 230
+        "x": 636,
+        "h": 190
       },
-      "order": 30,
+      "order": 22,
       "layer": "backdrop"
     },
     {
-      "id": "sign-8",
-      "type": "sign.screen",
-      "props": {
-        "kind": "ads",
-        "width": 80,
-        "height": 40,
-        "mount": "pole",
-        "seed": 12
-      },
-      "placement": {
-        "x": 1140,
-        "h": 300
-      },
-      "order": 31,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-9",
-      "type": "sign.plate",
-      "props": {
-        "text": "CASH FOR ID",
-        "color": "255,58,58",
-        "size": 9
-      },
-      "placement": {
-        "x": 1250,
-        "h": 200
-      },
-      "order": 32,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-10",
-      "type": "sign.ticker",
-      "props": {
-        "text": "GOLD BOUGHT · ID ACCEPTED · NO QUESTIONS",
-        "color": "255,176,46",
-        "width": 110
-      },
-      "placement": {
-        "x": 1330,
-        "h": 160
-      },
-      "order": 33,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-11",
-      "type": "sign.blade",
-      "props": {
-        "text": "BEDS",
-        "color": "255,58,90",
-        "size": 9
-      },
-      "placement": {
-        "x": 1500,
-        "h": 250
-      },
-      "order": 34,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-12",
+      "id": "sign-3",
       "type": "sign.paper",
       "props": {
         "style": "paper",
@@ -793,23 +552,10 @@
         "header": "NOTICE"
       },
       "placement": {
-        "x": 230,
-        "h": 40
+        "x": 366,
+        "h": 36
       },
-      "order": 35,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-13",
-      "type": "sign.camera",
-      "props": {
-        "phase": 2
-      },
-      "placement": {
-        "x": 980,
-        "h": 300
-      },
-      "order": 36,
+      "order": 23,
       "layer": "backdrop"
     },
     {
@@ -827,7 +573,7 @@
         "x": 40,
         "h": 0
       },
-      "order": 37,
+      "order": 24,
       "layer": "playfield"
     },
     {
@@ -844,7 +590,7 @@
         "x": 110,
         "h": 0
       },
-      "order": 38,
+      "order": 25,
       "layer": "playfield"
     },
     {
@@ -861,7 +607,7 @@
         "x": 170,
         "h": 0
       },
-      "order": 39,
+      "order": 26,
       "layer": "playfield"
     },
     {
@@ -879,7 +625,7 @@
         "x": 260,
         "h": 0
       },
-      "order": 40,
+      "order": 27,
       "layer": "playfield"
     },
     {
@@ -897,7 +643,7 @@
         "x": 330,
         "h": 0
       },
-      "order": 41,
+      "order": 28,
       "layer": "playfield"
     },
     {
@@ -914,7 +660,7 @@
         "x": 470,
         "h": 0
       },
-      "order": 42,
+      "order": 29,
       "layer": "playfield"
     },
     {
@@ -928,10 +674,10 @@
         "act": "queue"
       },
       "placement": {
-        "x": 560,
+        "x": 426,
         "h": 0
       },
-      "order": 43,
+      "order": 30,
       "layer": "playfield"
     },
     {
@@ -945,10 +691,10 @@
         "act": "queue"
       },
       "placement": {
-        "x": 585,
+        "x": 448,
         "h": 0
       },
-      "order": 44,
+      "order": 31,
       "layer": "playfield"
     },
     {
@@ -962,32 +708,14 @@
         "act": "queue"
       },
       "placement": {
-        "x": 610,
+        "x": 470,
         "h": 0
       },
-      "order": 45,
+      "order": 32,
       "layer": "playfield"
     },
     {
       "id": "crowd-9",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "market",
-        "seed": 833,
-        "archetype": "punk",
-        "act": "smoke"
-      },
-      "placement": {
-        "x": 700,
-        "h": 0
-      },
-      "order": 46,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-10",
       "type": "character.resident",
       "props": {
         "kind": "human",
@@ -998,10 +726,27 @@
         "act": "vend"
       },
       "placement": {
-        "x": 800,
+        "x": 526,
         "h": 0
       },
-      "order": 47,
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-10",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 870,
+        "act": "talk"
+      },
+      "placement": {
+        "x": 586,
+        "h": 0
+      },
+      "order": 34,
       "layer": "playfield"
     },
     {
@@ -1011,14 +756,14 @@
         "kind": "human",
         "depth": "play",
         "district": "market",
-        "seed": 907,
+        "seed": 33,
         "act": "talk"
       },
       "placement": {
-        "x": 880,
+        "x": 608,
         "h": 0
       },
-      "order": 48,
+      "order": 35,
       "layer": "playfield"
     },
     {
@@ -1028,14 +773,16 @@
         "kind": "human",
         "depth": "play",
         "district": "market",
-        "seed": 33,
-        "act": "talk"
+        "seed": 944,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "mixed"
       },
       "placement": {
-        "x": 905,
+        "x": 1060,
         "h": 0
       },
-      "order": 49,
+      "order": 36,
       "layer": "playfield"
     },
     {
@@ -1046,15 +793,14 @@
         "depth": "play",
         "district": "market",
         "seed": 981,
-        "archetype": "elder",
-        "act": "sit",
-        "sitting": "mixed"
+        "act": "walk",
+        "range": -420
       },
       "placement": {
-        "x": 1060,
+        "x": 1180,
         "h": 0
       },
-      "order": 50,
+      "order": 37,
       "layer": "playfield"
     },
     {
@@ -1065,14 +811,14 @@
         "depth": "play",
         "district": "market",
         "seed": 1018,
-        "act": "walk",
-        "range": -420
+        "archetype": "fixer",
+        "act": "lean"
       },
       "placement": {
-        "x": 1180,
+        "x": 1300,
         "h": 0
       },
-      "order": 51,
+      "order": 38,
       "layer": "playfield"
     },
     {
@@ -1083,35 +829,17 @@
         "depth": "play",
         "district": "market",
         "seed": 1055,
-        "archetype": "fixer",
-        "act": "lean"
-      },
-      "placement": {
-        "x": 1300,
-        "h": 0
-      },
-      "order": 52,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-16",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "market",
-        "seed": 1092,
         "act": "argue"
       },
       "placement": {
         "x": 1380,
         "h": 0
       },
-      "order": 53,
+      "order": 39,
       "layer": "playfield"
     },
     {
-      "id": "crowd-17",
+      "id": "crowd-16",
       "type": "character.resident",
       "props": {
         "kind": "human",
@@ -1124,17 +852,17 @@
         "x": 1410,
         "h": 0
       },
-      "order": 54,
+      "order": 40,
       "layer": "playfield"
     },
     {
-      "id": "crowd-18",
+      "id": "crowd-17",
       "type": "character.resident",
       "props": {
         "kind": "human",
         "depth": "play",
         "district": "market",
-        "seed": 1166,
+        "seed": 1129,
         "archetype": "drifter",
         "act": "sleep"
       },
@@ -1142,7 +870,7 @@
         "x": 1540,
         "h": 0
       },
-      "order": 55,
+      "order": 41,
       "layer": "playfield"
     },
     {
@@ -1154,10 +882,10 @@
         "act": "play"
       },
       "placement": {
-        "x": 760,
+        "x": 356,
         "h": 0
       },
-      "order": 56,
+      "order": 42,
       "layer": "playfield"
     },
     {
@@ -1172,7 +900,7 @@
         "x": 1110,
         "h": 0
       },
-      "order": 57,
+      "order": 43,
       "layer": "playfield"
     },
     {
@@ -1188,7 +916,7 @@
         "x": 640,
         "h": 0
       },
-      "order": 58,
+      "order": 44,
       "layer": "playfield"
     },
     {
@@ -1209,7 +937,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 59,
+      "order": 45,
       "layer": "foreground"
     },
     {
@@ -1220,7 +948,7 @@
         "x": 720,
         "h": 0
       },
-      "order": 60,
+      "order": 46,
       "layer": "playfield"
     }
   ]

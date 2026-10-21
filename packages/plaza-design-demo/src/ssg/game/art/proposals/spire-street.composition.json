@@ -14,311 +14,67 @@
       "layer": "distance"
     },
     {
-      "id": "skyline-far",
-      "type": "building.row",
+      "id": "foot",
+      "type": "landmark.spire-foot",
       "props": {
-        "width": 2400,
-        "seed": 77,
-        "parallax": 0.15,
-        "minHeight": 180,
-        "maxHeight": 330,
-        "haze": 0.45,
-        "lit": 0.15,
-        "skin": "glass",
-        "minWidth": 60,
-        "maxWidth": 140,
-        "gap": 30
+        "width": 1600,
+        "portal": 700,
+        "portalWidth": 120,
+        "letters": "PLAZA CENTRAL"
       },
       "placement": {
         "x": 0,
         "h": 0
       },
       "order": 2,
-      "layer": "distance"
+      "layer": "backdrop"
     },
     {
-      "id": "skyline-near",
-      "type": "building.row",
+      "id": "checkpoint",
+      "type": "building.pavilion",
       "props": {
-        "width": 2200,
-        "seed": 5,
-        "parallax": 0.4,
-        "minHeight": 120,
-        "maxHeight": 260,
-        "haze": 0.25,
-        "lit": 0.2,
-        "skin": "glass",
-        "minWidth": 80,
-        "maxWidth": 160,
-        "gap": 40
+        "kind": "checkpoint",
+        "width": 140,
+        "height": 56,
+        "label": "IDENTIFY"
       },
       "placement": {
-        "x": 0,
+        "x": 520,
         "h": 0
       },
       "order": 3,
-      "layer": "distance"
+      "layer": "backdrop"
     },
     {
-      "id": "air-0",
-      "type": "vehicle.air",
+      "id": "elevator",
+      "type": "building.pavilion",
       "props": {
-        "kind": "shuttle",
-        "depth": "far",
-        "motion": "loop",
-        "direction": "right",
-        "speed": 0.9,
-        "lane": 2400,
-        "lights": true
+        "kind": "elevator",
+        "width": 90,
+        "height": 60,
+        "label": "SKY ELEVATOR"
       },
       "placement": {
-        "x": 200,
-        "h": 250
+        "x": 1120,
+        "h": 0
       },
       "order": 4,
-      "layer": "distance"
+      "layer": "backdrop"
     },
     {
-      "id": "air-1",
-      "type": "vehicle.air",
+      "id": "annex",
+      "type": "building.pavilion",
       "props": {
-        "kind": "escort",
-        "depth": "far",
-        "motion": "loop",
-        "direction": "left",
-        "speed": 1.4,
-        "lane": 2400,
-        "lights": true
+        "kind": "annex",
+        "width": 150,
+        "height": 52,
+        "label": "SERVICE 4"
       },
       "placement": {
-        "x": 900,
-        "h": 300
+        "x": 80,
+        "h": 0
       },
       "order": 5,
-      "layer": "distance"
-    },
-    {
-      "id": "air-2",
-      "type": "vehicle.air",
-      "props": {
-        "kind": "patrol",
-        "depth": "far",
-        "motion": "loop",
-        "direction": "right",
-        "speed": 1.1,
-        "lane": 2400,
-        "lights": true
-      },
-      "placement": {
-        "x": 1400,
-        "h": 220
-      },
-      "order": 6,
-      "layer": "distance"
-    },
-    {
-      "id": "front-0",
-      "type": "building.front",
-      "props": {
-        "width": 220,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 20,
-            "width": 120,
-            "tenant": "lobby",
-            "sign": "-"
-          },
-          {
-            "kind": "door",
-            "from": 160,
-            "width": 34
-          }
-        ],
-        "seed": 501,
-        "skin": "glass",
-        "wall": "#0a0b0e",
-        "trim": "#d8b45a",
-        "density": 0.0,
-        "lit": 0.35,
-        "roof": "flat",
-        "gear": [],
-        "escape": "none",
-        "balconies": "none",
-        "fascia": false,
-        "storey": 72,
-        "ground": 90,
-        "rooms": "cold"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 7,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-1",
-      "type": "building.front",
-      "props": {
-        "width": 260,
-        "floors": 3,
-        "bays": [
-          {
-            "kind": "door",
-            "from": 110,
-            "width": 40
-          }
-        ],
-        "seed": 502,
-        "skin": "stone",
-        "wall": "#15151a",
-        "trim": "#d8b45a",
-        "density": 0.0,
-        "lit": 0.35,
-        "roof": "cornice",
-        "gear": [],
-        "escape": "none",
-        "balconies": "none",
-        "fascia": false,
-        "storey": 72,
-        "ground": 90,
-        "rooms": "cold",
-        "windows": "punched",
-        "columns": 6
-      },
-      "placement": {
-        "x": 260,
-        "h": 0
-      },
-      "order": 8,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-2",
-      "type": "building.front",
-      "props": {
-        "width": 200,
-        "floors": 1,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 16,
-            "width": 80,
-            "tenant": "clinic",
-            "sign": "-"
-          },
-          {
-            "kind": "door",
-            "from": 120,
-            "width": 34
-          }
-        ],
-        "seed": 503,
-        "skin": "glass",
-        "wall": "#0a0b0e",
-        "trim": "#d8b45a",
-        "density": 0.0,
-        "lit": 0.35,
-        "roof": "flat",
-        "gear": [],
-        "escape": "none",
-        "balconies": "none",
-        "fascia": false,
-        "storey": 72,
-        "ground": 90,
-        "rooms": "cold"
-      },
-      "placement": {
-        "x": 580,
-        "h": 0
-      },
-      "order": 9,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-3",
-      "type": "building.front",
-      "props": {
-        "width": 240,
-        "floors": 3,
-        "bays": [
-          {
-            "kind": "glass",
-            "from": 20,
-            "width": 90,
-            "tenant": "lobby",
-            "sign": "-"
-          },
-          {
-            "kind": "door",
-            "from": 140,
-            "width": 34
-          }
-        ],
-        "seed": 504,
-        "skin": "glass",
-        "wall": "#0a0b0e",
-        "trim": "#d8b45a",
-        "density": 0.0,
-        "lit": 0.35,
-        "roof": "stepped",
-        "gear": [],
-        "escape": "none",
-        "balconies": "none",
-        "fascia": false,
-        "storey": 72,
-        "ground": 90,
-        "rooms": "cold"
-      },
-      "placement": {
-        "x": 780,
-        "h": 0
-      },
-      "order": 10,
-      "layer": "backdrop"
-    },
-    {
-      "id": "front-4",
-      "type": "building.front",
-      "props": {
-        "width": 530,
-        "floors": 2,
-        "bays": [
-          {
-            "kind": "door",
-            "from": 60,
-            "width": 40
-          },
-          {
-            "kind": "glass",
-            "from": 130,
-            "width": 120,
-            "tenant": "lobby",
-            "sign": "-"
-          }
-        ],
-        "seed": 505,
-        "skin": "glass",
-        "wall": "#0a0b0e",
-        "trim": "#d8b45a",
-        "density": 0.0,
-        "lit": 0.35,
-        "roof": "flat",
-        "gear": [],
-        "escape": "none",
-        "balconies": "none",
-        "fascia": false,
-        "storey": 72,
-        "ground": 90,
-        "rooms": "cold"
-      },
-      "placement": {
-        "x": 1070,
-        "h": 0
-      },
-      "order": 11,
       "layer": "backdrop"
     },
     {
@@ -335,7 +91,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 12,
+      "order": 6,
       "layer": "backdrop"
     },
     {
@@ -350,7 +106,7 @@
         "x": 110,
         "h": 0
       },
-      "order": 13,
+      "order": 7,
       "layer": "backdrop"
     },
     {
@@ -365,7 +121,7 @@
         "x": 330,
         "h": 0
       },
-      "order": 14,
+      "order": 8,
       "layer": "backdrop"
     },
     {
@@ -380,7 +136,7 @@
         "x": 550,
         "h": 0
       },
-      "order": 15,
+      "order": 9,
       "layer": "backdrop"
     },
     {
@@ -395,7 +151,7 @@
         "x": 770,
         "h": 0
       },
-      "order": 16,
+      "order": 10,
       "layer": "backdrop"
     },
     {
@@ -410,7 +166,7 @@
         "x": 990,
         "h": 0
       },
-      "order": 17,
+      "order": 11,
       "layer": "backdrop"
     },
     {
@@ -425,7 +181,7 @@
         "x": 1210,
         "h": 0
       },
-      "order": 18,
+      "order": 12,
       "layer": "backdrop"
     },
     {
@@ -440,72 +196,38 @@
         "x": 1430,
         "h": 0
       },
-      "order": 19,
+      "order": 13,
       "layer": "backdrop"
     },
     {
       "id": "sign-0",
-      "type": "sign.plate",
+      "type": "sign.camera",
       "props": {
-        "text": "PLAZA",
-        "color": "216,180,90",
-        "size": 7,
-        "printed": true,
-        "bolts": false
+        "pole": true
       },
       "placement": {
-        "x": 330,
-        "h": 70
+        "x": 500,
+        "h": 160
       },
-      "order": 20,
+      "order": 14,
       "layer": "backdrop"
     },
     {
       "id": "sign-1",
-      "type": "sign.plate",
+      "type": "sign.camera",
       "props": {
-        "text": "REGISTRY · LEVEL 1",
-        "color": "216,180,90",
-        "size": 6,
-        "printed": true,
-        "bolts": false
+        "pole": true,
+        "phase": 3
       },
       "placement": {
-        "x": 620,
-        "h": 90
+        "x": 900,
+        "h": 160
       },
-      "order": 21,
+      "order": 15,
       "layer": "backdrop"
     },
     {
       "id": "sign-2",
-      "type": "sign.camera",
-      "props": {
-        "pole": false
-      },
-      "placement": {
-        "x": 560,
-        "h": 200
-      },
-      "order": 22,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-3",
-      "type": "sign.camera",
-      "props": {
-        "pole": false,
-        "phase": 3
-      },
-      "placement": {
-        "x": 1180,
-        "h": 210
-      },
-      "order": 23,
-      "layer": "backdrop"
-    },
-    {
-      "id": "sign-4",
       "type": "sign.paper",
       "props": {
         "style": "board",
@@ -522,7 +244,7 @@
         "x": 980,
         "h": 40
       },
-      "order": 24,
+      "order": 16,
       "layer": "backdrop"
     },
     {
@@ -533,14 +255,14 @@
         "depth": "play",
         "district": "spire",
         "seed": 900,
-        "archetype": "plazastaff",
+        "archetype": "guard",
         "act": "stand"
       },
       "placement": {
-        "x": 260,
+        "x": 560,
         "h": 0
       },
-      "order": 25,
+      "order": 17,
       "layer": "playfield"
     },
     {
@@ -556,10 +278,10 @@
         "range": 500
       },
       "placement": {
-        "x": 700,
+        "x": 740,
         "h": 0
       },
-      "order": 26,
+      "order": 18,
       "layer": "playfield"
     },
     {
@@ -574,10 +296,10 @@
         "act": "phone"
       },
       "placement": {
-        "x": 1040,
+        "x": 1150,
         "h": 0
       },
-      "order": 27,
+      "order": 19,
       "layer": "playfield"
     },
     {
@@ -588,29 +310,30 @@
         "depth": "play",
         "district": "spire",
         "seed": 1059,
-        "archetype": "guard",
+        "archetype": "plazastaff",
         "act": "stand"
       },
       "placement": {
-        "x": 1320,
+        "x": 300,
         "h": 0
       },
-      "order": 28,
+      "order": 20,
       "layer": "playfield"
     },
     {
       "id": "bot-0",
       "type": "character.resident",
       "props": {
-        "kind": "valet",
+        "kind": "loader",
         "depth": "play",
-        "act": "stand"
+        "act": "carry",
+        "range": 200
       },
       "placement": {
         "x": 120,
         "h": 0
       },
-      "order": 29,
+      "order": 21,
       "layer": "playfield"
     },
     {
@@ -626,7 +349,7 @@
         "x": 340,
         "h": 0
       },
-      "order": 30,
+      "order": 22,
       "layer": "playfield"
     },
     {
@@ -641,23 +364,22 @@
         "x": 480,
         "h": 0
       },
-      "order": 31,
+      "order": 23,
       "layer": "playfield"
     },
     {
       "id": "bot-3",
       "type": "character.resident",
       "props": {
-        "kind": "android",
+        "kind": "marshal",
         "depth": "play",
-        "act": "carry",
-        "range": -260
+        "act": "direct"
       },
       "placement": {
         "x": 640,
         "h": 0
       },
-      "order": 32,
+      "order": 24,
       "layer": "playfield"
     },
     {
@@ -673,7 +395,7 @@
         "x": 820,
         "h": 0
       },
-      "order": 33,
+      "order": 25,
       "layer": "playfield"
     },
     {
@@ -689,7 +411,7 @@
         "x": 930,
         "h": 0
       },
-      "order": 34,
+      "order": 26,
       "layer": "playfield"
     },
     {
@@ -704,7 +426,7 @@
         "x": 1100,
         "h": 0
       },
-      "order": 35,
+      "order": 27,
       "layer": "playfield"
     },
     {
@@ -721,22 +443,22 @@
         "x": 1250,
         "h": 0
       },
-      "order": 36,
+      "order": 28,
       "layer": "playfield"
     },
     {
       "id": "bot-8",
       "type": "character.resident",
       "props": {
-        "kind": "marshal",
+        "kind": "valet",
         "depth": "play",
-        "act": "direct"
+        "act": "stand"
       },
       "placement": {
         "x": 1450,
         "h": 0
       },
-      "order": 37,
+      "order": 29,
       "layer": "playfield"
     },
     {
@@ -751,7 +473,7 @@
         "x": 1530,
         "h": 0
       },
-      "order": 38,
+      "order": 30,
       "layer": "playfield"
     },
     {
@@ -773,7 +495,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 39,
+      "order": 31,
       "layer": "backdrop"
     },
     {
@@ -795,7 +517,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 40,
+      "order": 32,
       "layer": "foreground"
     },
     {
@@ -806,7 +528,7 @@
         "x": 720,
         "h": 0
       },
-      "order": 41,
+      "order": 33,
       "layer": "playfield"
     }
   ]

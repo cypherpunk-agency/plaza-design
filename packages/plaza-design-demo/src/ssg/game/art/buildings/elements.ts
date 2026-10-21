@@ -15,6 +15,7 @@ import { BAY_KINDS, FRONT_DEFAULTS, type FrontBayKind, GEAR, ROOFS, SIDES, SKINS
 import { ROW_SKINS, paintRow, rowLook, type RowSpec } from './row';
 import * as P from './parts';
 import { TENANT_IDS } from './tenants';
+import { ROW_FORMS, paintFormRow } from './types';
 import { alleyElement } from './alley';
 
 const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
@@ -99,6 +100,7 @@ const rowFields: Record<string, Field> = {
   minWidth: num('Narrowest building', 40, 6, 1000, 1, 'units'), maxWidth: num('Widest building', 90, 6, 2000, 1, 'units'), gap: num('Gap between buildings', 8, 0, 200, 1, 'units'),
   low: num('Low walk-ups (share)', 0.3, 0, 1, 0.05), skin: select('Skins', ROW_SKINS), lit: num('Lit windows', 0.25, 0, 1, 0.05),
   haze: num('Haze (distance)', 0.35, 0, 1, 0.05), signs: num('Signs per building (at most)', 0, 0, 4),
+  form: select('Building forms (district)', ROW_FORMS),
 };
 export const rowSpec = (p: Properties): RowSpec => ({ width: Number(p.width), seed: Number(p.seed), storey: Number(p.storey), minHeight: Number(p.minHeight), maxHeight: Math.max(Number(p.minHeight), Number(p.maxHeight)),
   minWidth: Number(p.minWidth), maxWidth: Math.max(Number(p.minWidth), Number(p.maxWidth)), gap: Number(p.gap), low: Number(p.low), skin: p.skin as RowSpec['skin'], lit: Number(p.lit), haze: Number(p.haze), signs: Number(p.signs) });
@@ -112,6 +114,7 @@ export const buildingRowElement: Element = {
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
   draw(ctx, v, p, _s, _pass, at) {
     const s = rowSpec(p), par = Number(p.parallax);
+    if (p.form && p.form !== 'towers') { paintFormRow(ctx, String(p.form), s, v.t, v.lighting, dx => v.sx(at.x + dx, par), v.y(at.h), v.viewW); return; }
     paintRow(ctx, s, rowLook(s, v.t, v.lighting), dx => v.sx(at.x + dx, par), v.y(at.h), v.viewW);
   },
 };

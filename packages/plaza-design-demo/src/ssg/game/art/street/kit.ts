@@ -22,11 +22,13 @@ export const streetSurfaceElement: Element = {
     sheen: num('Wet sheen (0 dry)', 0.7, 0, 1, 0.05),
     kerb: { kind: 'boolean', label: 'Kerb line', default: true },
     cobbles: { kind: 'boolean', label: 'Cobbles', default: false },
+    water: num('Canal in front (0: none; depth below the quay)', 0, 0, 200, 1, 'units'),
     seed: num('Seed', 1, 0, 1000000),
   },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: 4 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
   draw(x, v, p, _s, _pass, at) {
+    const water = Number(p.water ?? 0);
     const a = Math.max(0, v.sx(at.x)), b = Math.min(v.viewW, v.sx(at.x + Number(p.width))), gy = v.y(at.h);
     if (b <= a) return;
     const edge = rgbOf(p.edge, '255,136,0'), sheen = Number(p.sheen);
@@ -43,6 +45,20 @@ export const streetSurfaceElement: Element = {
           const k = hash(wx * 0.37 + row * 13 + seed), sx = wx - cam + (row % 2) * size;
           x.fillStyle = k < 0.12 ? 'rgba(' + edge + ',.10)' : 'rgba(255,230,200,' + (0.025 + k * 0.025).toFixed(3) + ')';
           x.fillRect(Math.round(sx), yy, size + 2, 1 + Math.floor(row / 2));
+        }
+      }
+    }
+    if (water > 0) {
+      // the canal below the quay: dark water, the quay's stone lip, light broken up on the ripples
+      const qy = gy + 14, cam = at.x - v.sx(at.x), seed = Number(p.seed);
+      x.fillStyle = '#05080a'; x.fillRect(a, qy, b - a, v.viewH - qy);
+      x.fillStyle = '#16120e'; x.fillRect(a, qy - 2, b - a, 3); x.fillStyle = 'rgba(' + edge + ',.25)'; x.fillRect(a, qy - 2, b - a, 1);
+      for (let row = 0; row < 14; row++) {
+        const yy = qy + 4 + row * 3 + Math.floor(row * row / 6), drift = v.t * (0.12 + row * 0.01);
+        for (let wx = Math.floor((cam + a) / 23) * 23; wx < cam + b; wx += 23) {
+          const k = hash(wx * 0.11 + row * 7 + seed), len = 3 + Math.floor(k * 9), sx = wx - cam + ((drift + k * 40) % 23);
+          x.fillStyle = k < 0.3 ? 'rgba(255,170,90,' + (0.18 - row * 0.008).toFixed(3) + ')' : 'rgba(' + edge + ',' + (0.07 - row * 0.003).toFixed(3) + ')';
+          x.fillRect(Math.round(sx), yy, len, 1);
         }
       }
     }
