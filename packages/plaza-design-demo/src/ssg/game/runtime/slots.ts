@@ -2,24 +2,24 @@ import { gameStorage, gameSessionStorage, reloadRuntime } from './storage';
 /**
  * Save slots for the pause menu (menu.ts).
  *
- * The autosave (`SAVE_KEY` in level.ts) stays the "continue" state the game keeps
+ * The autosave (the play profile's save key) stays the "continue" state the game keeps
  * writing. A slot is a full copy of that save plus a few lines to show in the
  * slot list, under its own key: `access-denied-v3-slot-1` … `-3`.
  *
  * Loading a slot reloads the page: the slot's save goes into sessionStorage
- * (`RESUME_KEY`), the boot is skipped, and index.ts writes it over the autosave
+ * (the profile's resume key), the boot is skipped, and index.ts writes it over the autosave
  * and starts the game in the slot's scene before anything else can write. That
  * way every scene's runtime starts clean from the loaded save.
  */
 
-import { SAVE_KEY, SHIFT_PROTOTYPE, SUDO,DEMO_MODE } from "./mode";
+import { playProfile, profileQuery, resumeKey, saveKey, slotPrefix } from "./play-profile";
 import { type Save } from "./save";
 
 export const SLOT_COUNT = 3;
 /** Sudo mode keeps its own slots, like its own save. */
-export const slotKey = (n: number) => `access-denied-v3-${DEMO_MODE ? 'demo-' : SHIFT_PROTOTYPE ? 'harbor-shift-' : SUDO ? 'sudo-' : ''}slot-${n}`;
+export const slotKey = (n: number) => `access-denied-v3-${slotPrefix()}slot-${n}`;
 /** sessionStorage: a save to land in after the reload (LOAD GAME). */
-export const RESUME_KEY = DEMO_MODE ? 'access-denied-demo-resume-v1' : SHIFT_PROTOTYPE ? 'access-denied-harbor-shift-resume-v1' : 'access-denied-resume-v3';
+
 
 export interface Slot {
   v: 2;
@@ -68,28 +68,28 @@ export function slotLine(s: Slot): string {
 /** LOAD GAME: reload the page and land in the slot's scene with the slot's save. */
 export function resumeInto(slot: Slot) {
   try {
-    gameSessionStorage.setItem(RESUME_KEY, JSON.stringify({ scene: slot.scene, save: slot.save }));
+    gameSessionStorage.setItem(resumeKey(), JSON.stringify({ scene: slot.scene, save: slot.save }));
     reloadRuntime();
   } catch {
     // No sessionStorage: write the save now and come back through ?play.
-    try { gameStorage.setItem(SAVE_KEY, JSON.stringify(slot.save)); } catch { /* nothing to do */ }
-    location.search = DEMO_MODE?'?demo':'?play' + (slot.scene && slot.scene !== 'downtown' ? '=' + encodeURIComponent(slot.scene) : '') + (SUDO ? '&sudo' : '');
+    try { gameStorage.setItem(saveKey(), JSON.stringify(slot.save)); } catch { /* nothing to do */ }
+    location.search = profileQuery(slot.scene);
   }
 }
 
 /** Is a LOAD GAME reload waiting (boot.ts skips the boot then)? */
 export function resumePending(): boolean {
-  try { return !!gameSessionStorage.getItem(RESUME_KEY); } catch { return false; }
+  try { return !!gameSessionStorage.getItem(resumeKey()); } catch { return false; }
 }
 
 /** After a LOAD GAME reload: put the slot's save in place as the autosave and return its scene. Once. */
 export function takeResume(): string | null {
   try {
-    const raw = gameSessionStorage.getItem(RESUME_KEY);
+    const raw = gameSessionStorage.getItem(resumeKey());
     if (!raw) return null;
-    gameSessionStorage.removeItem(RESUME_KEY);
+    gameSessionStorage.removeItem(resumeKey());
     const r = JSON.parse(raw) as { scene?: string; save?: Save };
-    if (r.save && typeof r.save === 'object') gameStorage.setItem(SAVE_KEY, JSON.stringify(r.save));
-    return typeof r.scene === 'string' ? r.scene : 'downtown';
+    if (r.save && typeof r.save === 'object') gameStorage.setItem(saveKey(), JSON.stringify(r.save));
+    return typeof r.scene === 'string' ? r.scene : playProfile().home;
   } catch { return null; }
 }

@@ -4,7 +4,7 @@ import { gameStorage } from './storage';
 import type { SceneSave } from '../data/types';
 import { type ClockSave, newClock, fixClock } from "../world/clock";
 import { START_MODULES } from '../data/index';
-import { SAVE_KEY,DEMO_MODE } from './mode';
+import { playProfile, saveKey } from './play-profile';
 
 
 // ---------- save state ----------
@@ -47,14 +47,15 @@ export interface Save {
 /** A fresh player save; the title/glide hands it to the train-home opening. */
 
 export function newSave(): Save {
-  return { ...(DEMO_MODE?{scene:'shop'}:{}),handle: DEMO_MODE?'TESTER':'', tokens: DEMO_MODE?8:0, jump: false, modules: [...START_MODULES,...(DEMO_MODE?['switch.so']:[])], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: DEMO_MODE?{arrived:true,schematics:true}:{}, scenes: {}, clock: newClock() };
+  const { seed } = playProfile();
+  return { ...(seed.scene ? { scene: seed.scene } : {}), handle: seed.handle, tokens: seed.tokens, jump: false, modules: [...START_MODULES, ...seed.modules], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: Object.fromEntries(seed.flags.map(f => [f, true])), scenes: {}, clock: newClock() };
 }
 
 
 /** A stored save, with anything missing filled in from a new game. */
 export function loadSave(): Save {
   try {
-    const raw = gameStorage.getItem(SAVE_KEY);
+    const raw = gameStorage.getItem(saveKey());
     if (raw) {
       const s: Save = { ...newSave(), ...JSON.parse(raw) };
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
@@ -68,7 +69,7 @@ export function loadSave(): Save {
       const safe=(k:string)=>!['__proto__','constructor','prototype'].includes(k);
       s.gameplay=Object.fromEntries(Object.entries(s.gameplay).filter(([owner,block])=>safe(owner)&&block&&typeof block==='object'&&!Array.isArray(block)).map(([owner,block])=>[owner,Object.fromEntries(Object.entries(block).filter(([k,v])=>safe(k)&&(v===null||typeof v==='boolean'||typeof v==='string'&&v.length<=2000||typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<=Number.MAX_SAFE_INTEGER)))]));
       s.clock = fixClock(JSON.parse(raw).clock);
-      if(DEMO_MODE&&!s.modules.includes('switch.so'))s.modules.push('switch.so');
+      for(const m of playProfile().seed.modules)if(!s.modules.includes(m))s.modules.push(m);
       return s;
     }
   } catch { /* private window or blocked storage: start fresh */ }
@@ -83,7 +84,7 @@ export const ownedModules = (s: Save) => [...(s.jump ? ['legs.so'] : []), ...s.m
 export function storeSave(s: Save,prepare?:(save:Save)=>Save) {
   const total=perfBegin('save.total');
   try {let span=perfBegin('save.stringify');let raw:string;try{raw=JSON.stringify(prepare?prepare(s):s);}finally{perfEnd(span);}
-    span=perfBegin('save.write');try{gameStorage.setItem(SAVE_KEY,raw);}finally{perfEnd(span);}
+    span=perfBegin('save.write');try{gameStorage.setItem(saveKey(),raw);}finally{perfEnd(span);}
   } catch { /* not persisted */ }finally{perfEnd(total);}
 }
 

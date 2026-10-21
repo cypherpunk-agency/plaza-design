@@ -20,7 +20,7 @@ import { chipStyles } from './kind-chips';
 import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, restack } from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
-export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets'; revision: string; value: unknown }
+export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 /** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
@@ -135,7 +135,7 @@ export class ComposerModel {
     const all = [...this.expanded(documents).values()], inputs = this.validationInputs?.(all);
     const unchanged = inputs && this.validatedInputs && inputs.length === this.validatedInputs.length && inputs.every((value, i) => value === this.validatedInputs![i]);
     for (const doc of unchanged ? [] : all) {
-      if ((['gameplay','scene','fixtures','conversations','city','transport','devices','people','presets'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
+      if ((['gameplay','scene','fixtures','conversations','city','transport','devices','people','presets','profiles'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
       this.validateDocument?.(doc, all);
     }
     if (inputs) this.validatedInputs = inputs;

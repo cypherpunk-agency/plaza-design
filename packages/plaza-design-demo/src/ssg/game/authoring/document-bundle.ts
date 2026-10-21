@@ -41,7 +41,7 @@ function bounded(text: string) {
 function known(documents: readonly EditorDocument[]) {
   const result = new Map<string, EditorDocument>();
   for (const doc of documents) {
-    if (!doc.id || result.has(doc.id) || !['composition', 'timeline', 'world', 'gameplay', 'scene', 'fixtures', 'conversations', 'city', 'transport', 'devices', 'people', 'presets'].includes(doc.kind)) fail('invalid document allowlist');
+    if (!doc.id || result.has(doc.id) || !['composition', 'timeline', 'world', 'gameplay', 'scene', 'fixtures', 'conversations', 'city', 'transport', 'devices', 'people', 'presets', 'profiles'].includes(doc.kind)) fail('invalid document allowlist');
     result.set(doc.id, doc);
   }
   return result;

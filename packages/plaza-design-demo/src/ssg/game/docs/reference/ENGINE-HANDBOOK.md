@@ -236,6 +236,21 @@ pre-wired cables, hack vision and the editor treat them like any part. A level e
 mover named in its `device` field. Check with `pnpm test:game circuit-movers`; the Tower lab's lift
 and lobby sensor are the example. Words: docs/design/CIRCUIT-VOCABULARY.md.
 
+## Recipe: a way of playing (play profiles)
+
+The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: World ›
+Play profiles) declares each way of playing; runtime/play-profile.ts picks the active one from the URL
+(`?demo`, `?play=harborShift`, else the default) or the editor Play frame, and the existing game loop, save and
+slot code read it: `can('map'|'mapKey'|'deck'|'jump'|'hack'|'sudo'|'review')`, `playProfile().start/routes/
+player/guidance/clock/chrome/seed`, `saveKey()`, `resumeKey()`, `slotPrefix()`. A profile is data plus pure
+helpers; it has no state or tick of its own, and `runtime/game.ts` stays the one loop. The profile decides whether
+an ability exists (`Game.hackLocked()` is `!can('hack')` or the opening's own lock); the story still decides when it
+is locked. To add or change a way of playing, edit the document; to add an ability, add it to `ABILITIES` in
+play-profiles.ts (validated, editor checkbox appears), read it with `can()` where the loop needs it and set it in
+every profile. A new player body is one entry in `AVATAR_PAINTERS` (runtime/avatars.ts) and `AVATARS`. Private Play
+installs the pending document before it builds the game (`installPlayProfiles`). Check:
+`pnpm test:game play-profiles`.
+
 ## Choose verification by what changed
 
 Run from packages/plaza-design-demo:
@@ -263,6 +278,7 @@ isolated copies, not the working game's files or your recovery journal.
 | Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
 | Communication | communication device-reply |
 | Demo isolation | demo-district |
+| Play profiles (ways of playing) | play-profiles demo-district play-storage |
 | Editor bundles and source service | public-editor-build authoring-save public-document-bundle |
 
 Choose focused checks for routine work. Run the full suite for broad engine changes. Visual

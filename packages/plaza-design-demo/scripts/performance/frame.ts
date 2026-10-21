@@ -3,7 +3,8 @@ import {Game} from '../../src/ssg/game/runtime/game';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {defaultPlayFixture,fixtureSave,type PlayScene} from '../../src/ssg/game/authoring/play-fixtures';
 import {gameStorage,capturePrivateStorage} from '../../src/ssg/game/runtime/storage';
-import {EDITOR_PLAY,SAVE_KEY} from '../../src/ssg/game/runtime/mode';
+import {EDITOR_PLAY} from '../../src/ssg/game/runtime/mode';
+import {installPlayProfiles,saveKey,SHIPPED_PROFILES} from '../../src/ssg/game/runtime/play-profile';
 import {setOverride,weatherNow,sceneClimate} from '../../src/ssg/game/world/weather';
 import {startPerformance,stopPerformance,calibratePerformance,perfBegin,perfEnd} from '../../src/ssg/game/runtime/diagnostics/performance';
 import {SceneModel} from '../../src/ssg/game/engine/model';
@@ -37,6 +38,7 @@ window.addEventListener('message',async event=>{
   // The parent owns workload controls and reports actual activation provenance.
   const activation=w.lane==='live-game'?event.data.activation:undefined;
   if(w.lane==='live-game'&&(!activation||activation.owner!=='parent'||typeof activation.parentTrusted!=='boolean'||activation.childTrusted!==false))throw new Error('Missing parent activation provenance');
+  installPlayProfiles(SHIPPED_PROFILES,true); // the workload runs in the restricted lab world, as before
   const calibration=calibratePerformance();
   const f=defaultPlayFixture(w.scene as PlayScene);f.day=1;f.seed=3;f.minute=w.minute;f.weather=w.weather;f.clock='fixed';f.flags={'opening:jacked':true,'opening:uplink':true};
   setOverride('city',w.weather);
@@ -48,9 +50,9 @@ window.addEventListener('message',async event=>{
    for(const[to,verb]of [['lamp.lamp','on'],['fan.fan','spin']]){const result=model.connect('button.button:pressed',to,verb);if(result[2]==='err')throw new Error('Fan-out fixture refused: '+result[1]);}let last=performance.now();tick=setInterval(()=>{const now=performance.now();const token=perfBegin('host.tick','isolated-demo-model');try{model!.tick(now-last,true);last=now;}finally{perfEnd(token);}},50);
   }else{
    const save=fixtureSave(f);if(w.id==='board-cycles'){const d=SCENES.library.data!;(save.gameplay??={}).library={...d.state};save.scenes.library={goals:[],links:d.cables.map(c=>({from:c.from,to:c.to,verb:c.verb})),logic:[],board:{known:d.devices.map(d=>d.id),pos:{},offsets:{}}};}
-   gameStorage.setItem(SAVE_KEY,JSON.stringify(save));
+   gameStorage.setItem(saveKey(),JSON.stringify(save));
    const windowEl=document.querySelector<HTMLElement>('.demo-window')!;
-   game=new Game({windowEl,header:windowEl.querySelector('header')!,footer:windowEl.querySelector('footer')!,inputHost:document.getElementById('input-host')!,onExit:()=>{},setNodes:()=>{},setScene:()=>{}},SCENES,'fixed',true);
+   game=new Game({windowEl,header:windowEl.querySelector('header')!,footer:windowEl.querySelector('footer')!,inputHost:document.getElementById('input-host')!,onExit:()=>{},setNodes:()=>{},setScene:()=>{}},SCENES,'fixed');
    game.start(w.scene as PlayScene);await frames();
    const canvas=windowEl.querySelector('canvas')!;canvas.focus();
    // The fixture explicitly suppresses arrival pages by advancing them through the normal E handler.
