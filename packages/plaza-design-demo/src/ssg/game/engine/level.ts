@@ -108,15 +108,14 @@ export interface Level { source: LevelSource; state: LevelState }
 /** What the level needs from the scene's model (SceneModel): its clock, its device parts with movers, and the movers. */
 export interface MoverModel {
   now(): number;
-  devices: ReadonlyMap<string, { data: { nouns: readonly { id: string; mover?: { stops: Readonly<Record<string, number>> } }[] } }>;
-  movers: { position(key: string): number | undefined; moving(key: string): boolean; target(key: string): string | undefined; trip(key: string): { t0: number; t1: number } | undefined };
+  movers: { stopPositions(key: string): Readonly<Record<string, number>> | undefined; position(key: string): number | undefined; moving(key: string): boolean; target(key: string): string | undefined; trip(key: string): { t0: number; t1: number } | undefined };
   moveTo(dev: string, noun: string, stop: string): unknown;
 }
 /** A lift's car read from its mover: where it is, where it is heading (null: still), its doors (0 shut, 1 open). Undefined: no mover, the lift is inert. */
 function car(lift: LevelLift, m: MoverModel) {
   if (!lift.device) return undefined;
   const i = lift.device.indexOf('.'), dev = lift.device.slice(0, i), noun = lift.device.slice(i + 1), key = dev + '.' + noun;
-  const stops = m.devices.get(dev)?.data.nouns.find(n => n.id === noun)?.mover?.stops, h = m.movers.position(key), trip = m.movers.trip(key);
+  const stops = m.movers.stopPositions(key), h = m.movers.position(key), trip = m.movers.trip(key);
   if (!stops || h === undefined || !trip) return undefined;
   const moving = m.movers.moving(key), to = moving ? m.movers.target(key) : undefined, ms = lift.doorMs ?? LEVEL_DEFAULTS.doorMs, now = m.now();
   // the doors shut quickly as it sets off and open once it has stopped

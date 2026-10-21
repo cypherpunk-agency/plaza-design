@@ -5,7 +5,8 @@
     "gateOpenMs": 1000,
     "slideMs": 2500,
     "chuteDropMs": 400,
-    "bounceBackMs": 700
+    "bounceBackMs": 700,
+    "hookMs": 1000
   },
   "devices": [
     {
@@ -146,7 +147,8 @@
         "dir": {
           "arm": "down",
           "claw": "up",
-          "job.log": "left"
+          "job.log": "left",
+          "hook": "down"
         }
       },
       "nouns": [
@@ -206,6 +208,60 @@
                 "cat job.log",
                 "job.log: \"parcel for you, slot ?-? (smudged by a thumb).\""
               ]
+            }
+          }
+        },
+        {
+          "id": "hook",
+          "layer": "hardware",
+          "function": "act",
+          "mover": {
+            "wired": false,
+            "follow": "armAt",
+            "start": "home",
+            "ms": "hookMs",
+            "ease": [
+              [
+                0.05,
+                0.22
+              ],
+              [
+                0.1,
+                0.4
+              ],
+              [
+                0.2,
+                0.64
+              ],
+              [
+                0.3,
+                0.78
+              ],
+              [
+                0.5,
+                0.92
+              ],
+              [
+                0.7,
+                0.98
+              ]
+            ],
+            "stops": {
+              "home": {
+                "place": "home"
+              },
+              "A-3": {
+                "place": "A-3"
+              },
+              "B-5": {
+                "place": "B-5"
+              },
+              "C-7": {
+                "place": "C-7"
+              },
+              "chute": {
+                "place": "chute"
+              }
             }
           }
         }
@@ -448,7 +504,7 @@
     },
     "gateOpen": "yard.gateOpen",
     "slideDeadline": "yard.slide",
-    "hookEase": 0.08,
+    "hook": "crane.hook",
     "slots": {
       "home": "slot-home",
       "A-3": "A-3",

@@ -7,7 +7,8 @@
     "adBackMs": 1200,
     "trendMs": 2600,
     "signTestMs": 3000,
-    "peerMs": 700
+    "peerMs": 700,
+    "dlvSignalMs": 450
   },
   "devices": [
     {
@@ -53,13 +54,15 @@
           "scanner": "up",
           "lock": "right",
           "door": "down",
-          "deliveries.log": "left"
+          "deliveries.log": "left",
+          "beam": "up"
         },
         "vision": {
           "scanner": "up",
           "lock": "right",
           "door": "down",
-          "deliveries.log": "left"
+          "deliveries.log": "left",
+          "beam": "up"
         }
       },
       "nouns": [
@@ -80,6 +83,30 @@
                 "signatures on file: delivery robots, staff. you: no."
               ]
             }
+          }
+        },
+        {
+          "id": "beam",
+          "layer": "hardware",
+          "function": "sense",
+          "events": [
+            "enters"
+          ],
+          "milestone": {
+            "enters": "downtown.dlv.scanned"
+          },
+          "zone": {
+            "from": {
+              "spot": "gate",
+              "edge": "left",
+              "plus": -32
+            },
+            "to": {
+              "spot": "gate",
+              "edge": "right",
+              "plus": 20
+            },
+            "watch": "dlv9.chassis"
           }
         },
         {
@@ -717,7 +744,8 @@
           "wheels": "down",
           "hatch": "right",
           "speaker": "right",
-          "uplink": "up"
+          "uplink": "up",
+          "chassis": "down"
         },
         "vision": {
           "eyes": "left",
@@ -725,7 +753,8 @@
           "wheels": "down",
           "hatch": "down",
           "speaker": "down",
-          "uplink": "left"
+          "uplink": "left",
+          "chassis": "down"
         }
       },
       "nouns": [
@@ -885,6 +914,99 @@
           "layer": "hardware",
           "function": "connect",
           "link": {}
+        },
+        {
+          "id": "chassis",
+          "layer": "hardware",
+          "function": "act",
+          "events": [
+            "started",
+            "arrived",
+            "door",
+            "through",
+            "back"
+          ],
+          "milestone": {
+            "door": "downtown.dlv.door",
+            "through": "downtown.dlv.through",
+            "back": "downtown.dlv.back"
+          },
+          "mover": {
+            "wired": false,
+            "speed": "dlvSpeed",
+            "ease": "linear",
+            "start": "home",
+            "set": "dlvAt",
+            "moving": "driving",
+            "stops": {
+              "home": {
+                "spot": "dlv9"
+              },
+              "gate": {
+                "spot": "gate",
+                "edge": "right",
+                "plus": 22
+              },
+              "door": {
+                "spot": "gate"
+              },
+              "market": {
+                "spot": "gate",
+                "edge": "left",
+                "plus": -70
+              }
+            },
+            "paths": {
+              "inward": [
+                {
+                  "to": "door",
+                  "minMs": "dlvSignalMs",
+                  "event": "door"
+                },
+                {
+                  "if": "lock=open",
+                  "then": [
+                    {
+                      "to": "market",
+                      "minMs": "dlvSignalMs",
+                      "event": "through"
+                    }
+                  ],
+                  "else": [
+                    {
+                      "to": "gate",
+                      "minMs": "dlvSignalMs",
+                      "event": "back"
+                    }
+                  ]
+                }
+              ],
+              "outward": [
+                {
+                  "to": "door",
+                  "minMs": "dlvSignalMs",
+                  "event": "door"
+                },
+                {
+                  "if": "lock=open",
+                  "then": [
+                    {
+                      "to": "gate",
+                      "minMs": "dlvSignalMs",
+                      "event": "through"
+                    }
+                  ],
+                  "else": [
+                    {
+                      "to": "market",
+                      "minMs": "dlvSignalMs",
+                      "event": "back"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -1754,9 +1876,6 @@
   "controller": {
     "kind": "downtown",
     "version": 1,
-    "outside": 22,
-    "inside": 70,
-    "signalMs": 450,
     "devices": {
       "gate": "gate",
       "vehicle": "dlv9"
@@ -1764,7 +1883,7 @@
     "state": {
       "at": "dlvAt"
     },
-    "speedTuning": "dlvSpeed",
+    "mover": "dlv9.chassis",
     "visual": {
       "state": {
         "lock": "lock",

@@ -248,10 +248,11 @@ no world presence, board node or hack-vision part, no state of their own. Cables
 other (`devices.json` `cables`, or `native.wires` for scenes whose shared gameplay owns them), listed
 in the Wiring panel and checked by data/check.ts and validateNativeBindings.
 
-State a mechanism keeps for the picture (a hook that eases, a simulation, a prepared frame) has one
+State a mechanism keeps for the picture (a simulation, a prepared frame) has one
 home: `ctx.shared`, the per-built-scene map `apply` receives; binding providers read it as
-`ctx.shared` under the mechanism's exported key. If that state changes per frame, `apply` also
-returns `presentation: {prepare, capture?, restore?}`; the scene runs every mechanism's `prepare`
+`ctx.shared` under the mechanism's exported key. Anything that moves is not picture state: it is a
+Circuit mover in the model (the gantry's trolley, the van, the claw's hook) and the picture reads it. If
+such state changes per frame, `apply` also returns `presentation: {prepare, capture?, restore?}`; the scene runs every mechanism's `prepare`
 in order before painting and saves/restores the `capture`s as one record keyed by mechanism name
 (beside `signals` when the scene has presentation signals), see `composePresentations`.
 
@@ -263,12 +264,20 @@ when the change is meant to alter the scene, and say so. The Tower lab is the sm
 
 ## Recipe: something that moves, or a place that notices
 
-Give a device an `act` part with a `mover` (stops, speed, axis) or a `sense` part with a `zone`
-(from, to, watch); GAME-DATA.md "Movers" and "Zones". No code: the engine adds the verbs
-(`go <stop>`, `return`, `arm`, `disarm`) and events (`started`, `arrived`, `enters`, `leaves`), so
-pre-wired cables, hack vision and the editor treat them like any part. A level elevator rides a
-mover named in its `device` field. Check with `pnpm test:game circuit-movers`; the Tower lab's lift
-and lobby sensor are the example. Words: docs/design/CIRCUIT-VOCABULARY.md.
+Give a device an `act` part with a `mover` (stops, speed or ms, axis, ease, paths of legs) or a `sense` part
+with a `zone` (from, to, watch); GAME-DATA.md "Movers" and "Zones". No code: the engine adds the verbs
+(`go <stop>`, `return`, `arm`, `disarm`) and events (`started`, `arrived`, a leg's `event`, `enters`,
+`leaves`), so pre-wired cables, hack vision and the editor treat them like any part. A level elevator
+rides a mover named in its `device` field. Use a path for a trip of several legs (a crane's lift: over,
+down, up, across, down), a `choice` in it for a branch that reads the scene's state, `follow` for a part
+that chases a state key, `load` for what rides along (the picture reads `movers.load`), and a `milestone` on
+the part to report a leg's end or a crossing to the scene's code (a physical `input` of its `rules`). A
+stop's place may name the scene's artwork (`SceneRules.places`, which a mechanism measures from its roles) or
+a device's spot. The one thing code does is send the mover along a path (`SceneModel.runPath` in an effect); the
+picture reads `movers.place`, `position`, `load`, `lastRun`, never a copy. Scene time moves it: drive checks with
+`model.tick(ms)`. Check with `pnpm test:game circuit-movers mover-authoring motion-controller`; the Tower lab's lift and lobby sensor, the Downtown van
+(`dlv9.chassis`, `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`) and the yard's hook (`crane.hook`) are the
+examples. Words: docs/design/CIRCUIT-VOCABULARY.md.
 
 ## Recipe: a way of playing (play profiles)
 

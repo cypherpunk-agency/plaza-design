@@ -3,7 +3,6 @@ import type {DowntownDeviceState} from '../../../art/electronics/downtown-device
 import {screenLine,sceneClimate} from '../../../world/weather';
 import {downtownVisualSnapshot} from '../../controllers/downtown-visual';
 import {downtownController} from '../../controllers/motion';
-import type {SceneModel} from '../../model';
 import {manifestGeometry} from '../manifest-geometry';
 import {prepareActor} from '../actor-frame';
 import {dlvX} from '../mechanisms/vehicle-run';
@@ -46,7 +45,6 @@ function layoutOf(rows:readonly Resolved[],source:Parameters<typeof manifestGeom
  const layout={owners,masks,fronts:rows.filter(r=>r.instance.type==='downtown.front'),windows:rows.filter(r=>r.instance.type==='downtown.window'),width:manifestGeometry(source,rows,[],{groundSpawn:false}).width};
  layouts.set(rows,{source,layout});return layout;
 }
-const homeOf=(m:SceneModel)=>m.data.devices.find(d=>d.id===downtownController(m.data).devices.vehicle)!.layout!.spot!.x;
 const downtownValues=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,roles,source}=ctx,out:Record<string,Value>={},layout=layoutOf(rows,source);
  out.width=layout.width;out.weatherText=screenLine(sceneClimate(source.id));out.rain=0;out.city=true;
@@ -63,7 +61,7 @@ const downtownValues=(ctx:BindingContext):Record<string,Value>=>{
  }
  if(roles.reflection0)smearList(roles).forEach(([x,color],i)=>{out['smear.'+SMEAR_ORDER[i]+'.x']=x;out['smear.'+SMEAR_ORDER[i]+'.color']=color;});
  for(const[id,body]of Object.entries(ctx.actors))out['pose.'+id]=prepareActor(body,view) as unknown as Value;
- const model=ctx.engine?.m,hover=ctx.engine?.hover,dlv=model?dlvX(model,homeOf(model)):undefined;
+ const model=ctx.engine?.m,hover=ctx.engine?.hover,dlv=model?dlvX(model):undefined;
  for(const id of DEVICES){
   const snapshot:DowntownDeviceState={...EMPTY};
   if(model){Object.assign(snapshot,downtownVisualSnapshot(model,id));snapshot.dlvAt=String(model.get(downtownController(model.data).state.at));snapshot.visible=dlv!==null;

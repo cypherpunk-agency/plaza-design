@@ -42,6 +42,12 @@ part, `zone` only on a sense part. A part with that
 function but no block is ordinary: SWITCH is a gate without a guard, TIMER and the library's
 session timer are time parts without a clock.
 
+Anything that moves is an `act` part with a `mover` (a lift car, a crane trolley with its spreader, a
+delivery van, a claw's hook); any place that notices is a `sense` part with a `zone`. A mover's
+trip may have several legs (a `path`), each with its own time, ease and load; a leg's end, a mover's
+arrival and a zone's crossing are events like any other, and a part's `milestone` carries one of them on to
+the scene's code. Scene code never keeps a position of its own: it sends the mover, and the picture reads it.
+
 ## Layer
 
 Layer says nothing to the engine. It is what the player and the author read: a wall switch
