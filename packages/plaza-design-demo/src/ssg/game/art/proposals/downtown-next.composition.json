@@ -71,6 +71,25 @@
       "layer": "distance"
     },
     {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 404,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3.5,
+      "layer": "distance"
+    },
+    {
       "id": "tenement-0",
       "type": "market.facade",
       "props": {
@@ -183,22 +202,6 @@
       "layer": "backdrop"
     },
     {
-      "id": "tenement-8",
-      "type": "market.facade",
-      "props": {
-        "width": 166,
-        "seed": 504,
-        "parallax": 0.7,
-        "alpha": 0.5
-      },
-      "placement": {
-        "x": 1140,
-        "h": 0
-      },
-      "order": 11,
-      "layer": "backdrop"
-    },
-    {
       "id": "tenement-10",
       "type": "market.facade",
       "props": {
@@ -212,22 +215,6 @@
         "h": 0
       },
       "order": 12,
-      "layer": "backdrop"
-    },
-    {
-      "id": "tenement-11",
-      "type": "market.facade",
-      "props": {
-        "width": 127,
-        "seed": 543,
-        "parallax": 0.7,
-        "alpha": 0.5
-      },
-      "placement": {
-        "x": 1590,
-        "h": 0
-      },
-      "order": 13,
       "layer": "backdrop"
     },
     {
@@ -245,11 +232,11 @@
       "id": "front-0",
       "type": "building.front",
       "props": {
-        "width": 150,
+        "width": 104,
         "bays": [
           {
             "kind": "door",
-            "from": 116,
+            "from": 8,
             "width": 24
           }
         ],
@@ -267,6 +254,28 @@
       "layer": "backdrop"
     },
     {
+      "id": "alley-market",
+      "type": "building.alley",
+      "props": {
+        "width": 46,
+        "height": 300,
+        "depth": 0.5,
+        "light": "warm",
+        "escape": "right",
+        "bins": true,
+        "steam": true,
+        "cables": true,
+        "yard": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 104,
+        "h": 0
+      },
+      "order": 15.5,
+      "layer": "backdrop"
+    },
+    {
       "id": "front-1",
       "type": "building.front",
       "props": {
@@ -275,7 +284,8 @@
           {
             "kind": "glass",
             "from": 10,
-            "width": 56
+            "width": 56,
+            "tenant": "convenience"
           },
           {
             "kind": "door",
@@ -305,9 +315,10 @@
         "width": 150,
         "bays": [
           {
-            "kind": "tagged",
+            "kind": "glass",
             "from": 6,
-            "width": 34
+            "width": 62,
+            "tenant": "clinic"
           },
           {
             "kind": "door",
@@ -342,7 +353,8 @@
           {
             "kind": "glass",
             "from": 50,
-            "width": 64
+            "width": 64,
+            "tenant": "phones"
           }
         ],
         "skin": "tenement",
@@ -368,7 +380,8 @@
           {
             "kind": "glass",
             "from": 8,
-            "width": 54
+            "width": 54,
+            "tenant": "loans"
           },
           {
             "kind": "door",
@@ -378,7 +391,8 @@
           {
             "kind": "glass",
             "from": 104,
-            "width": 58
+            "width": 58,
+            "tenant": "pharmacy"
           }
         ],
         "skin": "panel",
@@ -423,7 +437,8 @@
           {
             "kind": "glass",
             "from": 24,
-            "width": 50
+            "width": 50,
+            "tenant": "bar"
           }
         ],
         "skin": "glass",
@@ -509,7 +524,8 @@
           {
             "kind": "glass",
             "from": 10,
-            "width": 46
+            "width": 46,
+            "tenant": "pawn"
           },
           {
             "kind": "sealed",
@@ -519,7 +535,8 @@
           {
             "kind": "glass",
             "from": 104,
-            "width": 46
+            "width": 46,
+            "tenant": "laundry"
           }
         ],
         "skin": "concrete",
@@ -552,9 +569,10 @@
         "width": 100,
         "bays": [
           {
-            "kind": "shutter",
+            "kind": "glass",
             "from": 10,
-            "width": 44
+            "width": 44,
+            "tenant": "noodles"
           },
           {
             "kind": "door",
@@ -585,7 +603,8 @@
           {
             "kind": "glass",
             "from": 8,
-            "width": 64
+            "width": 64,
+            "tenant": "hotel"
           }
         ],
         "skin": "glass",
@@ -607,6 +626,12 @@
       "props": {
         "width": 160,
         "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 58,
+            "tenant": "repair"
+          },
           {
             "kind": "tagged",
             "from": 104,

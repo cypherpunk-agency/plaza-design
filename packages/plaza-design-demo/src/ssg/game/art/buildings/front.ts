@@ -23,6 +23,7 @@ import { visible } from '../architecture/downtown-towers';
 import { adScreen } from '../signage/screens';
 import { CURTAINS, PACKS } from '../assemblies/construction';
 import * as P from './parts';
+import { TENANTS, seededTenant, shopWindow } from './tenants';
 
 export const SKINS = ['brick', 'concrete', 'tenement', 'panel', 'glass'] as const;
 export type Skin = typeof SKINS[number];
@@ -37,7 +38,8 @@ export type Gear = typeof GEAR[number];
 export const SIDES = ['auto', 'none', 'left', 'right'] as const;
 
 /** One explicit ground-floor opening: left edge, width, kind. */
-export type BaySpec = [x: number, w: number, kind: FrontBayKind];
+/** A ground-floor bay: position, width, kind; a glass bay's tenant ('auto': from the seed) and fascia name ('' the tenant's, '-' none). */
+export type BaySpec = [x: number, w: number, kind: FrontBayKind, tenant?: string, sign?: string];
 /** A rectangle in the front's frame kept free of windows: [left, right, bottom, top]. */
 export type Rect = [number, number, number, number];
 
@@ -72,7 +74,7 @@ export const FRONT_DEFAULTS: FrontSpec = {
 interface Cell { x: number; w: number; wh: number; sill: number; light: number; state: number; col: string; ac: boolean; phase: number; seed: number; plant: boolean }
 interface Shape {
   skin: Skin; windows: WindowKind; roof: Roof; fill: string; storeys: number; setback: number;
-  rows: Cell[][]; bays: { x: number; w: number; kind: FrontBayKind }[];
+  rows: Cell[][]; bays: { x: number; w: number; kind: FrontBayKind; tenant?: string; sign?: string }[];
   escape: { x: number; w: number } | null; balconies: ({ x: number; plants: boolean } | null)[];
   pipes: number[]; conduit: { h: number; riser: number; top: number; n: number } | null;
   screens: { x: number; h: number; w: number; tall: number; seed: number }[]; scanners: [number, number][];
@@ -122,13 +124,13 @@ export function shapeOf(f: FrontSpec): Shape {
   }));
   // the ground floor: explicit bays, or a seeded shop/door layout
   let bays: Shape['bays'];
-  if (f.bays !== 'auto') bays = f.bays.map(([x, w, kind]) => ({ x, w, kind }));
+  if (f.bays !== 'auto') bays = f.bays.map(([x, w, kind, tenant, sign], i) => ({ x, w, kind, tenant: kind === 'glass' ? (!tenant || tenant === 'auto' ? seededTenant(f.seed * 31 + i) : tenant) : undefined, sign }));
   else {
     const kinds: FrontBayKind[] = f.w < 70 ? ['door'] : f.w < 120 ? pick(r, [['glass', 'door'], ['door', 'shutter'], ['shutter', 'door'], ['door', 'glass']] as FrontBayKind[][])
       : pick(r, [['glass', 'door', 'glass'], ['glass', 'door'], ['shutter', 'door', 'glass'], ['door', 'glass'], ['tagged', 'door', 'shutter'], ['glass', 'glass', 'door']] as FrontBayKind[][]);
     const doors = kinds.filter(k => k === 'door').length, space = f.w - 16 - 12 * (kinds.length - 1) - doors * 24, other = Math.max(20, Math.floor(space / Math.max(1, kinds.length - doors)));
     let x = 8; bays = [];
-    for (const kind of kinds) { const w = kind === 'door' ? 24 : Math.min(other, 70); if (x + w > f.w - 6) break; bays.push({ x, w, kind: kind === 'shutter' && r() < 0.3 ? 'tagged' : kind }); x += w + 12; }
+    for (const kind of kinds) { const w = kind === 'door' ? 24 : Math.min(other, 70); if (x + w > f.w - 6) break; bays.push({ x, w, kind: kind === 'shutter' && r() < 0.3 ? 'tagged' : kind, ...(kind === 'glass' ? { tenant: seededTenant(f.seed * 31 + bays.length) } : {}) }); x += w + 12; }
   }
   const scanners: [number, number][] = [];
   for (const b of bays) if ((b.kind === 'door' || b.kind === 'sealed') && r() < 0.25 + 0.5 * d) scanners.push([b.x + b.w + 6 < f.w - 4 ? b.x + b.w + 6 : b.x - 7, 36]);
@@ -227,6 +229,12 @@ export function paintFront(x: CanvasRenderingContext2D, f: FrontSpec, o: FrontLo
   if (f.fascia && S.roof !== 'ledge' && f.ground < top) P.fascia(x, y, 0, w, f.ground);
   for (const bay of S.bays) {
     if (bay.kind === 'tagged') { P.bay(x, y, bay.x, bay.w, 'shutter'); P.tag(x, y, bay.x + Math.max(0, (bay.w - 44) / 2) - 4, 8, 1.6); }
+    else if (bay.kind === 'glass' && bay.tenant) {
+      // a rented shop: its interior, awning and its name on the fascia
+      const T = TENANTS[bay.tenant] ?? TENANTS.empty, text = bay.sign === '-' ? '' : bay.sign || T.sign;
+      shopWindow(x, y, bay.x, bay.w, bay.tenant, o.t, f.seed * 13 + bay.x, f.fascia && S.roof !== 'ledge' ? { text, fascia: f.ground - 6 } : undefined);
+      if (T.lit) o.light?.(bay.x + bay.w / 2, 30, bay.w - 4, 46, T.col, 'window');
+    }
     else P.bay(x, y, bay.x, bay.w, bay.kind);
   }
   for (const tx of S.tags) if (!S.bays.some(b => tx + 44 > b.x && tx < b.x + b.w)) P.tag(x, y, tx, 4, 1.4);

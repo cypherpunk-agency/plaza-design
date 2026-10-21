@@ -14,6 +14,8 @@ import { rng } from '../core/primitives';
 import { BAY_KINDS, FRONT_DEFAULTS, type FrontBayKind, GEAR, ROOFS, SIDES, SKINS, WINDOW_KINDS, frontAnchors, paintFront, shapeOf, wallTop, type FrontSpec, type Rect } from './front';
 import { ROW_SKINS, paintRow, rowLook, type RowSpec } from './row';
 import * as P from './parts';
+import { TENANT_IDS } from './tenants';
+import { alleyElement } from './alley';
 
 const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
 const select = (label: string, options: readonly string[], value = options[0]): Field => ({ kind: 'select', label, options: [...options], default: value });
@@ -24,12 +26,16 @@ const BAY_LABELS: Record<string, string> = { door: 'door', glass: 'shop window',
 const bayItem: Record<string, Field> = {
   kind: { kind: 'select', label: 'Bay', options: [...BAY_KINDS], default: 'door' },
   from: num('From the left', 8, 0, 2000, 1, 'units'), width: num('Width', 24, 4, 600, 1, 'units'),
+  tenant: { kind: 'select', label: 'Tenant (shop windows)', options: ['auto', ...TENANT_IDS], default: 'auto' },
+  sign: { kind: 'string', label: 'Fascia name (empty: the tenant’s, - for none)', default: '' },
 };
 /** Ground-floor bays as stored: "auto", or bays from the left (kind, from, width). */
 const validBays = (v: Value) => {
   if (v === 'auto') return;
   if (!Array.isArray(v) || !v.every(b => !!b && typeof b === 'object' && !Array.isArray(b) && (BAY_KINDS as readonly string[]).includes((b as Properties).kind as string)
-    && Number.isFinite((b as Properties).from) && Number((b as Properties).width) > 0)) throw new Error('Ground floor: expected "auto" or bays of ' + Object.values(BAY_LABELS).join(', ') + ' with a position and width');
+    && Number.isFinite((b as Properties).from) && Number((b as Properties).width) > 0
+    && ((b as Properties).tenant === undefined || (b as Properties).tenant === 'auto' || TENANT_IDS.includes((b as Properties).tenant as string))
+    && ((b as Properties).sign === undefined || typeof (b as Properties).sign === 'string'))) throw new Error('Ground floor: expected "auto" or bays of ' + Object.values(BAY_LABELS).join(', ') + ' with a position and width');
 };
 
 const frontFields: Record<string, Field> = {
@@ -58,7 +64,7 @@ const frontFields: Record<string, Field> = {
 export function frontSpec(p: Properties): FrontSpec {
   return {
     w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey) + Number(p.top), storey: Number(p.storey), ground: Number(p.ground), skin: p.skin as FrontSpec['skin'], windows: p.windows as FrontSpec['windows'],
-    columns: Number(p.columns), bays: p.bays === 'auto' ? 'auto' : (p.bays as Properties[]).map(b => [Number(b.from), Number(b.width), b.kind as FrontBayKind]), roof: p.roof as FrontSpec['roof'], gear: p.gear as FrontSpec['gear'], escape: p.escape as FrontSpec['escape'],
+    columns: Number(p.columns), bays: p.bays === 'auto' ? 'auto' : (p.bays as Properties[]).map(b => [Number(b.from), Number(b.width), b.kind as FrontBayKind, b.tenant as string | undefined, b.sign as string | undefined]), roof: p.roof as FrontSpec['roof'], gear: p.gear as FrontSpec['gear'], escape: p.escape as FrontSpec['escape'],
     balconies: p.balconies as FrontSpec['balconies'], fascia: p.fascia !== false, density: Number(p.density), lit: Number(p.lit), seed: Number(p.seed), clear: (p.clear ?? []) as Rect[],
   };
 }
@@ -135,5 +141,5 @@ export const buildingAttachmentElement: Element = {
   },
 };
 
-export const buildingElements: Element[] = [buildingFrontElement, buildingRowElement, buildingAttachmentElement];
+export const buildingElements: Element[] = [buildingFrontElement, buildingRowElement, buildingAttachmentElement, alleyElement];
 export { FRONT_DEFAULTS };
