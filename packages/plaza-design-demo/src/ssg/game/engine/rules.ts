@@ -10,7 +10,7 @@ import type {FeedbackReceipt} from './feedback-receipt';
 
 import { ENGINE } from "../data/index";
 import type { CodeContract } from '../data/check';
-import type { Value, SceneData, PartFunction } from '../data/types';
+import type { Value, SceneData, PartFunction, MechanismDevice } from '../data/types';
 import type { Ctx, Line, Spot, SceneModel } from './model';
 
 export type Vars = Record<string, string | number>;
@@ -35,6 +35,8 @@ export interface World {
 export type Effect = (w: World, c: Ctx) => Line | null | void;
 
 export interface SceneRules {
+  /** The scene's registered mechanisms as Circuit devices (cable endpoints). Set by the mechanism registry, never by a rule set itself. */
+  mechanisms?: MechanismDevice[];
   /** Finite mechanical milestones emitted by this native algorithm. */
   inputs?:readonly string[];
   /** Named effects the data may run (`{ "effect": "crane.claw" }`), besides the engine's (`timer.wait`). */
@@ -95,5 +97,6 @@ export function contractOf(r: SceneRules,routes:readonly {device:string;noun:str
     derived: [...new Set([...Object.keys(r.derived ?? {}),...queries])],
     goals: r.needs?.goals ?? [],
     texts: { ...ENGINE_TEXTS, ...(r.needs?.texts ?? {}) },
+    ...(r.mechanisms?.length ? { mechanisms: r.mechanisms } : {}),
   };
 }

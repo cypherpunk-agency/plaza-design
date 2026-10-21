@@ -55,9 +55,9 @@ const mount=(scene:string,wiring:boolean,selection:any)=>{
 const ids=deviceSourceIdentity('stacks');
 let m=mount('stacks',false,{scene:'stacks'});
 const picker=m.field('Device configuration') as any;
-assert(all(picker).some(o=>o.value==='mechanism:gantryLift'),'device picker lists the mechanism');
+assert(all(picker).some(o=>o.value==='mechanism-gantryLift'),'device picker lists the mechanism');
 // select it: parts and numbers show
-m=mount('stacks',false,{scene:'stacks',device:'mechanism:gantryLift'});
+m=mount('stacks',false,{scene:'stacks',device:'mechanism-gantryLift'});
 assert(all(m.host).some(n=>/Engine mechanism · gantryLift/.test(n.textContent)),'inspector heading');
 assert(all(m.host).some(n=>/^Mechanism part gantryLift\.effects/.test(n.textContent)),'inspector lists the effects part');
 const before=(model.get(ids.devices).value as any).controller.lift.overMs;assert.equal(before,700);
@@ -65,7 +65,7 @@ const f=m.field('Mechanism gantryLift controller.lift.overMs');f.value='777';f.o
 assert.equal((model.get(ids.devices).value as any).controller.lift.overMs,777,'the number saved into the device document');
 // capsule: a tuning value reached through the controller edits tuning, not the controller
 const cap=deviceSourceIdentity('capsule'),tuningKey=mechanismNumbers(mechanismFace('thermal')!,(model.get(cap.devices).value as any)).find(n=>n.path[0]==='tuning')!;
-m=mount('capsule',false,{scene:'capsule',device:'mechanism:thermal'});
+m=mount('capsule',false,{scene:'capsule',device:'mechanism-thermal'});
 const t=m.field('Mechanism thermal '+tuningKey.label);t.value=String(tuningKey.value+1);t.onchange!();
 assert.equal((model.get(cap.devices).value as any).tuning[tuningKey.path[1] as string],tuningKey.value+1);
 // the wiring panel lists the mechanism's parts

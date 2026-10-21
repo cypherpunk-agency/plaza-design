@@ -71,3 +71,12 @@ the inventory's reading. The changes from a plain kind mapping are the accidenta
 
 - Whether to rename the data keys `nouns`, `verbs`, `events` to `parts`, `actions`, `signals`.
 - How hack vision should show the layer beyond colour (position on the device).
+
+## Engine mechanisms as devices (2026-10-21)
+
+A registered scene mechanism (`stage.mechanisms`) is a device of the Circuit with id `mechanism-<name>`:
+its derived values are `sense` parts (signal `changed`), its effects the actions of one `act` part
+`effects`, its physical milestones the signals of one `sense` part `milestones`. A cable may start at
+any signal and end at an effect; panels are listed but not wireable. These devices are not in the world
+and hold no state: hack vision does not show them (every part is effectively hidden), the editor's
+Devices and Wiring panels do.

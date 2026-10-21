@@ -19,7 +19,7 @@ import {compileSceneActors} from './actors';
 import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources,unofferedBindings} from './binding-sources';
 import {PresentationSignals} from './presentation-signals';
 import {stageContent} from './scene-stage';
-import {SCENE_MECHANISMS,mergeRules,mechanismsRulesShape,composePresentations,type MechanismPresentation} from './scene-mechanisms';
+import {SCENE_MECHANISMS,mergeRules,mechanismsRulesShape,withMechanismDevices,composePresentations,type MechanismPresentation} from './scene-mechanisms';
 import type {CityModel} from '../../world/city';
 import type {LineSystem} from '../../world/transport/line';
 import {nativeTargetValidator,compileNativeTargets,type NativeTargetValidationContext} from './native-targets';
@@ -66,7 +66,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const compiled=compileManifestDocument(d,rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),d.manifest!.compile??{elevatedResponses:true}),roles=compiled.geometry.artwork;
  // a mechanism's rules widen what the device document may read and emit (derived values, physical milestones)
  const mechanisms=(d.stage?.mechanisms??[]).map(name=>SCENE_MECHANISMS[name]),contract=mechanismsRulesShape(d.stage?.mechanisms);
- const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay,Object.keys(contract?.derived??{}),contract?.inputs,contract?.derivedTypes);
+ const data=nativeDeviceData(projectDeviceBindings(d,rows,projectSceneState(devices??emptyData(d.id,d.name),gameplay),validated.width),gameplay,Object.keys(contract?.derived??{}),contract?.inputs,contract?.derivedTypes,contract?.mechanisms);
  // a controller's geometry names artwork by id: it must exist, and a window must be a rectangle
  for(const[role,ref]of Object.entries((data.controller as {geometry?:Record<string,unknown>}|undefined)?.geometry??{})){const row=typeof ref==='string'?rows.find(r=>r.instance.id===ref):undefined;if(!row)throw new Error('Controller geometry '+role+' names missing artwork '+String(ref));if(role==='window'&&!(Number(row.props.width)>0&&Number(row.props.height)>0))throw new Error('Controller window requires rectangle dimensions');}
  // engine targets (scene.nativeTargets) anchor to the stage's artwork roles and open the scene's engine exits
@@ -95,5 +95,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
   // mechanisms that run code each supply rules; they combine
   return{...acc,...part,...(acc.rules&&part.rules?{rules:combine(acc.rules,part.rules)}:{})};},base);
  Object.assign(built,composePresentations(presentations,signals));
+ // the rules carry the mechanisms' Circuit devices, so the model, the contracts and the editor see the same cable endpoints
+ if(built.rules&&contract?.mechanisms?.length)built.rules=withMechanismDevices(built.rules,contract.mechanisms);
  return mechanisms.some(m=>m.world)?{...built,bindWorld:services=>declaredScene(scene,composition,gameplay,options,devices,services)}:built;
 }
