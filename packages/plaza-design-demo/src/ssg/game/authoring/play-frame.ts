@@ -10,6 +10,9 @@ import {pendingRegistry} from './pending-registry';
 import {validateMetroSource} from '../world/transport/metro-source';
 import {createCityModel} from '../world/city';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
+import {validateCompanionSource} from '../engine/gameplay/companion-source';
+import {validateCritterReactions} from '../engine/gameplay/critter-reactions';
+import {validateReviewStations} from '../demo/review-stations';
 import {pendingScene} from './pending-scene';
 
 import {manifestDemoScene,validateManifestScene,validateManifestGameplay,validateManifestComposition} from '../scenes/demo-manifest';
@@ -63,7 +66,7 @@ window.addEventListener('message', async event => {
     document.documentElement.classList.add('game-mode');applyProfileChrome(document.documentElement);
     document.body.innerHTML='<section class="demo-window"><header hidden></header><footer hidden></footer><div id="input-host"></div></section>';
     const windowEl=document.querySelector<HTMLElement>('.demo-window')!;
-    game=new Game({windowEl,header:windowEl.querySelector('header')!,footer:windowEl.querySelector('footer')!,inputHost:document.getElementById('input-host')!,onExit:()=>send('quit'),setNodes:()=>{},setScene:()=>{}},districtContent??{...registry,[f.scene]:scene},f.clock,botReactions===undefined?undefined:validateBotReactions(botReactions),citySource===undefined?undefined:createCityModel(citySource,registry?{scenes:registry}:undefined),metroSource===undefined?undefined:validateMetroSource(metroSource),metroState??(freshStart?f.metro:undefined),{sequences,network:sequenceValues&&registry?validatePendingNetwork(sequenceValues,registry):undefined,companionGameplay:sequenceValues?.has('companion-gameplay')?validateCompanionGameplay(sequenceValues.get('companion-gameplay')):undefined,openingStory:sequenceValues?.has('opening-story')?pendingOpeningStory(sequenceValues,registry!):undefined});
+    game=new Game({windowEl,header:windowEl.querySelector('header')!,footer:windowEl.querySelector('footer')!,inputHost:document.getElementById('input-host')!,onExit:()=>send('quit'),setNodes:()=>{},setScene:()=>{}},districtContent??{...registry,[f.scene]:scene},f.clock,botReactions===undefined?undefined:validateBotReactions(botReactions),citySource===undefined?undefined:createCityModel(citySource,registry?{scenes:registry}:undefined),metroSource===undefined?undefined:validateMetroSource(metroSource),metroState??(freshStart?f.metro:undefined),{sequences,network:sequenceValues&&registry?validatePendingNetwork(sequenceValues,registry):undefined,companionGameplay:sequenceValues?.has('companion-gameplay')?validateCompanionGameplay(sequenceValues.get('companion-gameplay')):undefined,companion:sequenceValues?.has('companion')?validateCompanionSource(sequenceValues.get('companion')):undefined,critters:sequenceValues?.has('critter-reactions')?validateCritterReactions(sequenceValues.get('critter-reactions')):undefined,reviewStations:sequenceValues?.has('review-stations')?validateReviewStations(sequenceValues.get('review-stations')):undefined,openingStory:sequenceValues?.has('opening-story')?pendingOpeningStory(sequenceValues,registry!):undefined});
     if(matchMedia('(pointer: coarse)').matches){document.documentElement.classList.add('touch');touchControls(windowEl);}
     game.start(f.scene);
     send('running',game.inspect());

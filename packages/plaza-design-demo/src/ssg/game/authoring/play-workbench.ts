@@ -74,7 +74,7 @@ export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,sel
    form.select(metroPanel,'Metro halt',['','track','siding'],r.halt??'',halt=>change('Edit starting metro halt',s=>{s.ride.halt=halt?halt as 'track'|'siding':null;if(halt!=='siding')s.ride.doors=false;}));
    form.check(metroPanel,'Metro doors released',r.doors,value=>change('Edit starting metro doors',s=>{s.ride.doors=value;}));
    form.text(metroPanel,'Metro announcement',r.say,value=>change('Edit starting metro announcement',s=>{s.ride.say=value;}));
-   for(const station of city.LINE){if(station!=='harbor')form.check(metroPanel,'Metro stop '+station,snapshot.lineOpen[station],value=>change('Edit starting metro access',s=>{s.lineOpen[station]=value;}));form.decimal(metroPanel,'Metro platform shift '+station,snapshot.shift[station],value=>change('Edit starting platform phase',s=>{s.shift[station]=value;}),0,metroSource.timetable.loop-.000001);}
+   for(const station of city.LINE){if(!metroSource.locked[station])form.check(metroPanel,'Metro stop '+station,snapshot.lineOpen[station],value=>change('Edit starting metro access',s=>{s.lineOpen[station]=value;}));form.decimal(metroPanel,'Metro platform shift '+station,snapshot.shift[station],value=>change('Edit starting platform phase',s=>{s.shift[station]=value;}),0,metroSource.timetable.loop-.000001);}
   }
   const fixtureDocuments=currentDocuments(),vocabulary=Object.keys(NATIVE_SCENES).every(id=>fixtureDocuments.has(id))?pendingFixtureVocabulary(fixtureDocuments):undefined;
   const flags=form.section(details,'Flags');for(const id of vocabulary?[...vocabulary.flags]:fixtureFlags)form.check(flags,id,!!f.flags[id],value=>edit('Edit fixture flag',f=>{f.flags[id]=value;}));

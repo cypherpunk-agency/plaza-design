@@ -29,6 +29,11 @@ export function renderSceneStage(form:TypedForm,host:HTMLElement,d:SceneDocument
  form.select(room,'Front shade from role',[none,...roles],stage.shade?.front?.role??none,v=>stageEdit('Edit front shade',s=>{if(v===none){delete s.shade?.front;}else (s.shade??={}).front={...(s.shade.front??{}),role:v};if(s.shade&&!Object.keys(s.shade).length)delete s.shade;}));
  form.select(room,'Back shade from role',[none,...roles],stage.shade?.back?.role??none,v=>stageEdit('Edit back shade',s=>{if(v===none){delete s.shade?.back;}else (s.shade??={}).back={gaps:s.shade.back?.gaps??'shade-gap',role:v};if(s.shade&&!Object.keys(s.shade).length)delete s.shade;}));
  if(stage.shade?.back)form.text(room,'Back shade gaps (rows whose role is)',stage.shade.back.gaps,v=>stageEdit('Edit back shade gaps',s=>{if(v.trim())s.shade!.back!.gaps=v.trim();}));
+ // the deck's `reset <scene>` and sudo-only scenes
+ const reset=form.section(host,'Reset and access');
+ form.check(reset,'Deck can reset this scene',!!stage.resettable,on=>stageEdit('Toggle scene reset',s=>{if(on)s.resettable={label:'this scene',confirm:'this resets this scene only.',done:'scene reset. Everything else is kept.'};else delete s.resettable;}));
+ if(stage.resettable)for(const key of ['label','confirm','done'] as const)form.text(reset,'Reset '+key,stage.resettable[key],v=>stageEdit('Edit scene reset text',s=>{s.resettable![key]=v;}),key!=='label');
+ form.check(reset,'Only under sudo (no resume, no reset)',!!stage.sudoOnly,on=>stageEdit('Toggle sudo-only scene',s=>{if(on)s.sudoOnly=true;else delete s.sudoOnly;}));
  // engine target anchors
  const anchorBox=form.section(host,'Engine target anchors');
  for(const role of roles)form.check(anchorBox,'Targets may anchor to '+role,(stage.targetAnchors??[]).includes(role),on=>stageEdit('Edit target anchors',s=>{const list=new Set(s.targetAnchors??[]);if(on)list.add(role);else list.delete(role);if(list.size)s.targetAnchors=roles.filter(r=>list.has(r));else delete s.targetAnchors;}));

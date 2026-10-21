@@ -142,6 +142,8 @@ export interface Character {
   /** World units per frame for walkers (the player walks 1.3). */
   speed?: number;
   name?: string;
+  /** Height (world units) the person's `[E] TALK` prompt stands at; default: over their head. */
+  promptH?: number;
   talk?: string[] | string[][];
   /**
    * Lines for a time or a weather (TIME.md "Lines by time and weather"), before `talk`: the first

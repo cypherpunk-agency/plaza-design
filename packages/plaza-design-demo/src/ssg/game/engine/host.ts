@@ -137,7 +137,7 @@ export class SceneHost {
   /** Captions over the thing that reacted, and pings (scene/feedback.ts). */
   private fx: Feedback;
   private deviceAcknowledgment?:DeviceAcknowledgment;
-  /** Speakers that are not devices or targets (the game's: 'pixel'), as world points; null when not here. */
+  /** Speakers that are not devices or targets (the game's: the companion's speaker), as world points; null when not here. */
   where: (from: string) => { x: number; h: number } | null = () => null;
   /** Things the game keeps the popup away from besides the player (Pixel), as world points. */
   extras: () => { x: number; h: number }[] = () => [];
