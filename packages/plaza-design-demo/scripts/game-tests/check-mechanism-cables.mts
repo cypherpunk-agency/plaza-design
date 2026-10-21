@@ -15,6 +15,7 @@ import {pendingNetworkContext} from '../../src/ssg/game/authoring/pending-networ
 import {mechanismDeviceId} from '../../src/ssg/game/engine/gameplay/mechanism-parts';
 import {buildEventInspection} from '../../src/ssg/game/authoring/event-inspector-model';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
+import {steaming} from '../../src/ssg/game/engine/gameplay/mechanisms/thermal';
 
 const thermal=mechanismDeviceId('thermal'),gantry=mechanismDeviceId('gantryLift');
 assert.equal(thermal,'mechanism-thermal');
@@ -76,9 +77,9 @@ let m=build(cables);
 assert.equal(m.links.length,3);
 m.set('sun',false);m.input('capsule.router.onlineDue');m.tick(400,false);
 assert.equal(m.get('sun'),true,'a mechanism milestone carried by a cable ran a device verb (blinds open)');
-assert.equal(m.scratch.steamUntil,undefined);
+assert(!steaming(m),'no steam yet');
 m.emit('kettle.kettle:boiled');m.tick(400,false);
-assert(m.scratch.steamUntil>0,'a device event ran the mechanism effect through a cable (kettle steam)');
+assert(steaming(m),'a device event ran the mechanism effect through a cable (kettle steam)');
 // a derived value raises changed when it differs between ticks (the first sight only notes it)
 m.set('plugOn',false);m.tick(50,true);m.set('sun',true);m.tick(50,true);m.tick(400,false);assert.equal(m.get('sun'),true,'no change, no signal');
 m.set('plugOn',true);m.tick(50,true);m.tick(400,false);assert.equal(m.get('sun'),false,'routerUp changed: the cable closed the blinds');
