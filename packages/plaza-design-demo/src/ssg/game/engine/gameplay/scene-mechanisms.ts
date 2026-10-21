@@ -30,17 +30,39 @@ import type {LineSystem} from '../../world/transport/line';
  * city and line system (SceneDef.bindWorld), which its binding providers then read (ctx.world).
  */
 /**
- * `world`: the city and line system the game bound (absent until it does). `shared`: state this one
- * built scene keeps for its mechanisms and binding providers (a prepared frame, a simulation);
- * the same map reaches the providers as BindingContext.shared.
+ * `world`: the city and line system the game bound (absent until it does). `shared`: the one store of
+ * state this built scene keeps for its mechanisms and binding providers (a prepared frame, a
+ * simulation, a hook that eases); it reaches the providers as BindingContext.shared. A mechanism
+ * keeps its state under its own name (or a key it exports) and, if that state is the picture's,
+ * returns a `presentation` from `apply` so the scene prepares, saves and restores it.
  */
 export interface SceneMechanismContext {composition:Composition;environment(view:View,engine?:EngineDraw):Environment;scene:SceneDocument;gameplay:GameplayDefinition;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;width:number;content:SceneDef;actors:Readonly<Record<string,Character>>;world?:{city:CityModel;metro:LineSystem};shared:Map<string,unknown>}
 /**
- * A mechanism's picture-side state (a hook that eases toward its target): one per scene, made when the scene is built.
- * Binding providers read `state` (BindingContext.presentation[mechanism]); the scene prepares it once per frame and
- * captures/restores it for isolated previews.
+ * How a mechanism's picture-side state (a hook easing toward its target, a skyline simulation, a
+ * prepared car frame) joins the scene. `prepare` runs once per all/devices pass, in mechanism order,
+ * before painting; `capture`/`restore` (both or neither) save and restore it for isolated previews.
+ * The scene's capture is one record keyed by mechanism name (plus `signals` when the scene also has
+ * presentation signals); restore needs exactly those keys.
  */
-export interface MechanismPresentation<S=unknown> {state:S;prepare(view:View,engine:EngineDraw):void;capture():Value;restore(value:Value):void}
+export interface MechanismPresentation {prepare(view:View,engine:EngineDraw):void;capture?():Value;restore?(value:Value):void}
+/** What `apply` returns: SceneDef fields, and optionally the mechanism's presentation. */
+export type MechanismResult=Partial<SceneDef>&{presentation?:MechanismPresentation};
+/** The SceneDef fields (preparePresentation, presentationState) that run the mechanisms' presentations, composed with the scene's presentation signals when it has any. */
+export function composePresentations(parts:readonly(readonly[string,MechanismPresentation])[],signals?:{capture():Value;restore(value:Value):void}):Partial<SceneDef>{
+ const saved=parts.filter(([,p])=>p.capture&&p.restore);
+ return{
+  ...(parts.length?{preparePresentation:(view:View,engine:EngineDraw)=>{for(const[,p]of parts)p.prepare(view,engine);}}:{}),
+  ...(saved.length?{presentationState:{
+   capture:():Value=>({...(signals?{signals:signals.capture()}:{}),...Object.fromEntries(saved.map(([name,p])=>[name,p.capture!()]))}),
+   restore:(value:Value)=>{
+    const keys=[...(signals?['signals']:[]),...saved.map(([name])=>name)];
+    if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).length!==keys.length||keys.some(k=>!Object.prototype.hasOwnProperty.call(value,k)))throw new Error('Invalid presentation state: expects '+keys.join(', '));
+    const record=value as Record<string,Value>;
+    signals?.restore(record.signals);for(const[name,p]of saved)p.restore!(record[name]);
+   },
+  }}:signals?{presentationState:signals}:{}),
+ };
+}
 export interface SceneMechanism {
  label:string;
  /** Artwork roles (manifest.artwork) the scene must name. */
@@ -51,11 +73,9 @@ export interface SceneMechanism {
  ownsRoom?:boolean;
  /** The scene's engine targets (scene.json nativeTargets) may use the `reset` step. */
  targetReset?:boolean;
- apply(ctx:SceneMechanismContext):Partial<SceneDef>;
+ apply(ctx:SceneMechanismContext):MechanismResult;
  /** Artwork rows an engine target may anchor to that the mechanism's own data names (a controller's geometry), beside the scene's artwork roles. */
  anchors?(ctx:{data:SceneData;rows:readonly Resolved[]}):Readonly<Record<string,Resolved>>;
- /** Picture-side state, if the mechanism keeps any (at most one such mechanism per scene). */
- presentation?(ctx:Pick<SceneMechanismContext,'scene'|'gameplay'|'rows'|'roles'>&{data:SceneData}):MechanismPresentation;
  /**
   * A mechanism that runs code supplies `SceneDef.rules` (and `panels`) from `apply`; several
   * combine (mergeRules). `rulesShape` is the same rules with default geometry: what the device

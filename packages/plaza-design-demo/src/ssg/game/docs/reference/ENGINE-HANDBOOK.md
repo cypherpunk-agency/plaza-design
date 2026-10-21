@@ -167,14 +167,20 @@ registers it: validation and the editor read the same table.
 
 **A mechanism** is what a scene takes from the engine beyond its documents: SceneDef fields, `rules`
 and `panels` (several are merged, `mergeRules`; a name defined twice is refused), `anchors` for engine
-targets, picture-side `presentation` state and a world binding (`world: true` rebuilds the scene with
+targets, picture-side state and a world binding (`world: true` rebuilds the scene with
 the city and line system). Add engine/gameplay/mechanisms/<name>.ts exporting a `SceneMechanism`
-(`label`, `requires` artwork roles, `world`, `apply`, optionally `rulesShape`, `check`, `anchors`,
-`presentation`), add one line to `SCENE_MECHANISMS` in engine/gameplay/scene-mechanisms.ts, and list
+(`label`, `requires` artwork roles, `world`, `apply`, optionally `rulesShape`, `check`, `anchors`), add one line to `SCENE_MECHANISMS` in engine/gameplay/scene-mechanisms.ts, and list
 the name in `stage.mechanisms`. The editor checkbox appears from the registry. Current set: transitPlatform,
 citySkyline, lineRide, gantryLift, dockworkerCarry, devicePulse, targetReset, sandboxBay, yardCrane,
 thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
 fixed value, a light or a shade line is stage data, not a mechanism.
+
+State a mechanism keeps for the picture (a hook that eases, a simulation, a prepared frame) has one
+home: `ctx.shared`, the per-built-scene map `apply` receives; binding providers read it as
+`ctx.shared` under the mechanism's exported key. If that state changes per frame, `apply` also
+returns `presentation: {prepare, capture?, restore?}`; the scene runs every mechanism's `prepare`
+in order before painting and saves/restores the `capture`s as one record keyed by mechanism name
+(beside `signals` when the scene has presentation signals), see `composePresentations`.
 
 **Parity.** When a scene's compiled shape or picture should not change (a migration, a refactor of a
 provider or mechanism), record its fingerprint first: `npx tsx scripts/scene-parity-record.mts <id>`
