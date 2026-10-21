@@ -9,7 +9,7 @@ for(const name of ['localStorage','sessionStorage'])Object.defineProperty(global
 Object.defineProperty(globalThis,'location',{value:{search:'?play=harborShift',reload(){reloads++;}},configurable:true});
 target.addEventListener('editor-runtime-reload',()=>reloads++);
 const {gameStorage,gameSessionStorage,reloadRuntime,capturePrivateStorage,restorePrivateStorage}=await import('../../src/ssg/game/runtime/storage');
-const {EDITOR_PLAY,SAVE_KEY}=await import('../../src/ssg/game/runtime/mode');
+const {EDITOR_PLAY}=await import('../../src/ssg/game/runtime/mode');const {saveKey}=await import('../../src/ssg/game/runtime/play-profile');const SAVE_KEY=saveKey();
 const {loadSave,newSave,storeSave}=await import('../../src/ssg/game/runtime/save');
 const {writeSlot,readSlot,resumeInto,takeResume}=await import('../../src/ssg/game/runtime/slots');
 assert.equal(EDITOR_PLAY,!native);

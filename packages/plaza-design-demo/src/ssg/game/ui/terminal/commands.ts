@@ -2,7 +2,7 @@ import { gameStorage, reloadRuntime } from '../../runtime/storage';
 /** Extracted commands responsibilities; function bodies and stored identifiers are preserved. */
 import { type Save, ownedModules, who, nodeCount } from '../../runtime/save';
 import { contactsOf, messagesOf, readFlag } from "../../story/contacts";
-import { SAVE_KEY } from '../../runtime/mode';
+import { saveKey } from '../../runtime/play-profile';
 
 
 // ---------- terminal ----------
@@ -191,7 +191,7 @@ export function run(c: Ctx, line: string) {
     case 'clear': c.clear(); return;
     case 'exit': case 'logout': c.leaveMachine(); return;
     case 'reset':
-      if (args[0] === '--yes') { gameStorage.removeItem(SAVE_KEY); reloadRuntime(); return; }
+      if (args[0] === '--yes') { gameStorage.removeItem(saveKey()); reloadRuntime(); return; }
       if ((args[0] || '').toLowerCase() === 'yard') {
         if (args[1] === '--yes') { c.resetYard(); c.print('back yard reset: cables, parts, the parcel, HINGE\'s mood. Everything else is kept.', 'ok'); return; }
         c.print('this resets the back yard only (cables, parts, the parcel, its goals). Type: reset yard --yes', 'err'); return;

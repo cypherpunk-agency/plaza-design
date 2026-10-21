@@ -5,7 +5,7 @@ import type {Condition,GameplayDefinition} from '../engine/gameplay/types';
 import type {Line} from '../engine/index';
 import type {Station} from '../world/city';
 import type {Handoff} from '../art/core/timeline';
-import {SHIFT_PROTOTYPE,SUDO} from '../runtime/mode';
+import {SUDO} from '../runtime/mode';
 export type OpeningWorkflow='home'|'street'|'flat'|'slept'|'uplink'|'jacked';
 export type OpeningState='home'|'flat'|'deleted'|'uplinked'|'free';
 export type PerScene<T>=Partial<Record<OpeningState,Record<string,T>>>;
@@ -108,7 +108,7 @@ export function createOpeningModel(value:unknown,context?:OpeningSourceContext){
  const openingResumeDestination=(f:Flags)=>{const rule=source.PHASES[openingState(f)].resume.find(r=>!r.whenFlag||f[r.whenFlag]);return rule?{...rule.destination}:null;};
  return{...source,source,resolveTarget:resolveOpeningTarget,OPENING_FLAGS:Object.values(OPENING),OPENING_INTRO:Object.fromEntries(Object.entries(source.OPENING_INTRO).map(([phase,rows])=>[phase,Object.fromEntries(Object.entries(rows!).map(([scene,row])=>[scene,{speaker:row.speaker,height:row.height,...(row.consume!==undefined?{consume:row.consume}:{}),lines:(touch:boolean)=>[...(touch?row.touchPages??row.pages:row.pages)]}]))])) as PerScene<{lines:(touch:boolean)=>string[];consume?:boolean;speaker:string;height:number}>,
  UPLINK_LINES:(touch:boolean)=>[...(touch?source.UPLINK_LINES.touchPages:source.UPLINK_LINES.pages)],openingState,openingResumeDestination,openingResume:(f:Flags)=>openingResumeDestination(f)?.scene??null,
- openingLevel:(id:string)=>source.OPENING_LEVELS.find(l=>l.id===id),hackLocked:(f:Flags)=>SHIFT_PROTOTYPE?true:SUDO?false:source.PHASES[openingState(f)].hackLocked,isBefore:(f:Flags)=>source.PHASES[openingState(f)].before,
+ openingLevel:(id:string)=>source.OPENING_LEVELS.find(l=>l.id===id),hackLocked:(f:Flags)=>SUDO?false:source.PHASES[openingState(f)].hackLocked,isBefore:(f:Flags)=>source.PHASES[openingState(f)].before,
  isPinned:(f:Flags)=>source.PHASES[openingState(f)].pinned};
 }
 export type OpeningStoryModel=ReturnType<typeof createOpeningModel>;

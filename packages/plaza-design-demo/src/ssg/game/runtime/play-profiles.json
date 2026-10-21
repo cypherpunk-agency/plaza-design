@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "id": "demo",
+      "label": "Test District",
+      "select": {"url": {"param": "demo"}, "editorRestricted": true},
+      "home": "downtown",
+      "start": {"scene": "shop", "title": false, "urlScene": false},
+      "routes": "content",
+      "world": "testDistrict",
+      "namespace": {"save": "access-denied-demo-v1", "resume": "access-denied-demo-resume-v1", "slots": "demo-"},
+      "abilities": {"map": true, "mapKey": false, "deck": true, "jump": true, "hack": true, "sudo": true, "review": true},
+      "player": {"avatar": "hacker"},
+      "guidance": {"style": "shift", "controlHints": false},
+      "clock": {"rule": "opening"},
+      "chrome": {"minimalHud": true},
+      "seed": {"scene": "shop", "handle": "TESTER", "tokens": 8, "modules": ["switch.so"], "flags": ["arrived", "schematics"]}
+    },
+    {
+      "id": "harborShift",
+      "label": "Harbor shift",
+      "select": {"url": {"param": "play", "value": "harborShift"}, "editorFrame": "access-denied-editor-play"},
+      "home": "downtown",
+      "start": {"scene": "harborShift", "title": true, "urlScene": true},
+      "routes": "start",
+      "world": "campaign",
+      "namespace": {"save": "access-denied-harbor-shift-v1", "resume": "access-denied-harbor-shift-resume-v1", "slots": "harbor-shift-"},
+      "abilities": {"map": false, "mapKey": true, "deck": false, "jump": false, "hack": false, "sudo": false, "review": false},
+      "player": {"avatar": "dockworker", "name": "worker"},
+      "guidance": {"style": "shift", "controlHints": true},
+      "clock": {"rule": "scene"},
+      "chrome": {"pageClass": "shift-prototype", "minimalHud": false},
+      "seed": {"handle": "", "tokens": 0, "modules": [], "flags": []}
+    },
+    {
+      "id": "full",
+      "label": "Full game",
+      "home": "downtown",
+      "start": {"title": true, "urlScene": true},
+      "routes": "world",
+      "world": "campaign",
+      "namespace": {"save": "access-denied-save-v3", "sudoSave": "access-denied-save-sudo-v3", "resume": "access-denied-resume-v3", "slots": "", "sudoSlots": "sudo-"},
+      "abilities": {"map": true, "mapKey": true, "deck": true, "jump": true, "hack": true, "sudo": true, "review": false},
+      "player": {"avatar": "hacker"},
+      "guidance": {"style": "none", "controlHints": true},
+      "clock": {"rule": "opening"},
+      "chrome": {"minimalHud": false},
+      "seed": {"handle": "", "tokens": 0, "modules": [], "flags": []}
+    }
+  ]
+}

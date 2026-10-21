@@ -18,14 +18,11 @@ import {mountPerformancePanel} from './diagnostics/performance-panel';
 import {capabilityView,sceneExitAccess,exitVisibility,exitPermission,harborTransportPermission} from '../world/access';
 import {mountReviewNavigator} from '../demo/review-navigator';
 import {reviewStations} from '../demo/review-stations';
-import {DEMO_MODE} from './mode';
 import {nativeGameplayPort} from '../engine/gameplay/native-bindings';
 import {ConversationSession} from '../engine/gameplay/conversation';
 import { gameStorage, reloadRuntime } from './storage';
 import { drawCapsuleWash } from '../art/atmosphere/capsule-wash';
-import { drawDockworker } from '../art/characters/dockworker';
-import { prepareDockworker } from './dockworker';
-import { drawPlayer } from '../art/characters/player';
+import { AVATAR_PAINTERS } from './avatars';
 import { createSkyShips,drawSkyShips,type Ship } from '../art/environment/sky-ships';
 import { renderSceneFrame } from './render-scene';
 import { GameplaySession } from '../engine/gameplay/session';
@@ -46,7 +43,6 @@ import { clearWorld } from '../art/core/canvas';
  * is drawn at an integer pixel scale so the sprites stay crisp.
  */
 
-import { SPR } from "../art/core/sprites";
 import { drawFlight,taxiDurationFor } from '../story/cutscenes/taxi';
 import type { Handoff } from '../art/core/timeline';
 import { type MachineData,type NetworkData } from "../data/index";
@@ -80,7 +76,8 @@ import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from 
 import { sound } from './audio';
 import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './characters';
 import { Companion } from './companion';
-import { EDITOR_PLAY,SAVE_KEY,SHIFT_PROTOTYPE } from "./mode";
+import { EDITOR_PLAY } from "./mode";
+import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import { LevelRuntime, type LiftDrive } from "../engine/level";
 
@@ -126,7 +123,7 @@ export class Game {
   private canvas: HTMLCanvasElement;
   private x: CanvasRenderingContext2D;
   private term: Terminal;
-  private save: Save = SUDO && !SHIFT_PROTOTYPE ? unlockAll(loadSave()) : loadSave();
+  private save: Save = sudoOn() ? unlockAll(loadSave()) : loadSave();
   private k = 2;
   private viewW = 640;
   private viewH = 320;
@@ -150,7 +147,9 @@ export class Game {
   private ships: Ship[] = [];
   private disposePerformance?:()=>void;
   private reviewNav?:ReturnType<typeof mountReviewNavigator>;
-  private reviewAllowed(){return DEMO_MODE||EDITOR_PLAY;}
+  private reviewAllowed(){return can('review')||EDITOR_PLAY;}
+  /** Hack is out of reach: the profile has no hacking, or the story has not given it yet (the opening's phases). */
+  private hackLocked(){return !can('hack')||this.openingStory.hackLocked(this.save.flags);}
   private refreshReview(){this.reviewNav?.refresh(this.here,this.here==='shop'&&!!this.def.gameplay?.conversations['demo.desk'],!!this.def.gameplay?.conversations['workshop.operator'],!!this.def.gameplay?.conversations.catalog);}
   /** Explicit review bookmarks; never available in campaign play. */
   reviewJump(id:string){
@@ -163,7 +162,7 @@ export class Game {
   private reviewTalk(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const session=this.gameplayFor(this.here);if(!session?.definition.conversations[id])return;this.bubble=null;this.keys.clear();this.zh.closeAll();this.zh.presentConversation(new ConversationSession(session,id));}
   private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=this.def.uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
   private reviewCommunication(id:CommunicationReview){
-    if(!DEMO_MODE)return;
+    if(!can('review'))return;
     this.keys.clear();this.zh.closeAll();this.bubble=null;this.hints.sceneChanged();
     runCommunicationReview(id,{
       status:(text,tone)=>this.notify(text,tone),
@@ -175,7 +174,7 @@ export class Game {
   }
   private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
   /** The scene the player is in. */
-  private here: SceneId = 'downtown';
+  private here: SceneId = playProfile().home as SceneId;
   /** Every key and what it does, along the top. */
   private keyBar: KeyBar;
   /** The hint lane under the scene title (ui/hints.ts); control hints are sent from `controlHints`. */
@@ -256,7 +255,7 @@ export class Game {
   private netView: NetView | null = null;
   private netBack = false;
 
-  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private restricted=false,private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroSnapshot,private sources:GameRuntimeSources={}) {
+  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroSnapshot,private sources:GameRuntimeSources={}) {
     if(metroStart)this.metro.restore(metroStart);
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'game-canvas';
@@ -277,7 +276,7 @@ export class Game {
     this.term.onClose = () => this.canvas.focus();
 
     this.keyBar = new KeyBar(host.windowEl);
-    if (SHIFT_PROTOTYPE||DEMO_MODE||(EDITOR_PLAY&&this.restricted)) this.shiftGuidance = new ShiftGuidance(host.windowEl, this.reduced, wx => {
+    if (playProfile().guidance.style === 'shift') this.shiftGuidance = new ShiftGuidance(host.windowEl, this.reduced, wx => {
       this.zh.clearPing('goal');
       this.goalAt = wx;
       if (wx !== null) this.zh.ping('goal', 'look');
@@ -291,14 +290,14 @@ export class Game {
       hasSave: () => this.hasSave(),
       quit: () => host.onExit(),
       // the city map lives in the menu too (TAB and M still open it on a keyboard)
-      ...(!SHIFT_PROTOTYPE ? { map: () => this.showMap() } : {}),
+      ...(can('map') ? { map: () => this.showMap() } : {}),
       onClose: () => { this.syncEnginePause(); this.canvas.focus(); },
-      ...(SUDO && !SHIFT_PROTOTYPE ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
+      ...(sudoOn() ? { levels, enter: (id: string) => this.enterLevel(id) } : {}),
       // the deck's JOBS, CARRY, CONTROLS (and TERM on touch); the Shift prototype keeps SYSTEM only
-      ...(!SHIFT_PROTOTYPE ? { deck: this.deckData() } : {}),
+      ...(can('deck') ? { deck: this.deckData() } : {}),
     }, this.touch);
     // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts); in a scene, the city clock's
-    if (SUDO && !SHIFT_PROTOTYPE) {
+    if (sudoOn()) {
       this.transport = new Transport(host.windowEl);
       this.clockBar = new ClockBar(host.windowEl, () => sceneClimate(this.here), () => this.syncClock(true));
     }
@@ -393,7 +392,7 @@ export class Game {
       return source?{x:source.x,h:'h'in source?source.h??0:0}:null;
     };
     // the opening (opening.ts): hacking is not yours until uplink.so, and some everyday actions say something else
-    zh.hackLock = () => this.openingStory.hackLocked(this.save.flags);
+    zh.hackLock = () => this.hackLocked();
     zh.story = (dev) => this.storyChips(id, dev);
     zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
     // captions never cover the player's speech bubble, and keep their lane over people's heads
@@ -473,7 +472,7 @@ export class Game {
     const first = !this.started;
     this.started = true;
     this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
-    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,open:!EDITOR_PLAY,communication:DEMO_MODE?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
+    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
   }
 
   /**
@@ -482,7 +481,8 @@ export class Game {
    */
   private continueGame(scene: SceneId | undefined, first: boolean) {
     this.endTitle();
-    if(DEMO_MODE)scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:'shop');
+    const { routes, start } = playProfile();
+    if(routes==='content')scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:start.scene as SceneId);
     this.started = true;
     const resume = !scene && first ? this.openingStory.openingResumeDestination(this.save.flags) : null;let resumeEntrance:string|undefined;
     if (!scene && first && this.save.scene && this.hasScene(this.save.scene) && (this.save.scene !== 'sandbox' || SUDO)) scene = this.save.scene;
@@ -492,6 +492,7 @@ export class Game {
       if (!this.save.flags[this.world.seenFlag(this.world.START_SCENE)]) { this.startOpening(); return; }
       scene = this.world.START_SCENE;
     }
+    if (first && scene && scene === start.scene && !resumeEntrance) resumeEntrance = start.entrance;
     if (scene && (this.here !== scene||resumeEntrance)) this.enter(scene, true,resumeEntrance);
     this.showHost();
     this.markSeen(this.here);
@@ -501,7 +502,7 @@ export class Game {
   /** Is there a run to continue: a stored save that has been played? */
   private hasSave() {
     try {
-      const raw = gameStorage.getItem(SAVE_KEY);
+      const raw = gameStorage.getItem(saveKey());
       if (!raw) return false;
       const s = JSON.parse(raw) as Partial<Save>;
       return (s.playMs ?? 0) > 0 || Object.keys(s.flags ?? {}).length > 0;
@@ -580,7 +581,7 @@ export class Game {
     this.showEnd = false;
     this.hints.sceneChanged();sound.cancelFeedback();
     this.openingGameplaySession?.dispose();this.openingGameplaySession=undefined;
-    this.save = SUDO ? unlockAll(newSave()) : newSave();
+    this.save = sudoOn() ? unlockAll(newSave()) : newSave();
     city.bind(this.save.clock);
     // Every scene starts a first visit in the new save.
     this.save.gameplay={};
@@ -596,7 +597,7 @@ export class Game {
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
     const greeting=this.openingStory.CONTROLLER.greeting;
-    if (this.here !== greeting.scene || this.openingStory.hackLocked(this.save.flags)) return;
+    if (this.here !== greeting.scene || this.hackLocked()) return;
     const how=this.touch?greeting.how.touchPages:greeting.how.pages;
     if (!this.save.flags.arrived) {
       this.save.flags.arrived = true; this.save.flags.schematics = true;
@@ -629,7 +630,7 @@ export class Game {
       engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
       gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
       environment:{weather:this.weatherHere().kind,clock:this.editorClock},
-      capabilities:capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags),this.networkContext.net),access:{exits:this.def.exits.map(e=>({id:e.id,visibility:exitVisibility(e,this.save.flags),permission:exitPermission(e,this.save.keyring)})),interactions:this.def.uses?.map(u=>({id:u.id,result:u.eligibility?.(this.save.flags,shared)??{ok:true}}))},
+      capabilities:capabilityView(this.save,!this.hackLocked(),this.networkContext.net),access:{exits:this.def.exits.map(e=>({id:e.id,visibility:exitVisibility(e,this.save.flags),permission:exitPermission(e,this.save.keyring)})),interactions:this.def.uses?.map(u=>({id:u.id,result:u.eligibility?.(this.save.flags,shared)??{ok:true}}))},
       objective:this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()), paused:this.enginesPaused,
       dialogue:this.bubble?{speaker:this.bubble.name,pages:this.bubble.pages,page:this.bubble.page}:null, popup:this.zh.popupOpen,
       events:[...this.gameplaySessions].flatMap(([scene,session])=>session.events().map(event=>({scene,...event}))) });
@@ -810,7 +811,7 @@ export class Game {
     if ((k === 'Enter' || k === ' ') && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (k === 'Enter') { e.preventDefault(); this.openDeck(); return; }
     // the deck's map app: the city as far as you know it
-    if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); if (!DEMO_MODE) this.showMap(); return; }
+    if (k === 'Tab' || k === 'm' || k === 'M') { e.preventDefault(); if (can('mapKey')) this.showMap(); return; }
     // B and H mean something only where there is something to hack (a scene with devices)
     if (zh.hackable && (k === 'b' || k === 'B')) { zh.toggleBoard(); return; }
     if (zh.hackable && (k === 'h' || k === 'H')) { zh.toggleVision(); return; }
@@ -835,9 +836,9 @@ export class Game {
   }
 
   private openDeck() {
-    if (SHIFT_PROTOTYPE) return;
+    if (!can('deck')) return;
     if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
-    const at = this.openingStory.hackLocked(this.save.flags) ? null : this.termMachine();
+    const at = this.hackLocked() ? null : this.termMachine();
     if (at) this.term.print('[' + (this.zh.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
     this.term.focus();
   }
@@ -870,7 +871,7 @@ export class Game {
   private levelLocked() { return this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep; }
 
   private jump() {
-    if (SHIFT_PROTOTYPE) return;
+    if (!can('jump')) return;
     if (!this.save.jump) { this.flash('[ERR] legs.so not found'); sound.denied(); return; }
     if (!this.p.onGround) return;
     this.p.vy = 4.6;
@@ -899,8 +900,8 @@ export class Game {
    * until it hands over (`openingDone`): leave mid-glide and the old run is still there. Slots are untouched.
    */
   private newGame() {
-    if (EDITOR_PLAY || SHIFT_PROTOTYPE||DEMO_MODE) {
-      gameStorage.removeItem(SAVE_KEY);
+    if (EDITOR_PLAY || playProfile().routes !== 'world') {
+      gameStorage.removeItem(saveKey());
       reloadRuntime();
       return;
     }
@@ -923,8 +924,9 @@ export class Game {
    * Pixel comes along where it follows you, or is at home; the first visit has the player say a few words.
    */
   private enter(id: SceneId, quiet = false, at?: string) {
-    if((DEMO_MODE||this.restricted)&&!this.content[id]){this.flash('This route is outside the Test District.');return;}
-    if (SHIFT_PROTOTYPE) id = 'harborShift';
+    const { routes, start, label } = playProfile();
+    if(routes==='content'&&!this.content[id]){this.flash(`This route is outside the ${label}.`);return;}
+    if (routes === 'start') id = start.scene as SceneId;
     const s: SceneDef = this.sceneDefinition(id);
     this.zh.persist();
     this.hosts.forEach((h) => h.closeAll());
@@ -987,7 +989,7 @@ export class Game {
     }));
     const id = zh.spotAt(wx, h);
     // (pink is the hacking layer's colour: no pink bracket on hover until hacking is yours)
-    zh.hover = this.openingStory.hackLocked(this.save.flags) ? null : id;
+    zh.hover = this.hackLocked() ? null : id;
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && zh.visionOn) { zh.poke(id); return; }
     // a thing's popup: its everyday actions, then jack in (computers) and hack it
@@ -1039,7 +1041,7 @@ export class Game {
       scanProgram:this.networkContext.net.scanProgram,
       machine: this.termMachine(),
       // the deck's commands reach the scene's machines, when it has any
-      shell: zh.model.devices.size && !this.openingStory.hackLocked(this.save.flags) ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
+      shell: zh.model.devices.size && !this.hackLocked() ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
@@ -1054,7 +1056,7 @@ export class Game {
       // the Registry's forecast, where you are
       weather: () => reportLines(sceneClimate(this.here)),
       // the net from where you stand (NET.md): scan, connect (needs scan.so, except what a port here knows)
-      net: this.openingStory.hackLocked(this.save.flags) ? undefined : {
+      net: this.hackLocked() ? undefined : {
         scan: () => this.deckScan(),
         connect: (name) => this.deckConnect(name),
         names: () => this.zh.model.nodesHere().filter((id) => this.zh.model.net.has(id) || this.zh.model.ports().length),
@@ -1065,7 +1067,7 @@ export class Game {
   private syncHud() {
     this.refreshReview();
     this.host.setNodes(nodeCount(this.save));
-    this.host.setScene(DEMO_MODE ? sceneTitle(this.def) : sceneTitle(this.def) + this.clockText + ' · ' + this.me.toUpperCase());
+    this.host.setScene(playProfile().chrome.minimalHud ? sceneTitle(this.def) : sceneTitle(this.def) + this.clockText + ' · ' + this.me.toUpperCase());
   }
 
   /**
@@ -1297,9 +1299,7 @@ export class Game {
     const open = this.here === 'downtown' ? this.downtown.viewing : null;
     const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
-    if (SHIFT_PROTOTYPE) { drawDockworker(x, this.view(), prepareDockworker(p.x,p.face,p.moving,this.view().t), p.face, this.def.dockworkerCarry?.(this.save.flags)??null); return; }
-    const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(this.t / 9) % 2 ? SPR.walk : SPR.stand;
-    drawPlayer(x, this.view(), sprite, p, jack, this.zh.visionOn ? null : this.groundUnder(p.x, p.y));
+    AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags) ?? null });
   }
 
   /**
@@ -1549,7 +1549,7 @@ export class Game {
     this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
-    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (SHIFT_PROTOTYPE || this.openingStory.isBefore(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
+    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (playProfile().player.name !== undefined || this.openingStory.isBefore(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
     x.fillStyle = '#fff'; shownLines.forEach((l, i) => x.fillText(l, bx + 10, by + 30 + i * 13));
     if (b.chars >= full.length && Math.floor(this.t / 20) % 2) {
       x.beginPath(); x.moveTo(bx + w - 16, by + h - 10); x.lineTo(bx + w - 8, by + h - 10); x.lineTo(bx + w - 12, by + h - 5); x.closePath(); x.fill();
@@ -1566,7 +1566,7 @@ export class Game {
     let y = top - 1;
     // hack vision keeps only the goal: what you own is in the LOGIC drawer there
     if (!vision) {
-      if(!DEMO_MODE){x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);}
+      if(!playProfile().chrome.minimalHud){x.fillStyle = 'rgba(255,136,0,.85)'; x.fillText(sceneTitle(this.def) + this.clockText, 8, top + 10);}
       y = top + 10;
       // what you own is not here (Tommi, 2026-10-15): hack vision's LOGIC drawer has it, and a short
       // line shows when something comes
@@ -1655,7 +1655,7 @@ export class Game {
    * Touch buttons are labelled, so touch only gets the deck and hack vision.
    */
   private controlHints(vision: boolean) {
-    if(DEMO_MODE)return; // Review cases own attention; campaign control lessons stay in the campaign.
+    if(!playProfile().guidance.controlHints)return; // Review cases own attention; campaign control lessons stay in the campaign.
     const h = this.hints;
     if (this.p.moving) h.done('ctl.walk');
     if (!this.touch) {
@@ -1701,9 +1701,9 @@ export class Game {
 
   private get story(): OpeningState { return this.openingStory.openingState(this.save.flags); }
   /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
-  private get me() { if (SHIFT_PROTOTYPE) return 'worker'; return this.openingStory.isBefore(this.save.flags) ? this.openingStory.CONTROLLER.playerBefore : who(this.save); }
+  private get me() { const fixed = playProfile().player.name; if (fixed !== undefined) return fixed; return this.openingStory.isBefore(this.save.flags) ? this.openingStory.CONTROLLER.playerBefore : who(this.save); }
   /** The city clock, after the scene's name in the HUD (" · 21:40"; the opening's times are its pins). */
-  private get clockText() { return DEMO_MODE ? '' : ' · ' + city.text; }
+  private get clockText() { return playProfile().chrome.minimalHud ? '' : ' · ' + city.text; }
 
   /** When the player last moved or did something (clock frames), for the idle ping. */
   private still = 0;
@@ -1850,7 +1850,7 @@ export class Game {
    */
   private pinStory() {
     if(EDITOR_PLAY&&this.editorClock!=='story'){if(this.editorClock==='fixed')city.pin(this.save.clock.min);return;}
-    if (SHIFT_PROTOTYPE) {
+    if (playProfile().clock.rule === 'scene') {
       const day=this.def.storyDay?.(this.save.flags);
       if(day!==undefined)this.save.clock.day=day;
       const at = this.def.storyMinute?.(this.save.flags);
@@ -1876,7 +1876,7 @@ export class Game {
     const t = city.stamp;
     if (force || t !== this.shownClock) {
       this.shownClock = t;
-      this.stampEl.textContent = DEMO_MODE ? '' : t;
+      this.stampEl.textContent = playProfile().chrome.minimalHud ? '' : t;
       if (!this.cut && !this.opening) this.syncHud();
     }
     if (this.clock - this.clockSaved > CLOCK_SAVE) { this.clockSaved = this.clock; this.persistSave(); }
@@ -2070,7 +2070,7 @@ export class Game {
 
   /** Arrive in a scene by id (anything else is Downtown), at its spawn. */
   handTo(id: string, entrance?: string) {
-    this.enter(this.hasScene(id) ? id : 'downtown', true, entrance);
+    this.enter(this.hasScene(id) ? id : playProfile().home as SceneId, true, entrance);
   }
 
   // ---------- a scene's ways out and its life ----------
@@ -2295,7 +2295,7 @@ export class Game {
 
   /** The city map on its own, just to look at (for a menu to call). Esc closes it. */
   showMap() {
-    if (SHIFT_PROTOTYPE) return;
+    if (!can('map')) return;
     if (!this.running || this.flight || this.hop) return;
     this.keys.clear();
     this.bubble = null;
@@ -2376,7 +2376,7 @@ export class Game {
 
   /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
   private quickTravel(place: MapPlace) {
-    if (this.openingStory.hackLocked(this.save.flags)) { this.flash('not now: ' + (pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? 'later')); sound.denied(); return; }
+    if (this.hackLocked()) { this.flash('not now: ' + (pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? 'later')); sound.denied(); return; }
     const why = this.world.placeBlocked(place, this.mapState());
     if (why) { this.flash(why.toLowerCase()); sound.denied(); return; }
     this.mapView = null;
@@ -2417,7 +2417,7 @@ export class Game {
   // ---------- the net map (netmap.ts, NET.md) ----------
 
   /** NET is yours: scan.so owned, and hacking yours (not in the opening's locked part). */
-  private get netOk() { return capabilityView(this.save,!this.openingStory.hackLocked(this.save.flags),this.networkContext.net).network; }
+  private get netOk() { return capabilityView(this.save,!this.hackLocked(),this.networkContext.net).network; }
 
   /** A program came (scan.so from the library): saved, and NET shows in hack vision's bar, pinging until used. */
   private grantProgram(id: string,receipt?:FeedbackReceipt) {
@@ -2550,7 +2550,7 @@ export class Game {
   /** The GOAL after Capsule 7B, until scan.so is yours: the library (Act I: Capsule 7B → the library → Downtown). */
   private libraryGoal(): string | null {
     const source=this.openingStory.CONTROLLER.libraryGuidance;
-    if(this.save.programs.includes(source.program)||this.here===source.destinationScene||this.openingStory.hackLocked(this.save.flags))return null;
+    if(this.save.programs.includes(source.program)||this.here===source.destinationScene||this.hackLocked())return null;
     const complete=this.hosts.get(source.completedScene as SceneId)?.model.goals??new Set(this.save.scenes[source.completedScene]?.goals??[]);
     if(!complete.has(source.completedGoal))return null;
     if(this.here===source.completedScene&&this.zh.model.data.goals.some(g=>!complete.has(g.id)))return null;
