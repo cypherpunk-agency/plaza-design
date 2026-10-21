@@ -5,7 +5,10 @@
     "plugOn": "plugOn",
     "sun": "sun",
     "pixelAt": "pixelAt",
-    "doorOpen": "doorOpen"
+    "doorOpen": "doorOpen",
+    "routerTemp": "routerTemp",
+    "bootUntil": "bootUntil",
+    "steamUntil": "steamUntil"
   },
   "devices": {
     "pixel": "pixel"
