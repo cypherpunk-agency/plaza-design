@@ -117,6 +117,7 @@ const PH = { dwell: 0, closing: 1, opening: 2, running: 3, braking: 4, halted: 5
 
 /** The ride and its car: the brake, doors and tunnel rules over the line system, the car's layout and the frame it paints (the `train` binding provider reads both). The scene's artwork roles place the car's fittings. */
 export const lineRide:SceneMechanism={
+ face:{function:'act'},
  label:'LINE 0 car (ride, brake, doors, passengers)',
  requires:['ceiling','roof','news','windowStyle','lineMap','handrail','staff','gangway','gangDoor','brake'],world:true,ownsRoom:true,
  rulesShape:()=>createTrainRules(),

@@ -131,6 +131,7 @@ const SHAPE = downtownRules({
 });
 
 export const vehicleRun:SceneMechanism={
+  face:{function:'act',controller:'downtown'},
   label:'DLV-9 delivery run (market gate, scanner, door)',requires:[],world:false,
   rulesShape:()=>SHAPE,
   /** The picture and the run read these select queries as plain booleans (and the destination as market or gate). */

@@ -99,6 +99,7 @@ const THERMAL_RULES: SceneRules = {
 
 /** The flat's clock and the router's thermal simulation; the scene's rules (the controller names its state and tuning). */
 export const thermal: SceneMechanism = {
+  face: {function: 'act', controller: 'capsule'},
   label: 'Thermal router and flat clock (boot, warm-up, reboot, steam)', requires: [], world: false,
   apply: () => ({ rules: THERMAL_RULES }),
   rulesShape: () => THERMAL_RULES,

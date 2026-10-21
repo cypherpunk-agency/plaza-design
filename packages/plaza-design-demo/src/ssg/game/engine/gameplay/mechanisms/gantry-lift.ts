@@ -315,6 +315,7 @@ const scopePanel = cameraPanel({
 
 /** scene.json `stage.mechanisms: ["gantryLift"]` (scene-mechanisms.ts): the rules, the scope panel and the source checks. */
 export const gantryLift:SceneMechanism={
+  face:{function:'act',controller:'stacks'},
   label:'Gantry lift (crane, thermal gate, scope)',
   requires:GANTRY_ROLES,
   world:false,

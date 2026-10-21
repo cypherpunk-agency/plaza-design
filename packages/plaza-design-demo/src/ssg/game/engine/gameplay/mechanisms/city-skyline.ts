@@ -40,6 +40,7 @@ export function skylineValue(shared:ReadonlyMap<string,unknown>|undefined,view:V
  return handle?metroSnapshotValue(handle.prepared??handle.session.preview(handle.layout,view)):undefined;
 }
 export const citySkyline:SceneMechanism={
+ face:{function:'hold'},
  label:'City skyline (animated, saved with the scene)',requires:['horizon'],world:false,
  apply:({roles,width,shared})=>{
   const handle:SkylineHandle={session:new CitySession(),layout:{width,horizon:roles.horizon.placement.h}};shared.set(SKYLINE_KEY,handle);

@@ -7,6 +7,7 @@ import {sandboxController} from '../../controllers/sandbox';
  * sign ("BAY 3·NN · title") unless the scene gives it a name of its own.
  */
 export const sandboxBay:SceneMechanism={
+ face:{function:'logic',controller:'sandbox'},
  label:'Sandbox bay (checks the picture controller against the artwork)',requires:[],world:false,
  apply:({scene,rows,content})=>{const data=content.data??{} as never;validateSandboxGeometry(data,rows);
   const controller=sandboxController(data)??null,stations=sandboxStations(rows,controller),generated=/^BAY 3·\d\d · /;

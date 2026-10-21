@@ -174,7 +174,11 @@ the city and line system). Add engine/gameplay/mechanisms/<name>.ts exporting a 
 the name in `stage.mechanisms`. The editor checkbox appears from the registry. Current set: transitPlatform,
 citySkyline, lineRide, gantryLift, dockworkerCarry, devicePulse, targetReset, sandboxBay, yardCrane,
 thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
-fixed value, a light or a shade line is stage data, not a mechanism.
+fixed value, a light or a shade line is stage data, not a mechanism. Give it a `face`
+(`{function, controller?}`): in Logic › Devices and Wiring the scene's mechanisms appear as devices
+(`mechanism:<name>`), their parts derived from `rulesShape()` (engine/gameplay/mechanism-face.ts), and the
+numbers in the `controller` block of that kind (plus the tuning it names) are editable. Cables cannot
+yet start or end on a mechanism part.
 
 **Parity.** When a scene's compiled shape or picture should not change (a migration, a refactor of a
 provider or mechanism), record its fingerprint first: `npx tsx scripts/scene-parity-record.mts <id>`

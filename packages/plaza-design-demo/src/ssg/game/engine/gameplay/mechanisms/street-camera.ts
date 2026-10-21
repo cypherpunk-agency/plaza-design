@@ -58,6 +58,7 @@ const RULES: SceneRules = {
 };
 
 export const streetCamera: SceneMechanism = {
+  face: {function: 'sense'},
   label: 'CAM-3 (the street camera: aim, zoom, tag, loop)', requires: [], world: false,
   rulesShape: () => RULES,
   apply: () => ({ rules: RULES, panels: { cam3: cam3Panel } }),
