@@ -20,7 +20,7 @@
 import { BLIMP_SCALE, drawBlimp, drawCraft, drawDrone, type CraftKind } from "../../vehicles/air-traffic";
 import { placed } from "../../core/view";
 import { type CoastView, R, S } from "./coast";
-import { glideDist, PLACES, SPIRE_P, SPIRE_X } from "./path";
+import { glideDist, PLACES, SPIRE_P, SPIRE_X, WEST } from "./path";
 
 const smooth = (a: number, b: number, v: number) => { const f = Math.max(0, Math.min(1, (v - a) / (b - a))); return f * f * (3 - 2 * f); };
 const h01 = (n: number) => { let h = (n * 374761393) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
@@ -51,7 +51,8 @@ export function drawAir(x: CanvasRenderingContext2D, c: CoastView, lift: (p: num
     const off = -ln.dir * f * ln.v, Xe = c.g - (W / 2 + 160) / ln.p, Xw = c.g + (W / 2 + 160) / ln.p;
     for (let k = Math.floor((Xe - off) / ln.gap); k <= Math.ceil((Xw - off) / ln.gap); k++) {
       const X = k * ln.gap + off;
-      if (h01(k * 31 + ln.seed) > ln.busy(X)) continue;
+      // quiet over the west beach (the city's lanes thin out past the junction)
+      if (h01(k * 31 + ln.seed) > ln.busy(X) * (X > WEST.junction ? lerp(1, 0.2, Math.min(1, (X - WEST.junction) / 400)) : 1)) continue;
       // the Spire's air stays clear of everyone else's lanes
       if (ln.kind !== 'shuttle' && Math.abs(at(X, ln.p) - spx) < 90 && c.g > SPIRE_X - 900 && c.g < SPIRE_X + 1400) continue;
       const bob = c.still ? 0 : Math.sin(f * 0.03 + k) * 1.2;

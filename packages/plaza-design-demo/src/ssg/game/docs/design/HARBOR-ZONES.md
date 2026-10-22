@@ -14,7 +14,10 @@
   player walks back west and takes the train home. Arriving by sky taxi is kept for later.
 - **P0** is the title glide: the main menu is the beach scene, mirrored; the camera glides **east across the city** as
   the sun goes down, a first look at some districts, and ends at the Harbor Station as the train comes in. Hand-over on
-  the platform.
+  the platform. *Built (2026-10-22, first pass):* story/title/timeline.json glides east from the mirrored beach
+  through Downtown and the Galleria to a raised Harbor Station drawn in the opening picture (finale.ts), the
+  sun setting by the city clock, a two-car train arriving; the hand-over onto the platform waits for these
+  zones, so the glide still hands over to the current opening.
 - **The city map:** the beach is in the **west**, the harbor in the **east**. The beach no longer joins the quay.
 - **Coffee machine:** optional, a side mention ("the coffee machine doesn't work again") with a small bonus if fixed.
   The trolley clamp stays the required lesson.

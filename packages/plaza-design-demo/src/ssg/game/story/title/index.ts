@@ -1,13 +1,19 @@
 /**
  * The opening (ROADMAP "The opening: intro and tutorial", step 1): the title screen and the glide.
  *
- * Launching the game shows a sunrise over the sea: the sun comes up out of it (RISE, about 7 s;
- * any key or click skips it) and settles half up on the horizon, then the main menu pops in over it
- * (menu.ts, `showTitle`). Reduced motion: settled from the start. NEW GAME: the menu fades and the
- * same shot starts moving west (glide.ts), not skippable, about 78 s: the coast, the harbor, the
- * Spire across the bay, the Galleria, Downtown, and LINE 0 out of its tower and down under the street,
- * the camera following it into a cutaway of the ground to a glimpse of the Undercity, then the dark.
+ * Launching the game shows the beach on the west shore in the late afternoon (Tommi, 2026-10-22: the
+ * beach scene, mirrored): the picture fades in and settles (RISE, about 7 s; any key or click skips
+ * it), then the main menu pops in over it (menu.ts, `showTitle`). Reduced motion: settled from the
+ * start. NEW GAME: the menu fades and the same shot starts moving east (glide.ts), not skippable,
+ * about 68 s, while the sun goes down into the sea behind it: the beach and its pier, the canal's
+ * inlet, Downtown in the rain, the Galleria, the Spire across the bay, and LINE 0's train overtaking
+ * the camera on the viaduct and coming in at the raised Harbor Station at dusk; then the dark.
+ * Camera, city clock, train and the district captions are tracks and cards in timeline.json.
  * CONTINUE and LOAD GAME cut straight into the save.
+ *
+ * The hand-over onto the Harbor Station's platform (P0: the prologue starts with the player stepping
+ * off) waits for the harbor zones (docs/design/HARBOR-ZONES.md); until then the glide hands over to
+ * the current opening below, unchanged.
  *
  * THE HANDOVER (to the story half of the opening, opening.ts: the train home, Downtown before,
  * the flat, the morning you are deleted). When the glide ends, game.ts `openingDone()`:

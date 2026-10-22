@@ -11,22 +11,51 @@
           "from": 0,
           "to": 7,
           "camera": {
-            "x": 0,
+            "x": 6220,
             "h": 0,
             "zoom": 1
           }
         }
       ],
-      "tracks": [],
+      "tracks": [
+        {
+          "id": "sun-clock",
+          "target": {
+            "kind": "state",
+            "instance": "sky",
+            "property": "clock"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 1060,
+              "ease": "smooth"
+            },
+            {
+              "time": 6.5,
+              "value": 1075
+            }
+          ]
+        }
+      ],
       "text": [],
-      "fades": [],
+      "fades": [
+        {
+          "id": "fade-in",
+          "from": 0,
+          "to": 2.2,
+          "color": "#000000",
+          "start": 1,
+          "end": 0
+        }
+      ],
       "beats": [
         {
-          "id": "NIGHT",
+          "id": "FADE IN",
           "time": 0
         },
         {
-          "id": "WATERLINE",
+          "id": "LATE AFTERNOON",
           "time": 2.2
         },
         {
@@ -45,22 +74,51 @@
           "from": 0,
           "to": 7,
           "camera": {
-            "x": 0,
+            "x": 6220,
             "h": 0,
             "zoom": 1
           }
         }
       ],
-      "tracks": [],
+      "tracks": [
+        {
+          "id": "sun-clock",
+          "target": {
+            "kind": "state",
+            "instance": "sky",
+            "property": "clock"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 1060,
+              "ease": "smooth"
+            },
+            {
+              "time": 6.5,
+              "value": 1075
+            }
+          ]
+        }
+      ],
       "text": [],
-      "fades": [],
+      "fades": [
+        {
+          "id": "fade-in",
+          "from": 0,
+          "to": 2.2,
+          "color": "#000000",
+          "start": 1,
+          "end": 0
+        }
+      ],
       "beats": [
         {
-          "id": "NIGHT",
+          "id": "FADE IN",
           "time": 0
         },
         {
-          "id": "WATERLINE",
+          "id": "LATE AFTERNOON",
           "time": 2.2
         },
         {
@@ -71,15 +129,15 @@
     },
     {
       "id": "glide",
-      "duration": 78.5,
+      "duration": 68,
       "composition": "sequence-opening",
       "shots": [
         {
           "id": "continuous",
           "from": 0,
-          "to": 78.5,
+          "to": 68,
           "camera": {
-            "x": 0,
+            "x": 6220,
             "h": 0,
             "zoom": 1
           }
@@ -87,7 +145,7 @@
       ],
       "tracks": [
         {
-          "id": "camera-west",
+          "id": "camera-east",
           "target": {
             "kind": "camera",
             "property": "x"
@@ -95,33 +153,75 @@
           "keys": [
             {
               "time": 0,
-              "value": 0
+              "value": 6220,
+              "ease": "in"
+            },
+            {
+              "time": 9,
+              "value": 5896,
+              "ease": "linear"
+            },
+            {
+              "time": 52.7,
+              "value": 2750,
+              "ease": "out"
+            },
+            {
+              "time": 62.7,
+              "value": 2390
             }
-          ],
-          "motion": {
-            "type": "opening.glide-distance",
-            "props": {}
-          }
+          ]
         },
         {
-          "id": "camera-drop",
+          "id": "sun-clock",
           "target": {
-            "kind": "camera",
-            "property": "h"
+            "kind": "state",
+            "instance": "sky",
+            "property": "clock"
           },
           "keys": [
             {
               "time": 0,
-              "value": 0
+              "value": 1075,
+              "ease": "linear"
+            },
+            {
+              "time": 68,
+              "value": 1192
             }
-          ],
-          "motion": {
-            "type": "opening.drop",
-            "props": {}
-          }
+          ]
         },
         {
-          "id": "tunnel-dark",
+          "id": "train-arrives",
+          "target": {
+            "kind": "state",
+            "instance": "line0",
+            "property": "train"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 4400,
+              "ease": "hold"
+            },
+            {
+              "time": 43.5,
+              "value": 4060,
+              "ease": "linear"
+            },
+            {
+              "time": 56.5,
+              "value": 2640,
+              "ease": "out"
+            },
+            {
+              "time": 64.5,
+              "value": 2220
+            }
+          ]
+        },
+        {
+          "id": "end-dark",
           "target": {
             "kind": "state",
             "instance": "tunnel-fade",
@@ -139,7 +239,48 @@
           }
         }
       ],
-      "text": [],
+      "text": [
+        {
+          "id": "beach",
+          "from": 1,
+          "to": 6.5,
+          "text": "THE BEACH · WEST SHORE",
+          "x": 14,
+          "h": -22
+        },
+        {
+          "id": "downtown",
+          "from": 19,
+          "to": 24.5,
+          "text": "DOWNTOWN",
+          "x": 14,
+          "h": -22
+        },
+        {
+          "id": "galleria",
+          "from": 47.5,
+          "to": 52.5,
+          "text": "GALLERIA",
+          "x": 14,
+          "h": -22
+        },
+        {
+          "id": "spire",
+          "from": 54,
+          "to": 58.5,
+          "text": "THE SPIRE · ACROSS THE BAY",
+          "x": 14,
+          "h": -22
+        },
+        {
+          "id": "harbor",
+          "from": 61,
+          "to": 66,
+          "text": "HARBOR STATION · LINE 0",
+          "x": 14,
+          "h": -22
+        }
+      ],
       "fades": [],
       "beats": [
         {
@@ -147,36 +288,32 @@
           "time": 0
         },
         {
-          "id": "PIER",
-          "time": 10.4
-        },
-        {
           "id": "INLET",
-          "time": 17.1
-        },
-        {
-          "id": "HARBOR",
-          "time": 27.3
-        },
-        {
-          "id": "SPIRE",
-          "time": 44.4
-        },
-        {
-          "id": "GALLERIA",
-          "time": 54.8
+          "time": 15
         },
         {
           "id": "DOWNTOWN",
-          "time": 61.5
+          "time": 19
+        },
+        {
+          "id": "GALLERIA",
+          "time": 49.8
+        },
+        {
+          "id": "SPIRE",
+          "time": 55
         },
         {
           "id": "LINE 0",
-          "time": 62.4
+          "time": 56.5
         },
         {
-          "id": "UNDER",
-          "time": 73
+          "id": "HARBOR",
+          "time": 62.7
+        },
+        {
+          "id": "ARRIVED",
+          "time": 64.5
         }
       ],
       "handoff": {

@@ -1,6 +1,7 @@
 import type{OpeningActors}from'./poses';
 import{validatePreparedCharacter}from'../../characters/prepared';
 import {frameView} from '../../core/view';
+import {lightAt} from '../../../world/light';
 /** Shared native dispatcher: runtime and composer evaluate these same ordered pieces. */
 import { ArtRegistry, resolveComposition, drawComposition, compositionAppearance, type Composition, type Element, type Properties, type Value } from '../../core/composition';
 import { evaluateTimeline, validateTimeline, type TimelineDocument, type TimelineContext, type TimelineFrame } from '../../core/timeline';
@@ -27,11 +28,11 @@ function metrics(state: Properties) {
 }
 export const openingElements: Element[] = openingPieceIds.map(id => ({
   type: `sequence.opening.${id}`, version: 1, label: names[id] ?? id.replace(/[.-]/g, ' '), category: 'Opening sequence', coordinates: 'world', parts: ['backdrop'], fields: openingFields(id),
-  visualFields: { time: clock, tau: { ...clock, default: -1 }, reduced: { kind: 'boolean', label: 'Reduced motion', default: false }, width:{kind:'number',label:'Native viewport width',default:420,min:1},height:{kind:'number',label:'Native viewport height',default:195,min:1},cameraX: { ...clock, label: 'Camera X' }, cameraH: { ...clock, label: 'Camera drop' }, ...(/^(coast-mid|people).person-/.test(id)?{pose:{kind:'json' as const,label:'Prepared actor pose',default:{visible:false,character:{x:0}},validate:validatePreparedCharacter}}:{}),...(id==='tunnel-fade'?{dark:{...clock,label:'Darkness',min:0,max:1,animatable:true}}:{}) },
+  visualFields: { time: clock, tau: { ...clock, default: -1 }, reduced: { kind: 'boolean', label: 'Reduced motion', default: false }, width:{kind:'number',label:'Native viewport width',default:420,min:1},height:{kind:'number',label:'Native viewport height',default:195,min:1},cameraX: { ...clock, label: 'Camera X' }, cameraH: { ...clock, label: 'Camera drop' }, ...(/^(coast-mid|people).person-/.test(id)?{pose:{kind:'json' as const,label:'Prepared actor pose',default:{visible:false,character:{x:0}},validate:validatePreparedCharacter}}:{}),...(id==='tunnel-fade'?{dark:{...clock,label:'Darkness',min:0,max:1,animatable:true}}:{}),...(id==='sky'?{clock:{...clock,label:'City clock (minute of the day; -1 the view\'s light)',default:-1,min:-1,max:1440,animatable:true}}:{}),...(id==='line0'?{train:{...clock,label:'Eastbound train nose X (-1 none)',default:-1,min:-1,animatable:true}}:{}) },
   bounds: (props, state) => {const native=metrics(state),geometry=openingGeometry(id,{...native.coast,pose:state.pose as unknown as import('../../../runtime/characters').PreparedCharacter},props);if(!geometry)return{x:0,h:0,w:native.W,tall:native.H};return{...geometry.bounds,h:geometry.bounds.h+(native.parts.find(p=>p.id===id)?.space==='near'?Math.round(native.drop):0)};},
   anchors: (props,state) => {const native=metrics(state),geometry=openingGeometry(id,{...native.coast,pose:state.pose as unknown as import('../../../runtime/characters').PreparedCharacter},props);if(!geometry)return{origin:{x:0,h:0,role:'origin'}};const drop=native.parts.find(p=>p.id===id)?.space==='near'?Math.round(native.drop):0;return Object.fromEntries(Object.entries(geometry.anchors).map(([key,anchor])=>[key,{...anchor,h:anchor.h+drop}]));},
   draw(ctx, view, props, state, _pass, placement) {
-    const frame = openingFrame(ctx, { W: view.viewW, H: view.viewH, reduced: !!state.reduced,lighting:view.lighting }, state.time as number, (state.tau as number) < 0 ? null : state.tau as number, { x: state.cameraX as number, h: state.cameraH as number, ...(id === 'tunnel-fade' ? { dark: state.dark as number } : {}),actors:{},pieces:{[id]:{props,pose:state.pose as unknown as import('../../../runtime/characters').PreparedCharacter,cull:{x:placement.x,scale:placement.scale,facing:placement.facing,width:view.viewW}}} });
+    const frame = openingFrame(ctx, { W: view.viewW, H: view.viewH, reduced: !!state.reduced,lighting:view.lighting }, state.time as number, (state.tau as number) < 0 ? null : state.tau as number, { x: state.cameraX as number, h: state.cameraH as number, ...(id === 'tunnel-fade' ? { dark: state.dark as number } : {}),...(id === 'line0' && (state.train as number) >= 0 ? { train: state.train as number } : {}),actors:{},pieces:{[id]:{props,pose:state.pose as unknown as import('../../../runtime/characters').PreparedCharacter,cull:{x:placement.x,scale:placement.scale,facing:placement.facing,width:view.viewW}}} });
     const part = frame.parts.find(p => p.id === id)!;
     ctx.save(); ctx.scale(frame.scale, frame.scale); ctx.translate(placement.x, -placement.h); if (part.space === 'near') ctx.translate(0, Math.round(-frame.drop)); part.draw(); ctx.restore();
   },
@@ -64,9 +65,12 @@ export function renderOpeningSequence(ctx: CanvasRenderingContext2D, view: Glide
   context.registry = options.registry ?? openingRegistry;
   const frame = options.frame ?? evaluateTimeline(timeline, sequenceId, seconds, context, { reduced: view.reduced });
   const selected = frame.composition;
-  const tunnel = selected.instances.find(n => n.type === 'sequence.opening.tunnel-fade');
-  const dark = tunnel ? frame.state[tunnel.id]?.dark as number | undefined : undefined;
-  let native = openingFrame(ctx, view, ambientTime, mode === 'glide' ? seconds : null, { actors:options.actors,x: frame.camera.x, h: frame.camera.h, ...(dark !== undefined ? { dark } : {}) });
+  const stateOf = (type: string, key: string) => { const row = selected.instances.find(n => n.type === 'sequence.opening.' + type); const v = row ? frame.state[row.id]?.[key] : undefined; return typeof v === 'number' ? v : undefined; };
+  const dark = stateOf('tunnel-fade', 'dark'), clockMinute = stateOf('sky', 'clock'), trainX = stateOf('line0', 'train');
+  // the timeline's city clock gives the frame its light (the same lightAt the game uses); facing the west sea
+  if (clockMinute !== undefined && clockMinute >= 0) view = { ...view, lighting: lightAt(view.lighting.day, clockMinute, 270, null) };
+  const extra = { ...(dark !== undefined ? { dark } : {}), ...(trainX !== undefined && trainX >= 0 ? { train: trainX } : {}) };
+  let native = openingFrame(ctx, view, ambientTime, mode === 'glide' ? seconds : null, { actors:options.actors,x: frame.camera.x, h: frame.camera.h, ...extra });
   const state: Record<string, Properties> = {};
   const collect = (nodes: Composition['instances']) => nodes.forEach(n => { state[n.id] = n.type.startsWith('sequence.opening.') ? { time: ambientTime, tau: mode === 'glide' ? seconds : -1, reduced: view.reduced,width:native.W,height:native.H,cameraX: frame.camera.x, cameraH: frame.camera.h,...(n.type==='sequence.opening.tunnel-fade'?{dark:dark??0}:{}), ...(options.actors?.[n.id]?{pose:options.actors[n.id] as unknown as Value}:{}),...(frame.state[n.id] ?? {}) } : frame.state[n.id] ?? {}; collect(n.children ?? []); }); collect(selected.instances);
   const registry = options.registry ?? openingRegistry;
@@ -76,7 +80,7 @@ export function renderOpeningSequence(ctx: CanvasRenderingContext2D, view: Glide
   const inputs:Record<string,PieceInput>={};
   const propertyChanges=new Map<string,boolean>();
   for(const row of resolved)if(row.instance.type.startsWith('sequence.opening.')){const p=row.placement,z=frame.camera.zoom,edited=JSON.stringify(row.props)!==JSON.stringify(registry.properties(row.instance.type,{}));propertyChanges.set(row.instance.id,edited);const changed=p.x!==0||p.scale!==1||p.facing!==1||z!==1||edited;inputs[row.instance.type.slice('sequence.opening.'.length)]={props:row.props,...(options.actors?.[row.instance.id]?{pose:options.actors[row.instance.id]}:{}),...(changed?{cull:{x:p.x*z+(1-z)*native.W/2,scale:p.scale*z,facing:p.facing,width:native.W,unculled:edited}}:{})};}
-  native=openingFrame(ctx,view,ambientTime,mode==='glide'?seconds:null,{actors:options.actors,x:frame.camera.x,h:frame.camera.h,...(dark!==undefined?{dark}:{}),pieces:inputs});
+  native=openingFrame(ctx,view,ambientTime,mode==='glide'?seconds:null,{actors:options.actors,x:frame.camera.x,h:frame.camera.h,...extra,pieces:inputs});
   const jobs = new Map(native.parts.map(part => [part.id, part]));
   const counts=new Map<string,number>();for(const row of resolved)counts.set(row.instance.type,(counts.get(row.instance.type)??0)+1);
   ctx.save(); ctx.scale(native.scale, native.scale);
@@ -95,14 +99,15 @@ export function renderOpeningSequence(ctx: CanvasRenderingContext2D, view: Glide
       }
       if ((part.space === 'near') !== near) { if (near) ctx.restore(); else { ctx.save(); ctx.translate(0, Math.round(-native.drop)); } near = part.space === 'near'; }
       const p = resolvedPiece.placement, opacity = look.opacity;
-      if (p.parallax !== 1 || counts.get(node.type)!>1) part = openingFrame(ctx, view, ambientTime, mode === 'glide' ? seconds : null, { actors:options.actors,x: frame.camera.x * p.parallax, h: frame.camera.h, ...(dark !== undefined ? { dark } : {}),pieces:{...inputs,[partId]:{props:resolvedPiece.props,...(options.actors?.[node.id]?{pose:options.actors[node.id]}:{}),...(p.x!==0||p.scale!==1||p.facing!==1||frame.camera.zoom!==1||propertyChanges.get(node.id)?{cull:{x:p.x*frame.camera.zoom+(1-frame.camera.zoom)*native.W/2,scale:p.scale*frame.camera.zoom,facing:p.facing,width:native.W,unculled:propertyChanges.get(node.id)}}:{})}} }).parts.find(job => job.id === partId)!;
+      if (p.parallax !== 1 || counts.get(node.type)!>1) part = openingFrame(ctx, view, ambientTime, mode === 'glide' ? seconds : null, { actors:options.actors,x: frame.camera.x * p.parallax, h: frame.camera.h, ...extra,pieces:{...inputs,[partId]:{props:resolvedPiece.props,...(options.actors?.[node.id]?{pose:options.actors[node.id]}:{}),...(p.x!==0||p.scale!==1||p.facing!==1||frame.camera.zoom!==1||propertyChanges.get(node.id)?{cull:{x:p.x*frame.camera.zoom+(1-frame.camera.zoom)*native.W/2,scale:p.scale*frame.camera.zoom,facing:p.facing,width:native.W,unculled:propertyChanges.get(node.id)}}:{})}} }).parts.find(job => job.id === partId)!;
       const changed = p.x !== 0 || p.h !== 0 || p.scale !== 1 || p.facing !== 1 || opacity !== 1;
       if (changed) { ctx.save(); ctx.translate(p.x, -p.h); ctx.scale(p.scale * p.facing, p.scale); ctx.globalAlpha *= opacity; }
       try { part.draw(); } finally { if (changed) ctx.restore(); }
     }
     if (near) { ctx.restore(); near = false; }
     for (const fade of frame.fades) if (fade.opacity > 0) { ctx.save(); ctx.globalAlpha = fade.opacity; ctx.fillStyle = fade.color; ctx.fillRect(0, 0, native.W, native.H); ctx.restore(); }
-    for (const card of frame.text) { ctx.save(); ctx.fillStyle = '#ffdfb5'; ctx.font = '600 12px "IBM Plex Mono", monospace'; ctx.fillText(card.text, card.x, -card.h); ctx.restore(); }
+    // text cards: small captions (the glide's district names), a short rule over them, fading in and out
+    for (const card of frame.text) { const a = Math.min(1, (frame.time - card.from) / 0.6, (card.to - frame.time) / 0.6); ctx.save(); ctx.globalAlpha *= Math.max(0, a); ctx.fillStyle = 'rgba(255,136,0,.8)'; ctx.fillRect(card.x, -card.h - 10, 14, 1); ctx.fillStyle = '#ffdfb5'; ctx.font = '600 7px "IBM Plex Mono", monospace'; ctx.textBaseline = 'alphabetic'; ctx.fillText(card.text, card.x, -card.h); ctx.restore(); }
   } finally { if (near) ctx.restore(); ctx.restore(); }
   return { frame, scale: native.scale, width: native.W, height: native.H };
 }

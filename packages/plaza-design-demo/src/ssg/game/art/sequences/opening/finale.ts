@@ -24,7 +24,8 @@ import { drawMetroCar, METRO } from "../../vehicles/train-car";
 import { drawBogies } from "../../vehicles/rail";
 import { frameView, placed } from "../../core/view";
 import { type CoastView, type Lines, ORANGE, PAPER, R, S } from "./coast";
-import { DROP2, glideDist, NOSE_IN, PLACES, TOWER_X, TRAIN_V } from "./path";
+import { DROP2, glideDist, HARBOR_STATION, NOSE_IN, PLACES, TOWER_X, TRAIN_V } from "./path";
+import { readableMirror } from "./mirror";
 import { PORTAL_TOWER } from "./town";
 
 /** A car's length and the coupling gap, in view units at the coast's scale. */
@@ -51,21 +52,30 @@ export const WAITING: { X: number; c: Character }[] = [
 
 /** The viaduct, the station, the tower's portal, the train above ground, the tunnel's headwall: drawn on the back line, above it only. */
 export function drawLine0(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
-  const left = c.sx(PLACES.portal + 40), right = c.sx(PLACES.station[0] - 20);
+  // with the eastbound train (the glide since 2026-10-22) the viaduct goes on over the bay bridge to the raised Harbor Station
+  const harbor = c.train !== undefined, eastEnd = harbor ? HARBOR_STATION[0] - 20 : PLACES.station[0];
+  const left = c.sx(PLACES.portal + 40), right = c.sx(eastEnd - 20);
   if (left > c.W + 200 || right < -200) return;
   const o0 = c.sx(0);
   x.save(); x.beginPath(); x.rect(-10, -4000, c.W + 20, L.BACK + 4000); x.clip();
   // the viaduct: from the station to the ramp's foot (its height in scene units in its frame)
-  const a = (Math.max(-60, c.sx(PLACES.portal + 60)) - o0) / S, b = (Math.min(c.W + 60, c.sx(PLACES.station[0])) - o0) / S;
+  const a = (Math.max(-60, c.sx(PLACES.portal + 60)) - o0) / S, b = (Math.min(c.W + 60, c.sx(eastEnd)) - o0) / S;
   if (b > a) placed(x, R(o0), L.BACK, S, () => drawViaduct(x, a, b, { t: c.f, still: c.still, fill: '#1c1418', height: (fx) => railH(-fx * S) / S }));
   // the station: the platform at track height, its canopy, the stairs down to the plaza, the board, people waiting
   station(x, c, L);
+  if (harbor) {
+    platform(x, c, L, HARBOR_STATION, '0 · HARBOR', 'HARBOR', 'ARRIVING', false);
+    // the train in from Downtown, eastbound: up out of the headwall, along the viaduct, braking into the Harbor Station
+    const pa = Math.max(-200, c.sx(PLACES.portal)); x.save(); x.beginPath(); x.rect(pa, -4000, c.W + 200 - pa, L.BACK + 4000); x.clip();
+    eastbound(x, c, c.train!, (X) => L.BACK - railH(X));
+    x.restore();
+  }
   // the tower's portal (the tower itself is the street's, town.ts): a lit opening behind the track
   const ts = c.sx(PORTAL_TOWER.X) - PORTAL_TOWER.w * S;
   if (ts < c.W + 40 && ts + PORTAL_TOWER.w * S > -40) placed(x, R(c.sx(TOWER_X)), L.BACK, S, () => drawWallPortal(x, 120 / S, { t: c.f, still: c.still }));
   // the train above ground: out of the portal, along the viaduct, down the ramp; hidden inside the tower and past the headwall
   const nose = noseAt(c.gt);
-  if (nose > TOWER_X - 125) {
+  if (!harbor && nose > TOWER_X - 125) {
     x.save(); x.beginPath(); x.rect(c.sx(PLACES.portal), -4000, c.sx(TOWER_X - 120) - c.sx(PLACES.portal), L.BACK + 4000); x.clip();
     train(x, c, nose, (X) => L.BACK - railH(X), false);
     x.restore();
@@ -77,8 +87,10 @@ export function drawLine0(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
 }
 
 /** The Galleria's LINE 0 station: a platform on the viaduct, its canopy, stairs, the board, the plate, three people waiting. */
-function station(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
-  const [X0, X1] = PLACES.station;
+function station(x: CanvasRenderingContext2D, c: CoastView, L: Lines) { platform(x, c, L, PLACES.station, '0 · GALLERIA', 'DOWNTOWN', '2 MIN', true); }
+
+/** A LINE 0 platform on the viaduct from X0 (east) to X1 (west): slab, canopy, stairs at its east end, plate, board; the Galleria's has its people. */
+function platform(x: CanvasRenderingContext2D, c: CoastView, L: Lines, [X0, X1]: [number, number], plate: string, next: string, when: string, people: boolean) {
   const a = R(c.sx(X1)), b = R(c.sx(X0)), d = R(L.BACK - LINE0.deck * S);
   if (b < -60 || a > c.W + 60) return;
   // the platform slab and its edge line, the canopy on two posts
@@ -90,11 +102,11 @@ function station(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
   x.fillStyle = '#1a1218'; for (let i = 0; i < 9; i++) x.fillRect(b + i * 3, d + 4 + i * ((L.BACK - d) / 9), 4, 2);
   // the plate and the board under the canopy: where the next train goes, and when
   x.fillStyle = '#0d0705'; x.fillRect(R((a + b) / 2) - 22, d - 58, 44, 9); x.strokeStyle = 'rgba(' + ORANGE + ',.7)'; x.lineWidth = 1; x.strokeRect(R((a + b) / 2) - 21.5, d - 57.5, 43, 8);
-  x.save(); x.font = '600 4px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(' + ORANGE + ',.95)'; x.fillText('0 · GALLERIA', R((a + b) / 2), d - 53); x.restore();
+  x.save(); x.font = '600 4px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(' + ORANGE + ',.95)'; x.fillText(plate, R((a + b) / 2), d - 53); x.restore();
   x.fillStyle = '#050302'; x.fillRect(a + 8, d - 36, 22, 7);
   const blink = c.still || Math.floor(c.f / 40) % 2 === 0;
-  x.save(); x.font = '600 2.6px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(' + PAPER + ',.9)'; x.fillText('DOWNTOWN', a + 19, d - 34.2); x.fillStyle = blink ? 'rgba(255,190,60,.95)' : 'rgba(255,190,60,.5)'; x.fillText('2 MIN', a + 19, d - 31.2); x.restore();
-  for (const w of WAITING) { const s = c.sx(w.X); placed(x, R(s), d, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['line0.'+WAITING.indexOf(w)],'line0.'+WAITING.indexOf(w))); }
+  x.save(); x.font = '600 2.6px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(' + PAPER + ',.9)'; x.fillText(next, a + 19, d - 34.2); x.fillStyle = blink ? 'rgba(255,190,60,.95)' : 'rgba(255,190,60,.5)'; x.fillText(when, a + 19, d - 31.2); x.restore();
+  if (people) for (const w of WAITING) { const s = c.sx(w.X); placed(x, R(s), d, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['line0.'+WAITING.indexOf(w)],'line0.'+WAITING.indexOf(w))); }
 }
 
 /** The three cars from the nose back along the line, each on the rail under both its bogies; `floor(X)` is the rail's screen y. */
@@ -112,6 +124,23 @@ function train(x: CanvasRenderingContext2D, c: CoastView, nose: number, floor: (
   // the headlight's beam on the line ahead
   const hx = c.sx(nose), hy = floor(nose) - 12;
   if (hx > -60 && hx < c.W + 60) { const g = x.createRadialGradient(hx, hy, 2, hx, hy, 60); g.addColorStop(0, 'rgba(255,230,190,' + (under ? 0.32 : 0.22) + ')'); g.addColorStop(1, 'rgba(255,230,190,0)'); x.fillStyle = g; x.fillRect(hx - 70, hy - 60, 80, 120); }
+}
+
+/** Two cars running east (the nose at the east end, smaller X), each flipped so its lead faces east; its boards still read. */
+function eastbound(x: CanvasRenderingContext2D, c: CoastView, nose: number, floor: (X: number) => number) {
+  const xr = readableMirror(x);
+  for (let k = 0; k < 2; k++) {
+    const Xe = nose + k * (CAR_L + GAP), Xw = Xe + CAR_L, Xa = Xw - 40 * S, Xb = Xe + 40 * S;
+    const ax = c.sx(Xa), bx = c.sx(Xb);
+    if (Math.max(ax, bx) < -40 || Math.min(ax, bx) > c.W + 40) continue;
+    const ay = floor(Xa), by = floor(Xb), mx = (ax + bx) / 2, my = (ay + by) / 2, ang = Math.atan2(by - ay, bx - ax);
+    x.save(); x.translate(mx, my); x.rotate(ang); x.scale(-S, S); x.translate(-METRO.len / 2, 0);
+    drawBogies(xr, METRO.len);
+    drawMetroCar(xr, 0, (h) => -h, { t: c.f, c: k, seed: 78, dest: 'HARBOR', ox: Xe, plate: k === 1 ? 'CAR 2' : undefined, still: c.still });
+    x.restore();
+  }
+  const hx = c.sx(nose), hy = floor(nose) - 12;
+  if (hx > -60 && hx < c.W + 60) { const g = x.createRadialGradient(hx, hy, 2, hx, hy, 60); g.addColorStop(0, 'rgba(255,230,190,.2)'); g.addColorStop(1, 'rgba(255,230,190,0)'); x.fillStyle = g; x.fillRect(hx - 60, hy - 60, 120, 120); }
 }
 
 /**
