@@ -101,9 +101,9 @@ and "Blanket (lying)" covers them to the chest. `sleep` stays the curled-up slee
 cap or hairnet, a towel), **waitress** (diner uniform, white collar, waist apron, notepad), **security**
 (private security, never Registry grey or Skyport navy: a dark polo with SECURITY across the back or
 hi-vis, a radio on the chest), **cashier** (a store tabard over a shirt, a name badge) and **clerk** (an
-office shirt, an ID card on a lanyard). Their parts (`chefcap`, `hairnet`; `whites`, `diner`, `polo`,
+office shirt, an ID card on a lanyard) and **police** (city police for the precinct: a dark olive uniform, a peaked cap, a radio and a badge; never Registry grey-white or Skyport navy). Their parts (`chefcap`, `hairnet`; `whites`, `diner`, `polo`,
 `tabard`, `shirt`; `towel`, `notepad`, `radio`, `badge`, `lanyard`) can be set on anyone. Presets: Diner
-cook, Diner waitress, Shop security, Store cashier, Registry clerk, Regular on a counter stool, Patient on a cot.
+cook, Diner waitress, Shop security, Store cashier, Registry clerk, Precinct officer, Regular on a counter stool, Patient on a cot.
 
 ## 3. The player is the unit
 

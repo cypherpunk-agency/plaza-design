@@ -44,6 +44,8 @@
       "props": { "kind": "human", "archetype": "cashier", "act": "stand", "district": "downtown" } },
     { "id": "registry-clerk", "label": "Registry clerk", "kit": "character.resident", "note": "Office shirt, ID on a lanyard; behind a counter.",
       "props": { "kind": "human", "archetype": "clerk", "act": "stand", "district": "downtown" } },
+    { "id": "precinct-officer", "label": "Precinct officer", "kit": "character.resident", "note": "City police: dark olive uniform, radio and badge.",
+      "props": { "kind": "human", "archetype": "police", "act": "stand", "district": "downtown" } },
     { "id": "stool-regular", "label": "Regular on a counter stool", "kit": "character.resident", "note": "Sits on a 19-unit diner stool, feet dangling.",
       "props": { "kind": "human", "act": "sit", "sitting": "side", "seat": 19, "district": "downtown" } },
     { "id": "patient-on-a-cot", "label": "Patient on a cot", "kit": "character.resident", "note": "Lying on the back at bed height 16, a blanket over them.",

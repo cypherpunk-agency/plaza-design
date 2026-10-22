@@ -746,7 +746,7 @@
         "number": "4C",
         "door": "none",
         "lock": "none",
-        "lit": 0.15,
+        "lit": 0.1,
         "window": true,
         "partition": true,
         "seed": 44
@@ -1735,6 +1735,81 @@
         "instance": "house-interior",
         "anchor": "origin"
       }
+    },
+    {
+      "id": "moth-wall",
+      "type": "interior.dt-pinwall",
+      "props": {
+        "width": 40,
+        "height": 28,
+        "from": 30,
+        "sheets": 10,
+        "strings": 6,
+        "map": true,
+        "list": true,
+        "gaps": 4,
+        "seed": 44
+      },
+      "placement": {
+        "x": 86,
+        "h": 0
+      },
+      "attach": {
+        "instance": "rm-flat-4",
+        "anchor": "origin"
+      },
+      "order": 32.2,
+      "layer": "backdrop"
+    },
+    {
+      "id": "moth-cables",
+      "type": "interior.dt-cables",
+      "props": {
+        "width": 120,
+        "height": 76,
+        "cables": 4,
+        "sag": 6,
+        "drops": 1,
+        "colours": "mixed",
+        "lit": 0.3,
+        "seed": 46
+      },
+      "placement": {
+        "x": 4,
+        "h": 0
+      },
+      "attach": {
+        "instance": "rm-flat-4",
+        "anchor": "origin"
+      },
+      "order": 32.3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "moth-left",
+      "type": "interior.dt-left-behind",
+      "props": {
+        "width": 120,
+        "chair": "pushed back",
+        "chairAt": 34,
+        "papers": 9,
+        "mug": true,
+        "boxes": 3,
+        "bag": 96,
+        "bowl": true,
+        "drawer": true,
+        "seed": 45
+      },
+      "placement": {
+        "x": 4,
+        "h": 0
+      },
+      "attach": {
+        "instance": "rm-flat-4",
+        "anchor": "origin"
+      },
+      "order": 32.4,
+      "layer": "backdrop"
     }
   ]
 }

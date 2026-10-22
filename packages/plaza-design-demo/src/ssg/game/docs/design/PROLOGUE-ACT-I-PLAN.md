@@ -118,7 +118,7 @@ dependency rules still apply where they do not contradict this route.
 | 13 | A Downtown street at night ✓ (sweep variant ○) → Kessel's room ○ | A sweep collects unregistered persons; Kessel's emergency transfer into DLV-9 | Narrative only; no new mechanic |
 
 Optional places that can carry breathers or side errands: the 24h diner, the billboard catwalk
-and Downtown roofs, the police precinct. The harbor finale is not in Act I; it may end the
+and Downtown roofs, the police precinct (style frame `dt-precinct`). The harbor finale is not in Act I; it may end the
 final act.
 
 ## Act I matrix (earlier version)

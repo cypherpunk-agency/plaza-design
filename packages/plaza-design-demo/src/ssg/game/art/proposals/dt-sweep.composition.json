@@ -2566,12 +2566,12 @@
       "type": "civic.floodlight",
       "props": {
         "kind": "tower",
-        "height": 120,
-        "heads": 3,
+        "height": 160,
+        "heads": 4,
         "aim": "right",
-        "reach": 150,
-        "spread": 170,
-        "strength": 0.85,
+        "reach": 170,
+        "spread": 200,
+        "strength": 0.9,
         "seed": 1
       },
       "placement": {
@@ -2586,12 +2586,12 @@
       "type": "civic.floodlight",
       "props": {
         "kind": "tower",
-        "height": 120,
-        "heads": 3,
+        "height": 160,
+        "heads": 4,
         "aim": "left",
-        "reach": 140,
-        "spread": 160,
-        "strength": 0.8,
+        "reach": 160,
+        "spread": 190,
+        "strength": 0.85,
         "seed": 2
       },
       "placement": {
@@ -2608,11 +2608,11 @@
         "table": true,
         "barrier": 64,
         "text": "IDENTITY CHECK/HAVE YOUR ID READY",
-        "cones": 3,
+        "cones": 2,
         "scanning": true
       },
       "placement": {
-        "x": 760,
+        "x": 1072,
         "h": 0
       },
       "order": 364,
@@ -2652,7 +2652,7 @@
         "archetype": "inspector"
       },
       "placement": {
-        "x": 812,
+        "x": 1066,
         "h": 0,
         "facing": -1
       },
@@ -2670,7 +2670,7 @@
         "act": "argue"
       },
       "placement": {
-        "x": 860,
+        "x": 1042,
         "h": 0,
         "facing": -1
       },
@@ -2685,11 +2685,11 @@
         "depth": "play",
         "district": "downtown",
         "seed": 6003,
-        "act": "wait",
+        "act": "queue",
         "archetype": "elder"
       },
       "placement": {
-        "x": 892,
+        "x": 1018,
         "h": 0
       },
       "order": 368,
@@ -2740,11 +2740,11 @@
         "depth": "play",
         "district": "downtown",
         "seed": 6006,
-        "act": "phone",
+        "act": "talk",
         "archetype": "inspector"
       },
       "placement": {
-        "x": 1238,
+        "x": 1236,
         "h": 0
       },
       "order": 371,
@@ -2778,8 +2778,8 @@
         "act": "scan"
       },
       "placement": {
-        "x": 900,
-        "h": 30
+        "x": 1130,
+        "h": 56
       },
       "order": 373,
       "layer": "playfield"
@@ -2827,7 +2827,7 @@
         "act": "lean"
       },
       "placement": {
-        "x": 1222,
+        "x": 242,
         "h": 0
       },
       "order": 376,
@@ -2859,14 +2859,14 @@
         "depth": "play",
         "district": "downtown",
         "seed": 6013,
-        "act": "sit",
+        "act": "wait",
         "archetype": "kid"
       },
       "placement": {
-        "x": 990,
+        "x": 878,
         "h": 0
       },
-      "order": 378,
+      "order": 281.5,
       "layer": "playfield"
     },
     {
@@ -2874,17 +2874,17 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "back",
+        "depth": "play",
         "district": "downtown",
         "seed": 6014,
-        "act": "lean",
+        "act": "wait",
         "archetype": "punk"
       },
       "placement": {
-        "x": 1880,
+        "x": 1912,
         "h": 0
       },
-      "order": 379,
+      "order": 378.5,
       "layer": "playfield"
     },
     {
@@ -2895,14 +2895,167 @@
         "depth": "back",
         "district": "downtown",
         "seed": 6015,
-        "act": "smoke"
+        "act": "lean"
       },
       "placement": {
-        "x": 1040,
+        "x": 972,
         "h": 0
       },
       "order": 380,
       "layer": "playfield"
+    },
+    {
+      "id": "flood-2",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "tripod",
+        "height": 74,
+        "heads": 2,
+        "aim": "left",
+        "reach": 80,
+        "spread": 110,
+        "strength": 0.8,
+        "seed": 3
+      },
+      "placement": {
+        "x": 1226,
+        "h": 0
+      },
+      "order": 363.5,
+      "layer": "set"
+    },
+    {
+      "id": "queue-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6016,
+        "act": "queue",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 994,
+        "h": 0
+      },
+      "order": 368.5,
+      "layer": "playfield"
+    },
+    {
+      "id": "loaded",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6018,
+        "act": "wait",
+        "archetype": "teen"
+      },
+      "placement": {
+        "x": 1262,
+        "h": 0
+      },
+      "order": 371.5,
+      "layer": "playfield"
+    },
+    {
+      "id": "hide-crates",
+      "type": "interior.dt-dry-goods",
+      "props": {
+        "width": 40,
+        "sacks": 0,
+        "crates": 2,
+        "drums": 1,
+        "print": "red",
+        "seed": 6
+      },
+      "placement": {
+        "x": 1898,
+        "h": 0
+      },
+      "order": 378.7,
+      "layer": "playfield"
+    },
+    {
+      "id": "sweep-ticker",
+      "type": "sign.ticker",
+      "props": {
+        "text": "SWEEP IN PROGRESS · REMAIN INDOORS · HAVE YOUR ID READY · UNREGISTERED PERSONS WILL BE COLLECTED · ",
+        "color": "255,42,68",
+        "width": 130,
+        "height": 10,
+        "speed": 0.5,
+        "mount": "wall",
+        "mask": [
+          -66,
+          66,
+          -8,
+          8
+        ]
+      },
+      "placement": {
+        "x": 80,
+        "h": 140
+      },
+      "attach": {
+        "instance": "front-9",
+        "anchor": "origin"
+      },
+      "order": 322.5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "notice-shutter",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 44,
+        "height": 28,
+        "header": "REGISTRY NOTICE",
+        "lines": [
+          "UNREGISTERED",
+          "PERSONS WILL",
+          "BE COLLECTED"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 146,
+        "h": 62
+      },
+      "attach": {
+        "instance": "front-7",
+        "anchor": "origin"
+      },
+      "order": 365.2,
+      "layer": "set"
+    },
+    {
+      "id": "notice-tagged",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 40,
+        "height": 26,
+        "header": "CURFEW",
+        "lines": [
+          "01:00–05:00",
+          "ID ON DEMAND"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 126,
+        "h": 30
+      },
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      },
+      "order": 365.3,
+      "layer": "set"
     }
   ]
 }

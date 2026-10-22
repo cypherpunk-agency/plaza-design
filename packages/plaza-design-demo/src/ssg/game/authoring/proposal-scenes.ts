@@ -66,6 +66,8 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'dt-substation', base: 'tower', file: 'art/proposals/dt-substation.composition.json', label: 'Downtown · the substation: yard, transformers, control hut', district: 'downtown' },
   { id: 'dt-substation-cut', base: 'tower', file: 'art/proposals/dt-substation-cut.composition.json', label: 'Downtown · the substation after the power cut', district: 'downtown' },
   { id: 'dt-sweep', base: 'downtown', file: 'art/proposals/dt-sweep.composition.json', label: 'Downtown · the sweep: Registry vans, floodlights, ID checks (best at night)', district: 'downtown' },
+  // Act I optional place (2026-10-22): the police precinct, where the Registry keeps a desk. Takes Downtown's look.
+  { id: 'dt-precinct', base: 'downtown', file: 'art/proposals/dt-precinct.composition.json', label: 'Downtown · the police precinct: front desk, Registry liaison, holding cells, squad room', district: 'downtown' },
   // Metro train and platform lengths (Tommi, 2026-10-22): the whole train is walkable, so the platform is as long as the train.
   // Underground Downtown platforms with 2, 3, 4 and 6 cut-open cars at the player's scale (art/transit/metro-kit.ts); look frames.
   { id: 'metro-len-2', base: 'tower', file: 'art/proposals/metro-len-2.composition.json', label: 'Metro · 2-car train at an underground platform', district: 'downtown' },
