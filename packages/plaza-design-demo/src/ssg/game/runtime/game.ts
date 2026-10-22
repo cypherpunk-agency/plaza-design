@@ -83,7 +83,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
+import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
 
 /**
  * Something to press E on: a way out (`exit`), the scene's life (`life`: a readable, a use, someone
@@ -922,7 +922,7 @@ export class Game {
     const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
-    this.level = s.level ? { source: s.level, state: levelArrive(s.level, this.p, (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0) } : null;
+    this.level = s.level ? { source: s.level, state: levelArrive(s.level, this.p, (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0, this.save.rooms?.[id]) } : null;
     this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
     this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
     if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
@@ -1161,6 +1161,8 @@ export class Game {
     // ↑/↓ held climb a ladder, spiral or switchback (a straight flight is walked with ←/→)
     const climb = locked ? 0 : (this.keys.has('ArrowUp') || this.keys.has('w') ? 1 : 0) - (this.keys.has('ArrowDown') || this.keys.has('s') ? 1 : 0);
     const riding = !!this.level && levelStep(this.level, p, locked ? 0 : dir, dt, this.zh.model, climb);
+    // a room seen for the first time stays open on this save
+    if (this.level && levelSeen(this.level).length !== (this.save.rooms?.[this.here]?.length ?? 0)) { (this.save.rooms ??= {})[this.here] = [...levelSeen(this.level)]; this.persistSave(); }
     const [minX, maxX] = this.level && !riding ? levelBounds(this.level, this.levelW) : [12, this.levelW - 12];
     if (!riding) p.x = Math.max(minX, Math.min(maxX, p.x + dir * speed * dt));
     // Walking into an open border (the yard's passage, a street's end) leaves without E.

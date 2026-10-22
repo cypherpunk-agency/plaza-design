@@ -24,17 +24,30 @@ const FINISH: Record<RoomKind, { wall: string; band: string; floor: string }> = 
   platform: { wall: '#202428', band: '#c9a227', floor: '#151719' },
 };
 
-/** The back wall of one storey: finish by kind, and what stands against it. */
+/**
+ * The back wall of one storey: finish by kind, and what stands against it. A room can also open on its own
+ * (engine/level.ts `LevelRoom`): `Opens` on arrival or never instead of always, and the artwork attached to it
+ * shows only while it is open; shut, it draws its cover (dark, lit windows, a section, earth) over itself.
+ */
 export const roomElement: Element = {
   type: 'level.room', version: 1, label: 'Room (cut-open storey)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     width: num('Width', 240, 20, 4000, 1, 'units'), height: num('Height (floor to ceiling)', 62, 30, 400, 1, 'units'),
     kind: { kind: 'select', label: 'Kind', options: [...ROOM_KINDS], default: 'office' },
     lit: num('Lights on', 1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    reveal: { kind: 'select', label: 'Opens (always: with its building)', options: ['always', 'arrival', 'never'], default: 'always' },
+    keep: { kind: 'select', label: 'Once seen', options: ['remember', 'close'], default: 'remember' },
+    closed: { kind: 'select', label: 'Looks while shut', options: ['dark', 'windows', 'section', 'earth'], default: 'dark' },
+    doorLight: { kind: 'boolean', label: 'Light under a door while shut', default: false },
   },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: Number(p.height), role: 'mount' }, middle: { x: Number(p.width) / 2, h: 0, role: 'mount' } }),
-  draw: (x, v, p) => {
+  draw: (x, v, p, s) => {
+    drawRoom(x, v, p);
+    if (p.reveal === 'arrival' || p.reveal === 'never') drawShut(x, v, p, s);
+  },
+};
+function drawRoom(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<string, unknown>>) {
     const w = Number(p.width), h = Number(p.height), kind = p.kind as RoomKind, f = FINISH[kind] ?? FINISH.office, lit = Number(p.lit), r = rng(Number(p.seed) * 31 + 7);
     rect(x, v, 0, 0, w, h, f.wall);
     rect(x, v, 0, 0, w, 6, f.band);
@@ -53,8 +66,37 @@ export const roomElement: Element = {
     if (kind === 'platform') { rect(x, v, 0, 0, w, 3, '#c9a227'); for (let dx = 30; dx < w - 20; dx += 90) { rect(x, v, dx, 26, 40, 14, '#0f1416'); rect(x, v, dx + 2, 28, 36, 10, 'rgba(255,214,138,.35)'); } }
     // ceiling lights and their glow on the wall
     if (lit > 0) for (let dx = 30; dx < w - 10; dx += 60) { rect(x, v, dx, h - 3, 14, 2, '#ffe9b8'); x.fillStyle = `rgba(255,220,160,${0.07 * lit})`; x.fillRect(v.sx(dx - 10), v.y(h - 3), Math.abs(v.sx(dx + 24) - v.sx(dx - 10)), Math.abs(v.y(0) - v.y(h - 3))); }
-  },
-};
+}
+/** A shut room's cover, as much as it is shut (`s.open`, from the level): what the player has not reached yet. */
+function drawShut(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<string, unknown>>, s: Readonly<Record<string, unknown>>) {
+    const shut = 1 - Math.max(0, Math.min(1, Number(s.open ?? 1))); if (shut <= 0.001) return;
+    const w = Number(p.width), t = Number(p.height), look = String(p.closed ?? 'dark');
+    x.save(); x.globalAlpha *= shut;
+    if (look === 'earth') {
+      rect(x, v, 0, 0, w, t, '#1c140e');
+      for (let h = 6; h < t; h += 11) rect(x, v, 0, h, w, 2, '#2a1e14');
+      for (let i = 0; i < w * t / 90; i++) { const a = (i * 97.13) % w, b = (i * 53.7) % t; rect(x, v, a, b, 1.5, 1.5, i % 3 ? '#3a2a1c' : '#4a3a28'); }
+    } else if (look === 'section') {
+      // an architect's cut: poured concrete, hatched, with the slabs drawn heavier
+      rect(x, v, 0, 0, w, t, '#2b2d33');
+      x.save(); x.beginPath(); x.rect(Math.min(v.sx(0), v.sx(w)), Math.min(v.y(0), v.y(t)), Math.abs(v.sx(w) - v.sx(0)), Math.abs(v.y(t) - v.y(0))); x.clip();
+      x.strokeStyle = '#41444c'; x.lineWidth = 1; x.beginPath();
+      for (let k = -t; k < w; k += 7) { x.moveTo(v.sx(k), v.y(0)); x.lineTo(v.sx(k + t), v.y(t)); }
+      x.stroke(); x.restore();
+      rect(x, v, 0, 0, w, 3, '#55585f'); rect(x, v, 0, t - 3, w, 3, '#55585f');
+    } else {
+      rect(x, v, 0, 0, w, t, '#0c0d10');
+      rect(x, v, 0, 0, w, 2, '#1d1f25'); rect(x, v, 0, t - 2, w, 2, '#1d1f25');
+      if (look === 'windows') for (let i = 0, n = Math.max(1, Math.floor(w / 46)); i < n; i++) {
+        // lit from inside, seen from outside: warm panes, a blind half down on some
+        const cx = (i + 0.5) * w / n - 9, lit = (i * 7 + Math.round(w)) % 3 !== 0;
+        rect(x, v, cx, t * 0.35, 18, Math.min(22, t * 0.45), lit ? 'rgba(255,196,120,.55)' : '#16181d');
+        if (lit && i % 2) rect(x, v, cx, t * 0.35 + Math.min(22, t * 0.45) * 0.5, 18, Math.min(22, t * 0.45) * 0.5, 'rgba(60,40,24,.8)');
+      }
+    }
+    if (p.doorLight === true) rect(x, v, w / 2 - 9, 0, 18, 1.5, 'rgba(255,200,130,.85)');
+    x.restore();
+}
 
 /** The cut floor between two storeys: concrete with section hatching and a lit edge. */
 export const slabElement: Element = {

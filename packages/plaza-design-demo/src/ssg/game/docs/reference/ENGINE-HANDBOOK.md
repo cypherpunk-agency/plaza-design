@@ -161,6 +161,20 @@ handrail. Escalators: standard, glass. Lifts: goods, cage, passenger-old, glass,
 OUT OF ORDER sign, never called). A flight lands on its own building's floor before the street at the same
 height. A floor marked `indoor` (a tunnel, a cellar) is lit as indoors while the player stands on it.
 
+Rooms (`level.room`, the interior kit's storey) can open a building one part at a time, for puzzles and for rooms
+nobody has to furnish. Attach the room to its building's interior and the room's artwork to the room. `Opens`:
+always (the default: with its building), on arrival (once the player is in it, or rises into it on a stair or in a
+lift), or never (a room that is not part of the game). `Once seen`: remember (stays open; saved in
+`Save.rooms` by scene) or close (shuts again behind the player). Shut, the room draws its cover (`dark`, `windows`
+lit from outside, a hatched `section`, `earth`) and can show light under a door; pieces left outside the room (a
+stair's mouth, a lift shaft) stay visible as the way on. The open amounts are `LevelState.rooms`, eased in the
+level step; the editor shows every room open, or (environment "Rooms as the player sees them from floor") one
+floor's view. Check with `pnpm test:game level-rooms`.
+
+The street door seen from inside is `level.entrance` (its `building`; `style` glass, shop, flat or service, each the
+inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
+player is in that building.
+
 ## Recipe: make or change any scene (folder scenes)
 
 Every scene is a folder scene: `scenes/<id>/` holds `composition.json`, `scene.json`, `gameplay.json`,

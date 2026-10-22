@@ -53,6 +53,60 @@ const handle = (type: string, label: string, fields: Record<string, Field> = {})
 export const shellElement = handle('level.shell', 'Building shell (fades when inside)', { revealSpeed: num('Opens and closes (share per frame)', 0.07, 0.01, 1, 0.01), ghost: num('Wall left while inside', 0, 0, 1, 0.01) });
 export const interiorElement = handle('level.interior', 'Building interior (shown when inside)');
 
+/** The inside face of a building's street door, in the look of its outside: shown only while the player is in that building. */
+export const ENTRANCE_STYLES = ['glass', 'shop', 'flat', 'service'] as const;
+export const entranceElement: Element = {
+  type: 'level.entrance', version: 1, label: 'Street door seen from inside', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  fields: {
+    building: text('Building (shown while inside it)'), style: { kind: 'select', label: 'Style', options: [...ENTRANCE_STYLES], default: 'glass' },
+    width: num('Width', 28, 14, 120, 1, 'units'), height: num('Height', 46, 30, 120, 1, 'units'),
+    sign: { kind: 'select', label: 'Shop sign (read from inside)', options: ['CLOSED', 'PULL', 'none'], default: 'CLOSED' },
+  },
+  bounds: p => ({ x: -Number(p.width) / 2 - 3, h: 0, w: Number(p.width) + 6, tall: Number(p.height) + 4 }),
+  anchors: origin,
+  draw: (x, v, p) => {
+    const w = Number(p.width), t = Number(p.height), hw = w / 2, style = String(p.style ?? 'glass');
+    const frame = style === 'glass' ? '#7d8794' : style === 'shop' ? '#4a3222' : style === 'service' ? '#3a3d44' : '#2e2a26';
+    // the frame: a glass door shows the lobby through it, the others fill it
+    if (style === 'glass') { rect(x, v, -hw - 3, 0, 3, t + 3, frame); rect(x, v, hw, 0, 3, t + 3, frame); rect(x, v, -hw - 3, t, w + 6, 3, frame); }
+    else rect(x, v, -hw - 3, 0, w + 6, t + 3, frame);
+    if (style === 'glass') {
+      // two glass leaves, the street light through them, a push bar across both
+      rect(x, v, -hw, 0, w, t, 'rgba(150,200,220,.22)'); rect(x, v, -0.5, 0, 1, t, frame);
+      rect(x, v, -hw + 2, t * 0.55, w - 4, t * 0.4, 'rgba(255,220,170,.10)');
+      rect(x, v, -hw + 2, 20, w - 4, 2, '#c8ccd4'); rect(x, v, -hw + 2, 19, 1, 4, '#8a8f99'); rect(x, v, hw - 3, 19, 1, 4, '#8a8f99');
+      rect(x, v, -hw, 0, w, 2, '#5d616c');
+    } else if (style === 'shop') {
+      // timber door, a pane in the top half, the bell on its bracket, the hanging sign seen from behind
+      rect(x, v, -hw, 0, w, t, '#6b4728'); rect(x, v, -hw + 3, t * 0.5, w - 6, t * 0.42, 'rgba(150,200,220,.25)');
+      rect(x, v, -hw + 3, 4, w - 6, t * 0.4, '#5a3b22'); rect(x, v, hw - 5, t * 0.42, 2, 3, '#c9a24a');
+      rect(x, v, hw - 4, t + 1, 3, 1, '#8a6a2a'); rect(x, v, hw - 4.5, t - 3, 4, 4, '#c9a24a');
+      if (p.sign !== 'none') {
+        const sw = Math.min(w - 8, 20), sh = 7, sy = t * 0.62;
+        rect(x, v, -sw / 2, sy, sw, sh, '#e8e2d0');
+        x.save(); x.translate(v.sx(0), v.y(sy + sh / 2)); x.scale(-1, 1); x.fillStyle = '#2a2622';
+        x.font = 'bold ' + Math.max(4, Math.round(sh * 0.7 * Math.abs(v.y(0) - v.y(1)))) + 'px monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
+        x.fillText(String(p.sign ?? 'CLOSED'), 0, 0.5); x.restore();
+        rect(x, v, -1, sy + sh, 2, t * 0.92 - sy - sh, '#2a2622');
+      }
+    } else if (style === 'flat') {
+      // a painted flat door: spy-hole, chain across to the frame, the handle and its lock
+      rect(x, v, -hw, 0, w, t, '#4e5a52'); rect(x, v, -hw + 2, 2, w - 4, t - 4, '#56635a');
+      rect(x, v, -0.75, t * 0.72, 1.5, 1.5, '#0c0d10');
+      rect(x, v, hw - 6, t * 0.48, 3, 2, '#c8ccd4'); rect(x, v, hw - 5, t * 0.4, 2, 2, '#8a8f99');
+      for (let i = 0; i < 5; i++) rect(x, v, hw - 6 + i * 1.6, t * 0.62 - i * 0.6, 1.2, 1.2, '#b0b4bc');
+      rect(x, v, hw + 0.5, t * 0.6, 2, 3, '#8a8f99');
+    } else {
+      // steel service door: riveted edges, a kick plate, a panic bar, a small wired-glass light
+      rect(x, v, -hw, 0, w, t, '#4a4e57');
+      for (let h = 4; h < t; h += 8) { rect(x, v, -hw + 1.5, h, 1, 1, '#6f7480'); rect(x, v, hw - 2.5, h, 1, 1, '#6f7480'); }
+      rect(x, v, -hw + 2, 0, w - 4, 7, '#5d616c'); rect(x, v, -hw + 3, 21, w - 6, 2, '#b8bcc4');
+      rect(x, v, -4, t * 0.68, 8, 9, 'rgba(150,200,220,.25)'); rect(x, v, -4, t * 0.68 + 4, 8, 0.6, '#6f7480');
+    }
+  },
+};
+
+
 /** A stair's materials: the stringer under the steps, the treads and their nosing, the handrail and its warm rim. */
 type StairLook = { stringer: string; tread: string; nose: string; rail: string; rim: string };
 const LOOKS: Record<string, StairLook> = {
@@ -283,4 +337,4 @@ export const liftButtonElement: Element = {
   },
 };
 
-export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement];
+export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, entranceElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement];

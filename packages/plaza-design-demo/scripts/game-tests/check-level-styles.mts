@@ -81,3 +81,15 @@ for (const style of Object.keys(STAIR_STYLES)) for (const rail of opts(stairsEle
 for (const style of LIFT_STYLES) for (const doors of [0, 1]) elevatorElement.draw(canvas, view, {height: 120, width: 34, style}, {car: 60, doors} as never);
 for (const style of ['standard', 'glass']) escalatorElement.draw(canvas, view, {run: 60, rise: 40, direction: 'up', style}, {} as never);
 console.log('Level styles PASS: ladders climbed with ↑/↓, switchback landing, broken lift out of order, shophouse stair lands indoors, indoor floors, every style draws.');
+
+// the street door seen from inside: shown with its building's interior, in each style
+{
+  const {levelOpacity, restingLevelView} = await import('../../src/ssg/game/engine/level');
+  const {entranceElement, ENTRANCE_STYLES} = await import('../../src/ssg/game/art/levels/elements');
+  const lv = compileLevel([row('level.floor', 'street', 0, 0, {width: 300}), row('level.floor', 'lobby', 100, 0, {width: 100, building: 'blk'}), row('level.interior', 'blk-in', 100, 0, {building: 'blk'}), row('level.entrance', 'front', 104, 0, {building: 'blk', style: 'glass'})])!;
+  assert.equal(levelOpacity(lv, restingLevelView(lv, false)).front, 0, 'outside, the inside of the door is not drawn');
+  assert.equal(levelOpacity(lv, restingLevelView(lv, true)).front, 1, 'inside, it is');
+  assert.deepEqual(opts(entranceElement.fields.style), [...ENTRANCE_STYLES]);
+  for (const style of ENTRANCE_STYLES) for (const sign of ['CLOSED', 'PULL', 'none']) entranceElement.draw(canvas, view, {width: 28, height: 46, style, sign}, {} as never);
+  console.log('Level entrances PASS: the street door seen from inside shows with its building, in every style.');
+}
