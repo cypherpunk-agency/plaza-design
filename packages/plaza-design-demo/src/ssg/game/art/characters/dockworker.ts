@@ -7,6 +7,6 @@ export function drawDockworker(x: CanvasRenderingContext2D, v: View, pose: Prepa
   if(pose.visible)drawCharacterFrame(x,v,pose.character,pose.ready,pose.pixelSize,pose.frame,pose.height);
   const wx=pose.character.x;
   if (carry) {
-    box(x, v.sx(wx) + face * 8 - 7, v.y(25), 14, 11, carry === 'case' ? '#77664d' : '#39678b', '#e5d4af');
+    box(x, v.sx(wx) + face * 8 - 7, v.y((pose.character.h ?? 0) + 25), 14, 11, carry === 'case' ? '#77664d' : '#39678b', '#e5d4af');
   }
 }
