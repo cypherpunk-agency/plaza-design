@@ -18,7 +18,7 @@
 
 ## Summary
 
-The harbor becomes one chunk, `harbor`, of five new zones. Walked west to east, they follow the
+The harbor becomes five new zones joined by seams. Walked west to east, they follow the
 prologue's order: you arrive at the staff gate at dusk and work the night in the shed and yard. At dawn you
 check out onto the public quay and climb to the raised station above it. The shift never walks
 back past where it started, except for the one deliberate return in P4.
@@ -43,10 +43,10 @@ back past where it started, except for the one deliberate return in P4.
 ## Zones
 
 All zones share one ground line, h 0 at quay level. The exception is the station, whose platform is
-160 units above the quay. Chunk offsets are measured from the shed's west edge. The chunk's facing
+160 units above the quay. Offsets are measured from the shed's west edge. The zones' shared facing
 is 90°, as the harbor's facing is today.
 
-| # | Zone (scene id) | Width | Chunk offset `{dx, dh}` | What is in it | Prologue beats |
+| # | Zone (scene id) | Width | Offset `{dx, dh}` | What is in it | Prologue beats |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `harbor-shed` | 1,280 (2 views) | 0, 0 | West edge: the port road and the staff gate in the perimeter fence, where the glide's sky taxi sets down. Transit Shed 3's long front and canopy. Lockers and a bench. The **staff room** on a glazed mezzanine up a steel stair (`level.floor` building `shed`, indoor), with the coffee machine. The supervisor's glass booth, the dispatch window and counter with the parcel, the BAY 3 pace ticker, the case-return rack. Masts, cranes, ship and the far shore behind. | P0 (landing at the gate), P1, P2, P3 pick-up, P4 return, the break |
 | 2 | `harbor-yard` | 1,280 (2 views) | 1,280, 0 | Receiving at Shed 3's east end, with Mara's window and counter and the empty case. Trolley parking T3–T5, the clamped trolley and its release, LOADING BAY 2 with its beacon. A cut-open straddle carrier and crates. The berth with the container ship and three STS cranes. East: the Terminal 2 fence gate, an ordinary exit to `stacks`. | P3 hand-over, P4 pick-up, P5 |
@@ -56,9 +56,9 @@ is 90°, as the harbor's facing is today.
 | – | `beach` (existing) | 1,530 | 4,800, 0 | Unchanged content. It joins the quay's east end by a walk seam. | Optional dawn detour |
 | – | Siding ledge (P14, later) | ≈ 300 | on the line | Stays a temporary ordinary exit for now (decided 12). The yard's east end is left clear, so its stair can land there later by a stairs seam. | Act II |
 
-Chunk walk length from the gate to the platform is about 3,600 units, or roughly 46 s of plain walking at 78
+Walk length from the gate to the platform is about 3,600 units, or roughly 46 s of plain walking at 78
 units/s, spread over the whole shift. The longest single task walk is P3: dispatch (shed x 820) →
-receiving (chunk x 1,430), 610 units or 8 s. It is also the first seam crossing, and nothing
+receiving (x 1,430), 610 units or 8 s. It is also the first seam crossing, and nothing
 announces it.
 
 ### Seams
@@ -145,7 +145,7 @@ review, make the coffee machine optional and cue it lightly (open question 2).
 | --- | --- |
 | `harbor` (the 2,480-unit pier) and its `harbor.*` scene-bound artwork | Replaced by the five zones. Its stalls, taxi rank, ferry and beach exit move to `harbor-quay`, and its cranes and ship to the yard. The customs arch, bonded store, den, ghost mark and bribe (later-act content) need a home: open question 4. |
 | `harborStation` (ground-level platform behind a pier gate) | Replaced by the raised `harbor-station`. The `station-harbor` entry in `city.json` points to it, with `elevation: "raised"`. |
-| `harborShift` (`?play=harborShift`, the M2 prototype) | Its JSON, task flags, objectives, uses and actors carry over onto `harbor-shed` and `harbor-yard`. The **stations keep their ids** (`dispatch-post`, `rack-post`, `receiving-post`, `checkout-post`, `office`, `trolley`, `clamp`, …), now split across three zones. The scene's gameplay owner (the shift's flags) needs one zone or a chunk-level owner: open question 3. |
+| `harborShift` (`?play=harborShift`, the M2 prototype) | Its JSON, task flags, objectives, uses and actors carry over onto `harbor-shed` and `harbor-yard`. The **stations keep their ids** (`dispatch-post`, `rack-post`, `receiving-post`, `checkout-post`, `office`, `trolley`, `clamp`, …), now split across three zones. The scene's gameplay owner (the shift's flags) needs one zone or a world-level owner: open question 3. |
 
 ## Style frames
 
@@ -172,7 +172,7 @@ ground line, scale, concrete, sodium and work-light palette across the seams.
    so that the dusk arrival is also by train?
 2. **Coffee machine**: required (a small beat of its own) or optional and lightly cued? Is it too close to P5?
 3. **Gameplay owner across zones.** The shift's flags live in one scene's gameplay today. Should the shift belong
-   to `harbor-shed` and be read by the yard and checkout, or should a chunk-level owner be added?
+   to `harbor-shed` and be read by the yard and checkout, or should a world-level owner be added?
 4. **The old pier's later-act content** (customs arch, bonded store, den, bribe, ghost mark): move it to
    the east end of the quay, put it in a separate `harbor-customs` zone, or keep it with `stacks`?
 5. **Train length**: 2 cars fits a 1,440-unit platform. Do we keep room for 3 (about 1,700)?
