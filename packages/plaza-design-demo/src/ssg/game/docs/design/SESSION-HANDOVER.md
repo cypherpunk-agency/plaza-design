@@ -108,6 +108,16 @@ renderWorldFrame (decision 24); Opening through renderWorldFrame with the direct
 `.claude/captures/glide-one-path/before` (regenerate with scripts/game-tests/capture-glide-frames.mts on an
 older commit if lost); empty the guard's allow-list.
 
+Glide agent's detailed next steps: generator from the old glide data with the mapping u = 3·(6760 − X); the
+mirrored beach at u = 1620 + 3X, facing −1; a parallax piece at p·u + (1 − p)·640. Zones (sudoOnly, spawn +
+floor, walk seams, a city.json place): glide-beach 4500, glide-downtown-west 3390, glide-downtown 2940,
+glide-galleria 1080, glide-spire-bay 1380, glide-harbor 990 units. Missing kit pieces: coast.bridge, truck gate +
+port office, escalator stroke, windows on air-lanes and line0-run (harbor end: shift.crane/stack/mast). Engine:
+backdrop registry + `SceneEnvironment.backdrop {id, x}`; `FrameDirector.sequence {time, state}`. Known look
+differences once wired: sun x follows its bearing; clouds and skyline rows no longer move with the camera; rain
+stops at zone edges; air-lane craft differ; cards use the director style; framing fixed to the 1280×720
+reference. Not yet rerun after the kit work: check-zone-graph, check-harbor-zones (both passed at baseline).
+
 ## Title glide
 
 - Performance: about 3.7× cheaper (render CPU p50 45.5 → 12.3 ms; Downtown 56 → 14.7) by skipping occluded
