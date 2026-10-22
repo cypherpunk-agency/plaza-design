@@ -15,7 +15,7 @@ import {playScenes,validatePlayFixtures,defaultPlayFixture} from '../../src/ssg/
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {gameSourceIdentity} from '../scene-system/source-identity.mts';
-const game=path.resolve('src/ssg/game'),ids=Object.keys(NATIVE_SCENES);assert.equal(ids.length,19);
+const game=path.resolve('src/ssg/game'),ids=Object.keys(NATIVE_SCENES);assert.equal(ids.length,20);
 const docs=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'test',value:JSON.parse(fs.readFileSync(path.join(game,d.file),'utf8'))}));
 const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(NATIVE_SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const make=()=>{const model=new ComposerModel(art,context,(doc,documents)=>{if(doc.id===docs[0].id)validateSourceDocuments(new Map(documents.map(d=>[d.id,d.value])));});model.load(docs);return model;},model=make();
@@ -42,7 +42,7 @@ function inspect(registry:any,ids:string[]){for(const id of ids){const scene=reg
 }}
 const values=(m:ComposerModel)=>new Map(m.list().map(d=>[d.id,d.value]));inspect(pendingRegistry(values(model)),ids);
 const safe=structuredClone(model.edits()),broken=structuredClone(edits[0].value);broken.uses.find((u:any)=>u.id==='review-uses').routes[0].command='missing-command';assert.throws(()=>model.importDocuments([{id:edits[0].id,value:broken}]));assert.deepEqual(model.edits(),safe,'invalid grouped edit is atomic');
-const bundle=createDocumentBundle(model.edits(),model.list()),receiver=make();receiver.importDocuments(readDocumentBundle(bundle,receiver.list()));assert.equal(receiver.edits().length,38);inspect(pendingRegistry(values(receiver)),ids);receiver.undo();assert.equal(receiver.dirty(),false);receiver.redo();inspect(pendingRegistry(values(receiver)),ids);
+const bundle=createDocumentBundle(model.edits(),model.list()),receiver=make();receiver.importDocuments(readDocumentBundle(bundle,receiver.list()));assert.equal(receiver.edits().length,ids.length*2);inspect(pendingRegistry(values(receiver)),ids);receiver.undo();assert.equal(receiver.dirty(),false);receiver.redo();inspect(pendingRegistry(values(receiver)),ids);
 for(const id of ids){const ref=deviceSourceIdentity(id),scene=structuredClone(receiver.get(ref.scene).value)as any;for(const group of ['uses','readables','rests','exits']as const)removeManifestContent(scene,group,'review-'+group);receiver.edit(ref.scene,'Delete review content',()=>scene);}
 const removed=pendingRegistry(values(receiver));for(const id of ids)for(const group of ['uses','readables','rests','exits'])assert(!removed[id][group]?.some((r:any)=>r.id==='review-'+group));for(const id of ids)receiver.undo();inspect(pendingRegistry(values(receiver)),ids);
 for(const scene of playScenes)assert.equal(validatePlayFixtures({version:1,fixtures:[defaultPlayFixture(scene)]},true).fixtures[0].scene,scene);

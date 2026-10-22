@@ -16,23 +16,32 @@ import {observationProblems,observationAliases} from '../engine/native-observati
  */
 
 import type {
-  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, Kind, LineData, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData,
+  Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, LineData, PartFunction, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData, MechanismDevice,
 } from './types';
+import { BEHAVIOUR_FUNCTION, LAYERS, PART_FUNCTIONS } from './types';
+import { MOVER_EASES, moverVerbs } from '../engine/movers';
+import { ZONE_VERBS } from '../engine/zones';
 import { windowProblem } from "../world/clock";
 import { ITEMS } from '../scenes/kit';
 
 /** What the code side of a scene provides and expects (see scene/rules.ts `contractOf`). */
 export interface CodeContract {
   /** Current registered primitive roles; ordinary source endpoints are not historical requirements. */
-  devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;kind?:Kind;events?:readonly string[]}[]}[];
+  devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;function?:PartFunction;events?:readonly string[]}[]}[];
   /** Verbs implemented by validated shared native routes, rather than legacy on steps. */
   nativeVerbs?: string[];
+  /** The scene's registered mechanisms as cable endpoints (engine/gameplay/mechanism-parts.ts). */
+  mechanisms?: MechanismDevice[];
   /** Named effects implemented in code. */
   effects: string[];
   /** Panels the data may open. */
   panels: string[];
   /** State keys the code relies on: the scene's `state` must give each a starting value. */
   state: readonly StateRequirement[];
+  /** The physical milestones the code reports (`SceneRules.inputs`): what a noun's `milestone` may name. */
+  inputs?: readonly string[];
+  /** The named places the code measured from the scene's artwork: what a stop or zone edge may call a `place` (absent: the code takes its names from the scene's own data, and a stop names it or fails when the scene is built). */
+  places?: readonly string[];
   /** Read-only values the code computes, usable in conditions and templates. */
   derived: string[];
   /** Goal ids the code ticks itself. */
@@ -44,9 +53,8 @@ export interface CodeContract {
 /** One scene to check: its file, what its code provides, and checks only its code knows. */
 export interface SceneCheck { data: SceneData; code: CodeContract; extra?: (z: SceneData) => string[] }
 
-const KINDS = ['SENSE', 'ACT', 'STORE', 'DAEMON', 'GUARD', 'LOG', 'LINK', 'CLOCK'];
-/** Kinds whose verbs the engine supplies, so they may list none. */
-const ENGINE_VERBS = ['GUARD', 'LINK', 'CLOCK'];
+/** Settings blocks whose verbs the engine supplies, so their parts may list none. */
+const ENGINE_VERBS = ['guard', 'link', 'clock', 'mover', 'zone'] as const;
 const TOYS = ['rings', 'cipher', 'cryptex', 'morse'] as const;
 /** The noun the engine puts on each device of a watchdog's route (scene/model.ts WATCH_NOUN). */
 const WATCH_NOUN = 'watchdog';
@@ -71,14 +79,18 @@ const KEYS: Record<string, string[]> = {
   device: ['targetQuery', 'id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
   itemUse: ['item', 'noun', 'label', 'on'],
-  noun: ['id', 'kind', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'on'],
+  noun: ['id', 'layer', 'function', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'mover', 'zone', 'milestone', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
   rings: ['rings', 'tolerance'],
   ring: ['speed', 'gap', 'start'],
   cipher: ['text', 'shift'],
   cryptex: ['word', 'rings'],
   morse: ['message', 'unitMs'],
-  clock: ['every', 'first', 'set', 'start'],
+  clock: ['every', 'first', 'set', 'start', 'once'],
+  mover: ['stops', 'axis', 'speed', 'ms', 'ease', 'start', 'across', 'set', 'moving', 'follow', 'paths', 'wired'],
+  leg: ['to', 'ms', 'share', 'speed', 'minMs', 'ease', 'load', 'event'],
+  choice: ['if', 'then', 'else'],
+  zone: ['from', 'to', 'watch', 'axis', 'within', 'building', 'set', 'armed'],
   watchdog: ['id', 'name', 'route', 'dwellMs', 'moveMs'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
   link: ['reach', 'known', 'when'],
@@ -114,6 +126,8 @@ interface Env {
   texts: Record<string, string | LineData>;
   /** Devices and nodes on a watchdog's route here: they carry the engine's `watchdog` noun. */
   routes: Set<string>;
+  /** The scene's tuning values: what a mover's or zone's numbers may name. */
+  tuning?: Record<string, number>;
 }
 
 /** Everything the checks look things up in: every keyring item, every device and node, by id. */
@@ -243,7 +257,7 @@ function checkNetworks(net: NetData, scenes: SceneData[], world: World): string[
         if (!m) { e(`${wr}: a port is "scene:device.noun"`); return; }
         const d = thing(m[1], m[2]), noun = d?.nouns.find((x) => x.id === m[3]);
         if (!d) e(`${wr}: "${m[1]}" has no device or node "${m[2]}"`);
-        else if (!noun || noun.kind !== 'LINK') e(`${wr}: ${m[2]}.${m[3]} is not a LINK noun`);
+        else if (!noun || !noun.link) e(`${wr}: ${m[2]}.${m[3]} is not a port (a part with a link)`);
       }
     });
     if (!Array.isArray(n.machines) || !n.machines.length) e('"machines": what is on it');
@@ -377,7 +391,7 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     }
     if ('guard' in s) {
       const g = d.nouns.find((n) => n.id === s.guard);
-      if (!g || g.kind !== 'GUARD') err(w, `guard "${s.guard}": not a GUARD noun of this device`);
+      if (!g || !g.guard) err(w, `guard "${s.guard}": not a login (a part with a guard) of this device`);
       else if (g.sector === sector) err(w, `guard "${s.guard}" sits inside the sector it opens (it could never be reached)`);
     }
     if ('sequence' in s) {
@@ -467,9 +481,10 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     for (const n of d.nouns) {
       const w = `${where} › nouns[${n.id}]`;
       keys(n, 'noun', w);
-      if (!KINDS.includes(n.kind)) err(w, `kind "${n.kind}" is not one of ${KINDS.join(' / ')}`);
+      if (!LAYERS.includes(n.layer)) err(w, `layer "${n.layer}" is not one of ${LAYERS.join(' / ')}`);
+      if (!PART_FUNCTIONS.includes(n.function)) err(w, `function "${n.function}" is not one of ${PART_FUNCTIONS.join(' / ')}`);
       const verbs = n.verbs ?? [];
-      if (!verbs.length && !ENGINE_VERBS.includes(n.kind)) err(w, 'has no verbs');
+      if (!verbs.length && !ENGINE_VERBS.some((f) => n[f])) err(w, 'has no verbs');
       dupes(verbs, w, 'verb');
       if (verbs.length && !n.on && verbs.some(v=>!env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v))) err(w, 'has verbs but no "on" (what they do)');
       if (n.current !== undefined && !known.has(n.current)) err(w, `current: unknown key "${n.current}"`);
@@ -477,10 +492,8 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       for (const v of verbs) if (!(v in (n.on ?? {})) && !('*' in (n.on ?? {})) && !env.code.nativeVerbs?.includes(d.id+'.'+n.id+':'+v)) err(`${w} › on`, `verb "${v}" does nothing (add it, or a "*" entry)`);
       if (n.sector !== undefined && !sectors.some((s) => s.id === n.sector)) err(w, `sector "${n.sector}" is not one of this device's sectors`);
       if (n.id === WATCH_NOUN && env.routes.has(d.id)) err(w, `"${WATCH_NOUN}" is the engine's noun on a device the watchdog visits: rename this one`);
-      for (const [f, kind] of [['guard', 'GUARD'], ['log', 'LOG'], ['link', 'LINK'], ['clock', 'CLOCK']] as const) {
-        if (n.kind === kind && !n[f]) err(w, `a ${kind} noun needs "${f}"`);
-        if (n[f] && n.kind !== kind) err(w, `"${f}" only goes on a ${kind} noun`);
-      }
+      for (const [f, fn] of Object.entries(BEHAVIOUR_FUNCTION) as [keyof typeof BEHAVIOUR_FUNCTION, PartFunction][])
+        if (n[f] && n.function !== fn) err(w, `"${f}" only goes on a ${fn} part (this one is ${n.function})`);
       if (n.guard) {
         const g = n.guard, wg = `${w} › guard`;
         keys(g, 'guard', wg);
@@ -527,9 +540,105 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         if (!(num(c.every) && c.every >= 100)) err(wc, 'every is the beat in ms, 100 or more');
         if (c.first !== undefined && !(num(c.first) && c.first >= 0)) err(wc, 'first is ms before the first beat, 0 or more');
         if (c.start !== undefined && typeof c.start !== 'boolean') err(wc, 'start is true or false (running when the scene starts)');
+        if (c.once !== undefined && typeof c.once !== 'boolean') err(wc, 'once is true or false (one event, then it stops)');
         if (c.set !== undefined && !writable.has(c.set)) err(wc, `set "${c.set}": not a state key (it holds the last event)`);
         if (!(n.events ?? []).length) err(w, 'a CLOCK needs events: what it raises, in turn (["tick"], or ["night", "day"])');
         for (const v of ['start', 'stop']) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a CLOCK: leave it out of verbs`);
+      }
+      if (n.mover) {
+        const mv = n.mover, wm = `${w} › mover`, stops = Object.entries(mv.stops ?? {});
+        keys(mv, 'mover', wm);
+        // a number, or the name of a tuning value that holds one (more than `min`)
+        const numRef = (v: unknown, min: number, strict: boolean) => (num(v) && (strict ? (v as number) > min : (v as number) >= min)) || (typeof v === 'string' && num((env.tuning ?? {})[v]) && (strict ? (env.tuning ?? {})[v] > min : (env.tuning ?? {})[v] >= min));
+        const coordOk = (c: unknown, wc: string): boolean => {
+          if (num(c)) return true;
+          if (!c || typeof c !== 'object' || Array.isArray(c)) return false;
+          const o = c as Record<string, unknown>;
+          if (o.plus !== undefined && !numRef(o.plus, -Infinity, true)) { err(wc, 'plus is a number or a tuning name'); return true; }
+          if ('place' in o) { if (Object.keys(o).some((k) => k !== 'place' && k !== 'plus')) err(wc, 'a place takes only plus'); else if (typeof o.place !== 'string' || (env.code.places && !env.code.places.includes(o.place))) err(wc, `place "${String(o.place)}": the scene's code names ${(env.code.places ?? []).join(', ') || 'none'}`); return true; }
+          if ('spot' in o) { if (Object.keys(o).some((k) => !['spot', 'edge', 'plus'].includes(k))) err(wc, 'a spot takes edge and plus'); else if (typeof o.spot !== 'string' || !all.get(String(o.spot))?.layout?.spot) err(wc, `spot "${String(o.spot)}": no device with a spot by that id`); if (o.edge !== undefined && !['left', 'center', 'right'].includes(String(o.edge))) err(wc, 'edge is left, center or right'); return true; }
+          return false;
+        };
+        const stopOk = (s: unknown, wc: string) => {
+          if (coordOk(s, wc)) return true;
+          if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
+          const o = s as Record<string, unknown>, ks = Object.keys(o);
+          if (!ks.length || ks.some((k) => k !== 'x' && k !== 'h')) return false;
+          return ks.every((k) => coordOk(o[k], wc + '.' + k));
+        };
+        const easeOk = (e: unknown) => e === undefined || MOVER_EASES.includes(e as never) || (Array.isArray(e) && e.length > 0 && e.every((p) => Array.isArray(p) && p.length === 2 && num(p[0]) && num(p[1]) && p[0] > 0 && p[0] < 1));
+        if (!stops.length || stops.some(([k]) => !k.trim())) err(wm, 'stops is { name: place } with at least one stop');
+        for (const [k, v] of stops) if (!stopOk(v, `${wm} › stops.${k}`)) err(wm, `stop "${k}" is a place along the axis (a number, a { place }, a { spot }) or a point { x, h }`);
+        if (mv.speed !== undefined && !numRef(mv.speed, 0, true)) err(wm, 'speed is world units per second (a number or a tuning name), more than 0');
+        if (mv.ms !== undefined && !numRef(mv.ms, 0, false)) err(wm, 'ms is how long every plain trip takes (a number or a tuning name), 0 or more');
+        if (!easeOk(mv.ease)) err(wm, `ease is ${MOVER_EASES.join(', ')} or a timing table [[time, progress], ...] (times between 0 and 1)`);
+        if (mv.wired !== undefined && typeof mv.wired !== 'boolean') err(wm, 'wired is true or false (the engine gives it go/return verbs)');
+        if (mv.wired !== false && mv.speed === undefined && mv.ms === undefined) err(wm, 'a wired mover needs a speed (or ms) for its go verbs');
+        if (mv.axis !== undefined && mv.axis !== 'x' && mv.axis !== 'h') err(wm, 'axis is "x" (across) or "h" (up)');
+        if (mv.across !== undefined && !num(mv.across)) err(wm, 'across is where it runs on the other axis (world units)');
+        if (mv.start !== undefined && !(mv.start in (mv.stops ?? {}))) err(wm, `start "${mv.start}" is not one of its stops`);
+        if (mv.set !== undefined && !writable.has(mv.set)) err(wm, `set "${mv.set}": not a state key (it holds the stop, or "moving")`);
+        if (mv.moving !== undefined && (typeof mv.moving !== 'string' || !mv.moving.trim() || mv.moving in (mv.stops ?? {}))) err(wm, 'moving is what set holds while it travels: text that is not one of its stops');
+        if (mv.moving !== undefined && mv.set === undefined) err(wm, 'moving is what set holds: give it a set key');
+        if (mv.follow !== undefined && !known.has(mv.follow)) err(wm, `follow "${mv.follow}": not a state key (it names the stop to be at)`);
+        const eventsUsed = new Set<string>(['started', 'arrived']);
+        const stepCheck = (steps: unknown, wp: string, depth: number) => {
+          if (!Array.isArray(steps) || !steps.length || depth > 6) { err(wp, 'a path is a list of legs (and choices), at least one'); return; }
+          steps.forEach((s: Record<string, unknown>, i) => {
+            const ws = `${wp}[${i}]`;
+            if (!s || typeof s !== 'object' || Array.isArray(s)) { err(ws, 'a leg or a choice is an object'); return; }
+            if ('if' in s) {
+              keys(s, 'choice', ws);
+              if (typeof s.if === 'string') cond(s.if, known, ws + ' › if'); else err(ws, 'if is a condition (lock=open)');
+              stepCheck(s.then, ws + ' › then', depth + 1);
+              if (s.else !== undefined) stepCheck(s.else, ws + ' › else', depth + 1);
+              return;
+            }
+            keys(s, 'leg', ws);
+            if (s.to !== undefined && (typeof s.to !== 'string' || !(s.to in (mv.stops ?? {})))) err(ws, `to "${String(s.to)}" is not one of its stops`);
+            if (s.ms !== undefined && !numRef(s.ms, 0, false)) err(ws, 'ms is a time in ms (a number or a tuning name), 0 or more');
+            if (s.share !== undefined && !(num(s.share) && (s.share as number) > 0)) err(ws, 'share is the part of ms this leg takes, more than 0');
+            if (s.speed !== undefined && !numRef(s.speed, 0, true)) err(ws, 'speed is world units per second (a number or a tuning name), more than 0');
+            if (s.minMs !== undefined && !numRef(s.minMs, 0, false)) err(ws, 'minMs is how long the leg lasts at least, ms (a number or a tuning name), 0 or more');
+            if (!easeOk(s.ease)) err(ws, 'ease is a curve name or a timing table');
+            if (s.load !== undefined && (typeof s.load !== 'string' || !s.load.trim())) err(ws, 'load is a label (text)');
+            if (s.event !== undefined) { if (typeof s.event !== 'string' || !s.event.trim() || s.event === 'started' || s.event === 'arrived') err(ws, 'event is a name other than started and arrived'); else { eventsUsed.add(s.event); if (!(n.events ?? []).includes(s.event)) err(ws, `event "${s.event}" is not in this part's events`); } }
+            if (s.to !== undefined && s.ms === undefined && s.speed === undefined && mv.speed === undefined && mv.ms === undefined) err(ws, 'a leg that moves needs ms or speed (or the mover one)');
+          });
+        };
+        for (const [name, steps] of Object.entries(mv.paths ?? {})) { if (!name.trim()) err(wm, 'a path needs a name'); stepCheck(steps, `${wm} › paths.${name}`, 0); }
+        for (const v of [...moverVerbs(mv), 'return']) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a mover: leave it out of verbs`);
+        for (const e of n.events ?? []) if (!eventsUsed.has(e)) err(w, `a mover raises "started", "arrived" and the events of its paths' legs, not "${e}"`);
+      }
+      if (n.zone) {
+        const zn = n.zone, wz = `${w} › zone`;
+        keys(zn, 'zone', wz);
+        const edge = (c: unknown, which: string) => {
+          if (num(c)) return;
+          const o = c as Record<string, unknown> | null;
+          if (o && typeof o === 'object' && !Array.isArray(o) && 'place' in o && Object.keys(o).every((k) => k === 'place' || k === 'plus')) { if (typeof o.place !== 'string' || (env.code.places && !env.code.places.includes(o.place))) err(wz, `${which} place "${String(o.place)}": the scene's code names ${(env.code.places ?? []).join(', ') || 'none'}`); if (o.plus !== undefined && !(num(o.plus) || (typeof o.plus === 'string' && num((env.tuning ?? {})[o.plus])))) err(wz, `${which} plus is a number or a tuning name`); return; }
+          if (o && typeof o === 'object' && !Array.isArray(o) && 'spot' in o && Object.keys(o).every((k) => ['spot', 'edge', 'plus'].includes(k))) { if (typeof o.spot !== 'string' || !all.get(String(o.spot))?.layout?.spot) err(wz, `${which} spot "${String(o.spot)}": no device with a spot by that id`); if (o.edge !== undefined && !['left', 'center', 'right'].includes(String(o.edge))) err(wz, `${which} edge is left, center or right`); if (o.plus !== undefined && !(num(o.plus) || (typeof o.plus === 'string' && num((env.tuning ?? {})[o.plus])))) err(wz, `${which} plus is a number or a tuning name`); return; }
+          err(wz, `${which} is a position (a number, a { place }, a { spot })`);
+        };
+        edge(zn.from, 'from'); edge(zn.to, 'to');
+        if (num(zn.from) && num(zn.to) && zn.from === zn.to) err(wz, 'from and to are two different positions (world units)');
+        if (typeof zn.watch !== 'string' || !(zn.watch === 'player' || /^[\w-]+\.[\w.-]+$/.test(zn.watch))) err(wz, 'watch is "player" or a mover as "device.noun"');
+        if (zn.axis !== undefined && zn.axis !== 'x' && zn.axis !== 'h') err(wz, 'axis is "x" (across) or "h" (up)');
+        if (zn.within !== undefined && !(Array.isArray(zn.within) && zn.within.length === 2 && zn.within.every(num))) err(wz, 'within is [low, high] on the other axis (world units)');
+        if (zn.armed !== undefined && typeof zn.armed !== 'boolean') err(wz, 'armed is true or false (raising events when the scene starts)');
+        if (zn.building !== undefined && (typeof zn.building !== 'string' || zn.watch !== 'player')) err(wz, 'building names the floors a watched player must stand on ("" the street)');
+        if (zn.set !== undefined && !writable.has(zn.set)) err(wz, `set "${zn.set}": not a state key (it holds whether something is inside)`);
+        for (const v of ZONE_VERBS) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a zone: leave it out of verbs`);
+        for (const e of n.events ?? []) if (e !== 'enters' && e !== 'leaves') err(w, `a zone raises "enters" and "leaves", not "${e}"`);
+      }
+      if (n.milestone !== undefined) {
+        const wm = `${w} › milestone`;
+        if (!n.mover && !n.zone) err(w, 'milestone belongs to a mover or a zone (it reports their events)');
+        if (!n.milestone || typeof n.milestone !== 'object' || Array.isArray(n.milestone)) err(wm, 'milestone is { event: input id }');
+        else for (const [event, input] of Object.entries(n.milestone)) {
+          if (!(n.events ?? []).includes(event)) err(wm, `"${event}" is not one of this part's events`);
+          if (typeof input !== 'string' || !(env.code.inputs ?? []).includes(input)) err(wm, `"${String(input)}" is no physical milestone of the scene's code (it reports ${(env.code.inputs ?? []).join(', ') || 'none'})`);
+        }
       }
       cases(n, w, known, writable, d);
     }
@@ -564,7 +673,10 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
     const nounAt = (key: string): NounData | undefined => {
       const [d, n] = split(key);
       // the engine's watchdog noun, on a device the watchdog visits: it raises arrives / leaves and takes no orders
-      if (n === WATCH_NOUN && env.routes.has(d) && all.has(d)) return { id: WATCH_NOUN, kind: 'WATCH' as Kind, events: WATCH_EVENTS, verbs: [] };
+      if (n === WATCH_NOUN && env.routes.has(d) && all.has(d)) return { id: WATCH_NOUN, layer: 'software', function: 'record', watch: true, events: WATCH_EVENTS, verbs: [] } as NounData & { watch: true };
+      // a registered mechanism's part: the signals it raises and the actions a cable may send it
+      const mech = env.code.mechanisms?.find((m) => m.id === d)?.parts.find((p) => p.id === n);
+      if (mech) return { id: mech.id, layer: mech.layer, function: mech.function, verbs: [...mech.verbs], events: [...mech.events] } as NounData;
       return all.get(d)?.nouns.find((x) => x.id === n);
     };
     const sealAt = (key: string) => { const [d, n] = split(key); const s = all.get(d)?.sectors?.find((x) => x.id === n); return s && 'sequence' in s.seal ? s.seal : undefined; };
@@ -580,9 +692,9 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
       const to = nounAt(cb.to), sq = sealAt(cb.to);
       if (sq) { if (!sq.sequence.includes(cb.verb)) err(w, `verb "${cb.verb}" is not in the seal's sequence`); return; }
       if (!to) { err(w, `to "${cb.to}": no such device.noun`); return; }
-      if (to.kind === 'GUARD') { err(w, `to "${cb.to}": a GUARD wants a person at the keyboard, not a cable`); return; }
-      if ((to.kind as string) === 'WATCH') { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
-      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...[...(to.link.reach ?? []), ...(to.link.known ?? [])].map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : [])];
+      if (to.guard) { err(w, `to "${cb.to}": a login wants a person at the keyboard, not a cable`); return; }
+      if ('watch' in to) { err(w, `to "${cb.to}": the watchdog takes no orders (wire from its arrives / leaves)`); return; }
+      const verbs = [...(to.verbs ?? []), ...(to.link ? ['scan', ...[...(to.link.reach ?? []), ...(to.link.known ?? [])].map((id) => 'connect ' + id)] : []), ...(to.clock ? ['start', 'stop'] : []), ...(to.mover ? moverVerbs(to.mover) : []), ...(to.zone ? ZONE_VERBS : [])];
       if (!verbs.includes(cb.verb)) err(w, `verb "${cb.verb}" is not one of ${cb.to}'s verbs`);
     });
     dupes(cbs.map((cb) => cb.from + ' → ' + cb.to), field, 'cable');
@@ -621,6 +733,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
     writable: new Set(Object.keys(z.state)),
     code, goals: new Set(z.goals.map((g) => g.id)), dialogues: Object.keys(z.dialogue), texts,
     routes: new Set([...(Array.isArray(z.watchdog?.route) ? z.watchdog!.route : []), ...(Array.isArray(net?.watchdog?.route) ? net!.watchdog!.route : [])]),
+    tuning: z.tuning,
   };
   const nodes = z.nodes ?? [];
   const all = new Map<string, DeviceData>([...world.netNodes, ...nodes.map((n) => [n.id, n] as const), ...z.devices.map((d) => [d.id, d] as const)]);
@@ -643,7 +756,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
   keys(z, 'scene', '');
 
   // ---------- state ----------
-  for(const role of code.devices??[]){const d=[...z.devices,...(z.nodes??[])].find(d=>d.id===role.id);if(!d){err('devices',`missing primitive device "${role.id}"`);continue;}if(role.spot&&!d.layout?.spot)err('devices',`primitive device "${role.id}" needs world spot geometry`);for(const requirement of role.nouns??[]){const noun=d.nouns.find(n=>n.id===requirement.id);if(!noun||requirement.kind&&noun.kind!==requirement.kind)err('devices',`missing/changed primitive noun "${role.id}.${requirement.id}"`);for(const event of requirement.events??[])if(!noun?.events?.includes(event))err('devices',`missing primitive event "${role.id}.${requirement.id}:${event}"`);}}
+  for(const role of code.devices??[]){const d=[...z.devices,...(z.nodes??[])].find(d=>d.id===role.id);if(!d){err('devices',`missing primitive device "${role.id}"`);continue;}if(role.spot&&!d.layout?.spot)err('devices',`primitive device "${role.id}" needs world spot geometry`);for(const requirement of role.nouns??[]){const noun=d.nouns.find(n=>n.id===requirement.id);if(!noun||requirement.function&&noun.function!==requirement.function)err('devices',`missing/changed primitive noun "${role.id}.${requirement.id}"`);for(const event of requirement.events??[])if(!noun?.events?.includes(event))err('devices',`missing primitive event "${role.id}.${requirement.id}:${event}"`);}}
   for(const problem of stateRequirementProblems(code.state,z.state,z.id))err('state',problem);
   for (const k of code.derived) if (k in z.state) err('state', `"${k}" is computed by the code; it cannot be a state key too`);
 
@@ -658,9 +771,9 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
 
   /**
    * A device's everyday actions (its popup in the world): each a noun's own verb. Hacking verbs
-   * are not everyday: no GUARD, LINK, LOG, SEAL or CLOCK nouns, nothing in a sealed sector.
+   * are not everyday: no logins, ports, recorders or clocks (parts with a guard, link, log or clock), nothing in a sealed sector.
    */
-  const HACKING = ['GUARD', 'LINK', 'LOG', 'SEAL', 'CLOCK'];
+  const hacking = (n: NounData) => !!(n.guard || n.link || n.log || n.clock);
   const MAX_EVERYDAY = 3;
   const everyday = (d: DeviceData, where: string) => {
     if (d.deck !== undefined && typeof d.deck !== 'boolean') err(where + ' › deck', 'true or false: a computer you can jack into');
@@ -677,7 +790,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
       c.keys(e, 'everyday', w);
       const n = d.nouns.find((x) => x.id === e.noun);
       if (!n) { err(w, `"${e.noun}" is not one of its nouns`); return; }
-      if (HACKING.includes(n.kind)) err(w, `${n.id} is a ${n.kind}: hacking, not everyday (it stays in hack view)`);
+      if (hacking(n)) err(w, `${n.id} is a ${n.function} part with engine behaviour: hacking, not everyday (it stays in hack view)`);
       if (n.sector) err(w, `${n.id} sits in sector "${n.sector}": sealed things are not everyday`);
       if (!(n.verbs ?? []).includes(e.verb)) err(w, `"${e.verb}" is not one of ${n.id}'s verbs (${(n.verbs ?? []).join(', ') || 'none'})`);
       if (e.label !== undefined && (typeof e.label !== 'string' || !e.label.trim())) err(w, 'label is the words on the popup (a string)');
@@ -702,7 +815,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
       if (typeof u.label !== 'string' || !u.label.trim()) err(w, 'label is the words on the popup ("pour in soap")');
       const n = d.nouns.find((x) => x.id === u.noun);
       if (!n) { err(w, `noun "${u.noun}" is not one of its nouns`); return; }
-      if (HACKING.includes(n.kind)) err(w, `${n.id} is a ${n.kind}: hacking, not everyday`);
+      if (hacking(n)) err(w, `${n.id} is a ${n.function} part with engine behaviour: hacking, not everyday`);
       if (n.sector) err(w, `${n.id} sits in sector "${n.sector}": sealed things are not everyday`);
       if (u.on === undefined) { err(w, 'needs "on": what happens (a case, or a list of them)'); return; }
       list<Case>(u.on).forEach((k, j) => {
@@ -753,6 +866,13 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
 
   // ---------- cables (pre-wired) ----------
   c.cables(z.cables, 'cables', [...z.devices, ...nodes]);
+  // a zone watches the player or a mover of this scene, on the mover's axis
+  for (const d of [...z.devices, ...nodes]) for (const n of d.nouns) {
+    const watch = n.zone?.watch;
+    if (!watch || watch === 'player') continue;
+    const [md, mn] = split(watch), mover = all.get(md)?.nouns.find((x) => x.id === mn)?.mover;
+    if (!mover) err(`devices[${d.id}] › nouns[${n.id}] › zone`, `watch "${watch}": no mover there`);
+  }
 
   // ---------- bench (crafting, later) ----------
   if (z.bench) {

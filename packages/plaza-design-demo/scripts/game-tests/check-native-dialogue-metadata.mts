@@ -31,7 +31,7 @@ for(const scene of ['capsule','yard','stacks','sandbox','library','laundromat'])
  m.reset();m.setPaused(true);
 }
 assert.ok(targets.length>0);
-const source=structuredClone(reviewGraphSource),data=structuredClone(current.MOTH);data.devices.push({id:'review',name:'Review',look:'Review',nouns:[{id:'first',kind:'DAEMON',verbs:['talk'],on:{talk:{do:[{open:'talk',with:'review'}]}}}]});
+const source=structuredClone(reviewGraphSource),data=structuredClone(current.MOTH);data.devices.push({id:'review',name:'Review',look:'Review',nouns:[{id:'first',layer:'software',function:'talk',verbs:['talk'],on:{talk:{do:[{open:'talk',with:'review'}]}}}]});
 const projection=nativeDeviceDialogues(source,data);assert.deepEqual(Object.keys(projection),['review']);assert.equal(projection.review.nodes.weather.do,undefined,'metadata cannot execute common rewards');assert(!Array.isArray(projection.review.nodes.base),'common comparison is not a fake native fallback');
 const implicit=structuredClone(data);delete (implicit.devices.at(-1)!.nouns[0].on!.talk as any).do[0].with;assert.throws(()=>nativeDeviceDialogues(source,implicit),/Missing native conversation undefined/);
 const missing=structuredClone(data);missing.devices.at(-1)!.nouns[0].on!.talk={do:[{open:'talk',with:'absent'}]};assert.throws(()=>nativeDeviceDialogues(source,missing),/Missing native conversation absent/);

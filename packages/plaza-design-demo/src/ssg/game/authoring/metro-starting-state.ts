@@ -6,7 +6,7 @@ export const metroStartingStates=['at-station','running','braking','track-stop',
 export type MetroStartingState=typeof metroStartingStates[number];
 /** Convenient authored states use the production controller's route/phase configuration. */
 export function metroStartingState(kind:MetroStartingState,station:Station,world:CityModel,source:MetroSource){
- const metro=createLineSystem(world,source);metro.lineOpen.harbor=false;metro.boardRide(station,source.dwell);
+ const metro=createLineSystem(world,source);for(const locked of Object.keys(source.locked))metro.lineOpen[locked as Station]=false;metro.boardRide(station,source.dwell);
  if(kind==='at-station')return metro.capture();
  metro.stepRide(metro.ride.dwell);metro.stepRide(metro.CLOSE);
  const r=metro.ride,mark=metro.sidingAlong(),fraction=.25;

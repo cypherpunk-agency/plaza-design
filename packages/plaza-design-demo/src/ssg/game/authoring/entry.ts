@@ -16,11 +16,17 @@ import {mountDeviceAuthoring} from './device-authoring';
 import {deviceSceneIds,deviceDocumentId,deviceSourceIdentity,applyDeviceSource} from './device-sources';
 import {pendingScene} from './pending-scene';
 import {createLineSystem} from '../world/transport/line';
-import {validateMetroSource} from '../world/transport/metro-source';
+import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {validatePendingCity,createPendingCity} from './pending-city';
 import {mountCityAuthoring} from './city-authoring';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
+import {validatePendingRules} from './pending-rules';
+import {mountCompanionSourceAuthoring} from './companion-source-authoring';
+import {mountCritterReactionAuthoring} from './critter-reaction-authoring';
+import {mountReviewStationsAuthoring} from './review-stations-authoring';
 import {mountBotReactionAuthoring} from './bot-reaction-authoring';
+import {mountPlayProfileAuthoring} from './play-profile-authoring';
+import {validatePendingPlayProfiles} from './play-profile-source';
 import {manifestDemoScene,validateManifestScene,validateManifestGameplay,validateManifestComposition,validateManifestSources} from '../scenes/demo-manifest';
 import {nativeGameplayScene,nativeGameplayScenes} from './native-gameplay-scenes';
 import {pendingDestinations,validatePendingSceneCatalogue} from './pending-destinations';
@@ -148,7 +154,7 @@ async function start() {
       return [...city.DISTRICTS.map(d => ({ label: d.name, places: placesIn(d.id) })), { label: 'Outside the districts', places: placesIn(null) }];
     },
     sceneLabel: scene => proposalScene(scene) ? proposalScene(scene)!.label : isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene.startsWith('sequence-') ? 'Sequence · ' + scene.slice('sequence-'.length) : scene,
-    sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId,...(scene==='sandbox'?['sandbox-behavior']:[])];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
+    sceneDocuments:(scene,documents)=>{try{const entry=gameplayScene(scene,documents);return[entry.prefix+'-scene',entry.gameplayId];}catch{return nativeGameplayScene(scene)?[nativeGameplayScene(scene)!.gameplayId]:[];}},
 
     worldStates: {
       // Play's starting states are the scene's saved world states. A proposal uses its base scene's.
@@ -186,11 +192,13 @@ async function start() {
       if(document.id==='network'){const values=validationSnapshot(documents);validatePendingNetwork(values,pendingRegistry(values));return;}
       if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
-      if(document.kind==='devices'||document.kind==='behavior'&&document.id==='sandbox-behavior'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='devices'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='profiles'){if(document.id!=='play-profiles')throw new Error('Unsupported profiles document');validatePendingPlayProfiles(document.value,validationSnapshot(documents));}
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
-      if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroSource(document.value);}
+      if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroLocks(validateMetroSource(document.value),(validationSnapshot(documents).get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}
       if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
+      if(document.kind==='rules')validatePendingRules(document.id,document.value,validationSnapshot(documents));
       if(document.kind==='conversations'){if(document.id!=='bot-reactions')throw new Error('Unsupported conversation library');validateBotReactions(document.value);}
       if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(validationSnapshot(documents)));}
 
@@ -206,12 +214,16 @@ async function start() {
     newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene },
     workbenches: [
       {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: opening scenes, arrivals and first guidance',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
+      {id:'play-profiles',area:'world',label:'Play profiles',title:'Ways of playing: the full game, the harbor shift and the Test District',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
       {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
       {id:'scene-catalogue',area:'world',label:'Scenes',title:'Create and manage authored scenes',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-fixtures','city-source'],primaryDocumentId:'authored-scenes',mount:mountSceneCatalogue},
       {id:'scene-connections',area:'scene',mode:'wiring',label:'Starting cables',title:'Authored scene connections',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){wireSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,wireSelection,true,()=>pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))))},
       {id:'districts',area:'world',label:'Districts',title:'Districts · create, rename, place on the map and remove',authoring:true,documentDependent:true,documentIds:['city-source'],primaryDocumentId:'city-source',layout:'sections',mount:mountDistrictAuthoring},
       {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
+      {id:'companion',area:'world',layout:'sections',label:'Companion',title:'The companion: look, unlock flag, follow modes, speaker and greeting',authoring:true,documentDependent:true,documentIds:['companion','companion-gameplay'],primaryDocumentId:'companion',mount:mountCompanionSourceAuthoring},
+      {id:'critter-reactions',area:'world',label:'Critter dialogue',title:'Cat and pigeon reactions',authoring:true,documentDependent:true,documentIds:['critter-reactions'],primaryDocumentId:'critter-reactions',mount:mountCritterReactionAuthoring},
+      {id:'review-stations',area:'world',layout:'sections',label:'Review stations',title:'Review navigator: bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
       {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions · shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab · the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},
       {id:'scene-logic',area:'scene',mode:'logic',label:'Interactions & story',title:'Scene logic: interactions, objectives, dialogue and presentation',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,'authored-scenes'],
@@ -301,6 +313,7 @@ async function start() {
       { key: 'minute', label: 'Time of day', kind: 'number', min: 0, max: 1439, step: 10, quick: true, choices: [{ label: 'Morning', value: 480 }, { label: 'Noon', value: 720 }, { label: 'Evening', value: 1110 }, { label: 'Night', value: 1320 }] },
       { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS], quick: true },
       { key: 'hack', label: 'Hack vision', kind: 'boolean', quick: true, shortcut: 'h' },
+      { key: 'inside', label: 'Inside buildings', kind: 'boolean', quick: true, shortcut: 'i' },
       { key: 'minute', label: 'City minute', kind: 'number', min: 0, max: 1439, step: 10 }, { key: 'day', label: 'City day', kind: 'number', min: 1, step: 1 },
       { key: 'seed', label: 'Weather seed', kind: 'number', min: 0, step: 1 }, { key: 'hover', label: 'Hovered device id', kind: 'text' },
 

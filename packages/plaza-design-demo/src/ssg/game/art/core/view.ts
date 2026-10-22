@@ -22,6 +22,8 @@ export interface View {
   gy: number;
   /** The save's flags (read only), for doors that open later (e.g. `end`: Downtown cleared, the market gate is open). */
   flags: Readonly<Record<string, boolean>>;
+  /** A scene with a level (engine/level.ts): how open each building is and where its lift cars are. */
+  level?: import('../../engine/level').LevelView;
 }
 
 /** A `View` for drawing in a set piece's own frame (after `translate` to its foot): no camera, nothing culled. */

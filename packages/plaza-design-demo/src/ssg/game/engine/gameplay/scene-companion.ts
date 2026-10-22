@@ -1,5 +1,6 @@
 import {validateManifestTarget,type ManifestTarget} from './manifest-contract';
 import {resolveManifestPoint} from './manifest-geometry';
+import {COMPANION_SOURCE} from './companion-source';
 import type {Resolved} from '../../art';
 import type {SceneDef} from '../../scenes/kit';
 import type {SceneData} from '../../data/types';
@@ -8,7 +9,9 @@ export interface CompanionPet {prompt:string;conversations:{sleep:string[];sun:s
 export interface CompanionPerch {id:string;point:ManifestTarget;rest:Perch['rest']}
 export interface SceneCompanion {mode:'home'|'along'|'off';unlockFlag?:string;warm?:CompanionPerch[];home?:{state:string;default:string;perches:CompanionPerch[]};pet?:CompanionPet}
 export interface CompiledCompanion {unlockFlag?:string;warm?:Perch[];pet?:CompanionPet;homeState?:string;homeIds?:string[]}
-export const DEFAULT_COMPANION_PET:CompanionPet={prompt:'[E] PET PIXEL',conversations:{sleep:['companion.pet.sleep.0','companion.pet.sleep.1'],sun:'companion.pet.sun',moving:'companion.pet.moving',idle:[0,1,2,3].map(i=>'companion.pet.idle.'+i)}};
+/** The flag that brings the companion along unless the scene names its own `unlockFlag` (the companion document's): a game-wide flag, so exits may set it without the scene's gameplay declaring it. */
+export const DEFAULT_COMPANION_FLAG=COMPANION_SOURCE.unlockFlag;
+export const DEFAULT_COMPANION_PET:CompanionPet=structuredClone(COMPANION_SOURCE.pet);
 const fail=(s:string):never=>{throw Error('Invalid scene companion: '+s);},name=(v:unknown)=>{if(typeof v!=='string'||!/^[-a-zA-Z0-9_.:]{1,128}$/.test(v)||['__proto__','constructor','prototype'].includes(v))fail('reference');};
 const object=(v:unknown,allowed:string[],required=allowed)=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.getPrototypeOf(v)!==Object.prototype||Object.keys(v).some(k=>!allowed.includes(k))||required.some(k=>!Object.prototype.hasOwnProperty.call(v,k)))fail('fields');return v as Record<string,any>;};
 export function validateSceneCompanion(value:unknown):asserts value is SceneCompanion{

@@ -279,7 +279,7 @@ if (onScreen(v, r.l - 10, 60)) {
     text(x, memo === 2 ? 'EMPTY' : 'MEMO ' + (memo + 1), r.cx, r.t + 8, rgba(C, 0.95), 7, '600');
     for (let k = 0; k < (memo === 2 ? 0 : 2); k++) { x.fillStyle = rgba(C, 0.45); x.fillRect(r.l + 5, r.t + 13 + k * 3, r.w - 10 - k * 8 - memo * 4, 1); }
     x.fillStyle = '#2a2420'; x.fillRect(r.cx - 4, r.b - 4, 8, 4);
-    kindTag(x, r.cx, r.b + 6, 'STORE');
+    kindTag(x, r.cx, r.b + 6, 'HOLD');
   }
 }
 
@@ -292,7 +292,7 @@ if (onScreen(v, r.l - 10, 50)) {
     const up = m.net.get('qasrv') === 'connected';
     x.fillStyle = up ? rgba(GREEN, 0.95) : rgba(C, Math.sin(t * 0.08) > 0 ? 0.9 : 0.3); x.fillRect(r.cx - 1, r.t + 17, 3, 2);
     x.strokeStyle = 'rgba(80,140,200,.7)'; x.beginPath(); x.moveTo(r.cx, r.t + 14); x.quadraticCurveTo(r.cx + 10, r.b + 20, r.cx + 4, v.y(30)); x.stroke();
-    kindTag(x, r.cx, r.t - 13, 'LINK');
+    kindTag(x, r.cx, r.t - 13, 'CONNECT');
   }
 }
 
@@ -309,7 +309,7 @@ if (onScreen(v, r.l - 10, 50)) {
     box(x, r.l + 6, r.t + 30, r.w - 12, 6, '#1a2428');
     text(x, '7', r.cx, r.t + 44, rgba(PAPER, 0.8), 8, '600');
     tell(x, t, r.l + r.w - 4, r.b - 4, 1);
-    kindTag(x, r.cx, r.t - 13, 'DAEMON');
+    kindTag(x, r.cx, r.t - 13, 'TALK');
   }
 }
 
@@ -323,7 +323,7 @@ if (onScreen(v, r.l - 10, 40)) {
     x.strokeStyle = next ? 'rgba(230,220,200,.95)' : 'rgba(160,150,130,.6)'; x.lineWidth = 1.5;
     x.beginPath(); x.moveTo(r.cx, r.b - 4); x.lineTo(r.cx + Math.sin(ang) * 24, r.b - 4 - Math.cos(ang) * 24); x.stroke(); x.lineWidth = 1;
     x.fillStyle = 'rgba(230,220,200,.95)'; x.fillRect(Math.round(r.cx + Math.sin(ang) * 16) - 2, Math.round(r.b - 4 - Math.cos(ang) * 16) - 2, 4, 3);
-    kindTag(x, r.cx, r.b + 6, 'CLOCK');
+    kindTag(x, r.cx, r.b + 6, 'TIME');
   }
 }
 
@@ -339,7 +339,7 @@ if (onScreen(v, r.l - 10, 50)) {
       x.beginPath(); x.moveTo(cx + Math.cos(a) * 5, cy + Math.sin(a) * 5); x.lineTo(cx - Math.cos(a) * 5, cy - Math.sin(a) * 5); x.stroke();
     }
     x.fillStyle = rgba(RED, on && Math.floor(t / 20) % 2 ? 0.95 : 0.2); x.fillRect(r.l + r.w - 5, r.b - 5, 3, 2);
-    kindTag(x, r.cx, r.b + 6, 'LOG');
+    kindTag(x, r.cx, r.b + 6, 'RECORD');
   }
 }
 

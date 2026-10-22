@@ -240,8 +240,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.watchman.pose",
-        "clip": "clip.actor.watchman"
+        "pose": "harbor.actor.watchman",
+        "clip": "harbor.clip.watchman"
       }
     },
     {
@@ -375,8 +375,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.operator0.pose",
-        "clip": "clip.actor.operator0"
+        "pose": "harbor.actor.operator0",
+        "clip": "harbor.clip.operator0"
       }
     },
     {
@@ -555,8 +555,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.operator1.pose",
-        "clip": "clip.actor.operator1"
+        "pose": "harbor.actor.operator1",
+        "clip": "harbor.clip.operator1"
       }
     },
     {
@@ -1370,8 +1370,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.den-person0.pose",
-        "clip": "clip.actor.den-person0"
+        "pose": "harbor.actor.den-person0",
+        "clip": "harbor.clip.den-person0"
       }
     },
     {
@@ -1391,8 +1391,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.den-person1.pose",
-        "clip": "clip.actor.den-person1"
+        "pose": "harbor.actor.den-person1",
+        "clip": "harbor.clip.den-person1"
       }
     },
     {
@@ -1668,8 +1668,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.driver.pose",
-        "clip": "clip.actor.driver"
+        "pose": "harbor.actor.driver",
+        "clip": "harbor.clip.driver"
       }
     },
     {
@@ -2037,8 +2037,8 @@
       "order": 0,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person0.pose",
-        "clip": "clip.actor.pier-person0"
+        "pose": "harbor.actor.pier-person0",
+        "clip": "harbor.clip.pier-person0"
       }
     },
     {
@@ -2054,8 +2054,8 @@
       "order": 1,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person1.pose",
-        "clip": "clip.actor.pier-person1"
+        "pose": "harbor.actor.pier-person1",
+        "clip": "harbor.clip.pier-person1"
       }
     },
     {
@@ -2071,8 +2071,8 @@
       "order": 2,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person2.pose",
-        "clip": "clip.actor.pier-person2"
+        "pose": "harbor.actor.pier-person2",
+        "clip": "harbor.clip.pier-person2"
       }
     },
     {
@@ -2088,8 +2088,8 @@
       "order": 3,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person3.pose",
-        "clip": "clip.actor.pier-person3"
+        "pose": "harbor.actor.pier-person3",
+        "clip": "harbor.clip.pier-person3"
       }
     },
     {
@@ -2105,8 +2105,8 @@
       "order": 4,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person4.pose",
-        "clip": "clip.actor.pier-person4"
+        "pose": "harbor.actor.pier-person4",
+        "clip": "harbor.clip.pier-person4"
       }
     },
     {
@@ -2122,8 +2122,8 @@
       "order": 5,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person5.pose",
-        "clip": "clip.actor.pier-person5"
+        "pose": "harbor.actor.pier-person5",
+        "clip": "harbor.clip.pier-person5"
       }
     },
     {
@@ -2139,8 +2139,8 @@
       "order": 6,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person6.pose",
-        "clip": "clip.actor.pier-person6"
+        "pose": "harbor.actor.pier-person6",
+        "clip": "harbor.clip.pier-person6"
       }
     },
     {
@@ -2156,8 +2156,8 @@
       "order": 7,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person7.pose",
-        "clip": "clip.actor.pier-person7"
+        "pose": "harbor.actor.pier-person7",
+        "clip": "harbor.clip.pier-person7"
       }
     },
     {
@@ -2173,8 +2173,8 @@
       "order": 8,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.pier-person8.pose",
-        "clip": "clip.actor.pier-person8"
+        "pose": "harbor.actor.pier-person8",
+        "clip": "harbor.clip.pier-person8"
       }
     },
     {
@@ -2190,8 +2190,8 @@
       "order": 9,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.guard.pose",
-        "clip": "clip.actor.guard"
+        "pose": "harbor.actor.guard",
+        "clip": "harbor.clip.guard"
       }
     },
     {
@@ -2207,8 +2207,8 @@
       "order": 10,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.customs.pose",
-        "clip": "clip.actor.customs"
+        "pose": "harbor.actor.customs",
+        "clip": "harbor.clip.customs"
       }
     },
     {
@@ -2224,8 +2224,8 @@
       "order": 11,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.docker.pose",
-        "clip": "clip.actor.docker"
+        "pose": "harbor.actor.docker",
+        "clip": "harbor.clip.docker"
       }
     },
     {
@@ -2241,8 +2241,8 @@
       "order": 12,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.tide.pose",
-        "clip": "clip.actor.tide"
+        "pose": "harbor.actor.tide",
+        "clip": "harbor.clip.tide"
       }
     },
     {
@@ -2258,8 +2258,8 @@
       "order": 13,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.fisher.pose",
-        "clip": "clip.actor.fisher"
+        "pose": "harbor.actor.fisher",
+        "clip": "harbor.clip.fisher"
       }
     },
     {
@@ -2275,8 +2275,8 @@
       "order": 14,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.jogger.pose",
-        "clip": "clip.actor.jogger"
+        "pose": "harbor.actor.jogger",
+        "clip": "harbor.clip.jogger"
       }
     },
     {
@@ -2292,8 +2292,8 @@
       "order": 15,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.bird0.pose",
-        "clip": "clip.actor.bird0"
+        "pose": "harbor.actor.bird0",
+        "clip": "harbor.clip.bird0"
       }
     },
     {
@@ -2309,8 +2309,8 @@
       "order": 16,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.bird1.pose",
-        "clip": "clip.actor.bird1"
+        "pose": "harbor.actor.bird1",
+        "clip": "harbor.clip.bird1"
       }
     },
     {
@@ -2326,8 +2326,8 @@
       "order": 17,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.bird2.pose",
-        "clip": "clip.actor.bird2"
+        "pose": "harbor.actor.bird2",
+        "clip": "harbor.clip.bird2"
       }
     },
     {
@@ -2343,8 +2343,8 @@
       "order": 18,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.bird3.pose",
-        "clip": "clip.actor.bird3"
+        "pose": "harbor.actor.bird3",
+        "clip": "harbor.clip.bird3"
       }
     },
     {
@@ -2360,8 +2360,8 @@
       "order": 19,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.bird4.pose",
-        "clip": "clip.actor.bird4"
+        "pose": "harbor.actor.bird4",
+        "clip": "harbor.clip.bird4"
       }
     },
     {
@@ -2377,8 +2377,8 @@
       "order": 20,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.bird5.pose",
-        "clip": "clip.actor.bird5"
+        "pose": "harbor.actor.bird5",
+        "clip": "harbor.clip.bird5"
       }
     },
     {
@@ -2394,8 +2394,8 @@
       "order": 21,
       "layer": "playfield",
       "bindings": {
-        "pose": "actor.cat.pose",
-        "clip": "clip.actor.cat"
+        "pose": "harbor.actor.cat",
+        "clip": "harbor.clip.cat"
       }
     },
     {
@@ -2903,8 +2903,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.fishSeller.pose",
-        "clip": "clip.actor.fishSeller"
+        "pose": "harbor.actor.fishSeller",
+        "clip": "harbor.clip.fishSeller"
       }
     },
     {
@@ -2924,8 +2924,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.teaMan.pose",
-        "clip": "clip.actor.teaMan"
+        "pose": "harbor.actor.teaMan",
+        "clip": "harbor.clip.teaMan"
       }
     }
   ]

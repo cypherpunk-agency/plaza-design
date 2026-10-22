@@ -269,6 +269,16 @@
       "reflection7": "exit-taxi",
       "reflection8": "exit-shop",
       "reflection9": "weather-ticker"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "transformedExits": true
     }
   },
   "environment": {
@@ -467,5 +477,24 @@
       "id": "done",
       "text": "Downtown cleared. the market is open."
     }
-  ]
+  ],
+  "stage": {
+    "lights": [
+      {
+        "type": "downtown.light",
+        "style": "element"
+      }
+    ],
+    "casters": [
+      {
+        "role": "caster",
+        "widthRole": "dumpsterWidth"
+      }
+    ],
+    "mechanisms": [
+      "streetLayers",
+      "vehicleRun",
+      "streetCamera"
+    ]
+  }
 }

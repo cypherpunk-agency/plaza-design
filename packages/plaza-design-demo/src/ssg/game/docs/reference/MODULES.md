@@ -2,7 +2,7 @@
 
 The directories express ownership. For current extension recipes read
 [ENGINE-HANDBOOK.md](./ENGINE-HANDBOOK.md) and [AGENTS.md](../../AGENTS.md).
-All 19 existing scenes use the shared engine and editor contracts.
+All 20 existing scenes use the shared engine and editor contracts.
 
 | Location | Owns |
 | --- | --- |
@@ -31,7 +31,7 @@ Cross-location timetables belong in `world/transport/`; campaign progression bel
 `story/`. Do not put unrelated logic in a generic helpers directory.
 
 `engine/gameplay/` owns the common command, condition, event, conversation, commerce and state
-contracts across all19 scenes. The runtime supplies player/world ports; native device integration
+contracts across all 20 scenes. The runtime supplies player/world ports; native device integration
 uses explicit authorized bindings to the same owner blocks. Ordinary content is not a pilot-only
 capability. engine/shell.ts is the shared terminal adapter onto SceneModel.
 
@@ -55,7 +55,7 @@ The old `level.ts` mixed several owners. Its responsibilities are now:
 | --- | --- |
 | Launch modes and storage key selection | `runtime/mode.ts` |
 | Player save schema, initialization, loading and persistence | `runtime/save.ts` |
-| Downtown world coordinates and readable/NPC placement | `scenes/downtown/layout.ts` |
+| Downtown world coordinates and readable/NPC placement | `scenes/downtown/composition.json` (artwork) and `scene.json` (manifest bindings) |
 | Downtown NPC/fixer dialogue | `scenes/downtown/scene.json` and `gameplay.json`, compiled into shared conversations |
 | Downtown objectives/progress markers | Authored objectives and gameplay onPersist triggers, shared evaluators |
 | Deck command execution and completion | `ui/terminal/commands.ts` |
@@ -71,11 +71,13 @@ environment. Specialized artwork may keep its own construction algorithms while 
 the common placement, property and anchor contracts. Animation and environmental response
 must use explicit inputs so the game and composer can draw the same frame.
 
-All 19 registered scenes have `composition.json` documents and canonical scene factories/adapters.
-`scenes/<id>/composition.ts` resolves authored placement into gameplay geometry and immutable visual
-bindings. A retained `scene.ts` holds scene-specific actors, perches or a visual-state adapter;
-its filename does not imply that it owns raw canvas artwork. The implementation uses a mixture
-of those adapters and exports from `index.ts`; follow imports rather than assuming identical files.
+All 20 registered scenes are folder scenes: `scenes/<id>/` holds `composition.json`, `scene.json`,
+`gameplay.json` and `devices.json`, listed in `scenes/folder-scenes.ts` and built by
+`engine/gameplay/folder-scene.ts` on the declared-scene path. The composition's placement resolves into
+gameplay geometry and the picture; what the code decides about the picture comes from binding sources
+(`engine/gameplay/binding-sources.ts`, `binding-providers/`), and the SceneDef fields and rules a scene
+takes from code come from registered mechanisms (`engine/gameplay/mechanisms/`), named in
+`scene.json` `stage.mechanisms`. See ENGINE-HANDBOOK.md, "Recipe: a scene made of JSON only".
 
 `art/index.ts` registers typed elements, with bounds, semantic anchors and explicit visual fields.
 `art/catalog.ts` supplies authoring catalog descriptions. Kernels live under `art/architecture/`,

@@ -66,7 +66,11 @@
     }
   ],
   "manifest": {
-    "devices": {"cam": "device-cam", "crane": "device-crane", "gate": "device-gate"},
+    "devices": {
+      "cam": "device-cam",
+      "crane": "device-crane",
+      "gate": "device-gate"
+    },
     "version": 1,
     "width": {
       "instance": "side-walls",
@@ -78,6 +82,20 @@
     "rests": {},
     "exits": {
       "downtown": "exit-downtown"
+    },
+    "artwork": {
+      "tray": "tray"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "groundSpawn": false,
+      "omitGroundRestHeight": true
     }
   },
   "actors": [],
@@ -129,5 +147,80 @@
         "rest": "sleep"
       }
     ]
+  },
+  "stage": {
+    "resettable": {
+      "label": "the back yard",
+      "confirm": "this resets the back yard only (cables, parts, the parcel, its goals).",
+      "done": "back yard reset: cables, parts, the parcel, HINGE's mood. Everything else is kept."
+    },
+    "mechanisms": [
+      "yardCrane"
+    ],
+    "targetAnchors": [
+      "tray"
+    ],
+    "values": {
+      "layer": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "layer"
+        }
+      },
+      "highlight": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "highlight"
+        }
+      },
+      "pan": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "pan"
+        }
+      },
+      "gateOpen": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "gateOpen"
+        }
+      },
+      "gateAllowed": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "gateAllowed"
+        }
+      },
+      "held": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "held"
+        }
+      },
+      "hookVisible": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "hookVisible"
+        }
+      },
+      "hookX": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "hookX"
+        }
+      },
+      "parcel": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "parcel"
+        }
+      },
+      "night": {
+        "shared": {
+          "mechanism": "yardCrane",
+          "field": "night"
+        }
+      }
+    }
   }
 }

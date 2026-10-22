@@ -7,7 +7,8 @@
     "adBackMs": 1200,
     "trendMs": 2600,
     "signTestMs": 3000,
-    "peerMs": 700
+    "peerMs": 700,
+    "dlvSignalMs": 450
   },
   "devices": [
     {
@@ -53,19 +54,22 @@
           "scanner": "up",
           "lock": "right",
           "door": "down",
-          "deliveries.log": "left"
+          "deliveries.log": "left",
+          "beam": "up"
         },
         "vision": {
           "scanner": "up",
           "lock": "right",
           "door": "down",
-          "deliveries.log": "left"
+          "deliveries.log": "left",
+          "beam": "up"
         }
       },
       "nouns": [
         {
           "id": "scanner",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -82,8 +86,33 @@
           }
         },
         {
+          "id": "beam",
+          "layer": "hardware",
+          "function": "sense",
+          "events": [
+            "enters"
+          ],
+          "milestone": {
+            "enters": "downtown.dlv.scanned"
+          },
+          "zone": {
+            "from": {
+              "spot": "gate",
+              "edge": "left",
+              "plus": -32
+            },
+            "to": {
+              "spot": "gate",
+              "edge": "right",
+              "plus": 20
+            },
+            "watch": "dlv9.chassis"
+          }
+        },
+        {
           "id": "lock",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "shut"
@@ -164,7 +193,8 @@
         },
         {
           "id": "door",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -182,7 +212,8 @@
         },
         {
           "id": "deliveries.log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -241,7 +272,8 @@
       "nouns": [
         {
           "id": "README",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -256,7 +288,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": "vrify",
             "lockMs": 0,
@@ -284,7 +317,8 @@
         },
         {
           "id": "legs.so",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "program",
           "verbs": [
             "read",
             "install"
@@ -343,7 +377,8 @@
       "nouns": [
         {
           "id": "tubes",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read",
             "test"
@@ -391,7 +426,8 @@
       "nouns": [
         {
           "id": "lens",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "view",
             "loop"
@@ -426,7 +462,8 @@
         },
         {
           "id": "footage",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -495,7 +532,8 @@
       "nouns": [
         {
           "id": "screen",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "show ad",
             "show feed"
@@ -519,7 +557,8 @@
         },
         {
           "id": "ads",
-          "kind": "SENSE",
+          "layer": "software",
+          "function": "time",
           "verbs": [
             "read"
           ],
@@ -537,7 +576,8 @@
         },
         {
           "id": "terms",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -598,7 +638,8 @@
       "nouns": [
         {
           "id": "receipts.log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -613,7 +654,8 @@
         },
         {
           "id": "quickstart",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -633,7 +675,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": "admin",
             "lockMs": 0
@@ -641,7 +684,8 @@
         },
         {
           "id": "drawer",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],
@@ -700,7 +744,8 @@
           "wheels": "down",
           "hatch": "right",
           "speaker": "right",
-          "uplink": "up"
+          "uplink": "up",
+          "chassis": "down"
         },
         "vision": {
           "eyes": "left",
@@ -708,13 +753,15 @@
           "wheels": "down",
           "hatch": "down",
           "speaker": "down",
-          "uplink": "left"
+          "uplink": "left",
+          "chassis": "down"
         }
       },
       "nouns": [
         {
           "id": "eyes",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -729,7 +776,8 @@
         },
         {
           "id": "route.dat",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -760,7 +808,8 @@
         },
         {
           "id": "wheels",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "go home",
             "follow you",
@@ -817,7 +866,8 @@
         },
         {
           "id": "hatch",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open",
             "close"
@@ -845,7 +895,8 @@
         },
         {
           "id": "speaker",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "say hi"
           ],
@@ -860,8 +911,102 @@
         },
         {
           "id": "uplink",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "link": {}
+        },
+        {
+          "id": "chassis",
+          "layer": "hardware",
+          "function": "act",
+          "events": [
+            "started",
+            "arrived",
+            "door",
+            "through",
+            "back"
+          ],
+          "milestone": {
+            "door": "downtown.dlv.door",
+            "through": "downtown.dlv.through",
+            "back": "downtown.dlv.back"
+          },
+          "mover": {
+            "wired": false,
+            "speed": "dlvSpeed",
+            "ease": "linear",
+            "start": "home",
+            "set": "dlvAt",
+            "moving": "driving",
+            "stops": {
+              "home": {
+                "spot": "dlv9"
+              },
+              "gate": {
+                "spot": "gate",
+                "edge": "right",
+                "plus": 22
+              },
+              "door": {
+                "spot": "gate"
+              },
+              "market": {
+                "spot": "gate",
+                "edge": "left",
+                "plus": -70
+              }
+            },
+            "paths": {
+              "inward": [
+                {
+                  "to": "door",
+                  "minMs": "dlvSignalMs",
+                  "event": "door"
+                },
+                {
+                  "if": "lock=open",
+                  "then": [
+                    {
+                      "to": "market",
+                      "minMs": "dlvSignalMs",
+                      "event": "through"
+                    }
+                  ],
+                  "else": [
+                    {
+                      "to": "gate",
+                      "minMs": "dlvSignalMs",
+                      "event": "back"
+                    }
+                  ]
+                }
+              ],
+              "outward": [
+                {
+                  "to": "door",
+                  "minMs": "dlvSignalMs",
+                  "event": "door"
+                },
+                {
+                  "if": "lock=open",
+                  "then": [
+                    {
+                      "to": "gate",
+                      "minMs": "dlvSignalMs",
+                      "event": "through"
+                    }
+                  ],
+                  "else": [
+                    {
+                      "to": "market",
+                      "minMs": "dlvSignalMs",
+                      "event": "back"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -910,7 +1055,8 @@
       "nouns": [
         {
           "id": "notes.txt",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -930,7 +1076,8 @@
         },
         {
           "id": "log",
-          "kind": "LOG",
+          "layer": "software",
+          "function": "record",
           "verbs": [
             "read"
           ],
@@ -955,7 +1102,8 @@
         },
         {
           "id": "archive",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "save",
             "read"
@@ -978,7 +1126,8 @@
         },
         {
           "id": "login",
-          "kind": "GUARD",
+          "layer": "software",
+          "function": "gate",
           "guard": {
             "password": "yfirv",
             "lockMs": 0,
@@ -1007,7 +1156,8 @@
         },
         {
           "id": "gate.memo",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1023,7 +1173,8 @@
         },
         {
           "id": "root.frag",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -1052,7 +1203,8 @@
         },
         {
           "id": "uplink",
-          "kind": "LINK",
+          "layer": "hardware",
+          "function": "connect",
           "sector": "maint",
           "link": {}
         }
@@ -1102,7 +1254,8 @@
       "nouns": [
         {
           "id": "plate",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1117,7 +1270,8 @@
         },
         {
           "id": "gate",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ],
@@ -1168,7 +1322,8 @@
       "nouns": [
         {
           "id": "scanner",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -1183,7 +1338,8 @@
         },
         {
           "id": "door",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "enter"
           ],
@@ -1226,7 +1382,8 @@
       "nouns": [
         {
           "id": "fleet",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1241,7 +1398,8 @@
         },
         {
           "id": "manual",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1256,7 +1414,8 @@
         },
         {
           "id": "routes",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "send to dlv9"
@@ -1318,7 +1477,8 @@
       "nouns": [
         {
           "id": "feed",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1341,7 +1501,8 @@
       "nouns": [
         {
           "id": "board",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1364,7 +1525,8 @@
       "nouns": [
         {
           "id": "forecast",
-          "kind": "SENSE",
+          "layer": "software",
+          "function": "sense",
           "verbs": [
             "read"
           ],
@@ -1387,7 +1549,8 @@
       "nouns": [
         {
           "id": "rumours",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -1713,9 +1876,6 @@
   "controller": {
     "kind": "downtown",
     "version": 1,
-    "outside": 22,
-    "inside": 70,
-    "signalMs": 450,
     "devices": {
       "gate": "gate",
       "vehicle": "dlv9"
@@ -1723,7 +1883,7 @@
     "state": {
       "at": "dlvAt"
     },
-    "speedTuning": "dlvSpeed",
+    "mover": "dlv9.chassis",
     "visual": {
       "state": {
         "lock": "lock",

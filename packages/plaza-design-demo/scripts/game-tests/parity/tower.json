@@ -1,0 +1,32 @@
+{
+ "fields": {
+  "ambient": "bf21a9e8fbc5a384",
+  "attention": "d5d4cd07616a5428",
+  "data": "3043f3dce2472ece",
+  "exits": "97d170e1550eee4a",
+  "gameplay": "caca7f35909cf40b",
+  "id": "392c1ee8f7c4bd87",
+  "intro": "d5d4cd07616a5428",
+  "level": "57a62dbca2551059",
+  "name": "840da68ab21f647a",
+  "objective": "d5d4cd07616a5428",
+  "objectives": "d5d4cd07616a5428",
+  "outdoor": "7cb6efb98ba5972a",
+  "people": "97d170e1550eee4a",
+  "readables": "d5d4cd07616a5428",
+  "rests": "d5d4cd07616a5428",
+  "spawn": "9f9af029585ba014",
+  "spawnH": "b6589fc6ab0dc82c",
+  "storyDay": "d5d4cd07616a5428",
+  "storyMinute": "d5d4cd07616a5428",
+  "uses": "97d170e1550eee4a",
+  "width": "0c774d8e1e30b273"
+ },
+ "paint": {
+  "start": "6f72df62d8890607",
+  "middle-night": "7ef928d098f07d3d",
+  "end": "a86f260ca05d091a",
+  "phone": "597c47d94471b2ac",
+  "wide-late": "7f017e37e57b70e7"
+ }
+}

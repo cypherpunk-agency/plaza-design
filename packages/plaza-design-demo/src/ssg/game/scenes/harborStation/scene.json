@@ -113,6 +113,16 @@
       "roof": "roof",
       "stop": "platform-train",
       "water": "water"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
     }
   },
   "rests": [
@@ -228,5 +238,10 @@
   },
   "companion": {
     "mode": "off"
+  },
+  "stage": {
+    "mechanisms": [
+      "transitPlatform"
+    ]
   }
 }

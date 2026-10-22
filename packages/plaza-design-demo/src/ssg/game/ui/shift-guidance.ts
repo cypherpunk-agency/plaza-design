@@ -1,4 +1,5 @@
-import { shiftAttention, shiftGoal } from "../scenes/harbor-shift/index";
+type Flags = Readonly<Record<string, boolean>>;
+type Attention = { x: number; gentle?: boolean } | null;
 
 /** Brief goal introduction, then the original quiet HUD line. Menus pause its clock. */
 export class ShiftGuidance {
@@ -7,10 +8,10 @@ export class ShiftGuidance {
   private age = 0;
   private idle = 0;
   private settled = false;
-  private target: ReturnType<typeof shiftAttention> = null;
+  private target: Attention = null;
   private blocked = true;
 
-  constructor(host: HTMLElement, private reduced: boolean, private ping: (x: number | null) => void, private attention = shiftAttention, private objective = shiftGoal) {
+  constructor(host: HTMLElement, private reduced: boolean, private ping: (x: number | null) => void, private attention: (flags: Flags) => Attention, private objective: (flags: Flags) => string) {
     this.live.className = 'shift-task-live';
     this.live.setAttribute('role', 'status');
     this.live.setAttribute('aria-live', 'polite');

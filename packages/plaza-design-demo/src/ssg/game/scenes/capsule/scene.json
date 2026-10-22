@@ -64,8 +64,22 @@
     }
   ],
   "manifest": {
-    "devices": {"lock": "device-lock", "fridge": "device-fridge", "kettle": "device-kettle", "blinds": "device-blinds", "pc": "device-pc", "plug": "device-plug", "router": "device-router"},
-    "artwork": {"orientation":"blinds","deskSurface":"desk","sunPatch":"sun-patch","router":"router","door":"door"},
+    "devices": {
+      "lock": "device-lock",
+      "fridge": "device-fridge",
+      "kettle": "device-kettle",
+      "blinds": "device-blinds",
+      "pc": "device-pc",
+      "plug": "device-plug",
+      "router": "device-router"
+    },
+    "artwork": {
+      "orientation": "blinds",
+      "deskSurface": "desk",
+      "sunPatch": "sun-patch",
+      "router": "router",
+      "door": "door"
+    },
     "version": 1,
     "width": {
       "instance": "shell",
@@ -82,6 +96,17 @@
     },
     "exits": {
       "door": "exit-door"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "groundSpawn": false,
+      "omitGroundRestHeight": true
     }
   },
   "rests": [
@@ -132,6 +157,78 @@
           "rest": "sun"
         }
       ]
+    }
+  },
+  "stage": {
+    "facing": {
+      "role": "orientation"
+    },
+    "targetAnchors": [
+      "door"
+    ],
+    "mechanisms": [
+      "thermal"
+    ],
+    "values": {
+      "hover": {
+        "live": {
+          "engine": "hover"
+        }
+      },
+      "plugOn": {
+        "picture": "plugOn"
+      },
+      "up": {
+        "picture": "up"
+      },
+      "sun": {
+        "picture": "sun"
+      },
+      "open": {
+        "picture": "open"
+      },
+      "hot": {
+        "picture": "hot"
+      },
+      "temp": {
+        "picture": "temp"
+      },
+      "steam": {
+        "picture": "steam"
+      },
+      "pixelAt": {
+        "picture": "pixelAt"
+      },
+      "routerX": {
+        "live": {
+          "role": "router",
+          "get": "x"
+        }
+      },
+      "deskRight": {
+        "live": {
+          "role": "deskSurface",
+          "get": "right"
+        }
+      },
+      "deskHeight": {
+        "live": {
+          "role": "deskSurface",
+          "get": "top"
+        }
+      },
+      "sunFrom": {
+        "live": {
+          "role": "sunPatch",
+          "get": "x"
+        }
+      },
+      "sunTo": {
+        "live": {
+          "role": "sunPatch",
+          "get": "right"
+        }
+      }
     }
   }
 }

@@ -6,7 +6,7 @@ remains in design. Use [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md)
 
 ## Current foundation
 
-All 19 existing scenes use shared gameplay, conversations, state, devices, composition and
+All 20 existing scenes use shared gameplay, conversations, state, devices, composition and
 world/story source, with typed editor controls and private native Play. Ordinary scene creation
 uses the catalogue rather than a new TypeScript registry entry. New artwork and physical
 calculations may require registered code primitives. Public editing downloads bundles; only

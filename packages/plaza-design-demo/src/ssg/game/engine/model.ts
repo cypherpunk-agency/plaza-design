@@ -24,21 +24,26 @@ import {readObservation} from './native-observations';
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from "../data/index";
 import type {
-  Action, CableData, Case, DeviceData, KeyItem, Kind, LineData, LineRef, LogicData, MachineData, NetData, NetworkData, NounData, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
+  Action, CableData, Case, Coord, DeviceData, KeyItem, Layer, LineData, LineRef, LogicData, MachineData, MechanismDevice, NetData, NetworkData, NounData, PartFunction, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [the net] networks and what you reach from where you are plugged in (NET.md)
 import { machinesOf, reachNets, ownsScanner } from './net';
 // [engine features: watchdog, clocks] (scene/watchdog.ts, scene/clock.ts)
 import { Clocks } from './clock';
+import { Movers, moverVerbs } from './movers';
+import { Zones, ZONE_VERBS } from './zones';
 import { type DogView, Watchdogs } from './watchdog';
 import { SceneTime } from './time';
 
 /**
- * Data kinds, plus two the engine makes: SEAL (the input of a sector sealed
- * with a sequence) and WATCH (the watchdog's noun on each device of its route).
+ * Engine behaviour a live noun carries: the data's settings blocks (`guard`, `link`, `clock`,
+ * `log`), plus two the engine makes: a seal (the input of a sector sealed with a sequence) and
+ * the watch (the watchdog's noun on each device of its route).
  */
-export type NounKind = Kind | 'SEAL' | 'WATCH';
+export type NounBehaviour = 'guard' | 'link' | 'clock' | 'log' | 'mover' | 'zone' | 'seal' | 'watch';
+/** A data noun's behaviour: the settings block it carries, if any. */
+export const behaviourOf = (n: NounData): NounBehaviour | undefined => n.guard ? 'guard' : n.link ? 'link' : n.clock ? 'clock' : n.log ? 'log' : n.mover ? 'mover' : n.zone ? 'zone' : undefined;
 
 /**
  * The city, as every scene's conditions see it (TIME.md): the game plugs it in (game.ts). `read`:
@@ -52,8 +57,10 @@ export type Line = [cmd: string, reply: string, tone?: 'ok' | 'err' | 'dim'];
 
 export interface Noun {
   id: string;
-  kind: NounKind;
-  /** Its verbs now (a GUARD's grow with the keyring, a LINK's with what it has scanned). */
+  layer: Layer;
+  function: PartFunction;
+  behaviour?: NounBehaviour;
+  /** Its verbs now (a login's grow with the keyring, a port's with what it has scanned). */
   readonly verbs: string[];
   /** Events this noun raises; cables start here. */
   events?: string[];
@@ -95,7 +102,7 @@ export interface SceneHooks {
   observe?: (event: Readonly<SceneTrace>) => void;
   /**
    * A line to show. `from`: who said it, when the model knows: the device whose verb ran
-   * (or whose effect names itself), or another speaker an effect names ('pixel'). The host
+   * (or whose effect names itself), or another speaker an effect names (the companion's). The host
    * puts it as a caption over that thing; without `from` it goes to the terminal only.
    */
   say: (line: Line, from?: string, receipt?:FeedbackReceipt) => void;
@@ -185,6 +192,14 @@ export class SceneModel {
   live = new Set<Link>();
   goals = new Set<string>();
   devices = new Map<string, Device>();
+  /**
+   * The scene's engine mechanisms as Circuit devices (`rules.mechanisms`): cable endpoints only. They are not
+   * in `devices` (never on the board, in hack vision or in the world); a cable's verb on one runs the
+   * mechanism's named effect, and its signals come from the mechanism's milestones and derived values.
+   */
+  readonly mechanisms = new Map<string, Device>();
+  /** Last value of each derived value a cable listens to (`changed`); not saved: a restore starts from what it sees. */
+  private derivedSeen = new Map<string, Value>();
   /** Sectors opened: `device/sector`. */
   opened = new Set<string>();
   /** Guards whose password was found: `device.noun`. */
@@ -203,7 +218,7 @@ export class SceneModel {
   private inspecting=false;
   private recent:Readonly<SceneTrace>[]=[];
   enableInspection(){this.inspecting=true;}
-  inspect(){return structuredClone({state:this.state,goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.kind==='CLOCK').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,kind:n.kind,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
+  inspect(){return structuredClone({state:this.state,goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.behaviour==='clock').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,layer:n.layer,function:n.function,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
 
   /** Scene time: held while paused. A focused check can swap it. */
   now: () => number = () => this.time.now();
@@ -212,6 +227,10 @@ export class SceneModel {
   // [engine features] the watchdog, clocks, cuts of pre-wired cables, lockout lengths, modules and tokens without a save
   readonly dogs: Watchdogs;
   readonly clocks: Clocks;
+  readonly movers: Movers;
+  readonly zones = new Zones();
+  /** Where the player stands in this scene (world x, height over the street), for zones; the game sets it each frame. */
+  player: { x: number; h: number; building?: string } | null = null;
   private cuts = new Set<string>();
   private spans = new Map<string, number>();
   private ownModules: string[] = [];
@@ -245,21 +264,51 @@ export class SceneModel {
   /** Bind the same source once; standalone engine fixtures may attach it after construction. */
   installGameplaySource(source:GameplayDefinition){if(this.checkpointReady)return;this.checkpointProgram=compileCheckpoint(source,this.data.id);this.checkpointReady=true;}
 
-  constructor(private hooks: SceneHooks, readonly data: SceneData, readonly rules: SceneRules, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>,gameplay?:GameplayDefinition) {
+  /** The scene's rules; a scene without any (folder scenes with no mechanism) has none to run. */
+  readonly rules: SceneRules;
+  constructor(private hooks: SceneHooks, readonly data: SceneData, rules: SceneRules | undefined, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>,gameplay?:GameplayDefinition) {
+    this.rules = rules ?? { effects: {} };
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
     this.programList = net.programs ?? [];
     this.scanProgram = net.scanProgram;
     for (const n of [...net.nodes, ...(data.nodes ?? [])]) this.nodeData.set(n.id, n);
     this.prewired = [...data.cables, ...net.cables];
+    for (const m of this.rules.mechanisms ?? []) this.mechanisms.set(m.id, this.mechanismDevice(m));
     this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
     this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
+    this.movers = new Movers({ now: () => this.now(), num: (n) => this.num(n), coord: (c, axis) => this.coord(c, axis), test: (cond) => this.cond(cond) });
     if(gameplay)this.installGameplaySource(gameplay);
     const initial={...ownedState};if(ownedState)this.state=ownedState;
     this.init();
     for(const key of Object.keys(this.data.state))if(Object.prototype.hasOwnProperty.call(initial,key))this.state[key]=initial[key];
+    this.syncMovers();
   }
+
+  /** A number as the data writes it: a literal, or the name of a tuning value. */
+  private num(n: number | string): number {
+    const v = typeof n === 'number' ? n : this.data.tuning[n];
+    if (typeof v !== 'number' || !Number.isFinite(v)) throw new Error('Unknown tuning value ' + n);
+    return v;
+  }
+  /** Where a coordinate lies on an axis: a literal, a place the scene's code measured from its artwork, or a device's standing spot. */
+  private coord(c: Coord, axis: 'x' | 'h'): number {
+    if (typeof c === 'number') return c;
+    const plus = c.plus === undefined ? 0 : this.num(c.plus);
+    if ('place' in c) {
+      // rules without any places (the shape a scene's code has before its artwork exists) put every place at the origin
+      const p = this.rules.places ? this.rules.places[c.place] : { x: 0, h: 0 };
+      if (!p) throw new Error('Unknown place ' + c.place);
+      return p[axis] + plus;
+    }
+    const spot = this.data.devices.find((d) => d.id === c.spot)?.layout?.spot;
+    if (!spot) throw new Error('Unknown spot ' + c.spot);
+    if (axis === 'h') return (spot.y ?? 0) + plus;
+    return spot.x + (c.edge === 'left' ? -spot.w / 2 : c.edge === 'right' ? spot.w / 2 : 0) + plus;
+  }
+  /** Movers that write a state key stand where the key says (a saved game's state), and a key left on `moving` by a trip that never finished names the stop they are at. */
+  private syncMovers() { for (const w of this.movers.sync((dev, key) => this.read(key, this.ctx(dev)))) this.write(w.key, w.value, w.dev); }
 
   /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
@@ -267,10 +316,11 @@ export class SceneModel {
     this.reservations=new WeakMap();
     this.recent=[];
     this.time.clear();
-    this.clocks.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
+    this.clocks.clear(); this.movers.clear(); this.zones.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
+    this.derivedSeen.clear();
     for(const key of Object.keys(this.state))delete this.state[key];
     Object.assign(this.state,this.data.state);
     this.data.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
@@ -285,7 +335,7 @@ export class SceneModel {
    */
   private wire(node?: string) {
     const dev = (key: string) => split(key.split(':')[0])[0];
-    const here = (key: string) => this.devices.has(dev(key));
+    const here = (key: string) => this.devices.has(dev(key)) || this.mechanisms.has(dev(key));
     for (const c of this.prewired) {
       if (node && dev(c.from) !== node && dev(c.to) !== node) continue;
       if (!here(c.from) || !here(c.to) || this.links.some((l) => l.from === c.from && l.to === c.to)) continue;
@@ -313,7 +363,7 @@ export class SceneModel {
   set(key: string, v: Value) { if(this.gameplayQueryIds?.has(key))throw Error('Gameplay query is read-only: '+key);if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);this.state[key] = v; }
   /** A state key, a derived value (`gateOpen`) or `signal`, as conditions read them. */
   value(key: string): Value | undefined { return this.read(key, this.ctx('')); }
-  noun(key: string) { const [d, n] = split(key); return this.devices.get(d)?.nouns.find((x) => x.id === n); }
+  noun(key: string) { const [d, n] = split(key); return (this.devices.get(d) ?? this.mechanisms.get(d))?.nouns.find((x) => x.id === n); }
   /**
    * Devices standing in the world (their `layout.spot`); logic parts and net nodes live on the board only.
    * A device that moves (the scene's `rules.place`) stands where its code says, or is gone for now (null).
@@ -353,7 +403,7 @@ export class SceneModel {
   takeReceipt(l:Line,from:string|null=this.speaker):FeedbackReceipt {const r=this.receipt(l,from);this.reservations.delete(l);return r;}
   private sayLine(l: Line, from: string | null = this.speaker) {const receipt=this.takeReceipt(l,from);this.hooks.say(l, from ?? undefined,receipt);return receipt;}
   /** Run `fn` with `dev` as the speaker: what it says comes from that device. */
-  private as<T>(dev: string, fn: () => T): T {
+  private as<T>(dev: string | null, fn: () => T): T {
     const before = this.speaker;
     this.speaker = dev;
     try { return this.withCue(fn); } finally { this.speaker = before; }
@@ -376,7 +426,13 @@ export class SceneModel {
   gameplayTick?:(dt:number,cause:(run:()=>void)=>void,phase:'beforeNative'|'afterNative')=>void;
   /** Registered panel inputs dispatch ordinary shared commands; panels own only hit testing. */
   gameplayInput?:(id:string,origin:import('./gameplay/native-inputs').NativeInputOrigin)=>import('./gameplay/types').GameplayResult;
-  input(id:string):import('./gameplay/types').GameplayResult{return this.rules.inputs?.includes(id)?this.gameplayInput?.(id,{kind:'physical'})??{ok:false,reason:'unknown-command'}:{ok:false,reason:'forbidden'};}
+  input(id:string):import('./gameplay/types').GameplayResult{
+    if(!this.rules.inputs?.includes(id))return{ok:false,reason:'forbidden'};
+    const result:import('./gameplay/types').GameplayResult=this.gameplayInput?.(id,{kind:'physical'})??{ok:false,reason:'unknown-command'};
+    // the milestone happened whatever the source made of it: cables from the mechanism's `milestones` part carry it on
+    this.emitMechanism('milestones',id);
+    return result;
+  }
   gameplayCommand?:(id:string)=>import('./gameplay/types').GameplayResult;
   runCommand(id:string):import('./gameplay/types').GameplayResult{return this.gameplayCommand?.(id)??{ok:false,reason:'unknown-command'};}
   /** Native committed device replies retain the existing receipt, caption and history owner. */
@@ -389,7 +445,7 @@ export class SceneModel {
   nativeEligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
     const n=this.noun(dev+'.'+noun);if(!n)return{ok:false,reason:'unknown-noun'};
     if(!n.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
-    if(n.kind!=='WATCH'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
+    if(n.behaviour!=='watch'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
     if(!bySignal&&this.lockLeft(dev))return{ok:false,reason:'lockout'};
     if(!bySignal&&n.sector&&this.sealed(dev,n.sector))return{ok:false,reason:'sealed'};
     return{ok:true};
@@ -400,14 +456,15 @@ export class SceneModel {
   act(dev: string, noun: string, verb: string, bySignal = false) {
     const context = { dev, noun, verb, bySignal };
     this.observe('trigger', context, {});
-    this.as(dev, () => this.actAs(dev, noun, verb, bySignal));
+    // a mechanism's effect speaks as the scene (no device of its own stands in the world)
+    this.as(this.mechanisms.has(dev) ? null : dev, () => this.actAs(dev, noun, verb, bySignal));
     this.observe('result', context, { state: this.state });
   }
 
   private actAs(dev: string, noun: string, verb: string, bySignal: boolean) {
     const n = this.noun(dev + '.' + noun);
     // [watchdog] a frozen device refuses every verb, and a signal into it is dropped (its own watchdog noun still answers)
-    if (n && n.kind !== 'WATCH' && this.frozen(dev)) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'watchdog available',matches:false});this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
+    if (n && n.behaviour !== 'watch' && this.frozen(dev)) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'watchdog available',matches:false});this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
     if (!bySignal) {
       const d = this.devices.get(dev), left = this.lockLeft(dev);
       if (d && left) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'device lock expired',matches:false,remainingMs:left});this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
@@ -529,7 +586,7 @@ export class SceneModel {
   /** Remove a placed logic part and every cable touching it. The scene's own devices stay. */
   removeDevice(id: string): void {
     if (!this.devices.get(id)?.logic) return;
-    this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id); this.clocks.remove(id);
+    this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id); this.clocks.remove(id); this.movers.remove(id); this.zones.remove(id);
     const on = (key: string) => split(key)[0] === id;
     this.links = this.links.filter((l) => { const hit = on(l.from) || on(l.to); if (hit) this.live.delete(l); return !hit; });
     this.changed();
@@ -667,7 +724,7 @@ export class SceneModel {
     let l: Line | null = null;
     if (n.sector && this.sealed(dev, n.sector)) l = this.trySeal(dev, n.sector, id);
     else if (this.frozen(dev)) l = this.frozenLine(dev, nid, 'login', false);
-    else if (n.kind === 'GUARD') {
+    else if (n.behaviour === 'guard') {
       this.touched.set(dev, this.now());
       if (this.nounData(dev, nid)?.guard?.toy) l = this.line('toy.hands', { noun: nid, verb: this.toyVerb });
       else if (k.kind === 'fragment') this.check(dev, nid, k.text ?? '');
@@ -843,7 +900,7 @@ export class SceneModel {
   traceOf(dev: string) { return this.trace.get(dev) ?? 0; }
   /** Does this device keep a log of you (so the schematic shows its meter)? */
   logged(dev: string) { return this.logsOf(dev).length > 0; }
-  private logsOf(dev: string) { return (this.devices.get(dev)?.data.nouns ?? []).filter((n) => n.kind === 'LOG' && n.log); }
+  private logsOf(dev: string) { return (this.devices.get(dev)?.data.nouns ?? []).filter((n) => n.log); }
 
   /** A log records while its `when` holds and its cable to the archive is still there. */
   recording(dev: string, n: NounData) {
@@ -866,7 +923,11 @@ export class SceneModel {
    * (the host redraws the meters, or everything when a lock ended).
    */
   tick(dt: number, live = true): boolean {
-    if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative'); }
+    // a mover that follows a state key sets off at the time the key changed (between frames the scene's time stands still), whatever the frame
+    for (const f of this.movers.followers()) { const v = this.read(f.state, this.ctx(f.dev)); if (typeof v === 'string' && this.movers.hasStop(f.key, v)) this.moveTo(f.dev, f.noun, v); }
+    // the frame moves scene time on (`dt` ms): delayed signals, deadlines and movers follow it
+    this.time.advance(dt);
+    if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative');this.tickMechanisms(); }
     let moved = false;
     for (const d of this.devices.values()) {
       const logs = this.logsOf(d.id), before = this.traceOf(d.id);
@@ -888,7 +949,8 @@ export class SceneModel {
 
   /** The watchdogs step along their routes (raising arrives / leaves), the clocks beat. True when something happened. */
   private tickEngine(): boolean {
-    const steps = this.dogs.tick(), beats = this.clocks.tick();
+    const steps = this.dogs.tick(), beats = this.clocks.tick(), arrivals = this.movers.tick();
+    const crossings = this.zones.tick((watch) => watch === 'player' ? this.player ?? undefined : this.movers.place(watch));
     for (const s of steps) {
       const dev = s.arrives ?? s.leaves!;
       if (!this.devices.has(dev)) continue;
@@ -900,8 +962,18 @@ export class SceneModel {
       if (b.set) this.write(b.set, b.event, b.dev);
       this.emit(b.dev + '.' + b.noun + ':' + b.event);
     }
-    if (steps.length || beats.some((b) => b.set)) this.changed();
-    return steps.length > 0 || beats.length > 0;
+    for (const a of arrivals) {
+      if (a.set && a.stop !== undefined) this.write(a.set, a.stop, a.dev);
+      this.emit(a.dev + '.' + a.noun + ':' + a.event);
+      this.milestone(a.dev, a.noun, a.event);
+    }
+    for (const z of crossings) {
+      if (z.set) this.write(z.set, z.event === 'enters', z.dev);
+      this.emit(z.dev + '.' + z.noun + ':' + z.event);
+      this.milestone(z.dev, z.noun, z.event);
+    }
+    if (steps.length || beats.some((b) => b.set) || arrivals.length || crossings.length) this.changed();
+    return steps.length > 0 || beats.length > 0 || arrivals.length > 0 || crossings.length > 0 || this.movers.anyMoving();
   }
 
   // ---------- the watchdog (scene/watchdog.ts) ----------
@@ -929,6 +1001,60 @@ export class SceneModel {
       return this.line(changed ? 'clock.' + c.verb : 'clock.already', { via, noun: n.id, verb: c.verb });
     }
     return this.perform(n, c);
+  }
+
+  // ---------- movers and zones (engine/movers.ts, engine/zones.ts) ----------
+
+  private runMover(n: NounData, c: Ctx): Line | null {
+    const key = c.dev + '.' + n.id, via = c.bySignal ? 'signal → ' : '';
+    const stop = c.verb === 'return' ? this.movers.home(key) : c.verb.startsWith('go ') ? c.verb.slice(3) : undefined;
+    if (stop === undefined) return this.perform(n, c);
+    const r = this.moveTo(c.dev, n.id, stop);
+    return this.line(r === 'started' ? 'mover.go' : 'mover.already', { via, noun: n.id, verb: c.verb, stop });
+  }
+
+  /**
+   * Send a mover to a stop without a terminal line (a lift called in the world). A frozen device
+   * does not move. Raises `started` and writes `moving` like the verb does.
+   */
+  moveTo(dev: string, noun: string, stop: string): 'started' | 'already' | 'unknown' {
+    const key = dev + '.' + noun, n = this.nounData(dev, noun);
+    if (!n?.mover || this.frozen(dev)) return 'unknown';
+    const r = this.movers.go(key, stop);
+    if (r === 'started') this.setOff(n, dev);
+    return r;
+  }
+
+  /**
+   * Send a mover along one of its named paths (`mover.paths`) from where it stands: the scene's own effect
+   * for a trip with legs (a crane's lift, a van's drive). Raises `started` and writes `moving` like a verb.
+   * The effect has already passed its own device's freeze, so a mover on another device goes regardless.
+   */
+  runPath(dev: string, noun: string, path: string): 'started' | 'unknown' {
+    const n = this.nounData(dev, noun);
+    if (!n?.mover) return 'unknown';
+    const r = this.movers.runPath(dev + '.' + noun, path);
+    if (r === 'started') this.setOff(n, dev);
+    return r;
+  }
+
+  private setOff(n: NounData, dev: string) {
+    if (n.mover!.set) this.write(n.mover!.set, n.mover!.moving ?? 'moving', dev);
+    this.emit(dev + '.' + n.id + ':started');
+    this.milestone(dev, n.id, 'started');
+    this.changed();
+  }
+
+  /** An event of a mover or zone that the noun reports to the scene's code as a physical milestone. */
+  private milestone(dev: string, noun: string, event: string) {
+    const id = this.nounData(dev, noun)?.milestone?.[event];
+    if (id !== undefined) this.input(id);
+  }
+
+  private runZone(n: NounData, c: Ctx): Line | null {
+    if (c.verb !== 'arm' && c.verb !== 'disarm') return this.perform(n, c);
+    const changed = this.zones.arm(c.dev + '.' + n.id, c.verb === 'arm');
+    return this.line(changed ? 'zone.' + c.verb : 'zone.already', { via: c.bySignal ? 'signal → ' : '', noun: n.id, verb: c.verb });
   }
 
   /** Raise (or lower) a device's trace; a full one kicks. */
@@ -1030,7 +1156,7 @@ export class SceneModel {
   ports(): { dev: string; noun: string; key: string }[] {
     const out: { dev: string; noun: string; key: string }[] = [];
     for (const d of this.devices.values()) for (const n of d.data.nouns) {
-      if (n.kind !== 'LINK' || !n.link) continue;
+      if (!n.link) continue;
       if (n.sector && this.sealed(d.id, n.sector)) continue;
       if (n.link.when && !this.test(n.link.when, this.ctx(d.id, n.id))) continue;
       out.push({ dev: d.id, noun: n.id, key: this.port(d.id, n.id) });
@@ -1122,6 +1248,10 @@ export class SceneModel {
     if (locks.length) z.locks = Object.fromEntries(locks);
     const clocks = this.clocks.snapshot();
     if (Object.keys(clocks).length) z.clocks = clocks;
+    const movers = this.movers.snapshot();
+    if (Object.keys(movers).length) z.movers = movers;
+    const zones = this.zones.snapshot();
+    if (Object.keys(zones).length) z.zones = zones;
     if (this.dogs.any) z.watchdog = this.dogs.snapshot();
     return z;
   }
@@ -1169,7 +1299,7 @@ export class SceneModel {
    */
   private restoreEngine(s: SceneSave) {
     (s.cut ?? []).forEach((id) => { if (typeof id === 'string') this.cuts.add(id); });
-    const here = (key: string) => this.devices.has(split(key.split(':')[0])[0]);
+    const here = (key: string) => { const d = split(key.split(':')[0])[0]; return this.devices.has(d) || this.mechanisms.has(d); };
     for (const c of this.prewired) {
       if (!here(c.from) || !here(c.to)) continue;
       const had = this.links.findIndex((l) => l.from === c.from && l.to === c.to);
@@ -1183,6 +1313,9 @@ export class SceneModel {
       if (left > 0 && this.devices.has(key.includes('.') ? dev : key) && (!key.includes('.') || this.nounData(dev, noun)?.guard)) this.lock(key, left);
     }
     this.clocks.restore(s.clocks);
+    this.syncMovers();
+    for (const w of this.movers.restore(s.movers)) this.write(w.key, w.value, w.dev);
+    this.zones.restore(s.zones);
     this.dogs.restore(s.watchdog);
   }
 
@@ -1204,29 +1337,76 @@ export class SceneModel {
     for (const s of d.sectors ?? []) {
       if (!('sequence' in s.seal)) continue;
       const verbs = s.seal.sequence.filter((v, i, a) => a.indexOf(v) === i);
-      dev.nouns.push({ id: s.id, kind: 'SEAL', verbs, run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal) });
+      dev.nouns.push({ id: s.id, layer: 'software', function: 'gate', behaviour: 'seal', verbs, run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal) });
     }
     // [watchdog] a device on a watchdog's route carries its noun: read it, wire from arrives / leaves
     if (this.dogs.routes().has(id)) {
-      dev.nouns.push({ id: WATCH_NOUN, kind: 'WATCH', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
+      dev.nouns.push({ id: WATCH_NOUN, layer: 'software', function: 'record', behaviour: 'watch', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
     }
-    // [clocks] its CLOCK nouns start beating
+    // [clocks, movers, zones] its clocks start beating, its movers stand at their first stop, its zones watch
     this.clocks.add(id, d.nouns);
+    this.movers.add(id, d.nouns);
+    this.zones.add(id, d.nouns, (c, axis) => this.coord(c, axis));
     if (as === 'logic') { dev.crafted = true; dev.logic = true; }
     if (as === 'node') dev.node = true;
     return dev;
   }
 
+  /**
+   * A mechanism as a device of the Circuit: one noun per part. A verb on its `effects` part runs the
+   * mechanism's named effect exactly as an `effect` action would (same world; it speaks as the scene).
+   */
+  private mechanismDevice(m: MechanismDevice): Device {
+    const data: DeviceData = { id: m.id, name: m.label, look: '', status: '', nouns: [] };
+    return {
+      id: m.id, name: m.label, look: '', data, status: () => '',
+      nouns: m.parts.map((p) => ({
+        id: p.id, layer: p.layer, function: p.function, verbs: [...p.verbs], events: [...p.events],
+        run: (verb, bySignal) => {
+          const effect = p.id === 'effects' ? this.rules.effects[verb] : undefined;
+          if (!effect) return null;
+          const c: Ctx = { dev: '', noun: '', verb, bySignal };
+          this.observe('action', c, { mechanism: m.id, effect: verb });
+          return effect(this.world(c), c) ?? null;
+        },
+      })),
+    };
+  }
+  /** Raise a mechanism's signal on the cables from it. Nothing is scheduled when no cable starts there. */
+  private emitMechanism(part: string, event: string) {
+    for (const m of this.mechanisms.values()) {
+      const key = m.id + '.' + part + ':' + event;
+      if (m.nouns.some((n) => n.id === part && n.events?.includes(event)) && this.links.some((l) => l.from === key)) this.emit(key);
+    }
+  }
+  /** A derived value a cable listens to raises `changed` when it differs from the last tick (the first sight only notes it). */
+  private tickMechanisms() {
+    if (!this.mechanisms.size || !this.links.length) return;
+    const derived = this.rules.derived ?? {}, seen = new Set<string>();
+    for (const l of [...this.links]) {
+      const i = l.from.lastIndexOf(':');
+      if (i < 0 || l.from.slice(i + 1) !== 'changed') continue;
+      const [dev, part] = split(l.from.slice(0, i));
+      if (!this.mechanisms.has(dev) || !(part in derived) || seen.has(l.from)) continue;
+      seen.add(l.from);
+      const now = derived[part](this), key = dev + '.' + part;
+      if (!this.derivedSeen.has(key)) { this.derivedSeen.set(key, now); continue; }
+      if (this.derivedSeen.get(key) !== now) { this.derivedSeen.set(key, now); this.emit(l.from); }
+    }
+  }
+
   private nounOf(n: NounData, dev: string): Noun {
     const m = this;
     const noun: Noun = {
-      id: n.id, kind: n.kind,
+      id: n.id, layer: n.layer, function: n.function, behaviour: behaviourOf(n),
       get verbs() { return m.verbsOf(n, dev); },
       run: (verb, bySignal) => {
         const c: Ctx = { dev, noun: n.id, verb, bySignal };
-        if (n.kind === 'GUARD' && n.guard) return this.runGuard(n, c);
-        if (n.kind === 'LINK' && n.link) return this.runLink(n, c);
-        if (n.kind === 'CLOCK' && n.clock) return this.runClock(n, c);
+        if (n.guard) return this.runGuard(n, c);
+        if (n.link) return this.runLink(n, c);
+        if (n.clock) return this.runClock(n, c);
+        if (n.mover) return this.runMover(n, c);
+        if (n.zone) return this.runZone(n, c);
         return this.perform(n, c);
       },
     };
@@ -1239,10 +1419,12 @@ export class SceneModel {
   /** A GUARD's verbs grow with the keyring (a toy guard's are `probe`); a LINK's with the nodes it has seen; a CLOCK starts and stops. */
   private verbsOf(n: NounData, dev: string): string[] {
     const own = n.verbs ?? [];
-    if (n.kind === 'GUARD' && n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
-    if (n.kind === 'CLOCK' && n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
-    if (n.kind === 'GUARD' && n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
-    if (n.kind === 'LINK' && n.link) {
+    if (n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
+    if (n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
+    if (n.mover) { const engine = moverVerbs(n.mover); return [...engine, ...own.filter((v) => !engine.includes(v))]; }
+    if (n.zone) return [...ZONE_VERBS, ...own.filter((v) => !(ZONE_VERBS as readonly string[]).includes(v))];
+    if (n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
+    if (n.link) {
       // what it knows it connects to straight away (no scan.so needed); what a scan found besides
       const reach = this.reachOf(n, dev), known = (n.link.known ?? []).filter((id) => reach.includes(id) && this.net.get(id) !== 'connected');
       const seen = reach.filter((id) => this.net.get(id) === 'seen' && !known.includes(id));

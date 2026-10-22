@@ -14,7 +14,7 @@
       "routes": [
         {
           "pages": [
-            "EVIDENCE CUSTODY \u00b7 ACCESS BY REGISTRY WARRANT CARD.",
+            "EVIDENCE CUSTODY · ACCESS BY REGISTRY WARRANT CARD.",
             "READER: PRESENT YOUR CARD. YOUR IDENTITY: NOT FOUND. A PERSON WHO IS NOT FOUND CANNOT HOLD A WARRANT. DOOR REMAINS LOCKED."
           ]
         }
@@ -58,7 +58,7 @@
       "id": "plaque",
       "name": "PLAQUE",
       "pages": [
-        "BONDED WAREHOUSE 4 \u00b7 REGISTRY EVIDENCE CUSTODY.",
+        "BONDED WAREHOUSE 4 · REGISTRY EVIDENCE CUSTODY.",
         "SEIZED PROPERTY IS HELD PENDING REVIEW. OWNERS WILL BE CONTACTED AT THEIR REGISTERED ADDRESS."
       ]
     },
@@ -66,7 +66,7 @@
       "id": "shoe",
       "name": "EVIDENCE TAG",
       "pages": [
-        "ITEM 44-0812 \u00b7 1 SHOE (LEFT) \u00b7 OWNER: COUNTED OUT \u00b7 STATUS: PENDING REVIEW."
+        "ITEM 44-0812 · 1 SHOE (LEFT) · OWNER: COUNTED OUT · STATUS: PENDING REVIEW."
       ]
     }
   ],
@@ -139,7 +139,11 @@
     }
   ],
   "manifest": {
-    "artwork": {"orientation":"scene","frontShade":"wall","casterWidth":"van"},
+    "artwork": {
+      "orientation": "scene",
+      "frontShade": "wall",
+      "casterWidth": "van"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -170,6 +174,15 @@
         "instance": "exit-stacks",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
     }
   },
   "environment": {
@@ -198,5 +211,27 @@
         ]
       }
     }
+  },
+  "stage": {
+    "facing": {
+      "role": "orientation"
+    },
+    "shade": {
+      "front": {
+        "role": "frontShade"
+      }
+    },
+    "lights": [
+      {
+        "type": "warehouse.light",
+        "style": "element"
+      }
+    ],
+    "casters": [
+      {
+        "type": "warehouse.caster",
+        "widthRole": "casterWidth"
+      }
+    ]
   }
 }

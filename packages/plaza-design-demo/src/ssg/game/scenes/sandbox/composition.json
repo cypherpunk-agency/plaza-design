@@ -16,7 +16,7 @@
       "order": 0,
       "layer": "backdrop",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -33,7 +33,7 @@
       "order": 1,
       "layer": "backdrop",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -49,7 +49,7 @@
       "order": 0,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -65,7 +65,7 @@
       "order": 1,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -81,7 +81,7 @@
       "order": 2,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -97,7 +97,7 @@
       "order": 3,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -113,7 +113,7 @@
       "order": 4,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -129,7 +129,7 @@
       "order": 5,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -145,7 +145,7 @@
       "order": 6,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -161,7 +161,7 @@
       "order": 7,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -177,7 +177,7 @@
       "order": 8,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -193,7 +193,7 @@
       "order": 9,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -209,7 +209,7 @@
       "order": 10,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -225,7 +225,7 @@
       "order": 11,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -241,7 +241,7 @@
       "order": 12,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -257,7 +257,7 @@
       "order": 13,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -273,7 +273,7 @@
       "order": 14,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -289,7 +289,7 @@
       "order": 15,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -305,7 +305,7 @@
       "order": 16,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -319,7 +319,7 @@
       "order": 17,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -335,7 +335,7 @@
       "order": 18,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -351,7 +351,7 @@
       "order": 19,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -367,7 +367,7 @@
       "order": 20,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -383,7 +383,7 @@
       "order": 21,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -399,7 +399,7 @@
       "order": 22,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -415,7 +415,7 @@
       "order": 23,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -431,7 +431,7 @@
       "order": 24,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -447,7 +447,7 @@
       "order": 25,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -463,7 +463,7 @@
       "order": 26,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -479,7 +479,7 @@
       "order": 27,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -501,7 +501,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -521,7 +521,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -543,7 +543,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -563,7 +563,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -585,7 +585,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -605,7 +605,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -627,7 +627,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -647,7 +647,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -669,7 +669,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -689,7 +689,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -711,7 +711,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -731,7 +731,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -753,7 +753,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -773,7 +773,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -795,7 +795,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -815,7 +815,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -837,7 +837,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -857,7 +857,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -879,7 +879,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -899,7 +899,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -913,7 +913,7 @@
       "order": 48,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -927,7 +927,7 @@
       "order": 49,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -941,7 +941,7 @@
       "order": 50,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -955,7 +955,7 @@
       "order": 51,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -973,7 +973,7 @@
       "order": 52,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -990,7 +990,7 @@
       "order": 53,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1007,7 +1007,7 @@
       "order": 54,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1024,7 +1024,7 @@
       "order": 55,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1041,7 +1041,7 @@
       "order": 56,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-1",
@@ -1062,7 +1062,7 @@
       "order": 57,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-1",
@@ -1083,7 +1083,7 @@
       "order": 58,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-1",
@@ -1104,7 +1104,7 @@
       "order": 59,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1121,7 +1121,7 @@
       "order": 60,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1138,7 +1138,7 @@
       "order": 61,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-2",
@@ -1159,7 +1159,7 @@
       "order": 62,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-2",
@@ -1180,7 +1180,7 @@
       "order": 63,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1197,7 +1197,7 @@
       "order": 64,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1214,7 +1214,7 @@
       "order": 65,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1231,7 +1231,7 @@
       "order": 66,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1248,7 +1248,7 @@
       "order": 67,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1265,7 +1265,7 @@
       "order": 68,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1282,7 +1282,7 @@
       "order": 69,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1299,7 +1299,7 @@
       "order": 70,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1316,7 +1316,7 @@
       "order": 71,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1333,7 +1333,7 @@
       "order": 72,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1350,7 +1350,7 @@
       "order": 73,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1367,7 +1367,7 @@
       "order": 74,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-3",
@@ -1388,7 +1388,7 @@
       "order": 75,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-3",
@@ -1409,7 +1409,7 @@
       "order": 76,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1426,7 +1426,7 @@
       "order": 77,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1443,7 +1443,7 @@
       "order": 78,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1460,7 +1460,7 @@
       "order": 79,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1477,7 +1477,7 @@
       "order": 80,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1494,7 +1494,7 @@
       "order": 81,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1511,7 +1511,7 @@
       "order": 82,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1525,7 +1525,7 @@
       "order": 83,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1542,7 +1542,7 @@
       "order": 84,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1556,7 +1556,7 @@
       "order": 85,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1573,7 +1573,7 @@
       "order": 86,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1590,7 +1590,7 @@
       "order": 87,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1607,7 +1607,7 @@
       "order": 88,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1624,7 +1624,7 @@
       "order": 89,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1641,7 +1641,7 @@
       "order": 90,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1658,7 +1658,7 @@
       "order": 91,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1675,7 +1675,7 @@
       "order": 92,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1689,7 +1689,7 @@
       "order": 93,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1706,7 +1706,7 @@
       "order": 94,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1723,7 +1723,7 @@
       "order": 95,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "workbench-4",
@@ -1741,7 +1741,7 @@
       "order": 96,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1755,7 +1755,7 @@
       "order": 97,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1769,7 +1769,7 @@
       "order": 98,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "tea-table",
@@ -1787,7 +1787,7 @@
       "order": 99,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       },
       "attach": {
         "instance": "tea-table",
@@ -1805,7 +1805,7 @@
       "order": 100,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1822,7 +1822,7 @@
       "order": 101,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1839,7 +1839,7 @@
       "layer": "set",
       "bindings": {
         "pose": "actor.outside.pose",
-        "clip": "window.clip"
+        "clip": "scene.windowClip"
       }
     },
     {
@@ -1860,7 +1860,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1874,7 +1874,7 @@
       "order": 104,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1890,7 +1890,7 @@
       "order": 105,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1907,7 +1907,7 @@
       "order": 106,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1924,7 +1924,7 @@
       "order": 107,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1941,7 +1941,7 @@
       "order": 108,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1955,7 +1955,7 @@
       "order": 109,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1969,7 +1969,7 @@
       "order": 110,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -1986,7 +1986,7 @@
       "order": 111,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2003,7 +2003,7 @@
       "order": 112,
       "layer": "set",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2089,7 +2089,7 @@
       "order": 4,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2105,7 +2105,7 @@
       "order": 5,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2123,7 +2123,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2141,7 +2141,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2159,7 +2159,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2177,7 +2177,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2195,7 +2195,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2213,7 +2213,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2231,7 +2231,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2249,7 +2249,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2267,7 +2267,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2285,7 +2285,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2305,7 +2305,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2325,7 +2325,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2345,7 +2345,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2365,7 +2365,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2385,7 +2385,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2405,7 +2405,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2425,7 +2425,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2445,7 +2445,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2465,7 +2465,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2485,7 +2485,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2499,7 +2499,7 @@
       "order": 26,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {
@@ -2513,7 +2513,7 @@
       "order": 27,
       "layer": "playfield",
       "bindings": {
-        "snapshot": "sandbox.visual"
+        "snapshot": "scene.visual"
       }
     },
     {

@@ -1,47 +1,25 @@
-import {attachSceneDeviceSource} from '../engine/gameplay/native-scene-devices';
-import {nativeDeviceSources} from './native-device-sources';
 /**
  * Every scene, by id: every place in the game is one (city.ts says which
  * place each belongs to). `?play=<id>` starts in one, and sudo's LEVELS lists
  * them in this order. Most are walkable scenery with people, things to use
  * and read, and ways out; the ones with devices bring their data file and
- * rules (capsule/, downtown/, library/, yard/, moth/, laundromat/, beach/, stacks/). Layout and texts are plain
- * objects in each module; drawing is code.
+ * rules (each scene's folder). Scenes are JSON documents;
+ * what they need beyond the shared features is a registered mechanism.
  */
 
-import { beach } from "./beach/index";
-import { capsule } from "./capsule/index";
-import { downtown } from "./downtown/index";
-import { laundromat } from "./laundromat/index";
-import { library } from "./library/index";
-import { moth } from "./moth/index";
-import { stacks } from "./stacks/index";
-import { yard } from "./yard/index";
-import { sandbox } from "./sandbox/index";
-import { harborShift } from "./harbor-shift/index";
-import { harbor } from "./harbor/index";
 import type { SceneDef } from './kit';
-import { mall } from "./mall/index";
-import { market } from "./market/index";
-import { metro } from "./metro/index";
-import { shop } from "./shop/index";
-import { galleriaStation } from './galleriaStation/index';
-import { harborStation } from './harborStation/index';
-import { train } from "./train/index";
-import { warehouse } from "./warehouse/index";
 import authored from './authored.json';
 import {createSceneRegistry} from '../engine/gameplay/scene-catalogue';
+import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
+import {FOLDER_SOURCES} from './folder-scenes';
 
 export type { ItemId, SceneDef, SceneExit, SceneReadable, SceneRest, SceneSaid, SceneUse, UseCtx, View as SceneView } from './kit';
 export { ITEMS, priceTag } from './kit';
 
-/** LINE 0's platforms are `metro` (Downtown's), `galleriaStation` and `harborStation`; `train` is the car you ride in. */
-const nativeDefinitions = {
-  capsule, downtown, library, yard, moth, beach, harbor, stacks, warehouse, market, laundromat, shop, mall, metro, galleriaStation, harborStation, train,
-  // sudo only (index.ts refuses `?play=sandbox` without `?sudo`): the engine's test bay, outside the story
-  sandbox, harborShift,
-} satisfies Record<string, SceneDef>;
-export const NATIVE_SCENES=Object.fromEntries(Object.entries(nativeDefinitions).map(([id,scene])=>{const source=nativeDeviceSources[id];if(!source)throw new Error('Missing native device source '+id);return[id,attachSceneDeviceSource(scene,source.devices,source.composition,source.scene)];})) as typeof nativeDefinitions;
+/** Every scene is a folder scene: JSON only, built by the shared declared path (folder-scenes.ts); what a scene needs beyond the shared features is a registered mechanism its data names. */
+export const NATIVE_SCENES=Object.fromEntries(Object.entries(FOLDER_SOURCES).map(([id,source])=>[id,folderSceneDefinition(id,source)])) as Record<keyof typeof FOLDER_SOURCES,SceneDef>;
+/** Scenes that have no code: the folder scenes. */
+export const FOLDER_SCENE_IDS=Object.keys(FOLDER_SOURCES);
 export const SCENES=createSceneRegistry(NATIVE_SCENES,authored);
 export type SceneId = keyof typeof NATIVE_SCENES | (string & {readonly __sceneId:unique symbol});
 

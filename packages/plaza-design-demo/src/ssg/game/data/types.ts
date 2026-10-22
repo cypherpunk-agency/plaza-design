@@ -14,8 +14,22 @@ import type {NativeObservations} from '../engine/native-observations';
  * Inside a device, its own `state` keys come before the scene's.
  */
 
-/** Noun kinds. GUARD, LOG, LINK and CLOCK have engine behaviour (see `guard`, `log`, `link`, `clock`). */
-export type Kind = 'SENSE' | 'ACT' | 'STORE' | 'DAEMON' | 'GUARD' | 'LOG' | 'LINK' | 'CLOCK';
+/**
+ * Where a part (noun) lives: a physical component, a program, or information
+ * (docs/design/CIRCUIT-VOCABULARY.md). Shown to the player; the engine does not read it.
+ */
+export type Layer = 'hardware' | 'software' | 'data';
+export const LAYERS: readonly Layer[] = ['hardware', 'software', 'data'];
+/**
+ * What a part does. Some functions have engine behaviour when the part carries their settings
+ * block: gate (`guard`), time (`clock`), connect (`link`), record (`log`), act (`mover`), sense (`zone`).
+ */
+export type PartFunction = 'sense' | 'act' | 'hold' | 'program' | 'time' | 'gate' | 'connect' | 'record' | 'talk' | 'logic';
+export const PART_FUNCTIONS: readonly PartFunction[] = ['sense', 'act', 'hold', 'program', 'time', 'gate', 'connect', 'record', 'talk', 'logic'];
+/** The settings block each engine behaviour needs, and the one function it may sit on. */
+export const BEHAVIOUR_FUNCTION = { guard: 'gate', clock: 'time', link: 'connect', log: 'record', mover: 'act', zone: 'sense' } as const satisfies Record<string, PartFunction>;
+/** Parts whose verbs shared gameplay commands may bind: everything but characters and parts with engine behaviour. */
+export const nativeBindable = (n: { function: PartFunction; guard?: unknown; link?: unknown; clock?: unknown; log?: unknown; mover?: unknown; zone?: unknown }) => n.function !== 'talk' && !n.guard && !n.link && !n.clock && !n.log && !n.mover && !n.zone;
 export type Tone = 'ok' | 'err' | 'dim';
 export type Value = string | number | boolean | null;
 export type Dir = 'up' | 'down' | 'left' | 'right';
@@ -158,6 +172,79 @@ export interface MorseToyData {
  * repeats). Engine verbs: `start`, `stop`. Saved: which event is next, how far
  * into the beat, and whether it is stopped.
  */
+/** A number, or the name of a scene tuning value (`tuning` in devices.json) that holds it. */
+export type Num = number | string;
+/**
+ * A place along one axis of the scene, in world units: a number; a `place` the scene's code measured
+ * from its artwork (a gantry's `slot`); or a `spot`, the standing place of a device (`edge`: its `left`
+ * or `right` side, default its middle), moved on by `plus`.
+ */
+export type Coord = number | { place: string; plus?: Num } | { spot: string; edge?: 'left' | 'center' | 'right'; plus?: Num };
+/** Where a mover stops: a place on its axis, or a point on both axes (`x` across the scene, `h` up it). */
+export type MoverStop = Coord | { x?: Coord; h?: Coord };
+/** How a leg eases between its ends: a named curve, or a timing table `[[time, progress], ...]` (both 0 to 1). */
+export type MoverEase = 'smooth' | 'linear' | 'ease-in' | 'ease-out' | [number, number][];
+/**
+ * One leg of a path: the mover travels to the stop `to` (leave it out to stay where it is) in `ms`
+ * (times `share`), or at `speed`, easing as `ease`. A leg lasts at least `minMs`: at its end the mover
+ * waits for the rest. `load` labels what rides along during the leg (the picture reads it); `event` is
+ * raised when the leg ends (a `milestone` of the noun may carry it on to the scene's code).
+ */
+export interface MoverLeg { to?: string; ms?: Num; share?: number; speed?: Num; minMs?: Num; ease?: MoverEase; load?: string; event?: string }
+/** A choice inside a path: when the condition (`lock=open`) holds when it is reached, the `then` steps follow, else the `else` steps. */
+export interface MoverChoice { if: string; then: MoverStep[]; else?: MoverStep[] }
+export type MoverStep = MoverLeg | MoverChoice;
+/**
+ * A mover (on an act part): it travels between named stops (engine/movers.ts). Engine verbs:
+ * `go <stop>` for each stop, and `return` (none when `wired` is false). Events it may raise: `started`,
+ * `arrived`, and the ones its paths' legs name.
+ */
+export interface MoverData {
+  /** Stop name → place. The first is where it starts unless `start` says. */
+  stops: Record<string, MoverStop>;
+  /** `x` across the scene (default) or `h` up it (a lift): the axis a plain stop position lies on. */
+  axis?: 'x' | 'h';
+  /** World units per second (a number, or a tuning name): how fast a trip or a leg without its own time goes. */
+  speed?: Num;
+  /** Every plain trip takes this many ms whatever the distance (instead of `speed`). */
+  ms?: Num;
+  /** How trips and legs without their own ease (default `smooth`). */
+  ease?: MoverEase;
+  start?: string;
+  /** Where it runs on the other axis: a lift shaft's x, a trolley's height (default 0). */
+  across?: number;
+  /** A state key that holds the stop it is at, or `moving` (or what `moving` says). It also puts the mover at the stop the key already names. */
+  set?: string;
+  /** What `set` holds while it travels (default `moving`). */
+  moving?: string;
+  /** A state key that names the stop it should be at: whenever it changes to a stop of this mover, the mover goes there. */
+  follow?: string;
+  /** Named multi-leg trips (`runPath`): a route of legs from wherever it is. */
+  paths?: Record<string, MoverStep[]>;
+  /** False: the engine gives it no verbs (`go`, `return`); only the scene's own effects send it. Default true. */
+  wired?: boolean;
+}
+
+/**
+ * A zone (on a sense part): a stretch of the scene that notices the player or a mover crossing
+ * its edge (engine/zones.ts). Engine verbs: `arm`, `disarm`. Events it may raise: `enters`, `leaves`.
+ */
+export interface ZoneData {
+  from: Coord;
+  to: Coord;
+  /** `player`, or a mover as `device.noun`. */
+  watch: string;
+  axis?: 'x' | 'h';
+  /** Optional limits on the other axis (a zone on one floor: `[0, 60]` in height). */
+  within?: [number, number];
+  /** Only while the player stands on this building's floors (a level's `building`; '' the street); not on a flight or riding a lift car. Movers have no building. */
+  building?: string;
+  /** A state key that holds whether something is inside. */
+  set?: string;
+  /** Raising events when the scene starts (default true). */
+  armed?: boolean;
+}
+
 export interface ClockData {
   /** The beat, ms. */
   every: number;
@@ -167,6 +254,8 @@ export interface ClockData {
   set?: string;
   /** Running when the scene starts (default true). */
   start?: boolean;
+  /** Raise one event after `first` (or `every`) ms, then stop; `start` runs it again. A timer instead of a schedule. */
+  once?: boolean;
 }
 
 /**
@@ -189,8 +278,9 @@ export interface WatchdogData {
 
 export interface NounData {
   id: string;
-  kind: Kind;
-  /** Verbs. GUARD and LINK nouns get theirs from the engine and may add more. */
+  layer: Layer;
+  function: PartFunction;
+  /** Verbs. Logins (`guard`), ports (`link`) and clocks get theirs from the engine and may add more. */
   verbs?: string[];
   /** Events this noun raises; cables start here. */
   events?: string[];
@@ -202,6 +292,10 @@ export interface NounData {
   log?: LogData;
   link?: LinkData;
   clock?: ClockData;
+  mover?: MoverData;
+  zone?: ZoneData;
+  /** Event → a physical milestone of the scene's code (`SceneRules.inputs`) that raising it reports: a mover's leg end, a zone's crossing. */
+  milestone?: Record<string, string>;
   /** Verb → what it does. `*` handles every verb without its own entry. */
   on?: Record<string, Case | Case[]>;
 }
@@ -238,7 +332,8 @@ export interface LayoutData {
   vision?: Record<string, Dir>;
   /**
    * Hack vision: the order of its nouns in the row over the device, left to right.
-   * Nouns not listed follow, by kind: SENSE and STORE, then ACT, then LINK / GUARD / LOG, then DAEMON.
+   * Nouns not listed follow, by function: sense, hold and program, then act and logic, then
+   * time, gate, connect and record, then talk.
    */
   row?: string[];
 }
@@ -359,6 +454,15 @@ export interface KeyItem {
   card?: 'slow' | 'ping';
 }
 
+/** A part of a scene mechanism's Circuit device: the signals a cable may start from and the actions it may send. */
+export interface MechanismPart { id: string; layer: Layer; function: PartFunction; verbs: string[]; events: string[] }
+/**
+ * A registered scene mechanism as a Circuit device (engine/gameplay/mechanism-parts.ts): cables may
+ * start or end on its parts. Derived from the scene's `stage.mechanisms` and carried by its rules
+ * (`SceneRules.mechanisms`), never by the device document: it is not authored, takes no layout and is
+ * not a physical device (no hack-vision node).
+ */
+export interface MechanismDevice { id: string; name: string; label: string; parts: MechanismPart[] }
 export interface SceneData {
   controller?:RegisteredSceneController;
   /** Native read-only projections and idempotent live-tick goal observations. */
@@ -483,6 +587,10 @@ export interface SceneSave {
   locks?: Record<string, number>;
   /** CLOCK nouns (`device.noun`): the next event's index, ms into the beat, stopped. */
   clocks?: Record<string, { next: number; ms: number; off?: boolean }>;
+  /** Movers: the stop each is at, and where one on its way was going (engine/movers.ts). */
+  movers?: Record<string, { at: string; to?: string; pos?: number }>;
+  /** Zones switched off with `disarm`. */
+  zones?: Record<string, { off: true }>;
   /** Watchdogs, by id: ms into their loop. */
   watchdog?: Record<string, number>;
   /**

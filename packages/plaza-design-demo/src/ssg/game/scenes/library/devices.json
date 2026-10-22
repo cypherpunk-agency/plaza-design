@@ -17,10 +17,10 @@
       },
       "nouns": [
         {
-          "id": "slot", "kind": "ACT", "verbs": ["tap"],
+          "id": "slot", "layer": "hardware","function": "act", "verbs": ["tap"],
           "on": { "tap": { "say": ["use slot --tap", "NO CARD PRESENTED. PUBLIC TERMINALS: 30 MINUTES PER VERIFIED IDENTITY. UNVERIFIED PERSONS MAY SIT.", "err"] } }
         },
-        { "id": "lan", "kind": "LINK", "link": { "known": ["catalog"] } }
+        { "id": "lan", "layer": "hardware","function": "connect", "link": { "known": ["catalog"] } }
       ]
     },
     {
@@ -37,11 +37,11 @@
       },
       "nouns": [
         {
-          "id": "clock", "kind": "SENSE", "verbs": ["read"],
+          "id": "clock", "layer": "hardware","function": "time", "verbs": ["read"],
           "on": { "read": { "say": ["cat clock", "T1: 12:40 LEFT (VERIFIED) · T2: 03:05 LEFT (VERIFIED) · T3: FREE. PRESENT CARD."] } }
         },
         {
-          "id": "policy", "kind": "STORE", "verbs": ["read"],
+          "id": "policy", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat policy", "SESSIONS: 30 MIN PER VERIFIED IDENTITY PER DAY. STAFF: UNLIMITED. STAFF ARE IDENTIFIED BY CARD NUMBER, NOT BY NAME. NAMES CHANGE."] } }
         }
       ]
@@ -60,14 +60,14 @@
       },
       "nouns": [
         {
-          "id": "tray", "kind": "ACT", "verbs": ["look"],
+          "id": "tray", "layer": "hardware","function": "act", "verbs": ["look"],
           "on": { "look": { "say": ["use tray --look", "the tray is empty. the printer hums as if it were about to.", "dim"] } }
         },
         {
-          "id": "queue", "kind": "STORE", "verbs": ["read"],
+          "id": "queue", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "do": [{ "give": "card.0013" }, { "goal": "notice" }], "say": ["cat queue", "JOB 1 OF 1 · STUCK · OVERDUE NOTICE · ITEM: scan.so (SOFTWARE LENDING) · BORROWER: STAFF CARD 0013 · DUE: 4,018 DAYS AGO · FINE: WAIVED (STAFF)"] } }
         },
-        { "id": "spool", "kind": "LINK", "link": { "known": ["lending"] } }
+        { "id": "spool", "layer": "hardware","function": "connect", "link": { "known": ["lending"] } }
       ]
     }
   ],
@@ -83,13 +83,13 @@
         "vision": { "catalog": "down", "index": "up", "patrons": "right" }
       },
       "nouns": [
-        { "id": "catalog", "kind": "DAEMON", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "catalog" }] } } },
+        { "id": "catalog", "layer": "software","function": "talk", "verbs": ["talk"], "on": { "talk": { "do": [{ "open": "talk", "with": "catalog" }] } } },
         {
-          "id": "index", "kind": "STORE", "verbs": ["read"],
+          "id": "index", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat index", "BOOKS: 0 (DIGITIZED 2049). CHAIRS: 41. RADIATORS: 2. SOFTWARE LENDING: 1 ITEM, ON LOAN, OVERDUE."] } }
         },
         {
-          "id": "patrons", "kind": "STORE", "verbs": ["read"],
+          "id": "patrons", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat patrons", "PATRONS VERIFIED TODAY: 11. PATRON AT THE READER: NO RECORD. SEARCHED 3 TIMES. FILED UNDER: MISCELLANEOUS."] } }
         }
       ]
@@ -106,11 +106,11 @@
       },
       "nouns": [
         {
-          "id": "shelf", "kind": "STORE", "verbs": ["read"],
+          "id": "shelf", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat shelf", "SOFTWARE LENDING · 1 ITEM · scan.so: finds what a port can reach · STATUS: ON LOAN TO STAFF. STAFF LOGIN (CARD NUMBER) TO VIEW LOANS."] } }
         },
         {
-          "id": "login", "kind": "GUARD",
+          "id": "login", "layer": "software","function": "gate",
           "guard": {
             "password": "0013", "tries": 3, "lockMs": 4000,
             "near": { "13": ["login staff 13", "STAFF CARD NUMBERS ARE FOUR DIGITS. THE LIBRARY HAD AMBITIONS.", "err"] },
@@ -118,11 +118,11 @@
           }
         },
         {
-          "id": "loans", "kind": "STORE", "verbs": ["read"], "sector": "staff",
+          "id": "loans", "layer": "data","function": "hold", "verbs": ["read"], "sector": "staff",
           "on": { "read": { "say": ["cat loans", "STAFF CARD 0013 · scan.so · OUT SINCE 2049 · RENEWALS LEFT: 99. THE LIBRARY WAS GENEROUS WITH STAFF."] } }
         },
         {
-          "id": "scan.so", "kind": "STORE", "verbs": ["read", "renew"], "sector": "staff",
+          "id": "scan.so", "layer": "data","function": "program", "verbs": ["read", "renew"], "sector": "staff",
           "on": {
             "read": { "say": ["cat scan.so", "[program] scan.so · finds the machines a port can reach, and connects to them. on loan to you, technically. renew it."] },
             "renew": [
@@ -146,11 +146,11 @@
       },
       "nouns": [
         {
-          "id": "thermostat", "kind": "SENSE", "verbs": ["read"],
+          "id": "thermostat", "layer": "hardware","function": "sense", "verbs": ["read"],
           "on": { "read": { "say": ["cat thermostat", "21.5 °C. SETPOINT 21.5 °C. LOCKED BY: THE COMMITTEE. COMMITTEE: SEE CHAIRS."] } }
         },
         {
-          "id": "budget", "kind": "STORE", "verbs": ["read"],
+          "id": "budget", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat budget", "HEATING BUDGET: EXCEEDED EVERY FEBRUARY SINCE 2049. HEATING CONTINUES PENDING REVIEW. REVIEW PENDING."] } }
         }
       ]

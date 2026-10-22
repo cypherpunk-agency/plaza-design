@@ -5,7 +5,8 @@
     "gateOpenMs": 1000,
     "slideMs": 2500,
     "chuteDropMs": 400,
-    "bounceBackMs": 700
+    "bounceBackMs": 700,
+    "hookMs": 1000
   },
   "devices": [
     {
@@ -38,7 +39,8 @@
       "nouns": [
         {
           "id": "lens",
-          "kind": "SENSE",
+          "layer": "hardware",
+          "function": "sense",
           "verbs": [
             "view"
           ],
@@ -58,7 +60,8 @@
         },
         {
           "id": "motor",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "left",
             "centre",
@@ -97,7 +100,8 @@
         },
         {
           "id": "footage",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read",
             "copy"
@@ -143,13 +147,15 @@
         "dir": {
           "arm": "down",
           "claw": "up",
-          "job.log": "left"
+          "job.log": "left",
+          "hook": "down"
         }
       },
       "nouns": [
         {
           "id": "arm",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "A-3",
             "B-5",
@@ -179,7 +185,8 @@
         },
         {
           "id": "claw",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "grab",
             "drop"
@@ -190,7 +197,8 @@
         },
         {
           "id": "job.log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -200,6 +208,60 @@
                 "cat job.log",
                 "job.log: \"parcel for you, slot ?-? (smudged by a thumb).\""
               ]
+            }
+          }
+        },
+        {
+          "id": "hook",
+          "layer": "hardware",
+          "function": "act",
+          "mover": {
+            "wired": false,
+            "follow": "armAt",
+            "start": "home",
+            "ms": "hookMs",
+            "ease": [
+              [
+                0.05,
+                0.22
+              ],
+              [
+                0.1,
+                0.4
+              ],
+              [
+                0.2,
+                0.64
+              ],
+              [
+                0.3,
+                0.78
+              ],
+              [
+                0.5,
+                0.92
+              ],
+              [
+                0.7,
+                0.98
+              ]
+            ],
+            "stops": {
+              "home": {
+                "place": "home"
+              },
+              "A-3": {
+                "place": "A-3"
+              },
+              "B-5": {
+                "place": "B-5"
+              },
+              "C-7": {
+                "place": "C-7"
+              },
+              "chute": {
+                "place": "chute"
+              }
             }
           }
         }
@@ -247,14 +309,16 @@
       "nouns": [
         {
           "id": "lock",
-          "kind": "ACT",
+          "layer": "hardware",
+          "function": "act",
           "verbs": [
             "open"
           ]
         },
         {
           "id": "log",
-          "kind": "STORE",
+          "layer": "data",
+          "function": "hold",
           "verbs": [
             "read"
           ],
@@ -269,7 +333,8 @@
         },
         {
           "id": "hinge",
-          "kind": "DAEMON",
+          "layer": "software",
+          "function": "talk",
           "verbs": [
             "talk"
           ],
@@ -439,7 +504,7 @@
     },
     "gateOpen": "yard.gateOpen",
     "slideDeadline": "yard.slide",
-    "hookEase": 0.08,
+    "hook": "crane.hook",
     "slots": {
       "home": "slot-home",
       "A-3": "A-3",

@@ -636,8 +636,49 @@
     }
   ],
   "manifest": {
-    "devices": {"kiosk": {"instance": "device-kiosk", "widthProperty": "width", "heightProperty": "height"}, "jukebox": {"instance": "device-jukebox", "widthProperty": "width", "heightProperty": "height"}, "mixer": {"instance": "device-mixer", "widthProperty": "width", "heightProperty": "height"}, "drone": {"instance": "device-drone", "widthProperty": "width", "heightProperty": "height"}, "pier": {"instance": "device-pier", "widthProperty": "width", "heightProperty": "height"}, "boat": {"instance": "device-boat", "widthProperty": "width", "heightProperty": "height"}},
-    "artwork": {"horizon": "horizon", "waterline": "waterline", "bar": "bar", "pier": "pier", "boardwalk": "boardwalk", "tower": "tower", "drink": "drink", "shore": "shore-edge", "stairs": "stairs-exit"},
+    "devices": {
+      "kiosk": {
+        "instance": "device-kiosk",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "jukebox": {
+        "instance": "device-jukebox",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "mixer": {
+        "instance": "device-mixer",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "drone": {
+        "instance": "device-drone",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "pier": {
+        "instance": "device-pier",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      },
+      "boat": {
+        "instance": "device-boat",
+        "widthProperty": "width",
+        "heightProperty": "height"
+      }
+    },
+    "artwork": {
+      "horizon": "horizon",
+      "waterline": "waterline",
+      "bar": "bar",
+      "pier": "pier",
+      "boardwalk": "boardwalk",
+      "tower": "tower",
+      "drink": "drink",
+      "shore": "shore-edge",
+      "stairs-exit": "stairs-exit"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -672,6 +713,16 @@
     "exits": {
       "stairs": "stairs-exit",
       "harbor": "edge-exit"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
     }
   },
   "environment": {
@@ -725,6 +776,149 @@
         "ashore-4",
         "ashore-5",
         "ashore-6"
+      ]
+    }
+  },
+  "stage": {
+    "lights": [
+      {
+        "type": "beach.light",
+        "style": "element"
+      }
+    ],
+    "casters": [
+      {
+        "role": "caster"
+      }
+    ],
+    "targetAnchors": [
+      "stairs-exit"
+    ],
+    "values": {
+      "limeVisible": {
+        "actor": {
+          "role": "bartender",
+          "get": "bare"
+        }
+      },
+      "limeX": {
+        "actor": {
+          "role": "bartender",
+          "get": "x"
+        }
+      },
+      "limeH": {
+        "sum": [
+          {
+            "actor": {
+              "role": "bartender",
+              "get": "h",
+              "fallback": 4
+            }
+          },
+          -4
+        ]
+      },
+      "palette": {
+        "world": "nightFall"
+      },
+      "horizon": {
+        "role": "horizon",
+        "get": "h"
+      },
+      "waterline": {
+        "role": "waterline",
+        "get": "h"
+      },
+      "gullShooed": {
+        "signal": "gullShooed"
+      },
+      "hover": {
+        "engine": "hover"
+      },
+      "barVisible": {
+        "visible": {
+          "role": "bar",
+          "margin": 60
+        }
+      },
+      "barWidth": {
+        "role": "bar",
+        "get": "width"
+      },
+      "towerVisible": {
+        "visible": {
+          "role": "tower",
+          "from": -70,
+          "width": 140,
+          "margin": 4
+        }
+      },
+      "pierVisible": {
+        "visible": {
+          "role": "pier"
+        }
+      },
+      "boardwalkVisible": {
+        "visible": {
+          "role": "boardwalk",
+          "margin": 4
+        }
+      },
+      "drinkX": {
+        "role": "drink",
+        "get": "x"
+      },
+      "drinkH": {
+        "role": "drink",
+        "get": "h"
+      },
+      "shore": {
+        "role": "shore",
+        "get": "x"
+      },
+      "lampPositions": {
+        "rows": "beach.pier-lamp",
+        "get": "x"
+      },
+      "rented": {
+        "picture": "rented"
+      },
+      "billingPaused": {
+        "picture": "billingPaused"
+      },
+      "billed": {
+        "picture": "billed"
+      },
+      "freeDrink": {
+        "picture": "freeDrink"
+      },
+      "danger": {
+        "picture": "danger"
+      },
+      "lamps": {
+        "picture": "lamps"
+      }
+    },
+    "actors": {
+      "hide": [
+        {
+          "actors": "bartender",
+          "when": {
+            "actor": {
+              "role": "bartender",
+              "get": "bare"
+            }
+          }
+        },
+        {
+          "actors": "ashore",
+          "when": {
+            "not": {
+              "picture": "danger"
+            }
+          }
+        }
       ]
     }
   }

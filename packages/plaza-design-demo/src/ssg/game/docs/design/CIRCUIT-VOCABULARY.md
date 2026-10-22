@@ -1,0 +1,88 @@
+# ACCESS DENIED: Circuit vocabulary
+
+2026-10-20, approved by Tommi: "kind" is replaced by **layer** and **function**. Background:
+[CIRCUIT-INVENTORY.md](./CIRCUIT-INVENTORY.md) (every part sorted this way) and
+[CIRCUIT-AUDIT.md](./CIRCUIT-AUDIT.md). Working vocabulary, open to revision.
+
+## Words
+
+| Word | Meaning | In the data |
+|---|---|---|
+| **the Circuit** | the whole logic, hacking and connection system | – |
+| **device** | a machine in the world, a network machine, or a logic part on your board | `devices`, `nodes` |
+| **part** | anything on a device you can address: a component, a program, a file | `nouns` |
+| **action** | what you can do to a part | `verbs` |
+| **signal** | what a part raises; wires start here | `events` |
+| **wire** / cable | a signal carried to an action | `cables` |
+| **layer** | where a part lives: `hardware`, `software`, `data` | `layer` |
+| **function** | what a part does (below) | `function` |
+
+The data keys `nouns`, `verbs` and `events` stay as they are for now; renaming them is a
+separate, mechanical decision. Player-facing words are unchanged apart from the hack-vision
+label (below).
+
+## Functions
+
+| Function | What it does | Engine behaviour when the part carries |
+|---|---|---|
+| `sense` | notices something | a `zone` |
+| `act` | does something to the world | a `mover` |
+| `hold` | keeps information | – |
+| `program` | a file that becomes a capability once taken | – |
+| `time` | waits or repeats | a `clock` |
+| `gate` | lets a signal or a person through, or not | a `guard` (a login or a lock toy) |
+| `connect` | reaches a network | a `link` |
+| `record` | writes down what you do; fills trace | a `log` |
+| `talk` | a character you talk to | – |
+| `logic` | works on signals (counting, combining) | – |
+
+A settings block belongs to one function: `guard` only on a gate part, `clock` only on a
+time part, `link` only on a connect part, `log` only on a record part, `mover` only on an act
+part, `zone` only on a sense part. A part with that
+function but no block is ordinary: SWITCH is a gate without a guard, TIMER and the library's
+session timer are time parts without a clock.
+
+Anything that moves is an `act` part with a `mover` (a lift car, a crane trolley with its spreader, a
+delivery van, a claw's hook); any place that notices is a `sense` part with a `zone`. A mover's
+trip may have several legs (a `path`), each with its own time, ease and load; a leg's end, a mover's
+arrival and a zone's crossing are events like any other, and a part's `milestone` carries one of them on to
+the scene's code. Scene code never keeps a position of its own: it sends the mover, and the picture reads it.
+
+## Layer
+
+Layer says nothing to the engine. It is what the player and the author read: a wall switch
+and SWITCH are both gates, one hardware and one software. Logic parts are software; network
+machines' services are software; lock toys are hardware.
+
+## Shown to the player
+
+- Hack vision labels each part with its function instead of its kind, coloured by layer.
+- Hack vision's default order is by function: sense, hold, program first; then act and logic;
+  then time, gate, connect, record; talk last.
+- The sandbox's teaching stations label each station with its function.
+
+## Conversion (done with this note)
+
+Every part in the scenes, the network and the logic parts was converted from its kind using
+the inventory's reading. The changes from a plain kind mapping are the accidental labels:
+
+- the library's session timer, the smart plug's schedule and the billboard's ad rotation
+  become `time` (they were SENSE);
+- the fridge's inside and the answering machine's tape become `act` (they were STORE);
+- the sandbox's press counter becomes `logic`; TIMER becomes `time` and SWITCH `gate`;
+- program files (`legs.so`, `switch.so`, `scan.so`) become `program`;
+- files named `.log` stay `hold`; only the three recorders are `record`.
+
+## Open
+
+- Whether to rename the data keys `nouns`, `verbs`, `events` to `parts`, `actions`, `signals`.
+- How hack vision should show the layer beyond colour (position on the device).
+
+## Engine mechanisms as devices (2026-10-21)
+
+A registered scene mechanism (`stage.mechanisms`) is a device of the Circuit with id `mechanism-<name>`:
+its derived values are `sense` parts (signal `changed`), its effects the actions of one `act` part
+`effects`, its physical milestones the signals of one `sense` part `milestones`. A cable may start at
+any signal and end at an effect; panels are listed but not wireable. These devices are not in the world
+and hold no state: hack vision does not show them (every part is effectively hidden), the editor's
+Devices and Wiring panels do.

@@ -179,6 +179,15 @@
         "instance": "downtown-door",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
     }
   },
   "actors": [
@@ -331,5 +340,10 @@
       "height": "artwork",
       "reaction": "slot-7"
     }
-  ]
+  ],
+  "stage": {
+    "facing": {
+      "role": "orientation"
+    }
+  }
 }

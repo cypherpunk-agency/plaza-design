@@ -364,8 +364,12 @@ function trainVisualState() {
  function restore(value:unknown){const snapshot=validateMetroSnapshot(value,{line:LINE,source:config});Object.assign(ride,snapshot.ride);Object.assign(shift,snapshot.shift);Object.assign(lineOpen,snapshot.lineOpen);}
  /** Retains object identities held by bound rules while clearing all mutable session state. */
  function reset(){Object.assign(ride,initialRide);for(const id of LINE){shift[id]=0;lineOpen[id]=true;}}
- return {capture,restore,reset,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformSync,platformDoors,lineOpen,nextStation,platformQueue,clock,DWELL,CLOSE,RUN,OPEN,SEG,LOOP,TUNNEL_IN,SIDING,BRAKE,HALT,ride,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,sidingAlong,boardRide,rideSpeed,rideStopsAt,brakeRide,rideDoors,stepRide,platformTrainVisual,departureVisual,trainVisualState};
+ /** The city lock that keeps LINE 0 from stopping at this station until it opens (metro source `locked`). */
+ const lockOf=(station:Station):string|undefined=>config.locked[station];
+ /** Open or shut every locked station by its city lock and the saved flags (a lock holds LINE 0 from stopping until its flag is set). */
+ function syncLocks(world:Pick<CityModel,'lockOpen'>,flags:Readonly<Record<string,boolean>>){for(const[station,lock]of Object.entries(config.locked))lineOpen[station as Station]=world.lockOpen(lock as string,flags);}
+ return {capture,restore,reset,lockOf,syncLocks,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformSync,platformDoors,lineOpen,nextStation,platformQueue,clock,DWELL,CLOSE,RUN,OPEN,SEG,LOOP,TUNNEL_IN,SIDING,BRAKE,HALT,ride,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,sidingAlong,boardRide,rideSpeed,rideStopsAt,brakeRide,rideDoors,stepRide,platformTrainVisual,departureVisual,trainVisualState};
 }
 export type LineSystem=ReturnType<typeof createLineSystem>;
 const shippingLine=createLineSystem();
-export const {capture,restore,reset,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformSync,platformDoors,lineOpen,nextStation,platformQueue,clock,DWELL,CLOSE,RUN,OPEN,SEG,LOOP,TUNNEL_IN,SIDING,BRAKE,HALT,ride,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,sidingAlong,boardRide,rideSpeed,rideStopsAt,brakeRide,rideDoors,stepRide,platformTrainVisual,departureVisual,trainVisualState}=shippingLine;
+export const {capture,restore,reset,lockOf,syncLocks,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformSync,platformDoors,lineOpen,nextStation,platformQueue,clock,DWELL,CLOSE,RUN,OPEN,SEG,LOOP,TUNNEL_IN,SIDING,BRAKE,HALT,ride,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,sidingAlong,boardRide,rideSpeed,rideStopsAt,brakeRide,rideDoors,stepRide,platformTrainVisual,departureVisual,trainVisualState}=shippingLine;

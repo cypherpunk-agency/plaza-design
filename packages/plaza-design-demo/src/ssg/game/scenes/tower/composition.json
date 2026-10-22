@@ -1,0 +1,704 @@
+{
+  "version": 1,
+  "scene": "tower",
+  "instances": [
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 2400,
+        "seed": 11,
+        "parallax": 0.3,
+        "minHeight": 220,
+        "maxHeight": 420,
+        "haze": 0.55
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 2200,
+        "seed": 4,
+        "parallax": 0.55,
+        "minHeight": 140,
+        "maxHeight": 300,
+        "haze": 0.3,
+        "lit": 0.35
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "distance"
+    },
+    {
+      "id": "ground",
+      "type": "level.ground-section",
+      "props": {
+        "width": 1600,
+        "depth": 280,
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "backdrop"
+    },
+    {
+      "id": "metro-hall",
+      "type": "level.room",
+      "props": {
+        "width": 1000,
+        "height": 86,
+        "kind": "platform",
+        "seed": 9
+      },
+      "placement": {
+        "x": 300,
+        "h": -190
+      },
+      "order": 40,
+      "layer": "backdrop"
+    },
+    {
+      "id": "metro-ceiling",
+      "type": "level.slab",
+      "props": {
+        "width": 1000,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 300,
+        "h": -104
+      },
+      "order": 50,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tower-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "tower"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 60,
+      "layer": "logic"
+    },
+    {
+      "id": "room-0",
+      "type": "level.room",
+      "props": {
+        "width": 460,
+        "height": 80,
+        "kind": "basement",
+        "seed": 3
+      },
+      "placement": {
+        "x": 520,
+        "h": -90
+      },
+      "order": 70,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-1",
+      "type": "level.room",
+      "props": {
+        "width": 460,
+        "height": 100,
+        "kind": "lobby",
+        "seed": 4
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 80,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-2",
+      "type": "level.room",
+      "props": {
+        "width": 460,
+        "height": 80,
+        "kind": "office",
+        "seed": 5
+      },
+      "placement": {
+        "x": 520,
+        "h": 110
+      },
+      "order": 90,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-3",
+      "type": "level.room",
+      "props": {
+        "width": 460,
+        "height": 80,
+        "kind": "office",
+        "seed": 6
+      },
+      "placement": {
+        "x": 520,
+        "h": 200
+      },
+      "order": 100,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 460,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 110,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-1",
+      "type": "level.slab",
+      "props": {
+        "width": 460,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 520,
+        "h": 110
+      },
+      "order": 120,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-2",
+      "type": "level.slab",
+      "props": {
+        "width": 460,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 520,
+        "h": 200
+      },
+      "order": 130,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-3",
+      "type": "level.slab",
+      "props": {
+        "width": 460,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 520,
+        "h": 290
+      },
+      "order": 140,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 400,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 512,
+        "h": -100
+      },
+      "order": 150,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 400,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 980,
+        "h": -100
+      },
+      "order": 160,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-west",
+      "type": "building.front",
+      "props": {
+        "width": 180,
+        "floors": 3,
+        "storey": 66,
+        "ground": 76,
+        "top": 0,
+        "skin": "brick",
+        "seed": 21
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 170,
+      "layer": "set"
+    },
+    {
+      "id": "front-west-2",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "floors": 2,
+        "storey": 66,
+        "ground": 76,
+        "top": 10,
+        "skin": "tenement",
+        "seed": 22
+      },
+      "placement": {
+        "x": 310,
+        "h": 0
+      },
+      "order": 180,
+      "layer": "set"
+    },
+    {
+      "id": "front-east",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "floors": 4,
+        "storey": 66,
+        "ground": 76,
+        "top": 0,
+        "skin": "panel",
+        "seed": 23
+      },
+      "placement": {
+        "x": 1020,
+        "h": 0
+      },
+      "order": 190,
+      "layer": "set"
+    },
+    {
+      "id": "front-east-2",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "floors": 3,
+        "storey": 66,
+        "ground": 76,
+        "top": 0,
+        "skin": "concrete",
+        "seed": 24
+      },
+      "placement": {
+        "x": 1380,
+        "h": 0
+      },
+      "order": 200,
+      "layer": "set"
+    },
+    {
+      "id": "tower-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "tower"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 210,
+      "layer": "logic"
+    },
+    {
+      "id": "tower-front",
+      "type": "building.front",
+      "props": {
+        "width": 460,
+        "floors": 2,
+        "storey": 90,
+        "ground": 110,
+        "top": 0,
+        "skin": "glass",
+        "roof": "stepped",
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 20,
+            "width": 160
+          },
+          {
+            "kind": "door",
+            "from": 215,
+            "width": 30
+          },
+          {
+            "kind": "glass",
+            "from": 280,
+            "width": 160
+          }
+        ],
+        "seed": 30
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 220,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift",
+      "type": "level.elevator",
+      "props": {
+        "height": 480,
+        "width": 60,
+        "device": "lift.car"
+      },
+      "placement": {
+        "x": 940,
+        "h": -190
+      },
+      "order": 230,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-metro",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": -190
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-b1",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": -90
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-lobby",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 0
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-f2",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 110
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-f3",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 200
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift-call-roof",
+      "type": "level.lift-button",
+      "props": {
+        "lift": "lift"
+      },
+      "placement": {
+        "x": 898,
+        "h": 290
+      },
+      "order": 231,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-basement",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 90
+      },
+      "placement": {
+        "x": 700,
+        "h": -90
+      },
+      "order": 240,
+      "layer": "set",
+      "attach": {
+        "instance": "tower-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "escalator-metro",
+      "type": "level.escalator",
+      "props": {
+        "run": -110,
+        "rise": 100,
+        "direction": "down",
+        "speed": 0.6
+      },
+      "placement": {
+        "x": 880,
+        "h": -190
+      },
+      "order": 250,
+      "layer": "set"
+    },
+    {
+      "id": "stairs-street",
+      "type": "level.stairs",
+      "props": {
+        "run": 130,
+        "rise": 190
+      },
+      "placement": {
+        "x": 1180,
+        "h": -190
+      },
+      "order": 260,
+      "layer": "set"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 270,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1600,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 280,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-lobby",
+      "type": "level.floor",
+      "props": {
+        "width": 460,
+        "building": "tower",
+        "label": "Lobby"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 290,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-2",
+      "type": "level.floor",
+      "props": {
+        "width": 460,
+        "building": "tower",
+        "label": "2 · Offices"
+      },
+      "placement": {
+        "x": 520,
+        "h": 110
+      },
+      "order": 300,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-3",
+      "type": "level.floor",
+      "props": {
+        "width": 460,
+        "building": "tower",
+        "label": "3 · Offices"
+      },
+      "placement": {
+        "x": 520,
+        "h": 200
+      },
+      "order": 310,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-roof",
+      "type": "level.floor",
+      "props": {
+        "width": 460,
+        "building": "tower",
+        "label": "Roof"
+      },
+      "placement": {
+        "x": 520,
+        "h": 290
+      },
+      "order": 320,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-b1",
+      "type": "level.floor",
+      "props": {
+        "width": 460,
+        "building": "tower",
+        "label": "B1 · Service"
+      },
+      "placement": {
+        "x": 520,
+        "h": -90
+      },
+      "order": 330,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-metro",
+      "type": "level.floor",
+      "props": {
+        "width": 1000,
+        "building": "tower",
+        "label": "Metro"
+      },
+      "placement": {
+        "x": 300,
+        "h": -190
+      },
+      "order": 340,
+      "layer": "logic"
+    }
+  ]
+}

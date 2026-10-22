@@ -60,7 +60,7 @@ resume key. Reload resumes task progress at the work-bay spawn. MENU → NEW GAM
 this prototype's autosave; its manual slots remain. The campaign and sudo saves are unchanged.
 No hacking, map, terminal or jump controls are available in the prototype, including with sudo.
 
-Implemented with `scenes/harbor-shift/index.ts`, ordinary `SceneUse` interactions and carried items;
+Implemented with `scenes/harbor-shift/` (JSON, with the carried item a scene value), ordinary `SceneUse` interactions and carried items;
 no engine device data or rule contract is added. `SceneUse.available` stages interactions,
 `SceneDef.objective` supplies the goal. Time is pinned to completed story beats, and wages
 are granted once. The player and workers use the existing character kit; distant water,
@@ -106,8 +106,8 @@ See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for sys
 | `runtime/` | Main controller, audio, save/slots, actor simulation and shared native frame orchestration |
 | `engine/` | Scene model/host, hacking UI, cables, guards, clocks, watchdogs and pausable scene time |
 | `data/` | Shared engine/logic/network data, types, scene-data registry and build-time validation |
-| `scenes/index.ts`, `scenes/kit.ts` | Scene registry and shared scene interface |
-| `scenes/<id>/` | Location definitions/rules, device data, composition JSON and adapters binding gameplay state to artwork |
+| `scenes/index.ts`, `scenes/folder-scenes.ts`, `scenes/kit.ts` | Scene registry, the folder-scene list and the shared scene interface |
+| `scenes/<id>/` | One folder per scene, JSON only: `composition.json`, `scene.json`, `gameplay.json`, `devices.json`. Code a scene needs lives in `engine/gameplay/binding-providers/` and `engine/gameplay/mechanisms/` |
 | `art/` | Code-rendered pieces and assemblies, character appearance, environmental effects, sequences and composition/timeline contracts |
 | `authoring/` | Local scene/animation editor, native preview adapters and validated source-save service |
 | `world/` | Geography, city time/weather/light and shared transport simulation |
@@ -116,7 +116,7 @@ See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for sys
 | `docs/` | Design concepts and current technical references |
 
 See [module organization](./docs/reference/MODULES.md) for logic ownership and dependency rules.
-All 19 registered scenes have composition adapters and typed source authoring. Opening, intro,
+All 20 registered scenes have composition adapters and typed source authoring. Opening, intro,
 Act II and taxi pictures also use composition documents. Game and editor share rendering.
 
 The enclosing `../render.tsx` supplies the static page and shared game styles.
@@ -160,7 +160,7 @@ The local [scene and animation composer](./authoring/README.md) starts with
 `pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
 `http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.
 Its preview and private Play use the actual game renderer and pending validated source. Typed
-controls cover all 19 scenes, existing gameplay/device/controller definitions, world/story settings
+controls cover all 20 scenes, existing gameplay/device/controller definitions, world/story settings
 and ordinary scene creation. History, bundles and protected source Save validate companion documents
 together. The public editor downloads bundles; it cannot write repository files. New art or physical
 algorithms remain registered code. Restart the composer after renderer/schema changes.

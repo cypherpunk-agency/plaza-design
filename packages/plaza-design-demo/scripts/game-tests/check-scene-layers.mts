@@ -5,9 +5,9 @@ import {art} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {drawCompositionSlot, resolveComposition, slotHasContent, type Composition, type Instance, type LayerSlot} from '../../src/ssg/game/art/core/composition';
 import {layerRows, restack} from '../../src/ssg/game/authoring/layer-stack';
-import {libraryComposition, libraryEnvironment, libraryGeometry} from '../../src/ssg/game/scenes/library/composition';
-import {libraryActors} from '../../src/ssg/game/scenes/library/scene';
-import {libraryScene} from '../../src/ssg/game/scenes/library';
+import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
+import {folderSceneDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
+const libraryComposition=art.validate(FOLDER_SOURCES.library.composition),libraryScene=(composition?:Composition)=>folderSceneDefinition('library',FOLDER_SOURCES.library,{composition});
 
 function recorder(){const commands:unknown[][]=[];let gradient=0;const values:Record<string,unknown>={globalAlpha:1,lineWidth:1,font:'',getTransform:()=>({a:1,b:0,c:0,d:1,e:0,f:0}),measureText:(text:string)=>({width:text.length*6}),getImageData:(_x:number,_y:number,w:number,h:number)=>({data:new Uint8ClampedArray(w*h*4),width:w,height:h})};const ctx=new Proxy(values,{get(t,k:string){if(k in t)return t[k];if(k==='createLinearGradient'||k==='createRadialGradient'||k==='createPattern')return(...args:unknown[])=>{const id=++gradient;commands.push([k,...args,id]);return{id,addColorStop:(...a:unknown[])=>commands.push(['stop',id,...a]),setTransform:()=>{}};};return(...args:unknown[])=>{commands.push([k,...args]);};},set(t,k:string,value){t[k]=value;commands.push(['set',k,value]);return true;}});return{ctx:ctx as unknown as CanvasRenderingContext2D,commands};}
 (globalThis as any).document={createElement:()=>{const rec=recorder();return{width:0,height:0,getContext:()=>rec.ctx,style:{}};},fonts:{load:async()=>[],ready:Promise.resolve()}};
@@ -32,7 +32,7 @@ assert.throws(()=>art.validate({version:1,scene:'sequence-x',instances:[{id:'p',
 
 // Sorting follows layer, then order: a low order key in a front layer still draws later.
 const sorted=copy(doc);node(sorted,'room').layer='foreground';node(sorted,'room').order=-50;
-{const ids=libraryGeometry(art.validate(sorted)).map(r=>r.instance.id);assert.ok(ids.indexOf('room')>ids.indexOf('spawn'),'foreground sorts after the playfield');}
+{const ids=compositionRows(art.validate(sorted)).map(r=>r.instance.id);assert.ok(ids.indexOf('room')>ids.indexOf('spawn'),'foreground sorts after the playfield');}
 
 // Slots: Library starts with everything behind the player.
 assert.equal(slotHasContent(doc,'behind-player'),true);
@@ -48,8 +48,8 @@ assert.equal(slotHasContent(moved,'over-player'),true);assert.equal(slotHasConte
 assert.throws(()=>restack(copy(doc),'spawn','set',0),/stays in the playfield/);
 
 // Each slot draws only its own rows.
-const actors=libraryActors(moved),engine={m:{value:()=>false},hover:null,layer:'all'} as any,view={...frameView(0),sx:(x:number)=>x,y:(h:number)=>300-h,gy:300,viewW:960,viewH:360};
-const env=libraryEnvironment(moved,view,engine,actors),drawn=(slot:LayerSlot)=>{const ids:string[]=[];const registry=new Proxy(art,{get(t,k){if(k==='get')return(type:string)=>{const e=t.get(type);return{...e,draw:(...a:unknown[])=>{ids.push(type);return (e.draw as any)(...a);}};};const v=(t as any)[k];return typeof v==='function'?v.bind(t):v;}});drawCompositionSlot(recorder().ctx,registry as typeof art,moved,env,slot);return ids;};
+const engine={m:{value:()=>false},hover:null,layer:'all'} as any,view={...frameView(0),sx:(x:number)=>x,y:(h:number)=>300-h,gy:300,viewW:960,viewH:360};
+const env=libraryScene(moved).visualEnvironment!(view as any,engine),drawn=(slot:LayerSlot)=>{const ids:string[]=[];const registry=new Proxy(art,{get(t,k){if(k==='get')return(type:string)=>{const e=t.get(type);return{...e,draw:(...a:unknown[])=>{ids.push(type);return (e.draw as any)(...a);}};};const v=(t as any)[k];return typeof v==='function'?v.bind(t):v;}});drawCompositionSlot(recorder().ctx,registry as typeof art,moved,env,slot);return ids;};
 assert.deepEqual(drawn('foreground'),['library.counter']);
 assert.ok(drawn('over-player').includes('library.printer')&&!drawn('over-player').includes('library.counter'));
 assert.ok(!drawn('behind-player').includes('library.printer')&&drawn('behind-player').includes('library.room'));

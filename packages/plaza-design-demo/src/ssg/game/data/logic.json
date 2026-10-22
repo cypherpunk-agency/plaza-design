@@ -10,7 +10,7 @@
         "status": "waits, then says done",
         "nouns": [
           {
-            "id": "timer", "kind": "ACT", "verbs": ["wait 1 s", "wait 2 s", "wait 3 s"], "events": ["done"],
+            "id": "timer", "layer": "software", "function": "time", "verbs": ["wait 1 s", "wait 2 s", "wait 3 s"], "events": ["done"],
             "on": { "*": { "do": [{ "effect": "timer.wait" }] } }
           }
         ]
@@ -27,7 +27,7 @@
         "state": { "on": false },
         "nouns": [
           {
-            "id": "switch", "kind": "ACT", "verbs": ["pass", "turn on", "turn off"], "events": ["out"], "current": "on",
+            "id": "switch", "layer": "software", "function": "gate", "verbs": ["pass", "turn on", "turn off"], "events": ["out"], "current": "on",
             "on": {
               "pass": [
                 { "if": "on", "do": [{ "emit": "out" }], "say": ["{via}use switch --pass", "switch: on. passed along.", "dim"] },

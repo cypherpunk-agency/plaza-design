@@ -71,6 +71,8 @@ export interface SceneExit {
   engine?: boolean;
   /** A save flag set when you leave through it (the flat's door: Pixel comes along from now on). */
   sets?: string;
+  /** Where you stand arriving through it in a level scene: its height (the floor there). */
+  arriveH?: number;
   /** A keyring item it needs; without it, E is refused with these words. */
   needs?: { key: string; name: string; pages: string[]; h: number };
 }
@@ -257,12 +259,20 @@ export interface SceneDef {
   keepFace?: boolean;
   /** Ledges to stand on (Downtown's low roof). */
   platforms?: { x: number; w: number; h: number }[];
+  /** Floors, stairs, escalators, lifts and buildings to step into (engine/level.ts); none: one street line. */
+  level?: import('../engine/level').LevelSource;
+  /** The spawn's height (a level scene can start on an upper floor). */
+  spawnH?: number;
   /** Track-world x of this station's stopped train nose. The timetable and door geometry share this marker. */
   platformStop?: number;
-  /** Pixel: 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */
+  /** The companion's mode in this scene (engine/gameplay/companion.json; the field keeps its first name): 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */
   pixel?: 'home' | 'along';
   perch?: (m: SceneModel) => Perch;
   companion?:CompiledCompanion;
+  /** The deck's `reset <scene id> --yes` starts this scene over (stage.resettable): what to call it, what the deck asks and what it answers. */
+  resettable?: { label: string; confirm: string; done: string };
+  /** Only under sudo: the scene is not a resume destination and its reset is not offered (stage.sudoOnly). */
+  sudoOnly?: boolean;
   /** The engine's error lines buzz (Downtown's ACCESS DENIED, as the old terminal did). */
   buzz?: boolean;
 

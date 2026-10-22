@@ -64,8 +64,8 @@ const LEAD = 10, CORE_HALF = 10, ROW_UP = 56, NOUN_GAP = 16;
 const ROOM = 6;
 /** Where the "unfold every circuit" setting is remembered. */
 const UNFOLD_KEY = 'access-denied-vision-unfold';
-/** Hack vision's row order by kind, left to right; ties keep the data's order. */
-const RANK: Record<string, number> = { SENSE: 0, STORE: 0, ACT: 1, LINK: 2, GUARD: 2, LOG: 2, SEAL: 2, DAEMON: 3 };
+/** Hack vision's row order by function, left to right; ties keep the data's order. */
+const RANK: Record<string, number> = { sense: 0, hold: 0, program: 0, act: 1, logic: 1, time: 2, gate: 2, connect: 2, record: 2, talk: 3 };
 const UNIT: Record<string, P> = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
 /** Where logic parts land on the board when nothing else says. */
 const BOARD_CRAFT: P[] = [{ x: 0.6, y: 0.78 }, { x: 0.84, y: 0.78 }, { x: 0.42, y: 0.6 }, { x: 0.72, y: 0.58 }];
@@ -299,10 +299,10 @@ export class Schematic {
     this.render();
   }
 
-  /** A device's nouns in hack vision's default row, left to right: the data's `layout.row` first, then by kind. */
+  /** A device's nouns in hack vision's default row, left to right: the data's `layout.row` first, then by function. */
   private row(d: Device) {
     const order = d.data.layout?.row ?? [];
-    const rank = (n: Noun) => { const i = order.indexOf(n.id); return i >= 0 ? i - order.length - 10 : RANK[n.kind] ?? 2; };
+    const rank = (n: Noun) => { const i = order.indexOf(n.id); return i >= 0 ? i - order.length - 10 : RANK[n.function] ?? 2; };
     return d.nouns.map((n, i) => ({ n, i })).sort((a, b) => rank(a.n) - rank(b.n) || a.i - b.i).map((x) => x.n);
   }
 
@@ -716,10 +716,10 @@ export class Schematic {
       const key = id + '.' + n.id, o = this.offset(id, n.id, i);
       if (n.sector && this.m.sealed(id, n.sector)) { g.appendChild(this.sealedNoun(id, n.sector, key, o)); return; }
       const choosing = this.pending?.to === key;
-      const target = !!this.armed || (!!this.chip && n.kind === 'GUARD');
-      const node = el('div', 'sch-noun' + (this.open.has(key) || choosing ? ' open' : '') + (choosing ? ' choosing' : '') + (target ? ' target' : '') + (n.kind === 'SEAL' ? ' seal' : ''));
+      const target = !!this.armed || (!!this.chip && n.behaviour === 'guard');
+      const node = el('div', 'sch-noun' + (this.open.has(key) || choosing ? ' open' : '') + (choosing ? ' choosing' : '') + (target ? ' target' : '') + (n.behaviour === 'seal' ? ' seal' : '') + ' layer-' + n.layer);
       node.dataset.target = key; node.style.left = o.x + 'px'; node.style.top = o.y + 'px';
-      const label = el('div', 'sch-label'); label.append(el('span', '', n.id), el('small', '', n.kind));
+      const label = el('div', 'sch-label'); label.append(el('span', '', n.id), el('small', '', n.function));
       node.appendChild(label);
       (n.events ?? []).forEach((ev) => node.appendChild(this.eventDot(key + ':' + ev, ev)));
       if (this.open.has(key) || choosing) node.appendChild(this.verbs(id, n.id, key, o, choosing));
@@ -764,12 +764,12 @@ export class Schematic {
     const box = el('div', 'sch-verbs ' + side + (choosing ? ' choosing' : ''));
     if (choosing) box.appendChild(el('span', 'sch-when', 'when ' + this.pending!.from.split('.')[1].replace(':', ' ') + ' →'));
     const n = this.m.noun(key)!;
-    const cur = n.current?.() ?? null, guardLocked = n.kind === 'GUARD' && this.m.lockLeft(key) > 0;
-    const typeVerb = n.kind === 'GUARD' ? this.m.typeVerb : null;
+    const cur = n.current?.() ?? null, guardLocked = n.behaviour === 'guard' && this.m.lockLeft(key) > 0;
+    const typeVerb = n.behaviour === 'guard' ? this.m.typeVerb : null;
     if (guardLocked && !choosing) { const t = el('span', 'sch-when', this.lockText(key)); t.dataset.lock = key; box.appendChild(t); }
     n.verbs.forEach((v) => {
       if (v === typeVerb && this.typing === key && !choosing) { box.appendChild(this.guessBox(dev, noun)); return; }
-      const b = el('button', 'sch-verb' + (v === cur && !choosing ? ' cur' : '') + (v.startsWith('try ') && n.kind === 'GUARD' ? ' try' : ''), v); b.type = 'button';
+      const b = el('button', 'sch-verb' + (v === cur && !choosing ? ' cur' : '') + (v.startsWith('try ') && n.behaviour === 'guard' ? ' try' : ''), v); b.type = 'button';
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1100,7 +1100,7 @@ export class Schematic {
   private propose(from: string, to: string) {
     this.armed = null;
     if (from.split(':')[0] === to) { this.note(['', 'a noun cannot wire to itself. it tried.', 'dim']); this.render(); return; }
-    if (this.m.noun(to)?.kind === 'GUARD') { this.note(['', 'a login wants a person at the keyboard, not a cable.', 'err']); this.render(); return; }
+    if (this.m.noun(to)?.behaviour === 'guard') { this.note(['', 'a login wants a person at the keyboard, not a cable.', 'err']); this.render(); return; }
     this.pending = { from, to }; this.only(to);
     this.note(['wire ' + from + ' → ' + to, 'pick what ' + to.split('.')[1] + ' should do when that happens.', 'dim']);
     this.render();

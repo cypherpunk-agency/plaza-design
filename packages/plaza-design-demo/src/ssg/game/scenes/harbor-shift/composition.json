@@ -218,7 +218,7 @@
       "order": 8,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.parcelPresent"
+        "visible": "scene.not.parcel"
       },
       "attach": {
         "instance": "dispatch-counter",
@@ -254,7 +254,7 @@
       "order": 10,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.returned"
+        "visible": "scene.returned"
       },
       "attach": {
         "instance": "rack",
@@ -312,7 +312,7 @@
       "order": 13,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.delivered"
+        "visible": "scene.delivered"
       },
       "attach": {
         "instance": "receiving-counter",
@@ -330,7 +330,7 @@
       "order": 14,
       "layer": "backdrop",
       "bindings": {
-        "visible": "shift.casePresent"
+        "visible": "scene.casePresent"
       },
       "attach": {
         "instance": "receiving-counter",
@@ -359,7 +359,7 @@
       "order": 16,
       "layer": "backdrop",
       "bindings": {
-        "x": "shift.trolleyX"
+        "x": "scene.trolleyX"
       }
     },
     {
@@ -373,7 +373,7 @@
       "order": 17,
       "layer": "backdrop",
       "bindings": {
-        "released": "shift.released"
+        "released": "scene.released"
       },
       "attach": {
         "instance": "trolley",
@@ -391,9 +391,9 @@
       "order": 18,
       "layer": "backdrop",
       "bindings": {
-        "released": "shift.released",
-        "trolleyX": "shift.trolleyX",
-        "restX": "shift.trolleyRestX"
+        "released": "scene.released",
+        "trolleyX": "scene.trolleyX",
+        "restX": "scene.trolleyRestX"
       },
       "attach": {
         "instance": "trolley",
@@ -411,7 +411,7 @@
       "order": 19,
       "layer": "backdrop",
       "bindings": {
-        "checked": "shift.checked"
+        "checked": "scene.checked"
       },
       "attach": {
         "instance": "checkout-post",
@@ -429,7 +429,7 @@
       "order": 20,
       "layer": "backdrop",
       "bindings": {
-        "checked": "shift.checked"
+        "checked": "scene.checked"
       },
       "attach": {
         "instance": "checkout",
@@ -447,7 +447,7 @@
       "order": 21,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.boss"
+        "visible": "scene.cue.boss"
       },
       "attach": {
         "instance": "boss",
@@ -465,7 +465,7 @@
       "order": 22,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.parcel"
+        "visible": "scene.cue.parcel"
       },
       "attach": {
         "instance": "parcel",
@@ -483,7 +483,7 @@
       "order": 23,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.mara"
+        "visible": "scene.cue.mara"
       },
       "attach": {
         "instance": "mara",
@@ -501,7 +501,7 @@
       "order": 24,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.case"
+        "visible": "scene.cue.case"
       },
       "attach": {
         "instance": "case",
@@ -519,7 +519,7 @@
       "order": 25,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.rack"
+        "visible": "scene.cue.rack"
       },
       "attach": {
         "instance": "rack",
@@ -537,7 +537,7 @@
       "order": 26,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.trolley"
+        "visible": "scene.cue.trolley"
       },
       "attach": {
         "instance": "trolley",
@@ -555,7 +555,7 @@
       "order": 27,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.clamp"
+        "visible": "scene.cue.clamp"
       },
       "attach": {
         "instance": "release",
@@ -573,7 +573,7 @@
       "order": 28,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.checkout"
+        "visible": "scene.cue.checkout"
       },
       "attach": {
         "instance": "checkout",
@@ -591,7 +591,7 @@
       "order": 29,
       "layer": "backdrop",
       "bindings": {
-        "visible": "cue.statement"
+        "visible": "scene.cue.statement"
       },
       "attach": {
         "instance": "statement",
@@ -609,7 +609,7 @@
       "order": 0,
       "layer": "set",
       "bindings": {
-        "done": "shift.done"
+        "done": "scene.done"
       },
       "attach": {
         "instance": "checkout",

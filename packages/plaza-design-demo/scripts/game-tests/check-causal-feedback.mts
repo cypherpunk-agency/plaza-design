@@ -8,7 +8,7 @@ import {SceneModel,type Line} from '../../src/ssg/game/engine/model';
 import {SceneHost} from '../../src/ssg/game/engine/host';
 import {mintFeedback,type FeedbackReceipt} from '../../src/ssg/game/engine/feedback-receipt';
 import {sound} from '../../src/ssg/game/runtime/audio';
-import {downtownRules} from '../../src/ssg/game/scenes/downtown/rules';
+import {downtownRules} from '../../src/ssg/game/engine/gameplay/mechanisms/vehicle-run';
 import {DOWNTOWN as downtown} from '../../src/ssg/game/data';
 import fs from 'node:fs';
 import type {SceneData} from '../../src/ssg/game/data/types';
@@ -21,17 +21,19 @@ let clock=0,next=0;const timers=new Map<number,{at:number;run:()=>void}>(),notes
 const nowDescriptor=Object.getOwnPropertyDescriptor(performance,'now');Object.defineProperty(performance,'now',{configurable:true,value:()=>clock});
 class Audio{currentTime=0;destination={};resume(){}createOscillator(){let frequency=0;return{frequency:{setValueAtTime(f:number){frequency=f;},linearRampToValueAtTime(){}},connect(){return{connect(){}};},start(){notes.push(frequency);},stop(){}};}createGain(){return{gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}};}}
 (globalThis as any).AudioContext=Audio;
-function advance(ms:number){const end=clock+ms;for(;;){const entry=[...timers].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at||a[0]-b[0])[0];if(!entry)break;clock=entry[1].at;timers.delete(entry[0]);entry[1].run();}clock=end;}
+// browser timers (the sound's notes) and scene time (each model's tick, as the game loop's frame moves it) advance together, a millisecond at a time
+const models:SceneModel[]=[];
+function advance(ms:number){const end=clock+ms;while(clock<end){clock++;for(;;){const entry=[...timers].filter(([,t])=>t.at<=clock).sort((a,b)=>a[1].at-b[1].at||a[0]-b[0])[0];if(!entry)break;timers.delete(entry[0]);entry[1].run();}models.forEach(m=>m.tick(1,false));}}
 const history:{line:Line;receipt:FeedbackReceipt}[]=[],host:any={active:false,echo:false,def:{id:'causal'},schem:{note(){}},vision:{note(){}},locate:()=>null,print(){},store:{feedbackCue:sound.feedback}};
 host.say=(SceneHost.prototype as any).say;
 function hooks(){return{feedbackScope:'causal',say:(line:Line,from?:string,receipt?:FeedbackReceipt)=>{history.push({line,receipt:receipt!});host.say(line,from,receipt);},changed(){},open(){}};}
 function attach(m:SceneModel,save:any,end:()=>void=()=>{}){const game:any=Object.create(Game.prototype);game.save=save;game.content={downtown:SCENES.downtown};game.hosts=new Map([['downtown',{model:m}]]);game.gameplaySessions=new Map();game.sceneDefinition=()=>SCENES.downtown;game.syncHud=()=>{};game.persistSave=()=>{};const session=game.gameplayFor('downtown',m);attachNativeGameplay(m,session);attachGameplayHandoffs(session,{schedule:(ms,run,canceled,detail)=>m.later(ms,run,detail,canceled),cutscene(){},presentation:end});return session;}
 try{
  sound.toggle();notes.length=0;
- const shared:Line=['','Same response.','ok'],data:SceneData={id:'causal',name:'Causal',state:{},tuning:{},cables:[],goals:[],texts:{},devices:[{id:'device',name:'DEVICE',look:'',nouns:[{id:'act',kind:'ACT',verbs:['go'],on:{go:{do:[{effect:'burst'}]}}}]}]};
+ const shared:Line=['','Same response.','ok'],data:SceneData={id:'causal',name:'Causal',state:{},tuning:{},cables:[],goals:[],texts:{},devices:[{id:'device',name:'DEVICE',look:'',nouns:[{id:'act',layer:'hardware',function:'act',verbs:['go'],on:{go:{do:[{effect:'burst'}]}}}]}]};
  let model:SceneModel;
- model=new SceneModel(hooks(),data,{effects:{burst:w=>{const receipt=w.receipt(shared);sound.feedback(receipt);w.say(shared);w.say(['','Second actual reply.','ok']);model.later(300,()=>{w.say(['','Delayed reply.','ok']);w.say(['','Second delayed reply.','ok']);});}}});host.model=model;
- model.act('device','act','go');assert.equal(history.length,2);assert.notEqual(history[0].receipt.id,history[1].receipt.id);assert.equal(history[0].receipt.cueId,history[1].receipt.cueId);assert.equal(timers.size,4,'one three-note cue and one native callback');advance(200);assert.deepEqual(notes,[523,659,784]);advance(300);assert.deepEqual(notes,[523,659,784,523,659,784]);assert.equal(history.length,4);assert.equal(history[2].receipt.cueId,history[3].receipt.cueId);assert.notEqual(history[0].receipt.cueId,history[2].receipt.cueId);
+ models.push(model=new SceneModel(hooks(),data,{effects:{burst:w=>{const receipt=w.receipt(shared);sound.feedback(receipt);w.say(shared);w.say(['','Second actual reply.','ok']);model.later(300,()=>{w.say(['','Delayed reply.','ok']);w.say(['','Second delayed reply.','ok']);});}}}));host.model=model;
+ model.act('device','act','go');assert.equal(history.length,2);assert.notEqual(history[0].receipt.id,history[1].receipt.id);assert.equal(history[0].receipt.cueId,history[1].receipt.cueId);assert.equal(timers.size,3,'one three-note cue');assert.equal(model.time.inspect().pending.length,1,'and one native callback on scene time');advance(200);assert.deepEqual(notes,[523,659,784]);advance(300);assert.deepEqual(notes,[523,659,784,523,659,784]);assert.equal(history.length,4);assert.equal(history[2].receipt.cueId,history[3].receipt.cueId);assert.notEqual(history[0].receipt.cueId,history[2].receipt.cueId);
  model.act('device','act','go');assert.notEqual(history[0].receipt.id,history[4].receipt.id,'same reused line in another action is a fresh delivery');assert.notEqual(history[0].receipt.cueId,history[4].receipt.cueId);advance(600);assert.equal(notes.length,12);
  const before=notes.length,success=mintFeedback('causal','device','success'),error=mintFeedback('causal','device','error',success.cueId);sound.feedback(success);sound.feedback(error);assert.equal(notes.length,before+1,'error is immediate');assert.equal(notes.at(-1),140);advance(200);assert.deepEqual(notes.slice(before),[140,110],'error cancels this cause’s pending success notes');sound.feedback(success);sound.feedback(error);advance(200);assert.equal(notes.length,before+2);
  const silent=mintFeedback('causal','controller','success');sound.feedback(silent);advance(200);assert.deepEqual(notes.slice(-3),[523,659,784],'standalone controller completion keeps its cue');

@@ -1,0 +1,34 @@
+{
+ "fields": {
+  "attention": "d5d4cd07616a5428",
+  "bindWorld": "e5d626c61ff0816a",
+  "companion": "bf21a9e8fbc5a384",
+  "data": "cde3df6664d9129c",
+  "exits": "56ae396b2cdd59a7",
+  "facing": "5e796e48332af414",
+  "gameplay": "c2083f889e6bf975",
+  "id": "22a7c459c5c3f20e",
+  "intro": "4ac766cd31b21394",
+  "name": "13de60108271c423",
+  "objective": "d5d4cd07616a5428",
+  "objectives": "d5d4cd07616a5428",
+  "people": "97d170e1550eee4a",
+  "perch": "d5d4cd07616a5428",
+  "pixel": "d5d4cd07616a5428",
+  "readables": "7d17edf9e2fbdea2",
+  "rests": "d5d4cd07616a5428",
+  "rules": "8e2b79ac51001b5c",
+  "spawn": "1dd4b9d8e432a99a",
+  "storyDay": "d5d4cd07616a5428",
+  "storyMinute": "d5d4cd07616a5428",
+  "uses": "97d170e1550eee4a",
+  "width": "73ee4958bdb5a056"
+ },
+ "paint": {
+  "start": "d1d2942e90b4f396",
+  "middle-night": "40e2f0a46291f71c",
+  "end": "6b0af061e559e877",
+  "phone": "5131c67e4ec7cea8",
+  "wide-late": "0e072d8eb460d09a"
+ }
+}

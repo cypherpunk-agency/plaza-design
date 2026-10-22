@@ -1,0 +1,38 @@
+{
+ "fields": {
+  "ambient": "a3411b27fede6268",
+  "attention": "d5d4cd07616a5428",
+  "bindWorld": "e5d626c61ff0816a",
+  "companion": "bf21a9e8fbc5a384",
+  "data": "c5befbda5dd5758c",
+  "exits": "91c2b711996897e4",
+  "facing": "29350804a152f35f",
+  "gameplay": "caca7f35909cf40b",
+  "horizon": "1574bddb75c78a6f",
+  "id": "8bc3e42f5a976eb8",
+  "intro": "026cdfcec47df31d",
+  "lights": "ebd25da7224e2d55",
+  "name": "5d6376bc785b7ec1",
+  "objective": "d5d4cd07616a5428",
+  "objectives": "d5d4cd07616a5428",
+  "people": "97d170e1550eee4a",
+  "perch": "d5d4cd07616a5428",
+  "pixel": "d5d4cd07616a5428",
+  "platformStop": "13682ac418603aa0",
+  "presentationState": "a537317f3771863a",
+  "readables": "0a49437c2a0bfac3",
+  "rests": "f5caa872d7ffe40d",
+  "spawn": "3c26dffc8a2e8804",
+  "storyDay": "d5d4cd07616a5428",
+  "storyMinute": "d5d4cd07616a5428",
+  "uses": "97d170e1550eee4a",
+  "width": "6341e003520bc779"
+ },
+ "paint": {
+  "start": "2d27ca717f950367",
+  "middle-night": "7e9aa985fcfbf338",
+  "end": "162c81841087c968",
+  "phone": "51d7209d5a13f02e",
+  "wide-late": "4a65c0a4e12de808"
+ }
+}

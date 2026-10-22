@@ -65,6 +65,9 @@ const KIND_OF: Record<string, LayerRole> = {
 export function layerRole(type: string, label: string, category: string, look?: unknown): LayerRole {
   if (KIND_OF[type]) return KIND_OF[type];
   if (/^(scene\.player|assembly\.group)\b/.test(type)) return type.startsWith('scene.') ? 'Player' : 'Group';
+  // the level kit: walkable lines, doors and building handles are positions; lifts and escalators are machines
+  if (/^level\.(floor|door|shell|interior)$/.test(type)) return 'Marker';
+  if (/^level\.(elevator|escalator)$/.test(type)) return 'Machine';
   const fromLook = lookKind(look);
   if (fromLook) return fromLook;
   // The type's own name and label decide; the namespace (often a scene name) and category only break ties.

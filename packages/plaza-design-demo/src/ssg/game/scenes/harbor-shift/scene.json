@@ -537,7 +537,11 @@
     }
   ],
   "manifest": {
-    "artwork": {"trolley":"trolley","bay":"bay","horizon":"horizon"},
+    "artwork": {
+      "trolley": "trolley",
+      "bay": "bay",
+      "horizon": "horizon"
+    },
     "version": 1,
     "width": {
       "instance": "scene",
@@ -611,7 +615,17 @@
     },
     "readables": {},
     "rests": {},
-    "exits": {}
+    "exits": {},
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
+    }
   },
   "environment": {
     "ambient": {
@@ -646,5 +660,133 @@
     {
       "day": 1
     }
-  ]
+  ],
+  "stage": {
+    "horizon": {
+      "role": "horizon"
+    },
+    "lights": [
+      {
+        "role": "light",
+        "style": "lamp",
+        "color": "255,217,165"
+      }
+    ],
+    "values": {
+      "checked": {
+        "flag": "checked"
+      },
+      "delivered": {
+        "flag": "delivered"
+      },
+      "done": {
+        "flag": "done"
+      },
+      "released": {
+        "flag": "released"
+      },
+      "returned": {
+        "flag": "returned"
+      },
+      "not.parcel": {
+        "not": {
+          "flag": "parcel"
+        }
+      },
+      "cue.boss": {
+        "use": "boss"
+      },
+      "cue.case": {
+        "use": "case"
+      },
+      "cue.checkout": {
+        "use": "checkout"
+      },
+      "cue.clamp": {
+        "use": "clamp"
+      },
+      "cue.mara": {
+        "use": "mara"
+      },
+      "cue.parcel": {
+        "use": "parcel"
+      },
+      "cue.rack": {
+        "use": "rack"
+      },
+      "cue.statement": {
+        "use": "statement"
+      },
+      "cue.trolley": {
+        "use": "trolley"
+      },
+      "casePresent": {
+        "all": [
+          {
+            "flag": "delivered"
+          },
+          {
+            "not": {
+              "flag": "case"
+            }
+          }
+        ]
+      },
+      "trolleyX": {
+        "if": {
+          "flag": "parked"
+        },
+        "then": {
+          "role": "bay",
+          "get": "x"
+        },
+        "else": {
+          "role": "trolley",
+          "get": "x"
+        }
+      },
+      "trolleyRestX": {
+        "role": "trolley",
+        "get": "x"
+      },
+      "carry": {
+        "if": {
+          "any": [
+            {
+              "all": [
+                {
+                  "flag": "parcel"
+                },
+                {
+                  "not": {
+                    "flag": "delivered"
+                  }
+                }
+              ]
+            },
+            {
+              "all": [
+                {
+                  "flag": "case"
+                },
+                {
+                  "not": {
+                    "flag": "returned"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "then": {
+          "if": {
+            "flag": "delivered"
+          },
+          "then": "case",
+          "else": "parcel"
+        },
+        "else": null
+      }
+    }
+  }
 }

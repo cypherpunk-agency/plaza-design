@@ -42,8 +42,20 @@
     }
   ],
   "manifest": {
-    "devices": {"mail": "device-mail", "board": "device-board", "turntable": "device-turntable", "desk": "device-desk", "tank": "device-tank", "pot": "device-pot", "phone": "device-phone"},
-    "artwork": {"orientation":"window","deskSurface":"desk","door":"door"},
+    "devices": {
+      "mail": "device-mail",
+      "board": "device-board",
+      "turntable": "device-turntable",
+      "desk": "device-desk",
+      "tank": "device-tank",
+      "pot": "device-pot",
+      "phone": "device-phone"
+    },
+    "artwork": {
+      "orientation": "window",
+      "deskSurface": "desk",
+      "door": "door"
+    },
     "version": 1,
     "width": {
       "instance": "shell",
@@ -55,6 +67,17 @@
     "rests": {},
     "exits": {
       "door": "exit-door"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "groundSpawn": false,
+      "omitGroundRestHeight": true
     }
   },
   "actors": [],
@@ -89,5 +112,37 @@
         "rest": "sleep"
       }
     ]
+  },
+  "stage": {
+    "facing": {
+      "role": "orientation"
+    },
+    "targetAnchors": [
+      "door"
+    ],
+    "values": {
+      "hover": {
+        "engine": "hover"
+      },
+      "deskHeight": {
+        "role": "deskSurface",
+        "get": "top"
+      },
+      "playing": {
+        "picture": "playing"
+      },
+      "nextMs": {
+        "picture": "nextMs"
+      },
+      "fed": {
+        "picture": "fed"
+      },
+      "wet": {
+        "picture": "wet"
+      },
+      "fresh": {
+        "picture": "fresh"
+      }
+    }
   }
 }

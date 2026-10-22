@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "tower",
+  "name": "Tower (level lab)",
+  "intro": [],
+  "uses": [],
+  "manifest": {
+    "version": 1,
+    "width": 1600,
+    "spawn": "spawn",
+    "uses": {}
+  }
+}

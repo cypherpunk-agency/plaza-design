@@ -3,15 +3,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sourceDocuments, validateSourceDocuments } from '../../src/ssg/game/authoring/source-documents';
 import { AuthoringStore, StoreError } from '../../src/ssg/game/authoring/server/store';
-import { libraryScene } from '../../src/ssg/game/scenes/library';
+import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
+import {folderSceneDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
+const libraryScene=(composition?:Composition,state={},options={},scene?:never)=>folderSceneDefinition('library',FOLDER_SOURCES.library,{composition,state,options,scene});
 import type { Composition } from '../../src/ssg/game/art';
 import type { TimelineDocument } from '../../src/ssg/game/art/core/timeline';
 import { preserveBoundIdentity } from '../../src/ssg/game/authoring/bound-identity';
 
-const bound: Composition = { version: 1, scene: 'identity-check', instances: [{ id: 'parent', type: 'assembly.group', props: {}, placement: { x: 0, h: 0 }, layer: 'set', order: 0, children: [{ id: 'actor', type: 'character.prepared', props: { actor: 'keeper' }, bindings: { pose: 'actor.keeper.pose' }, placement: { x: 20, h: 0 }, layer: 'set', order: 1 }] }] };
+const bound: Composition = { version: 1, scene: 'identity-check', instances: [{ id: 'parent', type: 'assembly.group', props: {}, placement: { x: 0, h: 0 }, layer: 'set', order: 0, children: [{ id: 'actor', type: 'library.card-reader', props: {}, bindings: { online: 'value.catalogConnected' }, placement: { x: 20, h: 0 }, layer: 'set', order: 1 }] }] };
 const relocated = structuredClone(bound); relocated.instances[0].children![0].placement.x += 20;
 preserveBoundIdentity(bound, relocated);
-const retargeted = structuredClone(bound); retargeted.instances[0].children![0].bindings!.pose = 'actor.other.pose';
+// actor artwork of scenes without a registered actor controller may be moved, rebound or removed (scene validation counts actors)
+const actorArt: Composition = { version: 1, scene: 'identity-check', instances: [{ id: 'keeper', type: 'character.prepared', props: { actor: 'keeper' }, bindings: { pose: 'actor.keeper.pose' }, placement: { x: 20, h: 0 }, layer: 'set', order: 0 }] };
+preserveBoundIdentity(actorArt, { ...actorArt, instances: [] });
+const retargeted = structuredClone(bound); retargeted.instances[0].children![0].bindings!.online = 'value.lendingConnected';
 assert.throws(() => preserveBoundIdentity(bound, retargeted), /actor: preserve gameplay identity/);
 const removedBinding = structuredClone(bound); delete removedBinding.instances[0].children![0].bindings;
 assert.throws(() => preserveBoundIdentity(bound, removedBinding), /actor: preserve gameplay identity/);

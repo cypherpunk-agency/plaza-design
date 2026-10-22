@@ -125,6 +125,16 @@
     },
     "exitCheckpoints": {
       "downtown": "turnstile"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true
     }
   },
   "rests": [
@@ -224,5 +234,21 @@
   },
   "companion": {
     "mode": "off"
+  },
+  "stage": {
+    "horizon": {
+      "role": "horizon"
+    },
+    "lights": [
+      {
+        "role": "light",
+        "style": "lamp",
+        "color": "255,230,190"
+      }
+    ],
+    "mechanisms": [
+      "transitPlatform",
+      "citySkyline"
+    ]
   }
 }

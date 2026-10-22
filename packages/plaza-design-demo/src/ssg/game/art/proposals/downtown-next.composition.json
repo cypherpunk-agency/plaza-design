@@ -45,7 +45,7 @@
       },
       "order": 2,
       "bindings": {
-        "width": "scene.width"
+        "width": "downtown.width"
       },
       "layer": "distance"
     },
@@ -66,7 +66,7 @@
       },
       "order": 3,
       "bindings": {
-        "width": "scene.width"
+        "width": "downtown.width"
       },
       "layer": "distance"
     },
@@ -748,7 +748,7 @@
       },
       "order": 260,
       "bindings": {
-        "text": "weather.text"
+        "text": "downtown.weatherText"
       },
       "attach": {
         "instance": "front-1",
@@ -825,7 +825,7 @@
       },
       "order": 264,
       "bindings": {
-        "doorOffset": "alley.doorOffset"
+        "doorOffset": "downtown.doorOffset"
       },
       "layer": "backdrop"
     },
@@ -916,9 +916,9 @@
       },
       "order": 270,
       "bindings": {
-        "metrics": "stall.metrics",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "metrics": "downtown.stall",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -934,10 +934,10 @@
       },
       "order": 271,
       "bindings": {
-        "x": "smear.device-sign.x",
-        "color": "smear.device-sign.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.device-sign.x",
+        "color": "downtown.smear.device-sign.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -953,10 +953,10 @@
       },
       "order": 272,
       "bindings": {
-        "x": "smear.noodle-stall.x",
-        "color": "smear.noodle-stall.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.noodle-stall.x",
+        "color": "downtown.smear.noodle-stall.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -972,10 +972,10 @@
       },
       "order": 273,
       "bindings": {
-        "x": "smear.billboard-frame.x",
-        "color": "smear.billboard-frame.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.billboard-frame.x",
+        "color": "downtown.smear.billboard-frame.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -991,10 +991,10 @@
       },
       "order": 274,
       "bindings": {
-        "x": "smear.market-neon.x",
-        "color": "smear.market-neon.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.market-neon.x",
+        "color": "downtown.smear.market-neon.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1010,10 +1010,10 @@
       },
       "order": 275,
       "bindings": {
-        "x": "smear.spaceport-neon.x",
-        "color": "smear.spaceport-neon.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.spaceport-neon.x",
+        "color": "downtown.smear.spaceport-neon.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1029,10 +1029,10 @@
       },
       "order": 276,
       "bindings": {
-        "x": "smear.open-neon.x",
-        "color": "smear.open-neon.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.open-neon.x",
+        "color": "downtown.smear.open-neon.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1048,10 +1048,10 @@
       },
       "order": 277,
       "bindings": {
-        "x": "smear.exit-metro.x",
-        "color": "smear.exit-metro.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.exit-metro.x",
+        "color": "downtown.smear.exit-metro.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1067,10 +1067,10 @@
       },
       "order": 278,
       "bindings": {
-        "x": "smear.exit-taxi.x",
-        "color": "smear.exit-taxi.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.exit-taxi.x",
+        "color": "downtown.smear.exit-taxi.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1086,10 +1086,10 @@
       },
       "order": 279,
       "bindings": {
-        "x": "smear.exit-shop.x",
-        "color": "smear.exit-shop.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.exit-shop.x",
+        "color": "downtown.smear.exit-shop.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1105,10 +1105,10 @@
       },
       "order": 280,
       "bindings": {
-        "x": "smear.weather-ticker.x",
-        "color": "smear.weather-ticker.color",
-        "rain": "weather.rain",
-        "city": "street.city"
+        "x": "downtown.smear.weather-ticker.x",
+        "color": "downtown.smear.weather-ticker.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
       },
       "layer": "backdrop"
     },
@@ -1128,7 +1128,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "pose": "actor.fixer.pose"
+        "pose": "downtown.pose.fixer"
       },
       "layer": "playfield"
     },
@@ -1146,7 +1146,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "metrics": "stall.metrics"
+        "metrics": "downtown.stall"
       },
       "layer": "playfield"
     },
@@ -1162,7 +1162,7 @@
       },
       "order": 283,
       "bindings": {
-        "pose": "actor.hood.pose"
+        "pose": "downtown.pose.hood"
       },
       "layer": "playfield"
     },
@@ -1178,7 +1178,7 @@
       },
       "order": 284,
       "bindings": {
-        "pose": "actor.umbrella.pose"
+        "pose": "downtown.pose.umbrella"
       },
       "layer": "playfield"
     },
@@ -1194,7 +1194,7 @@
       },
       "order": 285,
       "bindings": {
-        "pose": "actor.hat.pose"
+        "pose": "downtown.pose.hat"
       },
       "layer": "playfield"
     },
@@ -1233,7 +1233,7 @@
       },
       "order": 287,
       "bindings": {
-        "snapshot": "device.sign.snapshot"
+        "snapshot": "downtown.device.sign.snapshot"
       },
       "attach": {
         "instance": "front-2",
@@ -1255,7 +1255,7 @@
       },
       "order": 288,
       "bindings": {
-        "snapshot": "device.box.snapshot"
+        "snapshot": "downtown.device.box.snapshot"
       },
       "attach": {
         "instance": "front-2",
@@ -1277,7 +1277,7 @@
       },
       "order": 289,
       "bindings": {
-        "snapshot": "device.till.snapshot"
+        "snapshot": "downtown.device.till.snapshot"
       },
       "attach": {
         "instance": "noodle-stall",
@@ -1299,7 +1299,7 @@
       },
       "order": 290,
       "bindings": {
-        "snapshot": "device.relay.snapshot"
+        "snapshot": "downtown.device.relay.snapshot"
       },
       "attach": {
         "instance": "front-7",
@@ -1321,7 +1321,7 @@
       },
       "order": 291,
       "bindings": {
-        "snapshot": "device.gate.snapshot"
+        "snapshot": "downtown.device.gate.snapshot"
       },
       "attach": {
         "instance": "front-0",
@@ -1343,7 +1343,7 @@
       },
       "order": 292,
       "bindings": {
-        "snapshot": "device.fence.snapshot"
+        "snapshot": "downtown.device.fence.snapshot"
       },
       "attach": {
         "instance": "antenna-fence",
@@ -1365,7 +1365,7 @@
       },
       "order": 293,
       "bindings": {
-        "snapshot": "device.scan.snapshot"
+        "snapshot": "downtown.device.scan.snapshot"
       },
       "attach": {
         "instance": "front-11",
@@ -1387,7 +1387,7 @@
       },
       "order": 294,
       "bindings": {
-        "snapshot": "device.cam3.snapshot"
+        "snapshot": "downtown.device.cam3.snapshot"
       },
       "attach": {
         "instance": "front-3",
@@ -1409,7 +1409,7 @@
       },
       "order": 295,
       "bindings": {
-        "snapshot": "device.billboard.snapshot"
+        "snapshot": "downtown.device.billboard.snapshot"
       },
       "attach": {
         "instance": "billboard-frame",
@@ -1431,8 +1431,8 @@
       },
       "order": 296,
       "bindings": {
-        "snapshot": "device.dlv9.snapshot",
-        "position": "device.dlv9.position"
+        "snapshot": "downtown.device.dlv9.snapshot",
+        "position": "downtown.device.dlv9.position"
       },
       "attach": {
         "instance": "dumpster",
@@ -1454,7 +1454,7 @@
       },
       "order": 297,
       "bindings": {
-        "snapshot": "device.map.snapshot"
+        "snapshot": "downtown.device.map.snapshot"
       },
       "attach": {
         "instance": "exit-metro",
@@ -1472,7 +1472,7 @@
       },
       "order": 298,
       "bindings": {
-        "snapshot": "device.hover.snapshot"
+        "snapshot": "downtown.device.hover.snapshot"
       },
       "layer": "set"
     },

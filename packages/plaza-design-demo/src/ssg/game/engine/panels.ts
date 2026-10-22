@@ -17,14 +17,22 @@ export function button(text: string, cls: string, fn: () => void) {
   return b;
 }
 
+/** One 60 Hz frame in ms: the unit of per-frame easing rates (they scale by dt, not by frame count). */
+export const FRAME_MS = 1000 / 60;
+
 /** What a scene's own panel gets: the body to fill, the model, and a frame loop that stops when the panel closes. */
 export interface PanelKit {
   body: HTMLDivElement;
   m: SceneModel;
   say: (l: Line) => void;
   close: () => void;
-  /** requestAnimationFrame, cancelled on close. Return false to stop. */
-  frame: (fn: (t: number) => boolean | void) => void;
+  /**
+   * The panel's per-frame step, called from the game loop's tick (`Panels.step`): `dt` ms of scene time since the
+   * last call, `t` ms since the panel opened. Dropped on close. Return false to stop.
+   */
+  frame: (fn: (dt: number, t: number) => boolean | void) => void;
+  /** A delayed action on scene time (the model's `later`): held while the game is paused, cancelled when the panel closes. Returns its cancel. */
+  later: (ms: number, fn: () => void) => () => void;
   /** Owned resources are released on close or replacement; return unregisters cleanup. */
   cleanup: (release:()=>void)=>()=>void;
 }
@@ -35,7 +43,8 @@ export type PanelFn = (kit: PanelKit, arg?: string) => void;
 export class Panels {
   private root: HTMLDivElement;
   private body: HTMLDivElement;
-  private raf = 0;
+  private frames: ((dt: number, t: number) => boolean | void)[] = [];
+  private age = 0;
   private generation=0;
   private cleanups=new Set<()=>void>();
   private talking?:ConversationSession;
@@ -50,9 +59,20 @@ export class Panels {
 
   get conversationFrame(){return this.talking?.frame()??null;}
   get isOpen() { return !this.root.hidden; }
-  private release(){this.generation++;cancelAnimationFrame(this.raf);this.talking?.close();this.talking=undefined;const cleanups=[...this.cleanups];this.cleanups.clear();for(const release of cleanups)try{release();}catch{/* release remaining owned resources */}}
+  private release(){this.generation++;this.frames=[];this.age=0;this.talking?.close();this.talking=undefined;const cleanups=[...this.cleanups];this.cleanups.clear();for(const release of cleanups)try{release();}catch{/* release remaining owned resources */}}
   close() { if (this.root.hidden) return; this.root.hidden = true;this.release();this.body.textContent = ''; this.onClose(); }
   private show(cls: string) { this.release();this.body.textContent = ''; this.body.className = 'hack-panel-body ' + cls; this.root.hidden = false; }
+
+  /** The game loop's frame (SceneHost.tick): the open panel's frame functions step on by `ms` of scene time. */
+  step(ms: number) {
+    if (this.root.hidden || !this.frames.length || !(ms > 0)) return;
+    this.age += ms;
+    const generation = this.generation;
+    for (const fn of [...this.frames]) {
+      if (generation !== this.generation) return;
+      if (fn(ms, this.age) === false) this.frames = this.frames.filter((f) => f !== fn);
+    }
+  }
 
   /** Open a panel by name: `talk` (arg: the dialogue), or one of the scene's own. */
   open(name: string, arg?: string) {
@@ -61,11 +81,16 @@ export class Panels {
     if (!fn) return;
     this.show(name);
     const generation=this.generation,live=()=>!this.root.hidden&&generation===this.generation;
-    const loop = (fn: (t: number) => boolean | void) => {
-      const step = (t: number) => { if(!live()||fn(t)===false||!live())return;this.raf=requestAnimationFrame(step); };
-      if(live())this.raf=requestAnimationFrame(step);
+    const loop = (fn: (dt: number, t: number) => boolean | void) => { if (live()) this.frames.push(fn); };
+    const later = (ms: number, fn: () => void) => {
+      if (!live()) return () => {};
+      let cancel = () => {};
+      const release = () => { cancel(); };
+      cancel = this.m.later(ms, () => { this.cleanups.delete(release); if (live()) fn(); });
+      this.cleanups.add(release);
+      return () => { this.cleanups.delete(release); cancel(); };
     };
-    try{fn({ body:this.body,m:this.m,say:l=>{if(live())this.say(l);},close:()=>{if(live())this.close();},frame:loop,
+    try{fn({ body:this.body,m:this.m,say:l=>{if(live())this.say(l);},close:()=>{if(live())this.close();},frame:loop,later,
       cleanup:release=>{if(!live()){release();return()=>{};}this.cleanups.add(release);return()=>{this.cleanups.delete(release);};},
     },arg);}catch(error){this.close();throw error;}
   }

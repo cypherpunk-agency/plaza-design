@@ -49,11 +49,11 @@ export function sceneShell(host: SceneHost, print: (text: string, kind?: LineKin
       const d = m.devices.get(dev);
       if (!d) return '(nothing)';
       const sealed = [...new Set(d.nouns.filter((n) => n.sector && m.sealed(dev, n.sector)).map((n) => n.sector!))];
-      return [...open(dev).filter((n) => n.kind !== 'SEAL').map((n) => n.id), ...sealed.map((s) => '???(' + (m.sector(dev, s)?.label ?? s) + ')')].join('   ') || '(nothing)';
+      return [...open(dev).filter((n) => n.behaviour !== 'seal').map((n) => n.id), ...sealed.map((s) => '???(' + (m.sector(dev, s)?.label ?? s) + ')')].join('   ') || '(nothing)';
     },
     readable: (dev) => open(dev).filter((n) => n.verbs.includes('read')).map((n) => n.id),
     installable: (dev) => open(dev).filter((n) => n.verbs.includes('install')).map((n) => n.id),
-    hasGuard: (dev) => open(dev).some((n) => n.kind === 'GUARD'),
+    hasGuard: (dev) => open(dev).some((n) => n.behaviour === 'guard'),
     cat(dev, file) {
       const n = find(dev, file);
       if (!n) { print('cat: ' + (file || '<file>') + ': no such file', 'err'); return; }
@@ -62,7 +62,7 @@ export function sceneShell(host: SceneHost, print: (text: string, kind?: LineKin
     },
     login(dev, user, pass) {
       if (!user || !pass) { print('usage: login <user> <password>', 'dim'); return; }
-      const g = open(dev).find((n) => n.kind === 'GUARD');
+      const g = open(dev).find((n) => n.behaviour === 'guard');
       if (!g) { say(m.line(('login.none.' + dev) in m.texts ? 'login.none.' + dev : 'login.none')); return; }
       const want = m.texts['login.user.' + dev];
       if (typeof want === 'string' && want.toLowerCase() !== user.toLowerCase()) {

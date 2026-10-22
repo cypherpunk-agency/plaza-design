@@ -33,7 +33,7 @@ viewers and world tools retain that common structure.
 
 ## Available authoring
 
-All 19 existing scenes have composition, ordinary content, device/controller sources and native
+All 20 existing scenes have composition, ordinary content, device/controller sources and native
 Play. Ordinary actors, interactions, readables, rest points and exits can be created, removed and
 rebound. Existing physical calculations and drawing algorithms remain code primitives with typed
 inputs; the editor changes their declared parameters rather than editing arbitrary TypeScript.
@@ -85,7 +85,9 @@ district's card with its scenes on the stage, including the `downtown-next` prop
 building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
 show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
 stage like any other artwork (ART-GUIDE §2 and §12); it opens the same artwork browser as the Library,
-with the same filters, and adds a piece with its Add button or a double-click. Kits list first, each
+with the same filters, and adds a piece with its Add button or a double-click. The level kit's floors, doors and building
+handles are placed the same way; the stage draws them as a diagram (dashed floors with their names,
+doors, flight ends, lift stops), and **Inside buildings** (I) previews every building opened. Kits list first, each
 followed by its **presets**: named, saved settings of a kit piece (`art/presets/kit-presets.json`,
 validated by `kit-presets.ts`), marked Preset. A placed kit piece's **Preset** section in the inspector
 saves its settings as a new preset, or updates, renames or deletes one of its kit's presets. A preset is
@@ -131,7 +133,7 @@ campaign location.
 Run `pnpm test:game --list` from packages/plaza-design-demo. Select relevant names, for example
 `pnpm test:game conversation source-removal`. The default runs all current checks. Test output is
 `.game-test-output/` at repository root; old migration captures are unnecessary. Browser visual
-contracts cover all 19 scenes plus selected environment/hack states; see
+contracts cover all 20 scenes plus selected environment/hack states; see
 [the test guide](../../../../scripts/game-tests/README.md).
 
 The agent checks mechanics, permissions, persistence and disposal. User feedback should address

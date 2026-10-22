@@ -18,11 +18,11 @@
       },
       "nouns": [
         {
-          "id": "notice", "kind": "STORE", "verbs": ["read"],
+          "id": "notice", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat notice", "REGISTRY HOUSING NOTICE. RESIDENT 4C NOT VERIFIED FOR 72 HOURS. FLAT SCHEDULED FOR REALLOCATION. NO ACTION REQUIRED."] } }
         },
         {
-          "id": "post", "kind": "STORE", "verbs": ["read"],
+          "id": "post", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["ls post", "a takeaway menu, a final reminder, and a postcard of a fish, blank, addressed to Moth, in Moth's handwriting."] } }
         }
       ]
@@ -40,15 +40,15 @@
       },
       "nouns": [
         {
-          "id": "photo", "kind": "STORE", "verbs": ["read"],
+          "id": "photo", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat photo", "you and Moth at the noodle stall. on the back, in marker: \"proof we eat. —M\""] } }
         },
         {
-          "id": "list", "kind": "STORE", "verbs": ["read"],
+          "id": "list", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat list", "\"BEFORE LEAVING: 1. feed Sprat. 2. water Fern. 3. tape the camera. 4. tape the other camera. 5. trust nobody (except you, reading this. hi).\" items 1 and 2 are not ticked."] } }
         },
         {
-          "id": "rod", "kind": "STORE", "verbs": ["read"],
+          "id": "rod", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat rod", "a fishing rod, still in its wrapper. the receipt is pinned above it. on the receipt: \"for my status. —M\""] } }
         }
       ]
@@ -66,12 +66,12 @@
       },
       "nouns": [
         {
-          "id": "record", "kind": "CLOCK", "verbs": ["read"], "events": ["played"],
+          "id": "record", "layer": "hardware","function": "time", "verbs": ["read"], "events": ["played"],
           "clock": { "every": 2000 },
           "on": { "read": { "say": ["cat record", "the song, every 2 s. a single, cut short. it skips back to the start before it ends."] } }
         },
         {
-          "id": "sleeve", "kind": "STORE", "verbs": ["read"],
+          "id": "sleeve", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat sleeve", "a hand-labelled single. on the label: \"OURS.\" no title. Moth's writing: \"you were there. you know it.\""] } }
         }
       ]
@@ -90,14 +90,14 @@
       },
       "nouns": [
         {
-          "id": "screen", "kind": "STORE", "verbs": ["read"],
+          "id": "screen", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat screen", "MOTH-PC · LOCAL LOGIN DISABLED BY OWNER. REMOTE ACCESS: FRIENDNET CONTACTS ONLY."] } }
         },
         {
-          "id": "sticky", "kind": "STORE", "verbs": ["read"],
+          "id": "sticky", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat sticky", "\"no, you can't log in here. nobody can. friends come in through FRIENDNET, like friends. —M\""] } }
         },
-        { "id": "net", "kind": "LINK", "link": { "when": "uplink" } }
+        { "id": "net", "layer": "hardware","function": "connect", "link": { "when": "uplink" } }
       ]
     },
     {
@@ -113,7 +113,7 @@
       },
       "nouns": [
         {
-          "id": "sprat", "kind": "STORE", "verbs": ["read"],
+          "id": "sprat", "layer": "data","function": "hold", "verbs": ["read"],
           "on": {
             "read": [
               { "if": "fed", "say": ["cat sprat", "Sprat swims a slow lap of victory. he's fine."] },
@@ -122,7 +122,7 @@
           }
         },
         {
-          "id": "feeder", "kind": "ACT", "verbs": ["feed"],
+          "id": "feeder", "layer": "hardware","function": "act", "verbs": ["feed"],
           "on": {
             "feed": [
               { "if": "fed", "say": ["{via}use feeder --feed", "FEEDER: daily portion already dispensed.", "dim"] },
@@ -131,7 +131,7 @@
           }
         },
         {
-          "id": "lamp", "kind": "SENSE", "verbs": ["read"],
+          "id": "lamp", "layer": "hardware","function": "sense", "verbs": ["read"],
           "on": { "read": { "say": ["cat lamp", "LAMP: 26°C. the lid is warm. something has been sleeping on it."] } }
         }
       ]
@@ -149,7 +149,7 @@
       },
       "nouns": [
         {
-          "id": "soil", "kind": "SENSE", "verbs": ["read"],
+          "id": "soil", "layer": "hardware","function": "sense", "verbs": ["read"],
           "on": {
             "read": [
               { "if": "fern=dry", "say": ["cat soil", "MOISTURE 3%. WATERING SCHEDULE SUSPENDED: OWNER NOT VERIFIED."] },
@@ -158,7 +158,7 @@
           }
         },
         {
-          "id": "pump", "kind": "ACT", "verbs": ["water"],
+          "id": "pump", "layer": "hardware","function": "act", "verbs": ["water"],
           "on": {
             "water": [
               { "if": "fern=wet", "say": ["{via}use pump --water", "POT: moisture within tolerance. further water declined.", "dim"] },
@@ -181,7 +181,7 @@
       },
       "nouns": [
         {
-          "id": "tape", "kind": "STORE", "verbs": ["play"],
+          "id": "tape", "layer": "hardware","function": "act", "verbs": ["play"],
           "on": {
             "play": [
               { "if": "tape=0", "do": [{ "set": "tape", "to": 1 }], "say": "tape.1" },
@@ -207,22 +207,22 @@
       },
       "nouns": [
         {
-          "id": "moth", "kind": "STORE", "verbs": ["read"],
+          "id": "moth", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat moth", "moth · status: \"gone fishing (not fishing)\" · last seen 3 days ago · profile photo: a moth, wearing sunglasses, indoors."] } }
         },
         {
-          "id": "you", "kind": "STORE", "verbs": ["read"],
+          "id": "you", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat you", "you · status: \"pretending to be busy\" · account flagged: identity pending. your status was set by you, in a better week."] } }
         },
         {
-          "id": "fixer", "kind": "STORE", "verbs": ["read"],
+          "id": "fixer", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat fixer", "NO LOGS KEPT · status: \"serving noodles to the dead. the dead tip better.\""] } }
         },
         {
-          "id": "wall", "kind": "STORE", "verbs": ["read"],
+          "id": "wall", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat wall", "moth's wall: \"happy hatch day, moth!! 0412 forever\" · the fixer: \"your tab has chapters now.\" · REGISTRY-WD: \"just checking.\""] } }
         },
-        { "id": "home", "kind": "LINK", "link": {} }
+        { "id": "home", "layer": "hardware","function": "connect", "link": {} }
       ]
     },
     {
@@ -236,26 +236,26 @@
       },
       "nouns": [
         {
-          "id": "motd", "kind": "STORE", "verbs": ["read"],
+          "id": "motd", "layer": "data","function": "hold", "verbs": ["read"],
           "on": { "read": { "say": ["cat motd", "\"if you're not my friend, go away. if you are, you know where the key is.\""] } }
         },
         {
-          "id": "notes.txt", "kind": "STORE", "sector": "drawer", "verbs": ["read"],
+          "id": "notes.txt", "layer": "data","function": "hold", "sector": "drawer", "verbs": ["read"],
           "on": { "read": { "say": "notes.read" } }
         },
         {
-          "id": "photos", "kind": "STORE", "sector": "drawer", "verbs": ["read"],
+          "id": "photos", "layer": "data","function": "hold", "sector": "drawer", "verbs": ["read"],
           "on": { "read": { "do": [{ "give": "sprat" }], "say": "photos.read" } }
         },
         {
-          "id": "switch.so", "kind": "STORE", "sector": "drawer", "verbs": ["read", "install"],
+          "id": "switch.so", "layer": "data","function": "program", "sector": "drawer", "verbs": ["read", "install"],
           "on": {
             "read": { "say": ["cat switch.so", "[logic module] SWITCH. passes a signal while it is on, stops it while it is off. Moth's label: \"a door for signals.\""] },
             "install": { "do": [{ "give": "switch.so" }, { "goal": "switch" }] }
           }
         },
         {
-          "id": "journal.txt", "kind": "STORE", "sector": "journal", "verbs": ["read"],
+          "id": "journal.txt", "layer": "data","function": "hold", "sector": "journal", "verbs": ["read"],
           "on": { "read": { "do": [{ "give": "washer3" }, { "goal": "read" }], "say": "journal.read" } }
         }
       ],

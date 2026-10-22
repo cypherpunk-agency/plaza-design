@@ -52,7 +52,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/capsule/rules.ts",
+        "engine/gameplay/mechanisms/thermal.ts",
         "engine/controllers/capsule.ts",
         "scenes/capsule/gameplay.json"
       ]
@@ -61,10 +61,10 @@
       "scene": "downtown",
       "controller": "downtown",
       "inputs": [
-        "downtown.dlv.started",
         "downtown.dlv.scanned",
         "downtown.dlv.door",
-        "downtown.dlv.completed"
+        "downtown.dlv.through",
+        "downtown.dlv.back"
       ],
       "panels": [
         "cam3"
@@ -72,19 +72,11 @@
       "functions": {
         "effect:dlv.inward": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the van's mover path (devices.json dlv9.chassis); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "effect:dlv.outward": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
-        },
-        "read:dlvThrough": {
-          "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
-        },
-        "read:dlvInside": {
-          "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the van's mover path (devices.json dlv9.chassis); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "read:handle": {
           "classification": "canonical-read",
@@ -124,7 +116,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/downtown/rules.ts",
+        "engine/gameplay/mechanisms/vehicle-run.ts",
         "engine/controllers/motion.ts",
         "scenes/downtown/gameplay.json"
       ]
@@ -136,7 +128,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/library/index.ts"
+        "scenes/library/scene.json"
       ]
     },
     {
@@ -153,7 +145,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/yard/effects.ts",
+        "engine/gameplay/mechanisms/yard-crane.ts",
         "engine/controllers/yard.ts",
         "scenes/yard/gameplay.json"
       ]
@@ -165,7 +157,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/moth/index.ts"
+        "scenes/moth/scene.json"
       ]
     },
     {
@@ -175,7 +167,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/beach/index.ts"
+        "scenes/beach/scene.json"
       ]
     },
     {
@@ -185,7 +177,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/harbor/index.ts"
+        "scenes/harbor/scene.json"
       ]
     },
     {
@@ -204,19 +196,19 @@
       "functions": {
         "effect:sts2.lift": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the trolley's mover path (devices.json sts2.trolley); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "effect:port.return": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Starts the trolley's mover path (devices.json sts2.trolley); the Circuit moves it and shared source owns permissions, rewards and milestone outcomes."
         },
         "read:craneBusy": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Reads the trolley's mover (moving, path last run); shared source owns permissions, rewards and milestone outcomes."
         },
         "read:reeferTrajectory": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "Reads the trolley's mover (moving, path last run); shared source owns permissions, rewards and milestone outcomes."
         },
         "read:portFrozen": {
           "classification": "simulation",
@@ -224,11 +216,7 @@
         },
         "read:craneReturning": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
-        },
-        "tick": {
-          "classification": "presentation",
-          "reason": "Expires only the transient cold scan highlight after its current 1200ms lifetime; no puzzle progress is evaluated here."
+          "reason": "Reads the trolley's mover (moving, path last run); shared source owns permissions, rewards and milestone outcomes."
         },
         "check": {
           "classification": "validation",
@@ -236,7 +224,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/stacks/rules.ts",
+        "engine/gameplay/mechanisms/gantry-lift.ts",
         "engine/controllers/motion.ts",
         "scenes/stacks/gameplay.json"
       ]
@@ -248,7 +236,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/warehouse/index.ts"
+        "scenes/warehouse/scene.json"
       ]
     },
     {
@@ -258,7 +246,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/market/index.ts"
+        "scenes/market/scene.json"
       ]
     },
     {
@@ -268,7 +256,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/laundromat/index.ts"
+        "scenes/laundromat/scene.json"
       ]
     },
     {
@@ -278,7 +266,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/shop/index.ts"
+        "scenes/shop/scene.json"
       ]
     },
     {
@@ -288,7 +276,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/mall/index.ts"
+        "scenes/mall/scene.json"
       ]
     },
     {
@@ -298,7 +286,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/metro/index.ts"
+        "scenes/metro/scene.json"
       ]
     },
     {
@@ -308,7 +296,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/galleriaStation/index.ts"
+        "scenes/galleriaStation/scene.json"
       ]
     },
     {
@@ -318,7 +306,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/harborStation/index.ts"
+        "scenes/harborStation/scene.json"
       ]
     },
     {
@@ -401,7 +389,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/train/rules.ts",
+        "engine/gameplay/mechanisms/line-ride.ts",
         "world/transport/line.ts",
         "scenes/train/gameplay.json"
       ]
@@ -418,7 +406,7 @@
         }
       },
       "sourcePaths": [
-        "scenes/sandbox/rules.ts",
+        "engine/gameplay/mechanisms/sandbox-bay.ts",
         "engine/controllers/sandbox.ts",
         "scenes/sandbox/gameplay.json"
       ]
@@ -430,7 +418,7 @@
       "panels": [],
       "functions": {},
       "sourcePaths": [
-        "scenes/harbor-shift/index.ts"
+        "scenes/harbor-shift/scene.json"
       ]
     }
   ]

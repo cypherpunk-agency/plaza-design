@@ -253,7 +253,7 @@ Existing implementations remain available as material; the proposed progression 
 | P07–10 | Yard, Moth and rooftop content provide local depth; timers, trace, switches and watchdogs arrive too tightly | Keep simpler local interactions; move or simplify advanced versions for later acts |
 | P12 | DLV-9 can remain a relationship and local access challenge | Reconsider market-opening reward and multi-system difficulty |
 | P13–15 | Laundromat, train and stacks are useful later combinations | Defer, simplify or select for a finale; do not relocate every advanced puzzle into Downtown |
-| [Mall](../../scenes/mall/index.ts), metro/taxi and quick travel | Existing routes expose Galleria and market during Act I | Make every travel mode obey the revised progression consistently |
+| [Mall](../../scenes/mall/scene.json), metro/taxi and quick travel | Existing routes expose Galleria and market during Act I | Make every travel mode obey the revised progression consistently |
 | [NET.md](../reference/NET.md), [logic data](../../data/logic.json) | Known connections before scan are useful; TIMER currently starts owned | Stage discovery, map and logic tools independently; remote embodiment is new design |
 | [TIME.md](../reference/TIME.md) | Scripted opening time and later time-window teaching fit | Extend authored night shift; separate narrative time, city time and device timing |
 | [ART-GUIDE.md](../reference/ART-GUIDE.md), [SCENES.md](./SCENE-IDEAS.md) | Shared scenery, readable consequences and populated scenes support the approach | Establish ordinary human, robot and remote-presence visuals with clear fictional causes |

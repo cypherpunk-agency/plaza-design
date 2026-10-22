@@ -1,4 +1,4 @@
-import { SHIFT_PROTOTYPE } from '../runtime/mode';
+import { can } from '../runtime/play-profile';
 
 /** Sends a key to the game, the same way a keyboard would. */
 const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent(new KeyboardEvent(type, { key }));
@@ -19,7 +19,11 @@ export function touchControls(host: HTMLElement) {
     '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Deck" class="small walk-only">DECK</button>' +
     '<button data-key="h" aria-label="Leave hack vision" class="vis-only">EXIT</button><button data-key="b" aria-label="The board" class="vis-only">BOARD</button>' +
     '<button data-key="l" aria-label="Logic parts" class="vis-only logic" data-logic>LOGIC</button><button data-key="n" aria-label="The net map" class="vis-only net">NET</button><button data-key="u" aria-label="Unfold every circuit" class="vis-only unfold">UNFOLD</button></div>';
-  if (SHIFT_PROTOTYPE) bar.querySelectorAll('[data-key="h"], [data-key=" "], [data-key="Enter"], .vis-only').forEach((el) => el.remove());
+  // a button for an ability the play profile lacks is not drawn
+  const without = (selector: string) => bar.querySelectorAll(selector).forEach((el) => el.remove());
+  if (!can('hack')) without('[data-key="h"], .vis-only');
+  if (!can('jump')) without('[data-key=" "]');
+  if (!can('deck')) without('[data-key="Enter"]');
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;
     const down = (e: Event) => { e.preventDefault(); b.classList.add('down'); sendKey(key, 'keydown'); };

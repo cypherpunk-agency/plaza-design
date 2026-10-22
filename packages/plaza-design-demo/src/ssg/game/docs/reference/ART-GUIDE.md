@@ -329,6 +329,18 @@ lists. Shared drawing bodies live in `art/buildings/parts.ts`: Downtown's window
 Market tenement's windows, balconies and shutter, the yard's fire escape, AC unit and wall textures.
 Those scenes call the same functions, so a change there reaches them too; check them when you edit a part.
 
+**Levels: floors, stairs, lifts and buildings you step into (Tommi, 2026-10-20; experiment).** A scene
+can have more than one walkable line. The level kit (`art/levels/elements.ts`) places them: a **floor**
+is a walkable line at a height (outdoors, or a building's, with the name its lift shows); **stairs** and
+an **escalator** join the floor at their foot to the floor at their top; a **lift** stops at every floor
+its shaft crosses; a **door** joins the street to a building's floor at the same height (↑ in, ↓ out).
+A building's facade is attached to its **shell** handle and its rooms to its **interior** handle: while
+the player is on one of its floors the shell fades to a ghost and the interior shows, cut open. The
+interior kit (`art/levels/interior.ts`) draws the cut-open storeys: rooms by kind (lobby, office,
+corridor, basement, platform), slabs between them, section walls and the ground in section. The camera
+follows the floor's height. Keep a storey at least 62 units (the player is 42) and land every flight and
+lift stop exactly on a floor. The Tower lab scene (`?play=tower`) shows all of it.
+
 ## 13. Before you call a scene done
 
 - [ ] Squint, silhouette and phone tests pass.

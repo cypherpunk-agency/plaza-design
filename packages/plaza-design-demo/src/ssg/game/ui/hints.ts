@@ -7,8 +7,8 @@ import {CommunicationLane,type MessageTone} from './communication';
  * control you have not used yet) stays until its sender calls `done`. The deck's JOBS tab keeps the
  * latest one, so a missed hint is not lost.
  *
- * Timing is wall time while the game draws: the lane is only drawn in play, so the deck, the map and
- * cutscenes hold the queue.
+ * Timing is the communication lane's readable time (`notices.time`, passed to `step` by the game loop). It only moves
+ * while the lane is readable, so the deck, the map and cutscenes hold the queue. No wall clock.
  */
 
 interface Hint { id: string; text: string; sticky: boolean }
@@ -22,7 +22,7 @@ export class Hints {
   private cur: (Hint & { from: number; until: number }) | null = null;
   /** The last timed hint shown this session (JOBS). */
   latest: string | null = null;
-  /** Wall time of the last frame the lane was drawn: a gap (deck, map, cutscene) is not counted. */
+  /** Readable time of the last frame the lane was stepped. */
   private lastStep:number|null = null;
 
   constructor(private seen: () => string[]) {}
@@ -70,14 +70,12 @@ export class Hints {
   /** Has this hint been shown (a timed one) or done (a sticky one)? */
   has(id: string) { return this.seen().includes(id); }
 
-  /** The hint to draw now, with its opacity; null for none. Call once per drawn frame. */
-  step(now = performance.now(), optionalBusy=false): { text: string; alpha: number; tone?:MessageTone } | null {
+  /** The hint to draw now, with its opacity; null for none. Call once per drawn frame with the lane's readable time (`notices.time`). */
+  step(now: number, optionalBusy=false): { text: string; alpha: number; tone?:MessageTone } | null {
     const notice=this.notices.step(optionalBusy);
     if(notice||optionalBusy){if(this.cur&&this.lastStep!==null){const gap=now-this.lastStep;this.cur.from+=gap;this.cur.until+=gap;}this.lastStep=now;return notice;}
-    // time spent not drawing (the deck open, a cutscene) moves the current hint's clock along with it
-    const gap = this.lastStep!==null ? now - this.lastStep : 0;
+    // readable time already stands still while the deck is open or a cutscene plays
     this.lastStep = now;
-    if (this.cur && gap > 250) { this.cur.from += gap; this.cur.until += gap; }
     if (this.cur && !this.cur.sticky && now >= this.cur.until) this.cur = null;
     if(this.cur?.id==='ctl.noun'||this.cur?.id==='ctl.wire'){this.queue.unshift(this.cur);this.cur=null;}
     const next=this.queue.findIndex(h=>h.id!=='ctl.noun'&&h.id!=='ctl.wire');

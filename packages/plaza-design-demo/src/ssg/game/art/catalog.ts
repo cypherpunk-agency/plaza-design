@@ -75,7 +75,7 @@ export const SETS: SetEntry[] = [
   {
     id: 'galleria-dome', file: 'art/architecture/galleria-dome.ts',
     what: 'The Galleria\'s glass dome on its base, the mall\'s landmark on the skyline.',
-    users: ['scenes/train/index.ts: over Galleria on the far skyline from the car', 'story/title/coast.ts: on the Galleria\'s plinth, over the plaza'],
+    users: ['scenes/train (lineRide mechanism, train binding provider): over Galleria on the far skyline from the car', 'story/title/coast.ts: on the Galleria\'s plinth, over the plaza'],
   },
   {
     id: 'downtown-towers', file: 'art/architecture/downtown-towers.ts',
@@ -103,9 +103,9 @@ export const SETS: SetEntry[] = [
       'runtime/game.ts drawWorld: every scene with `ambient.sky` (downtown, harbor, market, stacks, warehouse, yard, metro, harborStation), horizon from `SceneDef.horizon`',
       'scenes/beach/scene.ts: its own sky call (horizon over the sea), seaCols and sunPath on the water',
       'scenes/harbor/index.ts, scenes/stacks/scene.ts, scenes/stations.ts (harbor): seaCols and sunPath on the water',
-      'scenes/train/index.ts: the car\'s windows and the sky over its roof (the train home rides into the dawn)',
+      'scenes/train (lineRide mechanism, train binding provider): the car\'s windows and the sky over its roof (the train home rides into the dawn)',
       'scenes/capsule/scene.ts: the window (drawPane), the shaft when the blinds are up (windowShaft), the light leaking through the slats',
-      'scenes/moth/scene.ts, scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the window\'s sky and the sun\'s shaft; scenes/mall/index.ts: the skylight',
+      'scenes/moth/scene.ts, scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the window\'s sky and the sun\'s shaft; the mall folder scene: the skylight',
       'runtime/game.ts drawWindow: dark panes reflect the sky by day (glass)',
     ],
   },
@@ -115,8 +115,8 @@ export const SETS: SetEntry[] = [
     users: [
       'runtime/game.ts drawWorld: every scene (grade outdoors; lights, casters and shade where declared); the player\'s and the street NPCs\' shadows',
       'runtime/characters.ts drawCharacter: every person, robot and animal\'s shadow',
-      'scenes/train/index.ts, scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the grade over what their windows show',
-      'declared in: scenes/downtown/index.ts, scenes/harbor/index.ts, scenes/beach/index.ts, scenes/market/index.ts, scenes/warehouse/index.ts, scenes/metro/index.ts',
+      'scenes/train (train binding provider), scenes/laundromat/scene.ts, scenes/library/scene.ts, scenes/shop/index.ts: the grade over what their windows show',
+      'declared in: scenes/downtown/scene.json (environment), scenes/harbor/index.ts, scenes/beach/index.ts, scenes/market/index.ts, scenes/warehouse/scene.json (stage), scenes/metro/scene.json (stage)',
     ],
   },
   {

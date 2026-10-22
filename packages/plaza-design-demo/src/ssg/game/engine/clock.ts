@@ -1,7 +1,7 @@
 /**
  * CLOCK nouns: event sources on a rhythm. Every `clock.every` ms a clock
  * raises its next event (its `events` in turn, so `["night", "day"]`
- * alternate and a single `tick` repeats). The engine gives it the verbs
+ * alternate and a single `tick` repeats; with `once` it raises one and stops, a timer). The engine gives it the verbs
  * `start` and `stop`, so a cable can stop the schedule; cutting its cables
  * is the other way to make it harmless.
  *
@@ -30,7 +30,7 @@ export class Clocks {
   /** Add the clocks of a device that is here now (a scene device at the start, a node when it connects). */
   add(dev: string, nouns: NounData[]) {
     for (const n of nouns) {
-      if (n.kind !== 'CLOCK' || !n.clock) continue;
+      if (!n.clock) continue;
       const key = dev + '.' + n.id;
       if (this.clocks.has(key)) continue;
       this.clocks.set(key, { key, dev, noun: n.id, data: n.clock, events: n.events ?? [], next: 0, last: this.now(), on: n.clock.start !== false, first: true });
@@ -50,6 +50,8 @@ export class Clocks {
       const late = t - c.last - this.beat(c);
       out.push({ dev: c.dev, noun: c.noun, event: c.events[c.next % c.events.length], set: c.data.set });
       c.next = (c.next + 1) % c.events.length; c.first = false;
+      // a one-shot clock stops after its beat; `start` sets it going from the top
+      if (c.data.once) { c.on = false; c.first = true; continue; }
       // keep the rhythm unless it fell a whole beat behind (a tab in the background)
       c.last = late < c.data.every ? t - late : t;
     }
@@ -61,7 +63,7 @@ export class Clocks {
     const c = this.clocks.get(key);
     if (!c || c.on === on) return false;
     c.on = on;
-    if (on) { c.last = this.now(); c.first = false; }
+    if (on) { c.last = this.now(); c.first = !!c.data.once; }
     return true;
   }
 

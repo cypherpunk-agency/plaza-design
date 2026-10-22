@@ -204,6 +204,15 @@
         "instance": "door",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
     }
   },
   "actors": [
@@ -354,6 +363,23 @@
       "outside": [
         "outside-0",
         "outside-1"
+      ]
+    }
+  },
+  "stage": {
+    "actors": {
+      "clip": [
+        {
+          "actors": "outside",
+          "to": "window"
+        }
+      ],
+      "cull": [
+        {
+          "actor": "keeper",
+          "role": "counter",
+          "margin": 60
+        }
       ]
     }
   }

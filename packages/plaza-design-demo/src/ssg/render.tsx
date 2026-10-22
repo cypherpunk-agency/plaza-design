@@ -389,6 +389,10 @@ export const demoStyles = `
     }
 
     .sch-label small { font-size: 8px; letter-spacing: 0.1em; color: var(--color-text-faint); }
+    /* a part's function, tinted by its layer: hardware amber, software magenta (like crafted parts), data cyan */
+    .sch-noun.layer-hardware .sch-label small { color: rgba(255, 170, 90, 0.8); }
+    .sch-noun.layer-software .sch-label small { color: rgba(255, 61, 242, 0.8); }
+    .sch-noun.layer-data .sch-label small { color: rgba(110, 220, 220, 0.8); }
     .sch-label:hover,
     .sch-noun.open .sch-label { border-color: var(--color-accent-400); color: var(--color-accent-400); box-shadow: 0 0 10px rgba(0, 255, 255, 0.25); }
     .sch-noun.target .sch-label { border-style: dashed; border-color: rgb(255, 61, 242); }

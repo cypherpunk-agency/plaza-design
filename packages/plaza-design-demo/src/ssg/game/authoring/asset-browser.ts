@@ -52,7 +52,8 @@ export function assetInventory(registry: ArtRegistry, documents: EditorDocument[
   return registry.catalog().map<AssetEntry>(element => {
     const family = layerRole(element.type, element.label, element.category), used = usages.get(element.type) ?? [], origin = originOf(element.type, family, used);
     const structure: AssetStructure = element.role === 'group' ? 'composition' : 'object';
-    const usability: AssetUsability = !element.parts.length || element.role === 'player' || element.role === 'group' || helperArtwork(element.type) ? 'helper'
+    // logic pieces a kit offers for placing (the level kit's floors, doors, building handles) are reusable too
+    const usability: AssetUsability = !element.parts.length && element.libraryUse !== 'reusable' || element.role === 'player' || element.role === 'group' || helperArtwork(element.type) ? 'helper'
       : element.libraryUse === 'reusable' ? 'reusable' : 'context';
     return { id: element.type, label: element.label, family, origin, structure, usability,
     tags: [...new Set([ORIGINS.find(o => o.id === origin)!.badge.toLowerCase(), element.category, ...element.type.split('.'), ...element.parts,

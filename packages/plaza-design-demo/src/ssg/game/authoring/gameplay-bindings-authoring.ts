@@ -1,4 +1,5 @@
 import {renderNativeCaseSay} from './native-case-say-authoring';
+import {nativeBindable} from '../data/types';
 import {renderGameplayQueriesAuthoring} from './gameplay-queries-authoring';
 import {renderStateDeclarationsAuthoring} from './state-declarations-authoring';
 import {renderNativeWorkflowAuthoring} from './native-workflows-authoring';
@@ -37,7 +38,7 @@ export function renderGameplayBindingsAuthoring(parent:HTMLElement,doc:GameplayD
  form.button(ids,'Add shared command',()=>edit('Add shared command',g=>{const id=draft.command??'';if(g.commands[id])throw new Error('Command already exists');g.commands[id]={sources:[(draft.source??'interaction')as Source],actions:[]};}));
  for(const[id,c]of Object.entries(doc.commands)){const row=section(ids,'Command permissions '+id,true);for(const source of ['interaction','conversation','signal','system']as const)form.check(row,'Command '+id+' allows '+source,c.sources.includes(source),on=>edit('Edit command permission',g=>{const s=g.commands[id].sources;g.commands[id].sources=on?[...s,source]:s.filter(v=>v!==source);}));form.button(row,'Remove command '+id,()=>edit('Remove shared command',g=>{delete g.commands[id];}));}
  if(!data)return;
- const box=section(parent,'Native device bindings'),vocabulary=nativeVocabulary(data),events=vocabulary.flatMap(n=>n.events.map(e=>n.key+':'+e)),targets=vocabulary.filter(n=>n.verbs.length),routeNouns=[...data.devices,...data.nodes??[]].flatMap(d=>d.nouns.filter(n=>['ACT','SENSE','STORE'].includes(n.kind)&&n.verbs?.length).map(n=>({device:d.id,noun:n.id,key:d.id+'.'+n.id,verbs:n.verbs!})));
+ const box=section(parent,'Native device bindings'),vocabulary=nativeVocabulary(data),events=vocabulary.flatMap(n=>n.events.map(e=>n.key+':'+e)),targets=vocabulary.filter(n=>n.verbs.length),routeNouns=[...data.devices,...data.nodes??[]].flatMap(d=>d.nouns.filter(n=>nativeBindable(n)&&n.verbs?.length).map(n=>({device:d.id,noun:n.id,key:d.id+'.'+n.id,verbs:n.verbs!})));
  if(!doc.native){form.button(box,'Enable shared device bridge',()=>edit('Enable shared device bridge',g=>{native(g);}));return;}
  for(const kind of ['reads','events','goals']as const){const mapping=section(box,'Native '+kind,true),entries=doc.native[kind]??{},allowed=kind==='reads'?doc.flags:doc.events,values=kind==='reads'?Array.from(new Set([...Object.keys(data.state),...Object.keys(data.observations?.aliases??{}),...ui.derived??[],...Object.values(doc.native.reads??{})])):kind==='events'?events:data.goals.map(g=>g.id);
   for(const[id,value]of Object.entries(entries)){form.select(mapping,'Native '+kind+' '+id,values,value,next=>edit('Edit native '+kind,g=>{native(g)[kind]![id]=next;}));form.button(mapping,'Remove native '+kind+' '+id,()=>edit('Remove native '+kind,g=>{delete native(g)[kind]![id];}));}

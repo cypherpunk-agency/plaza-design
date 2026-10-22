@@ -90,6 +90,11 @@
     "clock.start": ["{via}use {noun} --start", "{noun}: ticking again.", "dim"],
     "clock.stop": ["{via}use {noun} --stop", "{noun}: stopped. the schedule waits.", "dim"],
     "clock.already": ["{via}use {noun} --{verb}", "{noun}: it already is.", "dim"],
+    "mover.go": ["{via}use {noun} --{verb}", "{noun}: on its way to {stop}.", "dim"],
+    "mover.already": ["{via}use {noun} --{verb}", "{noun}: already there, or on its way.", "dim"],
+    "zone.arm": ["{via}use {noun} --arm", "{noun}: watching.", "dim"],
+    "zone.disarm": ["{via}use {noun} --disarm", "{noun}: not watching.", "dim"],
+    "zone.already": ["{via}use {noun} --{verb}", "{noun}: it already is.", "dim"],
 
     "toy.verb": "probe",
     "toy.open": ["probe {noun}", "{noun}: a {toy} lock. hands, not passwords.", "dim"],

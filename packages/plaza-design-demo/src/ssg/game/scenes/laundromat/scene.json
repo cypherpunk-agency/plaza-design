@@ -253,7 +253,15 @@
     }
   ],
   "manifest": {
-    "devices": {"clock": "device-clock", "washer1": "device-washer1", "washer2": "device-washer2", "washer3": "device-washer3", "washer4": "device-washer4", "breaker": "device-breaker", "suds": "device-suds"},
+    "devices": {
+      "clock": "device-clock",
+      "washer1": "device-washer1",
+      "washer2": "device-washer2",
+      "washer3": "device-washer3",
+      "washer4": "device-washer4",
+      "breaker": "device-breaker",
+      "suds": "device-suds"
+    },
     "version": 1,
     "width": {
       "instance": "room",
@@ -283,6 +291,18 @@
         "instance": "exit-market",
         "promptH": 82
       }
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false
+    },
+    "artwork": {
+      "window": "window"
     }
   },
   "environment": {},
@@ -304,6 +324,67 @@
           "companion.pet.idle.2",
           "companion.pet.idle.3"
         ]
+      }
+    }
+  },
+  "stage": {
+    "facing": {
+      "role": "window",
+      "fallback": 180
+    },
+    "values": {
+      "hover": {
+        "live": {
+          "engine": "hover"
+        }
+      },
+      "tripped": {
+        "picture": "tripped"
+      },
+      "clear": {
+        "picture": "clear"
+      },
+      "nextRunning": {
+        "picture": "nextRunning"
+      },
+      "nextMs": {
+        "picture": "nextMs"
+      },
+      "door3": {
+        "picture": "door3"
+      },
+      "w1": {
+        "picture": "w1"
+      },
+      "w2": {
+        "picture": "w2"
+      },
+      "w3": {
+        "picture": "w3"
+      },
+      "w4": {
+        "picture": "w4"
+      },
+      "p1": {
+        "picture": "p1"
+      },
+      "p2": {
+        "picture": "p2"
+      },
+      "p3": {
+        "picture": "p3"
+      },
+      "p4": {
+        "picture": "p4"
+      },
+      "breakerX": {
+        "picture": "breakerX"
+      },
+      "clip": {
+        "picture": "clip"
+      },
+      "washerXs": {
+        "picture": "washerXs"
       }
     }
   }

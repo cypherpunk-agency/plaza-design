@@ -59,6 +59,6 @@ export const stationElements:Element[]=[
 
 for(const element of stationElements)element.bindingChoices=composition=>{
  if(!['metro','galleriaStation','harborStation'].includes(composition.scene))return{};
- const sources:Record<string,string[]>={train:['transit.train'],departure:['transit.departure'],roof:[composition.scene==='metro'?'metro.roof':'architecture.roof'],...(composition.scene==='harborStation'?{closed:['transit.closed']}:{})};
+ const sources:Record<string,string[]>={train:['station.train'],departure:['station.departure'],roof:['station.roof'],...(composition.scene==='harborStation'?{closed:['station.closed']}:{})};
  return Object.fromEntries(Object.keys(element.visualFields??{}).filter(key=>sources[key]).map(key=>[key,sources[key]]));
 };
