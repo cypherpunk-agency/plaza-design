@@ -43,7 +43,7 @@ different thing.)
    overlays such as fades, cards and letterbox, time of day, pixel scale) with the cutscenes and the taxi flight
    moved onto it; (c) the title glide as a timeline camera over real zones (beach, inlet, Downtown, Galleria,
    Harbor Station; its hand-drawn panorama becomes registered art pieces placed in those zones), ending inside
-   the real `harbor-station` zone so the prologue starts with no cut; (d) the harbor dockworker player drawn by
+   the real `harbor-station` zone so the prologue starts with no cut; (d) (done: the profile's `player.character` is a kit person, runtime/avatars.ts) the harbor dockworker player drawn by
    the shared character kit. See [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) Principles and §7 step R.
 1. **Seamless world, steps 1–9** (order and detail in
    [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) §7): lab pilot of zones and seams with one

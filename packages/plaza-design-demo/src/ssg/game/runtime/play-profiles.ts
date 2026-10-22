@@ -5,14 +5,22 @@
  * chosen from the URL or the editor's Play frame (`select`); the story still decides when an ability the profile
  * grants is locked (the opening's hack lock). Edited in the editor under World › Play profiles.
  */
+import type { Look } from './characters';
+import { BODY_KINDS, EXTRA_KINDS, FACIAL_KINDS, GARB_KINDS, HAIR_KINDS } from '../art/characters/parts';
+import { ARCHETYPE_IDS } from '../art/characters/archetypes';
 export const ABILITIES = ['map', 'mapKey', 'deck', 'jump', 'hack', 'sudo', 'review'] as const;
 export type Ability = (typeof ABILITIES)[number];
 export const ABILITY_LABELS: Record<Ability, string> = {
   map: 'City map (menu entry and map screen)', mapKey: 'Map shortcut keys (Tab, M)', deck: 'Deck (Enter, the menu deck, terminal)',
   jump: 'Jump', hack: 'Hack vision, board and devices\' schematics', sudo: 'Sudo mode when ?sudo is in the URL (levels, time control)', review: 'Review navigator and bookmarks',
 };
-export const AVATARS = ['hacker', 'dockworker'] as const;
+export const AVATARS = ['hacker', 'person'] as const;
 export type AvatarId = (typeof AVATARS)[number];
+/** The shared character kit's person the player is drawn as (avatar 'person'): a seed and a look (art/characters/parts.ts, archetypes.ts). */
+export interface PlayerCharacter { seed: number; look: PlayerLook }
+export type PlayerLook = Pick<Look, 'archetype' | 'body' | 'hair' | 'garb' | 'facial' | 'extras' | 'skin' | 'hairCol' | 'top' | 'bottom' | 'acc'>;
+const LOOK_PARTS: Record<string, readonly string[]> = { body: BODY_KINDS, hair: HAIR_KINDS, garb: GARB_KINDS, facial: FACIAL_KINDS, archetype: ARCHETYPE_IDS };
+const LOOK_COLOURS = ['skin', 'hairCol', 'top', 'bottom', 'acc'] as const;
 export const ROUTES = ['world', 'start', 'content'] as const;
 export const WORLDS = ['campaign', 'testDistrict'] as const;
 export const GUIDANCE_STYLES = ['none', 'shift'] as const;
@@ -40,7 +48,7 @@ export interface PlayProfile {
   world: (typeof WORLDS)[number];
   namespace: { save: string; sudoSave?: string; resume: string; slots: string; sudoSlots?: string };
   abilities: Record<Ability, boolean>;
-  player: { avatar: AvatarId; /** A fixed display name for the HUD and bubbles; absent: the story's name, then the handle. */ name?: string };
+  player: { avatar: AvatarId; /** The person drawn by the character kit; required for avatar 'person', absent for 'hacker'. */ character?: PlayerCharacter; /** A fixed display name for the HUD and bubbles; absent: the story's name, then the handle. */ name?: string };
   guidance: { style: (typeof GUIDANCE_STYLES)[number]; /** The controls are taught once in the hint lane. */ controlHints: boolean };
   /** opening: the opening story pins the clock; scene: the scene's own story day and minute do. */
   clock: { rule: (typeof CLOCK_RULES)[number] };
@@ -64,6 +72,17 @@ const bool = (v: unknown, what: string) => { if (typeof v !== 'boolean') fail(wh
 const oneOf = <T extends string>(v: unknown, list: readonly T[], what: string) => { if (!list.includes(v as T)) fail(`${what} must be one of ${list.join(', ')}`); return v as T; };
 const text = (v: unknown, what: string, max = 80) => { if (typeof v !== 'string' || !v.trim() || v.length > max) fail(`${what} must be text (1 to ${max} characters)`); return v as string; };
 const list = (v: unknown, what: string, max: number) => { if (!Array.isArray(v) || v.length > max) fail(`${what} must be a list (${max} at most)`); return v as unknown[]; };
+
+function characterOf(v: unknown, what: string): PlayerCharacter {
+  const c = plain(v, what); exact(c, ['seed', 'look'], ['seed', 'look'], what);
+  if (!Number.isInteger(c.seed) || (c.seed as number) < 0 || (c.seed as number) > 1000000) fail(what + ' seed must be a whole number from 0 to 1000000');
+  const l = plain(c.look, what + ' look'); exact(l, [...Object.keys(LOOK_PARTS), 'extras', ...LOOK_COLOURS], [], what + ' look');
+  const look: Record<string, unknown> = {};
+  for (const [k, kinds] of Object.entries(LOOK_PARTS)) if (l[k] !== undefined) look[k] = oneOf(l[k], kinds, `${what} ${k}`);
+  if (l.extras !== undefined) look.extras = list(l.extras, what + ' extras', 8).map(e => oneOf(e, EXTRA_KINDS, what + ' extra'));
+  for (const k of LOOK_COLOURS) if (l[k] !== undefined) { if (typeof l[k] !== 'string' || !/^#[0-9a-f]{6}$/i.test(l[k] as string)) fail(`${what} ${k} must be a #rrggbb colour`); look[k] = l[k]; }
+  return { seed: c.seed as number, look: look as PlayerLook };
+}
 
 export interface PlayProfileContext {
   /** Scene ids the profile may name; absent: not checked here (the editor checks them against the pending world). */
@@ -132,8 +151,10 @@ export function validatePlayProfiles(value: unknown, context: PlayProfileContext
     for (const prefix of [out.namespace.slots, out.namespace.sudoSlots]) if (prefix !== undefined) own('slots:' + prefix, at + ' slots');
     const ab = plain(p.abilities, at + ' abilities'); exact(ab, [...ABILITIES], [...ABILITIES], at + ' abilities');
     out.abilities = Object.fromEntries(ABILITIES.map(a => [a, bool(ab[a], `${at} ${a}`)])) as Record<Ability, boolean>;
-    const pl = plain(p.player, at + ' player'); exact(pl, ['avatar', 'name'], ['avatar'], at + ' player');
+    const pl = plain(p.player, at + ' player'); exact(pl, ['avatar', 'character', 'name'], ['avatar'], at + ' player');
     out.player = { avatar: oneOf(pl.avatar, AVATARS, at + ' avatar') };
+    if ((out.player.avatar === 'person') !== (pl.character !== undefined)) fail(`${at}: a character goes with the person avatar only, and the person avatar needs one`);
+    if (pl.character !== undefined) out.player.character = characterOf(pl.character, at + ' player character');
     if (pl.name !== undefined) out.player.name = text(pl.name, at + ' player name', 24);
     const g = plain(p.guidance, at + ' guidance'); exact(g, ['style', 'controlHints'], ['style', 'controlHints'], at + ' guidance');
     out.guidance = { style: oneOf(g.style, GUIDANCE_STYLES, at + ' guidance style'), controlHints: bool(g.controlHints, at + ' control hints') };

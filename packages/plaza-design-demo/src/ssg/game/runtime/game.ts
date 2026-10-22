@@ -1457,7 +1457,7 @@ export class Game {
     const open = this.zh.viewing;
     const jack = open ? this.zh.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
-    AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null });
+    AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, player: playProfile().player, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null });
   }
 
   /**

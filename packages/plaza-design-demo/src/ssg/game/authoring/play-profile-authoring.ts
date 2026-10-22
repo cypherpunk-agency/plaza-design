@@ -47,7 +47,7 @@ export function mountPlayProfileAuthoring(host: HTMLElement, context: WorkbenchC
     for (const a of ABILITIES) form.check(abilities, 'Ability ' + ABILITY_LABELS[a], p.abilities[a], on => edit('Edit profile ability', p => { p.abilities[a] = on; }));
 
     const player = form.section(host, 'Player');
-    form.select(player, 'Player body', AVATARS, p.player.avatar, avatar => edit('Edit profile player body', p => { p.player.avatar = avatar as PlayProfile['player']['avatar']; }));
+    form.select(player, 'Player body', AVATARS, p.player.avatar, avatar => edit('Edit profile player body', p => { p.player.avatar = avatar as PlayProfile['player']['avatar']; if (avatar === 'person') p.player.character ??= { seed: 7303, look: { garb: 'hivis', hair: 'hardhat' } }; else delete p.player.character; }));
     form.text(player, 'Fixed player name (empty: story name, then handle)', p.player.name ?? '', name => edit('Edit profile player name', p => { if (name) p.player.name = name; else delete p.player.name; }));
 
     const feel = form.section(host, 'Guidance, clock and look');

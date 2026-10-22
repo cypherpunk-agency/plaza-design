@@ -6,7 +6,8 @@ import {preparedCharacterElement} from '../art/characters/prepared';
 import {drawRider,type RiderKind} from '../art/characters/riders';
 import {drawPixel,type PixelAppearance,type PixelPose} from '../art/characters/pixel';
 import {drawPlayer} from '../art/characters/player';
-import {drawDockworker} from '../art/characters/dockworker';
+import {playerCharacter} from '../runtime/avatars';
+import {SHIPPED_PROFILES} from '../runtime/play-profile';
 import {SPR} from '../art/core/sprites';
 import {frameView,placed,type View} from '../art/core/view';
 import {DowntownArtwork} from '../art/assemblies/downtown';
@@ -70,7 +71,7 @@ export function createCharacterWorkbenchSession(){
   if(config.action==='follow')p.follow={seed:18,x:start,range:[start,end],act:'walk',speed:.32};
   if(config.seated&&config.family==='human')p.seated=true;
   if(config.seat&&config.family==='human')p.seat=config.seat;
-  if(config.family==='dockworker')p={seed:7303,x:config.action==='walk'?start:220,act:config.action as Act,facing:config.facing,look:{body:'avg',garb:'hivis',hair:'short',top:'#b77a29',bottom:'#303746'},...(config.action==='walk'?{range:[start,end] as [number,number],...(config.inPlace?{speed:.004}:{})}:{})};
+  if(config.family==='dockworker')p={...playerCharacter(SHIPPED_PROFILES.profiles.find(q=>q.id==='harborShift')!.player,config.variant==='empty'?null:config.variant as 'parcel'|'case'),x:config.action==='walk'?start:220,act:config.action as Act,facing:config.facing,...(config.action==='walk'?{range:[start,end] as [number,number],...(config.inPlace?{speed:.004}:{})}:{})};
   if(actors.size>=128)actors.clear();actors.set(key,p);return p;
  }
  return{
@@ -86,15 +87,15 @@ export function createCharacterWorkbenchSession(){
 }
 /** Exported for bounded browser comparison against direct native calls. No canvas clearing/UI here. */
 export function drawCharacterWorkbenchSnapshot(ctx:CanvasRenderingContext2D,view:View,snapshot:CharacterWorkbenchSnapshot):void{
- const {config:c,time}=snapshot,t=time*60;
- if(snapshot.pose&&c.family!=='dockworker'){
+ const {time}=snapshot,t=time*60;
+ if(snapshot.pose){
   preparedCharacterElement.draw(ctx,view,{actor:'workbench'},{pose:snapshot.pose as never,clip:null},'backdrop',{x:0,h:0,scale:1,facing:1,parallax:1});return;
  }
  drawSpecialCharacter(ctx,view,snapshot,t);
 }
 /** Reference path invokes the existing native API directly; it does not use the composition element. */
 export function drawNativeCharacterReference(ctx:CanvasRenderingContext2D,view:View,snapshot:CharacterWorkbenchSnapshot):void{
- if(snapshot.pose&&snapshot.config.family!=='dockworker'){const p=snapshot.pose;if(p.visible)drawCharacterFrame(ctx,view,p.character,p.ready,p.pixelSize,p.frame,p.height);return;}
+ if(snapshot.pose){const p=snapshot.pose;if(p.visible)drawCharacterFrame(ctx,view,p.character,p.ready,p.pixelSize,p.frame,p.height);return;}
  drawSpecialCharacter(ctx,view,snapshot,snapshot.time*60);
 }
 function drawSpecialCharacter(ctx:CanvasRenderingContext2D,v:View,s:CharacterWorkbenchSnapshot,t:number){
@@ -105,7 +106,6 @@ function drawSpecialCharacter(ctx:CanvasRenderingContext2D,v:View,s:CharacterWor
   case'player':{const sprite=c.action==='walk'?(Math.floor(t/9)%2?SPR.walk:SPR.stand):SPR[c.action as 'stand'|'jump'|'jack'];drawPlayer(ctx,v,sprite,{x,y:0,face:c.facing},c.action==='jack'?{x:x+c.facing*70,y:0,h:80}:undefined,0);break;}
   case'downtown-pedestrian':{const k=new DowntownArtwork();k.set(ctx,v);k.drawPedestrian(x,c.variant as 'hood'|'hat'|'umbrella',flip);break;}
   case'downtown-fixer':{const k=new DowntownArtwork();k.set(ctx,v);k.drawFixer(x);break;}
-  case'dockworker':drawDockworker(ctx,v,s.pose!,c.facing,c.variant==='empty'?null:c.variant as 'parcel'|'case');break;
   case'lime':placed(ctx,v.sx(x),v.y(0),1,()=>saltLime(ctx,t));break;
   default:throw new Error('Missing native character renderer');
  }
