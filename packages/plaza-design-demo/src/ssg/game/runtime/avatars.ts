@@ -30,6 +30,6 @@ export const AVATAR_PAINTERS: Record<AvatarId, (f: AvatarFrame) => void> = {
     drawPlayer(x, view, sprite, p, jack, shadowGround());
   },
   dockworker({ x, view, p, carry }) {
-    drawDockworker(x, view, prepareDockworker(p.x, p.face, p.moving, view.t), p.face, carry);
+    drawDockworker(x, view, prepareDockworker(p.x, p.face, p.moving, view.t, p.y), p.face, carry);
   },
 };
