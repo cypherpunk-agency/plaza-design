@@ -17,15 +17,21 @@
 import type { Resolved } from '../art/core/composition';
 
 /** A walkable line. `entry: 'door'` marks a building floor entered only at a door (default: walked into from the street). */
-export interface LevelFloor { id: string; x: number; w: number; h: number; building: string; label: string; entry?: 'door' }
+export interface LevelFloor { id: string; x: number; w: number; h: number; building: string; label: string; entry?: 'door'; indoor?: true }
 /** `inside`: the building whose interior shows it; it is usable only from that building's floors. */
-export interface LevelLink { id: string; kind: 'stairs' | 'escalator'; low: { x: number; h: number }; high: { x: number; h: number }; runs: 'both' | 'up' | 'down'; speed: number; reach?: number; inside?: string }
+/**
+ * `shape`: stairs that are not a straight flight (a steep ladder-stair, rungs, a spiral, a switchback) are climbed by
+ * holding ↑/↓; a straight flight is walked with ←/→. `path`: the walking line from the low end to the high end when it
+ * is not straight (a switchback's landing).
+ */
+export interface LevelLink { id: string; kind: 'stairs' | 'escalator'; low: { x: number; h: number }; high: { x: number; h: number }; runs: 'both' | 'up' | 'down'; speed: number; reach?: number; inside?: string; shape?: StairShape; path?: { x: number; h: number }[] }
 export interface LevelDoor { id: string; x: number; h: number; w: number; building: string }
 /**
  * A lift: its car is the mover `device` (device.part) names. `buttons`: the call buttons beside the
  * shaft (instance ids and floor heights); they light while the car is on its way there.
  */
-export interface LevelLift { id: string; x: number; w: number; bottom: number; height: number; stops: { h: number; floor: string; label: string }[]; device?: string; doorMs?: number; inside?: string; buttons?: { id: string; h: number }[] }
+/** `broken`: out of order: offered as a sign, never called or ridden. */
+export interface LevelLift { id: string; x: number; w: number; bottom: number; height: number; stops: { h: number; floor: string; label: string }[]; device?: string; doorMs?: number; inside?: string; buttons?: { id: string; h: number }[]; broken?: true }
 export interface LevelSource {
   floors: LevelFloor[]; links: LevelLink[]; doors: LevelDoor[]; lifts: LevelLift[];
   /** Instance ids of each building's shell and interior handles (their attached artwork follows them). */
@@ -41,6 +47,11 @@ export interface LevelSource {
 export interface LevelView { reveal: Record<string, number>; lifts: Record<string, { car: number; doors: number }>; buttons?: Record<string, number> }
 
 const near = (a: number, b: number, d = 0.75) => Math.abs(a - b) <= d;
+export type StairShape = 'ladder' | 'rungs' | 'spiral' | 'switchback';
+/** How each stair style is climbed (art/levels/elements.ts): a straight flight (none), a steep ladder-stair, vertical rungs, a spiral, a switchback. */
+export const STAIR_SHAPES: Readonly<Record<string, StairShape | 'flight'>> = {
+  concrete: 'flight', timber: 'flight', stone: 'flight', ladder: 'ladder', switchback: 'switchback', spiral: 'spiral', 'steel-ladder': 'rungs', 'rusty-spiral': 'spiral',
+};
 /** The level kit's defaults (art/levels/elements.ts); a compiled piece carries a tuned value only where it differs. */
 export const LEVEL_DEFAULTS = { stairSpeed: 1, reach: 10, doorMs: 280, revealSpeed: 0.07, ghost: 0 } as const;
 /** How far into a walk-in building the facade has fully faded (units from its side). */
@@ -57,7 +68,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
   const floors: LevelFloor[] = rows.filter(r => r.element.type === 'level.floor').map(r => ({
     id: r.instance.id, x: r.placement.x, w: Number(r.props.width) * r.placement.scale, h: r.placement.h,
     building: String(r.props.building ?? '').trim(), label: String(r.props.label ?? '').trim(),
-    ...(r.props.entry === 'door' ? { entry: 'door' as const } : {}),
+    ...(r.props.entry === 'door' ? { entry: 'door' as const } : {}), ...(r.props.indoor === true ? { indoor: true as const } : {}),
   }));
   if (!floors.length) return undefined;
   // which building's interior shows a piece: follow its attachments (and parents) up to an interior handle
@@ -72,12 +83,16 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     return {};
   };
   const links: LevelLink[] = rows.filter(r => r.element.type === 'level.stairs' || r.element.type === 'level.escalator').map(r => {
-    const p = r.placement, foot = { x: p.x, h: p.h }, top = { x: p.x + Number(r.props.run) * p.scale * p.facing, h: p.h + Number(r.props.rise) * p.scale };
+    const p = r.placement, style = String(r.props.style ?? 'concrete'), run = Number(r.props.run) * p.scale * p.facing, rise = Number(r.props.rise) * p.scale;
+    // a spiral, a vertical ladder and a switchback come out above where they start; a steep ladder-stair leans its run
+    const shape = r.element.type === 'level.stairs' ? STAIR_SHAPES[style] ?? 'flight' : 'flight', foot = { x: p.x, h: p.h }, top = { x: shape === 'flight' || shape === 'ladder' ? p.x + run : p.x, h: p.h + rise };
     const [low, high] = top.h >= foot.h ? [foot, top] : [top, foot], stairs = r.element.type === 'level.stairs';
+    const turn = shape === 'switchback' ? [low, { x: p.x + run, h: (low.h + high.h) / 2 }, high] : undefined;
     // an escalator runs from its foot to its top ('up') or back; physically that may be downhill
     const footToTop = (r.props.direction ?? 'up') !== 'down', uphill = top.h >= foot.h;
     const speed = Number(r.props.speed ?? LEVEL_DEFAULTS.stairSpeed);
-    return { id: r.instance.id, kind: stairs ? 'stairs' : 'escalator', low, high, runs: stairs ? 'both' : footToTop === uphill ? 'up' : 'down', speed, ...tuned('reach', r.props.reach, LEVEL_DEFAULTS.reach), ...insideOf(r.instance.id) } as LevelLink;
+    return { id: r.instance.id, kind: stairs ? 'stairs' : 'escalator', low, high, runs: stairs ? 'both' : footToTop === uphill ? 'up' : 'down', speed, ...tuned('reach', r.props.reach, LEVEL_DEFAULTS.reach), ...insideOf(r.instance.id),
+      ...(shape !== 'flight' ? { shape } : {}), ...(turn ? { path: turn } : {}) } as LevelLink;
   });
   const doors: LevelDoor[] = rows.filter(r => r.element.type === 'level.door').map(r => ({ id: r.instance.id, x: r.placement.x, h: r.placement.h, w: Number(r.props.width) * r.placement.scale, building: String(r.props.building ?? '').trim() }));
   const buttons = rows.filter(r => r.element.type === 'level.lift-button');
@@ -87,7 +102,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     const crossed = floors.filter(f => p.x >= f.x && p.x <= f.x + f.w && f.h >= bottom - 0.75 && f.h <= bottom + height + 0.75).sort((a, b) => a.h - b.h || Number(!a.building) - Number(!b.building));
     const stops = crossed.filter((f, i) => i === 0 || !near(f.h, crossed[i - 1].h)).map(f => ({ h: f.h, floor: f.id, label: f.label || f.id }));
     const device = String(r.props.device ?? '').trim(), own = buttons.filter(b => String(b.props.lift ?? '').trim() === r.instance.id).map(b => ({ id: b.instance.id, h: b.placement.h }));
-    return { id: r.instance.id, x: p.x, w: Number(r.props.width) * p.scale, bottom, height, stops, ...(device ? { device } : {}), ...tuned('doorMs', r.props.doorMs, LEVEL_DEFAULTS.doorMs), ...insideOf(r.instance.id), ...(own.length ? { buttons: own } : {}) };
+    return { id: r.instance.id, x: p.x, w: Number(r.props.width) * p.scale, bottom, height, stops, ...(device ? { device } : {}), ...tuned('doorMs', r.props.doorMs, LEVEL_DEFAULTS.doorMs), ...insideOf(r.instance.id), ...(own.length ? { buttons: own } : {}), ...(r.props.style === 'broken' ? { broken: true as const } : {}) };
   });
   const hs = floors.map(f => f.h), revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
   for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }
@@ -211,7 +226,7 @@ export function levelInteract(lv: Level, id: string, p: LevelPlayer, m: MoverMod
   if (id.startsWith('up:')) return levelUp(lv, p);
   if (id.startsWith('down:')) return levelDown(lv, p);
   if (!id.startsWith('lift:')) return false;
-  const lift = lv.source.lifts.find(l => 'lift:' + l.id === id), c = lift && car(lift, m); if (!lift || !c) return false;
+  const lift = lv.source.lifts.find(l => 'lift:' + l.id === id), c = lift && !lift.broken && car(lift, m); if (!lift || !c) return false;
   const ride = s.ride;
   if (ride?.kind === 'lift') {
     const pick = lift.stops[ride.pick];
@@ -245,10 +260,11 @@ export function levelHints(lv: Level, p: LevelPlayer, m: MoverModel): LevelHint[
   if (d) out.push({ id: 'door:' + d.id, x: d.x, h, label: f.building ? '[↓] STEP OUT' : '[↑] ENTER' + (d.building ? ' · ' + d.building.toUpperCase() : ''), promptH: h + 56 });
   for (const end of ['low', 'high'] as const) {
     const l = linkEnd(lv, p, end); if (!l) continue;
-    const word = l.kind === 'stairs' ? (end === 'low' ? 'UPSTAIRS' : 'DOWNSTAIRS') : 'ESCALATOR ' + (end === 'low' ? 'UP' : 'DOWN');
+    const word = l.kind === 'escalator' ? 'ESCALATOR ' + (end === 'low' ? 'UP' : 'DOWN') : l.shape === 'ladder' || l.shape === 'rungs' ? (end === 'low' ? 'CLIMB UP' : 'CLIMB DOWN') : end === 'low' ? 'UPSTAIRS' : 'DOWNSTAIRS';
     out.push({ id: (end === 'low' ? 'up:' : 'down:') + l.id, x: l[end].x, h, label: (end === 'low' ? '[↑] ' : '[↓] ') + word, promptH: h + 56 });
   }
-  const lift = liftHere(lv, p), c = lift && car(lift, m);
+  const lift = liftHere(lv, p), c = lift && !lift.broken && car(lift, m);
+  if (lift?.broken) out.push({ id: 'broken:' + lift.id, x: lift.x, h, label: 'OUT OF ORDER', promptH: h + 58 });
   if (lift && c) out.push({ id: 'lift:' + lift.id, x: lift.x, h, label: near(c.h, h) && ready(c) ? '[E] STEP IN' : c.target !== null && near(c.target, h) ? 'LIFT COMING…' : '[E] CALL LIFT', promptH: h + 58 });
   return out;
 }
@@ -258,7 +274,7 @@ export function levelHints(lv: Level, p: LevelPlayer, m: MoverModel): LevelHint[
  * car, move them between the street and a walk-in building, ease each building's reveal. `walk` is the
  * player's ←/→ (-1, 0, 1). True while the level sets the player's position (the game then skips walking).
  */
-export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m: MoverModel): boolean {
+export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m: MoverModel, climb = 0): boolean {
   const s = lv.state, src = lv.source;
   if (!s.ride) {
     // the street and a walk-in building at the same height are one walk: crossing its side steps in or out
@@ -282,21 +298,37 @@ export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m
     if (s.ride) { const stop = lift.stops.find(st => near(st.h, c.h, 0.5)); if (stop) s.floor = stop.floor; }
     return !!s.ride;
   }
-  const l = src.links.find(k => k.id === ride.link)!, len = Math.hypot(l.high.x - l.low.x, l.high.h - l.low.h) || 1, upward = Math.sign(l.high.x - l.low.x) || 1;
-  // stairs: ←/→ walk along the flight and stop when let go; an escalator carries on by itself
-  const move = l.kind === 'stairs' ? walk * upward : ride.dir;
+  const l = src.links.find(k => k.id === ride.link)!, line = l.path ?? [l.low, l.high], len = pathLength(line) || 1, upward = Math.sign(l.high.x - l.low.x) || 1;
+  // stairs: ←/→ walk along a straight flight, ↑/↓ climb a ladder, spiral or switchback; both stop when let go. An escalator carries on by itself.
+  const move = l.kind === 'escalator' ? ride.dir : l.shape ? climb : walk * upward;
   ride.t += move * l.speed * dt / len;
-  const t = Math.max(0, Math.min(1, ride.t));
-  p.x = l.low.x + (l.high.x - l.low.x) * t; p.y = l.low.h + (l.high.h - l.low.h) * t;
-  if (move) p.face = Math.sign((l.high.x - l.low.x) * move) || p.face;
+  const at = pathAt(line, Math.max(0, Math.min(1, ride.t)));
+  if (move && Math.abs(at.x - p.x) > 0.01) p.face = Math.sign(at.x - p.x) || p.face;
+  p.x = at.x; p.y = at.h;
   p.moving = l.kind === 'stairs' && move !== 0; p.onGround = true; p.vy = 0;
   if ((move > 0 && ride.t >= 1) || (move < 0 && ride.t <= 0)) {
-    const end = ride.t >= 1 ? l.high : l.low, f = floorAt(src, end.x, end.h);
+    // the far end's floor: the flight's own building first (a shophouse stair lands indoors, not on the street at the same height)
+    const end = ride.t >= 1 ? l.high : l.low, own = l.inside ?? levelFloor(lv).building, f = (own ? floorAt(src, end.x, end.h, own) : undefined) ?? floorAt(src, end.x, end.h);
     if (f) s.floor = f.id;
     p.y = levelFloor(lv).h; s.ride = null;
   }
   return true;
 }
+/** A walking line's length, and the point a share `t` of the way along it. */
+function pathLength(line: readonly { x: number; h: number }[]) { let n = 0; for (let i = 1; i < line.length; i++) n += Math.hypot(line[i].x - line[i - 1].x, line[i].h - line[i - 1].h); return n; }
+function pathAt(line: readonly { x: number; h: number }[], t: number) {
+  let left = t * pathLength(line);
+  for (let i = 1; i < line.length; i++) {
+    const a = line[i - 1], b = line[i], d = Math.hypot(b.x - a.x, b.h - a.h);
+    if (left <= d || i === line.length - 1) { const k = d ? Math.min(1, left / d) : 1; return { x: a.x + (b.x - a.x) * k, h: a.h + (b.h - a.h) * k }; }
+    left -= d;
+  }
+  return line[line.length - 1];
+}
+/** Is the player climbing a ladder, spiral or switchback (↑/↓ held move them)? */
+export function levelClimbing(lv: Level) { const r = lv.state.ride; return r?.kind === 'link' && !!lv.source.links.find(l => l.id === r.link)?.shape; }
+/** Does the player stand on an indoor floor (a tunnel, a cellar, an underground hall): the scene is lit as indoors. */
+export function levelIndoor(lv: Level) { return !!levelFloor(lv).indoor; }
 /** Each building opens towards its goal: shut outside; on a walk-in floor, as far as the player is in from its side; else open. */
 function easeReveal(lv: Level, p: LevelPlayer, dt: number) {
   const f = levelFloor(lv), depth = street(lv.source, f) && !lv.state.ride ? Math.min(p.x - f.x, f.x + f.w - p.x) / ENTRY_DEPTH : 1;

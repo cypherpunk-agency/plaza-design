@@ -82,7 +82,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelBounds, levelDown, levelFloor, levelHints, levelInteract, levelRiding, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
+import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
 
 /**
  * Something to press E on: a way out (`exit`), the scene's life (`life`: a readable, a use, someone
@@ -827,8 +827,8 @@ export class Game {
     if (zh.visionOn && k === '0') { this.resetVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
     // in a level, ↑ and ↓ first mean a door, a flight, an escalator or the lift car; otherwise ↑ jumps
-    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && levelUp(this.level, this.p)) { this.keys.clear(); return; }
-    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && levelDown(this.level, this.p)) { this.keys.clear(); return; }
+    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && levelUp(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level)) this.keys.add('ArrowUp'); return; }
+    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && levelDown(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level)) this.keys.add('ArrowDown'); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && !(this.level && levelRiding(this.level))) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
@@ -1144,7 +1144,9 @@ export class Game {
     if (dir) { p.face = dir; if (this.bubble && Math.abs(p.x - this.bubble.x) > 140) this.bubble = null; }
     p.moving = !!dir;
     // a level ride (stairs, escalator, lift) carries the player; walking waits until it ends
-    const riding = !!this.level && levelStep(this.level, p, locked ? 0 : dir, dt, this.zh.model);
+    // ↑/↓ held climb a ladder, spiral or switchback (a straight flight is walked with ←/→)
+    const climb = locked ? 0 : (this.keys.has('ArrowUp') || this.keys.has('w') ? 1 : 0) - (this.keys.has('ArrowDown') || this.keys.has('s') ? 1 : 0);
+    const riding = !!this.level && levelStep(this.level, p, locked ? 0 : dir, dt, this.zh.model, climb);
     const [minX, maxX] = this.level && !riding ? levelBounds(this.level, this.levelW) : [12, this.levelW - 12];
     if (!riding) p.x = Math.max(minX, Math.min(maxX, p.x + dir * speed * dt));
     // Walking into an open border (the yard's passage, a street's end) leaves without E.
@@ -1246,7 +1248,8 @@ export class Game {
    */
   private lightHere(W: Weather | null): Light {
     const s = this.def, amb = s.ambient ?? {};
-    const outdoor = s.outdoor ?? !!(amb.weather || amb.sky);
+    // an indoor floor of a level (a tunnel, a cellar) is lit as indoors while the player stands on it
+    const outdoor = this.level && levelIndoor(this.level) ? false : s.outdoor ?? !!(amb.weather || amb.sky);
     const L = lightAt(city.day, city.min, s.facing ?? 180, W ?? this.weatherHere(), outdoor);
     setLight(L);
     return L;

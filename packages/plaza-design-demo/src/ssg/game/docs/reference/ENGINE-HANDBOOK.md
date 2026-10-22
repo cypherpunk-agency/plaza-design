@@ -149,8 +149,16 @@ walk along it and letting go stops. An escalator takes whoever walks onto its bo
 ↑/↓ choose a floor on its panel and E sends the car; `level.lift-button` pieces (their `lift` field)
 light while it is called to their floor. A zone may watch only one `building`'s floors. Stair speed,
 reach, door time and reveal speed are kit fields. What E acts on is `nearestPrompt` (a level prompt wins
-over a device on the same spot). Check with `pnpm test:game levels tower-lift circuit-movers`; the Tower
-lab (scenes/tower) is the example.
+over a device on the same spot). Check with `pnpm test:game levels level-styles tower-lift circuit-movers`;
+the Tower lab (scenes/tower) is the example.
+
+Every piece has a `style` field (the default is the original look). Stairs: concrete, timber, stone (straight
+flights, walked with ←/→), ladder (a steep ladder-stair, leaning its run), switchback (two half-flights and a
+landing; comes out above its foot), spiral, rusty-spiral and steel-ladder (straight up; `run` is the width).
+Everything but a straight flight is climbed with ↑/↓ held (engine/level.ts `STAIR_SHAPES`); `rail` overrides the
+handrail. Escalators: standard, glass. Lifts: goods, cage, passenger-old, glass, gold, service, and broken (an
+OUT OF ORDER sign, never called). A flight lands on its own building's floor before the street at the same
+height. A floor marked `indoor` (a tunnel, a cellar) is lit as indoors while the player stands on it.
 
 ## Recipe: make or change any scene (folder scenes)
 
