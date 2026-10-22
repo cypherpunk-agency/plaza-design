@@ -1150,6 +1150,14 @@ ${FEEDBACK_STYLES}
     }
 
     #touch button.down { background: rgba(var(--color-primary-500-rgb), 0.3); }
+    /* ▲ ▼ (game/ui/touch-controls.ts): only in a level scene, where they keep their places beside ◀ ▶
+       and show while ↑ or ↓ does something (game.ts syncLevelArrows); held, one stays until let go */
+    #touch .level-only { display: none; }
+    html.level-scene #touch .level-only { display: inline-block; visibility: hidden; }
+    html.level-up #touch .lv-up,
+    html.level-down #touch .lv-down,
+    html.level-scene #touch .level-only.down { visibility: visible; }
+    html.hack-on #touch .pad .level-only { visibility: hidden; }
     /* the bar by mode (game/index.ts): walking or hack vision; HACK once hacking is yours here */
     #touch .pad:last-child button { width: auto; min-width: 44px; padding: 0 var(--spacing-2); }
     #touch .vis-only,

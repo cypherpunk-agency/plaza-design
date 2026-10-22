@@ -83,7 +83,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
+import { levelArrive, levelArrows, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
 import { joined as zoneJoined, residency, seamsOf, validateZoneGraph, type ResidencyTier } from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
@@ -651,8 +651,8 @@ export class Game {
     this.shiftGuidance?.hide();
     this.syncEnginePause();
     this.endTitle();
-    document.documentElement.classList.remove('game-map', 'hack-ok', 'hack-on', 'logic-open', 'unfold-on');
-    this.modeKey = '';
+    document.documentElement.classList.remove('game-map', 'hack-ok', 'hack-on', 'logic-open', 'unfold-on', 'level-scene', 'level-up', 'level-down');
+    this.modeKey = ''; this.arrowsKey = '';
     this.menu.hide();
     this.endCutscene(false);
     this.transport?.attach(null);
@@ -745,6 +745,7 @@ export class Game {
     document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight || !!this.netView);
     this.visionCamera();
     this.syncModeUi();
+    this.syncLevelArrows();
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     // a story beat asked for a cutscene: it plays once nothing is open (the talk that asked for it has closed)
     if (this.pendingCut && !this.zh.overlayOpen && !this.zh.popupOpen && !this.bubble && !this.mapView && !this.term.focused) {
@@ -1629,6 +1630,22 @@ export class Game {
     html.toggle('logic-open', zh.logicOpen); html.toggle('unfold-on', zh.unfoldAll);
   }
 
+  /** The last `level-up`/`level-down` pair set on the page (syncLevelArrows). */
+  private arrowsKey = '';
+  /**
+   * Touch's ▲ ▼ (ui/touch-controls.ts) keep their places in a level scene (`html.level-scene`) and show only while
+   * ↑ or ↓ does something there (`html.level-up`, `html.level-down`; render.tsx): the rule the keys follow
+   * (engine/level.ts `levelArrows`). Elsewhere the bar is as it was.
+   */
+  private syncLevelArrows() {
+    const lv = this.level, on = this.touch && !!lv && !this.bubble && !this.levelLocked() && !this.zh.visionOn;
+    const a = on ? levelArrows(lv!, this.p) : { up: false, down: false }, scene = this.touch && !!lv, key = [scene, a.up, a.down].join();
+    if (key === this.arrowsKey) return;
+    this.arrowsKey = key;
+    const html = document.documentElement.classList;
+    html.toggle('level-scene', scene); html.toggle('level-up', a.up); html.toggle('level-down', a.down);
+  }
+
   // ---------- the camera nudge ----------
 
   /** The camera leaning towards something that reacted off the view: where it leans to, until when (clock frames), where you stood. */
@@ -1775,7 +1792,7 @@ export class Game {
   private controls(): [string, [string, string][]][] {
     const t = this.touch, jump = this.save.jump;
     const walk: [string, string][] = t
-      ? [['◀ ▶', 'walk'], ...(jump ? [['JMP', 'jump'] as [string, string]] : []), ['ACT', 'use what shows [E]; go on talking']]
+      ? [['◀ ▶', 'walk'], ...(this.level ? [['▲ ▼', 'what shows [↑] or [↓]; hold to climb'] as [string, string]] : []), ...(jump ? [['JMP', 'jump'] as [string, string]] : []), ['ACT', 'use what shows [E]; go on talking']]
       : [['← → · A D', 'walk'], ['SHIFT', 'run'], ...(jump ? [['SPACE', 'jump'] as [string, string]] : []), ['E', 'use what shows [E]'], ['ENTER · SPACE', 'go on talking']];
     const deck: [string, string][] = t
       ? [['DECK', 'this deck'], ['>_', 'terminal']]

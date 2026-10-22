@@ -341,14 +341,32 @@ export function levelUp(lv: Level, p: LevelPlayer): boolean { return step(lv, p,
 /** ↓: out through a door, onto a flight going down, or the lift panel's choice one floor down. */
 export function levelDown(lv: Level, p: LevelPlayer): boolean { return step(lv, p, -1); }
 function step(lv: Level, p: LevelPlayer, dir: 1 | -1): boolean {
+  const go = stepFor(lv, p, dir);
+  if (!go) return false;
+  go();
+  return true;
+}
+/** What ↑ (1) or ↓ (-1) would do where the player stands, not yet done; undefined: nothing (the game jumps on ↑). */
+function stepFor(lv: Level, p: LevelPlayer, dir: 1 | -1): (() => void) | undefined {
   const s = lv.state, ride = s.ride;
-  if (ride?.kind === 'lift') { const lift = lv.source.lifts.find(l => l.id === ride.lift)!; ride.pick = Math.max(0, Math.min(lift.stops.length - 1, ride.pick + dir)); return true; }
-  if (ride) return true;
+  if (ride?.kind === 'lift') { const lift = lv.source.lifts.find(l => l.id === ride.lift)!; return () => { ride.pick = Math.max(0, Math.min(lift.stops.length - 1, ride.pick + dir)); }; }
+  if (ride) return () => {};
   const f = levelFloor(lv), d = doorHere(lv, p);
-  if (d && dir > 0 && !f.building) { const inside = floorAt(lv.source, p.x, f.h, d.building); if (inside) { s.floor = inside.id; return true; } }
-  if (d && dir < 0 && f.building) { const out = lv.source.floors.find(o => !o.building && near(o.h, f.h, 2) && p.x >= o.x && p.x <= o.x + o.w); if (out) { s.floor = out.id; return true; } }
-  const l = linkEnd(lv, p, dir > 0 ? 'low' : 'high'); if (l) { s.ride = { kind: 'link', link: l.id, t: dir > 0 ? 0 : 1, dir }; p.vy = 0; p.onGround = true; return true; }
-  return false;
+  if (d && dir > 0 && !f.building) { const inside = floorAt(lv.source, p.x, f.h, d.building); if (inside) return () => { s.floor = inside.id; }; }
+  if (d && dir < 0 && f.building) { const out = lv.source.floors.find(o => !o.building && near(o.h, f.h, 2) && p.x >= o.x && p.x <= o.x + o.w); if (out) return () => { s.floor = out.id; }; }
+  const l = linkEnd(lv, p, dir > 0 ? 'low' : 'high'); if (l) return () => { s.ride = { kind: 'link', link: l.id, t: dir > 0 ? 0 : 1, dir }; p.vy = 0; p.onGround = true; };
+  return undefined;
+}
+/**
+ * Which of ↑ and ↓ do something where the player stands (touch shows its ▲ ▼ only then; nothing changes):
+ * a door, a flight's end, a ladder or spiral being climbed, the lift panel's next floor up or down.
+ * A straight flight or an escalator under way is walked or carried, not stepped: neither.
+ */
+export function levelArrows(lv: Level, p: LevelPlayer): { up: boolean; down: boolean } {
+  const ride = lv.state.ride;
+  if (ride?.kind === 'lift') { const n = lv.source.lifts.find(l => l.id === ride.lift)?.stops.length ?? 0; return { up: ride.pick < n - 1, down: ride.pick > 0 }; }
+  if (ride) { const climbing = levelClimbing(lv); return { up: climbing, down: climbing }; }
+  return { up: !!stepFor(lv, p, 1), down: !!stepFor(lv, p, -1) };
 }
 
 /** E on a level prompt: a door, a flight; at a lift, call it or step in; in the car, go to the chosen floor or step out. */
