@@ -5,6 +5,26 @@
 > No engine, gameplay or scene changes are made here. The style frames are editor-only proposals
 > (`art/proposals/harbor-*.composition.json`, Library › proposals, "Harbor zones · …").
 
+
+## Decided (Tommi, 2026-10-22, after the first review)
+
+- **Mirrored, train first.** The prologue begins with the player stepping off the train at the raised Harbor Station at
+  dusk, on the way to work. The harbor runs **west → east: station → quay → checkout → yard → shed**. The checkout's
+  turnstile is the staff entrance at dusk and the way out at dawn. The night shift is worked eastward, and at dawn the
+  player walks back west and takes the train home. Arriving by sky taxi is kept for later.
+- **P0** is the title glide: the main menu is the beach scene, mirrored; the camera glides **east across the city** as
+  the sun goes down, a first look at some districts, and ends at the Harbor Station as the train comes in. Hand-over on
+  the platform.
+- **The city map:** the beach is in the **west**, the harbor in the **east**. The beach no longer joins the quay.
+- **Coffee machine:** optional, a side mention ("the coffee machine doesn't work again") with a small bonus if fixed.
+  The trolley clamp stays the required lesson.
+- **The old pier's later content** stays in reserve; keep what is good for somewhere else.
+- **One-screen checkout zone:** keep it and see.
+- **Train:** 2 cars, a 1,440-unit platform.
+
+The sections below were drafted before these decisions (shed in the west, beach seam east of the quay). They are being
+redrawn to the mirrored order.
+
 ## Direction this follows (Tommi, 2026-10-22)
 
 - The prologue runs **seamless** from the harbor to Downtown and shows off the engine. Individual

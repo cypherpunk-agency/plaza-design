@@ -49,6 +49,11 @@ Story conversation and save/pause access are always available where appropriate.
 details never hide a required prerequisite. Failure/recovery and saved consequences are
 specified in the companion tables to keep the scene matrices readable.
 
+**Decided (Tommi, 2026-10-22, harbor review):** P0 is the title glide from the beach in the west across the city
+eastward at sunset, ending as the train comes into the raised Harbor Station; the player steps off and walks east to
+work. The coffee machine is an optional side mention with a small bonus; the trolley is the required lesson.
+See [HARBOR-ZONES.md](./HARBOR-ZONES.md).
+
 ## Prologue matrix
 
 P0–P6 are the Harbor Shift prototype; they move into the replanned harbor zones. P7 is the
