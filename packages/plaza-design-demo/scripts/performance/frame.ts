@@ -42,7 +42,7 @@ window.addEventListener('message',async event=>{
   const calibration=calibratePerformance();
   const f=defaultPlayFixture(w.scene as PlayScene);f.day=1;f.seed=3;f.minute=w.minute;f.weather=w.weather;f.clock='fixed';f.flags={'opening:jacked':true,'opening:uplink':true};
   setOverride('city',w.weather);
-  let actionCount=0,boardOpens=0,boardCloses=0;const visits:string[]=[];
+  let actionCount=0,boardOpens=0,boardCloses=0,glideTau=0;const visits:string[]=[];
   if(w.id==='demo-fanout'){
    const def=workshopScene(),state:GameplayState={flags:{},items:{},tokens:0,values:{sandbox:{}}};
    model=new SceneModel({say:()=>{},open:()=>{},changed:()=>{}},def.data!,def.rules as any,undefined,undefined,undefined,state.values!.sandbox);
@@ -53,22 +53,24 @@ window.addEventListener('message',async event=>{
    gameStorage.setItem(saveKey(),JSON.stringify(save));
    const windowEl=document.querySelector<HTMLElement>('.demo-window')!;
    game=new Game({windowEl,header:windowEl.querySelector('header')!,footer:windowEl.querySelector('footer')!,inputHost:document.getElementById('input-host')!,onExit:()=>{},setNodes:()=>{},setScene:()=>{}},SCENES,'fixed');
-   game.start(w.scene as PlayScene);await frames();
+   game.start(w.scene as PlayScene,w.id==='title-glide');await frames();
    const canvas=windowEl.querySelector('canvas')!;canvas.focus();
    // The fixture explicitly suppresses arrival pages by advancing them through the normal E handler.
-   for(let n=0;n<16&&game.inspect().dialogue;n++)key('e');
+   if(w.id!=='title-glide')for(let n=0;n<16&&game.inspect().dialogue;n++)key('e');
   }
   if(w.id==='private-play'){game!.checkpoint();send('running',{...snapshot(),initialStorageEmpty:true,scene:game!.inspect().scene,privateKeys:Object.keys(capturePrivateStorage().local)});return;}
   await wait(smoke?1000:w.warmupMs);
-  const initial=game?.inspect(),initialModel=model?.snapshot();visibility.length=0;visibility.push({at:performance.now(),hidden:document.hidden});
+  const initial=game?.inspect(),initialModel=model?.snapshot();if(initial&&w.id==='title-glide')initial.save.playMs=0;/* the glide's own clock stands in for active play */visibility.length=0;visibility.push({at:performance.now(),hidden:document.hidden});
   startPerformance({source,scenario:w.id+'/run-'+run,capacity,environment:{...snapshot(),activation,calibration,fixture:f,workload:w,cache:'new realm; five-second warmup; browser process/cache may be warm',initial:initial?{scene:initial.scene,paused:initial.paused,playMs:initial.save.playMs,canvasHidden:document.querySelector('canvas')?.hidden,player:initial.player,actors:initial.actors?.length,devices:SCENES[w.scene as PlayScene].data?.devices.length??0,weather:weatherNow(sceneClimate(w.scene))}:initialModel}});
   const begin=performance.now();
   if(w.id==='demo-fanout'){for(let n=0;n<(smoke?1:w.operations);n++){const token=perfBegin('workload.action','demo.button');try{model!.act('button','button','press');actionCount++;}finally{perfEnd(token);}await wait(smoke?250:Math.max(0,begin+(n+1)*1000-performance.now()));}}
   else if(w.id==='board-cycles'){for(let n=0;n<(smoke?1:w.operations);n++){let token=perfBegin('workload.action','board.open');key('b');perfEnd(token);if(!document.querySelector('#hack:not([hidden])'))throw new Error('Board failed to open');boardOpens++;await wait(smoke?100:500);token=perfBegin('workload.action','board.close');key('Escape');perfEnd(token);if(document.querySelector('#hack:not([hidden])'))throw new Error('Board failed to close');boardCloses++;await wait(smoke?100:500);}}
   else if(w.id==='scene-visits'){const ids=['catalog','shop-counter','laundry','talk-cook'];for(let n=0;n<(smoke?4:w.operations);n++){const token=perfBegin('workload.action','scene.visit');game!.reviewJump(ids[n%ids.length]);perfEnd(token);visits.push(game!.inspect().scene);await wait(smoke?100:Math.max(0,begin+(n+1)*1000-performance.now()));}}
+  else if(w.id==='title-glide'){// NEW GAME's own step (the private realm's newGame reloads instead): the title's Opening starts its glide
+   const o=()=>(game as unknown as {opening:{tau:number|null;gliding:boolean;go():void}|null}).opening;o()?.go();if(!o()?.gliding)throw new Error('NEW GAME did not start the glide');let tau=0;const limit=performance.now()+(smoke?2000:w.measureMs*4);while(o()&&performance.now()<limit){tau=o()!.tau??tau;await wait(50);}glideTau=o()?.tau??(smoke?tau:w.measureMs/1000);if(!smoke&&o())throw new Error('Glide did not finish');actionCount=1;}
   else await wait(smoke?2000:w.measureMs);
   if(model&&Number(model.get('count'))-Number(initialModel?.state.count??0)!==actionCount)throw Error('Fan-out shared counter did not receive every button signal');
-  const report=stopPerformance()!;report.environment.smoke=smoke;report.environment.visibility=visibility;report.environment.operations={actionCount,boardOpens,boardCloses,visits};report.environment.final=model?model.snapshot():{scene:game!.inspect().scene,paused:game!.inspect().paused,playMs:game!.inspect().save.playMs,canvasHidden:document.querySelector('canvas')?.hidden};
+  const report=stopPerformance()!;report.environment.smoke=smoke;report.environment.visibility=visibility;report.environment.operations={actionCount,boardOpens,boardCloses,visits};report.environment.final=model?model.snapshot():{scene:game!.inspect().scene,paused:game!.inspect().paused,playMs:w.id==='title-glide'?glideTau*1000:game!.inspect().save.playMs,canvasHidden:document.querySelector('canvas')?.hidden};
   close();send('report',report);
  }catch(e){stopPerformance();close();send('error',String(e));}
 });

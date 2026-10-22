@@ -59,13 +59,17 @@ built acquisition bundle for all repeats. **Run all six** is available, but an o
 ready-acknowledgement failure currently prevents treating its unattended batch path as reliable.
 Do not restart a live frame merely because an observer timed out; wait for its explicit error/status.
 
-The six definitions are `scripts/performance/workloads.ts`. They use fixed day1/seed3/time/weather,
+The definitions are `scripts/performance/workloads.ts`. They use fixed day1/seed3/time/weather,
 960×540 CSS dimensions, native DPR/full rendering quality, 5s warmup and three30s windows for
 Downtown/Market/native-model fan-out. Board and scene visits use twelve fixed operations;
 private Play uses five fresh start/checkpoint/stop/destroy realms per repeat. A private realm never
 reads campaign browser storage. Every run includes synthetic interleaved span calibration.
 The fan-out is the actual demo model with its fixed counter cable plus authored lamp/fan branches.
 It is explicitly a native-model lane, not a Canvas/render workload.
+`title-glide` starts NEW GAME's glide from the settled title and records it to its end in real time
+(about 68 s at full cadence); each `game.render` span is owned by its glide beat (`glide:BEACH` …
+`glide:ARRIVED`), so render CPU can be read per section. `PERF_PROFILE=1` on build.mts keeps function
+names for a CDP CPU profile; such a build is for attribution, not a timing acquisition.
 
 Raw reports and the captured acquisition manifest are archived below
 `.performance/native-workloads/recordings/run-<timestamp>/`. The validator checks raw samples against

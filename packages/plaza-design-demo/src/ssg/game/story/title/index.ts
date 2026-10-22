@@ -75,6 +75,8 @@ export class Opening {
   }
 
   get gliding() { return this.tau !== null; }
+  /** The glide's current beat (timeline.json), for diagnostics; null on the title. */
+  get beat() { if (this.tau === null) return null; let id = ''; for (const b of this.glideSequence.beats) if (b.time <= this.tau) id = b.id; return id; }
   /** Only the runtime controller commits this destination; drawing and seeking never do. */
   get handoff() { return this.glideSequence.handoff ? { ...this.glideSequence.handoff } : undefined; }
 

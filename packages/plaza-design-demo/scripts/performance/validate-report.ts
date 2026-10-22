@@ -13,6 +13,7 @@ export function validateReport(value:unknown,source:string){
  if(w.id==='private-play'){const cycles=r.environment.cycles as any[];if(!Array.isArray(cycles)||cycles.length!==(smoke?1:w.operations)||cycles.some(c=>c.remainingFrames!==0||!c.opened.initialStorageEmpty||!c.stopped.private))issues.push('private lifecycle/isolation count');}
  else if(!smoke){if(r.durationMs<w.measureMs-100)issues.push('short measurement');const ops=r.environment.operations as any;
   if(w.id==='demo-fanout'&&(ops.actionCount!==w.operations||!(r.environment.final as any)?.state||((r.environment.final as any)?.state.count!==30)||!(r.environment.final as any)?.state.lampOn||!(r.environment.final as any)?.state.fanOn))issues.push('fanout operation count');
+  if(w.id==='title-glide'&&(ops.actionCount!==1||Math.abs((r.environment.final as any)?.playMs-w.measureMs)>1))issues.push('glide did not run to its end');
   if(w.id==='board-cycles'&&(ops.boardOpens!==w.operations||ops.boardCloses!==w.operations))issues.push('board operation count');
   if(w.id==='scene-visits'&&JSON.stringify(ops.visits)!==JSON.stringify(Array.from({length:12},(_,i)=>['library','shop','laundromat','market'][i%4])))issues.push('visit operation sequence');
   if(w.lane==='live-game'&&!(r.summary['game.frame']?.count))issues.push('no native frames');

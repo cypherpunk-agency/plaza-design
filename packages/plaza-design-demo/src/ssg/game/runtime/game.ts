@@ -14,7 +14,7 @@ import type {MetroStart} from '../world/transport/metro-start';
 import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
 import {CRITTER_REACTIONS,critterReaction,critterReply} from '../engine/gameplay/critter-reactions';
 import {BOT_REACTIONS,withBotConversations,botVoice,botConversationId,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
-import {perfBegin,perfEnd,perfSample} from './diagnostics/performance';
+import {perfBegin,perfEnd,perfSample,performanceRecording} from './diagnostics/performance';
 import {mountPerformancePanel} from './diagnostics/performance-panel';
 import {capabilityView,sceneExitAccess,exitVisibility,exitPermission,barrierAccess} from '../world/access';
 import {mountReviewNavigator} from '../demo/review-navigator';
@@ -579,7 +579,9 @@ export class Game {
     const x = this.x;
     x.setTransform(this.k, 0, 0, this.k, 0, 0);
     x.imageSmoothingEnabled = false;
-    o.draw(x, this.viewW, this.viewH);
+    // opt-in recording: the title's or the glide's beat owns the frame's render span
+    const span = performanceRecording() ? perfBegin('game.render', o.gliding ? 'glide:' + o.beat : 'title') : -1;
+    try { o.draw(x, this.viewW, this.viewH); } finally { perfEnd(span); }
     if (o.done) this.openingDone();
   }
 

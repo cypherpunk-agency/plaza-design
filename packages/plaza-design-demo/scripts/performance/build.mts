@@ -4,10 +4,12 @@ import {gameSourceIdentity} from '../scene-system/source-identity.mts';
 import {workloads,repetitions,capacity,viewport} from './workloads';
 import {playStartupBootstrap} from '../scene-system/build-play-runtime.mts';
 const game=path.resolve('src/ssg/game'),output=path.resolve('../../.performance/native-workloads'),source=gameSourceIdentity(game);fs.mkdirSync(output,{recursive:true});
-const result=await build({entryPoints:{frame:'scripts/performance/frame.ts',runner:'scripts/performance/runner.ts'},outdir:output,bundle:true,format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none',metafile:true});
+// PERF_PROFILE=1: readable function names for a CDP CPU profile (whitespace/syntax still minified); not a timing acquisition.
+const profile=process.env.PERF_PROFILE==='1';
+const result=await build({entryPoints:{frame:'scripts/performance/frame.ts',runner:'scripts/performance/runner.ts'},outdir:output,bundle:true,format:'iife',platform:'browser',target:'es2022',minifyWhitespace:true,minifySyntax:true,minifyIdentifiers:!profile,keepNames:profile,legalComments:'none',metafile:true});
 if(Object.keys(result.metafile!.inputs).some(p=>p.replaceAll('\\','/').includes('/authoring/server/')))throw new Error('Source service reached performance build');
 const hash=createHash('sha256');for(const name of fs.readdirSync('scripts/performance').sort())if(/\.(ts|mts)$/.test(name)){hash.update(name);hash.update(fs.readFileSync('scripts/performance/'+name));}
-const manifest={version:1,source,harness:'sha256:'+hash.digest('hex'),revision:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),mode:'esbuild minified production-style native Game',viewport,repetitions,capacity,workloads};
+const manifest={version:1,source,harness:'sha256:'+hash.digest('hex'),revision:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),mode:profile?'esbuild profile build (identifiers kept) native Game':'esbuild minified production-style native Game',viewport,repetitions,capacity,workloads};
 fs.writeFileSync(path.join(output,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 const core=await build({entryPoints:[path.resolve('../plaza-design-core/plaza.css')],bundle:true,write:false,loader:{'.woff2':'dataurl'},logLevel:'warning'});
 let css=core.outputFiles[0].text.replace(/@font-face\s*\{[^}]*\}/g,'')+'\n'+demoStyles;
