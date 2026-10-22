@@ -36,12 +36,14 @@ different thing.)
 
 0. **One render path (decided by Tommi, 2026-10-22; first priority).** Everything that draws a frame (play,
    editor preview, the title glide, cutscenes, the taxi flight) goes through `renderWorldFrame`, configured,
-   never a separate renderer, so every fix and optimization is made once in one engine. Today there are three
-   frame paths (world, opening `renderOpeningSequence`, cinematic `renderCinematicPicture`). In order:
-   (a) a guard check that only `runtime/render-scene.ts` assembles a frame, and the rule in AGENTS.md;
-   (b) a frame **director** configuration on `renderWorldFrame` (camera from a timeline track, passes on/off,
-   overlays such as fades, cards and letterbox, time of day, pixel scale) with the cutscenes and the taxi flight
-   moved onto it; (c) the title glide as a timeline camera over real zones (beach, inlet, Downtown, Galleria,
+   never a separate renderer, so every fix and optimization is made once in one engine. One second frame path
+   remains: the opening's `renderOpeningSequence`/`openingFrame`. In order:
+   (a) (done) the guard `check-one-render-path` (only `runtime/render-scene.ts` assembles a frame; it prints the
+   opening's temporary allow-list, which must shrink to empty), and the rule in AGENTS.md;
+   (b) (done) the frame **director** (`FrameDirector` on `renderWorldFrame`: camera from a timeline track, passes on/off,
+   overlays such as fades, cards and letterbox, time of day, pixel scale; `directorFromTimeline` is the one bridge
+   from a timeline), with the cutscenes and the taxi flight on it (`runtime/sequence-frame.ts`: a one-zone frame;
+   their pieces are registered elements; `renderCinematicPicture` is gone); (c) the title glide as a timeline camera over real zones (beach, inlet, Downtown, Galleria,
    Harbor Station; its hand-drawn panorama becomes registered art pieces placed in those zones), ending inside
    the real `harbor-station` zone so the prologue starts with no cut; (d) (done: the profile's `player.character` is a kit person, runtime/avatars.ts) the harbor dockworker player drawn by
    the shared character kit. See [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) Principles and §7 step R.

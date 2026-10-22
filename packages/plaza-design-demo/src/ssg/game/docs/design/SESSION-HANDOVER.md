@@ -75,13 +75,13 @@ serve `dist-homepage` with `scripts/opening-playthrough/serve.mjs`.
 
 ## First priority: one render path (decided 2026-10-22)
 
-ROADMAP.md item 0 / SEAMLESS-WORLD §7 step R. Three frame paths exist today: world `renderWorldFrame`, opening
-`renderOpeningSequence` → `openingFrame` (art/sequences/opening, ~2,600 lines; own projection
-`sx = W/2 + p·(g − X)`, own scale `H/195`, own sky mood/warmth/rain, pieces are draw closures wrapped by
-`sequence.opening.*` rows), cinematic `renderCinematicPicture` (art/sequences/cinematics.ts; `drawFlight` is a
-wrapper). Order: guard check + AGENTS.md rule (done in docs; the check is still to write) → director config on
-`renderWorldFrame` + cutscenes/taxi on it → the glide as zones with a timeline camera ending in `harbor-station` →
-dockworker on the character kit. Until then do not add features to the opening or cinematic paths.
+ROADMAP.md item 0 / SEAMLESS-WORLD §7 step R. Done: the guard `check-one-render-path`, the `FrameDirector` on
+`renderWorldFrame` (+ `directorFromTimeline`), and the cutscenes and the taxi flight on it (`runtime/sequence-frame.ts`;
+`capture-sequence-frames.mts` showed all 80 sampled frames paint the same before and after). Two frame paths remain:
+world `renderWorldFrame` and the opening's `renderOpeningSequence` → `openingFrame` (art/sequences/opening, ~2,600 lines;
+own projection `sx = W/2 + p·(g − X)`, own scale `H/195`, own sky mood/warmth/rain, pieces are draw closures wrapped by
+`sequence.opening.*` rows), on the guard's temporary allow-list. Next: the glide as zones with a timeline camera
+ending in `harbor-station`. Do not add features to the opening path.
 
 ### Glide migration design (agent, checkpoint e46b8a5)
 
