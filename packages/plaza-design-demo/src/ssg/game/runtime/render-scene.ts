@@ -12,6 +12,8 @@ import { puddles, weatherFront, weatherMid, weatherSky } from '../art/atmosphere
 import { createLightingFrame, drawCasters, drawGrade, drawLights, drawShade } from '../art/atmosphere/lighting';
 import { muteWorld } from '../art/atmosphere/hack-vision';
 import { beginLayeredFrame, flushLayeredDocs, flushLayeredSlot, layeredDocs } from '../art/core/composition';
+import { lightAt } from '../world/light';
+import type { TimelineFrame } from '../art/core/timeline';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 /**
@@ -26,6 +28,58 @@ export interface ZoneFrame {
   /** It lies below the zone the player is in (a quay under a raised platform): drawn first, behind that zone's own artwork. */
   below?: boolean;
 }
+/** A pass of the one frame that a director can switch off (all run by default, as in play). */
+export type FramePass = 'sky' | 'weather' | 'casters' | 'actors' | 'shade' | 'grade' | 'lights' | 'prompts' | 'bubbles' | 'vision';
+/**
+ * The configuration of the one frame for a sequence (the title glide, a cutscene, the taxi flight): where the camera is,
+ * which passes run, what is drawn over the world, the time of day and the pixel scale. A sequence is never a second
+ * renderer; it is this frame, directed (docs/design/SEAMLESS-WORLD.md, Principles "One renderer"; decision 23).
+ * Absent, the frame is drawn exactly as in play.
+ */
+export interface FrameDirector {
+  /**
+   * Camera from a timeline (world units of the frame's zone) instead of the player follow. `x` is the camera's left edge
+   * (`view.cam`), `h` the timeline's camera height (the picture moves up by `h`, as the timeline's camera track has
+   * always meant), `zoom` scales the world about the middle of the viewport (overlays stay unzoomed).
+   */
+  camera?: { x: number; h: number; zoom?: number };
+  /** Which passes run (default: all on, as play). Sequences switch off what they don't have. */
+  passes?: Partial<Record<FramePass, boolean>>;
+  /**
+   * Drawn over the world, under nothing (in logical viewport coordinates, unzoomed), in this order: full-screen fades,
+   * the letterbox bars, then text cards (the glide's district names). A card without `x` is centred; `y` is the
+   * alphabetic baseline from the top (default the middle).
+   */
+  overlays?: { fades?: { color: string; opacity: number }[]; cards?: { text: string; opacity: number; x?: number; y?: number }[]; letterbox?: { top: number; bottom: number } };
+  /** Time of day for the light (city clock minute/day) when the sequence sets it: the frame's light at that minute, same facing, outdoors and weather. */
+  clock?: { minute: number; day?: number };
+  /** Pixel scale override (a sequence's own fit), else the game's. */
+  scale?: number;
+}
+/** Does the director let this pass run? */
+export const passOn = (d: FrameDirector | undefined, pass: FramePass) => d?.passes?.[pass] !== false;
+
+/**
+ * The one bridge from timelines to the frame: an evaluated timeline frame (art/core/timeline.ts `evaluateTimeline`) as
+ * a director. The shot camera and the camera tracks become the camera, the timeline's fades and text cards the
+ * overlays (a card's `h` is up from the viewport's top edge, as the timeline stores it), a piece's `clock` state (a city
+ * minute, -1 none) the time of day. `base` adds what the timeline does not own (passes, letterbox, scale) and wins.
+ */
+export function directorFromTimeline(frame: Pick<TimelineFrame, 'camera' | 'fades' | 'text' | 'state'>, base: FrameDirector = {}): FrameDirector {
+  const director: FrameDirector = {
+    camera: { x: frame.camera.x, h: frame.camera.h, zoom: frame.camera.zoom },
+    overlays: {
+      fades: frame.fades.map(f => ({ color: f.color, opacity: f.opacity })),
+      cards: frame.text.map(card => ({ text: card.text, opacity: 1, x: card.x, y: -card.h })),
+    },
+  };
+  for (const state of Object.values(frame.state)) {
+    const minute = state.clock;
+    if (typeof minute === 'number' && Number.isFinite(minute) && minute >= 0) { director.clock = { minute, ...(typeof state.day === 'number' ? { day: state.day } : {}) }; break; }
+  }
+  return { ...director, ...base, overlays: { ...director.overlays, ...base.overlays } };
+}
+
 /** One frame of the world: the zone the player is in (the scene) and the zones joined to it that are on screen. */
 export interface WorldFrame {
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
@@ -46,6 +100,8 @@ export interface WorldFrame {
   timeline?:TimelineOverlay;
   /** Zones joined to this one by seams, on screen this frame. None: a scene drawn alone, exactly as ever. */
   joined?: readonly ZoneFrame[];
+  /** A sequence's configuration of this frame (camera, passes, overlays, clock, scale). None: play. */
+  director?: FrameDirector;
 }
 
 /** The one frame renderer, for a scene alone or with the zones joined to it (docs/design/SEAMLESS-WORLD.md §3). */
@@ -53,23 +109,27 @@ export function renderWorldFrame(frame:WorldFrame){const span=perfBegin('render.
 function renderMeasuredFrame(frame: WorldFrame) {
   let pass=perfBegin('render.prepare');
   beginLayeredFrame();
-  const x = frame.context, k = frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
+  const d = frame.director, x = frame.context, k = d?.scale ?? frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
   x.setTransform(k, 0, 0, k, 0, 0);
-  const v = frame.view;
+  const v = d?.camera ? directedView(frame.view, d.camera) : frame.view;
   clearWorld(x, v.viewW, v.viewH);
-  const vision = zh.visionOn;
-  const W = amb.weather ? frame.weather() : null;
+  const zoom = d?.camera?.zoom ?? 1;
+  if (zoom !== 1) { x.translate(v.viewW / 2, v.viewH / 2); x.scale(zoom, zoom); x.translate(-v.viewW / 2, -v.viewH / 2); }
+  const vision = zh.visionOn && passOn(d, 'vision');
+  const W = amb.weather && passOn(d, 'weather') ? frame.weather() : null;
   const covers = amb.covers?.map(c => [v.sx(c.from), v.sx(c.to), v.y(c.under)] as [number, number, number]);
   // each joined zone is lit by its own facing; the scene's light is installed last, as it is the one the frame shares
   for (const z of frame.joined ?? []) { const ZL = z.lighting(W); z.view.lighting = ZL; z.view.illumination = createLightingFrame(ZL, z.scene.lights, ZL.outdoor ? z.scene.shade : undefined, z.scene.width, true); z.preparePresentation?.(); }
-  const L = frame.lighting(W);
+  const given = frame.lighting(W);
+  const L = d?.clock ? lightAt(d.clock.day ?? given.day, d.clock.minute, given.facing, W, given.outdoor) : given;
   v.lighting = L;
   v.illumination = createLightingFrame(L, s.lights, L.outdoor ? s.shade : undefined, s.width, true);
   frame.preparePresentation?.();
   const look = W ? { w: W, t: frame.reduced ? frame.clock * 0.35 : v.t, still: frame.reduced, covers, day: L.daylight } : null;
   const rain = W?.wet ?? 0;
+  const casters = !vision && passOn(d, 'casters'), shade = !vision && passOn(d, 'shade');
   perfEnd(pass);pass=perfBegin('render.world');
-  if (amb.sky) { drawSky(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
+  if (amb.sky && passOn(d, 'sky')) { drawSky(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
   if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
   if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);
   // a zone below this one (stacked by a stairs seam) is further back: drawn before the zone's own artwork, which stands over it
@@ -86,23 +146,61 @@ function renderMeasuredFrame(frame: WorldFrame) {
     mid();
     if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); muteWorld(x, v, zh.model.spots()); }
   }
-  if (!vision) drawCasters(x, v, s.casters);
+  if (casters) drawCasters(x, v, s.casters);
   for (const z of frame.joined ?? []) if (!z.below) drawJoined(x, z, look, rain, vision);
   perfEnd(pass);pass=perfBegin('render.actors');
-  frame.roomWash?.(x, v);
-  s.drawActors?.(x, v);
-  frame.actors?.(x, v);
+  if (passOn(d, 'actors')) {
+    frame.roomWash?.(x, v);
+    s.drawActors?.(x, v);
+    frame.actors?.(x, v);
+  }
   flushLayeredSlot('over-player');
   perfEnd(pass);pass=perfBegin('render.finish');
-  if (!vision) drawShade(x, v);
+  if (shade) drawShade(x, v);
   s.drawFront?.(x, v);
   flushLayeredSlot('foreground');
-  if (!vision) { drawGrade(x, v, L); drawLights(x, v, s.lights, L); }
+  if (!vision) { if (passOn(d, 'grade')) drawGrade(x, v, L); if (passOn(d, 'lights')) drawLights(x, v, s.lights, L); }
   if (look && !vision) weatherFront(x, v, look);
-  frame.prompts?.(x, v);
-  frame.bubbles?.(x, v);
+  if (zoom !== 1) x.setTransform(k, 0, 0, k, 0, 0);
+  if (passOn(d, 'prompts')) frame.prompts?.(x, v);
+  if (passOn(d, 'bubbles')) frame.bubbles?.(x, v);
   if(frame.timeline){const z=frame.zoom??1;drawTimelineOverlay(x,{width:v.viewW*z,height:v.viewH*z,scale:k/z},frame.timeline);}
+  if (d?.overlays) { const z = frame.zoom ?? 1; drawDirectorOverlays(x, v.viewW * z, v.viewH * z, k / z, d.overlays); }
   perfEnd(pass);
+}
+
+/** The frame's view under a director's camera: the camera's left edge at `x`, the picture moved up by `h` (zoom is a canvas transform). */
+function directedView(v: View, camera: NonNullable<FrameDirector['camera']>): View {
+  const dx = camera.x - v.cam;
+  return { ...v, cam: camera.x, sx: (wx, parallax = 1) => v.sx(wx - dx * parallax, parallax), y: h => v.y(h + camera.h) };
+}
+
+const RUST = '194,65,12';
+/** Fades, letterbox bars (each with a thin rust edge so the picture reads as framed), then cards: over everything else. */
+function drawDirectorOverlays(x: CanvasRenderingContext2D, W: number, H: number, scale: number, overlays: NonNullable<FrameDirector['overlays']>) {
+  x.save();
+  try {
+    x.setTransform(scale, 0, 0, scale, 0, 0); x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1;
+    for (const fade of overlays.fades ?? []) if (fade.opacity > 0) { x.globalAlpha = Math.min(1, fade.opacity); x.fillStyle = fade.color; x.fillRect(0, 0, W, H); }
+    x.globalAlpha = 1;
+    const bars = overlays.letterbox;
+    if (bars) {
+      x.fillStyle = '#000';
+      x.fillRect(0, 0, W, bars.top);
+      x.fillRect(0, H - bars.bottom, W, bars.bottom);
+      x.fillStyle = 'rgba(' + RUST + ',.55)';
+      x.fillRect(0, bars.top - 1, W, 1);
+      x.fillRect(0, H - bars.bottom, W, 1);
+    }
+    const cards = overlays.cards?.filter(c => c.opacity > 0 && c.text) ?? [];
+    if (cards.length) {
+      x.fillStyle = '#ffdfb5'; x.font = '600 12px "IBM Plex Mono", monospace'; x.textBaseline = 'alphabetic';
+      for (const card of cards) {
+        x.globalAlpha = Math.min(1, card.opacity); x.textAlign = card.x === undefined ? 'center' : 'left';
+        for (const [line, text] of card.text.split('\n').entries()) x.fillText(text, card.x ?? W / 2, (card.y ?? H / 2) + line * 18);
+      }
+    }
+  } finally { x.restore(); }
 }
 
 /**
