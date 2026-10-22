@@ -1,7 +1,8 @@
 # ACCESS DENIED: prologue and Act I encounter plan
 
-Milestone 1 design deliverable, 2026-10-16. Read with the
-[concept](./PROGRESSION-CONCEPT.md) and [roadmap](../../ROADMAP.md).
+Milestone 1 design deliverable, 2026-10-16; revised 2026-10-22. Read with the
+[concept](./PROGRESSION-CONCEPT.md), [story](./STORY.md), [seamless world](./SEAMLESS-WORLD.md)
+and [roadmap](../../ROADMAP.md).
 This is a proposed buildable sequence, not implemented content or a player-tested solution.
 Working defaults below make the design concrete; they remain revisable with Tommi.
 
@@ -11,18 +12,31 @@ Working defaults below make the design concrete; they remain revisable with Tomm
   coworker provides warmth and a recurring personal connection. Names and dialogue are pending.
 - The prologue begins at dusk and ends after dawn travel, home routines and rest. Act I
   begins at the first morning denial. Time follows authored beats, not a speed test.
+- **The prologue is seamless** (Tommi, 2026-10-22): one unbroken journey from the harbor to
+  Downtown, the showcase for the engine. Single cuts are allowed. The harbor is replanned as
+  joined zones and P0–P6 move into them; the ride runs from the raised Harbor station to the
+  underground Downtown Metro, and P7–P9 are authored on top. The order of engine steps is in
+  [SEAMLESS-WORLD.md](./SEAMLESS-WORLD.md) §7.
+- **No hacking in the prologue** (Tommi, 2026-10-22): no hacking view and no wiring puzzles. It
+  teaches ordinary use of items. It may prime hacking by fixing or getting around one thing,
+  such as a broken lift, a back door or the coffee machine.
 - Deletion removes administrative recognition. The body remains human and acquaintances
   remember the player. The visual representation should support that meaning.
 - Home permits emergency egress. Household service and re-entry permissions fail. The
   player can reach help on foot before receiving any hacking capability.
 - Kessel has a small Downtown treatment room, reached through the fixer. His existing
   Neon Market clinic can remain a later location; this plan does not move an entire district.
-- Kessel's augmentation enables direct local device interaction first. Moth supplies the
-  investigative thread, not an immediate unlock of the full hacking interface.
+- Kessel's augmentation enables direct local device interaction first. Moth's trail supplies
+  the investigative thread, not an immediate unlock of the full hacking interface.
 - Act I's required curriculum ends at simple information/access and known connections.
   Scanning, net-map navigation, TIMER, SWITCH, trace and watchdogs move to Act II.
-- The local investigation earns a specific departure lead. A harbor return is the working
-  finale option; the robot incident is a separate unresolved narrative decision.
+- **Act I plays only in Downtown** (Tommi, 2026-10-22). The player cannot leave while the
+  identity is revoked. Moth is not found in Act I; Moth is Act II's lead. Act I ends with the
+  sweep and Kessel's emergency transfer into a DLV-9 body. The harbor finale is not in Act I;
+  it may end the final act.
+- **Act I is built as sets for now** (Tommi, 2026-10-22): art and layout, no gameplay. Wiring
+  and hacking puzzles are not built yet. Tommi reviews each set.
+- **Saves may reset** when the prologue replaces the current opening.
 
 ## Reading the matrices
 
@@ -35,12 +49,12 @@ Story conversation and save/pause access are always available where appropriate.
 details never hide a required prerequisite. Failure/recovery and saved consequences are
 specified in the companion tables to keep the scene matrices readable.
 
-**Decided (Tommi, 2026-10-22):** the prologue has no hacking view and no wiring puzzles. It teaches ordinary
-use of items, and may prime hacking by fixing or getting around one thing (a broken lift, a back door, the
-coffee machine). It travels seamlessly from the harbor to Downtown, to show what the engine can do
-(see [SEAMLESS-WORLD.md](./SEAMLESS-WORLD.md)). Existing saves may be reset when it replaces the opening.
-
 ## Prologue matrix
+
+P0–P6 are the Harbor Shift prototype; they move into the replanned harbor zones. P7 is the
+seamless ride, not a cut to a separate train scene. Places and layout may change in the
+harbor design pass with Tommi; the teaching order stays. One beat may add the single fix or
+way around something that primes hacking, using ordinary actions only.
 
 | Beat / place | Objective and story contribution | New concept / prerequisite | Available actions and presentation | Evidence of understanding |
 | --- | --- | --- | --- | --- |
@@ -51,7 +65,7 @@ coffee machine). It travels seamlessly from the harbor to Downtown, to show what
 | P4 · counter → trolley | Return the coworker's empty transport case to its rack | Independent item practice; P3 | Same verbs, no repeated control lesson; short task request | Completes a changed delivery without a procedural prompt |
 | P5 · trolley bay | Release a trolley wheel clamp, then move it to the marked loading spot | Observation and ordinary machine state; P4 | Read clamp indicator, release clamp, push trolley; no puzzle timing | Explains why trolley would not move and sees it stay in the new position |
 | P6 · checkout | Return work tag, check out, inspect pay statement | Combine familiar actions; P3–5 | Give tag; use checkout; read optional wage detail | Completes work and identifies the homeward route |
-| P7 · platform/train | Take the homeward train and leave at Downtown | Guided travel; P1–6 | Board/exit using familiar interact; destination shown; optional passenger conversation | Selects the named stop without needing network geography |
+| P7 · platform/train | Take the homeward train from the raised Harbor station and leave at underground Downtown, with no cut | Guided travel; P1–6 | Walk aboard and off using familiar movement and interact; destination shown; optional passenger conversation | Selects the named stop without needing network geography |
 | P8 · Downtown route | Collect the usual breakfast at the fixer's stall, then go home | Practice orientation and exchange; P7 | Existing movement/interact; ordinary identity authorisation; simple route view if needed | Finds stall and building; recognises the fixer later |
 | P9 · Capsule 7B | Make a drink, greet Pixel, then rest | Practice household state and deliberate transition; P5/P8 | Kettle use, optional blinds/Pixel detail, explicit rest action after the short routine | Independently uses home objects; chooses to end the day |
 
@@ -75,11 +89,17 @@ through working badges and transactions; avoid delivering its history in the shi
 ## Revised Act I route (2026-10-22)
 
 Agreed with Tommi: Act I is about being stripped of identity, wanting it back and learning
-hacking to circumvent the obstacles. It shows a different Downtown place at each step and ends
-with an emergency transfer into a DLV-9 robot body (see STORY.md, "Decided 2026-10-22").
+hacking to circumvent the obstacles. It plays only in Downtown, shows a different Downtown place
+at each step and ends with an emergency transfer into a DLV-9 robot body (see STORY.md,
+"Decided 2026-10-22"). Moth is not found; steps 9–10 follow Moth's trail to an empty hideout
+that points to Act II.
+
+**Status: sets only.** The places are built as art and layout, reviewed by Tommi. No Act I
+gameplay, wiring or hacking puzzles are built yet.
+
 The teaching spine below is kept; the encounters move to the new places. The matrix after this
 section is the earlier version and is to be reworked to this route; its access, recovery and
-dependency rules still apply.
+dependency rules still apply where they do not contradict this route.
 
 | Step | Place (✓ scene exists · ○ new) | What happens | Teaches (from the matrix) |
 | --- | --- | --- | --- |
@@ -91,17 +111,22 @@ dependency rules still apply.
 | 6 | Capsule lobby ○ | Back in through the service latch, `release` | A4 independent practice |
 | 7 | FRESHCO supermarket ○ or the corner shop ✓ | Food without identity; the self-checkout accuses you; event → action wire | A5 (and A6 at home) |
 | 8 | Shop or supermarket back room ○ | A faulty sensor; cut the wire | A7 |
-| 9 | The back yard ✓ | Moth's parcel: cut and rewire | A8 |
-| 10 | Moth's stairwell ○ and flat ✓ | The note's phrase opens the door; the desk; a first known connection | A9–A11 |
+| 9 | The back yard ✓ | Moth's trail: a parcel Moth left; cut and rewire | A8 |
+| 10 | Moth's stairwell ○ and flat ✓ | The note's phrase opens the door; the flat is an empty hideout; the desk gives a first known connection and a lead for Act II | A9–A11 |
 | 11 | The library ✓ | A public terminal: the deletion was deliberate; there is a list | A12 |
 | 12 | The substation ○, then the dark Registry back office ○ | The combination challenge: cut the block's power at the substation, then break into the dark Registry and restore the record by force at the node; the backup power trips the alarm (decided 2026-10-22) | A13 |
 | 13 | A Downtown street at night ✓ (sweep variant ○) → Kessel's room ○ | A sweep collects unregistered persons; Kessel's emergency transfer into DLV-9 | Narrative only; no new mechanic |
 
 Optional places that can carry breathers or side errands: the 24h diner, the billboard catwalk
-and Downtown roofs, the police precinct. The harbor finale is not part of this route; it may
-return as Act I's or the final act's finale. Whether Moth is met in Act I is open.
+and Downtown roofs, the police precinct. The harbor finale is not in Act I; it may end the
+final act.
 
 ## Act I matrix (earlier version)
+
+**Superseded in part by the revised route above.** Its teaching beats A1–A13 still define the
+spine and move to the new places. Where it differs, the route wins: Moth is not reached in Act I,
+A13's combination is the dark Registry back office, A14's departure and A15's harbor finale
+are dropped, and the act ends with the sweep and the transfer instead.
 
 The sequence alternates instruction with independent action and story. Familiar places
 change meaning instead of being replaced by new districts at every step.
@@ -120,9 +145,9 @@ change meaning instead of being replaced by new districts at every step.
 | A10 · Moth's room | Use a nearby labelled service note to open a desk compartment containing a contact endpoint | Independent clue/access practice; A9 | Read another record, unlock compartment; no transformations or multi-fragment crafting | Locates and applies the second clue without being told its value |
 | A11 · Moth's desk | Reach a known building message service and read a notice associated with the deletion | LINK and known connection; A10 | Select one named endpoint, connect, read; current connection clearly labelled | Distinguishes the local desk from the connected service |
 | A12 · library desk | Independently contact the named public manifest service from a library terminal | Known-connection practice; A11 | Connect to the supplied endpoint, read record; no scanning or access timer | Uses the same connection model from another physical place |
-| A13 · Downtown service room | Recover a held dispatch record that identifies where Moth can be reached | Combination only; A8–12 | Clue opens cabinet; cut false sensor→latch close; wire request event→latch open; read record | Solves with taught actions and explains each consequence |
-| A14 · fixer / departure point | Compare evidence, arrange a specific journey and decide to follow Moth | Narrative synthesis; A13 | Talk/read/ordinary item handover; grant one clear destination permission | Understands where to go and why |
-| A15 · optional harbor finale | Return to the workplace under changed circumstances and reach Moth | Familiar skills in a changed context; A14 | A simplified access encounter, then dialogue; no new security/logic mechanic | Recognises the contrast and uses established skills independently |
+| A13 · Downtown service room | Recover a held dispatch record that identifies where Moth can be reached (superseded: in the revised route this is the substation and the dark Registry, restoring the record by force; Moth stays Act II's lead) | Combination only; A8–12 | Clue opens cabinet; cut false sensor→latch close; wire request event→latch open; read record | Solves with taught actions and explains each consequence |
+| ~~A14 · fixer / departure point~~ (superseded: no departure from Downtown in Act I) | Compare evidence, arrange a specific journey and decide to follow Moth | Narrative synthesis; A13 | Talk/read/ordinary item handover; grant one clear destination permission | Understands where to go and why |
+| ~~A15 · optional harbor finale~~ (superseded: not in Act I; may end the final act) | Return to the workplace under changed circumstances and reach Moth | Familiar skills in a changed context; A14 | A simplified access encounter, then dialogue; no new security/logic mechanic | Recognises the contrast and uses established skills independently |
 
 The morning denial concerns the resident account and re-entry; the kettle retains a manual
 local control for A6. Automated household authorisation need not disable every physical switch.
@@ -145,7 +170,7 @@ open after success. No narrow interval or background watchdog changes the soluti
 | A9–10 | Incorrect phrase gives a relevant response with no lockout. Notes remain readable after use. No optional purchase or puzzle supplies the only clue | Moth's place known, desk access and endpoint information |
 | A11–12 | Connect/disconnect freely; endpoint supplied before use. Library public desk is physically accessible and does not require the current P16 puzzle | Known-connection capability; records and visited services remembered |
 | A13 | Every required clue is in the room or a retained record. Stable states, repeatable events, local reset and contextual hints; no resource cost | Dispatch evidence recovered; local combination complete |
-| A14–15 | Departure permission names destination and method; pre-departure review of the lead is available. A15 depends on selecting the finale variant | Limited travel permission and Moth contact; exact end-of-act/body-transition flags deferred |
+| ~~A14–15~~ (superseded) | Departure permission names destination and method; pre-departure review of the lead is available. A15 depends on selecting the finale variant | Limited travel permission and Moth contact; exact end-of-act/body-transition flags deferred |
 
 ## Teaching dependency check
 
@@ -158,9 +183,9 @@ open after success. No narrow interval or background watchdog changes the soluti
 | Event/action wire | A5 | A6 | A8 after cutting practice |
 | Cut existing wire | A7 | A8 | A13 uses already practised cut/replace |
 | Clue/access relationship | A9 | A10 | A13 cabinet |
-| Known connection | A11 | A12 | Retrieving and interpreting records for A14 |
+| Known connection | A11 | A12 | Reading the deletion record (route step 11) and A13 |
 
-P1–P9 → A1–A4 → A5–A8 → A9–A12 → A13–A14 is the required learning spine.
+P1–P9 → A1–A4 → A5–A8 → A9–A12 → A13 is the required learning spine; the sweep and transfer follow as story.
 Optional activity can occur between these blocks. Completion conditions establish encounter
 availability; they do not claim to measure comprehension. If later testing shows a missed
 concept, adjust the encounter and feedback before adding more mandatory lessons.
@@ -176,20 +201,18 @@ this required curriculum. Use ground-level/service access for required Downtown 
 
 | Stage | Interfaces | Places and travel |
 | --- | --- | --- |
-| Prologue work | Movement, contextual actions, task reminder, pause/save | Assigned harbor bays; surrounding city remains scenery |
-| Commute/home | Same controls; simple home-route view if needed | Homebound train, short Downtown route, home |
+| Prologue work | Movement, contextual actions, task reminder, pause/save; no hacking view | Assigned harbor zones; surrounding city remains scenery |
+| Commute/home | Same controls; simple home-route view if needed | Seamless ride Harbor (raised) → Downtown (underground), short Downtown route, home |
 | A1–2 | Ordinary actions and local orientation | Home egress, fixer, Kessel; ordinary local services can offer flavour |
 | A3–4 | Single-device inspect and invoke | Clinic and home service latch |
 | A5–7 | Limited event/action wiring and then cutting | Shop counter/alcove and home practice devices |
 | A8 | Small multi-device board | Yard parcel; optional basic practice can reopen locally |
 | A9–12 | Clue access and named connections, staged separately | Moth's room, library public desk; no city-wide network browser |
-| A13–14 | Previously taught interfaces only | Downtown service room, departure arrangement |
-| A15 if chosen | Same capabilities | One authorised trip to the harbor finale; wider districts remain later |
+| A13 | Previously taught interfaces only | Substation and dark Registry back office; then the sweep and Kessel's room |
 
 The prologue harbor visit marks it known but does not grant later free return. After deletion,
-public interdistrict services reject the revoked identity; the special departure is earned
-through a contact. Apply the same permission to stations, taxis, street corridors and quick
-travel. In particular, the Galleria mall service corridor cannot bypass the Act I boundary.
+public interdistrict services reject the revoked identity, and Act I offers no way out of
+Downtown. Apply the same rule to stations, taxis, street corridors and quick travel. In particular, the Galleria mall service corridor cannot bypass the Act I boundary.
 Opening a local map does not expose all transport layers, unknown networks or future objectives.
 
 Keep doors meaningful: provide a short in-world reason for unavailable places. Once a local
@@ -217,36 +240,38 @@ route while building the new chapters; switch integration deliberately.
 | P11 bank | Later optional investigation; no Act I prerequisite |
 | P12 DLV-9 gate | Keep robot personality/ambient encounter; defer multi-system gate puzzle. It no longer forces entry to Neon Market during Act I |
 | P13 laundromat | Act II time/constraint chapter; remove jacket/pass dependency from the Act I route |
-| P14 emergency train stop | Act II combination after timing lessons. A14 travel is arranged through a contact, not an untaught brake hack |
-| P15 stacks/Moth | Reuse place and meeting for possible A15; remove watchdog/thermal/timing demands from that version. Preserve full machinery challenge for later |
+| P14 emergency train stop | Act II combination after timing lessons. Act I has no departure; the P14 siding is seamless step 10 |
+| P15 stacks/Moth | Not in Act I (Moth is Act II's lead; the harbor finale may end the final act). Preserve full machinery challenge for later |
 | P16 library | Reuse place and public terminals for A12; defer timer/guard/software-lending combination and scan reward to Act II |
 | O01/O02 practice machines | Only offer already taught subsets in Act I; camera scopes and sealed extras later |
 | O03–O11 advanced/other-district options | Retain as catalogue; place after their concepts and districts open. Simple flavour can remain without puzzle interfaces |
 
 ## Finale boundary and open decisions
 
-Milestone 1 establishes a complete local learning arc through A14 and a constrained A15
-candidate. It does not invent a settled cause for the body transfer. Before milestone 6's
-ending is implemented, choose between a Downtown finale and the harbor excursion, determine
-what Moth reveals, and connect that event causally to Kessel and the incident.
+Decided (Tommi, 2026-10-22): Act I ends in Downtown. A forced attempt at the dark Registry back
+office trips the alarm; a sweep collects unregistered persons; Kessel moves the player into a
+DLV-9 body in an emergency transfer, and the human body is taken. Moth is not found in Act I
+and leads Act II, whose goal is the body. The harbor finale is not in Act I; it may end the
+final act.
 
-Recommended narrative order: local success → useful evidence/contact → chosen departure or
-intervention → consequence leading into Act II. Do not surprise the player with new puzzle
-mechanics during the transfer. Establish the existence and limits of transfer technology
-before it becomes the rescue. The human body's location, Kessel's possible abduction and
-whether the player is transferred or copied require later story decisions.
+Still open, needed before milestone 7 rather than now: where the human body is taken, whether
+the player is transferred or copied, and Kessel's fate (including his possible abduction).
+
+Do not surprise the player with new puzzle mechanics during the transfer. Establish the
+existence and limits of transfer technology before it becomes the rescue.
 
 ## Implementation handoff and completion record
 
-Milestone 2 can build P1–P6 now from this plan without resolving the finale. Prototype a
-work bay, receiving counter, trolley spot and checkout using existing harbor scenery.
+Milestone 2 built P1–P6 as an isolated prototype on existing harbor scenery: a work bay,
+receiving counter, trolley spot and checkout. Milestone 3 moves them into the replanned,
+joined harbor zones after the harbor design pass with Tommi.
 Keep controls consistent with ordinary game interactions. Dialogue wording, names and exact
 layout are implementation choices to refine within this encounter structure.
 
 The integration will need distinct story-stage, capability, scene-permission and completed-task
 state. Existing opening flags and blanket hacking unlock do not provide this sequence.
-Keep required item transactions idempotent and preserve a valid resume point. Decide migration
-for existing saves before replacing the main opening; this document introduces no save reset.
+Keep required item transactions idempotent and preserve a valid resume point. Existing saves
+may be reset when the prologue replaces the main opening (Tommi, 2026-10-22).
 
 Design checks completed for this pass:
 
@@ -258,5 +283,5 @@ Design checks completed for this pass:
 - The first implementation slice is specified independently of unresolved later-act fiction.
 
 These are desk checks of the design. No playthrough, player test or gameplay implementation
-has been performed as part of milestone 1. Review pacing and comprehension with players at
-the separately agreed checkpoints in ROADMAP.md.
+has been performed as part of milestone 1. Tommi reviews frames and scenes at the
+checkpoints in ROADMAP.md; that review also covers Harbor Shift pacing.
