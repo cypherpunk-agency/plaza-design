@@ -17,8 +17,8 @@ export interface Seam { id: string; kind: SeamKind; a: SeamEnd; b: SeamEnd; dx: 
 export interface ZoneGraphSource { version: 1; seams: Seam[] }
 /** Where a zone sits relative to the active one, and how many seams away it is. */
 export interface ZonePlacement { dx: number; dh: number; hops: number }
-/** What the graph needs to know about each zone. */
-export interface ZoneInfo { width: number }
+/** What the graph needs to know about each zone: its width, and (for residency across floors) its height. */
+export interface ZoneInfo { width: number; height?: number }
 
 export const EMPTY_ZONE_GRAPH: ZoneGraphSource = { version: 1, seams: [] };
 
@@ -57,16 +57,93 @@ export function seamsOf(graph: ZoneGraphSource, zone: string): { seam: Seam; oth
 /**
  * The zones around `active`, each placed relative to it by walking seams outward (shortest path first), up to
  * `hops` seams away. `active` itself is at (0, 0). A zone reached twice keeps its first (shortest) placement;
- * `worldProblems` reports paths that disagree.
+ * `worldProblems` reports paths that disagree. Where `within` is given, a zone it refuses is left out and not
+ * walked through (residency stops at the eviction distance rather than placing the whole network).
  */
-export function placeFrom(graph: ZoneGraphSource, active: string, hops = 1): Map<string, ZonePlacement> {
-  const out = new Map<string, ZonePlacement>([[active, { dx: 0, dh: 0, hops: 0 }]]), queue = [active];
+export function placeFrom(graph: ZoneGraphSource, active: string, hops = 1, within?: (zone: string, at: ZonePlacement) => boolean): Map<string, ZonePlacement> {
+  const out = new Map<string, ZonePlacement>([[active, { dx: 0, dh: 0, hops: 0 }]]), queue = [active], refused = new Set<string>();
   while (queue.length) {
     const at = queue.shift()!, here = out.get(at)!;
     if (here.hops >= hops) continue;
-    for (const s of seamsOf(graph, at)) if (!out.has(s.other)) { out.set(s.other, { dx: here.dx + s.dx, dh: here.dh + s.dh, hops: here.hops + 1 }); queue.push(s.other); }
+    for (const s of seamsOf(graph, at)) {
+      if (out.has(s.other) || refused.has(s.other)) continue;
+      const there = { dx: here.dx + s.dx, dh: here.dh + s.dh, hops: here.hops + 1 };
+      if (within && !within(s.other, there)) { refused.add(s.other); continue; }
+      out.set(s.other, there); queue.push(s.other);
+    }
   }
   return out;
+}
+
+// ---------- residency (SEAMLESS-WORLD.md §3): which zones are hosted, decided each frame ----------
+
+/** How a zone is held: the one the player is in, on camera, close enough to be hosted, or not hosted at all. */
+export const RESIDENCY_TIERS = ['active', 'visible', 'near', 'unloaded'] as const;
+export type ResidencyTier = typeof RESIDENCY_TIERS[number];
+/** The world-level residency settings (§6.6): distances are in view widths, the margin in units. */
+export const RESIDENCY_DEFAULTS = { prefetch: 1.5, evict: 3, margin: 64, budget: 8 } as const;
+/** The camera rect in the active zone's units: `x`..`x + w` across and, where `h` is given, `y`..`y + h` up (no `h`: every height is in view). */
+export interface CameraRect { x: number; w: number; y?: number; h?: number }
+export interface ResidencyInput {
+  active: string; camera: CameraRect; viewW: number;
+  /** The zones that exist (a zone not named here cannot be hosted and is not walked through). */
+  zones: Readonly<Record<string, ZoneInfo>>;
+  /** Zones hosted now (hysteresis: a hosted zone stays until it is past the eviction distance). */
+  hosted: Iterable<string>;
+  /** Zones with a panel or dialogue open: kept hosted wherever they are. */
+  held?: Iterable<string>;
+  budget?: number; prefetch?: number; evict?: number; margin?: number;
+}
+/** One zone's answer: its tier, where it lies (none for a held zone out of reach), its gap from the camera rect, and why. */
+export interface ZoneResidency { tier: ResidencyTier; at?: ZonePlacement; gap: number; reason: string }
+export interface Residency {
+  zones: Map<string, ZoneResidency>;
+  /** Zones that should be hosted and are not, in the order to compile them (active, visible, then nearest). */
+  load: string[];
+  /** Zones hosted now that should not be: persist, then dispose. */
+  evict: string[];
+}
+
+/** The gap between the camera rect and a zone's rect placed at `at` (0 where they overlap); `[across, up]` apart. */
+const gapOf = (camera: CameraRect, at: ZonePlacement, zone: ZoneInfo): [number, number] => {
+  const gx = Math.max(0, at.dx - (camera.x + camera.w), camera.x - (at.dx + zone.width));
+  if (camera.h === undefined) return [gx, 0];
+  const y = camera.y ?? 0;
+  return [gx, Math.max(0, at.dh - (y + camera.h), y - (at.dh + (zone.height ?? 0)))];
+};
+const RANK: Record<ResidencyTier, number> = { active: 0, visible: 1, near: 2, unloaded: 3 };
+
+/**
+ * Each zone's tier this frame. Placed from `active` along seams (floating origin) out to the eviction distance:
+ * **active** the player's zone; **visible** its rect meets the camera rect grown by `margin`; **near** within
+ * `prefetch` view widths of the camera rect, or already hosted and not past `evict` view widths (hysteresis), or
+ * held by an open panel; **unloaded** otherwise. If more than `budget` would be hosted, the near set shrinks,
+ * nearest kept first; active, visible and held zones are never dropped. Pure: the loop compiles `load` (one per
+ * frame) and evicts `evict`.
+ */
+export function residency(graph: ZoneGraphSource, input: ResidencyInput): Residency {
+  const D = RESIDENCY_DEFAULTS, budget = input.budget ?? D.budget, margin = input.margin ?? D.margin, { active, camera, zones: info } = input;
+  const prefetch = (input.prefetch ?? D.prefetch) * input.viewW, evict = (input.evict ?? D.evict) * input.viewW;
+  const hosted = new Set(input.hosted), held = new Set(input.held ?? []);
+  const placed = placeFrom(graph, active, Infinity, (z, at) => !!info[z] && Math.hypot(...gapOf(camera, at, info[z])) <= evict);
+  const zones = new Map<string, ZoneResidency>();
+  for (const [z, at] of placed) {
+    if (!info[z]) continue;
+    const [gx, gy] = gapOf(camera, at, info[z]), d = Math.hypot(gx, gy), r = (tier: ResidencyTier, reason: string) => zones.set(z, { tier, at, gap: d, reason });
+    if (z === active) r('active', 'the player is here');
+    else if (gx <= margin && gy <= margin) r('visible', `visible: ${Math.round(d)} from camera`);
+    else if (d <= prefetch) r('near', `near: ${Math.round(d)} from camera <= prefetch ${Math.round(prefetch)}`);
+    else if (held.has(z)) r('near', 'held: a panel is open');
+    else if (hosted.has(z)) r('near', `kept: ${Math.round(d)} from camera <= eviction ${Math.round(evict)}`);
+    else r('unloaded', `unloaded: ${Math.round(d)} from camera > prefetch ${Math.round(prefetch)}`);
+  }
+  for (const z of [...hosted, ...held]) if (!zones.has(z))
+    zones.set(z, held.has(z) && info[z] ? { tier: 'near', gap: Infinity, reason: 'held: a panel is open' } : { tier: 'unloaded', gap: Infinity, reason: 'unloaded: past the eviction distance' });
+  // the budget: keep the nearest of the near set, never active, visible or held zones
+  const keep = [...zones].filter(([, r]) => r.tier !== 'unloaded').sort(([a, x], [b, y]) => (+!held.has(a) - +!held.has(b)) || RANK[x.tier] - RANK[y.tier] || x.gap - y.gap || a.localeCompare(b));
+  for (const [z, r] of keep.slice(Math.max(0, budget))) if (r.tier === 'near' && !held.has(z)) zones.set(z, { ...r, tier: 'unloaded', reason: `unloaded: over the budget of ${budget}` });
+  const order = [...zones].filter(([z, r]) => r.tier !== 'unloaded' && !hosted.has(z)).sort(([a, x], [b, y]) => RANK[x.tier] - RANK[y.tier] || x.gap - y.gap || a.localeCompare(b));
+  return { zones, load: order.map(([z]) => z), evict: [...hosted].filter(z => zones.get(z)?.tier === 'unloaded') };
 }
 
 /** Is a zone joined to anything? A zone with no seams is a world of one zone: it runs exactly as a scene always has. */
