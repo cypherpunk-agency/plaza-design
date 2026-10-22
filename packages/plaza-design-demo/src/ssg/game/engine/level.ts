@@ -25,6 +25,7 @@
  */
 import type { Resolved } from '../art/core/composition';
 import type { AccessResult } from './gameplay/access';
+import type { Condition } from './gameplay/types';
 
 /** A walkable line. `entry: 'door'` marks a building floor entered only at a door (default: walked into from the street). */
 export interface LevelFloor { id: string; x: number; w: number; h: number; building: string; label: string; entry?: 'door'; indoor?: true; zone?: string }
@@ -64,10 +65,12 @@ export interface LevelSource {
 /**
  * A barrier across a floor at x (its passage `w` wide, centred), standing at height h: shut, it stops the player on
  * either side. Its rule is the exits' own (world/access.ts `barrierAccess`): `key`, a keyring chip the player carries
- * (an exit's `needs.key`); `flag`, a flag that must be set (an exit's `requires`). `refuse`: the words when it refuses.
+ * (an exit's `needs.key`); `flag`, a flag that must be set (an exit's `requires`); `when`, a gameplay condition that must
+ * hold (an access requirement's `when`). `refuse`: the words when it refuses. A story phase may replace the rule
+ * (scene.json `phases.<p>.barriers.<id>`, story-rules.ts `barrierPhaseRule`).
  * `inside`: the building whose interior shows it; it stands only on that building's floors.
  */
-export interface LevelBarrier { id: string; x: number; h: number; w: number; style: string; key?: string; flag?: string; refuse: string; inside?: string; zone?: string }
+export interface LevelBarrier { id: string; x: number; h: number; w: number; style: string; key?: string; flag?: string; when?: Condition; refuse: string; inside?: string; zone?: string }
 /**
  * A part of a building that opens on its own: x..x+w, h..h+tall. `reveal`: always open, open once the player
  * is in it ('arrival'), or never (a room that is not part of the game). A room that opens always is not one of these. `keep`: a room once seen stays open
@@ -151,9 +154,9 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     return { id: r.instance.id, building: insideOf(r.instance.id).inside ?? '', x: p.facing < 0 ? p.x - w : p.x, w, h: p.h, tall: Number(r.props.height) * p.scale, reveal, keep: r.props.keep === 'close' ? 'close' : 'remember', children, live } as LevelRoom;
   });
   const barriers: LevelBarrier[] = rows.filter(r => r.element.type === 'level.barrier').map(r => {
-    const key = String(r.props.key ?? '').trim(), flag = String(r.props.flag ?? '').trim();
+    const key = String(r.props.key ?? '').trim(), flag = String(r.props.flag ?? '').trim(), when = r.props.when && typeof r.props.when === 'object' ? r.props.when as unknown as Condition : undefined;
     return { id: r.instance.id, x: r.placement.x, h: r.placement.h, w: Number(r.props.width) * r.placement.scale, style: String(r.props.style ?? 'turnstile'),
-      ...(key ? { key } : {}), ...(flag ? { flag } : {}), refuse: String(r.props.refuse ?? '').trim() || 'ACCESS DENIED.', ...insideOf(r.instance.id) };
+      ...(key ? { key } : {}), ...(flag ? { flag } : {}), ...(when ? { when: structuredClone(when) } : {}), refuse: String(r.props.refuse ?? '').trim() || 'ACCESS DENIED.', ...insideOf(r.instance.id) };
   });
   const hs = floors.map(f => f.h), revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
   for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }

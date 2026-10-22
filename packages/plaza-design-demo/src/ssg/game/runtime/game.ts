@@ -55,7 +55,7 @@ import { sceneShell } from "../engine/shell";
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
 import { contactsModel,type ContactsModel } from "../story/contacts";
 import { END_CARD,endCardText,type EndCardSource } from "../story/end-card";
-import { applyCounter,arrivalFor,attentionAim,attentionDue,cardFrame,clockPin,gateFrame,goalHint,triggerFires,triggerStarts,washTone,type CardSpec,type Cue,type GateRule,type Say } from "../story/story-rules";
+import { applyCounter,arrivalFor,attentionAim,attentionDue,barrierPhaseRule,cardFrame,clockPin,gateFrame,goalHint,triggerFires,triggerStarts,washTone,type CardSpec,type Cue,type GateRule,type Say } from "../story/story-rules";
 import { createCutscenes,CutscenePlay,isCutsceneId,type CutsceneId } from "../story/cutscenes/index";
 import {openingStoryModel,type ExitRule,type OpeningState,type PingTarget} from '../story/opening';
 import { Opening } from "../story/title/index";
@@ -938,11 +938,14 @@ export class Game {
     if (changed) this.persistSave();
   }
   /**
-   * E at a level barrier (turnstile, gate, locked door): its rule over the save (world/access.ts `barrierAccess`) refuses with
-   * its words, or it opens and stays open on this save (`Save.barriers`, by scene). False: the prompt is not a barrier's.
+   * E at a level barrier (engine/level.ts `LevelBarrier`): a phase rule for it (story-rules.ts `barrierPhaseRule`) runs as an exit's; else
+   * its rule over the save (world/access.ts `barrierAccess`) refuses with its words, or it opens and stays open on this save
+   * (`Save.barriers`, by scene). `granted`: a phase rule's beat is over. False: the prompt is not a barrier's.
    */
-  private passBarrier(id: string): boolean {
-    const lv = this.level!, result = levelPass(lv, id, b => barrierAccess(b, this.save.flags, this.save.keyring));
+  private passBarrier(id: string, granted = false): boolean {
+    const lv = this.level!, phase = granted ? undefined : barrierPhaseRule(id, lv.source.barriers, levelOpened(lv), z => this.sceneDefinition((z ?? this.here) as SceneId).phases?.[this.story]);
+    if (phase) return this.storyExit(phase.rule, phase.x, { barrier: id }, phase, id);
+    const result = levelPass(lv, id, b => granted ? { ok: true } : barrierAccess(b, this.save.flags, this.save.keyring, this.gameplayStatePort().read()));
     if (!result) return false;
     if (!result.ok) { this.zh.react(id, ['', result.reason, 'err']); return true; }
     this.save.barriers = { ...this.save.barriers, ...savedByScene(lv.source, this.here, levelOpened(lv)) }; this.persistSave();
@@ -1818,7 +1821,7 @@ export class Game {
   /** Where the attention ping points when it is not a device (world x): the scene's 'goal' speaker. */
   private goalAt: number | null = null;
   /** A checkpoint gate taking its time (story-rules.ts `GateRule`): when it started, where it stands, and where the player goes once it says ok. */
-  private beat: { start: number; checkpoint: { x: number; h: number }; gate: GateRule; go: { to: string; at?: string } | null } | null = null;
+  private beat: { start: number; checkpoint: { x: number; h: number }; gate: GateRule; go: { to: string; at?: string } | { barrier: string } | null } | null = null;
   /**
    * A card transition (story-rules.ts `CardSpec`; the opening's sleep, or "wait until…" at a bench or the bed): when the fade started,
    * the card (timings, the two clock readings, the label, and the cues that run in the dark `mid`, once: `woke`, and once it is light again `end`).
@@ -1889,7 +1892,7 @@ export class Game {
   }
 
   /** A way out that does something else in this phase (story-rules.ts `ExitRule`); `go` is where the player ends up. False: use it as usual. */
-  private storyExit(rule: ExitRule, x: number, go: { to: string; at?: string } | null, checkpoint?: SceneExit['checkpoint'], origin?: string): boolean {
+  private storyExit(rule: ExitRule, x: number, go: { to: string; at?: string } | { barrier: string } | null, checkpoint?: SceneExit['checkpoint'], origin?: string): boolean {
     if ('say' in rule) { this.say(rule.say.name, rule.say.pages, x, 60); return true; }
     if ('react' in rule) { this.zh.react(rule.react, rule.line); this.runCues(rule.cues ?? []); return true; }
     if ('gate' in rule) {
@@ -1909,7 +1912,7 @@ export class Game {
   }
 
   /** The gate or the acknowledgment is over: walk through the way out. */
-  private finishExit(go: { to: string; at?: string } | null) { if (go && this.hasScene(go.to)) this.travel(go.to, go.at); }
+  private finishExit(go: { to: string; at?: string } | { barrier: string } | null) { if (go && 'barrier' in go) { if (this.level) this.passBarrier(go.barrier, true); } else if (go && this.hasScene(go.to)) this.travel(go.to, go.at); }
 
   /**
    * Run a cue list (story-rules.ts `Cue`) in order. A milestone the story refuses ends it (false). Says are spoken, chained, once the other

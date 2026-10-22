@@ -81,6 +81,7 @@ import { mountBuildingWorkbench } from './building-workbench';
 
 
 import { mountEventInspector } from './event-inspector';
+import { mountBarrierAuthoring } from './barrier-authoring';
 
 import { mountSourceViewer } from './source-viewer';
 
@@ -357,7 +358,18 @@ function artworkLogic(scene: SceneDocument, instance: Instance) {
   scene.cues?.forEach((cue, i) => { if (cue.target === instance.id) keys.add('cue:' + i); });
   return { keys: [...keys], devices: [...devices] };
 }
+/** A selected level barrier's Access tab (barrier-authoring.ts): its rule edits the composition holding it, whatever the scene's logic. */
+function barrierSection(scene: string, instance: Instance, documents: readonly EditorDocument[]): InspectorSection[] {
+  if (instance.type !== 'level.barrier') return [];
+  const holds = (nodes: readonly Instance[]): boolean => nodes.some(n => n.id === instance.id || holds(n.children ?? []));
+  const doc = documents.find(d => d.kind === 'composition' && (d.value as Composition).scene === scene && holds((d.value as Composition).instances));
+  return doc ? [{ id: 'access', label: 'Access', title: 'When this barrier opens: its rule, Try it, phase rules and checks', mount: (host, context) => mountBarrierAuthoring(host, context, { scene, document: doc.id, instance: instance.id }) }] : [];
+}
 function inspectorSections(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
+  const barrier = instance ? barrierSection(scene, instance, documents) : [];
+  return [...barrier, ...logicSections(scene, instance, documents)];
+}
+function logicSections(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
   let entry: ReturnType<typeof gameplayScene> | undefined; try { entry = gameplayScene(scene, documents); } catch { entry = undefined; }
   const editable = !!entry && (!scene.startsWith('demo-') || scene === 'demo-manifest');
   const network = (context: WorkbenchContext) => () => pendingNetworkContext(new Map(context.documents.map(d => [d.id, d.value])));

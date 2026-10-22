@@ -342,16 +342,23 @@ export const BARRIER_STYLES = ['turnstile', 'gate', 'door'] as const;
 /**
  * A barrier across a floor (origin: the middle of its passage, `width` wide): shut, it stops the player on either side
  * until its rule passes (engine/level.ts `levelPass`, world/access.ts `barrierAccess`: the exits' key and flag); E asks it.
- * Its rule is these fields: `key`, a keyring chip the player must carry; `flag`, a flag that must be set; `refuse`, the
- * words when it refuses. It draws shut or open from `open` (0..1), which the level eases once it has opened; it stays open.
+ * Its rule is these fields: `key`, a keyring chip the player must carry; `flag`, a flag that must be set; `when`, an
+ * optional gameplay condition (flags, items, tokens, the player, time, weather; world/access.ts `validateBarrierCondition`);
+ * `refuse`, the words when it refuses. The composer's Access tab (authoring/barrier-authoring.ts) edits the rule with
+ * typed pickers, so the Look section hides those three. It draws shut or open from `open` (0..1), which the level eases
+ * once it has opened; it stays open.
  */
+const hidden = () => false;
+/** The shape only (null, or one plain condition object); its vocabulary is checked with the pending sources (world/access.ts). */
+const barrierWhen = (v: unknown) => { if (v !== null && (!v || typeof v !== 'object' || Array.isArray(v) || Object.keys(v).length !== 1)) throw new Error('level.barrier.when: null or one condition object'); };
 export const barrierElement: Element = {
   type: 'level.barrier', version: 1, label: 'Barrier (turnstile, gate, locked door)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     style: { kind: 'select', label: 'Style', options: [...BARRIER_STYLES], default: 'turnstile' },
     width: num('Passage width', 24, 10, 200, 1, 'units'),
-    key: text('Opens for: key chip carried (keyring id; empty: none)'),
-    flag: text('Opens once: flag set (empty: none)'),
+    key: { ...text('Opens for: key chip carried (keyring id; empty: none)'), showIf: hidden },
+    flag: { ...text('Opens once: flag set (empty: none)'), showIf: hidden },
+    when: { kind: 'json', label: 'Opens while: condition (null: always)', default: null, showIf: hidden, validate: barrierWhen },
     refuse: text('Refuses with', 'ACCESS DENIED.'),
   },
   visualFields: { open: num('Open', 0, 0, 1, 0.01) },
