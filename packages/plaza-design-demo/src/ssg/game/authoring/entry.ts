@@ -213,7 +213,7 @@ async function start() {
 
     newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene },
     workbenches: [
-      {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: opening scenes, arrivals and first guidance',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
+      {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: the story\'s phases, cards, triggers, each scene\'s part in them, contacts and the end card',authoring:true,documentDependent:true,documentIds:['opening-story','contacts','end-card'],primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
       {id:'play-profiles',area:'world',label:'Play profiles',title:'Ways of playing: the full game, the harbor shift and the Test District',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
       {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},

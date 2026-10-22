@@ -33,8 +33,8 @@ for(const id of ['warehouse','shop','library','laundromat','sandbox','stacks','b
 }
 const emptyRegistry=pendingRegistry(emptyDocuments);
 assert.throws(()=>validateSourceDocuments(emptyDocuments),'actor removal must address actual opening line references');
-const opening=emptyDocuments.get('opening-story') as any;
-for(const entries of Object.values(opening.OPENING_LINES) as Record<string,unknown>[])for(const ref of Object.keys(entries)){const [scene,id]=ref.split('/'),def=emptyRegistry[scene];const entities=[...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...def.data?.devices??[],...def.data?.nodes??[]];if(!entities.some(e=>e.id===id))delete entries[ref];}
+// a scene's phase lines (scene.json `phases[*].lines`) that answer for a removed person go with them
+for(const[scene,def]of Object.entries(emptyRegistry)){const doc=emptyDocuments.get(prefix(scene)+'-scene') as any;for(const phase of Object.values(doc?.phases??{}) as any[])for(const id of Object.keys(phase.lines??{})){const entities=[...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...def.data?.devices??[],...def.data?.nodes??[]];if(!entities.some(e=>e.id===id))delete phase.lines[id];}}
 validateSourceDocuments(emptyDocuments);
 for(const id of ['warehouse','shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','harborShift','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'])assert.equal((emptyRegistry[id].people??[]).length,0);
 const mutate=(fn:(s:SceneDocument,c:Composition)=>void,id='warehouse')=>{const s=model.get(prefix(id)+'-scene').value as SceneDocument,c=model.get(id).value as Composition;fn(s,c);model.importDocuments([{id:prefix(id)+'-scene',value:s},{id,value:c}]);};

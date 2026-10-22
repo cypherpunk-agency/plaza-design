@@ -346,6 +346,8 @@ export class SceneHost {
 
   get acknowledgmentPending(){return !!this.deviceAcknowledgment?.pending;}
   get acknowledgmentId(){return this.deviceAcknowledgment?.pending?this.deviceAcknowledgment.request.id:undefined;}
+  /** What the pending acknowledgment says now (the probe reads it). */
+  get acknowledgmentText(){return this.deviceAcknowledgment?.pending?this.deviceAcknowledgment.text:undefined;}
   advanceAcknowledgment(){return this.deviceAcknowledgment?.advance()??false;}
   cancelAcknowledgment(reason:AcknowledgmentCancel='dismissed'){return this.deviceAcknowledgment?.cancel(reason)??false;}
   acknowledgeDevice(request:DeviceAcknowledgmentRequest,complete:()=>void,canceled?:(reason:AcknowledgmentCancel)=>void):DeviceAcknowledgment{

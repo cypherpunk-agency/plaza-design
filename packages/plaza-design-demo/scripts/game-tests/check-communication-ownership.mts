@@ -26,7 +26,7 @@ try{
  sound.denied();sound.granted();assert.equal(timers.size,0);sound.toggle();notes=0;
  const history:any[]=[],status:any[]=[],host:any={active:false,echo:false,def:{id:'test'},print:(...a:any[])=>history.push(a),schem:{note(){}},vision:{note(){}},locate:()=>null,store:{notice:(...a:any[])=>status.push(a),feedbackCue:sound.feedback}};
  host.say=(SceneHost.prototype as any).say;host.react=SceneHost.prototype.react;
- const owner:any={openingStory:openingStoryModel,save:{flags:{},items:{}},gameplayFor:()=>undefined,zh:host};const use:any={id:'locked',eligibility:()=>({ok:false,reason:'NO ACCESS'})};
+ const owner:any={openingStory:openingStoryModel,def:{},save:{flags:{},items:{}},gameplayFor:()=>undefined,zh:host};const use:any={id:'locked',eligibility:()=>({ok:false,reason:'NO ACCESS'})};
  (Game.prototype as any).runUse.call(owner,use,()=>[]);
  assert.equal(notes,1,'actual runUse owns one immediate denial');assert.equal(timers.size,1);assert.equal(history.length,1);assert.equal(status.length,1);assert.equal(history[0][3],status[0][2]);
  const receipt=history[0][3];host.react('use:locked',['','NO ACCESS','err'],receipt);sound.feedback(receipt);assert.equal(notes,1);assert.equal(history.length,1);assert.equal(status.length,1);

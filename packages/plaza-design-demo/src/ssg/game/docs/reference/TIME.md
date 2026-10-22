@@ -116,8 +116,8 @@ hour in any weather.
   15 / taxi 10, `WAITS`, `WAIT_CARD`). Saved as `save.clock = { day, min, seed }` (old saves: day 1,
   09:40). It runs in a scene (hack vision and the board too) and stops in the menu, the map, a taxi
   or quick trip, talk (speech bubbles, daemon panels, toys), cutscenes, the title and the glide
-  (game.ts `clockRuns`). The opening pins it to `OPENING_TIME` and lets go after uplink.so, from
-  09:42 (`pinStory`). The HUD, the header and the footer (`DAY 3 · 21:40`) show it.
+  (game.ts `clockRuns`). The opening pins it to each scene's `phases.<phase>.time` and lets go after uplink.so, from
+  09:42 (`pinStory` with `clockPin`, story/story-rules.ts). The HUD, the header and the footer (`DAY 3 · 21:40`) show it.
 - **Waiting:** a scene's `rests` (benches on the three platforms, the market's stool, your bed)
   offer "wait until…" in the popup plate; a fade and a time card, the clock jumps. Not while the
   clock is pinned (the opening's bed is still its own sleep).
