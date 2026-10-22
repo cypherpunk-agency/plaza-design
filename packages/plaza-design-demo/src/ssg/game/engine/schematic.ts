@@ -188,12 +188,14 @@ export class Schematic {
       reset.addEventListener('click', () => this.onReset());
       this.root.append(this.stage, dock, reset);
       // a tap anywhere but the drawer (and the LOGIC buttons, which toggle it) closes it
-      window.addEventListener('pointerdown', (e) => {
+      const outside = (e: PointerEvent) => {
         if (!this.drawer || this.root.hidden) return;
         const t = e.target as HTMLElement | null;
         if (t?.closest?.('.sch-palette, [data-logic]')) return;
         this.setDrawer(false);
-      }, true);
+      };
+      window.addEventListener('pointerdown', outside, true);
+      this.releases.push(() => window.removeEventListener('pointerdown', outside, true));
     }
     else { this.root.id = 'hack'; this.root.append(bar, this.status, this.stage); }
     host.appendChild(this.root);
@@ -201,8 +203,14 @@ export class Schematic {
       if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-part')) return;
       if (this.armed || this.pending || this.chip) { this.armed = null; this.pending = null; this.chip = null; this.render(); }
     });
-    new ResizeObserver(() => { if (!this.root.hidden) this.render(); }).observe(this.stage);
+    const resize = new ResizeObserver(() => { if (!this.root.hidden) this.render(); });
+    resize.observe(this.stage);
+    this.releases.push(() => resize.disconnect());
   }
+  /** What the constructor subscribed to outside its own nodes (a window listener, the resize observer). */
+  private releases: (() => void)[] = [];
+  /** The host is disposed: closed, unsubscribed, its focus flashes cleared, and off the page. */
+  dispose() { this.onClose = () => {}; this.close(); this.clearFocus(); for (const release of this.releases.splice(0)) release(); this.root.remove(); }
 
   get isOpen() { return !this.root.hidden; }
   /** The device you are looking into (for trace): one device's schematic, open. */

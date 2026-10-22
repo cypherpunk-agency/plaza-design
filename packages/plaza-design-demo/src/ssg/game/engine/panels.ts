@@ -61,6 +61,8 @@ export class Panels {
   get isOpen() { return !this.root.hidden; }
   private release(){this.generation++;this.frames=[];this.age=0;this.talking?.close();this.talking=undefined;const cleanups=[...this.cleanups];this.cleanups.clear();for(const release of cleanups)try{release();}catch{/* release remaining owned resources */}}
   close() { if (this.root.hidden) return; this.root.hidden = true;this.release();this.body.textContent = ''; this.onClose(); }
+  /** The host is disposed: whatever is open is released and the panel leaves the page. */
+  dispose() { this.onClose = () => {}; this.close(); this.release(); this.root.remove(); }
   private show(cls: string) { this.release();this.body.textContent = ''; this.body.className = 'hack-panel-body ' + cls; this.root.hidden = false; }
 
   /** The game loop's frame (SceneHost.tick): the open panel's frame functions step on by `ms` of scene time. */

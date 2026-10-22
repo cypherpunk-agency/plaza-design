@@ -351,6 +351,9 @@ export class Feedback {
     this.pings = this.pings.filter(p => p.from !== from);
   }
 
+  /** The host is disposed: every caption and ping goes, and the layer leaves the page. */
+  dispose() { this.clear(); this.layer.remove(); }
+
   clear(preserveAcknowledgment=false) {
     const pinned=preserveAcknowledgment?this.pinned:undefined;if(!preserveAcknowledgment)this.pinned?.ack?.cancel('dismissed');
     this.caps.forEach((c) => { c.el?.remove(); c.lead?.remove(); }); this.pings.forEach((p) => p.el.remove());

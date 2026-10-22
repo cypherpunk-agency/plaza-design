@@ -357,6 +357,9 @@ export class Popup {
     this.onClose();
   }
 
+  /** The host is disposed: closed (its window listener goes with it) and off the page. */
+  dispose() { this.onClose = () => {}; this.close(); this.layer.remove(); }
+
   private select(i: number) {
     this.sel = i;
     [...this.list.children].forEach((b, j) => b.classList.toggle('sel', j === i));

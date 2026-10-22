@@ -256,7 +256,16 @@ Limits today:
 - Neighbours are seen, not used: prompts, E and hack vision belong to the active zone.
 - A neighbour's layered over-player and foreground pieces are flushed with the active zone's, outside its clip.
 - Weather is the active zone's climate (set on `enter`, not on `crossInto`); neighbours share it.
-- There is no residency or unloading: a neighbour's host is made (`hostOf`) and kept.
+- Residency (world/zone-graph.ts `residency`) decides each frame which joined zones are hosted. `followResidency`
+  hosts a visible zone at once and a near one at most one per frame, and unloads a zone past the eviction distance
+  (3 view widths): `SceneHost.dispose()` persists, then removes its nodes, window listeners, resize observers, save
+  timer, acknowledgment and popup, and disposes the session bound to its model; the model's delayed actions are dropped,
+  as on a page reload. The Game drops the cached session and the host, so `hostOf` rebuilds the zone from the save,
+  as Continue does. The active zone is never unloaded, and a zone with a panel, popup, hack vision or acknowledgment
+  open is held. Check with `pnpm test:game zone-unload residency`.
+- Only joined zones (named in the zone graph) unload. A scene with no seams is still kept hosted after you leave it,
+  as before; whether those unload too is a separate decision (Tommi). While the player is in an unjoined scene, joined
+  hosts are not evaluated, so they stay until the player is back in a joined zone.
 - The game imports the built zone graph, so editor Play does not take a pending one. The composer previews each
   zone alone, and there is no world canvas or seam tool yet.
 
@@ -494,7 +503,7 @@ isolated copies, not the working game's files or your recovery journal.
 | New scenes/routes | scene-catalogue all-scene-world-routes |
 | Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
 | Communication | communication device-reply |
-| Zones and seams (joined scenes) | zone-graph level-visual-state |
+| Zones and seams (joined scenes) | zone-graph level-visual-state residency zone-unload |
 | Demo isolation | demo-district |
 | Play profiles (ways of playing) | play-profiles demo-district play-storage |
 | Companion, critters, locks, review stations, reset flags | companion-source critter-reactions review-stations city-locks scene-reset-flags loop-scene-ids |

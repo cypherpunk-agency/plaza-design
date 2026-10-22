@@ -921,17 +921,23 @@ export class Game {
       const d = this.sceneDefinition(z); if (!d.level) continue;
       parts.push({ zone: z, source: d.level, dx: zr.at.dx, dh: zr.at.dh, width: d.width });
       this.zoneTiers.set(z, zr.tier);
-      if (z !== id) { this.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); this.hostOf(z); }
+      // a visible zone is hosted now (it is drawn); a near one is compiled by `followResidency`, one per frame
+      if (z !== id) { this.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); if (zr.tier === 'visible') this.hostOf(z); }
     }
     return parts.length > 1 ? mergeLevels(parts) : s.level;
   }
   /** Each joined zone's residency tier this frame: only visible ones are drawn; near ones are hosted and walked, not drawn. */
   private zoneTiers = new Map<string, ResidencyTier>();
-  /** Residency for zone `id` with the camera at `cam` (horizontal: the view's width across). Hosts are not unloaded yet (they keep ticking, as every visited scene does today). */
+  /**
+   * Residency for zone `id` with the camera at `cam` (horizontal: the view's width across). Only joined zones (in the
+   * zone graph) take part: a scene with no seams is kept hosted after you leave it, as before (decided for now).
+   * A zone with a panel, popup, hack vision or acknowledgment open is held.
+   */
   private residencyAt(id: SceneId, cam: number) {
     const zones: Record<string, { width: number }> = {};
     for (const seam of this.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (this.hasScene(z)) zones[z] = { width: this.sceneDefinition(z).width };
-    return residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: [...this.hosts.keys()].filter(z => zones[z]) });
+    const hosted = [...this.hosts].filter(([z]) => zones[z]), held = hosted.filter(([, h]) => h.overlayOpen || h.popupOpen || h.visionOn || h.acknowledgmentPending);
+    return residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: hosted.map(([z]) => z), held: held.map(([z]) => z) });
   }
   /**
    * Each frame in a joined zone: the resident set follows the camera. A zone coming into reach joins the level (its pieces
@@ -944,10 +950,19 @@ export class Game {
     const have = Object.keys(this.level.source.zones).sort();
     for (const [z, zr] of r.zones) if (this.zoneTiers.has(z)) this.zoneTiers.set(z, zr.tier);
     // never drop the zone the player stands in (mid-flight a ride can be in the neighbour's floors)
-    if (want.join() === have.join() || !want.includes(this.here)) return;
+    if (!want.includes(this.here)) return;
     const floor = levelFloor(this.level).zone; if (floor && !want.includes(floor)) return;
-    const source = this.joinLevel(this.here);
+    const source = want.join() === have.join() ? undefined : this.joinLevel(this.here);
     if (source?.zones) this.level = levelRejoin({ source, state: this.level.state }, source, this.seenRooms(source, this.here) ?? [], savedForLevel(source, this.here, this.save.barriers));
+    // out of the level now: zones past the eviction distance unload; one zone coming into reach is compiled per frame
+    for (const z of r.evict) if (z !== this.here) this.unload(z as SceneId);
+    const next = r.load.find(z => !this.hosts.has(z as SceneId) && this.hasScene(z)); if (next) this.hostOf(next as SceneId);
+  }
+  /** Unload a zone (SEAMLESS-WORLD.md §3): its host persists and is disposed, with the session bound to its model; the save stays, and `hostOf` rebuilds it from there. */
+  private unload(id: SceneId) {
+    const host = this.hosts.get(id); if (!host) return;
+    host.dispose(); this.hosts.delete(id);
+    if (this.gameplaySessions.get(id) === host.gameplay) this.gameplaySessions.delete(id);
   }
   /** The rooms the save remembers, as a level names them (a joined level: `zone/room` for each of its zones). */
   private seenRooms(source: LevelSource, id: SceneId): string[] | undefined {

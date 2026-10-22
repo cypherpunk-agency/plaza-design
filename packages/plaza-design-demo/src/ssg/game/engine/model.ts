@@ -354,6 +354,12 @@ export class SceneModel {
   /** Hold scene clocks and pending signals/actions together. Lockouts still expire on wall time. */
   setPaused(on: boolean) { this.time.pause(on); }
 
+  /**
+   * The zone is unloaded (its host is disposed): what is in flight (delayed signals, deadlines, handoffs) is dropped,
+   * as on a page reload, and nothing scheduled before now runs later. Persistent state stays in the save.
+   */
+  dispose() { this.epoch++; this.time.clear(); this.time.pause(true); }
+
   /** Delayed scene action: pauses with the scene, cancelled by reset or restore. */
   later(ms: number, fn: () => void, detail?:unknown,canceled?:()=>void) {
     const e = this.epoch;

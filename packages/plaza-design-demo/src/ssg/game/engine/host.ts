@@ -213,7 +213,7 @@ export class SceneHost {
       program: store?.program,
       controlled: store?.controlled,
     }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.(),def.gameplay);
-    const shared=store?.gameplay?.(this.model);if(shared)attachNativeGameplay(this.model,shared);
+    const shared=store?.gameplay?.(this.model);if(shared){attachNativeGameplay(this.model,shared);this.gameplay=shared;}
     if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id),...(store?.presentation?{presentation:operation=>store.presentation!(operation)}:{})});
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen });
@@ -261,7 +261,35 @@ export class SceneHost {
     this.saved = JSON.stringify({...this.snapshot(),state:this.model.state});
     this.sync();
     this.lastHeat = this.heat();
-    window.addEventListener('pagehide', () => this.persist());
+    window.addEventListener('pagehide', this.onPageHide);
+  }
+  private onPageHide = () => this.persist();
+  /** The scene's gameplay session, bound to this host's model (engine/gameplay/native-bindings.ts). */
+  gameplay?: GameplaySession;
+  private disposed = false;
+  get isDisposed() { return this.disposed; }
+
+  /**
+   * The zone is unloaded (SEAMLESS-WORLD.md §3 "Unloaded zones are reloaded"): the save is written, then everything
+   * this host owns goes: its popup, panels, schematics and captions (their nodes and window listeners), its HACK/BOARD
+   * strip, a pending acknowledgment, the save timer, the session bound to its model and the model's delayed actions
+   * (dropped, as on a page reload). The save is all that is left; hosting the scene again rebuilds it from there, as
+   * Continue does. Idempotent.
+   */
+  dispose() {
+    if (this.disposed) return;
+    this.persist();
+    this.disposed = true;
+    this.cancelAcknowledgment('disposed');
+    this.closeAll();
+    clearTimeout(this.saveTimer);
+    window.removeEventListener('pagehide', this.onPageHide);
+    this.gameplay?.dispose();
+    this.model.dispose();
+    this.popup.dispose(); this.panels.dispose(); this.schem.dispose(); this.vision.dispose(); this.fx.dispose();
+    this.btns.remove();
+    this.active = false; this.project = null; this.seen.clear();
+    this.onClose = this.onReact = () => {};
   }
 
   /** Trace (whole %) and running lockouts, as a string: when it changes, the save should hear of it. */
@@ -293,7 +321,7 @@ export class SceneHost {
 
   /** Something changed: write the save once things have been quiet for a moment. */
   private dirty() {
-    if (!this.store) return;
+    if (!this.store || this.disposed) return;
     clearTimeout(this.saveTimer);
     this.saveTimer = window.setTimeout(() => this.persist(), SAVE_AFTER_MS);
   }
@@ -301,7 +329,8 @@ export class SceneHost {
   /** Write the scene's progress now, if it changed since the last write. */
   persist() {
     clearTimeout(this.saveTimer);
-    if (!this.store) return;
+    // a disposed host never writes again: a fresh host for the scene owns its save block now
+    if (!this.store || this.disposed) return;
     const z = this.snapshot(), json = JSON.stringify({...z,state:this.model.state});
     if (json === this.saved) return;
     this.saved = json;
@@ -498,7 +527,7 @@ export class SceneHost {
    * beat, movers move, zones notice and delayed signals arrive on this one tick.
    */
   tick(ms: number) {
-    if (this.paused) return;
+    if (this.paused || this.disposed) return;
     const perf=perfBegin('host.tick',this.id);try{
     this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
     if (this.model.tick(ms, this.active)) { this.schem.meters(); this.vision.meters(); }
