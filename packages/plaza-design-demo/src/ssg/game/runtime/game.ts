@@ -83,7 +83,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, seenByZone, splitLevelView, levelZone, type Level, type LevelSource, type Movers } from "../engine/level";
+import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
 import { joined as zoneJoined, placeFrom, seamsOf, validateZoneGraph } from "../world/zone-graph";
 
@@ -159,7 +159,7 @@ export class Game {
     if(!this.reviewAllowed())return;const station=reviewStations(this.content,this.reviewDoc).find(s=>s.id===id);if(!station)return;
     this.keys.clear();this.bubble=null;this.zh.closeAll();this.menu.hide();this.mapView=null;this.netView=null;this.term.close();
     this.enter(station.scene as SceneId,true);this.bubble=null;Object.assign(this.p,{x:station.x,y:0,vy:0,onGround:true});
-    this.cam=Math.max(0,Math.min(this.levelW-this.viewW,this.p.x-this.viewW*.45));if(this.levelW<this.viewW)this.cam=(this.levelW-this.viewW)/2;
+    this.cam=this.camFollow(this.p.x);
     this.syncEnginePause();this.refreshReview();this.reviewNav?.station(id);this.canvas.focus();
   }
   private reviewTalk(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const session=this.gameplayFor(this.here);if(!session?.definition.conversations[id])return;this.bubble=null;this.keys.clear();this.zh.closeAll();this.zh.presentConversation(new ConversationSession(session,id));}
@@ -913,7 +913,8 @@ export class Game {
     this.joinedZones = [];
     if (!s.level || !zoneJoined(this.zoneGraph, id)) return s.level;
     const parts = [];
-    for (const [z, at] of placeFrom(this.zoneGraph, id)) {
+    // two seams out: a zone stays in the frame while the player is in a neighbour of it (residency comes with step 3)
+    for (const [z, at] of placeFrom(this.zoneGraph, id, 2)) {
       if (!this.hasScene(z)) continue;
       const d = this.sceneDefinition(z); if (!d.level) continue;
       parts.push({ zone: z, source: d.level, dx: at.dx, dh: at.dh, width: d.width });
@@ -931,7 +932,8 @@ export class Game {
     const lv = this.level!, seen = levelSeen(lv);
     const by: Record<string, readonly string[]> = lv.source.zones ? { ...Object.fromEntries(Object.keys(lv.source.zones).map(z => [z, []])), ...seenByZone(seen) } : { [this.here]: seen };
     let changed = false;
-    for (const [z, rooms] of Object.entries(by)) if (rooms.length !== (this.save.rooms?.[z]?.length ?? 0) && (rooms.length || this.save.rooms?.[z])) { (this.save.rooms ??= {})[z] = [...rooms]; changed = true; }
+    // a joined level only ever adds rooms (it may not hold every room a zone's save remembers): never shrink a zone's list
+    for (const [z, rooms] of Object.entries(by)) if (lv.source.zones ? rooms.length > (this.save.rooms?.[z]?.length ?? 0) : rooms.length !== (this.save.rooms?.[z]?.length ?? 0)) { (this.save.rooms ??= {})[z] = lv.source.zones ? [...new Set([...(this.save.rooms?.[z] ?? []), ...rooms])] : [...rooms]; changed = true; }
     if (changed) this.persistSave();
   }
   /** Each lift reads its own zone's movers. */
@@ -942,7 +944,7 @@ export class Game {
     return this.level!.source.zones ? splitLevelView(view, id) : view;
   }
   /** Is there a walk seam at this edge of the zone the player is in (no edge exit there: the street goes on)? */
-  private seamAt(edge: 'left' | 'right') { return seamsOf(this.zoneGraph, this.here).some(s => s.seam.kind === 'walk' && this.joinedZones.some(z => z.id === s.other) && (edge === 'right' ? s.dx > 0 : s.dx < 0)); }
+  private seamAt(edge: 'left' | 'right') { return !!this.level && !levelFloor(this.level).building && seamsOf(this.zoneGraph, this.here).some(s => s.seam.kind === 'walk' && this.joinedZones.some(z => z.id === s.other) && (edge === 'right' ? s.dx > 0 : s.dx < 0)); }
   /** How far the camera may look: the zone, and the zones joined to it. */
   private worldSpan(): [number, number] {
     let lo = 0, hi = this.levelW;
@@ -962,13 +964,17 @@ export class Game {
   private crossInto(id: SceneId) {
     const to = this.joinedZones.find(z => z.id === id); if (!to || !this.level) return;
     const { dx, dh } = to, state = this.level.state;
-    this.zh.persist(); this.zh.model.player = null;
+    // the zone left behind closes what it had open (hack vision, panels), as leaving a scene does
+    this.zh.closeAll(); this.zh.persist(); this.zh.model.player = null;
     this.here = id;
     this.p.x -= dx; this.p.y -= dh; this.cam -= dx; this.camH -= dh; this.gy = this.gyBase + Math.round(this.camH);
     if (this.bubble) { this.bubble.x -= dx; this.bubble.h -= dh; }
     this.companionBody.x -= dx; this.companionBody.h -= dh;
     this.nudge = null; this.easeBack = false;
-    this.level = { source: this.joinLevel(id)!, state };
+    const source = this.joinLevel(id)!;
+    this.level = levelRejoin({ source, state }, source, this.seenRooms(source, id) ?? []);
+    // the view keeps its scale over a seam (only a cut refits it)
+    this.fitW = this.spanW;
     this.showHost();
     this.markSeen(id);
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + this.def.name);
@@ -1474,7 +1480,7 @@ export class Game {
     if (!on && this.wasVision) {
       // back to you: the usual camera eases there from the middle of what you were looking at
       const w = this.viewW / this.vz;
-      this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.vcam + (w - this.viewW) / 2));
+      { const [lo, hi] = this.worldSpan(); this.cam = Math.max(lo, Math.min(hi - this.viewW, this.vcam + (w - this.viewW) / 2)); }
       this.vz = 1; this.panned = false; this.vptr.clear(); this.vgest = null;
       this.zh.viewMoved(false);
     }
@@ -1611,7 +1617,7 @@ export class Game {
     if (Math.abs(at.x - p.x) > this.viewW - m * 2) return;
     let goal = at.x < this.cam + m ? at.x - m : at.x + m - this.viewW;
     goal = Math.max(p.x + m - this.viewW, Math.min(p.x - m, goal));
-    goal = Math.max(0, Math.min(this.levelW - this.viewW, goal));
+    { const [lo, hi] = this.worldSpan(); goal = Math.max(lo, Math.min(hi - this.viewW, goal)); }
     this.nudged.add(key); this.lastNudge = this.clock;
     this.nudge = { goal, until: this.clock + NUDGE_HOLD, px: p.x };
   }

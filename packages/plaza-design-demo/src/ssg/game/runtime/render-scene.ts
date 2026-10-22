@@ -11,7 +11,7 @@ import { drawSky } from '../art/environment/sky';
 import { puddles, weatherFront, weatherMid, weatherSky } from '../art/atmosphere/weather';
 import { createLightingFrame, drawCasters, drawGrade, drawLights, drawShade } from '../art/atmosphere/lighting';
 import { muteWorld } from '../art/atmosphere/hack-vision';
-import { beginLayeredFrame, flushLayeredSlot } from '../art/core/composition';
+import { beginLayeredFrame, flushLayeredDocs, flushLayeredSlot, layeredDocs } from '../art/core/composition';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 /**
@@ -112,12 +112,18 @@ function drawJoined(x: CanvasRenderingContext2D, z: ZoneFrame, look: Parameters<
   x.save(); x.beginPath(); x.rect(left, 0, right - left, v.viewH); x.clip();
   if (amb.city) s.artworkFrame?.city?.(x, v);
   if (amb.street) s.artworkFrame?.street?.(x, v, rain, !!amb.city);
+  // its rows over the player and in front wait in the frame's shared queue: take its own and draw them here, clipped
+  const before = { over: layeredDocs('over-player'), front: layeredDocs('foreground') };
   z.host.draw(x, v);
+  const own = (slot: 'over-player' | 'foreground', had: Set<unknown>) => new Set([...layeredDocs(slot)].filter(d => !had.has(d)));
+  const over = own('over-player', before.over), front = own('foreground', before.front);
   if (look) { puddles(x, v, look, { width: s.width, seed: z.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections : undefined }); weatherMid(x, v, look); }
-  if (vision) muteWorld(x, v);
-  else drawCasters(x, v, s.casters);
+  if (!vision) drawCasters(x, v, s.casters);
   s.drawActors?.(x, v);
+  flushLayeredDocs('over-player', over);
   if (!vision) drawShade(x, v);
   s.drawFront?.(x, v);
+  flushLayeredDocs('foreground', front);
+  if (vision) muteWorld(x, v);
   x.restore();
 }

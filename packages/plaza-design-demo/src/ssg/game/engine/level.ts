@@ -486,6 +486,21 @@ export function mergeLevels(parts: readonly LevelPart[]): LevelSource {
   return { floors, links, doors, lifts, shells, interiors, low: Math.min(...hs), high: Math.max(...hs), zones,
     ...(Object.keys(revealSpeed).length ? { revealSpeed } : {}), ...(Object.keys(ghost).length ? { ghost } : {}), ...(rooms.length ? { rooms } : {}), ...(Object.keys(entrances).length ? { entrances } : {}) };
 }
+/**
+ * Over a seam the joined level is built again around the new zone, and may now take in zones it did not hold:
+ * the player's state carries over and gains their buildings (shut), rooms (shut, or open where the save remembers them).
+ */
+export function levelRejoin(lv: Level, source: LevelSource, seen: readonly string[] = []): Level {
+  const s = lv.state;
+  for (const b of Object.keys({ ...source.shells, ...source.interiors })) s.reveal[b] ??= 0;
+  if (source.rooms) {
+    const had = new Set(s.seen ?? []);
+    for (const r of source.rooms) if (r.keep === 'remember' && seen.includes(r.id)) had.add(r.id);
+    s.seen = [...had]; s.rooms ??= {}; s.here ??= {};
+    for (const r of source.rooms) { s.rooms[r.id] ??= r.reveal !== 'never' && had.has(r.id) ? 1 : 0; s.here[r.id] ??= 0; }
+  }
+  return { source, state: s };
+}
 /** Joined zones: the floor's zone (the zone the player is in), or undefined for one scene's own level. */
 export const levelZone = (lv: Level): string | undefined => levelFloor(lv).zone;
 /** One zone's part of a joined level's view, in that zone's own ids: what its composition draws from. */

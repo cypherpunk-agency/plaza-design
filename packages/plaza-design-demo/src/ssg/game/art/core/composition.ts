@@ -283,6 +283,10 @@ export function queueLayeredSlots(ctx: CanvasRenderingContext2D, registry: ArtRe
   for (const slot of ['over-player', 'foreground'] as const)
     if (slotHasContent(doc, slot)) pending[slot].set(doc, () => drawCompositionSlot(ctx, registry, doc, env, slot)); else pending[slot].delete(doc);
 }
+/** The documents waiting in a slot now: a joined zone's renderer takes the ones its own drawing added. */
+export const layeredDocs = (slot: 'over-player' | 'foreground') => new Set(pending[slot].keys());
+/** Draw (and drop) only these documents' waiting rows: a joined zone's, inside its own window. */
+export function flushLayeredDocs(slot: 'over-player' | 'foreground', docs: ReadonlySet<Composition>) { for (const [doc, draw] of [...pending[slot]]) if (docs.has(doc)) { pending[slot].delete(doc); draw(); } }
 export function beginLayeredFrame() { pending['over-player'].clear(); pending.foreground.clear(); }
 export function flushLayeredSlot(slot: 'over-player' | 'foreground') { const draws = [...pending[slot].values()]; pending[slot].clear(); for (const draw of draws) draw(); }
 /** Cheap check from the document alone, so scenes can skip preparing an environment for an empty slot. */

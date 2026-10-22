@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {placeFrom, seamsOf, validateZoneGraph, worldProblems} from '../../src/ssg/game/world/zone-graph';
-import {compileLevel, levelArrive, levelBounds, levelFloor, levelStep, levelUp, levelView, levelZone, mergeLevels, seenByZone, splitLevelView, type Level, type LevelPlayer, type MoverModel} from '../../src/ssg/game/engine/level';
+import {compileLevel, levelRejoin, levelArrive, levelBounds, levelFloor, levelStep, levelUp, levelView, levelZone, mergeLevels, seenByZone, splitLevelView, type Level, type LevelPlayer, type MoverModel} from '../../src/ssg/game/engine/level';
 import type {Resolved} from '../../src/ssg/game/art/core/composition';
 
 // the graph
@@ -56,4 +56,16 @@ assert.deepEqual(Object.keys(splitLevelView(view, 'annex').reveal), [], 'a zone 
 assert.deepEqual(seenByZone(['annex/r1', 'lab/r2', 'annex/r3']), {annex: ['r1', 'r3'], lab: ['r2']});
 // one scene stays exactly as it was: no zones, no namespacing
 assert.equal(annex.zones, undefined); assert.equal(annex.floors[0].id, 'street');
+// over a seam the level is built again and may take in a zone it did not hold: its buildings and rooms join the state
+{
+  const shop = compileLevel([row('level.floor', 'street', 0, 0, {width: 300}), row('level.floor', 'in', 100, 0, {width: 100, building: 'shop'}), row('level.interior', 'shop-in', 100, 0, {building: 'shop'}),
+    ({element: {type: 'level.room'}, instance: {id: 'back', attach: {instance: 'shop-in'}}, placement: {x: 100, h: 0, scale: 1, facing: 1}, props: {width: 100, height: 60, reveal: 'arrival', keep: 'remember'}}) as unknown as Resolved])!;
+  const first = mergeLevels([{zone: 'lab', source: lab, dx: 0, dh: 0, width: 400}]);
+  const q: LevelPlayer = {x: 50, y: 0, vy: 0, face: 1, onGround: true, moving: false};
+  const before: Level = {source: first, state: levelArrive(first, q, 0)};
+  const wider = mergeLevels([{zone: 'lab', source: lab, dx: 0, dh: 0, width: 400}, {zone: 'shop', source: shop, dx: 400, dh: 0, width: 300}]);
+  const after = levelRejoin(before, wider, ['shop/back']);
+  assert.equal(after.state.reveal['shop/shop'], 0, 'the new zone\'s building joins, shut');
+  assert.deepEqual([after.state.rooms!['shop/back'], after.state.seen], [1, ['shop/back']], 'and its remembered room joins, open');
+}
 console.log('Zone graph PASS: seams validate and place zones from the active one; joined levels walk over a seam and climb into a zone above; one scene is unchanged.');
