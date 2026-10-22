@@ -963,7 +963,7 @@ export class Game {
     if (changed) this.persistSave();
   }
   /**
-   * E at a level barrier (turnstile, gate, locked door): its rule over the save (world/access.ts `barrierAccess`) refuses with
+   * E at a level barrier (whatever its kind: a gate, a locked door): its rule over the save (world/access.ts `barrierAccess`) refuses with
    * its words, or it opens and stays open on this save (`Save.barriers`, by scene). False: the prompt is not a barrier's.
    */
   private passBarrier(id: string): boolean {
