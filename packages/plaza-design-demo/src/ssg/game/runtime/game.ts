@@ -86,6 +86,7 @@ import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from 
 import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
 import { joined as zoneJoined, placeFrom, seamsOf, validateZoneGraph } from "../world/zone-graph";
+const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
 
 /**
  * Something to press E on: a way out (`exit`), the scene's life (`life`: a readable, a use, someone
@@ -127,7 +128,7 @@ export class Game {
   private gyBase = 270;
   private camH = 0;
   /** The world's seams (world/zone-graph.json): zones joined to each other with no cut. */
-  private zoneGraph = validateZoneGraph(zoneGraphSource);
+  private get zoneGraph() { return this.sources?.zoneGraph ?? SHIPPED_ZONE_GRAPH; }
   /** The zones joined to the one the player is in, and where they lie from it: drawn beside it and walked into without a cut. */
   private joinedZones: { id: SceneId; dx: number; dh: number }[] = [];
   /** Floors, stairs, escalators, lifts and buildings of a level scene (engine/level.ts); null: one street line. */

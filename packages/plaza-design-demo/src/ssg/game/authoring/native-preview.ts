@@ -9,7 +9,9 @@ import {readQuery} from '../engine/gameplay/queries';
 import {resolveValues} from '../engine/gameplay/state';
 import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
-import { renderWorldFrame } from '../runtime/render-scene';
+import { renderWorldFrame, type ZoneFrame } from '../runtime/render-scene';
+import { joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zone-graph';
+import { authoredDocumentId } from '../engine/gameplay/scene-catalogue';
 import { city } from '../world/clock';
 import { light, lightAt, setLight } from '../world/light';
 import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
@@ -78,6 +80,46 @@ function parentOf(rows: Resolved[], id: string): string | undefined {
 /** No Game construction, controller stepping, player-save reads or player-save writes occur here. */
 export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>,bindWorld?:(definition:SceneDef,request:PreviewRequest)=>SceneDef,resolveAdapter?:(scene:string,request:PreviewRequest)=>NativeSceneAdapter|undefined) {
   const ships = createSkyShips();
+  /** Inspection never advances simulation: deadlines are reinitialised after replacing host time, so a clock/countdown
+   * snapshot cannot depend on render duration or warmup. */
+  const inspectionModel = (def: SceneDef, services: PlayerServices) => {
+    const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
+    const rules = typeof def.rules === 'function' ? def.rules(services) : def.rules ?? NO_RULES;
+    const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules,undefined,undefined,undefined,undefined,def.gameplay);
+    model.now = () => 0;
+    model.wall = () => 0;
+    model.reset();
+    return model;
+  };
+  /**
+   * The zones joined to the open one by the pending seams (world/zone-graph.json), one seam away, as runtime/game.ts
+   * `zoneFrame` draws them: each its own pending scene, isolated model and light, its view moved by where it lies.
+   * Read-only: they give no bounds, so nothing in them is selected or dragged.
+   */
+  const neighbours = (request: PreviewRequest, sceneId: string, view: View, zoom: number, services: PlayerServices, weather: () => Weather): ZoneFrame[] => {
+    const documents = request.documents, source = documents?.get('zone-graph');
+    if (!documents || source === undefined) return [];
+    const graph = validateZoneGraph(source); if (!zoneJoined(graph, sceneId)) return [];
+    const out: ZoneFrame[] = [];
+    for (const [zone, at] of placeFrom(graph, sceneId)) {
+      const value = zone === sceneId ? undefined : documents.get(zone) ?? documents.get(authoredDocumentId(zone, 'composition'));
+      if (value === undefined) continue;
+      const nearby: PreviewRequest = { ...request, composition: value as Composition, frame: undefined };
+      const adapter = adapters[zone] ?? resolveAdapter?.(zone, nearby); if (!adapter) continue;
+      const document = adapter.validate(value), options: NativeOptions = { reduced: request.reduced, sequenceTime: request.time };
+      const original = adapter.pendingDefinition ? adapter.pendingDefinition(document, {}, options, documents) : adapter.definition(document, {}, options);
+      const def = bindWorld?.(original, { ...nearby, composition: document }) ?? original, model = inspectionModel(def, services);
+      const cam = view.cam - at.dx, engine: EngineDraw = { m: model, hover: null, layer: 'all' };
+      const zoneView: View = { ...frameView(request.time * 60), viewW: view.viewW, viewH: view.viewH, cam, gy: view.gy - at.dh,
+        sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom) / zoom, y: h => view.y(h + at.dh), flags: view.flags,
+        ...(def.level ? { level: restingLevelView(def.level, false) } : {}) };
+      const outdoor = def.outdoor ?? !!(def.ambient?.weather || def.ambient?.sky);
+      out.push({ view: zoneView, scene: def, sceneId: zone, host: { model, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
+        preparePresentation: () => def.preparePresentation?.(zoneView, engine),
+        lighting: W => { const L = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor); setLight(L); return L; } });
+    }
+    return out;
+  };
   const render = (canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult => {
       const adapter = adapters[request.composition.scene]??resolveAdapter?.(request.composition.scene,request);
       if (!adapter) throw new Error(`Native composition adapter is not available yet for ${request.composition.scene}`);
@@ -107,13 +149,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
-      const rules = typeof def.rules === 'function' ? def.rules(services) : def.rules ?? NO_RULES;
-      const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules,undefined,undefined,undefined,undefined,def.gameplay);
-      // Inspection never advances simulation. Reinitialize native deadlines after replacing
-      // host time, so a clock/countdown snapshot cannot depend on render duration or warmup.
-      model.now = () => 0;
-      model.wall = () => 0;
-      model.reset();
+      const model = inspectionModel(def, services);
       const snapshot = object(settings.state, 'Scene state');
       for (const [key, value] of Object.entries(snapshot)) {
         if (!Object.prototype.hasOwnProperty.call(model.data.state, key)) throw new Error(`Unknown scene state: ${key}`);
@@ -134,7 +170,8 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       canvas.width = canvas.width;
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
-      renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id,
+      const joined = neighbours(request, request.composition.scene, view, zoom, services, weather);
+      renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id, ...(joined.length ? { joined } : {}),
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
