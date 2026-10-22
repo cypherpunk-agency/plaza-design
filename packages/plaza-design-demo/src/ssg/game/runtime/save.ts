@@ -39,6 +39,8 @@ export interface Save {
   deckTab?: string;
   /** Hint ids already shown (timed hints) or done (control hints): each shows once per run (ui/hints.ts). */
   seenHints?: string[];
+  /** Rooms seen and remembered (engine/level.ts `LevelRoom`, keep 'remember'), by scene id: they stay open. Older saves: none. */
+  rooms?: Record<string, string[]>;
   /** The city clock (clock.ts): day, minute of the day, the weather's seed. Older saves: day 1, 09:40, seed 1. */
   clock: ClockSave;
 }

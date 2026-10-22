@@ -98,7 +98,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       for (const v of Object.values(flags)) if (typeof v !== 'boolean') throw new Error('Flags must contain booleans');
       const view: View = { ...frameView(request.time * 60), viewW: width, viewH: height, cam, gy: height - 54,
         sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom), y: h => height - 54 - (h - cameraH) * zoom,
-        flags: flags as Record<string, boolean>, ...(def.level ? { level: restingLevelView(def.level, settings.inside === true) } : {}) };
+        flags: flags as Record<string, boolean>, ...(def.level ? { level: restingLevelView(def.level, settings.inside === true, typeof settings.roomsAt === 'string' && settings.roomsAt.trim() ? settings.roomsAt.trim() : undefined) } : {}) };
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
