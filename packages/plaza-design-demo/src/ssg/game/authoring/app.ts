@@ -22,7 +22,9 @@ import type { Layer } from '../art/core/composition';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; revision: string; value: unknown }
 export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
-export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
+/** A scene joined to the previewed one by a seam, drawn beside it read-only: where it is on the canvas (canvas pixels) and on which side. */
+export interface JoinedPreview { zone: string; label: string; x: number; y: number; width: number; height: number; side: 'left' | 'right' | 'above' | 'below' }
+export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; /** Joined scenes drawn beside this one, and the camera-x range (scene units) that holds the scene and them. */ joined?: JoinedPreview[]; extent?: { from: number; to: number }; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
 /** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
 export interface WorldState { id: string; name: string; environment: Record<string, string | number | boolean> }
 export interface WorldStates {
@@ -36,7 +38,7 @@ export interface WorldStates {
 /** `quick` controls sit in the Scene toolbar; `choices` render as a segmented row of named presets. The rest live under More. */
 export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[]; /** A single key that toggles a boolean control in the Scene view. */ shortcut?: string }
 /** One inspector tab beside Appearance: the logic, device or wiring that belongs to the selection (or to the scene when nothing is selected). */
-export interface InspectorSection { id: string; label: string; title?: string; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
+export interface InspectorSection { id: string; label: string; title?: string; /** Listed first and opened first whenever the selection changes (a barrier's Access). */ primary?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
 export interface WorkbenchContext {
   documents: EditorDocument[]; openScene(scene: string, compare?: string): void; openInstance(document: string, instance: string): void;
   /** The scene chosen in the header; scene-mode workbenches follow it instead of keeping their own picker. */
@@ -76,6 +78,8 @@ export interface ComposerConfig {
   newScene?: { places(api: NonNullable<WorkbenchContext['authoring']>): { places: string[]; initial: string }; blocked(api: NonNullable<WorkbenchContext['authoring']>): string; create(api: NonNullable<WorkbenchContext['authoring']>, id: string, name: string, place: string): void };
   /** Tabs for the Scene inspector. Called for the open scene with the selected instance, or none for the scene itself. */
   inspector?(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[];
+  /** Scenes joined to this one with no cut (one seam away). The Scene toolbar then offers Show joined scenes and Fit joined; the preview draws them. */
+  joinedScenes?(scene: string, documents: readonly EditorDocument[]): { zone: string; label: string }[];
 }
 /**
  * `area: 'scene'` panels are modes of the selected scene (Logic, Play; `wiring` panels sit under Logic)
@@ -96,6 +100,8 @@ export interface WorkbenchConfig {
 interface Snapshot { id: string; value: unknown }
 interface Command { label: string; before: Snapshot[]; after: Snapshot[] }
 const copy = <T>(value: T): T => structuredClone(value);
+/** The outline's mark for a level barrier (a padlock), so barriers and their Access rules are easy to find. */
+const BARRIER_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
 const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const flatten = (doc: Composition) => { const list: { node: Instance; depth: number }[] = []; const visit = (nodes: Instance[], depth: number) => nodes.forEach(node => { list.push({ node, depth }); visit(node.children ?? [], depth + 1); }); visit(doc.instances, 0); return list; };
 const message = (e: unknown) => e instanceof Error ? e.message : String(e);
@@ -282,6 +288,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     });
   }
   const options = element('div', 'preview-options'), stageWrap = element('div', 'stage-wrap'), stage = element('div', 'preview-stage'), canvas = element('canvas'), previewError = element('div', 'preview-error');
+  const joinedLayer = element('div', 'joined-tags'); joinedLayer.setAttribute('aria-label', 'Joined scenes');
   const viewportTools = element('div', 'viewport-tools'), hoverBox = element('div', 'hover-box'); viewportTools.setAttribute('role', 'group'); viewportTools.setAttribute('aria-label', 'Preview zoom'); hoverBox.hidden = true;
   const picker = element('div', 'add-picker'); picker.setAttribute('role', 'dialog'); picker.setAttribute('aria-label', 'Add artwork'); picker.hidden = true;
   const baseWidth = config.viewport?.width ?? 960, baseHeight = config.viewport?.height ?? 540;
@@ -296,14 +303,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** The outline's eyes: objects hidden in the editor preview, per composition document. View state only. */
   const hiddenByDocument = new Map<string, Set<string>>();
   const hiddenIn = (id: string | undefined) => { if (!id) return new Set<string>(); let set = hiddenByDocument.get(id); if (!set) hiddenByDocument.set(id, set = new Set()); return set; };
-  let moreOpen = false, inspectorTab = 'appearance', animating = false, ambientLabel: HTMLElement | undefined;
+  let moreOpen = false, inspectorTab = 'appearance', inspectedId = '', animating = false, ambientLabel: HTMLElement | undefined;
   let inspectorMount: { key: string; host: HTMLElement; handle?: WorkbenchHandle } | undefined;
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
   for (const [panel, text] of [['layers', 'Outline'], ['properties', 'Inspector']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
-  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
+  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, joinedLayer, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
   // An editor link: `#characters` opens a panel; `#scene=downtown-next&compare=downtown&panel=characters` also opens a scene.
   const linkQuery = location.hash.includes('=') ? new URLSearchParams(location.hash.slice(1)) : undefined;
@@ -567,6 +574,15 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const pick = select([{ value: '', label: 'Compare · off' }, ...comparable.map(o => ({ value: o.id, label: `Compare · ${o.label}` }))], compareId, value => { compareId = value; void draw(); });
       pick.title = 'Show another version beside this one, with the same camera, zoom, time and weather'; pick.setAttribute('aria-label', 'Compare'); cluster('Compare').append(pick);
     }
+    // scenes joined with no cut: drawn beside this one (read-only), on by default; Fit joined frames them all
+    const joinedList = composition && config.joinedScenes ? config.joinedScenes(sceneId(), documentsForView()) : [];
+    if (joinedList.length) {
+      const group = cluster('Joined scenes'), on = environment.showJoined !== false, names = joinedList.map(j => j.label).join(', ');
+      const toggle = button('Show joined scenes', () => { environment.showJoined = !on; refreshOptions(); void draw(); }, `${on ? 'Hide' : 'Show'} ${names}, joined to this scene with no cut, beside it (read-only)`);
+      toggle.className = 'toggle'; toggle.setAttribute('aria-pressed', String(on));
+      const frame = button('⤢ Fit joined', fitJoined, `Zoom out to show this scene with ${names}`); frame.disabled = !on;
+      group.append(toggle, frame);
+    }
     const more = element('details', 'more-menu'), panel = element('div', 'more-panel'); more.open = moreOpen; more.ontoggle = () => { moreOpen = more.open; };
     more.append(element('summary', '', 'More preview settings'), panel); bar.append(more);
     const motion = element('input'); motion.type = 'checkbox'; motion.checked = reduced; motion.onchange = () => { reduced = motion.checked; void draw(); }; panel.append(label('Reduced motion', motion));
@@ -661,6 +677,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const li = element('li'), pick = button('', () => { revealed = node.id; select_(node.id === selectedId ? '' : node.id); }, `${art(node).label} · ${node.type} · ${LAYER_LABELS[node.layer]}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
         pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
+        if (node.type === 'level.barrier') { const mark = element('span', 'layer-badge'); mark.innerHTML = BARRIER_ICON; mark.title = 'Barrier: select it to edit who may pass (Access)'; pick.append(mark); }
         pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.dataset.instance = node.id; pick.setAttribute('aria-pressed', String(node.id === selectedId));
         if (hidden.has(node.id)) li.classList.add('is-hidden');
         li.append(pick, eye(() => [node.id], node.id)); return li;
@@ -793,7 +810,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     right.append(head);
     let sections: InspectorSection[] = [];
     try { sections = scene && config.inspector ? config.inspector(scene, node, documentsForView()) : []; } catch (e) { right.append(element('p', 'error', `Inspector unavailable: ${message(e)}`)); }
-    const tabs = [...(node ? [{ id: 'appearance', label: 'Appearance', title: 'Position, look and attachment' }] : []), ...sections];
+    // a primary section (a barrier's Access) comes first and opens first each time the selection changes
+    const primary = sections.find(section => section.primary);
+    if ((node?.id ?? '') !== inspectedId) { inspectedId = node?.id ?? ''; if (primary) inspectorTab = primary.id; }
+    const tabs = [...(primary ? [primary] : []), ...(node ? [{ id: 'appearance', label: 'Appearance', title: 'Position, look and attachment' }] : []), ...sections.filter(section => section !== primary)];
     if (!tabs.length) { disposeInspector(); right.append(element('p', 'muted', 'This scene has no editable logic yet.')); return; }
     if (!tabs.some(tab => tab.id === inspectorTab)) inspectorTab = tabs[0].id;
     if (tabs.length > 1) {
@@ -971,7 +991,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       }
       sizeCanvas(baseWidth, zoomable() ? Math.round((crop && cropHeight ? cropHeight : baseHeight) * viewZoom) : baseHeight);
       const result = await config.preview.render(canvas, request(overlays, viewZoom));
-      if (!disposed && generation === previewGeneration) { preview = result; previewError.hidden = true; placeHover(); }
+      if (!disposed && generation === previewGeneration) { preview = result; previewError.hidden = true; placeHover(); placeJoined(); }
       // Compare: the other version through the same renderer and request, only the composition differs.
       const other = comparing() ? documentsForView().find(d => d.id === compareId) : undefined;
       stage.classList.toggle('comparing', !!other); compareCanvas.hidden = !other;
@@ -1009,13 +1029,30 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     hoverBox.toggleAttribute('data-below', top < 22); hoverBox.toggleAttribute('data-right', left > frame.width * .6);
   }
   function zoomTo(next: number, anchor?: { clientX: number; clientY: number }) {
-    if (!zoomable()) return; const previous = viewZoom; viewZoom = Math.round(Math.min(8, Math.max(.5, next)) * 100) / 100; if (viewZoom === previous) return;
+    if (!zoomable()) return; const previous = viewZoom; viewZoom = Math.round(Math.min(8, Math.max(.25, next)) * 100) / 100; if (viewZoom === previous) return;
     const rect = canvas.getBoundingClientRect(), stageRect = stage.getBoundingClientRect(), at = anchor ?? { clientX: Math.max(rect.left, stageRect.left) + Math.min(rect.width, stageRect.width) / 2, clientY: Math.max(rect.top, stageRect.top) + Math.min(rect.height, stageRect.height) / 2 };
     const ax = (at.clientX - rect.left) * canvas.width / rect.width, fromBottom = rect.bottom - at.clientY;
     environment.cameraX = Math.round((Number(environment.cameraX ?? 0) + ax / previous - ax / viewZoom) * 100) / 100;
     sizeCanvas(baseWidth, Math.round((crop && cropHeight ? cropHeight : baseHeight) * viewZoom));
     const after = canvas.getBoundingClientRect(); stage.scrollTop += after.bottom - (at.clientY + fromBottom * viewZoom / previous);
     refreshViewportTools(); refreshOptions(); void draw();
+  }
+  /** Frames the scene and the scenes joined to it (the preview's extent), zooming out as far as needed. */
+  function fitJoined() {
+    const extent = preview?.extent; if (!extent || !zoomable()) return; environment.showJoined = true;
+    const span = Math.max(1, extent.to - extent.from); viewZoom = Math.round(Math.min(1, Math.max(.25, baseWidth / (span * 1.04))) * 100) / 100;
+    environment.cameraX = Math.round(extent.from - (baseWidth / viewZoom - span) / 2); stage.scrollTop = 0; refreshViewportTools(); refreshOptions(); void draw();
+  }
+  /** A tag over each joined scene in the preview: its name, which side it joins on, and a button that opens it. */
+  function placeJoined() {
+    joinedLayer.replaceChildren(); const list = preview?.joined ?? []; if (!list.length || !playHost.hidden || comparing()) return;
+    const frame = stageWrap.getBoundingClientRect(), at = canvas.getBoundingClientRect(), scale = at.width / canvas.width, arrow = { left: '←', right: '→', above: '↑', below: '↓' } as const;
+    for (const j of list) {
+      const left = Math.max(at.left, frame.left, at.left + j.x * scale), right = Math.min(at.right, frame.right, at.left + (j.x + j.width) * scale); if (right - left < 60) continue;
+      const top = Math.max(frame.top + 6, at.top + j.y * scale + 6), tag = element('div', 'joined-tag');
+      tag.append(element('span', '', `${j.label} · joined ${arrow[j.side]}`), button(`Go to ${j.label}`, () => openScene(j.zone), `Open ${j.label} in the editor (or double-click it in the preview). Joined scenes are read-only here.`));
+      tag.setAttribute('aria-label', `${j.label}, joined scene`); Object.assign(tag.style, { left: `${left - frame.left + 6}px`, top: `${top - frame.top}px`, maxWidth: `${Math.max(60, right - left - 12)}px` }); joinedLayer.append(tag);
+    }
   }
   function fit() { viewZoom = 1; environment.cameraX = 0; cropFor = ''; stage.scrollTop = 0; refreshViewportTools(); refreshOptions(); void draw(); }
   function refreshViewportTools() {
@@ -1118,7 +1155,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (!dragging) return; const pending = dragging.pending, unchanged = !dragging.armed || equal(pending, dragging.before); dragging = undefined; delete canvas.dataset.dragging; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!unchanged) run(() => model.edit(compositionDocument()!.id, 'Drag artwork', () => pending));
   };
   canvas.onpointercancel = event => { touches.delete(event.pointerId); pinch = undefined; panning = undefined; delete canvas.dataset.panning; dragging = undefined; delete canvas.dataset.dragging; void draw(); };
-  stage.addEventListener('scroll', () => placeHover(), { passive: true });
+  stage.addEventListener('scroll', () => { placeHover(); placeJoined(); }, { passive: true });
+  // a joined scene is read-only here: double-clicking it opens it
+  canvas.ondblclick = event => { const point = coordinates(event); if (hitTest(point)) return; const j = preview?.joined?.find(j => point.x >= j.x && point.x <= j.x + j.width && point.y >= j.y && point.y <= j.y + j.height); if (j) openScene(j.zone); };
   canvas.onpointerleave = () => { if (hoverId) { hoverId = ''; placeHover(); } };
   // The comparison picture shares the camera and never selects: a left press is empty space, middle/right drag pans both.
   compareCanvas.onpointerdown = event => {

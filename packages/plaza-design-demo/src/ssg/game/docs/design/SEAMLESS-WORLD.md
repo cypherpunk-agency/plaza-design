@@ -710,7 +710,7 @@ functions as the game.
 - **Try it**: a fixture panel (flag and item toggles) shows the result sentence the barrier would give.
   Evaluation is pure, so nothing is committed.
 - **The world access policy**: City & travel › Access can name a barrier instead of an exit.
-- *Built (step 2):* the Access tab (authoring/barrier-authoring.ts) with the sentence, keyring/flag/condition pickers, Try it
+- *Built (step 2):* the Access tab (authoring/barrier-authoring.ts) with the sentence, keyring/flag/condition pickers, Test the rule (was Try it)
   and §6.8 warnings; `phases.<p>.barriers.<id>` validated and run by `storyExit` (a gate's beat ends by opening the barrier).
   Not yet: the *hidden while shut* checkbox, multi-row access lists and the world access policy.
 

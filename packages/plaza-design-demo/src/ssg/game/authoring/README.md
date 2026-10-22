@@ -113,22 +113,28 @@ scene without a starting state adds the default one and starts. World › Distri
 places and removes districts.
 
 **World › Zones** (`zone-graph-authoring.ts`) edits `world/zone-graph.json`, the seams that join scenes
-with no cut (docs/design/SEAMLESS-WORLD.md §2, §6.1). Each seam has a kind (walk, stairs, door),
-two zones, an optional level piece on each side, and `dx`/`dh`: where zone b's origin lies in zone a's
-units. **Align** moves a walk seam's zone b to zone a's edge. Each edit is one history step and is
-checked for its shape. Problems against the zones (`worldProblems`: unknown zone or piece, an edge that
-does not meet, a loop that disagrees) are listed in the panel, and protected Save refuses them. A scene
-joined by seams shows its neighbours one seam away in the Scene preview, drawn live from their
-pending sources by the shared frame renderer. They are read-only, so pan past the scene's edge to see
-them. Private Play uses the pending graph.
+with no cut (docs/design/SEAMLESS-WORLD.md §2, §6.1). The left list shows each seam as From → To with a kind icon
+(walk, stairs, door) and a tick or a problem count; the card on the right edits the selected one: kind, the From and
+To scenes by name (with *open* links), the stair or door piece on each side (stairs and doors only), and where the To
+scene starts (x, height, in the From scene's units). **Align to edge** puts a walk seam's To scene against the From
+scene's edge. A diagram draws both scenes at their offsets with the seam marked. Each edit is one history step and is
+checked for its shape. Problems against the zones (`worldProblems`: unknown scene or piece, an edge that does not meet,
+a loop that disagrees) appear in plain words beside the field they concern, and protected Save refuses them.
 
-A selected **barrier** (`level.barrier`) has an **Access** tab (`barrier-authoring.ts`): its rule as a sentence ("Opens when
-you carry UPLINK.SO · Refuses with: …"), a key chip picked from the pending keyring, a flag from the declared flags, an
-optional condition through the shared gameplay condition picker, and its refusal; each is one history step of the
-composition. **Try it** toggles the chips, flags and items the rule names (and a story phase) and shows what E would do,
-through the same `barrierAccess`, without Play. Phase rules (`phases.<p>.barriers.<id>`) are edited in Scene › Story phases
-(Barriers that act differently) and listed here. **Checks** warns of a rule that can never pass (an unknown chip, a flag
-nothing declares or sets); warnings do not block Save.
+In the Scene view, a scene joined by seams shows its neighbours one seam away, drawn live from their pending
+sources by the shared frame renderer. **Show joined scenes** in the toolbar (on by default) turns them on or off;
+**Fit joined** zooms out to frame the scene with them. Each neighbour is dimmed and tagged ("Tower annex · joined →")
+because it is read-only here; the tag's **Go to …** button, or a double-click on it, opens that scene. Private Play
+uses the pending graph.
+
+A selected **barrier** (`level.barrier`, marked with a padlock in the outline) opens its **Access** tab first
+(`barrier-authoring.ts`): the rule as a sentence in large type ("Opens when you carry UPLINK.SO · Refuses with: …"),
+then **What it needs**: *Needs key chip* (the pending keyring), *Needs flag* (the declared flags), *Only while* (the
+shared gameplay condition picker) and the refusal; each is one history step of the composition. **Test the rule**
+switches on the chips, flags and items the rule names (and a story phase) and shows what E would do (*Opens* or
+*Refuses: …*), through the same `barrierAccess`, without Play. Phase rules (`phases.<p>.barriers.<id>`) are edited in
+Scene › Story phases (Barriers that act differently) and listed here. **Checks** warns of a rule that can never pass
+(an unknown chip, a flag nothing declares or sets); warnings do not block Save.
 
 ## Isolation and source safety
 
