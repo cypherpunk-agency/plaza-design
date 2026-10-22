@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [],
+  "commands": {},
+  "reactions": [],
+  "conversations": {},
+  "state": {
+    "shift.tagReceived": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.parcelDelivered": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.caseReturned": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.trolleyMoved": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.checkedOut": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

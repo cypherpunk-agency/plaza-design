@@ -1,3 +1,4 @@
+import {withSharedState} from '../engine/gameplay/shared-state';
 import {validateCompanionConversations,validateCompanionGameplay,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {NATIVE_SCENES} from '../scenes';
@@ -9,7 +10,8 @@ import {isValidationSnapshot} from './validation-snapshot';
 import type {SceneDef} from '../scenes';
 const validatedRegistries = new WeakMap<ReadonlyMap<string,unknown>,Record<string,SceneDef>>();
 /** One prospective registry for private Play, including routes into other edited scenes. */
-export function pendingRegistry(documents:ReadonlyMap<string,unknown>){
+export function pendingRegistry(documents:ReadonlyMap<string,unknown>){return withSharedState(documents.get('state-owners'),()=>registryFor(documents));}
+function registryFor(documents:ReadonlyMap<string,unknown>){
  const cached=isValidationSnapshot(documents)?validatedRegistries.get(documents):undefined;if(cached)return cached;
  const network=pendingNetworkContext(documents);
  const native=Object.fromEntries(Object.keys(NATIVE_SCENES).map(id=>{const entry=gameplayScenes.find(s=>s.id===id)!;

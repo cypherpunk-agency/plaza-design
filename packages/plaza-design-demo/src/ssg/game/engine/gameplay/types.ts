@@ -61,6 +61,8 @@ export interface GameplayDefinition {
   state?:Record<string,StateDeclaration>;
   /** Read-only references to another declaration; no defaults, ownership or stored copies. */
   stateReads?:Record<string,StateDeclaration['type']>;
+  /** World-level owners (world/state-owners.json) whose declared keys this definition reads and writes. */
+  sharedState?:string[];
   /** Pure reads derived from the current draft and its source; never persisted. */
   queries?:Record<string,QueryDefinition>;
   purchases?:Record<string,PurchaseDefinition>;

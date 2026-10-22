@@ -1,3 +1,4 @@
+import {withSharedState,sourceGameplay} from '../engine/gameplay/shared-state';
 import {renderStateReadsAuthoring} from './state-reads-authoring';
 import {renderConversationStructure} from './conversation-structure-authoring';
 import {renderGameplayPurchasesAuthoring} from './gameplay-purchases-authoring';
@@ -21,6 +22,8 @@ export interface GameplayAuthoring {
   keyringIdsSource?():readonly string[];
   registryLabelsSource?():readonly string[];
   document():unknown;
+  /** The pending world/state-owners.json, so shared owners' keys appear in the state pickers. */
+  sharedStateSource?():unknown;
   validate?(value:unknown):GameplayDefinition;
   onEdit(value:GameplayDefinition,label:string):void;
   undo():void;redo():void;save():Promise<void>;reload():Promise<void>;
@@ -42,9 +45,11 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
   function select(parent:HTMLElement,name:string,values:readonly string[],value:string,change:(value:string)=>void){const input=element('select');for(const v of values){const option=element('option',v||'(none)');option.value=v;input.append(option);}input.value=value;input.onchange=()=>{try{change(input.value);}catch(e){report(e);}};field(parent,name,input);}
   function section(parent:HTMLElement,title:string,collapsed=false){const details=element('details'),key=conversation+'/'+node+'/'+command+':'+title;details.open=expanded.get(key)??(!collapsed&&parent===root);// nested rows start collapsed so a node reads as an index
    details.ontoggle=()=>expanded.set(key,details.open);details.append(element('summary',title));const body=element('div');body.className='gameplay-fields';details.append(body);parent.append(details);return body;}
-  function edit(label:string,change:(doc:GameplayDefinition)=>void){const doc=(options.validate??validateGameplay)(options.document());change(doc);const valid=(options.validate??validateGameplay)(doc);error.textContent='';options.onEdit(valid,label);}
+  // Pickers and edits see the shared owners' declarations; source keeps only the sharedState reference.
+  function edit(label:string,change:(doc:GameplayDefinition)=>void){const valid=withSharedState(options.sharedStateSource?.(),()=>{const doc=(options.validate??validateGameplay)(options.document());change(doc);return (options.validate??validateGameplay)(doc);});error.textContent='';options.onEdit(sourceGameplay(valid),label);}
   function condition(parent:HTMLElement,name:string,value:Condition|undefined,change:(value:Condition|undefined)=>void,doc:GameplayDefinition,depth=0){const form=new TypedForm(report);form.objectiveIds=options.objectiveIdsSource?.()??[];form.condition(parent,name,value,change,doc,false,depth);}
-  function refresh(){
+  function refresh(){withSharedState(options.sharedStateSource?.(),render);}
+  function render(){
     if(disposed)return;
     const doc=(options.validate??validateGameplay)(options.document());
     const nativeData=options.nativeDataSource?options.nativeDataSource():options.nativeData,nativeDerived=options.nativeDerivedSource?.();

@@ -1,3 +1,5 @@
+import {withSharedState} from '../engine/gameplay/shared-state';
+import {validateSharedState,validateGameplay} from '../engine/gameplay/validation';
 import {validationSnapshot} from './validation-snapshot';
 import {mountOpeningAuthoring} from './opening-authoring';
 import {mountSharedGameplay} from './shared-gameplay-authoring';
@@ -190,7 +192,9 @@ async function start() {
     // Proposals borrow gameplay from their base; validators below never read proposal artwork.
     // Projected authored.* children are covered by their authored-scenes source owner.
     validationInputs: documents => documents.filter(d => !proposalScene(d.id) && !d.id.startsWith('authored.')).flatMap(d => [d.id, d.kind, d.value]),
-    validateDocument(document,documents) {
+    // Scenes validate against the pending world/state-owners.json, as Save and Play do.
+    validateDocument(document,documents) {return withSharedState(documents.find(d=>d.id==='state-owners')?.value,()=>{
+      if(document.id==='state-owners'){validateSharedState(document.value);for(const d of documents)if(d.kind==='gameplay'&&d.id!=='state-owners'&&(d.value as {sharedState?:unknown})?.sharedState!==undefined)validateGameplay(d.value);pendingRegistry(validationSnapshot(documents));return;}
       if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(validationSnapshot(documents));return;}
       if(document.id==='opening-story'){const values=validationSnapshot(documents);pendingOpeningStory(values);return;}
       if(document.id==='network'){const values=validationSnapshot(documents);validatePendingNetwork(values,pendingRegistry(values));return;}
@@ -214,13 +218,13 @@ async function start() {
 
 
       if (document.kind === 'gameplay') (nativeGameplayScene(document.id)??gameplayScene(document.id)).validateGameplay(document.value);
-
-    },
+    });},
 
     newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene },
     workbenches: [
       {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: the story\'s phases, cards, triggers, each scene\'s part in them, contacts and the end card',authoring:true,documentDependent:true,documentIds:['opening-story','contacts','end-card'],primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
       {id:'play-profiles',area:'world',label:'Play profiles',title:'Ways of playing: the full game, the harbor shift and the Test District',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
+      {id:'state-owners',area:'world',layout:'sections',label:'Shared state',title:'State owners shared by several scenes (the night shift): declared once, used through each scene\'s gameplay',authoring:true,documentDependent:true,primaryDocumentId:'state-owners',mount:(host,context)=>mountSharedGameplay(host,context,'state-owners',validateSharedState,publicEditor)},
       {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
       {id:'scene-catalogue',area:'world',label:'Scenes',title:'Create and manage authored scenes',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-fixtures','city-source'],primaryDocumentId:'authored-scenes',mount:mountSceneCatalogue},
