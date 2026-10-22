@@ -6,6 +6,13 @@
 > built. [ROADMAP.md](../../ROADMAP.md) owns priorities, and
 > [ENGINE-HANDBOOK.md](../reference/ENGINE-HANDBOOK.md) describes the engine as it is.
 
+**Status (2026-10-22).** Step 1 is partly built: `world/zone-graph.json`/`zone-graph.ts` (seams, floating
+origin, `worldProblems` on Save), `mergeLevels`, `renderWorldFrame` as the one renderer, `crossInto`, the camera
+over the zones' union, each zone lit by its own facing, and the lab (tower → tower-annex by a walk seam,
+tower-annex → tower-deck by a stairs seam). Not yet: city-wide weather (the active zone's still applies), the
+editor's World › Zones tools (6.1–6.3; the zone graph is a plain source document), and the compass dial across
+joined zones. See the handbook's "zones and seams" recipe for what works today.
+
 Tommi's direction, 2026-10-22:
 
 - The metro should be "a properly supported feature", not an engine hack.

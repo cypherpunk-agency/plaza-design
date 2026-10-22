@@ -179,6 +179,72 @@ The street door seen from inside is `level.entrance` (its `building`; `style` gl
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
 player is in that building.
 
+## Recipe: zones and seams (two scenes with no cut)
+
+This is step 1 of [SEAMLESS-WORLD.md](../design/SEAMLESS-WORLD.md) as built. The rest of that document is
+still a proposal.
+
+Words. A **zone** is a scene: it keeps its id, folder, model, host and save block. A **seam** joins two zones
+with no cut and fixes where one sits from the other (`dx`, `dh`). An **exit** is still the cut join (a fade,
+the taxi). The zone the player stands in is the **active** zone. It is at (0, 0) and the zones around it are
+placed from it (a **floating origin**). There are no world coordinates.
+
+The seams are one source document, `world/zone-graph.json` (source document `zone-graph`, kind transport,
+registered in authoring/source-documents.ts). A seam is `{id, kind, a: {zone, piece?}, b: {zone, piece?}, dx, dh}`:
+`b`'s origin sits at (`dx`, `dh`) in `a`'s units, and `dh` < 0 is below. `kind` is `walk`, `stairs` or `door`.
+`door` validates but nothing walks it yet. world/zone-graph.ts is pure: `validateZoneGraph` checks the shape,
+`seamsOf` gives a zone's seams seen from it, `placeFrom(graph, active, hops = 1)` places zones from the active
+one, `joined` says whether a zone has any seam, and `worldProblems` checks the graph against the scenes. A scene
+with no seam runs exactly as before.
+
+To join two scenes:
+
+1. Both scenes need a level (a `level.floor` at least); a zone without one is not joined.
+2. **Walk seam**, side by side: `{"kind": "walk", "a": {"zone": "left"}, "b": {"zone": "right"}, "dx": <left
+   zone's width>, "dh": 0}`. Outdoor floors (no `building`) at the same height that meet at the edge walk on
+   into each other. That edge no longer walks off (`seamAt` skips `walkOff`).
+3. **Stairs seam**, one above the other: a `level.stairs` in one zone whose top (or foot) lands on a
+   `level.floor` of the other once the offset is applied. Name both pieces (`a.piece` the stair, `b.piece` the
+   floor). The pieces are only checked to exist; the join itself is geometric, so pick `dx`/`dh` so the stair's
+   end is on the floor. The lab: `stairs-deck` at x 470, run 120, rise 100 in tower-annex ends at (590, 100);
+   tower-deck sits at `dx` 0, `dh` 100, so its `floor-deck` at (590, 0) is at (590, 100) too.
+4. Save in the composer. `worldProblems` refuses unknown zones, a walk seam whose `dx` is not the zone's width,
+   a stairs or door seam without both pieces or with a missing piece, and loops that place a zone in two places.
+
+How the game walks it (runtime/game.ts). On `enter`, `joinLevel` places the zones one seam away and, if any has
+a level, builds one level with engine/level.ts `mergeLevels`. Each zone's pieces are moved by its placement,
+and ids and buildings become `zone/id`, so zones never collide; `LevelSource.zones` records where each zone
+lies. The level rules then work unchanged: `levelBounds` lets a floor run on into the next zone (`across`),
+`levelStep` moves the player onto it, and a stair that lands on another zone's floor climbs into it. Lifts read
+their own zone's movers (`Movers`, a function of the zone). `levelZone` names the zone under the player. When
+it changes, `crossInto` makes it the active zone in the same frame: the player, camera, bubble and companion
+shift by the offset, the level is joined again from the new zone, and the HUD, seen flag and first-visit intro
+follow. Nothing closes and nobody is placed again. The camera (`camFollow`, `worldSpan`) clamps to the union of
+the active zone and its neighbours; `onResize` fits that span. Rooms seen are kept on the save per zone
+(`seenByZone`). The model's own `Zones` get the player in local units, with the building's own name.
+
+How it draws (runtime/render-scene.ts). `renderWorldFrame` is the one renderer for game and editor. A frame
+alone draws as before. With `joined`, each neighbour on screen is a `ZoneFrame` (`zoneFrame` in game.ts): its own
+view (`cam - dx`, `gy - dh`), scene, host and light from its own facing. `drawJoined` draws it clipped to its
+rect: city and street layers, artwork, puddles, casters, actors, shade and `drawFront`. The sky, weather in
+front, grade, lights, prompts and bubbles are drawn once, by the active zone. Each zone draws its part of the
+level view (`splitLevelView`), which `levelVisualState` hands to its pieces as before. In hack vision a
+neighbour is muted whole.
+
+Limits today:
+
+- Only zones one seam away are joined and drawn. From the Tower lab you see the annex, not the deck above it.
+- Neighbours are seen, not used: prompts, E and hack vision belong to the active zone.
+- A neighbour's layered over-player and foreground pieces are flushed with the active zone's, outside its clip.
+- Weather is the active zone's climate (set on `enter`, not on `crossInto`); neighbours share it.
+- There is no residency or unloading: a neighbour's host is made (`hostOf`) and kept.
+- The game imports the built zone graph, so editor Play does not take a pending one. The composer previews each
+  zone alone, and there is no world canvas or seam tool yet.
+
+Try it: `?play=tower`, walk right into the annex and take its stair up to the deck (README "Build and
+preview"). Check with `pnpm test:game zone-graph level-visual-state`; check-zone-graph.mts is the small
+example of a joined level.
+
 ## Recipe: make or change any scene (folder scenes)
 
 Every scene is a folder scene: `scenes/<id>/` holds `composition.json`, `scene.json`, `gameplay.json`,
@@ -408,6 +474,7 @@ isolated copies, not the working game's files or your recovery journal.
 | New scenes/routes | scene-catalogue all-scene-world-routes |
 | Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
 | Communication | communication device-reply |
+| Zones and seams (joined scenes) | zone-graph level-visual-state |
 | Demo isolation | demo-district |
 | Play profiles (ways of playing) | play-profiles demo-district play-storage |
 | Companion, critters, locks, review stations, reset flags | companion-source critter-reactions review-stations city-locks scene-reset-flags loop-scene-ids |
