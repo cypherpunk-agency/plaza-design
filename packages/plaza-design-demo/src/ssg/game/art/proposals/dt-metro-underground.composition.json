@@ -1,0 +1,1177 @@
+{
+  "version": 1,
+  "scene": "dt-metro-underground",
+  "instances": [
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 2160
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 2160,
+        "seed": 81,
+        "parallax": 0.2,
+        "minHeight": 220,
+        "maxHeight": 400,
+        "haze": 0.65,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 150
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 2160,
+        "seed": 82,
+        "parallax": 0.5,
+        "minHeight": 170,
+        "maxHeight": 320,
+        "haze": 0.3,
+        "lit": 0.4,
+        "signs": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 150
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "front-0",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 60,
+            "width": 110,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 401,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 150
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-1",
+      "type": "building.front",
+      "props": {
+        "width": 180,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 10,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 130,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 402,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 200,
+        "h": 150
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-2",
+      "type": "building.front",
+      "props": {
+        "width": 220,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 14,
+            "width": 90,
+            "tenant": "bar"
+          },
+          {
+            "kind": "door",
+            "from": 160,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "windows": "curtained",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 403,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 380,
+        "h": 150
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-3",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "tagged",
+            "from": 14,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 404,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 600,
+        "h": 150
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-4",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 20,
+            "width": 120
+          }
+        ],
+        "skin": "panel",
+        "windows": "punched",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 405,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 760,
+        "h": 150
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-5",
+      "type": "building.front",
+      "props": {
+        "width": 190,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 20,
+            "width": 24
+          },
+          {
+            "kind": "sealed",
+            "from": 80,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 406,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 960,
+        "h": 150
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-6",
+      "type": "building.front",
+      "props": {
+        "width": 220,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 14,
+            "width": 80
+          },
+          {
+            "kind": "door",
+            "from": 150,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "windows": "framed",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 407,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1150,
+        "h": 150
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-7",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 100,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "tenement",
+        "windows": "curtained",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 408,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1370,
+        "h": 150
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-8",
+      "type": "building.front",
+      "props": {
+        "width": 180,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 60,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 409,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1570,
+        "h": 150
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-9",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "tagged",
+            "from": 20,
+            "width": 70
+          }
+        ],
+        "skin": "concrete",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 410,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1750,
+        "h": 150
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-10",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 20,
+            "width": 90
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 411,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1950,
+        "h": 150
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-11",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 30,
+            "width": 24
+          }
+        ],
+        "skin": "panel",
+        "windows": "punched",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 412,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 2150,
+        "h": 150
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-street-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 0
+      },
+      "placement": {
+        "x": 330,
+        "h": 150
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-street-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 1250,
+        "h": 150
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-street-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1800,
+        "h": 150
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hall",
+      "type": "metro.ticket-hall",
+      "props": {
+        "width": 620,
+        "name": "DOWNTOWN",
+        "office": 270,
+        "machines": 2,
+        "machinesAt": 380,
+        "broken": 1,
+        "map": 446,
+        "gate": 560,
+        "gateNote": "TICKET AND ID REQUIRED",
+        "ends": "left",
+        "deadLamp": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "platform",
+      "type": "metro.underground-platform",
+      "props": {
+        "width": 1540,
+        "name": "DOWNTOWN",
+        "ends": "right",
+        "nameEvery": 420
+      },
+      "placement": {
+        "x": 620,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "well-west",
+      "type": "metro.stairs-up",
+      "props": {
+        "rises": "left",
+        "run": 190,
+        "rise": 150,
+        "flight": false,
+        "sign": "WAY OUT · STREET",
+        "post": true
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "well-east",
+      "type": "metro.stairs-up",
+      "props": {
+        "rises": "right",
+        "run": 240,
+        "rise": 150,
+        "flight": false,
+        "sign": "WAY OUT · EAST · UP ONLY",
+        "post": true,
+        "signDrop": 30
+      },
+      "placement": {
+        "x": 1880,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-west",
+      "type": "level.stairs",
+      "props": {
+        "run": -190,
+        "rise": 150,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "set"
+    },
+    {
+      "id": "escalator-east",
+      "type": "level.escalator",
+      "props": {
+        "run": 240,
+        "rise": 150,
+        "direction": "up",
+        "speed": 0.6,
+        "style": "standard"
+      },
+      "placement": {
+        "x": 1880,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "set"
+    },
+    {
+      "id": "train",
+      "type": "metro.cutaway-train",
+      "props": {
+        "cars": 2,
+        "destination": "RING · GALLERIA"
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop"
+    },
+    {
+      "id": "departures",
+      "type": "sign.screen",
+      "props": {
+        "kind": "registry",
+        "width": 110,
+        "height": 30,
+        "mount": "hang",
+        "reach": 10,
+        "lines": [
+          "LINE 0 > GALLERIA",
+          "DUE 0:25"
+        ],
+        "title": "DEPARTURES",
+        "color": "255,170,60"
+      },
+      "placement": {
+        "x": 1460,
+        "h": 104
+      },
+      "order": 25,
+      "layer": "set"
+    },
+    {
+      "id": "slogans",
+      "type": "sign.screen",
+      "props": {
+        "kind": "slogans",
+        "width": 72,
+        "height": 24,
+        "mount": "hang",
+        "reach": 14,
+        "rec": true
+      },
+      "placement": {
+        "x": 900,
+        "h": 100
+      },
+      "order": 26,
+      "layer": "set"
+    },
+    {
+      "id": "camera-hall",
+      "type": "sign.camera",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": 112
+      },
+      "order": 27,
+      "layer": "set"
+    },
+    {
+      "id": "camera-platform",
+      "type": "sign.camera",
+      "props": {},
+      "placement": {
+        "x": 1600,
+        "h": 112
+      },
+      "order": 28,
+      "layer": "set"
+    },
+    {
+      "id": "exit-sign",
+      "type": "sign.hanging",
+      "props": {
+        "text": "EXIT ONLY",
+        "color": "255,217,165",
+        "drop": 12
+      },
+      "placement": {
+        "x": 1840,
+        "h": 112
+      },
+      "order": 29,
+      "layer": "set"
+    },
+    {
+      "id": "taped",
+      "type": "sign.taped",
+      "props": {
+        "lines": [
+          "CASH NOT",
+          "ACCEPTED"
+        ]
+      },
+      "placement": {
+        "x": 427,
+        "h": 30
+      },
+      "order": 30,
+      "layer": "set"
+    },
+    {
+      "id": "gate-in",
+      "type": "level.barrier",
+      "props": {
+        "style": "turnstile",
+        "width": 24,
+        "refuse": "TICKET AND ID REQUIRED."
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "set"
+    },
+    {
+      "id": "gate-exit",
+      "type": "level.barrier",
+      "props": {
+        "style": "gate",
+        "width": 30,
+        "refuse": "EXIT ONLY."
+      },
+      "placement": {
+        "x": 1840,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "set"
+    },
+    {
+      "id": "queue-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6101,
+        "act": "queue",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 340,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "queue-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6102,
+        "act": "wait",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 366,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "machine",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6103,
+        "act": "phone",
+        "archetype": "student"
+      },
+      "placement": {
+        "x": 432,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6104,
+        "act": "stand",
+        "archetype": "security"
+      },
+      "placement": {
+        "x": 612,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 36,
+      "layer": "playfield"
+    },
+    {
+      "id": "sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6105,
+        "act": "sleep",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 110,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 37,
+      "layer": "playfield"
+    },
+    {
+      "id": "busker",
+      "type": "character.resident",
+      "props": {
+        "kind": "busker",
+        "depth": "play",
+        "seed": 6106,
+        "act": "play"
+      },
+      "placement": {
+        "x": 680,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "seed": 6107,
+        "act": "scan"
+      },
+      "placement": {
+        "x": 600,
+        "h": 92,
+        "facing": -1
+      },
+      "order": 39,
+      "layer": "playfield"
+    },
+    {
+      "id": "sweeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "sweeper",
+        "depth": "play",
+        "seed": 6108,
+        "act": "sweep"
+      },
+      "placement": {
+        "x": 1700,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 40,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5410,
+        "act": "stand",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 1080,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 41,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5411,
+        "act": "phone",
+        "archetype": "commuter"
+      },
+      "placement": {
+        "x": 920,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 42,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5412,
+        "act": "read",
+        "archetype": "reader"
+      },
+      "placement": {
+        "x": 1373,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 43,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5413,
+        "act": "stand",
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 1600,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 44,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5415,
+        "act": "wait",
+        "archetype": "shopper"
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 45,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5401,
+        "act": "read",
+        "archetype": "office",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 805,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 46,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5402,
+        "act": "doze",
+        "archetype": "student",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1078,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 47,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5404,
+        "act": "talk",
+        "archetype": "courier",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1358,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 48,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5405,
+        "act": "phone",
+        "archetype": "elder",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1411,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 49,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5406,
+        "act": "read",
+        "archetype": "punk",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1494,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 50,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5408,
+        "act": "sit",
+        "archetype": "shopper",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1547,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 51,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider-6",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5409,
+        "act": "talk",
+        "archetype": "sleeper",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1631,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 52,
+      "layer": "playfield"
+    },
+    {
+      "id": "walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5414,
+        "act": "walk",
+        "archetype": "office",
+        "range": 600
+      },
+      "placement": {
+        "x": 760,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 53,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 54,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 2160,
+        "building": "",
+        "label": "Street (zone downtown)"
+      },
+      "placement": {
+        "x": 0,
+        "h": 150
+      },
+      "order": 55,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-station",
+      "type": "level.floor",
+      "props": {
+        "width": 2140,
+        "building": "metro",
+        "label": "Ticket hall and platform",
+        "indoor": true
+      },
+      "placement": {
+        "x": 10,
+        "h": 0
+      },
+      "order": 56,
+      "layer": "logic"
+    },
+    {
+      "id": "label",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 0,
+        "bar": false,
+        "numbers": false,
+        "size": 9,
+        "ink": "#ffd9a5",
+        "title": "DOWNTOWN METRO · UNDERGROUND (PROPOSAL, REPLACES THE RAISED PLATFORM)",
+        "note": "Street 150 above the platform: ceiling 124, slab 26 (metro-len-2 sizes); 2-car train 1,086, platform 1,540|West: real stairs up to the street, ticket hall, turnstile (level.barrier) at the gate line|East: up escalator to a second way out, exit-only gate|Indoor floors: the station is lit by its own lamps, not the sky"
+      },
+      "placement": {
+        "x": 30,
+        "h": 484
+      },
+      "order": 57,
+      "layer": "foreground"
+    }
+  ]
+}
