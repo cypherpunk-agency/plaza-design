@@ -159,5 +159,59 @@ assert.equal(easeAt([[.5, .9]], 2), 1);
   const lo = Math.min(rules.places.home.x, rules.places['A-3'].x), hi = Math.max(rules.places.home.x, rules.places['A-3'].x);
   assert.ok(a > lo && a < hi, 'and mid-way at half a second: ' + a + ' between ' + lo + ' and ' + hi);
 }
-console.log('Circuit movers PASS: mover timing, easing, paths with legs and choices, zone crossings and floors, the Tower lift called by its lobby zone through a cable, ridden through its mover, sent by its verb, saved.');
+// a loop line: a ring, trips that run another path when they end, stops a state key names, legs that begin part way in or send another mover,
+// a path that begins from a stop, sounds, the time to go, and the emergency stop with its snap, its zone on the stopping point, and its relay
+{
+  let t = 0, want = 'b', pass = false;
+  const hostR = {now: () => t, num: (n: number | string) => (typeof n === 'number' ? n : ({run: 1000, door: 100, hold: 500, decel: 1000, win: 40}[n as 'run'] ?? NaN)), coord: (c: unknown) => c as number, test: (c: string) => c === 'pass' && pass, read: (k: string) => (k === 'next' ? want : undefined)};
+  const rm = new Movers(hostR);
+  rm.add('d', [
+    {id: 'doors', layer: 'hardware', function: 'act', mover: {wired: false, ease: 'linear', start: 'open', stops: {shut: 0, open: 1}, paths: {open: [{to: 'open', ms: 'door'}], shut: [{to: 'shut', ms: 'door'}], snap: [{to: 'open', ms: 0}]}}},
+    {id: 'car', layer: 'hardware', function: 'act', events: ['started', 'arrived', 'depart', 'arrive', 'stopped'], mover: {
+      wired: false, ring: 300, ease: 'linear', start: 'a', auto: 'stand', stops: {a: 0, b: 100, c: 200, mark: 60},
+      brake: {decel: 'decel', snap: [{stop: 'mark', window: 'win'}], then: {track: 'halt', mark: 'halt'}, load: 'braking', event: 'stopped'},
+      paths: {
+        stand: [{ms: 'hold', load: 'dwell', drives: 'doors:snap'}, {ms: 'door', load: 'closing', drives: 'doors:shut', event: 'depart', cue: 'close'}, {run: 'go'}],
+        go: [{if: 'pass', then: [{to: '@next', ms: 'run', load: 'running', event: 'arrive', cue: 'open'}], else: [{to: '@next', ms: 'run', load: 'running', event: 'arrive', cue: 'open'}]}, {run: 'open'}],
+        open: [{ms: 'door', load: 'opening', drives: 'doors:open'}, {run: 'stand'}],
+        halt: [{ms: 'hold', load: 'halted'}, {to: '@next', speed: 100, load: 'resuming'}, {run: 'open'}],
+        home: [{from: 'c'}, {to: 'a', ms: 'run', ahead: 500, load: 'running'}],
+      },
+    }},
+  ] as never);
+  const log: string[] = [];
+  const settle = (to: number) => { while (t < to) { t = Math.min(to, t + 10); for (const e of rm.tick()) if (e.noun === 'car') log.push(e.event === 'cue' ? 'cue:' + e.cue : e.event + (e.stop ? ':' + e.stop : '')); } };
+  // auto: the mover is idle when it is added, so it runs its auto path; the leg drives the doors
+  assert.equal(rm.load('d.car'), 'dwell', 'an auto path runs when the mover is added'); assert.equal(rm.position('d.doors'), 1);
+  settle(550); assert.equal(rm.load('d.car'), 'closing'); assert.ok(Math.abs(rm.position('d.doors')! - .5) < .01, 'the leg drove the doors shut');
+  settle(600); assert.deepEqual(log, ['depart', 'cue:close', 'started'], 'closing ends: its event and its sound, then the next trip starts at the same instant');
+  assert.equal(rm.load('d.car'), 'running'); assert.equal(rm.target('d.car'), 'b', '@next named the stop when the leg began'); assert.equal(rm.at('d.car'), 'a', 'at is the stop it left');
+  settle(1100); assert.ok(Math.abs(rm.position('d.car')! - 50) < .01, 'half way to b');
+  settle(1600); assert.equal(rm.at('d.car'), 'b', 'the run is a trip: when it ends it is at b'); assert.deepEqual(log.slice(3), ['arrived:b', 'arrive', 'cue:open', 'started']);
+  assert.equal(rm.load('d.car'), 'opening', 'the next path began at the same instant');
+  // a ring: legs go forward round it
+  want = 'a'; settle(2250); assert.equal(rm.load('d.car'), 'closing'); settle(2800); assert.ok(Math.abs(rm.position('d.car')! - 200) < .01, 'b to a goes forward, through the wrap: 200 of the 300 at half time');
+  settle(3400); assert.equal(rm.at('d.car'), 'a'); assert.ok(rm.position('d.car')! >= 0 && rm.position('d.car')! < 1);
+  // to the stop it stands at is once round; the time left until a leg labelled opening ends follows the run on into the next path
+  want = 'a'; assert.equal(rm.runPath('d.car', 'go', {from: 'a'}), 'started'); settle(t + 500); assert.ok(Math.abs(rm.position('d.car')! - 150) < .01, 'once round the 300 ring: half way at half time');
+  assert.ok(Math.abs(rm.etaTo('d.car', 'opening') - 600) < .01, 'the rest of the run and the doors: ' + rm.etaTo('d.car', 'opening')); assert.equal(rm.etaTo('d.car', 'running'), 0, 'zero while it is on that leg');
+  // the emergency stop: it slows at the rate it is given and rests exactly at the snap stop when it would stop within the window of it
+  want = 'c'; rm.runPath('d.car', 'go', {from: 'a'}); settle(t + 100);
+  assert.deepEqual(rm.brakePreview('d.car'), {result: 'braking', where: 'mark'}, 'stopping 20 along from 20 is near the mark at 60: it lands there');
+  assert.deepEqual(rm.brake('d.car'), {result: 'braking', where: 'mark'}); assert.equal(rm.load('d.car'), 'braking'); assert.equal(rm.brake('d.car').result, 'already'); assert.equal(rm.halted('d.car'), 'mark');
+  assert.ok(Math.abs(rm.stopPoint('d.car')!.x - 60) < 1e-9, 'while it brakes its stopping point is where it will rest (a zone on it sees that)');
+  log.length = 0; settle(t + 400); assert.equal(rm.load('d.car'), 'halted'); assert.ok(log.includes('stopped'), 'rest raises the brake\'s event'); assert.ok(Math.abs(rm.position('d.car')! - 60) < 1e-6, 'at rest on the snap stop');
+  assert.equal(rm.at('d.car'), 'a', 'still the stop it left'); assert.equal(rm.target('d.car'), 'c', 'and still heading where it was going'); assert.equal(rm.brake('d.car').result, 'standing');
+  // a path started while it is held is still on its run: it keeps the stop it was heading for
+  rm.runPath('d.car', 'halt'); assert.equal(rm.target('d.car'), 'c'); settle(t + 500); assert.equal(rm.load('d.car'), 'resuming'); settle(t + 1500); assert.equal(rm.at('d.car'), 'c', 'it went on to c, at its speed (140 units at 100 per second)');
+  // far from the snap stop it stops on the track; with the end of the leg nearer than its stopping distance it goes on to its stop
+  settle(t + 1200); want = 'b'; rm.runPath('d.car', 'go', {from: 'a'}); settle(t + 30); assert.deepEqual(rm.brakePreview('d.car'), {result: 'braking', where: 'track'});
+  settle(t + 930); assert.equal(rm.brake('d.car').result, 'arriving');
+  // a path that begins from a stop, with its first leg already part way in
+  rm.runPath('d.car', 'home'); assert.equal(rm.at('d.car'), 'c'); settle(t + 1); assert.ok(Math.abs(rm.position('d.car')! - 250) < 1, 'it joins its run half way: 100 units round from c to a, half done: ' + rm.position('d.car'));
+  // a loop that takes no time is stopped
+  const z = new Movers(hostR); z.add('d', [{id: 'x', layer: 'hardware', function: 'act', mover: {wired: false, stops: {a: 0}, auto: 'loop', paths: {loop: [{ms: 0}, {run: 'loop'}]}}} as never]);
+  assert.throws(() => z.tick(), /without taking any time/);
+}
+console.log('Circuit movers PASS: mover timing, easing, paths with legs and choices, rings, trips that run on, @key stops, drives, ahead, cues, the emergency stop with its snap and halt paths, zone crossings and floors, the Tower lift called by its lobby zone through a cable, ridden through its mover, sent by its verb, saved.');
 process.exit(0);

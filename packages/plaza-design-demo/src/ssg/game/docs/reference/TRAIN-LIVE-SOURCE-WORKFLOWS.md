@@ -8,7 +8,7 @@ still precedes the halt caption and its cable still arrives after 150 ms.
 Geometry classification stays native; location and status words are source
 labels rendered by the existing formatter.
 
-The successful door operation calls `rideDoors(true)` exactly once, then reports
+The successful door operation sends the `train.doors` mover along `open` (the `halt.siding.open` path of the car, which extends the halt) exactly once, then reports
 `train.doors.opened`. Its source command writes the ordinary declared harbor
 flag. The existing following noun goal and source line retain their original
 interaction/signal context and ordering. No new outcome interpreter, flag alias

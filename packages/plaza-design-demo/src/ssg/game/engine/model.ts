@@ -24,7 +24,7 @@ import {readObservation} from './native-observations';
 
 import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from "../data/index";
 import type {
-  Action, CableData, Case, Coord, DeviceData, KeyItem, Layer, LineData, LineRef, LogicData, MachineData, MechanismDevice, NetData, NetworkData, NounData, PartFunction, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
+  Action, CableData, Case, Coord, DeviceData, KeyItem, Layer, LineData, LineRef, LogicData, MachineData, MechanismDevice, MoverCue, NetData, NetworkData, NounData, PartFunction, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [the net] networks and what you reach from where you are plugged in (NET.md)
@@ -110,6 +110,8 @@ export interface SceneHooks {
   /** Open a panel: `talk` (arg: the dialogue), or one of the scene's own (`camera`). */
   open: (panel: string, arg?: string) => void;
   changed: () => void;
+  /** A mover's leg ended with a sound (a train's doors); the host plays it while the scene is on screen. */
+  cue?: (cue: MoverCue) => void;
   /** A full trace threw the player out of this device. */
   kick?: (dev: string) => void;
   /** The logic modules the player owns (`timer.so`, …). Default: what a new game starts with. */
@@ -278,7 +280,7 @@ export class SceneModel {
     this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
     this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
     this.clocks = new Clocks(() => this.now());
-    this.movers = new Movers({ now: () => this.now(), num: (n) => this.num(n), coord: (c, axis) => this.coord(c, axis), test: (cond) => this.cond(cond) });
+    this.movers = new Movers({ now: () => this.now(), num: (n) => this.num(n), coord: (c, axis) => this.coord(c, axis), test: (cond) => this.cond(cond), read: (key, dev) => this.read(key, this.ctx(dev)) });
     if(gameplay)this.installGameplaySource(gameplay);
     const initial={...ownedState};if(ownedState)this.state=ownedState;
     this.init();
@@ -950,7 +952,7 @@ export class SceneModel {
   /** The watchdogs step along their routes (raising arrives / leaves), the clocks beat. True when something happened. */
   private tickEngine(): boolean {
     const steps = this.dogs.tick(), beats = this.clocks.tick(), arrivals = this.movers.tick();
-    const crossings = this.zones.tick((watch) => watch === 'player' ? this.player ?? undefined : this.movers.place(watch));
+    const crossings = this.zones.tick((watch, track) => watch === 'player' ? this.player ?? undefined : track === 'stop' ? this.movers.stopPoint(watch) : this.movers.place(watch));
     for (const s of steps) {
       const dev = s.arrives ?? s.leaves!;
       if (!this.devices.has(dev)) continue;
@@ -960,16 +962,18 @@ export class SceneModel {
     }
     for (const b of beats) {
       if (b.set) this.write(b.set, b.event, b.dev);
-      this.emit(b.dev + '.' + b.noun + ':' + b.event);
+      this.raise(b.dev, b.noun, b.event);
     }
     for (const a of arrivals) {
-      if (a.set && a.stop !== undefined) this.write(a.set, a.stop, a.dev);
-      this.emit(a.dev + '.' + a.noun + ':' + a.event);
+      if (a.event === 'cue') { this.hooks.cue?.(a.cue!); continue; }
+      const v = a.event === 'started' ? a.value : a.stop;
+      if (a.set && v !== undefined) this.write(a.set, v, a.dev);
+      this.raise(a.dev, a.noun, a.event);
       this.milestone(a.dev, a.noun, a.event);
     }
     for (const z of crossings) {
       if (z.set) this.write(z.set, z.event === 'enters', z.dev);
-      this.emit(z.dev + '.' + z.noun + ':' + z.event);
+      this.raise(z.dev, z.noun, z.event);
       this.milestone(z.dev, z.noun, z.event);
     }
     if (steps.length || beats.some((b) => b.set) || arrivals.length || crossings.length) this.changed();
@@ -1030,12 +1034,30 @@ export class SceneModel {
    * for a trip with legs (a crane's lift, a van's drive). Raises `started` and writes `moving` like a verb.
    * The effect has already passed its own device's freeze, so a mover on another device goes regardless.
    */
-  runPath(dev: string, noun: string, path: string): 'started' | 'unknown' {
+  runPath(dev: string, noun: string, path: string, opts?: { from?: string; ahead?: number }): 'started' | 'unknown' {
     const n = this.nounData(dev, noun);
     if (!n?.mover) return 'unknown';
-    const r = this.movers.runPath(dev + '.' + noun, path);
+    const r = this.movers.runPath(dev + '.' + noun, path, opts);
     if (r === 'started') this.setOff(n, dev);
     return r;
+  }
+
+  /**
+   * The emergency stop of a mover (`mover.brake`): it slows to rest ahead of where it is and runs the path for
+   * where it stopped. The effect that pulls it has already passed its own device's freeze. Raises
+   * `changed` when it braked; the mover raises its `brake.event` when it is at rest.
+   */
+  brake(dev: string, noun: string): ReturnType<Movers['brake']> {
+    const r = this.movers.brake(dev + '.' + noun);
+    if (r.result === 'braking') this.changed();
+    return r;
+  }
+
+  /** An event of a part, and the event of another part of the device that it is relayed as (`relay`). */
+  private raise(dev: string, noun: string, event: string) {
+    this.emit(dev + '.' + noun + ':' + event);
+    const to = this.nounData(dev, noun)?.relay?.[event];
+    if (to) this.emit(dev + '.' + to);
   }
 
   private setOff(n: NounData, dev: string) {

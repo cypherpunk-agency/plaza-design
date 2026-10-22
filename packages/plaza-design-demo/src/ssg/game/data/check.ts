@@ -19,7 +19,7 @@ import type {
   Action, CableData, Case, Cond, DeviceData, DialogueNode, EngineData, GuardData, KeyItem, LineData, PartFunction, LineRef, LogicData, NetData, NetworkData, NounData, SealData, StatusPart, ToyKind, WatchdogData, SceneData, MechanismDevice,
 } from './types';
 import { BEHAVIOUR_FUNCTION, LAYERS, PART_FUNCTIONS } from './types';
-import { MOVER_EASES, moverVerbs } from '../engine/movers';
+import { MOVER_CUES, MOVER_EASES, moverRuns, moverVerbs, splitDrive } from '../engine/movers';
 import { ZONE_VERBS } from '../engine/zones';
 import { windowProblem } from "../world/clock";
 import { ITEMS } from '../scenes/kit';
@@ -79,7 +79,7 @@ const KEYS: Record<string, string[]> = {
   device: ['targetQuery', 'id', 'name', 'look', 'status', 'state', 'nouns', 'sectors', 'layout', 'everyday', 'items', 'deck', 'affects'],
   everyday: ['noun', 'verb', 'label'],
   itemUse: ['item', 'noun', 'label', 'on'],
-  noun: ['id', 'layer', 'function', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'mover', 'zone', 'milestone', 'on'],
+  noun: ['id', 'layer', 'function', 'verbs', 'events', 'current', 'sector', 'guard', 'log', 'link', 'clock', 'mover', 'zone', 'milestone', 'relay', 'on'],
   guard: ['password', 'say', 'near', 'tries', 'lockMs', 'trace', 'do', 'toy', ...TOYS],
   rings: ['rings', 'tolerance'],
   ring: ['speed', 'gap', 'start'],
@@ -87,10 +87,14 @@ const KEYS: Record<string, string[]> = {
   cryptex: ['word', 'rings'],
   morse: ['message', 'unitMs'],
   clock: ['every', 'first', 'set', 'start', 'once'],
-  mover: ['stops', 'axis', 'speed', 'ms', 'ease', 'start', 'across', 'set', 'moving', 'follow', 'paths', 'wired'],
-  leg: ['to', 'ms', 'share', 'speed', 'minMs', 'ease', 'load', 'event'],
+  mover: ['stops', 'axis', 'speed', 'ms', 'ease', 'start', 'across', 'set', 'moving', 'follow', 'paths', 'wired', 'ring', 'auto', 'brake'],
+  moverBrake: ['decel', 'snap', 'then', 'load', 'event'],
+  brakeSnap: ['stop', 'window', 'minAhead'],
+  run: ['run'],
+  moverFrom: ['from'],
+  leg: ['to', 'ms', 'share', 'speed', 'minMs', 'ease', 'load', 'event', 'ahead', 'drives', 'cue'],
   choice: ['if', 'then', 'else'],
-  zone: ['from', 'to', 'watch', 'axis', 'within', 'building', 'set', 'armed'],
+  zone: ['from', 'to', 'watch', 'axis', 'within', 'building', 'set', 'armed', 'track'],
   watchdog: ['id', 'name', 'route', 'dwellMs', 'moveMs'],
   log: ['rate', 'fall', 'when', 'archive', 'linger', 'lockMs'],
   link: ['reach', 'known', 'when'],
@@ -581,7 +585,38 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         if (mv.moving !== undefined && (typeof mv.moving !== 'string' || !mv.moving.trim() || mv.moving in (mv.stops ?? {}))) err(wm, 'moving is what set holds while it travels: text that is not one of its stops');
         if (mv.moving !== undefined && mv.set === undefined) err(wm, 'moving is what set holds: give it a set key');
         if (mv.follow !== undefined && !known.has(mv.follow)) err(wm, `follow "${mv.follow}": not a state key (it names the stop to be at)`);
+        if (mv.ring !== undefined && !numRef(mv.ring, 0, true)) err(wm, 'ring is the length of the loop (a number or a tuning name), more than 0');
+        if (mv.auto !== undefined && !(typeof mv.auto === 'string' && mv.auto in (mv.paths ?? {}))) err(wm, `auto "${String(mv.auto)}" is not one of its paths`);
         const eventsUsed = new Set<string>(['started', 'arrived']);
+        if (mv.brake !== undefined) {
+          const br = mv.brake as unknown as Record<string, unknown>, wb = `${wm} › brake`;
+          if (!br || typeof br !== 'object' || Array.isArray(br)) err(wb, 'brake is { decel, then, snap? }');
+          else {
+            keys(br, 'moverBrake', wb);
+            if (!numRef(br.decel, 0, true)) err(wb, 'decel is the braking rate, world units per second squared (a number or a tuning name), more than 0');
+            const then = br.then as Record<string, unknown> | undefined;
+            if (!then || typeof then !== 'object' || Array.isArray(then) || !('track' in then)) err(wb, 'then is { track: path, <snap stop>: path }: the path to run where it stopped (track: anywhere)');
+            else for (const [where, p] of Object.entries(then)) {
+              if (where !== 'track' && !(Array.isArray(br.snap) && (br.snap as { stop?: unknown }[]).some((x) => x?.stop === where))) err(wb, `then "${where}": not "track" or one of the snap stops`);
+              if (typeof p !== 'string' || !(p in (mv.paths ?? {}))) err(wb, `then ${where}: "${String(p)}" is not one of its paths`);
+            }
+            if (br.snap !== undefined) {
+              if (!Array.isArray(br.snap)) err(wb, 'snap is a list of { stop, window }');
+              else (br.snap as Record<string, unknown>[]).forEach((x, i) => {
+                const wsn = `${wb} › snap[${i}]`;
+                if (!x || typeof x !== 'object' || Array.isArray(x)) { err(wsn, 'a snap is { stop, window }'); return; }
+                keys(x, 'brakeSnap', wsn);
+                if (typeof x.stop !== 'string' || !(x.stop in (mv.stops ?? {}))) err(wsn, `stop "${String(x.stop)}" is not one of its stops`);
+                if (!numRef(x.window, 0, false)) err(wsn, 'window is how close to the stop its stopping point must come, world units (a number or a tuning name)');
+                if (x.minAhead !== undefined && !numRef(x.minAhead, 0, false)) err(wsn, 'minAhead is how far ahead the stop must be, world units (a number or a tuning name)');
+              });
+            }
+            if (br.load !== undefined && (typeof br.load !== 'string' || !br.load.trim())) err(wb, 'load is a label (text)');
+            if (br.event !== undefined) { if (typeof br.event !== 'string' || !br.event.trim() || br.event === 'started' || br.event === 'arrived') err(wb, 'event is a name other than started and arrived'); else { eventsUsed.add(br.event); if (!(n.events ?? []).includes(br.event)) err(wb, `event "${br.event}" is not in this part's events`); } }
+          }
+        }
+        // a path that runs another must find it (and the loop must take time, which the engine guards at run time)
+        for (const [name, steps] of Object.entries(mv.paths ?? {})) if (Array.isArray(steps)) for (const r of moverRuns(steps)) if (!(r in (mv.paths ?? {}))) err(wm, `path "${name}": run "${r}" is not one of its paths`);
         const stepCheck = (steps: unknown, wp: string, depth: number) => {
           if (!Array.isArray(steps) || !steps.length || depth > 6) { err(wp, 'a path is a list of legs (and choices), at least one'); return; }
           steps.forEach((s: Record<string, unknown>, i) => {
@@ -594,8 +629,32 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
               if (s.else !== undefined) stepCheck(s.else, ws + ' › else', depth + 1);
               return;
             }
+            if ('from' in s) {
+              keys(s, 'moverFrom', ws);
+              if (typeof s.from !== 'string' || !(s.from in (mv.stops ?? {}))) err(ws, `from "${String(s.from)}" is not one of its stops`);
+              if (i !== 0 || depth > 0) err(ws, 'from is the first step of a path: the trip begins from that stop');
+              return;
+            }
+            if ('run' in s) {
+              keys(s, 'run', ws);
+              if (typeof s.run !== 'string' || !(s.run in (mv.paths ?? {}))) err(ws, `run "${String(s.run)}" is not one of its paths`);
+              if (i !== steps.length - 1) err(ws, 'run is the last step of a path (or of a branch of a choice): nothing after it would run');
+              return;
+            }
             keys(s, 'leg', ws);
-            if (s.to !== undefined && (typeof s.to !== 'string' || !(s.to in (mv.stops ?? {})))) err(ws, `to "${String(s.to)}" is not one of its stops`);
+            if (typeof s.to === 'string' && s.to.startsWith('@')) { if (!known.has(s.to.slice(1))) err(ws, `to "${s.to}": not a state key or computed value (it names the stop)`); }
+            else if (s.to !== undefined && (typeof s.to !== 'string' || !(s.to in (mv.stops ?? {})))) err(ws, `to "${String(s.to)}" is not one of its stops (or @key for a state key that holds one)`);
+            if (s.ahead !== undefined && !numRef(s.ahead, 0, false)) err(ws, 'ahead is ms the leg is already in when the trip starts (a number or a tuning name), 0 or more');
+            if (s.cue !== undefined && !MOVER_CUES.includes(s.cue as never)) err(ws, `cue is ${MOVER_CUES.join(' or ')}`);
+            if (s.drives !== undefined) {
+              if (typeof s.drives !== 'string' || !/^[^:]+:[^:]+$/.test(s.drives)) err(ws, 'drives is "noun:path": another mover of this device and one of its paths');
+              else {
+                const [dn, dp] = splitDrive(s.drives), other = d.nouns.find((x) => x.id === dn)?.mover;
+                if (!other) err(ws, `drives "${s.drives}": no mover part "${dn}" on this device`);
+                else if (dn === n.id) err(ws, 'a mover cannot drive itself');
+                else if (!other.paths?.[dp]) err(ws, `drives "${s.drives}": that mover has no path "${dp}"`);
+              }
+            }
             if (s.ms !== undefined && !numRef(s.ms, 0, false)) err(ws, 'ms is a time in ms (a number or a tuning name), 0 or more');
             if (s.share !== undefined && !(num(s.share) && (s.share as number) > 0)) err(ws, 'share is the part of ms this leg takes, more than 0');
             if (s.speed !== undefined && !numRef(s.speed, 0, true)) err(ws, 'speed is world units per second (a number or a tuning name), more than 0');
@@ -630,6 +689,18 @@ function checker(file: string, errs: string[], env: Env, world: World, all: Map<
         if (zn.set !== undefined && !writable.has(zn.set)) err(wz, `set "${zn.set}": not a state key (it holds whether something is inside)`);
         for (const v of ZONE_VERBS) if ((n.verbs ?? []).includes(v)) err(w, `"${v}" is the engine's verb on a zone: leave it out of verbs`);
         for (const e of n.events ?? []) if (e !== 'enters' && e !== 'leaves') err(w, `a zone raises "enters" and "leaves", not "${e}"`);
+        if (zn.track !== undefined && zn.track !== 'stop') err(wz, 'track is "stop" (watch where the mover would come to rest if it braked now)');
+        if (zn.track !== undefined && zn.watch === 'player') err(wz, 'track belongs to a zone that watches a mover');
+      }
+      if (n.relay !== undefined) {
+        const wr = `${w} › relay`;
+        if (!n.relay || typeof n.relay !== 'object' || Array.isArray(n.relay)) err(wr, 'relay is { event: "noun:event" }');
+        else for (const [event, to] of Object.entries(n.relay)) {
+          if (!(n.events ?? []).includes(event)) err(wr, `"${event}" is not one of this part's events`);
+          const i = typeof to === 'string' ? to.indexOf(':') : -1, target = i > 0 ? d.nouns.find((x) => x.id === to.slice(0, i)) : undefined;
+          if (!target || !(target.events ?? []).includes((to as string).slice(i + 1))) err(wr, `${event} → "${String(to)}": not an event of another part of this device (noun:event)`);
+          else if (target.id === n.id) err(wr, `${event} → "${String(to)}": relay it to another part`);
+        }
       }
       if (n.milestone !== undefined) {
         const wm = `${w} › milestone`;
@@ -872,6 +943,7 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
     if (!watch || watch === 'player') continue;
     const [md, mn] = split(watch), mover = all.get(md)?.nouns.find((x) => x.id === mn)?.mover;
     if (!mover) err(`devices[${d.id}] › nouns[${n.id}] › zone`, `watch "${watch}": no mover there`);
+    else if (n.zone?.track === 'stop' && !mover.brake) err(`devices[${d.id}] › nouns[${n.id}] › zone`, `track "stop": ${watch} has no brake to stop with`);
   }
 
   // ---------- bench (crafting, later) ----------

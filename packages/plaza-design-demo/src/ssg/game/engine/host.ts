@@ -69,6 +69,8 @@ export interface EngineDraw { m: SceneModel; hover: string | null; layer: DrawLa
 export interface SceneStore {
   notice?:(text:string,tone?:import('../ui/communication').MessageTone,receipt?:FeedbackReceipt)=>void;
   feedbackCue?:(receipt:FeedbackReceipt)=>void;
+  /** A mover's leg ended with a sound (a train's doors): played while this scene is the one on screen. */
+  cue?:(cue:import('../data/types').MoverCue)=>void;
   hints?:Hints;
   hintBusy?:()=>boolean;
   feedbackTime?:()=>number;
@@ -194,6 +196,7 @@ export class SceneHost {
     this.model = new SceneModel({
       say: (l, from,receipt) => this.say(l, from,receipt),
       feedbackScope:def.id,
+      cue: store?.cue ? (cue) => { if (this.active) store.cue!(cue); } : undefined,
       open: (panel, arg) => this.panels.open(panel, arg),
       changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
       kick: (dev) => { if (this.schem.viewing === dev) this.schem.close(); },

@@ -22,7 +22,7 @@ export const ZONE_VERBS = ['arm', 'disarm'] as const;
 
 /** Where a watched thing is: the player, or a mover's key. Undefined: not here (no crossing). */
 /** `building`: the building whose floor the player stands on ('' the street; undefined on a flight or in a lift car). */
-export type Locate = (watch: string) => { x: number; h: number; building?: string } | undefined;
+export type Locate = (watch: string, track?: "stop") => { x: number; h: number; building?: string } | undefined;
 
 export class Zones {
   private zones = new Map<string, Zone>();
@@ -55,7 +55,7 @@ export class Zones {
   tick(locate: Locate): Crossing[] {
     const out: Crossing[] = [];
     for (const z of this.zones.values()) {
-      const at = locate(z.data.watch);
+      const at = locate(z.data.watch, z.data.track);
       if (at === undefined) continue;
       const h = z.data.axis === 'h', p = h ? at.h : at.x, q = h ? at.x : at.h, w = z.data.within;
       const now = p >= Math.min(z.from, z.to) && p <= Math.max(z.from, z.to) && (!w || (q >= Math.min(w[0], w[1]) && q <= Math.max(w[0], w[1]))) && (z.data.building === undefined || at.building === z.data.building);

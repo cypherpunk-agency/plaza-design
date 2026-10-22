@@ -199,7 +199,7 @@ async function start() {
 
       if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=validationSnapshot(documents),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
 
-      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=validationSnapshot(documents);validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot),validateMetroSource(snapshot.get('metro-source')));}
+      if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=validationSnapshot(documents);validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot));}
 
 
       if (document.kind === 'gameplay') (nativeGameplayScene(document.id)??gameplayScene(document.id)).validateGameplay(document.value);

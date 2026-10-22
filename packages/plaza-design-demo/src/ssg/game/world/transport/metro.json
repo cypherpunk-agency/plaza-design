@@ -1,12 +1,5 @@
 {
   "version": 1,
   "timetable": {"loop": 1500, "arrive": 280, "dwell": 460, "leave": 280},
-  "offset": {"downtown": 0, "galleria": 520, "harbor": 1010},
-  "dwell": 330,
-  "close": 36,
-  "run": 780,
-  "open": 36,
-  "longRun": 1.6,
-  "brake": {"decel": 0.032, "window": 260, "accel": 0.05, "lead": 110},
-  "halt": {"track": 240, "siding": 420, "open": 2400}
+  "offset": {"downtown": 0, "galleria": 520, "harbor": 1010}
 }

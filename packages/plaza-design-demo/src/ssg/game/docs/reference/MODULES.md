@@ -94,7 +94,7 @@ The scene adapter prepares state before paint; `SceneDef.preparePresentation`,
 `presentationState` and `visualEnvironment` support explicit decorative history and its read-only
 bindings. Painting and bounds evaluation must not advance simulation or presentation history.
 
-`world/transport/line.ts` owns timetables, ride state and visual snapshots. Train and departure-board
+`world/transport/line.ts` owns the platform timetable (a function of a `Timeline`: a station scene's scene time and its `platformShift`) and the ride read-outs (pure functions of the train model's movers; the car is the mover `train.car`, with no ride state of its own). Train and departure-board
 pictures live in `art/vehicles/platform-train.ts` and `art/signage/line-departures.ts`.
 `story/title/` and `story/cutscenes/` own animation scheduling, actor preparation, timeline documents
 and gameplay handoffs; their pictures use `art/sequences/`. Preview seeking uses independent sessions.

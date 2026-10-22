@@ -211,7 +211,7 @@ do not add a provider for a scene.
 
 **A binding provider** works out what a picture needs once per frame from the scene as it stands
 (`ctx.engine`, `roles`, `presentation`, `shared`, `world`). It is for what cannot be stated as scene values: a
-simulation's frame (the metro, the train ride, Downtown's machines, the harbor's cranes, the terminal's gantry).
+simulation's frame (the metro platform timetable, the train's picture over its movers, Downtown's machines, the harbor's cranes, the terminal's gantry).
 Add engine/gameplay/binding-providers/<name>.ts exporting `provide(keys, (ctx)=>Record<string,Value>)`
 (binding-keys.ts), add one line to `BINDING_PROVIDERS` in that folder's index.ts, and name `<name>.<key>` in the
 composition's bindings. Current set: `scene` (the generic one), `station`, `train`, `downtown`, `harbor`,
@@ -251,7 +251,7 @@ in the Wiring panel and checked by data/check.ts and validateNativeBindings.
 State a mechanism keeps for the picture (a simulation, a prepared frame) has one
 home: `ctx.shared`, the per-built-scene map `apply` receives; binding providers read it as
 `ctx.shared` under the mechanism's exported key. Anything that moves is not picture state: it is a
-Circuit mover in the model (the gantry's trolley, the van, the claw's hook) and the picture reads it. If
+Circuit mover in the model (the gantry's trolley, the van, the claw's hook, the metro car and its doors) and the picture reads it. If
 such state changes per frame, `apply` also returns `presentation: {prepare, capture?, restore?}`; the scene runs every mechanism's `prepare`
 in order before painting and saves/restores the `capture`s as one record keyed by mechanism name
 (beside `signals` when the scene has presentation signals), see `composePresentations`.
@@ -273,11 +273,13 @@ down, up, across, down), a `choice` in it for a branch that reads the scene's st
 that chases a state key, `load` for what rides along (the picture reads `movers.load`), and a `milestone` on
 the part to report a leg's end or a crossing to the scene's code (a physical `input` of its `rules`). A
 stop's place may name the scene's artwork (`SceneRules.places`, which a mechanism measures from its roles) or
-a device's spot. The one thing code does is send the mover along a path (`SceneModel.runPath` in an effect); the
-picture reads `movers.place`, `position`, `load`, `lastRun`, never a copy. Scene time moves it: drive checks with
+a device's spot. The one thing code does is send the mover along a path (`SceneModel.runPath` in an effect, or `brake` for its emergency stop); the
+picture reads `movers.place`, `position`, `load`, `lastRun`, `legInfo`, `halted`, never a copy. A route that goes round (the metro) is a path that
+ends with `run`; a loop line is a `ring`; what a leg needs from the scene's state is `@key`; a part that moves another (a train's doors) is
+`drives`; see GAME-DATA.md "Movers" and TRAIN-LINE-RIDE.md. Scene time moves it: drive checks with
 `model.tick(ms)`. Check with `pnpm test:game circuit-movers mover-authoring motion-controller`; the Tower lab's lift and lobby sensor, the Downtown van
-(`dlv9.chassis`, `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`) and the yard's hook (`crane.hook`) are the
-examples. Words: docs/design/CIRCUIT-VOCABULARY.md.
+(`dlv9.chassis`, `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`), the yard's hook (`crane.hook`) and the metro car
+(`train.car`, `train.doors`: `pnpm test:game train-ride`) are the examples. Words: docs/design/CIRCUIT-VOCABULARY.md.
 
 ## Recipe: a way of playing (play profiles)
 

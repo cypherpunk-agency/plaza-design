@@ -100,12 +100,6 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
   const metro=validateMetroSource(api.get('metro-source').value),platform=form.section(host,'Metro platforms');
   for(const key of ['loop','arrive','dwell','leave'] as const)form.number(platform,'Platform '+key+' frames',metro.timetable[key],n=>editMetro('Edit metro platform timing',d=>{d.timetable[key]=n;}),key==='dwell'?80:1);
   for(const id of d.LINE){form.text(platform,'Station '+id+' name',d.STATIONS[id].name,name=>edit('Edit station name',d=>{d.STATIONS[id].name=name;}));form.number(platform,'Station '+id+' phase offset',metro.offset[id],n=>editMetro('Edit station phase',d=>{d.offset[id]=n;}),0,metro.timetable.loop-1);}
-  const train=form.section(host,'Metro ride');
-  for(const key of ['dwell','close','run','open'] as const)form.number(train,'Ride '+key+' frames',metro[key],n=>editMetro('Edit metro ride timing',d=>{d[key]=n;}),1);
-  form.decimal(train,'Closed-station run multiplier',metro.longRun,n=>editMetro('Edit closed-station run timing',d=>{d.longRun=n;}),1,10);
-  const brake=form.section(host,'Emergency brake');
-  for(const key of ['decel','window','accel','lead'] as const)form.decimal(brake,'Brake '+key,metro.brake[key],n=>editMetro('Edit metro brake',d=>{d.brake[key]=n;}),key==='decel'||key==='accel'?.000001:0,key==='decel'||key==='accel'?100:3000);
-  for(const key of ['track','siding','open'] as const)form.number(brake,'Halt '+key+' frames',metro.halt[key],n=>editMetro('Edit metro halt timing',d=>{d.halt[key]=n;}),1);
  }
  render();const dispose=(()=>{disposed=true;host.replaceChildren();}) as WorkbenchHandle;dispose.refresh=render;return dispose;
 }

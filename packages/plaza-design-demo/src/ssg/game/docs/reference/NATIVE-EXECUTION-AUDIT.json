@@ -379,9 +379,21 @@
           "classification": "simulation",
           "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
         },
-        "tick": {
+        "read:trainNext": {
           "classification": "simulation",
-          "reason": "Read-only physical observation or native operation; shared source owns permissions, rewards and milestone outcomes."
+          "reason": "What the car's paths ask of the scene (the station it runs to, whether that passes a closed one, the stop it was heading for, whether its doors are open at all); the car is a Circuit mover and its legs read these when they begin."
+        },
+        "read:trainPass": {
+          "classification": "simulation",
+          "reason": "What the car's paths ask of the scene (the station it runs to, whether that passes a closed one, the stop it was heading for, whether its doors are open at all); the car is a Circuit mover and its legs read these when they begin."
+        },
+        "read:trainHeading": {
+          "classification": "simulation",
+          "reason": "What the car's paths ask of the scene (the station it runs to, whether that passes a closed one, the stop it was heading for, whether its doors are open at all); the car is a Circuit mover and its legs read these when they begin."
+        },
+        "read:trainDoorsAjar": {
+          "classification": "simulation",
+          "reason": "What the car's paths ask of the scene (the station it runs to, whether that passes a closed one, the stop it was heading for, whether its doors are open at all); the car is a Circuit mover and its legs read these when they begin."
         },
         "read:trainRegion": {
           "classification": "simulation",
@@ -390,7 +402,9 @@
       },
       "sourcePaths": [
         "engine/gameplay/mechanisms/line-ride.ts",
+        "engine/movers.ts",
         "world/transport/line.ts",
+        "scenes/train/devices.json",
         "scenes/train/gameplay.json"
       ]
     },

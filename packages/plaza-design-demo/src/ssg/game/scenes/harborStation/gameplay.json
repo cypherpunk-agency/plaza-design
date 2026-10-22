@@ -5,5 +5,16 @@
   "events": [],
   "commands": {},
   "reactions": [],
-  "conversations": {}
+  "conversations": {},
+  "state": {
+    "harborStation.platformShift": {
+      "owner": "harborStation",
+      "lifetime": "session",
+      "type": "number",
+      "default": 0,
+      "integer": false,
+      "min": 0,
+      "max": 1000000
+    }
+  }
 }

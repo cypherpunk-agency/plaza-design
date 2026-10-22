@@ -10,7 +10,7 @@ import type {GameRuntimeSources} from './game-sources';
 import {runtimeSequenceDocuments} from '../story/sequence-documents';
 import {defaultNetworkContext} from '../engine/network-context';
 import {mintFeedback,type FeedbackReceipt} from '../engine/feedback-receipt';
-import type {MetroSnapshot} from '../world/transport/metro-snapshot';
+import type {MetroStart} from '../world/transport/metro-start';
 import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
 import {BOT_REACTIONS,withBotConversations,botVoice,botConversationId,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
 import {perfBegin,perfEnd,perfSample} from './diagnostics/performance';
@@ -71,7 +71,8 @@ import type {CityModel,MapPlace,Stand,Station} from '../world/city';
 import { city,parseHM,TRAVEL,WAIT_CARD,WAITS,type WaitTo } from "../world/clock";
 import { light,lightAt,setLight,type Light } from "../world/light";
 import { frameView } from '../art/core/view';
-import {createLineSystem,type LineSystem} from '../world/transport/line';
+import {createLineSystem,timelineOf,PLATFORM_SHIFT,type LineSystem} from '../world/transport/line';
+import {boardRide,rideHome,startRide} from '../engine/gameplay/mechanisms/line-ride';
 import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
 import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './characters';
@@ -255,8 +256,7 @@ export class Game {
   private netView: NetView | null = null;
   private netBack = false;
 
-  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroSnapshot,private sources:GameRuntimeSources={}) {
-    if(metroStart)this.metro.restore(metroStart);
+  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
     // sudo (developer) mode: browser checks read the player and the level, and place the player, through window.__game
     const game = this;
     if (SUDO) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.level; }, get here() { return game.here; }, prompt: () => game.nearest(), place: (x: number) => { game.p.x = x; } };
@@ -332,6 +332,8 @@ export class Game {
     this.onResize = this.onResize.bind(this);
     // Downtown is already the initial scene, so starting there does not call enter().
     this.p.x = this.def.spawn;
+    // a private Play's train: boarded and run to the state its fixture asks for, on the car's own movers
+    if (metroStart) this.startMetro(metroStart);
   }
 
   /**
@@ -355,6 +357,7 @@ export class Game {
     const zh = new SceneHost(this.host.windowEl, print, {
       notice:(text,tone,receipt)=>{this.hints.notify(text,tone,receipt);},
       feedbackCue:receipt=>sound.feedback(receipt),
+      cue:cue=>{if(cue==='open')sound.open();else sound.close();},
       hints:this.hints,
       hintBusy:()=>document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.bubble||!!this.hosts.get(id)?.acknowledgmentPending,
       feedbackTime:()=>this.hints.notices.time,
@@ -621,15 +624,11 @@ export class Game {
 
   checkpoint(){this.hosts.forEach(host=>host.persist());this.persistSave();}
 
-  /** Private Play restart state; never added to the player's save format. */
-  captureMetroState():MetroSnapshot{if(!EDITOR_PLAY)throw new Error('Controller snapshots require private Play');return this.metro.capture();}
-
   /** Detached diagnostics for editor inspection; no mutable runtime references. */
   inspect() {
     const shared=this.gameplayFor(this.here);
     return structuredClone({scene:this.here, player:{x:this.p.x,y:this.p.y}, save:this.save,
       actors:EDITOR_PLAY?(this.def.people??[]).map((p,index)=>({index,id:p.id,seed:p.seed,look:p.look,x:p.x,h:p.h,act:p.act,range:p.range,speed:p.speed,facing:p.facing,when:p.when,visible:isHere(p),follow:p.follow?(this.def.people??[]).indexOf(p.follow):undefined,gap:p.gap})):undefined,
-      metro:EDITOR_PLAY?this.metro.capture():undefined,
       engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
       gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
       environment:{weather:this.weatherHere().kind,clock:this.editorClock},
@@ -1137,7 +1136,7 @@ export class Game {
       b.chars = Math.min(b.pages[b.page].length, b.chars + 1.2 * dt);
       if (Math.floor(b.chars) !== before && Math.floor(b.chars) % 2 === 0) sound.blip();
     }
-    this.updateTravel(dt);
+    this.updateTravel();
     this.updateStory();
     const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
@@ -1727,11 +1726,20 @@ export class Game {
   }
 
   /** The train home: on its run into Downtown (from the harbor's closed stop), slow enough to talk to people on the way. */
-  private rideHome() {
-    Object.assign(this.metro.ride, {
-      at: this.world.LINE.indexOf(this.openingStory.CONTROLLER.homeRun.from), to: this.world.LINE.indexOf(this.openingStory.CONTROLLER.homeRun.to), phase: 'running', timer: this.openingStory.HOME_RUN.start, pos: this.world.LINE.indexOf(this.openingStory.CONTROLLER.homeRun.from) * this.metro.SEG, d: 0, span: this.metro.SEG,
-      frames: this.openingStory.HOME_RUN.frames, v: 0, open: 0, doors: false, halt: null, say: this.openingStory.CONTROLLER.homeRun.announcement,
-    });
+  private rideHome() { rideHome(this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model); }
+
+  /** The Train scene's movers: the ride lives there (world/transport/line.ts reads it). */
+  private get ride() { return this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model.movers; }
+
+  /** The platform clock of the scene on screen: its own scene time and shift (a station's). */
+  private get platformTime() { return timelineOf(this.zh.model); }
+
+  /** A private Play's train: boarded at its station and run to the starting state by the car's own movers. */
+  private startMetro(start: MetroStart) {
+    Object.assign(this.metro.lineOpen, start.lineOpen);
+    const host = this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId);
+    startRide(host.model, this.metro, start);
+    host.setPaused(this.enginesPaused);
   }
 
   /** A device's everyday actions in this state (opening.ts `this.openingStory.OPENING_EVERYDAY`), as popup chips; null: its data's. */
@@ -2044,7 +2052,7 @@ export class Game {
     const opening = this.openingStory.openingLevel(id);
     if (opening) { this.openingFrom(opening.flags); return; }
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
-    this.handTo(startLevel(id,this.metro) ?? id);
+    this.handTo(startLevel(id,{board:(station,left)=>boardRide(this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model,station,left)}) ?? id);
     this.markSeen(this.here);
     this.persistSave();
   }
@@ -2069,13 +2077,13 @@ export class Game {
       if (e.edge || e.engine || !exitVisibility(e,this.save.flags).ok) continue;
       if (e.action === 'board') {
         const st = this.world.stationAt(this.here);
-        if (st) for (const dx of this.metro.platformDoors(st, this.t, this.cam, s.platformStop ?? this.metro.STOP)) list.push({ kind: 'exit', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + this.world.STATIONS[this.metro.nextStation(st)].name, promptH: e.promptH ?? 70 });
+        if (st) for (const dx of this.metro.platformDoors(st, this.platformTime, this.cam, s.platformStop ?? this.metro.STOP)) list.push({ kind: 'exit', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + this.world.STATIONS[this.metro.nextStation(st)].name, promptH: e.promptH ?? 70 });
         continue;
       }
       // The train's door: only while it stands at a stop with the doors open.
-      if (e.action === 'out' && !this.metro.rideOpen()) continue;
+      if (e.action === 'out' && !this.metro.rideOpen(this.ride)) continue;
       // a taxi stand shows its fare and what you have (tokens show only where you pay)
-      const label = e.action === 'out' ? '[E] STEP OUT · ' + (this.metro.rideAtSiding() ? 'SIDING' : this.world.STATIONS[this.metro.rideStop()].name)
+      const label = e.action === 'out' ? '[E] STEP OUT · ' + (this.metro.rideAtSiding(this.ride) ? 'SIDING' : this.world.STATIONS[this.metro.rideStop(this.ride)].name)
         : e.action === 'taxi' ? e.label + ' · ' + priceTag(this.world.FARE, this.save.tokens) : e.label;
       list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
     }
@@ -2199,7 +2207,7 @@ export class Game {
     if (rule && this.storyExit(rule, e.x, () => { if (this.hasScene(e.to)) this.travel(e.to, e.at); }, e.checkpoint,'exit:'+e.id)) return;
     // a door that reads key chips (Moth's building): only the right one opens it
     if (e.needs && !exitPermission(e,this.save.keyring).ok) { this.zh.react('exit:'+e.id,['',e.needs.pages.join('\n'),'err']); return; }
-    if (e.action === 'board') { const st = this.world.stationAt(this.here); if (st && this.metro.platformOpen(st, this.t)) this.enterTrain(st); return; }
+    if (e.action === 'board') { const st = this.world.stationAt(this.here); if (st && this.metro.platformOpen(st, this.platformTime)) this.enterTrain(st); return; }
     if (e.action === 'out') { this.stepOut(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
@@ -2213,6 +2221,7 @@ export class Game {
   private view(): SceneView {
     const v = (this.sceneView ??= { ...frameView(0), sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), flags: this.save.flags });
     v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.level = this.level ? levelView(this.level, this.zh.model) : undefined;
+    v.timetable = this.world.stationAt(this.here) ? this.platformTime : undefined;
     return v;
   }
 
@@ -2222,9 +2231,6 @@ export class Game {
   private travel(id: SceneId, at?: string) {
     this.mapView = null;
     this.enter(id, false, at);
-    // With reduced motion the platforms' clocks stand still: stand a train there with its doors open.
-    const st = this.world.stationAt(id);
-    if (st && this.reduced && !this.metro.platformOpen(st, this.t)) this.metro.platformSync(st, this.t, this.metro.TIMETABLE.dwell / 2);
   }
 
   /** The player walked into a border: leave through that edge's exit, if the scene has one, still walking the same way. */
@@ -2245,18 +2251,20 @@ export class Game {
 
   /** Board the train standing at a station's platform: in the car by its door, which stays open as long as it would have on the platform. */
   private enterTrain(at: Station) {
-    this.metro.boardRide(at, this.metro.platformLeft(at, this.t));
+    boardRide(this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model, at, this.metro.platformLeft(at, this.platformTime));
     this.travel(this.world.TRANSPORT.boarding.scene,this.world.TRANSPORT.boarding.entrance);
   }
 
   /** E at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
   private stepOut() {
-    if (!this.metro.rideOpen()) return;
+    if (!this.metro.rideOpen(this.ride)) return;
     // P14: the old siding has no station, only a service stair up to the harbor's pier
-    if (this.metro.rideAtSiding()) { this.travel(this.world.TRANSPORT.siding.scene,this.world.TRANSPORT.siding.entrance); this.say('YOU', this.world.SIDING_OUT, this.p.x, 50); return; }
-    const st = this.metro.rideStop(), left = this.metro.rideLeft();
+    if (this.metro.rideAtSiding(this.ride)) { this.travel(this.world.TRANSPORT.siding.scene,this.world.TRANSPORT.siding.entrance); this.say('YOU', this.world.SIDING_OUT, this.p.x, 50); return; }
+    const st = this.metro.rideStop(this.ride), left = this.metro.rideLeft(this.ride);
     this.travel(this.world.STATIONS[st].scene,this.world.STATIONS[st].at);
-    this.metro.platformSync(st, this.t, this.reduced ? this.metro.TIMETABLE.dwell / 2 : left);
+    // the train you stepped off stands at this platform until it leaves: the platform's own clock is set to it
+    const platform = this.zh.model;
+    platform.set(PLATFORM_SHIFT, this.metro.platformShiftFor(st, timelineOf(platform).t, left));
   }
 
   /** The taxi answers at its stand; an unavailable anchor falls back to system feedback. */
@@ -2268,7 +2276,7 @@ export class Game {
       this.driverReply(this.world.DRIVER_BROKE);
       return;
     }
-    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop() : null);
+    this.mapView = this.worldMap.openMap('taxi', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop(this.ride) : null);
     this.keys.clear();
     this.syncEnginePause();
     sound.open();
@@ -2282,7 +2290,7 @@ export class Game {
     this.bubble = null;
     // the map takes the screen: hack vision closes first
     if (this.zh.visionOn) this.zh.toggleVision();
-    this.mapView = this.worldMap.openMap('view', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop() : null);
+    this.mapView = this.worldMap.openMap('view', this.here, this.here === this.world.TRANSPORT.boarding.scene ? this.metro.rideStop(this.ride) : null);
     this.syncEnginePause();
   }
 
@@ -2331,7 +2339,7 @@ export class Game {
       // the smallest touch target, 44 CSS px, in view units
       tapMin: (44 * this.canvas.width) / Math.max(1, this.canvas.clientWidth) / this.k,
       avoid: this.mapAvoid(),
-      ride: this.here === this.world.TRANSPORT.boarding.scene ? { from: this.metro.rideStop(), to: this.metro.rideNext(), f: this.metro.rideRun() } : null,
+      ride: this.here === this.world.TRANSPORT.boarding.scene ? { from: this.metro.rideStop(this.ride), to: this.metro.rideNext(this.ride), f: this.metro.rideRun(this.ride) } : null,
       seen: (z) => !!this.save.flags[this.world.seenFlag(z)], flag: (f) => !!this.save.flags[f], exitAccess:(scene,id)=>sceneExitAccess(this.hasScene(scene)?this.sceneDefinition(scene).exits.find(e=>e.id===id):undefined,this.save.flags,this.save.keyring), harborOpen: this.world.harborOpen(this.save.flags), tokens: this.save.tokens, t: this.clock,
     };
   }
@@ -2367,7 +2375,7 @@ export class Game {
   }
 
   /** Flights land; on board, the train stands, closes its doors, runs to the next stop on the loop and opens them (line.ts). */
-  private updateTravel(dt: number) {
+  private updateTravel() {
     // Maps hold the ride as well as the engine that reads its position (P14).
     if (this.mapView || this.netView) return;
     // the harbor lock: LINE 0 stops there only once P14 is solved
@@ -2386,13 +2394,6 @@ export class Game {
       if (!this.hop.done && e >= this.world.HOP / 2) { this.hop.done = true; city.advance(TRAVEL.quick); this.travel(this.hop.place.entrance, this.hop.place.at); }
       if (e >= this.world.HOP) this.hop = null;
     }
-    if (this.here !== this.world.TRANSPORT.boarding.scene) return;
-    const ev = this.metro.stepRide(dt);
-    // the train home stands at Downtown with its doors open until you get off
-    if (this.story === 'home' && this.metro.ride.phase === 'dwell' && this.metro.rideStop() === this.openingStory.CONTROLLER.homeRun.to) this.metro.ride.timer = 0;
-    // The car's sign carries stop news; sound reinforces the actual door transition.
-    if (ev === 'depart') sound.close();
-    else if (ev === 'arrive') sound.open();
   }
 
   // ---------- the net map (netmap.ts, NET.md) ----------

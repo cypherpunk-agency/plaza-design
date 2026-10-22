@@ -780,8 +780,8 @@ never keeps a trajectory, a timer or a second copy of a position; pictures read 
   the first stop, or `start`. `across`: where it runs on the other axis (the shaft's x).
 - Any number may be a **tuning name** (`"speed": "dlvSpeed"`, `"ms": "liftOverMs"`): the scene's `tuning` holds it.
 - `speed`: units per second (or `ms`: every plain trip takes that long, whatever the distance). `ease`: how
-  it moves between two stops: `smooth` (the default: eases out of and into each stop), `linear`, `ease-in`,
-  `ease-out`, or a timing table `[[time, progress], …]` (both 0 to 1).
+  it moves between two stops: `smooth` (the default: eases out of and into each stop), `sine` (a cosine
+  ease, the metro car's run), `linear`, `ease-in`, `ease-out`, or a timing table `[[time, progress], …]` (both 0 to 1).
 - Engine verbs `go <stop>` for every stop and `return`; your own verbs come after. A new order on the way
   turns it round from where it is. `wired: false` gives it no verbs: only the scene's own effect sends it
   (`SceneModel.runPath`, `moveTo`), so a cable or a finger cannot drive it.
@@ -814,6 +814,27 @@ never keeps a trajectory, a timer or a second copy of a position; pictures read 
   `events`). A `choice` (`if`, `then`, `else`) looks at the scene's state, as any `if` does, when it is reached.
   A new path replaces the one under way, from where the mover is: that is how an alarm sends a lift back.
   `movers.lastRun(key)` names the path last run.
+- **Routes that go round** (the metro car, `scenes/train/devices.json`): a path may end with the step `{ "run": "stand" }`: when the trip
+  ends the named path of the same mover goes on from where it stands, at the very instant the last leg ended, so a route cycles with no
+  scheduler (a trip that only waits and is followed by another raises no `arrived`; a chained trip raises `started`). A path may begin
+  with `{ "from": "harbor" }`: the trip starts from that stop, wherever the mover was. `runPath` also takes `from` (a stop) and
+  `ahead` (ms): a train boarded at a station, already part way through its dwell. A `ring` (a number or tuning name: the loop's length)
+  makes the axis a loop: positions wrap, a leg always goes forward round it, and a leg to the stop the mover stands at goes once round.
+  `auto` names a path that runs whenever the mover is idle: when the scene starts, and when a save brings it back. A leg `to` may be
+  `"@trainNext"`: the stop that a state key or computed value of the scene names when the leg begins (the station the car runs to, a closed
+  one passed). A leg may begin already `ahead` ms in, send another mover of the same device along one of its paths (`"drives":
+  "doors:shut"`: the train's doors are a mover too), and play a sound as it ends (`"cue": "open"` or `"close"`, only while the scene is
+  on screen). `movers.legInfo` and `etaTo(key, load)` give what a read-out needs: the leg's label and times, the time until the next leg
+  labelled so ends (the doors open). A route that goes round without taking any time is stopped with an error.
+- **The emergency stop** (`brake`, `SceneModel.brake(dev, noun)`, the one calculation here that is not an eased leg): `{ "decel": "brakeDecel",
+  "snap": [{ "stop": "siding", "window": "brakeWindow" }], "then": { "track": "halt", "siding": "halt.siding" }, "load": "braking",
+  "event": "stopped" }`. From its speed when pulled the mover slows at `decel` (units per second squared) to rest ahead of where it is,
+  exactly at a `snap` stop that it would have stopped within `window` of (at least `minAhead`, default 30, ahead), then runs the path in
+  `then` for where it stopped: a hold, then a leg `@heading`-style on to the stop it was heading for. `movers.halted(key)` says where
+  it stopped (`track` or the snap stop) until it moves on, a path started while it is held keeps the stop it was heading for, and a brake
+  pulled while it stands, while it brakes, or too near its stop to stop (it goes on to it) does nothing. `brakePreview` says what a
+  pull would do. A zone with `"track": "stop"` watches the point where the mover would rest if it braked now (the train's
+  `approach` zone raises `harbor siding`), not where it is.
 - **Milestones**: a part's `milestone` maps an event of its own (a leg's `event`, `arrived`, a zone's `enters`)
   to a physical milestone of the scene's code (`SceneRules.inputs`): raising the event reports it, and the
   scene's gameplay answers with its ordinary `native.inputs` cases. Nothing in code listens.
@@ -825,7 +846,8 @@ never keeps a trajectory, a timer or a second copy of a position; pictures read 
   settings, the paths with their legs and choices, and its milestones are typed controls; data/check.ts
   validates every one.
 - Examples: the Downtown DLV-9 van (`dlv9.chassis`: stops, the paths `inward` and `outward`, its scan area
-  `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`), the yard's hook (`crane.hook`).
+  `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`), the yard's hook (`crane.hook`), the metro car (`train.car` on a ring with
+  its doors `train.doors`, its zones `tunnel` and `approach`; see TRAIN-LINE-RIDE.md).
 
 ## Zones
 
@@ -843,6 +865,9 @@ its edge (engine/zones.ts).
 - Events `enters` and `leaves`, only on a crossing noticed on a frame: standing inside when the scene starts
   (or when the zone is first looked at) raises nothing. `set` writes true or false into a state key. A
   `milestone` reports an event to the scene's code (the thermal gate's `port.beam`, the van's `gate.beam`).
+- `track: "stop"` (a zone that watches a braking mover): see the emergency stop above.
+- A part's `relay` (`{ "enters": "position:tunnel" }`) raises another part's event of the same device whenever this one raises its own: the
+  train's `tunnel` zone reports as the `position` sense part, so cables wired from `position:tunnel` (P14) keep working.
 - Engine verbs `arm` and `disarm`; `armed: false` starts it disarmed. Saved: which zones are
   disarmed.
 
