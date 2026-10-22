@@ -40,6 +40,8 @@ export const roomElement: Element = {
     closed: { kind: 'select', label: 'Looks while shut', options: ['dark', 'windows', 'section', 'earth'], default: 'dark' },
     doorLight: { kind: 'boolean', label: 'Light under a door while shut', default: false },
   },
+  // how open the room is now (LevelState.rooms, supplied by the level as state): 1 open, 0 shut
+  visualFields: { open: num('Open (from the level)', 1, 0, 1, 0.01) },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: Number(p.height), role: 'mount' }, middle: { x: Number(p.width) / 2, h: 0, role: 'mount' } }),
   draw: (x, v, p, s) => {

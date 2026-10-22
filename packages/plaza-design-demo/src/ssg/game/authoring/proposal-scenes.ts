@@ -57,9 +57,9 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'dt-diner', base: 'downtown', file: 'art/proposals/dt-diner.composition.json', label: 'Downtown · the 24h diner in the rain', district: 'downtown' },
   { id: 'dt-roofs', base: 'tower', file: 'art/proposals/dt-roofs.composition.json', label: 'Downtown · the roofs and the billboard catwalk', district: 'downtown' },
   // Downtown home ground (dt-home, 2026-10-22): the capsule block, Moth's walk-up, Kessel's room behind the fixer's kitchen.
-  { id: 'dt-capsule-lobby', base: 'tower', file: 'art/proposals/dt-capsule-lobby.composition.json', label: 'Downtown · the capsule block: lobby, flats, basement, courtyard', district: 'downtown' },
-  { id: 'dt-moth-stairwell', base: 'tower', file: 'art/proposals/dt-moth-stairwell.composition.json', label: 'Downtown · Moth’s walk-up: the stairwell up to 4C', district: 'downtown' },
-  { id: 'dt-kessel-clinic', base: 'tower', file: 'art/proposals/dt-kessel-clinic.composition.json', label: 'Downtown · the noodle stall, its kitchen and Kessel’s back room', district: 'downtown' },
+  { id: 'dt-capsule-lobby', base: 'downtown', file: 'art/proposals/dt-capsule-lobby.composition.json', label: 'Downtown · the capsule block: lobby, flats, basement, courtyard', district: 'downtown' },
+  { id: 'dt-moth-stairwell', base: 'downtown', file: 'art/proposals/dt-moth-stairwell.composition.json', label: 'Downtown · Moth’s walk-up: the stairwell up to 4C', district: 'downtown' },
+  { id: 'dt-kessel-clinic', base: 'downtown', file: 'art/proposals/dt-kessel-clinic.composition.json', label: 'Downtown · the noodle stall, its kitchen and Kessel’s back room', district: 'downtown' },
   // Downtown civic (dt-civic, 2026-10-22): the Registry service point, its back office after hours, the substation and the sweep.
   { id: 'dt-registry', base: 'tower', file: 'art/proposals/dt-registry.composition.json', label: 'Downtown · the Registry service point: front, hall, back office, node', district: 'downtown' },
   { id: 'dt-registry-night', base: 'tower', file: 'art/proposals/dt-registry-night.composition.json', label: 'Downtown · the Registry after hours: the alarm at the node', district: 'downtown' },

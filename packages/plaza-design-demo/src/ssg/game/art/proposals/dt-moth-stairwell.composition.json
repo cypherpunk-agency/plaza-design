@@ -3,17 +3,6 @@
   "scene": "dt-moth-stairwell",
   "instances": [
     {
-      "id": "sky",
-      "type": "street.sky",
-      "props": {},
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 1,
-      "layer": "distance"
-    },
-    {
       "id": "skyline-far",
       "type": "building.row",
       "props": {
@@ -403,13 +392,13 @@
         "seed": 14
       },
       "placement": {
-        "x": 490,
+        "x": 0,
         "h": 0
       },
       "order": 18,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-shop",
         "anchor": "origin"
       }
     },
@@ -425,13 +414,13 @@
         "seed": 15
       },
       "placement": {
-        "x": 504,
+        "x": 14,
         "h": 0
       },
       "order": 19,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-shop",
         "anchor": "origin"
       }
     },
@@ -447,13 +436,13 @@
         "seed": 16
       },
       "placement": {
-        "x": 572,
+        "x": 82,
         "h": 0
       },
       "order": 20,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-shop",
         "anchor": "origin"
       }
     },
@@ -476,13 +465,13 @@
         "seed": 21
       },
       "placement": {
-        "x": 320,
-        "h": 90
+        "x": 0,
+        "h": 0
       },
       "order": 21,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-1",
         "anchor": "origin"
       }
     },
@@ -500,13 +489,13 @@
         "seed": 31
       },
       "placement": {
-        "x": 436,
-        "h": 90
+        "x": 116,
+        "h": 0
       },
       "order": 22,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-1",
         "anchor": "origin"
       }
     },
@@ -526,13 +515,13 @@
         "seed": 41
       },
       "placement": {
-        "x": 490,
-        "h": 90
+        "x": 0,
+        "h": 0
       },
       "order": 23,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-1",
         "anchor": "origin"
       }
     },
@@ -555,13 +544,13 @@
         "seed": 22
       },
       "placement": {
-        "x": 320,
-        "h": 168
+        "x": 0,
+        "h": 0
       },
       "order": 24,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-2",
         "anchor": "origin"
       }
     },
@@ -579,13 +568,13 @@
         "seed": 32
       },
       "placement": {
-        "x": 436,
-        "h": 168
+        "x": 116,
+        "h": 0
       },
       "order": 25,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-2",
         "anchor": "origin"
       }
     },
@@ -605,13 +594,13 @@
         "seed": 42
       },
       "placement": {
-        "x": 490,
-        "h": 168
+        "x": 0,
+        "h": 0
       },
       "order": 26,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-2",
         "anchor": "origin"
       }
     },
@@ -634,13 +623,13 @@
         "seed": 23
       },
       "placement": {
-        "x": 320,
-        "h": 246
+        "x": 0,
+        "h": 0
       },
       "order": 27,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-3",
         "anchor": "origin"
       }
     },
@@ -658,13 +647,13 @@
         "seed": 33
       },
       "placement": {
-        "x": 436,
-        "h": 246
+        "x": 116,
+        "h": 0
       },
       "order": 28,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-3",
         "anchor": "origin"
       }
     },
@@ -684,13 +673,13 @@
         "seed": 43
       },
       "placement": {
-        "x": 490,
-        "h": 246
+        "x": 0,
+        "h": 0
       },
       "order": 29,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-3",
         "anchor": "origin"
       }
     },
@@ -713,13 +702,13 @@
         "seed": 24
       },
       "placement": {
-        "x": 320,
-        "h": 324
+        "x": 0,
+        "h": 0
       },
       "order": 30,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-4",
         "anchor": "origin"
       }
     },
@@ -737,13 +726,13 @@
         "seed": 34
       },
       "placement": {
-        "x": 436,
-        "h": 324
+        "x": 116,
+        "h": 0
       },
       "order": 31,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-4",
         "anchor": "origin"
       }
     },
@@ -763,13 +752,13 @@
         "seed": 44
       },
       "placement": {
-        "x": 490,
-        "h": 324
+        "x": 0,
+        "h": 0
       },
       "order": 32,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-4",
         "anchor": "origin"
       }
     },
@@ -822,13 +811,13 @@
         "seed": 53
       },
       "placement": {
-        "x": 424,
-        "h": 168
+        "x": 104,
+        "h": 0
       },
       "order": 35,
       "layer": "backdrop",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-2",
         "anchor": "origin"
       }
     },
@@ -1282,13 +1271,13 @@
         "act": "vend"
       },
       "placement": {
-        "x": 556,
-        "h": 90
+        "x": 66,
+        "h": 0
       },
       "order": 58,
       "layer": "playfield",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-1",
         "anchor": "origin"
       }
     },
@@ -1304,13 +1293,13 @@
         "sitting": "side"
       },
       "placement": {
-        "x": 520,
-        "h": 168
+        "x": 30,
+        "h": 0
       },
       "order": 59,
       "layer": "playfield",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-2",
         "anchor": "origin"
       }
     },
@@ -1326,13 +1315,13 @@
         "archetype": "elder"
       },
       "placement": {
-        "x": 570,
-        "h": 246
+        "x": 80,
+        "h": 0
       },
       "order": 60,
       "layer": "playfield",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-flat-3",
         "anchor": "origin"
       }
     },
@@ -1348,13 +1337,13 @@
         "archetype": "shopper"
       },
       "placement": {
-        "x": 456,
-        "h": 90
+        "x": 136,
+        "h": 0
       },
       "order": 61,
       "layer": "playfield",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-1",
         "anchor": "origin"
       }
     },
@@ -1367,13 +1356,13 @@
         "act": "sit"
       },
       "placement": {
-        "x": 470,
-        "h": 324
+        "x": 150,
+        "h": 0
       },
       "order": 62,
       "layer": "playfield",
       "attach": {
-        "instance": "house-interior",
+        "instance": "rm-landing-4",
         "anchor": "origin"
       }
     },
@@ -1492,6 +1481,260 @@
       },
       "order": 70,
       "layer": "logic"
+    },
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 1100
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 71,
+      "layer": "logic"
+    },
+    {
+      "id": "entrance-inside",
+      "type": "level.entrance",
+      "props": {
+        "building": "walkup",
+        "style": "flat",
+        "width": 26,
+        "height": 50,
+        "sign": "none"
+      },
+      "placement": {
+        "x": 355,
+        "h": 0
+      },
+      "order": 15.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-shop",
+      "type": "level.room",
+      "props": {
+        "width": 130,
+        "height": 90,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "never",
+        "closed": "dark"
+      },
+      "placement": {
+        "x": 490,
+        "h": 0
+      },
+      "order": 17.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-landing-1",
+      "type": "level.room",
+      "props": {
+        "width": 170,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "windows"
+      },
+      "placement": {
+        "x": 320,
+        "h": 90
+      },
+      "order": 20.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-flat-1",
+      "type": "level.room",
+      "props": {
+        "width": 130,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "never",
+        "keep": "remember",
+        "closed": "windows",
+        "doorLight": false
+      },
+      "placement": {
+        "x": 490,
+        "h": 90
+      },
+      "order": 22.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-landing-2",
+      "type": "level.room",
+      "props": {
+        "width": 170,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "windows"
+      },
+      "placement": {
+        "x": 320,
+        "h": 168
+      },
+      "order": 23.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-flat-2",
+      "type": "level.room",
+      "props": {
+        "width": 130,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "never",
+        "keep": "remember",
+        "closed": "windows",
+        "doorLight": false
+      },
+      "placement": {
+        "x": 490,
+        "h": 168
+      },
+      "order": 25.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-landing-3",
+      "type": "level.room",
+      "props": {
+        "width": 170,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "windows"
+      },
+      "placement": {
+        "x": 320,
+        "h": 246
+      },
+      "order": 26.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-flat-3",
+      "type": "level.room",
+      "props": {
+        "width": 130,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "never",
+        "keep": "remember",
+        "closed": "windows",
+        "doorLight": false
+      },
+      "placement": {
+        "x": 490,
+        "h": 246
+      },
+      "order": 28.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-landing-4",
+      "type": "level.room",
+      "props": {
+        "width": 170,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "windows"
+      },
+      "placement": {
+        "x": 320,
+        "h": 324
+      },
+      "order": 29.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-flat-4",
+      "type": "level.room",
+      "props": {
+        "width": 130,
+        "height": 78,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "dark",
+        "doorLight": true
+      },
+      "placement": {
+        "x": 490,
+        "h": 324
+      },
+      "order": 31.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "house-interior",
+        "anchor": "origin"
+      }
     }
   ]
 }

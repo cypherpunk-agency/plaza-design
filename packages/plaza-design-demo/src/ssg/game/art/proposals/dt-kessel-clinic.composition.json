@@ -3,17 +3,6 @@
   "scene": "dt-kessel-clinic",
   "instances": [
     {
-      "id": "sky",
-      "type": "street.sky",
-      "props": {},
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 1,
-      "layer": "distance"
-    },
-    {
       "id": "skyline-far",
       "type": "building.row",
       "props": {
@@ -506,13 +495,13 @@
         "seed": 41
       },
       "placement": {
-        "x": 440,
-        "h": -100
+        "x": 0,
+        "h": 0
       },
       "order": 24,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -528,13 +517,13 @@
         "seed": 42
       },
       "placement": {
-        "x": 450,
-        "h": -100
+        "x": 10,
+        "h": 0
       },
       "order": 25,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -550,13 +539,13 @@
         "seed": 43
       },
       "placement": {
-        "x": 512,
-        "h": -100
+        "x": 72,
+        "h": 0
       },
       "order": 26,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -572,13 +561,13 @@
         "seed": 44
       },
       "placement": {
-        "x": 632,
-        "h": -100
+        "x": 192,
+        "h": 0
       },
       "order": 27,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -597,13 +586,13 @@
         "leaf": "#2a2e32"
       },
       "placement": {
-        "x": 710,
-        "h": -100
+        "x": 270,
+        "h": 0
       },
       "order": 28,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -615,13 +604,13 @@
         "phase": 7
       },
       "placement": {
-        "x": 722,
-        "h": -30
+        "x": 282,
+        "h": 70
       },
       "order": 29,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -641,13 +630,13 @@
         "seed": 5
       },
       "placement": {
-        "x": 440,
-        "h": -200
+        "x": 0,
+        "h": 0
       },
       "order": 30,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -665,13 +654,13 @@
         "seed": 51
       },
       "placement": {
-        "x": 440,
-        "h": -200
+        "x": 0,
+        "h": 0
       },
       "order": 31,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -688,13 +677,13 @@
         "seed": 6
       },
       "placement": {
-        "x": 450,
-        "h": -200
+        "x": 10,
+        "h": 0
       },
       "order": 32,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -710,13 +699,13 @@
         "seed": 7
       },
       "placement": {
-        "x": 480,
-        "h": -200
+        "x": 40,
+        "h": 0
       },
       "order": 33,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -732,13 +721,13 @@
         "seed": 52
       },
       "placement": {
-        "x": 520,
-        "h": -200
+        "x": 80,
+        "h": 0
       },
       "order": 34,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -753,13 +742,13 @@
         "seed": 8
       },
       "placement": {
-        "x": 520,
-        "h": -200
+        "x": 80,
+        "h": 0
       },
       "order": 35,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -775,13 +764,13 @@
         "seed": 9
       },
       "placement": {
-        "x": 586,
-        "h": -200
+        "x": 146,
+        "h": 0
       },
       "order": 36,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -801,13 +790,13 @@
         "seed": 10
       },
       "placement": {
-        "x": 632,
-        "h": -200
+        "x": 192,
+        "h": 0
       },
       "order": 37,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -825,13 +814,13 @@
         "seed": 53
       },
       "placement": {
-        "x": 590,
-        "h": -200
+        "x": 150,
+        "h": 0
       },
       "order": 38,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -851,13 +840,13 @@
         "seed": 61
       },
       "placement": {
-        "x": 380,
-        "h": -340
+        "x": 0,
+        "h": 0
       },
       "order": 39,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -875,13 +864,13 @@
         "seed": 62
       },
       "placement": {
-        "x": 380,
-        "h": -340
+        "x": 0,
+        "h": 0
       },
       "order": 40,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -898,13 +887,13 @@
         "seed": 63
       },
       "placement": {
-        "x": 390,
-        "h": -340
+        "x": 10,
+        "h": 0
       },
       "order": 41,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -922,13 +911,13 @@
         "seed": 64
       },
       "placement": {
-        "x": 476,
-        "h": -340
+        "x": 96,
+        "h": 0
       },
       "order": 42,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -946,13 +935,13 @@
         "seed": 65
       },
       "placement": {
-        "x": 484,
-        "h": -340
+        "x": 104,
+        "h": 0
       },
       "order": 43,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -969,13 +958,13 @@
         "seed": 66
       },
       "placement": {
-        "x": 560,
-        "h": -340
+        "x": 180,
+        "h": 0
       },
       "order": 44,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -993,13 +982,13 @@
         "seed": 67
       },
       "placement": {
-        "x": 510,
-        "h": -340
+        "x": 130,
+        "h": 0
       },
       "order": 45,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -1016,13 +1005,13 @@
         "seed": 68
       },
       "placement": {
-        "x": 680,
-        "h": -340
+        "x": 300,
+        "h": 0
       },
       "order": 46,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -1039,13 +1028,13 @@
         "seed": 69
       },
       "placement": {
-        "x": 780,
-        "h": -340
+        "x": 400,
+        "h": 0
       },
       "order": 47,
       "layer": "backdrop",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -1300,13 +1289,13 @@
         "seed": 70
       },
       "placement": {
-        "x": 380,
-        "h": -340
+        "x": 0,
+        "h": 0
       },
       "order": 61,
       "layer": "set",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -1541,13 +1530,13 @@
         "archetype": "dockworker"
       },
       "placement": {
-        "x": 600,
-        "h": -100
+        "x": 160,
+        "h": 0
       },
       "order": 72,
       "layer": "playfield",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-cellar",
         "anchor": "origin"
       }
     },
@@ -1566,13 +1555,13 @@
         "cover": "#5a4a32"
       },
       "placement": {
-        "x": 543,
-        "h": -200
+        "x": 103,
+        "h": 0
       },
       "order": 73,
       "layer": "playfield",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -1589,13 +1578,13 @@
         "garb": "hoodie"
       },
       "placement": {
-        "x": 622,
-        "h": -200
+        "x": 182,
+        "h": 0
       },
       "order": 74,
       "layer": "playfield",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-clinic",
         "anchor": "origin"
       }
     },
@@ -1615,13 +1604,13 @@
         "facial": "stubble"
       },
       "placement": {
-        "x": 630,
-        "h": -340
+        "x": 250,
+        "h": 0
       },
       "order": 75,
       "layer": "playfield",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -1636,13 +1625,13 @@
         "face": "off"
       },
       "placement": {
-        "x": 697,
-        "h": -322
+        "x": 317,
+        "h": 18
       },
       "order": 76,
       "layer": "playfield",
       "attach": {
-        "instance": "annex-interior",
+        "instance": "room-theatre",
         "anchor": "origin"
       }
     },
@@ -1763,6 +1752,92 @@
       },
       "order": 84,
       "layer": "logic"
+    },
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 1200
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 85,
+      "layer": "logic"
+    },
+    {
+      "id": "room-cellar",
+      "type": "level.room",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "earth"
+      },
+      "placement": {
+        "x": 440,
+        "h": -100
+      },
+      "order": 23.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-clinic",
+      "type": "level.room",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "earth"
+      },
+      "placement": {
+        "x": 440,
+        "h": -200
+      },
+      "order": 29.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-theatre",
+      "type": "level.room",
+      "props": {
+        "width": 460,
+        "height": 130,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "earth"
+      },
+      "placement": {
+        "x": 380,
+        "h": -340
+      },
+      "order": 38.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
     }
   ]
 }
