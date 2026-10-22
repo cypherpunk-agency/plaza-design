@@ -22,6 +22,12 @@ export const zoneInfo = (documents?: ReadonlyMap<string, unknown>): Record<strin
 /** A zone's pending composition: its own document, its projected authored document, or its authored catalogue entry. */
 const composition = (documents: ReadonlyMap<string, unknown>, id: string) =>
   (documents.get(id) ?? documents.get(authoredDocumentId(id, 'composition')) ?? authored(documents).find(e => e.scene!.id === id)?.composition) as { instances?: unknown } | undefined;
+/** A scene's name as the editor shows it beside its neighbours: the pending authored name or the registered one, without its "(… lab)" note. */
+export const zoneName = (id: string, documents?: ReadonlyMap<string, unknown>): string => {
+  const own = authored(documents).find(e => e.scene!.id === id)?.scene as { name?: unknown } | undefined;
+  const name = typeof own?.name === 'string' ? own.name : (SCENES as Record<string, { name?: string } | undefined>)[id]?.name ?? id;
+  return name.replace(/\s*\([^)]*\)\s*$/, '').trim() || id;
+};
 /** Each scene's level pieces (floors, stairs, doors), read from its pending composition where one is open. */
 export const zonePieces = (documents: ReadonlyMap<string, unknown>): Record<string, string[]> =>
   Object.fromEntries(Object.keys(zoneInfo(documents)).flatMap(id => { const doc = composition(documents, id); return doc ? [[id, levelPieces(doc.instances)]] : []; }));

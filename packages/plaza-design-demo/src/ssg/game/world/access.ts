@@ -66,7 +66,7 @@ export function sceneExitAccess(exit:Pick<SceneExit,'requires'|'needs'>|undefine
  * An in-world barrier (engine/level.ts `LevelBarrier`: a turnstile, gate or locked door) asks the exits' own rule:
  * its `flag` must be set (an exit's `requires`), its `key` carried (an exit's `needs`) and its `when` hold over the
  * gameplay state (`state`; without one, a `when` refuses). All refuse with the barrier's words; a barrier stands in
- * plain sight, so none is hidden. Pure: it commits nothing; the level opens it on `ok`. The composer's Try it panel
+ * plain sight, so none is hidden. Pure: it commits nothing; the level opens it on `ok`. The composer's Test the rule panel
  * calls this same function over a fixture.
  */
 export function barrierAccess(barrier:Pick<LevelBarrier,'flag'|'key'|'when'|'refuse'>,flags:Readonly<Record<string,boolean>>,keys:readonly string[],state?:Readonly<GameplayState>){
