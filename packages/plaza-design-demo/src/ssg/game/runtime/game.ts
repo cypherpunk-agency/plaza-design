@@ -85,7 +85,7 @@ import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
-import { joined as zoneJoined, placeFrom, seamsOf, validateZoneGraph } from "../world/zone-graph";
+import { joined as zoneJoined, residency, seamsOf, validateZoneGraph, type ResidencyTier } from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
 
 /**
@@ -909,19 +909,44 @@ export class Game {
   // ---------- joined zones (world/zone-graph.ts): walked into over a seam, with no cut ----------
 
   /** The level of the zone `id`: its own, or, where seams join it to other zones, theirs with it as one (`mergeLevels`). */
-  private joinLevel(id: SceneId): LevelSource | undefined {
+  private joinLevel(id: SceneId, cam = this.cam): LevelSource | undefined {
     const s = this.sceneDefinition(id);
-    this.joinedZones = [];
+    this.joinedZones = []; this.zoneTiers = new Map();
     if (!s.level || !zoneJoined(this.zoneGraph, id)) return s.level;
-    const parts = [];
-    // two seams out: a zone stays in the frame while the player is in a neighbour of it (residency comes with step 3)
-    for (const [z, at] of placeFrom(this.zoneGraph, id, 2)) {
-      if (!this.hasScene(z)) continue;
+    // the zones around this one that are resident for this camera (world/zone-graph.ts `residency`): visible or near
+    const r = this.residencyAt(id, cam), parts = [];
+    for (const [z, zr] of r.zones) {
+      if (zr.tier === 'unloaded' || !zr.at || !this.hasScene(z)) continue;
       const d = this.sceneDefinition(z); if (!d.level) continue;
-      parts.push({ zone: z, source: d.level, dx: at.dx, dh: at.dh, width: d.width });
-      if (z !== id) { this.joinedZones.push({ id: z, dx: at.dx, dh: at.dh }); this.hostOf(z); }
+      parts.push({ zone: z, source: d.level, dx: zr.at.dx, dh: zr.at.dh, width: d.width });
+      this.zoneTiers.set(z, zr.tier);
+      if (z !== id) { this.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); this.hostOf(z); }
     }
     return parts.length > 1 ? mergeLevels(parts) : s.level;
+  }
+  /** Each joined zone's residency tier this frame: only visible ones are drawn; near ones are hosted and walked, not drawn. */
+  private zoneTiers = new Map<string, ResidencyTier>();
+  /** Residency for zone `id` with the camera at `cam` (horizontal: the view's width across). Hosts are not unloaded yet (they keep ticking, as every visited scene does today). */
+  private residencyAt(id: SceneId, cam: number) {
+    const zones: Record<string, { width: number }> = {};
+    for (const seam of this.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (this.hasScene(z)) zones[z] = { width: this.sceneDefinition(z).width };
+    return residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: [...this.hosts.keys()].filter(z => zones[z]) });
+  }
+  /**
+   * Each frame in a joined zone: the resident set follows the camera. A zone coming into reach joins the level (its pieces
+   * walkable, its state added), one leaving reach leaves it; the player's own place in the level is kept.
+   */
+  private followResidency() {
+    if (!this.level?.source.zones) return;
+    const r = this.residencyAt(this.here, this.cam);
+    const want = [...r.zones].filter(([z, zr]) => zr.tier !== 'unloaded' && zr.at && this.hasScene(z) && this.sceneDefinition(z).level).map(([z]) => z).sort();
+    const have = Object.keys(this.level.source.zones).sort();
+    for (const [z, zr] of r.zones) if (this.zoneTiers.has(z)) this.zoneTiers.set(z, zr.tier);
+    // never drop the zone the player stands in (mid-flight a ride can be in the neighbour's floors)
+    if (want.join() === have.join() || !want.includes(this.here)) return;
+    const floor = levelFloor(this.level).zone; if (floor && !want.includes(floor)) return;
+    const source = this.joinLevel(this.here);
+    if (source?.zones) this.level = levelRejoin({ source, state: this.level.state }, source, this.seenRooms(source, this.here) ?? [], savedForLevel(source, this.here, this.save.barriers));
   }
   /** The rooms the save remembers, as a level names them (a joined level: `zone/room` for each of its zones). */
   private seenRooms(source: LevelSource, id: SceneId): string[] | undefined {
@@ -1027,7 +1052,7 @@ export class Game {
     const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
-    const source = this.joinLevel(id), arriveH = (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0;
+    const source = this.joinLevel(id, this.p.x - this.viewW * 0.45), arriveH = (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0;
     this.level = source ? { source, state: levelArrive(source, this.p, arriveH, this.seenRooms(source, id), savedForLevel(source, id, this.save.barriers)) } : null;
     this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
     this.cam = this.camFollow(this.p.x);
@@ -1269,6 +1294,7 @@ export class Game {
     // over a seam: the zone the player now stands in becomes the one they are in, with no cut
     const zone = this.level && levelZone(this.level);
     if (zone && zone !== this.here && this.hasScene(zone)) this.crossInto(zone);
+    else this.followResidency();
     // a room seen for the first time stays open on this save
     if (this.level) this.keepSeenRooms();
     const [minX, maxX] = this.level && !riding ? levelBounds(this.level, this.levelW, p.x) : [12, this.levelW - 12];
@@ -1363,7 +1389,7 @@ export class Game {
       skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
-      ...(this.joinedZones?.length ? { joined: this.joinedZones.map(z => this.zoneFrame(z)) } : {}),
+      ...(this.joinedZones?.length ? { joined: this.joinedZones.filter(z => this.zoneTiers?.get(z.id) === 'visible').map(z => this.zoneFrame(z)) } : {}),
     });
   }
 
