@@ -502,5 +502,135 @@
     "mechanisms": [
       "lineRide"
     ]
+  },
+  "phases": {
+    "home": {
+      "ride": {
+        "mover": "train.car",
+        "path": "home"
+      },
+      "time": "05:41",
+      "goal": "get off at DOWNTOWN",
+      "intro": {
+        "pages": [
+          "End of shift. Fourteen parcels, zero complaints, one sore back.",
+          "Downtown is next. Then bed.",
+          "← → walk. E talks to people."
+        ],
+        "touchPages": [
+          "End of shift. Fourteen parcels, zero complaints, one sore back.",
+          "Downtown is next. Then bed.",
+          "The arrows at the bottom walk. Tap someone to talk."
+        ],
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "door": true
+      },
+      "lines": {
+        "suit": {
+          "pages": [
+            "Morning shift?",
+            "Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
+          ]
+        },
+        "courier": {
+          "pages": [
+            "Night shift? You have the look. Like a receipt somebody kept.",
+            "Me, I am on my ninth loop with a parcel for \"whoever is at the Harbor\". Still no whoever."
+          ]
+        },
+        "elder": {
+          "pages": [
+            "Downtown next, dear. Then Galleria. Then Downtown.",
+            "I have ridden this line since it was a straight line.",
+            "Get some sleep. You look registered, but tired."
+          ]
+        },
+        "punk": {
+          "pages": [
+            "They retired a thousand records overnight. It was on the screen.",
+            "Retired. Like they get a watch and a cake."
+          ]
+        },
+        "ad": {
+          "name": "LINE 0 NEWS",
+          "pages": [
+            "REGISTRY AUDIT: 1,204 RECORDS RETIRED OVERNIGHT.",
+            "NO ACTION NEEDED."
+          ]
+        },
+        "staff": {
+          "name": "STAFF DOOR",
+          "pages": [
+            "STAFF ONLY. LOCKED.",
+            "NO PASSENGER ACCESS."
+          ]
+        }
+      },
+      "everyday": {
+        "train": [
+          {
+            "label": "read the brake plate",
+            "say": [
+              "cat plate",
+              "EMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE."
+            ]
+          },
+          {
+            "label": "pull the brake",
+            "say": [
+              "use brake --pull",
+              "BRAKE: no emergency registered to this passenger.",
+              "err"
+            ]
+          }
+        ]
+      }
+    },
+    "flat": {
+      "lines": {
+        "suit": {
+          "pages": [
+            "Morning shift?",
+            "Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
+          ]
+        },
+        "courier": {
+          "pages": [
+            "Night shift? You have the look. Like a receipt somebody kept.",
+            "Me, I am on my ninth loop with a parcel for \"whoever is at the Harbor\". Still no whoever."
+          ]
+        },
+        "elder": {
+          "pages": [
+            "Downtown next, dear. Then Galleria. Then Downtown.",
+            "I have ridden this line since it was a straight line.",
+            "Get some sleep. You look registered, but tired."
+          ]
+        },
+        "punk": {
+          "pages": [
+            "They retired a thousand records overnight. It was on the screen.",
+            "Retired. Like they get a watch and a cake."
+          ]
+        },
+        "ad": {
+          "name": "LINE 0 NEWS",
+          "pages": [
+            "REGISTRY AUDIT: 1,204 RECORDS RETIRED OVERNIGHT.",
+            "NO ACTION NEEDED."
+          ]
+        },
+        "staff": {
+          "name": "STAFF DOOR",
+          "pages": [
+            "STAFF ONLY. LOCKED.",
+            "NO PASSENGER ACCESS."
+          ]
+        }
+      }
+    }
   }
 }

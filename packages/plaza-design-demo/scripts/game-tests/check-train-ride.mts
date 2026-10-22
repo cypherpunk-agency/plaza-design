@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {createLineSystem,CAR,DOORS,LOOP,SEG,SIDING,TUNNEL_IN} from '../../src/ssg/game/world/transport/line';
-import {boardRide,rideHome,startRide,createTrainRules} from '../../src/ssg/game/engine/gameplay/mechanisms/line-ride';
+import {boardRide,startRide,createTrainRules} from '../../src/ssg/game/engine/gameplay/mechanisms/line-ride';
 import {validateMetroStart,metroStartingStates} from '../../src/ssg/game/world/transport/metro-start';
 import {createCityModel} from '../../src/ssg/game/world/city';import citySource from '../../src/ssg/game/world/city.json';
 import {METRO_SOURCE} from '../../src/ssg/game/world/transport/metro-source';
@@ -93,7 +93,7 @@ function events(r:ReturnType<typeof rig>,name:string){return r.events.some(e=>e.
 
 // ---- the train home: its own path, begun part way through its run; doors shut; arrives, opens, stands until boarded again
 {
- const r=rig(false),{metro,m,mv}=r;m.setPaused(false);rideHome(m);frame(m);
+ const r=rig(false),{metro,m,mv}=r;m.setPaused(false);assert.equal(m.runPath('train','car','home'),'started','the opening\'s scripted ride is the car\'s home path');frame(m);
  assert.equal(metro.rideStop(mv),'harbor');assert.equal(metro.rideNext(mv),'downtown');assert.equal(metro.ridePhase(mv),'running');assert.equal(metro.rideDoors(mv),0);assert.equal(metro.rideView(mv).say,'NEXT: DOWNTOWN');
  const f0=240/1800,d0=SEG*(1-Math.cos(Math.PI*f0))/2;assert(Math.abs(metro.rideRun(mv)-d0/SEG)<.01,'it joins its run 240 frames in');
  let end=-1;for(let t=0;t<1700&&end<0;t++){frame(m);if(metro.ridePhase(mv)==='opening')end=t+1;}assert(Math.abs(end-(1800-240-1))<3,'1560 frames of run in all ('+end+')');

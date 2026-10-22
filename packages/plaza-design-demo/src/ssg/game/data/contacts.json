@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "INBOX": {
+    "announce": {
+      "contact": "moth",
+      "speaker": "YOU",
+      "height": 46,
+      "pages": [
+        "Moth is on my deck now. One bar of signal, out on the water.",
+        "ENTER for the terminal, then: msg moth."
+      ],
+      "touchPages": [
+        "Moth is on my deck now. One bar of signal, out on the water.",
+        "TERMINAL, then: msg moth."
+      ]
+    },
+    "terminal": {
+      "prefix": "[deck] ",
+      "separator": " · ",
+      "countSuffix": " message(s)",
+      "commandPrefix": " · type: msg "
+    }
+  },
+  "CONTACTS": [
+    {
+      "id": "moth",
+      "name": "MOTH",
+      "when": "contact:moth",
+      "dark": "moth:dark",
+      "status": "on NIGHT FERRY 7 · signal comes and goes",
+      "messages": [
+        {
+          "id": "moth.1",
+          "when": "act1:done",
+          "text": [
+            "moth> on the water. signal is one bar and a seagull.",
+            "moth> the list: seven pieces. you already held one (the relay roof). I'll find where the other six live and send you there.",
+            "moth> the warehouse by the stacks is where the Registry keeps what it takes. remember the door.",
+            "moth> and feed Sprat. — m"
+          ]
+        }
+      ]
+    }
+  ]
+}

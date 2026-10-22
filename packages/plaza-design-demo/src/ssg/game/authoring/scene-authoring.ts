@@ -27,6 +27,9 @@ import {pendingNetworkContext} from './pending-network';
 import {pendingDestinations} from './pending-destinations';
 import {gameplayScenes,gameplayScene} from './gameplay-scenes';
 import {TypedForm} from './typed-form';
+import {pendingRegistry} from './pending-registry';
+import {validateOpeningSource} from '../story/opening-source';
+import {renderScenePhase,renderSceneWash} from './scene-phases-authoring';
 import {renderNativeTarget,renderNativeTargetCollection} from './native-target-authoring';
 import type {WorkbenchContext,WorkbenchHandle} from './app';
 import type {SceneDocument,InteractionRoute} from '../engine/gameplay/scene-document';
@@ -39,7 +42,7 @@ interface Entry {key:string;group:string;label:string;detail?:string;prefix?:str
 export interface SceneLogicFocus {only?:readonly string[];groups?:readonly string[];empty?:string}
 /** One part of the scene document at a time: a grouped list on the left, its fields on the right. */
 export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,selection:{scene?:string;use?:string;item?:string;fixed?:boolean;focus?:SceneLogicFocus}={}):WorkbenchHandle {
- const api=context.authoring!,error=document.createElement('p'),body=document.createElement('section');error.setAttribute('role','alert');error.className='error';host.replaceChildren(error,body);let use=selection.use??'boss';
+ const api=context.authoring!,error=document.createElement('p'),body=document.createElement('section');error.setAttribute('role','alert');error.className='error';host.replaceChildren(error,body);let use=selection.use??'boss',phasePick='';
  const form=new TypedForm(e=>error.textContent=e instanceof Error?e.message:String(e)),focusOpen=new Map<string,boolean>(),rotationDraft=new Map<string,string>();
  const selected=()=>gameplayScene(selection.scene??'harborShift',context.documents);
  const identity=()=>deviceSourceIdentity(selected().id);
@@ -66,6 +69,14 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
    form.button(h,'Add actor',()=>{actorTransaction('Add actor',(s,c)=>family==='streetSprite'?addSceneStreetSprite(s,c,id,{kind:'streetSprite',sprite:'hood'},x,height,dialogue):family==='rider'?addSceneRider(s,c,id,{kind:'rider',rider:'phone',phase:0},x,height,dialogue):addSceneActor(s,c,id,family==='human'?{}:family as import('../runtime/characters').Character['look'],x,height,dialogue));selection.item='actor:'+id;refresh();},(d.actors?.length??0)>=128);
   }});
   d.actors?.forEach((a,i)=>entries.push({key:'actor:'+a.id,group:'Actors',label:a.id,detail:a.band,render:h=>renderActor(form,h,d,i,edit,refresh,mutableActors?{composition:api.get(identity().composition).value as Composition,transaction:actorTransaction}:undefined)}));
+  if(d.manifest)entries.push({key:'phases',group:'Scene',label:'Story phases',detail:Object.keys(d.phases??{}).join(' · ')||undefined,render:h=>{
+   const registry=pendingRegistry(new Map(context.documents.map(x=>[x.id,api.get(x.id).value]))),story=validateOpeningSource(api.get('opening-story').value),vocab=()=>({scenes:Object.keys(registry),phases:Object.keys(story.PHASES),flags:Object.values(story.OPENING),cards:Object.keys(story.CARDS),milestones:Object.keys(story.WORKFLOWS),registry}),handle={value:()=>structuredClone(api.get(identity().scene).value) as any,edit:(label:string,change:(x:any)=>void)=>{edit(label,change);refresh();}};
+   note(h,'What this scene says and does in each phase of the story (the phases are the Game opening panel\'s). A field set here replaces the scene\'s usual behaviour in that phase.');
+   const phases=vocab().phases;if(!phases.includes(phasePick))phasePick=phases[0];
+   form.select(h,'Story phase',phases,phasePick,v=>{phasePick=v;refresh();});
+   renderScenePhase({form,parent:h,doc:handle,vocab,scene:d.id,phase:phasePick,refresh});
+   renderSceneWash(form,form.section(h,'Room light cue'),handle,vocab,d.id);
+  }});
   if(d.manifest)entries.push({key:'stage',group:'Scene',label:'Stage & compile',render:h=>{const composition=api.get(identity().composition).value as import('../art').Composition,types:string[]=[];const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){types.push(n.type);walk(n.children??[]);}};walk(composition.instances);renderSceneStage(form,h,d,edit,[...new Set(types)].sort());}});
   if(d.manifest)entries.push({key:'manifest',group:'Scene',label:'Content & bindings',render:h=>{
    const composition=api.get(identity().composition).value as import('../art').Composition,instances:import('../art').Instance[]=[];

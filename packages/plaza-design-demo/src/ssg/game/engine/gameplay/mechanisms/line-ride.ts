@@ -52,11 +52,6 @@ export function boardRide(m:SceneModel,st:string,left:number){
  if(m.runPath(CAR_DEVICE,CAR_NOUN,'board',{from:st,ahead:dwell-Math.max(120,left)*FRAME})!=='started')throw new Error('The metro car has no path board');
 }
 
-/** The train home (the opening's last ride): the car's `home` path, on its run into Downtown from the harbor's closed stop. */
-export function rideHome(m:SceneModel){
- if(m.runPath(CAR_DEVICE,CAR_NOUN,'home')!=='started')throw new Error('The metro car has no path home');
-}
-
 /**
  * A private Play's start (the editor's fixtures, `MetroStart`): the car is boarded at the start's station and run, on the model's own
  * tick, to the state asked for: standing at the station, a quarter of the way along its run, braking, stopped on the track, stopped at the

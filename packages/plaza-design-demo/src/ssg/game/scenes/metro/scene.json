@@ -250,5 +250,90 @@
       "transitPlatform",
       "citySkyline"
     ]
+  },
+  "phases": {
+    "home": {
+      "time": "05:48",
+      "goal": "go home",
+      "intro": {
+        "pages": [
+          "Downtown. The exit is at the far end, by the stairs."
+        ],
+        "touchPages": [
+          "Downtown. The exit is at the far end, by the stairs."
+        ],
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "exit": "downtown"
+      },
+      "lines": {
+        "regular": {
+          "name": "MAN WITH A PAPER",
+          "pages": [
+            "Morning paper. The Registry retired 1,204 records overnight.",
+            "Retired. Lucky records. I have been asking for that for years."
+          ]
+        },
+        "screen": {
+          "name": "REGISTRY SCREEN",
+          "pages": [
+            "REGISTRY AUDIT COMPLETE.",
+            "ALL REMAINING RECORDS ARE CURRENT. NO ACTION NEEDED."
+          ]
+        }
+      },
+      "exits": {
+        "train": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "That was my stop. Bed is the other way."
+            ]
+          }
+        },
+        "downtown": {
+          "gate": {
+            "verifying": "TURNSTILE: verifying",
+            "ok": "TURNSTILE: verifying… … ok.",
+            "verifyFrames": 150,
+            "okFrames": 50,
+            "dotEvery": 20,
+            "begin": [
+              {
+                "sound": "blip"
+              }
+            ],
+            "then": [
+              {
+                "sound": "granted"
+              },
+              {
+                "milestone": "street"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "flat": {
+      "lines": {
+        "regular": {
+          "name": "MAN WITH A PAPER",
+          "pages": [
+            "Morning paper. The Registry retired 1,204 records overnight.",
+            "Retired. Lucky records. I have been asking for that for years."
+          ]
+        },
+        "screen": {
+          "name": "REGISTRY SCREEN",
+          "pages": [
+            "REGISTRY AUDIT COMPLETE.",
+            "ALL REMAINING RECORDS ARE CURRENT. NO ACTION NEEDED."
+          ]
+        }
+      }
+    }
   }
 }

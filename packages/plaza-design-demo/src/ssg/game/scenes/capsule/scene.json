@@ -230,5 +230,317 @@
         }
       }
     }
-  }
+  },
+  "phases": {
+    "flat": {
+      "time": "06:04",
+      "goal": "get some sleep",
+      "intro": {
+        "pages": [
+          "Home. Four walls, one window, one cat.",
+          "Kettle, blinds, bed. In that order, if I am lucky.",
+          "E or a tap on a thing: use it."
+        ],
+        "touchPages": [
+          "Home. Four walls, one window, one cat.",
+          "Kettle, blinds, bed. In that order, if I am lucky.",
+          "Tap a thing to use it."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "target": "bed"
+      },
+      "exits": {
+        "door": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "Bed first. The city will still be there."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR LOCK: unlocked. welcome home.",
+              "ok"
+            ]
+          },
+          {
+            "label": "read the plate",
+            "say": [
+              "cat plate",
+              "RENT: PAID. NEXT DUE IN 9 DAYS."
+            ]
+          }
+        ],
+        "fridge": [
+          {
+            "label": "open the fridge",
+            "say": [
+              "open fridge",
+              "one lemon, a battery, and the noodles you did not eat on shift.",
+              "dim"
+            ]
+          },
+          {
+            "label": "read the note",
+            "act": [
+              "note",
+              "read"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "boil",
+            "act": [
+              "kettle",
+              "boil"
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "set": [
+              "sun",
+              true
+            ],
+            "say": [
+              "use motor --open",
+              "the blinds roll up. dawn, the colour of weak tea.",
+              "ok"
+            ]
+          },
+          {
+            "label": "close",
+            "act": [
+              "motor",
+              "close"
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HOME-PC: no new mail. 1 old message, from Moth: \"if I go dark, my place is yours. my key is with the noodle fixer. follow the trains.\""
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: schedule: night. it is always night in here.",
+              "dim"
+            ]
+          }
+        ],
+        "router": [
+          {
+            "label": "feel how warm it is",
+            "act": [
+              "temp",
+              "read"
+            ]
+          }
+        ]
+      },
+      "targets": {
+        "bed": {
+          "label": "[E] SLEEP",
+          "promptH": 46,
+          "bind": {
+            "kind": "rest",
+            "id": "bed",
+            "offsetX": 6
+          },
+          "card": "sleep"
+        }
+      }
+    },
+    "deleted": {
+      "time": "09:40",
+      "goal": "get out",
+      "ping": {
+        "device": "pc"
+      },
+      "exits": {
+        "door": {
+          "react": "lock",
+          "line": [
+            "open door",
+            "DOOR: rent: pending. identity: not found.",
+            "err"
+          ],
+          "cues": [
+            {
+              "counter": {
+                "id": "morning.tries"
+              }
+            },
+            {
+              "counter": {
+                "id": "morning.last",
+                "stamp": true
+              }
+            }
+          ]
+        }
+      },
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR: rent: pending. identity: not found.",
+              "err"
+            ],
+            "cues": [
+              {
+                "counter": {
+                  "id": "morning.tries"
+                }
+              },
+              {
+                "counter": {
+                  "id": "morning.last",
+                  "stamp": true
+                }
+              }
+            ]
+          },
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "boil",
+            "say": [
+              "use kettle --boil",
+              "KETTLE: no account. no water.",
+              "err"
+            ],
+            "cues": [
+              {
+                "counter": {
+                  "id": "morning.tries"
+                }
+              },
+              {
+                "counter": {
+                  "id": "morning.last",
+                  "stamp": true
+                }
+              }
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "say": [
+              "use motor --open",
+              "BLINDS: privacy mode. account: not found.",
+              "err"
+            ],
+            "cues": [
+              {
+                "counter": {
+                  "id": "morning.tries"
+                }
+              },
+              {
+                "counter": {
+                  "id": "morning.last",
+                  "stamp": true
+                }
+              }
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: no account. schedule: night.",
+              "err"
+            ],
+            "cues": [
+              {
+                "counter": {
+                  "id": "morning.tries"
+                }
+              },
+              {
+                "counter": {
+                  "id": "morning.last",
+                  "stamp": true
+                }
+              }
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HOME-PC: 1 new message. MOTH, 09:38.",
+              "ok"
+            ],
+            "cues": [
+              {
+                "counter": {
+                  "id": "morning.due"
+                }
+              },
+              {
+                "counter": {
+                  "id": "morning.last",
+                  "stamp": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "uplinked": {
+      "time": "09:42",
+      "goal": "jack in to your PC",
+      "ping": {
+        "device": "pc"
+      }
+    }
+  },
+  "wash": [
+    {
+      "phase": "flat",
+      "tone": "warm"
+    },
+    {
+      "flag": "opening:slept",
+      "unlessState": "doorOpen",
+      "tone": "cold"
+    }
+  ]
 }

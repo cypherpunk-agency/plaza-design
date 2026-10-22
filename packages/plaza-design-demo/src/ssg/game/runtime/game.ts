@@ -3,7 +3,6 @@ import {nativeLiveConditionsTick} from '../engine/gameplay/native-live-condition
 import {attachGameplayHandoffs} from '../engine/gameplay/handoffs';
 import {registryLabels} from '../engine/gameplay/rewards';
 import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
-import {capsuleController} from '../engine/controllers/capsule';
 import {type SceneModel} from '../engine/model';
 import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import {COMPANION_SOURCE,companionFlag,companionHere} from '../engine/gameplay/companion-source';
@@ -54,9 +53,11 @@ import type { PopupItem } from "../engine/popup";
 import { sceneShell } from "../engine/shell";
 
 import { isSceneId,ITEMS,priceTag,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type SceneView,type UseCtx } from "../scenes/index";
-import { messagesOf,unread } from "../story/contacts";
+import { contactsModel,type ContactsModel } from "../story/contacts";
+import { END_CARD,endCardText,type EndCardSource } from "../story/end-card";
+import { applyCounter,arrivalFor,attentionAim,attentionDue,cardFrame,clockPin,gateFrame,goalHint,triggerFires,triggerStarts,washTone,type CardSpec,type Cue,type GateRule,type Say } from "../story/story-rules";
 import { createCutscenes,CutscenePlay,isCutsceneId,type CutsceneId } from "../story/cutscenes/index";
-import {openingStoryModel,pick,type ExitRule,type OpeningState,type PingTarget} from '../story/opening';
+import {openingStoryModel,type ExitRule,type OpeningState,type PingTarget} from '../story/opening';
 import { Opening } from "../story/title/index";
 import { createCityMap,type MapAct,type MapState,type MapView } from "../ui/citymap";
 import { KeyBar } from "../ui/keybar";
@@ -74,12 +75,12 @@ import { city,parseHM,TRAVEL,WAIT_CARD,WAITS,type WaitTo } from "../world/clock"
 import { light,lightAt,setLight,type Light } from "../world/light";
 import { frameView } from '../art/core/view';
 import {createLineSystem,timelineOf,PLATFORM_SHIFT,type LineSystem} from '../world/transport/line';
-import {boardRide,rideHome,startRide} from '../engine/gameplay/mechanisms/line-ride';
+import {boardRide,startRide} from '../engine/gameplay/mechanisms/line-ride';
 import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
 import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './characters';
 import { Companion, COMPANION_LOOKS } from './companion';
-import { EDITOR_PLAY } from "./mode";
+import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
@@ -187,6 +188,8 @@ export class Game {
   private get companionDoc(){return this.sources?.companion??COMPANION_SOURCE;}
   private get critters(){return this.sources?.critters??CRITTER_REACTIONS;}
   private get openingStory(){return this.sources?.openingStory??openingStoryModel;}
+  private get contacts():ContactsModel{return this.sources?.contacts??contactsModel;}
+  private get endCard():EndCardSource{return this.sources?.endCard??END_CARD;}
   private get sequenceDocuments(){return this.sources?.sequences??runtimeSequenceDocuments;}
   private get networkContext(){return this.sources?.network??defaultNetworkContext;}
   private cutsceneRegistry?:ReturnType<typeof createCutscenes>;
@@ -260,7 +263,7 @@ export class Game {
   constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
     // sudo (developer) mode: browser checks read the player and the level, and place the player, through window.__game
     const game = this;
-    if (SUDO) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.level; }, get here() { return game.here; }, prompt: () => game.nearest(), place: (x: number) => { game.p.x = x; } };
+    if (SUDO || PROBE) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.level; }, get here() { return game.here; }, prompt: () => game.nearest(), probe: () => game.probeFrame(), ...(SUDO ? { place: (x: number) => { game.p.x = x; } } : {}) };
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'game-canvas';
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: Downtown');
@@ -492,7 +495,7 @@ export class Game {
     const resume = !scene && first ? this.openingStory.openingResumeDestination(this.save.flags) : null;let resumeEntrance:string|undefined;
     if (!scene && first && this.save.scene && this.resumable(this.save.scene)) scene = this.save.scene as SceneId;
     else if (resume && this.hasScene(resume.scene)) {scene=resume.scene;resumeEntrance=resume.entrance;}
-    else if (!scene && first && !this.save.flags.arrived && !this.save.flags[this.world.seenFlag('downtown')]) {
+    else if (!scene && first && !this.save.flags.arrived && !this.save.flags[this.world.seenFlag(this.openingStory.START.settled as SceneId)]) {
       // a save that never got going: the opening, on the train home (no glide: that is NEW GAME's)
       if (!this.save.flags[this.world.seenFlag(this.world.START_SCENE)]) { this.startOpening(); return; }
       scene = this.world.START_SCENE;
@@ -601,18 +604,10 @@ export class Game {
 
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
-    const greeting=this.openingStory.CONTROLLER.greeting;
-    if (this.here !== greeting.scene || this.hackLocked()) return;
-    const how=this.touch?greeting.how.touchPages:greeting.how.pages;
-    if (!this.save.flags.arrived) {
-      this.save.flags.arrived = true; this.save.flags.schematics = true;
-      const pages=[this.weatherHere().rain>greeting.rainThreshold?greeting.wet:greeting.dry,greeting.stall,...how];
-      if (this.save.flags[this.companionDoc.unlockFlag]) pages.splice(1,0,this.companionDoc.greeting);
-      this.say(greeting.speaker,pages,this.p.x,greeting.height);
-    } else if (!this.save.flags.schematics) {
-      this.save.flags.schematics = true;
-      this.say(greeting.speaker,[greeting.relearn,...how],this.p.x,greeting.height);
-    }
+    const arrival = arrivalFor(this.def.phases?.[this.story]?.arrival, { flags: this.save.flags, touch: this.touch, rain: this.weatherHere().rain, companion: this.save.flags[this.companionDoc.unlockFlag] ? this.companionDoc.greeting : null });
+    if (!arrival) return;
+    for (const flag of arrival.set) this.save.flags[flag] = true;
+    this.say(arrival.speaker, arrival.pages, this.p.x, arrival.height);
   }
 
   /** The HACK and BOARD buttons belong to the scene you are in. */
@@ -942,14 +937,14 @@ export class Game {
       else this.companionBody.place(home.x, home.h, home.rest);
     } else if (this.companionPresent) this.companionBody.place(x - this.p.face * 20, 0, 'sit', this.p.face);
     // the opening: the train home runs into Downtown; arriving, the player says the opening's words instead
-    const st = this.story, said = pick(this.openingStory.OPENING_INTRO, st, id);
-    if (id === this.world.TRANSPORT.boarding.scene && st === 'home') this.rideHome();
+    const st = this.story, phase = s.phases?.[st], said = phase?.intro;
+    if (phase?.ride) this.runRide(id, phase.ride);
     this.hints.sceneChanged();sound.cancelFeedback();
     const flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
     if (said) {
       const once = 'opening:said:' + st + ':' + id;
       if (said.consume) this.save.flags[flag] = true;
-      if (!this.save.flags[once]) { this.save.flags[once] = true; this.persistSave(); this.say(said.speaker,said.lines(this.touch),this.p.x,said.height); }
+      if (!this.save.flags[once]) { this.save.flags[once] = true; this.persistSave(); this.say(said.speaker,this.touch?said.touchPages??said.pages:said.pages,this.p.x,said.height); }
     } else if (intro && !this.save.flags[flag]) {
       this.save.flags[flag] = true;
       this.persistSave();
@@ -1038,7 +1033,7 @@ export class Game {
       persist: () => this.persist(),
       resettable: this.resettableScenes().map(([id, s]) => ({ id, ...s.resettable!, reset: () => this.hostOf(id as SceneId).reset() })),
       // your own deck, while you still exist
-      deck: this.openingStory.isBefore(this.save.flags) ? this.openingStory.DECK_BEFORE : undefined,
+      deck: this.openingStory.persona(this.save.flags)?.deck,
       // the Registry's forecast, where you are
       weather: () => reportLines(sceneClimate(this.here)),
       // the net from where you stand (NET.md): scan, connect (needs scan.so, except what a port here knows)
@@ -1072,10 +1067,10 @@ export class Game {
       list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
     }
     list.push(...life.filter(t=>!before.has(t.id)));
-    // the opening's own things to press E on (the bed)
-    for (const [key, t] of Object.entries(this.openingStory.OPENING_TARGETS[this.story] ?? {})) {
-      const [scene, id] = key.split('/');
-      if(scene===this.here){const target=this.openingStory.resolveTarget(t,this.def);if(target)list.push({kind:'life',id:'story:'+id,...target});}
+    // the story's own things to press E on in this phase (the bed)
+    for (const [id, t] of Object.entries(this.def.phases?.[this.story]?.targets ?? {})) {
+      const target = this.openingStory.resolveTarget(t, this.def);
+      if (target) list.push({ kind: 'life', id: 'story:' + id, ...target });
     }
     // a level's doors, flights, escalators and lifts where the player stands
     if (this.level) for (const t of levelHints(this.level, this.p, this.zh.model)) list.push({ kind: 'level', ...t });
@@ -1085,6 +1080,25 @@ export class Game {
   }
 
   private nearest(): Target | null { return nearestPrompt(this.targets(), this.p); }
+
+  /** What the HUD's hint lane drew last (the probe reads it; nothing else does). */
+  private hudHint = '';
+  /** `?probe` / `?sudo`: a read-only snapshot of the story for scripts (scripts/opening-playthrough). It writes nothing and advances nothing. */
+  private probeFrame() {
+    const t = this.nearest(), b = this.bubble;
+    return {
+      here: this.here, phase: this.story, flags: { ...this.save.flags },
+      clock: { day: city.day, min: Math.round(city.min * 100) / 100, text: city.text, pinned: city.pinned },
+      title: !!this.opening, glide: !!this.opening?.gliding, menu: this.menu.open, cut: !!this.cut, end: this.showEnd, map: !!this.mapView,
+      bubble: b ? { name: b.name, text: b.pages[b.page], page: b.page, pages: b.pages.length, full: b.chars >= b.pages[b.page].length } : null,
+      prompt: t ? { kind: t.kind, id: t.id, label: t.label, x: Math.round(t.x) } : null,
+      targets: this.targets().map(z => ({ kind: z.kind, id: z.id, label: z.label, x: Math.round(z.x) })),
+      hint: this.hudHint, goal: this.goalText(), popup: this.zh.popupOpen, acknowledging: this.zh.acknowledgmentText ?? null,
+      gate: this.probeGate(), card: this.probeCard(),
+      player: { x: Math.round(this.p.x * 10) / 10, y: Math.round(this.p.y * 10) / 10 },
+      term: (this.term.out.textContent ?? '').slice(-700),
+    };
+  }
 
   private say(name: string, pages: string[], x: number, h: number) {
     if(!pages.length)return;
@@ -1120,8 +1134,8 @@ export class Game {
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
       // the opening: a scene's own way out (the flat's door) may say something else in this state
-      const rule = pick(this.openingStory.OPENING_EXITS, this.story, this.here, target.id);
-      if (rule && this.storyExit(rule, target.x, () => {},undefined,target.id)) return;
+      const rule = this.def.phases?.[this.story]?.exits?.[target.id];
+      if (rule && this.storyExit(rule, target.x, null, undefined, target.id)) return;
     }
     if (target.kind === 'device') { const out = this.zh.use(target.id), e = out ? this.def.exits.find((z) => z.id === out) : undefined; if (e) this.useExit(e); return; }
     if (target.kind === 'companion') { const pet=this.def.companion?.pet;if(!pet)return;const conversation=new ConversationSession(this.gameplayFor(this.here)!,this.companionBody.pet(pet)),frame=conversation.frame();sound.blip();if(frame.choices?.length){this.zh.presentConversation(conversation);}else{conversation.close();this.say(frame.speaker,frame.pages,this.companionBody.x,this.companionBody.h+14);this.dialogueCompletion(frame.completion);}return; }
@@ -1190,9 +1204,9 @@ export class Game {
     if (this.companionPresent) this.companionBody.update(dt, { px: p.x, face: p.face, moving: p.moving, follow: this.companionDoc.follow, perch: this.def.perch?.(this.zh.model) ?? null, warm: this.def.companion?.warm });
     this.host.setNodes(nodeCount(this.save));
     // the opening's idle ping: standing still a while, the next goal's target pings (opening.ts)
-    const aim = this.shiftGuidance ? null : pick(this.openingStory.OPENING_PINGS, this.story, this.here);
+    const aim = this.shiftGuidance ? null : this.def.phases?.[this.story]?.ping ?? null;
     if (!aim || locked || p.moving || !p.onGround || this.bubble || this.zh.popupOpen) this.still = this.clock;
-    else if (this.clock - this.still > this.openingStory.IDLE_PING) { this.still = this.clock; this.pingGoal(aim); }
+    else if (attentionDue(this.clock, this.still, this.openingStory.ATTENTION.after)) { this.still = this.clock; this.pingGoal(aim); }
   }
 
   /** The companion is drawn at home (`companion.mode: home`), and where it follows you (`along`) once its flag is set (companion-source.ts). */
@@ -1266,7 +1280,7 @@ export class Game {
    */
   private weatherOf(scene: string): Weather {
     const w = weatherNow(sceneClimate(scene));
-    if (!this.openingStory.isBefore(this.save.flags) || (w.rain < 0.01 && w.storm < 0.01)) return w;
+    if (!this.openingStory.persona(this.save.flags)?.calmWeather || (w.rain < 0.01 && w.storm < 0.01)) return w;
     return { ...w, kind: w.kind === 'rain' || w.kind === 'storm' ? 'cloudy' : w.kind, rain: 0, storm: 0, wet: Math.min(w.wet, 0.4), wind: Math.min(w.wind, 0.3) };
   }
   private weatherHere() { return this.weatherOf(this.here); }
@@ -1530,7 +1544,7 @@ export class Game {
     this.bubbleBox = { x: bx, y: by, w, h };
     x.fillStyle = '#000'; x.fillRect(bx, by, w, h);
     x.strokeStyle = '#fff'; x.lineWidth = 2; x.strokeRect(bx + 1, by + 1, w - 2, h - 2); x.lineWidth = 1;
-    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (playProfile().player.name !== undefined || this.openingStory.isBefore(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
+    x.fillStyle = b.name === 'YOU' ? '#7ff' : '#ffd9a5'; x.fillText(b.name !== 'YOU' ? b.name : (playProfile().player.name !== undefined || this.openingStory.persona(this.save.flags)) ? 'YOU' : who(this.save).toUpperCase(), bx + 10, by + 15);
     x.fillStyle = '#fff'; shownLines.forEach((l, i) => x.fillText(l, bx + 10, by + 30 + i * 13));
     if (b.chars >= full.length && Math.floor(this.t / 20) % 2) {
       x.beginPath(); x.moveTo(bx + w - 16, by + h - 10); x.lineTo(bx + w - 8, by + h - 10); x.lineTo(bx + w - 12, by + h - 5); x.closePath(); x.fill();
@@ -1555,6 +1569,7 @@ export class Game {
     }
     // the hint lane (ui/hints.ts): one line at a time, on a dark strip so it reads over any scene
     const hint = this.hints.step(this.hints.notices.time,this.communicationCovered||!!this.bubble||!!this.zh.popupOpen||this.zh.acknowledgmentPending);
+    this.hudHint = hint?.text ?? '';
     if (hint) {
       y += 11;
       x.fillStyle = 'rgba(0,0,0,' + 0.6 * hint.alpha + ')'; x.fillRect(6, y - 8, x.measureText(hint.text).width + 4, 11);
@@ -1562,7 +1577,7 @@ export class Game {
     }
     // the scene's goal, where it has goals (a scene without a data file has none)
     // (the opening has its own: opening.ts)
-    const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()) ?? pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? this.libraryGoal();
+    const zh = this.zh.model.data.goals.length ? this.zh : null, story = this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()) ?? this.def.phases?.[this.story]?.goal ?? this.libraryGoal();
     if (story || zh) {
       y += 11;
       if (this.shiftGuidance) this.shiftGuidance.draw(x, this.viewW, this.viewH, y);
@@ -1590,7 +1605,7 @@ export class Game {
   /** The current goal as the HUD shows it (the scene's, the opening's, the library's, or the data's next). */
   private goalText(): string | null {
     const zh = this.zh.model.data.goals.length ? this.zh : null;
-    return this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()) ?? pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
+    return this.def.objective?.(this.save.flags,this.gameplayFor(this.here)?.state()) ?? this.def.phases?.[this.story]?.goal ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
   }
 
   /** What the deck's JOBS, CARRY, CONTROLS (and TERM on touch) tabs read (ui/menu.ts). */
@@ -1668,66 +1683,68 @@ export class Game {
     x.fillStyle = 'rgba(0,0,0,.78)'; x.fillRect(0, 0, this.viewW, this.viewH);
     x.textAlign = 'center';
     x.font = '600 16px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,136,0,.95)'; x.shadowColor = 'rgba(255,136,0,.8)'; x.shadowBlur = 10;
-    x.fillText('END OF TRANSMISSION', cx, cy);
+    const card = endCardText(this.endCard, { controlled: this.save.controlled.length, handle: who(this.save) });
+    x.fillText(card.title, cx, cy);
     x.shadowBlur = 0; x.font = '10px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,.9)';
-    x.fillText('Downtown cleared. Nodes that answer to you: ' + this.save.controlled.length + '. You are still a ghost, ' + who(this.save) + '.', cx, cy + 26);
-    x.fillText('The Neon Market gate stands open at the west end. Your progress is saved in this browser.', cx, cy + 42);
-    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText('ENTER keep exploring · ESC menu', cx, cy + 66);
+    card.lines.forEach((l, i) => x.fillText(l, cx, cy + 26 + 16 * i));
+    x.fillStyle = 'rgba(0,255,255,.9)'; x.fillText(card.prompt, cx, cy + 34 + 16 * card.lines.length);
     x.restore();
   }
 
   // ---------- the opening (opening.ts) ----------
-  // The train home, the turnstile, Downtown before, the flat at dawn, the sleep, the morning you
-  // are deleted, Moth's uplink.so. The scenes are the usual ones; the save's flags pick their state.
+  // The opening is story data (story/opening.json) plus each scene's `phases` (scene.json): the save's flags pick the phase
+  // (story/story-rules.ts holds the pure rules; this loop applies them: gates, cards, triggers, the clock pin, the attention ping).
 
   private get story(): OpeningState { return this.openingStory.openingState(this.save.flags); }
   /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
-  private get me() { const fixed = playProfile().player.name; if (fixed !== undefined) return fixed; return this.openingStory.isBefore(this.save.flags) ? this.openingStory.CONTROLLER.playerBefore : who(this.save); }
+  private get me() { const fixed = playProfile().player.name; if (fixed !== undefined) return fixed; return this.openingStory.persona(this.save.flags)?.name ?? who(this.save); }
   /** The city clock, after the scene's name in the HUD (" · 21:40"; the opening's times are its pins). */
   private get clockText() { return playProfile().chrome.minimalHud ? '' : ' · ' + city.text; }
 
-  /** When the player last moved or did something (clock frames), for the idle ping. */
+  /** When the player last moved or did something (clock frames), for the attention ping. */
   private still = 0;
-  /** Where the idle ping points when it is not a device (world x): the scene's 'goal' speaker. */
+  /** Where the attention ping points when it is not a device (world x): the scene's 'goal' speaker. */
   private goalAt: number | null = null;
-  /** The turnstile taking its time: when it started, and what happens once it says ok. */
-  private beat: { start: number; checkpoint: { x: number; h: number }; then: () => void } | null = null;
+  /** A checkpoint gate taking its time (story-rules.ts `GateRule`): when it started, where it stands, and where the player goes once it says ok. */
+  private beat: { start: number; checkpoint: { x: number; h: number }; gate: GateRule; go: { to: string; at?: string } | null } | null = null;
   /**
-   * Sleeping or waiting (the opening's sleep, or "wait until…" at a bench or the bed): when the
-   * fade started, its timings, the card (from, to, where), what happens in the dark (`mid`, once:
-   * `woke`) and once it is light again (`end`).
+   * A card transition (story-rules.ts `CardSpec`; the opening's sleep, or "wait until…" at a bench or the bed): when the fade started,
+   * the card (timings, the two clock readings, the label, and the cues that run in the dark `mid`, once: `woke`, and once it is light again `end`).
    */
-  private sleep: { start: number; woke: boolean; card: { out: number; card: number; in: number }; from: string; to: string; label: string; mid: () => void; end: () => void } | null = null;
-  /** The morning: when you woke, how many plain things failed, whether Moth has written (or is about to: the mail). */
-  private morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+  private sleep: { start: number; woke: boolean; card: CardSpec } | null = null;
+  /** The story's counters (story-rules.ts `applyCounter`): plain numbers named by the source (the morning's failed tries, when it last happened). The loop's own, cleared with the story's transitions. */
+  private counters: Record<string, number> = {};
   /** Scratch callbacks belong to this run; disposal never acknowledges or completes them. */
-  private cancelStoryTransitions(){this.hosts?.forEach(h=>h.cancelAcknowledgment?.('dismissed'));this.bubble=null;this.beat=null;this.sleep=null;this.pendingCut=null;this.morning={at:-1,tries:0,last:-1e9,sent:false,due:false};}
+  private cancelStoryTransitions(){this.hosts?.forEach(h=>h.cancelAcknowledgment?.('dismissed'));this.bubble=null;this.beat=null;this.sleep=null;this.pendingCut=null;this.counters={};}
 
 
   /** NEW GAME (until the glide lands) and a first launch: the opening, on the train home. */
   private startOpening(destination?: Handoff) {
     this.cancelStoryTransitions();
-    this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+    this.counters = {};
     if(!this.runOpeningWorkflow('home'))return;
     this.persistSave();
-    const target=destination??this.openingStory.CONTROLLER.start;this.handTo(target.scene,target.entrance);
+    const target=destination??this.openingStory.START.start;this.handTo(target.scene,target.entrance);
   }
 
-  /** Sudo's LEVELS: the opening from one of its points (opening.ts `OPENING_LEVELS`), the flat as on the first night. */
-  private openingFrom(flags: string[]) {
+  /** Sudo's LEVELS: the opening from one of its points (opening.json `OPENING_LEVELS`), its scenes started over. */
+  private openingFrom(level: { flags: string[]; reset?: string[]; end?: string }) {
     this.cancelStoryTransitions();
     for(const f of this.openingStory.OPENING_FLAGS)delete this.save.flags[f];
-    flags.forEach((f) => { this.save.flags[f] = true; });
-    this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
-    this.morning = { at: -1, tries: 0, last: -1e9, sent: false, due: false };
+    level.flags.forEach((f) => { this.save.flags[f] = true; });
+    for (const scene of level.reset ?? []) this.hostOf(scene as SceneId).reset();
+    this.counters = {};
     this.persistSave();
-    const to = this.openingStory.openingResumeDestination(this.save.flags) ?? this.openingStory.CONTROLLER.fallback;
+    const to = this.openingStory.openingResumeDestination(this.save.flags) ?? this.openingStory.START.fallback;
     this.handTo(to.scene,to.entrance);
-    if (this.story === 'deleted') this.wakeUp();
+    if (level.end) this.runCues(this.openingStory.CARDS[level.end].end ?? []);
   }
 
-  /** The train home: on its run into Downtown (from the harbor's closed stop), slow enough to talk to people on the way. */
-  private rideHome() { rideHome(this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model); }
+  /** A scripted ride (a scene phase's `ride`): send the scene's mover along its path, on the model's own tick. */
+  private runRide(scene: SceneId, ride: { mover: string; path: string }) {
+    const [device, noun] = ride.mover.split('.');
+    if (this.hostOf(scene).model.runPath(device, noun, ride.path) !== 'started') throw new Error('The mover ' + ride.mover + ' has no path ' + ride.path);
+  }
 
   /** The Train scene's movers: the ride lives there (world/transport/line.ts reads it). */
   private get ride() { return this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model.movers; }
@@ -1743,9 +1760,9 @@ export class Game {
     host.setPaused(this.enginesPaused);
   }
 
-  /** A device's everyday actions in this state (opening.ts `this.openingStory.OPENING_EVERYDAY`), as popup chips; null: its data's. */
+  /** A device's everyday actions in this state (its scene's `phases[phase].everyday`), as popup chips; null: its data's. */
   private storyChips(scene: SceneId, dev: string): PopupItem[] | null {
-    const chips = pick(this.openingStory.OPENING_EVERYDAY, this.story, scene, dev);
+    const chips = this.sceneDefinition(scene).phases?.[this.story]?.everyday?.[dev];
     if (!chips) return null;
     const zh = this.hostOf(scene);
     return chips.map((c) => ({
@@ -1754,61 +1771,98 @@ export class Game {
         if (c.act) zh.model.act(dev, c.act[0], c.act[1]);
         if (c.set) { zh.model.set(c.set[0], c.set[1]); zh.model.changed(); }
         if (c.say) {const receipt=zh.react(dev,c.say);if(c.say[2]==='ok')sound.feedback(receipt);}
-        if (c.fail) { this.morning.tries++; this.morning.last = this.clock; }
-        if (c.mail) { this.morning.due = true; this.morning.last = this.clock; }
+        if (c.cues) this.runCues(c.cues);
       },
     }));
   }
 
-  /** A way out that does something else in this state (opening.ts `ExitRule`); `go` leaves through it. False: use it as usual. */
-  private storyExit(rule: ExitRule, x: number, go: () => void, checkpoint?: SceneExit['checkpoint'],origin?:string): boolean {
+  /** A way out that does something else in this phase (story-rules.ts `ExitRule`); `go` is where the player ends up. False: use it as usual. */
+  private storyExit(rule: ExitRule, x: number, go: { to: string; at?: string } | null, checkpoint?: SceneExit['checkpoint'], origin?: string): boolean {
     if ('say' in rule) { this.say(rule.say.name, rule.say.pages, x, 60); return true; }
-    if ('react' in rule) { this.zh.react(rule.react, rule.line); if (rule.fail) { this.morning.tries++; this.morning.last = this.clock; } return true; }
-    if ('turnstile' in rule) {
-      // Downtown station's exit gate: one beat too long on "verifying", then ok. Nobody else waits.
+    if ('react' in rule) { this.zh.react(rule.react, rule.line); this.runCues(rule.cues ?? []); return true; }
+    if ('gate' in rule) {
+      // a checkpoint: one beat too long on "verifying", then ok. Nobody else waits.
       this.keys.clear();
-      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, then: () => { if(!this.runOpeningWorkflow('street'))return; this.persistSave(); go(); } };
-      sound.blip();
+      this.beat = { start: this.clock, checkpoint: { x: checkpoint?.x ?? x, h: checkpoint?.h ?? 0 }, gate: rule.gate, go };
+      this.runCues(rule.gate.begin ?? []);
       return true;
     }
-    // CONCIERGE at the tower's door: it knows you, and lets you up
-    if(!origin)throw Error('CONCIERGE acknowledgment requires its real scene anchor');
-    const scene=this.here,id='opening.concierge:'+origin;if(this.zh.acknowledgmentId===id)return true;
-    sound.granted();
-    this.zh.acknowledgeDevice({id,from:origin,...this.openingStory.CONTROLLER.concierge,tone:'ok'},()=>{if(this.here!==scene)return;if(!this.runOpeningWorkflow('flat'))return;this.persistSave();go();});
+    // an acknowledgment: the device speaks (it knows you), the player continues, then the milestone runs and the way opens
+    if (!origin) throw Error('Device acknowledgment requires its real scene anchor');
+    const scene = this.here, ack = rule.acknowledge, id = 'opening.acknowledge:' + origin;
+    if (this.zh.acknowledgmentId === id) return true;
+    this.runCues(ack.begin ?? []);
+    this.zh.acknowledgeDevice({ id, from: origin, speaker: ack.speaker, pages: ack.pages, height: ack.height, tone: 'ok' }, () => { if (this.here !== scene) return; if (!this.runCues(ack.then)) return; this.finishExit(go); });
     return true;
   }
 
-  /** The story's clock, every frame: the turnstile's beat, the sleep, the morning's message, jacking in. */
-  private updateStory() {
-    if (this.beat && this.clock - this.beat.start >= this.openingStory.TURNSTILE.verify + this.openingStory.TURNSTILE.ok) {
-      const then = this.beat.then;
-      this.beat = null;
-      sound.granted();
-      then();
+  /** The gate or the acknowledgment is over: walk through the way out. */
+  private finishExit(go: { to: string; at?: string } | null) { if (go && this.hasScene(go.to)) this.travel(go.to, go.at); }
+
+  /**
+   * Run a cue list (story-rules.ts `Cue`) in order. A milestone the story refuses ends it (false). Says are spoken, chained, once the other
+   * cues have run. The save is written and the HUD refreshed when a milestone, a restaging or the clock moved.
+   */
+  private runCues(cues: readonly Cue[]): boolean {
+    const says: Say[] = []; let ok = true, changed = false;
+    for (const cue of cues) {
+      if ('milestone' in cue) { if (!this.runOpeningWorkflow(cue.milestone)) { ok = false; break; } changed = true; }
+      else if ('say' in cue) says.push(cue.say);
+      else if ('print' in cue) cue.print.lines.forEach((l) => this.term.print((cue.print.prefix ?? '') + l, cue.print.tone ?? 'out'));
+      else if ('sound' in cue) sound[cue.sound]();
+      else if ('stage' in cue) { this.restage(cue.stage); changed = true; }
+      else if ('counter' in cue) applyCounter(this.counters, cue.counter, this.clock);
+      else if ('advance' in cue) { city.advance(cue.advance); this.syncClock(true); changed = true; }
     }
-    if (this.sleep) {
-      const e = this.clock - this.sleep.start, S = this.sleep.card;
-      if (!this.sleep.woke && e >= S.out + S.card / 2) { this.sleep.woke = true; this.sleep.mid(); }
-      if (e >= S.out + S.card + S.in) { const end = this.sleep.end; this.sleep = null; end(); }
-      return;
-    }
-    const st = this.story;
-    if (st === 'deleted' && this.here === this.openingStory.CONTROLLER.home.scene) {
-      const m = this.morning;
-      if (m.at < 0) m.at = this.clock;
-      if (!m.sent && !this.bubble && !this.zh.popupOpen && this.clock - m.last > this.openingStory.MORNING.after && (m.due || m.tries >= this.openingStory.MORNING.tries || this.clock - m.at > this.openingStory.MORNING.wait)) this.mothWrites();
-    }
-    // jacked in to HOME-PC: Capsule 7B's own goals take over
-    if (st === 'uplinked' && this.here === this.openingStory.CONTROLLER.home.scene && this.zh.viewing === this.openingStory.CONTROLLER.home.jackDevice) { if(this.runOpeningWorkflow('jacked'))this.persistSave(); }
+    if (changed) { this.persistSave(); this.syncHud(); }
+    if (ok) this.sayChain(says);
+    return ok;
   }
 
-  /** [E] this.openingStory.SLEEP: the fade, the card, the morning. */
-  private sleepNow() {
+  /** A `stage` cue: the player in the scene at its spawn, the scene back at the start of its puzzles, the companion at home. */
+  private restage(s: { scene: string; reset?: true; face?: -1 | 1 }) {
+    const id = s.scene as SceneId;
+    if (this.here !== id) this.enter(id, false);
+    if (s.reset) this.hostOf(id).reset();
+    Object.assign(this.p, { x: this.sceneDefinition(id).spawn, y: 0, vy: 0, onGround: true, ...(s.face ? { face: s.face } : {}) });
+    const home = this.def.perch?.(this.zh.model);
+    if (home) this.companionBody.place(home.x, home.h, home.rest);
+  }
+
+  /** Speak these in turn: each opens when the one before has been read. */
+  private sayChain(says: readonly Say[]) {
+    const [first, ...rest] = says;
+    if (!first) return;
+    this.say(first.speaker, this.touch ? first.touchPages ?? first.pages : first.pages, this.p.x, first.height);
+    if (rest.length && this.bubble) this.bubble.then = () => this.sayChain(rest);
+  }
+
+  /** The story's clock, every frame: a checkpoint's beat, a card, the triggers (the morning's message, jacking in). */
+  private updateStory() {
+    const gate = this.beat;
+    if (gate && gateFrame(gate.gate, this.clock - gate.start).done) {
+      this.beat = null;
+      if (this.runCues(gate.gate.then)) this.finishExit(gate.go);
+    }
+    if (this.sleep) {
+      const card = this.sleep.card, f = cardFrame(card, this.clock - this.sleep.start);
+      if (!this.sleep.woke && f.mid) { this.sleep.woke = true; this.runCues(card.mid ?? []); }
+      if (f.done) { this.sleep = null; this.runCues(card.end ?? []); }
+      return;
+    }
+    const st = this.story, triggers = this.openingStory.TRIGGERS;
+    for (const key of triggerStarts(triggers, st, this.here, this.counters)) this.counters[key] = this.clock;
+    for (const t of triggers) {
+      if (triggerFires(t, { phase: st, scene: this.here, clock: this.clock, counters: this.counters, bubble: !!this.bubble, popup: this.zh.popupOpen, viewing: this.zh.viewing ?? null })) this.runCues(t.do);
+    }
+  }
+
+  /** A card transition begins (the opening's bed, or a wait): dark, the card, light again. */
+  private startCard(card: CardSpec, closeAll: boolean) {
     this.keys.clear();
     this.bubble = null;
-    this.zh.closeAll();
-    this.sleep = { start: this.clock, woke: false, card: this.openingStory.SLEEP, from: this.openingStory.SLEEP.from, to: this.openingStory.SLEEP.to, label: this.openingStory.CONTROLLER.sleep.label, mid: () => this.morningFlat(), end: () => this.wakeUp() };
+    if (closeAll) this.zh.closeAll();
+    this.sleep = { start: this.clock, woke: false, card };
     sound.close();
   }
 
@@ -1819,7 +1873,7 @@ export class Game {
   /** The footer's timestamp in game mode (DAY 3 · 21:40), and what it and the HUD showed last. */
   private stampEl: HTMLElement;
   private shownClock = '';
-  /** The opening holds the clock (opening.ts this.openingStory.OPENING_TIME); true while it does. */
+  /** The story holds the clock (a phase's `time` in each scene's `phases`); true while it does. */
   private storyPinned = false;
   /** When the save was last written for the clock's sake (clock frames). */
   private clockSaved = 0;
@@ -1835,7 +1889,7 @@ export class Game {
   }
 
   /**
-   * The opening pins the clock to its times (opening.ts this.openingStory.OPENING_TIME: the train 05:41 … the
+   * The story pins the clock to its times (each scene's `phases[phase].time`: the train 05:41 … the
    * morning after 09:40) from the train home until Moth's uplink.so; then it runs, from 09:42.
    */
   private pinStory() {
@@ -1848,15 +1902,15 @@ export class Game {
       if (city.pinned !== at) city.pin(at);
       return;
     }
-    const st = this.story;
-    if (this.openingStory.isPinned(this.save.flags)) {
-      const at = parseHM(pick(this.openingStory.OPENING_TIME, st, this.here) ?? '');
-      if (at !== null) { if (city.pinned !== at) city.pin(at); }
+    const st = this.story, release = this.openingStory.CLOCK.release;
+    const pin = clockPin({ pinned: this.openingStory.isPinned(this.save.flags), minute: parseHM(this.def.phases?.[st]?.time ?? ''), wasPinned: this.storyPinned, releaseMinute: parseHM(this.sceneDefinition(release.scene as SceneId).phases?.[release.phase]?.time ?? '') });
+    if (pin.kind === 'hold') {
+      if (pin.minute !== null) { if (city.pinned !== pin.minute) city.pin(pin.minute); }
       else if (city.pinned === null) city.pin(Math.floor(city.min));
       this.storyPinned = true;
-    } else if (this.storyPinned) {
+    } else if (pin.kind === 'release') {
       this.storyPinned = false;
-      city.release(parseHM(pick(this.openingStory.OPENING_TIME,this.openingStory.CONTROLLER.releaseClock.phase,this.openingStory.CONTROLLER.releaseClock.scene) ?? '') ?? undefined);
+      city.release(pin.minute ?? undefined);
       this.persistSave();
     }
   }
@@ -1884,73 +1938,36 @@ export class Game {
   private waitUntil(w: WaitTo, r: SceneRest) {
     if (city.pinned !== null) return;
     const minutes = city.waitFor(w), from = city.text, to = city.min + minutes;
-    this.keys.clear();
-    this.bubble = null;
     const label = (r.kind === 'bed' ? 'SLEEPING · ' : 'WAITING · ') + this.placeName.toUpperCase();
-    this.sleep = { start: this.clock, woke: false, card: WAIT_CARD, from, to: hmOf(to), label, mid: () => { city.advance(minutes); this.syncClock(true); this.persistSave(); }, end: () => {} };
-    sound.close();
+    this.startCard({ ...WAIT_CARD, from, to: hmOf(to), label, mid: [{ advance: minutes }] }, false);
   }
 
-  /** In the dark between the two flats: the flat as it is the morning after (Capsule 7B's puzzles from the start), you by the bed. */
-  private morningFlat() {
-    if(!this.runOpeningWorkflow('slept'))return;
-    if(this.here!==this.openingStory.CONTROLLER.home.scene)this.enter(this.openingStory.CONTROLLER.home.scene as SceneId,false);
-    this.hostOf(this.openingStory.CONTROLLER.home.scene as SceneId).reset();
-    this.morning = { at: this.clock, tries: 0, last: -1e9, sent: false, due: false };
-    Object.assign(this.p, { x: this.sceneDefinition(this.openingStory.CONTROLLER.home.scene as SceneId).spawn, y: 0, vy: 0, onGround: true, face: -1 });
-    const home = this.def.perch?.(this.zh.model);
-    if (home) this.companionBody.place(home.x, home.h, home.rest);
-    this.persistSave();
-    this.syncHud();
-  }
-
-  /** Awake: the player says what is wrong (the morning's clock starts). */
-  private wakeUp() {
-    this.morning.at = this.clock;
-    this.say(this.openingStory.CONTROLLER.wake.speaker,this.openingStory.WAKE_LINES,this.p.x,this.openingStory.CONTROLLER.wake.height);
-  }
-
-  /** Moth's message: in the deck, as a bubble, and uplink.so with it (hacking is yours from now on). */
-  private mothWrites() {
-    if(!this.runOpeningWorkflow('uplink'))return;
-    this.morning.sent = true;
-    this.openingStory.MOTH_MESSAGE.forEach((l) => this.term.print(this.openingStory.CONTROLLER.moth.terminalPrefix + l, 'ok'));
-    this.persistSave();
-    this.syncHud();
-    this.term.print(this.openingStory.CONTROLLER.uplink.received, 'ok');
-    sound.granted();
-    this.say(this.openingStory.CONTROLLER.moth.speaker,this.openingStory.MOTH_MESSAGE,this.p.x,this.openingStory.CONTROLLER.moth.height);
-    this.bubble!.then = () => this.say(this.openingStory.CONTROLLER.uplink.speaker,this.openingStory.UPLINK_LINES(this.touch),this.p.x,this.openingStory.CONTROLLER.uplink.height);
-  }
-
-  /** The idle ping: the next goal's target (opening.ts `this.openingStory.OPENING_PINGS`): a device, or a point (a door, an exit, the bed). */
+  /** The attention ping: the next goal's target (the phase's `ping`): a device, or a point (a door, an exit, a story target such as the bed). */
   private pingGoal(t: PingTarget) {
-    if ('device' in t) { this.zh.ping(t.device, 'look'); return; }
-    let x: number | undefined;
-    if ('door' in t) x = this.def.exits.filter((e) => e.action === 'out').map((e) => e.x).sort((a, b) => Math.abs(a - this.p.x) - Math.abs(b - this.p.x))[0];
-    else if ('exit' in t) x = this.def.exits.find((e) => e.id === t.exit)?.x;
-    else {const target=pick(this.openingStory.OPENING_TARGETS,this.story,this.here,t.story);x=target?this.openingStory.resolveTarget(target,this.def)?.x:undefined;}
-    if (x === undefined) return;
-    this.goalAt = x;
+    const aim = attentionAim(t, this.def, this.p.x, (id) => { const target = this.def.phases?.[this.story]?.targets?.[id]; return target ? this.openingStory.resolveTarget(target, this.def)?.x : undefined; });
+    if (!aim) return;
+    if ('device' in aim) { this.zh.ping(aim.device, 'look'); return; }
+    this.goalAt = aim.x;
     this.zh.ping('goal', 'look');
   }
 
-  /** The flat's light: warm at dawn, cold the morning after (until the door is yours again). Under the player, over the room. */
+  /** The room's light cue (the scene's `wash` rules): under the player, over the room. */
   private drawLight() {
-    if (this.here !== this.openingStory.CONTROLLER.home.scene || this.zh.visionOn) return;
-    const f = this.save.flags;
-    const tone = this.story === 'flat' ? 'warm' : f[this.openingStory.OPENING.slept] && !this.zh.model.get(this.zh.model.data.controller?.kind==='capsule'?capsuleController(this.zh.model.data).state.doorOpen:'doorOpen') ? 'cold' : null;
+    if (this.zh.visionOn) return;
+    const tone = washTone(this.def.wash, { phase: this.story, flags: this.save.flags, state: (key) => this.zh.model.get(key) });
     if (tone) drawCapsuleWash(this.x, this.viewW, this.viewH, tone);
   }
 
-  /** The turnstile verifying, over the gate: dots, one beat too long, then ok. */
+  /** The probe's view of the gate's line and the card's stage. */
+  private probeGate() { return this.beat ? gateFrame(this.beat.gate, this.clock - this.beat.start).bare : null; }
+  private probeCard() { if (!this.sleep) return null; const f = cardFrame(this.sleep.card, this.clock - this.sleep.start); return { stage: f.stage, text: f.reading === 'from' ? this.sleep.card.from : this.sleep.card.to, label: this.sleep.card.label }; }
+
+  /** The checkpoint gate, over the gate: dots, one beat too long, then ok. */
   private drawBeat() {
     if (!this.beat) return;
-    const x = this.x, e = this.clock - this.beat.start, ok = e >= this.openingStory.TURNSTILE.verify;
-    const dots = '.'.repeat(1 + (Math.floor(e / this.openingStory.CONTROLLER.turnstile.dotEvery) % 3)).padEnd(3, ' ');
-    const line = ok ? this.openingStory.CONTROLLER.turnstile.ok : this.openingStory.CONTROLLER.turnstile.verifying + dots;
+    const x = this.x, g = gateFrame(this.beat.gate, this.clock - this.beat.start), ok = g.ok, line = g.text;
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'left'; x.textBaseline = 'middle';
-    const w = x.measureText(this.openingStory.CONTROLLER.turnstile.ok).width + 16, cx = Math.max(w / 2 + 4, Math.min(this.viewW - w / 2 - 4, this.sx(this.beat.checkpoint.x)));
+    const w = x.measureText(this.beat.gate.ok).width + 16, cx = Math.max(w / 2 + 4, Math.min(this.viewW - w / 2 - 4, this.sx(this.beat.checkpoint.x)));
     const top = this.y(96 + this.beat.checkpoint.h), gate = this.y(36 + this.beat.checkpoint.h);
     x.fillStyle = 'rgba(0,0,0,.85)'; x.fillRect(cx - w / 2, top, w, 20);
     x.strokeStyle = ok ? 'rgba(34,197,94,.8)' : 'rgba(255,217,165,.45)'; x.strokeRect(cx - w / 2 + 0.5, top + 0.5, w - 1, 19);
@@ -1959,19 +1976,17 @@ export class Game {
     x.restore();
   }
 
-  /** The sleep or a wait: dark, a card with the clock (06:04, then 09:40; now, then later), light again. */
+  /** A card transition (the sleep or a wait): dark, a card with the clock (06:04, then 09:40; now, then later), light again. */
   private drawSleep() {
     if (!this.sleep) return;
-    const x = this.x, e = this.clock - this.sleep.start, S = this.sleep.card;
-    const a = e < S.out ? e / S.out : e < S.out + S.card ? 1 : Math.max(0, 1 - (e - S.out - S.card) / S.in);
-    x.fillStyle = 'rgba(0,0,0,' + a + ')'; x.fillRect(0, 0, this.viewW, this.viewH);
-    if (e < S.out || e > S.out + S.card) return;
-    const f = (e - S.out) / S.card, fade = Math.min(1, Math.min(f, 1 - f) * 6);
+    const x = this.x, card = this.sleep.card, f = cardFrame(card, this.clock - this.sleep.start);
+    x.fillStyle = 'rgba(0,0,0,' + f.dark + ')'; x.fillRect(0, 0, this.viewW, this.viewH);
+    if (!f.showing) return;
     x.save(); x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.font = '600 18px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,136,0,' + 0.95 * fade + ')';
-    x.fillText(f < 0.5 ? this.sleep.from : this.sleep.to, this.viewW / 2, this.viewH / 2 - 6);
-    x.font = '8px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,' + 0.7 * fade + ')';
-    x.fillText(this.sleep.label, this.viewW / 2, this.viewH / 2 + 14);
+    x.font = '600 18px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,136,0,' + 0.95 * f.fade + ')';
+    x.fillText(f.reading === 'from' ? card.from : card.to, this.viewW / 2, this.viewH / 2 - 6);
+    x.font = '8px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(255,217,165,' + 0.7 * f.fade + ')';
+    x.fillText(card.label, this.viewW / 2, this.viewH / 2 + 14);
     x.restore();
   }
 
@@ -1988,9 +2003,9 @@ export class Game {
    * unread until `msg <contact>` in the deck.
    */
   private inbox() {
-    const news=unread(this.save.flags);if(!news.length)return;
-    const who=[...new Set(news.map(n=>n.contact))],source=this.openingStory.CONTROLLER.inbox,t=source.terminal;
-    who.forEach(c=>this.term.print(t.prefix+c.name+t.separator+c.status+t.separator+messagesOf(c,this.save.flags).length+t.countSuffix+t.commandPrefix+c.id,'ok'));
+    const contacts=this.contacts,news=contacts.unread(this.save.flags);if(!news.length)return;
+    const who=[...new Set(news.map(n=>n.contact))],source=contacts.INBOX.announce,t=contacts.INBOX.terminal;
+    who.forEach(c=>this.term.print(t.prefix+c.name+t.separator+c.status+t.separator+contacts.messagesOf(c,this.save.flags).length+t.countSuffix+t.commandPrefix+c.id,'ok'));
     if(who.some(c=>c.id===source.contact))this.say(source.speaker,this.touch?source.touchPages:source.pages,this.p.x,source.height);
   }
 
@@ -2051,7 +2066,7 @@ export class Game {
     this.endTitle();
     this.bubble = null;
     const opening = this.openingStory.openingLevel(id);
-    if (opening) { this.openingFrom(opening.flags); return; }
+    if (opening) { this.openingFrom(opening); return; }
     if (isCutsceneId(id)) { this.playCutscene(id); return; }
     this.handTo(startLevel(id,{board:(station,left)=>boardRide(this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model,station,left)}) ?? id);
     this.markSeen(this.here);
@@ -2117,10 +2132,10 @@ export class Game {
   /** E next to a scene's exit or something of its life (`kind:id`, as `exitTargets` and `lifeTargets` make them). */
   private useLife(target: string) {
     const s = this.def, [kind, id] = target.split(':');
-    if (kind === 'story') { if (id === this.openingStory.CONTROLLER.sleep.target) this.sleepNow(); return; }
+    if (kind === 'story') { const card = s.phases?.[this.story]?.targets?.[id]?.card; if (card) this.startCard(this.openingStory.CARDS[card], true); return; }
     if (kind === 'rest') { const r = s.rests?.find((z) => z.id === id); if (r) this.offerWait(r); return; }
     if (kind === 'read') {
-      const r = s.readables!.find((z) => z.id === id)!, o = pick(this.openingStory.OPENING_LINES, this.story, this.here, id);
+      const r = s.readables!.find((z) => z.id === id)!, o = s.phases?.[this.story]?.lines?.[id];
       this.say(o?.name ?? r.name, o?.pages ?? r.pages, r.x, r.h ?? 70);
       return;
     }
@@ -2172,7 +2187,7 @@ export class Game {
   /** Run a use (or what it does with something you carry), say what comes of it, write the save. */
   private runUse(u: SceneUse, fn: (c: UseCtx) => SceneSaid) {
     const save = this.save;
-    const opening=pick(this.openingStory.OPENING_LINES,this.story,this.here,u.id);
+    const opening=this.def.phases?.[this.story]?.lines?.[u.id];
     if(opening){this.say(opening.name??'YOU',opening.pages,u.x,u.h??60);return;}
     const gameplay=this.gameplayFor(this.here),tokensBefore=save.tokens;
     const permission=u.eligibility?.(save.flags,gameplay);if(permission&&!permission.ok){this.zh.react('use:'+u.id,['',permission.reason,'err']);return;}
@@ -2204,9 +2219,9 @@ export class Game {
 
   /** Leave through an exit: board, step out, hail a taxi, look at the map, or walk to its scene, landing at its matching exit there. */
   private useExit(e: SceneExit) {
-    // the opening: some ways out do something else in this state (the turnstile, CONCIERGE, "bed first")
-    const rule = pick(this.openingStory.OPENING_EXITS, this.story, this.here, e.id);
-    if (rule && this.storyExit(rule, e.x, () => { if (this.hasScene(e.to)) this.travel(e.to, e.at); }, e.checkpoint,'exit:'+e.id)) return;
+    // the story: some ways out do something else in this phase (a checkpoint, an acknowledgment, "bed first")
+    const rule = this.def.phases?.[this.story]?.exits?.[e.id];
+    if (rule && this.storyExit(rule, e.x, { to: e.to, at: e.at }, e.checkpoint,'exit:'+e.id)) return;
     // a door that reads key chips (Moth's building): only the right one opens it
     if (e.needs && !exitPermission(e,this.save.keyring).ok) { this.zh.react('exit:'+e.id,['',e.needs.pages.join('\n'),'err']); return; }
     if (e.action === 'board') { const st = this.world.stationAt(this.here); if (st && this.metro.platformOpen(st, this.platformTime)) this.enterTrain(st); return; }
@@ -2367,7 +2382,7 @@ export class Game {
 
   /** Quick travel to a place you know, from the map: no fare, a short fade; or say why not. */
   private quickTravel(place: MapPlace) {
-    if (this.hackLocked()) { this.flash('not now: ' + (pick(this.openingStory.OPENING_GOAL, this.story, this.here) ?? 'later')); sound.denied(); return; }
+    if (this.hackLocked()) { this.flash('not now: ' + (this.def.phases?.[this.story]?.goal ?? 'later')); sound.denied(); return; }
     const why = this.world.placeBlocked(place, this.mapState());
     if (why) { this.flash(why.toLowerCase()); sound.denied(); return; }
     this.mapView = null;
@@ -2533,12 +2548,11 @@ export class Game {
 
   /** The GOAL after Capsule 7B, until scan.so is yours: the library (Act I: Capsule 7B → the library → Downtown). */
   private libraryGoal(): string | null {
-    const source=this.openingStory.CONTROLLER.libraryGuidance;
-    if(this.save.programs.includes(source.program)||this.here===source.destinationScene||this.hackLocked())return null;
-    const complete=this.hosts.get(source.completedScene as SceneId)?.model.goals??new Set(this.save.scenes[source.completedScene]?.goals??[]);
-    if(!complete.has(source.completedGoal))return null;
-    if(this.here===source.completedScene&&this.zh.model.data.goals.some(g=>!complete.has(g.id)))return null;
-    return source.line;
+    return goalHint(this.openingStory.GOAL_HINTS, {
+      hackLocked: this.hackLocked(), scene: this.here, programs: this.save.programs,
+      goalsDone: (scene) => this.hosts.get(scene as SceneId)?.model.goals ?? new Set(this.save.scenes[scene]?.goals ?? []),
+      goalsLeft: () => this.zh.model.data.goals.some((g) => !this.zh.model.goals.has(g.id)),
+    });
   }
 
   /** The city map when it is open, and the fade of a quick trip (dark in the middle, with where you are going). */

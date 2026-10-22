@@ -12,6 +12,10 @@ uses the catalogue rather than a new TypeScript registry entry. New artwork and 
 calculations may require registered code primitives. Public editing downloads bundles; only
 the local source service writes validated repository files.
 
+The opening no longer has its own controller: its phases, checkpoint gate, sleep card, morning trigger, clock pins, attention ping and light cue are
+story data (opening.json, each scene's `phases`) applied by the one game loop through pure rules (story/story-rules.ts), so the milestone 3
+timeline (shift, commute, home) can be authored without new loop code. Contacts and the END card are documents too.
+
 ENG-01 through ENG-05, ENG-08 and ENG-09 consolidation is implemented across the existing game.
 ENG-06 measurement tools are available; no optimization is implied. ENG-07 remote identity/reach
 and future body/remote-presence mechanics remain future work. Completed engineering migration
