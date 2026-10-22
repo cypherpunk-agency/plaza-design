@@ -402,12 +402,14 @@ export function levelView(lv: Level, m: MoverModel): LevelView {
 
 /**
  * The renderer's inputs for a level with nobody inside (editor preview): buildings shut, or all open; lifts at the bottom,
- * buttons dark. Rooms: all open for authoring, or (`at`: a floor id) as a player standing on that floor sees them.
+ * buttons dark. Rooms: all open for authoring, or (`at`: floor ids, comma-separated, the last where the player stands)
+ * as the player sees them after that path: rooms that remember stay open on the way, rooms that close only where they stand.
  */
 export function restingLevelView(source: LevelSource, inside: boolean, at?: string): LevelView {
   const buttons = Object.fromEntries(source.lifts.flatMap(l => (l.buttons ?? []).map(b => [b.id, 0])));
-  const f = at ? source.floors.find(o => o.id === at) : undefined;
-  const rooms = source.rooms && Object.fromEntries(source.rooms.map(r => [r.id, !f || (r.reveal === 'arrival' && (!r.building || r.building === f.building) && f.x < r.x + r.w && f.x + f.w > r.x && f.h >= r.h - 2 && f.h < r.h + r.tall - 2) ? 1 : 0]));
+  const path = (at ?? '').split(',').map(id => source.floors.find(o => o.id === id.trim())).filter((o): o is LevelFloor => !!o), f = path[path.length - 1];
+  const holds = (r: LevelRoom, o: LevelFloor) => r.reveal === 'arrival' && (!r.building || r.building === o.building) && o.x < r.x + r.w && o.x + o.w > r.x && o.h >= r.h - 2 && o.h < r.h + r.tall - 2;
+  const rooms = source.rooms && Object.fromEntries(source.rooms.map(r => [r.id, !f || holds(r, f) || (r.keep === 'remember' && path.some(o => holds(r, o))) ? 1 : 0]));
   const open = inside || !!f?.building;
   return { reveal: Object.fromEntries(Object.keys({ ...source.shells, ...source.interiors }).map(b => [b, open && (!f || f.building === b) ? 1 : 0])), lifts: Object.fromEntries(source.lifts.map(l => [l.id, { car: (l.stops[0]?.h ?? l.bottom) - l.bottom, doors: 0 }])), ...(Object.keys(buttons).length ? { buttons } : {}), ...(rooms ? { rooms } : {}) };
 }

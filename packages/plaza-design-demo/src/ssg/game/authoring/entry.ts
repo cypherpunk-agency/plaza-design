@@ -320,7 +320,7 @@ async function start() {
       { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS], quick: true },
       { key: 'hack', label: 'Hack vision', kind: 'boolean', quick: true, shortcut: 'h' },
       { key: 'inside', label: 'Inside buildings', kind: 'boolean', quick: true, shortcut: 'i' },
-      { key: 'roomsAt', label: 'Rooms as the player sees them from floor (floor id; empty: every room open)', kind: 'text' },
+      { key: 'roomsAt', label: 'Rooms as the player sees them (floor ids walked, comma-separated, the last where they stand; empty: every room open)', kind: 'text' },
       { key: 'minute', label: 'City minute', kind: 'number', min: 0, max: 1439, step: 10 }, { key: 'day', label: 'City day', kind: 'number', min: 1, step: 1 },
       { key: 'seed', label: 'Weather seed', kind: 'number', min: 0, step: 1 }, { key: 'hover', label: 'Hovered device id', kind: 'text' },
 
