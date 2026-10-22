@@ -1,0 +1,572 @@
+{
+  "version": 1,
+  "scene": "oldq-church-yard",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "roofs-far",
+      "type": "building.row",
+      "props": {
+        "form": "roofs",
+        "width": 1800,
+        "seed": 81,
+        "parallax": 0.2,
+        "minHeight": 40,
+        "maxHeight": 80,
+        "haze": 0.75,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "roofs-near",
+      "type": "building.row",
+      "props": {
+        "form": "roofs",
+        "width": 1700,
+        "seed": 33,
+        "parallax": 0.45,
+        "minHeight": 50,
+        "maxHeight": 100,
+        "haze": 0.45,
+        "lit": 0.35
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.8,
+        "fill": "#0a0812",
+        "edge": 0.06,
+        "traffic": false
+      },
+      "placement": {
+        "x": 1000,
+        "h": 30,
+        "parallax": 0.1
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "house-0",
+      "type": "building.shophouse",
+      "props": {
+        "width": 92,
+        "floors": 1,
+        "seed": 601,
+        "goods": "tea",
+        "board": "TEA",
+        "lanterns": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-1",
+      "type": "building.shophouse",
+      "props": {
+        "width": 104,
+        "floors": 2,
+        "seed": 602,
+        "goods": "home",
+        "board": "",
+        "lanterns": 0,
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 92,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-2",
+      "type": "building.shophouse",
+      "props": {
+        "width": 104,
+        "floors": 1,
+        "seed": 603,
+        "goods": "lanterns",
+        "board": "LANTERNS",
+        "lanterns": 2
+      },
+      "placement": {
+        "x": 196,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "church",
+      "type": "landmark.church-front",
+      "props": {
+        "width": 340,
+        "towers": 280,
+        "gable": 200,
+        "steps": 3,
+        "open": 0.6,
+        "inside": 1,
+        "letters": "ST. AGNES",
+        "notice": "MASS 6 AND 9",
+        "statues": true,
+        "damp": 0.8,
+        "seed": 3
+      },
+      "placement": {
+        "x": 460,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "banyan",
+      "type": "environment.oldq-tree",
+      "props": {
+        "kind": "banyan",
+        "height": 190,
+        "spread": 150,
+        "blossom": 0,
+        "sway": 0.4,
+        "lanterns": 3,
+        "seed": 4
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "grotto",
+      "type": "environment.grotto",
+      "props": {
+        "width": 60,
+        "height": 64,
+        "candles": 8,
+        "lit": 0.8,
+        "flowers": true,
+        "plaque": "",
+        "seed": 5
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "frangipani",
+      "type": "environment.oldq-tree",
+      "props": {
+        "kind": "frangipani",
+        "height": 120,
+        "spread": 100,
+        "leaves": "#1e2c14",
+        "blossom": 0.8,
+        "sway": 0.3,
+        "lanterns": 0,
+        "seed": 6
+      },
+      "placement": {
+        "x": 820,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "graves",
+      "type": "environment.graves",
+      "props": {
+        "count": 4,
+        "spacing": 34,
+        "kinds": "mixed",
+        "candles": true,
+        "flowers": true,
+        "moss": 0.5,
+        "seed": 7
+      },
+      "placement": {
+        "x": 812,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "praying",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 966,
+        "archetype": "elder",
+        "act": "stand",
+        "hair": "scarf"
+      },
+      "placement": {
+        "x": 404,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sweeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 977,
+        "act": "sweep"
+      },
+      "placement": {
+        "x": 716,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "pigeon-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "walk",
+        "range": 40
+      },
+      "placement": {
+        "x": 580,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "pigeon-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 664,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "pigeon-ledge",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 700,
+        "h": 104
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bridge",
+      "type": "environment.oldq-bridge",
+      "props": {
+        "span": 130,
+        "rise": 22,
+        "covered": true,
+        "lanterns": 4,
+        "water": true,
+        "seed": 8
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-3",
+      "type": "building.shophouse",
+      "props": {
+        "width": 80,
+        "floors": 1,
+        "seed": 604,
+        "goods": "pottery",
+        "board": "",
+        "lanterns": 1
+      },
+      "placement": {
+        "x": 1090,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "house-4",
+      "type": "building.shophouse",
+      "props": {
+        "width": 70,
+        "floors": 1,
+        "seed": 605,
+        "goods": "home",
+        "board": "",
+        "lanterns": 0,
+        "shutters": "closed"
+      },
+      "placement": {
+        "x": 1170,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1240,
+        "ground": "#0b0806",
+        "edge": "#ffcf8a",
+        "sheen": 0.3,
+        "cobbles": true,
+        "water": 80,
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 100,
+        "count": 2,
+        "seed": 5,
+        "reach": 0.8
+      },
+      "placement": {
+        "x": 290,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lantern-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "lantern",
+        "height": 100,
+        "count": 3,
+        "seed": 9,
+        "reach": 0.8
+      },
+      "placement": {
+        "x": 1110,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop"
+    },
+    {
+      "id": "yard-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "churchyard"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "logic"
+    },
+    {
+      "id": "yard-wall",
+      "type": "street.yard-wall",
+      "props": {
+        "width": 660,
+        "height": 14,
+        "railing": 28,
+        "pillars": 80,
+        "gate": 312,
+        "gateWidth": 40,
+        "gateOpen": 0.8,
+        "lanterns": true,
+        "letters": "ST. AGNES",
+        "seed": 9
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "candle-stall",
+      "type": "street.candle-stall",
+      "props": {
+        "width": 46,
+        "lanterns": 2,
+        "card": "CANDLES 2",
+        "seed": 10
+      },
+      "placement": {
+        "x": 540,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "set"
+    },
+    {
+      "id": "candle-seller",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 985,
+        "archetype": "vendor",
+        "act": "sit",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 532,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "passer-by",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "oldq",
+        "tech": "no",
+        "seed": 991,
+        "archetype": "elder",
+        "act": "walk",
+        "range": -480
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1240,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-yard",
+      "type": "level.floor",
+      "props": {
+        "width": 660,
+        "building": "churchyard",
+        "label": "Churchyard"
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "logic"
+    },
+    {
+      "id": "door-gate",
+      "type": "level.door",
+      "props": {
+        "building": "churchyard",
+        "width": 36
+      },
+      "placement": {
+        "x": 632,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "logic"
+    }
+  ]
+}

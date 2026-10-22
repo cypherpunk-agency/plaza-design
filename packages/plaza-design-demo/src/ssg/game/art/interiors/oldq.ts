@@ -474,6 +474,7 @@ export const naveElement = piece({
       // the clerestory: two stained-glass lancets per bay
       const m = (a + b) / 2, lw = Math.min(14, (b - a) / 6);
       lancet(x, m - lw - 4, lw, triTop + 6, clTop - 4, bright * glass, seed + i * 7); lancet(x, m + 4, lw, triTop + 6, clTop - 4, bright * glass, seed + i * 11);
+      if (day > 0.1) o.light?.(m, (triTop + clTop) / 2, 2 * lw + 8, clTop - triTop, '230,200,160', 'window');
       // the shaft of daylight from them across the nave to the floor, and the colour it leaves there
       const s = Number(p.shafts) * day * (0.3 + 0.7 * o.lighting.direct);
       if (s > 0.02) {
@@ -824,5 +825,375 @@ export const towerFaceElement = piece({
   },
 });
 
+// ---------------------------------------------------------------- light through stained glass
+
+/**
+ * The light a row of stained-glass windows (or a rose window) throws into a church: coloured shafts
+ * slanting down to the floor, the pools they leave on the stone, dust turning in them. By day it follows
+ * the sun (or a fixed slant); at night a weak, paler moonlight. Place it over the pews and furniture
+ * (layer set) with the windows' positions; it only adds light (screen), so people and pews show through.
+ */
+const LIGHT_FIELDS = {
+  source: select('Window', ['lancets', 'rose']), count: num('Windows', 5, 1, 30), spacing: num('Spacing', 110, 4, 600, 0.5, 'units'),
+  width: num('Window width (rose: diameter)', 36, 4, 240, 1, 'units'), low: num('Window bottom', 150, 0, 900, 1, 'units'), high: num('Window top', 202, 4, 1000, 1, 'units'),
+  slant: num('Slant (0: follow the sun or moon; negative: to the left)', 0, -3, 3, 0.05), strength: num('Strength by day', 1, 0, 1.5, 0.05),
+  moon: num('Moonlight at night', 0.5, 0, 1, 0.05), colour: num('Colour in the light', 0.85, 0, 1, 0.05), dust: num('Dust in the beams', 0.6, 0, 1, 0.05),
+  pools: bool('Pools on the floor', true), seed: num('Seed', 1, 0, 1000000),
+};
+export const windowLightElement: Element = {
+  type: 'interior.window-light', version: 1, label: 'Light through stained glass (shafts, pools, dust)', category: 'environment', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable',
+  fields: LIGHT_FIELDS,
+  bounds: p => { const w = (Number(p.count) - 1) * Number(p.spacing) + Number(p.width); return { x: 0, h: Number(p.high), w, tall: Number(p.high) }; },
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  draw(ctx, v, p, _s, _pass, at) {
+    ctx.save(); ctx.translate(v.sx(at.x), v.y(at.h));
+    try { paintGlassLight(ctx, p, { t: v.t, lighting: v.lighting, view: v }); } finally { ctx.restore(); }
+  },
+};
+const mixWhite = (c: string, k: number) => c.split(',').map(n => Math.round(Number(n) * k + 255 * (1 - k))).join(',');
+function paintGlassLight(x: Ctx, p: Properties, o: Paint) {
+  const L = o.lighting, day = sky(o) * (0.35 + 0.65 * L.direct) * Number(p.strength), moon = L.night * (0.3 + 0.7 * L.moon.lit) * Number(p.moon) * (1 - L.cover * 0.7);
+  const byDay = day >= moon * 0.6, a0 = byDay ? day * 0.16 : moon * 0.07;
+  if (a0 < 0.004) return;
+  // the slant: down and away from the sun (or the moon), flatter when it is low
+  let s = Number(p.slant);
+  if (s === 0) { const b = byDay ? L.sun : L.moon, rel = byDay ? L.sunRel : L.moonRel, el = Math.max(0.15, Math.min(0.95, Math.abs(b.el))) * 1.4; s = -(Math.sign(rel) || 1) * Math.max(0.25, Math.min(1.6, Math.cos(el) / Math.sin(el))); }
+  const n = Number(p.count), sp = Number(p.spacing), w = Number(p.width), lo = Number(p.low), hi = Math.max(lo + 2, Number(p.high)), rose = p.source === 'rose', seed = Number(p.seed);
+  const tint = Number(p.colour) * (byDay ? 1 : 0.3), strip = 3;
+  x.globalCompositeOperation = 'screen';
+  for (let i = 0; i < n; i++) {
+    const x0 = i * sp;
+    for (let k = 0; k < w; k += strip) {
+      const xa = x0 + k, xb = Math.min(x0 + w, xa + strip), xc = (xa + xb) / 2;
+      let sl = lo, sh = hi;
+      if (rose) { const r = w / 2, cy = (lo + hi) / 2, d = xc - x0 - r, half = Math.sqrt(Math.max(0, r * r - d * d)) * (hi - lo) / w; if (half < 1) continue; sl = cy - half; sh = cy + half; }
+      const glass = GLASS[Math.floor(hash(seed + i * 31 + Math.floor(k / strip) * 7) * GLASS.length)], col = byDay ? mixWhite(glass, tint) : mixWhite('190,205,235', 1 - 0.3 * (1 - tint));
+      const a = a0 * (0.75 + 0.5 * hash(seed * 3 + i + k));
+      // the beam: from the window strip down along the slant to the floor, fading as it spreads
+      const g = x.createLinearGradient(0, y(sh), 0, 0); g.addColorStop(0, rgba(col, Math.min(0.5, a))); g.addColorStop(1, rgba(col, Math.min(0.5, a * 0.45)));
+      x.fillStyle = g; x.beginPath();
+      if (s < 0) { x.moveTo(xa, y(sh)); x.lineTo(xb, y(sh)); x.lineTo(xb, y(sl)); x.lineTo(xb + sl * s, 0); x.lineTo(xa + sh * s, 0); }
+      else { x.moveTo(xb, y(sh)); x.lineTo(xa, y(sh)); x.lineTo(xa, y(sl)); x.lineTo(xa + sl * s, 0); x.lineTo(xb + sh * s, 0); }
+      x.closePath(); x.fill();
+      // where it lands: a coloured pool on the flags, and its spread on the floor towards us
+      if (p.pools !== false) {
+        const fa = Math.min(xa + sh * s, xb + sl * s, xa + sl * s, xb + sh * s), fb = Math.max(xa + sh * s, xb + sl * s, xa + sl * s, xb + sh * s);
+        R(x, fa, 0, fb - fa, 2, rgba(col, Math.min(0.7, a * 3.2))); R(x, fa + 2 * s, -10, fb - fa, 10, rgba(col, Math.min(0.5, a * 1.6)));
+      }
+    }
+    // dust turning slowly in the beam
+    const motes = Math.round(Number(p.dust) * 14 * Math.min(1, a0 * 12));
+    for (let j = 0; j < motes; j++) {
+      const u = (hash(seed + i * 17 + j * 5) + o.t * 0.0006 * (0.6 + hash(j + i))) % 1, hs = lo + (hi - lo) * hash(seed * 7 + j + i * 3), xs = x0 + w * hash(seed * 11 + j * 13 + i);
+      const px = xs + u * hs * s + Math.sin(o.t / 70 + j) * 2, ph = hs * (1 - u);
+      R(x, px, ph, 1, 1, rgba('255,244,220', Math.min(0.9, a0 * 5 * Math.sin(Math.PI * u))));
+    }
+  }
+  x.globalCompositeOperation = 'source-over';
+}
+
+// ---------------------------------------------------------------- St. Agnes from outside, its yard
+
+/**
+ * St. Agnes' west front staged on its own forecourt (after St. Joseph's, Hanoi): two square towers
+ * with buttresses, statue niches, louvred belfries and a crenellated top; the gable with the rose
+ * window between them; three pointed portals with recessed orders, the middle one open on the candles
+ * inside; steps up to it. Grey stone gone black with damp.
+ */
+export const churchFrontElement = piece({
+  type: 'landmark.church-front', label: 'St. Agnes west front (landmark, forecourt)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 340, 160, 800, 1, 'units'), towers: num('Tower height', 280, 120, 700, 1, 'units'), gable: num('Gable height', 200, 80, 600, 1, 'units'),
+    stone: { kind: 'color', label: 'Stone', default: '#262628' }, steps: num('Steps up to the doors', 3, 0, 8), open: num('Middle door open', 0.6, 0, 1, 0.05),
+    inside: num('Candlelight inside', 1, 0, 1, 0.05), letters: text('Letters over the door (empty: none)', 'ST. AGNES'), notice: text('Board by the door (empty: none)', 'MASS 6 AND 9'),
+    statues: bool('Statues in the niches', true), damp: num('Damp', 0.8, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Math.max(Number(p.towers) + 30, Number(p.gable) + 34) }),
+  bounds: p => { const tall = Math.max(Number(p.towers) + 30, Number(p.gable) + 34); return { x: -Number(p.steps) * 6, h: tall, w: Number(p.width) + Number(p.steps) * 12, tall }; },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, door: { x: Number(p.width) / 2, h: Number(p.steps) * 4, role: 'entrance' } }),
+  paint(x, p, o) {
+    const W = Number(p.width), T = Number(p.towers), G = Number(p.gable), stone = String(p.stone), seed = Number(p.seed), st = Number(p.steps), base = st * 4;
+    const tw = Math.round(W * 0.27), cx = W / 2, inside = Number(p.inside) * flameLevel(o), candle = (a: number) => rgba('255,170,80', Math.min(0.9, a * inside * (0.85 + 0.15 * Math.sin(o.t / 11))));
+    const dark = '#0b0a0a', edge = 'rgba(210,190,160,.28)';
+    // the nave front and its gable, the rose window
+    R(x, tw, 0, W - 2 * tw, G - 40, stone);
+    x.fillStyle = stone; x.beginPath(); x.moveTo(tw, y(G - 40)); x.lineTo(cx, y(G + 12)); x.lineTo(W - tw, y(G - 40)); x.closePath(); x.fill();
+    blocks(x, tw, W - 2 * tw, 0, G - 40, 0.22); damp(x, tw, W - 2 * tw, G - 40, Number(p.damp), seed);
+    x.strokeStyle = edge; x.lineWidth = 1; x.beginPath(); x.moveTo(tw, y(G - 40)); x.lineTo(cx, y(G + 12)); x.lineTo(W - tw, y(G - 40)); x.stroke();
+    R(x, cx - 1, G + 12, 3, 20, '#0e0d0c'); R(x, cx - 6, G + 24, 13, 3, '#0e0d0c');
+    const rr = Math.min(30, (W - 2 * tw) / 5), ry = G - 64;
+    x.fillStyle = '#121112'; x.beginPath(); x.arc(cx, y(ry), rr + 4, 0, Math.PI * 2); x.fill();
+    for (let k = 0; k < 12; k++) { x.fillStyle = rgba(GLASS[(k + seed) % GLASS.length], 0.08 + 0.3 * inside * (0.5 + 0.5 * o.lighting.night) + 0.08 * sky(o)); x.beginPath(); x.moveTo(cx, y(ry)); x.arc(cx, y(ry), rr, (k * Math.PI) / 6 + 0.05, ((k + 1) * Math.PI) / 6 - 0.05); x.closePath(); x.fill(); }
+    x.strokeStyle = '#121112'; x.lineWidth = 2; x.beginPath(); x.arc(cx, y(ry), rr * 0.5, 0, Math.PI * 2); x.stroke(); x.lineWidth = 1;
+    x.strokeStyle = edge; x.beginPath(); x.arc(cx, y(ry), rr + 4, Math.PI * 1.05, Math.PI * 1.7); x.stroke();
+    if (inside > 0.2) o.light?.(cx, ry, rr * 2, rr * 2, '255,170,90', 'window');
+    // the gallery of small arches over the portals, a statue in each
+    const gy = Math.round(G * 0.52), gn = Math.max(3, Math.floor((W - 2 * tw) / 22));
+    R(x, tw, gy - 3, W - 2 * tw, 3, '#343436'); R(x, tw, gy - 1, W - 2 * tw, 1, edge); R(x, tw, gy + 24, W - 2 * tw, 2, '#343436');
+    for (let k = 0; k < gn; k++) {
+      const ax = tw + 4 + k * (W - 2 * tw - 8) / gn, aw = (W - 2 * tw - 8) / gn - 4;
+      x.fillStyle = dark; x.beginPath(); arch(x, ax, aw, gy, gy + 14, gy + 22); x.fill();
+      if (p.statues !== false) { R(x, ax + aw / 2 - 2, gy, 4, 13, 'rgba(150,145,135,.55)'); R(x, ax + aw / 2 - 1, gy + 13, 3, 3, 'rgba(150,145,135,.55)'); }
+    }
+    // the towers: buttresses stepping in, string courses, lancets, a niche, the belfry, the crenellated top
+    for (const tx of [0, W - tw]) {
+      R(x, tx, 0, tw, T, stone); blocks(x, tx, tw, 0, T, 0.22); damp(x, tx, tw, T, Number(p.damp), seed + tx);
+      for (const bx of [tx, tx + tw - 8]) { R(x, bx - 2, 0, 10, T * 0.36, '#2e2e30'); R(x, bx - 1, T * 0.36, 8, T * 0.3, '#2e2e30'); R(x, bx, T * 0.66, 6, T * 0.34, '#2e2e30'); R(x, bx - 2, 0, 1, T * 0.36, edge); R(x, bx - 1, T * 0.36, 1, T * 0.3, edge); }
+      for (const sh of [Math.round(T * 0.36), Math.round(T * 0.66), T - 6]) { R(x, tx - 2, sh - 2, tw + 4, 4, '#343436'); R(x, tx - 2, sh + 1, tw + 4, 1, edge); }
+      const m = tx + tw / 2;
+      for (const dx of [-9, 3]) lancet(x, m + dx, 6, Math.round(T * 0.2), Math.round(T * 0.32), 0.15 + 0.4 * inside * o.lighting.night, seed + tx + dx);
+      x.fillStyle = dark; x.beginPath(); arch(x, m - 8, 16, Math.round(T * 0.42), Math.round(T * 0.54), Math.round(T * 0.6)); x.fill();
+      if (p.statues !== false) { R(x, m - 3, T * 0.42, 6, 20, 'rgba(160,155,145,.6)'); R(x, m - 2, T * 0.42 + 20, 4, 4, 'rgba(160,155,145,.6)'); R(x, m - 4, T * 0.42, 8, 2, 'rgba(160,155,145,.4)'); }
+      for (const dx of [-14, 2]) {
+        const ax = m + dx, ab = Math.round(T * 0.7), at = T - 14;
+        x.fillStyle = dark; x.beginPath(); arch(x, ax, 12, ab, at - 8, at); x.fill();
+        for (let h = ab + 2; h < at - 4; h += 4) R(x, ax, h, 12, 2, '#1e1814');
+        x.strokeStyle = edge; x.beginPath(); arch(x, ax, 12, ab, at - 8, at); x.stroke();
+      }
+      R(x, tx - 3, T, tw + 6, 5, '#343436'); R(x, tx - 3, T + 4, tw + 6, 1, edge);
+      for (let k = tx - 3; k < tx + tw + 3; k += 10) R(x, k, T + 5, 6, 7, stone);
+      for (const px of [tx - 3, tx + tw - 3]) { R(x, px, T + 5, 6, 18, stone); x.fillStyle = stone; x.beginPath(); x.moveTo(px, y(T + 23)); x.lineTo(px + 3, y(T + 30)); x.lineTo(px + 6, y(T + 23)); x.fill(); }
+      R(x, tx, 0, 1, T, 'rgba(255,190,120,.18)');
+    }
+    // three portals with recessed orders; the middle one stands open on the candles
+    const portal = (px: number, pw: number, ph: number, open: number) => {
+      for (let k = 3; k >= 0; k--) { x.fillStyle = k ? (k % 2 ? '#303032' : '#2a2a2c') : dark; x.beginPath(); arch(x, px - pw / 2 - k * 3, pw + k * 6, base, base + ph + k * 2, base + ph + pw * 0.6 + k * 4); x.fill(); }
+      x.strokeStyle = edge; x.beginPath(); arch(x, px - pw / 2 - 9, pw + 18, base, base + ph + 6, base + ph + pw * 0.6 + 12); x.stroke();
+      R(x, px - pw / 2, base + ph - 2, pw, 2, '#3a3a3c');
+      const leaf = pw / 2 * (1 - open);
+      if (open > 0) { R(x, px - pw / 2, base, pw, ph - 2, candle(0.4)); for (const dx of [-8, -3, 2, 7]) if (Math.abs(dx) < pw / 2 - 2) R(x, px + dx, base + 12, 1, 2, candle(1.2)); o.light?.(px, base + ph / 2, pw, ph, '255,170,80', 'window'); }
+      for (const side of [-1, 1]) { const lx = side < 0 ? px - pw / 2 : px + pw / 2 - leaf; R(x, lx, base, leaf, ph - 2, '#2a1a0e'); for (let k = 3; k < leaf - 1; k += 5) R(x, lx + k, base, 1, ph - 2, 'rgba(0,0,0,.35)'); }
+    };
+    portal(cx, 40, 70, Number(p.open)); portal(tw / 2, 22, 48, 0); portal(W - tw / 2, 22, 48, 0);
+    const words = String(p.letters ?? ''); if (words) card(x, o, cx, base + 70 + 36, words, false);
+    const board = String(p.notice ?? ''); if (board) { R(x, tw + 12, base, 2, 30, '#1e1209'); card(x, o, tw + 13, base + 34, board); }
+    // the steps up to the doors, wider at the bottom
+    for (let s = 0; s < st; s++) { const k = (st - s) * 6, l = cx - 50 - k * 2, w = 100 + k * 4; R(x, l, s * 4, w, 4, s % 2 ? '#3a3836' : '#343230'); R(x, l, s * 4 + 3, w, 1, 'rgba(210,190,160,.3)'); }
+  },
+});
+
+/** A churchyard's front: a stone plinth, an iron railing between pillars with lanterns, a gate with an iron arch. */
+export const yardWallElement = piece({
+  type: 'street.yard-wall', label: 'Churchyard wall, railing and gate', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 660, 40, 6000, 1, 'units'), height: num('Wall height', 14, 4, 80, 1, 'units'), railing: num('Railing height (0: none)', 28, 0, 80, 1, 'units'),
+    pillars: num('A pillar every', 80, 20, 600, 1, 'units'), gate: num('Gate from the left (-1: none)', 330, -1, 6000, 1, 'units'), gateWidth: num('Gate width', 40, 16, 200, 1, 'units'),
+    gateOpen: num('Gate opened', 0.8, 0, 1, 0.05), lanterns: bool('Lanterns on the pillars', true), letters: text('Letters on the gate arch (empty: no arch)', 'ST. AGNES'),
+    stone: { kind: 'color', label: 'Stone', default: '#2e2d2c' }, seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.railing) + 50 }),
+  bounds: p => { const tall = Number(p.height) + Number(p.railing) + 50; return { x: 0, h: tall, w: Number(p.width), tall }; },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, gate: { x: Number(p.gate) + Number(p.gateWidth) / 2, h: 0, role: 'entrance' } }),
+  paint(x, p, o) {
+    const W = Number(p.width), wh = Number(p.height), rh = Number(p.railing), stone = String(p.stone), seed = Number(p.seed), g0 = Number(p.gate), gw = Number(p.gateWidth), g1 = g0 + gw, hasGate = g0 >= 0;
+    const inGate = (a: number, b: number) => hasGate && b > g0 && a < g1;
+    const lantern = (lx: number, lh: number, k: number) => {
+      R(x, lx - 3, lh, 7, 2, '#0e0c0a'); R(x, lx - 2, lh + 2, 5, 7, rgba('255,190,100', 0.35 + 0.55 * flameLevel(o) * flicker(o.t, k)));
+      R(x, lx - 3, lh + 9, 7, 2, '#0e0c0a'); R(x, lx, lh + 11, 1, 2, '#0e0c0a'); R(x, lx - 2, lh + 5, 5, 1, 'rgba(0,0,0,.4)');
+      o.light?.(lx, lh + 5, 6, 8, '255,190,100', 'screen');
+    };
+    // the plinth, broken by the gate's threshold
+    for (const [a, b] of hasGate ? [[0, g0], [g1, W]] : [[0, W]]) { if (b <= a) continue; R(x, a, 0, b - a, wh, stone); blocks(x, a, b - a, 0, wh, 0.25); R(x, a, wh, b - a, 3, '#3a3836'); R(x, a, wh + 2, b - a, 1, 'rgba(210,190,160,.35)'); damp(x, a, b - a, wh, 0.6, seed); }
+    if (hasGate) { R(x, g0, 0, gw, 3, '#3a3836'); R(x, g0, 2, gw, 1, 'rgba(210,190,160,.3)'); }
+    // the railing: iron bars with spear tips, two rails
+    if (rh > 0) for (let k = 2; k < W; k += 4) { if (inGate(k, k + 1)) continue; R(x, k, wh + 3, 1, rh - 2, '#101012'); R(x, k, wh + rh + 1, 1, 2, 'rgba(150,150,160,.5)'); }
+    if (rh > 0) for (const [a, b] of hasGate ? [[0, g0], [g1, W]] : [[0, W]]) { R(x, a, wh + 6, b - a, 1, '#101012'); R(x, a, wh + rh - 4, b - a, 1, '#101012'); }
+    // pillars with caps and lanterns
+    const ph = wh + rh + 6;
+    for (let k = 0; k <= W; k += Number(p.pillars)) {
+      const px = Math.min(W - 10, k); if (inGate(px - 6, px + 16)) continue;
+      R(x, px, 0, 10, ph, stone); R(x, px - 1, ph, 12, 3, '#3a3836'); R(x, px - 1, ph + 2, 12, 1, 'rgba(210,190,160,.35)'); R(x, px, 0, 1, ph, 'rgba(255,190,120,.2)');
+      if (p.lanterns !== false) lantern(px + 5, ph + 3, k);
+    }
+    // the gate: taller pillars with crosses, the leaves swung in, an iron arch with the letters
+    if (hasGate) {
+      const gp = ph + 16;
+      for (const px of [g0 - 14, g1]) { R(x, px, 0, 14, gp, stone); blocks(x, px, 14, 0, gp, 0.2); R(x, px - 2, gp, 18, 4, '#3a3836'); R(x, px - 2, gp + 3, 18, 1, 'rgba(210,190,160,.35)'); R(x, px + 6, gp + 4, 2, 12, '#141312'); R(x, px + 3, gp + 11, 8, 2, '#141312'); R(x, px, 0, 1, gp, 'rgba(255,190,120,.25)'); }
+      const leaf = Math.max(2, Math.round(gw / 2 * (1 - Number(p.gateOpen))));
+      for (const lx of [g0, g1 - leaf]) { for (let k = 0; k < leaf; k += 3) R(x, lx + k, 4, 1, rh + wh - 2, '#101012'); R(x, lx, 8, leaf, 1, '#101012'); R(x, lx, wh + rh, leaf, 1, '#101012'); }
+      const words = String(p.letters ?? '');
+      if (words) {
+        x.strokeStyle = '#101012'; x.lineWidth = 2; x.beginPath(); x.moveTo(g0 - 7, y(gp)); x.quadraticCurveTo(g0 + gw / 2, y(gp + 30), g1 + 7, y(gp)); x.stroke(); x.lineWidth = 1;
+        R(x, g0 + gw / 2, gp + 10, 1, 5, '#101012'); card(x, o, g0 + gw / 2, gp + 4, words, false);
+      }
+      if (p.lanterns !== false) { lantern(g0 - 7, gp + 16, 1); lantern(g1 + 7, gp + 16, 2); }
+    }
+  },
+});
+
+/** A tree of the Old Quarter: a banyan with hanging roots, a frangipani in flower, a broad tamarind; paper lanterns can hang in it. */
+export const oldqTreeElement = piece({
+  type: 'environment.oldq-tree', label: 'Tree (banyan, frangipani, tamarind)', category: 'environment', libraryUse: 'reusable',
+  fields: {
+    kind: select('Kind', ['banyan', 'frangipani', 'tamarind']), height: num('Height', 170, 40, 500, 1, 'units'), spread: num('Spread', 130, 30, 500, 1, 'units'),
+    leaves: { kind: 'color', label: 'Leaves', default: '#16220f' }, blossom: num('Blossom (frangipani)', 0.7, 0, 1, 0.05), sway: num('Sway', 0.4, 0, 1, 0.05),
+    lanterns: num('Paper lanterns hanging in it', 3, 0, 12), lantern: { kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }, seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.spread), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.spread), tall: Number(p.height) }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, trunk: { x: Number(p.spread) / 2, h: 0, role: 'mount' } }),
+  paint(x, p, o) {
+    const kind = String(p.kind), H = Number(p.height), S = Number(p.spread), cx = Math.round(S / 2), seed = Number(p.seed), r = rng(seed * 61 + 3), leaf = String(p.leaves), lrgb = rgb(isHex(leaf) ? leaf : '#16220f');
+    const bark = kind === 'frangipani' ? '#4a4640' : kind === 'banyan' ? '#2e2a24' : '#241c16', tw = kind === 'banyan' ? 16 : kind === 'tamarind' ? 10 : 7, crown = kind === 'frangipani' ? H * 0.45 : H * 0.55;
+    // trunk and the main branches out to the crown
+    R(x, cx - tw / 2, 0, tw, crown, bark); R(x, cx - tw / 2, 0, 1, crown, 'rgba(255,200,140,.15)');
+    if (kind === 'banyan') for (const dx of [-14, -8, 9, 15]) { x.fillStyle = bark; x.beginPath(); x.moveTo(cx + dx * 0.4, y(16)); x.lineTo(cx + dx, 0); x.lineTo(cx + dx * 0.4 + 3, 0); x.fill(); }
+    const tips: [number, number][] = [];
+    const nb = kind === 'frangipani' ? 7 : 5;
+    x.strokeStyle = bark; x.lineCap = 'round';
+    for (let i = 0; i < nb; i++) {
+      const f = (i + 0.5) / nb - 0.5, ex = cx + f * S * 0.85, eh = crown + (H - crown) * (0.45 + 0.5 * r()), mid = crown + (eh - crown) * 0.4;
+      x.lineWidth = kind === 'frangipani' ? 3 : 4; x.beginPath(); x.moveTo(cx, y(crown - 6)); x.quadraticCurveTo(cx + f * S * 0.2, y(mid), ex, y(eh)); x.stroke();
+      tips.push([ex, eh]);
+    }
+    x.lineCap = 'butt'; x.lineWidth = 1;
+    // the canopy: clumps of leaves round the branch tips, darker inside, lit on top; the outer ones sway
+    const clumps = kind === 'frangipani' ? 2 : 6;
+    for (const [tx, th] of tips) for (let k = 0; k < clumps; k++) {
+      const rx = (kind === 'frangipani' ? 9 : 14 + r() * 12), ry = rx * 0.6, ox = (r() - 0.5) * rx * 1.6 + Math.sin(o.t / 80 + tx) * Number(p.sway) * 1.5, oh = (r() - 0.3) * ry * 1.4;
+      x.fillStyle = rgba(lrgb, 0.95); x.beginPath(); x.ellipse(tx + ox, y(th + oh), rx, ry, 0, 0, Math.PI * 2); x.fill();
+      x.fillStyle = 'rgba(120,160,80,' + (0.1 + 0.18 * sky(o)).toFixed(3) + ')'; x.beginPath(); x.ellipse(tx + ox - 2, y(th + oh + ry * 0.4), rx * 0.7, ry * 0.4, 0, 0, Math.PI * 2); x.fill();
+      if (kind === 'frangipani') for (let b = 0; b < 4; b++) if (r() < Number(p.blossom)) { const bx = tx + ox + (r() - 0.5) * rx * 1.4, bh = th + oh + (r() - 0.2) * ry; R(x, bx, bh, 2, 2, 'rgba(240,235,215,.9)'); R(x, bx, bh, 1, 1, 'rgba(240,200,90,.9)'); }
+    }
+    // a banyan's aerial roots hanging from its branches
+    if (kind === 'banyan') for (let k = 0; k < 14; k++) { const rx2 = Math.round(cx + (r() - 0.5) * S * 0.8), top = crown + r() * (H - crown) * 0.5, len = Math.round(top * (0.4 + r() * 0.6)); R(x, rx2, top - len, 1, len, 'rgba(46,40,30,.85)'); }
+    // paper lanterns on strings from the lower branches
+    const n = Number(p.lanterns), lc = rgb(String(p.lantern));
+    for (let i = 0; i < n; i++) {
+      const lx = Math.round(S * (0.15 + 0.7 * (i + 0.5) / n)), top = crown + 4 + Math.round(hash(seed + i) * 18), drop = 8 + Math.round(hash(seed * 3 + i) * 14), sw = Math.sin(o.t / 50 + i + seed) * 1.2;
+      x.strokeStyle = 'rgba(0,0,0,.8)'; x.beginPath(); x.moveTo(lx, y(top)); x.lineTo(lx + sw, y(top - drop)); x.stroke();
+      const ly = top - drop, a = 0.45 + 0.5 * flameLevel(o) * (0.88 + 0.12 * Math.sin(o.t / 9 + i * 3));
+      x.fillStyle = rgba(lc, a); x.beginPath(); x.ellipse(lx + sw + 0.5, y(ly - 5), 3.5, 4.5, 0, 0, Math.PI * 2); x.fill();
+      R(x, lx + sw - 2, ly, 5, 1, '#100806'); R(x, lx + sw - 1, ly - 10, 3, 1, '#100806');
+      o.light?.(lx, ly - 5, 8, 10, lc, 'screen');
+    }
+  },
+});
+
+/** A few graves in a churchyard: crosses, headstones with a photograph, small tiled tombs; candles and flowers. */
+export const gravesElement = piece({
+  type: 'environment.graves', label: 'Graves (churchyard)', category: 'environment', libraryUse: 'reusable',
+  fields: {
+    count: num('Graves', 4, 1, 20), spacing: num('Spacing', 30, 14, 120, 1, 'units'), kinds: select('Kinds', ['mixed', 'crosses', 'headstones', 'tombs']),
+    stone: { kind: 'color', label: 'Stone', default: '#4a4844' }, candles: bool('Candles', true), flowers: bool('Flowers', true), moss: num('Moss', 0.5, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.count) * Number(p.spacing), tall: 34 }),
+  bounds: p => ({ x: 0, h: 34, w: Number(p.count) * Number(p.spacing), tall: 34 }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const n = Number(p.count), sp = Number(p.spacing), stone = String(p.stone), seed = Number(p.seed), KINDS = ['crosses', 'headstones', 'tombs'], edge = 'rgba(220,210,190,.3)';
+    for (let i = 0; i < n; i++) {
+      const gx = i * sp + Math.round(sp / 2) - 8, kind = p.kinds === 'mixed' ? KINDS[Math.floor(hash(seed + i * 13) * 3)] : String(p.kinds);
+      R(x, gx - 2, 0, 20, 3, '#2a2826');
+      if (kind === 'crosses') { R(x, gx + 3, 3, 10, 5, stone); R(x, gx + 7, 8, 3, 20, stone); R(x, gx + 3, 21, 11, 3, stone); R(x, gx + 7, 8, 1, 20, edge); }
+      else if (kind === 'headstones') { R(x, gx + 1, 3, 14, 16, stone); x.fillStyle = stone; x.beginPath(); x.arc(gx + 8, y(19), 7, Math.PI, 0); x.fill(); R(x, gx + 1, 3, 1, 16, edge); x.fillStyle = 'rgba(200,185,160,.6)'; x.beginPath(); x.ellipse(gx + 8, y(17), 2.5, 3.5, 0, 0, Math.PI * 2); x.fill(); R(x, gx + 4, 9, 8, 1, 'rgba(0,0,0,.4)'); R(x, gx + 5, 7, 6, 1, 'rgba(0,0,0,.4)'); }
+      else { R(x, gx - 2, 3, 20, 10, stone); R(x, gx - 3, 13, 22, 2, '#5a2c1a'); x.fillStyle = '#4a2414'; x.beginPath(); x.moveTo(gx - 3, y(15)); x.lineTo(gx + 8, y(21)); x.lineTo(gx + 19, y(15)); x.fill(); R(x, gx + 7, 21, 2, 6, stone); R(x, gx + 5, 24, 6, 1, stone); R(x, gx - 2, 3, 20, 1, edge); }
+      for (let k = 0; k < 4; k++) if (hash(seed * 5 + i * 7 + k) < Number(p.moss)) R(x, gx + Math.round(hash(seed + i + k * 3) * 14), 3 + Math.round(hash(seed * 9 + i + k) * 10), 3, 2, 'rgba(60,90,40,.55)');
+      if (p.flowers !== false && hash(seed + i * 3) < 0.7) { R(x, gx + 15, 3, 3, 4, '#3a3632'); R(x, gx + 15, 7, 1, 3, '#2e4a22'); R(x, gx + 14, 10, 2, 2, rgba(['230,220,200', '220,80,60', '230,190,60'][i % 3], 0.85)); }
+      if (p.candles !== false && hash(seed * 7 + i) < 0.6) { R(x, gx - 1, 3, 3, 3, 'rgba(180,30,30,.8)'); flame(x, o, gx, 6, i * 5 + seed); }
+    }
+  },
+});
+
+/** A grotto shrine of the Virgin: a heap of rough stone with a niche, the white statue in a blue mantle, candles and flowers. */
+export const grottoElement = piece({
+  type: 'environment.grotto', label: 'Grotto shrine (churchyard)', category: 'environment', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 60, 30, 240, 1, 'units'), height: num('Height', 64, 30, 240, 1, 'units'), rock: { kind: 'color', label: 'Rock', default: '#24221f' },
+    mantle: { kind: 'color', label: 'Statue’s mantle', default: '#4a6a9a' }, candles: num('Candles', 8, 0, 30), lit: num('Share lit', 0.8, 0, 1, 0.05), flowers: bool('Flowers', true),
+    plaque: text('Plaque (empty: none)', ''), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, niche: { x: Number(p.width) / 2, h: Number(p.height) * 0.35, role: 'mount' } }),
+  paint(x, p, o) {
+    const W = Number(p.width), H = Number(p.height), seed = Number(p.seed), r = rng(seed * 17 + 1), rock = String(p.rock), cx = Math.round(W / 2);
+    // the rock heap: overlapping rough boulders, lit on their upper edges
+    for (let k = 0; k < 14; k++) {
+      const f = k / 13, bx = Math.round(W * (0.08 + 0.84 * r())), bh = Math.round(H * (0.15 + 0.75 * (1 - Math.abs(bx - cx) / W * 1.6) * r())), rad = 8 + r() * 10;
+      x.fillStyle = k % 2 ? rock : '#2c2925'; x.beginPath(); x.ellipse(bx, y(Math.max(rad * 0.6, bh)), rad, rad * 0.7, 0, 0, Math.PI * 2); x.fill();
+      R(x, bx - rad * 0.5, Math.max(rad * 0.6, bh) + rad * 0.55, rad * 0.8, 1, 'rgba(210,190,160,.2)'); void f;
+    }
+    // the niche and the statue in it
+    const nw = Math.max(16, Math.round(W * 0.3)), nb = Math.round(H * 0.3), nt = Math.round(H * 0.9);
+    x.fillStyle = '#0c0b0a'; x.beginPath(); arch(x, cx - nw / 2, nw, nb, nt - nw * 0.6, nt); x.fill();
+    const sh = nb + 2; R(x, cx - 4, sh, 8, 22, 'rgba(225,220,210,.9)'); R(x, cx - 3, sh + 22, 6, 5, 'rgba(225,215,200,.9)'); R(x, cx - 2, sh + 23, 4, 3, 'rgba(210,190,170,.9)');
+    R(x, cx - 5, sh + 2, 2, 22, String(p.mantle)); R(x, cx + 3, sh + 2, 2, 22, String(p.mantle)); R(x, cx - 4, sh + 26, 8, 2, String(p.mantle)); R(x, cx - 1, sh + 12, 2, 1, 'rgba(70,100,160,.9)');
+    R(x, cx - 5, sh + 30, 10, 1, 'rgba(240,210,120,.5)');
+    // candles on a ledge at its foot, flowers either side
+    R(x, cx - nw / 2 - 6, nb - 3, nw + 12, 3, '#3a3634');
+    const n = Number(p.candles);
+    for (let i = 0; i < n; i++) { const lx = Math.round(cx - nw / 2 - 4 + (i + 0.5) * (nw + 8) / n); R(x, lx, nb, 1, 3, 'rgba(235,228,215,.85)'); if (hash(seed + i * 7) < Number(p.lit)) flame(x, o, lx, nb + 3, i); }
+    if (n > 0) { const g = x.createRadialGradient(cx, y(nb + 10), 0, cx, y(nb + 10), W * 0.6); g.addColorStop(0, 'rgba(255,180,90,' + (0.18 * flameLevel(o) * Number(p.lit)).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,180,90,0)'); x.fillStyle = g; x.fillRect(cx - W * 0.6, y(nb + 10 + W * 0.6), W * 1.2, W * 1.2); }
+    if (p.flowers !== false) for (const fx of [cx - nw / 2 - 10, cx + nw / 2 + 4]) { R(x, fx, 0, 6, 7, '#5a5650'); for (let k = 0; k < 4; k++) R(x, fx - 1 + k * 2, 8 + (k % 2) * 3, 2, 2, rgba(k % 2 ? '235,230,215' : '230,120,140', 0.9)); }
+    if (p.plaque) card(x, o, cx, Math.round(H * 0.18), String(p.plaque));
+  },
+});
+
+/** A candle seller's pitch: a low table of candles and incense, a parasol with lanterns, a cash tin and a card. */
+export const candleStallElement = piece({
+  type: 'street.candle-stall', label: 'Candle seller’s stall', category: 'furniture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 46, 24, 160, 1, 'units'), parasol: { kind: 'color', label: 'Parasol', default: '#7a2a1c' }, lanterns: num('Lanterns under the parasol', 2, 0, 6),
+    card: text('Card (empty: none)', 'CANDLES 2'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: 64 }),
+  bounds: p => ({ x: -10, h: 64, w: Number(p.width) + 20, tall: 64 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, seller: { x: -6, h: 0, role: 'mount' }, table: { x: Number(p.width) / 2, h: 14, role: 'surface' } }),
+  paint(x, p, o) {
+    const W = Number(p.width), seed = Number(p.seed), pc = String(p.parasol), cx = Math.round(W / 2);
+    // the parasol on its pole, ribs, lanterns from its rim
+    R(x, cx, 0, 1, 56, '#1a1008');
+    x.fillStyle = pc; x.beginPath(); x.moveTo(cx - W / 2 - 10, y(50)); x.quadraticCurveTo(cx, y(66), cx + W / 2 + 10, y(50)); x.closePath(); x.fill();
+    x.fillStyle = 'rgba(0,0,0,.3)'; for (let k = -2; k <= 2; k++) x.fillRect(Math.round(cx + k * (W / 5)), y(52 + (2 - Math.abs(k)) * 2), 1, 3);
+    R(x, cx - W / 2 - 10, 49, W + 20, 1, 'rgba(255,200,140,.3)');
+    const n = Number(p.lanterns);
+    for (let i = 0; i < n; i++) { const lx = Math.round(cx - W / 2 - 6 + (i + 0.5) * (W + 12) / n), sw = Math.sin(o.t / 50 + i) * 1; R(x, lx, 44, 1, 5, '#100806'); x.fillStyle = rgba('255,120,60', 0.45 + 0.5 * flameLevel(o)); x.beginPath(); x.ellipse(lx + sw + 0.5, y(40), 3, 4, 0, 0, Math.PI * 2); x.fill(); o.light?.(lx, 40, 8, 8, '255,120,60', 'screen'); }
+    // the table: bundles of tapers, red votive cups, incense, the cash tin
+    R(x, 0, 12, W, 2, '#3a2412'); R(x, 0, 13, W, 1, 'rgba(255,200,140,.35)'); R(x, 2, 0, 2, 12, '#24160b'); R(x, W - 4, 0, 2, 12, '#24160b');
+    for (let k = 3; k < W * 0.45; k += 5) { R(x, k, 14, 4, 2, 'rgba(160,120,70,.8)'); for (let s = 0; s < 3; s++) R(x, k + s, 16, 1, 9 + (s % 2) * 2, 'rgba(235,228,215,.85)'); }
+    for (let k = Math.round(W * 0.5); k < W * 0.8; k += 4) { R(x, k, 14, 3, 3, 'rgba(180,30,30,.85)'); if (hash(seed + k) < 0.4) flame(x, o, k + 1, 17, k); }
+    R(x, Math.round(W * 0.82), 14, 6, 4, '#6a6a70'); R(x, Math.round(W * 0.82), 17, 6, 1, 'rgba(255,255,255,.3)');
+    for (let s = 0; s < 4; s++) R(x, Math.round(W * 0.47) + s, 14, 1, 12, 'rgba(150,60,40,.8)');
+    if (p.card) { R(x, W - 3, 14, 1, 10, '#1a1008'); card(x, o, W - 3, 28, String(p.card)); }
+  },
+});
+
+/** A stone hump bridge over a side canal, seen side-on in the middle band; covered with a timber roof as at Hoi An if wanted. */
+export const oldqBridgeElement = piece({
+  type: 'environment.oldq-bridge', label: 'Canal bridge (Old Quarter)', category: 'environment', libraryUse: 'reusable',
+  fields: {
+    span: num('Span', 130, 40, 600, 1, 'units'), rise: num('Rise of the deck', 22, 4, 80, 1, 'units'), stone: { kind: 'color', label: 'Stone', default: '#34302a' },
+    covered: bool('Covered (timber roof)', true), lanterns: num('Lanterns', 4, 0, 12), lantern: { kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }, water: bool('Water under the arch', true), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.span), tall: Number(p.rise) + (p.covered ? 70 : 24) }),
+  bounds: p => { const tall = Number(p.rise) + (p.covered ? 70 : 24); return { x: 0, h: tall, w: Number(p.span), tall }; },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: Number(p.span) / 2, h: Number(p.rise), role: 'surface' } }),
+  paint(x, p, o) {
+    const S = Number(p.span), rise = Number(p.rise), stone = String(p.stone), seed = Number(p.seed), deck = (u: number) => rise * Math.sin(Math.PI * Math.max(0, Math.min(1, u)));
+    // the side canal under it, then the masonry with its arch
+    if (p.water !== false) { R(x, 0, -6, S, 10, '#05080a'); for (let k = 0; k < 8; k++) { const sx = (k * 23 + o.t * 0.2 + hash(seed + k) * 40) % S; R(x, sx, 1 - (k % 3) * 2, 4 + (k % 4), 1, 'rgba(255,170,90,.18)'); } }
+    x.fillStyle = stone; x.beginPath(); x.moveTo(0, y(0)); for (let u = 0; u <= 1.001; u += 0.05) x.lineTo(S * u, y(deck(u))); x.lineTo(S, 0); x.closePath(); x.fill();
+    const aw = S * 0.56, ah = rise * 0.85 + 4;
+    x.fillStyle = '#07090a'; x.beginPath(); x.moveTo(S / 2 - aw / 2, y(0)); x.quadraticCurveTo(S / 2 - aw / 2, y(ah), S / 2, y(ah)); x.quadraticCurveTo(S / 2 + aw / 2, y(ah), S / 2 + aw / 2, y(0)); x.closePath(); x.fill();
+    x.strokeStyle = 'rgba(210,190,160,.3)'; x.lineWidth = 1; x.beginPath(); x.moveTo(S / 2 - aw / 2 - 3, y(0)); x.quadraticCurveTo(S / 2 - aw / 2 - 3, y(ah + 4), S / 2, y(ah + 4)); x.quadraticCurveTo(S / 2 + aw / 2 + 3, y(ah + 4), S / 2 + aw / 2 + 3, y(0)); x.stroke();
+    if (p.water !== false) R(x, S / 2 - aw / 2 + 4, 1, aw - 8, 1, 'rgba(255,170,90,.15)');
+    // parapet along the deck
+    x.strokeStyle = '#1e1a16'; x.lineWidth = 4; x.beginPath(); for (let u = 0; u <= 1.001; u += 0.05) { const px = S * u, ph = deck(u) + 8; if (u === 0) x.moveTo(px, y(ph)); else x.lineTo(px, y(ph)); } x.stroke();
+    x.strokeStyle = 'rgba(210,190,160,.3)'; x.lineWidth = 1; x.beginPath(); for (let u = 0; u <= 1.001; u += 0.05) { const px = S * u, ph = deck(u) + 10; if (u === 0) x.moveTo(px, y(ph)); else x.lineTo(px, y(ph)); } x.stroke();
+    // the covered bridge's roof on timber posts
+    if (p.covered) {
+      const top = rise + 46;
+      for (let k = 8; k < S - 4; k += 22) R(x, k, deck(k / S) + 8, 3, top - deck(k / S) - 8, '#3a1e10');
+      x.fillStyle = '#1c0d08'; x.beginPath(); x.moveTo(-6, y(top)); x.lineTo(14, y(top + 18)); x.lineTo(S - 14, y(top + 18)); x.lineTo(S + 6, y(top)); x.closePath(); x.fill();
+      for (let k = 3; k < 18; k += 3) R(x, -6 + 20 * k / 18, top + k, S + 12 - 40 * k / 18, 1, 'rgba(150,70,40,.28)');
+      R(x, -7, top - 1, S + 14, 3, '#0c0604'); R(x, 12, top + 18, S - 24, 3, '#2a140c'); R(x, 12, top + 20, S - 24, 1, 'rgba(255,170,110,.35)');
+    }
+    const n = Number(p.lanterns), lc = rgb(String(p.lantern)), lh = p.covered ? rise + 44 : rise + 30;
+    for (let i = 0; i < n; i++) { const lx = Math.round(S * (i + 0.5) / n), sw = Math.sin(o.t / 50 + i + seed) * 1.1; R(x, lx, lh - 4, 1, 4, '#100806'); x.fillStyle = rgba(lc, 0.45 + 0.5 * flameLevel(o)); x.beginPath(); x.ellipse(lx + sw + 0.5, y(lh - 9), 3.5, 4.5, 0, 0, Math.PI * 2); x.fill(); o.light?.(lx, lh - 9, 8, 10, lc, 'screen'); }
+  },
+});
+
 export const oldqInteriors: Element[] = [oldqRoomElement, lightWellElement, altarElement, timberFloorElement, roofSectionElement, roofTerraceElement, stairDressElement,
-  naveElement, roseWindowElement, pewsElement, churchAltarElement, votiveStandElement, confessionalElement, organLoftElement, bellTowerElement, towerFaceElement];
+  naveElement, roseWindowElement, pewsElement, churchAltarElement, votiveStandElement, confessionalElement, organLoftElement, bellTowerElement, towerFaceElement,
+  windowLightElement, churchFrontElement, yardWallElement, oldqTreeElement, gravesElement, grottoElement, candleStallElement, oldqBridgeElement];

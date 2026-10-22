@@ -209,6 +209,40 @@
       "layer": "backdrop"
     },
     {
+      "id": "podium",
+      "type": "building.stack",
+      "props": {
+        "width": 260,
+        "floors": 1,
+        "seed": 309,
+        "shops": [
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fish"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "roast"
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fruit"
+          }
+        ],
+        "hung": [],
+        "shacks": false
+      },
+      "placement": {
+        "x": 386,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
       "id": "market-hall",
       "type": "landmark.market-hall",
       "props": {
@@ -217,12 +251,13 @@
         "seed": 5
       },
       "placement": {
-        "x": 386,
+        "x": 258,
         "h": 0,
-        "scale": 1.5
+        "parallax": 0.6,
+        "scale": 1.0
       },
-      "order": 9,
-      "layer": "backdrop"
+      "order": 10,
+      "layer": "distance"
     },
     {
       "id": "stack-3",
@@ -254,10 +289,10 @@
         "wall": "#1d2329"
       },
       "placement": {
-        "x": 782,
+        "x": 652,
         "h": 0
       },
-      "order": 10,
+      "order": 11,
       "layer": "backdrop"
     },
     {
@@ -274,10 +309,10 @@
         "seed": 9
       },
       "placement": {
-        "x": 892,
+        "x": 762,
         "h": 0
       },
-      "order": 11,
+      "order": 12,
       "layer": "backdrop"
     },
     {
@@ -317,10 +352,10 @@
         "cages": 0.7
       },
       "placement": {
-        "x": 922,
+        "x": 792,
         "h": 0
       },
-      "order": 12,
+      "order": 13,
       "layer": "backdrop"
     },
     {
@@ -351,17 +386,17 @@
         "scaffold": "bamboo"
       },
       "placement": {
-        "x": 1062,
+        "x": 932,
         "h": 0
       },
-      "order": 13,
+      "order": 14,
       "layer": "backdrop"
     },
     {
       "id": "stack-6",
       "type": "building.stack",
       "props": {
-        "width": 219,
+        "width": 284,
         "floors": 12,
         "seed": 307,
         "shops": [
@@ -393,26 +428,26 @@
         ]
       },
       "placement": {
-        "x": 1162,
+        "x": 1032,
         "h": 0
       },
-      "order": 14,
+      "order": 15,
       "layer": "backdrop"
     },
     {
       "id": "site",
       "type": "building.site",
       "props": {
-        "width": 219,
+        "width": 284,
         "notice": "SITE · KEEP OUT",
         "picture": "COMING SOON · 900 HOMES",
         "seed": 3
       },
       "placement": {
-        "x": 1381,
+        "x": 1316,
         "h": 0
       },
-      "order": 15,
+      "order": 16,
       "layer": "backdrop"
     },
     {
@@ -428,7 +463,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 16,
+      "order": 17,
       "layer": "backdrop"
     },
     {
@@ -446,7 +481,7 @@
         "x": 20,
         "h": 0
       },
-      "order": 17,
+      "order": 18,
       "layer": "backdrop"
     },
     {
@@ -464,7 +499,7 @@
         "x": 396,
         "h": 0
       },
-      "order": 18,
+      "order": 19,
       "layer": "backdrop"
     },
     {
@@ -482,7 +517,7 @@
         "x": 1180,
         "h": 0
       },
-      "order": 19,
+      "order": 20,
       "layer": "backdrop"
     },
     {
@@ -499,7 +534,7 @@
         "x": 300,
         "h": 210
       },
-      "order": 20,
+      "order": 21,
       "layer": "backdrop"
     },
     {
@@ -516,7 +551,7 @@
         "x": 1080,
         "h": 220
       },
-      "order": 21,
+      "order": 22,
       "layer": "backdrop"
     },
     {
@@ -529,7 +564,7 @@
         "x": 636,
         "h": 190
       },
-      "order": 22,
+      "order": 23,
       "layer": "backdrop"
     },
     {
@@ -549,7 +584,7 @@
         "x": 366,
         "h": 36
       },
-      "order": 23,
+      "order": 24,
       "layer": "backdrop"
     },
     {
@@ -567,7 +602,7 @@
         "x": 40,
         "h": 0
       },
-      "order": 24,
+      "order": 25,
       "layer": "playfield"
     },
     {
@@ -584,7 +619,7 @@
         "x": 110,
         "h": 0
       },
-      "order": 25,
+      "order": 26,
       "layer": "playfield"
     },
     {
@@ -601,7 +636,7 @@
         "x": 170,
         "h": 0
       },
-      "order": 26,
+      "order": 27,
       "layer": "playfield"
     },
     {
@@ -619,7 +654,7 @@
         "x": 260,
         "h": 0
       },
-      "order": 27,
+      "order": 28,
       "layer": "playfield"
     },
     {
@@ -637,7 +672,7 @@
         "x": 330,
         "h": 0
       },
-      "order": 28,
+      "order": 29,
       "layer": "playfield"
     },
     {
@@ -654,7 +689,7 @@
         "x": 470,
         "h": 0
       },
-      "order": 29,
+      "order": 30,
       "layer": "playfield"
     },
     {
@@ -671,7 +706,7 @@
         "x": 426,
         "h": 0
       },
-      "order": 30,
+      "order": 31,
       "layer": "playfield"
     },
     {
@@ -688,7 +723,7 @@
         "x": 448,
         "h": 0
       },
-      "order": 31,
+      "order": 32,
       "layer": "playfield"
     },
     {
@@ -705,7 +740,7 @@
         "x": 470,
         "h": 0
       },
-      "order": 32,
+      "order": 33,
       "layer": "playfield"
     },
     {
@@ -723,7 +758,7 @@
         "x": 526,
         "h": 0
       },
-      "order": 33,
+      "order": 34,
       "layer": "playfield"
     },
     {
@@ -740,7 +775,7 @@
         "x": 586,
         "h": 0
       },
-      "order": 34,
+      "order": 35,
       "layer": "playfield"
     },
     {
@@ -757,7 +792,7 @@
         "x": 608,
         "h": 0
       },
-      "order": 35,
+      "order": 36,
       "layer": "playfield"
     },
     {
@@ -776,7 +811,7 @@
         "x": 1060,
         "h": 0
       },
-      "order": 36,
+      "order": 37,
       "layer": "playfield"
     },
     {
@@ -794,7 +829,7 @@
         "x": 1180,
         "h": 0
       },
-      "order": 37,
+      "order": 38,
       "layer": "playfield"
     },
     {
@@ -812,7 +847,7 @@
         "x": 1300,
         "h": 0
       },
-      "order": 38,
+      "order": 39,
       "layer": "playfield"
     },
     {
@@ -829,7 +864,7 @@
         "x": 1380,
         "h": 0
       },
-      "order": 39,
+      "order": 40,
       "layer": "playfield"
     },
     {
@@ -846,7 +881,7 @@
         "x": 1410,
         "h": 0
       },
-      "order": 40,
+      "order": 41,
       "layer": "playfield"
     },
     {
@@ -864,7 +899,7 @@
         "x": 1540,
         "h": 0
       },
-      "order": 41,
+      "order": 42,
       "layer": "playfield"
     },
     {
@@ -879,7 +914,7 @@
         "x": 356,
         "h": 0
       },
-      "order": 42,
+      "order": 43,
       "layer": "playfield"
     },
     {
@@ -894,7 +929,7 @@
         "x": 1110,
         "h": 0
       },
-      "order": 43,
+      "order": 44,
       "layer": "playfield"
     },
     {
@@ -910,7 +945,7 @@
         "x": 640,
         "h": 0
       },
-      "order": 44,
+      "order": 45,
       "layer": "playfield"
     },
     {
@@ -931,7 +966,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 45,
+      "order": 46,
       "layer": "foreground"
     },
     {
@@ -942,7 +977,7 @@
         "x": 720,
         "h": 0
       },
-      "order": 46,
+      "order": 47,
       "layer": "playfield"
     }
   ]

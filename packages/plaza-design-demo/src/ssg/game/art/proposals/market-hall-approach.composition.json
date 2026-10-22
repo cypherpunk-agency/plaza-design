@@ -1,0 +1,1111 @@
+{
+  "version": 1,
+  "scene": "market-hall-approach",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "stacked",
+        "width": 2400,
+        "seed": 61,
+        "parallax": 0.2,
+        "minHeight": 220,
+        "maxHeight": 380,
+        "haze": 0.6,
+        "lit": 0.5,
+        "signs": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 1.0,
+        "fill": "#0a0610",
+        "edge": 0.14
+      },
+      "placement": {
+        "x": 900,
+        "h": 20,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "stacked",
+        "width": 2200,
+        "seed": 17,
+        "parallax": 0.5,
+        "minHeight": 250,
+        "maxHeight": 430,
+        "haze": 0.3,
+        "lit": 0.6,
+        "signs": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "forecourt",
+      "type": "street.surface",
+      "props": {
+        "width": 1400,
+        "ground": "#040505",
+        "edge": "#ffbe78",
+        "sheen": 0.9
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-0",
+      "type": "building.stack",
+      "props": {
+        "width": 140,
+        "floors": 13,
+        "seed": 611,
+        "shops": [
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "fish"
+          },
+          {
+            "tenant": "noodles",
+            "sign": "",
+            "stall": "roast"
+          }
+        ],
+        "hung": [
+          {
+            "text": "HOTEL",
+            "color": "#ff3a5a",
+            "floor": 3,
+            "from": 120,
+            "vertical": true
+          },
+          {
+            "text": "MAHJONG",
+            "color": "#ffb02e",
+            "floor": 6,
+            "from": 18,
+            "vertical": true
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-1",
+      "type": "building.stack",
+      "props": {
+        "width": 124,
+        "floors": 11,
+        "seed": 612,
+        "shops": [
+          {
+            "tenant": "pawn",
+            "sign": ""
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "herbs"
+          }
+        ],
+        "hung": [
+          {
+            "text": "DENTIST",
+            "color": "#c27bff",
+            "floor": 2,
+            "from": 104,
+            "vertical": true
+          }
+        ],
+        "wall": "#22201a",
+        "cages": 0.8
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hall",
+      "type": "landmark.market-hall-front",
+      "props": {
+        "width": 740,
+        "base": 165,
+        "rise": 165,
+        "doors": 5,
+        "mainDoor": 130,
+        "sideDoor": 70,
+        "doorHeight": 104,
+        "letters": "WET MARKET",
+        "letterSize": 18,
+        "subline": "MARKET AND COOKED FOOD CENTRE",
+        "notices": "OPEN 05:00-21:00,NO TROLLEYS INSIDE,HYGIENE GRADE B",
+        "birds": 7,
+        "seed": 5
+      },
+      "placement": {
+        "x": 340,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-2",
+      "type": "building.stack",
+      "props": {
+        "width": 120,
+        "floors": 12,
+        "seed": 613,
+        "shops": [
+          {
+            "tenant": "noodles",
+            "sign": ""
+          },
+          {
+            "tenant": "grocer",
+            "sign": "",
+            "stall": "dried"
+          }
+        ],
+        "hung": [
+          {
+            "text": "KARAOKE",
+            "color": "#ff3a5a",
+            "floor": 4,
+            "from": 18,
+            "vertical": true
+          }
+        ],
+        "wall": "#1d2329"
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stack-3",
+      "type": "building.stack",
+      "props": {
+        "width": 130,
+        "floors": 14,
+        "seed": 614,
+        "shops": [
+          {
+            "tenant": "repair",
+            "sign": "",
+            "stall": "electronics"
+          },
+          {
+            "tenant": "loans",
+            "sign": "CASH FOR ID"
+          }
+        ],
+        "hung": [
+          {
+            "text": "BEDS · HOURLY",
+            "color": "#ff3a5a",
+            "floor": 3,
+            "from": 104,
+            "vertical": true
+          },
+          {
+            "text": "TAILOR",
+            "color": "#ffb02e",
+            "floor": 7,
+            "from": 20,
+            "vertical": true
+          }
+        ],
+        "cages": 0.7
+      },
+      "placement": {
+        "x": 1270,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "footbridge",
+      "type": "market.footbridge",
+      "props": {
+        "span": 116,
+        "deck": 120,
+        "depth": 40,
+        "sides": "glass",
+        "piers": 1,
+        "stairs": "none",
+        "sign": "MARKET · LEVEL 1",
+        "walkers": 2,
+        "seed": 3
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bulbs-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 360,
+        "count": 18,
+        "height": 132,
+        "seed": 11,
+        "reach": 0.8
+      },
+      "placement": {
+        "x": 350,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bulbs-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "string",
+        "width": 360,
+        "count": 18,
+        "height": 136,
+        "seed": 12,
+        "reach": 0.8
+      },
+      "placement": {
+        "x": 710,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "seed": 1
+      },
+      "placement": {
+        "x": 322,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1120,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-queue",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 52,
+        "height": 22,
+        "lines": [
+          "QUEUE HERE",
+          "ONE ORDER EACH"
+        ],
+        "post": true
+      },
+      "placement": {
+        "x": 436,
+        "h": 34
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-loading",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 54,
+        "height": 22,
+        "lines": [
+          "LOADING BAY",
+          "05:00-09:00"
+        ],
+        "post": true
+      },
+      "placement": {
+        "x": 1104,
+        "h": 40
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign-registry",
+      "type": "sign.screen",
+      "props": {
+        "kind": "registry",
+        "width": 54,
+        "height": 32,
+        "mount": "wall",
+        "title": "NOTICE",
+        "lines": [
+          "HAWKER PERMITS|SCANNED AT ENTRY",
+          "STALL RENT|DUE ON THE 1ST"
+        ]
+      },
+      "placement": {
+        "x": 1210,
+        "h": 210
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "camera-lane",
+      "type": "sign.camera",
+      "props": {
+        "phase": 2
+      },
+      "placement": {
+        "x": 1158,
+        "h": 150
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stall-roast",
+      "type": "market.forecourt-stall",
+      "props": {
+        "width": 84,
+        "kind": "roast",
+        "cover": "tarp",
+        "tarp": "#c8282a",
+        "sign": "LUNG KEE ROAST",
+        "neon": true,
+        "bulbs": 3,
+        "boxes": 2,
+        "steam": 0.6,
+        "seed": 21
+      },
+      "placement": {
+        "x": 348,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "set"
+    },
+    {
+      "id": "stall-veg",
+      "type": "market.forecourt-stall",
+      "props": {
+        "width": 92,
+        "kind": "veg",
+        "cover": "tarp",
+        "stripes": false,
+        "tarp": "#2f62b8",
+        "bulbs": 2,
+        "boxes": 4,
+        "seed": 22
+      },
+      "placement": {
+        "x": 522,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "set"
+    },
+    {
+      "id": "trolley",
+      "type": "market.crates",
+      "props": {
+        "boxes": 0,
+        "crates": 0,
+        "cart": "trolley",
+        "cartLoad": 4,
+        "ice": true,
+        "seed": 31
+      },
+      "placement": {
+        "x": 606,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "set"
+    },
+    {
+      "id": "stall-fish",
+      "type": "market.forecourt-stall",
+      "props": {
+        "width": 92,
+        "kind": "fish",
+        "cover": "umbrella",
+        "tarp": "#2a8a5a",
+        "lamp": "cold",
+        "bulbs": 2,
+        "boxes": 5,
+        "height": 82,
+        "seed": 23
+      },
+      "placement": {
+        "x": 790,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "set"
+    },
+    {
+      "id": "hose",
+      "type": "market.hose",
+      "props": {
+        "length": 96,
+        "tap": "standpipe",
+        "flow": 0.8,
+        "reach": 50,
+        "puddle": 150,
+        "coils": 1,
+        "seed": 4
+      },
+      "placement": {
+        "x": 896,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "set"
+    },
+    {
+      "id": "crates-door",
+      "type": "market.crates",
+      "props": {
+        "boxes": 3,
+        "tall": 5,
+        "crates": 4,
+        "crateColour": "mixed",
+        "contents": "veg",
+        "cart": "none",
+        "seed": 32
+      },
+      "placement": {
+        "x": 1004,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "set"
+    },
+    {
+      "id": "lorry",
+      "type": "market.lorry",
+      "props": {
+        "length": 150,
+        "body": "box",
+        "open": true,
+        "tailLift": true,
+        "load": 0.7,
+        "loadKind": "mixed",
+        "name": "TAI KEE TRANSPORT",
+        "seed": 7
+      },
+      "placement": {
+        "x": 1110,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "set"
+    },
+    {
+      "id": "crates-lorry",
+      "type": "market.crates",
+      "props": {
+        "boxes": 2,
+        "tall": 3,
+        "crates": 0,
+        "cart": "flatbed",
+        "cartLoad": 4,
+        "seed": 33
+      },
+      "placement": {
+        "x": 1270,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "set"
+    },
+    {
+      "id": "gulls",
+      "type": "character.flock",
+      "props": {
+        "kind": "gull",
+        "count": 5,
+        "seed": 9,
+        "low": 220,
+        "high": 320,
+        "span": 1600,
+        "margin": 200,
+        "ps": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "set"
+    },
+    {
+      "id": "crowd-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1600,
+        "act": "walk",
+        "range": 520
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1610,
+        "act": "talk"
+      },
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1611,
+        "act": "talk",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 178,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1711,
+        "archetype": "fixer",
+        "act": "lean"
+      },
+      "placement": {
+        "x": 232,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1748,
+        "archetype": "vendor",
+        "act": "vend"
+      },
+      "placement": {
+        "x": 388,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1620,
+        "act": "queue"
+      },
+      "placement": {
+        "x": 448,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-6",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1621,
+        "act": "queue",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 464,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-7",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1622,
+        "act": "queue",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 480,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-8",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1623,
+        "act": "queue",
+        "archetype": "student"
+      },
+      "placement": {
+        "x": 496,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-9",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1624,
+        "act": "queue"
+      },
+      "placement": {
+        "x": 512,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-10",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1630,
+        "archetype": "vendor",
+        "act": "vend"
+      },
+      "placement": {
+        "x": 566,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-11",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1631,
+        "archetype": "elder",
+        "act": "haggle"
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-12",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1640,
+        "act": "walk",
+        "range": -380
+      },
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-13",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1641,
+        "act": "walk",
+        "range": 300,
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 734,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-14",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1650,
+        "archetype": "vendor",
+        "act": "vend"
+      },
+      "placement": {
+        "x": 836,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-15",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1651,
+        "archetype": "kid",
+        "act": "steal"
+      },
+      "placement": {
+        "x": 864,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-16",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1652,
+        "archetype": "vendor",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 904,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-17",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1653,
+        "act": "sweep"
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-18",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1660,
+        "archetype": "dockworker",
+        "act": "phone"
+      },
+      "placement": {
+        "x": 1236,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-19",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "market",
+        "seed": 1661,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 1362,
+        "h": 0
+      },
+      "order": 48,
+      "layer": "playfield"
+    },
+    {
+      "id": "loader",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "play",
+        "act": "carry",
+        "range": -120
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 49,
+      "layer": "playfield"
+    },
+    {
+      "id": "scan-drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "scan"
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 50,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 812,
+        "h": 0
+      },
+      "order": 51,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "walk",
+        "range": 30
+      },
+      "placement": {
+        "x": 676,
+        "h": 0
+      },
+      "order": 52,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 53,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "walk",
+        "range": 30
+      },
+      "placement": {
+        "x": 722,
+        "h": 0
+      },
+      "order": 54,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 946,
+        "h": 0
+      },
+      "order": 55,
+      "layer": "playfield"
+    },
+    {
+      "id": "van-near",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "van",
+        "paint": "#3a4a3a",
+        "depth": "near",
+        "motion": "run",
+        "direction": "left",
+        "speed": 2.4,
+        "lane": 2000,
+        "dwell": 2600,
+        "lights": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 56,
+      "layer": "foreground"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 400,
+        "h": 0
+      },
+      "order": 57,
+      "layer": "playfield"
+    }
+  ]
+}

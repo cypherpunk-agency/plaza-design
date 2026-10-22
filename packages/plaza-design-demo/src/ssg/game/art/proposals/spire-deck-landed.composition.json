@@ -1,0 +1,510 @@
+{
+  "version": 1,
+  "scene": "spire-deck-landed",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "cloud-sea",
+      "type": "deck.cloud-sea",
+      "props": {
+        "width": 4000,
+        "parallax": 0.2,
+        "horizon": 70,
+        "below": 120,
+        "banks": 6,
+        "drift": 0.3,
+        "towers": 9,
+        "towerMax": 210,
+        "haze": 0.5,
+        "cloud": "",
+        "wind": 0.4,
+        "seed": 5
+      },
+      "placement": {
+        "x": -400,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire-face",
+      "type": "deck.spire-wall",
+      "props": {
+        "width": 640,
+        "height": 1400,
+        "below": 100,
+        "seams": 0.6,
+        "seamGap": 48,
+        "panes": 0.5,
+        "edge": 0.7,
+        "corner": "right",
+        "bayFrom": 160,
+        "bayWidth": 380,
+        "bayHeight": 112,
+        "bayLit": 0.8,
+        "seed": 2
+      },
+      "placement": {
+        "x": -100,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lounge-room",
+      "type": "deck.lounge",
+      "props": {
+        "width": 470,
+        "height": 110,
+        "slab": 12,
+        "warm": 0.7,
+        "sofaFrom": 40,
+        "sofaWidth": 170,
+        "barFrom": 340,
+        "barWidth": 90,
+        "seal": true
+      },
+      "placement": {
+        "x": 40,
+        "h": 150
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lounge-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "lounge"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "logic"
+    },
+    {
+      "id": "deck",
+      "type": "deck.platform",
+      "props": {
+        "width": 1700,
+        "thickness": 16,
+        "from": 640,
+        "depth": 70,
+        "lights": 24,
+        "chase": 0.6,
+        "chaseTo": 1070,
+        "mast": 90,
+        "sock": true,
+        "wind": 0.6,
+        "rail": 30
+      },
+      "placement": {
+        "x": -100,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "set"
+    },
+    {
+      "id": "pad-main",
+      "type": "deck.landing-pad",
+      "props": {
+        "width": 540,
+        "mode": "parked",
+        "craft": "shuttle",
+        "from": "right",
+        "ramp": true,
+        "umbilical": true,
+        "post": 40,
+        "lights": true
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "set"
+    },
+    {
+      "id": "pad-small",
+      "type": "deck.landing-pad",
+      "props": {
+        "width": 240,
+        "mode": "visiting",
+        "craft": "escort",
+        "cycle": 3000,
+        "phase": 900,
+        "from": "right",
+        "leaves": "climbing",
+        "hover": 20,
+        "lights": true
+      },
+      "placement": {
+        "x": 1300,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "set"
+    },
+    {
+      "id": "lounge-stairs",
+      "type": "level.stairs",
+      "props": {
+        "run": -130,
+        "rise": 150
+      },
+      "placement": {
+        "x": 630,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "set"
+    },
+    {
+      "id": "exec-sofa",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1601,
+        "archetype": "office",
+        "act": "sit",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 95,
+        "h": 150
+      },
+      "order": 10,
+      "layer": "playfield"
+    },
+    {
+      "id": "exec-phone",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1633,
+        "archetype": "shopper",
+        "act": "phone",
+        "sitting": "mixed"
+      },
+      "placement": {
+        "x": 165,
+        "h": 150
+      },
+      "order": 11,
+      "layer": "playfield"
+    },
+    {
+      "id": "exec-window",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1667,
+        "archetype": "office",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 265,
+        "h": 150
+      },
+      "order": 12,
+      "layer": "playfield"
+    },
+    {
+      "id": "exec-talk",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1689,
+        "archetype": "inspector",
+        "act": "talk"
+      },
+      "placement": {
+        "x": 300,
+        "h": 150
+      },
+      "order": 13,
+      "layer": "playfield"
+    },
+    {
+      "id": "lounge-waiter",
+      "type": "character.resident",
+      "props": {
+        "kind": "waiter",
+        "depth": "play",
+        "act": "serve"
+      },
+      "placement": {
+        "x": 400,
+        "h": 150
+      },
+      "order": 14,
+      "layer": "playfield"
+    },
+    {
+      "id": "lounge-guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1701,
+        "archetype": "guard",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 480,
+        "h": 150
+      },
+      "order": 15,
+      "layer": "playfield"
+    },
+    {
+      "id": "bay-bot",
+      "type": "character.resident",
+      "props": {
+        "kind": "servbot",
+        "depth": "play",
+        "act": "charge"
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "playfield"
+    },
+    {
+      "id": "bay-loader",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "play",
+        "act": "carry",
+        "range": 220
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "playfield"
+    },
+    {
+      "id": "cleaner",
+      "type": "character.resident",
+      "props": {
+        "kind": "cleaner",
+        "depth": "play",
+        "act": "walk",
+        "range": 260
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "valet",
+      "type": "character.resident",
+      "props": {
+        "kind": "valet",
+        "depth": "play",
+        "act": "stand",
+        "seed": 4
+      },
+      "placement": {
+        "x": 665,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield"
+    },
+    {
+      "id": "passenger",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1720,
+        "archetype": "office",
+        "act": "walk",
+        "range": 260
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "playfield"
+    },
+    {
+      "id": "umbilical-drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "hover"
+      },
+      "placement": {
+        "x": 830,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "playfield"
+    },
+    {
+      "id": "ramp-guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "spire",
+        "seed": 1740,
+        "archetype": "guard",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 1025,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "playfield"
+    },
+    {
+      "id": "ramp-loader",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "play",
+        "act": "carry",
+        "range": 150
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "playfield"
+    },
+    {
+      "id": "ramp-porter",
+      "type": "character.resident",
+      "props": {
+        "kind": "porter",
+        "depth": "play",
+        "act": "walk",
+        "range": -120
+      },
+      "placement": {
+        "x": 1200,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "playfield"
+    },
+    {
+      "id": "marshal",
+      "type": "character.resident",
+      "props": {
+        "kind": "marshal",
+        "depth": "play",
+        "act": "direct",
+        "seed": 2
+      },
+      "placement": {
+        "x": 1270,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 820,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "lounge-glass",
+      "type": "deck.glass-front",
+      "props": {
+        "width": 470,
+        "height": 110,
+        "panes": 59,
+        "glass": 0.5,
+        "reflect": 0.6
+      },
+      "placement": {
+        "x": 40,
+        "h": 150
+      },
+      "order": 27,
+      "layer": "playfield",
+      "attach": {
+        "instance": "lounge-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor-deck",
+      "type": "level.floor",
+      "props": {
+        "width": 1590,
+        "building": "",
+        "label": "Deck"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-lounge",
+      "type": "level.floor",
+      "props": {
+        "width": 470,
+        "building": "lounge",
+        "label": "Lounge"
+      },
+      "placement": {
+        "x": 40,
+        "h": 150
+      },
+      "order": 29,
+      "layer": "logic"
+    }
+  ]
+}

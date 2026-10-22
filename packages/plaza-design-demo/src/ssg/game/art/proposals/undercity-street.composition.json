@@ -3,202 +3,214 @@
   "scene": "undercity-street",
   "instances": [
     {
-      "id": "vault-0",
-      "type": "building.vault",
+      "id": "rock",
+      "type": "undercity.rock",
       "props": {
-        "width": 300,
-        "height": 300,
-        "ceiling": "arch",
-        "bays": 2,
-        "seed": 11,
-        "alcoves": 0.9,
-        "emergency": 1,
-        "screens": 1,
-        "marks": 0.6,
-        "chalk": "DRY ABOVE THIS LINE",
-        "floodline": 30
+        "width": 1600,
+        "tall": 220,
+        "material": "rock",
+        "seams": 0.6,
+        "seed": 41
       },
       "placement": {
         "x": 0,
-        "h": 0
+        "h": -220
       },
       "order": 1,
       "layer": "backdrop"
     },
     {
-      "id": "vault-1",
+      "id": "arcade",
       "type": "building.vault",
       "props": {
-        "width": 280,
-        "height": 300,
+        "width": 1600,
+        "height": 120,
         "ceiling": "arch",
-        "bays": 2,
-        "seed": 12,
-        "alcoves": 0.8,
-        "emergency": 1,
-        "screens": 1,
-        "screenText": "NO SIGNAL",
-        "marks": 0.5,
-        "tarp": "#3a2c20",
-        "floodline": 30
+        "bays": 10,
+        "rise": 44,
+        "pipes": 3,
+        "alcoves": 0.75,
+        "emergency": 4,
+        "screens": 2,
+        "marks": 0.6,
+        "chalk": "CLINIC TUESDAY",
+        "floodline": 30,
+        "seed": 11
       },
       "placement": {
-        "x": 300,
+        "x": 0,
         "h": 0
       },
       "order": 2,
       "layer": "backdrop"
     },
     {
-      "id": "vault-2",
-      "type": "building.vault",
+      "id": "drain",
+      "type": "building.tunnel",
       "props": {
-        "width": 300,
-        "height": 300,
-        "ceiling": "ribbed",
-        "bays": 2,
-        "seed": 13,
-        "alcoves": 0.3,
-        "emergency": 2,
-        "screens": 0,
-        "marks": 0.8,
-        "pipes": 6,
-        "floodline": 30
+        "width": 1000,
+        "height": 56,
+        "profile": "round",
+        "homes": 0.2,
+        "lamps": 3,
+        "lamp": "battery",
+        "marks": 0.5,
+        "ends": "both",
+        "pipes": 1,
+        "seed": 43
       },
       "placement": {
-        "x": 580,
-        "h": 0
+        "x": 300,
+        "h": -120
       },
       "order": 3,
       "layer": "backdrop"
     },
     {
-      "id": "basement",
-      "type": "landmark.flooded-basement",
+      "id": "canal-0",
+      "type": "undercity.canal",
       "props": {
-        "width": 460,
-        "height": 240,
-        "racks": 6,
-        "running": 0.4,
-        "depth": 0.45,
-        "stair": "left",
-        "broken": true,
-        "raft": true,
-        "letters": "B2 · DATA HALL",
-        "seed": 7
-      },
-      "placement": {
-        "x": 880,
-        "h": 0
-      },
-      "order": 4,
-      "layer": "backdrop"
-    },
-    {
-      "id": "vault-3",
-      "type": "building.vault",
-      "props": {
-        "width": 260,
-        "height": 300,
-        "ceiling": "flat",
-        "bays": 2,
-        "seed": 14,
-        "alcoves": 1,
-        "emergency": 1,
-        "screens": 0,
-        "marks": 0.4,
-        "chalk": "CLINIC TUESDAY",
-        "pipes": 3,
-        "floodline": 30
-      },
-      "placement": {
-        "x": 1340,
-        "h": 0
-      },
-      "order": 5,
-      "layer": "backdrop"
-    },
-    {
-      "id": "street",
-      "type": "street.surface",
-      "props": {
-        "width": 1600,
-        "ground": "#040908",
-        "edge": "#3a8a80",
-        "sheen": 0.55,
-        "kerb": true,
-        "cobbles": false,
-        "water": 44,
-        "seed": 3
+        "width": 300,
+        "depth": 40,
+        "edge": "quay",
+        "flow": 0.2,
+        "litter": 0.4,
+        "boat": "none",
+        "boatAt": 560,
+        "boatDrift": 40,
+        "seed": 5
       },
       "placement": {
         "x": 0,
         "h": 0
       },
-      "order": 6,
-      "layer": "backdrop"
+      "order": 4,
+      "layer": "set"
     },
     {
-      "id": "leds-0",
-      "type": "street.lamp",
+      "id": "canal-1",
+      "type": "undercity.canal",
       "props": {
-        "style": "string",
-        "width": 280,
-        "count": 16,
-        "height": 156,
-        "seed": 5,
-        "color": "#e8e0b0",
-        "reach": 0.7
+        "width": 700,
+        "depth": 40,
+        "edge": "quay",
+        "flow": 0.2,
+        "litter": 0.4,
+        "boat": "punt",
+        "boatAt": 560,
+        "boatDrift": 40,
+        "seed": 6
       },
       "placement": {
-        "x": 300,
+        "x": 420,
         "h": 0
+      },
+      "order": 5,
+      "layer": "set"
+    },
+    {
+      "id": "canal-2",
+      "type": "undercity.canal",
+      "props": {
+        "width": 320,
+        "depth": 40,
+        "edge": "quay",
+        "flow": 0.2,
+        "litter": 0.4,
+        "boat": "none",
+        "boatAt": 560,
+        "boatDrift": 40,
+        "seed": 7
+      },
+      "placement": {
+        "x": 1280,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "set"
+    },
+    {
+      "id": "shaft-drain",
+      "type": "undercity.shaft",
+      "props": {
+        "height": 120,
+        "width": 26,
+        "from": 56,
+        "kind": "drain",
+        "top": "grate",
+        "label": "DRAIN",
+        "seed": 4
+      },
+      "placement": {
+        "x": 350,
+        "h": -120
       },
       "order": 7,
       "layer": "backdrop"
     },
     {
-      "id": "leds-1",
-      "type": "street.lamp",
+      "id": "stairwell",
+      "type": "undercity.shaft",
       "props": {
-        "style": "string",
-        "width": 260,
-        "count": 14,
-        "height": 150,
-        "seed": 9,
-        "color": "#e8e0b0",
-        "reach": 0.7
+        "height": 120,
+        "width": 140,
+        "from": 56,
+        "kind": "stairwell",
+        "top": "open",
+        "seed": 6
       },
       "placement": {
-        "x": 1340,
-        "h": 0
+        "x": 1130,
+        "h": -120
       },
       "order": 8,
       "layer": "backdrop"
     },
     {
-      "id": "sign-0",
-      "type": "sign.paper",
+      "id": "stairs-drain",
+      "type": "level.stairs",
       "props": {
-        "style": "paper",
-        "width": 58,
-        "height": 32,
-        "header": "NOTICE",
-        "lines": [
-          "PUMPS OFF",
-          "WATER IS LIVE"
-        ],
-        "post": true
+        "run": -110,
+        "rise": 120
       },
       "placement": {
-        "x": 862,
-        "h": 40
+        "x": 1260,
+        "h": -120
       },
       "order": 9,
-      "layer": "backdrop"
+      "layer": "set"
     },
     {
-      "id": "sign-1",
+      "id": "ladder-drain-link",
+      "type": "level.stairs",
+      "props": {
+        "run": 0,
+        "rise": 120
+      },
+      "placement": {
+        "x": 358,
+        "h": -120
+      },
+      "order": 10,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-drain",
+      "type": "undercity.ladder",
+      "props": {
+        "height": 120,
+        "metal": "rust",
+        "seed": 5
+      },
+      "placement": {
+        "x": 357,
+        "h": -120
+      },
+      "order": 11,
+      "layer": "set"
+    },
+    {
+      "id": "note-0",
       "type": "sign.taped",
       "props": {
         "lines": [
@@ -208,27 +220,31 @@
         "tilt": 0.04
       },
       "placement": {
-        "x": 440,
-        "h": 62
+        "x": 640,
+        "h": 44
       },
-      "order": 10,
+      "order": 12,
       "layer": "backdrop"
     },
     {
-      "id": "sign-2",
-      "type": "sign.screen",
+      "id": "notice-0",
+      "type": "sign.paper",
       "props": {
-        "kind": "broken",
+        "style": "paper",
         "width": 40,
-        "height": 26,
-        "mount": "wall",
-        "seed": 4
+        "height": 30,
+        "header": "NOTICE",
+        "lines": [
+          "PUMPS OFF",
+          "WATER IS LIVE"
+        ],
+        "post": true
       },
       "placement": {
-        "x": 1470,
-        "h": 120
+        "x": 880,
+        "h": 40
       },
-      "order": 11,
+      "order": 13,
       "layer": "backdrop"
     },
     {
@@ -238,16 +254,16 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
+        "seed": 811,
         "archetype": "ghost",
         "act": "sit",
-        "sitting": "side",
-        "seed": 811
+        "sitting": "side"
       },
       "placement": {
         "x": 64,
         "h": 0
       },
-      "order": 12,
+      "order": 14,
       "layer": "playfield"
     },
     {
@@ -257,15 +273,15 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
+        "seed": 824,
         "archetype": "drifter",
-        "act": "sleep",
-        "seed": 823
+        "act": "sleep"
       },
       "placement": {
         "x": 182,
         "h": 0
       },
-      "order": 13,
+      "order": 15,
       "layer": "playfield"
     },
     {
@@ -275,15 +291,15 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
+        "seed": 837,
         "archetype": "ghost",
-        "act": "talk",
-        "seed": 839
+        "act": "talk"
       },
       "placement": {
-        "x": 352,
+        "x": 470,
         "h": 0
       },
-      "order": 14,
+      "order": 16,
       "layer": "playfield"
     },
     {
@@ -293,15 +309,15 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
+        "seed": 850,
         "archetype": "ghost",
-        "act": "talk",
-        "seed": 857
+        "act": "talk"
       },
       "placement": {
-        "x": 374,
+        "x": 492,
         "h": 0
       },
-      "order": 15,
+      "order": 17,
       "layer": "playfield"
     },
     {
@@ -311,15 +327,15 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
+        "seed": 863,
         "archetype": "drifter",
-        "act": "smoke",
-        "seed": 863
+        "act": "smoke"
       },
       "placement": {
-        "x": 496,
+        "x": 600,
         "h": 0
       },
-      "order": 16,
+      "order": 18,
       "layer": "playfield"
     },
     {
@@ -329,16 +345,16 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
-        "archetype": "elder",
-        "act": "sit",
-        "sitting": "mixed",
-        "seed": 877
+        "seed": 876,
+        "archetype": "ghost",
+        "act": "walk",
+        "range": -300
       },
       "placement": {
-        "x": 604,
+        "x": 840,
         "h": 0
       },
-      "order": 17,
+      "order": 19,
       "layer": "playfield"
     },
     {
@@ -348,16 +364,15 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
+        "seed": 889,
         "archetype": "ghost",
-        "act": "walk",
-        "range": -320,
-        "seed": 881
+        "act": "vend"
       },
       "placement": {
-        "x": 840,
+        "x": 1000,
         "h": 0
       },
-      "order": 18,
+      "order": 20,
       "layer": "playfield"
     },
     {
@@ -367,15 +382,16 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
-        "archetype": "ghost",
-        "act": "vend",
-        "seed": 907
+        "seed": 902,
+        "archetype": "elder",
+        "act": "sit",
+        "sitting": "mixed"
       },
       "placement": {
-        "x": 1180,
+        "x": 1380,
         "h": 0
       },
-      "order": 19,
+      "order": 21,
       "layer": "playfield"
     },
     {
@@ -385,34 +401,52 @@
         "kind": "human",
         "depth": "play",
         "district": "undercity",
-        "archetype": "ghost",
-        "act": "sit",
-        "sitting": "side",
-        "seed": 919
-      },
-      "placement": {
-        "x": 1390,
-        "h": 0
-      },
-      "order": 20,
-      "layer": "playfield"
-    },
-    {
-      "id": "crowd-9",
-      "type": "character.resident",
-      "props": {
-        "kind": "human",
-        "depth": "play",
-        "district": "undercity",
+        "seed": 915,
         "archetype": "sleeper",
-        "act": "sleep",
-        "seed": 929
+        "act": "sleep"
       },
       "placement": {
         "x": 1520,
         "h": 0
       },
-      "order": 21,
+      "order": 22,
+      "layer": "playfield"
+    },
+    {
+      "id": "drain-sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "sleep",
+        "archetype": "drifter",
+        "seed": 901
+      },
+      "placement": {
+        "x": 800,
+        "h": -120
+      },
+      "order": 23,
+      "layer": "playfield"
+    },
+    {
+      "id": "drain-walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "walk",
+        "archetype": "ghost",
+        "range": 300,
+        "seed": 907
+      },
+      "placement": {
+        "x": 600,
+        "h": -120
+      },
+      "order": 24,
       "layer": "playfield"
     },
     {
@@ -427,22 +461,7 @@
         "x": 268,
         "h": 0
       },
-      "order": 22,
-      "layer": "playfield"
-    },
-    {
-      "id": "crawler",
-      "type": "character.resident",
-      "props": {
-        "kind": "crawler",
-        "depth": "play",
-        "act": "scrub"
-      },
-      "placement": {
-        "x": 1060,
-        "h": 0
-      },
-      "order": 23,
+      "order": 25,
       "layer": "playfield"
     },
     {
@@ -458,7 +477,22 @@
         "x": 1430,
         "h": 0
       },
-      "order": 24,
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "crawler",
+      "type": "character.resident",
+      "props": {
+        "kind": "crawler",
+        "depth": "play",
+        "act": "scrub"
+      },
+      "placement": {
+        "x": 1000,
+        "h": -120
+      },
+      "order": 27,
       "layer": "playfield"
     },
     {
@@ -473,8 +507,38 @@
         "x": 1290,
         "h": 0
       },
-      "order": 25,
+      "order": 28,
       "layer": "playfield"
+    },
+    {
+      "id": "floor-main",
+      "type": "level.floor",
+      "props": {
+        "width": 1600,
+        "building": "",
+        "label": "Junction"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-drain",
+      "type": "level.floor",
+      "props": {
+        "width": 1000,
+        "building": "",
+        "label": "Drain"
+      },
+      "placement": {
+        "x": 300,
+        "h": -120
+      },
+      "order": 30,
+      "layer": "logic"
     },
     {
       "id": "spawn",
@@ -484,7 +548,7 @@
         "x": 720,
         "h": 0
       },
-      "order": 26,
+      "order": 31,
       "layer": "playfield"
     }
   ]

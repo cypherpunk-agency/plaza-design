@@ -14,7 +14,8 @@
  * - `deck.spire-wall`: the monolith's black face rising out of the view, with a crew bay at deck level.
  * - `deck.platform`: the cantilevered deck, its truss back to the wall, gold edge lights running to
  *   the pad, the tip's mast and windsock.
- * - `deck.landing-pad`: the pad and the shuttle that settles on it and leaves, on a long cycle.
+ * - `deck.landing-pad`: the pad and its craft: one that settles and leaves on a long cycle, or one parked for
+ *   good (hatch lit, boarding ramp down, a power umbilical from a pedestal).
  * - `deck.lounge` and `deck.glass-front`: the glass-walled lounge cut into the wall (front on the shell).
  *
  * Everything is drawn in the piece's own frame: origin at its foot on the left, heights up (`y = -h`).
@@ -26,7 +27,7 @@ import { addLight } from '../atmosphere/lighting';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, rgba, hash, y, type Paint } from '../buildings/types';
 import { rng } from '../core/primitives';
 import { neonPlate } from '../signage/kit';
-import { drawCraft } from '../vehicles/air-traffic';
+import { drawCraft, CRAFT_EXTENT, CRAFT_LEN } from '../vehicles/air-traffic';
 
 const GOLD = '216,180,90', COLD = '220,232,245', RED = '255,42,68', GO = '120,230,160';
 const hexOr = (v: unknown, d: string) => isHex(v) ? String(v) : d;
@@ -489,12 +490,17 @@ export const platformElement = piece({
   },
 });
 
+/** The craft a pad can take (a hauler's slung box does not fit a pad). */
+const PAD_CRAFT = ['shuttle', 'escort', 'medevac', 'taxi'] as const;
+
 export const landingPadElement: Element = {
-  type: 'deck.landing-pad', version: 1, label: 'Landing pad and its shuttle (deck: settles, waits, leaves on a long cycle)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'deck.landing-pad', version: 1, label: 'Landing pad and its craft (deck: a visit on a long cycle, or parked for good)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    width: num('Pad length', 420, 120, 2000, 1, 'units'), cycle: num('One visit (frames)', 2400, 600, 30000, 10), phase: num('Phase (frames)', 0, 0, 30000, 10),
-    from: select('Comes in from the', ['right', 'left'], 'right'), leaves: select('Leaves', ['climbing', 'onward'], 'climbing'),
+    width: num('Pad length', 420, 120, 2000, 1, 'units'), mode: select('Craft', ['visiting', 'parked', 'none'], 'visiting'), craft: select('Kind of craft', PAD_CRAFT, 'shuttle'),
+    cycle: num('One visit (frames)', 2400, 600, 30000, 10), phase: num('Phase (frames)', 0, 0, 30000, 10),
+    from: select('Comes in from the (nose points away)', ['right', 'left'], 'right'), leaves: select('Leaves', ['climbing', 'onward'], 'climbing'),
     hover: num('Hover before touchdown', 26, 0, 120, 1, 'units'), paint: colour('Hull', 'Spire black'), stripe: colour('Fleet stripe', 'Gold'),
+    ramp: bool('Boarding ramp down (parked)', true), umbilical: bool('Power umbilical (parked)', true), post: num('Power post from the pad’s left', 30, 0, 2000, 1, 'units'),
     lights: bool('Pad lights', true), ...stoneFields(),
   },
   bounds: p => ({ x: 0, h: 120, w: Number(p.width), tall: 124 }),
@@ -502,10 +508,13 @@ export const landingPadElement: Element = {
   draw(ctx, v, p, _s, _pass, at) {
     framed(ctx, v, at, o => {
       const x = ctx, W = Number(p.width), g = rgbOr(p.gold, GOLD), cyc = Number(p.cycle), u = ((((o.t + Number(p.phase)) % cyc) + cyc) % cyc) / cyc;
-      const s = p.from === 'left' ? -1 : 1, face = (-s) as 1 | -1, hover = Number(p.hover), cx = W / 2;
-      // where the shuttle is: in, down onto the pad, a wait with the hatch open, up, away
+      const s = p.from === 'left' ? -1 : 1, face = (-s) as 1 | -1, hover = Number(p.hover), cx = W / 2, mode = String(p.mode);
+      const kind = (PAD_CRAFT as readonly string[]).includes(String(p.craft)) ? String(p.craft) as typeof PAD_CRAFT[number] : 'shuttle';
+      const L = CRAFT_LEN[kind] / 2, ext = CRAFT_EXTENT[kind], hatchH = Math.min(30, Math.round(ext.top * 0.6)), hatchW = Math.max(12, Math.round(L * 0.13));
+      // where the craft is: in, down onto the pad, a wait with the hatch open, up, away (or parked: down, open, for good)
       let dx = 0, alt = 0, gear = true, hatch = 0;
-      if (u < 0.28) { const k = ease(u / 0.28); dx = s * 900 * (1 - k); alt = hover + 320 * Math.pow(1 - k, 1.6); gear = k > 0.8; }
+      if (mode === 'parked') hatch = 1;
+      else if (u < 0.28) { const k = ease(u / 0.28); dx = s * 900 * (1 - k); alt = hover + 320 * Math.pow(1 - k, 1.6); gear = k > 0.8; }
       else if (u < 0.38) alt = hover * (1 - ease((u - 0.28) / 0.1));
       else if (u < 0.7) hatch = u < 0.42 ? 0 : u < 0.46 ? (u - 0.42) / 0.04 : u < 0.62 ? 1 : u < 0.66 ? 1 - (u - 0.62) / 0.04 : 0;
       else if (u < 0.78) alt = hover * ease((u - 0.7) / 0.08);
@@ -513,7 +522,7 @@ export const landingPadElement: Element = {
         const k = Math.pow((u - 0.78) / 0.22, 2); gear = k < 0.05;
         if (p.leaves === 'onward') { dx = face * 1100 * k; alt = hover + 200 * k; } else { dx = face * 60 * k; alt = hover + 700 * k; }
       }
-      const busy = u < 0.38 || u >= 0.7, blink = Math.floor(o.t / 18) % 2 === 0;
+      const busy = mode === 'visiting' && (u < 0.38 || u >= 0.7), blink = Math.floor(o.t / 18) % 2 === 0;
       // the pad: a raised plate, gold chevrons that blink while a craft is moving, lamp posts at both ends
       box(x, '#14151a', 0, 0, W, 3); box(x, rgba(COLD, 0.45), 0, 3, W, 1); box(x, rgba(g, 0.6), 0, 0, W, 1);
       for (let c = 16; c < W - 10; c += 22) box(x, rgba(g, busy ? (blink ? 0.9 : 0.3) : 0.55), c, 1, 8, 1);
@@ -521,23 +530,43 @@ export const landingPadElement: Element = {
         box(x, '#16171c', lx, 0, 3, 12); box(x, rgba(g, busy && !blink ? 0.3 : 0.95), lx, 12, 3, 2);
         o.light?.(lx + 1, 13, 3, 2, g, 'window');
       }
+      if (mode === 'none') return;
       // the downwash: cold light pooling on the pad under a hovering craft
-      if (alt < 140 && (u < 0.38 || u >= 0.7)) {
-        const k = 1 - alt / 140, wash = x.createRadialGradient(cx + dx, -4, 2, cx + dx, -4, 160);
+      if (busy && alt < 140) {
+        const k = 1 - alt / 140, r = L * 0.85, wash = x.createRadialGradient(cx + dx, -4, 2, cx + dx, -4, r);
         wash.addColorStop(0, rgba(COLD, 0.22 * k)); wash.addColorStop(1, rgba(COLD, 0));
-        x.fillStyle = wash; x.fillRect(Math.round(cx + dx - 160), -60, 320, 64);
-        for (let i = 0; i < 3; i++) box(x, rgba(COLD, 0.2 * k), Math.round(cx + dx - 120 + ((o.t * 3 + i * 80) % 240)), 4 + i, 24, 1);
+        x.fillStyle = wash; x.fillRect(Math.round(cx + dx - r), -60, Math.round(r * 2), 64);
+        for (let i = 0; i < 3; i++) box(x, rgba(COLD, 0.2 * k), Math.round(cx + dx - r * 0.75 + ((o.t * 3 + i * 80) % (r * 1.5))), 4 + i, 24, 1);
       }
-      // the craft: landing struts when low, a hatch of warm light while it waits
-      const sx = Math.round(cx + dx), base = Math.round(3 + alt);
-      if (gear) for (const gx of [-110, 100]) { box(x, '#101114', sx + gx, base, 3, 6); box(x, '#101114', sx + gx - 3, base, 9, 1); }
-      x.save(); x.translate(sx, y(base + 12));
+      const sx = Math.round(cx + dx), base = Math.round(3 + alt), lift = base + 6 + ext.bottom;
+      // the hatch in the craft's own frame (towards the tail) and on the pad
+      const hx = -face * Math.round(L * 0.3) - Math.round(hatchW / 2), hatchX = sx + hx;
+      // a parked craft's power umbilical: a pedestal on the pad, a cable sagging up to the belly
+      if (mode === 'parked' && p.umbilical !== false) {
+        const px = Number(p.post), bx = sx + face * Math.round(L * 0.35), bh = base + 6, ph = 24, on = 0.6 + 0.4 * Math.sin(o.t / 50);
+        box(x, '#16171c', px - 6, 3, 12, ph); box(x, rgba(COLD, 0.25), px - 6, 3, 1, ph); box(x, rgba(g, 0.8), px - 6, 3 + ph, 12, 1);
+        box(x, '#08080a', px - 3, ph - 8, 6, 5); box(x, rgba(g, 0.9 * on), px - 2, ph - 7, 4, 2);
+        o.light?.(px, ph - 6, 4, 2, g, 'screen');
+        for (let i = 0; i <= 24; i++) { const k = i / 24, cxw = px + (bx - px) * k, ch = (3 + ph - 4) + (bh - (ph - 1)) * k - 8 * 4 * k * (1 - k); box(x, '#0c0d10', cxw - 1, ch - 1, 3, 3); }
+        for (let i = 0; i <= 24; i += 6) { const k = i / 24, cxw = px + (bx - px) * k, ch = (3 + ph - 4) + (bh - (ph - 1)) * k - 8 * 4 * k * (1 - k); box(x, rgba(g, 0.5), cxw, ch + 1, 1, 1); }
+      }
+      if (gear) for (const gx of [-Math.round(L * 0.58), Math.round(L * 0.53)]) { box(x, '#101114', sx + gx, base, 3, 6); box(x, '#101114', sx + gx - 3, base, 9, 1); }
+      x.save(); x.translate(sx, y(lift));
       const stripe = isHex(p.stripe) ? String(p.stripe) : '#d8b45a';
-      drawCraft(x, 'shuttle', { t: o.t, face, paint: hexOr(p.paint, '#16171b'), scale: 1, livery: { stripe } });
-      if (hatch > 0) { const hx = face > 0 ? -60 : 36; x.fillStyle = rgba('255,226,180', 0.75 * hatch); x.fillRect(hx, -30, 24, Math.round(30 * hatch)); }
+      drawCraft(x, kind, { t: o.t, face, paint: hexOr(p.paint, '#16171b'), scale: 1, livery: { stripe } });
+      if (hatch > 0) { x.fillStyle = rgba('255,226,180', 0.75 * hatch); x.fillRect(hx, -hatchH, hatchW, Math.round(hatchH * hatch)); x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(hx, -hatchH, hatchW, 1); }
       x.restore();
-      o.light?.(sx, base + 34, 220, 8, '255,240,210', 'window');
-      if (hatch > 0) o.light?.(sx + (face > 0 ? -48 : 48), base + 26, 24, 30, '255,226,180', 'window');
+      // the boarding ramp: from the hatch sill down to the pad, towards the tail; lit edge, a handrail
+      if (mode === 'parked' && p.ramp !== false) {
+        const top = lift, len = Math.max(30, Math.round((top - 3) * 2.6)), x0 = face > 0 ? hatchX : hatchX + hatchW, dir = -face;
+        for (let i = 0; i < len; i += 2) { const h = Math.round(top - ((top - 3) * i) / len); box(x, '#1a1b20', x0 + dir * i - (dir < 0 ? 2 : 0), h - 3, 2, 3); box(x, rgba(COLD, 0.4), x0 + dir * i - (dir < 0 ? 2 : 0), h, 2, 1); }
+        for (let i = 0; i <= len; i += 2) { const h = Math.round(top - ((top - 3) * i) / len) + 22; box(x, rgba(g, 0.7), x0 + dir * i - (dir < 0 ? 1 : 0), h, 1, 1); }
+        for (const i of [0, Math.round(len / 2), len]) { const h = Math.round(top - ((top - 3) * i) / len); box(x, '#1a1b20', x0 + dir * i, h, 1, 22); }
+        const spill = x.createLinearGradient(0, y(top), 0, 0); spill.addColorStop(0, rgba('255,226,180', 0.18)); spill.addColorStop(1, rgba('255,226,180', 0));
+        x.fillStyle = spill; x.fillRect(Math.min(x0, x0 + dir * len), y(top), len, top);
+      }
+      o.light?.(sx, base + 34, L * 1.15, 8, '255,240,210', 'window');
+      if (hatch > 0) o.light?.(hatchX + hatchW / 2, lift - hatchH / 2, hatchW, hatchH, '255,226,180', 'window');
     });
   },
 };

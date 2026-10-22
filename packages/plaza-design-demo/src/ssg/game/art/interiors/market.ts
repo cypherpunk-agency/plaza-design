@@ -610,9 +610,9 @@ export const hallShellElement = piece({
   },
 });
 
-export const HALL_STALLS = ['fish', 'meat', 'veg', 'fruit', 'dried', 'tofu', 'flowers'] as const;
-const HALL_NAMES: Record<string, string> = { fish: 'SEAFOOD', meat: 'FRESH PORK', veg: 'VEGETABLES', fruit: 'FRUIT', dried: 'DRIED SEAFOOD', tofu: 'TOFU · SOY', flowers: 'FLOWERS' };
-const HALL_LAMP: Record<string, string> = { fish: 'cold', meat: 'red', veg: 'warm', fruit: 'warm', dried: 'warm', tofu: 'cold', flowers: 'warm' };
+export const HALL_STALLS = ['fish', 'meat', 'veg', 'fruit', 'dried', 'tofu', 'flowers', 'herbs', 'rice'] as const;
+const HALL_NAMES: Record<string, string> = { fish: 'SEAFOOD', meat: 'FRESH PORK', veg: 'VEGETABLES', fruit: 'FRUIT', dried: 'DRIED SEAFOOD', tofu: 'TOFU · SOY', flowers: 'FLOWERS', herbs: 'HERBAL MEDICINE', rice: 'RICE · GRAIN' };
+const HALL_LAMP: Record<string, string> = { fish: 'cold', meat: 'red', veg: 'warm', fruit: 'warm', dried: 'warm', tofu: 'cold', flowers: 'warm', herbs: 'warm', rice: 'warm' };
 const LAMP_COL: Record<string, string> = { red: '255,70,70', warm: '255,210,140', cold: '200,235,240', green: '170,255,150' };
 const CANOPIES = ['200,40,40', '40,90,200', '230,180,40', '40,150,90', '220,90,160'];
 
@@ -676,6 +676,16 @@ export const marketStallElement = piece({
       for (let k = 4; k < w - 16; k += 18) { R(x, k, top - 2, 16, 3, 'rgba(160,200,215,.55)'); for (let c = 0; c < 3; c++) R(x, k + 1 + c * 5, top - 1, 4, 4, 'rgba(240,235,215,.95)'); }
       for (let k = 4; k < w - 6; k += 5) { R(x, k, top + 18, 3, 8, 'rgba(240,240,230,.85)'); R(x, k, top + 26, 3, 1, 'rgba(60,140,200,.9)'); }
       R(x, w - 16, top, 12, 10, '#7a6a4a'); steam(x, w - 10, top + 10, t, seed, 4, 0.3, 26);
+    } else if (kind === 'herbs') {
+      // a red cabinet of a hundred drawers, brass pulls, jars on the counter, the scale
+      R(x, 3, top, w - 6, rail - top - 4, '#4a1210');
+      for (let rI = 0; rI < 4; rI++) for (let k = 5; k < w - 9; k += 8) { R(x, k, top + 3 + rI * 8, 7, 6, '#5a1a14'); R(x, k + 3, top + 5 + rI * 8, 1, 1, 'rgba(230,190,90,.9)'); }
+      for (let k = 4; k < w - 20; k += 8) { R(x, k, top - 4, 6, 8, 'rgba(220,230,220,.45)'); R(x, k + 1, top - 4, 4, 4, rgba(['150,90,50', '120,140,60', '200,160,90'][k % 3], 0.85)); }
+      R(x, w - 16, top - 4, 12, 1, 'rgba(200,180,120,.9)'); R(x, w - 11, top - 3, 2, 6, 'rgba(200,180,120,.9)'); R(x, w - 15, top + 3, 4, 1, 'rgba(200,180,120,.9)');
+    } else if (kind === 'rice') {
+      // open sacks rolled down, heaps of rice with a scoop in each, a stack of bags behind
+      for (let k = 3; k < w - 14; k += 15) { R(x, k, top - 10, 14, 12, '#7a6a4a'); R(x, k + 1, top + 2, 12, 3, rgba(['245,240,225', '230,215,180', '200,170,120', '120,60,50'][(k + seed) % 4], 0.95)); R(x, k + 9, top + 4, 1, 5, 'rgba(200,200,205,.9)'); }
+      for (let rI = 0; rI < 3; rI++) for (let k = 4 + (rI % 2) * 6; k < w - 12; k += 13) { R(x, k, top + 10 + rI * 8, 12, 7, 'rgba(230,220,190,.75)'); R(x, k + 2, top + 12 + rI * 8, 8, 2, 'rgba(200,40,40,.8)'); }
     } else {
       // flowers in buckets, wrapped bunches up the back, a red one for luck
       for (let k = 3; k < w - 10; k += 11) { R(x, k, top - 12, 9, 12, 'rgba(70,90,110,.9)'); for (let f = 0; f < 4; f++) { R(x, k + 1 + f * 2, top, 1, 6 + f, 'rgba(70,140,60,.95)'); R(x, k + f * 2, top + 6 + f, 3, 3, rgba(['255,80,120', '255,220,80', '240,240,240', '200,60,200', '255,120,40'][(k + f + seed) % 5], 0.95)); } }
@@ -898,7 +908,198 @@ export const officeWindowElement = piece({
   },
 });
 
+// ---------------------------------------------------------------- the hall's basement and top floor
+
+export const coldStoreElement = piece({
+  type: 'interior.cold-store', label: 'Cold store doors (kit, market basement)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 240, 60, 1000, 1, 'units'), height: num('Height', 90, 50, 200, 1, 'units'), doors: num('Doors', 2, 1, 6), open: num('Door standing open (0: none)', 1, 0, 6),
+    frost: num('Frost', 0.6, 0, 1, 0.05), hanging: bool('Carcasses hanging inside', true), reading: text('Temperature display', '-18'), sign: text('Sign (empty: none)', 'COLD STORE · KEEP SHUT'),
+    panel: colourField('Insulated panels', '#2a3338'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), n = Number(p.doors), open = Number(p.open), seed = Number(p.seed), t = o.t, frost = Number(p.frost);
+    R(x, 0, 0, w, H - 4, hexOr(p.panel, '#2a3338')); for (let k = 0; k < w; k += 24) R(x, k, 0, 1, H - 4, 'rgba(0,0,0,.35)'); R(x, 0, H - 6, w, 2, 'rgba(255,255,255,.08)');
+    const dw = Math.min(46, Math.floor((w - 10) / n) - 10), gap = (w - n * dw) / (n + 1), dh = Math.min(64, H - 26);
+    for (let i = 0; i < n; i++) {
+      const l = Math.round(gap + i * (dw + gap)), isOpen = i + 1 === open;
+      if (isOpen) {
+        // a frosty blue room through the strip curtain, carcasses on the rail, a breath of cold air
+        R(x, l, 0, dw, dh, 'rgba(150,200,225,.35)'); R(x, l, dh - 6, dw, 1, 'rgba(200,200,205,.8)');
+        if (p.hanging !== false) for (let k = l + 4; k < l + dw - 6; k += 9) { R(x, k + 2, dh - 10, 1, 4, 'rgba(200,200,205,.8)'); R(x, k, dh - 34, 6, 24, 'rgba(210,140,140,.85)'); R(x, k + 1, dh - 34, 2, 24, 'rgba(245,230,225,.7)'); }
+        for (let k = 0; k < dw; k += 3) R(x, l + k + Math.round(Math.sin(t / 60 + k) * 0.6), 2, 2, dh - 4, 'rgba(220,235,240,.22)');
+        steam(x, l + dw / 2, 4, t, seed, 4, 0.2, 18); o.light?.(l + dw / 2, dh / 2, dw, dh, '170,215,235', 'window');
+        R(x, l - 6, 0, 5, dh + 2, '#3e484e');
+      } else {
+        R(x, l, 0, dw, dh, '#3e484e'); R(x, l + 2, 2, dw - 4, dh - 4, '#4a555c'); R(x, l, dh, dw, 2, '#1e2428');
+        R(x, l + dw - 9, Math.round(dh / 2) - 2, 7, 3, '#8a9096'); R(x, l + dw - 4, Math.round(dh / 2) - 8, 2, 14, '#8a9096');
+        for (const hh of [10, dh - 14]) R(x, l - 2, hh, 4, 6, '#6a7076');
+      }
+      // frost creeping round the frames
+      if (frost > 0) for (let k = 0; k < Math.round(frost * 12); k++) R(x, l - 1 + Math.round(hash(seed + i * 9 + k) * (dw + 2)), dh - 1 + Math.round(hash(seed * 3 + k) * 3), 2, 1, 'rgba(225,240,245,.6)');
+      // the thermometer over each door, red digits
+      R(x, l + dw / 2 - 8, dh + 4, 16, 8, '#0a0a0a'); paintText(x, String(p.reading ?? ''), l + dw / 2, y(dh + 8), 'rgba(255,60,50,.95)', 6, '700');
+      o.light?.(l + dw / 2, dh + 8, 12, 6, '255,60,50', 'screen');
+    }
+    R(x, 0, 0, w, 2, 'rgba(200,230,240,' + (0.25 * frost).toFixed(3) + ')');
+    const sign = String(p.sign ?? '');
+    if (sign) neonPlate(x, t, Math.round(w / 2), y(H - 10), { text: sign, col: '30,30,30', size: 5, h: 9, printed: true, bolts: false, glow: 0, fill: 'rgba(232,225,205,.85)', ink: 'rgba(30,60,140,.9)' });
+  },
+});
+
+export const loadingBayElement = piece({
+  type: 'interior.loading-bay', label: 'Loading bay with its ramp (kit, market basement)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 300, 80, 1200, 1, 'units'), height: num('Height', 90, 50, 200, 1, 'units'), door: num('Roller door raised', 0.8, 0, 1, 0.05),
+    outside: select('Light up the ramp', ['sodium', 'neon', 'none']), pallets: num('Pallets of boxes', 3, 0, 8), trolley: bool('Hand trolley', true),
+    hazard: bool('Hazard stripes on the dock', true), sign: text('Sign (empty: none)', 'LOADING BAY · NO PARKING'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t, dl = Math.round(w * 0.45), dw = Math.round(w * 0.5), dh = Math.min(66, H - 22), up = Math.round(dh * Number(p.door));
+    R(x, 0, 0, w, H - 4, '#1e1f1e'); for (let k = 0; k < 6; k++) R(x, Math.round(hash(seed + k) * w), H - 30, 3, 26, 'rgba(0,0,0,.25)');
+    // the opening: the ramp going up and away to the street, lit from above, wet
+    const out = String(p.outside), col = out === 'neon' ? '255,58,90' : '255,170,80';
+    R(x, dl, 0, dw, dh, '#07080a');
+    if (out !== 'none') { const g = x.createLinearGradient(0, y(dh), 0, 0); g.addColorStop(0, rgba(col, 0.32 * glowOf(o))); g.addColorStop(1, rgba(col, 0.04)); x.fillStyle = g; x.fillRect(dl, y(dh), dw, dh); o.light?.(dl + dw / 2, dh / 2, dw, dh, col, 'window'); }
+    x.fillStyle = '#141516'; x.beginPath(); x.moveTo(dl, y(0)); x.lineTo(dl + dw, y(0)); x.lineTo(dl + dw, y(dh * 0.55)); x.closePath(); x.fill();
+    for (let k = 0; k < dw; k += 8) R(x, dl + k, Math.round((k / dw) * dh * 0.55), 6, 1, rgba(col, 0.25));
+    // the roller door, part way up, its drum and guides
+    R(x, dl, dh - up, dw, up, '#2c2e30'); for (let k = dh - up + 3; k < dh; k += 3) R(x, dl, k, dw, 1, 'rgba(0,0,0,.35)'); R(x, dl, dh - up, dw, 2, '#4a4d50');
+    R(x, dl - 3, 0, 3, dh + 6, '#3a3c3e'); R(x, dl + dw, 0, 3, dh + 6, '#3a3c3e'); R(x, dl - 3, dh, dw + 6, 8, '#2a2b2c');
+    if (p.hazard !== false) for (let k = 0; k < dw; k += 8) R(x, dl + k, 0, 4, 3, 'rgba(255,200,40,.85)');
+    // pallets stacked with foam fish boxes and cartons, the trolley leaning
+    for (let i = 0; i < Number(p.pallets); i++) {
+      const px = 6 + i * 34; if (px + 30 > dl - 4) break;
+      R(x, px, 0, 30, 4, '#5a4020'); for (let k = 2; k < 30; k += 7) R(x, px + k, 0, 3, 3, '#2a1c0e');
+      const rows = 1 + (i + seed) % 3;
+      for (let rI = 0; rI < rows; rI++) for (let c = 0; c < 2; c++) { const box = (i + rI + c) % 2 === 0; R(x, px + 1 + c * 14, 4 + rI * 10, 13, 9, box ? 'rgba(235,235,240,.85)' : '#6a5232'); R(x, px + 2 + c * 14, 12 + rI * 10, 11, 1, box ? 'rgba(160,200,230,.7)' : 'rgba(230,210,170,.35)'); }
+    }
+    if (p.trolley !== false) { const tx = Math.min(w - 16, dl + dw + 8); R(x, tx, 0, 2, 30, '#5a6066'); R(x, tx, 0, 10, 2, '#5a6066'); R(x, tx - 1, 0, 4, 3, '#111'); R(x, tx + 1, 30, 5, 2, '#5a6066'); }
+    const sign = String(p.sign ?? '');
+    if (sign) neonPlate(x, t, Math.round(dl + dw / 2), y(dh + 13), { text: sign, col: '30,30,30', size: 5, h: 9, printed: true, bolts: false, glow: 0, fill: 'rgba(255,200,40,.9)', ink: 'rgba(20,20,20,.9)' });
+    ceilingLamp(x, o, 'tube', Math.round(w * 0.2), H, 0, seed);
+  },
+});
+
+export const pumpRoomElement = piece({
+  type: 'interior.pump-room', label: 'Fish-tank pump room (kit, market basement)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 200, 60, 800, 1, 'units'), height: num('Height', 90, 50, 200, 1, 'units'), tanks: num('Header tanks', 2, 0, 6), pumps: num('Pumps', 3, 0, 8),
+    pipes: num('Pipe runs', 4, 0, 10), gauges: bool('Gauges', true), leak: bool('A leak', true), light: select('Light', LIGHT_KINDS, 'flicker'),
+    sign: text('Sign (empty: none)', 'SEAWATER PUMPS · STAFF ONLY'), pipe: colourField('Pipe paint', '#2f6a74'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t, pc = rgbField(p.pipe, '47,106,116');
+    R(x, 0, 0, w, H - 4, '#1a1d1d');
+    // header tanks of seawater on the back wall, lit blue, bubbling
+    const nt = Number(p.tanks), slot = Math.round((w - 16) / Math.max(1, nt));
+    for (let i = 0; i < nt; i++) {
+      const tl = 8 + i * slot, tw = Math.min(40, slot - 8);
+      R(x, tl, 34, tw, 30, '#2a3034'); R(x, tl + 2, 36, tw - 4, 22, 'rgba(40,140,170,.4)'); R(x, tl + 2, 56, tw - 4, 1, 'rgba(150,220,235,.7)');
+      for (let k = 0; k < 4; k++) R(x, tl + 4 + ((k * 7 + seed) % Math.max(1, tw - 8)), 36 + ((t * 0.3 + k * 5) % 20), 1, 1, 'rgba(220,250,255,.8)');
+      for (const lx of [tl + 2, tl + tw - 4]) R(x, lx, 0, 2, 34, '#3a3e40');
+      o.light?.(tl + tw / 2, 46, tw - 4, 20, '120,200,220', 'screen');
+    }
+    // pipe runs along the wall and down to the pumps, flanges every so often
+    for (let i = 0; i < Number(p.pipes); i++) { const ph = H - 12 - i * 6; R(x, 0, ph, w, 4, rgba(pc, 0.95)); R(x, 0, ph + 3, w, 1, 'rgba(255,255,255,.18)'); for (let k = 20 + i * 7; k < w; k += 46) R(x, k, ph - 1, 3, 6, rgba(pc, 1)); }
+    // pumps on plinths: a motor with its fan cover turning, a pipe up to the runs
+    for (let i = 0; i < Number(p.pumps); i++) {
+      const px = 10 + i * 30; if (px + 24 > w) break;
+      R(x, px - 2, 0, 26, 4, '#2c2e2e'); R(x, px, 4, 14, 12, '#3a5a4a'); R(x, px + 14, 6, 8, 8, '#4a4e50'); R(x, px + 2, 15, 10, 1, 'rgba(255,255,255,.15)');
+      fan(x, px + 18, 10, 3, t * 2, seed + i, true);
+      R(x, px + 5, 16, 3, Math.max(2, H - 12 - Number(p.pipes) * 6 - 10), rgba(pc, 0.95)); R(x, px + 4, 22, 5, 2, rgba(pc, 1));
+      if (p.gauges !== false) { x.fillStyle = 'rgba(230,230,220,.85)'; x.beginPath(); x.arc(px + 10, y(28), 3, 0, Math.PI * 2); x.fill(); const a = -Math.PI / 2 + Math.sin(t / 40 + i) * 0.6; x.strokeStyle = 'rgba(200,30,30,.95)'; x.beginPath(); x.moveTo(px + 10, y(28)); x.lineTo(px + 10 + Math.cos(a) * 2.5, y(28) + Math.sin(a) * 2.5); x.stroke(); }
+    }
+    if (p.leak !== false) { const lx = Math.round(w * 0.7); R(x, lx, H - 14 - ((t * 0.8) % (H - 16)), 1, 2, 'rgba(180,220,230,.8)'); x.fillStyle = 'rgba(150,200,215,.2)'; x.beginPath(); x.ellipse(lx, y(0), 10, 1.5, 0, 0, Math.PI * 2); x.fill(); R(x, lx - 5, 0, 10, 8, 'rgba(60,90,200,.9)'); }
+    const sign = String(p.sign ?? '');
+    if (sign) neonPlate(x, t, Math.round(w / 2), y(H - 40), { text: sign, col: '30,30,30', size: 5, h: 9, printed: true, bolts: false, glow: 0, fill: 'rgba(232,225,205,.85)', ink: 'rgba(170,25,25,.9)' });
+    ceilingLamp(x, o, String(p.light), Math.round(w * 0.6), H - 4, 0, seed);
+  },
+});
+
+export const tunnelDoorElement = piece({
+  type: 'interior.tunnel-door', label: 'Way into the tunnels: an arch with a gate (kit)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 110, 40, 400, 1, 'units'), height: num('Height', 90, 40, 200, 1, 'units'), gate: select('Gate', ['shut', 'ajar', 'open'], 'ajar'),
+    glow: colourField('Light deep inside', '#5a8a6a'), graffiti: bool('Tags on the wall', true), drip: bool('Water dripping', true),
+    sign: text('Sign (empty: none)', 'FLOOD CHANNEL · NO ENTRY'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t, glow = rgbField(p.glow, '90,138,106');
+    // old brick, damp, an arch cut through it
+    R(x, 0, 0, w, H - 4, '#231a16'); for (let h = 4; h < H - 4; h += 5) { R(x, 0, h, w, 1, 'rgba(0,0,0,.3)'); for (let k = ((h / 5) % 2) * 6; k < w; k += 12) R(x, k, h, 1, 5, 'rgba(0,0,0,.25)'); }
+    const aw = Math.round(w * 0.6), al = Math.round((w - aw) / 2), ah = Math.min(H - 20, Math.round(aw * 0.9)), cx = al + aw / 2, spring = Math.max(4, ah - aw / 2);
+    const arch = (inset: number, fill: string) => { const r = Math.max(1, aw / 2 - inset); x.fillStyle = fill; x.beginPath(); x.moveTo(cx - r, y(0)); x.lineTo(cx - r, y(spring)); x.arc(cx, y(spring), r, Math.PI, 0); x.lineTo(cx + r, y(0)); x.closePath(); x.fill(); };
+    arch(-3, '#3a2c24'); arch(0, '#050605');
+    // the tunnel going away: rings getting darker, one light far in
+    for (let k = 1; k < 5; k++) arch(k * Math.round(aw / 11), rgba(glow, 0.03 + k * 0.025));
+    R(x, cx - 1, Math.round(spring * 0.6), 3, 2, rgba(glow, 0.8 + 0.2 * Math.sin(t / 40))); o.light?.(cx, spring * 0.6, 6, 4, glow, 'screen');
+    R(x, al, 0, aw, 2, rgba(glow, 0.15));
+    // the gate: steel bars, padlocked, or pushed open
+    const g = String(p.gate), gw = g === 'shut' ? aw : g === 'ajar' ? Math.round(aw * 0.7) : 6;
+    for (let k = 2; k < gw; k += 4) R(x, al + k, 0, 1, spring + 4, '#5a5e60');
+    R(x, al, spring + 2, gw, 2, '#5a5e60'); R(x, al, Math.round(spring * 0.5), gw, 2, '#5a5e60');
+    if (g === 'shut') { R(x, cx - 2, Math.round(spring * 0.5) - 4, 5, 5, 'rgba(210,180,90,.9)'); R(x, cx - 1, Math.round(spring * 0.5) + 1, 3, 2, 'rgba(210,180,90,.9)'); }
+    if (p.graffiti !== false) for (let k = 0; k < 3; k++) { const gx = Math.round(hash(seed + k) * (w - 20)), gh = 10 + Math.round(hash(seed * 3 + k) * 30), c = ['255,61,242', '255,200,60', '120,230,140'][k]; if (gx + 18 > al - 3 && gx < al + aw + 3) continue; R(x, gx, gh, 14, 2, rgba(c, 0.55)); R(x, gx + 3, gh + 2, 2, 5, rgba(c, 0.55)); R(x, gx + 9, gh - 3, 6, 2, rgba(c, 0.55)); }
+    if (p.drip !== false) for (let k = 0; k < 2; k++) R(x, al + 6 + k * (aw - 12), ah - ((t * 0.7 + k * 30) % ah), 1, 2, 'rgba(180,220,230,.7)');
+    const sign = String(p.sign ?? '');
+    if (sign) neonPlate(x, t, Math.round(cx), y(Math.min(H - 10, ah + 8)), { text: sign, col: '30,30,30', size: 5, h: 9, printed: true, bolts: false, glow: 0, fill: 'rgba(232,225,205,.85)', ink: 'rgba(170,25,25,.9)' });
+  },
+});
+
+export const marketOfficesElement = piece({
+  type: 'interior.market-offices', label: 'Market management floor: counters, files, storage (kit)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 500, 80, 3000, 1, 'units'), height: num('Wall height', 88, 50, 300, 1, 'units'), counters: num('Service windows', 2, 0, 6),
+    label: text('Over the windows', 'LICENSING · STALL FEES'), ticket: bool('Queue number display', true), filing: num('Filing cabinets', 4, 0, 12),
+    storage: bool('Storage cage of crates and baskets', true), board: bool('Notice board', true), light: select('Light', LIGHT_KINDS, 'tube'),
+    wall: colourField('Wall', '#2a2f2e'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t;
+    R(x, 0, 0, w, H, hexOr(p.wall, '#2a2f2e')); R(x, 0, 0, w, 24, '#232827'); R(x, 0, 24, w, 1, 'rgba(230,220,190,.15)');
+    let at = 10;
+    // service windows behind glass: papers, a monitor, the slot, a bell
+    for (let i = 0; i < Number(p.counters); i++, at += 64) {
+      if (at + 56 > w) break;
+      R(x, at, 0, 56, 28, '#3a3f3e'); R(x, at, 27, 56, 2, '#5a605e'); R(x, at, 29, 56, 34, 'rgba(210,230,225,.18)'); R(x, at, 63, 56, 2, '#1a1e1d');
+      R(x, at + 6, 29, 20, 6, 'rgba(235,230,215,.6)'); R(x, at + 34, 29, 10, 8, '#141618'); R(x, at + 35, 30, 8, 6, 'rgba(120,200,140,.4)');
+      R(x, at + 20, 27, 16, 2, '#0a0a0a'); R(x, at + 48, 29, 4, 2, 'rgba(210,180,90,.9)');
+      paintText(x, String(i + 1), at + 50, y(56), 'rgba(240,235,220,.7)', 6, '700');
+      o.light?.(at + 28, 46, 52, 30, '210,230,225', 'window');
+    }
+    const label = String(p.label ?? ''), span = at - 10;
+    if (label && span > 0) neonPlate(x, t, Math.round(10 + span / 2 - 4), y(Math.min(H - 8, 72)), { text: label, col: '30,30,30', size: 6, h: 10, printed: true, bolts: false, glow: 0, fill: 'rgba(232,225,205,.88)', ink: 'rgba(30,60,140,.9)' });
+    if (p.ticket !== false && span > 0) { R(x, at, 44, 24, 12, '#0a0a0a'); paintText(x, String(100 + (Math.floor(t / 400) + seed) % 900), at + 12, y(50), 'rgba(255,60,50,.95)', 6, '700'); o.light?.(at + 12, 50, 20, 8, '255,60,50', 'screen'); at += 32; }
+    if (p.board !== false && at + 44 < w) { R(x, at, 34, 40, 26, '#4a3020'); handbills(x, at + 2, 36, 36, 52, 7, seed); at += 50; }
+    for (let i = 0; i < Number(p.filing) && at + 16 < w; i++, at += 16) { R(x, at, 0, 14, 40, '#4a5054'); for (let k = 0; k < 4; k++) { R(x, at + 1, 2 + k * 10, 12, 8, '#5a6064'); R(x, at + 5, 6 + k * 10, 4, 1, '#2a2c2e'); } }
+    if (p.storage !== false && at + 60 < w) {
+      // a wire cage of plastic baskets and spare crates
+      const cw = Math.min(w - at - 6, 160); R(x, at + 4, 0, cw, H - 12, '#151817');
+      for (let rI = 0; rI < 4; rI++) for (let k = at + 8; k < at + cw - 14; k += 14) { const c = ['210,40,40', '40,90,200', '230,180,40', '40,150,90'][(k + rI + seed) % 4]; R(x, k, rI * 13, 12, 11, rgba(c, 0.75)); R(x, k + 1, rI * 13 + 9, 10, 1, 'rgba(0,0,0,.4)'); }
+      mesh(x, at + 4, 0, cw, H - 12, '160,160,150', 4);
+    }
+    for (let k = 50; k < w - 20; k += 100) ceilingLamp(x, o, String(p.light), k, H, 0, seed + k);
+  },
+});
+
 export const marketInteriors: Element[] = [
   stallRoomElement, stairCoreElement, cageFlatsElement, landingElement, rooftopElement,
   hallShellElement, marketStallElement, wetFloorElement, cookedFoodElement, roundTableElement, railingElement, officeWindowElement,
+  coldStoreElement, loadingBayElement, pumpRoomElement, tunnelDoorElement, marketOfficesElement,
 ];

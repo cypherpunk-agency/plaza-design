@@ -86,7 +86,7 @@ const listOf = (label: string, item: Record<string, Field>, addLabel: string, ne
 export const stackElement = piece({
   type: 'building.stack', label: 'Stacked housing (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 120, 30, 600, 1, 'units'), floors: num('Floors above the shops', 7, 1, 40), storey: num('Floor height', 44, 28, 80, 1, 'units'),
+    width: num('Width', 120, 30, 600, 1, 'units'), floors: num('Floors above the shops', 7, 1, 40), storey: num('Floor height', 44, 28, 120, 1, 'units'),
     ground: num('Shop floor height', 72, 50, 140, 1, 'units'), wall: colour('Wall colour'), cages: num('Window cages', 0.6, 0, 1, 0.05),
     density: num('AC, laundry and pipes', 0.8, 0, 1, 0.05), lit: num('Rooms with a light', 0.55, 0, 1, 0.05),
     canopy: bool('Covered walkway over the shops', true), shacks: bool('Shacks and antennas on the roof', true),
@@ -191,7 +191,7 @@ const eaveRise = 9;
 export const shophouseElement = piece({
   type: 'building.shophouse', label: 'Shophouse (kit, Old Quarter)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 84, 40, 240, 1, 'units'), floors: num('Floors above the shop', 1, 0, 3), storey: num('Floor height', 50, 30, 90, 1, 'units'),
+    width: num('Width', 84, 40, 240, 1, 'units'), floors: num('Floors above the shop', 1, 0, 3), storey: num('Floor height', 50, 30, 130, 1, 'units'),
     ground: num('Shop floor height', 66, 44, 120, 1, 'units'), wall: colour('Wall colour'),
     goods: select('Shop front', GOODS), board: text('Name board (empty: none)', ''),
     gallery: bool('Wooden gallery upstairs', true), shutters: select('Shutters', ['mixed', 'open', 'closed']),

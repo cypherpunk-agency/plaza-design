@@ -1,0 +1,336 @@
+{
+  "version": 1,
+  "scene": "undercity-data-hall",
+  "instances": [
+    {
+      "id": "rock",
+      "type": "undercity.rock",
+      "props": {
+        "width": 1400,
+        "tall": 560,
+        "material": "rock",
+        "seams": 0.6,
+        "seed": 31
+      },
+      "placement": {
+        "x": 0,
+        "h": -160
+      },
+      "order": 1,
+      "layer": "backdrop"
+    },
+    {
+      "id": "approach",
+      "type": "building.tunnel",
+      "props": {
+        "width": 270,
+        "height": 66,
+        "profile": "horseshoe",
+        "pipes": 2,
+        "homes": 0,
+        "lamps": 2,
+        "lamp": "emergency",
+        "marks": 0.8,
+        "chalk": "MIND THE EDGE",
+        "chalkAt": 120,
+        "seed": 33
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hall",
+      "type": "landmark.data-hall",
+      "props": {
+        "width": 1140,
+        "height": 330,
+        "below": 110,
+        "far": 40,
+        "rows": 3,
+        "racks": 14,
+        "depth": 0.45,
+        "running": 0.35,
+        "columns": 220,
+        "lights": 0.2,
+        "mouth": "left",
+        "mouthHeight": 66,
+        "gallery": 120,
+        "galleryFrom": 640,
+        "galleryWidth": 440,
+        "stair": true,
+        "letters": "B2 · DATA HALL",
+        "seed": 7
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-pontoon",
+      "type": "level.stairs",
+      "props": {
+        "run": 0,
+        "rise": 40
+      },
+      "placement": {
+        "x": 680,
+        "h": -40
+      },
+      "order": 4,
+      "layer": "set"
+    },
+    {
+      "id": "stairs-gallery",
+      "type": "level.stairs",
+      "props": {
+        "run": 0,
+        "rise": 120
+      },
+      "placement": {
+        "x": 1301,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "set"
+    },
+    {
+      "id": "catwalk",
+      "type": "undercity.catwalk",
+      "props": {
+        "width": 1100,
+        "posts": 52,
+        "postDepth": 110,
+        "rail": "broken",
+        "ladder": 420,
+        "ladderDepth": 40,
+        "lamps": 4,
+        "seed": 3
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-gallery",
+      "type": "undercity.ladder",
+      "props": {
+        "height": 120,
+        "metal": "galvanised",
+        "cage": true,
+        "missing": 0.05,
+        "seed": 4
+      },
+      "placement": {
+        "x": 1300,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "set"
+    },
+    {
+      "id": "pontoon",
+      "type": "undercity.pontoon",
+      "props": {
+        "width": 90,
+        "drums": 4,
+        "terminal": true,
+        "lamp": true,
+        "rope": "left",
+        "seed": 2
+      },
+      "placement": {
+        "x": 650,
+        "h": -40
+      },
+      "order": 8,
+      "layer": "set"
+    },
+    {
+      "id": "note",
+      "type": "sign.taped",
+      "props": {
+        "lines": [
+          "WATER IS LIVE",
+          "IN PLACES"
+        ],
+        "tilt": -0.03
+      },
+      "placement": {
+        "x": 200,
+        "h": 40
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tunnel-sitter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "sit",
+        "archetype": "ghost",
+        "sitting": "side",
+        "seed": 1301
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "playfield"
+    },
+    {
+      "id": "rail-leaner",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "lean",
+        "archetype": "ghost",
+        "seed": 1303
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "playfield"
+    },
+    {
+      "id": "pontoon-sitter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "sit",
+        "archetype": "drifter",
+        "sitting": "side",
+        "seed": 1305
+      },
+      "placement": {
+        "x": 690,
+        "h": -40
+      },
+      "order": 12,
+      "layer": "playfield"
+    },
+    {
+      "id": "gallery-watcher",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "lean",
+        "archetype": "ghost",
+        "seed": 1307
+      },
+      "placement": {
+        "x": 1050,
+        "h": 120
+      },
+      "order": 13,
+      "layer": "playfield"
+    },
+    {
+      "id": "catwalk-crawler",
+      "type": "character.resident",
+      "props": {
+        "kind": "crawler",
+        "depth": "play",
+        "act": "scrub"
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "playfield"
+    },
+    {
+      "id": "gallery-wreck",
+      "type": "character.resident",
+      "props": {
+        "kind": "wreck",
+        "depth": "play",
+        "act": "slump"
+      },
+      "placement": {
+        "x": 1200,
+        "h": 120
+      },
+      "order": 15,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-walkway",
+      "type": "level.floor",
+      "props": {
+        "width": 1360,
+        "building": "",
+        "label": "Walkway"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-pontoon",
+      "type": "level.floor",
+      "props": {
+        "width": 90,
+        "building": "",
+        "label": "Pontoon"
+      },
+      "placement": {
+        "x": 650,
+        "h": -40
+      },
+      "order": 17,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-gallery",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "",
+        "label": "Gallery"
+      },
+      "placement": {
+        "x": 900,
+        "h": 120
+      },
+      "order": 18,
+      "layer": "logic"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield"
+    }
+  ]
+}

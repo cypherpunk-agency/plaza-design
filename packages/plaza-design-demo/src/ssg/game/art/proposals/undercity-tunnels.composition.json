@@ -1,0 +1,601 @@
+{
+  "version": 1,
+  "scene": "undercity-tunnels",
+  "instances": [
+    {
+      "id": "rock",
+      "type": "undercity.rock",
+      "props": {
+        "width": 1600,
+        "tall": 740,
+        "material": "rock",
+        "seams": 0.6,
+        "seep": 0.4,
+        "seed": 11
+      },
+      "placement": {
+        "x": 0,
+        "h": -340
+      },
+      "order": 1,
+      "layer": "backdrop"
+    },
+    {
+      "id": "l1",
+      "type": "building.tunnel",
+      "props": {
+        "width": 1450,
+        "height": 62,
+        "profile": "gallery",
+        "lining": 8,
+        "rings": 0,
+        "pipes": 3,
+        "cables": 0.8,
+        "homes": 0.15,
+        "lamps": 5,
+        "lamp": "bulkhead",
+        "marks": 0.4,
+        "floodline": 0,
+        "drips": 0.3,
+        "ends": "right",
+        "seed": 21
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "backdrop"
+    },
+    {
+      "id": "l2",
+      "type": "building.tunnel",
+      "props": {
+        "width": 1210,
+        "height": 60,
+        "profile": "round",
+        "lining": 8,
+        "rings": 30,
+        "pipes": 2,
+        "cables": 0.3,
+        "homes": 0.6,
+        "lamps": 6,
+        "lamp": "battery",
+        "marks": 0.7,
+        "chalk": "CANAL BELOW",
+        "chalkAt": 610,
+        "floodline": 12,
+        "ends": "left",
+        "seed": 22
+      },
+      "placement": {
+        "x": 150,
+        "h": -110
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "l3",
+      "type": "building.tunnel",
+      "props": {
+        "width": 1600,
+        "height": 70,
+        "profile": "brick",
+        "lining": 8,
+        "pipes": 1,
+        "cables": 0,
+        "homes": 0.3,
+        "lamps": 3,
+        "lamp": "emergency",
+        "marks": 0.6,
+        "chalk": "BOATS AT NIGHT",
+        "chalkAt": 860,
+        "floodline": 40,
+        "drips": 0.7,
+        "seed": 23
+      },
+      "placement": {
+        "x": 0,
+        "h": -225
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "canal",
+      "type": "undercity.canal",
+      "props": {
+        "width": 1600,
+        "depth": 40,
+        "edge": "towpath",
+        "flow": 0.4,
+        "litter": 0.5,
+        "boat": "punt",
+        "boatAt": 960,
+        "boatDrift": 50,
+        "lantern": true,
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": -225
+      },
+      "order": 5,
+      "layer": "set"
+    },
+    {
+      "id": "shaft-l1-l2",
+      "type": "undercity.shaft",
+      "props": {
+        "height": 110,
+        "width": 26,
+        "from": 60,
+        "kind": "ladder",
+        "top": "manhole",
+        "label": "L2",
+        "seed": 4
+      },
+      "placement": {
+        "x": 290,
+        "h": -110
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairwell-l2-l3",
+      "type": "undercity.shaft",
+      "props": {
+        "height": 115,
+        "width": 140,
+        "from": 70,
+        "kind": "stairwell",
+        "top": "open",
+        "lamp": true,
+        "label": "L3",
+        "seed": 6
+      },
+      "placement": {
+        "x": 680,
+        "h": -225
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lift-shaft",
+      "type": "undercity.shaft",
+      "props": {
+        "height": 225,
+        "width": 46,
+        "from": 70,
+        "kind": "lift",
+        "top": "open",
+        "stuck": 0.8,
+        "lamp": true,
+        "seed": 8
+      },
+      "placement": {
+        "x": 1360,
+        "h": -225
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-l2-l3",
+      "type": "level.stairs",
+      "props": {
+        "run": -110,
+        "rise": 115
+      },
+      "placement": {
+        "x": 810,
+        "h": -225
+      },
+      "order": 9,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-l1-l2-link",
+      "type": "level.stairs",
+      "props": {
+        "run": 0,
+        "rise": 110
+      },
+      "placement": {
+        "x": 298,
+        "h": -110
+      },
+      "order": 10,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-l1-l2",
+      "type": "undercity.ladder",
+      "props": {
+        "height": 110,
+        "cage": true,
+        "metal": "steel",
+        "seed": 1
+      },
+      "placement": {
+        "x": 297,
+        "h": -110
+      },
+      "order": 11,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-lift-link",
+      "type": "level.stairs",
+      "props": {
+        "run": 0,
+        "rise": 225
+      },
+      "placement": {
+        "x": 1393,
+        "h": -225
+      },
+      "order": 12,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-lift",
+      "type": "undercity.ladder",
+      "props": {
+        "height": 225,
+        "cage": false,
+        "metal": "rust",
+        "missing": 0.12,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1392,
+        "h": -225
+      },
+      "order": 13,
+      "layer": "set"
+    },
+    {
+      "id": "note-l2",
+      "type": "sign.taped",
+      "props": {
+        "lines": [
+          "STEPS",
+          "SLIPPERY"
+        ],
+        "tilt": 0.05
+      },
+      "placement": {
+        "x": 660,
+        "h": -80
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "board-boat",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 40,
+        "height": 22,
+        "lines": [
+          "BOAT 2 CR",
+          "ONE WAY"
+        ],
+        "post": true
+      },
+      "placement": {
+        "x": 1060,
+        "h": -189
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "l1-walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "walk",
+        "archetype": "ghost",
+        "range": 400,
+        "seed": 1201
+      },
+      "placement": {
+        "x": 500,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "playfield"
+    },
+    {
+      "id": "l1-sitter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "sit",
+        "archetype": "ghost",
+        "sitting": "side",
+        "seed": 1203
+      },
+      "placement": {
+        "x": 1100,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "playfield"
+    },
+    {
+      "id": "l1-crawler",
+      "type": "character.resident",
+      "props": {
+        "kind": "crawler",
+        "depth": "play",
+        "act": "scrub"
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "l2-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "seed": 1210,
+        "act": "sit",
+        "archetype": "ghost",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 400,
+        "h": -110
+      },
+      "order": 19,
+      "layer": "playfield"
+    },
+    {
+      "id": "l2-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "seed": 1217,
+        "act": "talk",
+        "archetype": "ghost"
+      },
+      "placement": {
+        "x": 560,
+        "h": -110
+      },
+      "order": 20,
+      "layer": "playfield"
+    },
+    {
+      "id": "l2-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "seed": 1224,
+        "act": "talk",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 582,
+        "h": -110
+      },
+      "order": 21,
+      "layer": "playfield"
+    },
+    {
+      "id": "l2-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "seed": 1231,
+        "act": "run",
+        "archetype": "kid",
+        "range": 200
+      },
+      "placement": {
+        "x": 820,
+        "h": -110
+      },
+      "order": 22,
+      "layer": "playfield"
+    },
+    {
+      "id": "l2-4",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "seed": 1238,
+        "act": "sleep",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 980,
+        "h": -110
+      },
+      "order": 23,
+      "layer": "playfield"
+    },
+    {
+      "id": "l2-5",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "seed": 1245,
+        "act": "sit",
+        "archetype": "elder",
+        "sitting": "mixed"
+      },
+      "placement": {
+        "x": 1180,
+        "h": -110
+      },
+      "order": 24,
+      "layer": "playfield"
+    },
+    {
+      "id": "l3-smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "smoke",
+        "archetype": "drifter",
+        "seed": 1251
+      },
+      "placement": {
+        "x": 420,
+        "h": -225
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "l3-boatman",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "wait",
+        "archetype": "ghost",
+        "seed": 1253
+      },
+      "placement": {
+        "x": 1000,
+        "h": -225
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "l3-litterbot",
+      "type": "character.resident",
+      "props": {
+        "kind": "litterbot",
+        "depth": "play",
+        "act": "roll",
+        "range": 300
+      },
+      "placement": {
+        "x": 600,
+        "h": -225
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "l3-wreck",
+      "type": "character.resident",
+      "props": {
+        "kind": "wreck",
+        "depth": "play",
+        "act": "slump"
+      },
+      "placement": {
+        "x": 180,
+        "h": -225
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "l3-cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 1250,
+        "h": -225
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-l1",
+      "type": "level.floor",
+      "props": {
+        "width": 1450,
+        "building": "",
+        "label": "L1 · Gallery"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-l2",
+      "type": "level.floor",
+      "props": {
+        "width": 1210,
+        "building": "",
+        "label": "L2 · Service tunnel"
+      },
+      "placement": {
+        "x": 150,
+        "h": -110
+      },
+      "order": 31,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-l3",
+      "type": "level.floor",
+      "props": {
+        "width": 1600,
+        "building": "",
+        "label": "L3 · Canal"
+      },
+      "placement": {
+        "x": 0,
+        "h": -225
+      },
+      "order": 32,
+      "layer": "logic"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    }
+  ]
+}

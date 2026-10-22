@@ -1,0 +1,452 @@
+{
+  "version": 1,
+  "scene": "undercity-entry",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline",
+      "type": "building.row",
+      "props": {
+        "width": 1800,
+        "seed": 21,
+        "parallax": 0.25,
+        "minHeight": 120,
+        "maxHeight": 260,
+        "haze": 0.6,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "backs-0",
+      "type": "building.stack",
+      "props": {
+        "width": 180,
+        "floors": 6,
+        "seed": 501,
+        "shops": [],
+        "canopy": false,
+        "wall": "#1d2329",
+        "density": 0.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "backs-1",
+      "type": "building.stack",
+      "props": {
+        "width": 220,
+        "floors": 8,
+        "seed": 502,
+        "shops": [],
+        "canopy": false,
+        "wall": "#22201a",
+        "density": 0.6
+      },
+      "placement": {
+        "x": 980,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "earth",
+      "type": "undercity.rock",
+      "props": {
+        "width": 1200,
+        "tall": 110,
+        "material": "earth",
+        "crust": "paving",
+        "seams": 0.4,
+        "seep": 0.2,
+        "seed": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": -110
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "bedrock",
+      "type": "undercity.rock",
+      "props": {
+        "width": 1200,
+        "tall": 190,
+        "material": "rock",
+        "seams": 0.6,
+        "seep": 0.4,
+        "seed": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": -300
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lot",
+      "type": "undercity.lot",
+      "props": {
+        "width": 360,
+        "gap": 250,
+        "sign": "NO ENTRY",
+        "weeds": 0.8,
+        "rubble": 0.6,
+        "marks": 0.6,
+        "seed": 7
+      },
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "metro",
+      "type": "undercity.metro-entrance",
+      "props": {
+        "depth": 96,
+        "run": 120,
+        "landing": 260,
+        "label": "LINE 4",
+        "notice": "CLOSED",
+        "sealed": "bricked",
+        "turnstiles": 3,
+        "marks": 0.7,
+        "seed": 5
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tunnel",
+      "type": "building.tunnel",
+      "props": {
+        "width": 440,
+        "height": 64,
+        "profile": "horseshoe",
+        "homes": 0.25,
+        "lamps": 2,
+        "lamp": "battery",
+        "marks": 0.7,
+        "chalk": "TO THE CANAL",
+        "chalkAt": 250,
+        "ends": "left",
+        "pipes": 2,
+        "seed": 9
+      },
+      "placement": {
+        "x": 760,
+        "h": -200
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "breach",
+      "type": "undercity.shaft",
+      "props": {
+        "height": 104,
+        "width": 26,
+        "from": 64,
+        "kind": "ladder",
+        "top": "open",
+        "lamp": true,
+        "seed": 2
+      },
+      "placement": {
+        "x": 900,
+        "h": -200
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "drain-down",
+      "type": "undercity.shaft",
+      "props": {
+        "height": 100,
+        "width": 22,
+        "from": 0,
+        "kind": "drain",
+        "top": "grate",
+        "lamp": false,
+        "seed": 6
+      },
+      "placement": {
+        "x": 1120,
+        "h": -300
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 110,
+        "seed": 2
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-metro",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 96
+      },
+      "placement": {
+        "x": 720,
+        "h": -96
+      },
+      "order": 13,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-breach-link",
+      "type": "level.stairs",
+      "props": {
+        "run": 0,
+        "rise": 104
+      },
+      "placement": {
+        "x": 908,
+        "h": -200
+      },
+      "order": 14,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-breach",
+      "type": "undercity.ladder",
+      "props": {
+        "height": 104,
+        "cage": false,
+        "metal": "rust",
+        "missing": 0.15,
+        "seed": 3
+      },
+      "placement": {
+        "x": 907,
+        "h": -200
+      },
+      "order": 15,
+      "layer": "set"
+    },
+    {
+      "id": "note-hall",
+      "type": "sign.taped",
+      "props": {
+        "lines": [
+          "STATION CLOSED",
+          "USE LINE 0"
+        ],
+        "tilt": -0.04
+      },
+      "placement": {
+        "x": 780,
+        "h": -60
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "ghost-gap",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "lean",
+        "archetype": "ghost",
+        "seed": 1101
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "playfield"
+    },
+    {
+      "id": "drifter-lot",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "sit",
+        "archetype": "drifter",
+        "sitting": "side",
+        "seed": 1103
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "passer",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "archetype": "commuter",
+        "act": "walk",
+        "range": 380,
+        "seed": 1107
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield"
+    },
+    {
+      "id": "ghost-hall",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "smoke",
+        "archetype": "ghost",
+        "seed": 1109
+      },
+      "placement": {
+        "x": 860,
+        "h": -96
+      },
+      "order": 20,
+      "layer": "playfield"
+    },
+    {
+      "id": "sleeper-tunnel",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "undercity",
+        "act": "sleep",
+        "archetype": "sleeper",
+        "seed": 1113
+      },
+      "placement": {
+        "x": 1080,
+        "h": -200
+      },
+      "order": 21,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1200,
+        "building": "",
+        "label": "Street"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-hall",
+      "type": "level.floor",
+      "props": {
+        "width": 260,
+        "building": "",
+        "label": "Ticket hall"
+      },
+      "placement": {
+        "x": 720,
+        "h": -96
+      },
+      "order": 24,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-tunnel",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "",
+        "label": "Tunnel"
+      },
+      "placement": {
+        "x": 760,
+        "h": -200
+      },
+      "order": 25,
+      "layer": "logic"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield"
+    }
+  ]
+}

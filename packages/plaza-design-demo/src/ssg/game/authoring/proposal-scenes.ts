@@ -18,8 +18,6 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'market-street', base: 'tower', file: 'art/proposals/market-street.composition.json', label: 'Neon Market · reference street', district: 'market' },
   { id: 'oldq-street', base: 'tower', file: 'art/proposals/oldq-street.composition.json', label: 'Old Quarter · reference street', district: 'oldq' },
   { id: 'spire-street', base: 'tower', file: 'art/proposals/spire-street.composition.json', label: 'Spire · reference street', district: 'spire' },
-  { id: 'market-street-far', base: 'tower', file: 'art/proposals/market-street-far.composition.json', label: 'Neon Market · landmark far off', district: 'market' },
-  { id: 'oldq-street-far', base: 'tower', file: 'art/proposals/oldq-street-far.composition.json', label: 'Old Quarter · landmark far off', district: 'oldq' },
   { id: 'undercity-street', base: 'tower', file: 'art/proposals/undercity-street.composition.json', label: 'Undercity · reference street', district: 'undercity' },
   { id: 'fringe-street', base: 'tower', file: 'art/proposals/fringe-street.composition.json', label: 'The Fringe · reference street', district: 'fringe' },
   { id: 'skyport-street', base: 'tower', file: 'art/proposals/skyport-street.composition.json', label: 'Skyport · reference street', district: 'skyport' },
@@ -30,6 +28,16 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'oldq-church-inside', base: 'tower', file: 'art/proposals/oldq-church-inside.composition.json', label: 'Old Quarter · inside St. Agnes', district: 'oldq' },
   { id: 'spire-lobby', base: 'tower', file: 'art/proposals/spire-lobby.composition.json', label: 'Spire · the lobby', district: 'spire' },
   { id: 'spire-deck', base: 'tower', file: 'art/proposals/spire-deck.composition.json', label: 'Spire · a docking deck above the weather', district: 'spire' },
+  // Second round of interiors and special places (Tommi, 2026-10-22).
+  { id: 'market-hall-approach', base: 'tower', file: 'art/proposals/market-hall-approach.composition.json', label: 'Neon Market · approaching the market hall', district: 'market' },
+  { id: 'market-block-roomy', base: 'tower', file: 'art/proposals/market-block-roomy.composition.json', label: 'Neon Market · inside a block, roomier', district: 'market' },
+  { id: 'market-hall-tall', base: 'tower', file: 'art/proposals/market-hall-tall.composition.json', label: 'Neon Market · market hall, more floors and a basement', district: 'market' },
+  { id: 'oldq-house-roomy', base: 'tower', file: 'art/proposals/oldq-house-roomy.composition.json', label: 'Old Quarter · inside a shophouse, roomier', district: 'oldq' },
+  { id: 'oldq-church-yard', base: 'tower', file: 'art/proposals/oldq-church-yard.composition.json', label: 'Old Quarter · St. Agnes from its forecourt', district: 'oldq' },
+  { id: 'spire-deck-landed', base: 'tower', file: 'art/proposals/spire-deck-landed.composition.json', label: 'Spire · docking deck with a ship landed', district: 'spire' },
+  { id: 'undercity-entry', base: 'tower', file: 'art/proposals/undercity-entry.composition.json', label: 'Undercity · the way down', district: 'undercity' },
+  { id: 'undercity-tunnels', base: 'tower', file: 'art/proposals/undercity-tunnels.composition.json', label: 'Undercity · tunnels and canals, several levels down', district: 'undercity' },
+  { id: 'undercity-data-hall', base: 'tower', file: 'art/proposals/undercity-data-hall.composition.json', label: 'Undercity · the flooded data hall', district: 'undercity' },
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 
