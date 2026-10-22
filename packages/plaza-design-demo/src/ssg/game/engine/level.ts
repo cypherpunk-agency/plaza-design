@@ -13,7 +13,8 @@
  * into from either side; its facade fades with how far in the player is.
  *
  * A building's rooms (`level.room`) can open one by one: a room shows its insides once the player is in it
- * (or never), and stays open or closes again when they leave; a closed room shows its cover.
+ * (or never), and stays open or closes again when they leave; a closed room shows its cover. Only the room the
+ * player is in is live: a room remembered from before shows how it looked, darkened, without its people.
  * Rooms remembered as seen are the save's (`Save.rooms`); the game passes them in and stores them back.
  *
  * A scene without level floors keeps the old single street line (and its jump ledges).
@@ -55,10 +56,14 @@ export interface LevelSource {
  * A part of a building that opens on its own: x..x+w, h..h+tall. `reveal`: always open, open once the player
  * is in it ('arrival'), or never (a room that is not part of the game). A room that opens always is not one of these. `keep`: a room once seen stays open
  * ('remember', saved) or closes again behind the player ('close'). `children`: the artwork attached to it.
+ * `live`: what in it is going on now (its people and devices, at any depth): shown only while the player is there.
  */
-export interface LevelRoom { id: string; building: string; x: number; w: number; h: number; tall: number; reveal: 'arrival' | 'never'; keep: 'remember' | 'close'; children: string[] }
-/** What the renderer needs this frame: how open each building is (0 outside, 1 inside), each lift car and its doors, each call button lit or not. */
-export interface LevelView { reveal: Record<string, number>; lifts: Record<string, { car: number; doors: number }>; buttons?: Record<string, number>; rooms?: Record<string, number> }
+export interface LevelRoom { id: string; building: string; x: number; w: number; h: number; tall: number; reveal: 'arrival' | 'never'; keep: 'remember' | 'close'; children: string[]; live: string[] }
+/**
+ * What the renderer needs this frame: how open each building is (0 outside, 1 inside), each lift car and its doors, each call button lit or not,
+ * each room's openness (`rooms`) and how much the player is in it (`here`: 1 live, 0 a room remembered from before).
+ */
+export interface LevelView { reveal: Record<string, number>; lifts: Record<string, { car: number; doors: number }>; buttons?: Record<string, number>; rooms?: Record<string, number>; here?: Record<string, number> }
 
 const near = (a: number, b: number, d = 0.75) => Math.abs(a - b) <= d;
 export type StairShape = 'ladder' | 'rungs' | 'spiral' | 'switchback';
@@ -122,8 +127,12 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
   const rooms: LevelRoom[] = rows.filter(r => r.element.type === 'level.room' && (r.props.reveal === 'arrival' || r.props.reveal === 'never')).map(r => {
     const p = r.placement, w = Number(r.props.width) * p.scale, reveal = r.props.reveal;
     // what the room holds: the artwork attached to it, or placed inside it as its children
-    const children = rows.filter(o => o.instance.attach?.instance === r.instance.id || parent.get(o.instance.id) === r.instance.id).map(o => o.instance.id);
-    return { id: r.instance.id, building: insideOf(r.instance.id).inside ?? '', x: p.facing < 0 ? p.x - w : p.x, w, h: p.h, tall: Number(r.props.height) * p.scale, reveal, keep: r.props.keep === 'close' ? 'close' : 'remember', children } as LevelRoom;
+    const owner = (o: Resolved) => o.instance.attach?.instance ?? parent.get(o.instance.id);
+    const children = rows.filter(o => owner(o) === r.instance.id).map(o => o.instance.id);
+    // its people and devices, however deep: drawn in the people or devices pass
+    const within = (o: Resolved): boolean => { for (let at = owner(o), n = 0; at && n < 64; at = byId.get(at) ? owner(byId.get(at)!) : undefined, n++) if (at === r.instance.id) return true; return false; };
+    const live = rows.filter(o => (o.element.parts ?? []).some(part => part === 'people' || part === 'devices') && within(o)).map(o => o.instance.id);
+    return { id: r.instance.id, building: insideOf(r.instance.id).inside ?? '', x: p.facing < 0 ? p.x - w : p.x, w, h: p.h, tall: Number(r.props.height) * p.scale, reveal, keep: r.props.keep === 'close' ? 'close' : 'remember', children, live } as LevelRoom;
   });
   const hs = floors.map(f => f.h), revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
   for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }
@@ -138,9 +147,9 @@ export interface LevelHint { id: string; x: number; h: number; label: string; pr
 type Ride = { kind: 'link'; link: string; t: number; dir: 1 | -1 } | { kind: 'lift'; lift: string; pick: number };
 /**
  * The player's place in the level, kept by the game beside the player: the floor, the ride, each building's openness,
- * each room's openness (`rooms`) and the rooms seen on this save that stay open (`seen`; the game saves them).
+ * each room's openness (`rooms`), how much the player is in it (`here`) and the rooms seen on this save that stay open (`seen`; the game saves them).
  */
-export interface LevelState { floor: string; ride: Ride | null; reveal: Record<string, number>; rooms?: Record<string, number>; seen?: string[] }
+export interface LevelState { floor: string; ride: Ride | null; reveal: Record<string, number>; rooms?: Record<string, number>; here?: Record<string, number>; seen?: string[] }
 /** A scene's level as the game holds it: the compiled pieces and the player's place in them. */
 export interface Level { source: LevelSource; state: LevelState }
 
@@ -209,6 +218,7 @@ export function levelArrive(src: LevelSource, p: LevelPlayer, h: number, seen: r
   if (src.rooms) {
     state.seen = src.rooms.filter(r => r.keep === 'remember' && seen.includes(r.id)).map(r => r.id);
     state.rooms = Object.fromEntries(src.rooms.map(r => [r.id, roomGoal(r, f, p.x, f.h, state.seen!)]));
+    state.here = Object.fromEntries(src.rooms.map(r => [r.id, hereGoal(r, f, p.x, f.h)]));
   }
   return state;
 }
@@ -220,6 +230,8 @@ const BODY = 30;
 function roomGoal(r: LevelRoom, f: LevelFloor, x: number, h: number, seen: readonly string[], body = 0) {
   return r.reveal === 'never' ? 0 : inRoom(r, f, x, h, body) || seen.includes(r.id) ? 1 : 0;
 }
+/** Is the room live (the player is in it)? A remembered room elsewhere shows only how it looked. */
+const hereGoal = (r: LevelRoom, f: LevelFloor, x: number, h: number, body = 0) => r.reveal !== 'never' && inRoom(r, f, x, h, body) ? 1 : 0;
 /** How far the player may walk on their floor (its walls, or the scene's ends outdoors; a walk-in floor opens onto its street). */
 export function levelBounds(lv: Level, width: number): [number, number] {
   const here = levelFloor(lv), f = street(lv.source, here) ?? here, a = f.x <= 0.5 ? 12 : f.x + 6, b = f.x + f.w >= width - 0.5 ? width - 12 : f.x + f.w - 6;
@@ -376,14 +388,17 @@ function easeReveal(lv: Level, p: LevelPlayer, dt: number) {
   }
 }
 
-/** Each room opens towards its goal at its building's reveal speed; a room the player is in is seen (kept if it remembers). */
+/** Each room opens (and comes alive) towards its goal at its building's reveal speed; a room that opened for the player is seen (kept if it remembers). */
 function easeRooms(lv: Level, p: LevelPlayer, dt: number) {
   const s = lv.state, rooms = lv.source.rooms; if (!rooms || !s.rooms) return;
-  const f = levelFloor(lv), h = s.ride ? p.y : f.h, body = s.ride ? BODY : 0, seen = s.seen ??= [];
+  const f = levelFloor(lv), h = s.ride ? p.y : f.h, body = s.ride ? BODY : 0, seen = s.seen ??= [], here = s.here ??= {};
   for (const r of rooms) {
-    if (r.reveal === 'arrival' && r.keep === 'remember' && !seen.includes(r.id) && inRoom(r, f, p.x, h)) seen.push(r.id);
+    // passing through on a flight or in a car counts: it opened for them, so they remember it
+    if (r.reveal === 'arrival' && r.keep === 'remember' && !seen.includes(r.id) && inRoom(r, f, p.x, h, body)) seen.push(r.id);
+    const k = Math.min(1, (lv.source.revealSpeed?.[r.building] ?? LEVEL_DEFAULTS.revealSpeed) * 1.6 * dt);
     const v = s.rooms[r.id] ?? 0, goal = roomGoal(r, f, p.x, h, seen, body);
-    s.rooms[r.id] = v + (goal - v) * Math.min(1, (lv.source.revealSpeed?.[r.building] ?? LEVEL_DEFAULTS.revealSpeed) * 1.6 * dt);
+    s.rooms[r.id] = v + (goal - v) * k;
+    const lv0 = here[r.id] ?? 0; here[r.id] = lv0 + (hereGoal(r, f, p.x, h, body) - lv0) * k;
   }
 }
 /** The rooms seen on this visit that stay open: the game keeps them in the save. */
@@ -397,30 +412,51 @@ export function levelView(lv: Level, m: MoverModel): LevelView {
     lifts[l.id] = { car: (c?.h ?? l.stops[0]?.h ?? l.bottom) - l.bottom, doors: c?.doors ?? 0 };
     for (const b of l.buttons ?? []) buttons[b.id] = c && c.target !== null && near(c.target, b.h, 2) ? 1 : 0;
   }
-  return { reveal: { ...lv.state.reveal }, lifts, ...(Object.keys(buttons).length ? { buttons } : {}), ...(lv.state.rooms ? { rooms: { ...lv.state.rooms } } : {}) };
+  return { reveal: { ...lv.state.reveal }, lifts, ...(Object.keys(buttons).length ? { buttons } : {}), ...(lv.state.rooms ? { rooms: { ...lv.state.rooms }, here: { ...lv.state.here } } : {}) };
 }
 
 /**
  * The renderer's inputs for a level with nobody inside (editor preview): buildings shut, or all open; lifts at the bottom,
- * buttons dark. Rooms: all open for authoring, or (`at`: floor ids, comma-separated, the last where the player stands)
- * as the player sees them after that path: rooms that remember stay open on the way, rooms that close only where they stand.
+ * buttons dark. Rooms: all open and live for authoring, or (`at`: the floors walked, comma-separated, each `floor` or `floor@x`
+ * (x: where on it, the floor's middle if left out), the last where the player stands) as the player sees them after that path,
+ * by the same rule as play: rooms that remember stay open on the way (darkened, as remembered), rooms that close only where they stand.
  */
 export function restingLevelView(source: LevelSource, inside: boolean, at?: string): LevelView {
   const buttons = Object.fromEntries(source.lifts.flatMap(l => (l.buttons ?? []).map(b => [b.id, 0])));
-  const path = (at ?? '').split(',').map(id => source.floors.find(o => o.id === id.trim())).filter((o): o is LevelFloor => !!o), f = path[path.length - 1];
-  const holds = (r: LevelRoom, o: LevelFloor) => r.reveal === 'arrival' && (!r.building || r.building === o.building) && o.x < r.x + r.w && o.x + o.w > r.x && o.h >= r.h - 2 && o.h < r.h + r.tall - 2;
-  const rooms = source.rooms && Object.fromEntries(source.rooms.map(r => [r.id, !f || holds(r, f) || (r.keep === 'remember' && path.some(o => holds(r, o))) ? 1 : 0]));
-  const open = inside || !!f?.building;
-  return { reveal: Object.fromEntries(Object.keys({ ...source.shells, ...source.interiors }).map(b => [b, open && (!f || f.building === b) ? 1 : 0])), lifts: Object.fromEntries(source.lifts.map(l => [l.id, { car: (l.stops[0]?.h ?? l.bottom) - l.bottom, doors: 0 }])), ...(Object.keys(buttons).length ? { buttons } : {}), ...(rooms ? { rooms } : {}) };
+  const path = (at ?? '').split(',').flatMap(step => {
+    const [id, x] = step.split('@').map(t => t.trim()), f = source.floors.find(o => o.id === id);
+    return f ? [{ f, x: x !== undefined && x !== '' && Number.isFinite(Number(x)) ? Number(x) : f.x + f.w / 2 }] : [];
+  });
+  const end = path[path.length - 1], seen = source.rooms?.filter(r => r.reveal === 'arrival' && r.keep === 'remember' && path.some(o => inRoom(r, o.f, o.x, o.f.h))).map(r => r.id) ?? [];
+  const rooms = source.rooms && Object.fromEntries(source.rooms.map(r => [r.id, end ? roomGoal(r, end.f, end.x, end.f.h, seen) : 1]));
+  const here = source.rooms && Object.fromEntries(source.rooms.map(r => [r.id, end ? hereGoal(r, end.f, end.x, end.f.h) : 1]));
+  const f = end?.f, open = inside || !!f?.building;
+  return { reveal: Object.fromEntries(Object.keys({ ...source.shells, ...source.interiors }).map(b => [b, open && (!f || f.building === b) ? 1 : 0])), lifts: Object.fromEntries(source.lifts.map(l => [l.id, { car: (l.stops[0]?.h ?? l.bottom) - l.bottom, doors: 0 }])), ...(Object.keys(buttons).length ? { buttons } : {}), ...(rooms ? { rooms, here } : {}) };
 }
 
+/**
+ * Each level piece's state as the renderer hands it to its artwork (each key must be one of that element's visual fields):
+ * a lift car and its doors, a call button lit, a room's openness and how much the player is in it.
+ */
+export function levelVisualState(view: LevelView): Record<string, Record<string, number>> {
+  return { ...Object.fromEntries(Object.entries(view.lifts).map(([id, c]) => [id, { car: c.car, doors: c.doors }])), ...Object.fromEntries(Object.entries(view.buttons ?? {}).map(([id, lit]) => [id, { lit }])),
+    ...Object.fromEntries(Object.entries(view.rooms ?? {}).map(([id, open]) => [id, { open, here: view.here?.[id] ?? 1 }])) };
+}
+
+/** How much a remembered room's things fade while the player is elsewhere (its wall darkens by `level.room`'s own `here`). */
+const REMEMBERED_FADE = 0.3;
 /** Opacity of each shell and interior handle for a reveal state (its attached artwork follows). Inside, a shell keeps only its ghost (none by default). */
 export function levelOpacity(source: LevelSource, view: LevelView): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [b, ids] of Object.entries(source.shells)) for (const id of ids) out[id] = 1 - (1 - (source.ghost?.[b] ?? LEVEL_DEFAULTS.ghost)) * (view.reveal[b] ?? 0);
   for (const [b, ids] of Object.entries(source.interiors)) for (const id of ids) out[id] = view.reveal[b] ?? 0;
   for (const [b, ids] of Object.entries(source.entrances ?? {})) for (const id of ids) out[id] = view.reveal[b] ?? 0;
-  // a room's insides follow its openness; the room itself stays, drawing its cover over what is shut
-  for (const r of source.rooms ?? []) for (const id of r.children) out[id] = (out[id] ?? 1) * (view.rooms?.[r.id] ?? 1);
+  // a room's insides follow its openness; the room itself stays, drawing its cover over what is shut.
+  // Away from the player a remembered room shows how it looked: its things a little faded over its darkened wall, its people and devices gone.
+  for (const r of source.rooms ?? []) {
+    const open = view.rooms?.[r.id] ?? 1, here = view.here?.[r.id] ?? 1;
+    for (const id of r.children) out[id] = (out[id] ?? 1) * open * (r.live.includes(id) ? 1 : 1 - REMEMBERED_FADE * (1 - here));
+    for (const id of r.live) out[id] = (out[id] ?? 1) * here;
+  }
   return out;
 }

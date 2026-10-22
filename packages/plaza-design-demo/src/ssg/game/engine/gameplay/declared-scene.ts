@@ -11,7 +11,7 @@ import {manifestGeometry} from './manifest-geometry';
 import {withSceneConversations,actorConversationId} from './scene-conversations';
 import type {SceneDef} from '../../scenes/kit';
 import {validateSceneDocument,type SceneDocument} from './scene-document';
-import {compileLevel,levelOpacity,restingLevelView} from '../level';
+import {compileLevel,levelOpacity,levelVisualState,restingLevelView} from '../level';
 import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
@@ -94,7 +94,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  // presentation signals: cosmetic event stamps a provider's artwork reads (a crane call), set by the scene's cues
  const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
-  return {...options,view,state:{...(options.state??{}),...(live?Object.fromEntries(Object.entries(live.lifts).map(([id,c])=>[id,{car:c.car,doors:c.doors}])):{}),...(live?.buttons?Object.fromEntries(Object.entries(live.buttons).map(([id,lit])=>[id,{lit}])):{}),...(live?.rooms?Object.fromEntries(Object.entries(live.rooms).map(([id,open])=>[id,{open}])):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
+  return {...options,view,state:{...(options.state??{}),...(live?levelVisualState(live):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
    bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;

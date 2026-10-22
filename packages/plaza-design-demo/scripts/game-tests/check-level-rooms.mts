@@ -22,11 +22,12 @@ const rows = [
   row('level.room', 'room-store', 160, 60, {building: 'blk', width: 40, height: 60, reveal: 'never'}, 'blk-in'),
   row('level.room', 'room-plain', 0, 200, {width: 40, height: 60}, 'blk-in'),
   row('art.lamp', 'lamp', 130, 90, {}, 'room-upper'),
+  ({element: {type: 'character.resident', parts: ['people']}, instance: {id: 'tenant', attach: {instance: 'room-ground'}}, placement: {x: 150, h: 0, scale: 1, facing: 1}, props: {}}) as unknown as Resolved,
 ];
 const src = compileLevel(rows)!;
 assert.ok(!src.rooms!.some(r => r.id === 'room-plain'), 'a room that opens always (the default) just shows with its building');
 assert.equal(src.rooms![0].building, 'blk', 'a room belongs to the building whose interior it is attached to');
-assert.deepEqual(src.rooms!.map(r => [r.id, r.reveal, r.keep, r.children]), [['room-ground', 'arrival', 'remember', []], ['room-upper', 'arrival', 'close', ['lamp']], ['room-store', 'never', 'remember', []]], 'rooms compile with what is attached to them');
+assert.deepEqual(src.rooms!.map(r => [r.id, r.reveal, r.keep, r.children]), [['room-ground', 'arrival', 'remember', ['tenant']], ['room-upper', 'arrival', 'close', ['lamp']], ['room-store', 'never', 'remember', []]], 'rooms compile with what is attached to them');
 const still: MoverModel = {now: () => 0, movers: {stopPositions: () => undefined, position: () => undefined, moving: () => false, target: () => undefined, trip: () => undefined}, moveTo() {}};
 const p: LevelPlayer = {x: 40, y: 0, vy: 0, face: 1, onGround: true, moving: false};
 const L: Level = {source: src, state: levelArrive(src, p, 0)};
@@ -81,3 +82,39 @@ assert.deepEqual(restingLevelView(src, false, 'upper, ground').rooms, {'room-gro
 // the level hands the room its openness as visual state: the room declares it (open by default)
 assert.equal((roomElement.visualFields as Record<string, {default: number}>).open.default, 1);
 console.log('Level room paths PASS: preview along a path of floors; the room declares its open state.');
+// only the room the player is in is live: a remembered one shows how it looked, darkened, without its people
+{
+  const q: LevelPlayer = {x: 150, y: 0, vy: 0, face: 1, onGround: true, moving: false};
+  const M: Level = {source: src, state: levelArrive(src, q, 0)};
+  const go = (frames: number, walk = 0) => { for (let i = 0; i < frames; i++) levelStep(M, q, walk, 1, still); };
+  go(80);
+  let v = levelView(M, still), o = levelOpacity(src, v);
+  assert.ok(v.here!['room-ground'] > 0.95 && o.tenant > 0.95, 'in the ground floor room: it is live, its tenant shows');
+  q.x = 120; assert.ok(levelUp(M, q)); go(250, 1); go(80);
+  v = levelView(M, still); o = levelOpacity(src, v);
+  assert.equal(levelFloor(M).id, 'upper');
+  assert.ok(v.rooms!['room-ground'] > 0.95 && v.here!['room-ground'] < 0.05, 'upstairs: the ground floor room stays open, remembered, not live');
+  assert.ok(o.tenant < 0.05, 'its tenant is not shown while the player is away');
+  assert.ok(v.here!['room-upper'] > 0.95 && o.lamp > 0.95, 'the room the player is in is live');
+  const look = levelOpacity(src, {...v, here: {...v.here, 'room-upper': 0}});
+  assert.ok(look.lamp > 0.6 && look.lamp < 0.8, 'a remembered room\'s things show faded');
+}
+// the preview uses the same rule as play: the player stands at one place on a floor (its middle, or floor@x)
+{
+  const wide = compileLevel([
+    row('level.floor', 'hall', 0, 0, {width: 200, building: 'b'}), row('level.interior', 'b-in', 0, 0, {building: 'b'}),
+    row('level.room', 'left', 0, 0, {width: 80, height: 60, reveal: 'arrival', keep: 'remember'}, 'b-in'),
+    row('level.room', 'right', 120, 0, {width: 80, height: 60, reveal: 'arrival', keep: 'close'}, 'b-in'),
+  ])!;
+  assert.deepEqual(restingLevelView(wide, false, 'hall').rooms, {left: 0, right: 0}, 'the middle of a floor under two rooms is in neither');
+  assert.deepEqual(restingLevelView(wide, false, 'hall@40').rooms, {left: 1, right: 0}, 'floor@x: the room at that place');
+  const back = restingLevelView(wide, false, 'hall@40, hall@160');
+  assert.deepEqual([back.rooms, back.here], [{left: 1, right: 1}, {left: 0, right: 1}], 'walked on: the left room is remembered (open, not live), the right one is live');
+}
+// the room draws its remembered look: a darkened wall while the player is away
+drawn = 0; roomElement.draw(canvas, view, {...room, reveal: 'arrival', closed: 'dark'}, {open: 1, here: 1} as never);
+const liveCalls = drawn;
+drawn = 0; roomElement.draw(canvas, view, {...room, reveal: 'arrival', closed: 'dark'}, {open: 1, here: 0} as never);
+assert.ok(drawn > liveCalls, 'a remembered room darkens its wall');
+assert.equal((roomElement.visualFields as Record<string, {default: number}>).here.default, 1);
+console.log('Level remembered rooms PASS: only the room the player is in is live; remembered rooms show darkened and faded without their people; the preview places the player as play does.');

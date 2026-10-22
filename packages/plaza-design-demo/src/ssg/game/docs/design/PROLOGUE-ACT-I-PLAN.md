@@ -35,6 +35,11 @@ Story conversation and save/pause access are always available where appropriate.
 details never hide a required prerequisite. Failure/recovery and saved consequences are
 specified in the companion tables to keep the scene matrices readable.
 
+**Decided (Tommi, 2026-10-22):** the prologue has no hacking view and no wiring puzzles. It teaches ordinary
+use of items, and may prime hacking by fixing or getting around one thing (a broken lift, a back door, the
+coffee machine). It travels seamlessly from the harbor to Downtown, to show what the engine can do
+(see [SEAMLESS-WORLD.md](./SEAMLESS-WORLD.md)). Existing saves may be reset when it replaces the opening.
+
 ## Prologue matrix
 
 | Beat / place | Objective and story contribution | New concept / prerequisite | Available actions and presentation | Evidence of understanding |

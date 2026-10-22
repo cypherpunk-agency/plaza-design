@@ -157,8 +157,10 @@ Registry's verification off for one night.
    because the deleted body counts as unregistered and is collected.
 3. **The robot body is DLV-9's model** for now.
 4. **Act II's goal is the body.**
-5. **The harbor finale** may end Act I or the final act; undecided.
-6. **Open:** whether Moth is found in Act I or remains Act II's lead.
+5. **The harbor finale** is not in Act I: Act I plays only in Downtown, and the player cannot leave
+   it while their identity is revoked. It may end the final act.
+6. **Moth is Act II's lead**, not found in Act I.
+7. **Act I is built as sets for now** (art and layout, no gameplay).
 
 These supersede, where they differ, the Act I finale and transition proposals in
 PROGRESSION-CONCEPT.md and the Act I matrix in PROLOGUE-ACT-I-PLAN.md.

@@ -37,6 +37,10 @@ street, and the turnstile is a barrier in the world, not a scene border.
 | 16 | Platform length | Open. Tommi wants to see train and platform sizes compared; a visual comparison is being made. |
 | 17 | Stations | The **Galleria** station is inside the mall, the **Harbor** station is raised, and **Downtown** is underground. Other stations are decided per district. |
 | 18 | Harbor replan | **Before M3.** The harbor, including the prologue's harbor shift, is replanned as several joined scenes. |
+| 19 | Prologue | **Seamless from harbor to Downtown**, to show the engine; individual cuts are allowed. The harbor comes before Downtown + Metro. |
+| 20 | Train length | **Two cars**, keeping three possible. |
+| 21 | Names | **city → district → place** is logical (a place is a named area; a zone may hold several, a place may span zones). A **zone** is the one unit authored, saved, loaded and unloaded (today's scene). A **seam** joins two zones with no cut; an **exit** joins them with a cut. The **world** is the graph of zones over seams and exits. Storeys are **storeys/floors**, not levels. "Chunk" is dropped. Interiors may be split into more zones later; the zone graph must allow it. |
+| 22 | Hacking across a seam | *Open.* Proposed: what is on screen can be hacked, since visible zones are loaded; wires between zones stay out (13). |
 
 ## 1. Goals and non-goals
 

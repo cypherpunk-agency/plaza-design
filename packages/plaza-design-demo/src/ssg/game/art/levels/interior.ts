@@ -39,15 +39,16 @@ export const roomElement: Element = {
     keep: { kind: 'select', label: 'Once seen', options: ['remember', 'close'], default: 'remember' },
     closed: { kind: 'select', label: 'Looks while shut', options: ['dark', 'windows', 'section', 'earth'], default: 'dark' },
     doorLight: { kind: 'boolean', label: 'Light under a door while shut', default: false },
-    doorAt: num('Door at (units from the left of the room; -1: the middle)', -1, -1, 4000),
+    doorAt: num('Door at (units from where the room starts: its left, its right when mirrored; -1: the middle)', -1, -1, 4000),
   },
-  // how open the room is, from the level while playing (1: open, the default for a room nobody set)
-  visualFields: { open: num('Open', 1, 0, 1, 0.01) },
+  // from the level while playing: how open the room is, and how much the player is in it (0: remembered from before,
+  // drawn darkened); 1 for both is the default for a room nobody set
+  visualFields: { open: num('Open', 1, 0, 1, 0.01), here: num('Player in it', 1, 0, 1, 0.01) },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: Number(p.height), role: 'mount' }, middle: { x: Number(p.width) / 2, h: 0, role: 'mount' } }),
   draw: (x, v, p, s) => {
     drawRoom(x, v, p);
-    if (p.reveal === 'arrival' || p.reveal === 'never') drawShut(x, v, p, s);
+    if (p.reveal === 'arrival' || p.reveal === 'never') { drawRemembered(x, v, p, s); drawShut(x, v, p, s); }
   },
 };
 function drawRoom(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<string, unknown>>) {
@@ -69,6 +70,11 @@ function drawRoom(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<strin
     if (kind === 'platform') { rect(x, v, 0, 0, w, 3, '#c9a227'); for (let dx = 30; dx < w - 20; dx += 90) { rect(x, v, dx, 26, 40, 14, '#0f1416'); rect(x, v, dx + 2, 28, 36, 10, 'rgba(255,214,138,.35)'); } }
     // ceiling lights and their glow on the wall
     if (lit > 0) for (let dx = 30; dx < w - 10; dx += 60) { rect(x, v, dx, h - 3, 14, 2, '#ffe9b8'); x.fillStyle = `rgba(255,220,160,${0.07 * lit})`; x.fillRect(v.sx(dx - 10), v.y(h - 3), Math.abs(v.sx(dx + 24) - v.sx(dx - 10)), Math.abs(v.y(0) - v.y(h - 3))); }
+}
+/** A room the player has left but remembers: its wall darkened as much as they are away (`s.here`); its things fade over it (engine/level.ts). */
+function drawRemembered(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<string, unknown>>, s: Readonly<Record<string, unknown>>) {
+    const away = 1 - Math.max(0, Math.min(1, Number(s.here ?? 1))); if (away <= 0.001) return;
+    rect(x, v, 0, 0, Number(p.width), Number(p.height), `rgba(6,8,12,${(0.45 * away).toFixed(3)})`);
 }
 /** A shut room's cover, as much as it is shut (`s.open`, from the level): what the player has not reached yet. */
 function drawShut(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<string, unknown>>, s: Readonly<Record<string, unknown>>) {

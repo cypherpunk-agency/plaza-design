@@ -167,9 +167,13 @@ always (the default: with its building), on arrival (once the player is in it, o
 lift), or never (a room that is not part of the game). `Once seen`: remember (stays open; saved in
 `Save.rooms` by scene) or close (shuts again behind the player). Shut, the room draws its cover (`dark`, `windows`
 lit from outside, a hatched `section`, `earth`) and can show light under a door; pieces left outside the room (a
-stair's mouth, a lift shaft) stay visible as the way on. The open amounts are `LevelState.rooms`, eased in the
-level step; the editor shows every room open, or (environment "Rooms as the player sees them from floor") one
-floor's view. Check with `pnpm test:game level-rooms`.
+stair's mouth, a lift shaft) stay visible as the way on. Only the room the player is in is live: a remembered room
+away from them shows how it looked, its wall darkened and its things faded, without its people and devices (pieces
+in the people or devices pass, at any depth). The amounts are `LevelState.rooms` (open) and `LevelState.here`
+(the player in it), eased in the level step and handed to each piece by `levelVisualState`, which is also how
+lifts and buttons get theirs; every key must be one of the element's visual fields. The editor shows every room open,
+or (environment "Rooms as the player sees them") the view after a path of floors, `floor` or `floor@x`, by the
+same rule as play. Check with `pnpm test:game level-rooms level-visual-state`.
 
 The street door seen from inside is `level.entrance` (its `building`; `style` glass, shop, flat or service, each the
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
