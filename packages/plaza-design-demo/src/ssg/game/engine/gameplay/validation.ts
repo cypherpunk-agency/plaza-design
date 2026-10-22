@@ -8,6 +8,7 @@ import {WEATHER_KINDS} from '../../world/weather';
 import {validateNativeShape} from './native-bindings';
 import {validValue,validStateNumber} from './state';
 import type { Condition, GameplayDefinition,GameplayState,StateDeclaration } from './types';
+import {activeSharedState,sharedDeclarations,sharedStateOwners,type SharedStateSource} from './shared-state';
 const reserved = new Set(['__proto__', 'constructor', 'prototype']);
 function fail(message: string): never { throw new Error('Invalid gameplay document: ' + message); }
 function object(value: unknown): Record<string, unknown> {
@@ -25,7 +26,22 @@ function number(value: unknown) { if (!Number.isSafeInteger(value) || Math.abs(N
 function names(value: unknown) { const values = array(value).map(id); if (new Set(values).size !== values.length) fail('duplicate id'); return new Set(values); }
 function has(set: Set<string>, value: unknown) { if (!set.has(id(value))) fail('unknown reference ' + value); }
 /** Validate once at document/session creation, never in a render loop. */
-export function validateGameplay(value: unknown): GameplayDefinition {
+const NO_SHARED_STATE:SharedStateSource={},sharedCache=new WeakMap<object,GameplayDefinition>();
+/** world/state-owners.json: a gameplay document that only declares state for owners no single scene owns. */
+export function validateSharedState(value:unknown):GameplayDefinition{
+  const cached=value&&typeof value==='object'?sharedCache.get(value):undefined;if(cached)return JSON.parse(JSON.stringify(cached));
+  const d=validateGameplay(value,NO_SHARED_STATE),raw=object(value);
+  if(d.flags.length||d.items.length||d.events.length||Object.keys(d.commands).length||d.reactions.length||Object.keys(d.conversations).length||['native','handoffs','checkpoint','queries','purchases','stateReads','sharedState'].some(k=>k in raw))fail('state owners document declares state only');
+  // Each scene's GameplaySession initializes session-lifetime keys when it starts, so a shared one would reset on entering another zone.
+  for(const[key,s]of Object.entries(d.state??{}))if(s.lifetime==='session')fail('shared state '+key+' cannot have session lifetime (each scene session would reset it); use save or interaction');
+  sharedCache.set(value as object,d);return JSON.parse(JSON.stringify(d));
+}
+/**
+ * Validate once at document/session creation, never in a render loop. A definition listing
+ * `sharedState` owners is checked and returned with those owners' declarations from the active
+ * world/state-owners.json in `state` (shared-state.ts sourceGameplay strips them again for source).
+ */
+export function validateGameplay(value: unknown,shared?:unknown): GameplayDefinition {
   const seen = new Set<object>();
   function plain(v: unknown, depth = 0): void {
     if (depth > 24) fail('nesting limit');
@@ -39,7 +55,15 @@ export function validateGameplay(value: unknown): GameplayDefinition {
   }
   plain(value);
   if (JSON.stringify(value).length > 128_000) fail('document size limit');
-  const doc = object(value); keys(doc, ['version','flags','items','events','commands','reactions','conversations','state','stateReads','queries','purchases','native','handoffs','checkpoint'], ['version','flags','items','events','commands','reactions','conversations']);
+  let doc = object(value); keys(doc, ['version','flags','items','events','commands','reactions','conversations','state','stateReads','sharedState','queries','purchases','native','handoffs','checkpoint'], ['version','flags','items','events','commands','reactions','conversations']);
+  {// One declaration per shared owner: scenes reference it, never redeclare or copy it.
+   const sharedDoc=shared===NO_SHARED_STATE?NO_SHARED_STATE:validateSharedState(shared??activeSharedState()),sharedOwners=sharedStateOwners(sharedDoc);
+   const listed=doc.sharedState===undefined?[]:[...names(doc.sharedState)];if(doc.sharedState!==undefined&&!listed.length)fail('sharedState needs an owner');
+   for(const owner of listed)if(!sharedOwners.has(owner))fail('unknown shared state owner '+owner);
+   const local=doc.state===undefined?{}:object(doc.state);
+   for(const[key,raw]of Object.entries(local)){const owner=object(raw).owner;if(typeof owner!=='string'||!sharedOwners.has(owner))continue;if(!listed.includes(owner))fail('state owner '+owner+' is declared in world/state-owners.json; list it in sharedState instead of declaring '+key);if(JSON.stringify(raw)!==JSON.stringify(sharedDoc.state?.[key]))fail('shared state '+key+' must be declared only in world/state-owners.json');}
+   if(listed.length){doc={...doc,state:{...local,...sharedDeclarations(sharedDoc,listed)}};value=doc;}
+  }
   if (doc.version !== 1) fail('unsupported version');
   const flags = names(doc.flags), items = names(doc.items), events = names(doc.events), commands = object(doc.commands), conversations = object(doc.conversations);
   const declarations=doc.state===undefined?{}:object(doc.state),purchases=doc.purchases===undefined?{}:object(doc.purchases);

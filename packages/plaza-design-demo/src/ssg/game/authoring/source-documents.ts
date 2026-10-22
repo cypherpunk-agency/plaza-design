@@ -1,3 +1,5 @@
+import {withSharedState} from '../engine/gameplay/shared-state';
+import {validateSharedState} from '../engine/gameplay/validation';
 import {validateStateReadReferences} from '../engine/gameplay/state-reads';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import {pendingOpeningStory} from './pending-opening';
@@ -66,6 +68,8 @@ const validatePendingSceneContent=(registration:(typeof gameplayScenes)[number],
 };
 export const sourceDocuments: DocumentDescriptor[] = [
   {id:'companion-gameplay',file:'engine/gameplay/companion-gameplay.json',kind:'gameplay',validate:validateCompanionGameplay},
+  // world-level state owners (shift.*): declared once, used by scenes through gameplay sharedState
+  {id:'state-owners',file:'world/state-owners.json',kind:'gameplay',validate:validateSharedState},
   {id:'opening-story',file:'story/opening.json',kind:'gameplay',validate:validateOpeningSource,validateContext:(value,documents)=>pendingOpeningStory(new Map([...documents,['opening-story',value]])).source},
   {id:'network',file:'data/net.json',kind:'devices',validate:validateNetworkShape,validateContext:(value,documents)=>validatePendingNetwork(new Map([...documents,['network',value]]),pendingRegistry(new Map([...documents,['network',value]])))},
   {id:'authored-scenes',file:'scenes/authored.json',kind:'scene',validate:value=>validateSceneCatalogue(value,NATIVE_SCENES),validateContext:validatePendingSceneCatalogue},
@@ -99,6 +103,10 @@ export const sourceDocuments: DocumentDescriptor[] = [
 ];
 /** Every grouped save validates the complete prospective source set before any replacement. */
 export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>) {
+  // every scene validates against the pending state owners, not the shipped ones
+  return withSharedState(documents.get('state-owners'),()=>validateAll(documents));
+}
+function validateAll(documents: ReadonlyMap<string, unknown>) {
   const declared=validateManifestSources(documents.get('demo-manifest'),documents.get('demo-manifest-scene'),documents.get('demo-manifest-gameplay'));
   validateDeclaredDestinations(declared.scene,pendingDestinations(documents));
   const compositions: Record<string, Composition> = {};

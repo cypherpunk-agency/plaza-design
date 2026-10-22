@@ -1,3 +1,4 @@
+import {useSharedState} from '../engine/gameplay/shared-state';
 import {pendingFixtureVocabulary} from './pending-fixtures';
 import {pendingOpeningStory} from './pending-opening';
 import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
@@ -48,6 +49,7 @@ window.addEventListener('message', async event => {
     const pendingProfiles=sourceDocuments?.find((d:{id:string})=>d.id==='play-profiles');
     installPlayProfiles(pendingProfiles?validatePlayProfiles(pendingProfiles.value):SHIPPED_PROFILES,!!district||!!manifest);
     const sequenceValues=sourceDocuments?new Map<string,unknown>(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value])):undefined;
+    if(sequenceValues?.has('state-owners'))useSharedState(sequenceValues.get('state-owners'));
     const sequences=sequenceValues?createRuntimeSequenceDocuments(sequenceValues,createSequenceValidationContext(art,Object.fromEntries([...sequenceValues].filter(([id])=>['sequence-opening','sequence-intro','sequence-act2','sequence-taxi'].includes(id))) as Record<string,Composition>,pendingDestinations(sequenceValues))):undefined;
     const registry=sourceDocuments?pendingRegistry(new Map(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value]))):undefined;
     const fixtureVocabulary=sequenceValues&&registry?pendingFixtureVocabulary(sequenceValues,registry):undefined;

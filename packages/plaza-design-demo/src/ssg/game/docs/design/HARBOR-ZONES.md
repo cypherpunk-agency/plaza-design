@@ -199,3 +199,41 @@ ground line, scale, concrete, sodium and work-light palette across the seams.
 6. **P0**: does the glide land at the port-road gate as a sky taxi (as framed), or on the quay at dusk?
 7. **Zone sizes**: is a one-screen zone (`harbor-checkout`, 640) acceptable, or should the checkout merge
    into the yard's east end?
+
+## Where the shift's state lives
+
+*Answers open question 3 (2026-10-22). Engine support is built; the harbor shift itself has not moved.*
+
+**What existed.** All scalar state is already one common root, `Save.gameplay[owner][localKey]`. Every scene's
+`GameplaySession` reads and writes that root, and a state ID splits at its last dot into owner and key. A
+declaration names its owner explicitly (`{owner, type, default, lifetime}`), so the owner never had to be the
+scene. What was missing was a home for a declaration that belongs to no single scene. A scene could only declare
+state in its own `gameplay.json`. Another scene could read it through `stateReads` (type only, read-only) or
+declare an identical copy. The copy route meant one declaration in three files, kept equal only by a conflict
+check. The prototype's progress is `shift:*` **flags** in `Save.flags`. Flags are global names with no owner,
+type, default or lifetime, so they reach across zones, but they do not answer the question.
+
+**Chosen approach: a world-level owner document.** [`world/state-owners.json`](../../world/state-owners.json)
+(source document `state-owners`, editor *World › Shared state*) is a gameplay document that only declares state.
+It declares `shift.tagReceived`, `shift.parcelDelivered`, `shift.caseReturned`, `shift.trolleyMoved` and
+`shift.checkedOut` once. A zone's gameplay opts in with `"sharedState": ["shift"]`. Its commands, conditions,
+queries and pickers then use those keys like their own. `validateGameplay` adds the owner's declarations to
+the compiled definition. Source keeps only the reference: `sourceGameplay` strips the declarations again on
+every typed edit. The rules:
+
+- Only declared keys can be used. An unknown owner, a key missing from the document, a wrong value type,
+  using a key without opting in, or a scene redeclaring or copying a `shift.*` declaration is rejected.
+- Values live in `Save.gameplay.shift`. There is no new save field and no per-zone copy. Game serialization and
+  lifetimes work as they do for any owner.
+- Lifetime is `save` (or `interaction`). `session` is refused because each zone's session starts at first entry
+  and would reset the key.
+- Editor validation, grouped Save and private Play see the pending owners document (`withSharedState`).
+
+**Why this is the one way.** It is the existing scalar owner with its declaration in one place. A shift object,
+a story-level session, flags or a `harbor-shed` owner read by the others would each be a second store, or would
+make two zones depend on a third. `stateReads` remains the way to only *look* at another scene's own state.
+`shift:*` flags should become `shift.*` state when the prototype is split across the three zones.
+
+**Not done yet.** Moving `harborShift`'s flags onto `shift.*`, and splitting its stations across
+`harbor-checkout`, `harbor-yard` and `harbor-shed`. Play-fixture state presets cover only scene-owned keys so
+far. Check: `pnpm test:game shared-state-owner`.

@@ -95,6 +95,10 @@ sessions; session/interaction values deliberately do not. State IDs split at the
 owner/local key. Queries are derived reads, never another stored copy. Do not add a parallel cursor
 map, synchronize two scalar stores, reset shop rotation on reload or restore missing optional
 source fields from a compiled original. No historic save-format migration is required.
+State that belongs to no single scene (the harbor night shift across its zones) is declared once in
+[world/state-owners.json](../../world/state-owners.json); a scene's gameplay lists the owner in
+`sharedState` and then reads and writes its keys like its own. Never copy those declarations into a
+scene, and use `stateReads` only to look at another scene's own state. Check: `shared-state-owner`.
 
 Examples: [Library dialogue source](../../scenes/library/scene.json),
 [shared conversation compiler](../../engine/gameplay/scene-conversations.ts),
