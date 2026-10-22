@@ -1,0 +1,1369 @@
+{
+ "version": 1,
+ "scene": "train-two-car",
+ "instances": [
+  {
+   "id": "base",
+   "type": "scene.base",
+   "props": {
+    "use": "look",
+    "width": 1440
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 1,
+   "layer": "logic"
+  },
+  {
+   "id": "bay-across",
+   "type": "shift.far-shore",
+   "props": {
+    "parallax": 0.08,
+    "seed": 7,
+    "tall": 105,
+    "low": 18,
+    "lit": 0.4,
+    "haze": 0.85,
+    "spireX": 980,
+    "spireSize": 0.72,
+    "traffic": true,
+    "water": true
+   },
+   "placement": {
+    "x": 0,
+    "h": -76
+   },
+   "order": 2,
+   "layer": "distance"
+  },
+  {
+   "id": "crane-0",
+   "type": "shift.crane",
+   "props": {
+    "gantry": "sts1",
+    "boomUp": 1,
+    "trolley": -60,
+    "hang": 40,
+    "load": false,
+    "loadPaint": 2,
+    "floods": 0.3,
+    "phase": 0
+   },
+   "placement": {
+    "x": 1300,
+    "h": -126,
+    "parallax": 0.45,
+    "scale": 0.62
+   },
+   "order": 3,
+   "layer": "distance"
+  },
+  {
+   "id": "fog",
+   "type": "shift.fog",
+   "props": {
+    "top": 80,
+    "density": 0.3,
+    "drift": 0.06,
+    "parallax": 0.6
+   },
+   "placement": {
+    "x": 0,
+    "h": -160
+   },
+   "order": 4,
+   "layer": "distance"
+  },
+  {
+   "id": "ground",
+   "type": "shift.floor",
+   "props": {
+    "width": 1440,
+    "concrete": "#26241f",
+    "joint": 96,
+    "walkway": true,
+    "puddles": [
+     {
+      "x": 520,
+      "width": 120,
+      "depth": 12
+     },
+     {
+      "x": 980,
+      "width": 80,
+      "depth": 9
+     }
+    ],
+    "glints": [
+     {
+      "x": 600,
+      "color": "255,214,160"
+     },
+     {
+      "x": 1080,
+      "color": "255,232,196"
+     }
+    ]
+   },
+   "placement": {
+    "x": 0,
+    "h": -160
+   },
+   "order": 5,
+   "layer": "distance"
+  },
+  {
+   "id": "via-deck",
+   "type": "level.slab",
+   "props": {
+    "width": 1440,
+    "thickness": 16
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 6,
+   "layer": "backdrop"
+  },
+  {
+   "id": "via-pier-0",
+   "type": "level.section-wall",
+   "props": {
+    "height": 144,
+    "thickness": 18
+   },
+   "placement": {
+    "x": 100,
+    "h": -160
+   },
+   "order": 7,
+   "layer": "backdrop"
+  },
+  {
+   "id": "via-pier-1",
+   "type": "level.section-wall",
+   "props": {
+    "height": 144,
+    "thickness": 18
+   },
+   "placement": {
+    "x": 470,
+    "h": -160
+   },
+   "order": 8,
+   "layer": "backdrop"
+  },
+  {
+   "id": "via-pier-2",
+   "type": "level.section-wall",
+   "props": {
+    "height": 144,
+    "thickness": 18
+   },
+   "placement": {
+    "x": 840,
+    "h": -160
+   },
+   "order": 9,
+   "layer": "backdrop"
+  },
+  {
+   "id": "via-pier-3",
+   "type": "level.section-wall",
+   "props": {
+    "height": 144,
+    "thickness": 18
+   },
+   "placement": {
+    "x": 1210,
+    "h": -160
+   },
+   "order": 10,
+   "layer": "backdrop"
+  },
+  {
+   "id": "via-pier-4",
+   "type": "level.section-wall",
+   "props": {
+    "height": 144,
+    "thickness": 18
+   },
+   "placement": {
+    "x": 1422,
+    "h": -160
+   },
+   "order": 11,
+   "layer": "backdrop"
+  },
+  {
+   "id": "track",
+   "type": "station.track-base",
+   "props": {},
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 12,
+   "layer": "backdrop"
+  },
+  {
+   "id": "car1",
+   "type": "vehicle.car",
+   "props": {
+    "length": 533,
+    "ceiling": 62,
+    "roof": 12,
+    "doors": 4,
+    "doorWidth": 36,
+    "doorHeight": 54,
+    "cab": "left",
+    "plate": "CAR 1",
+    "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
+   },
+   "placement": {
+    "x": 230,
+    "h": 0
+   },
+   "order": 13,
+   "layer": "backdrop"
+  },
+  {
+   "id": "gangway",
+   "type": "vehicle.gangway",
+   "props": {
+    "face": "far",
+    "length": 20
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 14,
+   "layer": "backdrop",
+   "attach": {
+    "instance": "car1",
+    "anchor": "end"
+   }
+  },
+  {
+   "id": "car2",
+   "type": "vehicle.car",
+   "props": {
+    "length": 533,
+    "ceiling": 62,
+    "roof": 12,
+    "doors": 4,
+    "doorWidth": 36,
+    "doorHeight": 54,
+    "cab": "right",
+    "plate": "CAR 2",
+    "ads": "LINE 0 · ON TIME 61%|SPIRE RESIDENCES · BY INVITATION|REPORT UNREGISTERED PERSONS",
+    "notice": "NO SLEEPING ON SEATS"
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 15,
+   "layer": "backdrop",
+   "attach": {
+    "instance": "gangway",
+    "anchor": "end"
+   }
+  },
+  {
+   "id": "track-edge",
+   "type": "station.track-edge",
+   "props": {},
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 16,
+   "layer": "backdrop"
+  },
+  {
+   "id": "roof",
+   "type": "station.harbor-canopy",
+   "props": {
+    "under": 158,
+    "top": 168,
+    "width": 1440
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 17,
+   "layer": "backdrop"
+  },
+  {
+   "id": "lamp-0",
+   "type": "station.canopy-lamp",
+   "props": {},
+   "placement": {
+    "x": 120,
+    "h": 158
+   },
+   "order": 18,
+   "layer": "backdrop"
+  },
+  {
+   "id": "lamp-1",
+   "type": "station.canopy-lamp",
+   "props": {},
+   "placement": {
+    "x": 480,
+    "h": 158
+   },
+   "order": 19,
+   "layer": "backdrop"
+  },
+  {
+   "id": "lamp-2",
+   "type": "station.canopy-lamp",
+   "props": {},
+   "placement": {
+    "x": 840,
+    "h": 158
+   },
+   "order": 20,
+   "layer": "backdrop"
+  },
+  {
+   "id": "lamp-3",
+   "type": "station.canopy-lamp",
+   "props": {},
+   "placement": {
+    "x": 1200,
+    "h": 158
+   },
+   "order": 21,
+   "layer": "backdrop"
+  },
+  {
+   "id": "post-0",
+   "type": "station.canopy-post",
+   "props": {},
+   "placement": {
+    "x": 60,
+    "h": 158
+   },
+   "order": 22,
+   "layer": "backdrop"
+  },
+  {
+   "id": "post-1",
+   "type": "station.canopy-post",
+   "props": {},
+   "placement": {
+    "x": 1380,
+    "h": 158
+   },
+   "order": 23,
+   "layer": "backdrop"
+  },
+  {
+   "id": "name-0",
+   "type": "sign.nameplate",
+   "props": {
+    "name": "HARBOR",
+    "rods": 20,
+    "alpha": 0.92
+   },
+   "placement": {
+    "x": 1340,
+    "h": 120
+   },
+   "order": 24,
+   "layer": "backdrop"
+  },
+  {
+   "id": "departures",
+   "type": "sign.screen",
+   "props": {
+    "kind": "registry",
+    "width": 110,
+    "height": 34,
+    "mount": "hang",
+    "reach": 20,
+    "lines": [
+     "LINE 0 > DOWNTOWN",
+     "DUE 0:40"
+    ],
+    "title": "DEPARTURES",
+    "text": "",
+    "color": "255,170,60",
+    "period": 260,
+    "phase": 0,
+    "seed": 2
+   },
+   "placement": {
+    "x": 773,
+    "h": 104
+   },
+   "order": 25,
+   "layer": "backdrop"
+  },
+  {
+   "id": "car1-bench0",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 4,
+    "place": 20,
+    "style": "bench"
+   },
+   "placement": {
+    "x": 2,
+    "h": 0
+   },
+   "order": 26,
+   "layer": "set",
+   "attach": {
+    "instance": "car1",
+    "anchor": "bay0"
+   }
+  },
+  {
+   "id": "car1-bench1",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 4,
+    "place": 20,
+    "style": "bench"
+   },
+   "placement": {
+    "x": 2,
+    "h": 0
+   },
+   "order": 27,
+   "layer": "set",
+   "attach": {
+    "instance": "car1",
+    "anchor": "bay1"
+   }
+  },
+  {
+   "id": "car1-bench2",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 4,
+    "place": 20,
+    "style": "bench"
+   },
+   "placement": {
+    "x": 2,
+    "h": 0
+   },
+   "order": 28,
+   "layer": "set",
+   "attach": {
+    "instance": "car1",
+    "anchor": "bay2"
+   }
+  },
+  {
+   "id": "car1-bench3",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 1,
+    "place": 20,
+    "style": "priority"
+   },
+   "placement": {
+    "x": 6,
+    "h": 0
+   },
+   "order": 29,
+   "layer": "set",
+   "attach": {
+    "instance": "car1",
+    "anchor": "bay3"
+   }
+  },
+  {
+   "id": "car2-bench0",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 1,
+    "place": 20,
+    "style": "priority"
+   },
+   "placement": {
+    "x": 6,
+    "h": 0
+   },
+   "order": 30,
+   "layer": "set",
+   "attach": {
+    "instance": "car2",
+    "anchor": "bay0"
+   }
+  },
+  {
+   "id": "car2-bench1",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 4,
+    "place": 20,
+    "style": "bench"
+   },
+   "placement": {
+    "x": 2,
+    "h": 0
+   },
+   "order": 31,
+   "layer": "set",
+   "attach": {
+    "instance": "car2",
+    "anchor": "bay1"
+   }
+  },
+  {
+   "id": "car2-bench2",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 4,
+    "place": 20,
+    "style": "bench"
+   },
+   "placement": {
+    "x": 2,
+    "h": 0
+   },
+   "order": 32,
+   "layer": "set",
+   "attach": {
+    "instance": "car2",
+    "anchor": "bay2"
+   }
+  },
+  {
+   "id": "car2-bench3",
+   "type": "vehicle.seat",
+   "props": {
+    "places": 4,
+    "place": 20,
+    "style": "bench"
+   },
+   "placement": {
+    "x": 2,
+    "h": 0
+   },
+   "order": 33,
+   "layer": "set",
+   "attach": {
+    "instance": "car2",
+    "anchor": "bay3"
+   }
+  },
+  {
+   "id": "rider-0",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7701,
+    "act": "read",
+    "archetype": "office",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 332,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 34,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-2",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7702,
+    "act": "doze",
+    "archetype": "student",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 372,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 35,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-5",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7703,
+    "act": "phone",
+    "archetype": "elder",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 487,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 36,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-9",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7704,
+    "act": "sit",
+    "archetype": "dockworker",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 622,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 37,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-10",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7705,
+    "act": "read",
+    "archetype": "reader",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 642,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 38,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-13",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7706,
+    "act": "doze",
+    "archetype": "sleeper",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 805,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 39,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-17",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7707,
+    "act": "talk",
+    "archetype": "courier",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 945,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 40,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-18",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7708,
+    "act": "phone",
+    "archetype": "commuter",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 1020,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 41,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-22",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7709,
+    "act": "read",
+    "archetype": "punk",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 1155,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 42,
+   "layer": "playfield"
+  },
+  {
+   "id": "rider-24",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7710,
+    "act": "doze",
+    "archetype": "teen",
+    "sitting": "side",
+    "seat": 14
+   },
+   "placement": {
+    "x": 1195,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 43,
+   "layer": "playfield"
+  },
+  {
+   "id": "stand-0",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7711,
+    "act": "phone",
+    "archetype": "technician"
+   },
+   "placement": {
+    "x": 550,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 44,
+   "layer": "playfield"
+  },
+  {
+   "id": "stand-1",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7712,
+    "act": "stand",
+    "archetype": "clerk"
+   },
+   "placement": {
+    "x": 710,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 45,
+   "layer": "playfield"
+  },
+  {
+   "id": "stand-2",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7713,
+    "act": "read",
+    "archetype": "commuter"
+   },
+   "placement": {
+    "x": 993,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 46,
+   "layer": "playfield"
+  },
+  {
+   "id": "stand-3",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7714,
+    "act": "phone",
+    "archetype": "courier"
+   },
+   "placement": {
+    "x": 1143,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 47,
+   "layer": "playfield"
+  },
+  {
+   "id": "through-gangway",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7715,
+    "act": "walk",
+    "archetype": "teen",
+    "range": 90
+   },
+   "placement": {
+    "x": 730,
+    "h": 0
+   },
+   "order": 48,
+   "layer": "playfield"
+  },
+  {
+   "id": "line0-shell",
+   "type": "level.shell",
+   "props": {
+    "building": "line0",
+    "ghost": 0.12,
+    "revealSpeed": 0.08
+   },
+   "placement": {
+    "x": 230,
+    "h": 0
+   },
+   "order": 52,
+   "layer": "logic",
+   "children": [
+    {
+     "id": "shell1",
+     "type": "vehicle.car-shell",
+     "props": {
+      "length": 533,
+      "ceiling": 62,
+      "roof": 12,
+      "doors": 4,
+      "doorWidth": 36,
+      "doorHeight": 54,
+      "cab": "left",
+      "number": "0-2031",
+      "destination": "LINE 0 · DOWNTOWN"
+     },
+     "placement": {
+      "x": 0,
+      "h": 0
+     },
+     "order": 49,
+     "layer": "playfield"
+    },
+    {
+     "id": "gangway-near",
+     "type": "vehicle.gangway",
+     "props": {
+      "face": "near",
+      "length": 20
+     },
+     "placement": {
+      "x": 533,
+      "h": 0
+     },
+     "order": 50,
+     "layer": "playfield"
+    },
+    {
+     "id": "shell2",
+     "type": "vehicle.car-shell",
+     "props": {
+      "length": 533,
+      "ceiling": 62,
+      "roof": 12,
+      "doors": 4,
+      "doorWidth": 36,
+      "doorHeight": 54,
+      "cab": "right",
+      "number": "0-2032",
+      "destination": "LINE 0 · DOWNTOWN"
+     },
+     "placement": {
+      "x": 553,
+      "h": 0
+     },
+     "order": 51,
+     "layer": "playfield"
+    }
+   ]
+  },
+  {
+   "id": "car1-door0",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 53,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car1",
+    "anchor": "door0"
+   }
+  },
+  {
+   "id": "car1-door1",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 54,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car1",
+    "anchor": "door1"
+   }
+  },
+  {
+   "id": "car1-door2",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 55,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car1",
+    "anchor": "door2"
+   }
+  },
+  {
+   "id": "car1-door3",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 56,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car1",
+    "anchor": "door3"
+   }
+  },
+  {
+   "id": "car2-door0",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 57,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car2",
+    "anchor": "door0"
+   }
+  },
+  {
+   "id": "car2-door1",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 58,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car2",
+    "anchor": "door1"
+   }
+  },
+  {
+   "id": "car2-door2",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 59,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car2",
+    "anchor": "door2"
+   }
+  },
+  {
+   "id": "car2-door3",
+   "type": "vehicle.door",
+   "props": {
+    "width": 36,
+    "height": 54
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 60,
+   "layer": "playfield",
+   "attach": {
+    "instance": "car2",
+    "anchor": "door3"
+   }
+  },
+  {
+   "id": "platform-0",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7716,
+    "act": "stand",
+    "archetype": "elder"
+   },
+   "placement": {
+    "x": 380,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 61,
+   "layer": "playfield"
+  },
+  {
+   "id": "platform-1",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7717,
+    "act": "phone",
+    "archetype": "office"
+   },
+   "placement": {
+    "x": 480,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 62,
+   "layer": "playfield"
+  },
+  {
+   "id": "platform-2",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7718,
+    "act": "walk",
+    "archetype": "dockworker",
+    "range": 120
+   },
+   "placement": {
+    "x": 843,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 63,
+   "layer": "playfield"
+  },
+  {
+   "id": "platform-3",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7719,
+    "act": "wait",
+    "archetype": "commuter"
+   },
+   "placement": {
+    "x": 1073,
+    "h": 0,
+    "facing": 1
+   },
+   "order": 64,
+   "layer": "playfield"
+  },
+  {
+   "id": "platform-4",
+   "type": "character.resident",
+   "props": {
+    "kind": "human",
+    "depth": "play",
+    "district": "harbor",
+    "seed": 7720,
+    "act": "stand",
+    "archetype": "courier"
+   },
+   "placement": {
+    "x": 1233,
+    "h": 0,
+    "facing": -1
+   },
+   "order": 65,
+   "layer": "playfield"
+  },
+  {
+   "id": "spawn",
+   "type": "scene.player",
+   "props": {},
+   "placement": {
+    "x": 120,
+    "h": 0
+   },
+   "order": 66,
+   "layer": "playfield"
+  },
+  {
+   "id": "floor-platform",
+   "type": "level.floor",
+   "props": {
+    "width": 1440,
+    "building": "",
+    "label": "Platform"
+   },
+   "placement": {
+    "x": 0,
+    "h": 0
+   },
+   "order": 67,
+   "layer": "logic"
+  },
+  {
+   "id": "line0-deck",
+   "type": "level.floor",
+   "props": {
+    "width": 1086,
+    "building": "line0",
+    "label": "LINE 0",
+    "entry": "door"
+   },
+   "placement": {
+    "x": 230,
+    "h": 0
+   },
+   "order": 68,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car1-0",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 294,
+    "h": 0
+   },
+   "order": 69,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car1-1",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 429,
+    "h": 0
+   },
+   "order": 70,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car1-2",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 564,
+    "h": 0
+   },
+   "order": 71,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car1-3",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 699,
+    "h": 0
+   },
+   "order": 72,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car2-0",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 847,
+    "h": 0
+   },
+   "order": 73,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car2-1",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 982,
+    "h": 0
+   },
+   "order": 74,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car2-2",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 1117,
+    "h": 0
+   },
+   "order": 75,
+   "layer": "logic"
+  },
+  {
+   "id": "way-car2-3",
+   "type": "level.door",
+   "props": {
+    "building": "line0",
+    "width": 36
+   },
+   "placement": {
+    "x": 1252,
+    "h": 0
+   },
+   "order": 76,
+   "layer": "logic"
+  },
+  {
+   "id": "label",
+   "type": "metro.scale-ruler",
+   "props": {
+    "span": 0,
+    "bar": false,
+    "numbers": false,
+    "size": 9,
+    "title": "LINE 0 · THE WALKABLE 2-CAR TRAIN AT A PLATFORM (consist kit: vehicle.car, car-shell, door, gangway, seat)",
+    "note": "2 cars of 533 + a 20-unit gangway = 1,086 units; one fused deck at the platform’s height, 8 doors on the platform side|Vehicle source: art/proposals/train-two-car.vehicle.json (checked against this frame by check-train-consist-art)|A third car: one more gangway + car attached to car 2’s end (1,639 units)"
+   },
+   "placement": {
+    "x": 20,
+    "h": 250
+   },
+   "order": 77,
+   "layer": "foreground"
+  },
+  {
+   "id": "ruler-train",
+   "type": "metro.scale-ruler",
+   "props": {
+    "span": 1086,
+    "title": "TRAIN: 2 CARS + 1 GANGWAY",
+    "size": 8
+   },
+   "placement": {
+    "x": 230,
+    "h": 196
+   },
+   "order": 78,
+   "layer": "foreground"
+  }
+ ]
+}

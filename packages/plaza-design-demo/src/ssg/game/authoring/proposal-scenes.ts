@@ -74,6 +74,9 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'metro-len-3', base: 'tower', file: 'art/proposals/metro-len-3.composition.json', label: 'Metro · 3-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-4', base: 'tower', file: 'art/proposals/metro-len-4.composition.json', label: 'Metro · 4-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-6', base: 'tower', file: 'art/proposals/metro-len-6.composition.json', label: 'Metro · 6-car train at an underground platform (long)', district: 'downtown' },
+  // The walkable train (SEAMLESS-WORLD.md decided 5 and 20): two cars and a gangway from the consist kit (vehicle.*), cut open,
+  // its deck, doors and seats matching art/proposals/train-two-car.vehicle.json. On the harbor's look, at the raised platform.
+  { id: 'train-two-car', base: 'harbor', file: 'art/proposals/train-two-car.composition.json', label: 'Metro · the walkable 2-car train at a platform (consist kit; morning, night)', district: 'harbor' },
   // Downtown Metro underground (SEAMLESS-WORLD decided 4, 17, 20; §7 step 7), for review before the real metro is redrawn:
   // the station in cross-section, and the street-to-station cut where the stairs are the seam. Look frames on Downtown's look.
   { id: 'dt-metro-underground', base: 'downtown', file: 'art/proposals/dt-metro-underground.composition.json', label: 'Downtown Metro · underground: ticket hall, turnstile, 2-car platform, stairs and escalator up', district: 'downtown' },

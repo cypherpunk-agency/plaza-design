@@ -542,4 +542,323 @@ export const scaleRulerElement = piece({
   },
 });
 
-export const metroKitElements: Element[] = [undergroundPlatformElement, ticketHallElement, metroStairsUpElement, cutawayCarElement, gangwayElement, cutawayTrainElement, scaleRulerElement];
+// ---------------------------------------------------------------- the walkable consist (vehicle.*)
+
+/*
+ * The walkable train (docs/design/SEAMLESS-WORLD.md §4, decided 5 and 20: two cars joined by a gangway, a third possible).
+ * The `metro.cutaway-*` pieces above draw a whole car as one picture; these split it into the parts a vehicle has, each
+ * one placeable, so a later compiler can read a composition into world/vehicles.ts `VehicleSource`:
+ * - `vehicle.car` → one `VehicleCar`: `length` is its `width`; its floor is the car's deck at h 0 (the default deck);
+ *   its anchors `door0`… are the near doors' centres and `bay0`… the seat bays' left ends. The car is the inside, cut open
+ *   on the near side, and always drawn: far wall, windows onto the outside, seats' wall, poles, straps, adverts, ceiling.
+ * - `vehicle.car-shell` → `VehicleSource.shell`: the near side and roof seen from outside, attached to a `level.shell`
+ *   handle of the vehicle's building, so it fades to the handle's ghost while the player is aboard. Same layout fields.
+ * - `vehicle.door` → one `VehicleDoor` (`x` its centre, `w` its `width`): the near door pair; it draws open or shut from
+ *   its visual field `open` (0 shut … 1 open), which a vehicle's doors mover would hand it (world/vehicles.ts `vehicleDoors`).
+ * - `vehicle.gangway` → the consist's `gap` (its `length`) and `gangways: true`: the walk-through between cars (`face: far`),
+ *   or the bellows' near side (`face: near`, attached to the shell handle so it fades with the shell).
+ * - `vehicle.seat` → one `VehicleSeat` per place (`seat0`… anchors: a place's centre at the cushion's height).
+ * The road, air, water and whole-train pieces (`vehicle.road`, `vehicle.air`, `vehicle.boat`, `vehicle.rail`) are whole
+ * vehicles seen from outside; the names here are parts of a consist, after the model's own words.
+ * Every piece is drawn in its own frame, the car's floor at h 0 (a platform at the same height boards level).
+ */
+
+/** The cab's depth at a leading end. */
+export const CONSIST_CAB = 40;
+/** The shared layout fields of a car and its shell: they must agree (scripts/game-tests/check-train-consist-art.mts). */
+const CONSIST_FIELDS = {
+  length: num('Car length', METRO.len, 120, 1600, 1, 'units'),
+  ceiling: num('Ceiling height over the floor', 62, 46, 160, 1, 'units'),
+  roof: num('Roof (shell over the ceiling)', 12, 4, 40, 1, 'units'),
+  doors: num('Doors a side', METRO.doors.length, 1, 8, 1),
+  doorWidth: num('Door width', METRO.doorW, 16, 90, 1, 'units'),
+  doorHeight: num('Door height', 54, 42, 140, 1, 'units'),
+  cab: select('Driver’s cab', ['none', 'left', 'right'], 'none'),
+};
+export interface ConsistCarLayout { L: number; C: number; roof: number; dw: number; dh: number; cab: 'none' | 'left' | 'right'; cab0: number; cab1: number; doors: number[]; bays: [number, number][] }
+/** Where a car's parts are, from its layout fields: door centres spread like the true-scale car's (train-car.ts METRO.doors), and the seat bays between them. */
+export function consistCarLayout(p: Properties): ConsistCarLayout {
+  const L = N(p, 'length'), n = Math.max(1, Math.round(N(p, 'doors'))), dw = N(p, 'doorWidth'), C = N(p, 'ceiling');
+  const cab = p.cab === 'left' || p.cab === 'right' ? p.cab : 'none', cab0 = cab === 'left' ? CONSIST_CAB : 0, cab1 = cab === 'right' ? L - CONSIST_CAB : L;
+  const a = METRO.doors[0], b = METRO.doors[METRO.doors.length - 1];
+  const doors = Array.from({ length: n }, (_, i) => Math.round((n === 1 ? 0.5 : a + (b - a) * i / (n - 1)) * L));
+  const bays: [number, number][] = []; let from = cab0 + 6;
+  for (const c of doors) { bays.push([from, c - dw / 2 - 8]); from = c + dw / 2 + 8; }
+  bays.push([from, cab1 - 6]);
+  return { L, C, roof: N(p, 'roof'), dw, dh: Math.min(N(p, 'doorHeight'), C - 4), cab, cab0, cab1, doors, bays: bays.filter(([l, r]) => r - l >= 24) };
+}
+const clamp01 = (v: unknown, d = 0) => { const n = Number(v); return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : d; };
+/** A piece with visual state: its state fields are read in `paint` like its props (the names never overlap). */
+function stateful(o: Parameters<typeof piece>[0] & { visualFields: Record<string, import('../core/composition').Field> }): Element {
+  const e = piece(o);
+  return { ...e, draw: (ctx, v, p, s, pass, at) => e.draw(ctx, v, { ...p, ...s }, s, pass, at) };
+}
+/** A pane of glass the world behind shows through: by day it holds the sky's sheen, at night the car's own lights. */
+function pane(x: X, l: number, h: number, w: number, t: number, o: Paint, inner: number) {
+  const night = o.lighting.night, day = o.lighting.daylight;
+  R(x, l, h, w, t, 'rgba(150,185,210,' + (0.08 + 0.14 * day).toFixed(3) + ')');
+  if (inner > 0) R(x, l, h, w, t, 'rgba(255,220,175,' + (0.22 * night * inner).toFixed(3) + ')');
+  x.fillStyle = 'rgba(235,245,255,' + (0.05 + 0.07 * day).toFixed(3) + ')';
+  for (let k = l + 6; k < l + w - 6; k += 46) { x.beginPath(); x.moveTo(k, y(h)); x.lineTo(k + 5, y(h)); x.lineTo(k + 5 + t * 0.5, y(h + t)); x.lineTo(k + t * 0.5, y(h + t)); x.closePath(); x.fill(); }
+}
+/** A rect with holes (the windows and doorways the world shows through), filled even-odd. */
+function holed(x: X, l: number, h: number, w: number, t: number, holes: [number, number, number, number][], fill: string | CanvasGradient) {
+  x.beginPath(); x.rect(Math.round(l), Math.round(y(h + t)), Math.round(w), Math.round(t));
+  for (const [hl, hh, hw, ht] of holes) if (hw > 0 && ht > 0) x.rect(Math.round(hl), Math.round(y(hh + ht)), Math.round(hw), Math.round(ht));
+  x.fillStyle = fill; x.fill('evenodd');
+}
+const SILL = 26, HEAD = 50;
+/** The far side's windows: between the far doors, clear of the cab and the ends. */
+const farWindows = (g: ConsistCarLayout): [number, number][] => {
+  const out: [number, number][] = []; let from = g.cab0 + 8;
+  for (const c of g.doors) { out.push([from, c - g.dw / 2 - 6]); from = c + g.dw / 2 + 6; }
+  out.push([from, g.cab1 - 8]); return out.filter(([a, b]) => b - a >= 14);
+};
+
+export const vehicleCarElement = stateful({
+  type: 'vehicle.car', label: 'Vehicle car, cut open: far wall, windows, poles, straps, adverts (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  fields: {
+    ...CONSIST_FIELDS,
+    plate: text('Car plate', 'CAR 1'),
+    inside: colour('Inside wall colour', '#3b352e'),
+    ads: text('Advert cards along the cove (| between; fine print)', 'REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%'),
+    notice: text('Notice card in the cove (over the widest window)', 'CAMERAS OPERATE IN THIS CAR'),
+    camera: bool('Ceiling camera', true),
+  },
+  visualFields: { lit: num('Cabin lights (0 out: emergency light)', 1, 0, 1, 0.01), sway: num('Straps lean (-1 braking … 1 pulling away)', 0, -1, 1, 0.01) },
+  size: p => ({ w: N(p, 'length'), tall: N(p, 'ceiling') + N(p, 'roof') }),
+  reach: () => 60,
+  bounds: p => ({ x: 0, h: N(p, 'ceiling') + N(p, 'roof'), w: N(p, 'length'), tall: N(p, 'ceiling') + N(p, 'roof') }),
+  anchors: p => {
+    const g = consistCarLayout(p);
+    return { origin: { x: 0, h: 0, role: 'origin' as const }, end: { x: g.L, h: 0, role: 'mount' as const }, roof: { x: 0, h: g.C + g.roof, role: 'surface' as const },
+      ...Object.fromEntries(g.doors.map((c, i) => ['door' + i, { x: c, h: 0, role: 'entrance' as const }])),
+      ...Object.fromEntries(g.bays.map(([l], i) => ['bay' + i, { x: l, h: 0, role: 'mount' as const }])) };
+  },
+  paint(x, p, o) {
+    const g = consistCarLayout(p), { L, C, dw, dh, cab0, cab1 } = g, lit = clamp01(p.lit, 1), sway = Math.max(-1, Math.min(1, Number(p.sway) || 0));
+    const wins = farWindows(g), body = '#14171a';
+    // the far wall, warm where the lights fall, with the windows and the far doors' panes open to the world behind
+    const grad = x.createLinearGradient(0, y(C), 0, y(0)); grad.addColorStop(0, hex(p.inside, '#3b352e')); grad.addColorStop(1, '#17130f');
+    const holes: [number, number, number, number][] = [...wins.map(([a, b]) => [a, SILL, b - a, HEAD - SILL] as [number, number, number, number]),
+      ...g.doors.flatMap(c => [[c - dw / 2 + 3, dh - 26, dw / 2 - 5, 20], [c + 2, dh - 26, dw / 2 - 5, 20]] as [number, number, number, number][])];
+    holed(x, cab0, 0, cab1 - cab0, C, holes, grad);
+    x.fillStyle = 'rgba(255,214,160,' + (0.14 * lit).toFixed(3) + ')'; x.fillRect(Math.round(cab0), Math.round(y(C)), Math.round(cab1 - cab0), Math.round(C * 0.55));
+    for (const [a, b] of wins) {
+      pane(x, a, SILL, b - a, HEAD - SILL, o, lit);
+      for (let k = a + 58; k < b - 16; k += 58) R(x, k, SILL, 2, HEAD - SILL, '#23262a');
+      R(x, a - 1, SILL - 1, b - a + 2, 1, 'rgba(255,217,165,.22)'); R(x, a - 1, HEAD, b - a + 2, 1, '#0d0f11');
+    }
+    // the far doors, shut, with their panes
+    for (const c of g.doors) {
+      const l = c - dw / 2;
+      holed(x, l, 0, dw, dh, [[l + 3, dh - 26, dw / 2 - 5, 20], [c + 2, dh - 26, dw / 2 - 5, 20]], '#30353a');
+      pane(x, l + 3, dh - 26, dw / 2 - 5, 20, o, lit); pane(x, c + 2, dh - 26, dw / 2 - 5, 20, o, lit);
+      R(x, c - 0.5, 0, 1, dh, 'rgba(0,0,0,.55)'); R(x, l - 2, dh, dw + 4, 2, 'rgba(' + O + ',.5)');
+      R(x, l + 2, 0, dw - 4, 1, 'rgba(255,196,40,.35)');
+    }
+    // the cove over the windows: advert cards, the line map over the doors, one notice in plain words
+    const ads = String(p.ads).split('|').map(s => s.trim()).filter(Boolean), notice = String(p.notice);
+    const widest = wins.reduce((m, w, i) => w[1] - w[0] > wins[m][1] - wins[m][0] ? i : m, 0);
+    let ai = 0;
+    for (const [wi, [a, b]] of wins.entries()) {
+      if (b - a < 40) continue;
+      R(x, a, HEAD + 1, b - a, 7, 'rgba(0,0,0,.28)');
+      let k = a + 4;
+      if (notice && wi === widest) { const nw = Math.min(b - a - 8, notice.length * 2.6 + 10); R(x, k, HEAD + 1.5, nw, 6, 'rgba(240,236,228,.9)'); R(x, k, HEAD + 6.5, nw, 1, 'rgba(255,42,68,.85)'); say(x, notice, k + nw / 2, HEAD + 4.5, 'rgba(20,16,14,.95)', 4, '600'); k += nw + 6; }
+      for (; ; ai++) {
+        const words = ads.length ? ads[ai % ads.length] : '', cw = Math.max(30, words.length * 2.5 + 8);
+        if (k + cw > b - 2) break;
+        const hue = ai % 3 === 0 ? 'rgba(' + O + ',.55)' : ai % 3 === 1 ? 'rgba(' + PAPER + ',.4)' : 'rgba(120,170,190,.45)';
+        R(x, k, HEAD + 2, cw, 5, hue);
+        if (words) say(x, words, k + cw / 2, HEAD + 4.5, 'rgba(10,8,6,.8)', 4); else R(x, k + 2, HEAD + 3, 12, 1, 'rgba(0,0,0,.35)');
+        k += cw + 6;
+      }
+    }
+    for (const c of g.doors) { R(x, c - dw / 2, dh + 3, dw, 4, '#0b0908'); R(x, c - dw / 2 + 3, dh + 4.5, dw - 6, 1, 'rgba(' + O + ',.8)'); for (let k = 0; k < 5; k++) R(x, c - dw / 2 + 4 + k * (dw - 8) / 4, dh + 4, 1.5, 2, k === 2 ? 'rgba(255,240,215,.95)' : 'rgba(' + O + ',.9)'); }
+    // the ceiling: the cove, the light strip, the lamps' light on the floor
+    R(x, cab0, C - 5, cab1 - cab0, 5, '#cfc3ad'); R(x, cab0 + 4, C - 4, cab1 - cab0 - 8, 2, lit > 0.05 ? 'rgba(255,248,230,' + (0.35 + 0.65 * lit).toFixed(2) + ')' : 'rgba(90,120,170,.5)');
+    if (lit < 1) { x.fillStyle = 'rgba(8,12,24,' + (0.55 * (1 - lit)).toFixed(3) + ')'; x.fillRect(Math.round(cab0), Math.round(y(C)), Math.round(cab1 - cab0), Math.round(C)); }
+    for (let k = cab0 + 50; k < cab1 - 20; k += 90) o.glow?.(k, C - 4, { kind: 'lamp', col: '255,240,215', r: 56, a: 0.4 * lit });
+    if (lit < 0.5) for (let k = cab0 + 80; k < cab1; k += 200) { R(x, k, C - 7, 6, 2, 'rgba(120,255,160,.8)'); o.glow?.(k + 3, C - 7, { kind: 'neon', col: '120,255,160', r: 24, a: 0.35 }); }
+    // the handrail along the ceiling and its straps, leaning with the car's pull
+    R(x, cab0 + 2, C - 11, cab1 - cab0 - 4, 1, 'rgba(205,205,210,.7)');
+    x.strokeStyle = 'rgba(40,36,34,.9)'; x.lineWidth = 1;
+    for (let k = cab0 + 10; k < cab1 - 6; k += 15) {
+      if (g.doors.some(c => Math.abs(k - c) < dw / 2 + 2)) continue;
+      const lean = sway * 3; x.beginPath(); x.moveTo(Math.round(k) + 0.5, y(C - 11)); x.lineTo(Math.round(k + lean) + 0.5, y(C - 18)); x.stroke();
+      x.strokeStyle = 'rgba(220,215,200,.75)'; x.strokeRect(Math.round(k + lean) - 2 + 0.5, y(C - 18) + 0.5, 4, 3); x.strokeStyle = 'rgba(40,36,34,.9)';
+    }
+    // poles by every door, floor to ceiling, and one down each long bay
+    const poles = [...g.doors.flatMap(c => [c - dw / 2 - 5, c + dw / 2 + 3]), ...g.bays.filter(([a, b]) => b - a > 70).map(([a, b]) => Math.round((a + b) / 2))];
+    for (const px of poles) { R(x, px, 2, 2, C - 7, 'rgba(210,210,215,.8)'); R(x, px + 1, 2, 1, C - 7, 'rgba(0,0,0,.3)'); }
+    // the floor and the near doors' thresholds: where you step on and off
+    R(x, 0, 0, L, 2, '#2c2824'); R(x, 0, 2, L, 1, 'rgba(255,217,165,.1)');
+    for (const c of g.doors) { R(x, c - dw / 2, 0, dw, 2, 'rgba(255,196,40,.65)'); R(x, c - dw / 2 - 3, 0, 3, dh, 'rgba(20,23,26,.8)'); R(x, c + dw / 2, 0, 3, dh, 'rgba(20,23,26,.8)'); R(x, c - dw / 2 - 3, dh, dw + 6, 2, 'rgba(20,23,26,.8)'); }
+    // the ends: a doorway through to the gangway, or the cab behind its bulkhead
+    const end = (left: boolean) => {
+      const wx = left ? 0 : L - 4;
+      if ((left && g.cab === 'left') || (!left && g.cab === 'right')) {
+        const ox = left ? 0 : L - CONSIST_CAB, bx = left ? CONSIST_CAB - 4 : L - CONSIST_CAB;
+        R(x, ox, 0, CONSIST_CAB, C, '#15181b');
+        const wl = left ? ox + 3 : ox + 9; holed(x, ox, SILL, CONSIST_CAB, C - SILL - 6, [[wl, SILL + 2, 28, HEAD - SILL + 4]], '#15181b'); pane(x, wl, SILL + 2, 28, HEAD - SILL + 4, o, 0);
+        R(x, left ? ox + 6 : ox + 10, 0, 22, 20, '#0d1013'); R(x, left ? ox + 6 : ox + 10, 20, 22, 2, 'rgba(255,136,0,.35)');
+        R(x, left ? ox + 18 : ox + 14, 8, 8, 14, '#24282c'); R(x, left ? ox + 17 : ox + 13, 22, 10, 3, '#24282c');
+        R(x, bx, 0, 4, C, body); R(x, bx + 1, 0, 2, 50, '#2a2e33'); R(x, bx + 1, 50, 2, 1, 'rgba(255,42,68,.7)');
+        say(x, 'NO ENTRY', bx + 2 + (left ? 14 : -14), 44, 'rgba(' + PAPER + ',.55)', 5);
+      } else {
+        R(x, wx, dh, 4, C - dh, body); R(x, left ? wx + 3 : wx, 0, 1, dh, 'rgba(' + O + ',.4)');
+        R(x, left ? wx : wx, 0, 4, dh, 'rgba(255,214,160,' + (0.08 * lit).toFixed(3) + ')');
+      }
+    };
+    end(true); end(false);
+    if (p.camera) { const cx = cab0 + (cab1 - cab0) * 0.5; R(x, cx - 4, C - 9, 8, 4, '#0b0b0d'); R(x, cx - 1, C - 9, 2, 1, 'rgba(255,42,68,' + (0.6 + 0.4 * Math.max(0, Math.sin(o.t / 20))).toFixed(2) + ')'); }
+    // the car plate by the last door
+    if (String(p.plate)) { const px = g.doors[g.doors.length - 1] + dw / 2 + 22; R(x, px - 14, 40, 28, 8, '#050302'); say(x, String(p.plate), px, 44, 'rgba(255,217,165,.85)', 5, '600'); }
+    // the cut: roof in section, its edge orange, and the floor's edge
+    R(x, 0, C, L, g.roof, '#0f1113'); R(x, 0, C, L, 1, 'rgba(' + O + ',.55)'); R(x, 0, C + g.roof - 1, L, 1, 'rgba(255,200,150,.2)');
+    R(x, 0, -2, L, 2, body); R(x, 0, -2, L, 1, 'rgba(' + O + ',.45)');
+  },
+});
+
+export const vehicleCarShellElement = stateful({
+  type: 'vehicle.car-shell', label: 'Vehicle car shell: the near side and roof from outside, fades when aboard (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  fields: {
+    ...CONSIST_FIELDS,
+    body: colour('Body colour', '#1a1e22'),
+    stripe: colour('Line stripe', '#ff8800'),
+    number: text('Fleet number', '0-2031'),
+    destination: text('Destination (cab end)', 'LINE 0 · RING'),
+  },
+  visualFields: {},
+  size: p => ({ w: N(p, 'length'), tall: N(p, 'ceiling') + N(p, 'roof') + 8 }),
+  reach: p => p.cab === 'none' ? 0 : 120,
+  bounds: p => ({ x: p.cab === 'left' ? -10 : 0, h: N(p, 'ceiling') + N(p, 'roof') + 8, w: N(p, 'length') + (p.cab === 'none' ? 0 : 10), tall: N(p, 'ceiling') + N(p, 'roof') + 14 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' as const }, end: { x: N(p, 'length'), h: 0, role: 'mount' as const } }),
+  paint(x, p, o) {
+    const g = consistCarLayout(p), { L, C, roof, dw, dh, cab } = g, top = C + roof, body = hex(p.body, '#1a1e22'), stripe = rgbOf(hex(p.stripe, '#ff8800'));
+    const wins = farWindows(g), screen = cab === 'none' ? undefined : (cab === 'left' ? [3, SILL + 2, CONSIST_CAB - 12, HEAD - SILL + 6] : [L - CONSIST_CAB + 9, SILL + 2, CONSIST_CAB - 12, HEAD - SILL + 6]) as [number, number, number, number] | undefined;
+    const holes: [number, number, number, number][] = [...wins.map(([a, b]) => [a, SILL, b - a, HEAD - SILL] as [number, number, number, number]), ...g.doors.map(c => [c - dw / 2, 0, dw, dh] as [number, number, number, number]), ...(screen ? [screen] : [])];
+    // the body, a lit rim along its top, the nose at a cab end
+    holed(x, 0, -4, L, top + 4, holes.map(([l, h, w, t]) => [l, h, w, t]), body);
+    if (cab !== 'none') { const nx = cab === 'left' ? 0 : L, d = cab === 'left' ? -1 : 1; x.fillStyle = body; x.beginPath(); x.moveTo(nx, y(top)); x.quadraticCurveTo(nx + d * 12, y(C * 0.45), nx, y(-4)); x.closePath(); x.fill(); x.strokeStyle = 'rgba(' + O + ',.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(nx, y(top)); x.quadraticCurveTo(nx + d * 12, y(C * 0.45), nx, y(-4)); x.stroke(); }
+    R(x, 0, top - 1, L, 1, 'rgba(255,200,150,.35)'); R(x, 0, top - 3, L, 1, 'rgba(255,255,255,.06)');
+    for (const [a, b] of wins) { pane(x, a, SILL, b - a, HEAD - SILL, o, 1); for (let k = a + 58; k < b - 16; k += 58) R(x, k, SILL, 3, HEAD - SILL, body); R(x, a, SILL - 1, b - a, 1, '#0a0c0e'); R(x, a, HEAD, b - a, 1, 'rgba(255,255,255,.12)'); }
+    if (screen) { pane(x, screen[0], screen[1], screen[2], screen[3], o, 0); R(x, screen[0], screen[1] + screen[3], screen[2], 1, 'rgba(255,255,255,.18)'); }
+    // the line's stripe along the waist, broken by the doors; the fleet number and the line's roundel by the first door
+    const runs: [number, number][] = []; let from = 0;
+    for (const c of g.doors) { runs.push([from, c - dw / 2 - 3]); from = c + dw / 2 + 3; }
+    runs.push([from, L]);
+    for (const [a, b] of runs) { R(x, a, 16, b - a, 4, 'rgba(' + stripe + ',.85)'); R(x, a, 15, b - a, 1, 'rgba(0,0,0,.35)'); }
+    const nx = g.doors[0] + dw / 2 + 16;
+    R(x, nx - 5, 6, 10, 8, '#0b0d0f'); say(x, '0', nx, 10, 'rgba(' + stripe + ',.95)', 7, '600');
+    if (String(p.number)) say(x, String(p.number), nx + 10, 10, 'rgba(' + PAPER + ',.45)', 5, '', 'left');
+    // the door frames' rubber and the step plates under them
+    for (const c of g.doors) { R(x, c - dw / 2 - 2, 0, 2, dh, '#0b0d0f'); R(x, c + dw / 2, 0, 2, dh, '#0b0d0f'); R(x, c - dw / 2 - 2, dh, dw + 4, 2, '#0b0d0f'); R(x, c - dw / 2 - 2, -4, dw + 4, 3, '#3a3d41'); }
+    // the skirt under the floor and the roof gear: air conditioning pods, conduit
+    R(x, 0, -4, L, 1, 'rgba(' + O + ',.3)');
+    for (const k of [0.25, 0.7]) { const ax = Math.round(L * k); R(x, ax - 32, top, 64, 6, '#22262b'); R(x, ax - 32, top + 6, 64, 1, 'rgba(255,200,150,.3)'); for (let j = ax - 26; j < ax + 28; j += 6) R(x, j, top + 1, 3, 4, '#15181b'); }
+    R(x, 0, top + 1, L, 1, '#2a2e33');
+    // a cab end: the headlight, the tail light on the far end of the train, the destination board over the windscreen
+    if (cab !== 'none') {
+      const left = cab === 'left', hx = left ? 2 : L - 9;
+      R(x, hx, 6, 7, 4, 'rgba(255,240,215,.95)'); o.glow?.(left ? 2 : L - 2, 8, { kind: 'head', col: '255,235,200', r: 110, a: 0.55, dir: left ? -1 : 1 });
+      R(x, left ? 6 : L - 14, 2, 8, 2, 'rgba(255,42,68,.85)');
+      const bx = left ? 6 : L - CONSIST_CAB - 70, bw = CONSIST_CAB + 64;
+      R(x, bx, HEAD + 4, bw, 8, '#050302'); say(x, String(p.destination), bx + bw / 2, HEAD + 8, 'rgba(255,136,0,.95)', 6, '600');
+      o.glow?.(bx + bw / 2, HEAD + 8, { kind: 'screen', col: '255,136,0', r: 30, a: 0.35 });
+    }
+  },
+});
+
+export const vehicleDoorElement = stateful({
+  type: 'vehicle.door', label: 'Vehicle door pair: slides open and shut from its state (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  fields: { width: num('Door width (opening)', METRO.doorW, 16, 90, 1, 'units'), height: num('Door height', 54, 42, 140, 1, 'units'), leaf: colour('Leaf colour', '#3a3f45'), button: bool('Door button (cyan)', true) },
+  visualFields: { open: num('Open (0 shut … 1 open; at its berth a train rests open)', 1, 0, 1, 0.01) },
+  size: p => ({ w: N(p, 'width'), tall: N(p, 'height') + 8 }),
+  reach: () => 30,
+  bounds: p => ({ x: -N(p, 'width') / 2 - 4, h: N(p, 'height') + 8, w: N(p, 'width') + 8, tall: N(p, 'height') + 8 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'entrance' as const }, top: { x: 0, h: N(p, 'height'), role: 'mount' as const } }),
+  paint(x, p, o) {
+    const w = N(p, 'width'), h = N(p, 'height'), hw = w / 2, open = clamp01(p.open, 1), shift = open * (hw - 1), leaf = hex(p.leaf, '#3a3f45');
+    // the opening: lit from inside while it is open
+    if (open > 0) { R(x, -hw, 0, w, h, 'rgba(255,214,160,' + (0.06 * open).toFixed(3) + ')'); R(x, -hw, 0, w, 2, 'rgba(255,217,165,' + (0.8 * open).toFixed(3) + ')'); o.glow?.(0, 4, { kind: 'lamp', col: '255,217,165', r: 36, a: 0.4 * open }); }
+    // the two leaves, sliding into the body (clipped to the opening), each with a big pane
+    x.save(); x.beginPath(); x.rect(Math.round(-hw), Math.round(y(h)), Math.round(w), Math.round(h)); x.clip();
+    for (const [l] of [[-hw - shift], [shift]] as [number][]) {
+      if (hw - 0.5 <= 0) continue;
+      holed(x, l, 0, hw, h, [[l + 3, h - 30, hw - 6, 24]], leaf);
+      pane(x, l + 3, h - 30, hw - 6, 24, o, 1);
+      R(x, l, 0, hw, 1, '#1a1c1f'); R(x, l + 3, 14, hw - 6, 1, 'rgba(255,196,40,.45)');
+    }
+    if (open < 0.02) R(x, -0.5, 0, 1, h, 'rgba(0,0,0,.65)');
+    x.restore();
+    // the frame, and over it the door lamp: green open, red while the doors move, dark shut
+    R(x, -hw - 2, h, w + 4, 2, '#0b0d0f');
+    const lamp = open >= 0.98 ? '124,255,154' : open > 0.02 ? '255,42,68' : '';
+    R(x, -3, h + 3, 6, 3, lamp ? 'rgba(' + lamp + ',.95)' : '#202326');
+    if (lamp) o.glow?.(0, h + 4, { kind: 'neon', col: lamp, r: 18, a: 0.5 });
+    if (p.button) { R(x, hw + 2, 22, 3, 5, '#0b0d0f'); R(x, hw + 2.5, 23, 2, 3, 'rgba(0,255,255,' + (open >= 0.98 ? 0.5 : 0.9).toFixed(2) + ')'); }
+  },
+});
+
+export const vehicleGangwayElement = stateful({
+  type: 'vehicle.gangway', label: 'Vehicle gangway between two cars: walk-through or its near bellows (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  fields: {
+    face: select('Side (far: the walk-through; near: the outside bellows, on the shell)', ['far', 'near'], 'far'),
+    length: num('Length (the gap between the cars)', 20, 6, 80, 1, 'units'), ceiling: CONSIST_FIELDS.ceiling, roof: CONSIST_FIELDS.roof, doorHeight: CONSIST_FIELDS.doorHeight,
+    body: colour('Bellows colour', '#101214'),
+  },
+  visualFields: { open: num('Passage open (0: its door shut and locked)', 1, 0, 1, 0.01) },
+  size: p => ({ w: N(p, 'length'), tall: N(p, 'ceiling') + N(p, 'roof') }),
+  bounds: p => ({ x: 0, h: N(p, 'ceiling') + N(p, 'roof'), w: N(p, 'length'), tall: N(p, 'ceiling') + N(p, 'roof') + 4 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' as const }, end: { x: N(p, 'length'), h: 0, role: 'mount' as const } }),
+  paint(x, p, o) {
+    const len = N(p, 'length'), C = N(p, 'ceiling'), top = C + N(p, 'roof') - 2, dh = Math.min(N(p, 'doorHeight'), C - 4), body = hex(p.body, '#101214'), open = clamp01(p.open, 1);
+    const pleats = (h0: number, h1: number, a: number) => { x.fillStyle = 'rgba(70,74,80,' + a + ')'; for (let k = 1; k < len; k += 3) x.fillRect(Math.round(k), Math.round(y(h1)), 1, Math.round(h1 - h0)); };
+    if (p.face === 'near') { R(x, 0, -2, len, top + 2, body); pleats(-2, top, 0.8); R(x, 0, top, len, 1, 'rgba(255,200,150,.25)'); R(x, 0, 16, len, 4, 'rgba(0,0,0,.4)'); return; }
+    R(x, 0, 0, len, top, body); pleats(0, top, 0.5);
+    // the passage: light from both cars, the floor plate over the coupling, its header
+    R(x, 0, 0, len, dh, 'rgba(255,214,160,.10)');
+    R(x, 0, 0, len, 3, '#4a4640'); x.fillStyle = 'rgba(255,217,165,.18)'; for (let k = 1; k < len; k += 4) x.fillRect(Math.round(k), Math.round(y(3)), 2, 1);
+    R(x, 0, dh, len, top - dh, body); pleats(dh, top, 0.8); R(x, 0, dh, len, 1, 'rgba(' + O + ',.4)');
+    // shut: the gangway door across the passage, its lamp red
+    if (open < 1) {
+      const lw = len * (1 - open); R(x, 0, 0, lw, dh, '#2a2e33'); R(x, 1, dh - 20, Math.max(0, lw - 2), 12, 'rgba(150,185,210,.12)');
+      R(x, len / 2 - 2, dh + 3, 4, 3, 'rgba(255,42,68,.9)'); o.glow?.(len / 2, dh + 4, { kind: 'neon', col: '255,42,68', r: 16, a: 0.4 });
+    }
+  },
+});
+
+export const SEAT_STYLES = ['bench', 'priority', 'tip-up'] as const;
+export const vehicleSeatElement = stateful({
+  type: 'vehicle.seat', label: 'Vehicle seat bench along the far wall: places to sit (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  fields: {
+    places: num('Places', 4, 1, 12, 1), place: num('Place width', 20, 14, 40, 1, 'units'),
+    style: select('Style (priority: kept for those who need it; tip-up: folded against the wall)', [...SEAT_STYLES], 'bench'),
+    cushion: num('Seat height (people sit at h + this)', 14, 8, 24, 1, 'units'),
+    colour: colour('Cushion colour', '#5a2630'),
+  },
+  visualFields: {},
+  size: p => ({ w: N(p, 'places') * N(p, 'place'), tall: 32 }),
+  bounds: p => ({ x: 0, h: 32, w: N(p, 'places') * N(p, 'place'), tall: 32 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' as const }, ...Object.fromEntries(Array.from({ length: Math.max(1, Math.round(N(p, 'places'))) }, (_, i) => ['seat' + i, { x: (i + 0.5) * N(p, 'place'), h: N(p, 'cushion'), role: 'surface' as const }])) }),
+  paint(x, p) {
+    const n = Math.max(1, Math.round(N(p, 'places'))), pw = N(p, 'place'), W = n * pw, s = N(p, 'cushion'), style = String(p.style);
+    const seat = style === 'priority' ? '#2c4a6a' : hex(p.colour, '#5a2630');
+    if (style === 'tip-up') {
+      // folded up against the wall: the pans standing, a rail to lean on
+      for (let i = 0; i < n; i++) { R(x, i * pw + 2, s - 2, pw - 4, 16, seat); R(x, i * pw + 2, s + 13, pw - 4, 1, 'rgba(255,255,255,.12)'); R(x, i * pw + pw / 2 - 1, 2, 2, s - 4, '#141210'); }
+      R(x, 0, s + 18, W, 2, 'rgba(210,210,215,.7)'); return;
+    }
+    R(x, 0, s, W, 16, seat); R(x, 0, s + 15, W, 1, 'rgba(255,255,255,.12)');
+    R(x, -1, s - 5, W + 2, 5, seat); R(x, -1, s - 1, W + 2, 1, 'rgba(255,255,255,.18)');
+    R(x, 3, 0, W - 6, s - 5, '#141210'); x.fillStyle = 'rgba(255,136,0,.12)'; for (let k = 6; k < W - 6; k += 4) x.fillRect(Math.round(k), Math.round(y(s - 7)), 2, 2);
+    for (let i = 1; i < n; i++) R(x, i * pw, s + 1, 1, 14, 'rgba(0,0,0,.35)');
+    R(x, -2, 0, 2, s + 8, 'rgba(210,210,215,.75)'); R(x, W, 0, 2, s + 8, 'rgba(210,210,215,.75)');
+    if (style === 'priority') { R(x, W / 2 - 5, s + 20, 10, 8, '#e8ecef'); R(x, W / 2 - 1, s + 21, 2, 2, '#2c4a6a'); R(x, W / 2 - 2, s + 23, 4, 3, '#2c4a6a'); }
+  },
+});
+
+export const metroKitElements: Element[] = [undergroundPlatformElement, ticketHallElement, metroStairsUpElement, cutawayCarElement, gangwayElement, cutawayTrainElement, scaleRulerElement,
+  vehicleCarElement, vehicleCarShellElement, vehicleDoorElement, vehicleGangwayElement, vehicleSeatElement];
