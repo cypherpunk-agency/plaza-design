@@ -13,13 +13,43 @@
       "type": "boolean",
       "default": false
     },
+    "shift.parcelCollected": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
     "shift.parcelDelivered": {
       "owner": "shift",
       "lifetime": "save",
       "type": "boolean",
       "default": false
     },
+    "shift.caseCollected": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
     "shift.caseReturned": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.trolleyAssigned": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.clampFound": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.clampReleased": {
       "owner": "shift",
       "lifetime": "save",
       "type": "boolean",
@@ -32,6 +62,18 @@
       "default": false
     },
     "shift.checkedOut": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.statementRead": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
+    "shift.coffeeFixed": {
       "owner": "shift",
       "lifetime": "save",
       "type": "boolean",

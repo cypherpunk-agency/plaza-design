@@ -11,10 +11,10 @@ const isObject=(v:unknown):v is Obj=>!!v&&typeof v==='object'&&!Array.isArray(v)
 /** The editor's name for the kind of a value: a literal, or the discriminating key(s). */
 export function valueKindOf(v:ValueExpr):string{
  if(!isObject(v))return 'literal';
- if('if' in v)return 'if';if('role' in v)return 'role';if('rows' in v)return 'rows';
+ if('if' in v)return 'if';if('role' in v)return 'role';if('instance' in v&&'get' in v)return 'instance';if('rows' in v)return 'rows';
  return Object.keys(v)[0];
 }
-const KIND_NAMES=['literal',...VALUE_KINDS.slice(0,6),'if','role','rows',...VALUE_KINDS.slice(6)];
+const KIND_NAMES=['literal',...VALUE_KINDS.slice(0,6),'if','role','instance','rows',...VALUE_KINDS.slice(6)];
 const at=(root:unknown,path:Path)=>path.reduce<unknown>((o,k)=>(o as Obj)[k as string],root);
 const put=(root:unknown,path:Path,v:unknown)=>{(at(root,path.slice(0,-1)) as Obj)[String(path.at(-1))]=v;};
 const literal=(text:string):ValueExpr=>{const t=text.trim();if(t==='true')return true;if(t==='false')return false;if(t==='null')return null;if(t!==''&&Number.isFinite(Number(t)))return Number(t);return text;};
@@ -31,7 +31,7 @@ export function renderSceneValues(form:TypedForm,host:HTMLElement,d:SceneDocumen
  const fresh=(kind:string):ValueExpr=>{switch(kind){
   case 'literal':return false;case 'flag':return{flag:first(flagRoles) as never};case 'use':return{use:first(uses)};
   case 'not':return{not:false};case 'all':return{all:[]};case 'any':return{any:[]};case 'sum':return{sum:[]};case 'list':return{list:[]};
-  case 'if':return{if:false,then:false,else:false};case 'role':return{role:first(roles),get:'x'};case 'rows':return{rows:first(types),get:'x'};
+  case 'if':return{if:false,then:false,else:false};case 'role':return{role:first(roles),get:'x'};case 'instance':return{instance:'spawn',get:'x'};case 'state':return{state:'owner.key'};case 'rows':return{rows:first(types),get:'x'};
   case 'visible':return{visible:{role:first(roles)}};case 'actor':return{actor:{role:first(actorRoles) as never,get:'x'}};
   case 'picture':return{picture:first(allPictureFields)};case 'engine':return{engine:'hover'};case 'signal':return{signal:'signal'};
   case 'world':return{world:'ticker'};case 'shared':return{shared:{mechanism:'',field:''}};case 'atrium':return{atrium:true};default:return{live:false};}};
@@ -54,6 +54,11 @@ export function renderSceneValues(form:TypedForm,host:HTMLElement,d:SceneDocumen
    const gets=[...ROLE_GETS,'prop:'],g=String(o.get),plain=(ROLE_GETS as readonly string[]).includes(g);
    form.select(row,title+' geometry',gets,plain?g:'prop:',x=>set('Edit value',path,{...o,get:x}));
    if(!plain)form.text(row,title+' property name',g.slice(5),x=>set('Edit value',path,{...o,get:'prop:'+x.trim()}));}
+  else if(kind==='instance'){form.text(row,title+' artwork instance id',String(o.instance),x=>set('Edit value',path,{...o,instance:x.trim()}));
+   const gets=[...ROLE_GETS,'prop:'],g=String(o.get),plain=(ROLE_GETS as readonly string[]).includes(g);
+   form.select(row,title+' geometry',gets,plain?g:'prop:',x=>set('Edit value',path,{...o,get:x}));
+   if(!plain)form.text(row,title+' property name',g.slice(5),x=>set('Edit value',path,{...o,get:'prop:'+x.trim()}));}
+  else if(kind==='state')form.text(row,title+' saved state (owner.key, declared by the gameplay or a shared owner it uses)',String(o.state),x=>set('Edit value',path,{state:x.trim()}));
   else if(kind==='rows'){form.select(row,title+' artwork type',types.includes(String(o.rows))?types:[...types,String(o.rows)],String(o.rows),x=>set('Edit value',path,{...o,rows:x}));form.select(row,title+' of each row',['x','h'],String(o.get),x=>set('Edit value',path,{...o,get:x}));}
   else if(kind==='visible'){const a=o.visible as Obj;
    form.select(row,title+' artwork role',roles.includes(String(a.role))?roles:[...roles,String(a.role)],String(a.role),x=>set('Edit value',[...path,'visible'],{...a,role:x}));

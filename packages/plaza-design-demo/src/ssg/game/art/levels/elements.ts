@@ -374,11 +374,11 @@ export const BARRIER_STYLES = ['turnstile', 'gate', 'door'] as const;
  * optional gameplay condition (flags, items, tokens, the player, time, weather; world/access.ts `validateBarrierCondition`);
  * `refuse`, the words when it refuses. The composer's Access tab (authoring/barrier-authoring.ts) edits the rule with
  * typed pickers, so the Look section hides those three. It draws shut or open from `open` (0..1), which the level eases
- * once it has opened; it stays open.
+ * once it has opened; it stays open, unless `closes` (a turnstile): then it shuts again once the player has walked on.
  */
 const hidden = () => false;
 /** The shape only (null, or one plain condition object); its vocabulary is checked with the pending sources (world/access.ts). */
-const barrierWhen = (v: unknown) => { if (v !== null && (!v || typeof v !== 'object' || Array.isArray(v) || Object.keys(v).length !== 1)) throw new Error('level.barrier.when: null or one condition object'); };
+const barrierWhen = (v: unknown) => { if (v !== null && (!v || typeof v !== 'object' || Array.isArray(v) || !Object.keys(v).length || Object.keys(v).length > 2)) throw new Error('level.barrier.when: null or one condition object'); };
 export const barrierElement: Element = {
   type: 'level.barrier', version: 1, label: 'Barrier (turnstile, gate, locked door)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
@@ -388,6 +388,7 @@ export const barrierElement: Element = {
     flag: { ...text('Opens once: flag set (empty: none)'), showIf: hidden },
     when: { kind: 'json', label: 'Opens while: condition (null: always)', default: null, showIf: hidden, validate: barrierWhen },
     refuse: text('Refuses with', 'ACCESS DENIED.'),
+    closes: { kind: 'boolean', label: 'Shuts again behind the player (asks its rule each time)', default: false },
   },
   visualFields: { open: num('Open', 0, 0, 1, 0.01) },
   bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 0, w: Number(p.width) + 20, tall: 58 }),

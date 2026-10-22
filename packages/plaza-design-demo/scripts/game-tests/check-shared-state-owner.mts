@@ -44,7 +44,7 @@ const registry=pendingRegistry(pending()),A=registry['tower-annex'].gameplay!,D=
 const save=newSave();let state:GameplayState={flags:save.flags,items:save.items,tokens:save.tokens,values:save.gameplay??={}};
 const port={read:()=>state,write:(next:GameplayState)=>{state={...next,values:Object.assign(save.gameplay!,next.values)};}};
 const a=withSharedState(owners,()=>new GameplaySession(A,port)),d=withSharedState(owners,()=>new GameplaySession(D,port));
-const defaults={tagReceived:false,parcelDelivered:false,caseReturned:false,trolleyMoved:false,checkedOut:false,radio:false};assert.deepEqual(a.state().values!.shift,defaults,'declared defaults');assert.deepEqual(d.state().values!.shift,defaults);
+const defaults=Object.fromEntries(Object.entries(owners.state as Record<string,{default:unknown}>).map(([id,d])=>[id.slice('shift.'.length),d.default]));assert.equal(defaults.radio,false);assert.deepEqual(a.state().values!.shift,defaults,'declared defaults');assert.deepEqual(d.state().values!.shift,defaults);
 assert.deepEqual(d.dispatch('deck.checkout','interaction'),{ok:false,reason:'conditions'},'deck refuses before the annex delivers');
 assert(a.dispatch('annex.tag','interaction').ok);assert(a.dispatch('annex.deliver','interaction').ok);
 assert(d.dispatch('deck.checkout','interaction').ok,'deck reads what the annex wrote');assert.equal(a.state().values!.shift.checkedOut,true,'annex reads what the deck wrote');

@@ -19,7 +19,8 @@
  *
  * A barrier (`level.barrier`: a turnstile, a gate, a locked door) stops the player on their floor until its
  * access rule passes (world/access.ts `barrierAccess`, the exits' key and flag shapes); E there asks it and opens it.
- * It is not a scene exit. Barriers once opened stay open and are the save's (`Save.barriers`), like seen rooms.
+ * It is not a scene exit. Barriers once opened stay open and are the save's (`Save.barriers`), like seen rooms; one that
+ * `closes` (a turnstile that lets one person through) shuts again once the player has walked on, and asks again next time.
  *
  * A scene without level floors keeps the old single street line (and its jump ledges).
  */
@@ -69,8 +70,9 @@ export interface LevelSource {
  * hold (an access requirement's `when`). `refuse`: the words when it refuses. A story phase may replace the rule
  * (scene.json `phases.<p>.barriers.<id>`, story-rules.ts `barrierPhaseRule`).
  * `inside`: the building whose interior shows it; it stands only on that building's floors.
+ * `closes`: it shuts again behind the player once they are past it (not kept on the save), so its rule is asked each time.
  */
-export interface LevelBarrier { id: string; x: number; h: number; w: number; style: string; key?: string; flag?: string; when?: Condition; refuse: string; inside?: string; zone?: string }
+export interface LevelBarrier { id: string; x: number; h: number; w: number; style: string; key?: string; flag?: string; when?: Condition; refuse: string; inside?: string; zone?: string; closes?: true }
 /**
  * A part of a building that opens on its own: x..x+w, h..h+tall. `reveal`: always open, open once the player
  * is in it ('arrival'), or never (a room that is not part of the game). A room that opens always is not one of these. `keep`: a room once seen stays open
@@ -162,7 +164,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
   const barriers: LevelBarrier[] = rows.filter(r => r.element.type === 'level.barrier').map(r => {
     const key = String(r.props.key ?? '').trim(), flag = String(r.props.flag ?? '').trim(), when = r.props.when && typeof r.props.when === 'object' ? r.props.when as unknown as Condition : undefined;
     return { id: r.instance.id, x: r.placement.x, h: r.placement.h, w: Number(r.props.width) * r.placement.scale, style: String(r.props.style ?? 'turnstile'),
-      ...(key ? { key } : {}), ...(flag ? { flag } : {}), ...(when ? { when: structuredClone(when) } : {}), refuse: String(r.props.refuse ?? '').trim() || 'ACCESS DENIED.', ...insideOf(r.instance.id) };
+      ...(key ? { key } : {}), ...(flag ? { flag } : {}), ...(when ? { when: structuredClone(when) } : {}), refuse: String(r.props.refuse ?? '').trim() || 'ACCESS DENIED.', ...insideOf(r.instance.id), ...(r.props.closes === true ? { closes: true as const } : {}) };
   });
   const hs = floors.map(f => f.h), revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
   for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }
@@ -314,8 +316,8 @@ export function levelPass(lv: Level, id: string, access: (barrier: LevelBarrier)
   if (result.ok) (lv.state.opened ??= []).push(g.id);
   return result;
 }
-/** The barriers opened on this save: the game keeps them (`Save.barriers`, by scene). */
-export const levelOpened = (lv: Level): readonly string[] => lv.state.opened ?? [];
+/** The barriers opened on this save: the game keeps them (`Save.barriers`, by scene). One that closes again is not kept. */
+export const levelOpened = (lv: Level): readonly string[] => (lv.state.opened ?? []).filter(id => !lv.source.barriers?.find(b => b.id === id)?.closes);
 /** A floor's own walls, or its zone's ends where it reaches them (one scene: the scene's ends). */
 function ownBounds(src: LevelSource, f: LevelFloor, width: number): [number, number] {
   const z = f.zone ? src.zones?.[f.zone] : undefined, left = z?.x ?? 0, right = z ? z.x + z.w : width;
@@ -482,7 +484,7 @@ export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m
   }
   easeReveal(lv, p, dt);
   easeRooms(lv, p, dt);
-  easeBarriers(lv, dt);
+  easeBarriers(lv, p, dt);
   const ride = s.ride;
   if (!ride) return false;
   if (ride.kind === 'lift') {
@@ -547,9 +549,11 @@ function easeRooms(lv: Level, p: LevelPlayer, dt: number) {
     const lv0 = here[r.id] ?? 0; here[r.id] = lv0 + (hereGoal(r, f, p.x, h, body) - lv0) * k;
   }
 }
-/** Each barrier swings towards open once it has opened (its picture's `open`); it never closes again. */
-function easeBarriers(lv: Level, dt: number) {
+/** Each barrier swings towards open once it has opened (its picture's `open`); only one that `closes` shuts again. */
+function easeBarriers(lv: Level, p: LevelPlayer, dt: number) {
   const s = lv.state; if (!lv.source.barriers || !s.barriers) return;
+  // a barrier that closes shuts once the player has walked on past its reach (or left its floor)
+  if (s.opened?.length) s.opened = s.opened.filter(id => { const g = lv.source.barriers!.find(b => b.id === id); return !g?.closes || (Math.abs(p.x - g.x) <= g.w / 2 + BARRIER_REACH + 6 && near(p.y, g.h, 2)); });
   const k = Math.min(1, LEVEL_DEFAULTS.barrierSpeed * dt);
   for (const g of lv.source.barriers) { const v = s.barriers[g.id] ?? 0, goal = s.opened?.includes(g.id) ? 1 : 0; s.barriers[g.id] = v + (goal - v) * k; }
 }
@@ -622,6 +626,12 @@ export function mergeLevels(parts: readonly LevelPart[]): LevelSource {
     for (const [into, from] of [[shells, src.shells], [interiors, src.interiors], [entrances, src.entrances ?? {}]] as const) for (const [k, ids] of Object.entries(from)) into[b(k)] = ids.map(id => ns(z, id));
     for (const [k, v] of Object.entries(src.revealSpeed ?? {})) revealSpeed[b(k)] = v;
     for (const [k, v] of Object.entries(src.ghost ?? {})) ghost[b(k)] = v;
+  }
+  // a lift whose shaft reaches a joined zone's floor (a raised station's lift down to the quay below) stops there too,
+  // where its own zone has no stop at that height; its car is still its own zone's mover, which must have a stop there
+  for (const l of lifts) {
+    const crossed = floors.filter(f => f.zone !== l.zone && !f.building && l.x >= f.x && l.x <= f.x + f.w && f.h >= l.bottom - 0.75 && f.h <= l.bottom + l.height + 0.75 && !l.stops.some(st => near(st.h, f.h)));
+    if (crossed.length) l.stops = [...l.stops, ...crossed.filter((f, i) => !crossed.slice(0, i).some(o => near(o.h, f.h))).map(f => ({ h: f.h, floor: f.id, label: f.label || f.id }))].sort((a, b) => a.h - b.h);
   }
   const hs = floors.map(f => f.h);
   return { floors, links, doors, lifts, shells, interiors, low: Math.min(...hs), high: Math.max(...hs), zones,

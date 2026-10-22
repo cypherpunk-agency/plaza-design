@@ -8,9 +8,10 @@ import type {EngineDraw} from '../host';
 import type {SceneUse} from '../../scenes/kit';
 import {presentationActor,presentationFlag,type ScenePresentation,type ScenePresentationActorRole,type ScenePresentationRole} from './scene-presentation';
 import type {PresentationSignals} from './presentation-signals';
-import type {GameplayDefinition} from './types';
+import type {GameplayDefinition,GameplayState,StateValues} from './types';
 import {controllerPicture} from './controller-pictures';
 import {atriumSnapshot} from './scene-atrium';
+import {resolveValues,stateValue} from './state';
 import type {SceneDocument} from './scene-document';
 /**
  * Scene values (scene.json `stage.values`): the numbers, flags and small structures a scene's artwork
@@ -19,8 +20,12 @@ import type {SceneDocument} from './scene-document';
  *
  * - `{flag}` / `{use}`: a presentation flag role is set / an interaction is available now.
  * - `{not}`, `{all}`, `{any}`, `{sum}`, `{list}` and `{if, then, else}`: combine other values.
+ * - `{state}`: a saved gameplay value the scene's gameplay declares (its own, or a world-level owner's it opts
+ *   into, such as the shift's `shift.*`): the save's value, or its declared default.
  * - `{role, get}`: a geometry of an artwork role (manifest.artwork): `x`, `h`, `width` (scaled), `height`
  *   (scaled), `top` (h + height), `right` (x + width), or `prop:<name>`. A role the scene does not place reads 0.
+ * - `{instance, get}`: the same geometry of one artwork instance of the composition, by its id (for scenes with no
+ *   registered artwork roles: move the artwork and the value follows).
  * - `{rows, get}`: `x` or `h` of every row of an artwork type, in order.
  * - `{visible: {role, margin, from?, width?}}`: whether that role's artwork is on screen (within `margin` px).
  * - `{actor: {role|id, get, fallback?}}`: `x`, `h` or `bare` (the actor has no look of its own) of a presentation actor.
@@ -31,9 +36,9 @@ import type {SceneDocument} from './scene-document';
  */
 export type RoleGet='x'|'h'|'width'|'height'|'top'|'right'|`prop:${string}`;
 export type ValueExpr=null|boolean|number|string
- |{flag:ScenePresentationRole}|{use:string}
+ |{flag:ScenePresentationRole}|{use:string}|{state:string}
  |{not:ValueExpr}|{all:ValueExpr[]}|{any:ValueExpr[]}|{if:ValueExpr;then:ValueExpr;else:ValueExpr}|{sum:ValueExpr[]}|{list:ValueExpr[]}
- |{role:string;get:RoleGet}|{rows:string;get:'x'|'h'}
+ |{role:string;get:RoleGet}|{instance:string;get:RoleGet}|{rows:string;get:'x'|'h'}
  |{visible:{role:string;margin?:number;from?:number;width?:number}}
  |{actor:{role?:ScenePresentationActorRole;id?:string;get:'x'|'h'|'bare';fallback?:number}}
  |{picture:string}|{engine:'hover'}|{signal:string}|{world:'nightFall'|'ticker'}|{shared:{mechanism:string;field:string}}|{atrium:true}|{live:ValueExpr};
@@ -41,13 +46,15 @@ export type SceneValues=Readonly<Record<string,ValueExpr>>;
 /** What a value can read. The binding context of a frame is one; a flag-only caller (the carried item) passes just the flags. */
 export interface ValueEnv {
  presentation?:ScenePresentation|null;flags:Readonly<Record<string,boolean>>;
+ /** The save's gameplay values (Save.gameplay); absent (the editor), declared defaults stand. */
+ values?:Readonly<StateValues>;
  uses?:readonly SceneUse[];roles?:Readonly<Record<string,Resolved>>;rows?:readonly Resolved[];view?:View;
  actors?:Readonly<Record<string,Character>>;engine?:EngineDraw;gameplay?:GameplayDefinition;signals?:PresentationSignals;
  shared?:ReadonlyMap<string,unknown>;source?:SceneDocument;
  /** Work done once per frame and kept for the rest of it (the controller's picture). */
  memo?:Map<string,unknown>;
 }
-export const VALUE_KINDS=['flag','use','not','all','any','sum','list','visible','actor','picture','engine','signal','world','shared','atrium','live'] as const;
+export const VALUE_KINDS=['flag','use','not','all','any','sum','list','visible','actor','picture','engine','signal','world','shared','atrium','live','state'] as const;
 export const ROLE_GETS=['x','h','width','height','top','right'] as const;
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
 export const valueName=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,95}$/.test(v);
@@ -60,13 +67,14 @@ export function validateValue(v:unknown,fail:(why:string)=>never,depth=0):void{
  if(!object(v))return fail('a value is a literal or an object');
  const keys=Object.keys(v).sort().join(),sub=(c:unknown)=>validateValue(c,fail,depth+1);
  if(keys==='get,role'){if(!valueName(v.role)||!((ROLE_GETS as readonly string[]).includes(String(v.get))||/^prop:[a-zA-Z0-9_.-]{1,64}$/.test(String(v.get))))fail('role takes a role name and get '+ROLE_GETS.join(', ')+' or prop:<name>');return;}
+ if(keys==='get,instance'){if(!valueName(v.instance)||!((ROLE_GETS as readonly string[]).includes(String(v.get))||/^prop:[a-zA-Z0-9_.-]{1,64}$/.test(String(v.get))))fail('instance takes an artwork instance id and get '+ROLE_GETS.join(', ')+' or prop:<name>');return;}
  if(keys==='get,rows'){if(!valueName(v.rows)||v.get!=='x'&&v.get!=='h')fail('rows takes an artwork type and get x or h');return;}
  if(keys==='else,if,then'){sub(v.if);sub(v.then);sub(v.else);return;}
- if(Object.keys(v).length!==1||!(VALUE_KINDS as readonly string[]).includes(Object.keys(v)[0]))return fail('a value object is one of '+VALUE_KINDS.join(', ')+', role+get, rows+get or if+then+else');
+ if(Object.keys(v).length!==1||!(VALUE_KINDS as readonly string[]).includes(Object.keys(v)[0]))return fail('a value object is one of '+VALUE_KINDS.join(', ')+', role+get, instance+get, rows+get or if+then+else');
  const kind=Object.keys(v)[0] as typeof VALUE_KINDS[number],a=v[kind];
  const fields=(allowed:string[],required:string[])=>{if(!object(a)||Object.keys(a).some(k=>!allowed.includes(k))||required.some(k=>!(k in a)))fail(kind+' fields');return a as Record<string,unknown>;};
  switch(kind){
-  case 'flag':case 'use':case 'picture':case 'signal':if(!valueName(a))fail(kind+' takes a name');break;
+  case 'flag':case 'use':case 'picture':case 'signal':case 'state':if(!valueName(a))fail(kind+' takes a name');break;
   case 'not':case 'live':sub(a);break;
   case 'all':case 'any':case 'sum':case 'list':if(!Array.isArray(a)||a.length>32)fail(kind+' takes a list of at most 32');else a.forEach(sub);break;
   case 'visible':{const o=fields(['role','margin','from','width'],['role']);if(!valueName(o.role)||[o.margin,o.from,o.width].some(n=>n!==undefined&&!finite(n)))fail('visible');break;}
@@ -82,15 +90,16 @@ export function validateSceneValues(values:unknown,fail:(why:string)=>never):voi
  for(const[name,v]of Object.entries(values)){if(!valueName(name))fail('value name '+name);validateValue(v,fail);}
 }
 /** Every name the values refer to, for checks against the scene (flag roles, uses, artwork roles, actor roles, picture fields, signals). */
-export interface ValueReferences {flags:string[];uses:string[];roles:string[];rowTypes:string[];actorRoles:string[];pictures:string[];signals:string[];shared:{mechanism:string;field:string}[];atrium:boolean}
+export interface ValueReferences {flags:string[];uses:string[];roles:string[];instances:string[];states:string[];rowTypes:string[];actorRoles:string[];pictures:string[];signals:string[];shared:{mechanism:string;field:string}[];atrium:boolean}
 export function valueReferences(values:SceneValues|undefined):ValueReferences{
- const out:ValueReferences={flags:[],uses:[],roles:[],rowTypes:[],actorRoles:[],pictures:[],signals:[],shared:[],atrium:false};
+ const out:ValueReferences={flags:[],uses:[],roles:[],instances:[],states:[],rowTypes:[],actorRoles:[],pictures:[],signals:[],shared:[],atrium:false};
  const walk=(v:ValueExpr):void=>{
   if(!object(v))return;
   if('if' in v){walk(v.if);walk(v.then);walk(v.else);return;}
   if('role' in v&&'get' in v){out.roles.push(v.role);return;}
+  if('instance' in v&&'get' in v){out.instances.push(v.instance);return;}
   if('rows' in v&&'get' in v){out.rowTypes.push(v.rows);return;}
-  if('flag' in v)out.flags.push(v.flag);else if('use' in v)out.uses.push(v.use);
+  if('flag' in v)out.flags.push(v.flag);else if('use' in v)out.uses.push(v.use);else if('state' in v)out.states.push(v.state);
   else if('not' in v)walk(v.not);else if('live' in v)walk(v.live);
   else if('all' in v)v.all.forEach(walk);else if('any' in v)v.any.forEach(walk);else if('sum' in v)v.sum.forEach(walk);else if('list' in v)v.list.forEach(walk);
   else if('visible' in v)out.roles.push(v.visible.role);
@@ -106,6 +115,12 @@ export function valueReferences(values:SceneValues|undefined):ValueReferences{
 /** The presentation signals (name, starting stamp) the scene's values read: the targets its cues may name. */
 export const valueSignals=(values:SceneValues|undefined)=>Object.fromEntries([...new Set(valueReferences(values).signals)].map(s=>[s,-1e9])) as Record<string,number>;
 const SKIP=Symbol('skip');
+/** What availability and `state` values read: the save's flags and values with the declarations' defaults, worked out once per frame. */
+function gameplayState(env:ValueEnv):GameplayState{
+ const memo=env.memo??(env.memo=new Map<string,unknown>());
+ if(!memo.has('gameplay:state')){const state:GameplayState={flags:env.flags as Record<string,boolean>,items:{},tokens:0,values:env.values as StateValues|undefined};memo.set('gameplay:state',env.gameplay?{...state,values:resolveValues(env.gameplay,state)}:state);}
+ return memo.get('gameplay:state') as GameplayState;
+}
 function roleGet(row:Resolved|undefined,get:string):number{
  if(!row)return 0;
  const p=row.placement;
@@ -128,9 +143,11 @@ function evaluate(v:ValueExpr,env:ValueEnv):Value|undefined|typeof SKIP{
  const ev=(c:ValueExpr)=>{const r=evaluate(c,env);return r===SKIP?undefined:r;};
  if('if' in v)return ev(v.if)?ev(v.then):ev(v.else);
  if('role' in v&&'get' in v)return roleGet(env.roles?.[v.role],v.get);
+ if('instance' in v&&'get' in v)return roleGet(env.rows?.find(r=>r.instance.id===v.instance),v.get);
  if('rows' in v&&'get' in v){const g=v.get;return(env.rows??[]).filter(r=>r.instance.type===v.rows).map(r=>g==='x'?r.placement.x:r.placement.h);}
  if('flag' in v)return presentationFlag(env.presentation,env.flags,v.flag);
- if('use' in v){const use=env.uses?.find(u=>u.id===v.use);return use?!use.available||use.available(env.flags):SKIP;}
+ if('use' in v){const use=env.uses?.find(u=>u.id===v.use);return use?!use.available||use.available(env.flags,gameplayState(env)):SKIP;}
+ if('state' in v)return stateValue(gameplayState(env).values,v.state)??null;
  if('not' in v)return !ev(v.not);
  if('all' in v)return v.all.every(c=>!!ev(c));
  if('any' in v)return v.any.some(c=>!!ev(c));

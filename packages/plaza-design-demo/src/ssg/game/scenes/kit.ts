@@ -94,8 +94,8 @@ export interface SceneUse {
   conversationPresentation?:'bubble'|'panel';
   speakerKind?:'character'|'device'|'system';
   eligibility?: (flags:Readonly<Record<string,boolean>>,gameplay?:GameplaySession)=>import('../engine/gameplay/access').AccessResult;
-  /** Omit interactions outside their authored story stage. */
-  available?: (flags: Readonly<Record<string, boolean>>) => boolean;
+  /** Omit interactions outside their authored story stage (flags and saved state: pass the scene's gameplay state). */
+  available?: (flags: Readonly<Record<string, boolean>>, state?: import('../engine/gameplay/types').GameplayState) => boolean;
   id: string;
   x: number;
   /** The E prompt ("[E] BUY FISH"); a `price` is added to it ("· 1 TOKEN · YOU HAVE 7"). */
@@ -188,8 +188,8 @@ export interface SceneArtworkFrame {
 }
 export interface SceneDef {
   artworkFrame?:SceneArtworkFrame;
-  /** Pure registered dockworker presentation, reading the current source's flag roles. */
-  dockworkerCarry?:(flags:Readonly<Record<string,boolean>>)=>'parcel'|'case'|null;
+  /** Pure registered dockworker presentation, reading the current source's flag roles (and saved state: the save's gameplay values). */
+  dockworkerCarry?:(flags:Readonly<Record<string,boolean>>,values?:import('../engine/gameplay/types').StateValues)=>'parcel'|'case'|null;
   readonly nativeTargetBindings?:import('../engine/gameplay/native-targets').NativeTargetBindings;
   readonly presentationTargets?:readonly string[];
   /** Bind world controllers once per game; source definitions remain immutable. */
@@ -200,8 +200,8 @@ export interface SceneDef {
   gameplay?: GameplayDefinition;
   /** Story objective for scenes without hacking goals. */
   attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
-  storyDay?: (flags:Readonly<Record<string,boolean>>)=>number;
-  storyMinute?: (flags:Readonly<Record<string,boolean>>)=>number;
+  storyDay?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number;
+  storyMinute?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number;
   /** What this scene says and does in each story phase (scene.json `phases`; story/story-rules.ts). The game loop reads `phases[phase]`; nothing else decides it. */
   phases?:Readonly<Record<string,import('../story/story-rules').ScenePhase>>;
   /** The room's light cue (scene.json `wash`; story-rules.ts `washTone`). */

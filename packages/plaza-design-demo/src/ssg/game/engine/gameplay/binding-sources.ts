@@ -91,7 +91,7 @@ export function bindingValues(doc:Composition,ctx:BindingContext,rules:StageActo
  const clipped=new Map<string,Resolved>(),culled=new Map<string,{row:Resolved;margin:number}>(),hidden=new Set<string>();
  for(const c of rules?.clip??[]){const row=roles[c.to];if(row)for(const id of roleList(ctx.source,c.actors))clipped.set(id,row);}
  for(const c of rules?.cull??[]){const row=roles[c.role];if(row)for(const id of roleList(ctx.source,c.actor))culled.set(id,{row,margin:c.margin??0});}
- const env:ValueEnv={...ctx,presentation:ctx.source.presentation,flags:view.flags,memo};
+ const env:ValueEnv={...ctx,presentation:ctx.source.presentation,flags:view.flags,values:view.values,memo};
  for(const h of rules?.hide??[])if(evaluateValue(h.when,env))for(const id of roleList(ctx.source,h.actors))hidden.add(id);
  // artwork that holds its actor (a stall's vendor): the actor's own artwork shows nothing while the holder paints it
  const holders=rules?.held??[],byId=holders.length?new Map(rows.map(r=>[r.instance.id,r])):undefined;

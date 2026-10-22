@@ -28,12 +28,14 @@ import {DEFAULT_COMPANION_FLAG} from './scene-companion';
 import {evaluateValue,valueReferences} from './scene-values';
 import {allPictureFields,pictureFields} from './controller-pictures';
 /** What scene.json `stage.values` and `stage.atrium` name must exist in the scene: interactions, the atrium's artwork roles and picture fields. An artwork role, actor role or flag role the scene lacks reads as nothing (0, false), so an optional role may be left out. */
-function valueProblems(d:SceneDocument){
+function valueProblems(d:SceneDocument,gameplay?:GameplayDefinition,rows?:readonly import('../../art/core/composition').Resolved[]){
  const ref=valueReferences(d.stage?.values),roles=d.manifest?.artwork??{};
  const bad=(what:string,names:string[],ok:(n:string)=>boolean)=>{const n=names.find(x=>!ok(x));if(n!==undefined)throw new Error('Scene value names '+what+' "'+n+'", which the scene does not have');};
  bad('an interaction',ref.uses,n=>d.uses.some(u=>u.id===n));
  bad('an artwork role',d.stage?.atrium?[d.stage.atrium.room,d.stage.atrium.escalator]:[],n=>Object.prototype.hasOwnProperty.call(roles,n));
  bad('a picture field',ref.pictures,n=>allPictureFields.includes(n));
+ if(gameplay)bad('a saved state',ref.states,n=>Object.prototype.hasOwnProperty.call(gameplay.state??{},n));
+ if(rows)bad('an artwork instance',ref.instances,n=>rows.some(r=>r.instance.id===n));
 }
 
 /** A named mechanism lets the scene's engine targets use the `reset` step (scene-mechanisms.ts `targetReset`). */
@@ -51,10 +53,10 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)&&e.sets!==DEFAULT_COMPANION_FLAG&&e.sets!==d.companion?.unlockFlag))throw new Error('Exit sets an undeclared gameplay flag');
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');
- valueProblems(d);
  const unknown=unknownBindingSources(doc);if(unknown.length)throw new Error('Unknown binding sources: '+unknown.join(', '));
  const unoffered=unofferedBindings(doc,d);if(unoffered.length)throw new Error('Binding not offered by its provider: '+unoffered.join('; '));
  const rows=resolveComposition(art,doc,{view:frameView(0),state:{},bindings:bindingDefaults(doc),reduced:false});
+ valueProblems(d,gameplay,rows);
  const compile=d.manifest.compile,geometry=compile?manifestGeometry(d,rows,compile.groups,compile):manifestGeometry(d,rows),bindings=geometry.bindings;
  // a scene's people are either its actors (scene.actors, with their artwork) or residents placed by the manifest
  const actors=withActors?compileSceneActors(d,rows):{};
@@ -102,7 +104,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
    bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  // each mechanism may return picture-side state (`presentation`); the scene prepares, saves and restores them together, beside its presentation signals

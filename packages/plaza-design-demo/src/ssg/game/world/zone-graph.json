@@ -2,6 +2,10 @@
   "version": 1,
   "seams": [
     { "id": "tower-annex", "kind": "walk", "a": { "zone": "tower" }, "b": { "zone": "tower-annex" }, "dx": 1600, "dh": 0 },
-    { "id": "annex-deck", "kind": "stairs", "a": { "zone": "tower-annex", "piece": "stairs-deck" }, "b": { "zone": "tower-deck", "piece": "floor-deck" }, "dx": 0, "dh": 100 }
+    { "id": "annex-deck", "kind": "stairs", "a": { "zone": "tower-annex", "piece": "stairs-deck" }, "b": { "zone": "tower-deck", "piece": "floor-deck" }, "dx": 0, "dh": 100 },
+    { "id": "station-quay", "kind": "stairs", "a": { "zone": "harbor-station", "piece": "via-stair" }, "b": { "zone": "harbor-quay", "piece": "floor-quay" }, "dx": 0, "dh": -160 },
+    { "id": "quay-checkout", "kind": "walk", "a": { "zone": "harbor-quay" }, "b": { "zone": "harbor-checkout" }, "dx": 1600, "dh": 0 },
+    { "id": "checkout-yard", "kind": "walk", "a": { "zone": "harbor-checkout" }, "b": { "zone": "harbor-yard" }, "dx": 640, "dh": 0 },
+    { "id": "yard-shed", "kind": "walk", "a": { "zone": "harbor-yard" }, "b": { "zone": "harbor-shed" }, "dx": 1280, "dh": 0 }
   ]
 }

@@ -2,7 +2,9 @@ import type {NetData} from '../data';
 import {ownsScanner} from '../engine/net';
 import {nativeAccess} from '../engine/gameplay/access';
 import {matches,validateGameplay} from '../engine/gameplay/validation';
-import type {Condition,GameplayState} from '../engine/gameplay/types';
+import type {Condition,GameplayDefinition,GameplayState} from '../engine/gameplay/types';
+import {activeSharedState} from '../engine/gameplay/shared-state';
+import {resolveValues} from '../engine/gameplay/state';
 import type {SceneExit} from '../scenes/kit';
 import type {LevelBarrier} from '../engine/level';
 
@@ -29,6 +31,12 @@ export function validateExitKeyReferences(scene:{id:string;exits?:readonly Pick<
   if(barrier.when!==undefined)try{validateBarrierCondition(barrier.when);}catch(e){throw Error('Invalid barrier condition: '+scene.id+'/'+barrier.id+': '+(e instanceof Error?e.message:String(e)));}
  }
 }
+/** The saved states a condition names. */
+function conditionStates(c:Condition|undefined,out:string[]=[]):string[]{
+ if(!c)return out;
+ if('state'in c){if(!out.includes(c.state))out.push(c.state);}else if('not'in c)conditionStates(c.not,out);else if('all'in c)c.all.forEach(x=>conditionStates(x,out));else if('any'in c)c.any.forEach(x=>conditionStates(x,out));
+ return out;
+}
 /** The flags and items a condition names (a barrier's `when`), in order of appearance. */
 export function conditionNames(c:Condition|undefined,out:{flags:string[];items:string[]}={flags:[],items:[]}){
  if(!c)return out;
@@ -36,19 +44,24 @@ export function conditionNames(c:Condition|undefined,out:{flags:string[];items:s
  else if('not'in c)conditionNames(c.not,out);else if('all'in c)c.all.forEach(x=>conditionNames(x,out));else if('any'in c)c.any.forEach(x=>conditionNames(x,out));
  return out;
 }
+/** The world-level state owners (world/state-owners.json, the shift's `shift.*`): saved state that is the save's, not one scene's. */
+const sharedOwners=():Pick<GameplayDefinition,'state'>=>(activeSharedState() as Pick<GameplayDefinition,'state'>)??{};
 /**
  * A barrier's `when`: one gameplay condition over what the game always knows when E is pressed there (flags, items,
- * tokens, the player, the time and weather), not a scene's state, queries or objective. Its shape is the gameplay
- * validator's own; any flag or item it names may be any of the save's (they are a save's, not one scene's).
+ * tokens, the player, the time and weather, and the world-level shared state such as `shift.checkedOut`), not a scene's
+ * own state, queries or objective. Its shape is the gameplay validator's own; any flag or item it names may be any of
+ * the save's (they are a save's, not one scene's), and a state it names must be declared by world/state-owners.json.
  */
 export function validateBarrierCondition(when:unknown):Condition{
+ const shared=sharedOwners().state??{};
  const scan=(c:unknown,depth=0):void=>{if(depth>12||!c||typeof c!=='object'||Array.isArray(c))return;const r=c as Record<string,unknown>;
-  if('state'in r||'objective'in r)throw Error('a barrier condition reads flags, items, tokens, the player, time and weather');
+  if('state'in r&&!(typeof r.state==='string'&&Object.prototype.hasOwnProperty.call(shared,r.state))||'objective'in r)throw Error('a barrier condition reads flags, items, tokens, the player, time, weather and shared state (world/state-owners.json)');
   if('compare'in r&&JSON.stringify(r.compare).match(/"(state|query)"\s*:/))throw Error('a barrier comparison reads literals only');
   for(const k of['not'])if(k in r)scan(r[k],depth+1);for(const k of['all','any'])if(Array.isArray(r[k]))(r[k] as unknown[]).forEach(x=>scan(x,depth+1));};
  scan(when);
  const names=conditionNames(when as Condition);
- validateGameplay({version:1,flags:names.flags,items:names.items,events:[],commands:{check:{sources:['interaction'],when,actions:[]}},reactions:[],conversations:{}});
+ const owners=[...new Set(conditionStates(when as Condition).map(id=>shared[id].owner))];
+ validateGameplay({version:1,flags:names.flags,items:names.items,...(owners.length?{sharedState:owners}:{}),events:[],commands:{check:{sources:['interaction'],when,actions:[]}},reactions:[],conversations:{}});
  return structuredClone(when) as Condition;
 }
 /** Taxi, map and metro share the city's destination locks (city.json `LOCKS`); fare charging and animations retain their owners. `lock` is the one holding the destination shut, if any. */
@@ -65,10 +78,11 @@ export function sceneExitAccess(exit:Pick<SceneExit,'requires'|'needs'>|undefine
 /**
  * An in-world barrier (engine/level.ts `LevelBarrier`: a turnstile, gate or locked door) asks the exits' own rule:
  * its `flag` must be set (an exit's `requires`), its `key` carried (an exit's `needs`) and its `when` hold over the
- * gameplay state (`state`; without one, a `when` refuses). All refuse with the barrier's words; a barrier stands in
+ * gameplay state (`state`, its shared values read with their declared defaults; without one, a `when` refuses). All refuse with the barrier's words; a barrier stands in
  * plain sight, so none is hidden. Pure: it commits nothing; the level opens it on `ok`. The composer's Test the rule panel
  * calls this same function over a fixture.
  */
 export function barrierAccess(barrier:Pick<LevelBarrier,'flag'|'key'|'when'|'refuse'>,flags:Readonly<Record<string,boolean>>,keys:readonly string[],state?:Readonly<GameplayState>){
- return nativeAccess([...(barrier.flag?[{allowed:!!flags[barrier.flag],reason:barrier.refuse}]:[]),...(barrier.key?[{allowed:keys.includes(barrier.key),reason:barrier.refuse}]:[]),...(barrier.when?[{allowed:!!state&&matches(barrier.when,state),reason:barrier.refuse}]:[])]);
+ const read=state&&{...state,values:resolveValues(sharedOwners() as GameplayDefinition,state)};
+ return nativeAccess([...(barrier.flag?[{allowed:!!flags[barrier.flag],reason:barrier.refuse}]:[]),...(barrier.key?[{allowed:keys.includes(barrier.key),reason:barrier.refuse}]:[]),...(barrier.when?[{allowed:!!read&&matches(barrier.when,read),reason:barrier.refuse}]:[])]);
 }

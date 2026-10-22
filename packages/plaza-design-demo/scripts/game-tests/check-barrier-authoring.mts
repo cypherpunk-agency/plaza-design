@@ -72,7 +72,12 @@ change('Only while type','flag');assert.equal(typeof props().when,'object');
 change('Only while flag','opening:uplink');assert.deepEqual(props().when,{flag:'opening:uplink'});
 assert.match(field('Barrier rule').textContent,/, once flag opening:street is set and while flag opening:uplink is set · /);
 assert.equal(tried(),'Refuses: “'+REFUSE+'”');toggle('Flag opening:uplink set',true);assert.equal(tried(),'Opens');
-assert(!field('Only while type').children.some(o=>['state','objective'].includes(o.value)),'a barrier condition reads no scene state or objective');
+assert(!field('Only while type').children.some(o=>o.value==='objective'),'a barrier condition reads no objective');
+// the only saved state it offers is the world-level shared state (world/state-owners.json), never a scene's own
+change('Only while type','state');assert(Object.keys(props().when as object).includes('state'));
+assert.deepEqual(field('Only while state').children.map(o=>o.value).filter(v=>!v.startsWith('shift.')),[],'only shared shift.* keys are offered');
+assert.doesNotThrow(()=>validateBarrierCondition(props().when));
+change('Only while type','flag');change('Only while flag','opening:uplink');
 // an invalid condition is refused atomically by the composition's own validation
 {const before=structuredClone(model.get(DOC).value),label=model.undoLabel;
  const bad=structuredClone(before) as Composition;bad.instances.find(n=>n.id===ID)!.props.when=[1,2] as never;
