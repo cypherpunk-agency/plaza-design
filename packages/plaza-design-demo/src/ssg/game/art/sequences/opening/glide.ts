@@ -42,7 +42,7 @@ import { type CoastView, drawBreakwater, coastPieces, coastFrontPieces, coastMid
 import { drawLine0, drawUnder } from "./finale";
 import { DROP1, DROP2, GLIDE, GLIDE_BEATS, glideDist, PLACES, SPIRE_P, SPIRE_X, WEST } from "./path";
 import { drawRingOver, drawSkyline, drawStreetGround, drawWestGate, townPieces, townLampPieces, townPeoplePieces } from "./town";
-import { drawTraffic } from "./traffic";
+import { drawSideStreetTraffic, drawTraffic } from "./traffic";
 import { readableMirror } from "./mirror";
 import type { PieceInputs } from './piece-inputs';
 
@@ -259,7 +259,8 @@ function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean
   };
   const cityOnly = (id: string, draw: () => void) => paint(id, () => east(draw));
   both('coast.', coastPieces(x, cv, (Lc) => drawStreetGround(x, cv, Lc), options.pieces), coastPieces(xm, cvw, undefined, options.pieces));
-  for (const part of townPieces(x, cv, L, options.pieces)) cityOnly('town.' + part.id, part.draw);
+  // a side street's piece also draws the cars still behind the pavement in it (traffic.ts), before the towers and the people
+  for (const part of townPieces(x, cv, L, options.pieces)) cityOnly('town.' + part.id, part.id.startsWith('side-street-') ? () => { part.draw(); drawSideStreetTraffic(x, cv, L, Number(part.id.slice('side-street-'.length))); } : part.draw);
   cityOnly('air-canyon', () => drawAirNear(x, cv, (p) => -drop * p + drop, 'canyon'));
   cityOnly('ring', () => drawRingOver(x, cv, L));
   cityOnly('air-over', () => drawAirNear(x, cv, (p) => -drop * p + drop, 'over'));
