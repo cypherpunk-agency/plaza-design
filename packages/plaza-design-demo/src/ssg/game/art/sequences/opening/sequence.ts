@@ -47,6 +47,12 @@ export interface OpeningRenderOptions {
   actors?:OpeningActors;
 }
 const smooth = (a: number, b: number, v: number) => { const f = Math.max(0, Math.min(1, (v - a) / (b - a))); return f * f * (3 - 2 * f); };
+/** A type's default properties as JSON: registered elements never change, so once per registry and type (not per row per frame). */
+const defaults = new WeakMap<ArtRegistry, Map<string, string>>();
+function defaultProps(registry: ArtRegistry, type: string) {
+  let m = defaults.get(registry); if (!m) { m = new Map(); defaults.set(registry, m); }
+  let json = m.get(type); if (json === undefined) { json = JSON.stringify(registry.properties(type, {})); m.set(type, json); } return json;
+}
 export function openingTimelineContext(ctx: CanvasRenderingContext2D, view: GlideView, documents: OpeningDocuments, ambientTime: number, sequenceId: string): TimelineContext {
   const tau = sequenceId === 'title' || sequenceId === 'rise' ? null : undefined;
   const duration = documents.timeline.sequences.find(sequence => sequence.id === sequenceId)?.duration ?? GLIDE;
@@ -79,7 +85,7 @@ export function renderOpeningSequence(ctx: CanvasRenderingContext2D, view: Glide
   const appearance = compositionAppearance(selected, { visibility: frame.visibility, opacity: frame.opacity });
   const inputs:Record<string,PieceInput>={};
   const propertyChanges=new Map<string,boolean>();
-  for(const row of resolved)if(row.instance.type.startsWith('sequence.opening.')){const p=row.placement,z=frame.camera.zoom,edited=JSON.stringify(row.props)!==JSON.stringify(registry.properties(row.instance.type,{}));propertyChanges.set(row.instance.id,edited);const changed=p.x!==0||p.scale!==1||p.facing!==1||z!==1||edited;inputs[row.instance.type.slice('sequence.opening.'.length)]={props:row.props,...(options.actors?.[row.instance.id]?{pose:options.actors[row.instance.id]}:{}),...(changed?{cull:{x:p.x*z+(1-z)*native.W/2,scale:p.scale*z,facing:p.facing,width:native.W,unculled:edited}}:{})};}
+  for(const row of resolved)if(row.instance.type.startsWith('sequence.opening.')){const p=row.placement,z=frame.camera.zoom,edited=JSON.stringify(row.props)!==defaultProps(registry,row.instance.type);propertyChanges.set(row.instance.id,edited);const changed=p.x!==0||p.scale!==1||p.facing!==1||z!==1||edited;inputs[row.instance.type.slice('sequence.opening.'.length)]={props:row.props,...(options.actors?.[row.instance.id]?{pose:options.actors[row.instance.id]}:{}),...(changed?{cull:{x:p.x*z+(1-z)*native.W/2,scale:p.scale*z,facing:p.facing,width:native.W,unculled:edited}}:{})};}
   native=openingFrame(ctx,view,ambientTime,mode==='glide'?seconds:null,{actors:options.actors,x:frame.camera.x,h:frame.camera.h,...extra,pieces:inputs});
   const jobs = new Map(native.parts.map(part => [part.id, part]));
   const counts=new Map<string,number>();for(const row of resolved)counts.set(row.instance.type,(counts.get(row.instance.type)??0)+1);

@@ -153,7 +153,8 @@ export class ArtRegistry {
       if (!valid) throw new Error(`${type}.${key}: invalid ${field.kind} value`);
       if (field.kind === 'json') serializable(v, `${type}.${key}`);
       field.validate?.(v);
-      result[key] = structuredClone(v);
+      // primitives are their own copy; only structured values need the isolating clone
+      result[key] = v !== null && typeof v === 'object' ? structuredClone(v) : v;
     }
     return result;
   }

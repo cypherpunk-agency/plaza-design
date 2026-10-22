@@ -19,6 +19,7 @@ import type { Character } from "../../../runtime/characters";
 import { drawTower, signGlows, towerRow, type Tower } from "../../architecture/downtown-towers";
 import { drawRing, RING, ringTraffic } from "../../architecture/ring-highway";
 import { frameView, placed } from "../../core/view";
+import { hiddenTowers, type PlacedTower } from './occlusion';
 import { type CoastView, type Lines, hash, lerp, mixHex, R, S } from "./coast";
 import { PLACES, TOWER_X } from "./path";
 import { text } from "../../core/primitives";
@@ -91,16 +92,23 @@ export function drawSkyline(x: CanvasRenderingContext2D, c: CoastView, lift: (p:
   // they come up behind the Galleria, after the bay (the Spire's stretch stays open)
   const k = smooth(2860, 3200, c.g);
   if (k <= 0) return;
+  const items: PlacedTower[] = [];
   for (const row of ROWS) {
     const sc = S * row.p, base = R(c.hz + (c.GY - c.hz) * row.p * 0.9 + lift(row.p));
     for (const b of row.towers) {
       const s = c.W / 2 + row.p * (c.g - b.X);
       if (s > c.W + 4 || s + b.w * sc < -4) continue;
-      x.save(); x.globalAlpha = k;
-      placed(x, R(s), base, sc, () => drawTower(x, b, { t: c.f, still: c.still, fill: mixHex('#0c0710', '#1c1024', c.warm * (1 - c.city * 0.4)), edge: 0.14, lit: 0.1 + row.p * 0.12, glow: 0.45 + row.p * 0.4, below: 200, storey: STOREY, haze: row.haze * 0.55, hazeCol: mixHex('#1e1024', '#3a1c34', c.warm * (1 - c.city * 0.5)) }));
-      x.restore();
+      items.push({ tower: b, tx: R(s), ty: base, sc, look: { t: c.f, still: c.still, fill: mixHex('#0c0710', '#1c1024', c.warm * (1 - c.city * 0.4)), edge: 0.14, lit: 0.1 + row.p * 0.12, glow: 0.45 + row.p * 0.4, below: 200, storey: STOREY, haze: row.haze * 0.55, hazeCol: mixHex('#1e1024', '#3a1c34', c.warm * (1 - c.city * 0.5)) } });
     }
   }
+  // the far rows behind the near rows' opaque bodies never reach the screen (occlusion.ts: exact)
+  const hidden = hiddenTowers(x, items, k === 1);
+  items.forEach((p, i) => {
+    if (hidden.has(i)) return;
+    x.save(); x.globalAlpha = k;
+    placed(x, p.tx, p.ty, p.sc, () => drawTower(x, p.tower, p.look));
+    x.restore();
+  });
 }
 
 /** The street's surface from the plaza's steps west, and the road from the truck gate: wet in the rain, the signs' colours in it. */

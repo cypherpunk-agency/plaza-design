@@ -176,7 +176,7 @@ export function visible(x: CanvasRenderingContext2D): [number, number] {
 const pxPer = (x: CanvasRenderingContext2D) => Math.abs(x.getTransform().d) || 1;
 
 /** The tower's massing: its segments bottom up (left, right, from, to), inset at each setback. */
-function segments(b: Tower): [number, number, number, number][] {
+export function segments(b: Tower): [number, number, number, number][] {
   const out: [number, number, number, number][] = [];
   let l = 0, rr = b.w, h0 = 0;
   for (const [f, inset] of b.steps ?? []) { const h1 = Math.round(b.h * f); if (h1 <= h0 + 4) continue; out.push([l, rr, h0, h1]); const d = Math.max(2, Math.round((rr - l) * inset)); l += d; rr -= d; h0 = h1; if (rr - l < 8) break; }
