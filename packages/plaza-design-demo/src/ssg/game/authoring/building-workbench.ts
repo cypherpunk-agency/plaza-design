@@ -5,6 +5,7 @@
  */
 import { WorkbenchPlayback, mountWorkbenchPlayback } from './workbench-playback';
 import { frameView, type View } from '../art/core/view';
+import { createFrame } from './frame';
 import { lightAt } from '../world/light';
 import { SPR } from '../art/core/sprites';
 import { drawPlayer } from '../art/characters/player';
@@ -57,11 +58,11 @@ export function paintBuildingRows(x: CanvasRenderingContext2D, width: number, he
 }
 
 export function mountBuildingWorkbench(host: HTMLElement): () => void {
-  const root = document.createElement('section'), heading = document.createElement('h2'), modes = document.createElement('div'), common = document.createElement('div'), single = document.createElement('div'), rowControls = document.createElement('div');
+  const heading = document.createElement('h2'), modes = document.createElement('div'), common = document.createElement('div'), single = document.createElement('div'), rowControls = document.createElement('div');
   const transport = document.createElement('div'), canvas = document.createElement('canvas'), status = document.createElement('output');
   heading.textContent = 'Building kit'; modes.className = 'segmented'; modes.setAttribute('role', 'group'); modes.setAttribute('aria-label', 'View'); modes.style.margin = '8px 0';
   canvas.width = 960; canvas.height = 420; canvas.style.maxWidth = '100%'; canvas.style.background = '#0c0a12';
-  root.append(heading, modes, common, single, rowControls, transport, canvas, status); host.append(root);
+  createFrame(host, { nav: [heading, modes], stage: [transport, canvas, status], inspector: [common, single, rowControls] }, 'Buildings');
   const s: BenchState = { mode: 'lineup', seed: 3, minute: 1260, density: 0.5, lit: 0.45, front: { ...FRONT_DEFAULTS, w: 160, h: 340 }, row: 'mixed' };
   const ctx = canvas.getContext('2d')!; let disposed = false, raf = 0, ui: ReturnType<typeof mountWorkbenchPlayback> | undefined, spans: { skin: string; x0: number; x1: number }[] = [];
   const draw = () => {
@@ -75,7 +76,7 @@ export function mountBuildingWorkbench(host: HTMLElement): () => void {
     ui?.refresh();
   };
   const clock = new WorkbenchPlayback(50, draw); ui = mountWorkbenchPlayback(transport, clock);
-  const label = (text: string, input: HTMLElement, parent: HTMLElement) => { const l = document.createElement('label'); l.style.marginRight = '12px'; l.append(text + ' ', input); parent.append(l); };
+  const label = (text: string, input: HTMLElement, parent: HTMLElement) => { const l = document.createElement('label'), name = document.createElement('span'); name.textContent = text; l.append(name, input); parent.append(l); };
   const number = (text: string, get: () => number, set: (n: number) => void, min: number, max: number, step: number, parent: HTMLElement) => {
     const el = document.createElement('input'); el.type = 'number'; el.min = String(min); el.max = String(max); el.step = String(step); el.value = String(get());
     el.onchange = () => { const n = Number(el.value); if (Number.isFinite(n)) { set(Math.max(min, Math.min(max, n))); draw(); } }; label(text, el, parent);
@@ -108,5 +109,5 @@ export function mountBuildingWorkbench(host: HTMLElement): () => void {
   };
   setMode('lineup');
   const loop = (now: number) => { if (disposed) return; clock.tick(now); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop);
-  return () => { disposed = true; cancelAnimationFrame(raf); clock.dispose(); ui?.dispose(); root.remove(); };
+  return () => { disposed = true; cancelAnimationFrame(raf); clock.dispose(); ui?.dispose(); host.classList.remove('framed'); host.replaceChildren(); };
 }
