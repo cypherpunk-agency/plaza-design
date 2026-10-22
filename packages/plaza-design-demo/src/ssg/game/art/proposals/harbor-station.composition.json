@@ -202,13 +202,13 @@
       "id": "via-stair",
       "type": "level.stairs",
       "props": {
-        "run": 200,
+        "run": -200,
         "rise": 160,
         "style": "concrete",
         "rail": "steel"
       },
       "placement": {
-        "x": 150,
+        "x": 350,
         "h": -160
       },
       "order": 11,
@@ -413,7 +413,7 @@
         "alpha": 0.92
       },
       "placement": {
-        "x": 160,
+        "x": 330,
         "h": 120
       },
       "order": 26,
@@ -479,7 +479,7 @@
       "type": "shift.sign",
       "props": {
         "text": "WAY OUT",
-        "sub": "QUAY · FERRY · BEACH",
+        "sub": "QUAY · FERRY · PORT",
         "code": "",
         "height": 90,
         "mount": "post",
@@ -488,7 +488,7 @@
         "width": 0
       },
       "placement": {
-        "x": 365,
+        "x": 200,
         "h": 0
       },
       "order": 30,
@@ -671,8 +671,8 @@
       "type": "metro.scale-ruler",
       "props": {
         "span": 0,
-        "title": "HARBOR ZONE 5 · harbor-station (raised) · 1,440 units (2.25 views)",
-        "note": "LINE 0 platform 160 over the quay: 2-car train (1,086 units) with room either end; a 3-car train (1,639) would need about 1,700|Down: stairs and glass lift seam to harbor-quay. The line runs on west over the yard; the P14 siding ledge sits on it (a later seam)",
+        "title": "HARBOR ZONE 1 · harbor-station (raised) · 1,440 units (2.25 views)",
+        "note": "LINE 0 platform 160 over the quay: 2-car train (1,086 units) with room either end; a 3-car train (1,639) would need about 1,700|Down: stairs and glass lift seam to harbor-quay at the west end. West: the line to Downtown. East: the line runs on over the harbor; the P14 siding ledge sits on it (a later seam)",
         "size": 9,
         "bar": false,
         "numbers": false
@@ -696,7 +696,7 @@
         "ink": "#ffd23c"
       },
       "placement": {
-        "x": 300,
+        "x": 150,
         "h": 190
       },
       "order": 42,

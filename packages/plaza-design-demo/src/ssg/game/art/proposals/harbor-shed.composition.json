@@ -26,7 +26,7 @@
         "low": 18,
         "lit": 0.4,
         "haze": 0.85,
-        "spireX": 760,
+        "spireX": 520,
         "spireSize": 0.72,
         "traffic": true,
         "water": true
@@ -54,7 +54,7 @@
         "seed": 31
       },
       "placement": {
-        "x": 620,
+        "x": -40,
         "h": 44,
         "parallax": 0.42
       },
@@ -98,10 +98,10 @@
         "load": true,
         "loadPaint": 2,
         "floods": 0.8,
-        "phase": 0.0
+        "phase": 0
       },
       "placement": {
-        "x": 260,
+        "x": 1057,
         "h": 34,
         "parallax": 0.45,
         "scale": 0.62
@@ -123,7 +123,7 @@
         "phase": 2.1
       },
       "placement": {
-        "x": 980,
+        "x": 337,
         "h": 34,
         "parallax": 0.45,
         "scale": 0.62
@@ -145,7 +145,7 @@
         "glow": true
       },
       "placement": {
-        "x": 560,
+        "x": 720,
         "h": 20,
         "parallax": 0.62,
         "scale": 0.8
@@ -167,7 +167,7 @@
         "glow": true
       },
       "placement": {
-        "x": 1220,
+        "x": 60,
         "h": 20,
         "parallax": 0.62,
         "scale": 0.8
@@ -190,7 +190,7 @@
         "seed": 11
       },
       "placement": {
-        "x": -40,
+        "x": 1123,
         "h": 6,
         "parallax": 0.72,
         "scale": 0.5
@@ -213,7 +213,7 @@
         "seed": 41
       },
       "placement": {
-        "x": 700,
+        "x": 383,
         "h": 6,
         "parallax": 0.72,
         "scale": 0.5
@@ -244,7 +244,7 @@
         "kind": "straddle",
         "depth": "far",
         "motion": "shuttle",
-        "direction": "right",
+        "direction": "left",
         "speed": 0.7,
         "lane": 380,
         "dwell": 420,
@@ -253,7 +253,7 @@
         "lights": true
       },
       "placement": {
-        "x": 820,
+        "x": 289,
         "h": 22,
         "parallax": 0.55,
         "scale": 0.45
@@ -271,49 +271,49 @@
         "walkway": true,
         "puddles": [
           {
-            "x": 60,
-            "width": 80,
-            "depth": 12
+            "x": 70,
+            "width": 110,
+            "depth": 10
           },
           {
-            "x": 470,
-            "width": 84,
-            "depth": 9
-          },
-          {
-            "x": 760,
+            "x": 460,
             "width": 60,
             "depth": 14
           },
           {
-            "x": 1100,
-            "width": 110,
-            "depth": 10
+            "x": 726,
+            "width": 84,
+            "depth": 9
+          },
+          {
+            "x": 1140,
+            "width": 80,
+            "depth": 12
           }
         ],
         "glints": [
           {
-            "x": 90,
+            "x": 100,
             "color": "255,176,92"
           },
           {
-            "x": 300,
+            "x": 380,
             "color": "255,232,196"
           },
           {
-            "x": 520,
-            "color": "255,232,196"
-          },
-          {
-            "x": 700,
+            "x": 580,
             "color": "255,214,160"
           },
           {
-            "x": 900,
+            "x": 760,
             "color": "255,232,196"
           },
           {
-            "x": 1180,
+            "x": 980,
+            "color": "255,232,196"
+          },
+          {
+            "x": 1190,
             "color": "255,176,92"
           }
         ]
@@ -333,9 +333,9 @@
         "height": 70,
         "spacing": 50,
         "top": "barbed",
-        "gate": 40,
+        "gate": 50,
         "gateWidth": 60,
-        "gateOpen": 1,
+        "gateOpen": 0,
         "gateLabel": "PORT ROAD",
         "notice": "STAFF ONLY/SHED 3 · BAY 3",
         "header": "PORT AUTHORITY",
@@ -344,29 +344,10 @@
         "seed": 4
       },
       "placement": {
-        "x": 0,
+        "x": 1130,
         "h": 0
       },
       "order": 13,
-      "layer": "backdrop"
-    },
-    {
-      "id": "taxi",
-      "type": "vehicle.air",
-      "props": {
-        "kind": "taxi",
-        "depth": "back",
-        "motion": "parked",
-        "altitude": 0,
-        "bob": 1,
-        "lights": true,
-        "cargo": false
-      },
-      "placement": {
-        "x": 70,
-        "h": 2
-      },
-      "order": 14,
       "layer": "backdrop"
     },
     {
@@ -381,29 +362,29 @@
         "name": "TRANSIT SHED 3",
         "sub": "NIGHT TRANSPORT · BAY 3",
         "columns": [
-          30,
-          300,
-          520,
-          760,
-          1000,
-          1096
+          14,
+          110,
+          350,
+          590,
+          810,
+          1080
         ],
         "strips": [
-          120,
-          410,
-          640,
-          880,
-          1040
+          70,
+          230,
+          470,
+          700,
+          990
         ],
         "stripColor": "255,232,196",
         "pipes": true,
         "seed": 3
       },
       "placement": {
-        "x": 170,
+        "x": 0,
         "h": 0
       },
-      "order": 15,
+      "order": 14,
       "layer": "backdrop"
     },
     {
@@ -426,10 +407,10 @@
         "seed": 6
       },
       "placement": {
-        "x": 186,
+        "x": 864,
         "h": 100
       },
-      "order": 16,
+      "order": 15,
       "layer": "backdrop"
     },
     {
@@ -440,10 +421,10 @@
         "thickness": 8
       },
       "placement": {
-        "x": 182,
+        "x": 858,
         "h": 100
       },
-      "order": 17,
+      "order": 16,
       "layer": "backdrop"
     },
     {
@@ -451,10 +432,10 @@
       "type": "station.snacks",
       "props": {},
       "placement": {
-        "x": 340,
+        "x": 940,
         "h": 100
       },
-      "order": 18,
+      "order": 17,
       "layer": "backdrop"
     },
     {
@@ -468,10 +449,10 @@
         "tilt": -0.06
       },
       "placement": {
-        "x": 342,
+        "x": 938,
         "h": 150
       },
-      "order": 19,
+      "order": 18,
       "layer": "backdrop"
     },
     {
@@ -486,11 +467,11 @@
         "district": "harbor"
       },
       "placement": {
-        "x": 260,
+        "x": 1020,
         "h": 100,
-        "facing": 1
+        "facing": -1
       },
-      "order": 20,
+      "order": 19,
       "layer": "playfield"
     },
     {
@@ -505,26 +486,26 @@
         "colour": "#7c858b"
       },
       "placement": {
-        "x": 300,
+        "x": 860,
         "h": 100
       },
-      "order": 21,
+      "order": 20,
       "layer": "backdrop"
     },
     {
       "id": "staff-stair",
       "type": "level.stairs",
       "props": {
-        "run": -110,
+        "run": 110,
         "rise": 100,
         "style": "concrete",
         "rail": "steel"
       },
       "placement": {
-        "x": 530,
+        "x": 750,
         "h": 0
       },
-      "order": 22,
+      "order": 21,
       "layer": "set"
     },
     {
@@ -535,15 +516,15 @@
         "width": 15,
         "height": 60,
         "color": "#3d5566",
-        "open": 2,
+        "open": 3,
         "bench": true,
         "seed": 2
       },
       "placement": {
-        "x": 200,
+        "x": 986,
         "h": 0
       },
-      "order": 23,
+      "order": 22,
       "layer": "backdrop"
     },
     {
@@ -559,11 +540,11 @@
         "sitting": "side"
       },
       "placement": {
-        "x": 212,
+        "x": 1068,
         "h": 10,
-        "facing": 1
+        "facing": -1
       },
-      "order": 24,
+      "order": 23,
       "layer": "playfield"
     },
     {
@@ -585,10 +566,10 @@
         "tell": false
       },
       "placement": {
-        "x": 420,
+        "x": 860,
         "h": 92
       },
-      "order": 25,
+      "order": 24,
       "layer": "backdrop"
     },
     {
@@ -599,10 +580,10 @@
         "phase": 11
       },
       "placement": {
-        "x": 470,
+        "x": 810,
         "h": 116
       },
-      "order": 26,
+      "order": 25,
       "layer": "backdrop"
     },
     {
@@ -615,7 +596,7 @@
         "label": "SUPERVISOR",
         "sub": "BAY 3",
         "hatch": 46,
-        "door": "right",
+        "door": "left",
         "frame": "#59636c",
         "room": "#3e3529"
       },
@@ -623,7 +604,7 @@
         "x": 640,
         "h": 0
       },
-      "order": 27,
+      "order": 26,
       "layer": "backdrop"
     },
     {
@@ -640,9 +621,9 @@
       "placement": {
         "x": 640,
         "h": 0,
-        "facing": 1
+        "facing": -1
       },
-      "order": 28,
+      "order": 27,
       "layer": "playfield"
     },
     {
@@ -660,7 +641,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 29,
+      "order": 28,
       "layer": "backdrop",
       "attach": {
         "instance": "office",
@@ -677,7 +658,7 @@
         "label": "SUPERVISOR",
         "sub": "BAY 3",
         "hatch": 46,
-        "door": "right",
+        "door": "left",
         "frame": "#59636c",
         "room": "#3e3529"
       },
@@ -685,7 +666,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 30,
+      "order": 29,
       "layer": "backdrop",
       "attach": {
         "instance": "office",
@@ -706,10 +687,10 @@
         "width": 0
       },
       "placement": {
-        "x": 820,
+        "x": 460,
         "h": 0
       },
-      "order": 31,
+      "order": 30,
       "layer": "backdrop"
     },
     {
@@ -729,7 +710,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 32,
+      "order": 31,
       "layer": "backdrop",
       "attach": {
         "instance": "dispatch-post",
@@ -751,7 +732,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 33,
+      "order": 32,
       "layer": "backdrop",
       "attach": {
         "instance": "dispatch-post",
@@ -770,7 +751,7 @@
         "x": 0,
         "h": 20
       },
-      "order": 34,
+      "order": 33,
       "layer": "backdrop",
       "attach": {
         "instance": "dispatch-post",
@@ -792,10 +773,10 @@
         "seed": 0
       },
       "placement": {
-        "x": 950,
+        "x": 330,
         "h": 101
       },
-      "order": 35,
+      "order": 34,
       "layer": "backdrop"
     },
     {
@@ -812,10 +793,10 @@
         "width": 0
       },
       "placement": {
-        "x": 1010,
+        "x": 270,
         "h": 0
       },
-      "order": 36,
+      "order": 35,
       "layer": "backdrop"
     },
     {
@@ -837,7 +818,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 37,
+      "order": 36,
       "layer": "backdrop",
       "attach": {
         "instance": "rack-post",
@@ -854,14 +835,14 @@
         "act": "walk",
         "depth": "back",
         "district": "harbor",
-        "range": 480
+        "range": -480
       },
       "placement": {
-        "x": 420,
+        "x": 860,
         "h": 2,
-        "facing": 1
+        "facing": -1
       },
-      "order": 38,
+      "order": 37,
       "layer": "backdrop"
     },
     {
@@ -874,14 +855,14 @@
         "act": "carry",
         "depth": "back",
         "district": "harbor",
-        "range": -220
+        "range": 220
       },
       "placement": {
-        "x": 1180,
+        "x": 100,
         "h": 2,
-        "facing": 1
+        "facing": -1
       },
-      "order": 39,
+      "order": 38,
       "layer": "backdrop"
     },
     {
@@ -898,10 +879,10 @@
         "glow": true
       },
       "placement": {
-        "x": 1250,
+        "x": 30,
         "h": 0
       },
-      "order": 40,
+      "order": 39,
       "layer": "backdrop"
     },
     {
@@ -916,10 +897,10 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 290,
+        "x": 990,
         "h": 118
       },
-      "order": 41,
+      "order": 40,
       "layer": "logic"
     },
     {
@@ -934,10 +915,10 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 580,
+        "x": 700,
         "h": 118
       },
-      "order": 42,
+      "order": 41,
       "layer": "logic"
     },
     {
@@ -952,10 +933,10 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 810,
+        "x": 470,
         "h": 118
       },
-      "order": 43,
+      "order": 42,
       "layer": "logic"
     },
     {
@@ -970,10 +951,10 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 1050,
+        "x": 230,
         "h": 118
       },
-      "order": 44,
+      "order": 43,
       "layer": "logic"
     },
     {
@@ -988,10 +969,10 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 1210,
+        "x": 70,
         "h": 118
       },
-      "order": 45,
+      "order": 44,
       "layer": "logic"
     },
     {
@@ -1006,10 +987,10 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 300,
+        "x": 980,
         "h": 160
       },
-      "order": 46,
+      "order": 45,
       "layer": "logic"
     },
     {
@@ -1027,7 +1008,7 @@
         "x": 640,
         "h": 84
       },
-      "order": 47,
+      "order": 46,
       "layer": "logic"
     },
     {
@@ -1042,7 +1023,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 48,
+      "order": 47,
       "layer": "logic"
     },
     {
@@ -1055,10 +1036,10 @@
         "indoor": true
       },
       "placement": {
-        "x": 186,
+        "x": 864,
         "h": 100
       },
-      "order": 49,
+      "order": 48,
       "layer": "logic"
     },
     {
@@ -1066,10 +1047,10 @@
       "type": "scene.player",
       "props": {},
       "placement": {
-        "x": 110,
+        "x": 60,
         "h": 0
       },
-      "order": 50,
+      "order": 49,
       "layer": "playfield"
     },
     {
@@ -1077,8 +1058,8 @@
       "type": "metro.scale-ruler",
       "props": {
         "span": 0,
-        "title": "HARBOR ZONE 1 · harbor-shed · 1,280 units (2 views)",
-        "note": "Port road staff gate (P0 landing) · lockers · staff room up the stair (coffee machine: the priming fix) · supervisor (P1-P2) · dispatch (P3) · case returns (P4)|West edge: hard (port road). East edge: walk seam to harbor-yard. Ground line h 0, harbor kit, sodium + work-light palette",
+        "title": "HARBOR ZONE 5 · harbor-shed · 1,280 units (2 views)",
+        "note": "Case returns (P4) · dispatch (P3) · supervisor (P1-P2) · lockers · staff room up the stair (the coffee machine: optional, \"doesn't work again\")|West edge: walk seam from harbor-yard. East edge: hard (the port road staff gate, shut; a taxi stand later). Ground line h 0, harbor kit, sodium + work-light palette",
         "size": 9,
         "bar": false,
         "numbers": false
@@ -1087,25 +1068,25 @@
         "x": 20,
         "h": 300
       },
-      "order": 51,
+      "order": 50,
       "layer": "foreground"
     },
     {
-      "id": "seam-east",
+      "id": "seam-west",
       "type": "metro.scale-ruler",
       "props": {
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "WALK SEAM →|harbor-yard",
+        "title": "← WALK SEAM|harbor-yard",
         "size": 8,
         "ink": "#ffd23c"
       },
       "placement": {
-        "x": 1110,
+        "x": 10,
         "h": 230
       },
-      "order": 52,
+      "order": 51,
       "layer": "foreground"
     }
   ]

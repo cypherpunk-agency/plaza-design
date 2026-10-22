@@ -826,23 +826,26 @@ const clampEl = kit({
 const reader = kit({
   type: 'reader', label: 'Checkout: tag reader, turnstile and shelter (harbor shift)', visual: { checked: bool('Tag returned') },
   fields: { before: str('Screen before', 'SCAN TAG'), after: str('Screen after', 'VERIFIED'), shelter: bool('Shelter roof', true), roof: num('Shelter height', 88, 60, 200, 1, 'units'),
-    reach: num('Shelter reach to the right', 70, 20, 300, 1, 'units'), turnstile: bool('Turnstile', true) },
-  box: p => ({ x: -66, w: 66 + N(p, 'reach') + 4, tall: N(p, 'roof') + 8 }),
+    reach: num('Shelter reach past the reader (away from the turnstile)', 70, 20, 300, 1, 'units'), turnstile: bool('Turnstile', true),
+    side: select('Turnstile on the', ['left', 'right'], 'left') },
+  box: p => p.side === 'right' ? { x: -N(p, 'reach') - 4, w: 66 + N(p, 'reach') + 4, tall: N(p, 'roof') + 8 } : { x: -66, w: 66 + N(p, 'reach') + 4, tall: N(p, 'roof') + 8 },
   anchors: p => ({ roof: { x: 0, h: N(p, 'roof') + 2, role: 'surface' } }),
   paint(x, p, c) {
     const done = c.s.checked === true, on = c.on, sig = done ? '34,197,94' : '255,42,68', H = N(p, 'roof'), reach = N(p, 'reach');
+    // the turnstile and shelter are drawn for a turnstile on the left; on the right they are mirrored, the reader's screen is not
+    const m = p.side === 'right' ? -1 : 1, Rm = (l: number, b: number, w: number, h: number, col: string) => R(x, m > 0 ? l : -l - w, b, w, h, col);
     if (p.shelter !== false) {
-      for (const px of [-64, reach - 4]) { R(x, px, 0, 4, H, '#3a424b'); R(x, px, 0, 1, H, 'rgba(255,220,180,.22)'); R(x, px - 2, 0, 8, 2, '#1d2125'); }
-      R(x, -68, H - 2, reach + 72, 6, '#2b3239'); R(x, -68, H + 3, reach + 72, 1, 'rgba(255,220,180,.3)'); R(x, -68, H - 1, reach + 72, 2, 'rgba(216,160,58,.6)');
-      for (const lx of [-34, reach / 2]) { R(x, lx - 8, H - 5, 16, 3, '#16191c'); R(x, lx - 7, H - 5, 14, 1, ca('255,236,200', 0.55 + 0.45 * on)); c.light(lx, H - 8, { r: 46, col: '255,232,196', a: 0.45 }); }
+      for (const px of [-64, reach - 4]) { Rm(px, 0, 4, H, '#3a424b'); Rm(px, 0, 1, H, 'rgba(255,220,180,.22)'); Rm(px - 2, 0, 8, 2, '#1d2125'); }
+      Rm(-68, H - 2, reach + 72, 6, '#2b3239'); Rm(-68, H + 3, reach + 72, 1, 'rgba(255,220,180,.3)'); Rm(-68, H - 1, reach + 72, 2, 'rgba(216,160,58,.6)');
+      for (const lx of [-34, reach / 2]) { Rm(lx - 8, H - 5, 16, 3, '#16191c'); Rm(lx - 7, H - 5, 14, 1, ca('255,236,200', 0.55 + 0.45 * on)); c.light(lx * m, H - 8, { r: 46, col: '255,232,196', a: 0.45 }); }
     }
     if (p.turnstile !== false) {
       // a full-height turnstile: the cage, the rotor with its arms, the red/green signal on its post
-      R(x, -56, 0, 3, 66, '#59636c'); R(x, -22, 0, 3, 66, '#59636c'); R(x, -56, 64, 37, 3, '#59636c'); R(x, -56, 66, 37, 1, 'rgba(255,255,255,.25)');
-      R(x, -40, 0, 3, 64, '#8a9298');
-      for (let h = 8; h < 62; h += 7) { R(x, -52, h, 12, 2, (h / 7) % 2 ? '#a8b0b6' : '#6d757b'); R(x, -37, h + 3, 14, 2, '#6d757b'); }
-      R(x, -62, 44, 8, 16, '#141719'); R(x, -60, 53, 4, 4, ca('255,42,68', done ? 0.2 : 0.95)); R(x, -60, 47, 4, 4, ca('34,197,94', done ? 0.95 : 0.2));
-      c.light(-58, 52, { kind: 'neon', r: 16, col: sig, a: 0.7 });
+      Rm(-56, 0, 3, 66, '#59636c'); Rm(-22, 0, 3, 66, '#59636c'); Rm(-56, 64, 37, 3, '#59636c'); Rm(-56, 66, 37, 1, 'rgba(255,255,255,.25)');
+      Rm(-40, 0, 3, 64, '#8a9298');
+      for (let h = 8; h < 62; h += 7) { Rm(-52, h, 12, 2, (h / 7) % 2 ? '#a8b0b6' : '#6d757b'); Rm(-37, h + 3, 14, 2, '#6d757b'); }
+      Rm(-62, 44, 8, 16, '#141719'); Rm(-60, 53, 4, 4, ca('255,42,68', done ? 0.2 : 0.95)); Rm(-60, 47, 4, 4, ca('34,197,94', done ? 0.95 : 0.2));
+      c.light(-58 * m, 52, { kind: 'neon', r: 16, col: sig, a: 0.7 });
     }
     // the reader on its pedestal: screen, tag slot; the screen is the cyan of a thing you can use
     R(x, -3, 0, 6, 36, '#4a5157'); R(x, -3, 0, 1, 36, 'rgba(255,255,255,.2)'); R(x, -8, 0, 16, 2, '#1d2125');
@@ -955,7 +958,7 @@ const trolleyPark = kit({
 const bay = kit({
   type: 'bay', label: 'Marked loading position with its post (harbor shift)',
   fields: { width: num('Width', 76, 20, 400, 1, 'units'), label: str('Post sign', 'LOADING BAY 2'), stencil: str('On the floor', 'BAY 2'), post: num('Post offset', 50, -400, 400, 1, 'units'), beacon: bool('Amber beacon', true) },
-  box: p => ({ x: -N(p, 'width') / 2 - 4, w: N(p, 'width') + 8 + Math.max(0, N(p, 'post')), tall: 90 }),
+  box: p => ({ x: -N(p, 'width') / 2 - 4 + Math.min(0, N(p, 'post')), w: N(p, 'width') + 8 + Math.abs(N(p, 'post')), tall: 90 }),
   paint(x, p, c) {
     const W = N(p, 'width'), l = -W / 2, on = c.on;
     // the hatched box on the floor in front of the wall, and the wheel stop
@@ -1004,7 +1007,13 @@ const end = kit({
       R(x, -6, 0, 10, 40, '#3a424b'); R(x, -6, 38, 10, 4, '#e0b03a');
       for (let i = 0; i < 6; i++) R(x, -56 + i * 9, 32, 9, 4, i % 2 ? '#e8e2d2' : '#c23a30');
       R(x, -2, 42, 4, 3, ca('255,42,68', Math.floor(c.t / 30) % 2 ? 0.9 : 0.3));
-      if (S(p, 'label') && p.side !== 'left') { const sw = Math.round(Math.min(W, S(p, 'label').length * 4.6 + 12)); R(x, 16, 38, sw, 12, '#d9cfb5'); R(x, 16, 47, sw, 3, '#b8332b'); T(x, S(p, 'label'), 16 + sw / 2, 42.5, '#2a241c', 7, '700'); }
+      if (S(p, 'label')) {
+        // the gate sign on the fence beside the post; a fence running left mirrors the fence, never the sign's letters
+        const sw = Math.round(Math.min(W, S(p, 'label').length * 4.6 + 12));
+        if (p.side === 'left') x.scale(-1, 1);
+        const sl = p.side === 'left' ? -16 - sw : 16;
+        R(x, sl, 38, sw, 12, '#d9cfb5'); R(x, sl, 47, sw, 3, '#b8332b'); T(x, S(p, 'label'), sl + sw / 2, 42.5, '#2a241c', 7, '700');
+      }
     }
   },
 });

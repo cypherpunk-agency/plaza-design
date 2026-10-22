@@ -26,7 +26,7 @@
         "low": 18,
         "lit": 0.4,
         "haze": 0.85,
-        "spireX": 420,
+        "spireX": 860,
         "spireSize": 0.72,
         "traffic": true,
         "water": true
@@ -54,7 +54,7 @@
         "seed": 31
       },
       "placement": {
-        "x": 120,
+        "x": 60,
         "h": 44,
         "parallax": 0.42
       },
@@ -98,10 +98,10 @@
         "load": true,
         "loadPaint": 2,
         "floods": 0.8,
-        "phase": 0.0
+        "phase": 0
       },
       "placement": {
-        "x": 180,
+        "x": 1137,
         "h": 34,
         "parallax": 0.45,
         "scale": 0.62
@@ -123,7 +123,7 @@
         "phase": 2.1
       },
       "placement": {
-        "x": 720,
+        "x": 597,
         "h": 34,
         "parallax": 0.45,
         "scale": 0.62
@@ -145,7 +145,7 @@
         "phase": 4.2
       },
       "placement": {
-        "x": 1220,
+        "x": 97,
         "h": 34,
         "parallax": 0.45,
         "scale": 0.62
@@ -167,7 +167,7 @@
         "glow": true
       },
       "placement": {
-        "x": 420,
+        "x": 860,
         "h": 20,
         "parallax": 0.62,
         "scale": 0.8
@@ -189,7 +189,7 @@
         "glow": true
       },
       "placement": {
-        "x": 1100,
+        "x": 180,
         "h": 20,
         "parallax": 0.62,
         "scale": 0.8
@@ -212,7 +212,7 @@
         "seed": 57
       },
       "placement": {
-        "x": 820,
+        "x": 198,
         "h": 6,
         "parallax": 0.72,
         "scale": 0.5
@@ -235,7 +235,7 @@
         "seed": 23
       },
       "placement": {
-        "x": 1080,
+        "x": 69,
         "h": 6,
         "parallax": 0.72,
         "scale": 0.5
@@ -271,7 +271,7 @@
         "seed": 5
       },
       "placement": {
-        "x": 1215,
+        "x": 47,
         "h": 6,
         "parallax": 0.72,
         "scale": 0.5
@@ -286,7 +286,7 @@
         "kind": "forklift",
         "depth": "far",
         "motion": "shuttle",
-        "direction": "left",
+        "direction": "right",
         "speed": 0.45,
         "lane": 360,
         "dwell": 360,
@@ -295,7 +295,7 @@
         "lights": true
       },
       "placement": {
-        "x": 520,
+        "x": 386,
         "h": 16,
         "parallax": 0.55
       },
@@ -312,50 +312,50 @@
         "walkway": true,
         "puddles": [
           {
-            "x": 140,
-            "width": 90,
-            "depth": 10
-          },
-          {
-            "x": 520,
+            "x": 50,
             "width": 70,
-            "depth": 13
+            "depth": 12
           },
           {
-            "x": 860,
+            "x": 300,
             "width": 120,
             "depth": 9
           },
           {
-            "x": 1160,
+            "x": 690,
             "width": 70,
-            "depth": 12
+            "depth": 13
+          },
+          {
+            "x": 1050,
+            "width": 90,
+            "depth": 10
           }
         ],
         "glints": [
           {
-            "x": 80,
-            "color": "255,232,196"
-          },
-          {
-            "x": 260,
-            "color": "255,232,196"
-          },
-          {
-            "x": 540,
+            "x": 140,
             "color": "255,176,92"
           },
           {
-            "x": 700,
-            "color": "255,214,160"
-          },
-          {
-            "x": 900,
+            "x": 380,
             "color": "255,170,40"
           },
           {
-            "x": 1140,
+            "x": 580,
+            "color": "255,214,160"
+          },
+          {
+            "x": 740,
             "color": "255,176,92"
+          },
+          {
+            "x": 1020,
+            "color": "255,232,196"
+          },
+          {
+            "x": 1200,
+            "color": "255,232,196"
           }
         ]
       },
@@ -376,22 +376,22 @@
         "fascia": 12,
         "overhang": 14,
         "name": "RECEIVING",
-        "sub": "SHED 3 · EAST END",
+        "sub": "SHED 3 · WEST END",
         "columns": [
           10,
-          170,
+          160,
           320
         ],
         "strips": [
-          90,
-          250
+          80,
+          240
         ],
         "stripColor": "255,232,196",
         "pipes": true,
         "seed": 8
       },
       "placement": {
-        "x": -20,
+        "x": 970,
         "h": 0
       },
       "order": 15,
@@ -411,7 +411,7 @@
         "width": 0
       },
       "placement": {
-        "x": 150,
+        "x": 1129,
         "h": 0
       },
       "order": 16,
@@ -431,7 +431,7 @@
         "seed": 21
       },
       "placement": {
-        "x": 12,
+        "x": -11,
         "h": 0
       },
       "order": 17,
@@ -453,9 +453,9 @@
         "district": "harbor"
       },
       "placement": {
-        "x": 162,
+        "x": 1118,
         "h": 0,
-        "facing": -1
+        "facing": 1
       },
       "order": 18,
       "layer": "playfield"
@@ -472,7 +472,7 @@
         "label": ""
       },
       "placement": {
-        "x": 19,
+        "x": -18,
         "h": 0
       },
       "order": 19,
@@ -491,7 +491,7 @@
         "color": "#77664d"
       },
       "placement": {
-        "x": 31,
+        "x": -30,
         "h": 23
       },
       "order": 20,
@@ -511,7 +511,7 @@
         "prefix": "T"
       },
       "placement": {
-        "x": 400,
+        "x": 688,
         "h": 0
       },
       "order": 21,
@@ -526,8 +526,9 @@
         "stripe": "#c9862a"
       },
       "placement": {
-        "x": 520,
-        "h": 0
+        "x": 760,
+        "h": 0,
+        "facing": -1
       },
       "order": 22,
       "layer": "backdrop"
@@ -540,7 +541,8 @@
       },
       "placement": {
         "x": 44,
-        "h": 0
+        "h": 0,
+        "facing": -1
       },
       "order": 23,
       "layer": "backdrop",
@@ -573,11 +575,11 @@
         "width": 76,
         "label": "LOADING BAY 2",
         "stencil": "BAY 2",
-        "post": 50,
+        "post": -50,
         "beacon": true
       },
       "placement": {
-        "x": 720,
+        "x": 560,
         "h": 0
       },
       "order": 25,
@@ -598,7 +600,7 @@
         "seed": 3
       },
       "placement": {
-        "x": 860,
+        "x": 314,
         "h": 0
       },
       "order": 26,
@@ -631,13 +633,13 @@
         "kind": "straddle",
         "depth": "back",
         "motion": "parked",
-        "direction": "left",
+        "direction": "right",
         "cargo": true,
         "pose": 0.6,
         "lights": true
       },
       "placement": {
-        "x": 1030,
+        "x": 250,
         "h": 0
       },
       "order": 28,
@@ -651,7 +653,7 @@
         "height": 80,
         "spacing": 70,
         "top": "razor",
-        "gate": 60,
+        "gate": 80,
         "gateWidth": 70,
         "gateOpen": 0,
         "gateLabel": "TERMINAL 2",
@@ -662,7 +664,7 @@
         "seed": 6
       },
       "placement": {
-        "x": 1070,
+        "x": 0,
         "h": 0
       },
       "order": 29,
@@ -680,9 +682,9 @@
         "district": "harbor"
       },
       "placement": {
-        "x": 760,
+        "x": 520,
         "h": 0,
-        "facing": -1
+        "facing": 1
       },
       "order": 30,
       "layer": "playfield"
@@ -699,9 +701,9 @@
         "district": "harbor"
       },
       "placement": {
-        "x": 960,
+        "x": 320,
         "h": 2,
-        "facing": 1
+        "facing": -1
       },
       "order": 31,
       "layer": "backdrop"
@@ -744,7 +746,7 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 70,
+        "x": 1210,
         "h": 112
       },
       "order": 33,
@@ -762,7 +764,7 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 230,
+        "x": 1050,
         "h": 112
       },
       "order": 34,
@@ -798,7 +800,7 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 770,
+        "x": 510,
         "h": 60
       },
       "order": 36,
@@ -835,8 +837,8 @@
       "type": "metro.scale-ruler",
       "props": {
         "span": 0,
-        "title": "HARBOR ZONE 2 · harbor-yard · 1,280 units (2 views)",
-        "note": "Receiving at the east end of Shed 3 (Mara: P3 hand-over, P4 the empty case) · trolley bay and clamp (P5) · loading bay 2 · the berth|Terminal 2 gate: ordinary exit to stacks (a cut) · room at the east end for the P14 siding stair to land later (a stairs seam)",
+        "title": "HARBOR ZONE 4 · harbor-yard · 1,280 units (2 views)",
+        "note": "Terminal 2 gate · loading bay 2 · trolley bay and clamp (P5) · receiving at the west end of Shed 3 (Mara: P3 hand-over, P4 the empty case) · the berth|Terminal 2 gate: ordinary exit to stacks (a cut) · room at the west end for the P14 siding stair to land later (a stairs seam)",
         "size": 9,
         "bar": false,
         "numbers": false
@@ -855,7 +857,7 @@
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "← WALK SEAM|harbor-shed",
+        "title": "← WALK SEAM|harbor-checkout",
         "size": 8,
         "ink": "#ffd23c"
       },
@@ -873,12 +875,12 @@
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "WALK SEAM →|harbor-checkout",
+        "title": "WALK SEAM →|harbor-shed",
         "size": 8,
         "ink": "#ffd23c"
       },
       "placement": {
-        "x": 1090,
+        "x": 1110,
         "h": 230
       },
       "order": 41,
