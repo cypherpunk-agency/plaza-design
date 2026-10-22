@@ -164,7 +164,7 @@ export class Game {
     this.syncEnginePause();this.refreshReview();this.reviewNav?.station(id);this.canvas.focus();
   }
   private reviewTalk(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const session=this.gameplayFor(this.here);if(!session?.definition.conversations[id])return;this.bubble=null;this.keys.clear();this.zh.closeAll();this.zh.presentConversation(new ConversationSession(session,id));}
-  private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=this.def.uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
+  private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=this.def.uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags,this.gameplayFor(this.here)?.state()))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
   private reviewCommunication(id:CommunicationReview){
     if(!can('review'))return;
     this.keys.clear();this.zh.closeAll();this.bubble=null;this.hints.sceneChanged();
@@ -1027,9 +1027,9 @@ export class Game {
   /** A joined zone in this frame: its own view (the camera moved by where it lies), scene, host and light. */
   private zoneFrame(z: { id: SceneId; dx: number; dh: number }): ZoneFrame {
     const host = this.hostOf(z.id), scene = this.sceneDefinition(z.id), cam = this.cam - z.dx, gy = this.gy - z.dh;
-    const view: SceneView = { ...frameView(0), t: this.t, viewW: this.viewW, viewH: this.viewH, cam, gy, sx: (wx, p = 1) => Math.round(wx - cam * p), y: (h) => gy - h, flags: this.save.flags, level: this.level ? this.levelViewOf(z.id) : undefined };
+    const view: SceneView = { ...frameView(0), t: this.t, viewW: this.viewW, viewH: this.viewH, cam, gy, sx: (wx, p = 1) => Math.round(wx - cam * p), y: (h) => gy - h, flags: this.save.flags, values: this.save.gameplay, level: this.level ? this.levelViewOf(z.id) : undefined };
     const outdoor = scene.outdoor ?? !!(scene.ambient?.weather || scene.ambient?.sky);
-    return { view, scene, sceneId: z.id, host, preparePresentation: () => host.preparePresentation(view, 'all'),
+    return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: () => host.preparePresentation(view, 'all'),
       lighting: W => { const L = lightAt(city.day, city.min, scene.facing ?? 180, W ?? this.weatherHere(), outdoor); setLight(L); return L; } };
   }
   /** The scene's name, for the HUD and the canvas label. */
@@ -1436,7 +1436,7 @@ export class Game {
     const open = this.zh.viewing;
     const jack = open ? this.zh.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
-    AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags) ?? null });
+    AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null });
   }
 
   /**
@@ -2053,9 +2053,9 @@ export class Game {
   private pinStory() {
     if(EDITOR_PLAY&&this.editorClock!=='story'){if(this.editorClock==='fixed')city.pin(this.save.clock.min);return;}
     if (playProfile().clock.rule === 'scene') {
-      const day=this.def.storyDay?.(this.save.flags);
+      const day=this.def.storyDay?.(this.save.flags,this.gameplayFor(this.here)?.state());
       if(day!==undefined)this.save.clock.day=day;
-      const at = this.def.storyMinute?.(this.save.flags);
+      const at = this.def.storyMinute?.(this.save.flags,this.gameplayFor(this.here)?.state());
       if(at===undefined){city.release();return;}
       if (city.pinned !== at) city.pin(at);
       return;
@@ -2268,10 +2268,16 @@ export class Game {
    * A scene's life as E targets: readables, uses, the people who talk, and the animals
    * (cats to pet, pigeons to shoo) and robots. E on one runs `useLife`.
    */
+  /** The floor a use or readable is offered on: in a scene with levels, the floor under where it answers (a mezzanine's machine); else the street. */
+  private promptFloor(s: SceneDef, x: number, h: number | undefined): number {
+    if (!s.level || !h) return 0;
+    const under = s.level.floors.filter(f => x >= f.x - 0.5 && x <= f.x + f.w + 0.5 && f.h <= h + 2).map(f => f.h);
+    return under.length ? Math.max(...under) : 0;
+  }
   private lifeTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
-    for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: 0, label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
-    for (const u of s.uses ?? []) {if(u.available&&!u.available(this.save.flags))continue;const permission=u.eligibility?.(this.save.flags,this.gameplayFor(this.here));if(permission&&!permission.ok&&permission.hidden)continue;list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: 0, label: this.useLabel(u), promptH: u.promptH ?? 70 });}
+    for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: this.promptFloor(s, r.x, r.h), label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
+    for (const u of s.uses ?? []) {if(u.available&&!u.available(this.save.flags,this.gameplayFor(this.here)?.state()))continue;const permission=u.eligibility?.(this.save.flags,this.gameplayFor(this.here));if(permission&&!permission.ok&&permission.hidden)continue;list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: this.promptFloor(s, u.x, u.h), label: this.useLabel(u), promptH: u.promptH ?? 70 });}
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
     if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
@@ -2395,7 +2401,7 @@ export class Game {
   /** The scene view, refreshed for this frame. */
   private view(): SceneView {
     const v = (this.sceneView ??= { ...frameView(0), sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), flags: this.save.flags });
-    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.level = this.level ? this.levelViewOf(this.here) : undefined;
+    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.values = this.save.gameplay; v.level = this.level ? this.levelViewOf(this.here) : undefined;
     v.timetable = this.world.stationAt(this.here) ? this.platformTime : undefined;
     return v;
   }

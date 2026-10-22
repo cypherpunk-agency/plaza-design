@@ -22,6 +22,8 @@ export interface View {
   gy: number;
   /** The save's flags (read only), for doors that open later (e.g. `end`: Downtown cleared, the market gate is open). */
   flags: Readonly<Record<string, boolean>>;
+  /** The save's gameplay values (Save.gameplay, read only), for scene values that read saved state (`{state}`). */
+  values?: Readonly<Record<string, Readonly<Record<string, string | number | boolean | null>>>>;
   /** A scene with a level (engine/level.ts): how open each building is and where its lift cars are. */
   level?: import('../../engine/level').LevelView;
   /**
