@@ -22,7 +22,7 @@
 import type { Resolved } from '../art/core/composition';
 
 /** A walkable line. `entry: 'door'` marks a building floor entered only at a door (default: walked into from the street). */
-export interface LevelFloor { id: string; x: number; w: number; h: number; building: string; label: string; entry?: 'door'; indoor?: true }
+export interface LevelFloor { id: string; x: number; w: number; h: number; building: string; label: string; entry?: 'door'; indoor?: true; zone?: string }
 /** `inside`: the building whose interior shows it; it is usable only from that building's floors. */
 /**
  * `shape`: stairs that are not a straight flight (a steep ladder-stair, rungs, a spiral, a switchback) are climbed by
@@ -36,7 +36,7 @@ export interface LevelDoor { id: string; x: number; h: number; w: number; buildi
  * shaft (instance ids and floor heights); they light while the car is on its way there.
  */
 /** `broken`: out of order: offered as a sign, never called or ridden. */
-export interface LevelLift { id: string; x: number; w: number; bottom: number; height: number; stops: { h: number; floor: string; label: string }[]; device?: string; doorMs?: number; inside?: string; buttons?: { id: string; h: number }[]; broken?: true }
+export interface LevelLift { id: string; x: number; w: number; bottom: number; height: number; stops: { h: number; floor: string; label: string }[]; device?: string; doorMs?: number; inside?: string; buttons?: { id: string; h: number }[]; broken?: true; zone?: string; dh?: number }
 export interface LevelSource {
   floors: LevelFloor[]; links: LevelLink[]; doors: LevelDoor[]; lifts: LevelLift[];
   /** Instance ids of each building's shell and interior handles (their attached artwork follows them). */
@@ -47,6 +47,8 @@ export interface LevelSource {
   ghost?: Record<string, number>;
   /** The lowest and highest floor: how far the camera may look down and up. */
   low: number; high: number;
+  /** Joined zones (`mergeLevels`): where each zone lies in the active zone's units. Pieces then carry their zone, ids are `zone/id`. */
+  zones?: Record<string, { x: number; w: number; h: number }>;
   /** Rooms that open one by one (absent: a building shows all its insides at once). */
   rooms?: LevelRoom[];
   /** Each building's street doors seen from inside (`level.entrance`): shown with its interior. */
@@ -159,11 +161,16 @@ export interface MoverModel {
   movers: { stopPositions(key: string): Readonly<Record<string, number>> | undefined; position(key: string): number | undefined; moving(key: string): boolean; target(key: string): string | undefined; trip(key: string): { t0: number; t1: number } | undefined };
   moveTo(dev: string, noun: string, stop: string): unknown;
 }
+/** The models a level's lifts read: one scene's, or (joined zones) each zone's own. */
+export type Movers = MoverModel | ((zone: string | undefined) => MoverModel);
 /** A lift's car read from its mover: where it is, where it is heading (null: still), its doors (0 shut, 1 open). Undefined: no mover, the lift is inert. */
-function car(lift: LevelLift, m: MoverModel) {
+function car(lift: LevelLift, movers: Movers) {
   if (!lift.device) return undefined;
+  const m = typeof movers === 'function' ? movers(lift.zone) : movers, dh = lift.dh ?? 0;
   const i = lift.device.indexOf('.'), dev = lift.device.slice(0, i), noun = lift.device.slice(i + 1), key = dev + '.' + noun;
-  const stops = m.movers.stopPositions(key), h = m.movers.position(key), trip = m.movers.trip(key);
+  const local = m.movers.stopPositions(key), at = m.movers.position(key), trip = m.movers.trip(key);
+  // a joined zone's lift moves in its own zone's heights: read and set them shifted by where the zone lies
+  const stops = local && (dh ? Object.fromEntries(Object.entries(local).map(([k, v]) => [k, v + dh])) : local), h = at === undefined ? undefined : at + dh;
   if (!stops || h === undefined || !trip) return undefined;
   const moving = m.movers.moving(key), to = moving ? m.movers.target(key) : undefined, ms = lift.doorMs ?? LEVEL_DEFAULTS.doorMs, now = m.now();
   // the doors shut quickly as it sets off and open once it has stopped
@@ -234,8 +241,20 @@ function roomGoal(r: LevelRoom, f: LevelFloor, x: number, h: number, seen: reado
 const hereGoal = (r: LevelRoom, f: LevelFloor, x: number, h: number, body = 0) => r.reveal !== 'never' && inRoom(r, f, x, h, body) ? 1 : 0;
 /** How far the player may walk on their floor (its walls, or the scene's ends outdoors; a walk-in floor opens onto its street). */
 export function levelBounds(lv: Level, width: number): [number, number] {
-  const here = levelFloor(lv), f = street(lv.source, here) ?? here, a = f.x <= 0.5 ? 12 : f.x + 6, b = f.x + f.w >= width - 0.5 ? width - 12 : f.x + f.w - 6;
-  return [a, Math.max(a, b)];
+  const here = levelFloor(lv), f = street(lv.source, here) ?? here, [a, b] = ownBounds(lv.source, f, width);
+  // joined zones: a floor that meets the next zone's floor at a seam walks on into it
+  const before = across(lv.source, f, -1), after = across(lv.source, f, 1);
+  return [before ? ownBounds(lv.source, before, width)[0] : a, Math.max(a, after ? ownBounds(lv.source, after, width)[1] : b)];
+}
+/** A floor's own walls, or its zone's ends where it reaches them (one scene: the scene's ends). */
+function ownBounds(src: LevelSource, f: LevelFloor, width: number): [number, number] {
+  const z = f.zone ? src.zones?.[f.zone] : undefined, left = z?.x ?? 0, right = z ? z.x + z.w : width;
+  return [f.x <= left + 0.5 ? left + 12 : f.x + 6, f.x + f.w >= right - 0.5 ? right - 12 : f.x + f.w - 6];
+}
+/** The floor in the neighbouring zone that this one meets at a seam, walking `dir` (outdoor floors at one height). */
+function across(src: LevelSource, f: LevelFloor, dir: -1 | 1): LevelFloor | undefined {
+  if (!f.zone || f.building) return undefined;
+  return src.floors.find(o => o.zone !== undefined && o.zone !== f.zone && !o.building && near(o.h, f.h, 2) && (dir > 0 ? Math.abs(o.x - (f.x + f.w)) <= 1.5 : Math.abs(o.x + o.w - f.x) <= 1.5));
 }
 
 function doorHere(lv: Level, p: LevelPlayer) {
@@ -269,7 +288,7 @@ function step(lv: Level, p: LevelPlayer, dir: 1 | -1): boolean {
 }
 
 /** E on a level prompt: a door, a flight; at a lift, call it or step in; in the car, go to the chosen floor or step out. */
-export function levelInteract(lv: Level, id: string, p: LevelPlayer, m: MoverModel): boolean {
+export function levelInteract(lv: Level, id: string, p: LevelPlayer, m: Movers): boolean {
   const s = lv.state;
   if (id.startsWith('door:')) return levelFloor(lv).building ? levelDown(lv, p) : levelUp(lv, p);
   if (id.startsWith('up:')) return levelUp(lv, p);
@@ -287,7 +306,7 @@ export function levelInteract(lv: Level, id: string, p: LevelPlayer, m: MoverMod
   if (near(c.h, f.h) && ready(c)) { s.ride = { kind: 'lift', lift: lift.id, pick: Math.max(0, lift.stops.findIndex(st => near(st.h, c.h, 0.5))) }; p.x = lift.x; p.moving = false; return true; }
   c.go(f.h); return true;
 }
-function stepOut(lv: Level, p: LevelPlayer, m: MoverModel) {
+function stepOut(lv: Level, p: LevelPlayer, m: Movers) {
   const ride = lv.state.ride; if (ride?.kind !== 'lift') return;
   const lift = lv.source.lifts.find(l => l.id === ride.lift)!, c = car(lift, m), stop = c && lift.stops.find(st => near(st.h, c.h));
   if (!c || !stop || !ready(c)) return;
@@ -295,7 +314,7 @@ function stepOut(lv: Level, p: LevelPlayer, m: MoverModel) {
 }
 
 /** The prompts the level offers where the player stands. */
-export function levelHints(lv: Level, p: LevelPlayer, m: MoverModel): LevelHint[] {
+export function levelHints(lv: Level, p: LevelPlayer, m: Movers): LevelHint[] {
   const out: LevelHint[] = [], f = levelFloor(lv), h = f.h, ride = lv.state.ride;
   if (ride?.kind === 'lift') {
     const lift = lv.source.lifts.find(l => l.id === ride.lift)!, c = car(lift, m); if (!c) return out;
@@ -323,13 +342,16 @@ export function levelHints(lv: Level, p: LevelPlayer, m: MoverModel): LevelHint[
  * car, move them between the street and a walk-in building, ease each building's reveal. `walk` is the
  * player's ←/→ (-1, 0, 1). True while the level sets the player's position (the game then skips walking).
  */
-export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m: MoverModel, climb = 0): boolean {
+export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m: Movers, climb = 0): boolean {
   const s = lv.state, src = lv.source;
   if (!s.ride) {
     // the street and a walk-in building at the same height are one walk: crossing its side steps in or out
     const f = levelFloor(lv);
     if (!f.building) { const into = src.floors.find(o => street(src, o) === f && p.x > o.x && p.x < o.x + o.w); if (into) s.floor = into.id; }
     else { const out = street(src, f); if (out && (p.x <= f.x || p.x >= f.x + f.w)) s.floor = out.id; }
+    // over a seam onto the next zone's floor
+    const on = levelFloor(lv), next = p.x > on.x + on.w ? across(src, on, 1) : p.x < on.x ? across(src, on, -1) : undefined;
+    if (next) s.floor = next.id;
     // an escalator takes whoever walks onto its boarding end, towards the flight
     if (walk) for (const end of ['low', 'high'] as const) {
       const l = linkEnd(lv, p, end), other = end === 'low' ? 'high' : 'low';
@@ -405,7 +427,7 @@ function easeRooms(lv: Level, p: LevelPlayer, dt: number) {
 export const levelSeen = (lv: Level): readonly string[] => lv.state.seen ?? [];
 
 /** The renderer's inputs this frame: each building's openness, each lift car (from its mover) and doors, each call button. */
-export function levelView(lv: Level, m: MoverModel): LevelView {
+export function levelView(lv: Level, m: Movers): LevelView {
   const lifts: LevelView['lifts'] = {}, buttons: Record<string, number> = {};
   for (const l of lv.source.lifts) {
     const c = car(l, m);
@@ -433,6 +455,51 @@ export function restingLevelView(source: LevelSource, inside: boolean, at?: stri
   const f = end?.f, open = inside || !!f?.building;
   return { reveal: Object.fromEntries(Object.keys({ ...source.shells, ...source.interiors }).map(b => [b, open && (!f || f.building === b) ? 1 : 0])), lifts: Object.fromEntries(source.lifts.map(l => [l.id, { car: (l.stops[0]?.h ?? l.bottom) - l.bottom, doors: 0 }])), ...(Object.keys(buttons).length ? { buttons } : {}), ...(rooms ? { rooms, here } : {}) };
 }
+
+/** One zone's level and where it lies from the active zone (world/zone-graph.ts `placeFrom`). */
+export interface LevelPart { zone: string; source: LevelSource; dx: number; dh: number; width: number }
+const ns = (zone: string, id: string) => zone + '/' + id;
+/**
+ * Joined zones walked as one level (docs/design/SEAMLESS-WORLD.md "Joining"): each zone's pieces moved by where it lies
+ * from the active zone, with ids (and buildings) as `zone/id` so zones never collide. A stair whose end lands on the
+ * other zone's floor joins them; outdoor floors that meet at a seam continue. The level rules then work unchanged.
+ */
+export function mergeLevels(parts: readonly LevelPart[]): LevelSource {
+  const floors: LevelFloor[] = [], links: LevelLink[] = [], doors: LevelDoor[] = [], lifts: LevelLift[] = [], rooms: LevelRoom[] = [];
+  const shells: Record<string, string[]> = {}, interiors: Record<string, string[]> = {}, entrances: Record<string, string[]> = {}, revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
+  const zones: Record<string, { x: number; w: number; h: number }> = {};
+  for (const { zone: z, source: src, dx, dh, width } of parts) {
+    zones[z] = { x: dx, w: width, h: dh };
+    const b = (building: string | undefined) => building ? ns(z, building) : '', at = (o: { x: number; h: number }) => ({ x: o.x + dx, h: o.h + dh });
+    const inside = (o: { inside?: string }) => o.inside ? { inside: ns(z, o.inside) } : {};
+    for (const f of src.floors) floors.push({ ...f, id: ns(z, f.id), x: f.x + dx, h: f.h + dh, building: b(f.building), zone: z });
+    for (const l of src.links) links.push({ ...l, id: ns(z, l.id), low: at(l.low), high: at(l.high), ...(l.path ? { path: l.path.map(at) } : {}), ...inside(l) });
+    for (const d of src.doors) doors.push({ ...d, id: ns(z, d.id), x: d.x + dx, h: d.h + dh, building: b(d.building) });
+    for (const l of src.lifts) lifts.push({ ...l, id: ns(z, l.id), x: l.x + dx, bottom: l.bottom + dh, stops: l.stops.map(st => ({ ...st, h: st.h + dh, floor: ns(z, st.floor) })),
+      ...(l.buttons ? { buttons: l.buttons.map(k => ({ id: ns(z, k.id), h: k.h + dh })) } : {}), ...inside(l), zone: z, dh });
+    for (const r of src.rooms ?? []) rooms.push({ ...r, id: ns(z, r.id), building: b(r.building), x: r.x + dx, h: r.h + dh, children: r.children.map(c => ns(z, c)), live: r.live.map(c => ns(z, c)) });
+    for (const [into, from] of [[shells, src.shells], [interiors, src.interiors], [entrances, src.entrances ?? {}]] as const) for (const [k, ids] of Object.entries(from)) into[b(k)] = ids.map(id => ns(z, id));
+    for (const [k, v] of Object.entries(src.revealSpeed ?? {})) revealSpeed[b(k)] = v;
+    for (const [k, v] of Object.entries(src.ghost ?? {})) ghost[b(k)] = v;
+  }
+  const hs = floors.map(f => f.h);
+  return { floors, links, doors, lifts, shells, interiors, low: Math.min(...hs), high: Math.max(...hs), zones,
+    ...(Object.keys(revealSpeed).length ? { revealSpeed } : {}), ...(Object.keys(ghost).length ? { ghost } : {}), ...(rooms.length ? { rooms } : {}), ...(Object.keys(entrances).length ? { entrances } : {}) };
+}
+/** Joined zones: the floor's zone (the zone the player is in), or undefined for one scene's own level. */
+export const levelZone = (lv: Level): string | undefined => levelFloor(lv).zone;
+/** One zone's part of a joined level's view, in that zone's own ids: what its composition draws from. */
+export function splitLevelView(view: LevelView, zone: string): LevelView {
+  const pre = zone + '/', own = <T>(r: Record<string, T> | undefined) => r && Object.fromEntries(Object.entries(r).filter(([k]) => k.startsWith(pre)).map(([k, v]) => [k.slice(pre.length), v]));
+  const rooms = own(view.rooms), here = own(view.here), buttons = own(view.buttons);
+  return { reveal: own(view.reveal)!, lifts: own(view.lifts)!, ...(buttons && Object.keys(buttons).length ? { buttons } : {}), ...(rooms && Object.keys(rooms).length ? { rooms, here } : {}) };
+}
+/** Joined zones: the rooms remembered on the save, by zone, from a joined level's seen list (and back). */
+export const seenByZone = (seen: readonly string[]): Record<string, string[]> => {
+  const out: Record<string, string[]> = {};
+  for (const id of seen) { const i = id.indexOf('/'); if (i > 0) (out[id.slice(0, i)] ??= []).push(id.slice(i + 1)); }
+  return out;
+};
 
 /**
  * Each level piece's state as the renderer hands it to its artwork (each key must be one of that element's visual fields):

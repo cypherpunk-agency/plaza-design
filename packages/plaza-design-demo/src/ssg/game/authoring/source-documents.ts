@@ -31,6 +31,8 @@ import {validatePresets} from './kit-presets';
 import {validateStoryboard} from './storyboard';
 import {validatePendingPlayProfiles} from './play-profile-source';
 import {validatePlayProfiles} from '../runtime/play-profiles';
+import {validateZoneGraph,worldProblems} from '../world/zone-graph';
+import {zoneInfo,zonePieces} from './zone-graph-context';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
 import { art, type Composition } from '../art';
 import { validateTimeline } from '../art/core/timeline';
@@ -75,6 +77,8 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'storyboard',file:'authoring/storyboard.json',kind:'storyboard',validate:value=>validateStoryboard(value),validateContext:(value,documents)=>validateStoryboard(value,new Set(sourceDocuments.filter(d=>d.kind==='composition'&&documents.has(d.id)).map(d=>d.id)))},
   {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource,validateContext:(value,documents)=>{validateMetroLocks(validateMetroSource(value),(documents.get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
+  // the seams that join zones with no cut (world/zone-graph.ts); checked against the scenes that exist and their level pieces
+  {id:'zone-graph',file:'world/zone-graph.json',kind:'transport',validate:validateZoneGraph,validateContext:(value,documents)=>{const problems=worldProblems(validateZoneGraph(value),zoneInfo(documents),zonePieces(documents));if(problems.length)throw new Error(problems.join('; '));}},
   {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'conversations',validate:validateBotReactions},
   {id:'companion',file:'engine/gameplay/companion.json',kind:'rules',validate:validateCompanionSource,validateContext:validatePendingCompanion},
   {id:'critter-reactions',file:'engine/gameplay/critter-reactions.json',kind:'rules',validate:validateCritterReactions},
