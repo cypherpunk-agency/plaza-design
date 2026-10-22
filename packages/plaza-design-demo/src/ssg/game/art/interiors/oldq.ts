@@ -63,13 +63,51 @@ function damp(x: Ctx, l: number, w: number, top: number, amount: number, seed: n
   x.fillStyle = g; x.fillRect(Math.round(l), Math.round(y(Math.min(top, 30))), Math.round(w), Math.round(Math.min(top, 30)));
 }
 const GLASS = ['200,60,60', '220,180,80', '70,110,190', '110,170,90', '160,80,170'];
-/** A stained-glass lancet: coloured panes in lead, brighter by day. */
-function lancet(x: Ctx, l: number, w: number, base: number, top: number, bright: number, seed: number) {
+/** The same glass with the sun straight on it: deeper, more saturated colours. */
+const GLASS_LIT = ['235,45,40', '255,205,50', '45,110,240', '80,210,80', '200,70,225'];
+/** Which way a window looks out, relative to the view: the far wall looks where the camera looks (0), the ends right (90) or left (-90). */
+export const WINDOW_FACES: Record<string, number> = { 'far wall': 0, 'right end': 90, 'left end': -90 };
+/**
+ * Light on a window from the city clock: `diffuse` is the sky's daylight through it, `sun` how squarely
+ * the sun stands behind it (0 when the sun is on the other side, down, or behind cloud).
+ */
+function glassLight(o: Paint, faces: number) {
+  const L = o.lighting, diffuse = sky(o), on = Math.max(0, Math.cos(((L.sunRel - faces) * Math.PI) / 180));
+  return { diffuse, sun: L.sun.up ? diffuse * L.direct * on : 0 };
+}
+/**
+ * The sun's (or by night the moon's) beam in the side view: horizontal travel per unit of drop, from its
+ * bearing relative to the view and its height (as the city clock's shadows: long and low morning and
+ * evening, steep at noon). Null when neither is up.
+ */
+function sunSlope(o: Paint, night = false): number | null {
+  const L = o.lighting, b = night ? L.moon : L.sun, rel = night ? L.moonRel : L.sunRel;
+  if (!b.up || b.el <= 0) return null;
+  const ang = Math.max(0.12, b.el * 1.2);
+  return Math.max(-3, Math.min(3, -Math.sin((rel * Math.PI) / 180) / Math.tan(ang)));
+}
+/** How bright a window's glass reads: dim by night, a little by daylight, full with the sun behind it. */
+const glassBright = (g: { diffuse: number; sun: number }) => 0.08 + 0.42 * g.diffuse + 0.5 * g.sun;
+const mixRgb = (a: string, b: string, k: number) => { const A = a.split(',').map(Number), B = b.split(',').map(Number); return A.map((v, i) => Math.round(v + (B[i] - v) * k)).join(','); };
+/** A stained-glass lancet: coloured panes in lead, brighter by day; with the sun on it (`sun` 0..1) the colours deepen and glow over the lead. */
+function lancet(x: Ctx, l: number, w: number, base: number, top: number, bright: number, seed: number, sun = 0) {
   x.fillStyle = '#0a0a0c'; x.beginPath(); arch(x, l - 1, w + 2, base - 1, top - w * 0.7, top + 1); x.fill();
+  const panes: [number, number, string][] = [];
   for (let h = base; h < top; h += 5) for (let k = 0; k < w; k += 3) {
-    const c = GLASS[Math.floor(hash(seed + h * 7 + k * 13) * GLASS.length)], lim = h > top - w * 0.7 ? Math.abs(k + 1.5 - w / 2) <= (top - h) / 0.7 / 2 : true;
-    if (lim) R(x, l + k, h, 2, 4, rgba(c, Math.min(0.95, 0.12 + 0.75 * bright * (0.7 + 0.3 * hash(seed + h + k)))));
+    const i = Math.floor(hash(seed + h * 7 + k * 13) * GLASS.length), lim = h > top - w * 0.7 ? Math.abs(k + 1.5 - w / 2) <= (top - h) / 0.7 / 2 : true;
+    if (!lim) continue;
+    const c = sun > 0 ? mixRgb(GLASS[i], GLASS_LIT[i], Math.min(1, sun * 1.3)) : GLASS[i];
+    R(x, l + k, h, 2, 4, rgba(c, Math.min(0.97, 0.12 + 0.75 * bright * (0.7 + 0.3 * hash(seed + h + k)))));
+    panes.push([l + k, h, c]);
   }
+  if (sun < 0.05) return;
+  // the sun through it: each pane bleeds a little light over its lead, the whole window has a soft halo
+  x.save(); x.globalCompositeOperation = 'screen';
+  for (const [px, ph, c] of panes) R(x, px - 1, ph - 1, 4, 6, rgba(c, 0.22 * sun));
+  const g = x.createRadialGradient(l + w / 2, y((base + top) / 2), 0, l + w / 2, y((base + top) / 2), Math.max(w, top - base) * 0.75);
+  g.addColorStop(0, 'rgba(255,236,200,' + (0.16 * sun).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,236,200,0)');
+  x.fillStyle = g; x.fillRect(l - w, y(top + w), w * 3, top - base + 2 * w);
+  x.restore();
 }
 
 // ---------------------------------------------------------------- the tube house
@@ -428,8 +466,9 @@ export const naveElement = piece({
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, crossing: { x: Number(p.crossing) + Number(p.crossingWidth) / 2, h: 0, role: 'mount' }, apse: { x: Number(p.width) - Number(p.apse) / 2, h: 0, role: 'mount' } }),
   paint(x, p, o) {
     const W = Number(p.width), H = Number(p.height), A = Math.min(Number(p.arcade), H - 60), B = Number(p.bay), seed = Number(p.seed), stone = String(p.stone);
-    const cr = Number(p.crossing), cw = Number(p.crossingWidth), apse = Math.min(Number(p.apse), W), end = W - apse, glass = Number(p.glass), day = sky(o);
-    const bright = 0.12 + 0.88 * day, dark = '#151517', aisle = '#111113', pierW = 14;
+    const cr = Number(p.crossing), cw = Number(p.crossingWidth), apse = Math.min(Number(p.apse), W), end = W - apse, glass = Number(p.glass);
+    // the far wall's glass and the apse's (it looks out to the right) each see the sun from their own side
+    const far = glassLight(o, 0), east = glassLight(o, 90), bright = glassBright(far), brightApse = glassBright(east), dark = '#151517', aisle = '#111113', pierW = 14;
     const triTop = A + 20, clTop = Math.min(H - 30, triTop + 66), vs = clTop + 4;
     // the walls: the vault zone darker than the clerestory, the clerestory than the arcade
     R(x, 0, 0, W, H, stone); R(x, 0, vs, W, H - vs, '#202022');
@@ -452,7 +491,7 @@ export const naveElement = piece({
         x.fillStyle = dark; x.beginPath(); arch(x, l, w, 0, spring, apex); x.fill();
         blocks(x, l, w, 0, spring, 0.12);
         R(x, l + w / 2 - 9, 0, 18, 34, '#0c0c0d'); x.fillStyle = '#0c0c0d'; x.beginPath(); arch(x, l + w / 2 - 9, 18, 30, 34, 44); x.fill();
-        lancet(x, l + 8, 8, 26, 84, bright * glass * 0.7, seed + i * 31); lancet(x, l + w - 16, 8, 26, 84, bright * glass * 0.7, seed + i * 37);
+        lancet(x, l + 8, 8, 26, 84, bright * glass * 0.7, seed + i * 31, far.sun * glass); lancet(x, l + w - 16, 8, 26, 84, bright * glass * 0.7, seed + i * 37, far.sun * glass);
         continue;
       }
       const spring = Math.max(A * 0.45, A - w * 0.55);
@@ -460,8 +499,7 @@ export const naveElement = piece({
       // depth: the aisle wall's blind arcade beyond, fainter and smaller
       x.strokeStyle = 'rgba(120,115,108,.18)'; x.lineWidth = 1; x.beginPath(); arch(x, l + w * 0.18, w * 0.64, 0, spring * 0.78, A * 0.8); x.stroke();
       x.strokeStyle = 'rgba(120,115,108,.1)'; x.beginPath(); arch(x, l + w * 0.3, w * 0.4, 0, spring * 0.62, A * 0.64); x.stroke();
-      lancet(x, l + w / 2 - 5, 10, 34, Math.min(spring + 6, A - 18), bright * glass * 0.8, seed + i * 13);
-      if (day > 0.05) R(x, l + w / 2 - 14, 0, 28, 2, rgba(GLASS[(seed + i) % GLASS.length], 0.12 * day * glass));
+      lancet(x, l + w / 2 - 5, 10, 34, Math.min(spring + 6, A - 18), bright * glass * 0.8, seed + i * 13, far.sun * glass);
       x.strokeStyle = 'rgba(150,140,128,.35)'; x.beginPath(); arch(x, l, w, 0, spring, A); x.stroke();
     }
     // triforium: a string course and small dark openings in pairs
@@ -473,21 +511,20 @@ export const naveElement = piece({
       for (let k = a + 14; k < b - 12; k += 10) { R(x, k, A + 7, 5, 9, '#0c0c0d'); x.fillStyle = '#0c0c0d'; x.beginPath(); arch(x, k, 5, A + 14, A + 15, A + 18); x.fill(); }
       // the clerestory: two stained-glass lancets per bay
       const m = (a + b) / 2, lw = Math.min(14, (b - a) / 6);
-      lancet(x, m - lw - 4, lw, triTop + 6, clTop - 4, bright * glass, seed + i * 7); lancet(x, m + 4, lw, triTop + 6, clTop - 4, bright * glass, seed + i * 11);
-      if (day > 0.1) o.light?.(m, (triTop + clTop) / 2, 2 * lw + 8, clTop - triTop, '230,200,160', 'window');
-      // the shaft of daylight from them across the nave to the floor, and the colour it leaves there
-      const s = Number(p.shafts) * day * (0.3 + 0.7 * o.lighting.direct);
-      if (s > 0.02) {
-        const c = GLASS[(seed + i * 3) % GLASS.length], drop = clTop * 0.45;
-        x.fillStyle = rgba('255,240,215', 0.07 * s); x.beginPath(); x.moveTo(m - lw - 4, y(clTop - 4)); x.lineTo(m + lw + 4, y(clTop - 4)); x.lineTo(m + lw + 4 - drop, 0); x.lineTo(m - lw - 4 - drop, 0); x.closePath(); x.fill();
-        R(x, m - lw - 4 - drop, 0, 2 * lw + 8, 2, rgba(c, 0.35 * s));
+      lancet(x, m - lw - 4, lw, triTop + 6, clTop - 4, bright * glass, seed + i * 7, far.sun * glass); lancet(x, m + 4, lw, triTop + 6, clTop - 4, bright * glass, seed + i * 11, far.sun * glass);
+      if (far.sun > 0.1) o.light?.(m, (triTop + clTop) / 2, 2 * lw + 8, clTop - triTop, '230,200,160', 'window');
+      // a faint wash of the sun's light from them on the wall below (the strong shafts are interior.window-light), on the sun's slant
+      const s = Number(p.shafts) * far.sun, k = sunSlope(o);
+      if (s > 0.02 && k !== null) {
+        const top = clTop - 4, ka = (m - lw - 4) + top * k, kb = (m + lw + 4) + (triTop + 6) * k;
+        x.fillStyle = rgba('255,240,215', 0.05 * s); x.beginPath(); x.moveTo(m - lw - 4, y(top)); x.lineTo(m + lw + 4, y(top)); x.lineTo(m + lw + 4, y(triTop + 6)); x.lineTo(kb, 0); x.lineTo(ka, 0); x.closePath(); x.fill();
       }
     }
     // the apse: tall lancets close together, the half dome's ribs over them
     if (apse > 0) {
       R(x, end, 0, apse, H, '#242426'); blocks(x, end, apse, 0, H, 0.14);
       const n = Math.max(1, Math.floor(apse / 44));
-      for (let k = 0; k < n; k++) { const lx = end + (k + 0.5) * apse / n - 6; lancet(x, lx, 12, 46, Math.min(H - 50, 190), bright * glass, seed + k * 17 + 5); }
+      for (let k = 0; k < n; k++) { const lx = end + (k + 0.5) * apse / n - 6; lancet(x, lx, 12, 46, Math.min(H - 50, 190), brightApse * glass, seed + k * 17 + 5, east.sun * glass); }
       x.strokeStyle = 'rgba(150,140,128,.3)'; for (let k = 1; k <= 3; k++) { x.beginPath(); x.moveTo(end, y(H - 30 - k * 8)); x.quadraticCurveTo(end + apse / 2, y(H - 4 - k * 4), W, y(H - 30 - k * 8)); x.stroke(); }
       R(x, end, 30, apse, 2, '#3a3a3c');
     }
@@ -534,26 +571,36 @@ export const naveElement = piece({
 /** A rose window: petals of coloured glass in stone tracery, round a small centre. */
 export const roseWindowElement = piece({
   type: 'interior.rose-window', label: 'Rose window', category: 'architecture', libraryUse: 'reusable',
-  fields: { radius: num('Radius', 34, 10, 120, 1, 'units'), petals: num('Petals', 12, 6, 24), glass: num('Stained glass', 0.9, 0, 1, 0.05), frame: { kind: 'color', label: 'Stone frame', default: '#1a1918' }, seed: num('Seed', 1, 0, 1000000) },
+  fields: { radius: num('Radius', 34, 10, 120, 1, 'units'), petals: num('Petals', 12, 6, 24), glass: num('Stained glass', 0.9, 0, 1, 0.05), frame: { kind: 'color', label: 'Stone frame', default: '#1a1918' },
+    faces: select('Looks out from', Object.keys(WINDOW_FACES)), seed: num('Seed', 1, 0, 1000000) },
   size: p => ({ w: Number(p.radius) * 2 + 8, tall: Number(p.radius) * 2 + 8 }),
   bounds: p => { const d = Number(p.radius) * 2 + 8; return { x: 0, h: d, w: d, tall: d }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, centre: { x: Number(p.radius) + 4, h: Number(p.radius) + 4, role: 'mount' } }),
   paint(x, p, o) {
-    const r = Number(p.radius), c = r + 4, cy = y(c), n = Number(p.petals), seed = Number(p.seed), bright = (0.12 + 0.88 * sky(o)) * Number(p.glass);
+    const r = Number(p.radius), c = r + 4, cy = y(c), n = Number(p.petals), seed = Number(p.seed), gl = glassLight(o, WINDOW_FACES[String(p.faces)] ?? 0), bright = glassBright(gl) * Number(p.glass), sun = gl.sun * Number(p.glass);
+    const tint = (i: number) => sun > 0 ? mixRgb(GLASS[i % GLASS.length], GLASS_LIT[i % GLASS.length], Math.min(1, sun * 1.3)) : GLASS[i % GLASS.length];
     x.fillStyle = String(p.frame); x.beginPath(); x.arc(c, cy, r + 4, 0, Math.PI * 2); x.fill();
     x.fillStyle = '#08080a'; x.beginPath(); x.arc(c, cy, r, 0, Math.PI * 2); x.fill();
     for (let k = 0; k < n; k++) {
-      const a0 = (k * Math.PI * 2) / n, a1 = ((k + 1) * Math.PI * 2) / n, col = GLASS[(k + seed) % GLASS.length];
-      x.fillStyle = rgba(col, 0.15 + 0.75 * bright); x.beginPath(); x.moveTo(c, cy); x.arc(c, cy, r - 1, a0 + 0.04, a1 - 0.04); x.closePath(); x.fill();
-      x.fillStyle = rgba(GLASS[(k + seed + 2) % GLASS.length], 0.1 + 0.6 * bright); x.beginPath(); x.moveTo(c, cy); x.arc(c, cy, r * 0.55, a0 + 0.08, a1 - 0.08); x.closePath(); x.fill();
+      const a0 = (k * Math.PI * 2) / n, a1 = ((k + 1) * Math.PI * 2) / n, col = tint(k + seed);
+      x.fillStyle = rgba(col, Math.min(0.97, 0.15 + 0.75 * bright)); x.beginPath(); x.moveTo(c, cy); x.arc(c, cy, r - 1, a0 + 0.04, a1 - 0.04); x.closePath(); x.fill();
+      x.fillStyle = rgba(tint(k + seed + 2), Math.min(0.95, 0.1 + 0.6 * bright)); x.beginPath(); x.moveTo(c, cy); x.arc(c, cy, r * 0.55, a0 + 0.08, a1 - 0.08); x.closePath(); x.fill();
     }
     x.strokeStyle = String(p.frame); x.lineWidth = 2;
     for (let k = 0; k < n; k++) { const a = (k * Math.PI * 2) / n; x.beginPath(); x.moveTo(c + Math.cos(a) * r * 0.2, cy + Math.sin(a) * r * 0.2); x.lineTo(c + Math.cos(a) * r, cy + Math.sin(a) * r); x.stroke(); }
     x.beginPath(); x.arc(c, cy, r * 0.55, 0, Math.PI * 2); x.stroke();
     x.fillStyle = String(p.frame); x.beginPath(); x.arc(c, cy, r * 0.2, 0, Math.PI * 2); x.fill();
     x.fillStyle = rgba('220,180,80', 0.2 + 0.7 * bright); x.beginPath(); x.arc(c, cy, r * 0.12, 0, Math.PI * 2); x.fill();
+    // the sun through it: a soft glow over the tracery and a halo round the stone
+    if (sun > 0.05) {
+      x.save(); x.globalCompositeOperation = 'screen';
+      for (let k = 0; k < n; k++) { const a = ((k + 0.5) * Math.PI * 2) / n; x.fillStyle = rgba(tint(k + seed), 0.2 * sun); x.beginPath(); x.arc(c + Math.cos(a) * r * 0.62, cy + Math.sin(a) * r * 0.62, r * 0.42, 0, Math.PI * 2); x.fill(); }
+      const g = x.createRadialGradient(c, cy, r * 0.5, c, cy, r * 1.6); g.addColorStop(0, 'rgba(255,236,200,' + (0.2 * sun).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,236,200,0)');
+      x.fillStyle = g; x.fillRect(c - r * 1.6, cy - r * 1.6, r * 3.2, r * 3.2);
+      x.restore();
+    }
     x.strokeStyle = 'rgba(210,190,160,.25)'; x.lineWidth = 1; x.beginPath(); x.arc(c, cy, r + 4, Math.PI * 1.05, Math.PI * 1.6); x.stroke();
-    if (bright > 0.2) o.light?.(c, c, r * 2, r * 2, '220,160,120', 'window');
+    if (sun > 0.1) o.light?.(c, c, r * 2, r * 2, '230,180,140', 'window');
   },
 });
 
@@ -836,9 +883,12 @@ export const towerFaceElement = piece({
 const LIGHT_FIELDS = {
   source: select('Window', ['lancets', 'rose']), count: num('Windows', 5, 1, 30), spacing: num('Spacing', 110, 4, 600, 0.5, 'units'),
   width: num('Window width (rose: diameter)', 36, 4, 240, 1, 'units'), low: num('Window bottom', 150, 0, 900, 1, 'units'), high: num('Window top', 202, 4, 1000, 1, 'units'),
+  faces: select('Windows look out from', Object.keys(WINDOW_FACES)),
   slant: num('Slant (0: follow the sun or moon; negative: to the left)', 0, -3, 3, 0.05), strength: num('Strength by day', 1, 0, 1.5, 0.05),
   moon: num('Moonlight at night', 0.5, 0, 1, 0.05), colour: num('Colour in the light', 0.85, 0, 1, 0.05), dust: num('Dust in the beams', 0.6, 0, 1, 0.05),
-  pools: bool('Pools on the floor', true), seed: num('Seed', 1, 0, 1000000),
+  pools: bool('Pools on the floor', true),
+  from: num('Light stays right of (from the first window)', -2000, -6000, 0, 1, 'units'), to: num('Light stays left of (from the first window)', 4000, 0, 8000, 1, 'units'),
+  seed: num('Seed', 1, 0, 1000000),
 };
 export const windowLightElement: Element = {
   type: 'interior.window-light', version: 1, label: 'Light through stained glass (shafts, pools, dust)', category: 'environment', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable',
@@ -852,12 +902,16 @@ export const windowLightElement: Element = {
 };
 const mixWhite = (c: string, k: number) => c.split(',').map(n => Math.round(Number(n) * k + 255 * (1 - k))).join(',');
 function paintGlassLight(x: Ctx, p: Properties, o: Paint) {
-  const L = o.lighting, day = sky(o) * (0.35 + 0.65 * L.direct) * Number(p.strength), moon = L.night * (0.3 + 0.7 * L.moon.lit) * Number(p.moon) * (1 - L.cover * 0.7);
-  const byDay = day >= moon * 0.6, a0 = byDay ? day * 0.16 : moon * 0.07;
-  if (a0 < 0.004) return;
-  // the slant: down and away from the sun (or the moon), flatter when it is low
+  // only a sun (or moon) standing behind the windows' wall throws shafts through them; none from the other side
+  const L = o.lighting, faces = WINDOW_FACES[String(p.faces)] ?? 0, behind = (rel: number) => Math.max(0, Math.cos(((rel - faces) * Math.PI) / 180));
+  const day = glassLight(o, faces).sun * Number(p.strength);
+  const moon = L.moon.up && L.moon.el > 0 ? L.night * (0.3 + 0.7 * L.moon.lit) * Number(p.moon) * (1 - L.cover * 0.7) * behind(L.moonRel) : 0;
+  const byDay = day >= moon * 0.6, a0 = byDay ? day * 0.1 : moon * 0.045;
+  if (a0 < 0.003) return;
+  // the slant: down and away from the sun (or moon) as it stands now, long and low morning and evening, steep at noon
   let s = Number(p.slant);
-  if (s === 0) { const b = byDay ? L.sun : L.moon, rel = byDay ? L.sunRel : L.moonRel, el = Math.max(0.15, Math.min(0.95, Math.abs(b.el))) * 1.4; s = -(Math.sign(rel) || 1) * Math.max(0.25, Math.min(1.6, Math.cos(el) / Math.sin(el))); }
+  if (s === 0) { const k = sunSlope(o, !byDay); if (k === null) return; s = k; }
+  x.save(); x.beginPath(); x.rect(Number(p.from), y(Number(p.high) + 20), Number(p.to) - Number(p.from), Number(p.high) + 36); x.clip();
   const n = Number(p.count), sp = Number(p.spacing), w = Number(p.width), lo = Number(p.low), hi = Math.max(lo + 2, Number(p.high)), rose = p.source === 'rose', seed = Number(p.seed);
   const tint = Number(p.colour) * (byDay ? 1 : 0.3), strip = 3;
   x.globalCompositeOperation = 'screen';
@@ -870,7 +924,7 @@ function paintGlassLight(x: Ctx, p: Properties, o: Paint) {
       const glass = GLASS[Math.floor(hash(seed + i * 31 + Math.floor(k / strip) * 7) * GLASS.length)], col = byDay ? mixWhite(glass, tint) : mixWhite('190,205,235', 1 - 0.3 * (1 - tint));
       const a = a0 * (0.75 + 0.5 * hash(seed * 3 + i + k));
       // the beam: from the window strip down along the slant to the floor, fading as it spreads
-      const g = x.createLinearGradient(0, y(sh), 0, 0); g.addColorStop(0, rgba(col, Math.min(0.5, a))); g.addColorStop(1, rgba(col, Math.min(0.5, a * 0.45)));
+      const g = x.createLinearGradient(0, y(sh), 0, 0); g.addColorStop(0, rgba(col, Math.min(0.33, a))); g.addColorStop(1, rgba(col, Math.min(0.33, a * 0.45)));
       x.fillStyle = g; x.beginPath();
       if (s < 0) { x.moveTo(xa, y(sh)); x.lineTo(xb, y(sh)); x.lineTo(xb, y(sl)); x.lineTo(xb + sl * s, 0); x.lineTo(xa + sh * s, 0); }
       else { x.moveTo(xb, y(sh)); x.lineTo(xa, y(sh)); x.lineTo(xa, y(sl)); x.lineTo(xa + sl * s, 0); x.lineTo(xb + sh * s, 0); }
@@ -878,18 +932,18 @@ function paintGlassLight(x: Ctx, p: Properties, o: Paint) {
       // where it lands: a coloured pool on the flags, and its spread on the floor towards us
       if (p.pools !== false) {
         const fa = Math.min(xa + sh * s, xb + sl * s, xa + sl * s, xb + sh * s), fb = Math.max(xa + sh * s, xb + sl * s, xa + sl * s, xb + sh * s);
-        R(x, fa, 0, fb - fa, 2, rgba(col, Math.min(0.7, a * 3.2))); R(x, fa + 2 * s, -10, fb - fa, 10, rgba(col, Math.min(0.5, a * 1.6)));
+        R(x, fa, 0, fb - fa, 2, rgba(col, Math.min(0.45, a * 2.1))); R(x, fa + 2 * s, -10, fb - fa, 10, rgba(col, Math.min(0.3, a * 1.0)));
       }
     }
     // dust turning slowly in the beam
-    const motes = Math.round(Number(p.dust) * 14 * Math.min(1, a0 * 12));
+    const motes = Math.round(Number(p.dust) * 14 * Math.min(1, a0 * 16));
     for (let j = 0; j < motes; j++) {
       const u = (hash(seed + i * 17 + j * 5) + o.t * 0.0006 * (0.6 + hash(j + i))) % 1, hs = lo + (hi - lo) * hash(seed * 7 + j + i * 3), xs = x0 + w * hash(seed * 11 + j * 13 + i);
       const px = xs + u * hs * s + Math.sin(o.t / 70 + j) * 2, ph = hs * (1 - u);
-      R(x, px, ph, 1, 1, rgba('255,244,220', Math.min(0.9, a0 * 5 * Math.sin(Math.PI * u))));
+      R(x, px, ph, 1, 1, rgba('255,244,220', Math.min(0.7, a0 * 6 * Math.sin(Math.PI * u))));
     }
   }
-  x.globalCompositeOperation = 'source-over';
+  x.restore();
 }
 
 // ---------------------------------------------------------------- St. Agnes from outside, its yard
@@ -1032,43 +1086,106 @@ export const oldqTreeElement = piece({
   size: p => ({ w: Number(p.spread), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.spread), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, trunk: { x: Number(p.spread) / 2, h: 0, role: 'mount' } }),
-  paint(x, p, o) {
-    const kind = String(p.kind), H = Number(p.height), S = Number(p.spread), cx = Math.round(S / 2), seed = Number(p.seed), r = rng(seed * 61 + 3), leaf = String(p.leaves), lrgb = rgb(isHex(leaf) ? leaf : '#16220f');
-    const bark = kind === 'frangipani' ? '#4a4640' : kind === 'banyan' ? '#2e2a24' : '#241c16', tw = kind === 'banyan' ? 16 : kind === 'tamarind' ? 10 : 7, crown = kind === 'frangipani' ? H * 0.45 : H * 0.55;
-    // trunk and the main branches out to the crown
-    R(x, cx - tw / 2, 0, tw, crown, bark); R(x, cx - tw / 2, 0, 1, crown, 'rgba(255,200,140,.15)');
-    if (kind === 'banyan') for (const dx of [-14, -8, 9, 15]) { x.fillStyle = bark; x.beginPath(); x.moveTo(cx + dx * 0.4, y(16)); x.lineTo(cx + dx, 0); x.lineTo(cx + dx * 0.4 + 3, 0); x.fill(); }
-    const tips: [number, number][] = [];
-    const nb = kind === 'frangipani' ? 7 : 5;
-    x.strokeStyle = bark; x.lineCap = 'round';
-    for (let i = 0; i < nb; i++) {
-      const f = (i + 0.5) / nb - 0.5, ex = cx + f * S * 0.85, eh = crown + (H - crown) * (0.45 + 0.5 * r()), mid = crown + (eh - crown) * 0.4;
-      x.lineWidth = kind === 'frangipani' ? 3 : 4; x.beginPath(); x.moveTo(cx, y(crown - 6)); x.quadraticCurveTo(cx + f * S * 0.2, y(mid), ex, y(eh)); x.stroke();
-      tips.push([ex, eh]);
-    }
-    x.lineCap = 'butt'; x.lineWidth = 1;
-    // the canopy: clumps of leaves round the branch tips, darker inside, lit on top; the outer ones sway
-    const clumps = kind === 'frangipani' ? 2 : 6;
-    for (const [tx, th] of tips) for (let k = 0; k < clumps; k++) {
-      const rx = (kind === 'frangipani' ? 9 : 14 + r() * 12), ry = rx * 0.6, ox = (r() - 0.5) * rx * 1.6 + Math.sin(o.t / 80 + tx) * Number(p.sway) * 1.5, oh = (r() - 0.3) * ry * 1.4;
-      x.fillStyle = rgba(lrgb, 0.95); x.beginPath(); x.ellipse(tx + ox, y(th + oh), rx, ry, 0, 0, Math.PI * 2); x.fill();
-      x.fillStyle = 'rgba(120,160,80,' + (0.1 + 0.18 * sky(o)).toFixed(3) + ')'; x.beginPath(); x.ellipse(tx + ox - 2, y(th + oh + ry * 0.4), rx * 0.7, ry * 0.4, 0, 0, Math.PI * 2); x.fill();
-      if (kind === 'frangipani') for (let b = 0; b < 4; b++) if (r() < Number(p.blossom)) { const bx = tx + ox + (r() - 0.5) * rx * 1.4, bh = th + oh + (r() - 0.2) * ry; R(x, bx, bh, 2, 2, 'rgba(240,235,215,.9)'); R(x, bx, bh, 1, 1, 'rgba(240,200,90,.9)'); }
-    }
-    // a banyan's aerial roots hanging from its branches
-    if (kind === 'banyan') for (let k = 0; k < 14; k++) { const rx2 = Math.round(cx + (r() - 0.5) * S * 0.8), top = crown + r() * (H - crown) * 0.5, len = Math.round(top * (0.4 + r() * 0.6)); R(x, rx2, top - len, 1, len, 'rgba(46,40,30,.85)'); }
-    // paper lanterns on strings from the lower branches
-    const n = Number(p.lanterns), lc = rgb(String(p.lantern));
-    for (let i = 0; i < n; i++) {
-      const lx = Math.round(S * (0.15 + 0.7 * (i + 0.5) / n)), top = crown + 4 + Math.round(hash(seed + i) * 18), drop = 8 + Math.round(hash(seed * 3 + i) * 14), sw = Math.sin(o.t / 50 + i + seed) * 1.2;
-      x.strokeStyle = 'rgba(0,0,0,.8)'; x.beginPath(); x.moveTo(lx, y(top)); x.lineTo(lx + sw, y(top - drop)); x.stroke();
-      const ly = top - drop, a = 0.45 + 0.5 * flameLevel(o) * (0.88 + 0.12 * Math.sin(o.t / 9 + i * 3));
-      x.fillStyle = rgba(lc, a); x.beginPath(); x.ellipse(lx + sw + 0.5, y(ly - 5), 3.5, 4.5, 0, 0, Math.PI * 2); x.fill();
-      R(x, lx + sw - 2, ly, 5, 1, '#100806'); R(x, lx + sw - 1, ly - 10, 3, 1, '#100806');
-      o.light?.(lx, ly - 5, 8, 10, lc, 'screen');
-    }
-  },
+  paint(x, p, o) { paintTree(x, p, o); },
 });
+type Limb = { x0: number; h0: number; x1: number; h1: number; w: number; depth: number };
+/** The shape of each kind: how tall the bole is, how the limbs leave it, how they fork, how big the leaf masses are. */
+const TREE_FORM: Record<string, { bole: number; limbs: number[]; len: number; depth: number; spread: number; lift: number; base: number; clump: number; bark: string; barkLit: string }> = {
+  banyan: { bole: 0.34, limbs: [-1.25, -0.75, -0.2, 0.35, 0.85, 1.3], len: 0.36, depth: 2, spread: 0.45, lift: 0.75, base: 24, clump: 19, bark: '#211d17', barkLit: '#3a3329' },
+  frangipani: { bole: 0.3, limbs: [-0.45, 0.4], len: 0.26, depth: 3, spread: 0.42, lift: 0.85, base: 9, clump: 8, bark: '#4a4640', barkLit: '#6e685e' },
+  tamarind: { bole: 0.4, limbs: [-0.85, -0.25, 0.3, 0.9], len: 0.3, depth: 3, spread: 0.5, lift: 0.8, base: 13, clump: 13, bark: '#1e1712', barkLit: '#352a20' },
+};
+/**
+ * A tree drawn as a tree: a tapering bole with its root flare (a banyan's buttresses and the prop roots
+ * it lets down), limbs forking out to the crown, leaf masses at their ends in three tones (shade,
+ * body, the lit top) with the back ones darker so the crown has depth, and lanterns hung from real limbs.
+ */
+function paintTree(x: Ctx, p: Properties, o: Paint) {
+  const kind = TREE_FORM[String(p.kind)] ? String(p.kind) : 'banyan', F = TREE_FORM[kind], H = Number(p.height), S = Number(p.spread), cx = S / 2, seed = Number(p.seed), r = rng(seed * 61 + 3);
+  const leaf = String(p.leaves), lrgb = rgb(isHex(leaf) ? leaf : '#16220f'), lit = 0.25 + 0.75 * sky(o), sway = Number(p.sway);
+  // grow the limbs, then fit the crown into the tree's height and spread
+  const limbs: Limb[] = [], tips: { x: number; h: number; depth: number }[] = [];
+  const grow = (x0: number, h0: number, ang: number, len: number, w: number, depth: number) => {
+    const x1 = x0 + Math.sin(ang) * len, h1 = h0 + Math.cos(ang) * len;
+    limbs.push({ x0, h0, x1, h1, w, depth });
+    if (depth >= F.depth) { tips.push({ x: x1, h: h1, depth }); return; }
+    const kids = kind === 'frangipani' ? 2 : 2 + (r() < 0.4 ? 1 : 0);
+    for (let k = 0; k < kids; k++) {
+      const off = (kids === 1 ? 0 : (k / (kids - 1) - 0.5) * 2) * F.spread + (r() - 0.5) * 0.25;
+      grow(x1, h1, ang * F.lift + off, len * (0.62 + r() * 0.16), Math.max(1, w * 0.62), depth + 1);
+    }
+  };
+  const boleTop = H * F.bole;
+  // limbs leave the bole at different heights, the lower ones reaching further out
+  F.limbs.forEach((a, i) => { const at = boleTop * (kind === 'frangipani' ? 1 : 0.62 + 0.38 * ((i * 7 + seed) % F.limbs.length) / F.limbs.length); grow(cx + Math.sign(a) * F.base * 0.15, at, a + (r() - 0.5) * 0.15, H * F.len * (0.85 + r() * 0.3) * (1.15 - 0.3 * at / boleTop), F.base * 0.5, 1); });
+  const rc = F.clump, maxX = Math.max(1, ...tips.map(t => Math.abs(t.x - cx))), maxH = Math.max(boleTop + 1, ...tips.map(t => t.h));
+  const kx = Math.max(0.3, (S / 2 - rc) / maxX), kh = Math.max(0.3, (H - rc * 0.8 - boleTop) / (maxH - boleTop));
+  const fit = (px: number, ph: number) => [cx + (px - cx) * kx, ph <= boleTop ? ph : boleTop + (ph - boleTop) * kh] as const;
+  for (const l of limbs) { [l.x0, l.h0] = fit(l.x0, l.h0); [l.x1, l.h1] = fit(l.x1, l.h1); }
+  for (const t of tips) [t.x, t.h] = fit(t.x, t.h);
+  const swayAt = (px: number, ph: number) => Math.round(Math.sin(o.t / 90 + px * 0.07 + seed) * sway * 1.6 * (ph / H));
+  const clump = (tx: number, th: number, rad: number, tone: number, k: number) => {
+    const dx = swayAt(tx, th), ry = rad * 0.62;
+    x.fillStyle = rgba(mixRgb(lrgb, '0,0,0', 0.45 + 0.25 * (1 - tone)), 1); x.beginPath(); x.ellipse(tx + dx + 1, y(th - ry * 0.35), rad, ry, 0, 0, Math.PI * 2); x.fill();
+    x.fillStyle = rgba(mixRgb(lrgb, '0,0,0', 0.25 * (1 - tone)), 1); x.beginPath(); x.ellipse(tx + dx, y(th), rad * 0.92, ry * 0.9, 0, 0, Math.PI * 2); x.fill();
+    x.fillStyle = rgba(mixRgb(lrgb, '170,200,110', 0.22 * tone), lit); x.beginPath(); x.ellipse(tx + dx - rad * 0.2, y(th + ry * 0.35), rad * 0.6, ry * 0.45, 0, 0, Math.PI * 2); x.fill();
+    // leaf texture: a scatter of small leaves catching the light, a few gaps showing the dark inside
+    for (let i = 0; i < Math.round(rad * 0.9); i++) {
+      const a = hash(seed + k * 37 + i * 3) * Math.PI * 2, d = Math.sqrt(hash(seed * 5 + k * 11 + i)), lx = tx + dx + Math.cos(a) * rad * 0.9 * d, lh = th + Math.sin(a) * ry * 0.9 * d;
+      R(x, lx, lh, 2, 1, lh > th ? rgba(mixRgb(lrgb, '190,220,130', 0.35 * tone), 0.7 * lit) : rgba(mixRgb(lrgb, '0,0,0', 0.5), 0.8));
+    }
+  };
+  // the crown's back: darker masses behind the limbs, so it has depth
+  if (kind !== 'frangipani') for (let i = 0; i < tips.length; i++) { const t = tips[i]; clump(t.x + (hash(seed + i) - 0.5) * rc, t.h + rc * 0.45, rc * 1.05, 0, i + 100); }
+  // the root flare and the bole: wide at the foot, tapering, lit on one side
+  const wb = F.base, wt = F.base * 0.55;
+  x.fillStyle = F.bark; x.beginPath(); x.moveTo(cx - wb / 2 - wb * 0.5, 0); x.quadraticCurveTo(cx - wb / 2, y(4), cx - wb / 2, y(10)); x.lineTo(cx - wt / 2, y(boleTop + 2)); x.lineTo(cx + wt / 2, y(boleTop + 2)); x.lineTo(cx + wb / 2, y(10)); x.quadraticCurveTo(cx + wb / 2, y(4), cx + wb / 2 + wb * 0.5, 0); x.closePath(); x.fill();
+  x.strokeStyle = F.barkLit; x.lineWidth = 1; x.beginPath(); x.moveTo(cx - wb / 2 + 1, y(10)); x.lineTo(cx - wt / 2 + 1, y(boleTop)); x.stroke();
+  x.fillStyle = 'rgba(0,0,0,.3)'; for (let k = 0; k < Math.round(wb / 4); k++) { const bx = cx - wb / 2 + 3 + k * 4 + (k % 2); x.fillRect(Math.round(bx), Math.round(y(boleTop * (0.3 + 0.6 * hash(seed + k)))), 1, Math.round(boleTop * 0.3)); }
+  if (kind === 'banyan') for (const [dx, len] of [[-1, 1], [-0.55, 0.7], [0.5, 0.75], [1, 1]] as const) { x.fillStyle = F.bark; x.beginPath(); x.moveTo(cx + dx * wb * 0.3, y(boleTop * 0.35)); x.quadraticCurveTo(cx + dx * wb * 0.55, y(6), cx + dx * wb * (0.8 + 0.6 * len), 0); x.lineTo(cx + dx * wb * 0.25, 0); x.fill(); }
+  R(x, cx - wb * 1.3, -2, wb * 2.6, 3, 'rgba(0,0,0,.35)');
+  // the limbs, thinning as they fork
+  x.lineCap = 'round';
+  // each limb bows upward a little on its way out (a curve, not a spoke); a thin lit line along the big ones' backs
+  const bow = (l: Limb, lift: number) => { const mx = (l.x0 + l.x1) / 2, mh = (l.h0 + l.h1) / 2 + Math.abs(l.x1 - l.x0) * 0.18; x.beginPath(); x.moveTo(l.x0, y(l.h0 + lift)); x.quadraticCurveTo(mx, y(mh + lift), l.x1 + swayAt(l.x1, l.h1) * 0.5, y(l.h1 + lift)); x.stroke(); };
+  for (const l of limbs) { x.strokeStyle = F.bark; x.lineWidth = Math.max(1, l.w); bow(l, 0); }
+  for (const l of limbs) if (l.w >= 4) { x.strokeStyle = F.barkLit; x.lineWidth = 1; bow(l, l.w / 2 - 1); }
+  x.lineCap = 'butt';
+  // a banyan's prop roots: some hanging roots reached the ground and became pillars; the rest still hang
+  if (kind === 'banyan') {
+    const firsts = limbs.filter(l => l.depth === 1);
+    for (let k = 0; k < firsts.length; k++) {
+      const l = firsts[k], f = 0.55 + 0.3 * hash(seed + k), px = l.x0 + (l.x1 - l.x0) * f, ph = l.h0 + (l.h1 - l.h0) * f;
+      if (Math.abs(px - cx) < wb) continue;
+      if (k % 2 === 0) { R(x, px - 1, 0, 3, ph, F.bark); R(x, px - 1, 0, 1, ph, F.barkLit); R(x, px - 3, 0, 7, 2, F.bark); }
+      else for (let j = 0; j < 3; j++) R(x, px - 2 + j * 2, ph - 10 - Math.round(hash(seed + k * 3 + j) * ph * 0.6), 1, 10 + Math.round(hash(seed + k * 3 + j) * ph * 0.6), 'rgba(52,46,36,.9)');
+    }
+  }
+  // the crown's front masses, lit on top; the frangipani's leaf rosettes and flowers at its blunt tips
+  for (let i = 0; i < tips.length; i++) {
+    const t = tips[i];
+    if (kind === 'frangipani') {
+      const dx = swayAt(t.x, t.h);
+      for (let k = 0; k < 7; k++) { const a = -Math.PI / 2 + (k / 6 - 0.5) * 2.6; x.fillStyle = rgba(mixRgb(lrgb, k % 2 ? '0,0,0' : '150,190,100', k % 2 ? 0.2 : 0.2 * lit), 1); x.beginPath(); x.ellipse(t.x + dx + Math.cos(a) * 6, y(t.h) + Math.sin(a) * 5, 6, 2, a, 0, Math.PI * 2); x.fill(); }
+      for (let b = 0; b < 4; b++) if (hash(seed + i * 7 + b) < Number(p.blossom)) { const bx = t.x + dx - 4 + b * 3, bh = t.h + 4 + (b % 2) * 2; R(x, bx - 1, bh, 3, 1, 'rgba(240,235,215,.95)'); R(x, bx, bh - 1, 1, 3, 'rgba(240,235,215,.95)'); R(x, bx, bh, 1, 1, 'rgba(240,200,80,.95)'); }
+    } else {
+      clump(t.x, t.h, rc * (0.85 + 0.3 * hash(seed + i * 5)), 1, i);
+      if (hash(seed * 3 + i) < 0.6) clump(t.x + (hash(seed + i * 9) - 0.5) * rc * 1.4, t.h - rc * 0.35, rc * 0.7, 0.6, i + 50);
+    }
+  }
+  // lanterns on strings from the limbs themselves, where a limb runs out under the crown
+  const n = Number(p.lanterns), lc = rgb(String(p.lantern));
+  const hooks = limbs.filter(l => l.depth <= 2 && Math.abs(l.x1 - l.x0) > 6).map(l => ({ x: l.x0 + (l.x1 - l.x0) * 0.7, h: l.h0 + (l.h1 - l.h0) * 0.7 })).filter(h => h.h > 50 && Math.abs(h.x - cx) > wb).sort((a, b) => a.x - b.x);
+  for (let i = 0; i < n && hooks.length; i++) {
+    const hk = hooks[Math.min(hooks.length - 1, Math.floor((i + 0.5) * hooks.length / n))], drop = 6 + Math.round(hash(seed * 3 + i) * 10), sw = Math.sin(o.t / 50 + i + seed) * 1.2;
+    const ly = hk.h - drop, a = 0.45 + 0.5 * flameLevel(o) * (0.88 + 0.12 * Math.sin(o.t / 9 + i * 3));
+    x.strokeStyle = 'rgba(0,0,0,.85)'; x.lineWidth = 1; x.beginPath(); x.moveTo(hk.x, y(hk.h)); x.lineTo(hk.x + sw, y(ly)); x.stroke();
+    R(x, hk.x + sw - 2, ly, 5, 1, '#100806');
+    x.fillStyle = rgba(lc, a); x.beginPath(); x.ellipse(hk.x + sw + 0.5, y(ly - 5), 3.5, 4.5, 0, 0, Math.PI * 2); x.fill();
+    R(x, hk.x + sw - 3, ly - 3, 7, 1, 'rgba(0,0,0,.25)'); R(x, hk.x + sw - 1, ly - 10, 3, 1, '#100806'); R(x, hk.x + sw, ly - 13, 1, 3, rgba(lc, 0.5));
+    o.light?.(hk.x, ly - 5, 8, 10, lc, 'screen');
+  }
+}
 
 /** A few graves in a churchyard: crosses, headstones with a photograph, small tiled tombs; candles and flowers. */
 export const gravesElement = piece({

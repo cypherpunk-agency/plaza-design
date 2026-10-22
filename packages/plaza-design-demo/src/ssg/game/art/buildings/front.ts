@@ -112,10 +112,12 @@ export function shapeOf(f: FrontSpec): Shape {
     : skin === 'glass' ? (r() < 0.6 ? 'stepped' : 'flat') : skin === 'panel' ? 'flat' : pick(r, ['flat', 'parapet', 'stepped'] as const);
   const fill = /^#[0-9a-f]{6}$/i.test(f.wall) ? f.wall : tone(skin, r), storeys = Math.max(0, Math.floor((f.h - f.ground) / f.storey));
   const setback = roof === 'stepped' && storeys > 1 && f.w > 70 ? Math.round(f.w * (0.1 + r() * 0.08)) : 0;
-  // the window grid: one size per building, an even or paired rhythm, centred
-  const ww = windows === 'framed' ? 14 : windows === 'curtained' ? 14 + Math.round(r() * 8) : 12 + Math.round(r() * 6);
-  const wh = windows === 'framed' ? 28 : windows === 'curtained' ? Math.max(22, Math.min(44, f.storey - 24 - Math.round(r() * 6))) : Math.max(20, Math.min(34, f.storey - 30 + Math.round(r() * 8)));
-  const sill = Math.round((f.storey - wh) * (0.36 + r() * 0.1));
+  // the window grid: one size per building, an even or paired rhythm, centred. Every window is big enough
+  // for a person to stand in (the player is 42 tall, about 13 wide): 18+ wide, 26+ tall, the sill near the waist.
+  const fit = (want: number) => Math.max(14, Math.min(want, f.storey - 12));
+  const ww = windows === 'framed' ? 18 : windows === 'curtained' ? 18 + Math.round(r() * 8) : 16 + Math.round(r() * 6);
+  const wh = fit(windows === 'framed' ? 32 : windows === 'curtained' ? Math.max(28, Math.min(44, f.storey - 22 - Math.round(r() * 6))) : Math.max(26, Math.min(38, f.storey - 26 + Math.round(r() * 8))));
+  const sill = Math.max(4, Math.min(f.storey - wh - 6, Math.round(14 + r() * 6)));
   const gap = 10 + Math.round(r() * 12), paired = skin !== 'glass' && r() < 0.3, margin = 8 + Math.round(r() * 6);
   const xs: number[] = [];
   if (windows !== 'none') {
@@ -160,7 +162,7 @@ export function shapeOf(f: FrontSpec): Shape {
   const patches: [number, number][] = Array.from({ length: Math.round(f.w * f.h / 9000) }, () => [Math.round(r() * (f.w - 30)), f.ground + Math.round(r() * (f.h - f.ground - 20))]);
   const stains: [number, number, number][] = Array.from({ length: Math.round(f.w / 30 * (0.3 + d)) }, () => [Math.round(r() * f.w), f.ground + Math.round(r() * (f.h - f.ground)), 10 + Math.round(r() * 40)]);
   const tags = bays.length && r() < 0.2 + 0.4 * d ? [Math.round(r() * Math.max(0, f.w - 44))] : [];
-  const mullion = 12 + Math.round(r() * 6), seamX: number[] = [];
+  const mullion = 20 + Math.round(r() * 8), seamX: number[] = [];
   for (let x = 40 + Math.round(r() * 16); x < f.w - 6; x += 44 + Math.round(r() * 10)) seamX.push(x);
   const shape: Shape = { skin, windows, roof, fill, storeys, setback, rows, bays, escape, balconies, pipes, conduit, screens, scanners, gear, laundry: Array.from({ length: 6 }, () => pick(r, PACKS)), patches, stains, tags, mullion, seamX };
   if (SHAPES.size > 400) SHAPES.clear();
@@ -223,7 +225,7 @@ function paintFrontIn(x: CanvasRenderingContext2D, f: FrontSpec, o: FrontLook) {
       const h0 = floor + c.sill, h1 = h0 + c.wh;
       if (h1 > top + c.wh || overlaps(masks, c.x - 1, c.x + c.w + 1, h0 - 2, h1 + 2)) continue;
       const wy = y(h1); let lit = -1;
-      if (S.windows === 'framed') lit = P.framedWindow(x, c.x, wy, c.light, false, c.seed, o.t, o.lighting);
+      if (S.windows === 'framed') lit = P.framedWindow(x, c.x, wy, c.light, false, c.seed, o.t, o.lighting, c.w, c.wh);
       else if (S.windows === 'punched') lit = P.punchedWindow(x, c.x, wy, c.w, c.wh, c.light, c.seed, o.t, o.lighting);
       else if (S.windows === 'curtained') {
         const state = c.state && windowLit(c.seed, o.lighting) ? c.state : 0;

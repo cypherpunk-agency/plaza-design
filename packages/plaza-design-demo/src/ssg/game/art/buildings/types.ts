@@ -105,16 +105,21 @@ export const stackElement = piece({
     // tiled facade, streaked by decades of rain from the AC drips
     x.fillStyle = 'rgba(255,255,255,.025)'; for (let h = g + 6; h < H; h += 6) x.fillRect(0, y(h), w, 1);
     for (let i = 0; i < Math.round(w / 9); i++) { const sx = Math.round(r() * w), top = g + r() * (H - g); x.fillStyle = 'rgba(0,0,0,.16)'; x.fillRect(sx, y(top), 2, Math.min(top - g, 30 + r() * 80)); }
-    // flats: a unit every ~26 units, each with its own window, cage, AC, maybe a laundry pole
-    const unit = 26, n = Math.max(1, Math.floor((w - 8) / unit)), off = Math.round((w - n * unit) / 2);
+    // flats: a unit every ~30 units, each with its own window (an aluminium slider a person could stand in:
+    // 18-24 wide, 24-36 tall, the sill near the waist), cage, AC, maybe a laundry pole
+    const unit = 30, n = Math.max(1, Math.floor((w - 8) / unit)), off = Math.round((w - n * unit) / 2);
     for (let f = 0; f < floors; f++) {
       const fh = g + f * st;
       x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, y(fh + 1), w, 2);
       for (let c = 0; c < n; c++) {
-        const cx = off + c * unit, s = seed * 1013 + f * 37 + c * 7, q = hash(s), ww = 14 + Math.round(hash(s + 1) * 6), wh = Math.round(st * 0.5), wx = cx + Math.round((unit - ww) / 2), sill = fh + Math.round(st * 0.28);
+        const cx = off + c * unit, s = seed * 1013 + f * 37 + c * 7, q = hash(s), ww = 18 + Math.round(hash(s + 1) * 6), wh = Math.max(Math.min(24, st - 10), Math.min(36, st - 12, Math.round(st * 0.6))), wx = cx + Math.round((unit - ww) / 2), sill = fh + Math.max(2, Math.min(st - wh - 6, Math.round(st * 0.3)));
         const on = hash(s + 2) < Number(p.lit) && windowLit(s, o.lighting), cool = hash(s + 3) < 0.6, col = cool ? '190,230,215' : '255,190,120';
         x.fillStyle = on ? rgba(col, 0.5 + 0.3 * hash(s + 4)) : '#07090a'; x.fillRect(wx, y(sill + wh), ww, wh);
         if (on) { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(wx + Math.round(ww * hash(s + 5)), y(sill + wh), 2, wh); o.light?.(wx + ww / 2, sill + wh / 2, ww, wh, col, 'window'); }
+        // the aluminium slider: a frame, two sashes overlapping in the middle, a fixed top light
+        x.fillStyle = 'rgba(170,178,182,.45)'; x.fillRect(wx, y(sill + wh), ww, 1); x.fillRect(wx, y(sill + 1), ww, 1); x.fillRect(wx, y(sill + wh), 1, wh); x.fillRect(wx + ww - 1, y(sill + wh), 1, wh);
+        const half = Math.round(ww / 2), slid = hash(s + 10) < 0.4 ? Math.round(ww * 0.25) : 0; x.fillRect(wx + half - 1 - slid, y(sill + wh), 1, wh); x.fillRect(wx + half + 1, y(sill + wh), 1, wh);
+        x.fillRect(wx, y(sill + wh - Math.round(wh * 0.28)), ww, 1);
         if (q < Number(p.cages)) {
           // a burglar-bar cage bolted round the window, standing out over the street
           const cw = ww + 6, ch = wh + 6, cl = wx - 3, cb = sill - 4;
@@ -213,15 +218,23 @@ export const shophouseElement = piece({
     x.fillStyle = 'rgba(0,0,0,.12)'; for (let i = 0; i < Math.round(w / 14); i++) { const sx = Math.round(r() * w); x.fillRect(sx, y(H), 1, Math.round(10 + r() * 30)); }
     // upper floors: shuttered windows, maybe a gallery with its rail and posts
     for (let f = 0; f < floors; f++) {
-      const fh = g + f * st, nW = Math.max(1, Math.floor((w - 10) / 30)), gap = (w - nW * 18) / (nW + 1);
+      // tall timber casements a person could stand in (20 wide, about two thirds of the storey), shutters folded back
+      const WW = 20, fh = g + f * st, nW = Math.max(1, Math.floor((w - 8) / 38)), gap = (w - nW * WW) / (nW + 1);
       for (let c = 0; c < nW; c++) {
-        const wx = Math.round(gap + c * (18 + gap)), wh = Math.round(st * 0.56), sill = fh + Math.round(st * 0.18), s = seed * 31 + f * 7 + c;
+        const wx = Math.round(gap + c * (WW + gap)), wh = Math.min(st - 10, Math.max(26, Math.round(st * 0.64))), sill = fh + Math.max(2, Math.min(st - wh - 6, Math.round(st * 0.22))), s = seed * 31 + f * 7 + c;
         const mode = p.shutters === 'mixed' ? (hash(s) < 0.5 ? 'open' : 'closed') : String(p.shutters), lit = mode === 'open' && on(s);
-        x.fillStyle = lit ? 'rgba(255,190,110,.6)' : '#120c07'; x.fillRect(wx, y(sill + wh), 18, wh);
-        if (lit) o.light?.(wx + 9, sill + wh / 2, 16, wh, '255,180,100', 'window');
+        const top = y(sill + wh), fan = Math.round(wh * 0.22);
+        x.fillStyle = lit ? 'rgba(255,190,110,.6)' : '#120c07'; x.fillRect(wx, top, WW, wh);
+        if (lit) o.light?.(wx + WW / 2, sill + wh / 2, WW - 2, wh, '255,180,100', 'window');
         x.fillStyle = '#2a1a0d';
-        if (mode === 'closed') { x.fillRect(wx, y(sill + wh), 18, wh); x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(wx + 9, y(sill + wh), 1, wh); for (let k = 3; k < wh; k += 3) x.fillRect(wx + 1, y(sill + wh) + k, 16, 1); }
-        else { x.fillRect(wx - 7, y(sill + wh), 6, wh); x.fillRect(wx + 19, y(sill + wh), 6, wh); x.fillStyle = 'rgba(0,0,0,.35)'; for (let k = 3; k < wh; k += 3) { x.fillRect(wx - 6, y(sill + wh) + k, 4, 1); x.fillRect(wx + 20, y(sill + wh) + k, 4, 1); } }
+        if (mode === 'closed') { x.fillRect(wx, top, WW, wh); x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(wx + WW / 2, top, 1, wh); for (let k = 3; k < wh; k += 3) x.fillRect(wx + 1, top + k, WW - 2, 1); }
+        else {
+          // the casement: a fanlight over two glazed leaves, their frames, the louvred shutters folded back on the wall
+          x.fillRect(wx, top + fan, WW, 1); x.fillRect(wx + WW / 2, top + fan, 1, wh - fan); x.fillRect(wx, top, 1, wh); x.fillRect(wx + WW - 1, top, 1, wh);
+          for (let k = wx + 4; k < wx + WW - 2; k += 4) x.fillRect(k, top, 1, fan);
+          x.fillRect(wx - 8, top, 7, wh); x.fillRect(wx + WW + 1, top, 7, wh); x.fillStyle = 'rgba(0,0,0,.35)'; for (let k = 3; k < wh; k += 3) { x.fillRect(wx - 7, top + k, 5, 1); x.fillRect(wx + WW + 2, top + k, 5, 1); }
+        }
+        x.fillStyle = '#1a1008'; x.fillRect(wx - 2, y(sill), WW + 4, 2);
       }
       if (p.gallery !== false && f === 0) {
         // the gallery: a timber deck along the front, a rail of balusters, two posts up to the eave

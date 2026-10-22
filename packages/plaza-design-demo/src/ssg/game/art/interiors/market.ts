@@ -99,6 +99,19 @@ function mesh(x: X, l: number, h: number, w: number, t: number, col: string, ste
   for (let b = l + step; b < l + w - 1; b += step) R(x, b, h + 1, 1, t - 2, rgba(col, 0.32));
   R(x, l + 1, h + Math.round(t / 2), w - 2, 1, rgba(col, 0.3));
 }
+/**
+ * The Market's window onto a light well: an aluminium slider (two sashes, one pushed aside) behind a cage
+ * grille, big enough to stand in. The view out is the well: pale by day, a neighbour's sign at night.
+ */
+function slider(x: X, o: Paint, l: number, h: number, w: number, t: number, seed: number, grille = true) {
+  const day = o.lighting.daylight, pulse = 0.5 + 0.5 * Math.sin(o.t / 23 + seed);
+  R(x, l - 1, h - 1, w + 2, t + 2, '#07090a'); R(x, l, h, w, t, rgba('170,190,195', 0.12 + 0.3 * day)); R(x, l, h + Math.round(t / 2), w, Math.round(t / 2), rgba('255,58,90', (1 - day) * 0.22 * pulse));
+  const half = Math.round(w / 2), slid = hash(seed) < 0.5 ? Math.round(w * 0.22) : 0;
+  R(x, l, h, w, 1, 'rgba(175,182,186,.6)'); R(x, l, h + t - 1, w, 1, 'rgba(175,182,186,.6)'); R(x, l, h, 1, t, 'rgba(175,182,186,.6)'); R(x, l + w - 1, h, 1, t, 'rgba(175,182,186,.6)');
+  R(x, l + half - 1 - slid, h, 1, t, 'rgba(175,182,186,.55)'); R(x, l + half + 1, h, 1, t, 'rgba(175,182,186,.55)');
+  if (grille) { for (let k = l + 2; k < l + w - 1; k += 3) R(x, k, h - 1, 1, t + 2, 'rgba(120,115,105,.65)'); R(x, l - 1, h + Math.round(t / 2), w + 2, 1, 'rgba(120,115,105,.65)'); }
+  R(x, l - 2, h - 2, w + 4, 2, 'rgba(230,220,190,.18)');
+}
 /** A painted two-tone stairwell wall: pale over a dark dado, water stains from the floor above. */
 function twoTone(x: X, w: number, h: number, wall: string, dado: string, seed: number) {
   R(x, 0, 0, w, h, wall); R(x, 0, 0, w, 24, dado); R(x, 0, 24, w, 1, 'rgba(230,220,190,.18)');
@@ -122,6 +135,7 @@ export const FLAT_KINDS = ['cage', 'cubicle', 'bunks', 'kitchen', 'empty'] as co
 const flatItem: Record<string, Field> = {
   kind: { kind: 'select', label: 'Kind', options: [...FLAT_KINDS], default: 'cage' },
   tv: { kind: 'boolean', label: 'TV', default: false },
+  window: { kind: 'boolean', label: 'Window onto the light well (cubicle, kitchen)', default: true },
   fan: { kind: 'boolean', label: 'Fan', default: true },
   cooker: { kind: 'boolean', label: 'Rice cooker', default: false },
   bags: { kind: 'number', label: 'Belongings in bags', default: 0.5, min: 0, max: 1, step: 0.05 },
@@ -232,6 +246,11 @@ export const cageFlatsElement = piece({
     const n = rows.length, uw = n ? Math.floor((w - 4) / n) : 0;
     rows.forEach((row, i) => {
       const l = 2 + i * uw, s = seed * 97 + i * 13, kind = String(row.kind);
+      // a cubicle or the kitchen gets its window first, the room drawn in front of it
+      if (row.window !== false && (kind === 'cubicle' || kind === 'kitchen')) {
+        const ww = Math.min(22, uw - 14), wt = Math.max(14, Math.min(28, ih - (kind === 'kitchen' ? 44 : 38))), sill = kind === 'kitchen' ? 22 : 16;
+        if (ww >= 12) slider(x, o, l + Math.round((uw - ww) / 2), sill, ww, wt, s);
+      }
       if (kind === 'cage') cageUnit(x, o, l, uw, ih, Number(p.tiers), row, s);
       else if (kind === 'cubicle') cubicleUnit(x, o, l, uw, ih, row, s);
       else if (kind === 'bunks') bunksUnit(x, o, l, uw, ih, row, s);
@@ -342,11 +361,9 @@ export const stairCoreElement = piece({
     const w = Number(p.width), H = Number(p.height), ih = H - 8, seed = Number(p.seed);
     twoTone(x, w, H, hexOr(p.wall, '#2d302a'), hexOr(p.dado, '#1c3226'), seed);
     if (p.window !== false) {
-      // a slit onto the light well: the sky by day, a neighbour's sign pulsing at night
-      const wl = Math.min(w - 18, Number(p.windowFrom)), day = o.lighting.daylight, pulse = 0.5 + 0.5 * Math.sin(o.t / 23 + seed);
-      R(x, wl, ih - 24, 16, 16, '#07090a'); R(x, wl + 1, ih - 23, 14, 14, rgba('170,190,195', 0.12 + 0.3 * day)); R(x, wl + 1, ih - 23, 14, 7, rgba('255,58,90', (1 - day) * 0.25 * pulse));
-      for (let k = wl + 3; k < wl + 15; k += 3) R(x, k, ih - 24, 1, 16, '#2a2c2e');
-      R(x, wl - 1, ih - 25, 18, 1, 'rgba(230,220,190,.2)');
+      // a window onto the light well, big enough to stand in: an aluminium slider behind a grille
+      const wt = Math.max(16, Math.min(28, ih - 24)), sill = Math.max(4, Math.min(ih - wt - 4, 20));
+      slider(x, o, Math.min(w - 26, Number(p.windowFrom)), sill, 24, wt, seed);
     }
     const label = String(p.label ?? '');
     if (label) paintText(x, label, Number(p.labelFrom), y(Number(p.labelAt)), 'rgba(230,220,190,.55)', 9, '700');
@@ -461,18 +478,19 @@ export const rooftopElement = piece({
     // shacks of corrugated sheet, tarps held down with tyres, a lit doorway or window, an AC box
     let sx = 6 + Math.round(r() * 8);
     for (let k = 0; k < Number(p.shacks) && sx < w - 30; k++) {
-      const sw = 38 + Math.round(r() * 26), sh = 32 + Math.round(r() * 16), sid = seed * 31 + k;
+      const sw = 46 + Math.round(r() * 24), sh = 40 + Math.round(r() * 12), sid = seed * 31 + k;
       if (!clear(sx, sw)) { sx = hutL + hutW + 8; k--; if (sx > w - 30) break; continue; }
       R(x, sx, 0, sw, sh, '#151617'); for (let c = sx + 2; c < sx + sw; c += 3) R(x, c, 0, 1, sh, 'rgba(150,140,128,.16)');
       for (let c = 0; c < 3; c++) R(x, sx + Math.round(r() * (sw - 8)), Math.round(r() * (sh - 10)), 6, 8, 'rgba(150,70,30,.18)');
       R(x, sx - 3, sh, sw + 6, 4, rgba(tarp, 0.85)); R(x, sx - 3, sh + 4, sw + 6, 1, 'rgba(255,255,255,.12)');
       for (const tx of [sx + 4, sx + sw - 12]) { R(x, tx, sh + 4, 8, 3, '#0a0a0a'); R(x, tx + 2, sh + 5, 4, 1, '#222'); }
-      const on = hash(sid) < Number(p.lit) && windowLit(sid, o.lighting), dl = sx + 5 + Math.round(r() * (sw - 22));
-      R(x, dl, 0, 12, 24, on ? 'rgba(255,190,120,.55)' : '#0b0b0a'); R(x, dl - 1, 24, 14, 1, '#0a0a0a');
-      if (on) { R(x, dl + 2, 2, 8, 18, 'rgba(140,40,40,.5)'); o.light?.(dl + 6, 12, 12, 24, '255,190,120', 'window'); }
-      const wl = dl + 16 < sx + sw - 10 ? dl + 16 : sx + 3; const won = on && hash(sid + 1) < 0.7;
-      R(x, wl, sh - 16, 9, 8, won ? 'rgba(190,230,215,.5)' : '#0b0b0a'); R(x, wl, sh - 16, 9, 1, '#2a2a2a');
-      if (hash(sid + 2) < 0.6) P.acUnit(x, y, sx + sw - 9, sh - 22);
+      const on = hash(sid) < Number(p.lit) && windowLit(sid, o.lighting), dl = sx + 4 + Math.round(r() * (sw - 42));
+      R(x, dl, 0, 14, 32, on ? 'rgba(255,190,120,.55)' : '#0b0b0a'); R(x, dl - 1, 32, 16, 1, '#0a0a0a');
+      if (on) { R(x, dl + 2, 2, 10, 26, 'rgba(140,40,40,.5)'); o.light?.(dl + 7, 16, 14, 32, '255,190,120', 'window'); }
+      // a window you could lean out of: 16 x 16 at waist height, glazed in whatever was to hand, a grille
+      const wl = dl + 20 + 16 <= sx + sw - 3 ? dl + 20 : dl - 20 >= sx + 3 ? dl - 20 : -1, won = on && hash(sid + 1) < 0.7;
+      if (wl >= 0) { R(x, wl, 16, 16, 16, won ? 'rgba(190,230,215,.5)' : '#0b0b0a'); R(x, wl - 1, 15, 18, 1, '#2a2a2a'); R(x, wl - 1, 32, 18, 1, '#2a2a2a'); for (let g = wl + 3; g < wl + 16; g += 4) R(x, g, 16, 1, 16, 'rgba(150,140,128,.5)'); }
+      if (hash(sid + 2) < 0.6) P.acUnit(x, y, sx + sw - 9, Math.max(33, sh - 12));
       sx += sw + 10 + Math.round(r() * 20);
     }
     // a satellite dish, the pigeon coop on legs, foam boxes of greens and chillies

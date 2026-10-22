@@ -490,6 +490,9 @@
         "colour": 0.85,
         "dust": 0.7,
         "pools": true,
+        "faces": "far wall",
+        "from": -37,
+        "to": 823,
         "seed": 7
       },
       "placement": {
@@ -514,6 +517,9 @@
         "colour": 0.9,
         "dust": 0.4,
         "pools": true,
+        "faces": "far wall",
+        "from": -50,
+        "to": 810,
         "seed": 8
       },
       "placement": {
@@ -538,6 +544,9 @@
         "colour": 0.95,
         "dust": 0.8,
         "pools": true,
+        "faces": "far wall",
+        "from": -566,
+        "to": 294,
         "seed": 3
       },
       "placement": {
@@ -562,6 +571,9 @@
         "colour": 0.9,
         "dust": 0.6,
         "pools": true,
+        "faces": "right end",
+        "from": -670,
+        "to": 190,
         "seed": 9
       },
       "placement": {

@@ -23,26 +23,27 @@ const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a + ')';
 // ---------- windows ----------
 
 /**
- * Downtown's storey window: a 14 x 28 frame with a transom and mullion, its sill, an optional AC box
- * under it. `light` < 0 is dark (the pane reflects the sky by day), 0..1 a warm room (blinds when dim),
- * >= 1 a TV's blue. A room light follows the city clock (`windowLit`). Returns the light after the
- * clock, so the caller can add the window to the frame's light layer.
+ * Downtown's storey window: a frame (14 x 28 unless `ww` x `wh` are given) with a transom and mullion,
+ * its sill, an optional AC box under it. `light` < 0 is dark (the pane reflects the sky by day), 0..1 a
+ * warm room (blinds when dim), >= 1 a TV's blue. A room light follows the city clock (`windowLit`).
+ * Returns the light after the clock, so the caller can add the window to the frame's light layer.
  */
-export function framedWindow(x: CanvasRenderingContext2D, wx: number, wy: number, light: number, ac: boolean, seed: number, t: number, lighting: Light): number {
-  x.fillStyle = '#040201'; x.fillRect(wx, wy, 14, 28);
+export function framedWindow(x: CanvasRenderingContext2D, wx: number, wy: number, light: number, ac: boolean, seed: number, t: number, lighting: Light, ww = 14, wh = 28): number {
+  const tr = Math.round(wh * 0.38), mid = Math.round(ww / 2);
+  x.fillStyle = '#040201'; x.fillRect(wx, wy, ww, wh);
   // the room's light follows the clock (on at dusk, off after midnight); a dark pane reflects the sky by day
   if (light >= 0 && !windowLit(seed, lighting)) light = -1;
-  if (light < 0) { const [gc, ga] = glass(lighting); if (ga > 0.02) { x.fillStyle = 'rgba(' + gc + ',' + ga.toFixed(3) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26); } }
+  if (light < 0) { const [gc, ga] = glass(lighting); if (ga > 0.02) { x.fillStyle = 'rgba(' + gc + ',' + ga.toFixed(3) + ')'; x.fillRect(wx + 1, wy + 1, ww - 2, wh - 2); } }
   if (light >= 1) {
-    x.fillStyle = 'rgba(150,170,220,' + (0.1 + 0.06 * Math.sin(t * 0.05 + light * 3)) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
+    x.fillStyle = 'rgba(150,170,220,' + (0.1 + 0.06 * Math.sin(t * 0.05 + light * 3)) + ')'; x.fillRect(wx + 1, wy + 1, ww - 2, wh - 2);
   } else if (light >= 0) {
-    x.fillStyle = 'rgba(255,136,0,' + (0.1 + 0.18 * light) + ')'; x.fillRect(wx + 1, wy + 1, 12, 26);
-    if (light < 0.35) { x.fillStyle = 'rgba(0,0,0,.4)'; for (let b = 3; b < 27; b += 3) x.fillRect(wx + 1, wy + b, 12, 1); }
+    x.fillStyle = 'rgba(255,136,0,' + (0.1 + 0.18 * light) + ')'; x.fillRect(wx + 1, wy + 1, ww - 2, wh - 2);
+    if (light < 0.35) { x.fillStyle = 'rgba(0,0,0,.4)'; for (let b = 3; b < wh - 1; b += 3) x.fillRect(wx + 1, wy + b, ww - 2, 1); }
   }
-  x.fillStyle = '#0a0503'; x.fillRect(wx, wy + 11, 14, 1); x.fillRect(wx + 7, wy, 1, 28);
-  x.strokeStyle = 'rgba(' + TRIM + ',.35)'; x.strokeRect(wx + 0.5, wy + 0.5, 13, 27);
-  x.fillStyle = 'rgba(' + TRIM + ',.5)'; x.fillRect(wx - 1, wy + 28, 16, 2);
-  if (ac) { x.fillStyle = '#16110d'; x.fillRect(wx + 2, wy + 31, 10, 6); x.strokeStyle = 'rgba(' + TRIM + ',.4)'; x.strokeRect(wx + 2.5, wy + 31.5, 9, 5); }
+  x.fillStyle = '#0a0503'; x.fillRect(wx, wy + tr, ww, 1); x.fillRect(wx + mid, wy, 1, wh);
+  x.strokeStyle = 'rgba(' + TRIM + ',.35)'; x.strokeRect(wx + 0.5, wy + 0.5, ww - 1, wh - 1);
+  x.fillStyle = 'rgba(' + TRIM + ',.5)'; x.fillRect(wx - 1, wy + wh, ww + 2, 2);
+  if (ac) { x.fillStyle = '#16110d'; x.fillRect(wx + 2, wy + wh + 3, ww - 4, 6); x.strokeStyle = 'rgba(' + TRIM + ',.4)'; x.strokeRect(wx + 2.5, wy + wh + 3.5, ww - 5, 5); }
   return light;
 }
 
