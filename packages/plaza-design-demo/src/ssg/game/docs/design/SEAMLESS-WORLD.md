@@ -6,12 +6,23 @@
 > built. [ROADMAP.md](../../ROADMAP.md) owns priorities, and
 > [ENGINE-HANDBOOK.md](../reference/ENGINE-HANDBOOK.md) describes the engine as it is.
 
-**Status (2026-10-22).** Step 1 is partly built: `world/zone-graph.json`/`zone-graph.ts` (seams, floating
-origin, `worldProblems` on Save), `mergeLevels`, `renderWorldFrame` as the one renderer, `crossInto`, the camera
-over the zones' union, each zone lit by its own facing, and the lab (tower → tower-annex by a walk seam,
-tower-annex → tower-deck by a stairs seam). Not yet: city-wide weather (the active zone's still applies), the
-editor's World › Zones tools (6.1–6.3; the zone graph is a plain source document), and the compass dial across
-joined zones. See the handbook's "zones and seams" recipe for what works today.
+**Status (2026-10-22, end of day; deployed at `fba1cfd`).**
+
+| Step | State |
+| --- | --- |
+| 1 Zones and seams | Built: zone graph, `mergeLevels`, `renderWorldFrame` (one renderer), `crossInto`, camera over the union; editor World › Zones (seam list, card, diagram), joined scenes in the composer (Show/Fit joined). Not yet: drag-to-place world canvas, compass dial, city-wide weather |
+| 2 Barriers | Built: `level.barrier` (turnstile, gate, door; `closes`), access rules incl. shared state, editor Access tab with Test the rule, story-phase barrier rules |
+| 3 Residency | Built: zones load by camera (`residency`), far joined zones unload (`SceneHost.dispose`). Unjoined scenes still stay hosted (Tommi to decide) |
+| 4 Harbor | Built as five playable zones (`?play=harbor-station`, shift on shared `shift.*`). **Open (Tommi's play-test):** walk animation, stair link vs drawing, station redesign (walk east first), turnstile front/back, clock jump at the supervisor, sign overlaps — content agent in progress. **Seam engine issues found:** a different backdrop per zone, pieces cut at a seam, neighbours not ticking live — causes found, not fixed (see [SESSION-HANDOVER.md](./SESSION-HANDOVER.md)) |
+| 5 Vehicles | Pure model + walkable 2-car train kit and vehicle source; first use in the title glide's traffic |
+| 6 People flows | Pure model; first use in the title glide (escalator riders, Harbor Station boarding) |
+| 7 Downtown + Metro | Style frames only (underground station, stairs seam) |
+| 8 Walkable train | Kit and vehicle definition; not running |
+| 9 Seamless ride | Not started |
+
+The title glide (P0) runs east at sunset to the Harbor Station; it still draws through its own path
+(`renderOpeningSequence`) and hands over to today's opening. Proposed later step: fly the glide over real
+zones with `renderWorldFrame` once Downtown is a zone.
 
 Tommi's direction, 2026-10-22:
 

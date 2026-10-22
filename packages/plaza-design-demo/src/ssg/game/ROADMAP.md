@@ -76,7 +76,11 @@ Wiring and hacking puzzles are not built yet; M4–M6 gameplay waits until the p
   deliveries, trolley/clamp, checkout and completion are present with isolated saves. Brief
   centre-to-HUD goal text and contextual pings are in; the persistent task card was removed after
   feedback. Its scenes move into the replanned harbor zones in seamless step 4.
-- **Milestone 3: not started.** It waits on seamless steps 1–9.
+- **Milestone 3: in progress (about 40%).** Seamless steps 1–3 are built, step 4 (the harbor as five joined zones
+  with the shift on shared `shift.*`) is playable at `?play=harbor-station` with play-test fixes open, steps 5–8
+  have pure models and art, step 9 is not started. The new title glide (P0) runs east at sunset from the
+  west beach to the Harbor Station and still hands over to today's opening. Status per step:
+  [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) (Status); open work: [SESSION-HANDOVER.md](./docs/design/SESSION-HANDOVER.md).
 - **Recent kit work:** rooms open on arrival; remembered rooms are shown darkened without their
   people; street doors have inside faces; Act I place style frames are in their second round;
   the storyboard is in the editor's Library.
