@@ -25,7 +25,7 @@ import { gameStorage, reloadRuntime } from './storage';
 import { drawCapsuleWash } from '../art/atmosphere/capsule-wash';
 import { AVATAR_PAINTERS } from './avatars';
 import { createSkyShips,drawSkyShips,type Ship } from '../art/environment/sky-ships';
-import { renderSceneFrame } from './render-scene';
+import { renderWorldFrame, type ZoneFrame } from './render-scene';
 import { GameplaySession } from '../engine/gameplay/session';
 import { clearWorld } from '../art/core/canvas';
 /**
@@ -83,7 +83,9 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
+import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, seenByZone, splitLevelView, levelZone, type Level, type LevelSource, type Movers } from "../engine/level";
+import zoneGraphSource from "../world/zone-graph.json";
+import { joined as zoneJoined, placeFrom, seamsOf, validateZoneGraph } from "../world/zone-graph";
 
 /**
  * Something to press E on: a way out (`exit`), the scene's life (`life`: a readable, a use, someone
@@ -124,6 +126,10 @@ export class Game {
   /** The ground line before the camera looks up or down (`camH`, world units: the floor height it follows in a level). */
   private gyBase = 270;
   private camH = 0;
+  /** The world's seams (world/zone-graph.json): zones joined to each other with no cut. */
+  private zoneGraph = validateZoneGraph(zoneGraphSource);
+  /** The zones joined to the one the player is in, and where they lie from it: drawn beside it and walked into without a cut. */
+  private joinedZones: { id: SceneId; dx: number; dh: number }[] = [];
   /** Floors, stairs, escalators, lifts and buildings of a level scene (engine/level.ts); null: one street line. */
   private level: Level | null = null;
   private cam = 0;
@@ -688,10 +694,10 @@ export class Game {
     while (k > 1 && this.canvas.width / k < MIN_VIEW_W && px / (k - 1) <= MAX_VIEW_H) k--;
     // A place narrower than the view (a flat, the yard) is shown closer, so it fills the width,
     // as long as enough height stays in view for its rooms and signs.
-    const fit = Math.floor(this.canvas.width / (this.levelW + 24));
+    const fit = Math.floor(this.canvas.width / (this.spanW + 24));
     if (fit > k) k = Math.max(k, Math.min(fit, Math.floor(this.canvas.height / 170)));
     this.k = k;
-    this.fitW = this.levelW;
+    this.fitW = this.spanW;
     this.viewW = this.canvas.width / this.k;
     this.viewH = this.canvas.height / this.k;
     // On phones the ground sits above the touch buttons, so the floor and what stands on it stay in view.
@@ -733,7 +739,7 @@ export class Game {
     // The deck: the world holds still under it (the last frame stays on the canvas).
     if (this.menu.open) { this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     this.save.playMs = (this.save.playMs ?? 0) + dt * 16.67;
-    if (this.levelW !== this.fitW) this.onResize(); // a new place: fit the view to it
+    if (this.spanW !== this.fitW) this.onResize(); // a new place: fit the view to it
     // the city map (and a taxi flight) owns the screen: the key bar and touch buttons step aside (render.tsx)
     document.documentElement.classList.toggle('game-map', !!this.mapView || !!this.flight || !!this.netView);
     this.visionCamera();
@@ -898,6 +904,87 @@ export class Game {
 
 
   private get levelW() { return this.def.width; }
+
+  // ---------- joined zones (world/zone-graph.ts): walked into over a seam, with no cut ----------
+
+  /** The level of the zone `id`: its own, or, where seams join it to other zones, theirs with it as one (`mergeLevels`). */
+  private joinLevel(id: SceneId): LevelSource | undefined {
+    const s = this.sceneDefinition(id);
+    this.joinedZones = [];
+    if (!s.level || !zoneJoined(this.zoneGraph, id)) return s.level;
+    const parts = [];
+    for (const [z, at] of placeFrom(this.zoneGraph, id)) {
+      if (!this.hasScene(z)) continue;
+      const d = this.sceneDefinition(z); if (!d.level) continue;
+      parts.push({ zone: z, source: d.level, dx: at.dx, dh: at.dh, width: d.width });
+      if (z !== id) { this.joinedZones.push({ id: z, dx: at.dx, dh: at.dh }); this.hostOf(z); }
+    }
+    return parts.length > 1 ? mergeLevels(parts) : s.level;
+  }
+  /** The rooms the save remembers, as a level names them (a joined level: `zone/room` for each of its zones). */
+  private seenRooms(source: LevelSource, id: SceneId): string[] | undefined {
+    if (!source.zones) return this.save.rooms?.[id];
+    return Object.entries(this.save.rooms ?? {}).flatMap(([z, rooms]) => source.zones![z] ? rooms.map(r => z + '/' + r) : []);
+  }
+  /** A room seen for the first time stays open on this save (by scene). */
+  private keepSeenRooms() {
+    const lv = this.level!, seen = levelSeen(lv);
+    const by: Record<string, readonly string[]> = lv.source.zones ? { ...Object.fromEntries(Object.keys(lv.source.zones).map(z => [z, []])), ...seenByZone(seen) } : { [this.here]: seen };
+    let changed = false;
+    for (const [z, rooms] of Object.entries(by)) if (rooms.length !== (this.save.rooms?.[z]?.length ?? 0) && (rooms.length || this.save.rooms?.[z])) { (this.save.rooms ??= {})[z] = [...rooms]; changed = true; }
+    if (changed) this.persistSave();
+  }
+  /** Each lift reads its own zone's movers. */
+  private readonly movers: Movers = (zone) => zone && zone !== this.here && this.hasScene(zone) ? this.hostOf(zone).model : this.zh.model;
+  /** A zone's part of the level's view, in its own ids. */
+  private levelViewOf(id: SceneId) {
+    const view = levelView(this.level!, this.movers);
+    return this.level!.source.zones ? splitLevelView(view, id) : view;
+  }
+  /** Is there a walk seam at this edge of the zone the player is in (no edge exit there: the street goes on)? */
+  private seamAt(edge: 'left' | 'right') { return seamsOf(this.zoneGraph, this.here).some(s => s.seam.kind === 'walk' && this.joinedZones.some(z => z.id === s.other) && (edge === 'right' ? s.dx > 0 : s.dx < 0)); }
+  /** How far the camera may look: the zone, and the zones joined to it. */
+  private worldSpan(): [number, number] {
+    let lo = 0, hi = this.levelW;
+    for (const z of this.joinedZones) { lo = Math.min(lo, z.dx); hi = Math.max(hi, z.dx + this.sceneDefinition(z.id).width); }
+    return [lo, hi];
+  }
+  private get spanW() { const [lo, hi] = this.worldSpan(); return hi - lo; }
+  /** The camera's goal for the player at x: a little behind them, within the world span (centred where it is narrower than the view). */
+  private camFollow(x: number) {
+    const [lo, hi] = this.worldSpan();
+    return hi - lo < this.viewW ? lo + (hi - lo - this.viewW) / 2 : Math.max(lo, Math.min(hi - this.viewW, x - this.viewW * 0.45));
+  }
+  /**
+   * Over a seam into a joined zone: it becomes the zone the player is in, with no cut. Everything shifts by where it
+   * lies (the floating origin) in the same frame, so nothing on screen moves; nothing closes, nobody is placed again.
+   */
+  private crossInto(id: SceneId) {
+    const to = this.joinedZones.find(z => z.id === id); if (!to || !this.level) return;
+    const { dx, dh } = to, state = this.level.state;
+    this.zh.persist(); this.zh.model.player = null;
+    this.here = id;
+    this.p.x -= dx; this.p.y -= dh; this.cam -= dx; this.camH -= dh; this.gy = this.gyBase + Math.round(this.camH);
+    if (this.bubble) { this.bubble.x -= dx; this.bubble.h -= dh; }
+    this.companionBody.x -= dx; this.companionBody.h -= dh;
+    this.nudge = null; this.easeBack = false;
+    this.level = { source: this.joinLevel(id)!, state };
+    this.showHost();
+    this.markSeen(id);
+    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + this.def.name);
+    this.syncHud();
+    this.hints.sceneChanged();
+    const s = this.def, flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
+    if (intro && !this.save.flags[flag]) { this.save.flags[flag] = true; this.persistSave(); this.say('YOU', intro, this.p.x, 46); }
+  }
+  /** A joined zone in this frame: its own view (the camera moved by where it lies), scene, host and light. */
+  private zoneFrame(z: { id: SceneId; dx: number; dh: number }): ZoneFrame {
+    const host = this.hostOf(z.id), scene = this.sceneDefinition(z.id), cam = this.cam - z.dx, gy = this.gy - z.dh;
+    const view: SceneView = { ...frameView(0), t: this.t, viewW: this.viewW, viewH: this.viewH, cam, gy, sx: (wx, p = 1) => Math.round(wx - cam * p), y: (h) => gy - h, flags: this.save.flags, level: this.level ? this.levelViewOf(z.id) : undefined };
+    const outdoor = scene.outdoor ?? !!(scene.ambient?.weather || scene.ambient?.sky);
+    return { view, scene, sceneId: z.id, host, preparePresentation: () => host.preparePresentation(view, 'all'),
+      lighting: W => { const L = lightAt(city.day, city.min, scene.facing ?? 180, W ?? this.weatherHere(), outdoor); setLight(L); return L; } };
+  }
   /** The scene's name, for the HUD and the canvas label. */
   private get placeName() { return this.def.name; }
   private get platforms() { return this.def.platforms ?? []; }
@@ -922,10 +1009,10 @@ export class Game {
     const x = (at && s.exits.find((e) => e.id === at)?.x) || s.spawn;
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
-    this.level = s.level ? { source: s.level, state: levelArrive(s.level, this.p, (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0, this.save.rooms?.[id]) } : null;
+    const source = this.joinLevel(id), arriveH = (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0;
+    this.level = source ? { source, state: levelArrive(source, this.p, arriveH, this.seenRooms(source, id)) } : null;
     this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
-    this.cam = Math.max(0, Math.min(this.levelW - this.viewW, this.p.x - this.viewW * 0.45));
-    if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
+    this.cam = this.camFollow(this.p.x);
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
     this.syncHud();
     setHereClimate(sceneClimate(id));
@@ -1073,7 +1160,7 @@ export class Game {
       if (target) list.push({ kind: 'life', id: 'story:' + id, ...target });
     }
     // a level's doors, flights, escalators and lifts where the player stands
-    if (this.level) for (const t of levelHints(this.level, this.p, this.zh.model)) list.push({ kind: 'level', ...t });
+    if (this.level) for (const t of levelHints(this.level, this.p, this.movers)) list.push({ kind: 'level', ...t });
     // the companion can always be petted, wherever it is with you
     if (this.companionPresent&&this.def.companion?.pet) list.push({ kind: 'companion', id: this.companionDoc.id, x: this.companionBody.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.companionBody.h + 24 });
     return list;
@@ -1129,7 +1216,7 @@ export class Game {
     if(this.zh.acknowledgmentPending){this.zh.advanceAcknowledgment();return;}
     const target = this.nearest();
     if (!target) return;
-    if (target.kind === 'level') { if (this.level) levelInteract(this.level, target.id, this.p, this.zh.model); return; }
+    if (target.kind === 'level') { if (this.level) levelInteract(this.level, target.id, this.p, this.movers); return; }
     if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
@@ -1160,14 +1247,17 @@ export class Game {
     // a level ride (stairs, escalator, lift) carries the player; walking waits until it ends
     // ↑/↓ held climb a ladder, spiral or switchback (a straight flight is walked with ←/→)
     const climb = locked ? 0 : (this.keys.has('ArrowUp') || this.keys.has('w') ? 1 : 0) - (this.keys.has('ArrowDown') || this.keys.has('s') ? 1 : 0);
-    const riding = !!this.level && levelStep(this.level, p, locked ? 0 : dir, dt, this.zh.model, climb);
+    const riding = !!this.level && levelStep(this.level, p, locked ? 0 : dir, dt, this.movers, climb);
+    // over a seam: the zone the player now stands in becomes the one they are in, with no cut
+    const zone = this.level && levelZone(this.level);
+    if (zone && zone !== this.here && this.hasScene(zone)) this.crossInto(zone);
     // a room seen for the first time stays open on this save
-    if (this.level && levelSeen(this.level).length !== (this.save.rooms?.[this.here]?.length ?? 0)) { (this.save.rooms ??= {})[this.here] = [...levelSeen(this.level)]; this.persistSave(); }
+    if (this.level) this.keepSeenRooms();
     const [minX, maxX] = this.level && !riding ? levelBounds(this.level, this.levelW) : [12, this.levelW - 12];
     if (!riding) p.x = Math.max(minX, Math.min(maxX, p.x + dir * speed * dt));
     // Walking into an open border (the yard's passage, a street's end) leaves without E.
-    if (dir < 0 && p.x <= 12) this.walkOff('left');
-    else if (dir > 0 && p.x >= this.levelW - 12) this.walkOff('right');
+    if (dir < 0 && p.x <= 12 && !this.seamAt('left')) this.walkOff('left');
+    else if (dir > 0 && p.x >= this.levelW - 12 && !this.seamAt('right')) this.walkOff('right');
 
     // Vertical: gravity, platforms and the street (a level's floor under the player)
     const prevY = p.y, floorH = this.level ? levelFloor(this.level).h : 0;
@@ -1184,20 +1274,21 @@ export class Game {
     }
 
     // zones (engine/zones.ts) watch where the player stands
-    this.zh.model.player = { x: p.x, h: p.y, ...(this.level && !levelRiding(this.level) ? { building: levelFloor(this.level).building } : {}) };
+    // (a joined level names buildings zone/building; the scene's own zones know them by their own name)
+    this.zh.model.player = { x: p.x, h: p.y, ...(this.level && !levelRiding(this.level) ? { building: levelFloor(this.level).building.replace(/^[^/]*\//, '') } : {}) };
     // Camera follows, eased, clamped to the level. A nudge leans it towards something that reacted
     // off the view for a moment (walking, talking or the deck cancel it), then it eases back.
     if (this.zh.visionOn) this.nudge = null;
     const n = this.nudge;
     if (n && (p.moving || !p.onGround || this.bubble || this.term.focused || this.zh.overlayOpen || Math.abs(p.x - n.px) > 2)) { this.nudge = null; this.easeBack = !p.moving; }
-    const follow = Math.max(0, Math.min(this.levelW - this.viewW, p.x - this.viewW * 0.45));
+    const follow = this.camFollow(p.x);
     const nudging = !!this.nudge && this.clock < this.nudge!.until;
     if (this.nudge && !nudging) { this.nudge = null; this.easeBack = true; }
     const goal = nudging ? this.nudge!.goal : follow;
     // gentle while leaning out and coming back; the usual follow otherwise (a step turns it off)
     if (p.moving || Math.abs(goal - this.cam) < 0.5) this.easeBack = false;
     this.cam += (goal - this.cam) * Math.min(1, (nudging || this.easeBack ? NUDGE_EASE : 0.12) * dt);
-    if (this.levelW < this.viewW) this.cam = (this.levelW - this.viewW) / 2;
+    { const [lo, hi] = this.worldSpan(); if (hi - lo < this.viewW) this.cam = lo + (hi - lo - this.viewW) / 2; }
     // a level's camera also follows the height of the floor (or the ride), within its lowest and highest floor
     if (this.level) {
       const goalH = Math.max(this.level.source.low, Math.min(this.level.source.high, p.onGround || riding ? p.y : levelFloor(this.level).h));
@@ -1247,13 +1338,14 @@ export class Game {
 
   private drawWorld() {
     const v = this.view();
-    renderSceneFrame({ context: this.x, scale: this.k, view: v, scene: this.def, sceneId: this.here,
+    renderWorldFrame({ context: this.x, scale: this.k, view: v, scene: this.def, sceneId: this.here,
       host: this.zh, reduced: this.reduced, clock: this.clock,
       weather: () => this.weatherHere(), lighting: W => this.lightHere(W),
       preparePresentation: () => this.zh.preparePresentation(v, this.zh.visionOn && this.def.layers ? 'devices' : 'all'),
       skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
+      ...(this.joinedZones.length ? { joined: this.joinedZones.map(z => this.zoneFrame(z)) } : {}),
     });
   }
 
@@ -2239,7 +2331,7 @@ export class Game {
   /** The scene view, refreshed for this frame. */
   private view(): SceneView {
     const v = (this.sceneView ??= { ...frameView(0), sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), flags: this.save.flags });
-    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.level = this.level ? levelView(this.level, this.zh.model) : undefined;
+    v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.level = this.level ? this.levelViewOf(this.here) : undefined;
     v.timetable = this.world.stationAt(this.here) ? this.platformTime : undefined;
     return v;
   }

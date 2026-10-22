@@ -9,7 +9,7 @@ import {readQuery} from '../engine/gameplay/queries';
 import {resolveValues} from '../engine/gameplay/state';
 import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
-import { renderSceneFrame } from '../runtime/render-scene';
+import { renderWorldFrame } from '../runtime/render-scene';
 import { city } from '../world/clock';
 import { light, lightAt, setLight } from '../world/light';
 import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
@@ -134,7 +134,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       canvas.width = canvas.width;
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
-      renderSceneFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id,
+      renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id,
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,

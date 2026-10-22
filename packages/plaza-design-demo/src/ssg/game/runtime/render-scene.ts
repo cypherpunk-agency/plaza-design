@@ -14,7 +14,18 @@ import { muteWorld } from '../art/atmosphere/hack-vision';
 import { beginLayeredFrame, flushLayeredSlot } from '../art/core/composition';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
-export interface SceneFrame {
+/**
+ * A neighbouring zone joined by a seam (world/zone-graph.ts), drawn in the same frame: its own view (the camera moved
+ * by where it lies), scene, host and light (its own facing, the city's weather). Clipped to its window.
+ */
+export interface ZoneFrame {
+  view: View; scene: SceneDef; sceneId: string;
+  host: Pick<SceneHost, 'draw' | 'model'>;
+  lighting: (weather: Weather | null) => Light;
+  preparePresentation?: () => void;
+}
+/** One frame of the world: the zone the player is in (the scene) and the zones joined to it that are on screen. */
+export interface WorldFrame {
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
   /** A camera zoom already folded into `scale` (the world drawn larger; `view` is in zoomed units): overlays in logical
    * viewport coordinates draw at `scale / zoom`. Default 1. */
@@ -31,10 +42,13 @@ export interface SceneFrame {
   roomWash?: Draw; actors?: Draw; prompts?: Draw; bubbles?: Draw;
   /** Evaluated authoring/playback overlays, in logical viewport coordinates. */
   timeline?:TimelineOverlay;
+  /** Zones joined to this one by seams, on screen this frame. None: a scene drawn alone, exactly as ever. */
+  joined?: readonly ZoneFrame[];
 }
 
-export function renderSceneFrame(frame:SceneFrame){const span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);}finally{perfEnd(span);}}
-function renderMeasuredFrame(frame: SceneFrame) {
+/** The one frame renderer, for a scene alone or with the zones joined to it (docs/design/SEAMLESS-WORLD.md §3). */
+export function renderWorldFrame(frame:WorldFrame){const span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);}finally{perfEnd(span);}}
+function renderMeasuredFrame(frame: WorldFrame) {
   let pass=perfBegin('render.prepare');
   beginLayeredFrame();
   const x = frame.context, k = frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
@@ -44,6 +58,8 @@ function renderMeasuredFrame(frame: SceneFrame) {
   const vision = zh.visionOn;
   const W = amb.weather ? frame.weather() : null;
   const covers = amb.covers?.map(c => [v.sx(c.from), v.sx(c.to), v.y(c.under)] as [number, number, number]);
+  // each joined zone is lit by its own facing; the scene's light is installed last, as it is the one the frame shares
+  for (const z of frame.joined ?? []) { const ZL = z.lighting(W); z.view.lighting = ZL; z.view.illumination = createLightingFrame(ZL, z.scene.lights, ZL.outdoor ? z.scene.shade : undefined, z.scene.width, true); z.preparePresentation?.(); }
   const L = frame.lighting(W);
   v.lighting = L;
   v.illumination = createLightingFrame(L, s.lights, L.outdoor ? s.shade : undefined, s.width, true);
@@ -67,6 +83,7 @@ function renderMeasuredFrame(frame: SceneFrame) {
     if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); muteWorld(x, v, zh.model.spots()); }
   }
   if (!vision) drawCasters(x, v, s.casters);
+  for (const z of frame.joined ?? []) drawJoined(x, z, look, rain, vision);
   perfEnd(pass);pass=perfBegin('render.actors');
   frame.roomWash?.(x, v);
   s.drawActors?.(x, v);
@@ -82,4 +99,25 @@ function renderMeasuredFrame(frame: SceneFrame) {
   frame.bubbles?.(x, v);
   if(frame.timeline){const z=frame.zoom??1;drawTimelineOverlay(x,{width:v.viewW*z,height:v.viewH*z,scale:k/z},frame.timeline);}
   perfEnd(pass);
+}
+
+/**
+ * A joined zone over the scene, inside its window: its own city and street layers, artwork, actors, wet ground, casters,
+ * shade and front. The sky, the grade, the weather in front and the overlays are the frame's, drawn once.
+ * In hack vision a neighbour is muted whole: hacking is in the zone the player is in.
+ */
+function drawJoined(x: CanvasRenderingContext2D, z: ZoneFrame, look: Parameters<typeof weatherMid>[2] | null, rain: number, vision: boolean) {
+  const v = z.view, s = z.scene, amb = s.ambient ?? {}, left = v.sx(0), right = v.sx(s.width);
+  if (right <= 0 || left >= v.viewW) return;
+  x.save(); x.beginPath(); x.rect(left, 0, right - left, v.viewH); x.clip();
+  if (amb.city) s.artworkFrame?.city?.(x, v);
+  if (amb.street) s.artworkFrame?.street?.(x, v, rain, !!amb.city);
+  z.host.draw(x, v);
+  if (look) { puddles(x, v, look, { width: s.width, seed: z.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections : undefined }); weatherMid(x, v, look); }
+  if (vision) muteWorld(x, v);
+  else drawCasters(x, v, s.casters);
+  s.drawActors?.(x, v);
+  if (!vision) drawShade(x, v);
+  s.drawFront?.(x, v);
+  x.restore();
 }

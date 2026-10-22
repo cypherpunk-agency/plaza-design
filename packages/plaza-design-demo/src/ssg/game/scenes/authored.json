@@ -1,4 +1,253 @@
 {
   "version": 1,
-  "scenes": []
+  "scenes": [
+    {
+      "composition": {
+        "version": 1,
+        "scene": "tower-annex",
+        "instances": [
+          {
+            "id": "skyline-far",
+            "type": "building.row",
+            "props": {
+              "width": 1400,
+              "seed": 12,
+              "parallax": 0.3,
+              "minHeight": 220,
+              "maxHeight": 420,
+              "haze": 0.55
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 10,
+            "layer": "distance"
+          },
+          {
+            "id": "skyline-near",
+            "type": "building.row",
+            "props": {
+              "width": 1200,
+              "seed": 5,
+              "parallax": 0.55,
+              "minHeight": 140,
+              "maxHeight": 300,
+              "haze": 0.3,
+              "lit": 0.35
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 20,
+            "layer": "distance"
+          },
+          {
+            "id": "ground",
+            "type": "level.ground-section",
+            "props": {
+              "width": 800,
+              "depth": 280,
+              "seed": 6
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 30,
+            "layer": "backdrop"
+          },
+          {
+            "id": "front-annex",
+            "type": "building.front",
+            "props": {
+              "width": 220,
+              "floors": 2,
+              "storey": 66,
+              "ground": 76,
+              "top": 0,
+              "skin": "concrete",
+              "seed": 41
+            },
+            "placement": {
+              "x": 120,
+              "h": 0
+            },
+            "order": 170,
+            "layer": "set"
+          },
+          {
+            "id": "front-annex-2",
+            "type": "building.front",
+            "props": {
+              "width": 180,
+              "floors": 1,
+              "storey": 66,
+              "ground": 76,
+              "top": 10,
+              "skin": "brick",
+              "seed": 42
+            },
+            "placement": {
+              "x": 620,
+              "h": 0
+            },
+            "order": 180,
+            "layer": "set"
+          },
+          {
+            "id": "stairs-deck",
+            "type": "level.stairs",
+            "props": {
+              "run": 120,
+              "rise": 100
+            },
+            "placement": {
+              "x": 470,
+              "h": 0
+            },
+            "order": 260,
+            "layer": "set"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 120,
+              "h": 0
+            },
+            "order": 270,
+            "layer": "playfield"
+          },
+          {
+            "id": "floor-street",
+            "type": "level.floor",
+            "props": {
+              "width": 800,
+              "building": "",
+              "label": ""
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 280,
+            "layer": "logic"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "tower-annex",
+        "name": "Tower annex (zone lab)",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 800,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "tower-deck",
+        "instances": [
+          {
+            "id": "deck",
+            "type": "level.slab",
+            "props": {
+              "width": 210
+            },
+            "placement": {
+              "x": 590,
+              "h": 0
+            },
+            "order": 30,
+            "layer": "backdrop"
+          },
+          {
+            "id": "hut",
+            "type": "building.front",
+            "props": {
+              "width": 90,
+              "floors": 1,
+              "storey": 50,
+              "ground": 56,
+              "top": 0,
+              "skin": "panel",
+              "seed": 43
+            },
+            "placement": {
+              "x": 700,
+              "h": 0
+            },
+            "order": 170,
+            "layer": "set"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 640,
+              "h": 0
+            },
+            "order": 270,
+            "layer": "playfield"
+          },
+          {
+            "id": "floor-deck",
+            "type": "level.floor",
+            "props": {
+              "width": 210,
+              "building": "",
+              "label": "roof deck"
+            },
+            "placement": {
+              "x": 590,
+              "h": 0
+            },
+            "order": 280,
+            "layer": "logic"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "tower-deck",
+        "name": "Roof deck over the annex (zone lab)",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 800,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    }
+  ]
 }
