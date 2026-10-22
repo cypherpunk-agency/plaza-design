@@ -13,7 +13,10 @@
  *   cable trays, a maintenance catwalk (`civic.transformer`, `civic.busbar`, `civic.control-hut`,
  *   `civic.control-panels`, `civic.cable-tray`, `civic.catwalk`);
  * - the sweep: Registry vans, floodlight towers, an ID checkpoint (`civic.registry-van`, `civic.floodlight`,
- *   `civic.checkpoint`).
+ *   `civic.checkpoint`);
+ * - the police precinct, where the Registry keeps a desk: the blue lamp over the door, holding cells, the wanted and
+ *   unregistered board, the Registry liaison desk (`civic.police-lamp`, `civic.holding-cell`, `civic.wanted-board`,
+ *   `civic.liaison-desk`). The police are tired municipal green and dark olive, never Registry grey-white.
  *
  * The Registry is grey-white: laminate, fluorescent tubes, polite notices, cameras, one red watchdog.
  * Plaza Holdings runs it under contract and signs in gold on black. Every notice is deadpan (ART-GUIDE §10).
@@ -27,6 +30,7 @@ import { windowLit } from '../../world/light';
 import { text as paintText } from '../core/primitives';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
 import { drawCar } from '../vehicles/vehicles';
+import { bodyText } from '../vehicles/kit';
 
 type X = CanvasRenderingContext2D;
 
@@ -1119,15 +1123,18 @@ export const registryVanElement = piece({
       const bx = -70 * face, out = -face;
       for (const k of [6, 13]) { R(x, bx + out * k - 2, 9, 4, 44, paint); R(x, bx + out * k - 2, 30, 4, 1, 'rgba(0,0,0,.3)'); R(x, bx + out * k - 2, 9, 1, 44, 'rgba(255,255,255,.25)'); }
     }
-    drawCar(x, { t, face, still: true, lights: p.lights !== false, paint, kind: 'van', livery: { stripe: '#b8262f', number: fleet, qr: true, decal: decal.length ? decal : undefined }, ...(p.side === true ? { door: 1 } : {}) });
+    drawCar(x, { t, face, still: true, lights: p.lights !== false, paint, kind: 'van', livery: { stripe: '#b8262f', qr: true, decal: decal.length ? decal : undefined } });
+    // the fleet number on the cab door, clear of the decal; the side door slid open just behind the cab, a bench inside
+    if (fleet) bodyText(x, 1, fleet, 50 * face, 18, 'rgba(30,24,18,.8)', 6, '700');
+    if (p.side === true) { const dl = face > 0 ? 7 : -29; R(x, dl, 9, 22, 42, '#0b0d0e'); R(x, dl + 2, 18, 18, 3, '#3a4044'); R(x, dl, 50, 22, 1, '#5b6267'); R(x, dl, 9, 22, 1, '#5b6267'); }
     if (p.rear === true) { const bx = face > 0 ? -68 : 50; R(x, bx, 10, 18, 40, '#0b0d0e'); for (let k = 2; k < 18; k += 3) R(x, bx + k, 12, 1, 36, 'rgba(160,170,175,.45)'); R(x, bx, 22, 18, 1, 'rgba(160,170,175,.45)'); }
     // the light bar: red and white, alternating
     R(x, -16, 54, 32, 4, '#16191b');
     if (p.beacons !== false) {
       const ph = Math.floor(t / 7) % 4, redOn = ph === 0 || ph === 2, whiteOn = ph === 1;
       R(x, -15, 55, 12, 2, redOn ? 'rgba(255,60,80,1)' : 'rgba(110,20,30,1)'); R(x, 3, 55, 12, 2, whiteOn ? 'rgba(250,250,255,1)' : 'rgba(90,96,100,1)');
-      if (redOn) o.glow?.(-9, 58, { kind: 'neon', col: RED, r: 90, a: 0.75 });
-      if (whiteOn) o.glow?.(9, 58, { kind: 'neon', col: '235,240,255', r: 80, a: 0.6 });
+      if (redOn) o.glow?.(-9, 58, { kind: 'neon', col: RED, r: 130, a: 0.8 });
+      if (whiteOn) o.glow?.(9, 58, { kind: 'neon', col: '235,240,255', r: 110, a: 0.65 });
     }
     if (p.flood === true) {
       const fx = -40 * face; R(x, fx - 4, 54, 8, 6, '#2a2e31'); R(x, fx + 3 * face - 1, 55, 2, 4, 'rgba(250,252,255,1)');
@@ -1210,9 +1217,186 @@ export const checkpointElement = piece({
   },
 });
 
+// ---------------------------------------------------------------- the precinct (Act I optional place, 2026-10-22)
+
+/** City police: a deep blue lamp (never the cyan of usable tech), tired municipal green walls, a dark olive uniform. */
+const POLICE_BLUE = '80,120,255';
+
+/** The blue lamp over a police station door: a lantern on a wall bracket or a pole, POLICE on its face, lit day and night. */
+export const policeLampElement = piece({
+  type: 'civic.police-lamp', label: 'Police lamp: blue lantern on a bracket (civic kit: the precinct)', category: 'sign kit', libraryUse: 'reusable',
+  fields: {
+    text: text('Letters on the face', 'POLICE'), mount: select('Mount', ['wall', 'pole'], 'wall'), drop: num('Pole height (pole)', 120, 40, 300, 1, 'units'),
+    colour: colourField('Lamp', '#5078ff'), on: bool('Lit', true),
+  },
+  size: () => ({ w: 40, tall: 30 }), reach: () => 50,
+  bounds: p => p.mount === 'pole' ? { x: -20, h: Number(p.drop) + 22, w: 40, tall: Number(p.drop) + 22 } : { x: -20, h: 22, w: 40, tall: 30 },
+  anchors: () => origin(),
+  paint(x, p, o) {
+    const col = isHex(p.colour) ? rgbOf(String(p.colour)) : POLICE_BLUE, on = p.on !== false, word = String(p.text ?? 'POLICE'), pole = p.mount === 'pole';
+    const base = pole ? Number(p.drop) : 0, w = Math.max(30, Math.ceil(textW(x, word, 7, '700')) + 8);
+    if (pole) { R(x, -4, 0, 8, 3, '#2a2e31'); R(x, -1, 3, 3, base - 3, '#3b4045'); }
+    else { R(x, -2, base - 8, 4, 8, '#2a2e31'); R(x, -1, base - 2, 2, 4, '#1a1c1e'); }
+    // the lantern: a black cap, the glass face with the word, a finial
+    R(x, -w / 2 - 2, base + 2, w + 4, 2, '#15171a'); R(x, -w / 2 - 1, base + 14, w + 2, 3, '#15171a'); R(x, -2, base + 17, 4, 3, '#15171a');
+    R(x, -w / 2, base + 4, w, 10, on ? rgba(col, 0.95) : '#2a3450');
+    R(x, -w / 2, base + 13, w, 1, 'rgba(255,255,255,.35)');
+    T(x, word, 0, base + 9, on ? 'rgba(250,252,255,.97)' : 'rgba(190,200,215,.7)', 7, '700');
+    if (on) { o.glow?.(0, base + 9, { kind: 'neon', col, r: 46, a: 0.7 }); o.light?.(0, base + 9, w, 10, col, 'screen'); }
+  },
+});
+
+const CELL_WALL = '#5a625c', CELL_DADO = '#3c4440';
+/**
+ * Holding cells, cut open: a back wall of painted block with scratched tallies, a steel bench along it (sit people on its
+ * `seat` anchors, lie them on it), a steel toilet, a caged bulb; and the front: bars and a sliding door. `part` splits the
+ * two so people stand between the wall and the bars (back on the backdrop, front over the people in the playfield).
+ */
+export const holdingCellElement = piece({
+  type: 'civic.holding-cell', label: 'Holding cells: block wall, steel bench, bars (civic kit: the precinct)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    cells: num('Cells', 2, 1, 6), width: num('Cell width', 90, 50, 200, 1, 'units'), height: num('Height', 72, 50, 140, 1, 'units'),
+    bench: num('Bench height (sit people here)', 14, 8, 24, 1, 'units'), part: select('Draws (back: wall and bench; front: the bars over the people)', ['all', 'back', 'front'], 'all'),
+    open: text('Cell doors open (comma list)', ''), labels: text('Cell plates (split by /)', 'H1/H2/H3/H4/H5/H6'),
+    notice: text('Notice by the door (empty: none)', 'AWAITING REGISTRY COLLECTION'), lit: num('Cell lights on', 1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.cells) * (Number(p.width) + 4) + 4, tall: Number(p.height) + 12 }),
+  bounds: p => box(Number(p.cells) * (Number(p.width) + 4) + 4, Number(p.height) + 12),
+  anchors: p => ({ ...origin(), ...Object.fromEntries(Array.from({ length: Number(p.cells) }, (_, i) => {
+    const l = 4 + i * (Number(p.width) + 4);
+    return [['seat' + i, { x: l + 14, h: Number(p.bench), role: 'surface' as const }], ['bed' + i, { x: l + 8, h: Number(p.bench), role: 'surface' as const }], ['cell' + i, { x: l + Number(p.width) / 2, h: 0, role: 'mount' as const }]];
+  }).flat()) }),
+  paint(x, p, o) {
+    const n = Number(p.cells), W = Number(p.width), H = Number(p.height), B = Number(p.bench), seed = Number(p.seed), t = o.t, lit = Number(p.lit);
+    const back = p.part !== 'front', front = p.part !== 'back', open = new Set(String(p.open ?? '').split(',').map(s => parseInt(s, 10)));
+    const plates = String(p.labels ?? '').split('/').map(s => s.trim()), total = n * (W + 4) + 4;
+    if (back) {
+      for (let i = 0; i < n; i++) {
+        const l = 4 + i * (W + 4), s = seed * 17 + i * 5;
+        R(x, l, 0, W, H, CELL_WALL); R(x, l, 0, W, 24, CELL_DADO); R(x, l, 24, W, 1, 'rgba(255,255,255,.12)');
+        for (let h = 8; h < H; h += 8) { R(x, l, h, W, 1, 'rgba(0,0,0,.16)'); for (let k = ((h / 8) % 2) * 8; k < W; k += 16) R(x, l + k, h - 8, 1, 8, 'rgba(0,0,0,.12)'); }
+        // tallies and a scratched name, low on the wall where someone sat a long time
+        for (let g = 0; g < 2 + Math.floor(hash(s) * 3); g++) { const gx = l + 8 + g * 9 + hash(s + g) * 4, gh = 34 + hash(s + g * 3) * 16; for (let k = 0; k < 4; k++) R(x, gx + k * 1.5, gh, 0.6, 5, 'rgba(220,215,200,.4)'); R(x, gx - 0.5, gh + 2, 6, 0.6, 'rgba(220,215,200,.4)'); }
+        // the bench: a steel slab on brackets along the back wall
+        const bw = W - 26;
+        R(x, l + 4, B - 3, bw, 3, '#8a9192'); R(x, l + 4, B - 1, bw, 1, 'rgba(255,255,255,.3)'); R(x, l + 4, B - 4, bw, 1, 'rgba(0,0,0,.4)');
+        for (const k of [8, bw - 6]) R(x, l + 4 + k, 2, 2, B - 5, '#5d6466');
+        if (hash(s + 9) < 0.6) { R(x, l + 8, B, 16, 2, '#5a4a32'); R(x, l + 8, B + 2, 10, 1, '#6a5a3a'); }
+        // the steel toilet in the corner, a drain in the floor
+        const tx = l + W - 18; R(x, tx, 0, 12, 4, '#6f7778'); R(x, tx + 1, 4, 10, 8, '#9aa2a3'); R(x, tx, 12, 12, 2, '#b3babb'); R(x, tx + 8, 14, 4, 10, '#8a9192'); R(x, tx + 2, 11, 8, 1, 'rgba(0,0,0,.3)');
+        R(x, l + W / 2 - 3, 0, 6, 1, '#1e2224');
+        // the caged bulb over the middle and its cone
+        const cx = l + W / 2; R(x, cx - 4, H - 4, 8, 4, '#2a2e2f');
+        if (lit > 0) {
+          R(x, cx - 2, H - 7, 4, 3, rgba('255,236,190', 0.6 + 0.4 * lit)); for (let k = -3; k <= 3; k += 2) R(x, cx + k, H - 8, 0.6, 5, '#2a2e2f');
+          const g = x.createLinearGradient(0, y(H - 7), 0, 0); g.addColorStop(0, rgba('255,236,190', 0.16 * lit)); g.addColorStop(1, rgba('255,236,190', 0.02 * lit));
+          x.fillStyle = g; x.beginPath(); x.moveTo(cx - 3, y(H - 7)); x.lineTo(cx + 3, y(H - 7)); x.lineTo(cx + W * 0.42, 0); x.lineTo(cx - W * 0.42, 0); x.closePath(); x.fill();
+          o.light?.(cx, H - 6, 6, 3, '255,236,190', 'screen');
+        } else R(x, cx - 2, H - 7, 4, 3, '#3a3a36');
+      }
+      // the dividing walls, cut
+      for (let i = 0; i <= n; i++) { const l = i * (W + 4); R(x, l, 0, 4, H + 2, '#3a403e'); R(x, l + 3, 0, 1, H + 2, 'rgba(255,190,120,.25)'); }
+      R(x, 0, H, total, 2, '#3a403e');
+      const notice = String(p.notice ?? '');
+      if (notice) plate(x, notice, total / 2, H + 7, { fill: '#e6e9ea', edge: '#8d969b', size: 6, pad: 3 });
+    }
+    if (front) {
+      for (let i = 0; i < n; i++) {
+        const l = 4 + i * (W + 4), isOpen = open.has(i + 1), dw = 24, slide = isOpen ? dw - 4 : 0;
+        // fixed bars, a top and a mid rail; the door section (on the left) slides behind the fixed bars when open
+        R(x, l, H - 3, W, 3, '#2c3134'); R(x, l, 0, W, 2, '#2c3134'); R(x, l + dw, 30, W - dw, 2, '#3a4044');
+        for (let k = dw + 3; k < W - 1; k += 5) { R(x, l + k, 2, 1.5, H - 5, '#4d5559'); R(x, l + k, 2, 0.6, H - 5, 'rgba(255,255,255,.22)'); }
+        const dl = l + slide; R(x, dl, 30, dw, 2, '#3a4044'); R(x, dl, 2, 2, H - 5, '#3a4044'); R(x, dl + dw - 2, 2, 2, H - 5, '#3a4044');
+        for (let k = 4; k < dw - 2; k += 5) { R(x, dl + k, 2, 1.5, H - 5, '#4d5559'); R(x, dl + k, 2, 0.6, H - 5, 'rgba(255,255,255,.22)'); }
+        // the lock box and its light, the plate over the door
+        R(x, l + dw - 3, 34, 6, 8, '#1e2224'); R(x, l + dw - 1, 37, 2, 2, isOpen ? rgba(GO, 0.95) : rgba(RED, 0.75 + 0.25 * pulse(t, 0.08, i)));
+        const name = plates[i] ?? ''; if (name) plate(x, name, l + 12, H - 9, { fill: '#e6e9ea', ink: 'rgba(40,46,52,.95)', size: 6, pad: 2 });
+      }
+    }
+  },
+});
+
+/** A precinct's wanted board: mugshot cards in rows under WANTED and UNREGISTERED, the collected ones struck red, one card with no face. */
+export const wantedBoardElement = piece({
+  type: 'civic.wanted-board', label: 'Wanted and unregistered board: mugshot cards (civic kit: the precinct)', category: 'sign kit', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 96, 40, 400, 1, 'units'), height: num('Height', 50, 30, 200, 1, 'units'),
+    left: text('Left header (empty: none)', 'WANTED'), right: text('Right header (empty: none)', 'UNREGISTERED'),
+    cards: num('Cards', 14, 0, 60), collected: num('Share struck as collected', 0.4, 0, 1, 0.05), blank: num('Card with no face (0: none)', 9, 0, 60),
+    footer: text('Strip along the bottom (empty: none)', 'REPORT SIGHTINGS'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => box(Number(p.width) + 4, Number(p.height) + 2, -2),
+  anchors: () => origin(),
+  paint(x, p) {
+    const W = Number(p.width), H = Number(p.height), seed = Number(p.seed), n = Number(p.cards), blank = Number(p.blank), foot = String(p.footer ?? '');
+    R(x, -2, -2, W + 4, H + 4, '#2c3236'); R(x, 0, 0, W, H, '#c9c4b2'); R(x, -2, H + 1, W + 4, 1, 'rgba(255,255,255,.2)');
+    const left = String(p.left ?? ''), right = String(p.right ?? ''), half = right && left ? W / 2 : W;
+    // headers shrink to fit their half (never under 5), so WANTED and UNREGISTERED never run into each other
+    const fit = (s: string, room: number) => [7, 6, 5].find(k => textW(x, s, k, '700') <= room - 4) ?? 5;
+    if (left) { R(x, 1, H - 10, half - 2, 9, '#b8262f'); T(x, left, half / 2, H - 5.5, 'rgba(250,246,240,.95)', fit(left, half - 2), '700'); }
+    if (right) { const rl = left ? half + 1 : 1, rw = (left ? half : W) - 2; R(x, rl, H - 10, rw, 9, '#3a4248'); T(x, right, rl + rw / 2, H - 5.5, 'rgba(235,238,240,.95)', fit(right, rw), '700'); }
+    const bottom = foot ? 11 : 2, top = H - 12, cw = 10, ch = 13, cols = Math.max(1, Math.floor((W - 4) / (cw + 2))), rows = Math.max(1, Math.floor((top - bottom) / (ch + 2)));
+    if (foot) { R(x, 1, 1, W - 2, 8, '#e8e4d6'); x.save(); x.beginPath(); x.rect(1, y(9), W - 2, 8); x.clip(); T(x, foot, W / 2, 5, 'rgba(40,46,52,.9)', textW(x, foot, 6) <= W - 6 ? 6 : 5, '600'); x.restore(); }
+    const skins = ['#e0b896', '#c08a62', '#8a5a3a', '#5a3a26', '#f0cfb0', '#a8704a'], hairs = ['#1a1410', '#3a2a1a', '#6a5a4a', '#b8b0a0', '#8a3a2a', '#2a2a3a'];
+    for (let k = 0; k < Math.min(n, cols * rows); k++) {
+      const c = k % cols, r = Math.floor(k / cols), cx = 3 + c * (cw + 2) + (left && right && c >= cols / 2 ? 1 : 0), ch0 = top - (r + 1) * (ch + 2) + 2, s = seed * 31 + k * 7;
+      R(x, cx, ch0, cw, ch, '#f0ece0'); R(x, cx, ch0, cw, 1, 'rgba(0,0,0,.25)');
+      if (k + 1 === blank) {
+        // no photo on file: a grey head-shaped gap and a question mark
+        R(x, cx + 1, ch0 + 4, cw - 2, 8, '#8a8f92'); R(x, cx + 3, ch0 + 5, 4, 5, '#6a6f72'); T(x, '?', cx + cw / 2, ch0 + 8, 'rgba(240,240,236,.9)', 6, '700');
+      } else {
+        R(x, cx + 1, ch0 + 4, cw - 2, 8, '#9aa4aa');
+        const sk = skins[Math.floor(hash(s) * skins.length)], hr = hairs[Math.floor(hash(s + 1) * hairs.length)];
+        R(x, cx + 2, ch0 + 4, 6, 3, '#4a525a'); R(x, cx + 3, ch0 + 6, 4, 5, sk); R(x, cx + 3, ch0 + 10, 4, 1.5, hr); if (hash(s + 2) < 0.4) R(x, cx + 2, ch0 + 8, 1, 3, hr);
+      }
+      R(x, cx + 1, ch0 + 1, cw - 2 - Math.round(hash(s + 3) * 3), 1, 'rgba(40,36,30,.6)'); R(x, cx + 1, ch0 + 2.5, cw - 4, 0.8, 'rgba(40,36,30,.4)');
+      if (k + 1 !== blank && hash(s + 4) < Number(p.collected)) { x.save(); x.strokeStyle = 'rgba(190,30,30,.9)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(cx, y(ch0)); x.lineTo(cx + cw, y(ch0 + ch)); x.stroke(); x.restore(); }
+      R(x, cx + cw / 2 - 0.5, ch0 + ch - 1, 1.5, 1.5, hash(s + 5) < 0.5 ? '#c83a2a' : '#2a6ac8');
+    }
+  },
+});
+
+/** The Registry's corner in someone else's building: a grey-white desk with the seal, a screen for the visitor, an ID scanner, the gold plate. */
+export const liaisonDeskElement = piece({
+  type: 'civic.liaison-desk', label: 'Registry liaison desk: seal, visitor screen, ID scanner, gold plate (civic kit)', category: 'furniture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 64, 44, 160, 1, 'units'), plate: text('Plate on the wall (empty: none)', 'REGISTRY LIAISON'), sub: text('Line under it (empty: none)', 'PLAZA HOLDINGS · UNDER CONTRACT'),
+    plateAt: num('Plate height', 66, 40, 200, 1, 'units'), screen: select('Visitor screen', ['seal', 'verifying', 'not found', 'off'], 'verifying'),
+    tent: text('Card on the desk (empty: none)', 'PREMIUM FIRST'), tell: bool('Usable (cyan tell on the scanner)', false), hours: hoursField(),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.plateAt) + 10 }),
+  bounds: p => box(Number(p.width), Number(p.plateAt) + 10),
+  anchors: p => ({ ...origin(), clerk: { x: Number(p.width) * 0.35, h: 0, role: 'mount' }, visitor: { x: Number(p.width) + 12, h: 0, role: 'mount' } }),
+  paint(x, p, o) {
+    const W = Number(p.width), t = o.t, hours = String(p.hours), open = hours === 'open', mode = String(p.screen);
+    const name = String(p.plate ?? ''), sub = String(p.sub ?? ''), ph = Number(p.plateAt);
+    if (name) goldPlate(x, name, W / 2, ph, 7);
+    if (sub) plate(x, sub, W / 2, ph - 10, { fill: '#e6e9ea', ink: 'rgba(60,66,72,.9)', size: 5, pad: 2 });
+    // the desk: grey-white laminate, a front panel with the seal, a modesty strip
+    R(x, 0, 0, W, 28, '#cfd4d6'); R(x, 0, 28, W, 3, '#eef0f0'); R(x, 0, 27, W, 1, 'rgba(0,0,0,.25)'); R(x, 0, 0, W, 3, '#5d666c');
+    R(x, 4, 4, W - 8, 21, '#dde1e2'); seal(x, W / 2, 15, 6, 'rgba(120,132,140,.85)');
+    // the visitor's screen on a stand, turned towards the room
+    const sx = W - 22; R(x, sx + 6, 31, 3, 5, '#2a2f33'); R(x, sx, 36, 16, 12, '#1b1f22');
+    let scr = 'rgba(200,220,232,.85)'; if (!open) scr = hours === 'cut' ? '#07090a' : 'rgba(70,82,92,.55)'; else if (mode === 'not found') scr = 'rgba(240,210,210,.9)'; else if (mode === 'off') scr = '#0c0e10';
+    R(x, sx + 1, 37, 14, 10, scr);
+    if (open && mode === 'seal') seal(x, sx + 8, 42, 3, 'rgba(90,100,110,.9)');
+    if (open && mode === 'verifying') { const k = Math.floor(t / 10) % 10; R(x, sx + 3, 41, 10, 2, 'rgba(60,70,80,.35)'); R(x, sx + 3, 41, k + 1, 2, 'rgba(60,90,120,.9)'); }
+    if (open && mode === 'not found') { R(x, sx + 3, 43, 10, 1, rgba(RED, 0.9)); R(x, sx + 3, 40, 7, 1, rgba(RED, 0.7)); }
+    if (open && mode !== 'off') o.light?.(sx + 8, 42, 14, 10, mode === 'not found' ? '255,150,150' : '200,225,238', 'screen');
+    // the ID scanner pad, its red line sweeping; a tray of forms; the clerk's own monitor seen from behind
+    R(x, 8, 31, 14, 3, '#2a2e31'); R(x, 9, 34, 12, 1, open ? rgba(RED, 0.5 + 0.5 * pulse(t, 0.12)) : 'rgba(110,30,36,.6)');
+    if (p.tell === true) { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, 8, 30, 14, 1, rgba(CYAN, k)); }
+    R(x, 24, 31, 10, 2, '#9aa2a6'); R(x, 25, 33, 8, 1, '#efe9d6'); R(x, 25, 34, 8, 1, '#e4dcc4');
+    const tent = String(p.tent ?? ''); if (tent) { const w = Math.ceil(textW(x, tent, 5)) + 4; R(x, 36 - w / 2 + 6, 31, w, 6, '#0b0b0d'); T(x, tent, 36 + 6, 34, rgba(GOLD, 0.95), 5, '700'); }
+    after(x, hours, 0, 0, W, 50, t, 0.5);
+  },
+});
+
 export const downtownCivicElements: Element[] = [
   roomElement, ticketMachineElement, numberDisplayElement, chairsElement, countersElement, boothsElement, holdScreenElement, posterElement, queueRailElement,
   staffDoorElement, terminalBankElement, recordsElement, nodeElement, alarmElement, registryFrontElement,
   transformerElement, busbarElement, controlHutElement, controlPanelsElement, cableTrayElement, catwalkElement,
   registryVanElement, floodlightElement, checkpointElement,
+  policeLampElement, holdingCellElement, wantedBoardElement, liaisonDeskElement,
 ];

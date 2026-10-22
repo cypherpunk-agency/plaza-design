@@ -5,7 +5,8 @@
  *   exit with its push bar), the micro-flats stacked above it, the service basement with CONCIERGE's
  *   cabinet, and the back courtyard with its washing lines and the areaway down to the service latch;
  * - Moth's walk-up: an old stairwell with flat doors, shoes, bikes and peeling paint, a skylight at the top,
- *   and Moth's door at 4C (extra locks, the camera taped over);
+ *   and Moth's door at 4C (extra locks, the camera taped over); behind it the empty hideout: the pinned wall
+ *   (`interior.dt-pinwall`) and what was left in a hurry (`interior.dt-left-behind`);
  * - Dr. Kessel's room behind the fixer's noodle kitchen: the kitchen's pots and burners, and a ripperdoc's
  *   treatment room improvised in a storeroom (chair, lamp, implant tray, parts fridge, privacy screen, cot).
  *
@@ -1207,7 +1208,80 @@ export const floorFogElement = piece({
   },
 });
 
+// ---------------------------------------------------------------- Moth's empty hideout (Act I step 10, 2026-10-22: Moth is gone, the monitors are still on)
+
+/** A wall of pinned paper: printouts, photos, a map of the block, red string between pins; a long list with names struck out. */
+export const pinWallElement = piece({
+  type: 'interior.dt-pinwall', label: 'Pinned wall: printouts, photos, a map, red string (kit: Moth’s hideout)', category: 'props', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 44, 16, 300, 1, 'units'), height: num('Height', 30, 10, 200, 1, 'units'), from: num('Bottom edge height', 24, 0, 200, 1, 'units'),
+    sheets: num('Sheets and photos', 9, 0, 40), strings: num('Red strings', 5, 0, 30), map: bool('Map of the block', true), list: bool('A long list, names struck out', true),
+    gaps: num('Pins left where sheets were taken', 3, 0, 20), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.from) + Number(p.height), w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p) {
+    const w = Number(p.width), H = Number(p.height), f = Number(p.from), s = Number(p.seed), r = rng(s * 71 + 3);
+    const pins: [number, number][] = [];
+    if (p.map !== false) {
+      const mw = Math.min(20, Math.round(w * 0.45)), mh = Math.min(16, H - 4), ml = Math.round(w - mw - 2), mb = f + H - mh - 2;
+      R(x, ml, mb, mw, mh, 'rgba(220,214,190,.85)');
+      for (let k = 3; k < mw; k += 5) R(x, ml + k, mb, 1, mh, 'rgba(90,80,60,.4)'); for (let k = 3; k < mh; k += 4) R(x, ml, mb + k, mw, 1, 'rgba(90,80,60,.4)');
+      R(x, ml + Math.round(mw * 0.6), mb + Math.round(mh * 0.4), 2, 2, 'rgba(200,30,30,.95)'); pins.push([ml + Math.round(mw * 0.6) + 1, mb + Math.round(mh * 0.4) + 1]);
+    }
+    if (p.list !== false) {
+      const ll = 2, lw = 9, lh = Math.min(H - 2, 26);
+      R(x, ll, f + H - lh - 1, lw, lh, 'rgba(232,228,214,.9)');
+      for (let k = f + H - 4; k > f + H - lh; k -= 2) { R(x, ll + 1, k, lw - 2 - Math.round(r() * 3), 1, 'rgba(40,36,30,.5)'); if (r() < 0.35) R(x, ll, k, lw, 1, 'rgba(200,30,30,.75)'); }
+      pins.push([ll + 4, f + H - 2]);
+    }
+    for (let k = 0; k < Number(p.sheets); k++) {
+      const photo = r() < 0.4, sw = photo ? 6 : 7 + Math.round(r() * 4), st = photo ? 7 : 8 + Math.round(r() * 4);
+      const sl = 12 + Math.round(r() * Math.max(0, w - sw - 14)), sb = f + 1 + Math.round(r() * Math.max(0, H - st - 2));
+      if (photo) { R(x, sl, sb, sw, st, 'rgba(240,238,230,.9)'); R(x, sl + 1, sb + 2, sw - 2, st - 3, pick(r, ['rgba(90,110,130,.9)', 'rgba(120,90,80,.9)', 'rgba(70,80,70,.9)'])); }
+      else sheet(x, sl, sb, sw, st, s + k * 3, r() < 0.25, 0.8);
+      pins.push([sl + Math.round(sw / 2), sb + st - 1]);
+    }
+    for (const [px, ph] of pins) R(x, px, ph, 1, 1, pick(r, ['rgba(220,40,40,1)', 'rgba(240,200,60,1)', 'rgba(60,120,220,1)']));
+    for (let k = 0; k < Number(p.gaps); k++) { const gx = 12 + Math.round(r() * Math.max(1, w - 16)), gh = f + 2 + Math.round(r() * Math.max(1, H - 4)); R(x, gx, gh, 1, 1, 'rgba(220,40,40,1)'); R(x, gx - 1, gh - 1, 3, 1, 'rgba(240,236,220,.35)'); }
+    if (pins.length > 1) {
+      x.save(); x.strokeStyle = 'rgba(200,30,30,.8)'; x.lineWidth = 0.6; x.beginPath();
+      for (let k = 0; k < Number(p.strings); k++) { const a = pins[Math.floor(r() * pins.length)], b = pins[Math.floor(r() * pins.length)]; if (a === b) continue; x.moveTo(a[0] + 0.5, y(a[1]) + 0.5); x.lineTo(b[0] + 0.5, y(b[1]) + 0.5); }
+      x.stroke(); x.restore();
+    }
+  },
+});
+
+/** What someone leaves when they go in a hurry: a chair pushed back, papers on the floor, a cold mug, a clean patch where a bag stood, an empty bowl. */
+export const leftBehindElement = piece({
+  type: 'interior.dt-left-behind', label: 'Left in a hurry: chair, papers, mug, the patch where a bag stood (kit)', category: 'props', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 60, 20, 300, 1, 'units'), chair: select('Chair', ['pushed back', 'tipped over', 'none'], 'pushed back'), chairAt: num('Chair from the left', 8, 0, 300, 1, 'units'),
+    papers: num('Papers on the floor', 7, 0, 40), mug: bool('Mug left on the floor', true), boxes: num('Takeaway boxes', 2, 0, 10),
+    bag: num('Clean patch where a bag stood, from the left (-1: none)', 40, -1, 300, 1, 'units'), bowl: bool('Pet bowl, empty', true), drawer: bool('A crate tipped out', true), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: 20 }),
+  bounds: p => ({ x: 0, h: 20, w: Number(p.width), tall: 20 }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p) {
+    const w = Number(p.width), r = rng(Number(p.seed) * 43 + 9), bag = Number(p.bag);
+    // dust on the floor, and the clean rectangle where something stood until today
+    R(x, 0, 0, w, 1, 'rgba(150,140,120,.18)');
+    if (bag >= 0) { R(x, bag, 0, 14, 1, 'rgba(60,50,40,.9)'); R(x, bag, 1, 14, 1, 'rgba(200,190,170,.12)'); }
+    if (p.drawer !== false) { const dx = Math.min(w - 16, Math.round(w * 0.55)); R(x, dx, 0, 12, 8, '#4a3a2a'); R(x, dx, 7, 12, 1, 'rgba(255,220,170,.2)'); R(x, dx + 1, 8, 10, 1, '#3a2a1a'); for (let k = 0; k < 4; k++) R(x, dx + 13 + k * 3, 0, 2, 1 + (k % 2), pick(r, ['#c8c0a8', '#8a9aa8', '#a83a2a'])); }
+    for (let k = 0; k < Number(p.papers); k++) { const px = Math.round(r() * (w - 6)); R(x, px, 0, 5 + Math.round(r() * 3), 1, 'rgba(225,220,205,.85)'); if (r() < 0.4) R(x, px + 1, 1, 4, 1, 'rgba(225,220,205,.6)'); }
+    for (let k = 0; k < Number(p.boxes); k++) { const bx = Math.round(r() * (w - 6)); R(x, bx, 0, 5, 4, '#e8e2d0'); R(x, bx, 3, 5, 1, 'rgba(200,40,30,.8)'); R(x, bx + 1, 4, 3, 1, '#d8d2c0'); }
+    if (p.mug !== false) { const mx = Math.round(w * 0.3); R(x, mx, 0, 4, 5, '#c8c4b8'); R(x, mx + 4, 1, 1, 3, '#c8c4b8'); R(x, mx + 1, 4, 2, 1, '#3a2614'); }
+    if (p.bowl !== false) { const bx = w - 9; R(x, bx, 0, 8, 2, '#a83a2a'); R(x, bx + 1, 2, 6, 1, '#c84a3a'); }
+    const ch = String(p.chair), cx = Number(p.chairAt);
+    if (ch === 'pushed back') { R(x, cx + 5, 2, 2, 9, '#2a2f33'); R(x, cx, 0, 12, 2, '#1f2326'); R(x, cx, 11, 12, 3, '#3a3f44'); R(x, cx - 1, 13, 3, 13, '#3a3f44'); }
+    else if (ch === 'tipped over') { R(x, cx, 0, 14, 3, '#3a3f44'); R(x, cx + 14, 0, 3, 10, '#3a3f44'); R(x, cx + 3, 3, 2, 4, '#2a2f33'); R(x, cx + 9, 3, 2, 4, '#2a2f33'); }
+  },
+});
+
 export const downtownHomeInteriors: Element[] = [dtRoomElement, conciergeElement, mailboxesElement, noticeBoardElement, fireExitElement, serviceLatchElement,
   microFlatElement, flatDoorElement, bikeElement, skylightElement, courtyardElement, areawayElement, parcelElement, servicePlantElement,
   noodleKitchenElement, docChairElement, partsFridgeElement, privacyScreenElement, cotElement, stockShelvesElement,
-  drySacksElement, cableRunElement, diagnosticElement, jarShelfElement, labRoomElement, surgicalGantryElement, neuralRackElement, transferCradleElement, robotFrameElement, floorFogElement];
+  drySacksElement, cableRunElement, diagnosticElement, jarShelfElement, labRoomElement, surgicalGantryElement, neuralRackElement, transferCradleElement, robotFrameElement, floorFogElement,
+  pinWallElement, leftBehindElement];

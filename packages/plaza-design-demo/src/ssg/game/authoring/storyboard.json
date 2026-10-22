@@ -253,7 +253,7 @@
           "status": "rework",
           "happens": "The note’s phrase opens the door; the desk; a first known connection.",
           "teaches": "A9–A11",
-          "note": "The stairwell is new; the flat exists. Style frame dt-moth-stairwell (2026-10-22)."
+          "note": "The stairwell is new; the flat exists. Style frame dt-moth-stairwell (2026-10-22): 4C is the empty hideout, monitors still on, the pinned wall, things left in a hurry."
         },
         {
           "id": "act1-11",
@@ -297,7 +297,7 @@
           "status": "rework",
           "happens": "A sweep collects unregistered persons; Kessel’s emergency transfer into DLV-9.",
           "teaches": "Narrative only; no new mechanic",
-          "note": "The street’s sweep variant and Kessel’s room are new. Style frame dt-sweep (2026-10-22)."
+          "note": "The street’s sweep variant and Kessel’s room are new. Style frame dt-sweep (2026-10-22): vans with light bars, floodlight towers, the checkpoint by the van, notices and a red ticker, people hiding."
         }
       ]
     },
@@ -325,6 +325,16 @@
           "status": "new",
           "happens": "Downtown from above; the Registry Premium billboard; someone sheltering behind it.",
           "note": "Optional place; style frame dt-roofs (2026-10-22)."
+        },
+        {
+          "id": "opt-precinct",
+          "title": "The precinct",
+          "place": "The police precinct",
+          "district": "downtown",
+          "scene": "dt-precinct",
+          "status": "new",
+          "happens": "The front desk will not take a report from someone who does not exist; the Registry keeps a liaison desk here, and the holding cells wait for its collection.",
+          "note": "Optional place; style frame dt-precinct (2026-10-22): front desk, wanted and unregistered board, Registry liaison office, holding cells, squad room, evidence cage."
         }
       ]
     },

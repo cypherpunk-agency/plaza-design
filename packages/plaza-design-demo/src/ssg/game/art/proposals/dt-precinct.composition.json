@@ -1,0 +1,1833 @@
+{
+  "version": 1,
+  "scene": "dt-precinct",
+  "instances": [
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1900,
+        "seed": 41,
+        "parallax": 0.2,
+        "minHeight": 240,
+        "maxHeight": 460,
+        "haze": 0.6,
+        "lit": 0.4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "traffic": true
+      },
+      "placement": {
+        "x": 640,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1700,
+        "seed": 47,
+        "parallax": 0.45,
+        "minHeight": 180,
+        "maxHeight": 340,
+        "haze": 0.3,
+        "lit": 0.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "ground",
+      "type": "level.ground-section",
+      "props": {
+        "width": 1300,
+        "depth": 120,
+        "seed": 9
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "floors": 7,
+        "storey": 66,
+        "ground": 76,
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "escape": "right",
+        "density": 0.7,
+        "seed": 901,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 64,
+            "tenant": "pharmacy"
+          },
+          {
+            "kind": "door",
+            "from": 100,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "floors": 6,
+        "storey": 66,
+        "ground": 76,
+        "skin": "tenement",
+        "windows": "curtained",
+        "balconies": "some",
+        "density": 0.8,
+        "seed": 902,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 10,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 44,
+            "width": 64,
+            "tenant": "pawn"
+          }
+        ]
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "floors": 8,
+        "storey": 66,
+        "ground": 76,
+        "skin": "concrete",
+        "windows": "punched",
+        "roof": "parapet",
+        "density": 0.6,
+        "seed": 903,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 12,
+            "width": 70,
+            "tenant": "loans"
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-d",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "floors": 6,
+        "storey": 66,
+        "ground": 76,
+        "skin": "brick",
+        "windows": "curtained",
+        "escape": "left",
+        "density": 0.8,
+        "seed": 904,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 52,
+            "width": 80,
+            "tenant": "noodles"
+          }
+        ]
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1300,
+        "ground": "#050302",
+        "edge": "#ff8800",
+        "sheen": 0.7,
+        "kerb": true,
+        "seed": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "count": 1,
+        "reach": 0.9,
+        "seed": 4
+      },
+      "placement": {
+        "x": 210,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "count": 1,
+        "reach": 0.9,
+        "seed": 6
+      },
+      "placement": {
+        "x": 1110,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "precinct-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "precinct"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "logic"
+    },
+    {
+      "id": "lobby",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 350,
+        "height": 96,
+        "kind": "lobby",
+        "wall": "#4d5d58",
+        "dado": "#2c3a36",
+        "floor": "lino",
+        "light": "tube",
+        "lights": 3,
+        "peel": 0.3,
+        "grime": 0.5,
+        "pipes": false,
+        "seed": 91
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "entrance-inside",
+      "type": "level.entrance",
+      "props": {
+        "building": "precinct",
+        "style": "glass",
+        "width": 26,
+        "height": 54,
+        "sign": "none"
+      },
+      "placement": {
+        "x": 403,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wanted-board",
+      "type": "civic.wanted-board",
+      "props": {
+        "width": 86,
+        "height": 52,
+        "cards": 18,
+        "collected": 0.4,
+        "blank": 11,
+        "seed": 7
+      },
+      "placement": {
+        "x": 426,
+        "h": 36
+      },
+      "order": 15,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lobby-chairs",
+      "type": "civic.chairs",
+      "props": {
+        "count": 4,
+        "seat": 18
+      },
+      "placement": {
+        "x": 430,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lobby-poster",
+      "type": "civic.poster",
+      "props": {
+        "kind": "custom",
+        "width": 40,
+        "height": 30,
+        "header": "NOTICE",
+        "lines": "TAKE A/SEAT"
+      },
+      "placement": {
+        "x": 288,
+        "h": 58
+      },
+      "order": 17,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lobby-camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "phase": 30
+      },
+      "placement": {
+        "x": 590,
+        "h": 86
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "desk-back",
+      "type": "civic.counters",
+      "props": {
+        "windows": 2,
+        "bay": 44,
+        "counter": 30,
+        "glass": 62,
+        "open": "1",
+        "label": "FRONT DESK",
+        "line": true,
+        "part": "back",
+        "seed": 3
+      },
+      "placement": {
+        "x": 516,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-liaison",
+      "type": "level.room",
+      "props": {
+        "width": 180,
+        "height": 96,
+        "kind": "office",
+        "lit": 0,
+        "seed": 2,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "windows"
+      },
+      "placement": {
+        "x": 610,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "liaison-room",
+      "type": "civic.room",
+      "props": {
+        "width": 180,
+        "height": 96,
+        "kind": "office",
+        "hours": "open",
+        "tubes": 1,
+        "flicker": 0,
+        "tubeEvery": 60,
+        "clock": 160,
+        "cameras": 1,
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-liaison",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "liaison-poster",
+      "type": "civic.poster",
+      "props": {
+        "kind": "premium",
+        "width": 24,
+        "height": 42
+      },
+      "placement": {
+        "x": 114,
+        "h": 30
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-liaison",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "custody-door",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "staff",
+        "width": 22,
+        "height": 54,
+        "plate": "CUSTODY",
+        "state": "closed",
+        "reader": true
+      },
+      "placement": {
+        "x": 152,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-liaison",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-custody",
+      "type": "level.room",
+      "props": {
+        "width": 210,
+        "height": 96,
+        "kind": "corridor",
+        "lit": 0,
+        "seed": 3,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "dark",
+        "doorLight": true,
+        "doorAt": 12
+      },
+      "placement": {
+        "x": 790,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "custody-room",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 210,
+        "height": 96,
+        "kind": "service",
+        "wall": "#4a524c",
+        "floor": "concrete",
+        "light": "tube",
+        "lights": 2,
+        "peel": 0.2,
+        "grime": 0.7,
+        "pipes": true,
+        "seed": 93
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cells-back",
+      "type": "civic.holding-cell",
+      "props": {
+        "cells": 2,
+        "width": 92,
+        "height": 72,
+        "bench": 14,
+        "part": "back",
+        "open": "",
+        "labels": "H1/H2",
+        "notice": "AWAITING REGISTRY COLLECTION",
+        "lit": 1,
+        "seed": 4
+      },
+      "placement": {
+        "x": 8,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-squad",
+      "type": "level.room",
+      "props": {
+        "width": 440,
+        "height": 78,
+        "kind": "office",
+        "lit": 0,
+        "seed": 4,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "windows"
+      },
+      "placement": {
+        "x": 260,
+        "h": 96
+      },
+      "order": 27,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "squad-room",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 440,
+        "height": 78,
+        "kind": "plain",
+        "wall": "#4d5d58",
+        "dado": "#2c3a36",
+        "floor": "lino",
+        "light": "flicker",
+        "lights": 3,
+        "peel": 0.4,
+        "grime": 0.5,
+        "window": "right",
+        "blinds": 0.6,
+        "label": "1",
+        "labelFrom": 128,
+        "seed": 94
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-squad",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "squad-roster",
+      "type": "interior.dt-notices",
+      "props": {
+        "width": 64,
+        "height": 40,
+        "from": 24,
+        "style": "cork",
+        "header": "ROSTER",
+        "headline": "SWEEP ROTA",
+        "second": "MUSTER 00:30",
+        "papers": 6,
+        "seed": 21
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-squad",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "squad-desks",
+      "type": "civic.terminal-bank",
+      "props": {
+        "desks": 3,
+        "desk": 52,
+        "partitions": false,
+        "people": "1,3",
+        "hours": "open",
+        "seed": 8
+      },
+      "placement": {
+        "x": 212,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-squad",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rm-evidence",
+      "type": "level.room",
+      "props": {
+        "width": 300,
+        "height": 78,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 5,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "dark",
+        "doorLight": true,
+        "doorAt": 20
+      },
+      "placement": {
+        "x": 700,
+        "h": 96
+      },
+      "order": 31,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-room",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 300,
+        "height": 78,
+        "kind": "storeroom",
+        "floor": "concrete",
+        "light": "tube",
+        "lights": 2,
+        "peel": 0.3,
+        "grime": 0.6,
+        "seed": 95
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-cage",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "cage",
+        "width": 26,
+        "height": 56,
+        "plate": "EVIDENCE",
+        "state": "open",
+        "reader": true
+      },
+      "placement": {
+        "x": 12,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-shelves",
+      "type": "interior.dt-shelves",
+      "props": {
+        "width": 60,
+        "height": 62,
+        "shelves": 4,
+        "fill": 0.8,
+        "stock": "mixed",
+        "seed": 31
+      },
+      "placement": {
+        "x": 62,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-records",
+      "type": "civic.records",
+      "props": {
+        "units": 3,
+        "unit": 28,
+        "height": 62,
+        "fill": 0.9,
+        "aisle": 0,
+        "labels": true,
+        "hours": "open",
+        "seed": 32
+      },
+      "placement": {
+        "x": 132,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-parcel-0",
+      "type": "interior.dt-parcel",
+      "props": {
+        "width": 18,
+        "height": 12,
+        "wrap": "cardboard",
+        "sticker": "fragile",
+        "seed": 33
+      },
+      "placement": {
+        "x": 236,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-parcel-1",
+      "type": "interior.dt-parcel",
+      "props": {
+        "width": 14,
+        "height": 9,
+        "wrap": "cardboard",
+        "sticker": "none",
+        "seed": 34
+      },
+      "placement": {
+        "x": 238,
+        "h": 12
+      },
+      "order": 37,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-bike",
+      "type": "interior.dt-bike",
+      "props": {
+        "kind": "commuter",
+        "chained": true,
+        "flat": true,
+        "seed": 35
+      },
+      "placement": {
+        "x": 262,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 740,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-1",
+      "type": "level.slab",
+      "props": {
+        "width": 740,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 96
+      },
+      "order": 40,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-roof",
+      "type": "level.slab",
+      "props": {
+        "width": 740,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 260,
+        "h": 174
+      },
+      "order": 41,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 184,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 252,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 184,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "precinct-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "precinct"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "logic"
+    },
+    {
+      "id": "precinct-front",
+      "type": "building.front",
+      "props": {
+        "width": 740,
+        "floors": 1,
+        "storey": 78,
+        "ground": 96,
+        "skin": "concrete",
+        "windows": "punched",
+        "roof": "parapet",
+        "escape": "none",
+        "balconies": "none",
+        "gear": [
+          "vent",
+          "dish",
+          "ac"
+        ],
+        "density": 0.6,
+        "lit": 0.7,
+        "seed": 910,
+        "wall": "#262d29",
+        "trim": "#5a6a60",
+        "bays": [
+          {
+            "kind": "door",
+            "from": 130,
+            "width": 26
+          },
+          {
+            "kind": "glass",
+            "from": 176,
+            "width": 100,
+            "tenant": "lobby",
+            "sign": "-"
+          },
+          {
+            "kind": "glass",
+            "from": 370,
+            "width": 96,
+            "tenant": "lobby",
+            "sign": "-"
+          },
+          {
+            "kind": "shutter",
+            "from": 560,
+            "width": 92
+          }
+        ]
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "precinct-sign",
+      "type": "sign.plate",
+      "props": {
+        "text": "CITY POLICE · PRECINCT 9",
+        "color": "235,238,230",
+        "size": 9,
+        "printed": true,
+        "bolts": true,
+        "mask": []
+      },
+      "placement": {
+        "x": 226,
+        "h": 86
+      },
+      "order": 46,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "liaison-sign",
+      "type": "sign.plate",
+      "props": {
+        "text": "REGISTRY LIAISON OFFICE",
+        "color": "216,180,90",
+        "size": 8,
+        "printed": true,
+        "bolts": true,
+        "mask": []
+      },
+      "placement": {
+        "x": 418,
+        "h": 86
+      },
+      "order": 47,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "police-lamp",
+      "type": "civic.police-lamp",
+      "props": {
+        "text": "POLICE",
+        "mount": "wall",
+        "on": true
+      },
+      "placement": {
+        "x": 143,
+        "h": 60
+      },
+      "order": 48,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "precinct-camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "phase": 12
+      },
+      "placement": {
+        "x": 118,
+        "h": 70
+      },
+      "order": 49,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "precinct-wanted",
+      "type": "sign.screen",
+      "props": {
+        "kind": "wanted",
+        "width": 70,
+        "height": 40,
+        "mount": "wall",
+        "seed": 77
+      },
+      "placement": {
+        "x": 513,
+        "h": 48
+      },
+      "order": 50,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "precinct-notice",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 60,
+        "height": 26,
+        "header": "REGISTRY NOTICE",
+        "lines": [
+          "UNREGISTERED PERSONS",
+          "REPORT HERE"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 323,
+        "h": 34
+      },
+      "order": 51,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sallyport-sign",
+      "type": "sign.paper",
+      "props": {
+        "style": "board",
+        "width": 74,
+        "height": 12,
+        "lines": [
+          "CUSTODY · NO PARKING"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 606,
+        "h": 78
+      },
+      "order": 52,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "precinct-door",
+      "type": "level.door",
+      "props": {
+        "building": "precinct",
+        "width": 26
+      },
+      "placement": {
+        "x": 403,
+        "h": 0
+      },
+      "order": 53,
+      "layer": "logic"
+    },
+    {
+      "id": "van",
+      "type": "civic.registry-van",
+      "props": {
+        "face": "left",
+        "beacons": false,
+        "rear": false,
+        "side": false,
+        "lights": false,
+        "fleetNo": "R-031",
+        "phase": 0
+      },
+      "placement": {
+        "x": 862,
+        "h": 0
+      },
+      "order": 54,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "patrol-car",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "sedan",
+        "paint": "#2a3226",
+        "motion": "parked",
+        "lights": false,
+        "stripe": "#c9a227",
+        "fleetNo": "P-09",
+        "decal": "POLICE",
+        "direction": "left"
+      },
+      "placement": {
+        "x": 1084,
+        "h": 0
+      },
+      "order": 55,
+      "layer": "set"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 190,
+        "h": 0
+      },
+      "order": 56,
+      "layer": "playfield"
+    },
+    {
+      "id": "door-smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9101,
+        "act": "smoke",
+        "archetype": "police"
+      },
+      "placement": {
+        "x": 1028,
+        "h": 0
+      },
+      "order": 57,
+      "layer": "playfield"
+    },
+    {
+      "id": "screen-reader",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9102,
+        "act": "read",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 58,
+      "layer": "playfield",
+      "attach": {
+        "instance": "precinct-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9103,
+        "act": "walk",
+        "range": -300,
+        "archetype": "commuter"
+      },
+      "placement": {
+        "x": 1240,
+        "h": 0
+      },
+      "order": 59,
+      "layer": "playfield"
+    },
+    {
+      "id": "kerb-kid",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9104,
+        "act": "play",
+        "archetype": "kid"
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 60,
+      "layer": "playfield"
+    },
+    {
+      "id": "van-driver",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9105,
+        "act": "phone",
+        "archetype": "inspector"
+      },
+      "placement": {
+        "x": 236,
+        "h": 0
+      },
+      "order": 61,
+      "layer": "playfield"
+    },
+    {
+      "id": "lobby-wait-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9111,
+        "act": "sit",
+        "seat": 10,
+        "sitting": "front",
+        "archetype": "shopper"
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 62,
+      "layer": "playfield",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lobby-wait-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9112,
+        "act": "doze",
+        "seat": 10,
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 478,
+        "h": 0
+      },
+      "order": 63,
+      "layer": "playfield",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sergeant",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9113,
+        "act": "read",
+        "archetype": "police"
+      },
+      "placement": {
+        "x": 536,
+        "h": 0
+      },
+      "order": 64,
+      "layer": "playfield",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "desk-front",
+      "type": "civic.counters",
+      "props": {
+        "windows": 2,
+        "bay": 44,
+        "counter": 30,
+        "glass": 62,
+        "open": "1",
+        "label": "FRONT DESK",
+        "line": true,
+        "part": "front",
+        "seed": 3
+      },
+      "placement": {
+        "x": 516,
+        "h": 0
+      },
+      "order": 65,
+      "layer": "playfield",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "complainant",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9114,
+        "act": "argue",
+        "archetype": "dockworker"
+      },
+      "placement": {
+        "x": 552,
+        "h": 0
+      },
+      "order": 66,
+      "layer": "playfield",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "liaison-clerk",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9121,
+        "act": "stand",
+        "archetype": "clerk"
+      },
+      "placement": {
+        "x": 52,
+        "h": 0
+      },
+      "order": 67,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-liaison",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "liaison-desk",
+      "type": "civic.liaison-desk",
+      "props": {
+        "width": 64,
+        "plate": "REGISTRY LIAISON",
+        "sub": "PLAZA HOLDINGS · UNDER CONTRACT",
+        "plateAt": 70,
+        "screen": "verifying",
+        "tent": "PREMIUM FIRST",
+        "hours": "open"
+      },
+      "placement": {
+        "x": 30,
+        "h": 0
+      },
+      "order": 68,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-liaison",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "liaison-visitor",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9122,
+        "act": "wait",
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 104,
+        "h": 0
+      },
+      "order": 69,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-liaison",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cell-sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9131,
+        "act": "lie",
+        "seat": 14,
+        "lying": "asleep",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 18,
+        "h": 0
+      },
+      "order": 70,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cell-bars",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9132,
+        "act": "lean",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 84,
+        "h": 0
+      },
+      "order": 71,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cell-elder",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9133,
+        "act": "sit",
+        "seat": 14,
+        "sitting": "side",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 124,
+        "h": 0
+      },
+      "order": 72,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cell-ghost",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9134,
+        "act": "wait",
+        "archetype": "ghost"
+      },
+      "placement": {
+        "x": 174,
+        "h": 0
+      },
+      "order": 73,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cells-front",
+      "type": "civic.holding-cell",
+      "props": {
+        "cells": 2,
+        "width": 92,
+        "height": 72,
+        "bench": 14,
+        "part": "front",
+        "open": "",
+        "labels": "H1/H2",
+        "notice": "",
+        "lit": 1,
+        "seed": 4
+      },
+      "placement": {
+        "x": 8,
+        "h": 0
+      },
+      "order": 74,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-custody",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "squad-doze",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9141,
+        "act": "doze",
+        "seat": 12,
+        "archetype": "police"
+      },
+      "placement": {
+        "x": 236,
+        "h": 0
+      },
+      "order": 75,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-squad",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "squad-phone",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9142,
+        "act": "phone",
+        "archetype": "police"
+      },
+      "placement": {
+        "x": 350,
+        "h": 0
+      },
+      "order": 76,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-squad",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "squad-smoke",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9143,
+        "act": "smoke",
+        "archetype": "police"
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 77,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-squad",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "evidence-clerk",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 9144,
+        "act": "read",
+        "archetype": "clerk"
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 78,
+      "layer": "playfield",
+      "attach": {
+        "instance": "rm-evidence",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-0",
+      "type": "level.stairs",
+      "props": {
+        "run": 110,
+        "rise": 96,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 268,
+        "h": 0
+      },
+      "order": 79,
+      "layer": "set",
+      "attach": {
+        "instance": "precinct-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1300,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 80,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-g",
+      "type": "level.floor",
+      "props": {
+        "width": 740,
+        "building": "precinct",
+        "label": "Ground",
+        "entry": "door"
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 81,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-1",
+      "type": "level.floor",
+      "props": {
+        "width": 740,
+        "building": "precinct",
+        "label": "1/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 96
+      },
+      "order": 82,
+      "layer": "logic"
+    },
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 1300
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 83,
+      "layer": "logic"
+    }
+  ]
+}

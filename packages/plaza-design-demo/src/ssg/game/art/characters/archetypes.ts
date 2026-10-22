@@ -124,6 +124,10 @@ const TABLE = {
   clerk: { label: 'Clerk', note: 'An office shirt and an ID card on a lanyard; behind a Registry counter or a desk.', age: 'adult',
     body: ['avg', 'slim', 'old', 'heavy', 'short'], hair: ['short', 'bun', 'bald', 'ponytail', 'buzz'], garb: ['shirt'], extras: ['lanyard'], maybe: ['glasses', 'glasses'], tech: ['earpiece', 'arglasses'], kitted: 0.3,
     facial: ['none', 'none', 'moustache', 'stubble'], colours: { top: ['#d8d4c8', '#b8c0c8', '#c8c0a8', '#a8b0a0'], bottom: ['#2a2a30', '#3a3a40', '#4a4438'], acc: ['#a82020', '#2e4a7a', '#5a6470'] }, act: 'stand' },
+  // the precinct (2026-10-22): city police, a tired dark olive, never Registry grey or Skyport navy
+  police: { label: 'City police', note: 'A dark olive uniform under a stab vest, a peaked cap or a cap, a radio and a badge.', age: 'adult',
+    body: ['broad', 'avg', 'heavy', 'tall', 'old'], hair: ['peaked', 'peaked', 'cap', 'buzz'], garb: ['uniform'], extras: ['radio', 'badge'], tech: ['earpiece', 'wristscreen'], kitted: 0.35,
+    facial: ['none', 'stubble', 'moustache', 'none'], colours: { top: ['#2a3226', '#262c24', '#30362a'], bottom: ['#1c201a', '#22261e'], acc: ['#c9a227', '#2a3226', '#1c201a'], light: ['#ff4a2a', '#ffd23a'] }, act: 'stand' },
 } satisfies Record<string, Archetype>;
 
 export type ArchetypeId = keyof typeof TABLE;
