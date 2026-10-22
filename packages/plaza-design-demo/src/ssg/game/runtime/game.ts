@@ -27,7 +27,6 @@ import { AVATAR_PAINTERS } from './avatars';
 import { createSkyShips,drawSkyShips,type Ship } from '../art/environment/sky-ships';
 import { renderWorldFrame, type ZoneFrame } from './render-scene';
 import { GameplaySession } from '../engine/gameplay/session';
-import { clearWorld } from '../art/core/canvas';
 /**
  * ACCESS DENIED, the game: input, movement, camera and drawing. Every place is
  * a scene (scenes/: `SCENES`, one `SceneDef` each), and every scene is hosted
@@ -1390,10 +1389,9 @@ export class Game {
     // a person whose speech bubble is open gestures while they talk (the player's own bubble sits at the player)
     setSpeaker(this.bubble && Math.abs(this.bubble.x - this.p.x) > 2 ? this.bubble.x : null);
     const x = this.x, k = this.k;
-    x.setTransform(k, 0, 0, k, 0, 0);
     x.imageSmoothingEnabled = false;
-    clearWorld(x, this.viewW, this.viewH);
-    if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / (taxiDurationFor(this.sequenceDocuments.cinematics) * 60)), this.clock, this.world.STANDS[this.flight.to].name,light(),this.sequenceDocuments.cinematics); return; }
+    // a taxi flight is the one frame too, directed by its timeline (story/cutscenes/taxi.ts)
+    if (this.flight) { drawFlight(x, this.viewW, this.viewH, Math.min(1, (this.clock - this.flight.start) / (taxiDurationFor(this.sequenceDocuments.cinematics) * 60)), this.clock, this.world.STANDS[this.flight.to].name,light(),this.sequenceDocuments.cinematics,k); return; }
     // the world, at hack vision's pan and zoom; the HUD and the overlays over it at the usual scale
     this.zoomed(() => this.drawWorld());
     x.setTransform(k, 0, 0, k, 0, 0);
@@ -2254,9 +2252,8 @@ export class Game {
     c.step((dt / 60) * (this.transport?.rate ?? 1));
     this.transport?.sync();
     const x = this.x;
-    x.setTransform(this.k, 0, 0, this.k, 0, 0);
     x.imageSmoothingEnabled = false;
-    c.draw(x, this.viewW, this.viewH);
+    c.draw(x, this.viewW, this.viewH, light(), this.k);
     if (c.done) this.endCutscene(true);
   }
 

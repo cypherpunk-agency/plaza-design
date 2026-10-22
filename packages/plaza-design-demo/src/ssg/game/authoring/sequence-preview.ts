@@ -1,14 +1,15 @@
 import{renderOpeningDocument}from'../story/title/render';
 import{lightAt}from'../world/light';
 import {frameView} from '../art/core/view';
-/** Sequence authoring adapter. All pictures/cards use the shipping sequence renderers. */
+/** Sequence authoring adapter. Cutscenes and the taxi flight draw through the one frame (runtime/sequence-frame.ts); the opening still has its own path (ROADMAP item 0, being moved). */
 import { resolveComposition, compositionAppearance, type ArtRegistry, type Composition, type Properties, type Resolved } from '../art/core/composition';
 import { evaluateTimeline, type TimelineContext, type MotionTrack, type TimelineFrame } from '../art/core/timeline';
 import { openingFrame } from '../art/sequences/opening/glide';
 import { openingTimelineContext } from '../art/sequences/opening/sequence';
 import { openingGeometry } from '../art/sequences/opening/metadata';
 import { cinematicGeometry } from '../art/sequences/cinematic-metadata';
-import { cinematicTimelineContext, cutView, renderCinematicPicture } from '../art/sequences/cinematics';
+import { cinematicTimelineContext, cutView } from '../art/sequences/cinematics';
+import { renderSequenceFrame } from '../runtime/sequence-frame';
 import { IntroSeekSession } from '../story/cutscenes/skyline-session';
 import { openingDocuments } from '../story/title/documents';
 import { cinematicDocuments } from '../story/cutscenes/documents';
@@ -82,9 +83,10 @@ export function createSequencePreview(registry: ArtRegistry) {
       const nativeView = { ...frameView(request.time*60,request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null)),viewW: W, viewH: H, gy: 0, cam: frame.camera.x, flags: {}, t: request.time * 60, sx: (x: number) => x, y: (h: number) => -h };
       const rows = resolveComposition(registry, frame.composition, { view: nativeView, state: frame.state, reduced: request.reduced });
       let output: PreviewResult;
-      ctx.save(); ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+      ctx.save();
       try {
         if (style === 'opening') {
+          ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
           const mode = id === 'title' || id === 'rise' ? id : 'glide', ambientTime = finite(request.environment.titleOffset, mode === 'glide' ? 7 : 0) + request.time;
           const rendered=renderOpeningDocument(ctx, {W,H,reduced:request.reduced,lighting:request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null)}, { ...openingDocuments, compositionId: sequence.composition, composition: request.composition }, id, request.time, { registry, frame, timeline, composition: request.composition, ambientTime, mode });
           const native = openingFrame(ctx, {W,H,reduced:request.reduced,lighting:request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null)}, ambientTime, mode === 'glide' ? request.time : null, { x: frame.camera.x, h: frame.camera.h });
@@ -106,8 +108,9 @@ export function createSequencePreview(registry: ArtRegistry) {
           const key = `${sequence.composition}:${W}:${H}:${request.reduced}`;
           if (!sessions.has(key)) sessions.set(key, new IntroSeekSession());
           const options = {lighting:request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null), registry, frame, timeline, composition: request.composition, sequenceId: id, reduced: request.reduced, seek: sessions.get(key), ambient: finite(request.environment.ambientClock, request.time * 60), destination: String(request.environment.destination ?? 'DOWNTOWN') };
-          if (style === 'intro' || style === 'act2') renderCutsceneDocument(ctx, W, H, style, request.time, options);
-          else renderCinematicPicture(ctx, {lighting:request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null),viewW:W,viewH:H,barTop:0,barBottom:0,reduced:request.reduced}, cinematicDocuments, 'taxi', request.time, options);
+          ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+          if (style === 'intro' || style === 'act2') renderCutsceneDocument(ctx, W, H, style, request.time, { ...options, scale });
+          else renderSequenceFrame(ctx, { documents: cinematicDocuments, sequenceId: id, timeline, composition: request.composition, registry, frame, scale, width: W, height: H, reduced: request.reduced, lighting: options.lighting, time: request.time, ambient: options.ambient, destination: options.destination });
           output = result(rows, row => {if(!row.instance.type.startsWith(`sequence.${style}.`)){const b=row.element.bounds(row.props,row.state,{view:nativeView,placement:row.placement});return{x:b.x,y:-b.h,width:b.w,height:b.tall};}const geometry=cinematicGeometry(style,row.instance.type.slice(`sequence.${style}.`.length),row.props,{time:request.time,ambient:options.ambient,reduced:request.reduced,width:W,height:H,cameraX:frame.camera.x,...frame.state[row.instance.id]}).bounds;return{x:geometry.x,y:-geometry.h,width:geometry.w,height:geometry.tall};}, W, H, frame.camera.zoom, scale, frame);
         }
       } finally { ctx.restore(); }

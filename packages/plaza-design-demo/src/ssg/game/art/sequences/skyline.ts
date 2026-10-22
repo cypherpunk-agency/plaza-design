@@ -1,13 +1,14 @@
 /**
  * The intro's picture: the skyline (../skyline.ts) as a scene with no one in it,
  * a slow pan across the city with the wet floor under the horizon and a shower
- * passing through the middle of it.
+ * passing through the middle of it. Each part is one registered piece
+ * (`sequence.intro.*`, cinematics.ts) drawn by the one frame.
  */
 
 import type { Skyline } from "../environment/skyline";
 import type { CutView } from "../core/view";
 
-/** Draw the skyline at `t` seconds into a `duration`-second pan. */
+/** The skyline at `t` seconds into a `duration`-second pan: its layout frame, draw inputs and parts. */
 export interface IntroOptions { cameraX?: number; rain?: number; city:Skyline;step:number }
 export function introFrame(x: CanvasRenderingContext2D, v: CutView, t: number, duration: number, options:IntroOptions) {
   const W = Math.ceil(v.viewW), H = Math.ceil(v.viewH), top = v.barTop;
@@ -23,4 +24,9 @@ export function introFrame(x: CanvasRenderingContext2D, v: CutView, t: number, d
   const draw = { cam, a, k, still, floor: true, rain: options.rain ?? wet * 0.85 };
   return { parts: options.city.parts(x, frame, draw), frame, draw };
 }
-export function drawSkyline(x: CanvasRenderingContext2D, v: CutView, t: number, duration:number,inputs:IntroOptions) { for (const part of introFrame(x,v,t,duration,inputs).parts) part.draw(); }
+/** One part of the intro at the camera's pan `cameraX` (its rain only for the `rain` part). */
+export function drawIntroPart(x: CanvasRenderingContext2D, v: CutView, part: string, t: number, options: IntroOptions & { cameraX: number; rain: number }) {
+  const found = introFrame(x, v, t, 1, options).parts.find(p => p.id === part);
+  if (!found) throw new Error(`Unknown intro part: ${part}`);
+  found.draw();
+}

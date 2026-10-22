@@ -32,6 +32,11 @@ export interface View {
    * reduced motion); a picture painted without a scene follows `t`.
    */
   timetable?: { t: number; shift: number };
+  /**
+   * The intro's skyline (art/environment/skyline.ts): the city whose packets are in flight and this frame's packet step,
+   * prepared by its controller (story/cutscenes/skyline-session.ts: continuous playback or a deterministic seek).
+   */
+  skyline?: { city: import('../environment/skyline').Skyline; step: number };
 }
 
 /** A `View` for drawing in a set piece's own frame (after `translate` to its foot): no camera, nothing culled. */

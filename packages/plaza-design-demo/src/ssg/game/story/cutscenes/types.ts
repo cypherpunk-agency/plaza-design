@@ -36,7 +36,9 @@ export interface Cutscene extends CutsceneData {
   id: string;
   /** JSON compositions own their exact transition envelope; custom pictures retain the default. */
   ownsFade?: boolean;
-  transition?: (x: CanvasRenderingContext2D, view: CutView, t: number) => void;
-  /** Draw the picture at `t` seconds. Lay things out once per view size, not per frame. */
-  draw: (x: CanvasRenderingContext2D, view: CutView, t: number) => void;
+  /**
+   * Draw the frame at `t` seconds through the one frame (runtime/render-scene.ts renderWorldFrame) at `scale`, adding
+   * `director` (the player's letterbox and default fade) to the sequence's own direction.
+   */
+  render: (x: CanvasRenderingContext2D, view: CutView, t: number, scale: number, director: import('../../runtime/render-scene').FrameDirector) => void;
 }

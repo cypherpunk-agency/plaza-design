@@ -3,7 +3,8 @@
  * NIGHT FERRY 7 pulling out with Moth in its last box, the Spire standing in
  * the water with the Registry's antenna blinking on top, and the act's title
  * set over it: ACT I · WHERE IS MOTH? FOUND. → ACT II · SEVEN FRAGMENTS.
- * The words under it are cutscenes.json's cards.
+ * The words under it are cutscenes.json's cards. Each part is one registered
+ * piece (`sequence.act2.*`, cinematics.ts) drawn by the one frame.
  */
 
 import { drawSpire } from "../architecture/spire";
@@ -19,32 +20,29 @@ const CITY = (() => { const r = rng(9); return Array.from({ length: 40 }, () => 
 /** Fade in from `a` over `d` seconds. */
 const fade = (t: number, a: number, d = 0.8) => Math.max(0, Math.min(1, (t - a) / d));
 
+export type Act2Part = 'sky' | 'city' | 'spire' | 'water' | 'ferry' | 'titles';
 export interface Act2Options { ferryProgress?: number; sky?:{top:string;horizon:string};water?:string;ferryPaint?:string;spire?:{windows:number;edge:number;glow:boolean};titles?: { actOne: string; found: string; actTwo: string; subtitle: string }; alpha?: { one: number; found: number; two: number; subtitle: number } }
-export interface CinematicPiece { id: string; draw(): void }
-export function act2Frame(x: CanvasRenderingContext2D, v: CutView, t: number, duration: number, options: Act2Options = {}) {
-  const parts: CinematicPiece[] = []; const paint = (id: string, draw: () => void) => parts.push({ id, draw });
+/** Draw one part of the picture at `t` seconds into a `duration`-second card. */
+export function drawAct2Part(x: CanvasRenderingContext2D, v: CutView, part: Act2Part, t: number, duration: number, options: Act2Options = {}) {
   const W = v.viewW, H = v.viewH, top = v.barTop, bottom = H - v.barBottom, hz = Math.round(top + (bottom - top) * 0.62);
   const a = v.reduced ? 6 : t;
   const sx = Math.round(W * 0.74), unit = (hz - top) / 92;
-  paint('sky', () => {
+  if (part === 'sky') {
   // sky, low orange from the city behind
   const sky = x.createLinearGradient(0, top, 0, hz);
   sky.addColorStop(0, options.sky?.top??'#02030a'); sky.addColorStop(1, options.sky?.horizon??'#170803');
   x.fillStyle = sky; x.fillRect(0, top, W, hz - top);
-  });
-  paint('city', () => {
+  } else if (part === 'city') {
   // the far city low on the horizon, left
   for (const [cx, ch, cw] of CITY) {
     const px = cx * W * 0.7, bh = ch * (bottom - top), bw = cw * W;
     x.fillStyle = '#050201'; x.fillRect(Math.round(px), Math.round(hz - bh), Math.round(bw), Math.round(bh));
   }
-  });
-  paint('spire', () => {
+  } else if (part === 'spire') {
   // the Spire: its foot in the bay, the deck, its towers, the antenna on the tallest
   // the set piece (sets/spire.ts), scaled so its light sits about 81 units of sky up
   placed(x, sx, hz, (unit * 81) / 302, () => drawSpire(x, { t: a * 60, glow: options.spire?.glow??true, windows: options.spire?.windows??1.6, edge: options.spire?.edge??0.18 }));
-  });
-  paint('water', () => {
+  } else if (part === 'water') {
   // the water
   x.fillStyle = options.water??'#01040a'; x.fillRect(0, hz, W, bottom - hz);
   x.fillStyle = 'rgba(' + ORANGE + ',.12)'; x.fillRect(0, hz, W, 1);
@@ -54,14 +52,11 @@ export function act2Frame(x: CanvasRenderingContext2D, v: CutView, t: number, du
     x.fillStyle = 'rgba(170,210,255,' + (0.04 + 0.08 * k) + ')'; x.fillRect(Math.round(px), Math.round(py), Math.round(4 + 14 * k), 1);
   }
   for (let i = 0; i < 8; i++) { x.fillStyle = 'rgba(' + RED + ',' + 0.07 * (1 - i / 8) + ')'; x.fillRect(sx - 3 + Math.sin(a * 2 + i) * 2, hz + 3 + i * 5, 6, 1); }
-  });
-  paint('ferry', () => {
+  } else if (part === 'ferry') {
   // NIGHT FERRY 7, pulling out across the bay towards open water, its lights on the water
   const u = options.ferryProgress ?? Math.min(1, a / duration), fx = Math.round(W * (0.2 + 0.36 * u)), fy = Math.round(hz + (bottom - hz) * 0.28), fl = Math.max(26, Math.round(W * 0.07));
   placed(x, fx, fy, fl / 96, () => drawBoat(x, 'ferry', { t: a * 60, paint: options.ferryPaint ?? '#0a0504', nav: true, wake: true, reflection: true }));
-
-  });
-  paint('titles', () => {
+  } else if (part === 'titles') {
   // the title, set over the picture: ACT I closes, ACT II opens
   x.save();
   x.textAlign = 'center'; x.textBaseline = 'middle';
@@ -86,8 +81,5 @@ export function act2Frame(x: CanvasRenderingContext2D, v: CutView, t: number, du
     if (f > 0) { x.globalAlpha = two * f; x.font = '600 ' + small + 'px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(' + PAPER + ',.9)'; x.fillText(options.titles?.subtitle ?? 'SEVEN FRAGMENTS', W / 2, ty + big * 0.75); }
   }
   x.restore();
-  });
-  return parts;
+  }
 }
-
-export function drawAct2(x: CanvasRenderingContext2D, v: CutView, t: number, duration: number) { for (const part of act2Frame(x, v, t, duration)) part.draw(); }

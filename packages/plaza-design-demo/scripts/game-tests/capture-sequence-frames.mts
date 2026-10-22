@@ -4,8 +4,8 @@
  * effective draw commands with their absolute transform, alpha, clip and style, so equivalent save/restore and
  * transform nesting compare equal). Run it before and after a change to the frame path and diff the output:
  *   npx tsx scripts/game-tests/capture-sequence-frames.mts > before.txt
- * A leading full-screen black clear is dropped (the one frame clears first; a picture that covers the screen
- * paints the same pixels either way).
+ * Leading opaque full-screen black fills are dropped (the one frame clears first, and the skyline's own first piece is
+ * the same black fill: repeated, they paint the same pixels).
  */
 import {createHash} from 'node:crypto';
 import {canonicalPaint} from './canonical-paint.mts';
@@ -24,11 +24,13 @@ const {cinematicDocuments}=await import('../../src/ssg/game/story/cutscenes/docu
 const round=(v:unknown):unknown=>typeof v==='number'?Math.round(v*1000)/1000:Array.isArray(v)?v.map(round):v&&typeof v==='object'?Object.fromEntries(Object.entries(v as object).map(([k,x])=>[k,round(x)])):v;
 export function paintHash(commands:unknown[][],W:number,H:number,k:number){
  const paints=canonicalPaint(commands) as any[];
- const first=paints[0];
- if(first&&first[0]==='fillRect'&&first[1]===0&&first[2]===0&&first[3]===W&&first[4]===H&&first[5]?.style==='#000'&&first[5].matrix.join()===[k,0,0,k,0,0].join())paints.shift();
+ const clear=(p:any)=>p&&p[0]==='fillRect'&&p[1]===0&&p[2]===0&&p[3]===W&&p[4]===H&&p[5]?.style==='#000'&&p[5].alpha===1&&!p[5].clip&&p[5].matrix.join()===[k,0,0,k,0,0].join();
+ while(clear(paints[0]))paints.shift();
  return createHash('sha1').update(JSON.stringify(round(paints))).digest('hex').slice(0,16)+' ('+paints.length+' paints)';
 }
 const L=lightAt(1,580,90,null);
+/** OLD=1: the frame paths before the move onto renderWorldFrame (the caller set the transform and cleared). */
+const OLD=!!process.env.OLD;
 const sizes=[{W:640,H:360,k:2},{W:390,H:844,k:1}];
 const lines:string[]=[];
 for(const {W,H,k} of sizes){
@@ -38,7 +40,7 @@ for(const {W,H,k} of sizes){
   const play=new CutscenePlay(scene,{reduced,touch:false}),marks=id==='intro'?[0,1,5,12.5,20,25.5]:[0,1,3,6.5,9,15.5];
   for(let frame=0;frame<=Math.round(scene.duration*60);frame++){
    const t=frame/60,mark=marks.find(m=>Math.abs(m-t)<1e-9);
-   const r=recorder();play.t=t;r.ctx.setTransform(k,0,0,k,0,0);play.draw(r.ctx,W,H,L);
+   const r=recorder();play.t=t;if(OLD)r.ctx.setTransform(k,0,0,k,0,0);play.draw(r.ctx,W,H,L,k);
    if(mark!==undefined)lines.push(`play ${id} ${W}x${H} reduced=${reduced} t=${mark}: ${paintHash(r.commands,W,H,k)}`);
   }
  }
@@ -54,7 +56,8 @@ for(const {W,H,k} of sizes){
 }
 /** What the game does for a flight frame. */
 function flight(x:CanvasRenderingContext2D,W:number,H:number,k:number,progress:number,ambient:number,dest:string){
- x.setTransform(k,0,0,k,0,0);x.imageSmoothingEnabled=false;x.fillStyle='#000';x.fillRect(0,0,W,H);
- drawFlight(x,W,H,progress,ambient,dest,L,cinematicDocuments);
+ x.imageSmoothingEnabled=false;
+ if(OLD){x.setTransform(k,0,0,k,0,0);x.fillStyle='#000';x.fillRect(0,0,W,H);}
+ drawFlight(x,W,H,progress,ambient,dest,L,cinematicDocuments,k);
 }
 console.log(lines.join('\n'));

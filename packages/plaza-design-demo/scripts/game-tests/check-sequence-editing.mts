@@ -4,7 +4,8 @@ const lighting=lightAt(1,580,90,null);
 import assert from 'node:assert/strict';
 import {openingElements,openingRegistry} from '../../src/ssg/game/art/sequences/opening/sequence';
 import {openingDocuments} from '../../src/ssg/game/story/title/documents';
-import {cinematicElements,cinematicRegistry,renderCinematicPicture,cutView} from '../../src/ssg/game/art/sequences/cinematics';
+import {cinematicElements,cinematicRegistry} from '../../src/ssg/game/art/sequences/cinematics';
+import {renderSequenceFrame} from '../../src/ssg/game/runtime/sequence-frame';
 import type {Composition,Instance,Properties} from '../../src/ssg/game/art/core/composition';
 import type {TimelineDocument} from '../../src/ssg/game/art/core/timeline';
 import {cinematicDocuments} from '../../src/ssg/game/story/cutscenes/documents';
@@ -47,7 +48,7 @@ const bounds=measureArtwork(ctx=>{ctx.translate(10,20);ctx.scale(-2,2);ctx.fillR
 function cinematic(id:'act2'|'taxi',instances:Instance[],time=1){
   const context=recorder(),composition:Composition={version:1,scene:'sequence-'+id,instances};
   const custom:TimelineDocument={...timeline,sequences:[{...timeline.sequences[0],id,composition:'editable'}]};
-  renderCinematicPicture(context.ctx,cutView(640,360,false,lighting),{...cinematicDocuments,timeline:custom,compositions:{editable:composition}},id,time,{composition});return context.commands;
+  renderSequenceFrame(context.ctx,{documents:{...cinematicDocuments,timeline:custom,compositions:{editable:composition}},sequenceId:id,composition,scale:2,width:640,height:360,reduced:false,lighting,time});return context.commands;
 }
 const piece=(id:string,type:string,props:Properties):Instance=>({id,type,version:1,placement:{x:0,h:0,scale:1,facing:1,parallax:1},props});
 const ferries=cinematic('act2',[piece('ferry-a','sequence.act2.ferry',{paint:'#112233'}),piece('ferry-b','sequence.act2.ferry',{paint:'#334455'})]);
