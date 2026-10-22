@@ -452,6 +452,69 @@ and the checkout. It is a design pass with Tommi followed by a build (step 4), a
 P0–P6 move into those zones. It comes first among the real places because the prologue runs seamless from the
 harbor to Downtown. Milestone 3 is done when the seamless ride (step 9) carries the prologue's P7–P9.
 
+### Implementation notes (step 5 spike, 2026-10-22)
+
+A pure model exists in `world/vehicles.ts`, checked by `pnpm test:game vehicles`. It is not wired into the game
+loop, the renderer or the editor. A vehicle keeps no state of its own: it is its movers in the SceneModel, and
+every function only reads them.
+
+- **Source** (`VehicleSource`, `validateVehicle`): `id`, `kind`, `mover` (the frame mover), `doors`, `cars`, `gap`
+  and `gangways`, `route`, `berths`, `inside`, and the shell's ids, `ghost` and `revealSpeed`.
+  - `doors` is either `{mover, open}`, where a doors mover's position is the openness (`train.doors`), or
+    `{trip, open}`, worked out from the frame mover's trip exactly as `car()` does for a lift.
+  - Each car has a `width`, optional `floors` (car-local `LevelFloor`s; the default is one deck), `doors`,
+    `seats`, and `shellOnly` for a van.
+- **The mover drives a route parameter, not x.** The frame mover's position is `s`. `routeAt(route, s)` maps it
+  to a leg, a zone, the zone-local anchor `(x, h)`, `facing` and `tilt`.
+  - A leg is `{zone, from, to, via?, drop?, length?, facing?, tilt?}`. `via` makes a quadratic curve that the
+    vehicle runs evenly along its arc. `drop` moves x evenly while h falls faster and faster.
+  - Timing stays in the mover's legs (speed, `ms`, ease, `ease-in`). So `via` and drops are route geometry, and
+    `engine/movers.ts` needs no new leg option. This differs from the plan above.
+  - A seam crossing is two legs in two zones. `routeProblems` checks with `placeFrom` that one leg ends where the
+    next begins. It also checks zones, a ring that closes, and berths that lie on the route.
+  - `routeParamAt` turns a berth into the mover stop it needs.
+- **Interior**:
+  - `consistLevel` lays out the cars as one `LevelSource` in the vehicle's frame. Every floor belongs to the
+    vehicle's building, with `entry: 'door'`. A gangway fuses floors of neighbouring cars at the same height.
+  - `vehicleFrame` places the interior as a `LevelPart` whose zone is the vehicle's id, at the zone placement
+    plus the pose. Through `mergeLevels` it is walked with the unchanged level rules: walls, reveal, and no
+    leaking out except at a door.
+  - `carry` moves the player by the frame's delta, so they are held in the vehicle's frame.
+- **Boarding** (`boardAt`, `alightAt`): the player's floor changes to the car floor, or back to the landing
+  floor, only when all of these hold:
+  - a door is open past its threshold;
+  - the vehicle stands at a berth;
+  - the door lies over the player's floor at the same height;
+  - the floor is one the vehicle may be used from (`inside`).
+- **Lift as a vehicle** (`liftVehicle`): one cabin as wide as the shaft, one leg up the shaft with `origin`
+  at its bottom, a berth at each stop, `{trip: doorMs, open: 0.9}`. The check runs the Tower lab lift through
+  two trips and finds the cabin height and doors equal to `levelView`'s on every sampled frame. Boarding is
+  possible exactly when the level offers STEP IN.
+
+**What remains to wire**:
+
+- the game loop adds each resident vehicle's part to the merged level every frame and calls `carry`;
+- E/↑ at a door call `boardAt`/`alightAt`, and prompts are needed for that;
+- `crossInto` and the camera ride with the vehicle;
+- the renderer draws the shell at the pose (with `facing` and `tilt`) and reveals it;
+- the `stage.vehicle` block, the `level.vehicle-door`, `level.gangway` and `level.seat` pieces, and the
+  `vehicle.berth` piece, which compile into this source;
+- the workbench and the route strip;
+- moving `LevelLift` onto `liftVehicle`: the call buttons, the floor panel and `ready` move to vehicle prompts,
+  and `car()` then reads through `vehicleDoors`.
+
+**Open questions**:
+
+1. While the player is aboard, the merged level names their zone as the vehicle. Which zone hosts receive
+   `model.player` then: the route zone under the vehicle, or none?
+2. The merged level is rebuilt each frame while a vehicle moves. Is that cheap enough, or does `mergeLevels`
+   need a moving part whose offset is read live?
+3. Which kinds may reverse along a route? A train does not flip, so `facing` is reported for the art only, and
+   the consist is never mirrored.
+4. Should a curve's tilt be smoothed? It is the bare tangent now.
+5. The lift's call buttons and floor panel stay with the level until the move; they have no home in the
+   vehicle source yet.
+
 ## 5. People movement
 
 ### Model
