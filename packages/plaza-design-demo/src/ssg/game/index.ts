@@ -38,10 +38,14 @@ export { runBoot };
 export const playParam = () => { try { return urlAsksForPlay(location.search); } catch { return false; } };
 /** `?play=yard` starts in the fixer's back yard, `?play=harbor` on the harbor pier: any scene. */
 const playScene = () => {
-  try { if(!playProfile().start.urlScene)return undefined;return sceneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
+  try { if(!playProfile().start.urlScene)return undefined;return sceneParam(new URLSearchParams(location.search).get('play') ?? '', true); } catch { return undefined; }
 };
-/** A scene (or cutscene) id the game can start in; Downtown (and anything unknown) is undefined: the game decides. The sandbox only with `?sudo`. */
-const sceneParam = (z: string) => ((isSceneId(z) && z !== playProfile().home && (z !== 'sandbox' || SUDO) && !reservedScene(z)) || isCutsceneId(z) ? z : undefined);
+/**
+ * A scene (or cutscene) id the game can start in; anything unknown is undefined: the game decides. The sandbox only with `?sudo`.
+ * The home scene (Downtown) is a scene like any other when the URL names it (`named`); a LOAD GAME resume to it lets the game decide
+ * (it continues the save, with its resume entrance).
+ */
+const sceneParam = (z: string, named = false) => ((isSceneId(z) && (named || z !== playProfile().home) && (z !== 'sandbox' || SUDO) && !reservedScene(z)) || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
