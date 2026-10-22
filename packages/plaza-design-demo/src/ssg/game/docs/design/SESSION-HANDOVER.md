@@ -83,6 +83,19 @@ wrapper). Order: guard check + AGENTS.md rule (done in docs; the check is still 
 `renderWorldFrame` + cutscenes/taxi on it → the glide as zones with a timeline camera ending in `harbor-station` →
 dockworker on the character kit. Until then do not add features to the opening or cinematic paths.
 
+### Glide migration design (agent, checkpoint e46b8a5)
+
+Capture harness: `scripts/game-tests/capture-glide-frames.mts` (title + 22 glide times through Opening.draw,
+1280×720 and 960×540). Zones in scenes/authored.json (sudoOnly, walkable): glide-beach 6760–5260 (beach, pier,
+inlet), glide-downtown-west 5260–4130, glide-downtown 4130–3150, glide-galleria 3150–2790, glide-spire-bay
+2790–2330, glide-harbor 2330–2000 (later the real harbor-station). 1 glide px = 3 world units; zoom from the
+director scale. One backdrop group owned by glide-beach (far shore, Spire, sea, boats, breakwater, skyline rows,
+air lanes). Engine: drawJoined clips only distance/backdrop rows; the backdrop owner's distance rows drawn once,
+unclipped; drawSky opt-in 'sunset' style; rain clipped to zones with weather. People → character.resident (+ dim)
+and a people-flow element; traffic → a street-kit element on world/vehicles routes; camera track = world centre;
+line0.train a cue element. Order: kit elements → zones + backdrop group → Opening via renderWorldFrame + director →
+editor preview → remove opening frame paths, update checks → captures and perf comparison.
+
 ## Title glide
 
 - Performance: about 3.7× cheaper (render CPU p50 45.5 → 12.3 ms; Downtown 56 → 14.7) by skipping occluded
