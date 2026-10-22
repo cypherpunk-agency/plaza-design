@@ -1,4 +1,4 @@
-import{paintOpeningActor,type OpeningActors}from'./poses';
+import{actorOffset,flowPlace,paintOpeningActor,type OpeningActors}from'./poses';
 import type{Light}from'../../../world/light';
 /**
  * The glide's near coast (glide.ts), east of the city: ONE ground line from the title's beach to
@@ -31,6 +31,7 @@ import { drawCar, drawForklift, drawReachStacker, drawStraddle, drawTruck } from
 import { drawCraft } from "../../vehicles/air-traffic";
 import { frameView, placed } from "../../core/view";
 import { PLACES } from "./path";
+import type { FlowSource } from "../../../world/people-flow";
 import type { Properties } from "../../core/composition";
 import { pieceNumber as pn, pieceString as ps, visiblePoint, viewportSpan, strictlyVisiblePoint, type PieceInputs, type PieceCull } from "./piece-inputs";
 
@@ -789,15 +790,39 @@ export const RIDERS_UP: Character[] = [
   { seed: 4182, look: { garb: 'jacket', hair: 'cap' }, x: 0, act: 'phone', facing: 1 },
   { seed: 4183, look: { body: 'old', garb: 'coat', hair: 'brim', extras: ['bag'] }, x: 0, act: 'stand', facing: 1 },
 ];
+/**
+ * Where the escalator's riders go (X; `rise`: the flow's height units at the terrace): out of the Galleria's doors on
+ * the plaza, along to the escalator's foot, up it, and along the terrace into the dome. Nobody appears or vanishes
+ * anywhere else (Tommi, 2026-10-22); story/title/actors.ts runs the flow and prepares each rider.
+ */
+export const ESCALATOR = { door: Math.round((PLACES.galleria[0] + PLACES.galleria[1]) / 2), foot: PLACES.galleria[0] - 28, head: PLACES.galleria[0] + 4, dome: PLACES.galleria[0] + 56, rise: 40 };
+/** The riders as a people flow (world/people-flow.ts) in the glide's own zone: x is X, h runs 0 (the plaza) to `rise` (the terrace). Looks are RIDERS_UP indices. */
+export const ESCALATOR_FLOW: FlowSource = {
+  id: 'galleria-escalator', clock: 'scene', seed: 4181, looks: RIDERS_UP.map((_, i) => String(i)), speed: 7,
+  spawn: { kind: 'interval', every: 7, jitter: 0.6 },
+  route: [
+    { kind: 'walk', zone: 'glide', x: ESCALATOR.door, h: 0 },
+    { kind: 'walk', zone: 'glide', x: ESCALATOR.foot, h: 0 },
+    { kind: 'walk', zone: 'glide', x: ESCALATOR.head, h: ESCALATOR.rise },
+    { kind: 'leave', zone: 'glide', x: ESCALATOR.dome, h: ESCALATOR.rise },
+  ],
+};
+/** The flow's step while riding (heading for the escalator's head): they stand on it. */
+export const ESCALATOR_RIDE_STEP = 2;
 function escalator(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
-  const X0 = PLACES.galleria[0] - 28, X1 = PLACES.galleria[0] + 4;
-  if (!seen(c, X1, X0, 40)) return;
+  const X0 = ESCALATOR.foot, X1 = ESCALATOR.head;
   const s0 = c.sx(X0), s1 = c.sx(X1), y0 = L.MID, y1 = L.BACK - 58;
-  x.strokeStyle = '#4a3450'; x.lineWidth = 5; x.beginPath(); x.moveTo(s0, y0); x.lineTo(s1, y1); x.stroke();
-  x.strokeStyle = 'rgba(255,190,110,.6)'; x.lineWidth = 1; x.beginPath(); x.moveTo(s0, y0 - 6); x.lineTo(s1, y1 - 6); x.stroke();
-  for (let i = 0; i < 3; i++) {
-    const k = ((c.still ? 0.3 : c.f * 0.0025) + i / 3) % 1, px = lerp(s0, s1, k), py = lerp(y0, y1, k) - 2;
-    placed(x, R(px), R(py), S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['escalator.'+i],'escalator.'+i));
+  if (seen(c, X1, X0, 40)) {
+    x.strokeStyle = '#4a3450'; x.lineWidth = 5; x.beginPath(); x.moveTo(s0, y0); x.lineTo(s1, y1); x.stroke();
+    x.strokeStyle = 'rgba(255,190,110,.6)'; x.lineWidth = 1; x.beginPath(); x.moveTo(s0, y0 - 6); x.lineTo(s1, y1 - 6); x.stroke();
+  }
+  // the riders, each where the flow has them (culled one by one: on the plaza they are well away from the escalator)
+  for (const [id, pose] of Object.entries(c.actors)) {
+    const at = id.startsWith('escalator.') ? flowPlace(pose) : undefined;
+    if (!at) continue;
+    const s = c.sx(at.x), k = Math.max(0, Math.min(1, at.h / ESCALATOR.rise)), py = lerp(y0, y1, k) - (k > 0 && k < 1 ? 2 : 0);
+    if (!visiblePoint(c, s, 60)) continue;
+    placed(x, R(s), R(py), S, () => paintOpeningActor(x, frameView(c.f, c.lighting), pose, id));
   }
 }
 
@@ -853,7 +878,7 @@ export function coastMiddlePieces(x: CanvasRenderingContext2D, c: CoastView, inp
   return [
     ...['dj','bonfire',...LOUNGERS.map((_,i)=>'lounger-'+i)].map(id=>({id,draw:()=>beach(x,cv(id),L,id)})),
     ...['straddle','reach-stacker','forklift','truck','tractor'].map(id=>({id:'machine-'+id,draw:()=>machines(x,cv('machine-'+id),L,id)})),
-    ...PEOPLE.map((w,i)=>({id:'person-'+i,draw:()=>{const p=cv('person-'+i),s=p.sx(pn(p.piece,'worldX',w.X));if(!visiblePoint(p,s,60))return;placed(x,R(s),lineY(L,p,w.line),S,()=>paintOpeningActor(x,frameView(p.f,p.lighting),p.pose??p.actors['coast.person-'+i],'coast.person-'+i));}})),
+    ...PEOPLE.map((w,i)=>({id:'person-'+i,draw:()=>{const p=cv('person-'+i),s=p.sx(pn(p.piece,'worldX',w.X)),pose=p.pose??p.actors['coast.person-'+i];if(!visiblePoint(p,s+actorOffset(pose)*S,60))return;placed(x,R(s),lineY(L,p,w.line),S,()=>paintOpeningActor(x,frameView(p.f,p.lighting),pose,'coast.person-'+i));}})),
     {id:'escalator',draw:()=>escalator(x,cv('escalator'),L)},
   ];
 }

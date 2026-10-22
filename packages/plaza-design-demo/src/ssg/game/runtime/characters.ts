@@ -415,13 +415,16 @@ export type PreparedCharacter = { visible: false; character: Character } | {
   visible: true; character: Character; ready: Ready; pixelSize: number; frame: Frame; height: number;
 };
 
-/** Resolve scheduling and pose once for an artwork binding; keep the original bake key. */
-export function prepareCharacter(p: Character, t: number, override?: Partial<Pick<Character, 'act' | 'facing' | 'x' | 'h'>>): PreparedCharacter {
+/**
+ * Resolve scheduling and pose once for an artwork binding; keep the original bake key. `moving`: a controller places
+ * the body itself (a people flow): it stands at `override.x`, stepping when true (as `drawDriven`).
+ */
+export function prepareCharacter(p: Character, t: number, override?: Partial<Pick<Character, 'act' | 'facing' | 'x' | 'h'>>, moving?: boolean): PreparedCharacter {
   const posed = override ? { ...p, ...override } : p;
   // Following affects pose evaluation, not appearance; omit that object link from the snapshot.
   const character = JSON.parse(JSON.stringify({ ...posed, follow: undefined })) as Character;
   if (!isHere(p)) return { visible: false, character };
-  const R = ready(p), f = frameOf(posed, R, t);
+  const R = ready(p), f = frameOf(posed, R, t, moving);
   const defaultHeight = R.critter ? CRITTERS[R.critter].h ?? 0 : 0;
   return { visible: true, character, ready: JSON.parse(JSON.stringify(R)) as Ready,
     pixelSize: psOf(p), frame: f, height: characterHeight(p) + ((posed.h ?? defaultHeight) - (p.h ?? defaultHeight)) };

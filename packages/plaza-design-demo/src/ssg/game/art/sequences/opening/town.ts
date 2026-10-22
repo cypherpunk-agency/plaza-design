@@ -1,4 +1,4 @@
-import{paintOpeningActor}from'./poses';
+import{actorOffset,paintOpeningActor}from'./poses';
 /**
  * The glide's Downtown (glide.ts), from the Galleria's plaza west to LINE 0's tunnel. Second pass
  * (Tommi, 2026-10-15):
@@ -21,7 +21,7 @@ import { drawRing, RING, ringTraffic } from "../../architecture/ring-highway";
 import { frameView, placed } from "../../core/view";
 import { type CoastView, type Lines, hash, lerp, mixHex, R, S } from "./coast";
 import { PLACES, TOWER_X } from "./path";
-import { SIDE_STREETS } from "./traffic";
+import { RING_ENDS, SIDE_STREETS } from "./traffic";
 import {pieceNumber as pn,pieceString as ps,visiblePoint,viewportSpan,strictlyVisiblePoint,type PieceInputs} from "./piece-inputs";
 import type {Properties} from "../../core/composition";
 
@@ -173,7 +173,9 @@ export function drawRingOver(x: CanvasRenderingContext2D, c: CoastView, L: Lines
   if (b > a) {
     placed(x, R(o0), L.BACK, S, () => {
       drawRing(x, a, b, { t: c.f, still: c.still, fill: mixHex('#18121a', '#241a24', c.warm * 0.4), gantries: [-3900 / S], lamps: lights }, () => {
-        x.save(); x.beginPath(); x.rect(a, -2000, b - a, 2000); x.clip();
+        // its traffic runs between the deck's two ends (traffic.ts RING_ENDS), where it passes into the structures that close them
+        const ta = Math.max(a, fx(c.sx(RING_ENDS.west))), tb = Math.min(b, fx(c.sx(RING_ENDS.east)));
+        x.save(); x.beginPath(); x.rect(ta, -2000, Math.max(0, tb - ta), 2000); x.clip();
         ringTraffic(x, a, b, c.f, c.still, true);
         x.restore();
       });
@@ -208,9 +210,10 @@ export function drawTownLamps(x: CanvasRenderingContext2D, c: CoastView, L: Line
 export function drawTownPeople(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?: number) {
   for (const [index,w] of PEOPLE.entries()) {
     if (only !== undefined && only !== index) continue;
-    const s = c.sx(pn(c.piece,"worldX",w.X));
-    if (!visiblePoint(c,s,60)) continue;
-    placed(x, R(s), L.MID, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.pose??c.actors['people.person-'+PEOPLE.indexOf(w)],'people.person-'+PEOPLE.indexOf(w)));
+    // culled where the walker is now, not where it is anchored (a walker's range reaches 50 view units from it)
+    const s = c.sx(pn(c.piece,"worldX",w.X)), pose = c.pose??c.actors['people.person-'+index];
+    if (!visiblePoint(c,s+actorOffset(pose)*S,60)) continue;
+    placed(x, R(s), L.MID, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),pose,'people.person-'+index));
   }
 }
 
