@@ -94,7 +94,7 @@
         "nav": true
       },
       "placement": {
-        "x": 1380,
+        "x": 1200,
         "h": 0,
         "parallax": 0.7
       },
@@ -274,13 +274,13 @@
       "id": "via-stair",
       "type": "level.stairs",
       "props": {
-        "run": 200,
+        "run": -200,
         "rise": 160,
         "style": "concrete",
         "rail": "steel"
       },
       "placement": {
-        "x": 150,
+        "x": 350,
         "h": 0
       },
       "order": 13,
@@ -330,7 +330,7 @@
         "width": 0
       },
       "placement": {
-        "x": 120,
+        "x": 510,
         "h": 0
       },
       "order": 16,
@@ -490,26 +490,10 @@
         "tell": false
       },
       "placement": {
-        "x": 520,
+        "x": 560,
         "h": 0
       },
       "order": 23,
-      "layer": "backdrop"
-    },
-    {
-      "id": "taxi-sign",
-      "type": "sign.hanging",
-      "props": {
-        "text": "SKY TAXI",
-        "color": "120,230,255",
-        "board": "#10202a",
-        "drop": 12
-      },
-      "placement": {
-        "x": 1140,
-        "h": 120
-      },
-      "order": 24,
       "layer": "backdrop"
     },
     {
@@ -525,10 +509,10 @@
         "cargo": false
       },
       "placement": {
-        "x": 1150,
+        "x": 1540,
         "h": 2
       },
-      "order": 25,
+      "order": 24,
       "layer": "backdrop"
     },
     {
@@ -549,7 +533,27 @@
         "tell": false
       },
       "placement": {
-        "x": 1300,
+        "x": 1120,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "backdrop"
+    },
+    {
+      "id": "taxi-sign",
+      "type": "shift.sign",
+      "props": {
+        "text": "SKY TAXI",
+        "sub": "RANK",
+        "code": "",
+        "height": 96,
+        "mount": "post",
+        "to": 110,
+        "lamp": true,
+        "width": 0
+      },
+      "placement": {
+        "x": 1480,
         "h": 0
       },
       "order": 26,
@@ -565,27 +569,27 @@
         "label": ""
       },
       "placement": {
-        "x": 1340,
+        "x": 1160,
         "h": 0
       },
       "order": 27,
       "layer": "set"
     },
     {
-      "id": "beach-way",
-      "type": "sign.hanging",
+      "id": "edge-fence",
+      "type": "shift.end",
       "props": {
-        "text": "BEACH →",
-        "color": "255,217,165",
-        "board": "#2a1a10",
-        "drop": 10
+        "style": "fence",
+        "side": "left",
+        "width": 60,
+        "label": ""
       },
       "placement": {
-        "x": 1540,
-        "h": 110
+        "x": 70,
+        "h": 0
       },
       "order": 28,
-      "layer": "backdrop"
+      "layer": "set"
     },
     {
       "id": "lamps",
@@ -615,12 +619,12 @@
         "act": "walk",
         "depth": "play",
         "district": "harbor",
-        "range": 420
+        "range": -420
       },
       "placement": {
-        "x": 300,
+        "x": 1000,
         "h": 0,
-        "facing": 1
+        "facing": -1
       },
       "order": 30,
       "layer": "playfield"
@@ -635,12 +639,12 @@
         "act": "walk",
         "depth": "play",
         "district": "harbor",
-        "range": 300
+        "range": -300
       },
       "placement": {
-        "x": 360,
+        "x": 880,
         "h": 0,
-        "facing": 1
+        "facing": -1
       },
       "order": 31,
       "layer": "playfield"
@@ -833,7 +837,7 @@
       "type": "scene.player",
       "props": {},
       "placement": {
-        "x": 40,
+        "x": 380,
         "h": 0
       },
       "order": 42,
@@ -844,8 +848,8 @@
       "type": "metro.scale-ruler",
       "props": {
         "span": 0,
-        "title": "HARBOR ZONE 4 · harbor-quay · 1,600 units (2.5 views)",
-        "note": "Public quay under the raised Harbor Station: stair and glass lift up (stairs seam, +160) · tea and fish under the arches · taxi rank · ferry steps|West: walk seam from harbor-checkout. East: walk seam to the beach (existing zone). Above: harbor-station, stacked by the stairs seam",
+        "title": "HARBOR ZONE 2 · harbor-quay · 1,600 units (2.5 views)",
+        "note": "Public quay under the raised Harbor Station: stair and glass lift up at the west end (stairs seam, +160) · tea and fish under the arches · ferry steps · sky taxi rank|West: hard edge. East: walk seam to harbor-checkout (the staff gate). Above: harbor-station, stacked by the stairs seam",
         "size": 9,
         "bar": false,
         "numbers": false
@@ -858,13 +862,13 @@
       "layer": "foreground"
     },
     {
-      "id": "seam-west",
+      "id": "edge-west",
       "type": "metro.scale-ruler",
       "props": {
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "← WALK SEAM|harbor-checkout",
+        "title": "← HARD EDGE|west end of the harbor",
         "size": 8,
         "ink": "#ffd23c"
       },
@@ -887,7 +891,7 @@
         "ink": "#ffd23c"
       },
       "placement": {
-        "x": 300,
+        "x": 330,
         "h": 250
       },
       "order": 45,
@@ -900,12 +904,12 @@
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "WALK SEAM →|beach",
+        "title": "WALK SEAM →|harbor-checkout",
         "size": 8,
         "ink": "#ffd23c"
       },
       "placement": {
-        "x": 1490,
+        "x": 1440,
         "h": 250
       },
       "order": 46,

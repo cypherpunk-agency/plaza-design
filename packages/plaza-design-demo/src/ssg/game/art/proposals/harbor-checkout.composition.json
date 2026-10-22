@@ -26,7 +26,7 @@
         "low": 18,
         "lit": 0.4,
         "haze": 0.85,
-        "spireX": 300,
+        "spireX": 340,
         "spireSize": 0.72,
         "traffic": true,
         "water": true
@@ -54,7 +54,7 @@
         "seed": 31
       },
       "placement": {
-        "x": -500,
+        "x": 240,
         "h": 44,
         "parallax": 0.42
       },
@@ -98,10 +98,10 @@
         "load": false,
         "loadPaint": 2,
         "floods": 0.5,
-        "phase": 0.0
+        "phase": 0
       },
       "placement": {
-        "x": 120,
+        "x": 557,
         "h": 34,
         "parallax": 0.45,
         "scale": 0.62
@@ -123,7 +123,7 @@
         "glow": true
       },
       "placement": {
-        "x": 500,
+        "x": 140,
         "h": 20,
         "parallax": 0.62,
         "scale": 0.8
@@ -156,7 +156,7 @@
         "name": "HARBOR LINE",
         "depth": "far",
         "motion": "loop",
-        "direction": "right",
+        "direction": "left",
         "speed": 0.3,
         "lane": 2600,
         "waterline": 40,
@@ -167,7 +167,7 @@
         "nav": true
       },
       "placement": {
-        "x": 300,
+        "x": 340,
         "h": 0,
         "parallax": 0.3
       },
@@ -184,27 +184,27 @@
         "walkway": true,
         "puddles": [
           {
-            "x": 90,
-            "width": 70,
-            "depth": 11
-          },
-          {
-            "x": 420,
+            "x": 130,
             "width": 90,
             "depth": 10
+          },
+          {
+            "x": 480,
+            "width": 70,
+            "depth": 11
           }
         ],
         "glints": [
           {
-            "x": 160,
+            "x": 170,
             "color": "255,232,196"
           },
           {
-            "x": 300,
+            "x": 340,
             "color": "255,176,92"
           },
           {
-            "x": 470,
+            "x": 480,
             "color": "255,232,196"
           }
         ]
@@ -221,12 +221,12 @@
       "type": "shift.end",
       "props": {
         "style": "fence",
-        "side": "left",
+        "side": "right",
         "width": 200,
         "label": ""
       },
       "placement": {
-        "x": 220,
+        "x": 420,
         "h": 0
       },
       "order": 9,
@@ -243,7 +243,7 @@
         "legs": 8
       },
       "placement": {
-        "x": 90,
+        "x": 550,
         "h": 0
       },
       "order": 10,
@@ -263,7 +263,7 @@
         "width": 0
       },
       "placement": {
-        "x": 300,
+        "x": 340,
         "h": 0
       },
       "order": 11,
@@ -278,7 +278,8 @@
         "shelter": true,
         "roof": 88,
         "reach": 70,
-        "turnstile": true
+        "turnstile": true,
+        "side": "right"
       },
       "placement": {
         "x": 0,
@@ -298,7 +299,7 @@
         "slip": "NET 3"
       },
       "placement": {
-        "x": 58,
+        "x": -58,
         "h": 0
       },
       "order": 13,
@@ -313,12 +314,12 @@
       "type": "shift.end",
       "props": {
         "style": "gate",
-        "side": "right",
-        "width": 60,
-        "label": "STAFF EXIT · TAG REQUIRED"
+        "side": "left",
+        "width": 130,
+        "label": "STAFF GATE · TAG REQUIRED"
       },
       "placement": {
-        "x": 400,
+        "x": 240,
         "h": 0
       },
       "order": 14,
@@ -328,13 +329,13 @@
       "id": "station-way",
       "type": "sign.hanging",
       "props": {
-        "text": "HARBOR STATION · LINE 0 →",
+        "text": "← HARBOR STATION · LINE 0",
         "color": "255,217,165",
         "board": "#2a1a10",
         "drop": 12
       },
       "placement": {
-        "x": 540,
+        "x": 80,
         "h": 120
       },
       "order": 15,
@@ -352,7 +353,7 @@
         "seed": 2
       },
       "placement": {
-        "x": 520,
+        "x": 60,
         "h": 0
       },
       "order": 16,
@@ -366,7 +367,7 @@
         "phase": 3
       },
       "placement": {
-        "x": 380,
+        "x": 260,
         "h": 0
       },
       "order": 17,
@@ -382,12 +383,12 @@
         "act": "walk",
         "depth": "play",
         "district": "harbor",
-        "range": 160
+        "range": -160
       },
       "placement": {
-        "x": 470,
+        "x": 170,
         "h": 0,
-        "facing": 1
+        "facing": -1
       },
       "order": 18,
       "layer": "playfield"
@@ -404,9 +405,9 @@
         "district": "harbor"
       },
       "placement": {
-        "x": 250,
+        "x": 390,
         "h": 0,
-        "facing": 1
+        "facing": -1
       },
       "order": 19,
       "layer": "playfield"
@@ -423,7 +424,7 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 300,
+        "x": 340,
         "h": 86
       },
       "order": 20,
@@ -441,7 +442,7 @@
         "lightHeight": 0
       },
       "placement": {
-        "x": 520,
+        "x": 60,
         "h": 100
       },
       "order": 21,
@@ -456,7 +457,7 @@
         "label": "Staff side"
       },
       "placement": {
-        "x": 0,
+        "x": 310,
         "h": 0
       },
       "order": 22,
@@ -471,7 +472,7 @@
         "label": "Public quay"
       },
       "placement": {
-        "x": 330,
+        "x": 0,
         "h": 0
       },
       "order": 23,
@@ -494,7 +495,7 @@
       "props": {
         "span": 0,
         "title": "HARBOR ZONE 3 · harbor-checkout · 640 units (1 view)",
-        "note": "Shift board · tag reader and turnstile (a barrier in the world: tag returned opens it) · wage-slip printer (P6)|West: walk seam from harbor-yard. East: walk seam onto the public quay (harbor-quay)",
+        "note": "Staff gate and turnstile: the way in at dusk, the way out at dawn (a barrier in the world: tag returned opens it) · tag reader · wage-slip printer (P6) · shift board|West: walk seam from the public quay (harbor-quay). East: walk seam to harbor-yard",
         "size": 9,
         "bar": false,
         "numbers": false
@@ -513,7 +514,7 @@
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "← WALK SEAM|harbor-yard",
+        "title": "← WALK SEAM|harbor-quay",
         "size": 8,
         "ink": "#ffd23c"
       },
@@ -531,7 +532,7 @@
         "span": 0,
         "bar": false,
         "numbers": false,
-        "title": "WALK SEAM →|harbor-quay",
+        "title": "WALK SEAM →|harbor-yard",
         "size": 8,
         "ink": "#ffd23c"
       },

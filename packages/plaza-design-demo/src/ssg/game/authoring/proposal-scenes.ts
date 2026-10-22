@@ -74,13 +74,14 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'metro-len-3', base: 'tower', file: 'art/proposals/metro-len-3.composition.json', label: 'Metro · 3-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-4', base: 'tower', file: 'art/proposals/metro-len-4.composition.json', label: 'Metro · 4-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-6', base: 'tower', file: 'art/proposals/metro-len-6.composition.json', label: 'Metro · 6-car train at an underground platform (long)', district: 'downtown' },
-  // Harbor replan (docs/design/HARBOR-ZONES.md, 2026-10-22): the harbor as joined zones, west to east along the prologue's walk.
-  // Look frames on the harbor's look (sky, weather, facing 90); all share ground line h 0 (the station: 160 over the quay).
-  { id: 'harbor-shed', base: 'harbor', file: 'art/proposals/harbor-shed.composition.json', label: 'Harbor zones · 1 Transit Shed 3: staff gate, staff room, supervisor, dispatch, case returns (dusk, night)', district: 'harbor' },
-  { id: 'harbor-yard', base: 'harbor', file: 'art/proposals/harbor-yard.composition.json', label: 'Harbor zones · 2 the yard: receiving, trolley bay, loading bay, berth (night)', district: 'harbor' },
-  { id: 'harbor-checkout', base: 'harbor', file: 'art/proposals/harbor-checkout.composition.json', label: 'Harbor zones · 3 checkout: tag reader, turnstile, wage slip (night, dawn)', district: 'harbor' },
-  { id: 'harbor-quay', base: 'harbor', file: 'art/proposals/harbor-quay.composition.json', label: 'Harbor zones · 4 the public quay under the raised station (dusk, dawn)', district: 'harbor' },
-  { id: 'harbor-station', base: 'harbor', file: 'art/proposals/harbor-station.composition.json', label: 'Harbor zones · 5 the raised Harbor Station, 160 over the quay (dawn)', district: 'harbor' },
+  // Harbor replan (docs/design/HARBOR-ZONES.md, 2026-10-22): the harbor as joined zones, mirrored and train first, west to east along the walk
+  // to work at dusk (station → quay → checkout → yard → shed). Look frames on the harbor's look (sky, weather, facing 90); all share ground
+  // line h 0 (the station: 160 over the quay).
+  { id: 'harbor-station', base: 'harbor', file: 'art/proposals/harbor-station.composition.json', label: 'Harbor zones · 1 the raised Harbor Station, 160 over the quay (dusk, dawn)', district: 'harbor' },
+  { id: 'harbor-quay', base: 'harbor', file: 'art/proposals/harbor-quay.composition.json', label: 'Harbor zones · 2 the public quay under the raised station (dusk, dawn)', district: 'harbor' },
+  { id: 'harbor-checkout', base: 'harbor', file: 'art/proposals/harbor-checkout.composition.json', label: 'Harbor zones · 3 checkout: staff gate, turnstile, tag reader, wage slip (dusk, dawn)', district: 'harbor' },
+  { id: 'harbor-yard', base: 'harbor', file: 'art/proposals/harbor-yard.composition.json', label: 'Harbor zones · 4 the yard: Terminal 2 gate, loading bay, trolley bay, receiving, berth (night)', district: 'harbor' },
+  { id: 'harbor-shed', base: 'harbor', file: 'art/proposals/harbor-shed.composition.json', label: 'Harbor zones · 5 Transit Shed 3: case returns, dispatch, supervisor, lockers, staff room (night)', district: 'harbor' },
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 
