@@ -97,6 +97,17 @@ and a people-flow element; traffic → a street-kit element on world/vehicles ro
 line0.train a cue element. Order: kit elements → zones + backdrop group → Opening via renderWorldFrame + director →
 editor preview → remove opening frame paths, update checks → captures and perf comparison.
 
+### Glide migration state at session end (main 5a227a7)
+
+Done: kit pieces for the whole glide (coast/shore kit art/environment/coast.ts, sunset sky style, city kit
+architecture.tower/skyline-rows/ring/through-block, street.side-street, building.galleria, LINE 0 kit transit.*,
+vehicle.line0-run, street.traffic on world/vehicles, vehicle.air-lanes, beach kit, character.flow on
+world/people-flow, opt-in street.lamp 'coast' and resident dim/facing). The title still plays on its old path.
+Next: generate world/backdrops/glide-coast and the glide zones from the glide layout; generic backdrop support in
+renderWorldFrame (decision 24); Opening through renderWorldFrame with the director; after captures vs
+`.claude/captures/glide-one-path/before` (regenerate with scripts/game-tests/capture-glide-frames.mts on an
+older commit if lost); empty the guard's allow-list.
+
 ## Title glide
 
 - Performance: about 3.7× cheaper (render CPU p50 45.5 → 12.3 ms; Downtown 56 → 14.7) by skipping occluded
