@@ -376,6 +376,37 @@ export function levelArrows(lv: Level, p: LevelPlayer): { up: boolean; down: boo
   return { up: !!stepFor(lv, p, 1), down: !!stepFor(lv, p, -1) };
 }
 
+/** One row of a lift car's floor list: the stop's short key, its name, and where the car is in relation to it. */
+export interface LiftRow { index: number; key: string; label: string; picked: boolean; here: boolean; called: boolean }
+/** A lift car with the player in it: where the car stands (world units, `h` its floor) and its stops, top floor first. */
+export interface LiftList { id: string; x: number; h: number; w: number; tall: number; rows: LiftRow[] }
+/** The car's height drawn (art/levels/elements.ts), which the floor list stands beside. */
+const CAR_TALL = 46;
+/** A stop's short key from its label: "2 · Offices" is 2, "B1 · Service" is B1, "Lobby" is L. */
+export function stopKey(label: string): string {
+  const first = label.split('·')[0].trim().split(/\s+/)[0] ?? '';
+  return (/\d/.test(first) ? first : first.slice(0, 1)).toUpperCase().slice(0, 3);
+}
+/** A stop's name without its short key: "2 · Offices" is "Offices". */
+const stopName = (label: string) => (label.includes('·') ? label.split('·').slice(1).join('·').trim() : label.trim()) || label;
+/**
+ * The floors of the lift the player rides, for the list menu beside the car (engine/popup.ts): top floor first, the
+ * stop the car is at marked `here` (stopped, doors open), the one it is heading for `called`, the panel's choice
+ * `picked` (`ride.pick`, the one state ↑ ↓ move and E acts on). Null: not in a car.
+ */
+export function levelLiftList(lv: Level, m: Movers): LiftList | null {
+  const ride = lv.state.ride; if (ride?.kind !== 'lift') return null;
+  const lift = lv.source.lifts.find(l => l.id === ride.lift), c = lift && !lift.broken && car(lift, m); if (!lift || !c) return null;
+  const rows = lift.stops.map((st, index): LiftRow => ({ index, key: stopKey(st.label), label: stopName(st.label), picked: index === ride.pick, here: c.target === null && near(st.h, c.h, 0.5), called: c.target !== null && near(c.target, st.h, 0.5) }));
+  return { id: lift.id, x: lift.x, h: c.h, w: lift.w + 8, tall: CAR_TALL, rows: rows.reverse() };
+}
+/** The panel's choice (what ↑ ↓ move): stop `index` of the lift the player rides. The list menu's tap on a row. */
+export function levelPick(lv: Level, index: number): void {
+  const ride = lv.state.ride; if (ride?.kind !== 'lift') return;
+  const n = lv.source.lifts.find(l => l.id === ride.lift)?.stops.length ?? 0;
+  ride.pick = Math.max(0, Math.min(n - 1, index));
+}
+
 /** E on a level prompt: a door, a flight; at a lift, call it or step in; in the car, go to the chosen floor or step out. */
 export function levelInteract(lv: Level, id: string, p: LevelPlayer, m: Movers): boolean {
   const s = lv.state;

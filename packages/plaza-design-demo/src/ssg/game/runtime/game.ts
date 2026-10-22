@@ -83,7 +83,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelArrows, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
+import { levelArrive, levelArrows, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, levelLiftList, levelPick, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
 import { joined as zoneJoined, residency, seamsOf, validateZoneGraph, type ResidencyTier } from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
@@ -767,6 +767,7 @@ export class Game {
     this.checkGain();
     const renderSpan=perfBegin('game.render');
     try{this.draw();}finally{perfEnd(renderSpan);}
+    this.syncCarList();
     this.followHost();
     this.raf = requestAnimationFrame((n) => this.loop(n));
   }
@@ -799,6 +800,8 @@ export class Game {
     // a thing's popup takes arrows, Enter / E and Esc; any other key closes it and goes on as usual
     if (zh && zh.popupOpen && zh.popupKey(e)) return;
     const k = e.key;
+    // the car's list was closed (Esc): the panel's own keys bring it back
+    if (this.carListOff && ['e', 'E', 'ArrowUp', 'ArrowDown', 'w', 'W', 's', 'S'].includes(k)) this.carListOff = false;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(k)) e.preventDefault();
     if (e.repeat && !['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(k)) return;
     if (this.showEnd) {
@@ -1222,7 +1225,8 @@ export class Game {
       if (target) list.push({ kind: 'life', id: 'story:' + id, ...target });
     }
     // a level's doors, flights, escalators and lifts where the player stands
-    if (this.level) for (const t of levelHints(this.level, this.p, this.movers)) list.push({ kind: 'level', ...t });
+    // (the list menu beside the car is the lift's panel while it is open: no prompt over it)
+    if (this.level) for (const t of levelHints(this.level, this.p, this.movers)) if (!(this.carListOn && t.id.startsWith('lift:'))) list.push({ kind: 'level', ...t });
     // the companion can always be petted, wherever it is with you
     if (this.companionPresent&&this.def.companion?.pet) list.push({ kind: 'companion', id: this.companionDoc.id, x: this.companionBody.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.companionBody.h + 24 });
     return list;
@@ -1644,6 +1648,39 @@ export class Game {
     html.toggle('hack-ok', zh.hackable); html.toggle('hack-on', on);
     html.toggle('logic-open', zh.logicOpen); html.toggle('unfold-on', zh.unfoldAll);
   }
+
+  /** The list menu beside the lift car is showing (the car's own prompt steps aside), and the player closed it (Esc): it stays shut until they use the panel's keys again or leave the car. */
+  private carListOn = false;
+  private carListOff = false;
+  /**
+   * In a lift car the floors are a list menu beside it (engine/popup.ts 'list', through the scene's host), not a floating
+   * prompt: it reflects the panel (engine/level.ts `levelLiftList`: `ride.pick` is its one state), ↑ ↓ move the choice
+   * as `levelUp`/`levelDown` do, a row or E sends the car through `levelInteract`; stepping out closes it.
+   */
+  private syncCarList() {
+    const zh = this.zh, lv = this.level, list = lv && !this.bubble && !this.levelLocked() && !this.zh.visionOn ? levelLiftList(lv, this.movers) : null;
+    const id = list ? 'lift:' + list.id : '';
+    const was = this.carListOn;
+    if (!list || !lv) {
+      this.carListOn = false; this.carListOff = false;
+      for (const l of this.liftIds) zh.closeList(l);
+      return;
+    }
+    this.liftIds.add(id);
+    // the player closed it (Esc, a tap elsewhere): leave it shut
+    if (was && !zh.listOpen(id)) this.carListOff = true;
+    if (this.carListOff || (!zh.listOpen(id) && zh.popupOpen)) { this.carListOn = false; return; }
+    const items = list.rows.map((r) => ({
+      key: r.key, label: r.label, cur: r.here,
+      tag: r.here ? (r.picked ? 'step out' : 'you are here') : r.called ? 'called' : '',
+      point: () => levelPick(lv, r.index),
+      run: () => { levelPick(lv, r.index); levelInteract(lv, id, this.p, this.movers); },
+    }));
+    const sel = Math.max(0, list.rows.findIndex((r) => r.picked));
+    zh.list(id, 'LIFT', items, { x: list.x, y: list.h, w: list.w, h: list.tall }, sel, (dir) => { if (dir > 0) levelUp(lv, this.p); else levelDown(lv, this.p); });
+    this.carListOn = zh.listOpen(id);
+  }
+  private liftIds = new Set<string>();
 
   /** The last `level-up`/`level-down` pair set on the page (syncLevelArrows). */
   private arrowsKey = '';
