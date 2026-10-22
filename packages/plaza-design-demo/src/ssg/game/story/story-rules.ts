@@ -14,7 +14,8 @@
  *  - the clock pin rule (`clockPin`): what the story holds the city clock at, and what it lets go to;
  *  - the attention rule (`attentionDue`, `attentionAim`): standing still a while points at the next goal;
  *  - the stage light cue (`washTone`): the flat's warm and cold wash;
- *  - goal hints (`goalHint`): a sentence for the HUD's goal line when a program is still missing.
+ *  - goal hints (`goalHint`): a sentence for the HUD's goal line when a program is still missing;
+ *  - a barrier's phase rule (`barrierPhaseRule`, `barrierRuleOpens`): an exit rule standing in for a level barrier's own.
  *
  * The scene-side data (`ScenePhase`, scene.json `phases`) and the story-side data (opening.json) are validated in
  * opening-source.ts and engine/gameplay/scene-phases.ts; this file holds the shapes and the pure rules only.
@@ -48,6 +49,8 @@ export interface ArrivalRow {unless?:string;set?:string[];rainThreshold?:number;
 export interface ScenePhase {
  time?:string;goal?:string;intro?:StoryIntro;ping?:PingTarget;ride?:{mover:string;path:string};arrival?:ArrivalRow[];
  lines?:Record<string,{name?:string;pages:string[]}>;exits?:Record<string,ExitRule>;everyday?:Record<string,StoryChip[]>;targets?:Record<string,StoryTarget>;
+ /** Level barriers (engine/level.ts `LevelBarrier`, by the scene's own barrier id) that act differently: an exit's rule shape (`barrierPhaseRule`). */
+ barriers?:Record<string,ExitRule>;
 }
 export interface WashRule {phase?:string;flag?:string;unlessState?:string;tone:'warm'|'cold'}
 export interface CardSpec {out:number;card:number;in:number;from:string;to:string;label:string;mid?:Cue[];end?:Cue[]}
@@ -174,3 +177,19 @@ export function goalHint(rules:readonly GoalHint[],at:{hackLocked:boolean;scene:
  }
  return null;
 }
+
+// ---------- a level barrier in a phase ----------
+
+/**
+ * E at a shut level barrier (prompt `barrier:<id>`) in a phase whose scene has `phases.<p>.barriers.<id>`: that rule replaces
+ * the barrier's own access rule for the phase, run by the loop's `storyExit` like an exit's. A joined level's barrier is
+ * `zone/id`; its rule is its own zone's (`phaseOf(zone)`). Undefined: not a barrier, already open, or no rule in this phase.
+ */
+export function barrierPhaseRule(prompt:string,barriers:readonly {id:string;x:number;h:number;zone?:string}[]|undefined,opened:readonly string[],phaseOf:(zone:string|undefined)=>ScenePhase|undefined):{rule:ExitRule;x:number;h:number}|undefined{
+ if(!prompt.startsWith('barrier:'))return undefined;
+ const id=prompt.slice('barrier:'.length),b=barriers?.find(g=>g.id===id);if(!b||opened.includes(id))return undefined;
+ const own=b.zone&&id.startsWith(b.zone+'/')?id.slice(b.zone.length+1):id,rule=phaseOf(b.zone)?.barriers?.[own];
+ return rule?{rule,x:b.x,h:b.h}:undefined;
+}
+/** Whether a barrier's phase rule lets the player through: a gate or an acknowledgment opens it once its beat is over and its `then` cues ran (a refused milestone keeps it shut); a say or a react only speaks, and it stays shut. */
+export const barrierRuleOpens=(rule:ExitRule)=>'gate'in rule||'acknowledge'in rule;

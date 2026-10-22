@@ -122,6 +122,14 @@ joined by seams shows its neighbours one seam away in the Scene preview, drawn l
 pending sources by the shared frame renderer. They are read-only, so pan past the scene's edge to see
 them. Private Play uses the pending graph.
 
+A selected **barrier** (`level.barrier`) has an **Access** tab (`barrier-authoring.ts`): its rule as a sentence ("Opens when
+you carry UPLINK.SO · Refuses with: …"), a key chip picked from the pending keyring, a flag from the declared flags, an
+optional condition through the shared gameplay condition picker, and its refusal; each is one history step of the
+composition. **Try it** toggles the chips, flags and items the rule names (and a story phase) and shows what E would do,
+through the same `barrierAccess`, without Play. Phase rules (`phases.<p>.barriers.<id>`) are edited in Scene › Story phases
+(Barriers that act differently) and listed here. **Checks** warns of a rule that can never pass (an unknown chip, a flag
+nothing declares or sets); warnings do not block Save.
+
 ## Isolation and source safety
 
 Private Play uses an opaque-origin frame and memory storage. The static public bundle contains no

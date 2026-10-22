@@ -36,7 +36,7 @@ interface SceneNoun {id:string;verbs?:readonly string[];mover?:{paths?:Readonly<
 interface SceneDevice {id:string;nouns:readonly SceneNoun[]}
 /** Supplied only after prospective registry assembly; no registry import or live game dependency. */
 export interface OpeningSourceContext {
- scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];phases?:Readonly<Record<string,ScenePhase>>;wash?:readonly WashRule[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly SceneDevice[];nodes?:readonly SceneDevice[]}}>>;
+ scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];level?:{barriers?:readonly {id:string}[]};rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];phases?:Readonly<Record<string,ScenePhase>>;wash?:readonly WashRule[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly SceneDevice[];nodes?:readonly SceneDevice[]}}>>;
  keyring?:readonly string[];controlled?:readonly string[];programs?:readonly string[];
 }
 const ROLE_FLAGS={home:'opening:home',street:'opening:street',flat:'opening:flat',slept:'opening:slept',uplink:'opening:uplink',jacked:'opening:jacked'} as const;
@@ -121,6 +121,12 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
     for(const key of Object.keys(ph.lines??{}))if(!known(key))fail(at+'/lines/'+key,'unknown person/readable/device/exit');
     for(const[key,rule]of Object.entries(ph.exits??{})){
      const a=at+'/exits/'+key;if(!def.exits.some(e=>e.id===key))fail(a,'unknown exit');
+     if('react'in rule){device(sceneId,rule.react,a);checkCues(rule.cues??[],a);}
+     else if('gate'in rule){checkCues([...rule.gate.begin??[],...rule.gate.then],a);}
+     else if('acknowledge'in rule){checkCues([...rule.acknowledge.begin??[],...rule.acknowledge.then],a);}
+    }
+    for(const[key,rule]of Object.entries(ph.barriers??{})){
+     const a=at+'/barriers/'+key;if(!def.level?.barriers?.some(b=>b.id===key))fail(a,'unknown barrier');
      if('react'in rule){device(sceneId,rule.react,a);checkCues(rule.cues??[],a);}
      else if('gate'in rule){checkCues([...rule.gate.begin??[],...rule.gate.then],a);}
      else if('acknowledge'in rule){checkCues([...rule.acknowledge.begin??[],...rule.acknowledge.then],a);}

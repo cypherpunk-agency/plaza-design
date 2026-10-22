@@ -86,7 +86,7 @@ export class StoryFields {
     const form=this.form,name=path.join(' '),keys=Object.keys(value),key=path.at(-1),parentKey=path.at(-2),v=this.vocab();
     // a trigger/level/card keeps its own scene for the names inside it
     const here=typeof value.scene==='string'&&v.scenes.includes(value.scene)?value.scene:scene;
-    if(parentKey==='exits'&&['say','react','gate','acknowledge'].some(k=>k in value)){
+    if((parentKey==='exits'||parentKey==='barriers')&&['say','react','gate','acknowledge'].some(k=>k in value)){
       const kind=['say','react','gate','acknowledge'].find(k=>k in value)!;
       form.select(parent,name+' handler',['say','react','gate','acknowledge'],kind,k=>this.set(path,defaultRule(k,this.deviceIds(scene)[0]??'')));
     }
@@ -135,7 +135,7 @@ export class StoryFields {
     if(path[0]==='PHASES'&&path.length===2){if(!value.persona)form.button(parent,'Add '+name+' persona',()=>this.set([...path,'persona'],{name:'courier',calmWeather:true,deck:{files:{},whoami:'whoami'}}));else drop('persona');}
     if(path[0]==='CARDS'&&path.length===2){add('mid',[]);add('end',[]);}
     if(key==='gate'||key==='acknowledge'){add('begin',[]);}
-    if(parentKey==='exits'&&'react'in value)add('cues',[]);
+    if((parentKey==='exits'||parentKey==='barriers')&&'react'in value)add('cues',[]);
     if(typeof key==='number'&&parentKey&&path.includes('everyday')){
       for(const f of['cues'])add(f,[]);
       const dev=String(path[path.indexOf('everyday')+1]),device=this.devices(scene).find(d=>d.id===dev),noun=device?.nouns.find(n=>n.verbs?.length),state=this.states(scene,true)[0];

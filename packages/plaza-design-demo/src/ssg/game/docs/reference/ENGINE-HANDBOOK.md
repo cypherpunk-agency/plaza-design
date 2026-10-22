@@ -182,10 +182,15 @@ same rule as play. Check with `pnpm test:game level-rooms level-visual-state`.
 A barrier (`level.barrier`; `style` turnstile, gate or door; `width` its passage) stands across a floor in the world, not
 at a scene exit: shut, `levelBounds` (given the player's x) stops the player on their side, on that floor only. E there
 (`barrier:` prompt) goes through `levelPass`, which asks world/access.ts `barrierAccess`: the exits' own rule shapes, a
-keyring chip carried (`key`, like an exit's `needs`) and a flag set (`flag`, like `requires`), refusing with `refuse`. Passing, it
+keyring chip carried (`key`, like an exit's `needs`), a flag set (`flag`, like `requires`) and an optional gameplay condition
+(`when`, over flags, items, tokens, the player, time and weather: `validateBarrierCondition`), refusing with `refuse`. A story phase can
+replace that rule with an exit's rule shape (scene.json `phases.<p>.barriers.<id>`; story-rules.ts `barrierPhaseRule`, run by `storyExit`: a
+gate or acknowledgment opens it when its beat is over, a say or react only speaks); an unknown barrier id there is refused. Passing, it
 opens and stays open: `LevelState.opened`, kept in `Save.barriers` by scene (`savedByScene`/`savedForLevel`, like seen rooms);
 its picture's `open` is eased in the level step. `mergeLevels` namespaces barriers like every piece; a barrier key is
-validated with the exits' keys. The Tower annex's turnstile is the example. Check with `pnpm test:game level-barriers`.
+validated with the exits' keys. The Tower annex's turnstile is the example. The composer's Access tab (authoring/barrier-authoring.ts) edits the
+rule with typed pickers, tries it over a fixture through `barrierAccess`, lists its phase rules and warns of a rule that can never pass.
+Check with `pnpm test:game level-barriers barrier-authoring`.
 
 The street door seen from inside is `level.entrance` (its `building`; `style` glass, shop, flat or service, each the
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
@@ -399,6 +404,7 @@ model's tick. A second timeline (shift -> commute -> home) is authored in the sa
 | What one scene says and does in one phase: goal line, clock time, arrival words, the scripted ride, who answers, exits that act differently, everyday popup actions, story targets, the attention ping | scenes/<id>/scene.json `phases.<phase>` (editor: Scene › Story phases, or Game opening › Scene phases) |
 | The room's light cue | scene.json `wash` rules (`washTone`) |
 | A timed checkpoint (turnstile), an acknowledging device (concierge) | an exit rule `gate` / `acknowledge` in a phase's `exits` (`gateFrame`) |
+| A level barrier that acts differently in a phase | the same exit rule shapes in a phase's `barriers` (`barrierPhaseRule`, `barrierRuleOpens`) |
 | Sleep / wait: fade, a card with two clock readings, fade | opening.json `CARDS` (`cardFrame`); a story target with `card` starts one; "wait until..." builds the same card |
 | A workflow that fires when counters, elapsed frames and quiet say so (the morning's message, jacking in) | opening.json `TRIGGERS` (`triggerFires`, `triggerStarts`) |
 | Counters (tries, last, due, at) | named by the source: a chip or react-exit `cues: [{counter}]`, a trigger's tests; the loop's `counters` record |

@@ -91,13 +91,14 @@ export function validateArrival(v:unknown,at:string){
   const last=i===rows.length-1;if(r.unless===undefined&&!last)fail(a,'a row without a flag test must be last');
  }
 }
-const PHASE_FIELDS=['time','goal','intro','ping','ride','arrival','lines','exits','everyday','targets'];
+const PHASE_FIELDS=['time','goal','intro','ping','ride','arrival','lines','exits','everyday','targets','barriers'];
 export function validatePhase(v:unknown,at:string){
  const p=fields(v,at,PHASE_FIELDS,[]);
  if(p.time!==undefined)hm(p.time,at+'/time');if(p.goal!==undefined)text(p.goal,at+'/goal');if(p.intro!==undefined)validateIntro(p.intro,at+'/intro');if(p.ping!==undefined)validatePing(p.ping,at+'/ping');if(p.ride!==undefined){const r=fields(p.ride,at+'/ride',['mover','path']);id(r.mover,at+'/ride/mover');id(r.path,at+'/ride/path');if(!/^[^.]+\.[^.]+$/.test(r.mover))fail(at+'/ride/mover','device.noun required');}if(p.arrival!==undefined)validateArrival(p.arrival,at+'/arrival');
  const table=(key:string,check:(row:unknown,a:string)=>void)=>{if(p[key]===undefined)return;const rows=Object.entries(object(p[key],at+'/'+key));if(rows.length>128)fail(at+'/'+key,'row limit');for(const[k,row]of rows){id(k,at+'/'+key+'/'+k);check(row,at+'/'+key+'/'+k);}};
  table('lines',(row,a)=>{const r=fields(row,a,['name','pages'],['pages']);if(r.name!==undefined)text(r.name,a+'/name');pages(r.pages,a+'/pages');});
  table('exits',validateExitRule);
+ table('barriers',validateExitRule);
  table('everyday',(row,a)=>{for(const[i,chip]of list(row,a,16).entries())validateChip(chip,a+'/'+i);});
  table('targets',validateTarget);
 }
