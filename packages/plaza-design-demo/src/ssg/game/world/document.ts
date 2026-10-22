@@ -6,7 +6,7 @@ import type { Composition } from '../art/core/composition';
 import type { Sequence } from '../art/core/timeline';
 import { SCENES, type SceneDef, type SceneId } from '../scenes';
 import type {PlaceId} from './city';
-import { AVENUES, CANAL, CANAL_W, COAST, FENCE, ISLE, PARK } from './cityplan';
+import { AVENUES, CANAL, CANAL_W, COAST, FENCE, ISLE, PARK, WEST } from './cityplan';
 
 export interface WorldSequenceReference { id: string; scene: string; entrance?: string }
 export interface WorldDocumentContext {
@@ -66,7 +66,7 @@ export function snapshotWorld(sceneCompositions: Readonly<Record<string,string>>
     version:1 as const,
     map:{
       width:MAP_W, height:MAP_H,
-      geometry:{coast:COAST,island:ISLE,canal:CANAL,canalWidth:CANAL_W,avenues:AVENUES,park:PARK,fence:FENCE},
+      geometry:{coast:COAST,westCoast:WEST,island:ISLE,canal:CANAL,canalWidth:CANAL_W,avenues:AVENUES,park:PARK,fence:FENCE},
       districts:DISTRICTS.map(d=>({...d,plan:DISTRICT_MAP[d.id]})),
       places:PLACES.map(p=>({...p,mapPosition:PLACE_MAP[p.id] ?? null})),
     },

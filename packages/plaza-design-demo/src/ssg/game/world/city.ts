@@ -272,8 +272,9 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
 
 /**
  * The city map is a street plan, drawn by citymap.ts (and traced by cityplan.ts) from the data
- * here. Plan units: MAP_W × MAP_H, x runs west → east, y north → south. The sea lies east of the
- * coast, the Spire stands on its island in the bay, the canal flows in from the west through the
+ * here. Plan units: MAP_W × MAP_H, x runs west → east, y north → south. The harbor's sea lies east
+ * of the coast, the Spire stands on its island in the bay; the open sea of the west shore lies in
+ * the south-west (the beach, Old Quarter), and the canal flows from its mouth there through the
  * Old Quarter into the bay (cityplan.ts has the coast, the canal and the avenues). The map shows the
  * plan tilted back by default (towers stand up), or flat.
  */

@@ -79,8 +79,13 @@ reveals as you go** (above). Sets (`sets/`, ART-GUIDE.md §12) make the B places
 
 ### 2. Old Quarter: the old town on the canal (Act II)
 
+The Old Quarter runs along the canal to its mouth on the west shore, where the beach is (Tommi,
+2026-10-22: the beach in the west, the harbor in the east; the beach no longer joins the quay).
+
 | Place | Tier | Act | What |
 | --- | --- | --- | --- |
+| The beach ✓ (SALT, the pier), on the west shore | H | I | moved here from the harbor, 2026-10-22 |
+| The surf school, the beach hotel | B | any | |
 | Canal Street | H | II | stone bridges, banks, LINE 1's station |
 | Tenements and houseboats | V | II | old living, old neighbours |
 | St. Agnes | V | II | the last church that takes cash; an ageing congregation |
@@ -146,9 +151,7 @@ reveals as you go** (above). Sets (`sets/`, ART-GUIDE.md §12) make the B places
 | The fish market and fishing boats | V | any | |
 | The sailors' bar | V | any | |
 | The harbor patrol | B | any | customs |
-| The beach ✓ (SALT, the pier) | H | I | |
 | Moth's boat ○ | V | II | |
-| The surf school, the beach hotel | B | any | |
 | The bridge ○ | V | II | |
 
 ### 6. The Spire / Plaza Central: the elite (Act II up, Act III)
@@ -211,7 +214,7 @@ reveals as you go** (above). Sets (`sets/`, ART-GUIDE.md §12) make the B places
 - Whether the Fringe holds a story piece (the data cemetery, a list of names?).
 
 The metro runs through the street districts: LINE 0 (the loop: Downtown ✓, Galleria ✓, Harbor ✓)
-and LINE 1, the Canal Line (Fringe Depot, Old Quarter, Canal Street, Harbor Shore, Beach), with bus 7
+and LINE 1, the Canal Line (Beach, Fringe Depot, Old Quarter, Canal Street, Harbor Shore), with bus 7
 and the ferry; interchanges are marked on the map (the street-map draft).
 
 ## Ways to move
@@ -235,7 +238,8 @@ and the ferry; interchanges are marked on the map (the street-map draft).
 ## Ways between districts
 
 - **On foot**: within a district, and across seams that touch (Downtown ↔ the market gate,
-  the harbor pier ↔ the beach).
+  and, until the harbor zones are rebuilt, the harbor pier's BEACH exit; the map no longer draws a
+  shore path, since the beach is now at the other end of the city).
 - **Metro**: between the street districts' stations.
 - **Sky taxi, dropship, sky elevator**: up to the Spire.
 - **Drains, canal boats, service lifts, metro service tunnels**: down to the Undercity.
@@ -256,8 +260,9 @@ Built (2026-10-15, from the approved draft E): `cityplan.ts` traces the plan, `c
 it, both from `city.ts`'s map data.
 
 - **The plan** (`cityplan.ts`, plan units 844 × 390, x east, y south): the coast with the sea
-  east of it, the Spire's island in the bay, the canal from the west through the Old Quarter into
-  the bay, the avenues (AVENUE 0, REGISTRY ROAD, OLD QUARTER LANE, GALLERIA WAY, SKYLINE DRIVE,
+  east of it (the harbor), the west shore with the open sea in the south-west (`WEST`: the beach),
+  the Spire's island in the bay, the canal from its mouth on the west shore through the Old Quarter
+  into the bay, the avenues (AVENUE 0, REGISTRY ROAD, OLD QUARTER LANE, GALLERIA WAY, SKYLINE DRIVE,
   DOCK ROAD, THE RING highway, LAUNCH ROAD to the Skyport), Circle Park, the Skyport's fence.
   Each district has a centre its streets grow from (`DISTRICT_MAP`); the land is shared out to
   the nearest centre (`districtAt`).
