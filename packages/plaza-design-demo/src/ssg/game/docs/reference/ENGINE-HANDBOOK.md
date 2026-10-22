@@ -198,6 +198,17 @@ The street door seen from inside is `level.entrance` (its `building`; `style` gl
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
 player is in that building.
 
+What the player passes behind: a walk-in building's shell front with a `jamb` (units of wall at either side, default 0:
+off; the Tower front has 20) and every stair with a handrail (`railInFront`, default on; rungs have none) have a near
+part. While the player passes it (engine/level.ts `levelNear`: in a wall edge at a walk-in floor's height, on the flight
+or at either end within its reach) the level sets the piece's visual state `near`; its artwork then draws without that
+part and paints it in `Element.drawNear`, which the composition draws first in the over-player slot (the same slot as
+playfield rows after the player row). So the player goes behind the wall edge and comes out inside, and walks behind a
+stair's rail over its treads. The player's place comes in `LevelView.at` (`levelView(lv, m, player)`; a joined level hands
+it only to the player's zone). At rest (the editor, parity views) nothing is near and everything draws whole. In hack
+vision the over-player slot is drawn after the world is muted, so near parts show unmuted there, like any over-player row.
+Check with `pnpm test:game entrance-occlusion`.
+
 ## Recipe: zones and seams (two scenes with no cut)
 
 This is step 1 of [SEAMLESS-WORLD.md](../design/SEAMLESS-WORLD.md) as built. The rest of that document is
@@ -503,6 +514,7 @@ isolated copies, not the working game's files or your recovery journal.
 | New scenes/routes | scene-catalogue all-scene-world-routes |
 | Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
 | Communication | communication device-reply |
+| Pieces the player passes behind (wall edges, stair rails) | entrance-occlusion |
 | Zones and seams (joined scenes) | zone-graph level-visual-state residency zone-unload |
 | Demo isolation | demo-district |
 | Play profiles (ways of playing) | play-profiles demo-district play-storage |

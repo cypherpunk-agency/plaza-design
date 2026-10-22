@@ -98,7 +98,16 @@ export interface Element {
   bounds(props: Properties, state: Properties, context?: BoundsContext): Bounds;
   anchors(props: Properties, state: Properties): Record<string, Anchor>;
   draw(ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, pass: Pass, placement: Readonly<Required<Placement>>): void;
+  /**
+   * A piece the player passes through or behind (a walk-in building's wall edge, a stair's near handrail). While its
+   * visual state `near` is set (engine/level.ts `levelNear`: the player is passing it), `draw` leaves its near part out
+   * and this paints only that part, in the over-player slot, so the player is drawn between the two. At rest (`near` 0)
+   * `draw` paints the whole piece as ever and this is not called.
+   */
+  drawNear?(ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, placement: Readonly<Required<Placement>>): void;
 }
+/** Is a resolved piece passing in front of the player this frame (its near part drawn over them)? */
+export const nearPart = (r: Resolved) => !!r.element.drawNear && Number(r.state.near ?? 0) > 0;
 
 const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
 /** A composition is layered when its instances carry `layer`; validation rejects mixtures. */
@@ -272,16 +281,18 @@ export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegi
 export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean)) {
   const keep = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer);
   const rows = resolveComposition(registry, doc, env), found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
-  const inSlot = (r: Resolved, index: number) => slot === 'foreground' ? r.instance.layer === 'foreground'
-    : r.instance.layer === 'playfield' ? (slot === 'behind-player') === (index < player)
-    : slot === 'behind-player' && r.instance.layer !== 'foreground' && r.instance.layer !== 'logic';
-  paint(ctx, doc, env, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && inSlot(r, index)), r => r.element.parts[0]);
+  const inSlot = (r: Resolved, index: number, s: LayerSlot) => s === 'foreground' ? r.instance.layer === 'foreground'
+    : r.instance.layer === 'playfield' ? (s === 'behind-player') === (index < player)
+    : s === 'behind-player' && r.instance.layer !== 'foreground' && r.instance.layer !== 'logic';
+  // over the player, first the near parts of the pieces behind them that they are passing (Element.drawNear), then the rows in front
+  if (slot === 'over-player') paint(ctx, doc, env, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && nearPart(r) && inSlot(r, index, 'behind-player')), r => r.element.parts[0], true);
+  paint(ctx, doc, env, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && inSlot(r, index, slot)), r => r.element.parts[0]);
 }
 /** Rows over the player and the foreground, waiting for their moment in the current frame (keyed by document, latest wins). */
 const pending = { 'over-player': new Map<Composition, () => void>(), foreground: new Map<Composition, () => void>() };
 export function queueLayeredSlots(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment) {
   for (const slot of ['over-player', 'foreground'] as const)
-    if (slotHasContent(doc, slot)) pending[slot].set(doc, () => drawCompositionSlot(ctx, registry, doc, env, slot)); else pending[slot].delete(doc);
+    if (slotHasContent(doc, slot) || slot === 'over-player' && nearState(env)) pending[slot].set(doc, () => drawCompositionSlot(ctx, registry, doc, env, slot)); else pending[slot].delete(doc);
 }
 /** The documents waiting in a slot now: a joined zone's renderer takes the ones its own drawing added. */
 export const layeredDocs = (slot: 'over-player' | 'foreground') => new Set(pending[slot].keys());
@@ -289,6 +300,8 @@ export const layeredDocs = (slot: 'over-player' | 'foreground') => new Set(pendi
 export function flushLayeredDocs(slot: 'over-player' | 'foreground', docs: ReadonlySet<Composition>) { for (const [doc, draw] of [...pending[slot]]) if (docs.has(doc)) { pending[slot].delete(doc); draw(); } }
 export function beginLayeredFrame() { pending['over-player'].clear(); pending.foreground.clear(); }
 export function flushLayeredSlot(slot: 'over-player' | 'foreground') { const draws = [...pending[slot].values()]; pending[slot].clear(); for (const draw of draws) draw(); }
+/** Does the environment set any piece's `near` (its near part waits for the over-player slot)? */
+const nearState = (env: Environment) => Object.values(env.state).some(s => Number(s.near ?? 0) > 0);
 /** Cheap check from the document alone, so scenes can skip preparing an environment for an empty slot. */
 export function slotHasContent(doc: Readonly<Composition>, slot: LayerSlot): boolean {
   const nodes = flat(doc.instances);
@@ -298,7 +311,7 @@ export function slotHasContent(doc: Readonly<Composition>, slot: LayerSlot): boo
   const at = nodes.indexOf(player), after = (n: Instance) => n.order > player.order || n.order === player.order && nodes.indexOf(n) > at;
   return nodes.some(n => n.layer === 'playfield' && n !== player && (slot === 'over-player') === after(n));
 }
-function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment, rows: Resolved[], passOf: (r: Resolved) => Pass) {
+function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment, rows: Resolved[], passOf: (r: Resolved) => Pass, near = false) {
   const appearance = compositionAppearance(doc, env);
   for (const r of rows) {
     const { visible, opacity } = appearance.get(r.instance.id)!;
@@ -312,7 +325,7 @@ function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment
         ctx.save(); ctx.translate(ax, ay); ctx.scale(p.scale * p.facing, p.scale); ctx.translate(-ax, -ay); ctx.globalAlpha *= opacity;
       }
       const world = p.parallax === 1 ? v : { ...v, sx: (wx: number, depth = p.parallax) => v.sx(wx, depth) };
-      try { r.element.draw(ctx, world, r.props, r.state, pass, p); }
+      try { if (near) r.element.drawNear!(ctx, world, r.props, r.state, p); else r.element.draw(ctx, world, r.props, r.state, pass, p); }
       finally { if (transformed) ctx.restore(); }
       continue;
     }
@@ -322,7 +335,7 @@ function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment
     ctx.translate(ox, oy); ctx.scale(p.scale * p.facing, p.scale);
     const local: View = { ...v, sx: (wx, depth = p.parallax) => (v.sx(p.x + wx * p.scale * p.facing, depth) - ox) / (p.scale * p.facing),
       y: h => (v.y(p.h + h * p.scale) - oy) / p.scale, gy: 0 };
-    try { r.element.draw(ctx, local, r.props, r.state, pass, p); }
+    try { if (near) r.element.drawNear!(ctx, local, r.props, r.state, p); else r.element.draw(ctx, local, r.props, r.state, pass, p); }
     finally { ctx.restore(); }
   }
 }

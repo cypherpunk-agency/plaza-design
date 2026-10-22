@@ -11,7 +11,7 @@ import {manifestGeometry} from './manifest-geometry';
 import {withSceneConversations,actorConversationId} from './scene-conversations';
 import type {SceneDef} from '../../scenes/kit';
 import {validateSceneDocument,type SceneDocument} from './scene-document';
-import {compileLevel,levelOpacity,levelVisualState,restingLevelView} from '../level';
+import {compileLevel,compileOccluders,levelNear,levelOpacity,levelVisualState,restingLevelView} from '../level';
 import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
@@ -88,13 +88,17 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,anchorRows[a].placement])),{reset:resetPermitted(d),anchors}):{};
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
+ // what the player passes behind (a walk-in building's wall edges, a stair's near rail): drawn over them while they do
+ const occluders=level?compileOccluders(rows):[];
  // the grey review room stands in for a room until the composition paints its own backdrop
  const ownRoom=rows.some(r=>r.instance.layer==='backdrop'||r.instance.layer==='distance')||mechanisms.some(m=>m.ownsRoom),front=rows.some(r=>r.instance.layer==='foreground');
  const instanceOf=(t:unknown)=>typeof t==='string'?t:(t as {instance:string}).instance,heightOf=(t:unknown)=>rows.find(r=>r.instance.id===instanceOf(t))?.placement.h??0;
  // presentation signals: cosmetic event stamps a provider's artwork reads (a crane call), set by the scene's cues
  const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
-  return {...options,view,state:{...(options.state??{}),...(live?levelVisualState(live):{})},...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
+  const pieces=live?levelVisualState(live):{},near=level&&live?levelNear(level,live,occluders):{},state:Record<string,import('../../art').Properties>={...(options.state??{}),...pieces};
+  for(const[id,v]of Object.entries(near))state[id]={...(state[id]??{}),...v};
+  return {...options,view,state,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
    bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
