@@ -230,7 +230,9 @@
       "district": null,
       "entrance": "tower",
       "scenes": [
-        "tower"
+        "tower",
+        "tower-annex",
+        "tower-deck"
       ]
     }
   ],
