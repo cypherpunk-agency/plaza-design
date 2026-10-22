@@ -5,7 +5,16 @@
  * - `metro.underground-platform`: a tiled subway platform under the street: the far wall across the track with
  *   its name band, the ceiling and its strip lamps, the slab up to the street and the street's pavement on top,
  *   the platform's edge and paving;
- * - `metro.stairs-up`: a flight from the platform up through the slab to the street, its sign and railings;
+ * - `metro.ticket-hall`: the underground ticket hall at the platform's level (Downtown is underground, decided 4 and 17):
+ *   small old tiles, the ticket office, ticket machines, the LINE 0 map, the gate line's gantry and ID camera, the slab
+ *   and the street above; the turnstile itself is the level kit's `level.barrier`, a real barrier in the world;
+ * - `metro.stairs-up`: a flight from the platform up through the slab to the street, its sign and railings; with
+ *   `flight` off it is only the well (tiled sides, lamp, railings, METRO post, optional glass hood) round a walkable
+ *   `level.stairs` or `level.escalator`;
+ *
+ * The underground station preset is these pieces together: ticket hall + platform (`ends` so they join) + stairs well
+ * over a walkable flight, indoor floors (`level.floor` `indoor`), the street floor on the slab
+ * (art/proposals/dt-metro-underground and dt-metro-seam).
  * - `metro.cutaway-car`: one car with its platform side cut away, so its inside reads: seats along the far wall,
  *   poles and straps, the far side's shut doors and dark windows, the near doors' thresholds and frames, a cab at
  *   either end if it leads;
@@ -41,6 +50,25 @@ export const SCREEN_W = 960, UNITS_PER_M = METRO.len / 20;
 
 // ---------------------------------------------------------------- the platform
 
+/** The slab between a station's ceiling `C` and the street `S` over `W`: a concrete section, orange-rimmed where it is cut, the pavement on top. */
+function paintSlab(x: X, W: number, C: number, S: number, streetTop: boolean) {
+  R(x, 0, C, W, S - C, '#0c0a09');
+  x.fillStyle = 'rgba(' + O + ',.07)'; for (let k = -40; k < W; k += 14) { x.beginPath(); x.moveTo(k, y(C)); x.lineTo(k + 10, y(C)); x.lineTo(k + 10 + (S - C), y(S)); x.lineTo(k + (S - C), y(S)); x.closePath(); x.fill(); }
+  R(x, 0, C, W, 1, 'rgba(' + O + ',.45)');
+  if (streetTop) {
+    // the pavement and kerb up on the street, wet and dark
+    R(x, 0, S - 1, W, 4, '#1a1612'); R(x, 0, S + 3, W, 1, 'rgba(' + PAPER + ',.16)');
+    x.fillStyle = 'rgba(' + PAPER + ',.06)'; for (let k = 18; k < W; k += 36) x.fillRect(k, y(S + 3), 1, 4);
+  } else R(x, 0, S - 1, W, 1, 'rgba(' + O + ',.45)');
+}
+/** A station box's end wall at `ex` (10 wide), down past the paving and up to the street. */
+const endWall = (x: X, ex: number, S: number, rimRight: boolean) => { R(x, ex, -60, 10, S + 60, '#0e0b09'); R(x, ex + (rimRight ? 9 : 0), -60, 1, S + 60, 'rgba(' + O + ',.4)'); };
+const END_WALLS = ['both', 'left', 'right', 'none'] as const;
+const endsOf = (v: unknown, W: number): [number, boolean][] => {
+  const e = END_WALLS.includes(v as typeof END_WALLS[number]) ? v : 'both';
+  return [...(e === 'both' || e === 'left' ? [[0, true] as [number, boolean]] : []), ...(e === 'both' || e === 'right' ? [[W - 10, false] as [number, boolean]] : [])];
+};
+
 export const undergroundPlatformElement = piece({
   type: 'metro.underground-platform', label: 'Underground metro platform: tiled wall, ceiling lamps, slab, street above (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
@@ -57,6 +85,7 @@ export const undergroundPlatformElement = piece({
     edge: bool('Yellow edge line', true),
     streetTop: bool('Street pavement on top', true),
     endWalls: bool('End walls', true),
+    ends: select('Which end walls (a ticket hall can join at one end)', END_WALLS, 'both'),
   },
   size: p => ({ w: N(p, 'width'), tall: N(p, 'street') + 6 }),
   bounds: p => ({ x: 0, h: N(p, 'street') + 6, w: N(p, 'width'), tall: N(p, 'street') + 60 }),
@@ -64,15 +93,7 @@ export const undergroundPlatformElement = piece({
   paint(x, p, o) {
     const W = N(p, 'width'), C = N(p, 'ceiling'), S = Math.max(C + 8, N(p, 'street')), ts = Math.max(4, N(p, 'tileSize'));
     const tile = hex(p.tile, '#1c2220'), band = hex(p.band, '#2a1608');
-    // the slab between the ceiling and the street: a concrete section, orange-rimmed where it is cut
-    R(x, 0, C, W, S - C, '#0c0a09');
-    x.fillStyle = 'rgba(' + O + ',.07)'; for (let k = -40; k < W; k += 14) { x.beginPath(); x.moveTo(k, y(C)); x.lineTo(k + 10, y(C)); x.lineTo(k + 10 + (S - C), y(S)); x.lineTo(k + (S - C), y(S)); x.closePath(); x.fill(); }
-    R(x, 0, C, W, 1, 'rgba(' + O + ',.45)');
-    if (p.streetTop) {
-      // the pavement and kerb up on the street, wet and dark
-      R(x, 0, S - 1, W, 4, '#1a1612'); R(x, 0, S + 3, W, 1, 'rgba(' + PAPER + ',.16)');
-      x.fillStyle = 'rgba(' + PAPER + ',.06)'; for (let k = 18; k < W; k += 36) x.fillRect(k, y(S + 3), 1, 4);
-    } else R(x, 0, S - 1, W, 1, 'rgba(' + O + ',.45)');
+    paintSlab(x, W, C, S, !!p.streetTop);
     // the far wall across the track: tiles, a darker dado, grout lines
     R(x, 0, 0, W, C, tile);
     R(x, 0, 0, W, 30, 'rgba(0,0,0,.28)');
@@ -93,7 +114,7 @@ export const undergroundPlatformElement = piece({
       x.fillStyle = g; x.beginPath(); x.moveTo(k - 16, y(C - 6)); x.lineTo(k + 16, y(C - 6)); x.lineTo(k + 46, y(0)); x.lineTo(k - 46, y(0)); x.closePath(); x.fill();
       o.glow?.(k, C - 6, { kind: 'lamp', col: '255,235,200', r: 80, a: la * 0.7 });
     }
-    if (p.endWalls) for (const ex of [0, W - 10]) { R(x, ex, -60, 10, S + 60, '#0e0b09'); R(x, ex + (ex ? 0 : 9), -60, 1, S + 60, 'rgba(' + O + ',.4)'); }
+    if (p.endWalls) for (const [ex, rim] of endsOf(p.ends, W)) endWall(x, ex, S, rim);
     // the platform: its edge (a yellow line at the track), the paving coming towards us
     R(x, 0, -60, W, 60, '#110f0d');
     x.fillStyle = 'rgba(' + PAPER + ',.045)'; for (let h = -12; h > -60; h -= 12) x.fillRect(0, y(h), W, 1);
@@ -117,6 +138,8 @@ export const metroStairsUpElement = piece({
     signDrop: num('Sign hangs below the ceiling', 40, 8, 200, 1, 'units'),
     post: bool('METRO post at the top', true),
     lit: num('Light in the stairwell', 0.6, 0, 1, 0.05),
+    flight: bool('Draw the flight (off: a walkable level stairs or escalator draws the steps)', true),
+    hood: bool('Glass hood over the street opening', false),
   },
   // the origin is the foot of the flight; it rises over `run` to the `rises` side
   size: p => ({ w: N(p, 'run'), tall: N(p, 'rise') + 90 }),
@@ -133,18 +156,34 @@ export const metroStairsUpElement = piece({
     g.addColorStop(0, 'rgba(255,230,190,' + (0.05 * lit).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,230,190,' + (0.22 * lit).toFixed(3) + ')');
     R(x, l, C - 2, w, rise - C + 3, '#060504'); x.fillStyle = g; x.fillRect(Math.round(l), Math.round(y(rise + 1)), Math.round(w), Math.round(rise - C + 3));
     R(x, d > 0 ? l : l + w - 1, C - 2, 1, rise - C + 3, 'rgba(' + O + ',.35)');
-    // the flight: a concrete side under the steps, the treads with lit nosings
-    x.fillStyle = '#17120e'; x.beginPath(); x.moveTo(0, y(0));
-    for (let i = 0; i < n; i++) { const a = at(i / n), b = at((i + 1) / n), hh = rise * (i + 1) / n; x.lineTo(a, y(hh)); x.lineTo(b, y(hh)); }
-    x.lineTo(at(1), y(0)); x.closePath(); x.fill();
-    for (let i = 0; i < n; i++) { const a = at(i / n), b = at((i + 1) / n), hh = rise * (i + 1) / n; R(x, Math.min(a, b), hh - 1, Math.abs(b - a), 1, 'rgba(' + PAPER + ',' + (0.16 + 0.2 * lit * (1 - i / n)).toFixed(3) + ')'); }
-    x.strokeStyle = 'rgba(' + O + ',.5)'; x.lineWidth = 1; x.beginPath(); x.moveTo(0, y(0)); x.lineTo(at(1), y(rise)); x.stroke();
-    // the handrail, waist high over the nosings, with its newel at the foot
-    x.strokeStyle = 'rgba(' + O + ',.85)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(-d * 6, y(24)); x.lineTo(at(1), y(rise + 24)); x.stroke();
-    R(x, -d * 6 - 1, 0, 2, 24, 'rgba(' + O + ',.8)');
+    if (p.flight !== false) {
+      // the flight: a concrete side under the steps, the treads with lit nosings
+      x.fillStyle = '#17120e'; x.beginPath(); x.moveTo(0, y(0));
+      for (let i = 0; i < n; i++) { const a = at(i / n), b = at((i + 1) / n), hh = rise * (i + 1) / n; x.lineTo(a, y(hh)); x.lineTo(b, y(hh)); }
+      x.lineTo(at(1), y(0)); x.closePath(); x.fill();
+      for (let i = 0; i < n; i++) { const a = at(i / n), b = at((i + 1) / n), hh = rise * (i + 1) / n; R(x, Math.min(a, b), hh - 1, Math.abs(b - a), 1, 'rgba(' + PAPER + ',' + (0.16 + 0.2 * lit * (1 - i / n)).toFixed(3) + ')'); }
+      x.strokeStyle = 'rgba(' + O + ',.5)'; x.lineWidth = 1; x.beginPath(); x.moveTo(0, y(0)); x.lineTo(at(1), y(rise)); x.stroke();
+      // the handrail, waist high over the nosings, with its newel at the foot
+      x.strokeStyle = 'rgba(' + O + ',.85)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(-d * 6, y(24)); x.lineTo(at(1), y(rise + 24)); x.stroke();
+      R(x, -d * 6 - 1, 0, 2, 24, 'rgba(' + O + ',.8)');
+    } else {
+      // a walkable flight or escalator (level kit) draws the steps; the well keeps its tiled side walls and a lamp over the opening
+      const tile = 'rgba(' + PAPER + ',.05)';
+      for (let hh = C - 2; hh < rise; hh += 8) R(x, l, hh, w, 1, tile);
+      R(x, l + w / 2 - 12, C - 4, 24, 2, 'rgba(255,240,215,' + (0.3 + 0.6 * lit).toFixed(2) + ')');
+      o.glow?.(l + w / 2, C - 4, { kind: 'lamp', col: '255,235,200', r: 70, a: 0.6 * lit });
+    }
     // the railings round the opening, up on the street, and the METRO post
     R(x, l, rise + 24, w, 2, 'rgba(' + O + ',.8)');
     for (const k of [l, l + w / 2, l + w - 2]) R(x, k, rise, 2, 24, 'rgba(' + O + ',.8)');
+    if (p.hood) {
+      // a glass hood over the street opening: steel posts at both ends, a lit roof edge, clear side panes
+      const top = rise + 64;
+      R(x, l, rise + 26, w, top - rise - 26, 'rgba(150,200,220,.10)');
+      for (const k of [l, l + w - 3]) R(x, k, rise, 3, top - rise, '#2a2c33');
+      R(x, l - 6, top, w + 12, 5, '#1d1f24'); R(x, l - 6, top + 5, w + 12, 1, 'rgba(' + O + ',.7)'); R(x, l - 6, top - 1, w + 12, 1, 'rgba(255,235,200,.55)');
+      o.glow?.(l + w / 2, top - 2, { kind: 'lamp', col: '255,235,200', r: 60, a: 0.5 });
+    }
     if (p.post) {
       const px = at(1) + d * 14; R(x, px - 1, rise, 3, 70, '#2a160a'); R(x, px - 1, rise + 70, 3, 1, 'rgba(' + O + ',.6)');
       R(x, px - 20, rise + 70, 40, 12, '#04100f'); R(x, px - 20, rise + 82, 40, 1, 'rgba(0,255,255,.6)');
@@ -160,6 +199,147 @@ export const metroStairsUpElement = piece({
       say(x, (d < 0 ? '< ' : '') + sign + (d > 0 ? ' >' : ''), sx, top - 6, 'rgba(' + PAPER + ',.9)', 7, '600');
       o.glow?.(sx, top - 6, { kind: 'screen', col: '255,217,165', r: 26, a: 0.3 });
     }
+  },
+});
+
+// ---------------------------------------------------------------- the ticket hall
+
+const hash01 = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
+/** The LINE 0 map on the wall: a loop through its three stations, this one marked. */
+function lineMap(x: X, l: number, h: number, here: string) {
+  const w = 124, t = 46, stops = ['DOWNTOWN', 'GALLERIA', 'HARBOR'];
+  R(x, l - 2, h - 2, w + 4, t + 4, '#2a2622'); R(x, l, h, w, t, '#d8cfbb');
+  R(x, l, h + t - 10, w, 10, '#1a1612'); say(x, 'LINE 0 · LOOP', l + w / 2, h + t - 5, 'rgba(' + PAPER + ',.95)', 7, '600');
+  // the loop: out along the top line, back along the bottom
+  x.strokeStyle = 'rgba(' + O + ',.95)'; x.lineWidth = 2; x.beginPath(); x.moveTo(l + 14, y(h + 26)); x.lineTo(l + w - 14, y(h + 26)); x.arc(l + w - 14, y(h + 20), 6, -Math.PI / 2, Math.PI / 2); x.lineTo(l + 14, y(h + 14)); x.arc(l + 14, y(h + 20), 6, Math.PI / 2, Math.PI * 1.5); x.stroke();
+  stops.forEach((s, i) => {
+    const cx = l + 20 + i * 42, me = s === here.toUpperCase();
+    R(x, cx - 2, h + 24, 5, 5, me ? '#b8122c' : '#1a1612');
+    say(x, s, cx, h + 8, me ? 'rgba(160,20,40,.95)' : 'rgba(26,22,18,.9)', 7, me ? '600' : '');
+  });
+}
+export const ticketHallElement = piece({
+  type: 'metro.ticket-hall', label: 'Underground metro ticket hall: tiled walls, ticket office, machines, line map, gate line, slab and street above (kit)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Length', 620, 100, 4000, 1, 'units'),
+    ceiling: num('Ceiling height', 124, 70, 400, 1, 'units'),
+    street: num('Street level above', 150, 80, 600, 1, 'units'),
+    name: text('Station name on the wall band', 'DOWNTOWN'),
+    nameEvery: num('Name repeats every', 300, 80, 4000, 1, 'units'),
+    tile: colour('Wall tile', '#27251f'),
+    band: colour('Name band', '#2a1608'),
+    tileSize: num('Tile size', 6, 4, 24, 1, 'units'),
+    missing: num('Missing tiles', 0.025, 0, 0.3, 0.005),
+    lampEvery: num('Ceiling lamp every', 100, 30, 1000, 1, 'units'),
+    lampAlpha: num('Lamp strength', 0.8, 0, 1, 0.05),
+    deadLamp: num('Flickering lamp (-1 none)', -1, -1, 40, 1),
+    office: num('Ticket office at (-1 none)', 290, -1, 4000, 1, 'units'),
+    officeText: text('Ticket office sign', 'TICKETS'),
+    officeNote: text('Plate under the window', 'ID FOR ALL FARES'),
+    machines: num('Ticket machines', 2, 0, 8, 1),
+    machinesAt: num('Machines from', 400, 0, 4000, 1, 'units'),
+    broken: num('Out-of-order machine (-1 none)', -1, -1, 7, 1),
+    map: num('Line map at (-1 none)', 470, -1, 4000, 1, 'units'),
+    gate: num('Gate line at (-1 none)', 580, -1, 4000, 1, 'units'),
+    gateSign: text('Over the gate line', 'PAID AREA'),
+    gateNote: text('Under it', 'TICKET AND ID BEYOND THIS POINT'),
+    scanner: bool('ID camera and screen at the gate line', true),
+    ends: select('End walls', END_WALLS, 'left'),
+    streetTop: bool('Street pavement on top', true),
+  },
+  size: p => ({ w: N(p, 'width'), tall: N(p, 'street') + 6 }),
+  bounds: p => ({ x: 0, h: N(p, 'street') + 6, w: N(p, 'width'), tall: N(p, 'street') + 60 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: N(p, 'ceiling'), role: 'mount' }, street: { x: 0, h: N(p, 'street'), role: 'surface' },
+    ...(N(p, 'gate') >= 0 ? { gate: { x: N(p, 'gate'), h: 0, role: 'mount' as const } } : {}), ...(N(p, 'office') >= 0 ? { office: { x: N(p, 'office') + 46, h: 0, role: 'mount' as const } } : {}) }),
+  paint(x, p, o) {
+    const W = N(p, 'width'), C = N(p, 'ceiling'), S = Math.max(C + 8, N(p, 'street')), ts = Math.max(4, N(p, 'tileSize'));
+    const tile = hex(p.tile, '#27251f'), band = hex(p.band, '#2a1608'), t = o.t;
+    paintSlab(x, W, C, S, !!p.streetTop);
+    // the wall: small old tiles, a dark dado, grout, a few tiles gone (nobody replaces them)
+    R(x, 0, 0, W, C, tile); R(x, 0, 0, W, 34, 'rgba(0,0,0,.3)'); R(x, 0, 34, W, 2, 'rgba(' + O + ',.22)');
+    x.fillStyle = 'rgba(' + PAPER + ',.055)';
+    for (let h = ts; h < C; h += ts) x.fillRect(0, y(h), W, 1);
+    for (let k = ts; k < W; k += ts) x.fillRect(Math.round(k), y(C), 1, C);
+    const miss = N(p, 'missing');
+    for (let k = 0, i = 0; k < W; k += ts, i++) for (let h = 36, j = 0; h < C - 10; h += ts, j++) if (hash01(i * 31 + j * 7 + 3) < miss) R(x, k + 1, h + 1, ts - 1, ts - 1, '#12110e');
+    // the name band, as on the platform
+    const bh = Math.min(C - 22, 92);
+    R(x, 0, bh, W, 13, band); R(x, 0, bh + 13, W, 1, 'rgba(' + O + ',.5)'); R(x, 0, bh - 1, W, 1, 'rgba(' + O + ',.5)');
+    const every = Math.max(80, N(p, 'nameEvery'));
+    for (let k = every / 2; k < W; k += every) say(x, String(p.name), k, bh + 6.5, 'rgba(' + PAPER + ',.8)', 8, '600');
+    // the ceiling: soffit, panel lamps (one flickers)
+    R(x, 0, C - 6, W, 6, '#0a0807'); R(x, 0, C - 9, W, 1, 'rgba(' + O + ',.18)');
+    const la = Math.max(0, Math.min(1, N(p, 'lampAlpha'))), dead = Math.round(N(p, 'deadLamp'));
+    for (let k = N(p, 'lampEvery') / 2, i = 0; k < W; k += Math.max(30, N(p, 'lampEvery')), i++) {
+      const on = i !== dead ? 1 : (Math.sin(t * 0.9) > 0.6 || Math.sin(t * 0.13) > 0.95 ? 0.9 : 0.08), a = la * on;
+      R(x, k - 12, C - 6, 24, 3, 'rgba(255,240,215,' + (0.2 + a * 0.7).toFixed(2) + ')');
+      const g = x.createLinearGradient(0, y(C - 6), 0, y(0)); g.addColorStop(0, 'rgba(255,235,200,' + (a * 0.08).toFixed(3) + ')'); g.addColorStop(1, 'rgba(255,235,200,0)');
+      x.fillStyle = g; x.beginPath(); x.moveTo(k - 12, y(C - 6)); x.lineTo(k + 12, y(C - 6)); x.lineTo(k + 40, y(0)); x.lineTo(k - 40, y(0)); x.closePath(); x.fill();
+      o.glow?.(k, C - 6, { kind: 'lamp', col: '255,235,200', r: 76, a: a * 0.7 });
+    }
+    // the ticket office: a booth set into the wall, a lit window with the clerk behind it, the counter and the sign
+    const ox = N(p, 'office');
+    if (ox >= 0) {
+      R(x, ox - 3, 0, 98, 80, '#0b0a09'); R(x, ox - 3, 80, 98, 1, 'rgba(' + O + ',.6)'); R(x, ox - 3, 0, 1, 80, 'rgba(' + O + ',.35)'); R(x, ox + 94, 0, 1, 80, 'rgba(' + O + ',.35)');
+      R(x, ox + 6, 34, 80, 30, '#3a2c1e');
+      const g = x.createLinearGradient(0, y(64), 0, y(34)); g.addColorStop(0, 'rgba(255,220,170,.35)'); g.addColorStop(1, 'rgba(255,220,170,.05)');
+      x.fillStyle = g; x.fillRect(ox + 6, Math.round(y(64)), 80, 30);
+      // the clerk, a dark shape behind the glass, and the speak-through
+      R(x, ox + 38, 34, 18, 12, '#15100c'); x.fillStyle = '#15100c'; x.beginPath(); x.arc(ox + 47, y(51), 5, 0, Math.PI * 2); x.fill();
+      x.fillStyle = 'rgba(150,200,220,.10)'; for (const k of [ox + 12, ox + 58]) { x.beginPath(); x.moveTo(k, y(34)); x.lineTo(k + 6, y(34)); x.lineTo(k + 16, y(64)); x.lineTo(k + 10, y(64)); x.closePath(); x.fill(); }
+      R(x, ox + 6, 64, 80, 1, 'rgba(200,210,220,.4)'); R(x, ox + 46, 34, 1, 30, 'rgba(200,210,220,.25)');
+      x.strokeStyle = 'rgba(200,200,200,.4)'; x.lineWidth = 1; x.beginPath(); x.arc(ox + 26, y(44), 3, 0, Math.PI * 2); x.stroke();
+      R(x, ox - 4, 30, 100, 4, '#3b3e47'); R(x, ox - 4, 33, 100, 1, 'rgba(255,190,120,.35)'); R(x, ox + 36, 30, 22, 2, '#0b0a09');
+      R(x, ox, 0, 92, 30, '#1a1714'); R(x, ox, 29, 92, 1, 'rgba(0,0,0,.5)');
+      const note = String(p.officeNote);
+      if (note) { R(x, ox + 6, 12, 80, 11, '#d8cfbb'); say(x, note, ox + 46, 17.5, 'rgba(26,22,18,.95)', 7, '600'); }
+      R(x, ox + 6, 67, 80, 11, '#0a0705'); R(x, ox + 6, 77, 80, 1, 'rgba(' + O + ',.7)');
+      say(x, String(p.officeText), ox + 46, 72.5, 'rgba(' + PAPER + ',.95)', 8, '600');
+      o.light?.(ox + 46, 49, 80, 30, '255,214,160', 'window');
+    }
+    // the ticket machines: cabinets with a cyan screen (you can use them), a card slot, a tray; one may be out of order
+    const mx = N(p, 'machinesAt'), nm = Math.max(0, Math.round(N(p, 'machines'))), broken = Math.round(N(p, 'broken'));
+    for (let i = 0; i < nm; i++) {
+      const l = mx + i * 34, dead = i === broken;
+      R(x, l, 0, 26, 58, '#1d2126'); R(x, l, 58, 26, 2, '#2c3138'); R(x, l, 0, 1, 60, 'rgba(255,190,120,.3)'); R(x, l + 25, 0, 1, 60, 'rgba(0,0,0,.4)');
+      R(x, l + 3, 32, 20, 18, '#04100f');
+      if (dead) { R(x, l + 3, 32, 20, 18, '#1a0508'); x.strokeStyle = 'rgba(255,42,68,.7)'; x.lineWidth = 1; x.beginPath(); x.moveTo(l + 5, y(34)); x.lineTo(l + 21, y(48)); x.stroke(); }
+      else {
+        R(x, l + 3, 49, 20, 1, 'rgba(0,255,255,.7)');
+        for (let r = 0; r < 4; r++) R(x, l + 5, 45 - r * 3.5, 6 + ((r * 5 + Math.floor(t / 40) + i * 3) % 11), 1, 'rgba(0,255,255,.55)');
+        o.glow?.(l + 13, 41, { kind: 'screen', col: '0,255,255', r: 22, a: 0.35 });
+      }
+      R(x, l + 8, 24, 10, 2, '#050607'); R(x, l + 6, 8, 14, 6, '#0b0d10'); R(x, l + 6, 13, 14, 1, 'rgba(255,190,120,.25)');
+      say(x, dead ? 'NO' : 'FARES', l + 13, 54.5, dead ? 'rgba(255,42,68,.8)' : 'rgba(' + PAPER + ',.7)', 7);
+    }
+    // the line map on the wall
+    const mapAt = N(p, 'map');
+    if (mapAt >= 0) lineMap(x, mapAt, 40, String(p.name));
+    // the gate line: a gantry hung from the ceiling over the turnstiles, the ID camera and its screen
+    const gx = N(p, 'gate');
+    if (gx >= 0) {
+      const sign = String(p.gateSign), note = String(p.gateNote), sw = Math.max(100, note.length * 4.4 + 12), top = C - 18;
+      for (const k of [gx - sw / 2 + 8, gx + sw / 2 - 9]) R(x, k, top, 1, C - 6 - top, 'rgba(' + O + ',.5)');
+      R(x, gx - sw / 2, top - 22, sw, 22, '#0a0705'); R(x, gx - sw / 2, top - 1, sw, 1, 'rgba(' + O + ',.75)'); R(x, gx - sw / 2, top - 22, sw, 1, 'rgba(' + O + ',.4)');
+      say(x, sign, gx, top - 7, 'rgba(' + PAPER + ',.95)', 8, '600'); say(x, note, gx, top - 16, 'rgba(' + PAPER + ',.7)', 7);
+      o.glow?.(gx, top - 11, { kind: 'screen', col: '255,217,165', r: 34, a: 0.3 });
+      if (p.scanner) {
+        // behind the barrier, a post with a camera on top (its red light blinks) and a small screen that says what it wants
+        const px = gx + 34;
+        R(x, px, 0, 3, 74, '#2a2c33'); R(x, px - 1, 0, 5, 2, '#3b3e47');
+        R(x, px - 5, 74, 13, 7, '#1d1f24'); R(x, px - 9, 76, 4, 3, '#0b0b0d');
+        if (Math.floor(t / 30) % 2 === 0) { R(x, px + 5, 79, 2, 1, 'rgba(255,42,68,.95)'); o.glow?.(px + 6, 79, { kind: 'neon', col: '255,42,68', r: 10, a: 0.5 }); }
+        R(x, px - 20, 46, 44, 14, '#04100f'); R(x, px - 20, 59, 44, 1, 'rgba(255,42,68,.6)');
+        say(x, Math.floor(t / 150) % 2 ? 'ID CHECK' : 'LOOK UP', px + 2, 52.5, 'rgba(255,90,110,.9)', 7, '600');
+        o.glow?.(px + 2, 53, { kind: 'screen', col: '255,90,110', r: 24, a: 0.3 });
+      }
+    }
+    if (W > 20) for (const [ex, rim] of endsOf(p.ends, W)) endWall(x, ex, S, rim);
+    // the floor: terrazzo paving coming towards us, a worn lit strip along the wall
+    R(x, 0, -60, W, 60, '#14110f');
+    x.fillStyle = 'rgba(' + PAPER + ',.04)'; for (let h = -15; h > -60; h -= 15) x.fillRect(0, y(h), W, 1);
+    for (let k = 30; k < W; k += 60) x.fillRect(k, y(0), 1, 60);
+    R(x, 0, -1, W, 2, 'rgba(' + PAPER + ',.24)');
   },
 });
 
@@ -362,4 +542,4 @@ export const scaleRulerElement = piece({
   },
 });
 
-export const metroKitElements: Element[] = [undergroundPlatformElement, metroStairsUpElement, cutawayCarElement, gangwayElement, cutawayTrainElement, scaleRulerElement];
+export const metroKitElements: Element[] = [undergroundPlatformElement, ticketHallElement, metroStairsUpElement, cutawayCarElement, gangwayElement, cutawayTrainElement, scaleRulerElement];

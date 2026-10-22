@@ -74,6 +74,10 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'metro-len-3', base: 'tower', file: 'art/proposals/metro-len-3.composition.json', label: 'Metro · 3-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-4', base: 'tower', file: 'art/proposals/metro-len-4.composition.json', label: 'Metro · 4-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-6', base: 'tower', file: 'art/proposals/metro-len-6.composition.json', label: 'Metro · 6-car train at an underground platform (long)', district: 'downtown' },
+  // Downtown Metro underground (SEAMLESS-WORLD decided 4, 17, 20; §7 step 7), for review before the real metro is redrawn:
+  // the station in cross-section, and the street-to-station cut where the stairs are the seam. Look frames on Downtown's look.
+  { id: 'dt-metro-underground', base: 'downtown', file: 'art/proposals/dt-metro-underground.composition.json', label: 'Downtown Metro · underground: ticket hall, turnstile, 2-car platform, stairs and escalator up', district: 'downtown' },
+  { id: 'dt-metro-seam', base: 'downtown', file: 'art/proposals/dt-metro-seam.composition.json', label: 'Downtown Metro · the stairs seam: the street above, the ticket hall below', district: 'downtown' },
   // Harbor replan (docs/design/HARBOR-ZONES.md, 2026-10-22): the harbor as joined zones, mirrored and train first, west to east along the walk
   // to work at dusk (station → quay → checkout → yard → shed). Look frames on the harbor's look (sky, weather, facing 90); all share ground
   // line h 0 (the station: 160 over the quay).

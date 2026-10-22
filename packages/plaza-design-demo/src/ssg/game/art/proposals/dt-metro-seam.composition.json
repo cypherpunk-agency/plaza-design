@@ -1,0 +1,790 @@
+{
+  "version": 1,
+  "scene": "dt-metro-seam",
+  "instances": [
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 1400
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 1400,
+        "seed": 71,
+        "parallax": 0.2,
+        "minHeight": 220,
+        "maxHeight": 400,
+        "haze": 0.65,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 760,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 1400,
+        "seed": 72,
+        "parallax": 0.5,
+        "minHeight": 170,
+        "maxHeight": 320,
+        "haze": 0.3,
+        "lit": 0.4,
+        "signs": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "front-0",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 60,
+            "width": 110,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 301,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-1",
+      "type": "building.front",
+      "props": {
+        "width": 180,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 10,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 130,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 302,
+        "floors": 6,
+        "top": 0
+      },
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-2",
+      "type": "building.front",
+      "props": {
+        "width": 220,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 14,
+            "width": 90,
+            "tenant": "bar"
+          },
+          {
+            "kind": "door",
+            "from": 160,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "windows": "curtained",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 303,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-3",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "tagged",
+            "from": 14,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 304,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-4",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 20,
+            "width": 120
+          }
+        ],
+        "skin": "panel",
+        "windows": "punched",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 305,
+        "floors": 6,
+        "top": 0
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-5",
+      "type": "building.front",
+      "props": {
+        "width": 190,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 20,
+            "width": 24
+          },
+          {
+            "kind": "sealed",
+            "from": 80,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 306,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-6",
+      "type": "building.front",
+      "props": {
+        "width": 220,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 14,
+            "width": 80
+          },
+          {
+            "kind": "door",
+            "from": 150,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "windows": "framed",
+        "roof": "parapet",
+        "density": 0.7,
+        "seed": 307,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-7",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 100,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "tenement",
+        "windows": "curtained",
+        "roof": "cornice",
+        "density": 0.7,
+        "seed": 308,
+        "floors": 6,
+        "top": 0
+      },
+      "placement": {
+        "x": 1370,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1400,
+        "ground": "#030304",
+        "edge": "#ffb35a",
+        "sheen": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "ground",
+      "type": "level.ground-section",
+      "props": {
+        "width": 1400,
+        "depth": 300,
+        "seed": 9
+      },
+      "placement": {
+        "x": 0,
+        "h": -6
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 0
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 1060,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "metro-plate",
+      "type": "sign.plate",
+      "props": {
+        "text": "METRO · LINE 0",
+        "color": "0,255,255",
+        "size": 10
+      },
+      "placement": {
+        "x": 520,
+        "h": 150
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "hall",
+      "type": "metro.ticket-hall",
+      "props": {
+        "width": 640,
+        "streetTop": false,
+        "name": "DOWNTOWN",
+        "office": 290,
+        "machines": 2,
+        "machinesAt": 400,
+        "map": 470,
+        "gate": 590,
+        "gateNote": "TICKET AND ID REQUIRED",
+        "ends": "left"
+      },
+      "placement": {
+        "x": 420,
+        "h": -150
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "platform",
+      "type": "metro.underground-platform",
+      "props": {
+        "width": 340,
+        "streetTop": false,
+        "endWalls": false,
+        "name": "DOWNTOWN"
+      },
+      "placement": {
+        "x": 1060,
+        "h": -150
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "well",
+      "type": "metro.stairs-up",
+      "props": {
+        "rises": "left",
+        "run": 190,
+        "rise": 150,
+        "flight": false,
+        "hood": true,
+        "sign": "WAY OUT · STREET",
+        "post": true
+      },
+      "placement": {
+        "x": 660,
+        "h": -150
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs",
+      "type": "level.stairs",
+      "props": {
+        "run": -190,
+        "rise": 150,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 660,
+        "h": -150
+      },
+      "order": 20,
+      "layer": "set"
+    },
+    {
+      "id": "train",
+      "type": "metro.cutaway-train",
+      "props": {
+        "cars": 2,
+        "destination": "RING · GALLERIA"
+      },
+      "placement": {
+        "x": 1100,
+        "h": -150
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "camera",
+      "type": "sign.camera",
+      "props": {},
+      "placement": {
+        "x": 960,
+        "h": -38
+      },
+      "order": 22,
+      "layer": "set"
+    },
+    {
+      "id": "gate",
+      "type": "level.barrier",
+      "props": {
+        "style": "turnstile",
+        "width": 24,
+        "refuse": "TICKET AND ID REQUIRED."
+      },
+      "placement": {
+        "x": 1010,
+        "h": -150
+      },
+      "order": 23,
+      "layer": "set"
+    },
+    {
+      "id": "street-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6201,
+        "act": "walk",
+        "archetype": "office",
+        "range": 200
+      },
+      "placement": {
+        "x": 180,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 24,
+      "layer": "playfield"
+    },
+    {
+      "id": "street-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6202,
+        "act": "stand",
+        "archetype": "punk",
+        "extras": [
+          "umbrella"
+        ]
+      },
+      "placement": {
+        "x": 820,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "street-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6203,
+        "act": "smoke",
+        "archetype": "dockworker"
+      },
+      "placement": {
+        "x": 1180,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "street-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6204,
+        "act": "phone",
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 380,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "down",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6205,
+        "act": "stand",
+        "archetype": "commuter"
+      },
+      "placement": {
+        "x": 585,
+        "h": -91,
+        "facing": 1
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "queue-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6206,
+        "act": "queue",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 780,
+        "h": -150,
+        "facing": -1
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "queue-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6207,
+        "act": "wait",
+        "archetype": "student"
+      },
+      "placement": {
+        "x": 806,
+        "h": -150,
+        "facing": -1
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6208,
+        "act": "stand",
+        "archetype": "security"
+      },
+      "placement": {
+        "x": 978,
+        "h": -150,
+        "facing": 1
+      },
+      "order": 31,
+      "layer": "playfield"
+    },
+    {
+      "id": "drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "seed": 6209,
+        "act": "scan"
+      },
+      "placement": {
+        "x": 1030,
+        "h": -58,
+        "facing": -1
+      },
+      "order": 32,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6210,
+        "act": "phone",
+        "archetype": "shopper"
+      },
+      "placement": {
+        "x": 1150,
+        "h": -150,
+        "facing": 1
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "rider",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6211,
+        "act": "read",
+        "archetype": "office",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1265,
+        "h": -150,
+        "facing": 1
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1400,
+        "building": "",
+        "label": "Street"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-hall",
+      "type": "level.floor",
+      "props": {
+        "width": 970,
+        "building": "metro",
+        "label": "Ticket hall (zone metro)",
+        "indoor": true
+      },
+      "placement": {
+        "x": 430,
+        "h": -150
+      },
+      "order": 37,
+      "layer": "logic"
+    },
+    {
+      "id": "label",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 0,
+        "bar": false,
+        "numbers": false,
+        "size": 9,
+        "ink": "#ffd9a5",
+        "title": "DOWNTOWN STREET OVER DOWNTOWN METRO · THE STAIRS SEAM (PROPOSAL)",
+        "note": "The street's ground line is the station's ceiling slab: Downtown above, the Metro zone 150 below|The stairs are the seam: walk down from the pavement into the ticket hall with no cut|The turnstile at the gate line is a barrier in the world; the platform and train continue east"
+      },
+      "placement": {
+        "x": 20,
+        "h": 262
+      },
+      "order": 38,
+      "layer": "foreground"
+    }
+  ]
+}
