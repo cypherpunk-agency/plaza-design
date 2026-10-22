@@ -8,6 +8,7 @@
  * the same black fill: repeated, they paint the same pixels).
  */
 import {createHash} from 'node:crypto';
+import fs from 'node:fs';
 import {canonicalPaint} from './canonical-paint.mts';
 function recorder(){const commands:unknown[][]=[];let gradient=0;const stack:Record<string,unknown>[]=[];const values:Record<string,unknown>={globalAlpha:1,lineWidth:1,font:'',imageSmoothingEnabled:true,getTransform:()=>({a:1,b:0,c:0,d:1,e:0,f:0}),measureText:(text:string)=>({width:String(text).length*6}),getImageData:(_x:number,_y:number,w:number,h:number)=>({data:new Uint8ClampedArray(w*h*4),width:w,height:h})};
  const ctx=new Proxy(values,{get(t,k:string){if(k in t)return t[k];if(k==='save')return()=>{stack.push({...t});commands.push(['save']);};if(k==='restore')return()=>{const r=stack.pop();if(!r)throw new Error('Unbalanced restore');Object.keys(t).forEach(key=>delete t[key]);Object.assign(t,r);commands.push(['restore']);};if(k==='createLinearGradient'||k==='createRadialGradient'||k==='createPattern')return(...args:unknown[])=>{const id=++gradient;commands.push([k,...args,id]);return{id,addColorStop:(...a:unknown[])=>commands.push(['stop',id,...a]),setTransform:()=>{}};};return(...args:unknown[])=>{commands.push([k,...args]);};},set(t,k:string,value){t[k]=value;commands.push(['set',k,value]);return true;}});
@@ -22,10 +23,11 @@ const {art}=await import('../../src/ssg/game/art/index.ts');
 const {cinematicDocuments}=await import('../../src/ssg/game/story/cutscenes/documents.ts');
 
 const round=(v:unknown):unknown=>typeof v==='number'?Math.round(v*1000)/1000:Array.isArray(v)?v.map(round):v&&typeof v==='object'?Object.fromEntries(Object.entries(v as object).map(([k,x])=>[k,round(x)])):v;
-export function paintHash(commands:unknown[][],W:number,H:number,k:number){
+export function paintHash(commands:unknown[][],W:number,H:number,k:number,label=''){
  const paints=canonicalPaint(commands) as any[];
  const clear=(p:any)=>p&&p[0]==='fillRect'&&p[1]===0&&p[2]===0&&p[3]===W&&p[4]===H&&p[5]?.style==='#000'&&p[5].alpha===1&&!p[5].clip&&p[5].matrix.join()===[k,0,0,k,0,0].join();
  while(clear(paints[0]))paints.shift();
+ if(process.env.DUMP&&label===process.env.DUMP)fs.writeFileSync(process.env.DUMP_TO!,JSON.stringify(round(paints)).replace(/\],\[/g,'],\n['));
  return createHash('sha1').update(JSON.stringify(round(paints))).digest('hex').slice(0,16)+' ('+paints.length+' paints)';
 }
 const L=lightAt(1,580,90,null);
@@ -51,7 +53,7 @@ for(const {W,H,k} of sizes){
  for(const id of ['intro','act2','taxi'] as const)for(const time of id==='taxi'?[0,1,2.5]:[0,2,7,14]){
   const r=recorder(),composition=cinematicDocuments.compositions['sequence-'+id];
   preview.render({width:W*k,height:H*k,getContext:()=>r.ctx} as unknown as HTMLCanvasElement,{composition,time,reduced:false,overlays:false,lighting:L,environment:{renderScale:k,ambientClock:time*60,destination:'DOWNTOWN'}} as any);
-  lines.push(`preview ${id} ${W}x${H} t=${time}: ${paintHash(r.commands,W,H,k)}`);
+  lines.push(`preview ${id} ${W}x${H} t=${time}: ${paintHash(r.commands,W,H,k,`preview ${id} ${W}x${H} t=${time}`)}`);
  }
 }
 /** What the game does for a flight frame. */
