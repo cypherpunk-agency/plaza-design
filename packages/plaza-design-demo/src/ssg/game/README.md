@@ -31,6 +31,9 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
 - `?sudo` opens developer mode with separate saves, unlocks, the LEVELS menu and time controls.
 - `?probe` adds the read-only `window.__game` handle (`probe()`: scene, story phase, flags, clock, dialogue, prompts, captions) to the ordinary game, with no unlocks. `scripts/opening-playthrough/` uses it.
 - `?play=sandbox&sudo` opens the engine's manual demonstration bay.
+- `?play=tower` opens the zone lab: walk right off the Tower lab's street into `tower-annex` with no
+  cut, then take the annex stair up to `tower-deck`. `?play=tower-annex` starts in the annex. Seams are in
+  `world/zone-graph.json`; see the handbook's "zones and seams" recipe.
 - The regular homepage also accepts the Konami code to enter the game.
 
 Arrow keys walk, E interacts, H opens hack vision, B the board, Enter the terminal, TAB/M the
