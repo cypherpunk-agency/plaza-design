@@ -38,7 +38,8 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
 
 Arrow keys walk, E interacts, H opens hack vision, B the board, Enter the terminal, TAB/M the
 city map, N the net map once `scan.so` is owned, and Escape closes overlays or opens the menu.
-Touch has on-screen controls and currently requires landscape orientation.
+Touch has on-screen controls and currently requires landscape orientation; in a level scene ▲ ▼
+appear beside ◀ ▶ when ↑/↓ does something (tap to step on or pick a lift floor, hold to climb).
 
 ## Harbor shift prototype (milestone 2)
 

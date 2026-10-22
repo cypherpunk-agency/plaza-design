@@ -144,7 +144,9 @@ its Circuit mover in the scene's model (the elevator's `device`, required); the 
 is, asks it to go, and derives its doors from the mover's trip. A scene without floors keeps one street
 line and its jump ledges. Arrival uses the spawn's or the exit marker's height (`spawnH`,
 `SceneExit.arriveH`). The renderer receives `View.level` (reveal, lift cars, call buttons); the editor
-previews it at rest or opened (environment `inside`).
+previews it at rest or opened (environment `inside`). Touch has no input path of its own: the bar's ▲ ▼
+(ui/touch-controls.ts) press ↑/↓ into the same key handlers (tap one press, hold climbs) and show only
+while `levelArrows` says they act; ACT is E (`scripts/game-tests/check-touch-level-controls.mts`).
 
 What the player sees is what the player can use: a flight or lift attached to a building's interior
 handle works only from that building's floors. A building floor at street height is walked into from

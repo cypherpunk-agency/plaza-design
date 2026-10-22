@@ -6,14 +6,17 @@ const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent
 /**
  * On-screen controls for touch screens: they press the same keys a keyboard does. One bar along the
  * bottom, by mode (the game sets `html.hack-on`, `html.hack-ok`; render.tsx shows what fits):
- * walking, the arrows left and HACK, JMP, ACT, >_, DECK right (the map is in the deck's SYSTEM tab); hack vision,
+ * walking, the arrows left and HACK, JMP, ACT, >_, DECK right (the map is in the deck's SYSTEM tab); in a level
+ * scene ▲ ▼ beside them are ↑ and ↓, shown only while they do something (`html.level-up`, `html.level-down`):
+ * a tap steps onto a flight, through a door or picks the lift panel's floor, holding climbs; hack vision,
  * no arrows and EXIT, BOARD, LOGIC, NET (once scan.so is yours: `html.net-ok`), UNFOLD. HACK only once hacking is yours here.
  */
 export function touchControls(host: HTMLElement) {
   const bar = document.createElement('div');
   bar.id = 'touch';
   bar.innerHTML =
-    '<div class="pad"><button data-key="ArrowLeft" aria-label="Walk left">&#9664;</button><button data-key="ArrowRight" aria-label="Walk right">&#9654;</button></div>' +
+    '<div class="pad"><button data-key="ArrowLeft" aria-label="Walk left">&#9664;</button><button data-key="ArrowRight" aria-label="Walk right">&#9654;</button>' +
+    '<button data-key="ArrowUp" aria-label="Up" class="level-only lv-up">&#9650;</button><button data-key="ArrowDown" aria-label="Down" class="level-only lv-down">&#9660;</button></div>' +
     '<div class="pad"><button data-key="h" aria-label="Hack vision" class="walk-only hack">HACK</button>' +
     '<button data-key=" " aria-label="Jump" class="walk-only">JMP</button><button data-key="e" aria-label="Talk or jack in" class="walk-only">ACT</button>' +
     '<button data-key="Enter" aria-label="Terminal" class="small">&gt;_</button><button data-key="Escape" aria-label="Deck" class="small walk-only">DECK</button>' +
@@ -34,6 +37,10 @@ export function touchControls(host: HTMLElement) {
     b.addEventListener('pointerleave', up);
     b.addEventListener('contextmenu', (e) => e.preventDefault());
   });
+  // the page losing focus lets go of every held button (a held ▲ must not keep climbing)
+  const release = () => bar.querySelectorAll<HTMLButtonElement>('button.down').forEach((b) => { b.classList.remove('down'); sendKey(b.dataset.key!, 'keyup'); });
+  window.addEventListener('blur', release);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) release(); });
   host.appendChild(bar);
 
   const rotate = document.createElement('div');
