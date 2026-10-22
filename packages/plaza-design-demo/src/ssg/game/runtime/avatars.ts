@@ -23,6 +23,8 @@ export interface AvatarFrame {
   shadowGround: () => number | null;
   /** What the player carries in the scene's presentation. */
   carry: Carry | null;
+  /** Cushion height above the player's deck; absent while standing. */
+  seat?:number;
   /** The profile's player: who the person avatar is. */
   player: PlayProfile['player'];
 }
@@ -47,17 +49,17 @@ export function playerCharacter(player: PlayProfile['player'], carry: Carry | nu
  * The person where the game loop puts the player: `wx`, `h` (the player's height: a stair, a lift, a raised floor) and
  * facing. The loop owns the position, so the pose is driven (`moving` steps the walk cycle), never range-walked.
  */
-export function preparePlayerPerson(player: PlayProfile['player'], carry: Carry | null, wx: number, face: number, moving: boolean, t: number, h = 0): PreparedCharacter {
-  return prepareCharacter(playerCharacter(player, carry), t, { x: wx, h, facing: face < 0 ? -1 : 1, act: moving ? 'walk' : 'stand' }, moving);
+export function preparePlayerPerson(player: PlayProfile['player'], carry: Carry | null, wx: number, face: number, moving: boolean, t: number, h = 0,seat?:number): PreparedCharacter {
+  return prepareCharacter(playerCharacter(player, carry), t, { x: wx, h, facing: face < 0 ? -1 : 1, act: seat!==undefined?'sit':moving ? 'walk' : 'stand',seat }, moving);
 }
 
 export const AVATAR_PAINTERS: Record<AvatarId, (f: AvatarFrame) => void> = {
-  hacker({ x, view, p, t, jack, shadowGround }) {
-    const sprite = jack ? SPR.jack : !p.onGround ? SPR.jump : p.moving && Math.floor(t / 9) % 2 ? SPR.walk : SPR.stand;
+  hacker({ x, view, p, t, jack, shadowGround,seat }) {
+    const sprite = jack ? SPR.jack : seat!==undefined?SPR.sit:!p.onGround ? SPR.jump : p.moving && Math.floor(t / 9) % 2 ? SPR.walk : SPR.stand;
     drawPlayer(x, view, sprite, p, jack, shadowGround());
   },
-  person({ x, view, p, carry, player }) {
-    const pose = preparePlayerPerson(player, carry, p.x, p.face, p.moving, view.t, p.y);
+  person({ x, view, p, carry, player,seat }) {
+    const pose = preparePlayerPerson(player, carry, p.x, p.face, p.moving, view.t, p.y,seat);
     if (pose.visible) drawCharacterFrame(x, view, pose.character, pose.ready, pose.pixelSize, pose.frame, pose.height);
   },
 };

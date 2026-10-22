@@ -1,4 +1,4 @@
-import {validValue,stateAddress} from '../engine/gameplay/state';
+import {validValue,stateAddress,setStateValue} from '../engine/gameplay/state';
 import type {StateDeclaration,StateValue} from '../engine/gameplay/types';
 import type {SceneDef} from '../scenes/kit';
 import {validateMetroStart,type MetroStart} from '../world/transport/metro-start';
@@ -11,7 +11,7 @@ import {LOGIC,NET,KEYRING} from '../data';
 
 import {OPENING,openingStoryModel} from '../story/opening';
 
-import shiftGameplay from '../scenes/harbor-shift/gameplay.json';
+
 
 import {WEATHER_KINDS,type WeatherKind} from '../world/weather';
 
@@ -28,14 +28,14 @@ export interface PlayFixtureVocabulary {flags:ReadonlySet<string>;programs:Reado
 
 export type FixtureStateMetadata=Readonly<Record<string,Readonly<Record<string,StateDeclaration>>>>;
 /** Scene-local fixture keys address the same canonical scene owner as gameplay. */
-export function fixtureStateMetadata(registry:Readonly<Record<string,SceneDef>>):FixtureStateMetadata{return Object.fromEntries(Object.entries(registry).map(([scene,def])=>[scene,Object.fromEntries(Object.entries(def.gameplay?.state??{}).filter(([id,d])=>d.owner===scene&&stateAddress(id)[0]===scene).map(([id,d])=>[stateAddress(id)[1],d]))]));}
+export function fixtureStateMetadata(registry:Readonly<Record<string,SceneDef>>):FixtureStateMetadata{return Object.fromEntries(Object.entries(registry).map(([scene,def])=>[scene,Object.fromEntries(Object.entries(def.gameplay?.state??{}).filter(([id,d])=>stateAddress(id)[0]===d.owner).map(([id,d])=>[d.owner===scene?stateAddress(id)[1]:id,d]))]));}
 export function fixtureStateDeclarations(scene:string,vocabulary?:PlayFixtureVocabulary){return (vocabulary?vocabulary.states:fixtureStateMetadata(SCENES))?.[scene]??{};}
 
 /** Prospective composition bounds are checked in both editor history and grouped source saves. */
 
 export function validateFixtureBounds(doc:PlayFixtures,widths:Readonly<Record<string,number>>){for(const f of doc.fixtures)if(f.spawn!==null&&(!Number.isFinite(widths[f.scene])||f.spawn>widths[f.scene]-12))throw new Error('Play fixture '+f.id+': starting X is outside the pending scene');return doc;}
 
-export const fixtureFlags=Array.from(new Set([...shiftGameplay.flags,...Object.values(OPENING),...openingStoryModel.GAMEPLAY.flags,...Object.values(SCENES).flatMap(s=>s.gameplay?.flags??[]),...Object.values(SCENES).flatMap(s=>s.exits.flatMap(e=>[...(e.requires?[e.requires]:[]),...(e.sets?[e.sets]:[])])),defaultCity.HARBOR_FLAG,'shop:bought','end','pixel']));
+export const fixtureFlags=Array.from(new Set([...Object.values(OPENING),...openingStoryModel.GAMEPLAY.flags,...Object.values(SCENES).flatMap(s=>s.gameplay?.flags??[]),...Object.values(SCENES).flatMap(s=>s.exits.flatMap(e=>[...(e.requires?[e.requires]:[]),...(e.sets?[e.sets]:[])])),defaultCity.HARBOR_FLAG,'shop:bought','end','pixel']));
 
 export const fixtureModules=LOGIC.modules.map(m=>m.id),fixturePrograms=(NET.programs??[]).map(p=>p.id),fixtureKeys=[...KEYRING.keys()];
 
@@ -66,19 +66,19 @@ export function validatePlayFixtures(value:unknown,single=false,additionalScenes
 
  }
 
- if(!single&&['harborShift','sandbox'].some(scene=>!doc.fixtures.some(f=>f.scene===scene)))fail('retain the original Harbor Shift and Sandbox fixtures');
+ if(!single&&['harbor-station','sandbox'].some(scene=>!doc.fixtures.some(f=>f.scene===scene)))fail('retain the connected Harbor and Sandbox fixtures');
 
  if(JSON.stringify(doc).length>128000)fail('size');return structuredClone(doc);
 
 }
 
-export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string[]=[],vocabulary?:PlayFixtureVocabulary):Save {const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,additionalScenes,vocabulary).fixtures[0],save=newSave();save.scene=f.scene;save.flags={...f.flags};save.items={...f.items};save.tokens=f.tokens;save.modules=[...f.modules];save.programs=[...f.programs];save.keyring=[...f.keyring];save.clock={day:f.day,min:f.minute,seed:f.seed};const declarations=fixtureStateDeclarations(f.scene,vocabulary);save.gameplay={[f.scene]:{...Object.fromEntries(Object.entries(declarations).map(([key,d])=>[key,d.default])),...f.state}};return save;}
+export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string[]=[],vocabulary?:PlayFixtureVocabulary):Save {const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,additionalScenes,vocabulary).fixtures[0],save=newSave();save.scene=f.scene;save.flags={...f.flags};save.items={...f.items};save.tokens=f.tokens;save.modules=[...f.modules];save.programs=[...f.programs];save.keyring=[...f.keyring];save.clock={day:f.day,min:f.minute,seed:f.seed};const declarations=fixtureStateDeclarations(f.scene,vocabulary);save.gameplay={};for(const[key,d]of Object.entries(declarations))setStateValue(save.gameplay,d.owner===f.scene?f.scene+'.'+key:key,Object.prototype.hasOwnProperty.call(f.state,key)?f.state[key]:d.default);return save;}
 
 
 
 /** Source-based starting state template for newly created Play fixtures. */
 
-export function defaultPlayFixture(scene:PlayScene,scanner:string|null=NET.scanProgram):PlayFixture {return {id:scene==='harborShift'?'harbor-start':scene.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-start',name:scene==='harborShift'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harborShift'?0:5,modules:scene==='harborShift'?['timer.so']:['timer.so','switch.so'],programs:scene==='harborShift'||scanner===null?[]:[scanner],keyring:[],state:{},day:1,minute:scene==='harborShift'?1120:580,seed:3,weather:'forecast',clock:scene==='harborShift'?'story':'fixed',spawn:null};}
+export function defaultPlayFixture(scene:PlayScene,scanner:string|null=NET.scanProgram):PlayFixture {return {id:scene==='harbor-station'?'harbor-start':scene.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-start',name:scene==='harbor-station'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harbor-station'?0:5,modules:scene==='harbor-station'?['timer.so']:['timer.so','switch.so'],programs:scene==='harbor-station'||scanner===null?[]:[scanner],keyring:[],state:{},day:1,minute:scene==='harbor-station'?1140:580,seed:3,weather:'forecast',clock:scene==='harbor-station'?'story':'fixed',spawn:null};}
 
 /** Route and phase-offset validation uses the complete prospective world/transport source. */
 export function validateFixtureMetro(doc:PlayFixtures,world:CityModel=defaultCity){for(const f of doc.fixtures)if(f.metro)validateMetroStart(f.metro,world.LINE);return doc;}

@@ -6,6 +6,7 @@ import type {Handoff} from '../art/core/timeline';
 import {SUDO} from '../runtime/mode';
 import {fail,object,fields,text,id,list,bool,num,hm,phaseId,validateCues,cueRefs} from './story-shapes';
 import type {CardSpec,Cue,GoalHint,Persona,ScenePhase,StoryTarget,Trigger,WashRule} from './story-rules';
+import {characterOf} from '../runtime/play-profiles';
 export type {CardSpec,Cue,GoalHint,Persona,ScenePhase,StoryTarget,Trigger,WashRule,ExitRule,StoryChip,PingTarget,StoryIntro,ArrivalRow,ArrivalPage,GateRule,AckRule,Say,StoryLine}from './story-rules';
 /** A milestone the story reaches: the name of an entry of `WORKFLOWS` (home, street, flat, slept, uplink, jacked; a second timeline adds its own). */
 export type OpeningWorkflow=string;
@@ -48,6 +49,7 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  const knownFlags=new Set<string>(Object.values(roles));if(knownFlags.size!==Object.keys(ROLE_FLAGS).length)fail('OPENING','distinct phase-role flags required');
  const gameplay=validateGameplay(d.GAMEPLAY),workflows=object(d.WORKFLOWS,'WORKFLOWS');
  for(const flag of knownFlags)if(!gameplay.flags.includes(flag))fail('GAMEPLAY/flags','opening phase role references missing flag '+flag);
+ for(const flag of gameplay.flags)knownFlags.add(flag);
  if(gameplay.native||gameplay.checkpoint)fail('GAMEPLAY','story workflows do not own physical scene bindings or checkpoint policies');
  if(!('home'in workflows))fail('WORKFLOWS','the home milestone (a new game) is required');
  if(Object.keys(workflows).length>32)fail('WORKFLOWS','milestone limit');
@@ -75,7 +77,7 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
   phaseId(p,'PHASES/'+p);
   const r=fields(v,'PHASES/'+p,['hackLocked','pinned','resume','persona'],['hackLocked','pinned','resume']);for(const k of ['hackLocked','pinned'])bool(r[k],'PHASES/'+p+'/'+k);
   const rules=list(r.resume,'PHASES/'+p+'/resume',8);let fallback=false;for(const[index,rule]of rules.entries()){const a='PHASES/'+p+'/resume/'+index,q=fields(rule,a,['whenFlag','destination'],['destination']);if(fallback)fail(a,'unreachable resume rule after fallback');if(q.whenFlag!==undefined){if(!knownFlags.has(q.whenFlag))fail(a,'unknown opening flag');}else fallback=true;destination(q.destination,a);}
-  if(r.persona!==undefined){const a='PHASES/'+p+'/persona',q=fields(r.persona,a,['name','calmWeather','deck']);text(q.name,a+'/name');bool(q.calmWeather,a+'/calmWeather');const deck=fields(q.deck,a+'/deck',['files','whoami']);text(deck.whoami,a+'/deck/whoami');const files=object(deck.files,a+'/deck/files');if(Object.keys(files).length>32)fail(a+'/deck/files','file limit');for(const[k,t]of Object.entries(files)){id(k,a+'/deck/file');text(t,a+'/deck/'+k);}}
+  if(r.persona!==undefined){const a='PHASES/'+p+'/persona',q=fields(r.persona,a,['name','calmWeather','deck','character'],['name','calmWeather','deck']);if(q.character!==undefined)characterOf(q.character,a+'/character');text(q.name,a+'/name');bool(q.calmWeather,a+'/calmWeather');const deck=fields(q.deck,a+'/deck',['files','whoami']);text(deck.whoami,a+'/deck/whoami');const files=object(deck.files,a+'/deck/files');if(Object.keys(files).length>32)fail(a+'/deck/files','file limit');for(const[k,t]of Object.entries(files)){id(k,a+'/deck/file');text(t,a+'/deck/'+k);}}
  }
  // a phase with resume rules needs a fallback (the last phase, which may have none, is the story's end)
  for(const[p,v]of Object.entries(metadata)){const rules=(v as {resume:{whenFlag?:string}[]}).resume;if(rules.length&&!rules.some(r=>r.whenFlag===undefined))fail('PHASES/'+p,'resume fallback required');}
@@ -165,10 +167,10 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
 }
 type Flags=Readonly<Record<string,boolean>>;
 export function createOpeningModel(value:unknown,context?:OpeningSourceContext){
- const source=validateOpeningSource(value,context),OPENING=source.OPENING;
+ const source=validateOpeningSource(value,context);
  const openingState=(f:Flags):OpeningState=>source.PHASE_RULES.find(row=>matches(row.when,{flags:f,items:{},tokens:0}))!.phase;
  const openingResumeDestination=(f:Flags)=>{const rule=source.PHASES[openingState(f)].resume.find(r=>!r.whenFlag||f[r.whenFlag]);return rule?{...rule.destination}:null;};
- return{...source,source,resolveTarget:resolveOpeningTarget,OPENING_FLAGS:Object.values(OPENING),
+ return{...source,source,resolveTarget:resolveOpeningTarget,OPENING_FLAGS:[...source.GAMEPLAY.flags],
  phaseIds:Object.keys(source.PHASES),openingState,openingResumeDestination,openingResume:(f:Flags)=>openingResumeDestination(f)?.scene??null,
  openingLevel:(id:string)=>source.OPENING_LEVELS.find(l=>l.id===id),hackLocked:(f:Flags)=>SUDO?false:source.PHASES[openingState(f)].hackLocked,
  /** Who you are while the phase has a persona (the courier before the deletion): its name, deck, and whether the weather is kept calm. */

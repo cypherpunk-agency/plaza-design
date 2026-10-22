@@ -7,11 +7,9 @@ import {evaluateAccess,validateAccess} from '../../src/ssg/game/engine/gameplay/
 import {capabilityView,exitPermission,exitVisibility} from '../../src/ssg/game/world/access';
 import {compileSceneDocument,validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import {matches} from '../../src/ssg/game/engine/gameplay/validation';
-import shiftSceneJson from '../../src/ssg/game/scenes/harbor-shift/scene.json';
-import shiftGameplayJson from '../../src/ssg/game/scenes/harbor-shift/gameplay.json';
-import {SCENES} from '../../src/ssg/game/scenes/index';
-import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
-const SHIFT_SCENE=validateSceneDocument(shiftSceneJson,validateGameplay(shiftGameplayJson),{manifest:true,actors:true}),SHIFT_USES=SCENES.harborShift.uses!,shiftGoal=SCENES.harborShift.objective!,shiftAttention=SCENES.harborShift.attention!;
+import {HARBOR_SHED,HARBOR_GAMEPLAY} from './harbor-source-fixture.mts';
+import {SCENES} from '../../src/ssg/game/scenes';
+const SHIFT_SCENE=validateSceneDocument(HARBOR_SHED.scene,HARBOR_GAMEPLAY,{manifest:true,actors:true}),SHIFT_USES=SCENES['harbor-shed'].uses!,shiftGoal=SCENES['harbor-shed'].objective!,shiftAttention=SCENES['harbor-shed'].attention!;
 import {demoContent,DEMO_GAMEPLAY,DEMO_COUNTER} from '../../src/ssg/game/demo';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {ConversationSession} from '../../src/ssg/game/engine/gameplay/conversation';
@@ -22,12 +20,12 @@ for(let mask=0;mask<64;mask++){
  const old=!s.handle?'handle':!s.flags.till?'till':!s.controlled.includes('0x2F')?'box':!s.jump?'install':!s.controlled.includes('0x31')?'relay':!s.flags.end?'gate':'done';
  assert.equal(currentObjective(downtownDocument.objectives as any,{flags:s.flags,items:s.items,tokens:s.tokens,player:s})?.id,old);
 }
-const flags=[...new Set(JSON.stringify(SHIFT_SCENE.objectives).matchAll(/"flag":"([^"]+)"/g).map(m=>m[1]))];
+const flags=[...new Set(JSON.stringify(SHIFT_SCENE.objectives).matchAll(/"state":"shift\.([^"]+)"/g).map(m=>m[1]))];
 for(let mask=0;mask<2**flags.length;mask++){
- const state={flags:Object.fromEntries(flags.map((f,i)=>[f,!!(mask&(1<<i))])),items:{},tokens:0};
+ const state={flags:{},values:{shift:Object.fromEntries(flags.map((f,i)=>[f,!!(mask&(1<<i))]))},items:{},tokens:0};
  const old=SHIFT_SCENE.objectives.find(g=>matches(g.when,state))!;
- assert.equal(shiftGoal(state.flags),old.text);
- const attention=shiftAttention(state.flags);assert.equal(attention?.x,old.target?SHIFT_USES.find(u=>u.id===old.target)!.x:undefined);assert.equal(!!attention?.gentle,!!old.target&&!!old.gentle);
+ assert.equal(shiftGoal(state.flags,state),old.text);
+ const attention=shiftAttention(state.flags,state);assert.equal(attention?.x,old.target?SHIFT_USES.find(u=>u.id===old.target)!.x:undefined);assert.equal(!!attention?.gentle,!!old.target&&!!old.gentle);
 }
 // Preserve the previous map refusal priority over seen/location/gate/harbor/ride combinations.
 for(const p of PLACES)for(const scene of ['downtown','harbor'] as const)for(let mask=0;mask<16;mask++){

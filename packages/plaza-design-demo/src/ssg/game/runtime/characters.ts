@@ -419,7 +419,7 @@ export type PreparedCharacter = { visible: false; character: Character } | {
  * Resolve scheduling and pose once for an artwork binding; keep the original bake key. `moving`: a controller places
  * the body itself (a people flow): it stands at `override.x`, stepping when true (as `drawDriven`).
  */
-export function prepareCharacter(p: Character, t: number, override?: Partial<Pick<Character, 'act' | 'facing' | 'x' | 'h'>>, moving?: boolean): PreparedCharacter {
+export function prepareCharacter(p: Character, t: number, override?: Partial<Pick<Character, 'act' | 'facing' | 'x' | 'h' | 'seat'>>, moving?: boolean): PreparedCharacter {
   const posed = override ? { ...p, ...override } : p;
   // Following affects pose evaluation, not appearance; omit that object link from the snapshot.
   const character = JSON.parse(JSON.stringify({ ...posed, follow: undefined })) as Character;

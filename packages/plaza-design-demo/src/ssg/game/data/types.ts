@@ -589,7 +589,11 @@ export interface Pt { x: number; y: number }
  * come back in a stable state. Trace and lockouts are stored, so reloading
  * does not wipe them; so are clocks and the watchdog's place on its route.
  */
+/** A current mover checkpoint. Vehicle services retain a source path step, never executable saved steps. */
+export interface MoverSave {at:string;to?:string;pos?:number;path?:{name:string;step:number;elapsed:number;from:{x:number;h:number};lastTo?:string}}
 export interface SceneSave {
+  /** Current short-lived passenger memory, with its expiry stamp. */
+  people?:import('../engine/people').PeopleState;
   /** Goal ids reached. */
   goals: string[];
   /** Every cable: `from` device.noun:event, `to` device.noun, the verb it carries. Pre-wired ones you cut are missing. */
@@ -616,7 +620,7 @@ export interface SceneSave {
   /** CLOCK nouns (`device.noun`): the next event's index, ms into the beat, stopped. */
   clocks?: Record<string, { next: number; ms: number; off?: boolean }>;
   /** Movers: the stop each is at, and where one on its way was going (engine/movers.ts). */
-  movers?: Record<string, { at: string; to?: string; pos?: number }>;
+  movers?: Record<string, MoverSave>;
   /** Zones switched off with `disarm`. */
   zones?: Record<string, { off: true }>;
   /** Watchdogs, by id: ms into their loop. */

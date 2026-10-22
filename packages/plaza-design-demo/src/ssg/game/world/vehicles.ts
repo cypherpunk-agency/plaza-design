@@ -1,7 +1,7 @@
 /**
  * VEHICLES (docs/design/SEAMLESS-WORLD.md §4): a shell with its own frame of reference, carried through zones by a
- * Circuit mover. A spike of the pure model for step 5: source shapes and the rules the one runtime would apply. Nothing
- * here is wired into the game loop yet, and nothing here keeps state: a vehicle is only its movers in a SceneModel
+ * Circuit mover. Pure source and geometry rules used by engine/level-vehicles.ts in the existing level step.
+ * Nothing here keeps state: a vehicle is only its movers in a SceneModel
  * (the frame mover and, for a train, its doors mover). Every function reads them, the way engine/level.ts `car()`
  * reads a lift's mover.
  *
@@ -29,7 +29,7 @@ export type VehicleKind = typeof VEHICLE_KINDS[number];
 export interface ZonePoint { x: number; h: number }
 /** A door in its car: centre `x` (car-local) and width; the floor it opens onto is the car floor at its height (`h`, default 0). */
 export interface VehicleDoor { id: string; x: number; w: number; h?: number }
-export interface VehicleSeat { id: string; x: number; h?: number }
+export interface VehicleSeat { id: string; x: number; h?: number; /** Optional registered furniture and surface anchor; compiled geometry follows the artwork. */ artwork?:string; anchor?:string }
 /** A car floor in car-local units (x from the car's left end, h from its floor). Absent: one deck the car's width at h 0. */
 export interface CarFloor { id: string; x: number; w: number; h: number; label?: string; indoor?: true }
 /** One car of the consist. Cars are laid out left to right, `gap` apart. A shell-only car (a van, `shellOnly`) has no floors. */
@@ -50,6 +50,8 @@ export interface VehicleSource {
   id: string; kind: VehicleKind;
   /** The frame mover, `device.noun`. */
   mover: string;
+  /** Optional shared gameplay query authorizing player boarding; alighting remains available. */
+  boardQuery?:string;
   doors: VehicleDoorsDrive;
   cars: VehicleCar[];
   /** Between cars, units (default 0). Gangways join neighbouring cars' floors at one height into one walk (default true). */
@@ -206,7 +208,7 @@ export function consistLevel(v: VehicleSource): LevelSource {
 /** Where each placed zone lies from the active zone (world/zone-graph.ts `placeFrom`). */
 export type Placements = ReadonlyMap<string, { dx: number; dh: number }>;
 /** A vehicle in this frame, in the active zone's units: its pose, doors, berth, and its interior as a `LevelPart`. */
-export interface VehicleFrame { vehicle: VehicleSource; pose: VehiclePose; doors: number; berth?: VehicleBerth; part: LevelPart }
+export interface VehicleFrame { vehicle: VehicleSource; pose: VehiclePose; doors: number; berth?: VehicleBerth; part: LevelPart;occupied?:readonly string[];boarding?:boolean }
 
 /** The vehicle as the frame sees it, or undefined when its mover is missing or its zone is not placed (not resident). */
 export function vehicleFrame(v: VehicleSource, m: MoverModel, placements: Placements, level: LevelSource = consistLevel(v)): VehicleFrame | undefined {
@@ -235,6 +237,7 @@ const usableFrom = (f: VehicleFrame, fl: LevelFloor) => !f.vehicle.inside || fl.
  * the door over that floor. Returns the car floor (merged id) the player now stands on, or undefined.
  */
 export function boardAt(level: LevelSource, f: VehicleFrame, floor: string, x: number): string | undefined {
+  if(f.boarding===false)return undefined;
   const here = level.floors.find(o => o.id === floor);
   if (!here || here.zone === f.vehicle.id || !covers(here, x, here.h) || !usableFrom(f, here)) return undefined;
   const d = doorAt(f, x, here.h); if (!d) return undefined;
@@ -287,6 +290,7 @@ export function validateVehicle(value: unknown): VehicleSource {
   if (!v || !idOk(v.id)) throw new Error(`${at}: id is lower-case letters, digits, dots and dashes`);
   if (!VEHICLE_KINDS.includes(v.kind as VehicleKind)) throw new Error(`${at}: kind is one of ${VEHICLE_KINDS.join(', ')}`);
   if (typeof v.mover !== 'string' || !/^[^.]+\.[^.]+$/.test(v.mover)) throw new Error(`${at}: mover is device.noun`);
+  if(v.boardQuery!==undefined&&(typeof v.boardQuery!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v.boardQuery)))throw Error(`${at}: boarding query names a shared gameplay query`);
   const d = v.doors as Partial<{ mover: string; trip: number; open: number }> | undefined;
   if (!d || !finite(d.open) || d.open <= 0 || d.open > 1 || (typeof d.mover !== 'string' && !(finite(d.trip) && d.trip > 0))) throw new Error(`${at}: doors is { mover, open } or { trip, open } with open in (0, 1]`);
   if (!Array.isArray(v.cars) || !v.cars.length) throw new Error(`${at}: a vehicle has at least one car`);
@@ -294,9 +298,14 @@ export function validateVehicle(value: unknown): VehicleSource {
   for (const c of v.cars) {
     if (!idOk(c?.id) || ids.has(c.id)) throw new Error(`${at}: each car has its own id`); ids.add(c.id);
     if (!finite(c.width) || c.width <= 0) throw new Error(`${at} car ${c.id}: width is a positive number`);
-    for (const f of c.floors ?? []) if (!idOk(f.id) || !finite(f.x) || !finite(f.w) || !finite(f.h) || f.x < -0.5 || f.x + f.w > c.width + 0.5) throw new Error(`${at} car ${c.id}: floor ${f?.id} lies within the car`);
-    for (const k of [...(c.doors ?? []), ...(c.seats ?? [])]) if (!idOk(k?.id) || !finite(k.x) || k.x < 0 || k.x > c.width) throw new Error(`${at} car ${c.id}: ${k?.id} lies within the car`);
     if (!Array.isArray(c.doors) || !Array.isArray(c.seats)) throw new Error(`${at} car ${c.id}: doors and seats are lists`);
+    for (const f of c.floors ?? []) if (!idOk(f.id) || !finite(f.x) || !finite(f.w) || f.w<=0 || !finite(f.h) || f.x < -0.5 || f.x + f.w > c.width + 0.5) throw new Error(`${at} car ${c.id}: floor ${f?.id} lies within the car`);
+    for(const list of [c.doors,c.seats]){const keys=new Set<string>();for (const k of list) {
+      if (!idOk(k?.id) || keys.has(k.id) || !finite(k.x) || k.x < 0 || k.x > c.width || k.h!==undefined&&!finite(k.h)) throw new Error(`${at} car ${c.id}: ${k?.id} needs a unique id and lies within the car`);
+      keys.add(k.id);
+    }}
+    for(const door of c.doors)if(!finite(door.w)||door.w<=0)throw new Error(`${at} car ${c.id}: door width is positive`);
+    for(const seat of c.seats)if((seat.artwork===undefined)!==(seat.anchor===undefined)||seat.artwork!==undefined&&(!idOk(seat.artwork)||!idOk(seat.anchor)))throw new Error(`${at} car ${c.id}: a linked seat names artwork and anchor`);
   }
   if (v.gap !== undefined && (!finite(v.gap) || v.gap < 0)) throw new Error(`${at}: gap is a number ≥ 0`);
   const r = v.route as Partial<VehicleRoute> | undefined;

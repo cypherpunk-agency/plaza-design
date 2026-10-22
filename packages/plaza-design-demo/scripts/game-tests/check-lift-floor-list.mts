@@ -168,7 +168,7 @@ try {
         g.syncLevelArrows(); g.syncCarList(); ui.follow();
       }
     };
-    const pick = () => (L.state.ride as {pick: number}).pick;
+    const pick = () => L.state.vehicle!.panel!.pick;
     const rows = () => (popup as any).list.children as El[];
     const text = (r: El) => r.children.map(c => c.textContent);
     const box = () => { const b: El = (popup as any).box; return {l: Number.parseFloat(b.style.left), t: Number.parseFloat(b.style.top), w: b.offsetWidth, h: b.offsetHeight}; };
@@ -234,7 +234,8 @@ try {
     assert.ok(!rows().some(r => r.has('cur')), name + ': no row says "you are here" while it travels');
     frame(25); placed('while it travels');
     frame(900);
-    assert.equal(levelFloor(L).id, target.floor, name + ': the car arrived at the chosen floor');
+    assert.equal(p.y, target.h, name + ': the cabin arrived at the chosen floor');
+    assert.ok(L.state.vehicle?.panel, name + ': the rider stays on the cabin deck until stepping out');
     const here = rows().filter(r => r.has('cur'));
     assert.ok(here.length === 1 && text(here[0])[1] === nameOf(target.label), name + ': "you are here" moved to it');
     const atTarget = placed('at ' + target.label);
@@ -273,11 +274,11 @@ try {
       btn('e').fire('pointerdown'); btn('e').fire('pointerup');
       frame(10); assert.ok(m.movers.moving('lift.car'), name + ': ACT sends the car');
       frame(900);
-      assert.equal(levelFloor(L).id, stops[1].floor, name + ': ACT sent it to the picked floor');
+      assert.equal(p.y, stops[1].h, name + ': ACT sent it to the picked floor');
     }
 
     // Enter sends too; choosing the floor the car is at steps out and closes the list
-    const stopAt = stops.findIndex(s => s.floor === levelFloor(L).id);
+    const stopAt = stops.findIndex(s => Math.abs(s.h-p.y)<.5);
     for (let i = 0; i < 12; i++) key('ArrowDown');
     for (let i = 0; i < stopAt; i++) key('ArrowUp');
     frame(); assert.equal(pick(), stopAt, name + ': picked the floor the car is at');

@@ -174,3 +174,33 @@ contracts cover all 20 scenes plus selected environment/hack states; see
 The agent checks mechanics, permissions, persistence and disposal. User feedback should address
 clarity, appeal, pacing and authoring comfort. See [review routes](../docs/reference/REVIEW-GUIDE.md).
 For engine ownership and extension recipes read [ENGINE-HANDBOOK.md](../docs/reference/ENGINE-HANDBOOK.md).
+
+## Shared world backdrops and camera sequences
+
+World backdrop compositions live in `world/backdrops/` and are ordinary editable artwork documents.
+Open `backdrop-glide-coast` to edit the shared coast; use its Sky inspector for the horizon, style,
+world width and atmosphere regions. Scene environment controls reference the backdrop and give the
+zone's world x/h origin. Origins must agree with every shared seam; grouped Save rejects a mismatch.
+Distance rows stay in the backdrop; walkable ground stays in the scene composition. Set/playfield
+artwork may overhang a zone, while distance/backdrop rows clip at its window.
+
+`sequence-opening` owns framing and timeline inputs, not duplicate scene artwork. Edit its camera,
+clock, rain and arrival-train tracks there; edit buildings, people and props in the corresponding
+`authored.glide-*` or harbor scene documents. Both sequence preview and private Play consume the
+pending scene, graph and backdrop documents through the game's shared frame.
+
+### Walkable vehicle pilot
+
+Open `authored.vehicle-lab` and select the `shuttle` frame. Its **Vehicle** tab edits
+existing cars and doors, gangways, route points and berths; **Logic → Devices** edits
+the same frame/door movers and service timing. Pending edits reach native scene Play and
+Demo world. History, bundles and protected Save use the ordinary composition document.
+Seat benches have typed position/height controls and native sitting; their usable places follow the registered furniture anchors. Existing consists support one/two/three-car presets and Add/Remove car (up to eight). The source edit includes doors, benches, gangways and shell references. Route controls show segment lengths and support split/remove/extend; invalid discontinuities reject atomically. New scene → Preset creates a working shuttle or a shell-only curve/drop cart as ordinary source. Cross-zone route legs select the actual zone; berths name that zone’s floor. Prospective source validation rejects discontinuous routes.
+
+
+Select a live `character.flow` to open **Passengers**: vehicle, boarding/alighting berths, seed,
+spawn interval, walking speed, approach/exit waypoints and queue spacing. Native Play uses actual
+vehicle doors and the same identities throughout. Painting only reads prepared people.
+For a quick real commute, open Harbor Station → Play fixture **harbor-commute**; it starts at an
+open door after checkout. The fixture stores declared shared `shift.*` values in their actual
+owner block. It does not create a second copy under the scene.

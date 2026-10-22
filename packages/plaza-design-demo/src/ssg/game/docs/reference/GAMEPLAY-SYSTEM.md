@@ -55,7 +55,7 @@ changed in this implementation.
 | `engine/gameplay/session.ts` | Atomic draft execution, invocation permissions, bounded reaction queue and post-commit observers |
 | `engine/gameplay/conversation.ts` | Conditional entry, read-only frames, choices and transitions; no rewards on opening/closing |
 | `engine/gameplay/delivery-terminal.ts` | Small native SceneModel fixture and bridge to the same delivery command |
-| `scenes/harbor-shift/gameplay.json` | Harbor command/reaction definitions and supervisor/Mara dialogue |
+| `scenes/authored.json` (`harbor-shed`, `harbor-yard`, `harbor-checkout`) | Harbor commands, reactions and supervisor/Mara dialogue on shared `shift.*` state |
 | `engine/gameplay/content-contract.ts` | Shared validation of a scene's documents against its composition (the harbor's one-press interactions included); the pilot IDs and invocation permissions are in the scene's `gameplay.json` |
 | `runtime/game.ts` | Per-scene session state ports onto the current player save; existing save/HUD handling after interaction |
 | `authoring/gameplay-pilot-session.ts` | Independent pilot state, bounded controlled clock and native device model |

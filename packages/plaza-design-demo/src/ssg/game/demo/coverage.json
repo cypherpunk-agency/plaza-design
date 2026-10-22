@@ -10,7 +10,8 @@
   "areas": {
     "library": "Conversations",
     "shop": "Purchases and optional guidance",
-    "sandbox": "Devices and wiring"
+    "sandbox": "Devices and wiring",
+    "vehicle-lab": "Walkable two-car shuttle"
   },
   "features": [
     {
@@ -64,7 +65,6 @@
       "failure": "refused conversation purchase leaves state/node unchanged",
       "combined": "buy/refill/discount through same commands",
       "game": [
-        "harborShift",
         "library:catalog"
       ]
     },
@@ -107,6 +107,16 @@
       "combined": "Authorize in place, then purchase; objective advances through the shared transaction",
       "game": "Harbor authored guidance, Downtown progression, flag/key exits, quick-travel and harbor transport adapters",
       "evidence": "ENG-05-08-STATUS.md"
+    },
+    {
+      "id": "vehicles.walkable",
+      "authoring": "Vehicle frame inspector; Circuit movers under Logic / Devices",
+      "minimal": "Step aboard at the starting door",
+      "failure": "Closed doors and travelling frames refuse boarding/alighting",
+      "combined": "Walk through the gangway, ride, and step off at the next berth",
+      "game": [
+        "vehicle-lab"
+      ]
     }
   ]
 }

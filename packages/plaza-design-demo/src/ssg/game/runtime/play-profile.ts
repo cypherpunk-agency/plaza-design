@@ -56,13 +56,15 @@ export const slotPrefix = () => (SUDO && active.namespace.sudoSlots) || active.n
 /** The query string that reopens the active profile at a scene (LOAD GAME without session storage). */
 export function profileQuery(scene: string): string {
   const url = active.select?.url;
+  if(url?.value!==undefined)return '?'+url.param+'='+encodeURIComponent(url.value)+(SUDO?'&sudo':'');
   if (url && url.value === undefined) return '?' + url.param;
-  const named = scene && scene !== active.home ? '=' + encodeURIComponent(scene) : '';
+  const selectsOtherProfile=profiles.profiles.some(p=>p!==active&&p.select?.url?.param==='play'&&p.select.url.value===scene);
+  const named = scene && scene !== active.home&&!selectsOtherProfile ? '=' + encodeURIComponent(scene) : '';
   return '?play' + named + (SUDO ? '&sudo' : '');
 }
 
 /** A scene only another profile starts in and is confined to (e.g. the harbor shift): `?play=<scene>` may not reach it from here. */
-export const reservedScene = (scene: string) => profiles.profiles.some(p => p.routes === 'start' && p.start.scene === scene && p !== active);
+export const reservedScene = (scene: string) => scene!==active.start.scene&&profiles.profiles.some(p => p.routes === 'start' && p.start.scene === scene && p !== active);
 
 /** Does the page's URL ask for play (any profile's parameter, `?play` or `?sudo`)? */
 export function urlAsksForPlay(search: string): boolean {

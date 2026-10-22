@@ -1,9 +1,13 @@
 import {environmentArtworkOwners,type SceneEnvironment} from '../engine/gameplay/scene-environment';
 import type {TypedForm} from './typed-form';
+import {BACKDROP_SOURCES} from '../world/backdrops';
 /** Registered artwork may derive these values; explicit source overrides are optional. */
 export function renderSceneEnvironment(form:TypedForm,host:HTMLElement,value:SceneEnvironment|undefined,edit:(label:string,change:(environment:SceneEnvironment)=>void)=>void,refresh:()=>void,scene?:string){
  const owners=scene?environmentArtworkOwners[scene]:undefined;for(const [key,owner]of Object.entries(owners??{})){const note=document.createElement('p');note.textContent=key+' follows Layout: '+owner;host.append(note);}
  const env=value??{},change=(fn:(e:SceneEnvironment)=>void)=>edit('Edit scene environment',fn);
+ const backdropIds=Object.keys(BACKDROP_SOURCES);
+ form.select(host,'World backdrop',['',...backdropIds],env.backdrop?.id??'',id=>{change(e=>{if(id)e.backdrop={id,x:e.backdrop?.x??0,h:e.backdrop?.h??0};else delete e.backdrop;});refresh();});
+ if(env.backdrop){for(const key of ['x','h'] as const)form.decimal(host,'Zone origin in backdrop · '+key,env.backdrop[key]??0,v=>change(e=>{e.backdrop![key]=v;}),-1e9,1e9);}
  for(const key of ['facing','horizon'] as const){if((key==='facing'||key==='horizon')&&owners?.[key])continue;form.check(host,'Override '+key,env[key]!==undefined,on=>{change(e=>{if(on)e[key]=key==='facing'?180:0;else delete e[key];});refresh();});if(env[key]!==undefined)form.decimal(host,'Environment '+key,env[key]!,v=>change(e=>{e[key]=v;}),key==='facing'?0:-10000,key==='facing'?360:10000);}
  for(const key of ['outdoor','keepFace'] as const){form.check(host,'Override '+key,env[key]!==undefined,on=>{change(e=>{if(on)e[key]=false;else delete e[key];});refresh();});if(env[key]!==undefined)form.check(host,'Environment '+key,env[key]!,v=>change(e=>{e[key]=v;}));}
  form.check(host,'Override ambient settings',env.ambient!==undefined,on=>{change(e=>{if(on)e.ambient={};else delete e.ambient;});refresh();});

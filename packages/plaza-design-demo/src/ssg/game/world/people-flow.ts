@@ -1,6 +1,6 @@
 /**
  * People flows (docs/design/SEAMLESS-WORLD.md §5, step 6): people who walk a route across zones, wait, queue
- * and board vehicles. **A spike: a pure model, not yet wired.** Nothing here keeps state or runs a loop; the
+ * and board vehicles. Live boarding memory belongs to SceneModel (engine/people.ts). Nothing here keeps state or runs a loop; the
  * game loop (or an editor preview) asks "who is where at time t" and draws the answer.
  *
  * - A **flow** is source: a route of waypoints (walk, wait, queue, board, leave) whose points may lie in
@@ -79,7 +79,7 @@ export type Waypoint = WalkPoint | WaitPoint | QueuePoint | BoardPoint | LeavePo
 /** Who a flow brings, and when. */
 export type FlowSpawn =
   /** One person every `every` seconds (±`jitter` of it), kept with the probability `byHour[hour]` (city clock). */
-  | {kind: 'interval'; every: number; jitter?: number; byHour?: readonly number[]}
+  | {kind: 'interval'; every: number; jitter?: number; byHour?: readonly number[]; start?:number}
   /** A cohort for each trip of a vehicle: `count` places, each filled with probability `on`, walking in spread over `window` (seconds relative to the doors opening). */
   | {kind: 'trip'; vehicle: string; count: number; on: number; window: readonly [number, number]}
   /** People stepping off a vehicle when its doors open: `count` places, each filled with probability `on`, `gap` seconds apart. */
@@ -179,8 +179,8 @@ function basics(flow: FlowSource, world: FlowWorld, index: number): Basics {
   const speed = (flow.speed ?? WALK_SPEED) * (0.85 + 0.3 * u(3)), key = personKey(flow.id, index), start = flow.route[0];
   const base = {index, key, look, phase, speed, start};
   if (s.kind === 'interval') {
-    const spawn = (index + (s.jitter ?? 0) * (r(4) - 0.5)) * s.every;
-    return {...base, spawn, on: !s.byHour || r(5) < (s.byHour[flowHour(spawn)] ?? 0)};
+    const spawn = (s.start??0)+(index + (s.jitter ?? 0) * (r(4) - 0.5)) * s.every;
+    return {...base, spawn, on: (s.start===undefined||index>=0)&&(!s.byHour || r(5) < (s.byHour[flowHour(spawn)] ?? 0))};
   }
   if (s.kind === 'routine') {
     const day = index, spawn = routineTime(s.at, day);
@@ -305,7 +305,7 @@ function previousBatch(flow: FlowSource, world: FlowWorld, n: number): {n: numbe
 /** Indices of people whose (lag-free) spawn time may fall in [t0, t1]: a superset, filtered by the caller. */
 function candidates(flow: FlowSource, world: FlowWorld, t0: number, t1: number): number[] {
   const s = flow.spawn, out: number[] = [];
-  if (s.kind === 'interval') { for (let i = Math.floor(t0 / s.every) - 1; i <= Math.ceil(t1 / s.every) + 1; i++) out.push(i); return out; }
+  if (s.kind === 'interval') { for (let i = Math.floor((t0-(s.start??0)) / s.every) - 1; i <= Math.ceil((t1-(s.start??0)) / s.every) + 1; i++) out.push(i); return out; }
   if (s.kind === 'routine') { const d0 = Math.floor(flowCityMin(t0) / DAY_MIN), d1 = Math.floor(flowCityMin(t1) / DAY_MIN) + 1; for (let d = Math.max(1, d0); d <= d1 + 1; d++) out.push(d); return out; }
   const v = vehicle(world, s.vehicle), lead = s.kind === 'trip' ? Math.min(0, s.window[0]) : 0;
   for (let n = v.tripAt(t0 - 1) - 1; n <= v.tripAt(t1 - lead + 1) + 1; n++) for (let k = 0; k < s.count; k++) out.push(n * s.count + k);
@@ -327,7 +327,7 @@ function batch(flow: FlowSource, world: FlowWorld, n: number, key: {open: number
   const id = flow.id + '@' + n, hit = cache.get(id);
   if (hit) return hit;
   const q = flow.route[heldAt(flow.route)] as QueuePoint | BoardPoint, margin = q.slots * q.gap;
-  const prev = q.kind === 'queue' ? key.open - q.every : (() => { const v = vehicle(world, q.vehicle); for (let k = n - 1; k > n - 64; k--) { const w = v.doors(k); if (w) return w.close; } return key.open - 3600; })();
+  const prev = q.kind === 'queue' ? key.open - q.every : (() => { const v = vehicle(world, q.vehicle); for (let k = n - 1; k > n - 64; k--) { const w = v.doors(k); if (w) return w.close; } return key.open - (flow.maxWait??120); })();
   const span = preSpan(flow, world) + maxLag(lags) + 1, all: Approach[] = [];
   for (const i of candidates(flow, world, prev - margin - span, key.close)) {
     const b = basics(flow, world, i);
@@ -383,6 +383,7 @@ export function personAt(flow: FlowSource, world: FlowWorld, index: number, t: n
   const f = (tt: number) => Math.min(1, Math.max(0, (ownTime(holds, tt) - a.t0) / Math.max(1e-6, a.arrive - a.t0)));
   const from = inFrame(world, a.from, head.zone), walkX = (tt: number) => from.x + (head.x - from.x) * f(tt), walkH = (tt: number) => from.h + ((head.h ?? 0) - from.h) * f(tt);
   const face: 1 | -1 = head.x === from.x ? 1 : head.x > from.x ? 1 : -1;
+  if(bt&&!me)return null; // A full cohort does not spawn overlapping people at its last slot.
   if (!bt || !me) { // no service: stand at the tail of an endless wait (a closed line)
     const x = dir > 0 ? Math.max(walkX(t), slot(head.slots - 1)) : Math.min(walkX(t), slot(head.slots - 1));
     return here({...locate(world, a.from, head, x, walkH(t), 1), facing: face}, x === walkX(t) && t < a.reach ? 'walk' : 'queue', q);
@@ -452,6 +453,13 @@ export function handedOff(flow: FlowSource, world: FlowWorld, trip: number, lags
   if (!w) return [];
   const bt = batch(flow, world, trip, {open: w.open, close: w.close, door: w}, lags, new Map());
   return bt.members.map(m => personAt(flow, world, m.a.b.index, w.close, lags)).filter((p): p is PersonAboard => p?.state === 'aboard');
+}
+/** Continue the same person after alighting, using the normal waypoint walking rules. */
+export function walkAfterRide(person:PersonAboard,start:FlowPoint,route:readonly Waypoint[],since:number,t:number,speed=WALK_SPEED):PersonHere|null{
+ const world:FlowWorld={graph:{version:1,seams:[]},vehicles:{}},walk=walkLegs(world,start,route,0,route.length,since,speed);
+ let facing:1|-1=1;
+ for(const leg of walk.legs){const p=legPose(world,leg,Math.min(t,leg.t1),facing);facing=p.facing;if(t<leg.t1)return{...person,state:'here',...p,act:leg.act,step:leg.step};}
+ return walk.left?null:{...person,state:'here',zone:walk.at.zone,x:walk.at.x,h:walk.at.h??0,facing,act:'stand',step:route.length-1};
 }
 
 // ---------- on-screen state and the short memory ----------

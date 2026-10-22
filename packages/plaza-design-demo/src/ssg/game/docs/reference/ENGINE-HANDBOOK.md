@@ -540,3 +540,60 @@ Package TypeScript runs from this package; homepage/design builds run from repos
 Before handoff: remove replaced execution paths, update current guidance, report what actually
 ran and keep user appeal feedback separate. Do not reopen the completed consolidation, add old-save
 support, invent performance infrastructure or launch a campaign playthrough as routine validation.
+
+## Walkable vehicles (current pilot)
+
+`scenes/authored.json` → `vehicle-lab` is the compact current example. Place a registered
+`vehicle.frame` with its validated `VehicleSource` in `props.vehicle`, attach the registered
+car/door/gangway artwork, and reference ordinary Circuit frame and door movers. The frame
+mover position is the route parameter; the door mover is openness. Motion paths and waits
+remain device source, not a vehicle controller. Berths name existing landing floors.
+
+`engine/level-vehicles.ts` derives moving floors in the existing level step. The existing
+LevelState owns player attachment; walking still uses the normal floor rules. Boarding and
+alighting require an open door at a berth while physically stationary. Pure views drive the
+registered frame and door artwork through the shared renderer. Paint and queries never tick.
+
+The Vehicle inspector edits this source and its attached artwork atomically. It shares normal
+ComposerModel history, bundle validation, protected Save and pending native Play. Use the
+existing Devices inspector for mover paths and timing. Physical floors remain unrotated. Cross-zone services use route legs and seam placements; their
+existing Circuit owner stays resident while a route zone is active. Geometry placements do not
+require every intervening scene host to remain loaded. New scene presets create complete ordinary
+service source. Do not add a vehicle loop or a second renderer.
+
+Seats live in the existing LevelState vehicle attachment. The level step pins a seated player to
+the moving bench; E or movement stands, and jumping while seated is refused. A linked seat
+names `artwork` and `anchor` on registered `vehicle.seat` furniture attached inside its car.
+Compilation reads those surface anchors, so ordinary artwork edits move the usable places.
+The Vehicle inspector moves linked benches as one source edit. Person avatars reuse the kit's
+sitting pose and cushion height; the hacker avatar has a seated sprite. Lifts now read pose
+and trip doors through `liftVehicle`, `vehiclePose` and `vehicleDoors`; their floor-selection
+interaction remains in the level rules. Their occupied cabin uses the same LevelState vehicle attachment
+and moving-floor construction as other vehicles; `ride` now describes stairs/escalators only.
+
+The Vehicle inspector's consist presets resize an existing vehicle, preserving its mover and
+route. Add car copies the last registered car with its attached doors, seats and bindings;
+removing a car reconnects neighbours and removes its shell references in the same validated
+edit. External dependencies still block removal. Route split preserves the mover range;
+extending a route also requires updating the mover's stops/path if it should reach the new end.
+Vehicle door/gangway bindings are registered presentation consumers; they own no gameplay state.
+
+
+Live passengers use `engine/people.ts`, called only from `SceneModel.tick`. A `character.flow`
+with `vehicle: {frame, board, alight}` binds prepared pictures through `flow.<id>.people`.
+Its interval schedule determines identity and approach; actual doors authorize boarding. Model
+memory owns riders, seat occupancy and alighting, expires after 60 seconds away, and is bounded.
+The player owns its existing LevelState attachment; NPCs cannot take the reserved player seat.
+The Passenger inspector edits the same source. City routines and cross-floor pedestrian routing
+are not yet live features; do not describe the pure schedule helpers as completed integration.
+
+Vehicle service saves retain source path name/step/elapsed time for flat named mover paths, with
+source-validated geometry. Saved data never contains executable mover steps. Restoring a leg does
+not re-fire its driven-door action. Save.vehicle holds the player's vehicle-relative place; the
+normal scene/model restores before the level reattaches it. Ordinary non-vehicle checkpoint policy
+stays settled. Choice-containing paths retain their existing settled checkpoint policy.
+
+Scene-owned clock declarations take precedence while present; otherwise story phases govern the
+clock. The prologue persona supplies its ordinary person appearance through the existing avatar
+painter. The Harbor morning commute is gated by a shared gameplay query on the vehicle, while
+alighting stays available. Add no scene-name condition to the runtime for these rules.

@@ -732,7 +732,6 @@
         "entrance": "harbor",
         "scenes": [
           "harbor",
-          "harborShift",
           "stacks"
         ],
         "mapPosition": [
@@ -1416,12 +1415,6 @@
           "checkpoint": false
         }
       ]
-    },
-    {
-      "id": "harborShift",
-      "place": "harbor",
-      "composition": "harborShift",
-      "exits": []
     }
   ],
   "transport": {

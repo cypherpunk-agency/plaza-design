@@ -478,7 +478,7 @@ export const gangwayElement = piece({
 
 /** A whole train's length: `cars` cars and the gangways between them. */
 export const cutawayTrainLength = (cars: number, len: number, gangway: number) => cars * len + Math.max(0, cars - 1) * gangway;
-export const cutawayTrainElement = piece({
+const stationaryCutawayTrainElement = piece({
   type: 'metro.cutaway-train', label: 'Metro train cut open: cars coupled by walk-through gangways (kit)', category: 'vehicles', libraryUse: 'reusable',
   fields: {
     cars: num('Cars', 3, 1, 10, 1), gangway: num('Gangway length', 20, 6, 80, 1, 'units'), ...CAR_FIELDS,
@@ -499,6 +499,13 @@ export const cutawayTrainElement = piece({
     }
   },
 });
+
+/** A timeline/mover supplies visual travel and doors; the same train paints at rest and in motion. */
+export const cutawayTrainElement:Element={...stationaryCutawayTrainElement,
+ visualFields:{offset:{kind:'number',label:'Travel offset',default:0,animatable:true},open:{kind:'number',label:'Doors override (-1: authored)',default:-1,min:-1,max:1,animatable:true}},
+ bounds(p,state,env){const box=stationaryCutawayTrainElement.bounds(p,state,env);return{...box,x:box.x+Number(state?.offset??0)};},
+ draw(x,v,p,state,pass,at){stationaryCutawayTrainElement.draw(x,v,Number(state.open)>=0?{...p,open:state.open}:p,state,pass,{...at,x:at.x+Number(state.offset??0)});},
+};
 
 // ---------------------------------------------------------------- the measuring bar
 
@@ -589,9 +596,9 @@ export function consistCarLayout(p: Properties): ConsistCarLayout {
 }
 const clamp01 = (v: unknown, d = 0) => { const n = Number(v); return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : d; };
 /** A piece with visual state: its state fields are read in `paint` like its props (the names never overlap). */
-function stateful(o: Parameters<typeof piece>[0] & { visualFields: Record<string, import('../core/composition').Field> }): Element {
+function stateful(o: Parameters<typeof piece>[0] & { visualFields: Record<string, import('../core/composition').Field>; bindingIdentity?:Element['bindingIdentity'] }): Element {
   const e = piece(o);
-  return { ...e, draw: (ctx, v, p, s, pass, at) => e.draw(ctx, v, { ...p, ...s }, s, pass, at) };
+  return { ...e, bindingIdentity:o.bindingIdentity, draw: (ctx, v, p, s, pass, at) => e.draw(ctx, v, { ...p, ...s }, s, pass, at) };
 }
 /** A pane of glass the world behind shows through: by day it holds the sky's sheen, at night the car's own lights. */
 function pane(x: X, l: number, h: number, w: number, t: number, o: Paint, inner: number) {
@@ -772,7 +779,7 @@ export const vehicleCarShellElement = stateful({
 });
 
 export const vehicleDoorElement = stateful({
-  type: 'vehicle.door', label: 'Vehicle door pair: slides open and shut from its state (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  type: 'vehicle.door', bindingIdentity:'presentation', label: 'Vehicle door pair: slides open and shut from its state (consist kit)', category: 'vehicles', libraryUse: 'reusable',
   fields: { width: num('Door width (opening)', METRO.doorW, 16, 90, 1, 'units'), height: num('Door height', 54, 42, 140, 1, 'units'), leaf: colour('Leaf colour', '#3a3f45'), button: bool('Door button (cyan)', true) },
   visualFields: { open: num('Open (0 shut … 1 open; at its berth a train rests open)', 1, 0, 1, 0.01) },
   size: p => ({ w: N(p, 'width'), tall: N(p, 'height') + 8 }),
@@ -803,7 +810,7 @@ export const vehicleDoorElement = stateful({
 });
 
 export const vehicleGangwayElement = stateful({
-  type: 'vehicle.gangway', label: 'Vehicle gangway between two cars: walk-through or its near bellows (consist kit)', category: 'vehicles', libraryUse: 'reusable',
+  type: 'vehicle.gangway', bindingIdentity:'presentation', label: 'Vehicle gangway between two cars: walk-through or its near bellows (consist kit)', category: 'vehicles', libraryUse: 'reusable',
   fields: {
     face: select('Side (far: the walk-through; near: the outside bellows, on the shell)', ['far', 'near'], 'far'),
     length: num('Length (the gap between the cars)', 20, 6, 80, 1, 'units'), ceiling: CONSIST_FIELDS.ceiling, roof: CONSIST_FIELDS.roof, doorHeight: CONSIST_FIELDS.doorHeight,

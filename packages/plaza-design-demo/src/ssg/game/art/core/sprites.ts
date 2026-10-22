@@ -17,6 +17,7 @@ export const PAL: Record<string, string> = {
 export const HULL: Record<string, string> = { S: '#30343e' };
 
 export const SPR = {
+  sit: ['...HHHH...', '..HHHHHH..', '..HVVVVH..', '..HHHHHH..', '...HHHH...', '.CCCCCCCC.', '.CCCOOCCC.', '.CCCCCCCC.', '..CCCCCC..', '..LLLLLLL.', '..LL...LL.', '.BBB..BBB.'],
   stand: ['...HHHH...', '..HHHHHH..', '..HVVVVH..', '..HHHHHH..', '...HHHH...', '.CCCCCCCC.', '.CCCCCCCC.', '.CCCOOCCC.', '.CCCCCCCC.', '..CCCCCC..', '..CC..CC..', '..LL..LL..', '..LL..LL..', '.BBB..BBB.'],
   walk: ['...HHHH...', '..HHHHHH..', '..HVVVVH..', '..HHHHHH..', '...HHHH...', '.CCCCCCCC.', '.CCCCCCCC.', '.CCCOOCCC.', '.CCCCCCCC.', '..CCCCCC..', '..CC.CC...', '..LL..LL..', '.LL....LL.', '.BB....BB.'],
   jump: ['...HHHH...', '..HHHHHH..', '..HVVVVH..', 'C.HHHHHH.C', 'CC.HHHH.CC', '.CCCCCCCC.', '.CCCCCCCC.', '.CCCOOCCC.', '.CCCCCCCC.', '..CCCCCC..', '.LLL..LLL.', '.LL....LL.', 'BB......BB', '..........'],

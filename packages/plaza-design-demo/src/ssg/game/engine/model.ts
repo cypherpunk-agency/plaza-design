@@ -1,3 +1,5 @@
+import {emptyPeople,stepPeople,restorePeople,type PeopleSource} from './people';
+import type {LevelSource} from './level';
 import {formatNativeText} from './text';
 import {wireConnectEligibility,captureDomains,reduceWireConnect,reduceWireCut,reduceTraceAdd,reduceTraceKick,type SceneDomains,type DomainNotice,type GameplayDomainTransaction} from './scene-domains';
 import {registryLabels} from './gameplay/rewards';
@@ -185,6 +187,11 @@ export const WATCH_NOUN = 'watchdog';
 export const wiredId = (c: CableData) => c.id ?? c.from + '>' + c.to;
 
 export class SceneModel {
+  peopleSources:readonly PeopleSource[]=[];
+  peopleLevel?:LevelSource;
+  people=emptyPeople();
+  playerSeat?:{vehicle:string;seat:string};
+  occupiedSeats(vehicle:string){return Object.values(this.people.riders).filter(r=>r.person.vehicle===vehicle&&!r.out&&r.seat).map(r=>r.seat!);}
   /** The scene's state keys. Starting values come from the scene's `state`. */
   state: Record<string, Value> = {};
   /** Numbers effects keep while things are in flight (a slide's start). Not saved; cleared by reset. */
@@ -317,7 +324,7 @@ export class SceneModel {
     this.epoch++;
     this.reservations=new WeakMap();
     this.recent=[];
-    this.time.clear();
+    this.time.clear();this.people=emptyPeople();
     this.clocks.clear(); this.movers.clear(); this.zones.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
@@ -952,6 +959,7 @@ export class SceneModel {
     for (const [k, until] of this.locks) if (until <= this.wall()) { this.locks.delete(k); this.spans.delete(k); moved = true; }
     // [watchdog, clocks] they move on the same tick; while a watchdog walks, its sprite and countdown need redrawing
     if (this.tickEngine()) moved = true;
+    if(this.peopleSources.length&&this.peopleLevel)stepPeople(this.people,this.peopleSources,this.peopleLevel,this);
     return moved || this.dogs.any;
   }
 
@@ -1276,11 +1284,12 @@ export class SceneModel {
     if (locks.length) z.locks = Object.fromEntries(locks);
     const clocks = this.clocks.snapshot();
     if (Object.keys(clocks).length) z.clocks = clocks;
-    const movers = this.movers.snapshot();
+    const movers = this.movers.snapshot(new Set((this.peopleLevel?.vehicles??[]).flatMap(v=>[v.source.mover,...('mover'in v.source.doors?[v.source.doors.mover]:[])])));
     if (Object.keys(movers).length) z.movers = movers;
     const zones = this.zones.snapshot();
     if (Object.keys(zones).length) z.zones = zones;
     if (this.dogs.any) z.watchdog = this.dogs.snapshot();
+    if(this.peopleSources.length)z.people={...structuredClone(this.people),wall:this.wall()};
     return z;
   }
 
@@ -1345,6 +1354,7 @@ export class SceneModel {
     for (const w of this.movers.restore(s.movers)) this.write(w.key, w.value, w.dev);
     this.zones.restore(s.zones);
     this.dogs.restore(s.watchdog);
+    this.people=restorePeople(s.people,this.now(),this.wall());
   }
 
   /** Start the scene over (the terminal's `reset yard`). The keyring is the player's, so it stays. */

@@ -81,14 +81,7 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   // the station in cross-section, and the street-to-station cut where the stairs are the seam. Look frames on Downtown's look.
   { id: 'dt-metro-underground', base: 'downtown', file: 'art/proposals/dt-metro-underground.composition.json', label: 'Downtown Metro · underground: ticket hall, turnstile, 2-car platform, stairs and escalator up', district: 'downtown' },
   { id: 'dt-metro-seam', base: 'downtown', file: 'art/proposals/dt-metro-seam.composition.json', label: 'Downtown Metro · the stairs seam: the street above, the ticket hall below', district: 'downtown' },
-  // Harbor replan (docs/design/HARBOR-ZONES.md, 2026-10-22): the harbor as joined zones, mirrored and train first, west to east along the walk
-  // to work at dusk (station → quay → checkout → yard → shed). Look frames on the harbor's look (sky, weather, facing 90); all share ground
-  // line h 0 (the station: 160 over the quay).
-  { id: 'harbor-station', base: 'harbor', file: 'art/proposals/harbor-station.composition.json', label: 'Harbor zones · 1 the raised Harbor Station, 160 over the quay (dusk, dawn)', district: 'harbor' },
-  { id: 'harbor-quay', base: 'harbor', file: 'art/proposals/harbor-quay.composition.json', label: 'Harbor zones · 2 the public quay under the raised station (dusk, dawn)', district: 'harbor' },
-  { id: 'harbor-checkout', base: 'harbor', file: 'art/proposals/harbor-checkout.composition.json', label: 'Harbor zones · 3 checkout: staff gate, turnstile, tag reader, wage slip (dusk, dawn)', district: 'harbor' },
-  { id: 'harbor-yard', base: 'harbor', file: 'art/proposals/harbor-yard.composition.json', label: 'Harbor zones · 4 the yard: Terminal 2 gate, loading bay, trolley bay, receiving, berth (night)', district: 'harbor' },
-  { id: 'harbor-shed', base: 'harbor', file: 'art/proposals/harbor-shed.composition.json', label: 'Harbor zones · 5 Transit Shed 3: case returns, dispatch, supervisor, lockers, staff room (night)', district: 'harbor' },
+
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 

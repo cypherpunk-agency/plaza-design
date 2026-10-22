@@ -3,7 +3,7 @@
   "id": "metro",
   "name": "Downtown metro",
   "intro": [
-    "The metro. One line, three stops, round and round. Getting off at the right one is my problem."
+    "Downtown, below street level. The ticket hall and the stairs are to the west."
   ],
   "uses": [],
   "readables": [
@@ -60,14 +60,16 @@
       "to": "downtown",
       "at": "metro",
       "label": "[E] STAIRS DOWN · DOWNTOWN",
-      "promptH": 82
+      "promptH": 82,
+      "engine": true
     },
     {
       "id": "train",
       "to": "",
       "action": "board",
       "label": "[E] BOARD",
-      "promptH": 84
+      "promptH": 84,
+      "engine": true
     },
     {
       "id": "citymap",
@@ -117,15 +119,7 @@
         "instance": "poster"
       }
     },
-    "artwork": {
-      "roof": "canopy-shell",
-      "deck": "track",
-      "horizon": "horizon",
-      "stop": "platform-train"
-    },
-    "exitCheckpoints": {
-      "downtown": "turnstile"
-    },
+    "artwork": {},
     "compile": {
       "groups": [
         "uses",
@@ -149,70 +143,6 @@
   ],
   "actors": [
     {
-      "id": "waiting0",
-      "instance": "waiting0",
-      "band": "background",
-      "reaction": "actor.waiting0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "downtown",
-          "slot": 0,
-          "count": 4
-        }
-      }
-    },
-    {
-      "id": "waiting1",
-      "instance": "waiting1",
-      "band": "background",
-      "reaction": "actor.waiting1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "downtown",
-          "slot": 1,
-          "count": 4
-        }
-      }
-    },
-    {
-      "id": "waiting2",
-      "instance": "waiting2",
-      "band": "background",
-      "reaction": "actor.waiting2",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "downtown",
-          "slot": 2,
-          "count": 4
-        }
-      }
-    },
-    {
-      "id": "waiting3",
-      "instance": "waiting3",
-      "band": "background",
-      "reaction": "actor.waiting3",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "downtown",
-          "slot": 3,
-          "count": 4
-        }
-      }
-    },
-    {
       "id": "regular",
       "instance": "regular",
       "band": "background",
@@ -226,34 +156,19 @@
     }
   ],
   "environment": {
+    "outdoor": false,
     "ambient": {
-      "sky": true,
-      "weather": true
-    },
-    "facing": 270
+      "sky": false,
+      "weather": false
+    }
   },
   "companion": {
     "mode": "off"
   },
-  "stage": {
-    "horizon": {
-      "role": "horizon"
-    },
-    "lights": [
-      {
-        "role": "light",
-        "style": "lamp",
-        "color": "255,230,190"
-      }
-    ],
-    "mechanisms": [
-      "transitPlatform",
-      "citySkyline"
-    ]
-  },
+  "stage": {},
   "phases": {
     "home": {
-      "time": "05:48",
+      "time": "06:12",
       "goal": "go home",
       "intro": {
         "pages": [
@@ -284,16 +199,8 @@
           ]
         }
       },
-      "exits": {
-        "train": {
-          "say": {
-            "name": "YOU",
-            "pages": [
-              "That was my stop. Bed is the other way."
-            ]
-          }
-        },
-        "downtown": {
+      "barriers": {
+        "gate-in": {
           "gate": {
             "verifying": "TURNSTILE: verifying",
             "ok": "TURNSTILE: verifying… … ok.",

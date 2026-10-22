@@ -14,10 +14,9 @@
   player walks back west and takes the train home. Arriving by sky taxi is kept for later.
 - **P0** is the title glide: the main menu is the beach scene, mirrored; the camera glides **east across the city** as
   the sun goes down, a first look at some districts, and ends at the Harbor Station as the train comes in. Hand-over on
-  the platform. *Built (2026-10-22, first pass):* story/title/timeline.json glides east from the mirrored beach
-  through Downtown and the Galleria to a raised Harbor Station drawn in the opening picture (finale.ts), the
-  sun setting by the city clock, a two-car train arriving; the hand-over onto the platform waits for these
-  zones, so the glide still hands over to the current opening.
+  the platform. *Current local implementation:* the timeline travels through ordinary coast/city zones
+  and shows the real station via the shared world renderer. The playable no-cut platform landing remains
+  with the commute integration; the full campaign still fades to its existing train-home opening.
 - **The city map:** the beach is in the **west**, the harbor in the **east**. The beach no longer joins the quay.
 - **Coffee machine:** optional, a side mention ("the coffee machine doesn't work again") with a small bonus if fixed.
   The trolley clamp stays the required lesson.
@@ -54,7 +53,7 @@ dawn walk home.
  ┌──────── harbor-station (raised, +160) ──────────┐
  │ departures · 2-car train · canopy · WAY OUT     │──── LINE 0 runs on east (P14 siding, later)
  └─┬───── stairs + lift seam ──────────────────────┘
-   │ (stair head x 150, foot x 350; lift x 410)
+   │ (station stair head 1210, foot 1410; quay foot 510; station lift 1150 / quay 250)
  ┌─┴─────────── harbor-quay ─────────────┬─ checkout ─┬────────── harbor-yard ──────────┬──────── harbor-shed ──────────┐
  │ station foot · tea and fish under the │ staff gate │ Terminal 2 gate · loading bay 2 │ case returns · dispatch ·     │ port road
  │ arches · ferry steps · sky taxi rank  │ turnstile ·│ · trolley bay · RECEIVING       │ supervisor · lockers ·        │ gate (shut;
@@ -73,8 +72,8 @@ zones' shared facing is 90°, as the harbor's facing is today.
 
 | # | Zone (scene id) | Width | Offset `{dx, dh}` | What is in it | Prologue beats |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `harbor-station` | 1,440 (2.25 views) | 0, +160 | The raised LINE 0 platform over the quay's west part: canopy, posts and lamps, HARBOR nameplates, departures, a bench. The 2-car train standing, cut open (1,086 units, x 230–1,316). The stair head at the platform's west end (x 150) with a WAY OUT sign; the lift's top stop at x 410. People waiting, Mara among them going home at dawn. West: the line to Downtown. East: the line runs on over the harbor. | P0 hand-over (dusk, off the train), P7 board towards Downtown (dawn) |
-| 2 | `harbor-quay` | 1,600 (2.5 views) | 0, 0 | The public quay under the raised station's viaduct (deck x 0–1,440), with the piers and deck underside. The station foot at the west end: a concrete stair rising west (foot x 350, head x 150, rise 160) and a glass lift (x 410), the HARBOR STATION sign post. The Registry checkpoint notice, tea and fish stalls under the arches, a sleeping cat, the ferry steps with a moored ferry, and the SKY TAXI rank at the east end, past the deck. West: a fence, the harbor's hard edge. | P0 down to the quay (dusk), P7 back up (dawn) |
+| 1 | `harbor-station` | 1,440 (2.25 views) | −900, +160 | The raised LINE 0 platform over the quay's west part: canopy, posts and lamps, HARBOR nameplates, departures, a bench. The 2-car train standing, cut open (1,086 units, x 20–1,106). The stair head at the platform's east end (x 1210) with a WAY OUT sign; the lift's top stop at x 1150. People waiting, Mara among them going home at dawn. West: the line to Downtown. East: the line runs on over the harbor. | P0 hand-over (dusk, off the train), P7 board towards Downtown (dawn) |
+| 2 | `harbor-quay` | 1,600 (2.5 views) | 0, 0 | The public quay under the raised station's viaduct (deck x −900–540), with the piers and deck underside. The station foot at the west end: a concrete stair rising west (quay foot x 510, station head x 1210, rise 160) and a glass lift (quay x 250), the HARBOR STATION sign post. The Registry checkpoint notice, tea and fish stalls under the arches, a sleeping cat, the ferry steps with a moored ferry, and the SKY TAXI rank at the east end, past the deck. West: a fence, the harbor's hard edge. | P0 down to the quay (dusk), P7 back up (dawn) |
 | 3 | `harbor-checkout` | 640 (1 view) | 1,600, 0 | West, the public side: a sodium lamp, a sign "← HARBOR STATION · LINE 0", a camera, the STAFF GATE (TAG REQUIRED). The tag reader with its turnstile and shelter, the wage-slip printer, then the staff side: its fence and the shift board (SHIFT OPEN → COMPLETE). | Staff entrance (dusk), P6 (dawn) |
 | 4 | `harbor-yard` | 1,280 (2 views) | 2,240, 0 | West: the Terminal 2 fence gate, an ordinary exit to `stacks`, and room for the P14 siding stair. A straddle carrier and crates, LOADING BAY 2 with its beacon (x 560), trolley parking T3–T5, the clamped trolley T4 and its release (x 760). Receiving at Shed 3's west end (x 970–1,300), with Mara's window and counter and the empty case. The berth with the container ship and three STS cranes. | P1 walk-in, P3 hand-over, P4 pick-up, P5 |
 | 5 | `harbor-shed` | 1,280 (2 views) | 3,520, 0 | Transit Shed 3's long front and canopy (x 0–1,110), continuing Receiving across the seam. CASE RETURNS rack (x 270), the BAY 3 pace ticker, the DISPATCH window and counter with the parcel (x 460), the supervisor's glass booth (x 640). A steel stair (x 750–860) to the **staff room** on a glazed mezzanine (`level.floor` building `shed`, indoor, x 864–1,094) with the coffee machine; lockers and a bench below. East edge: the perimeter fence and the PORT ROAD staff gate, shut (a taxi stand later). Masts, cranes, ship and the far shore behind. | P1, P2, P3 pick-up, P4 return, the optional coffee machine |
@@ -82,7 +81,7 @@ zones' shared facing is 90°, as the harbor's facing is today.
 
 The `beach` no longer joins the harbor: it is in the west of the city now (decided above).
 
-Walk length from the platform's stair head (station x 150) down to the quay and east to the
+Walk length from the platform's stair head (station x 1210) down to the quay and east to the
 supervisor's booth (world x 4,160) is about 4,000 units, or roughly 51 s of plain walking at 78
 units/s, the whole of it at dusk on the way in. The dawn walk back from the checkout reader (world
 x 1,940) to the stair head is about 1,800 units, 23 s. The longest single task walk is P3: dispatch
@@ -93,7 +92,7 @@ the shed–yard seam, and nothing announces it.
 
 | Seam | Kind | Between | Notes |
 | --- | --- | --- | --- |
-| `station-quay` | stairs + lift | station (150, +160) → quay (350, 0); lift at quay x 410 | The station owns the stair and the lift. The stair rises west, so the dawn walk west runs straight up it; at dusk you step off the train and come down it eastward. The lift is a Circuit mover with stops at 0 and 160. |
+| `station-quay` | stairs + lift | station head (1210, 0) → quay foot (510, 0); lift at quay x 250 | The station owns the stair and the lift. The stair rises west, so the dawn walk west runs straight up it; at dusk you step off the train and come down it eastward. The lift is a Circuit mover with stops at 0 and 160. |
 | `quay-checkout` | walk, with a **barrier** | quay east ↔ checkout west | The turnstile is a world barrier (§6.6). At dusk it is the staff *entrance* from the public side (the tag lets you in); at dawn it opens once the tag is returned. |
 | `checkout-yard` | walk | checkout east ↔ yard west | The staff side of the fence. |
 | `yard-shed` | walk | yard east edge ↔ shed west edge | Open yard floor. Shed 3 runs on from its receiving end, so the wall continues across the seam. |
@@ -109,7 +108,7 @@ stair sees both, as the quay frame and the station frame each show.
 | Beat | Zone and place | Time |
 | --- | --- | --- |
 | P0 glide → harbor | The title glide ends at the Harbor Station as the train comes in. Hand-over on the platform as the player steps off (station x 420). | Dusk, about 19:00 |
-| Walk to work | Down the stair (station x 150 → quay x 350) or the lift, east along the quay past the stalls, in through the staff gate and turnstile at the checkout (checkout x 240–400). | Dusk |
+| Walk to work | Down the stair (station x 1210 → quay x 510) or the lift, east along the quay past the stalls, in through the staff gate and turnstile at the checkout (checkout x 240–400). | Dusk |
 | P1 work bay | East through the yard, past receiving and across the seam into Shed 3, to the booth (shed x 640). | Dusk |
 | P2 supervisor | Work tag and assignment at the booth. | Dusk → night |
 | P3 bay → counter | Parcel from DISPATCH (shed x 460), back west across the seam, to Mara at RECEIVING (yard x 1,129). | Night |
@@ -285,12 +284,37 @@ seams quay → checkout → yard → shed (dx 1,600, 640, 1,280).
   line, `STATIONS.harbor` and the opening still use `harborStation` and today's scenes.
 - **Play**: `?play=harbor-station` is the `harborZones` play profile (dockworker, scene clock, no hacking, its own
   save); `?play=harbor-quay` … `?play=harbor-shed` open a zone directly under the full profile, for inspection.
-  `?play=harborShift` is the unchanged M2 prototype. Check: `pnpm test:game harbor-zones`.
+  `?play=harborShift` now opens the same connected harbor, in a separate save namespace. Check: `pnpm test:game harbor-zones`.
 
 Engine support added for this: availability and the scene clock may read saved state; scene values `{state}` and
 `{instance, get}`; barrier rules over world-level shared state, and `closes`; a lift stops on a joined zone's floor its
 shaft reaches; a zone below the active one draws first; uses and readables in a level scene are offered on their floor.
 
 Left: the Terminal 2 exit to `stacks` (scenery only), new art (raised-station kit, coffee machine, staff gate,
-quay edge), departures from the real timetable, the P0 hand-over onto the platform and P7 boarding, the editor's
-pending zone graph in Play, and the switch from `harborShift` (Tommi's call).
+quay edge), and departures from the real timetable. The P0 platform hand-over and P7 physical boarding
+are now implemented locally; see the current commute status below.
+The pending zone graph reaches private Play; the shift profile switch is implemented and the former one-room source is removed.
+
+## Current implementation notes (2026-10-22)
+
+`?play=harborShift` and `?play=harbor-station` start the connected harbor as the dockworker.
+The station origin is quay (−900, +160); the stair descends from station (1210, 0) to
+station (1410, −160), which is quay (510, 0). Walk east along the platform first.
+The lift is at station x 1150 / quay x 250. The staff notice is at shed (1000, 30);
+the coffee note is at h 120.
+
+The city clock holds 19:00 before assignment, then runs from its current minute at 3× until
+06:10; it no longer jumps when talking to the supervisor. Midnight advances the saved day.
+Checkout holds day 2, 06:10. The editor exposes hold/run, rate, stop minute and current/fixed day.
+
+All five zones and the title route reference `world/backdrops/glide-coast.composition.json`.
+Each zone stores its origin in that document's world coordinates. Background rows clip to their
+zone; foreground/set objects can overhang. The title uses these actual zones and the same metro
+train primitive. The full campaign now hands the actual platform into play and follows the authored service to underground Metro.
+
+
+Current commute implementation: a shared two-car service leaves west through four tunnel zones,
+then stops at the underground Downtown platform. Live interval passengers keep their identity
+through boarding, seats and alighting. Checkout unlocks player boarding through a gameplay query.
+Harbor Station's editor Play fixture `harbor-commute` starts at the door after checkout. Remaining
+network stations and the P14 siding are separate later steps; this does not replace those routes.

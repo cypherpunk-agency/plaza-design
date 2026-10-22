@@ -1,4 +1,6 @@
+import {sequencePlacements} from '../world/zone-graph';
 import {withSharedState} from '../engine/gameplay/shared-state';
+import {BACKDROP_SOURCES,backdropDocumentId,validateBackdrop} from '../world/backdrops';
 import {validateSharedState} from '../engine/gameplay/validation';
 import {validateStateReadReferences} from '../engine/gameplay/state-reads';
 import type {GameplayDefinition} from '../engine/gameplay/types';
@@ -78,7 +80,10 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'kit-presets',file:'art/presets/kit-presets.json',kind:'presets',validate:value=>validatePresets(value,art)},
   {id:'people',file:'art/characters/people.json',kind:'people',validate:validatePeople},
   // Beats' scenes must be composition documents: real scenes or style-frame proposals.
-  {id:'storyboard',file:'authoring/storyboard.json',kind:'storyboard',validate:value=>validateStoryboard(value),validateContext:(value,documents)=>validateStoryboard(value,new Set(sourceDocuments.filter(d=>d.kind==='composition'&&documents.has(d.id)).map(d=>d.id)))},
+  {id:'storyboard',file:'authoring/storyboard.json',kind:'storyboard',validate:value=>validateStoryboard(value),validateContext:(value,documents)=>validateStoryboard(value,new Set([
+    ...sourceDocuments.filter(d=>d.kind==='composition'&&documents.has(d.id)).map(d=>(documents.get(d.id) as Composition).scene),
+    ...((documents.get('authored-scenes') as import('../engine/gameplay/scene-catalogue').SceneCatalogue|undefined)?.scenes??[]).map(s=>s.scene.id),
+  ]))},
   {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource,validateContext:(value,documents)=>{validateMetroLocks(validateMetroSource(value),(documents.get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
   // the seams that join zones with no cut (world/zone-graph.ts); checked against the scenes that exist and their level pieces
@@ -92,7 +97,8 @@ export const sourceDocuments: DocumentDescriptor[] = [
   ...nativeGameplayScenes.filter(s=>!gameplayScenes.some(g=>g.gameplayId===s.gameplayId)).map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
   ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>validatePendingSceneContent(s,value,documents)},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
   {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents))},
-  ...scenes.map(scene => ({ id: scene, file: `scenes/${scene === 'harborShift' ? 'harbor-shift' : scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art) })),
+  ...scenes.map(scene => ({ id: scene, file: `scenes/${scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art) })),
+  ...Object.entries(BACKDROP_SOURCES).map(([id,source])=>({id:backdropDocumentId(id),file:source.file,kind:'composition' as const,validate:(value:unknown)=>validateBackdrop(value,id)})),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art), validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
   ...Object.entries(timelineFiles).map(([id, file]) => ({ id, file, kind: 'timeline' as const, validate(value: unknown) {
     if (!value || typeof value !== 'object' || (value as { version?: unknown }).version !== 1 || !Array.isArray((value as { sequences?: unknown }).sequences)) throw new Error('Invalid timeline document header');
@@ -116,6 +122,10 @@ function validateAll(documents: ReadonlyMap<string, unknown>) {
     if (descriptor.kind === 'composition') compositions[descriptor.id] = documents.get(descriptor.id) as Composition;
   }
   for(const s of gameplayScenes)validatePendingSceneContent(s,documents.get(s.prefix+'-scene'),documents);
+  const scenes=pendingRegistry(documents);
+  for(const scene of Object.values(scenes)){const ref=scene.backdrop;if(ref&&!documents.has(backdropDocumentId(ref.id)))throw new Error('Unknown backdrop '+ref.id+' in '+scene.id);}
+  for(const seam of validateZoneGraph(documents.get('zone-graph')).seams){const a=scenes[seam.a.zone]?.backdrop,b=scenes[seam.b.zone]?.backdrop;if(a&&b&&a.id===b.id&&(Math.abs(b.x-a.x-seam.dx)>0.001||Math.abs((b.h??0)-(a.h??0)-seam.dh)>0.001))throw new Error('Backdrop origins disagree across seam '+seam.id);}
+  for(const composition of Object.values(compositions))for(const row of composition.instances)if(row.type==='sequence.world-control'){const props=art.properties(row.type,row.props);sequencePlacements(validateZoneGraph(documents.get('zone-graph')),String(props.origin),props.zones as string[],scenes);}
   validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents));
   const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);
   const context = createSequenceValidationContext(art, compositions, pendingDestinations(documents));

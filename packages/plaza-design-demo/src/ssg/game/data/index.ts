@@ -1,4 +1,3 @@
-import harborshiftGameplay from '../scenes/harbor-shift/gameplay.json';
 import harborStationGameplay from '../scenes/harborStation/gameplay.json';
 import galleriaStationGameplay from '../scenes/galleriaStation/gameplay.json';
 import metroGameplay from '../scenes/metro/gameplay.json';
@@ -20,7 +19,6 @@ import mallDeviceJson from '../scenes/mall/devices.json';
 import metroDeviceJson from '../scenes/metro/devices.json';
 import galleriaStationDeviceJson from '../scenes/galleriaStation/devices.json';
 import harborStationDeviceJson from '../scenes/harborStation/devices.json';
-import harborShiftDeviceJson from '../scenes/harbor-shift/devices.json';
 import beachGameplay from '../scenes/beach/gameplay.json';
 import stacksGameplay from '../scenes/stacks/gameplay.json';
 import laundromatGameplay from '../scenes/laundromat/gameplay.json';
@@ -109,7 +107,7 @@ export const SANDBOX = sandbox as SceneData;
 /** Canonical device catalogs include every native scene and data-only authored scene sources. */
 export const SCENE_FILES: Record<string, SceneData> = { yard: YARD, capsule: CAPSULE, downtown: DOWNTOWN, moth: MOTH, beach: BEACH, laundromat: LAUNDROMAT,
   train: TRAIN, stacks: STACKS, library: LIBRARY, sandbox: SANDBOX,
-  harbor: projectSceneState(harborDeviceJson as unknown as SceneData,validateGameplay(harborGameplay)), warehouse: projectSceneState(warehouseDeviceJson as unknown as SceneData,validateGameplay(warehouseGameplay)), market: projectSceneState(marketDeviceJson as unknown as SceneData,validateGameplay(marketGameplay)), shop: projectSceneState(shopDeviceJson as unknown as SceneData,validateGameplay(shopGameplay)), mall: projectSceneState(mallDeviceJson as unknown as SceneData,validateGameplay(mallGameplay)), metro: projectSceneState(metroDeviceJson as unknown as SceneData,validateGameplay(metroGameplay)), galleriaStation: projectSceneState(galleriaStationDeviceJson as unknown as SceneData,validateGameplay(galleriaStationGameplay)), harborStation: projectSceneState(harborStationDeviceJson as unknown as SceneData,validateGameplay(harborStationGameplay)), harborShift: projectSceneState(harborShiftDeviceJson as unknown as SceneData,validateGameplay(harborshiftGameplay)),
+  harbor: projectSceneState(harborDeviceJson as unknown as SceneData,validateGameplay(harborGameplay)), warehouse: projectSceneState(warehouseDeviceJson as unknown as SceneData,validateGameplay(warehouseGameplay)), market: projectSceneState(marketDeviceJson as unknown as SceneData,validateGameplay(marketGameplay)), shop: projectSceneState(shopDeviceJson as unknown as SceneData,validateGameplay(shopGameplay)), mall: projectSceneState(mallDeviceJson as unknown as SceneData,validateGameplay(mallGameplay)), metro: projectSceneState(metroDeviceJson as unknown as SceneData,validateGameplay(metroGameplay)), galleriaStation: projectSceneState(galleriaStationDeviceJson as unknown as SceneData,validateGameplay(galleriaStationGameplay)), harborStation: projectSceneState(harborStationDeviceJson as unknown as SceneData,validateGameplay(harborStationGameplay)),
   ...Object.fromEntries((authoredDeviceSource.scenes as unknown as {scene:{id:string};devices?:SceneData;gameplay:import('../engine/gameplay/types').GameplayDefinition}[]).flatMap(entry=>entry.devices?[[entry.scene.id,projectSceneState(entry.devices,entry.gameplay)]]:[])),
 };
 

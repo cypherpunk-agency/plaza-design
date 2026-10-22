@@ -1,0 +1,414 @@
+{
+  "version": 1,
+  "scene": "backdrop-glide-coast",
+  "instances": [
+    {
+      "id": "sea",
+      "type": "environment.sea",
+      "props": {
+        "horizon": 189,
+        "bottom": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0,
+        "parallax": 1
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "far-shore",
+      "type": "coast.far-shore",
+      "props": {
+        "length": 1566,
+        "rise": 378,
+        "windowFrom": 4680
+      },
+      "placement": {
+        "x": 2330.8,
+        "h": 0,
+        "parallax": 0.12
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "boats",
+      "type": "coast.boats",
+      "props": {
+        "boats": [
+          {
+            "x": 4664.000000000001,
+            "len": 22,
+            "mast": 0
+          },
+          {
+            "x": 4592.0,
+            "len": 12,
+            "mast": 1
+          },
+          {
+            "x": 4388.0,
+            "len": 14,
+            "mast": 1
+          },
+          {
+            "x": 4148.0,
+            "len": 34,
+            "mast": 0
+          },
+          {
+            "x": 3968.0000000000005,
+            "len": 18,
+            "mast": 1
+          },
+          {
+            "x": 2978.0000000000005,
+            "len": 26,
+            "mast": 0
+          },
+          {
+            "x": 2738.0000000000005,
+            "len": 16,
+            "mast": 1
+          },
+          {
+            "x": 740.0,
+            "len": 22,
+            "mast": 0,
+            "flip": true
+          },
+          {
+            "x": 812.0,
+            "len": 12,
+            "mast": 1,
+            "flip": true
+          },
+          {
+            "x": 1016.0,
+            "len": 14,
+            "mast": 1,
+            "flip": true
+          },
+          {
+            "x": 1256.0,
+            "len": 34,
+            "mast": 0,
+            "flip": true
+          },
+          {
+            "x": 1436.0,
+            "len": 18,
+            "mast": 1,
+            "flip": true
+          },
+          {
+            "x": 2426.0,
+            "len": 26,
+            "mast": 0,
+            "flip": true
+          },
+          {
+            "x": 2666.0,
+            "len": 16,
+            "mast": 1,
+            "flip": true
+          }
+        ],
+        "water": 183
+      },
+      "placement": {
+        "x": 0,
+        "h": 0,
+        "parallax": 0.2
+      },
+      "order": 5,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 1.488
+      },
+      "placement": {
+        "x": 4361.2,
+        "h": 183,
+        "parallax": 0.3
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "breakwater",
+      "type": "coast.breakwater",
+      "props": {},
+      "placement": {
+        "x": 3033.2,
+        "h": 0,
+        "parallax": 0.62
+      },
+      "order": 6,
+      "layer": "distance"
+    },
+    {
+      "id": "air-lanes",
+      "type": "vehicle.air-lanes",
+      "props": {
+        "quiet": 1500,
+        "lanes": [
+          {
+            "kind": "pod",
+            "parallax": 0.42,
+            "height": 504.6,
+            "dir": 1,
+            "speed": 1.7,
+            "gap": 520,
+            "seed": 3,
+            "busyFrom": 9180,
+            "busyTo": 11580,
+            "busyLow": 1,
+            "busyHigh": 0.25
+          },
+          {
+            "kind": "pod",
+            "parallax": 0.5,
+            "height": 461.4,
+            "dir": -1,
+            "speed": 1.5,
+            "gap": 560,
+            "seed": 5,
+            "busyFrom": 9180,
+            "busyTo": 11580,
+            "busyLow": 1,
+            "busyHigh": 0.2
+          },
+          {
+            "kind": "taxi",
+            "parallax": 0.58,
+            "height": 411.0,
+            "dir": 1,
+            "speed": 1.9,
+            "gap": 640,
+            "seed": 7,
+            "busyFrom": 10080,
+            "busyTo": 11880,
+            "busyLow": 0.8,
+            "busyHigh": 0
+          },
+          {
+            "kind": "taxi",
+            "parallax": 0.62,
+            "height": 382.20000000000005,
+            "dir": -1,
+            "speed": 1.6,
+            "gap": 700,
+            "seed": 9,
+            "busyFrom": 10080,
+            "busyTo": 11880,
+            "busyLow": 0.7,
+            "busyHigh": 0
+          }
+        ],
+        "blimp": [
+          {
+            "u": 18780,
+            "parallax": 0.12,
+            "height": 500,
+            "drift": 0.08
+          }
+        ],
+        "patrols": [
+          {
+            "x": 8700,
+            "parallax": 0.8,
+            "height": 360,
+            "rx": 600,
+            "ry": 30,
+            "period": 800,
+            "beam": 1
+          }
+        ],
+        "stream": [
+          {
+            "from": 16500,
+            "to": 8500,
+            "parallax": 0.5,
+            "gap": 420,
+            "speed": 1.8,
+            "low": 300,
+            "high": 480
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0,
+        "parallax": 1
+      },
+      "order": 8,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline",
+      "type": "architecture.skyline-rows",
+      "props": {
+        "rows": [
+          {
+            "parallax": 0.14,
+            "x": 2339.6000000000004,
+            "seed": 300,
+            "length": 11871.42857142857,
+            "haze": 0.75
+          },
+          {
+            "parallax": 0.22,
+            "x": 3310.8,
+            "seed": 317,
+            "length": 9845.454545454546,
+            "haze": 0.5833333333333334
+          },
+          {
+            "parallax": 0.34,
+            "x": 4767.6,
+            "seed": 334,
+            "length": 8594.117647058825,
+            "haze": 0.4166666666666667
+          },
+          {
+            "parallax": 0.5,
+            "x": 6710.0,
+            "seed": 351,
+            "length": 7860.0,
+            "haze": 0.25
+          }
+        ],
+        "from": 4680,
+        "to": 10890
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "distance"
+    },
+    {
+      "id": "spire-reflection",
+      "type": "environment.reflection",
+      "props": {
+        "size": 1.488
+      },
+      "placement": {
+        "x": 4361.2,
+        "h": 0,
+        "parallax": 0.3
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "harbor-crane-0",
+      "type": "shift.crane",
+      "props": {
+        "gantry": "sts1",
+        "boomUp": 1,
+        "trolley": -60,
+        "hang": 40,
+        "load": false,
+        "loadPaint": 2,
+        "floods": 0.3,
+        "phase": 0.0
+      },
+      "placement": {
+        "x": 7685.5,
+        "h": 34,
+        "parallax": 0.45,
+        "scale": 0.62
+      },
+      "order": 22,
+      "layer": "distance"
+    },
+    {
+      "id": "harbor-fog",
+      "type": "shift.fog",
+      "props": {
+        "top": 80,
+        "density": 0.35,
+        "drift": 0.06,
+        "parallax": 0.6
+      },
+      "placement": {
+        "x": 8514.0,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "distance"
+    },
+    {
+      "id": "harbor-ferry",
+      "type": "vehicle.boat",
+      "props": {
+        "kind": "ferry",
+        "named": true,
+        "name": "HARBOR LINE",
+        "depth": "back",
+        "motion": "parked",
+        "direction": "left",
+        "waterline": 40,
+        "bob": 1,
+        "wake": false,
+        "reflection": true,
+        "lamp": "on",
+        "nav": true
+      },
+      "placement": {
+        "x": 11133.0,
+        "h": 0,
+        "parallax": 0.7
+      },
+      "order": 24,
+      "layer": "distance"
+    },
+    {
+      "id": "harbor-lamp-boat",
+      "type": "vehicle.boat",
+      "props": {
+        "kind": "lamp",
+        "named": false,
+        "depth": "far",
+        "motion": "loop",
+        "direction": "right",
+        "speed": 0.2,
+        "lane": 2400,
+        "waterline": 40,
+        "bob": 1,
+        "wake": true,
+        "reflection": true,
+        "lamp": "on"
+      },
+      "placement": {
+        "x": 5566.5,
+        "h": 0,
+        "parallax": 0.35
+      },
+      "order": 25,
+      "layer": "distance"
+    }
+  ],
+  "sky": {
+    "horizon": 189,
+    "style": "sunset",
+    "regions": [
+      {
+        "from": 4140,
+        "to": 11820,
+        "enter": 1320,
+        "leave": 1740,
+        "town": 1
+      }
+    ]
+  },
+  "width": 20000
+}

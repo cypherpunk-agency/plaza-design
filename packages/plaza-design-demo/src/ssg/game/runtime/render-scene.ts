@@ -14,6 +14,8 @@ import { muteWorld } from '../art/atmosphere/hack-vision';
 import { beginLayeredFrame, flushLayeredDocs, flushLayeredSlot, layeredDocs } from '../art/core/composition';
 import { lightAt } from '../world/light';
 import type { TimelineFrame } from '../art/core/timeline';
+import {art,drawCompositionSlot} from '../art';
+import {backdropDocuments,backdropTown,type BackdropDocument} from '../world/backdrops';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 /**
@@ -24,7 +26,8 @@ export interface ZoneFrame {
   view: View; scene: SceneDef; sceneId: string;
   host: Pick<SceneHost, 'draw' | 'model'>;
   lighting: (weather: Weather | null) => Light;
-  preparePresentation?: () => void;
+  preparePresentation?: (view:View) => void;
+  weather?: () => Weather;
   /** It lies below the zone the player is in (a quay under a raised platform): drawn first, behind that zone's own artwork. */
   below?: boolean;
 }
@@ -55,6 +58,7 @@ export interface FrameDirector {
   clock?: { minute: number; day?: number };
   /** Pixel scale override (a sequence's own fit), else the game's. */
   scale?: number;
+  sequence?: View['sequence'];
 }
 /** Does the director let this pass run? */
 export const passOn = (d: FrameDirector | undefined, pass: FramePass) => d?.passes?.[pass] !== false;
@@ -91,7 +95,7 @@ export interface WorldFrame {
   /** Also installs native shared light/shade inputs before any artwork runs. */
   lighting: (weather: Weather | null) => Light;
   /** Caller-owned controller evaluation. All subsequent artwork consumes prepared snapshots. */
-  preparePresentation?: () => void;
+  preparePresentation?: (view:View) => void;
   reflections?: [number, string][];
   skyTraffic?: Draw; city?: Draw;
   street?: (ctx: CanvasRenderingContext2D, view: View, rain: number, lit: boolean) => void;
@@ -102,6 +106,7 @@ export interface WorldFrame {
   joined?: readonly ZoneFrame[];
   /** A sequence's configuration of this frame (camera, passes, overlays, clock, scale). None: play. */
   director?: FrameDirector;
+  backdrops?: ReadonlyMap<string,BackdropDocument>;
 }
 
 /** The one frame renderer, for a scene alone or with the zones joined to it (docs/design/SEAMLESS-WORLD.md §3). */
@@ -111,30 +116,44 @@ function renderMeasuredFrame(frame: WorldFrame) {
   beginLayeredFrame();
   const d = frame.director, x = frame.context, k = d?.scale ?? frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
   x.setTransform(k, 0, 0, k, 0, 0);
-  const v = d?.camera ? directedView(frame.view, d.camera) : frame.view;
+  const v = { ...(d?.camera ? directedView(frame.view, d.camera) : frame.view), zoneWindow: undefined as View['zoneWindow'],reduced:frame.reduced };
   clearWorld(x, v.viewW, v.viewH);
   const zoom = d?.camera?.zoom ?? 1;
   if (zoom !== 1) { x.translate(v.viewW / 2, v.viewH / 2); x.scale(zoom, zoom); x.translate(-v.viewW / 2, -v.viewH / 2); }
   const vision = zh.visionOn && passOn(d, 'vision');
+  const joined=(frame.joined??[]).map(z=>({...z,view:{...(d?.camera?directedView(z.view,{...d.camera,x:z.view.cam+d.camera.x-frame.view.cam}):z.view),reduced:frame.reduced,...(d?.sequence?{sequence:d.sequence}:{})}}));
+  if(d?.sequence)v.sequence=d.sequence;
   const W = amb.weather && passOn(d, 'weather') ? frame.weather() : null;
   const covers = amb.covers?.map(c => [v.sx(c.from), v.sx(c.to), v.y(c.under)] as [number, number, number]);
   // each joined zone is lit by its own facing; the scene's light is installed last, as it is the one the frame shares
-  for (const z of frame.joined ?? []) { const ZL = z.lighting(W); z.view.lighting = ZL; z.view.illumination = createLightingFrame(ZL, z.scene.lights, ZL.outdoor ? z.scene.shade : undefined, z.scene.width, true); z.preparePresentation?.(); }
+  for (const z of joined) { const weather=z.scene.ambient?.weather&&passOn(d,'weather')?(z.weather?.()??W):null,given=z.lighting(weather),ZL=d?.clock?lightAt(d.clock.day??given.day,d.clock.minute,given.facing,weather,given.outdoor):given; z.view.lighting = ZL; z.view.illumination = createLightingFrame(ZL, z.scene.lights, ZL.outdoor ? z.scene.shade : undefined, z.scene.width, true); z.preparePresentation?.(z.view); }
   const given = frame.lighting(W);
   const L = d?.clock ? lightAt(d.clock.day ?? given.day, d.clock.minute, given.facing, W, given.outdoor) : given;
   v.lighting = L;
   v.illumination = createLightingFrame(L, s.lights, L.outdoor ? s.shade : undefined, s.width, true);
-  frame.preparePresentation?.();
+  frame.view.lighting=L; frame.view.illumination=v.illumination;
+  frame.preparePresentation?.(v);
   const look = W ? { w: W, t: frame.reduced ? frame.clock * 0.35 : v.t, still: frame.reduced, covers, day: L.daylight } : null;
   const rain = W?.wet ?? 0;
   const casters = !vision && passOn(d, 'casters'), shade = !vision && passOn(d, 'shade');
   perfEnd(pass);pass=perfBegin('render.world');
-  if (amb.sky && passOn(d, 'sky')) { drawSky(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
+  const backdrops = frame.backdrops ?? backdropDocuments(), sharedBackdrop=s.backdrop?backdrops.get(s.backdrop.id):undefined, sharedSky=sharedBackdrop?.sky;
+  if (amb.sky && passOn(d, 'sky')) { drawSky(x, v, L, { horizon: v.y(sharedSky ? sharedSky.horizon-(s.backdrop!.h??0) : s.horizon ?? 0),...(sharedSky?{style:sharedSky.style,town:backdropTown(sharedBackdrop,v.cam+(s.backdrop?.x??0)+v.viewW/2)}:{}) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
   if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
   if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);
+  // An independent backdrop paints once through world coordinates, never clipped to a zone's window.
+  const seenBackdrops = new Set<string>();
+  for (const zone of [{scene:s,view:v},...joined]) {
+    const ref=zone.scene.backdrop;if(!ref||seenBackdrops.has(ref.id))continue;
+    const doc=backdrops.get(ref.id);if(!doc)throw new Error('Missing world backdrop '+ref.id);seenBackdrops.add(ref.id);
+    const local=zone.view, view:View={...local,zoneWindow:undefined,cam:local.cam+ref.x,
+      sx:(wx,p=1)=>local.sx(wx-ref.x*p,p),y:h=>local.y(h-(ref.h??0))};
+    drawCompositionSlot(x,art,doc,{view,reduced:frame.reduced,state:{}},'behind-player');
+  }
+  if (joined.length) v.zoneWindow={left:v.sx(0),right:v.sx(s.width)};
   // a zone below this one (stacked by a stairs seam) is further back: drawn before the zone's own artwork, which stands over it
-  for (const z of frame.joined ?? []) if (z.below) drawJoined(x, z, look, rain, vision);
-  const mid = () => { if (look) { puddles(x, v, look, { width: s.width, seed: frame.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections??frame.reflections : undefined }); weatherMid(x, v, look); } };
+  for (const z of joined) if (z.below) drawJoined(x, z, look, rain, vision,d);
+  const mid = () => { if (look) inZoneWindow(x,v,()=>{ puddles(x, v, look, { width: s.width, seed: frame.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections??frame.reflections : undefined }); weatherMid(x, v, look); }); };
   if (vision && s.layers) {
     zh.draw(x, v, 'world');
     mid();
@@ -147,7 +166,7 @@ function renderMeasuredFrame(frame: WorldFrame) {
     if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); muteWorld(x, v, zh.model.spots()); }
   }
   if (casters) drawCasters(x, v, s.casters);
-  for (const z of frame.joined ?? []) if (!z.below) drawJoined(x, z, look, rain, vision);
+  for (const z of joined) if (!z.below) drawJoined(x, z, look, rain, vision,d);
   perfEnd(pass);pass=perfBegin('render.actors');
   if (passOn(d, 'actors')) {
     frame.roomWash?.(x, v);
@@ -156,11 +175,11 @@ function renderMeasuredFrame(frame: WorldFrame) {
   }
   flushLayeredSlot('over-player');
   perfEnd(pass);pass=perfBegin('render.finish');
-  if (shade) drawShade(x, v);
+  if (shade) inZoneWindow(x,v,()=>drawShade(x, v));
   s.drawFront?.(x, v);
   flushLayeredSlot('foreground');
   if (!vision) { if (passOn(d, 'grade')) drawGrade(x, v, L); if (passOn(d, 'lights')) drawLights(x, v, s.lights, L); }
-  if (look && !vision) weatherFront(x, v, look);
+  if (look && !vision) inZoneWindow(x,v,()=>weatherFront(x, v, look));
   if (zoom !== 1) x.setTransform(k, 0, 0, k, 0, 0);
   if (passOn(d, 'prompts')) frame.prompts?.(x, v);
   if (passOn(d, 'bubbles')) frame.bubbles?.(x, v);
@@ -208,10 +227,12 @@ function drawDirectorOverlays(x: CanvasRenderingContext2D, W: number, H: number,
  * shade and front. The sky, the grade, the weather in front and the overlays are the frame's, drawn once.
  * In hack vision a neighbour is muted whole: hacking is in the zone the player is in.
  */
-function drawJoined(x: CanvasRenderingContext2D, z: ZoneFrame, look: Parameters<typeof weatherMid>[2] | null, rain: number, vision: boolean) {
-  const v = z.view, s = z.scene, amb = s.ambient ?? {}, left = v.sx(0), right = v.sx(s.width);
-  if (right <= 0 || left >= v.viewW) return;
-  x.save(); x.beginPath(); x.rect(left, 0, right - left, v.viewH); x.clip();
+function drawJoined(x: CanvasRenderingContext2D, z: ZoneFrame, look: Parameters<typeof weatherMid>[2] | null, rain: number, vision: boolean,d?:FrameDirector) {
+  const s = z.scene, amb = s.ambient ?? {}, left = z.view.sx(0), right = z.view.sx(s.width), v:View={...z.view,zoneWindow:{left,right}};
+  if(z.weather&&amb.weather&&passOn(d,'weather')){const weather=z.weather();look={w:weather,t:v.t,still:!!v.reduced,day:v.lighting.daylight,covers:amb.covers?.map(c=>[v.sx(c.from),v.sx(c.to),v.y(c.under)] as [number,number,number])};}
+  if((right<=0||left>=v.viewW)&&!s.artworkVisible?.(v,z.host.model as SceneHost['model']))return;
+  // A set row may still be on screen when the logical zone rect has just left it.
+  x.save();
   if (amb.city) s.artworkFrame?.city?.(x, v);
   if (amb.street) s.artworkFrame?.street?.(x, v, rain, !!amb.city);
   // its rows over the player and in front wait in the frame's shared queue: take its own and draw them here, clipped
@@ -219,13 +240,20 @@ function drawJoined(x: CanvasRenderingContext2D, z: ZoneFrame, look: Parameters<
   z.host.draw(x, v);
   const own = (slot: 'over-player' | 'foreground', had: Set<unknown>) => new Set([...layeredDocs(slot)].filter(d => !had.has(d)));
   const over = own('over-player', before.over), front = own('foreground', before.front);
-  if (look) { puddles(x, v, look, { width: s.width, seed: z.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections : undefined }); weatherMid(x, v, look); }
-  if (!vision) drawCasters(x, v, s.casters);
-  s.drawActors?.(x, v);
+  if (look&&amb.weather&&passOn(d,'weather')) inZoneWindow(x,v,()=>{puddles(x, v, look, { width: s.width, seed: z.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections : undefined }); weatherMid(x, v, look);});
+  if (!vision&&passOn(d,'casters')) inZoneWindow(x,v,()=>drawCasters(x, v, s.casters));
+  if(passOn(d,'actors'))s.drawActors?.(x, v);
   flushLayeredDocs('over-player', over);
-  if (!vision) drawShade(x, v);
+  if (!vision&&passOn(d,'shade')) inZoneWindow(x,v,()=>drawShade(x, v));
   s.drawFront?.(x, v);
   flushLayeredDocs('foreground', front);
-  if (vision) muteWorld(x, v);
+  if(z.weather&&look&&amb.weather&&!vision)inZoneWindow(x,v,()=>weatherFront(x,v,look!));
+  if (vision) inZoneWindow(x,v,()=>muteWorld(x, v));
   x.restore();
+}
+
+/** Effects belong to the zone; artwork rows decide their own overhang. */
+function inZoneWindow(x:CanvasRenderingContext2D,v:View,draw:()=>void){
+ const window=v.zoneWindow;if(!window||(window.left<=0&&window.right>=v.viewW)){draw();return;}
+ x.save();x.beginPath();x.rect(window.left,0,window.right-window.left,v.viewH);x.clip();try{draw();}finally{x.restore();}
 }

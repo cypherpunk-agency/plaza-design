@@ -1,13 +1,12 @@
 import type {SceneDef} from '../../scenes/kit';
 /** Optional overrides. Omitted fields retain the registered artwork/controller's derived value. */
-export type SceneEnvironment=Pick<SceneDef,'ambient'|'facing'|'outdoor'|'horizon'|'shade'|'keepFace'>;
-export const sceneEnvironmentKeys=['ambient','facing','outdoor','horizon','shade','keepFace'] as const;
+export type SceneEnvironment=Pick<SceneDef,'ambient'|'facing'|'outdoor'|'horizon'|'shade'|'keepFace'|'backdrop'>;
+export const sceneEnvironmentKeys=['ambient','facing','outdoor','horizon','shade','keepFace','backdrop'] as const;
 /** These values already have editable geometry owners; do not introduce a second source. */
 export const environmentArtworkOwners:Record<string,Partial<Record<'facing'|'horizon'|'shade'|'covers',string>>>={
  capsule:{facing:'blinds · facing'},moth:{facing:'window · facing'},library:{facing:'reading-room windows · facing'},laundromat:{facing:'window · facing'},
  warehouse:{facing:'scene · facing',shade:'wall · height and placement'},stacks:{horizon:'scene · horizon'},
  harbor:{horizon:'horizon-height · placement',shade:'shade0 and shade-gap artwork'},
- harborShift:{horizon:'horizon · placement'},
  metro:{horizon:'horizon · placement',covers:'canopy-shell · under; scene width'},
  harborStation:{horizon:'water · horizon',covers:'canopy-shell · under; scene width'},
 };
@@ -17,6 +16,7 @@ export function validateSceneEnvironment(value:unknown,scene?:string):SceneEnvir
  const number=(v:unknown,min=-10000,max=10000)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)fail();};
  const boolean=(v:unknown)=>{if(v!==undefined&&typeof v!=='boolean')fail();};
  const env=object(value,sceneEnvironmentKeys);
+ if(env.backdrop!==undefined){const b=object(env.backdrop,['id','x','h']);if(typeof b.id!=='string'||!/^[a-z][a-z0-9-]*$/.test(b.id))fail();number(b.x,-1e9,1e9);if(b.h!==undefined)number(b.h,-1e9,1e9);}
  const owners=scene?environmentArtworkOwners[scene]:undefined;
  if(owners)for(const key of ['facing','horizon','shade'] as const)if(owners[key]&&env[key]!==undefined)throw new Error('Environment '+key+' belongs to Layout: '+owners[key]);
  for(const key of ['outdoor','keepFace'])boolean(env[key]);

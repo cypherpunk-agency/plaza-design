@@ -182,13 +182,14 @@ try {
     tap(act); assert.ok(levelRiding(L), 'ACT steps in');
     frame();
     assert.ok(shown('up') && !shown('down'), 'in the car at the lowest stop: ▲ shows, ▼ does not');
-    const pick = () => (L.state.ride as {pick: number}).pick;
+    const pick = () => L.state.vehicle!.panel!.pick;
     tap(up); tap(up); assert.equal(pick(), 2, '▲ picks the next floor up, once per tap');
     frame(); assert.ok(shown('down'), 'with a floor below chosen, ▼ shows');
     tap(down); assert.equal(pick(), 1, '▼ picks one down');
     assert.equal(p.y, -190, 'picking does not move the car');
     tap(act); frame(900);
-    assert.equal(levelFloor(L).id, level.lifts[0].stops[1].floor, 'ACT sends the car to the chosen floor');
+    assert.equal(p.y, level.lifts[0].stops[1].h, 'ACT sends the cabin to the chosen floor');
+    assert.ok(L.state.vehicle?.panel, 'the rider remains aboard until ACT steps out');
     for (let i = 0; i < lift.stops.length; i++) tap(up);
     frame(); assert.ok(!shown('up') && shown('down'), 'at the top of the panel ▲ steps aside');
     dispose();

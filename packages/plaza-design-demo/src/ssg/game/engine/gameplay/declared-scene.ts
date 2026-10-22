@@ -1,3 +1,4 @@
+import {compilePeople} from '../people';
 import {projectSceneState,type SceneDeviceSource} from './scene-state';
 import {emptyData} from '../empty-data';
 import {nativeDeviceData} from './native-bindings';
@@ -12,6 +13,9 @@ import {withSceneConversations,actorConversationId} from './scene-conversations'
 import type {SceneDef} from '../../scenes/kit';
 import {validateSceneDocument,type SceneDocument} from './scene-document';
 import {compileLevel,compileOccluders,levelNear,levelOpacity,levelVisualState,restingLevelView} from '../level';
+import {levelVehicleVisuals} from '../level-vehicles';
+import {routeProblems} from '../../world/vehicles';
+import {EMPTY_ZONE_GRAPH} from '../../world/zone-graph';
 import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
@@ -90,6 +94,14 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,anchorRows[a].placement])),{reset:resetPermitted(d),anchors}):{};
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
+ for(const v of level?.vehicles??[]){
+  if(v.source.boardQuery&&!gameplay.queries?.[v.source.boardQuery])throw Error('Vehicle references a missing boarding query: '+v.source.boardQuery);
+  const local=v.source.route.legs.every(l=>l.zone===d.id||l.zone==='here');
+  if(local){const problems=routeProblems(v.source,EMPTY_ZONE_GRAPH,{[d.id]:{},here:{}});if(problems.length)throw Error(problems.join('; '));}
+  for(const berth of v.source.berths)if((berth.zone===d.id||berth.zone==='here')&&berth.floor&&!level!.floors.some(f=>f.id===berth.floor))throw Error('Vehicle berth names a missing floor: '+berth.floor);
+  for(const key of [v.source.mover,...('mover'in v.source.doors?[v.source.doors.mover]:[])]){const[device,noun]=key.split('.');if(!data.devices.find(d=>d.id===device)?.nouns.find(n=>n.id===noun)?.mover)throw Error('Vehicle references a missing Circuit mover: '+key);}
+  for(const id of v.source.shell??[])if(!rows.some(r=>r.instance.id===id))throw Error('Vehicle shell names missing artwork: '+id);
+ }
  // what the player passes behind (a walk-in building's wall edges, a stair's near rail): drawn over them while they do
  const occluders=level?compileOccluders(rows):[];
  // the grey review room stands in for a room until the composition paints its own backdrop
@@ -98,13 +110,18 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  // presentation signals: cosmetic event stamps a provider's artwork reads (a crane call), set by the scene's cues
  const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
-  const pieces=live?levelVisualState(live):{},near=level&&live?levelNear(level,live,occluders):{},state:Record<string,import('../../art').Properties>={...(options.state??{}),...pieces};
+  const pieces=live?levelVisualState(live):{},near=level&&live?levelNear(level,live,occluders):{},vehicles=level?.vehicles?.length&&engine?levelVehicleVisuals(engine.m.peopleLevel??level,engine.m):{},state:Record<string,import('../../art').Properties>={...(options.state??{}),...vehicles,...pieces};
   for(const[id,v]of Object.entries(near))state[id]={...(state[id]??{}),...v};
-  return {...options,view,state,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
-   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:options.reduced??false};};
+  return {...options,view,state:{...state,...view.sequence?.state},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
+   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:view.reduced??options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
+ const artworkVisible:NonNullable<SceneDef['artworkVisible']>=(view,model)=>resolveComposition(art,validated.composition,environment(view,{m:model,hover:null,layer:'all'})).some(r=>{
+  if(!r.element.parts.length||['distance','backdrop','logic'].includes(r.instance.layer))return false;
+  const p=r.placement,b=r.element.bounds(r.props,r.state,{view,placement:p}),x=view.sx(p.x,p.parallax),a=x+b.x*p.scale*p.facing,z=a+b.w*p.scale*p.facing;
+  return Math.max(a,z)>0&&Math.min(a,z)<view.viewW;
+ });
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- const base:SceneDef={id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ const base:SceneDef={peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  // each mechanism may return picture-side state (`presentation`); the scene prepares, saves and restores them together, beside its presentation signals

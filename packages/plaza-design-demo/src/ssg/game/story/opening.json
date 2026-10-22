@@ -11,12 +11,15 @@
   "OPENING_LEVELS": [
     {
       "id": "opening",
-      "name": "OPENING · TRAIN HOME",
+      "name": "PROLOGUE · HARBOR SHIFT",
       "flags": [
-        "opening:home"
+        "prologue:started"
       ],
       "reset": [
-        "capsule"
+        "harbor-station",
+        "harbor-checkout",
+        "harbor-yard",
+        "harbor-shed"
       ]
     },
     {
@@ -47,7 +50,7 @@
         },
         {
           "destination": {
-            "scene": "train"
+            "scene": "harbor-station"
           }
         }
       ],
@@ -59,6 +62,16 @@
             "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
           },
           "whoami": "courier, capsule 7B (registered) · night shift"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
         }
       }
     },
@@ -80,6 +93,16 @@
             "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
           },
           "whoami": "courier, capsule 7B (registered) · night shift"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
         }
       }
     },
@@ -109,6 +132,37 @@
       "hackLocked": false,
       "pinned": false,
       "resume": []
+    },
+    "prologue": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "harbor-station"
+          }
+        }
+      ],
+      "persona": {
+        "name": "courier",
+        "calmWeather": true,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+          },
+          "whoami": "courier, capsule 7B (registered) · night shift"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
     }
   },
   "PHASE_RULES": [
@@ -116,8 +170,16 @@
       "when": {
         "any": [
           {
-            "flag": "opening:home",
-            "is": false
+            "all": [
+              {
+                "flag": "opening:home",
+                "is": false
+              },
+              {
+                "flag": "prologue:started",
+                "is": false
+              }
+            ]
           },
           {
             "flag": "opening:jacked"
@@ -145,15 +207,29 @@
       "phase": "flat"
     },
     {
+      "when": {
+        "all": [
+          {
+            "flag": "prologue:started"
+          },
+          {
+            "flag": "opening:home",
+            "is": false
+          }
+        ]
+      },
+      "phase": "prologue"
+    },
+    {
       "phase": "home"
     }
   ],
   "START": {
     "start": {
-      "scene": "train"
+      "scene": "harbor-station"
     },
     "fallback": {
-      "scene": "train"
+      "scene": "harbor-station"
     },
     "settled": "downtown"
   },
@@ -171,7 +247,7 @@
       "out": 50,
       "card": 110,
       "in": 50,
-      "from": "06:04",
+      "from": "06:20",
       "to": "09:40",
       "label": "CAPSULE 7B",
       "mid": [
@@ -334,7 +410,8 @@
       "opening:flat",
       "opening:slept",
       "opening:uplink",
-      "opening:jacked"
+      "opening:jacked",
+      "prologue:started"
     ],
     "items": [],
     "events": [],
@@ -345,7 +422,7 @@
         ],
         "actions": [
           {
-            "flag": "opening:home",
+            "flag": "prologue:started",
             "value": true
           }
         ]

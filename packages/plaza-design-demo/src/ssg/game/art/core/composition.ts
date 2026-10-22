@@ -319,6 +319,9 @@ function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment
     if (!visible) continue;
     if (opacity === 0) continue;
     const pass = passOf(r), p = r.placement, v = env.view;
+    const clip = v.zoneWindow && (v.zoneWindow.left>0||v.zoneWindow.right<v.viewW) && (r.instance.layer === 'distance' || r.instance.layer === 'backdrop');
+    if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(v.zoneWindow!.left,0,v.zoneWindow!.right-v.zoneWindow!.left,v.viewH); ctx.clip(); }
+    try {
     if (r.element.coordinates === 'world') {
       const transformed = p.scale !== 1 || p.facing !== 1 || opacity !== 1;
       if (transformed) {
@@ -338,5 +341,6 @@ function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment
       y: h => (v.y(p.h + h * p.scale) - oy) / p.scale, gy: 0 };
     try { if (near) r.element.drawNear!(ctx, local, r.props, r.state, p); else r.element.draw(ctx, local, r.props, r.state, pass, p); }
     finally { ctx.restore(); }
+    } finally { if (clip) ctx.restore(); }
   }
 }

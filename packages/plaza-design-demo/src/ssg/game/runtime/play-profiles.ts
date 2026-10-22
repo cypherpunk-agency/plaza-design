@@ -73,7 +73,7 @@ const oneOf = <T extends string>(v: unknown, list: readonly T[], what: string) =
 const text = (v: unknown, what: string, max = 80) => { if (typeof v !== 'string' || !v.trim() || v.length > max) fail(`${what} must be text (1 to ${max} characters)`); return v as string; };
 const list = (v: unknown, what: string, max: number) => { if (!Array.isArray(v) || v.length > max) fail(`${what} must be a list (${max} at most)`); return v as unknown[]; };
 
-function characterOf(v: unknown, what: string): PlayerCharacter {
+export function characterOf(v: unknown, what: string): PlayerCharacter {
   const c = plain(v, what); exact(c, ['seed', 'look'], ['seed', 'look'], what);
   if (!Number.isInteger(c.seed) || (c.seed as number) < 0 || (c.seed as number) > 1000000) fail(what + ' seed must be a whole number from 0 to 1000000');
   const l = plain(c.look, what + ' look'); exact(l, [...Object.keys(LOOK_PARTS), 'extras', ...LOOK_COLOURS], [], what + ' look');

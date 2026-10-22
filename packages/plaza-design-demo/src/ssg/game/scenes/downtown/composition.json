@@ -4648,6 +4648,48 @@
         "instance": "dumpster",
         "anchor": "topCenter"
       }
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 2000,
+        "label": "floor-street"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-platform-dumpster",
+      "type": "level.floor",
+      "props": {
+        "width": 40,
+        "label": "floor-platform-dumpster"
+      },
+      "placement": {
+        "x": 1000,
+        "h": 22
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-platform-annex",
+      "type": "level.floor",
+      "props": {
+        "width": 160,
+        "label": "floor-platform-annex"
+      },
+      "placement": {
+        "x": 1040,
+        "h": 62
+      },
+      "order": 0,
+      "layer": "logic"
     }
   ]
 }

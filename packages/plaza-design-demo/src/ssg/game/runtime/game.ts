@@ -23,6 +23,7 @@ import {nativeGameplayPort} from '../engine/gameplay/native-bindings';
 import {ConversationSession} from '../engine/gameplay/conversation';
 import { gameStorage, reloadRuntime } from './storage';
 import { drawCapsuleWash } from '../art/atmosphere/capsule-wash';
+import {vehicleSeatHeight,stepLevelVehicles,validateWorldVehicles,saveVehicle,restoreVehicle} from '../engine/level-vehicles';
 import { AVATAR_PAINTERS } from './avatars';
 import { createSkyShips,drawSkyShips,type Ship } from '../art/environment/sky-ships';
 import { renderWorldFrame, type ZoneFrame } from './render-scene';
@@ -84,7 +85,7 @@ import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import { levelArrive, levelArrows, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, levelLiftList, levelPick, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
-import { joined as zoneJoined, residency, seamsOf, validateZoneGraph, type ResidencyTier } from "../world/zone-graph";
+import { joined as zoneJoined, residency, seamsOf, placeFrom, validateZoneGraph, type ResidencyTier } from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
 
 /**
@@ -248,7 +249,7 @@ export class Game {
     for(const[id,host]of this.hosts){const {state,...engine}=host.model.snapshot();Object.assign(values[id]??={},state);scenes[id]={...engine,...(scenes[id]?.board?{board:scenes[id]!.board}:{})};}
     for(const id of new Set([...Object.keys(this.content),...Object.keys(SCENES)]))for(const[key,d]of Object.entries(this.sceneDefinition(id as SceneId).gameplay?.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
     for(const[key,d]of Object.entries(this.openingStory.GAMEPLAY.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
-    return {...save,gameplay:values,scenes};
+    return {...save,gameplay:values,scenes,vehicle:saveVehicle(this.level,this.p,this.here)};
   }
   private persistSave(){storeSave(this.save,save=>this.prepareSave(save));}
   /** The companion body (engine/gameplay/companion.json): at home where a scene says so, at your heels once its flag is set. */
@@ -267,6 +268,7 @@ export class Game {
   private netBack = false;
 
   constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
+    validateWorldVehicles(Object.fromEntries(Object.entries({...SCENES,...content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),this.zoneGraph);
     // sudo (developer) mode: browser checks read the player and the level, and place the player, through window.__game
     const game = this;
     if (SUDO || PROBE) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.level; }, get here() { return game.here; }, prompt: () => game.nearest(), probe: () => game.probeFrame(), ...(SUDO ? { place: (x: number) => { game.p.x = x; } } : {}) };
@@ -494,6 +496,7 @@ export class Game {
    * saved scene takes precedence; older saves fall back to opening.ts or Downtown/the first scene.
    */
   private continueGame(scene: SceneId | undefined, first: boolean) {
+    const vehicle=first&&(!scene||scene===this.save.scene)?this.save.vehicle:undefined;delete this.save.vehicle;
     this.endTitle();
     const { routes, start } = playProfile();
     if(routes==='content')scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:start.scene as SceneId);
@@ -508,6 +511,7 @@ export class Game {
     }
     if (first && scene && scene === start.scene && !resumeEntrance) resumeEntrance = start.entrance;
     if (scene && (this.here !== scene||resumeEntrance)) this.enter(scene, true,resumeEntrance);
+    if(vehicle&&this.level&&restoreVehicle(this.level,this.p,this.movers,vehicle)){this.cam=this.camFollow(this.p.x);this.camH=this.p.y;this.gy=this.gyBase+Math.round(this.camH);}
     this.showHost();
     this.markSeen(this.here);
     this.greet();
@@ -542,7 +546,7 @@ export class Game {
     this.keys.clear();
     this.hosts.forEach((h) => {h.cancelAcknowledgment?.('dismissed');h.closeAll();});
     this.term.close();
-    this.opening = new Opening(this.reduced,this.sequenceDocuments.opening);
+    this.opening = new Opening(this.reduced,this.sequenceDocuments.opening,{scenes:{...SCENES,...this.content},graph:this.zoneGraph,backdrops:this.sources.backdrops});
     this.syncEnginePause();
     document.documentElement.classList.add('cutscene');
     this.host.setScene('ACCESS DENIED');
@@ -580,7 +584,7 @@ export class Game {
     x.imageSmoothingEnabled = false;
     // opt-in recording: the title's or the glide's beat owns the frame's render span
     const span = performanceRecording() ? perfBegin('game.render', o.gliding ? 'glide:' + o.beat : 'title') : -1;
-    try { o.draw(x, this.viewW, this.viewH); } finally { perfEnd(span); }
+    try { o.draw(x, this.viewW, this.viewH,this.gyBase); } finally { perfEnd(span); }
     if (o.done) this.openingDone();
   }
 
@@ -621,7 +625,10 @@ export class Game {
   /** The HACK and BOARD buttons belong to the scene you are in. */
   private showHost() {
     const here = this.zh;
-    this.hosts.forEach((h) => h.show(h === here));
+    for (const [id, h] of this.hosts) {
+      if (h !== here && !this.joinedZones.some(z => z.id === id)) { this.unload(id); continue; }
+      h.show(h === here, h === here || this.zoneTiers.get(id) === 'visible');
+    }
   }
 
   checkpoint(){this.hosts.forEach(host=>host.persist());this.persistSave();}
@@ -630,6 +637,7 @@ export class Game {
   inspect() {
     const shared=this.gameplayFor(this.here);
     return structuredClone({scene:this.here, player:{x:this.p.x,y:this.p.y}, save:this.save,
+      level:EDITOR_PLAY&&this.level?{floor:this.level.state.floor,vehicle:this.level.state.vehicle,frames:this.level.source.vehicleFrames?.map(f=>({id:f.vehicle.id,x:f.part.dx,h:f.part.dh,zone:f.pose.zone,berth:f.berth?.id,doors:f.doors,boarding:f.boarding})),prompt:this.nearest()}:undefined,
       actors:EDITOR_PLAY?(this.def.people??[]).map((p,index)=>({index,id:p.id,seed:p.seed,look:p.look,x:p.x,h:p.h,act:p.act,range:p.range,speed:p.speed,facing:p.facing,when:p.when,visible:isHere(p),follow:p.follow?(this.def.people??[]).indexOf(p.follow):undefined,gap:p.gap})):undefined,
       engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
       gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
@@ -868,7 +876,7 @@ export class Game {
   private jump() {
     if (!can('jump')) return;
     if (!this.save.jump) { this.flash('[ERR] legs.so not found'); sound.denied(); return; }
-    if (!this.p.onGround) return;
+    if (!this.p.onGround || this.level?.state.vehicle?.seat) return;
     this.p.vy = 4.6;
     this.p.onGround = false;
     sound.jump();
@@ -928,20 +936,33 @@ export class Game {
       // a visible zone is hosted now (it is drawn); a near one is compiled by `followResidency`, one per frame
       if (z !== id) { this.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); if (zr.tier === 'visible') this.hostOf(z); }
     }
-    return parts.length > 1 ? mergeLevels(parts) : s.level;
+    const level=mergeLevels(parts);
+    level.vehicleZones=Object.fromEntries([...placeFrom(this.zoneGraph,id,Infinity)].map(([z,p])=>[z,{x:p.dx,h:p.dh}]));
+    for(const part of parts){const host=this.hosts.get(part.zone as SceneId);if(host&&part.source.vehicles?.length)host.model.peopleLevel={...part.source,vehicleZones:Object.fromEntries([...placeFrom(this.zoneGraph,part.zone,Infinity)].map(([z,p])=>[z,{x:p.dx,h:p.dh}]))};}
+    return level;
   }
   /** Each joined zone's residency tier this frame: only visible ones are drawn; near ones are hosted and walked, not drawn. */
   private zoneTiers = new Map<string, ResidencyTier>();
   /**
    * Residency for zone `id` with the camera at `cam` (horizontal: the view's width across). Only joined zones (in the
-   * zone graph) take part: a scene with no seams is kept hosted after you leave it, as before (decided for now).
+   * zone graph) take part. Unjoined scenes unload on departure in showHost, restoring saved state on return.
    * A zone with a panel, popup, hack vision or acknowledgment open is held.
    */
   private residencyAt(id: SceneId, cam: number) {
     const zones: Record<string, { width: number }> = {};
-    for (const seam of this.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (this.hasScene(z)) zones[z] = { width: this.sceneDefinition(z).width };
+    for (const seam of this.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (this.hasScene(z) && (!this.sceneDefinition(z).sudoOnly || sudoOn() || EDITOR_PLAY)) zones[z] = { width: this.sceneDefinition(z).width };
     const hosted = [...this.hosts].filter(([z]) => zones[z]), held = hosted.filter(([, h]) => h.overlayOpen || h.popupOpen || h.visionOn || h.acknowledgmentPending);
-    return residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: hosted.map(([z]) => z), held: held.map(([z]) => z) });
+    const r=residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: hosted.map(([z]) => z), held: held.map(([z]) => z) });
+    // Keep the existing Circuit owner while one of its route zones is active or on screen.
+    const placed=placeFrom(this.zoneGraph,id,Infinity);
+    const visible=new Set([...r.zones].filter(([,z])=>z.tier==='active'||z.tier==='visible').map(([id])=>id));
+    for(const [owner,scene] of Object.entries({...SCENES,...this.content})){
+      if(!scene?.level?.vehicles?.some(v=>!v.lift&&v.source.route.legs.some(l=>visible.has(l.zone))&&v.source.route.legs.some(l=>l.zone!==owner&&l.zone!=='here')))continue;
+      const at=placed.get(owner);if(!at)continue;
+      r.zones.set(owner,{tier:owner===id?'active':'visible',at,gap:0,reason:'active vehicle service'});
+      r.evict=r.evict.filter(z=>z!==owner);if(!this.hosts.has(owner as SceneId)&&!r.load.includes(owner))r.load.push(owner);
+    }
+    return r;
   }
   /**
    * Each frame in a joined zone: the resident set follows the camera. A zone coming into reach joins the level (its pieces
@@ -955,12 +976,13 @@ export class Game {
     for (const [z, zr] of r.zones) if (this.zoneTiers.has(z)) this.zoneTiers.set(z, zr.tier);
     // never drop the zone the player stands in (mid-flight a ride can be in the neighbour's floors)
     if (!want.includes(this.here)) return;
-    const floor = levelFloor(this.level).zone; if (floor && !want.includes(floor)) return;
+    const floor = this.level.state.vehicle?levelZone(this.level):levelFloor(this.level).zone; if (floor && !want.includes(floor)) return;
     const source = want.join() === have.join() ? undefined : this.joinLevel(this.here);
-    if (source?.zones) this.level = levelRejoin({ source, state: this.level.state }, source, this.seenRooms(source, this.here) ?? [], savedForLevel(source, this.here, this.save.barriers));
+    if (source?.zones) {this.level = levelRejoin({ source, state: this.level.state }, source, this.seenRooms(source, this.here) ?? [], savedForLevel(source, this.here, this.save.barriers));if(this.level.state.vehicle)stepLevelVehicles(this.level,this.p,this.movers);}
     // out of the level now: zones past the eviction distance unload; one zone coming into reach is compiled per frame
     for (const z of r.evict) if (z !== this.here) this.unload(z as SceneId);
     const next = r.load.find(z => !this.hosts.has(z as SceneId) && this.hasScene(z)); if (next) this.hostOf(next as SceneId);
+    this.showHost();
   }
   /** Unload a zone (SEAMLESS-WORLD.md §3): its host persists and is disposed, with the session bound to its model; the save stays, and `hostOf` rebuilds it from there. */
   private unload(id: SceneId) {
@@ -1027,12 +1049,14 @@ export class Game {
     // the zone left behind closes what it had open (hack vision, panels), as leaving a scene does
     this.zh.closeAll(); this.zh.persist(); this.zh.model.player = null;
     this.here = id;
+    if(state.vehicle){state.vehicle.x-=dx;state.vehicle.h-=dh;}
     this.p.x -= dx; this.p.y -= dh; this.cam -= dx; this.camH -= dh; this.gy = this.gyBase + Math.round(this.camH);
     if (this.bubble) { this.bubble.x -= dx; this.bubble.h -= dh; }
     this.companionBody.x -= dx; this.companionBody.h -= dh;
     this.nudge = null; this.easeBack = false;
     const source = this.joinLevel(id)!;
     this.level = levelRejoin({ source, state }, source, this.seenRooms(source, id) ?? [], savedForLevel(source, id, this.save.barriers));
+    if(state.vehicle)stepLevelVehicles(this.level,this.p,this.movers);
     // the view keeps its scale over a seam (only a cut refits it)
     this.fitW = this.spanW;
     this.showHost();
@@ -1048,8 +1072,8 @@ export class Game {
     const host = this.hostOf(z.id), scene = this.sceneDefinition(z.id), cam = this.cam - z.dx, gy = this.gy - z.dh;
     const view: SceneView = { ...frameView(0), t: this.t, viewW: this.viewW, viewH: this.viewH, cam, gy, sx: (wx, p = 1) => Math.round(wx - cam * p), y: (h) => gy - h, flags: this.save.flags, values: this.save.gameplay, level: this.level ? this.levelViewOf(z.id) : undefined };
     const outdoor = scene.outdoor ?? !!(scene.ambient?.weather || scene.ambient?.sky);
-    return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: () => host.preparePresentation(view, 'all'),
-      lighting: W => { const L = lightAt(city.day, city.min, scene.facing ?? 180, W ?? this.weatherHere(), outdoor); setLight(L); return L; } };
+    return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: prepared => host.preparePresentation(prepared, 'all'),weather:()=>this.weatherOf(z.id),
+      lighting: W => { const L = lightAt(city.day, city.min, scene.facing ?? 180, W ?? this.weatherOf(z.id), outdoor); setLight(L); return L; } };
   }
   /** The scene's name, for the HUD and the canvas label. */
   private get placeName() { return this.def.name; }
@@ -1283,7 +1307,7 @@ export class Game {
     if(this.zh.acknowledgmentPending){this.zh.advanceAcknowledgment();return;}
     const target = this.nearest();
     if (!target) return;
-    if (target.kind === 'level') { if (this.level && !this.passBarrier(target.id)) levelInteract(this.level, target.id, this.p, this.movers); return; }
+    if (target.kind === 'level') { if (this.level && !this.passBarrier(target.id)&&levelInteract(this.level, target.id, this.p, this.movers))this.persistSave(); return; }
     if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
@@ -1315,6 +1339,8 @@ export class Game {
     // ↑/↓ held climb a ladder, spiral or switchback (a straight flight is walked with ←/→)
     const climb = locked ? 0 : (this.keys.has('ArrowUp') || this.keys.has('w') ? 1 : 0) - (this.keys.has('ArrowDown') || this.keys.has('s') ? 1 : 0);
     const riding = !!this.level && levelStep(this.level, p, locked ? 0 : dir, dt, this.movers, climb);
+    for(const host of this.hosts.values())host.model.playerSeat=undefined;
+    const seated=this.level?.state.vehicle;if(seated?.seat){const definition=(this.level!.source.vehicleBase??this.level!.source).vehicles?.find(v=>v.id===seated.id),model=definition?.zone?this.hostOf(definition.zone as SceneId).model:this.zh.model;model.playerSeat={vehicle:seated.id.split('/').at(-1)!,seat:seated.seat};}
     // over a seam: the zone the player now stands in becomes the one they are in, with no cut
     const zone = this.level && levelZone(this.level);
     if (zone && zone !== this.here && this.hasScene(zone)) this.crossInto(zone);
@@ -1406,9 +1432,9 @@ export class Game {
   private drawWorld() {
     const v = this.view();
     renderWorldFrame({ context: this.x, scale: this.k, view: v, scene: this.def, sceneId: this.here,
-      host: this.zh, reduced: this.reduced, clock: this.clock,
+      host: this.zh, reduced: this.reduced, clock: this.clock,backdrops:this.sources.backdrops,
       weather: () => this.weatherHere(), lighting: W => this.lightHere(W),
-      preparePresentation: () => this.zh.preparePresentation(v, this.zh.visionOn && this.def.layers ? 'devices' : 'all'),
+      preparePresentation: prepared => this.zh.preparePresentation(prepared, this.zh.visionOn && this.def.layers ? 'devices' : 'all'),
       skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
@@ -1455,7 +1481,8 @@ export class Game {
     const open = this.zh.viewing;
     const jack = open ? this.zh.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
-    AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, player: playProfile().player, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null });
+    const character=this.openingStory.persona(this.save.flags)?.character,player=character?{...playProfile().player,avatar:'person' as const,character}:playProfile().player;
+    AVATAR_PAINTERS[player.avatar]({ x, view: this.view(), p, t: this.t, jack, player, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null,seat:this.level?vehicleSeatHeight(this.level):undefined });
   }
 
   /**
@@ -2104,14 +2131,16 @@ export class Game {
    */
   private pinStory() {
     if(EDITOR_PLAY&&this.editorClock!=='story'){if(this.editorClock==='fixed')city.pin(this.save.clock.min);return;}
-    if (playProfile().clock.rule === 'scene') {
+    if (this.def.storyMinute||this.def.storyRun||this.def.storyDay||playProfile().clock.rule === 'scene') {
       const day=this.def.storyDay?.(this.save.flags,this.gameplayFor(this.here)?.state());
       if(day!==undefined)this.save.clock.day=day;
       const at = this.def.storyMinute?.(this.save.flags,this.gameplayFor(this.here)?.state());
-      if(at===undefined){city.release();return;}
+      if(at===undefined){const run=this.def.storyRun?.(this.save.flags,this.gameplayFor(this.here)?.state());city.run(run?.rate??1,run?.until);return;}
+      city.run();
       if (city.pinned !== at) city.pin(at);
       return;
     }
+    city.resetRun();
     const st = this.story, release = this.openingStory.CLOCK.release;
     const pin = clockPin({ pinned: this.openingStory.isPinned(this.save.flags), minute: parseHM(this.def.phases?.[st]?.time ?? ''), wasPinned: this.storyPinned, releaseMinute: parseHM(this.sceneDefinition(release.scene as SceneId).phases?.[release.phase]?.time ?? '') });
     if (pin.kind === 'hold') {

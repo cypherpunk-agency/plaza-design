@@ -66,7 +66,7 @@ export interface Pixels {
 }
 
 /** Draw `paint` in the panorama's pixels at a placement. */
-export function inPixels(ctx: CanvasRenderingContext2D, view: View, at: Readonly<Required<Placement>>, paint: (p: Pixels) => void, still = false) {
+export function inPixels(ctx: CanvasRenderingContext2D, view: View, at: Readonly<Required<Placement>>, paint: (p: Pixels) => void, still = view.reduced??false) {
   const p = at.parallax, ax = view.sx(at.x, p) / ART, ay = view.y(at.h) / ART, W = view.viewW / ART, H = view.viewH / ART, facing = at.facing;
   // mirrored about the anchor: a pixel s is drawn at 2·ax − s
   const shown = (s: number) => facing < 0 ? 2 * ax - s : s;

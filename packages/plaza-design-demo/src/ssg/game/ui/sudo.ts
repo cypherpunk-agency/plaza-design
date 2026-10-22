@@ -58,7 +58,7 @@ export function levels(): Level[] {
     ...OPENING_LEVELS.map((l) => ({ id: l.id, name: l.name, note: 'LEVEL' })),
     ...Object.entries(STORY).map(([id, l]) => ({ id, name: l.name, note: 'LEVEL' })),
     ...Object.values(CUTSCENES).map((c) => ({ id: c.id, name: c.id.toUpperCase(), note: 'CUTSCENE' })),
-    ...Object.entries(SCENES).filter(([id]) => id !== 'sandbox' && id !== 'harborShift').map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
+    ...Object.entries(SCENES).filter(([id]) => id !== 'sandbox').map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
   ];
 }
 

@@ -96,7 +96,8 @@
       "to": "metro",
       "at": "downtown",
       "label": "[E] METRO",
-      "promptH": 106
+      "promptH": 106,
+      "engine": true
     },
     {
       "id": "moth",
@@ -499,15 +500,15 @@
   },
   "phases": {
     "home": {
-      "time": "05:52",
+      "time": "06:14",
       "goal": "go home (7B)",
       "intro": {
         "pages": [
-          "Ten to six. The street is still warm from the night.",
+          "Morning. The street is still warm from the night.",
           "Home is the capsule tower, past the metro stairs."
         ],
         "touchPages": [
-          "Ten to six. The street is still warm from the night.",
+          "Morning. The street is still warm from the night.",
           "Home is the capsule tower, past the metro stairs."
         ],
         "consume": true,

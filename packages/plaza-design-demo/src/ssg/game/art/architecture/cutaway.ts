@@ -1,4 +1,4 @@
-import {paintOpeningActor}from'../sequences/opening/poses';
+import {paintPreparedAtOrigin}from'../characters/paint-prepared';
 import type{Light}from'../../world/light';
 /**
  * Set pieces (ART-GUIDE §12): the city cut open. When a picture goes under the street (the opening
@@ -112,7 +112,7 @@ export function drawCanalGlimpse(x: CanvasRenderingContext2D, w: number, o: { t:
   x.fillStyle = '#2a1a14'; x.beginPath(); x.moveTo(-150, y(18)); x.lineTo(150, y(18)); x.lineTo(130, y(-6)); x.lineTo(-136, y(-6)); x.closePath(); x.fill();
   x.fillStyle = 'rgba(255,190,120,.3)'; x.fillRect(-150, y(18), 300, 2);
   x.fillStyle = '#1a100c'; x.fillRect(96, y(150), 4, 136);
-  placed1(x, -40, y(4), () => paintOpeningActor(x,frameView(o.t,o.lighting),o.boatPose,'canal'));
+  placed1(x, -40, y(4), () => paintPreparedAtOrigin(x,frameView(o.t,o.lighting),o.boatPose,'canal'));
   const fl = o.still ? 1 : 0.85 + 0.15 * Math.sin(t * 0.3) * Math.sin(t * 0.13);
   const lg = x.createRadialGradient(98, y(140), 2, 98, y(140), 220); lg.addColorStop(0, 'rgba(255,190,100,' + (0.45 * fl).toFixed(3) + ')'); lg.addColorStop(1, 'rgba(255,190,100,0)');
   x.fillStyle = lg; x.fillRect(-140, y(360), 480, 440);

@@ -9,9 +9,9 @@ export const DELIVERY_TERMINAL:SceneData={
     {id:'terminal',name:'DELIVERY TERMINAL',look:'The same transfer operation as the receiving clerk.',status:'requires an assignment and a carried parcel',nouns:[{id:'delivery',layer:'hardware',function:'act',verbs:['deliver'],events:['accepted','denied'],on:{deliver:{do:[{effect:'delivery.request'}]}}}]}
   ],cables:[{id:'delivery-request',from:'scanner.parcel:detected',to:'terminal.delivery',verb:'deliver'}]
 };
-export function deliveryTerminalRules(gameplay:GameplaySession):SceneRules{return{
+export function deliveryTerminalRules(gameplay:GameplaySession,command='delivery.deliver'):SceneRules{return{
   effects:{'delivery.request':(world,context)=>{
-    const result=gameplay.dispatch('shift.deliver',context.bySignal?'signal':'interaction');
+    const result=gameplay.dispatch(command,context.bySignal?'signal':'interaction');
     world.emit(result.ok?'accepted':'denied');
     return['use delivery --deliver',result.ok?'DELIVERY REGISTERED.':`DELIVERY REFUSED: ${result.reason}.`,result.ok?'ok':'err'];
   }}

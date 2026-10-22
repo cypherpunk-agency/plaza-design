@@ -75,6 +75,14 @@ export function placeFrom(graph: ZoneGraphSource, active: string, hops = 1, with
   return out;
 }
 
+/** A timeline's camera uses the ordinary graph, with a source-owned origin and zone list. */
+export function sequencePlacements(graph:ZoneGraphSource,origin:string,zones:readonly string[],info:Readonly<Record<string,ZoneInfo>>):Map<string,ZonePlacement>{
+  if(!zones.includes(origin))throw Error('World sequence origin must be in its zone list');
+  const placed=placeFrom(graph,origin,Infinity),out=new Map<string,ZonePlacement>();
+  for(const id of zones){const at=placed.get(id);if(!info[id]||!at)throw Error('World sequence zone is missing or unjoined: '+id);out.set(id,at);}
+  return out;
+}
+
 // ---------- residency (SEAMLESS-WORLD.md §3): which zones are hosted, decided each frame ----------
 
 /** How a zone is held: the one the player is in, on camera, close enough to be hosted, or not hosted at all. */

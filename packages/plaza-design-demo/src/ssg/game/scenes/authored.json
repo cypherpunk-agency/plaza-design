@@ -295,7 +295,7 @@
               "rail": "steel"
             },
             "placement": {
-              "x": 350,
+              "x": 1410,
               "h": -160
             },
             "order": 11,
@@ -312,7 +312,7 @@
               "style": "glass"
             },
             "placement": {
-              "x": 410,
+              "x": 1150,
               "h": -160
             },
             "order": 12,
@@ -325,7 +325,7 @@
               "lift": "via-lift"
             },
             "placement": {
-              "x": 434,
+              "x": 1174,
               "h": -160
             },
             "order": 13,
@@ -340,23 +340,6 @@
               "h": 0
             },
             "order": 15,
-            "layer": "backdrop"
-          },
-          {
-            "id": "train",
-            "type": "metro.cutaway-train",
-            "props": {
-              "cars": 2,
-              "destination": "LINE 0 · DOWNTOWN",
-              "open": 1,
-              "light": 0.85,
-              "cabs": true
-            },
-            "placement": {
-              "x": 230,
-              "h": 0
-            },
-            "order": 16,
             "layer": "backdrop"
           },
           {
@@ -546,51 +529,11 @@
               "width": 0
             },
             "placement": {
-              "x": 200,
+              "x": 1270,
               "h": 0
             },
             "order": 30,
             "layer": "backdrop"
-          },
-          {
-            "id": "commuter-a",
-            "type": "character.resident",
-            "props": {
-              "kind": "human",
-              "archetype": "commuter",
-              "seed": 7401,
-              "act": "phone",
-              "depth": "play",
-              "district": "harbor"
-            },
-            "placement": {
-              "x": 600,
-              "h": 0,
-              "facing": -1
-            },
-            "order": 31,
-            "layer": "playfield"
-          },
-          {
-            "id": "commuter-b",
-            "type": "character.resident",
-            "props": {
-              "kind": "human",
-              "archetype": "dockworker",
-              "seed": 7402,
-              "act": "doze",
-              "depth": "play",
-              "district": "harbor",
-              "sitting": "side",
-              "seat": 14
-            },
-            "placement": {
-              "x": 820,
-              "h": 0,
-              "facing": 1
-            },
-            "order": 32,
-            "layer": "playfield"
           },
           {
             "id": "mara-home",
@@ -703,7 +646,7 @@
             "type": "scene.player",
             "props": {},
             "placement": {
-              "x": 420,
+              "x": 200,
               "h": 0
             },
             "order": 40,
@@ -716,11 +659,649 @@
               "lift": "via-lift"
             },
             "placement": {
-              "x": 434,
+              "x": 1174,
               "h": 0
             },
             "order": 13,
             "layer": "set"
+          },
+          {
+            "id": "west-pier-0",
+            "type": "level.section-wall",
+            "props": {
+              "height": 144,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 100,
+              "h": -160
+            },
+            "order": 1,
+            "layer": "backdrop"
+          },
+          {
+            "id": "west-pier-1",
+            "type": "level.section-wall",
+            "props": {
+              "height": 144,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 470,
+              "h": -160
+            },
+            "order": 2,
+            "layer": "backdrop"
+          },
+          {
+            "id": "west-pier-2",
+            "type": "level.section-wall",
+            "props": {
+              "height": 144,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 840,
+              "h": -160
+            },
+            "order": 3,
+            "layer": "backdrop"
+          },
+          {
+            "id": "service",
+            "type": "vehicle.frame",
+            "props": {
+              "vehicle": {
+                "id": "service",
+                "kind": "train",
+                "mover": "service.frame",
+                "doors": {
+                  "mover": "service.doors",
+                  "open": 0.9
+                },
+                "cars": [
+                  {
+                    "id": "car1",
+                    "width": 533,
+                    "doors": [
+                      {
+                        "id": "d0",
+                        "x": 64,
+                        "w": 36
+                      },
+                      {
+                        "id": "d1",
+                        "x": 199,
+                        "w": 36
+                      },
+                      {
+                        "id": "d2",
+                        "x": 334,
+                        "w": 36
+                      },
+                      {
+                        "id": "d3",
+                        "x": 469,
+                        "w": 36
+                      }
+                    ],
+                    "seats": [
+                      {
+                        "id": "seat0",
+                        "x": 237,
+                        "h": 14,
+                        "artwork": "car1-bench",
+                        "anchor": "seat0"
+                      },
+                      {
+                        "id": "seat1",
+                        "x": 257,
+                        "h": 14,
+                        "artwork": "car1-bench",
+                        "anchor": "seat1"
+                      },
+                      {
+                        "id": "seat2",
+                        "x": 277,
+                        "h": 14,
+                        "artwork": "car1-bench",
+                        "anchor": "seat2"
+                      },
+                      {
+                        "id": "seat3",
+                        "x": 297,
+                        "h": 14,
+                        "artwork": "car1-bench",
+                        "anchor": "seat3"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "car2",
+                    "width": 533,
+                    "doors": [
+                      {
+                        "id": "d0",
+                        "x": 64,
+                        "w": 36
+                      },
+                      {
+                        "id": "d1",
+                        "x": 199,
+                        "w": 36
+                      },
+                      {
+                        "id": "d2",
+                        "x": 334,
+                        "w": 36
+                      },
+                      {
+                        "id": "d3",
+                        "x": 469,
+                        "w": 36
+                      }
+                    ],
+                    "seats": [
+                      {
+                        "id": "seat0",
+                        "x": 102,
+                        "h": 14,
+                        "artwork": "car2-bench",
+                        "anchor": "seat0"
+                      },
+                      {
+                        "id": "seat1",
+                        "x": 122,
+                        "h": 14,
+                        "artwork": "car2-bench",
+                        "anchor": "seat1"
+                      },
+                      {
+                        "id": "seat2",
+                        "x": 142,
+                        "h": 14,
+                        "artwork": "car2-bench",
+                        "anchor": "seat2"
+                      },
+                      {
+                        "id": "seat3",
+                        "x": 162,
+                        "h": 14,
+                        "artwork": "car2-bench",
+                        "anchor": "seat3"
+                      }
+                    ]
+                  }
+                ],
+                "gap": 20,
+                "gangways": true,
+                "route": {
+                  "legs": [
+                    {
+                      "zone": "harbor-station",
+                      "from": {
+                        "x": 20,
+                        "h": 0
+                      },
+                      "to": {
+                        "x": 0,
+                        "h": 0
+                      },
+                      "length": 20,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "line-harbor-1",
+                      "from": {
+                        "x": 1600,
+                        "h": 180
+                      },
+                      "to": {
+                        "x": 0,
+                        "h": 102.5
+                      },
+                      "length": 1600,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "line-harbor-2",
+                      "from": {
+                        "x": 1600,
+                        "h": 180
+                      },
+                      "to": {
+                        "x": 0,
+                        "h": 102.5
+                      },
+                      "length": 1600,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "line-harbor-3",
+                      "from": {
+                        "x": 1600,
+                        "h": 180
+                      },
+                      "to": {
+                        "x": 0,
+                        "h": 102.5
+                      },
+                      "length": 1600,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "line-harbor-4",
+                      "from": {
+                        "x": 1600,
+                        "h": 180
+                      },
+                      "to": {
+                        "x": 0,
+                        "h": 102.5
+                      },
+                      "length": 1600,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "metro",
+                      "from": {
+                        "x": 2160,
+                        "h": 0
+                      },
+                      "to": {
+                        "x": 700,
+                        "h": 0
+                      },
+                      "length": 1460,
+                      "facing": 1
+                    }
+                  ]
+                },
+                "berths": [
+                  {
+                    "id": "west",
+                    "zone": "harbor-station",
+                    "x": 20,
+                    "h": 0,
+                    "floor": "floor-platform"
+                  },
+                  {
+                    "id": "east",
+                    "zone": "metro",
+                    "x": 700,
+                    "h": 0,
+                    "floor": "floor-station"
+                  }
+                ],
+                "shell": [
+                  "car1-door0",
+                  "car1-door1",
+                  "car1-door2",
+                  "car1-door3",
+                  "car2-door0",
+                  "car2-door1",
+                  "car2-door2",
+                  "car2-door3"
+                ],
+                "boardQuery": "commute.ready"
+              }
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 3,
+            "layer": "logic"
+          },
+          {
+            "id": "car1",
+            "type": "vehicle.car",
+            "props": {
+              "length": 533,
+              "ceiling": 62,
+              "roof": 12,
+              "doors": 4,
+              "doorWidth": 36,
+              "doorHeight": 54,
+              "cab": "left",
+              "plate": "CAR 1",
+              "inside": "#3b352e",
+              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%",
+              "notice": "CAMERAS OPERATE IN THIS CAR",
+              "camera": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 4,
+            "layer": "set",
+            "attach": {
+              "instance": "service",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "car1-door0",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 5,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door0"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car1-door1",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 6,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door1"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car1-door2",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 7,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door2"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car1-door3",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 8,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door3"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car1-bench",
+            "type": "vehicle.seat",
+            "props": {
+              "places": 4,
+              "place": 20
+            },
+            "placement": {
+              "x": 2,
+              "h": 0
+            },
+            "order": 9,
+            "layer": "set",
+            "attach": {
+              "instance": "car1",
+              "anchor": "bay1"
+            }
+          },
+          {
+            "id": "gangway",
+            "type": "vehicle.gangway",
+            "props": {
+              "length": 20,
+              "face": "far"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 10,
+            "layer": "set",
+            "attach": {
+              "instance": "car1",
+              "anchor": "end"
+            },
+            "bindings": {
+              "open": "vehicle.service.gangway"
+            }
+          },
+          {
+            "id": "car2",
+            "type": "vehicle.car",
+            "props": {
+              "length": 533,
+              "ceiling": 62,
+              "roof": 12,
+              "doors": 4,
+              "doorWidth": 36,
+              "doorHeight": 54,
+              "cab": "right",
+              "plate": "CAR 2",
+              "inside": "#3b352e",
+              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%",
+              "notice": "CAMERAS OPERATE IN THIS CAR",
+              "camera": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 11,
+            "layer": "set",
+            "attach": {
+              "instance": "gangway",
+              "anchor": "end"
+            }
+          },
+          {
+            "id": "car2-door0",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 12,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door0"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car2-door1",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 13,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door1"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car2-door2",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 14,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door2"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car2-door3",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 15,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door3"
+            },
+            "bindings": {
+              "open": "vehicle.service.open"
+            }
+          },
+          {
+            "id": "car2-bench",
+            "type": "vehicle.seat",
+            "props": {
+              "places": 4,
+              "place": 20
+            },
+            "placement": {
+              "x": 2,
+              "h": 0
+            },
+            "order": 16,
+            "layer": "set",
+            "attach": {
+              "instance": "car2",
+              "anchor": "bay1"
+            }
+          },
+          {
+            "id": "passengers",
+            "type": "character.flow",
+            "props": {
+              "clock": "scene",
+              "flow": {
+                "seed": 17,
+                "speed": 38,
+                "maxWait": 60,
+                "spawn": {
+                  "kind": "interval",
+                  "every": 12
+                },
+                "route": [
+                  {
+                    "kind": "walk",
+                    "x": 160,
+                    "h": 0
+                  },
+                  {
+                    "kind": "board",
+                    "x": 84,
+                    "h": 0,
+                    "vehicle": "service",
+                    "slots": 3,
+                    "spacing": 22,
+                    "gap": 0.6
+                  }
+                ]
+              },
+              "vehicle": {
+                "frame": "service",
+                "board": "west",
+                "alight": "east"
+              },
+              "exit": [
+                {
+                  "kind": "walk",
+                  "x": 660,
+                  "h": 0
+                },
+                {
+                  "kind": "leave",
+                  "x": 580,
+                  "h": 0
+                }
+              ],
+              "looks": [
+                {
+                  "seed": 37
+                },
+                {
+                  "seed": 51
+                },
+                {
+                  "seed": 69
+                }
+              ]
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 17,
+            "layer": "playfield",
+            "bindings": {
+              "people": "flow.passengers.people"
+            }
           }
         ]
       },
@@ -729,7 +1310,7 @@
         "id": "harbor-station",
         "name": "Harbor Station · LINE 0",
         "intro": [
-          "Dusk. The train pulls out behind me. Down the stairs, east along the quay, in at the staff gate. Shed 3 is at the far end."
+          "Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end."
         ],
         "objectives": [
           {
@@ -845,38 +1426,11 @@
           },
           {
             "when": {
-              "state": "shift.trolleyMoved",
-              "is": true
-            },
-            "minute": 300
-          },
-          {
-            "when": {
-              "state": "shift.trolleyAssigned",
-              "is": true
-            },
-            "minute": 180
-          },
-          {
-            "when": {
-              "state": "shift.caseReturned",
-              "is": true
-            },
-            "minute": 60
-          },
-          {
-            "when": {
-              "state": "shift.parcelDelivered",
-              "is": true
-            },
-            "minute": 1320
-          },
-          {
-            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
-            "minute": 1200
+            "rate": 3,
+            "until": 370
           },
           {
             "minute": 1140
@@ -885,14 +1439,12 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.caseReturned",
+              "state": "shift.checkedOut",
               "is": true
             },
             "day": 2
           },
-          {
-            "day": 1
-          }
+          {}
         ],
         "uses": [],
         "manifest": {
@@ -918,8 +1470,13 @@
           "ambient": {
             "sky": true
           },
-          "facing": 90,
-          "horizon": -76
+          "facing": 243,
+          "horizon": -76,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 13290,
+            "h": 160
+          }
         },
         "companion": {
           "mode": "off"
@@ -979,12 +1536,43 @@
         "sharedState": [
           "shift"
         ],
-        "flags": [],
+        "flags": [
+          "prologue:started"
+        ],
         "items": [],
         "events": [],
         "commands": {},
         "reactions": [],
-        "conversations": {}
+        "conversations": {},
+        "queries": {
+          "commute.ready": {
+            "kind": "select",
+            "cases": [
+              {
+                "when": {
+                  "any": [
+                    {
+                      "flag": "prologue:started",
+                      "is": false
+                    },
+                    {
+                      "state": "shift.statementRead",
+                      "is": true
+                    }
+                  ]
+                },
+                "value": {
+                  "literal": true
+                }
+              },
+              {
+                "value": {
+                  "literal": false
+                }
+              }
+            ]
+          }
+        }
       },
       "devices": {
         "id": "harbor-station",
@@ -998,7 +1586,7 @@
             "status": "two stops · quay and platform",
             "layout": {
               "spot": {
-                "x": 410,
+                "x": 1150,
                 "y": 0,
                 "w": 34,
                 "h": 46
@@ -1019,11 +1607,121 @@
                 ],
                 "mover": {
                   "axis": "h",
-                  "across": 410,
+                  "across": 1150,
                   "speed": 84,
                   "stops": {
                     "quay": -160,
                     "platform": 0
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "service",
+            "name": "SERVICE",
+            "look": "Vehicle service",
+            "status": "automatic",
+            "layout": {
+              "spot": {
+                "x": 80,
+                "y": 0,
+                "w": 24,
+                "h": 40
+              },
+              "board": {
+                "x": 0.5,
+                "y": 0.5
+              }
+            },
+            "nouns": [
+              {
+                "id": "frame",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "x",
+                  "wired": false,
+                  "stops": {
+                    "west": 0,
+                    "east": 7880
+                  },
+                  "start": "west",
+                  "auto": "service",
+                  "paths": {
+                    "service": [
+                      {
+                        "ms": 7666.666666666667
+                      },
+                      {
+                        "ms": 600,
+                        "drives": "doors:close"
+                      },
+                      {
+                        "to": "east",
+                        "ms": 9000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 700,
+                        "drives": "doors:open"
+                      },
+                      {
+                        "ms": 7666.666666666667
+                      },
+                      {
+                        "ms": 600,
+                        "drives": "doors:close"
+                      },
+                      {
+                        "to": "west",
+                        "ms": 9000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 700,
+                        "drives": "doors:open"
+                      },
+                      {
+                        "run": "service"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "id": "doors",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "x",
+                  "wired": false,
+                  "stops": {
+                    "closed": 0,
+                    "open": 1
+                  },
+                  "start": "open",
+                  "paths": {
+                    "close": [
+                      {
+                        "to": "closed",
+                        "ms": 600
+                      }
+                    ],
+                    "open": [
+                      {
+                        "to": "open",
+                        "ms": 700
+                      }
+                    ]
                   }
                 }
               }
@@ -1041,116 +1739,6 @@
         "version": 1,
         "scene": "harbor-quay",
         "instances": [
-          {
-            "id": "bay-across",
-            "type": "shift.far-shore",
-            "props": {
-              "parallax": 0.08,
-              "seed": 7,
-              "tall": 105,
-              "low": 18,
-              "lit": 0.4,
-              "haze": 0.85,
-              "spireX": 980,
-              "spireSize": 0.72,
-              "traffic": true,
-              "water": true
-            },
-            "placement": {
-              "x": 0,
-              "h": 84
-            },
-            "order": 1,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-0",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts1",
-              "boomUp": 1,
-              "trolley": -60,
-              "hang": 40,
-              "load": false,
-              "loadPaint": 2,
-              "floods": 0.3,
-              "phase": 0.0
-            },
-            "placement": {
-              "x": 1300,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 2,
-            "layer": "distance"
-          },
-          {
-            "id": "fog",
-            "type": "shift.fog",
-            "props": {
-              "top": 80,
-              "density": 0.35,
-              "drift": 0.06,
-              "parallax": 0.6
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 3,
-            "layer": "distance"
-          },
-          {
-            "id": "ferry",
-            "type": "vehicle.boat",
-            "props": {
-              "kind": "ferry",
-              "named": true,
-              "name": "HARBOR LINE",
-              "depth": "back",
-              "motion": "parked",
-              "direction": "left",
-              "waterline": 40,
-              "bob": 1,
-              "wake": false,
-              "reflection": true,
-              "lamp": "on",
-              "nav": true
-            },
-            "placement": {
-              "x": 1200,
-              "h": 0,
-              "parallax": 0.7
-            },
-            "order": 4,
-            "layer": "distance"
-          },
-          {
-            "id": "lamp-boat",
-            "type": "vehicle.boat",
-            "props": {
-              "kind": "lamp",
-              "named": false,
-              "depth": "far",
-              "motion": "loop",
-              "direction": "right",
-              "speed": 0.2,
-              "lane": 2400,
-              "waterline": 40,
-              "bob": 1,
-              "wake": true,
-              "reflection": true,
-              "lamp": "on"
-            },
-            "placement": {
-              "x": 600,
-              "h": 0,
-              "parallax": 0.35
-            },
-            "order": 5,
-            "layer": "distance"
-          },
           {
             "id": "ground",
             "type": "shift.floor",
@@ -1240,48 +1828,6 @@
             "layer": "backdrop"
           },
           {
-            "id": "via-pier-2",
-            "type": "level.section-wall",
-            "props": {
-              "height": 144,
-              "thickness": 18
-            },
-            "placement": {
-              "x": 840,
-              "h": 0
-            },
-            "order": 10,
-            "layer": "backdrop"
-          },
-          {
-            "id": "via-pier-3",
-            "type": "level.section-wall",
-            "props": {
-              "height": 144,
-              "thickness": 18
-            },
-            "placement": {
-              "x": 1210,
-              "h": 0
-            },
-            "order": 11,
-            "layer": "backdrop"
-          },
-          {
-            "id": "via-pier-4",
-            "type": "level.section-wall",
-            "props": {
-              "height": 144,
-              "thickness": 18
-            },
-            "placement": {
-              "x": 1422,
-              "h": 0
-            },
-            "order": 12,
-            "layer": "backdrop"
-          },
-          {
             "id": "station-sign",
             "type": "shift.sign",
             "props": {
@@ -1295,7 +1841,7 @@
               "width": 0
             },
             "placement": {
-              "x": 510,
+              "x": 600,
               "h": 0
             },
             "order": 16,
@@ -1324,7 +1870,7 @@
               "seed": 4
             },
             "placement": {
-              "x": 620,
+              "x": 760,
               "h": 0
             },
             "order": 17,
@@ -1342,7 +1888,7 @@
               "district": "harbor"
             },
             "placement": {
-              "x": 640,
+              "x": 780,
               "h": 0,
               "facing": 1
             },
@@ -1455,7 +2001,7 @@
               "tell": false
             },
             "placement": {
-              "x": 560,
+              "x": 680,
               "h": 0
             },
             "order": 23,
@@ -1743,7 +2289,7 @@
               "lightHeight": 0
             },
             "placement": {
-              "x": 640,
+              "x": 780,
               "h": 70
             },
             "order": 38,
@@ -1787,7 +2333,7 @@
             "type": "scene.player",
             "props": {},
             "placement": {
-              "x": 380,
+              "x": 560,
               "h": 0
             },
             "order": 42,
@@ -1809,6 +2355,20 @@
               "instance": "notice",
               "anchor": "origin"
             }
+          },
+          {
+            "id": "via-pier-east",
+            "type": "level.section-wall",
+            "props": {
+              "height": 144,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 530,
+              "h": 0
+            },
+            "order": 11,
+            "layer": "backdrop"
           }
         ]
       },
@@ -1931,38 +2491,11 @@
           },
           {
             "when": {
-              "state": "shift.trolleyMoved",
-              "is": true
-            },
-            "minute": 300
-          },
-          {
-            "when": {
-              "state": "shift.trolleyAssigned",
-              "is": true
-            },
-            "minute": 180
-          },
-          {
-            "when": {
-              "state": "shift.caseReturned",
-              "is": true
-            },
-            "minute": 60
-          },
-          {
-            "when": {
-              "state": "shift.parcelDelivered",
-              "is": true
-            },
-            "minute": 1320
-          },
-          {
-            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
-            "minute": 1200
+            "rate": 3,
+            "until": 370
           },
           {
             "minute": 1140
@@ -1971,14 +2504,12 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.caseReturned",
+              "state": "shift.checkedOut",
               "is": true
             },
             "day": 2
           },
-          {
-            "day": 1
-          }
+          {}
         ],
         "uses": [],
         "readables": [
@@ -2023,8 +2554,13 @@
           "ambient": {
             "sky": true
           },
-          "facing": 90,
-          "horizon": 84
+          "facing": 243,
+          "horizon": 84,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 14190,
+            "h": 0
+          }
         },
         "companion": {
           "mode": "off"
@@ -2097,164 +2633,6 @@
         "version": 1,
         "scene": "harbor-checkout",
         "instances": [
-          {
-            "id": "bay-across",
-            "type": "shift.far-shore",
-            "props": {
-              "parallax": 0.08,
-              "seed": 7,
-              "tall": 105,
-              "low": 18,
-              "lit": 0.4,
-              "haze": 0.85,
-              "spireX": 340,
-              "spireSize": 0.72,
-              "traffic": true,
-              "water": true
-            },
-            "placement": {
-              "x": 0,
-              "h": 84
-            },
-            "order": 1,
-            "layer": "distance"
-          },
-          {
-            "id": "ship",
-            "type": "shift.ship",
-            "props": {
-              "length": 900,
-              "freeboard": 36,
-              "name": "MERIDIAN CONSTANCE",
-              "tiers": 4,
-              "box": 20,
-              "bay": 46,
-              "bridge": 0.2,
-              "dim": 0.3,
-              "lights": true,
-              "seed": 31
-            },
-            "placement": {
-              "x": 240,
-              "h": 44,
-              "parallax": 0.42
-            },
-            "order": 2,
-            "layer": "distance"
-          },
-          {
-            "id": "apron",
-            "type": "shift.quay",
-            "props": {
-              "top": 34,
-              "parallax": 0.5,
-              "rails": true,
-              "lanes": 2,
-              "pools": [
-                {
-                  "x": 330,
-                  "width": 160
-                },
-                {
-                  "x": 900,
-                  "width": 180
-                }
-              ]
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 3,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-0",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts2",
-              "boomUp": 1,
-              "trolley": 0,
-              "hang": 40,
-              "load": false,
-              "loadPaint": 2,
-              "floods": 0.5,
-              "phase": 0
-            },
-            "placement": {
-              "x": 557,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 4,
-            "layer": "distance"
-          },
-          {
-            "id": "mast-far-0",
-            "type": "shift.mast",
-            "props": {
-              "height": 300,
-              "lamps": 6,
-              "color": "255,176,92",
-              "cone": 0.5,
-              "halo": 1,
-              "spread": 110,
-              "dead": -1,
-              "glow": true
-            },
-            "placement": {
-              "x": 140,
-              "h": 20,
-              "parallax": 0.62,
-              "scale": 0.8
-            },
-            "order": 5,
-            "layer": "distance"
-          },
-          {
-            "id": "fog",
-            "type": "shift.fog",
-            "props": {
-              "top": 80,
-              "density": 0.5,
-              "drift": 0.06,
-              "parallax": 0.6
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 6,
-            "layer": "distance"
-          },
-          {
-            "id": "ferry",
-            "type": "vehicle.boat",
-            "props": {
-              "kind": "ferry",
-              "named": true,
-              "name": "HARBOR LINE",
-              "depth": "far",
-              "motion": "loop",
-              "direction": "left",
-              "speed": 0.3,
-              "lane": 2600,
-              "waterline": 40,
-              "bob": 1,
-              "wake": true,
-              "reflection": true,
-              "lamp": "on",
-              "nav": true
-            },
-            "placement": {
-              "x": 340,
-              "h": 0,
-              "parallax": 0.3
-            },
-            "order": 7,
-            "layer": "distance"
-          },
           {
             "id": "ground",
             "type": "shift.floor",
@@ -2787,38 +3165,11 @@
           },
           {
             "when": {
-              "state": "shift.trolleyMoved",
-              "is": true
-            },
-            "minute": 300
-          },
-          {
-            "when": {
-              "state": "shift.trolleyAssigned",
-              "is": true
-            },
-            "minute": 180
-          },
-          {
-            "when": {
-              "state": "shift.caseReturned",
-              "is": true
-            },
-            "minute": 60
-          },
-          {
-            "when": {
-              "state": "shift.parcelDelivered",
-              "is": true
-            },
-            "minute": 1320
-          },
-          {
-            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
-            "minute": 1200
+            "rate": 3,
+            "until": 370
           },
           {
             "minute": 1140
@@ -2827,14 +3178,12 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.caseReturned",
+              "state": "shift.checkedOut",
               "is": true
             },
             "day": 2
           },
-          {
-            "day": 1
-          }
+          {}
         ],
         "uses": [
           {
@@ -2970,8 +3319,13 @@
           "ambient": {
             "sky": true
           },
-          "facing": 90,
-          "horizon": 84
+          "facing": 243,
+          "horizon": 84,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 15790,
+            "h": 0
+          }
         },
         "companion": {
           "mode": "off"
@@ -3043,7 +3397,9 @@
         "sharedState": [
           "shift"
         ],
-        "flags": [],
+        "flags": [
+          "opening:home"
+        ],
         "items": [
           "shift.tag"
         ],
@@ -3115,6 +3471,10 @@
               },
               {
                 "emit": "statement.read"
+              },
+              {
+                "flag": "opening:home",
+                "value": true
               }
             ]
           }
@@ -3133,292 +3493,6 @@
         "version": 1,
         "scene": "harbor-yard",
         "instances": [
-          {
-            "id": "bay-across",
-            "type": "shift.far-shore",
-            "props": {
-              "parallax": 0.08,
-              "seed": 7,
-              "tall": 105,
-              "low": 18,
-              "lit": 0.4,
-              "haze": 0.85,
-              "spireX": 860,
-              "spireSize": 0.72,
-              "traffic": true,
-              "water": true
-            },
-            "placement": {
-              "x": 0,
-              "h": 84
-            },
-            "order": 1,
-            "layer": "distance"
-          },
-          {
-            "id": "ship",
-            "type": "shift.ship",
-            "props": {
-              "length": 1100,
-              "freeboard": 36,
-              "name": "MERIDIAN CONSTANCE",
-              "tiers": 4,
-              "box": 20,
-              "bay": 46,
-              "bridge": 0.2,
-              "dim": 0.3,
-              "lights": true,
-              "seed": 31
-            },
-            "placement": {
-              "x": 60,
-              "h": 44,
-              "parallax": 0.42
-            },
-            "order": 2,
-            "layer": "distance"
-          },
-          {
-            "id": "apron",
-            "type": "shift.quay",
-            "props": {
-              "top": 34,
-              "parallax": 0.5,
-              "rails": true,
-              "lanes": 2,
-              "pools": [
-                {
-                  "x": 330,
-                  "width": 160
-                },
-                {
-                  "x": 900,
-                  "width": 180
-                }
-              ]
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 3,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-0",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts3",
-              "boomUp": 0,
-              "trolley": -100,
-              "hang": 110,
-              "load": true,
-              "loadPaint": 2,
-              "floods": 0.8,
-              "phase": 0
-            },
-            "placement": {
-              "x": 1137,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 4,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-1",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts1",
-              "boomUp": 0,
-              "trolley": -40,
-              "hang": 110,
-              "load": true,
-              "loadPaint": 3,
-              "floods": 0.8,
-              "phase": 2.1
-            },
-            "placement": {
-              "x": 597,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 5,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-2",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts2",
-              "boomUp": 1,
-              "trolley": 0,
-              "hang": 40,
-              "load": false,
-              "loadPaint": 4,
-              "floods": 0,
-              "phase": 4.2
-            },
-            "placement": {
-              "x": 97,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 6,
-            "layer": "distance"
-          },
-          {
-            "id": "mast-far-0",
-            "type": "shift.mast",
-            "props": {
-              "height": 300,
-              "lamps": 6,
-              "color": "255,176,92",
-              "cone": 0.5,
-              "halo": 1,
-              "spread": 110,
-              "dead": -1,
-              "glow": true
-            },
-            "placement": {
-              "x": 860,
-              "h": 20,
-              "parallax": 0.62,
-              "scale": 0.8
-            },
-            "order": 7,
-            "layer": "distance"
-          },
-          {
-            "id": "mast-far-1",
-            "type": "shift.mast",
-            "props": {
-              "height": 300,
-              "lamps": 6,
-              "color": "255,176,92",
-              "cone": 0.5,
-              "halo": 1,
-              "spread": 110,
-              "dead": 3,
-              "glow": true
-            },
-            "placement": {
-              "x": 180,
-              "h": 20,
-              "parallax": 0.62,
-              "scale": 0.8
-            },
-            "order": 8,
-            "layer": "distance"
-          },
-          {
-            "id": "block-0",
-            "type": "shift.stack",
-            "props": {
-              "columns": 4,
-              "tiers": 3,
-              "box": "40ft",
-              "ragged": 0.5,
-              "reefers": 0,
-              "codes": true,
-              "dim": 0.5,
-              "gap": 3,
-              "seed": 57
-            },
-            "placement": {
-              "x": 198,
-              "h": 6,
-              "parallax": 0.72,
-              "scale": 0.5
-            },
-            "order": 9,
-            "layer": "distance"
-          },
-          {
-            "id": "block-1",
-            "type": "shift.stack",
-            "props": {
-              "columns": 2,
-              "tiers": 2,
-              "box": "40ft",
-              "ragged": 0.5,
-              "reefers": 0.85,
-              "codes": true,
-              "dim": 0.5,
-              "gap": 3,
-              "seed": 23
-            },
-            "placement": {
-              "x": 69,
-              "h": 6,
-              "parallax": 0.72,
-              "scale": 0.5
-            },
-            "order": 10,
-            "layer": "distance"
-          },
-          {
-            "id": "fog",
-            "type": "shift.fog",
-            "props": {
-              "top": 80,
-              "density": 0.5,
-              "drift": 0.06,
-              "parallax": 0.6
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 11,
-            "layer": "distance"
-          },
-          {
-            "id": "reefer-rack",
-            "type": "shift.reefer-rack",
-            "props": {
-              "tiers": 2,
-              "width": 36,
-              "cable": "both",
-              "reach": 22,
-              "dim": 0.55,
-              "seed": 5
-            },
-            "placement": {
-              "x": 47,
-              "h": 6,
-              "parallax": 0.72,
-              "scale": 0.5
-            },
-            "order": 12,
-            "layer": "distance"
-          },
-          {
-            "id": "forklift",
-            "type": "vehicle.road",
-            "props": {
-              "kind": "forklift",
-              "depth": "far",
-              "motion": "shuttle",
-              "direction": "right",
-              "speed": 0.45,
-              "lane": 360,
-              "dwell": 360,
-              "cargo": true,
-              "pose": 0.2,
-              "lights": true
-            },
-            "placement": {
-              "x": 386,
-              "h": 16,
-              "parallax": 0.55
-            },
-            "order": 13,
-            "layer": "distance"
-          },
           {
             "id": "ground",
             "type": "shift.floor",
@@ -4262,38 +4336,11 @@
           },
           {
             "when": {
-              "state": "shift.trolleyMoved",
-              "is": true
-            },
-            "minute": 300
-          },
-          {
-            "when": {
-              "state": "shift.trolleyAssigned",
-              "is": true
-            },
-            "minute": 180
-          },
-          {
-            "when": {
-              "state": "shift.caseReturned",
-              "is": true
-            },
-            "minute": 60
-          },
-          {
-            "when": {
-              "state": "shift.parcelDelivered",
-              "is": true
-            },
-            "minute": 1320
-          },
-          {
-            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
-            "minute": 1200
+            "rate": 3,
+            "until": 370
           },
           {
             "minute": 1140
@@ -4302,14 +4349,12 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.caseReturned",
+              "state": "shift.checkedOut",
               "is": true
             },
             "day": 2
           },
-          {
-            "day": 1
-          }
+          {}
         ],
         "uses": [
           {
@@ -4522,8 +4567,13 @@
           "ambient": {
             "sky": true
           },
-          "facing": 90,
-          "horizon": 84
+          "facing": 243,
+          "horizon": 84,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 16430,
+            "h": 0
+          }
         },
         "companion": {
           "mode": "off"
@@ -4875,251 +4925,6 @@
         "scene": "harbor-shed",
         "instances": [
           {
-            "id": "bay-across",
-            "type": "shift.far-shore",
-            "props": {
-              "parallax": 0.08,
-              "seed": 7,
-              "tall": 105,
-              "low": 18,
-              "lit": 0.4,
-              "haze": 0.85,
-              "spireX": 520,
-              "spireSize": 0.72,
-              "traffic": true,
-              "water": true
-            },
-            "placement": {
-              "x": 0,
-              "h": 84
-            },
-            "order": 1,
-            "layer": "distance"
-          },
-          {
-            "id": "ship",
-            "type": "shift.ship",
-            "props": {
-              "length": 700,
-              "freeboard": 36,
-              "name": "MERIDIAN CONSTANCE",
-              "tiers": 4,
-              "box": 20,
-              "bay": 46,
-              "bridge": 0.2,
-              "dim": 0.3,
-              "lights": true,
-              "seed": 31
-            },
-            "placement": {
-              "x": -40,
-              "h": 44,
-              "parallax": 0.42
-            },
-            "order": 2,
-            "layer": "distance"
-          },
-          {
-            "id": "apron",
-            "type": "shift.quay",
-            "props": {
-              "top": 34,
-              "parallax": 0.5,
-              "rails": true,
-              "lanes": 2,
-              "pools": [
-                {
-                  "x": 330,
-                  "width": 160
-                },
-                {
-                  "x": 900,
-                  "width": 180
-                }
-              ]
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 3,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-0",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts1",
-              "boomUp": 0,
-              "trolley": -170,
-              "hang": 110,
-              "load": true,
-              "loadPaint": 2,
-              "floods": 0.8,
-              "phase": 0
-            },
-            "placement": {
-              "x": 1057,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 4,
-            "layer": "distance"
-          },
-          {
-            "id": "crane-1",
-            "type": "shift.crane",
-            "props": {
-              "gantry": "sts3",
-              "boomUp": 1,
-              "trolley": -60,
-              "hang": 40,
-              "load": false,
-              "loadPaint": 3,
-              "floods": 0.8,
-              "phase": 2.1
-            },
-            "placement": {
-              "x": 337,
-              "h": 34,
-              "parallax": 0.45,
-              "scale": 0.62
-            },
-            "order": 5,
-            "layer": "distance"
-          },
-          {
-            "id": "mast-far-0",
-            "type": "shift.mast",
-            "props": {
-              "height": 300,
-              "lamps": 6,
-              "color": "255,176,92",
-              "cone": 0.5,
-              "halo": 1,
-              "spread": 110,
-              "dead": -1,
-              "glow": true
-            },
-            "placement": {
-              "x": 720,
-              "h": 20,
-              "parallax": 0.62,
-              "scale": 0.8
-            },
-            "order": 6,
-            "layer": "distance"
-          },
-          {
-            "id": "mast-far-1",
-            "type": "shift.mast",
-            "props": {
-              "height": 300,
-              "lamps": 6,
-              "color": "255,176,92",
-              "cone": 0.5,
-              "halo": 1,
-              "spread": 110,
-              "dead": 2,
-              "glow": true
-            },
-            "placement": {
-              "x": 60,
-              "h": 20,
-              "parallax": 0.62,
-              "scale": 0.8
-            },
-            "order": 7,
-            "layer": "distance"
-          },
-          {
-            "id": "block-0",
-            "type": "shift.stack",
-            "props": {
-              "columns": 3,
-              "tiers": 3,
-              "box": "40ft",
-              "ragged": 0.5,
-              "reefers": 0,
-              "codes": true,
-              "dim": 0.5,
-              "gap": 3,
-              "seed": 11
-            },
-            "placement": {
-              "x": 1123,
-              "h": 6,
-              "parallax": 0.72,
-              "scale": 0.5
-            },
-            "order": 8,
-            "layer": "distance"
-          },
-          {
-            "id": "block-1",
-            "type": "shift.stack",
-            "props": {
-              "columns": 3,
-              "tiers": 2,
-              "box": "40ft",
-              "ragged": 0.5,
-              "reefers": 0,
-              "codes": true,
-              "dim": 0.5,
-              "gap": 3,
-              "seed": 41
-            },
-            "placement": {
-              "x": 383,
-              "h": 6,
-              "parallax": 0.72,
-              "scale": 0.5
-            },
-            "order": 9,
-            "layer": "distance"
-          },
-          {
-            "id": "fog",
-            "type": "shift.fog",
-            "props": {
-              "top": 80,
-              "density": 0.5,
-              "drift": 0.06,
-              "parallax": 0.6
-            },
-            "placement": {
-              "x": 0,
-              "h": 0
-            },
-            "order": 10,
-            "layer": "distance"
-          },
-          {
-            "id": "straddle",
-            "type": "vehicle.road",
-            "props": {
-              "kind": "straddle",
-              "depth": "far",
-              "motion": "shuttle",
-              "direction": "left",
-              "speed": 0.7,
-              "lane": 380,
-              "dwell": 420,
-              "cargo": true,
-              "pose": 0.35,
-              "lights": true
-            },
-            "placement": {
-              "x": 289,
-              "h": 22,
-              "parallax": 0.55,
-              "scale": 0.45
-            },
-            "order": 11,
-            "layer": "distance"
-          },
-          {
             "id": "ground",
             "type": "shift.floor",
             "props": {
@@ -5308,7 +5113,7 @@
             },
             "placement": {
               "x": 938,
-              "h": 150
+              "h": 120
             },
             "order": 18,
             "layer": "backdrop"
@@ -5424,8 +5229,8 @@
               "tell": false
             },
             "placement": {
-              "x": 860,
-              "h": 92
+              "x": 1000,
+              "h": 30
             },
             "order": 24,
             "layer": "backdrop"
@@ -6204,38 +6009,11 @@
           },
           {
             "when": {
-              "state": "shift.trolleyMoved",
-              "is": true
-            },
-            "minute": 300
-          },
-          {
-            "when": {
-              "state": "shift.trolleyAssigned",
-              "is": true
-            },
-            "minute": 180
-          },
-          {
-            "when": {
-              "state": "shift.caseReturned",
-              "is": true
-            },
-            "minute": 60
-          },
-          {
-            "when": {
-              "state": "shift.parcelDelivered",
-              "is": true
-            },
-            "minute": 1320
-          },
-          {
-            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
-            "minute": 1200
+            "rate": 3,
+            "until": 370
           },
           {
             "minute": 1140
@@ -6244,14 +6022,12 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.caseReturned",
+              "state": "shift.checkedOut",
               "is": true
             },
             "day": 2
           },
-          {
-            "day": 1
-          }
+          {}
         ],
         "uses": [
           {
@@ -6456,8 +6232,13 @@
           "ambient": {
             "sky": true
           },
-          "facing": 90,
-          "horizon": 84
+          "facing": 243,
+          "horizon": 84,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 17710,
+            "h": 0
+          }
         },
         "companion": {
           "mode": "off"
@@ -6861,6 +6642,4669 @@
             }
           }
         }
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "glide-beach",
+        "instances": [
+          {
+            "id": "ground-glide-beach",
+            "type": "coast.ground",
+            "props": {
+              "segments": [
+                {
+                  "kind": "sand",
+                  "from": 0,
+                  "to": 4500
+                }
+              ],
+              "origin": 0,
+              "wet": 0
+            },
+            "placement": {
+              "x": 0,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 0,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor",
+            "type": "level.floor",
+            "props": {
+              "width": 4500
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 200,
+              "h": 0
+            },
+            "order": 2,
+            "layer": "playfield"
+          },
+          {
+            "id": "salt",
+            "type": "beach.salt",
+            "props": {},
+            "placement": {
+              "x": 2208,
+              "h": 0,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 18,
+            "layer": "set"
+          },
+          {
+            "id": "pier",
+            "type": "coast.pier",
+            "props": {},
+            "placement": {
+              "x": 2820,
+              "h": 0,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 19,
+            "layer": "set"
+          },
+          {
+            "id": "inlet",
+            "type": "coast.footbridge",
+            "props": {},
+            "placement": {
+              "x": 4020,
+              "h": 0,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 20,
+            "layer": "set"
+          },
+          {
+            "id": "lifeguard",
+            "type": "coast.lifeguard",
+            "props": {},
+            "placement": {
+              "x": 3720,
+              "h": 0,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 21,
+            "layer": "set"
+          },
+          {
+            "id": "dj",
+            "type": "props.dj-booth",
+            "props": {},
+            "placement": {
+              "x": 1920,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 22,
+            "layer": "set"
+          },
+          {
+            "id": "bonfire",
+            "type": "props.bonfire",
+            "props": {},
+            "placement": {
+              "x": 1494,
+              "h": -75,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 23,
+            "layer": "set"
+          },
+          {
+            "id": "palm-0",
+            "type": "environment.palm",
+            "props": {
+              "height": 150,
+              "lean": 26,
+              "seed": 1
+            },
+            "placement": {
+              "x": 2334,
+              "h": -141,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 24,
+            "layer": "foreground"
+          },
+          {
+            "id": "palm-1",
+            "type": "environment.palm",
+            "props": {
+              "height": 112,
+              "lean": 14,
+              "seed": 4
+            },
+            "placement": {
+              "x": 1890,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 25,
+            "layer": "set"
+          },
+          {
+            "id": "palm-2",
+            "type": "environment.palm",
+            "props": {
+              "height": 80,
+              "lean": -10,
+              "seed": 11
+            },
+            "placement": {
+              "x": 1392,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 26,
+            "layer": "set"
+          },
+          {
+            "id": "palm-3",
+            "type": "environment.palm",
+            "props": {
+              "height": 128,
+              "lean": -20,
+              "seed": 5
+            },
+            "placement": {
+              "x": 1032,
+              "h": -141,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 27,
+            "layer": "foreground"
+          },
+          {
+            "id": "palm-4",
+            "type": "environment.palm",
+            "props": {
+              "height": 92,
+              "lean": -6,
+              "seed": 6
+            },
+            "placement": {
+              "x": 834,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 28,
+            "layer": "set"
+          },
+          {
+            "id": "palm-5",
+            "type": "environment.palm",
+            "props": {
+              "height": 70,
+              "lean": 10,
+              "seed": 7
+            },
+            "placement": {
+              "x": 2634,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 29,
+            "layer": "set"
+          },
+          {
+            "id": "palm-6",
+            "type": "environment.palm",
+            "props": {
+              "height": 98,
+              "lean": -8,
+              "seed": 8
+            },
+            "placement": {
+              "x": 2976,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 30,
+            "layer": "set"
+          },
+          {
+            "id": "palm-7",
+            "type": "environment.palm",
+            "props": {
+              "height": 84,
+              "lean": 12,
+              "seed": 9
+            },
+            "placement": {
+              "x": 3606,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 31,
+            "layer": "set"
+          },
+          {
+            "id": "palm-8",
+            "type": "environment.palm",
+            "props": {
+              "height": 60,
+              "lean": -14,
+              "seed": 12
+            },
+            "placement": {
+              "x": 3825,
+              "h": -18,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 32,
+            "layer": "set"
+          },
+          {
+            "id": "lounger-0",
+            "type": "props.lounger",
+            "props": {
+              "color": "#c83a2a",
+              "flip": false
+            },
+            "placement": {
+              "x": 1284,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 33,
+            "layer": "set"
+          },
+          {
+            "id": "lounger-1",
+            "type": "props.lounger",
+            "props": {
+              "color": "#d8b040",
+              "flip": false
+            },
+            "placement": {
+              "x": 1164,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 34,
+            "layer": "set"
+          },
+          {
+            "id": "lounger-2",
+            "type": "props.lounger",
+            "props": {
+              "color": "#3a6ad8",
+              "flip": true
+            },
+            "placement": {
+              "x": 720,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 35,
+            "layer": "set"
+          },
+          {
+            "id": "lounger-3",
+            "type": "props.lounger",
+            "props": {
+              "color": "#e8e0d0",
+              "flip": true
+            },
+            "placement": {
+              "x": 2406,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 36,
+            "layer": "set"
+          },
+          {
+            "id": "beach-person-0",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4101,
+              "act": "lean",
+              "depth": "play",
+              "body": "tall",
+              "garb": "tee",
+              "hair": "long",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 2061,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 71,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-1",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4102,
+              "act": "stand",
+              "depth": "play",
+              "body": "avg",
+              "garb": "dress",
+              "hair": "bun",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 2019,
+              "h": -69,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 72,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-2",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4103,
+              "act": "dance",
+              "depth": "play",
+              "garb": "tee",
+              "hair": "mohawk",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1866,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 73,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-3",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4104,
+              "act": "dance",
+              "depth": "play",
+              "garb": "dress",
+              "hair": "long",
+              "extras": [
+                "headphones"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1830,
+              "h": -69,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 74,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-4",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4105,
+              "act": "dance",
+              "depth": "play",
+              "body": "wide",
+              "garb": "jacket",
+              "hair": "cap",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1794,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 75,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-5",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4106,
+              "act": "dance",
+              "depth": "play",
+              "body": "slim",
+              "garb": "tee",
+              "hair": "short",
+              "extras": [
+                "visor"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1758,
+              "h": -69,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 76,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-6",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4107,
+              "act": "dance",
+              "depth": "play",
+              "body": "short",
+              "garb": "robe",
+              "hair": "scarf",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1722,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 77,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-7",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4108,
+              "act": "phone",
+              "depth": "play",
+              "garb": "jacket",
+              "hair": "beanie",
+              "extras": [
+                "phone"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1680,
+              "h": -69,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 78,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-8",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4111,
+              "act": "sit",
+              "depth": "play",
+              "body": "avg",
+              "garb": "tee",
+              "hair": "long",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1560,
+              "h": -69,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 79,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-9",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4112,
+              "act": "smoke",
+              "depth": "play",
+              "body": "tall",
+              "garb": "jacket",
+              "hair": "brim",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1527,
+              "h": -69,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 80,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-10",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4113,
+              "act": "dance",
+              "depth": "play",
+              "body": "kid",
+              "garb": "tee",
+              "hair": "cap",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1452,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 81,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-11",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4114,
+              "act": "sit",
+              "depth": "play",
+              "body": "old",
+              "garb": "coat",
+              "hair": "bald",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1422,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 82,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-12",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4115,
+              "act": "sleep",
+              "depth": "play",
+              "body": "slim",
+              "garb": "dress",
+              "hair": "long",
+              "extras": [
+                "glasses"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1284,
+              "h": -59,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 83,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-13",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4116,
+              "act": "walk",
+              "depth": "play",
+              "body": "avg",
+              "garb": "tee",
+              "hair": "short",
+              "dim": 0,
+              "speed": 0.25,
+              "range": 120
+            },
+            "placement": {
+              "x": 1095,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 84,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-14",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4117,
+              "act": "stand",
+              "depth": "play",
+              "garb": "dress",
+              "hair": "long",
+              "dim": 0.5,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1266,
+              "h": -12,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 85,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-15",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4118,
+              "act": "phone",
+              "depth": "play",
+              "garb": "tee",
+              "hair": "short",
+              "dim": 0.5,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1206,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 86,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-16",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4121,
+              "act": "walk",
+              "depth": "play",
+              "garb": "coat",
+              "hair": "hood",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 2520,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 87,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-17",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4122,
+              "act": "walk",
+              "depth": "play",
+              "garb": "tee",
+              "hair": "bun",
+              "extras": [
+                "bag"
+              ],
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 2556,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 88,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-18",
+            "type": "character.resident",
+            "props": {
+              "kind": "litterbot",
+              "seed": 1,
+              "act": "roll",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 2760,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 89,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-19",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4123,
+              "act": "walk",
+              "depth": "play",
+              "body": "kid",
+              "garb": "tee",
+              "hair": "short",
+              "dim": 0,
+              "speed": 0.6,
+              "range": 120
+            },
+            "placement": {
+              "x": 3300,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 90,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-20",
+            "type": "character.resident",
+            "props": {
+              "kind": "gull",
+              "seed": 1,
+              "act": "walk",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 3456,
+              "h": -69,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 91,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-21",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4124,
+              "act": "sit",
+              "depth": "play",
+              "body": "old",
+              "garb": "jacket",
+              "hair": "cap",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3720,
+              "h": -65,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 92,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-22",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4131,
+              "act": "stand",
+              "depth": "play",
+              "garb": "coat",
+              "hair": "long",
+              "dim": 0.93,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 2976,
+              "h": 51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 93,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-23",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4132,
+              "act": "stand",
+              "depth": "play",
+              "garb": "jacket",
+              "hair": "short",
+              "dim": 0.93,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 2997,
+              "h": 51,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 94,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-24",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4133,
+              "act": "dance",
+              "depth": "play",
+              "garb": "dress",
+              "hair": "bun",
+              "dim": 0.93,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3180,
+              "h": 51,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 95,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-25",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4134,
+              "act": "dance",
+              "depth": "play",
+              "garb": "tee",
+              "hair": "cap",
+              "dim": 0.93,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3213,
+              "h": 51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 96,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-26",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4136,
+              "act": "phone",
+              "depth": "play",
+              "garb": "jacket",
+              "hair": "hood",
+              "dim": 0.93,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3390,
+              "h": 51,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 97,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-27",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4137,
+              "act": "sit",
+              "depth": "play",
+              "body": "old",
+              "garb": "coat",
+              "hair": "brim",
+              "dim": 0.93,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3504,
+              "h": 53,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 98,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-28",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4138,
+              "act": "sit",
+              "depth": "play",
+              "body": "wide",
+              "garb": "coat",
+              "hair": "beanie",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3996,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 99,
+            "layer": "playfield"
+          },
+          {
+            "id": "beach-person-29",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4139,
+              "act": "walk",
+              "depth": "play",
+              "garb": "hivis",
+              "hair": "helmet",
+              "body": "avg",
+              "extras": [
+                "backpack"
+              ],
+              "dim": 0,
+              "speed": 0.32,
+              "range": 120
+            },
+            "placement": {
+              "x": 4260,
+              "h": -45,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 100,
+            "layer": "playfield"
+          },
+          {
+            "id": "arrival-train",
+            "type": "metro.cutaway-train",
+            "props": {
+              "cars": 2,
+              "destination": "LINE 0 · DOWNTOWN",
+              "open": 1,
+              "light": 0.85,
+              "cabs": true
+            },
+            "placement": {
+              "x": 13310,
+              "h": 160
+            },
+            "order": 90,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-road",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "road"
+            },
+            "placement": {
+              "x": 20280,
+              "h": 0
+            },
+            "order": 95,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-street",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "street"
+            },
+            "placement": {
+              "x": 20280,
+              "h": 0
+            },
+            "order": 80,
+            "layer": "backdrop"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "glide-beach",
+        "name": "BEACH",
+        "intro": [],
+        "uses": [],
+        "stage": {
+          "sudoOnly": true
+        },
+        "environment": {
+          "ambient": {
+            "sky": true,
+            "weather": false
+          },
+          "outdoor": true,
+          "facing": 243,
+          "horizon": 189,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 0,
+            "h": 0
+          }
+        },
+        "manifest": {
+          "version": 1,
+          "width": 4500,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "glide-downtown-west",
+        "instances": [
+          {
+            "id": "ground-glide-downtown-west",
+            "type": "coast.ground",
+            "props": {
+              "segments": [
+                {
+                  "kind": "street",
+                  "from": 0,
+                  "to": 3390
+                }
+              ],
+              "origin": -4500,
+              "wet": 1
+            },
+            "placement": {
+              "x": 0,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 3,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor",
+            "type": "level.floor",
+            "props": {
+              "width": 3390
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 4,
+            "layer": "logic"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 200,
+              "h": 0
+            },
+            "order": 5,
+            "layer": "playfield"
+          },
+          {
+            "id": "tower-4703",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4703,
+              "roof": "mast",
+              "skin": "glass",
+              "shop": true,
+              "crown": "spire",
+              "gear": [
+                "billboard",
+                "dish"
+              ],
+              "balconies": false,
+              "grime": 0.3924447016460905,
+              "signs": [
+                {
+                  "kind": "blade",
+                  "text": "OPEN",
+                  "col": "60,230,140",
+                  "h": 282,
+                  "at": 0.5429698216735254,
+                  "dead": -1
+                },
+                {
+                  "kind": "ticker",
+                  "text": "WATER RATION TODAY 40 L · CURFEW SECTOR 9 FROM 23:00 · LINE 0 RUNNING · ",
+                  "col": "255,190,60",
+                  "h": 306,
+                  "at": 0.25344221536351164,
+                  "dead": -1
+                },
+                {
+                  "kind": "holo",
+                  "text": "KOBA SOY|PROTEIN 31%",
+                  "col": "190,215,255",
+                  "h": 153,
+                  "at": 0.46674382716049384,
+                  "dead": -1
+                }
+              ],
+              "width": 811,
+              "height": 3664
+            },
+            "placement": {
+              "x": 2495,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 40,
+            "layer": "set"
+          },
+          {
+            "id": "tower-4704",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4704,
+              "roof": "tank",
+              "skin": "capsule",
+              "shop": true,
+              "crown": "pyramid",
+              "gear": [
+                "antenna",
+                "dish",
+                "ac"
+              ],
+              "balconies": false,
+              "grime": 0.5319015775034294,
+              "signs": [
+                {
+                  "kind": "blade",
+                  "text": "REGISTRY",
+                  "col": "190,215,255",
+                  "h": 214,
+                  "at": 0.9816486625514403,
+                  "dead": -1
+                },
+                {
+                  "kind": "billboard",
+                  "text": "KASHI PHARMA",
+                  "col": "190,215,255",
+                  "h": 3185,
+                  "at": 0.17935956790123456,
+                  "dead": -1
+                },
+                {
+                  "kind": "plate",
+                  "text": "HOTEL",
+                  "col": "255,190,60",
+                  "h": 150,
+                  "at": 0.8195173182441701,
+                  "dead": -1
+                }
+              ],
+              "width": 339,
+              "height": 3270
+            },
+            "placement": {
+              "x": 1917,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 41,
+            "layer": "set"
+          },
+          {
+            "id": "tower-4705",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4705,
+              "roof": "mast",
+              "skin": "panel",
+              "shop": true,
+              "crown": "pyramid",
+              "gear": [
+                "tank",
+                "pad"
+              ],
+              "balconies": true,
+              "grime": 0.03390174897119341,
+              "signs": [
+                {
+                  "kind": "stack",
+                  "text": "PHARMACY · ID REQUIRED",
+                  "col": "60,230,140",
+                  "h": 379,
+                  "at": 0.7861668381344308,
+                  "dead": -1
+                },
+                {
+                  "kind": "plate",
+                  "text": "PHARMACY · ID REQUIRED",
+                  "col": "60,230,140",
+                  "h": 356,
+                  "at": 0.5045138888888889,
+                  "dead": -1
+                },
+                {
+                  "kind": "stack",
+                  "text": "KARAOKE",
+                  "col": "255,217,165",
+                  "h": 387,
+                  "at": 0.18170867626886145,
+                  "dead": 0
+                }
+              ],
+              "width": 584,
+              "height": 5735
+            },
+            "placement": {
+              "x": 712,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 42,
+            "layer": "set"
+          },
+          {
+            "id": "tower-4706",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4706,
+              "roof": "tank",
+              "skin": "concrete",
+              "shop": true,
+              "crown": "slant",
+              "gear": [
+                "tank"
+              ],
+              "balconies": true,
+              "grime": 0.3975518689986282,
+              "signs": [
+                {
+                  "kind": "billboard",
+                  "text": "SCORE 712 · APPROVED",
+                  "col": "170,130,255",
+                  "h": 2955,
+                  "at": 0.5296296296296297,
+                  "dead": 0
+                }
+              ],
+              "width": 495,
+              "height": 3040
+            },
+            "placement": {
+              "x": 183.9999999999991,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 43,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-7",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 2970,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 52,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-8",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 2490,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 53,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-9",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 2010,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 54,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-10",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 1530,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 55,
+            "layer": "set"
+          },
+          {
+            "id": "town-person-10",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 9102,
+              "act": "walk",
+              "depth": "play",
+              "body": "slim",
+              "hair": "long",
+              "garb": "coat",
+              "extras": [
+                "umbrella"
+              ],
+              "dim": 0,
+              "speed": 0.28,
+              "range": 120
+            },
+            "placement": {
+              "x": 3300,
+              "h": -51,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 125,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-11",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 9103,
+              "act": "stand",
+              "depth": "play",
+              "body": "old",
+              "hair": "brim",
+              "garb": "coat",
+              "extras": [],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 3030,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 126,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-12",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 9104,
+              "act": "walk",
+              "depth": "play",
+              "body": "tall",
+              "hair": "short",
+              "garb": "suit",
+              "extras": [
+                "umbrella"
+              ],
+              "dim": 0,
+              "speed": 0.4,
+              "range": 120
+            },
+            "placement": {
+              "x": 2610,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 127,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-13",
+            "type": "character.resident",
+            "props": {
+              "kind": "sweeper",
+              "seed": 1,
+              "act": "sweep",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 2370,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 128,
+            "layer": "playfield"
+          },
+          {
+            "id": "arrival-train",
+            "type": "metro.cutaway-train",
+            "props": {
+              "cars": 2,
+              "destination": "LINE 0 · DOWNTOWN",
+              "open": 1,
+              "light": 0.85,
+              "cabs": true
+            },
+            "placement": {
+              "x": 8810,
+              "h": 160
+            },
+            "order": 90,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-road",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "road"
+            },
+            "placement": {
+              "x": 15780,
+              "h": 0
+            },
+            "order": 95,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-street",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "street"
+            },
+            "placement": {
+              "x": 15780,
+              "h": 0
+            },
+            "order": 80,
+            "layer": "backdrop"
+          },
+          {
+            "id": "west-gate",
+            "type": "architecture.through-block",
+            "props": {
+              "width": 172,
+              "entry": "east",
+              "foot": -1500
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 200,
+            "layer": "set"
+          },
+          {
+            "id": "line0-viaduct",
+            "type": "transit.viaduct",
+            "props": {
+              "from": 0,
+              "to": 3390,
+              "origin": 0,
+              "base": 40
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 60,
+            "layer": "set"
+          },
+          {
+            "id": "ring",
+            "type": "architecture.ring",
+            "props": {
+              "from": 0,
+              "to": 3390,
+              "origin": 0,
+              "curve": false
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 65,
+            "layer": "set"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "glide-downtown-west",
+        "name": "DOWNTOWN-WEST",
+        "intro": [],
+        "uses": [],
+        "stage": {
+          "sudoOnly": true
+        },
+        "environment": {
+          "ambient": {
+            "sky": true,
+            "weather": true
+          },
+          "outdoor": true,
+          "facing": 243,
+          "horizon": 189,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 4500,
+            "h": 0
+          }
+        },
+        "manifest": {
+          "version": 1,
+          "width": 3390,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "glide-downtown",
+        "instances": [
+          {
+            "id": "ground-glide-downtown",
+            "type": "coast.ground",
+            "props": {
+              "segments": [
+                {
+                  "kind": "street",
+                  "from": 0,
+                  "to": 2940
+                }
+              ],
+              "origin": -7890,
+              "wet": 1
+            },
+            "placement": {
+              "x": 0,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 6,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor",
+            "type": "level.floor",
+            "props": {
+              "width": 2940
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 7,
+            "layer": "logic"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 200,
+              "h": 0
+            },
+            "order": 8,
+            "layer": "playfield"
+          },
+          {
+            "id": "tower-4700",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4700,
+              "roof": "mast",
+              "skin": "brick",
+              "shop": true,
+              "crown": "flat",
+              "gear": [
+                "dish"
+              ],
+              "balconies": false,
+              "grime": 0.719221536351166,
+              "signs": [
+                {
+                  "kind": "billboard",
+                  "text": "KASHI PHARMA",
+                  "col": "255,190,60",
+                  "h": 476,
+                  "at": 0.5006215706447188,
+                  "dead": -1
+                },
+                {
+                  "kind": "blade",
+                  "text": "NUTRIPASTE",
+                  "col": "170,130,255",
+                  "h": 279,
+                  "at": 0.3547710905349794,
+                  "dead": -1
+                },
+                {
+                  "kind": "blade",
+                  "text": "KOBA SOY",
+                  "col": "190,215,255",
+                  "h": 276,
+                  "at": 0.7603609396433471,
+                  "dead": -1
+                }
+              ],
+              "width": 587,
+              "height": 561
+            },
+            "placement": {
+              "x": 1771,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 37,
+            "layer": "set"
+          },
+          {
+            "id": "tower-4701",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4701,
+              "roof": "tank",
+              "skin": "brick",
+              "shop": true,
+              "crown": "flat",
+              "gear": [
+                "pad"
+              ],
+              "balconies": false,
+              "grime": 0.49795953360768175,
+              "signs": [
+                {
+                  "kind": "blade",
+                  "text": "SLEEP 8H · 40C",
+                  "col": "255,42,68",
+                  "h": 130,
+                  "at": 0.9632201646090535,
+                  "dead": 8
+                }
+              ],
+              "width": 387,
+              "height": 561
+            },
+            "placement": {
+              "x": 1366,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 38,
+            "layer": "set"
+          },
+          {
+            "id": "tower-4702",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 4702,
+              "roof": "none",
+              "skin": "brick",
+              "shop": true,
+              "crown": "flat",
+              "gear": [
+                "antenna",
+                "dish"
+              ],
+              "balconies": false,
+              "grime": 0.8868955761316872,
+              "signs": [
+                {
+                  "kind": "plate",
+                  "text": "CREDIT 24H",
+                  "col": "255,136,0",
+                  "h": 263,
+                  "at": 0.913983196159122,
+                  "dead": 3
+                },
+                {
+                  "kind": "blade",
+                  "text": "PHARMACY · ID REQUIRED",
+                  "col": "60,230,140",
+                  "h": 133,
+                  "at": 0.7213820301783265,
+                  "dead": -1
+                }
+              ],
+              "width": 248,
+              "height": 476
+            },
+            "placement": {
+              "x": 898,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 39,
+            "layer": "set"
+          },
+          {
+            "id": "tower-99001",
+            "type": "architecture.tower",
+            "props": {
+              "seed": 99001,
+              "roof": "none",
+              "skin": "glass",
+              "crown": "halo",
+              "gear": [
+                "antenna"
+              ],
+              "grime": 0.3,
+              "shop": false,
+              "signs": [
+                {
+                  "kind": "ticker",
+                  "text": "LINE 0 · CANYON BRANCH · NEXT: DOWNTOWN · MIND THE GAP · ",
+                  "col": "255,136,0",
+                  "h": 640
+                },
+                {
+                  "kind": "blade",
+                  "text": "REGISTRY",
+                  "col": "255,42,68",
+                  "h": 900,
+                  "at": 0.9,
+                  "dead": 4
+                }
+              ],
+              "width": 486,
+              "height": 5600
+            },
+            "placement": {
+              "x": 2400,
+              "h": -12,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 44,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-0",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 2850,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 45,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-1",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 2400,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 46,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-2",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 1950,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 47,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-3",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 1470,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 48,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-4",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 990,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 49,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-5",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 540,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 50,
+            "layer": "set"
+          },
+          {
+            "id": "street-lamp-6",
+            "type": "street.lamp",
+            "props": {
+              "style": "coast"
+            },
+            "placement": {
+              "x": 60,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 51,
+            "layer": "set"
+          },
+          {
+            "id": "town-person-0",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4171,
+              "act": "walk",
+              "depth": "play",
+              "garb": "coat",
+              "hair": "hood",
+              "extras": [
+                "umbrella"
+              ],
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 2790,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 115,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-1",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4172,
+              "act": "walk",
+              "depth": "play",
+              "garb": "suit",
+              "hair": "short",
+              "extras": [
+                "umbrella"
+              ],
+              "dim": 0,
+              "speed": 0.4,
+              "range": 120
+            },
+            "placement": {
+              "x": 2400,
+              "h": -51,
+              "facing": -1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 116,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-2",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4173,
+              "act": "queue",
+              "depth": "play",
+              "garb": "jacket",
+              "hair": "beanie",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1980,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 117,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-3",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4174,
+              "act": "queue",
+              "depth": "play",
+              "body": "old",
+              "garb": "coat",
+              "hair": "scarf",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1944,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 118,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-4",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4176,
+              "act": "phone",
+              "depth": "play",
+              "body": "slim",
+              "garb": "jacket",
+              "hair": "cap",
+              "extras": [
+                "phone"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1908,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 119,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-5",
+            "type": "character.resident",
+            "props": {
+              "kind": "drone",
+              "seed": 1,
+              "act": "scan",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 1710,
+              "h": -11,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 120,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-6",
+            "type": "character.resident",
+            "props": {
+              "kind": "android",
+              "seed": 1,
+              "act": "walk",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 1290,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 121,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-7",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4175,
+              "act": "walk",
+              "depth": "play",
+              "garb": "dress",
+              "hair": "long",
+              "extras": [
+                "umbrella"
+              ],
+              "dim": 0,
+              "speed": 0.25,
+              "range": 120
+            },
+            "placement": {
+              "x": 1020,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 122,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-8",
+            "type": "character.resident",
+            "props": {
+              "kind": "deliverybot",
+              "seed": 1,
+              "act": "roll",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 675,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 123,
+            "layer": "playfield"
+          },
+          {
+            "id": "town-person-9",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 9101,
+              "act": "walk",
+              "depth": "play",
+              "body": "avg",
+              "hair": "beanie",
+              "garb": "jacket",
+              "extras": [
+                "bag"
+              ],
+              "dim": 0,
+              "speed": 0.35,
+              "range": 120
+            },
+            "placement": {
+              "x": 240,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 124,
+            "layer": "playfield"
+          },
+          {
+            "id": "arrival-train",
+            "type": "metro.cutaway-train",
+            "props": {
+              "cars": 2,
+              "destination": "LINE 0 · DOWNTOWN",
+              "open": 1,
+              "light": 0.85,
+              "cabs": true
+            },
+            "placement": {
+              "x": 5420,
+              "h": 160
+            },
+            "order": 90,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-road",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "road"
+            },
+            "placement": {
+              "x": 12390,
+              "h": 0
+            },
+            "order": 95,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-street",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "street"
+            },
+            "placement": {
+              "x": 12390,
+              "h": 0
+            },
+            "order": 80,
+            "layer": "backdrop"
+          },
+          {
+            "id": "ring-east",
+            "type": "architecture.through-block",
+            "props": {
+              "width": 162,
+              "entry": "west",
+              "street": false,
+              "name": "R4 · INLAND",
+              "code": "",
+              "foot": -12
+            },
+            "placement": {
+              "x": 2760,
+              "h": 0
+            },
+            "order": 200,
+            "layer": "set"
+          },
+          {
+            "id": "line0-viaduct",
+            "type": "transit.viaduct",
+            "props": {
+              "from": 0,
+              "to": 2940,
+              "origin": -3390,
+              "base": 40
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 60,
+            "layer": "set"
+          },
+          {
+            "id": "ring",
+            "type": "architecture.ring",
+            "props": {
+              "from": 0,
+              "to": 2850,
+              "origin": -3390,
+              "curve": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 65,
+            "layer": "set"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "glide-downtown",
+        "name": "DOWNTOWN",
+        "intro": [],
+        "uses": [],
+        "stage": {
+          "sudoOnly": true
+        },
+        "environment": {
+          "ambient": {
+            "sky": true,
+            "weather": true
+          },
+          "outdoor": true,
+          "facing": 243,
+          "horizon": 189,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 7890,
+            "h": 0
+          }
+        },
+        "manifest": {
+          "version": 1,
+          "width": 2940,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "glide-galleria",
+        "instances": [
+          {
+            "id": "ground-glide-galleria",
+            "type": "coast.ground",
+            "props": {
+              "segments": [
+                {
+                  "kind": "plaza",
+                  "from": 0,
+                  "to": 1080
+                }
+              ],
+              "origin": -10830,
+              "wet": 0
+            },
+            "placement": {
+              "x": 0,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 9,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor",
+            "type": "level.floor",
+            "props": {
+              "width": 1080
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 10,
+            "layer": "logic"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 200,
+              "h": 0
+            },
+            "order": 11,
+            "layer": "playfield"
+          },
+          {
+            "id": "galleria",
+            "type": "building.galleria",
+            "props": {
+              "width": 690
+            },
+            "placement": {
+              "x": 240,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 56,
+            "layer": "set"
+          },
+          {
+            "id": "galleria-platform",
+            "type": "transit.platform",
+            "props": {
+              "length": 222
+            },
+            "placement": {
+              "x": 0,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 59,
+            "layer": "set"
+          },
+          {
+            "id": "coast-person-42",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4161,
+              "act": "walk",
+              "depth": "play",
+              "garb": "dress",
+              "hair": "bun",
+              "extras": [
+                "bag"
+              ],
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 1020,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 106,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-43",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4162,
+              "act": "phone",
+              "depth": "play",
+              "garb": "suit",
+              "hair": "short",
+              "extras": [
+                "bag",
+                "phone"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 816,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 107,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-44",
+            "type": "character.resident",
+            "props": {
+              "kind": "mech",
+              "seed": 1,
+              "act": "patrol",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 714,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 108,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-45",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4163,
+              "act": "queue",
+              "depth": "play",
+              "garb": "coat",
+              "hair": "long",
+              "extras": [
+                "bag"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 600,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 109,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-46",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4164,
+              "act": "queue",
+              "depth": "play",
+              "body": "kid",
+              "garb": "tee",
+              "hair": "cap",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 570,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 110,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-47",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4165,
+              "act": "queue",
+              "depth": "play",
+              "body": "wide",
+              "garb": "jacket",
+              "hair": "beanie",
+              "extras": [
+                "bag"
+              ],
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 540,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 111,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-48",
+            "type": "character.resident",
+            "props": {
+              "kind": "busker",
+              "seed": 1,
+              "act": "play",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3
+            },
+            "placement": {
+              "x": 396,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 112,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-49",
+            "type": "character.resident",
+            "props": {
+              "kind": "sweeper",
+              "seed": 1,
+              "act": "sweep",
+              "depth": "play",
+              "dim": 0,
+              "speed": 0.3,
+              "range": 120
+            },
+            "placement": {
+              "x": 270,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 113,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-50",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4166,
+              "act": "walk",
+              "depth": "play",
+              "garb": "jacket",
+              "hair": "mohawk",
+              "extras": [
+                "bag"
+              ],
+              "dim": 0,
+              "speed": 0.4,
+              "range": 120
+            },
+            "placement": {
+              "x": 150,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 114,
+            "layer": "playfield"
+          },
+          {
+            "id": "arrival-train",
+            "type": "metro.cutaway-train",
+            "props": {
+              "cars": 2,
+              "destination": "LINE 0 · DOWNTOWN",
+              "open": 1,
+              "light": 0.85,
+              "cabs": true
+            },
+            "placement": {
+              "x": 2480,
+              "h": 160
+            },
+            "order": 90,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-road",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "road"
+            },
+            "placement": {
+              "x": 9450,
+              "h": 0
+            },
+            "order": 95,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-street",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "street"
+            },
+            "placement": {
+              "x": 9450,
+              "h": 0
+            },
+            "order": 80,
+            "layer": "backdrop"
+          },
+          {
+            "id": "line0-viaduct",
+            "type": "transit.viaduct",
+            "props": {
+              "from": 0,
+              "to": 1080,
+              "origin": -6330,
+              "base": 40
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 60,
+            "layer": "set"
+          },
+          {
+            "id": "terrace-escalator",
+            "type": "level.escalator",
+            "props": {
+              "run": 150,
+              "rise": 162
+            },
+            "placement": {
+              "x": 180,
+              "h": 0
+            },
+            "order": 150,
+            "layer": "set"
+          },
+          {
+            "id": "terrace-people",
+            "type": "character.flow",
+            "props": {
+              "clock": "frame",
+              "flow": {
+                "seed": 844,
+                "speed": 38,
+                "spawn": {
+                  "kind": "interval",
+                  "every": 6,
+                  "jitter": 0.4
+                },
+                "route": [
+                  {
+                    "kind": "walk",
+                    "x": 100,
+                    "h": 0
+                  },
+                  {
+                    "kind": "walk",
+                    "x": 180,
+                    "h": 0
+                  },
+                  {
+                    "kind": "walk",
+                    "x": 330,
+                    "h": 162
+                  },
+                  {
+                    "kind": "walk",
+                    "x": 400,
+                    "h": 162
+                  },
+                  {
+                    "kind": "leave",
+                    "x": 430,
+                    "h": 162
+                  }
+                ]
+              },
+              "ride": 1,
+              "looks": [
+                {
+                  "seed": 831,
+                  "archetype": "commuter"
+                },
+                {
+                  "seed": 833,
+                  "archetype": "clerk"
+                }
+              ]
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 151,
+            "layer": "playfield"
+          },
+          {
+            "id": "terrace-floor",
+            "type": "level.floor",
+            "props": {
+              "width": 150,
+              "label": "Terrace"
+            },
+            "placement": {
+              "x": 330,
+              "h": 162
+            },
+            "order": 152,
+            "layer": "logic"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "glide-galleria",
+        "name": "GALLERIA",
+        "intro": [],
+        "uses": [],
+        "stage": {
+          "sudoOnly": true
+        },
+        "environment": {
+          "ambient": {
+            "sky": true,
+            "weather": false
+          },
+          "outdoor": true,
+          "facing": 243,
+          "horizon": 189,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 10830,
+            "h": 0
+          }
+        },
+        "manifest": {
+          "version": 1,
+          "width": 1080,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "glide-spire-bay",
+        "instances": [
+          {
+            "id": "ground-glide-spire-bay",
+            "type": "coast.ground",
+            "props": {
+              "segments": [
+                {
+                  "kind": "bridge",
+                  "from": 0,
+                  "to": 1380
+                }
+              ],
+              "origin": -11910,
+              "wet": 0
+            },
+            "placement": {
+              "x": 0,
+              "h": 0,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 12,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor",
+            "type": "level.floor",
+            "props": {
+              "width": 1380
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 13,
+            "layer": "logic"
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 200,
+              "h": 0
+            },
+            "order": 14,
+            "layer": "playfield"
+          },
+          {
+            "id": "coast-person-41",
+            "type": "character.resident",
+            "props": {
+              "kind": "human",
+              "seed": 4151,
+              "act": "walk",
+              "depth": "play",
+              "garb": "tee",
+              "hair": "short",
+              "extras": [
+                "headphones"
+              ],
+              "dim": 0,
+              "speed": 0.7,
+              "range": 120
+            },
+            "placement": {
+              "x": 930,
+              "h": -51,
+              "facing": 1,
+              "parallax": 1,
+              "scale": 1
+            },
+            "order": 105,
+            "layer": "playfield"
+          },
+          {
+            "id": "arrival-train",
+            "type": "metro.cutaway-train",
+            "props": {
+              "cars": 2,
+              "destination": "LINE 0 · DOWNTOWN",
+              "open": 1,
+              "light": 0.85,
+              "cabs": true
+            },
+            "placement": {
+              "x": 1400,
+              "h": 160
+            },
+            "order": 90,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-road",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "road"
+            },
+            "placement": {
+              "x": 8370,
+              "h": 0
+            },
+            "order": 95,
+            "layer": "backdrop"
+          },
+          {
+            "id": "traffic-street",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -6720,
+              "portal": -15780,
+              "pass": "street"
+            },
+            "placement": {
+              "x": 8370,
+              "h": 0
+            },
+            "order": 80,
+            "layer": "backdrop"
+          },
+          {
+            "id": "bay-bridge",
+            "type": "coast.bridge",
+            "props": {
+              "length": 1380
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 100,
+            "layer": "set"
+          },
+          {
+            "id": "station-approach",
+            "type": "level.stairs",
+            "props": {
+              "run": 200,
+              "rise": 160,
+              "style": "concrete",
+              "rail": "steel"
+            },
+            "placement": {
+              "x": 1180,
+              "h": 0
+            },
+            "order": 150,
+            "layer": "set"
+          },
+          {
+            "id": "line0-viaduct",
+            "type": "transit.viaduct",
+            "props": {
+              "from": 0,
+              "to": 1380,
+              "origin": -7410,
+              "base": 40
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 60,
+            "layer": "set"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "glide-spire-bay",
+        "name": "SPIRE-BAY",
+        "intro": [],
+        "uses": [],
+        "stage": {
+          "sudoOnly": true
+        },
+        "environment": {
+          "ambient": {
+            "sky": true,
+            "weather": false
+          },
+          "outdoor": true,
+          "facing": 243,
+          "horizon": 189,
+          "backdrop": {
+            "id": "glide-coast",
+            "x": 11910,
+            "h": 0
+          }
+        },
+        "manifest": {
+          "version": 1,
+          "width": 1380,
+          "spawn": "spawn",
+          "uses": {}
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "vehicle-lab",
+        "instances": [
+          {
+            "id": "shuttle",
+            "type": "vehicle.frame",
+            "props": {
+              "vehicle": {
+                "id": "shuttle",
+                "kind": "train",
+                "mover": "shuttle.frame",
+                "doors": {
+                  "mover": "shuttle.doors",
+                  "open": 0.9
+                },
+                "gap": 20,
+                "gangways": true,
+                "cars": [
+                  {
+                    "id": "car1",
+                    "width": 533,
+                    "doors": [
+                      {
+                        "id": "d0",
+                        "x": 64,
+                        "w": 36
+                      },
+                      {
+                        "id": "d1",
+                        "x": 199,
+                        "w": 36
+                      },
+                      {
+                        "id": "d2",
+                        "x": 334,
+                        "w": 36
+                      },
+                      {
+                        "id": "d3",
+                        "x": 469,
+                        "w": 36
+                      }
+                    ],
+                    "seats": [
+                      {
+                        "id": "bench1-seat0",
+                        "x": 237,
+                        "h": 14,
+                        "artwork": "car1-bench1",
+                        "anchor": "seat0"
+                      },
+                      {
+                        "id": "bench1-seat1",
+                        "x": 257,
+                        "h": 14,
+                        "artwork": "car1-bench1",
+                        "anchor": "seat1"
+                      },
+                      {
+                        "id": "bench1-seat2",
+                        "x": 277,
+                        "h": 14,
+                        "artwork": "car1-bench1",
+                        "anchor": "seat2"
+                      },
+                      {
+                        "id": "bench1-seat3",
+                        "x": 297,
+                        "h": 14,
+                        "artwork": "car1-bench1",
+                        "anchor": "seat3"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "car2",
+                    "width": 533,
+                    "doors": [
+                      {
+                        "id": "d0",
+                        "x": 64,
+                        "w": 36
+                      },
+                      {
+                        "id": "d1",
+                        "x": 199,
+                        "w": 36
+                      },
+                      {
+                        "id": "d2",
+                        "x": 334,
+                        "w": 36
+                      },
+                      {
+                        "id": "d3",
+                        "x": 469,
+                        "w": 36
+                      }
+                    ],
+                    "seats": [
+                      {
+                        "id": "bench1-seat0",
+                        "x": 237,
+                        "h": 14,
+                        "artwork": "car2-bench1",
+                        "anchor": "seat0"
+                      },
+                      {
+                        "id": "bench1-seat1",
+                        "x": 257,
+                        "h": 14,
+                        "artwork": "car2-bench1",
+                        "anchor": "seat1"
+                      },
+                      {
+                        "id": "bench1-seat2",
+                        "x": 277,
+                        "h": 14,
+                        "artwork": "car2-bench1",
+                        "anchor": "seat2"
+                      },
+                      {
+                        "id": "bench1-seat3",
+                        "x": 297,
+                        "h": 14,
+                        "artwork": "car2-bench1",
+                        "anchor": "seat3"
+                      }
+                    ]
+                  }
+                ],
+                "route": {
+                  "legs": [
+                    {
+                      "zone": "vehicle-lab",
+                      "from": {
+                        "x": 160,
+                        "h": 0
+                      },
+                      "to": {
+                        "x": 960,
+                        "h": 0
+                      },
+                      "length": 800,
+                      "facing": 1
+                    }
+                  ]
+                },
+                "berths": [
+                  {
+                    "id": "west",
+                    "zone": "vehicle-lab",
+                    "x": 160,
+                    "h": 0,
+                    "floor": "platform"
+                  },
+                  {
+                    "id": "east",
+                    "zone": "vehicle-lab",
+                    "x": 960,
+                    "h": 0,
+                    "floor": "platform"
+                  }
+                ],
+                "shell": [
+                  "car1-door0",
+                  "car1-door1",
+                  "car1-door2",
+                  "car1-door3",
+                  "car2-door0",
+                  "car2-door1",
+                  "car2-door2",
+                  "car2-door3"
+                ],
+                "ghost": 0.12,
+                "revealSpeed": 0.08
+              }
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "layer": "logic",
+            "order": 0
+          },
+          {
+            "id": "car1",
+            "type": "vehicle.car",
+            "props": {
+              "length": 533,
+              "ceiling": 62,
+              "roof": 12,
+              "doors": 4,
+              "doorWidth": 36,
+              "doorHeight": 54,
+              "cab": "left",
+              "plate": "CAR 1",
+              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 13,
+            "layer": "backdrop",
+            "attach": {
+              "instance": "shuttle",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "gangway",
+            "type": "vehicle.gangway",
+            "props": {
+              "face": "far",
+              "length": 20
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 14,
+            "layer": "backdrop",
+            "attach": {
+              "instance": "car1",
+              "anchor": "end"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.gangway"
+            }
+          },
+          {
+            "id": "car2",
+            "type": "vehicle.car",
+            "props": {
+              "length": 533,
+              "ceiling": 62,
+              "roof": 12,
+              "doors": 4,
+              "doorWidth": 36,
+              "doorHeight": 54,
+              "cab": "right",
+              "plate": "CAR 2",
+              "ads": "LINE 0 · ON TIME 61%|SPIRE RESIDENCES · BY INVITATION|REPORT UNREGISTERED PERSONS",
+              "notice": "NO SLEEPING ON SEATS"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 15,
+            "layer": "backdrop",
+            "attach": {
+              "instance": "gangway",
+              "anchor": "end"
+            }
+          },
+          {
+            "id": "car1-bench1",
+            "type": "vehicle.seat",
+            "props": {
+              "places": 4,
+              "place": 20,
+              "style": "bench"
+            },
+            "placement": {
+              "x": 2,
+              "h": 0
+            },
+            "order": 27,
+            "layer": "set",
+            "attach": {
+              "instance": "car1",
+              "anchor": "bay1"
+            }
+          },
+          {
+            "id": "car2-bench1",
+            "type": "vehicle.seat",
+            "props": {
+              "places": 4,
+              "place": 20,
+              "style": "bench"
+            },
+            "placement": {
+              "x": 2,
+              "h": 0
+            },
+            "order": 31,
+            "layer": "set",
+            "attach": {
+              "instance": "car2",
+              "anchor": "bay1"
+            }
+          },
+          {
+            "id": "car1-door0",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 53,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door0"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car1-door1",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 54,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door1"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car1-door2",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 55,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door2"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car1-door3",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 56,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car1",
+              "anchor": "door3"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car2-door0",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 57,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door0"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car2-door1",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 58,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door1"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car2-door2",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 59,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door2"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "car2-door3",
+            "type": "vehicle.door",
+            "props": {
+              "width": 36,
+              "height": 54
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 60,
+            "layer": "foreground",
+            "attach": {
+              "instance": "car2",
+              "anchor": "door3"
+            },
+            "bindings": {
+              "open": "vehicle.shuttle.open"
+            }
+          },
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 224,
+              "h": 0
+            },
+            "order": 40,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "level.floor",
+            "props": {
+              "width": 2500,
+              "label": "Platform"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "deck",
+            "type": "level.slab",
+            "props": {
+              "width": 2500,
+              "thickness": 14
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "backdrop"
+          },
+          {
+            "id": "west-sign",
+            "type": "sign.nameplate",
+            "props": {
+              "name": "WEST PLATFORM"
+            },
+            "placement": {
+              "x": 224,
+              "h": 100
+            },
+            "order": 2,
+            "layer": "set"
+          },
+          {
+            "id": "east-sign",
+            "type": "sign.nameplate",
+            "props": {
+              "name": "EAST PLATFORM"
+            },
+            "placement": {
+              "x": 1024,
+              "h": 100
+            },
+            "order": 2,
+            "layer": "set"
+          },
+          {
+            "id": "passengers",
+            "type": "character.flow",
+            "props": {
+              "clock": "scene",
+              "flow": {
+                "seed": 17,
+                "speed": 38,
+                "maxWait": 60,
+                "spawn": {
+                  "kind": "interval",
+                  "every": 12
+                },
+                "route": [
+                  {
+                    "kind": "walk",
+                    "x": 120,
+                    "h": 0
+                  },
+                  {
+                    "kind": "board",
+                    "x": 224,
+                    "h": 0,
+                    "vehicle": "shuttle",
+                    "slots": 3,
+                    "spacing": 22,
+                    "gap": 0.6
+                  }
+                ]
+              },
+              "vehicle": {
+                "frame": "shuttle",
+                "board": "west",
+                "alight": "east"
+              },
+              "exit": [
+                {
+                  "kind": "leave",
+                  "x": 1400,
+                  "h": 0
+                }
+              ],
+              "looks": [
+                {
+                  "seed": 37
+                },
+                {
+                  "seed": 51
+                },
+                {
+                  "seed": 69
+                }
+              ]
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "layer": "playfield",
+            "order": 30,
+            "bindings": {
+              "people": "flow.passengers.people"
+            }
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "vehicle-lab",
+        "name": "Vehicles · two-car shuttle",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 2500,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "stage": {
+          "sudoOnly": true
+        },
+        "environment": {
+          "outdoor": true,
+          "ambient": {
+            "sky": true,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "events": [],
+        "commands": {},
+        "reactions": [],
+        "conversations": {}
+      },
+      "devices": {
+        "id": "vehicle-lab",
+        "name": "Vehicle pilot",
+        "tuning": {},
+        "texts": {},
+        "dialogue": {},
+        "goals": [],
+        "devices": [
+          {
+            "id": "shuttle",
+            "name": "Shuttle drive",
+            "look": "Two platforms, one two-car shuttle.",
+            "status": "automatic service",
+            "nouns": [
+              {
+                "id": "frame",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "stops": {
+                    "west": 0,
+                    "east": 800
+                  },
+                  "start": "west",
+                  "paths": {
+                    "service": [
+                      {
+                        "ms": 12000
+                      },
+                      {
+                        "ms": 600,
+                        "drives": "doors:close"
+                      },
+                      {
+                        "to": "east",
+                        "ms": 9000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 700,
+                        "drives": "doors:open"
+                      },
+                      {
+                        "ms": 12000
+                      },
+                      {
+                        "ms": 600,
+                        "drives": "doors:close"
+                      },
+                      {
+                        "to": "west",
+                        "ms": 9000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 700,
+                        "drives": "doors:open"
+                      },
+                      {
+                        "run": "service"
+                      }
+                    ]
+                  },
+                  "wired": false,
+                  "auto": "service"
+                }
+              },
+              {
+                "id": "doors",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "stops": {
+                    "closed": 0,
+                    "open": 1
+                  },
+                  "start": "open",
+                  "paths": {
+                    "close": [
+                      {
+                        "to": "closed",
+                        "ms": 600
+                      }
+                    ],
+                    "open": [
+                      {
+                        "to": "open",
+                        "ms": 700
+                      }
+                    ]
+                  },
+                  "wired": false
+                }
+              }
+            ],
+            "layout": {
+              "spot": {
+                "x": 80,
+                "y": 0,
+                "w": 24,
+                "h": 40
+              },
+              "board": {
+                "x": 0.5,
+                "y": 0.5
+              }
+            }
+          }
+        ],
+        "cables": []
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "vehicle-routes",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 224,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "level.floor",
+            "props": {
+              "width": 2400,
+              "label": "Platform"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "surface",
+            "type": "level.slab",
+            "props": {
+              "width": 2400,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 2,
+            "layer": "backdrop"
+          },
+          {
+            "id": "service",
+            "type": "vehicle.frame",
+            "props": {
+              "vehicle": {
+                "id": "service",
+                "kind": "cart",
+                "mover": "service.frame",
+                "doors": {
+                  "mover": "service.doors",
+                  "open": 0.9
+                },
+                "cars": [
+                  {
+                    "id": "cart",
+                    "width": 90,
+                    "doors": [],
+                    "seats": [],
+                    "shellOnly": true
+                  }
+                ],
+                "gap": 20,
+                "gangways": true,
+                "route": {
+                  "legs": [
+                    {
+                      "zone": "vehicle-routes",
+                      "from": {
+                        "x": 160,
+                        "h": 80
+                      },
+                      "via": {
+                        "x": 560,
+                        "h": 220
+                      },
+                      "to": {
+                        "x": 960,
+                        "h": 80
+                      },
+                      "length": 800,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "vehicle-routes",
+                      "from": {
+                        "x": 960,
+                        "h": 80
+                      },
+                      "to": {
+                        "x": 1160,
+                        "h": 0
+                      },
+                      "drop": true,
+                      "length": 200,
+                      "facing": 1
+                    }
+                  ]
+                },
+                "berths": [],
+                "shell": []
+              }
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 3,
+            "layer": "logic"
+          },
+          {
+            "id": "cart",
+            "type": "vehicle.road",
+            "props": {
+              "kind": "van",
+              "speed": 0
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 4,
+            "layer": "set",
+            "attach": {
+              "instance": "service",
+              "anchor": "origin"
+            }
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "vehicle-routes",
+        "name": "Vehicles · curves and drops",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 2400,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": true,
+          "ambient": {
+            "sky": true,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      },
+      "devices": {
+        "id": "vehicle-routes",
+        "name": "New cart",
+        "tuning": {},
+        "devices": [
+          {
+            "id": "service",
+            "name": "SERVICE",
+            "look": "Vehicle service",
+            "status": "automatic",
+            "layout": {
+              "spot": {
+                "x": 80,
+                "y": 0,
+                "w": 24,
+                "h": 40
+              },
+              "board": {
+                "x": 0.5,
+                "y": 0.5
+              }
+            },
+            "nouns": [
+              {
+                "id": "frame",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "x",
+                  "wired": false,
+                  "stops": {
+                    "west": 0,
+                    "east": 1000
+                  },
+                  "start": "west",
+                  "auto": "service",
+                  "paths": {
+                    "service": [
+                      {
+                        "ms": 12000
+                      },
+                      {
+                        "ms": 600,
+                        "drives": "doors:close"
+                      },
+                      {
+                        "to": "east",
+                        "ms": 9000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 700,
+                        "drives": "doors:open"
+                      },
+                      {
+                        "ms": 12000
+                      },
+                      {
+                        "ms": 600,
+                        "drives": "doors:close"
+                      },
+                      {
+                        "to": "west",
+                        "ms": 9000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 700,
+                        "drives": "doors:open"
+                      },
+                      {
+                        "run": "service"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "id": "doors",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "x",
+                  "wired": false,
+                  "stops": {
+                    "closed": 0,
+                    "open": 1
+                  },
+                  "start": "open",
+                  "paths": {
+                    "close": [
+                      {
+                        "to": "closed",
+                        "ms": 600
+                      }
+                    ],
+                    "open": [
+                      {
+                        "to": "open",
+                        "ms": 700
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "cables": [],
+        "dialogue": {},
+        "goals": [],
+        "texts": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "line-harbor-1",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 800,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "floor-bed",
+            "type": "level.floor",
+            "props": {
+              "width": 1600,
+              "label": "Maintenance bed",
+              "indoor": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "rock",
+            "type": "level.ground-section",
+            "props": {
+              "width": 1600,
+              "depth": 500,
+              "seed": 31
+            },
+            "placement": {
+              "x": 0,
+              "h": 40
+            },
+            "order": 1,
+            "layer": "backdrop"
+          },
+          {
+            "id": "ceiling",
+            "type": "level.slab",
+            "props": {
+              "width": 1600,
+              "thickness": 26
+            },
+            "placement": {
+              "x": 0,
+              "h": 310
+            },
+            "order": 2,
+            "layer": "backdrop"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "line-harbor-1",
+        "name": "LINE 0 · Harbor approach",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 1600,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": false,
+          "ambient": {
+            "sky": false,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "line-harbor-2",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 800,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "floor-bed",
+            "type": "level.floor",
+            "props": {
+              "width": 1600,
+              "label": "Maintenance bed",
+              "indoor": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "rock",
+            "type": "level.ground-section",
+            "props": {
+              "width": 1600,
+              "depth": 500,
+              "seed": 32
+            },
+            "placement": {
+              "x": 0,
+              "h": 40
+            },
+            "order": 1,
+            "layer": "backdrop"
+          },
+          {
+            "id": "ceiling",
+            "type": "level.slab",
+            "props": {
+              "width": 1600,
+              "thickness": 26
+            },
+            "placement": {
+              "x": 0,
+              "h": 310
+            },
+            "order": 2,
+            "layer": "backdrop"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "line-harbor-2",
+        "name": "LINE 0 · tunnel 2",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 1600,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": false,
+          "ambient": {
+            "sky": false,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "line-harbor-3",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 800,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "floor-bed",
+            "type": "level.floor",
+            "props": {
+              "width": 1600,
+              "label": "Maintenance bed",
+              "indoor": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "rock",
+            "type": "level.ground-section",
+            "props": {
+              "width": 1600,
+              "depth": 500,
+              "seed": 33
+            },
+            "placement": {
+              "x": 0,
+              "h": 40
+            },
+            "order": 1,
+            "layer": "backdrop"
+          },
+          {
+            "id": "ceiling",
+            "type": "level.slab",
+            "props": {
+              "width": 1600,
+              "thickness": 26
+            },
+            "placement": {
+              "x": 0,
+              "h": 310
+            },
+            "order": 2,
+            "layer": "backdrop"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "line-harbor-3",
+        "name": "LINE 0 · tunnel 3",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 1600,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": false,
+          "ambient": {
+            "sky": false,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "line-harbor-4",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 800,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "floor-bed",
+            "type": "level.floor",
+            "props": {
+              "width": 1600,
+              "label": "Maintenance bed",
+              "indoor": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "rock",
+            "type": "level.ground-section",
+            "props": {
+              "width": 1600,
+              "depth": 500,
+              "seed": 34
+            },
+            "placement": {
+              "x": 0,
+              "h": 40
+            },
+            "order": 1,
+            "layer": "backdrop"
+          },
+          {
+            "id": "ceiling",
+            "type": "level.slab",
+            "props": {
+              "width": 1600,
+              "thickness": 26
+            },
+            "placement": {
+              "x": 0,
+              "h": 310
+            },
+            "order": 2,
+            "layer": "backdrop"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "line-harbor-4",
+        "name": "LINE 0 · tunnel 4",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 1600,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": false,
+          "ambient": {
+            "sky": false,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
       }
     }
   ]

@@ -1,3 +1,7 @@
+import authored from '../scenes/authored.json';
+import {declaredScene} from '../engine/gameplay/declared-scene';
+import type {AuthoredScene} from '../engine/gameplay/scene-catalogue';
+import type {SceneDef} from '../scenes/kit';
 import {plainReviewScene,reviewVisibility} from './review-room';
 /** Test District uses native factories and the shared game; only its source/save namespace differs. */
 import {workshopScene,WORKSHOP_GAMEPLAY,sandboxComposition} from './workshop';
@@ -28,4 +32,4 @@ export function demoDeskScene(composition:Composition=libraryComposition,state={
  const base=folderSceneDefinition('library',FOLDER_SOURCES.library,{composition,state,options:{...options,visibility:reviewVisibility(composition,['shelfe','librarian'])},scene:d,gameplay:validateDemoGameplay(gameplay),devices:emptyDeviceSource('library',d.name)});
  return {...plainReviewScene(base,['shelfe','librarian'],['chair']),name:'Conversations',spawn:420,data:undefined,rules:undefined,uses:[]};
 }
-export function demoContent(values:{gameplay?:unknown;counter?:unknown;desk?:unknown;shop?:Composition;library?:Composition;sandbox?:Composition;workshop?:unknown}={}){const game=validateDemoGameplay(values.gameplay??DEMO_GAMEPLAY);return{sandbox:workshopScene(values.sandbox??sandboxComposition,values.workshop===undefined?WORKSHOP_GAMEPLAY:values.workshop as import('../engine/gameplay/types').GameplayDefinition),shop:demoCounterScene(values.shop,{}, {},validateDemoScene(values.counter??DEMO_COUNTER,game),game),library:demoDeskScene(values.library,{}, {},validateDemoScene(values.desk??DEMO_DESK,game),game)};}
+export function demoContent(values:{gameplay?:unknown;counter?:unknown;desk?:unknown;shop?:Composition;library?:Composition;sandbox?:Composition;workshop?:unknown;vehicle?:SceneDef;routes?:SceneDef}={}){const game=validateDemoGameplay(values.gameplay??DEMO_GAMEPLAY);const pilot=authored.scenes.find(s=>s.scene.id==='vehicle-lab') as unknown as AuthoredScene;const routes=authored.scenes.find(s=>s.scene.id==='vehicle-routes') as unknown as AuthoredScene;return{'vehicle-routes':values.routes??declaredScene(routes.scene,routes.composition,validateGameplay(routes.gameplay),{},routes.devices),'vehicle-lab':values.vehicle??declaredScene(pilot.scene,pilot.composition,validateGameplay(pilot.gameplay),{},pilot.devices),sandbox:workshopScene(values.sandbox??sandboxComposition,values.workshop===undefined?WORKSHOP_GAMEPLAY:values.workshop as import('../engine/gameplay/types').GameplayDefinition),shop:demoCounterScene(values.shop,{}, {},validateDemoScene(values.counter??DEMO_COUNTER,game),game),library:demoDeskScene(values.library,{}, {},validateDemoScene(values.desk??DEMO_DESK,game),game)};}

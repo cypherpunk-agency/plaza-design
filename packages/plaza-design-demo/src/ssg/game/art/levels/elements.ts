@@ -390,7 +390,7 @@ export const barrierElement: Element = {
     refuse: text('Refuses with', 'ACCESS DENIED.'),
     closes: { kind: 'boolean', label: 'Shuts again behind the player (asks its rule each time)', default: false },
   },
-  visualFields: { open: num('Open', 0, 0, 1, 0.01) },
+  visualFields: { open: num('Open', 0, 0, 1, 0.01), near: num('Near cabinet over the player', 0, 0, 1, 1) },
   bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 0, w: Number(p.width) + 20, tall: 58 }),
   anchors: origin,
   draw: (x, v, p, s) => {
@@ -420,15 +420,20 @@ export const barrierElement: Element = {
       return;
     }
     // turnstile: a waist-high cabinet each side, the arm across the passage dropping as it opens, a lamp on top
-    rect(x, v, -hw - 8, 0, 8, 34, C.mid); rect(x, v, hw, 0, 8, 34, C.mid);
-    rect(x, v, -hw - 8, 32, 8, 2, C.edge); rect(x, v, hw, 32, 8, 2, C.edge);
+    rect(x, v, -hw - 8, 0, 8, 34, C.mid); if (!s.near) rect(x, v, hw, 0, 8, 34, C.mid);
+    rect(x, v, -hw - 8, 32, 8, 2, C.edge); if (!s.near) rect(x, v, hw, 32, 8, 2, C.edge);
     rect(x, v, -hw - 6, 26, 4, 3, C.face); rect(x, v, -hw - 5, 27, 2, 1, lamp);
-    rect(x, v, hw + 2, 34, 4, 2, lamp);
+    if (!s.near) rect(x, v, hw + 2, 34, 4, 2, lamp);
     // the arm hinges on the left cabinet: level when shut, hanging down when open
     const a = open * Math.PI / 2, len = w - 1, hx = -hw, hh = 26;
     x.strokeStyle = C.rail; x.lineWidth = 2; x.beginPath(); x.moveTo(v.sx(hx), v.y(hh)); x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh - Math.min(len, hh - 2) * Math.sin(a))); x.stroke();
     x.strokeStyle = C.rim; x.lineWidth = 1; x.beginPath(); x.moveTo(v.sx(hx), v.y(hh + 1)); x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh + 1 - Math.min(len, hh - 2) * Math.sin(a))); x.stroke();
     rect(x, v, -hw - 1, hh - 2, 3, 4, C.edge);
+  },
+  drawNear(x, v, p, s) {
+    if (p.style !== 'turnstile' || !s.near) return;
+    const hw = Number(p.width) / 2, lamp = Number(s.open ?? 0) > 0.5 ? C.go : C.stop;
+    rect(x, v, hw, 0, 8, 34, C.mid); rect(x, v, hw, 32, 8, 2, C.edge); rect(x, v, hw + 2, 34, 4, 2, lamp);
   },
 };
 

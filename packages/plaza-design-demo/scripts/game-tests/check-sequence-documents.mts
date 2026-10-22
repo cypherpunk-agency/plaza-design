@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
-import { ArtRegistry, type Composition } from '../../src/ssg/game/art/core/composition';
+import { type Composition } from '../../src/ssg/game/art/core/composition';
 import { validateTimeline, evaluateTimeline } from '../../src/ssg/game/art/core/timeline';
 import { openingDocuments } from '../../src/ssg/game/story/title/documents';
 import { cinematicDocuments } from '../../src/ssg/game/story/cutscenes/documents';
-import { openingTimelineContext, openingElements } from '../../src/ssg/game/art/sequences/opening/sequence';
-import { cinematicTimelineContext, cinematicElements, cutView } from '../../src/ssg/game/art/sequences/cinematics';
+import {art} from '../../src/ssg/game/art';
+import { cinematicTimelineContext, cutView } from '../../src/ssg/game/art/sequences/cinematics';
 import { Skyline } from '../../src/ssg/game/art/environment/skyline';
 import{introFrame}from'../../src/ssg/game/art/sequences/skyline';
 import{IntroSeekSession}from'../../src/ssg/game/story/cutscenes/skyline-session';
 import{lightAt}from'../../src/ssg/game/world/light';
 const lighting=lightAt(1,580,90,null);
-import { groupElement } from '../../src/ssg/game/art/assemblies/group';
+
 
 function recording() {
   const commands: unknown[] = [];
@@ -19,21 +19,21 @@ function recording() {
   return { ctx, commands };
 }
 const context = recording();
-const registry = new ArtRegistry().register(groupElement); [...openingElements, ...cinematicElements].forEach(e => registry.register(e));
-assert.equal(registry.catalog().length, openingElements.length + cinematicElements.length + 1);
-const opening = validateTimeline(openingDocuments.timeline, openingTimelineContext(context.ctx, {W:640,H:360,reduced:false,lighting}, openingDocuments, 7, 'glide'));
+const registry=art;
+const opening=validateTimeline(openingDocuments.timeline,{registry,compositions:{[openingDocuments.compositionId]:openingDocuments.composition},destinations:{train:[], 'harbor-station':[]}});
 const cinematic = validateTimeline(cinematicDocuments.timeline, cinematicTimelineContext(cutView(640,360,false,lighting), cinematicDocuments));
 assert.deepEqual(opening, JSON.parse(JSON.stringify(openingDocuments.timeline)));
 assert.deepEqual(cinematic, JSON.parse(JSON.stringify(cinematicDocuments.timeline)));
 assert.deepEqual(opening.sequences.map(s => s.id), ['title', 'rise', 'glide']);
 assert.deepEqual(cinematic.sequences.map(s => s.id), ['intro', 'act2', 'taxi']);
-assert.equal(opening.sequences.find(s => s.id === 'glide')!.handoff!.scene, 'train');
+assert.equal(opening.sequences.find(s => s.id === 'glide')!.handoff!.scene, 'harbor-station');
+assert.equal(opening.sequences.find(s=>s.id==='glide')!.fades.length,0,'the glide hands the actual platform into play without a black fade');
 assert.equal(cinematic.sequences.find(s => s.id === 'intro')!.handoff!.scene, 'capsule');
 assert.equal(cinematic.sequences.find(s => s.id === 'act2')!.handoff!.scene, 'stacks');
 const frame = evaluateTimeline(cinematic, 'act2', 8, cinematicTimelineContext(cutView(640,360,false,lighting), cinematicDocuments));
 assert.equal(frame.text.length, 1); assert.equal(frame.state.titles.two, 1); assert.ok((frame.state.ferry.amount as number) > 0);
 for (const composition of [openingDocuments.composition, ...Object.values(cinematicDocuments.compositions)]) {
-  assert.ok(composition.instances.length >= 6); assert.deepEqual(registry.validate(JSON.parse(JSON.stringify(composition))), composition);
+  assert.ok(composition.instances.length >= 2); assert.deepEqual(registry.validate(JSON.parse(JSON.stringify(composition))), composition);
   const edited = structuredClone(composition) as Composition; edited.instances[1].placement.x = 17; assert.equal(registry.validate(edited).instances[1].placement.x, 17);
 }
 
@@ -63,4 +63,4 @@ for (const reduced of [false, true]) {
   }
   const snapshot = a.snapshot(); a.advance(ca.ctx, initial.frame, 100, reduced); a.restore(snapshot); assert.deepEqual(a.snapshot(), snapshot);
 }
-console.log(`Sequence documents and replay checks passed: six sequences, ${openingElements.length + cinematicElements.length} registered pieces, nested coast/town groups, source round-trip/handoffs, full 60fps packet replay, backward seek and snapshot/advance equivalence.`);
+console.log(`Sequence documents and replay checks passed: six sequences, ${registry.catalog().length} registered pieces, nested coast/town groups, source round-trip/handoffs, full 60fps packet replay, backward seek and snapshot/advance equivalence.`);

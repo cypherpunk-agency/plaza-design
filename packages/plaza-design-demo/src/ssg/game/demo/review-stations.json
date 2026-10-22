@@ -144,6 +144,26 @@
         "device": "mixer"
       },
       "prompt": "Try the mixer and jukebox. Does the manual refusal suggest a useful next action?"
+    },
+    {
+      "id": "vehicles",
+      "label": "Vehicles",
+      "scene": "vehicle-lab",
+      "at": {
+        "firstUse": true,
+        "fallback": "spawn"
+      },
+      "prompt": "At the open door, E steps aboard. Walk to a bench and E sits; E or movement stands. Walk between the cars, ride to the next platform, then E steps off. Doors close before departure."
+    },
+    {
+      "id": "vehicle-routes",
+      "label": "Curves & drops",
+      "scene": "vehicle-routes",
+      "at": {
+        "firstUse": true,
+        "fallback": "spawn"
+      },
+      "prompt": "Watch the unmanned cart arc upward and descend. Its route and timing are editable in Vehicle and Devices."
     }
   ],
   "actions": [

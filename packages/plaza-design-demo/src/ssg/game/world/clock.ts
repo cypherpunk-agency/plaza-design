@@ -98,15 +98,27 @@ export class CityClock {
   pinned: number | null = null;
   /** Sudo's multiplier (CLOCK_SPEEDS): 1 as usual, 0 stopped. */
   speed = 1;
+  /** Authored story pacing, independent of the debug speed. Re-derived from scene rules. */
+  pace = 1;
+  private runUntil: number | undefined;
+  private runEnd: number | undefined;
+  run(rate = 1, until?: number) {
+    if (rate !== this.pace || until !== this.runUntil) {
+      this.pace = rate; this.runUntil = until;
+      this.runEnd = until === undefined ? undefined : this.abs + ((until - this.min + DAY_MIN) % DAY_MIN);
+    }
+    this.release();
+  }
 
   /** Use this save's clock (it is written in place: storing the save stores the clock). */
-  bind(s: ClockSave) { this.s = s; }
+  bind(s: ClockSave) { this.s = s; this.resetRun(); }
+  resetRun() { this.pace = 1; this.runUntil = undefined; this.runEnd = undefined; }
   /** Synchronous preview scope; restore the original save reference and controller settings. */
   withSnapshot<T>(snapshot: ClockSave, render: () => T): T {
-    const previous = this.s, pinned = this.pinned, speed = this.speed;
+    const previous = this.s, pinned = this.pinned, speed = this.speed, pace = this.pace, runUntil = this.runUntil, runEnd = this.runEnd;
     this.s = { ...snapshot };
     try { return render(); }
-    finally { this.s = previous; this.pinned = pinned; this.speed = speed; }
+    finally { this.s = previous; this.pinned = pinned; this.speed = speed; this.pace = pace; this.runUntil = runUntil; this.runEnd = runEnd; }
   }
   get day() { return this.s.day; }
   get min() { return this.s.min; }
@@ -119,8 +131,9 @@ export class CityClock {
 
   /** Real seconds pass in a scene: the clock runs (unless pinned or stopped). */
   tick(realSec: number) {
-    if (this.pinned !== null || !this.speed) return;
-    this.advance(realSec * CLOCK_RATE * this.speed);
+    if (this.pinned !== null || !this.speed || !Number.isFinite(realSec) || realSec <= 0) return;
+    const end = this.abs + realSec * CLOCK_RATE * this.speed * this.pace;
+    this.set(this.runEnd === undefined ? end : Math.min(end, this.runEnd));
   }
 
   /** Jump ahead (travel, waiting). Pinned: nothing moves. */

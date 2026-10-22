@@ -7,13 +7,13 @@ own design detail; this file owns order and status.
 
 ## Current foundation
 
-All 20 existing scenes use shared gameplay, conversations, state, devices, composition and
+Existing campaign scenes use shared gameplay, conversations, state, devices, composition and
 world/story source, with typed editor controls and private native Play. Ordinary scene creation
 uses the catalogue rather than a new TypeScript registry entry. New artwork and physical
 calculations may require registered code primitives. Public editing downloads bundles; only
 the local source service writes validated repository files.
 
-The opening no longer has its own controller: its phases, checkpoint gate, sleep card, morning trigger, clock pins, attention ping and light cue are
+The opening story no longer has a separate gameplay controller: its phases, checkpoint gate, sleep card, morning trigger, clock pins, attention ping and light cue are
 story data (opening.json, each scene's `phases`) applied by the one game loop through pure rules (story/story-rules.ts), so the milestone 3
 timeline (shift, commute, home) can be authored without new loop code. Contacts and the END card are documents too.
 
@@ -34,19 +34,13 @@ different thing.)
 
 ## Next work
 
-0. **One render path (decided by Tommi, 2026-10-22; first priority).** Everything that draws a frame (play,
-   editor preview, the title glide, cutscenes, the taxi flight) goes through `renderWorldFrame`, configured,
-   never a separate renderer, so every fix and optimization is made once in one engine. One second frame path
-   remains: the opening's `renderOpeningSequence`/`openingFrame`. In order:
-   (a) (done) the guard `check-one-render-path` (only `runtime/render-scene.ts` assembles a frame; it prints the
-   opening's temporary allow-list, which must shrink to empty), and the rule in AGENTS.md;
-   (b) (done) the frame **director** (`FrameDirector` on `renderWorldFrame`: camera from a timeline track, passes on/off,
-   overlays such as fades, cards and letterbox, time of day, pixel scale; `directorFromTimeline` is the one bridge
-   from a timeline), with the cutscenes and the taxi flight on it (`runtime/sequence-frame.ts`: a one-zone frame;
-   their pieces are registered elements; `renderCinematicPicture` is gone); (c) the title glide as a timeline camera over real zones (beach, inlet, Downtown, Galleria,
-   Harbor Station; its hand-drawn panorama becomes registered art pieces placed in those zones), ending inside
-   the real `harbor-station` zone so the prologue starts with no cut; (d) (done: the profile's `player.character` is a kit person, runtime/avatars.ts) the harbor dockworker player drawn by
-   the shared character kit. See [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) Principles and §7 step R.
+0. **One render path: implemented locally (2026-10-22).** Play, editor preview, the title glide,
+   cutscenes and taxi flight all use `renderWorldFrame`. The guard has no temporary exceptions.
+   The title's timeline travels through ordinary authored coast/city zones to the real harbor station;
+   its backdrop is a shared world composition. The old opening renderer and artwork wrappers are removed.
+   The glide now lands on the playable Harbor platform without the black fade. The dockworker
+   uses the shared character kit through the shift, commute and home phases.
+
 1. **Seamless world, steps 1–9** (order and detail in
    [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) §7): lab pilot of zones and seams with one
    renderer over several zones; barriers; residency and reload by zone; harbor replan (a design
@@ -55,11 +49,16 @@ different thing.)
    (three kept possible); the seamless ride from the raised Harbor station to underground
    Downtown, with P7–P9 authored on top. Step 9 completes milestone 3.
 2. **Parallel track: Act I sets** (below).
+   The precinct's role as a required Act I step or optional place remains undecided.
 3. Later seamless steps: the P14 siding (step 10), then the other stations (step 11).
 4. Keep gathering feedback on editor authoring comfort and communication clarity. Preserve the
    current scene-centred editor and ongoing rendering/layer work.
 5. Prototype remote-presence requirements only when needed for M7 through M9. Settle body
    location, transfer versus copy and Kessel's fate before M7.
+
+Implemented locally: unjoined scenes unload after leaving and restore saved state on return.
+The `?play=harborShift` entry and Harbor start editor fixture now use the connected harbor zones.
+The former one-room prototype source and registrations are removed. The connected harbor is the sole shift implementation.
 
 Tommi reviews frames and scenes to give feedback; that is how review checkpoints are met. The
 Harbor Shift pacing review is done this way during the harbor replan, not as a separate player
@@ -84,22 +83,24 @@ Wiring and hacking puzzles are not built yet; M4–M6 gameplay waits until the p
 - **Milestone 1: design pass complete.** [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md)
   holds the prologue matrix, the teaching spine and the revised Act I route (2026-10-22).
   It is a design deliverable, not evidence of player comprehension or implemented progression.
-- **Milestone 2: prototype implemented locally.** Launch `?play=harborShift`; see
+- **Milestone 2: shift implemented in the connected harbor.** Launch `?play=harborShift`; see
   [preview and validation notes](./README.md#harbor-shift-prototype-milestone-2). Boss, coworker,
   deliveries, trolley/clamp, checkout and completion are present with isolated saves. Brief
   centre-to-HUD goal text and contextual pings are in; the persistent task card was removed after
-  feedback. Its scenes move into the replanned harbor zones in seamless step 4.
-- **Milestone 3: in progress (about 40%).** Seamless steps 1–3 are built, step 4 (the harbor as five joined zones
-  with the shift on shared `shift.*`) is playable at `?play=harbor-station` with play-test fixes open, steps 5–8
-  have pure models and art, step 9 is not started. The new title glide (P0) runs east at sunset from the
-  west beach to the Harbor Station and still hands over to today's opening. Status per step:
-  [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) (Status); open work: [SESSION-HANDOVER.md](./docs/design/SESSION-HANDOVER.md).
+  feedback. Its interactions and saved state now live in the replanned harbor zones; the one-room source is removed.
+- **Milestone 3: implemented locally; experiential review pending.** The title lands at Harbor;
+  the shift runs in joined zones; the two-car service carries the player and live passengers through
+  four tunnel zones to underground Metro; stairs continue to Downtown and the existing home/rest
+  beats. New-service presets, curved/drop demo, typed vehicle/passenger tools, shared-state Play
+  fixtures and current vehicle reload checkpoints are implemented. This is the Harbor–Downtown
+  vertical slice. City routines, general pedestrian routes through stairs and remaining stations
+  are later work. Current status: [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md).
 - **Recent kit work:** rooms open on arrival; remembered rooms are shown darkened without their
   people; street doors have inside faces; Act I place style frames are in their second round;
   the storyboard is in the editor's Library.
-- The running game still uses the previous train-first opening and multi-district Act I.
-  Existing saves may be reset when the prologue replaces it. Staged augmentation and body
-  transitions are not implemented.
+- A fresh campaign now starts with the Harbor prologue. The existing multi-district Act I, staged
+  augmentation and later body transitions have not been redesigned by this implementation pass.
+  P14 and the other stations retain their existing line until seamless steps 10–11 replace them.
 - No test session, regression-suite expansion, CI work or publication is implied by this roadmap.
 
 ## Build sequence

@@ -10,6 +10,8 @@ import { playProfile, saveKey } from './play-profile';
 // ---------- save state ----------
 
 export interface Save {
+  /** Current place aboard a physical service; restored after its scene model. */
+  vehicle?:import('../engine/level-vehicles').VehicleSave;
   /** Common scalar owner blocks shared by gameplay commands and scene models. */
   gameplay?:import('../engine/gameplay/types').StateValues;
   /** Last scene for Continue; absent in older v3 saves. Validated against SCENES on resume. */

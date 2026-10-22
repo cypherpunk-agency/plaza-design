@@ -1,5 +1,6 @@
 import {validateTimeline,type TimelineContext} from '../art/core/timeline';
-import {openingRegistry,type OpeningDocuments} from '../art/sequences/opening/sequence';
+import {art} from '../art';
+import type {OpeningDocuments} from './title/documents';
 import {cinematicRegistry,type CinematicDocuments} from '../art/sequences/cinematics';
 import {openingDocuments} from './title/documents';
 import {cinematicDocuments} from './cutscenes/documents';
@@ -9,7 +10,7 @@ export const runtimeSequenceDocuments:RuntimeSequenceDocuments={opening:openingD
 /** Existing native sequence identities select registered controllers, not arbitrary code. */
 export function createRuntimeSequenceDocuments(documents:ReadonlyMap<string,unknown>,context:TimelineContext):RuntimeSequenceDocuments{
  const need=(id:string)=>{if(!documents.has(id))throw new Error('Missing native sequence document: '+id);return documents.get(id);};
- const composition=openingRegistry.validate(need('sequence-opening'));
+ const composition=art.validate(need('sequence-opening'));
  const compositions=Object.fromEntries(['intro','act2','taxi'].map(id=>['sequence-'+id,cinematicRegistry.validate(need('sequence-'+id))]));
  const opening=validateTimeline(need('sequence-opening-timeline'),context),cinematics=validateTimeline(need('sequence-cinematics'),context);
  for(const[id,timeline,compositionId]of [['title',opening,'sequence-opening'],['glide',opening,'sequence-opening'],['intro',cinematics,'sequence-intro'],['act2',cinematics,'sequence-act2'],['taxi',cinematics,'sequence-taxi']]as const){

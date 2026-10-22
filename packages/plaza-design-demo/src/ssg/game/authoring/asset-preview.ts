@@ -35,7 +35,7 @@ const SEQUENCE_TIMES = [0, 1, 2.5, 4, 6, 9, 12, 16, 20, 25, 30, 35, 40, 45, 50, 
 const OPENING_SEQUENCES = ['glide', 'rise', 'title'];
 
 /**
- * Cutscene pieces are drawn by their sequence's own renderer as one picture, so they cannot be painted alone.
+ * Cutscene pieces are drawn by the directed shared world frame as one picture, so they cannot be painted alone.
  * The preview renders the sequence frame and shows the piece's box cut from it, with whatever is behind it.
  */
 function sequenceCutout(canvas: HTMLCanvasElement, render: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult | null, composition: Composition, instance: string, settings: Pick<PreviewRequest, 'reduced' | 'environment'>, showcase = false): AssetPreviewReport | string {

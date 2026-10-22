@@ -39,7 +39,7 @@ export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext)
  let registry:ReturnType<typeof pendingRegistry>={};
  const documents=()=>new Map(context.documents.map(x=>[x.id,api.get(x.id).value]));
  const story=()=>validateOpeningSource(api.get('opening-story').value);
- const vocab=():StoryVocab=>{const s=story();return{scenes:Object.keys(registry),phases:Object.keys(s.PHASES),flags:Object.values(s.OPENING),cards:Object.keys(s.CARDS),milestones:Object.keys(s.WORKFLOWS),registry};};
+ const vocab=():StoryVocab=>{const s=story();return{scenes:Object.keys(registry),phases:Object.keys(s.PHASES),flags:[...s.GAMEPLAY.flags],cards:Object.keys(s.CARDS),milestones:Object.keys(s.WORKFLOWS),registry};};
  /** A handle on one source document: its value, and an edit that validates, records history and re-renders. */
  const handle=(id:string)=>({value:()=>structuredClone(api.get(id).value) as any,edit:(label:string,change:(d:any)=>void)=>{const d=structuredClone(api.get(id).value) as any;change(d);api.edit(id,label,d);render();}});
  const sceneDocId=(s:string)=>deviceSourceIdentity(s).scene;
@@ -48,7 +48,7 @@ export function mountOpeningAuthoring(host:HTMLElement,context:WorkbenchContext)
  const special=(docId:DocId)=>(parent:HTMLElement,_value:any,path:(string|number)[])=>{
   if(docId!=='opening-story')return false;
   if(path[0]==='PHASE_RULES'&&path.length===1){
-   const d=story(),doc:GameplayDefinition={version:1,flags:Object.values(d.OPENING),items:[],events:[],commands:{},reactions:[],conversations:{}},phases=Object.keys(d.PHASES),h=handle('opening-story');
+   const d=story(),doc:GameplayDefinition={version:1,flags:[...d.GAMEPLAY.flags],items:[],events:[],commands:{},reactions:[],conversations:{}},phases=Object.keys(d.PHASES),h=handle('opening-story');
    d.PHASE_RULES.forEach((row,i)=>{
     const fallback=row.when===undefined,box=form.section(parent,'Phase rule '+(i+1)+(fallback?' fallback':''));
     form.select(box,'Phase rule '+(i+1)+' phase',phases,row.phase,v=>h.edit('Edit opening phase rule',x=>{x.PHASE_RULES[i].phase=v;}));

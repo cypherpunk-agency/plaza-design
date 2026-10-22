@@ -1,28 +1,28 @@
 # Seamless world: joined zones, vehicles and moving people
 
-> **Proposal, 2026-10-22. Not implemented.** This is an engine design for discussion with Tommi.
+> **Design and implementation plan, 2026-10-22.** The status table distinguishes current code from planned work.
 > It was revised the same day with his answers, listed under **Decided** below, and again for the
 > names, the principles and the step order. Nothing here changes current code or contracts until it is
 > built. [ROADMAP.md](../../ROADMAP.md) owns priorities, and
 > [ENGINE-HANDBOOK.md](../reference/ENGINE-HANDBOOK.md) describes the engine as it is.
 
-**Status (2026-10-22, end of day; deployed at `fba1cfd`).**
+**Status (2026-10-22, current local work; not published).**
 
 | Step | State |
 | --- | --- |
 | 1 Zones and seams | Built: zone graph, `mergeLevels`, `renderWorldFrame` (one renderer), `crossInto`, camera over the union; editor World › Zones (seam list, card, diagram), joined scenes in the composer (Show/Fit joined). Not yet: drag-to-place world canvas, compass dial, city-wide weather |
 | 2 Barriers | Built: `level.barrier` (turnstile, gate, door; `closes`), access rules incl. shared state, editor Access tab with Test the rule, story-phase barrier rules |
-| 3 Residency | Built: zones load by camera (`residency`), far joined zones unload (`SceneHost.dispose`). Unjoined scenes still stay hosted (Tommi to decide) |
-| 4 Harbor | Built as five playable zones (`?play=harbor-station`, shift on shared `shift.*`). **Open (Tommi's play-test):** walk animation, stair link vs drawing, station redesign (walk east first), turnstile front/back, clock jump at the supervisor, sign overlaps — content agent in progress. **Seam engine issues found:** a different backdrop per zone, pieces cut at a seam, neighbours not ticking live — causes found, not fixed (see [SESSION-HANDOVER.md](./SESSION-HANDOVER.md)) |
-| 5 Vehicles | Pure model + walkable 2-car train kit and vehicle source; first use in the title glide's traffic |
-| 6 People flows | Pure model; first use in the title glide (escalator riders, Harbor Station boarding) |
-| 7 Downtown + Metro | Style frames only (underground station, stairs seam) |
-| 8 Walkable train | Kit and vehicle definition; not running |
-| 9 Seamless ride | Not started |
+| 3 Residency | Built: camera-driven joined-zone residency; unjoined scenes dispose on departure and restore saved state on return. Visible neighbours tick live; active controls remain with the player's zone. |
+| 4 Harbor | Five playable connected zones; `?play=harborShift` starts at the raised station. East-first layout, stair/lift geometry, turnstile near cabinet, running shift clock and shed signs fixed. One independent coast backdrop spans the joins; set pieces can overhang. Focused checks cover traversal, shift commands, clock, lifecycle, drawing endpoints and seam continuity. |
+| 5 Vehicles | Built locally: working-shuttle and curved/drop-cart creation presets; boarding, seats, gangways, shared lift attachment; typed consist/route/berth controls; pending Play, history, bundle and Save. Cross-zone services retain their Circuit owner and geometry through floating-origin changes. |
+| 6 People flows | Live interval passenger flows in the shuttle pilot and real Harbor service: approach, queue, actual-door boarding, seats, ride, alight and leave with stable identities. SceneModel owns bounded, 60-second reload memory. Typed Passenger inspector. General city routines and routes through stairs are still future work; the older Galleria/HarborStation/train crowd controllers remain with those not-yet-replaced routes. |
+| 7 Downtown + Metro | Underground Metro replaces the raised Downtown platform. West stair joins the real Downtown street; the opening verification is a level barrier. Both are editable together. |
+| 8 Walkable train | The real Harbor–Downtown service uses the same two-car source, doors, gangways, seats and live passengers as the pilot. Vehicle checkpoints retain the source path step and player attachment during a reload. |
+| 9 Seamless ride | Authored Harbor → four tunnel zones → underground Metro → Downtown stairs. The title hands the actual Harbor platform into the prologue without its old black fade. Checkout enables the commute; existing Downtown/home/rest/deletion beats follow. Mechanical checks pass; framing, timing and atmosphere remain user review. |
 
-The title glide (P0) runs east at sunset to the Harbor Station; it still draws through its own path
-(`renderOpeningSequence`) and hands over to today's opening. Proposed later step: fly the glide over real
-zones with `renderWorldFrame` once Downtown is a zone.
+The title glide (P0) now draws ordinary world zones through `renderWorldFrame`, ending on the
+real Harbor Station artwork. Its old frame path and train-home fade are removed. The closing
+shot blends into playable framing, then starts the shift on that same platform.
 
 Tommi's direction, 2026-10-22:
 
@@ -282,7 +282,7 @@ open.** Nothing else keeps it loaded: running timers, mover trips, trace and wat
   nearest zones first. Active and visible zones are never unloaded. Measure retained heap with the existing
   recorder over repeated walks, and tune the number from that.
 - **Zones with no seams** follow the same rule, as the one-zone case. Today every visited host is kept and
-  ticks forever; under this proposal they unload after you leave.
+  ticks forever; **decided by Tommi, 2026-10-22:** they unload after you leave and restore saved state on return.
 
 ### Unloaded zones are reloaded (decided)
 

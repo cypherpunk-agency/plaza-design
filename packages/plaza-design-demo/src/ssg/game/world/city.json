@@ -182,7 +182,6 @@
       "entrance": "harbor",
       "scenes": [
         "harbor",
-        "harborShift",
         "stacks"
       ]
     },
@@ -225,7 +224,11 @@
       "district": null,
       "entrance": "train",
       "scenes": [
-        "train"
+        "train",
+        "line-harbor-1",
+        "line-harbor-2",
+        "line-harbor-3",
+        "line-harbor-4"
       ]
     },
     {
@@ -246,6 +249,29 @@
         "tower",
         "tower-annex",
         "tower-deck"
+      ]
+    },
+    {
+      "id": "glide-coast",
+      "name": "COAST GLIDE",
+      "district": null,
+      "entrance": "glide-beach",
+      "scenes": [
+        "glide-beach",
+        "glide-downtown-west",
+        "glide-downtown",
+        "glide-galleria",
+        "glide-spire-bay"
+      ]
+    },
+    {
+      "id": "vehicle-lab",
+      "name": "VEHICLE LAB",
+      "district": null,
+      "entrance": "vehicle-lab",
+      "scenes": [
+        "vehicle-lab",
+        "vehicle-routes"
       ]
     }
   ],

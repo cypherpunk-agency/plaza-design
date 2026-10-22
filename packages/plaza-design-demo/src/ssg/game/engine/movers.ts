@@ -24,6 +24,7 @@
  */
 
 import type { Coord, MoverCue, MoverData, MoverEase, MoverFrom, MoverLeg, MoverRun, MoverStep, Num, NounData } from '../data/types';
+import type {MoverSave} from '../data/types';
 
 /** What the movers need from the scene: its clock, its numbers, its places and its conditions. */
 export interface MoverHost {
@@ -194,6 +195,8 @@ export class Movers {
   anyMoving() { for (const m of this.movers.values()) if (m.leg) return true; return false; }
 
   moving(key: string) { return !!this.movers.get(key)?.leg; }
+  /** Physical travel, excluding a path's stationary dwell or wait. */
+  travelling(key:string){const m=this.movers.get(key);return !!m?.leg&&this.host.now()<m.tMove&&(m.from.x!==m.to.x||m.from.h!==m.to.h);}
   at(key: string) { return this.movers.get(key)?.at; }
   /** The stop it is heading for (its own stop when it is still). */
   target(key: string) { const m = this.movers.get(key); return m ? this.heading(m) : undefined; }
@@ -255,12 +258,12 @@ export class Movers {
 
   private norm(m: Mover, p: Pt): Pt { return m.ring > 0 ? { x: wrap(p.x, m.ring), h: p.h } : p; }
 
-  private begin(m: Mover, step: MoverLeg, t: number, ahead = 0) {
+  private begin(m: Mover, step: MoverLeg, t: number, ahead = 0,drive = true) {
     const from = this.norm(m, m.to), p = this.plan(m, step, from), t0 = t - p.ahead - ahead;
     Object.assign(m, { from, to: p.to, t0, tMove: t0 + p.ms, tEnd: t0 + Math.max(p.ms, p.wait), leg: { to: p.name, load: step.load, event: step.event, cue: step.cue, ease: step.ease ?? m.data.ease } });
     if (p.name !== undefined) m.lastTo = p.name;
     if (p.moves) m.halt = undefined;
-    if (step.drives) this.drive(m, step.drives);
+    if (drive&&step.drives) this.drive(m, step.drives);
   }
 
   /** A leg sends another mover of the device along one of its paths. */
@@ -452,22 +455,40 @@ export class Movers {
    * For the save: where each mover is. A plain trip on its way is saved with where it was going; a
    * path under way is settled where it set off (the scene's checkpoint does the same for its state).
    */
-  snapshot(): Record<string, { at: string; to?: string; pos?: number }> {
-    const out: Record<string, { at: string; to?: string; pos?: number }> = {};
-    for (const m of this.movers.values()) out[m.key] = m.leg && m.plain ? { at: m.at, to: this.heading(m), pos: Math.round((this.position(m.key) ?? 0) * 100) / 100 } : { at: m.at };
+  snapshot(keepPaths:ReadonlySet<string>=new Set()): Record<string, MoverSave> {
+    const out: Record<string, MoverSave> = {};
+    for (const m of this.movers.values()) {
+      out[m.key]=m.leg&&m.plain?{at:m.at,to:this.heading(m),pos:Math.round((this.position(m.key)??0)*100)/100}:{at:m.at};
+      const steps=m.run&&m.data.paths?.[m.run];
+      if(keepPaths.has(m.key)&&m.leg&&!m.plain&&steps&&!steps.some(isChoice)){
+        const step=steps.length-m.queue.length-1;
+        if(step>=0&&!isRun(steps[step])&&!isFrom(steps[step]))out[m.key].path={name:m.run!,step,elapsed:this.host.now()-m.t0,from:{...m.from},...(m.lastTo?{lastTo:m.lastTo}:{})};
+      }
+    }
     return out;
   }
 
   /** Back to a saved point: a mover on its way sets off again from where it was. Returns the state it now holds. */
-  restore(s: Record<string, { at: string; to?: string; pos?: number }> | undefined): MoverWrite[] {
+  restore(s: Record<string, MoverSave> | undefined): MoverWrite[] {
     const t = this.host.now(), out: MoverWrite[] = [];
     for (const [k, v] of Object.entries(s ?? {})) {
       const m = this.movers.get(k);
-      if (!m || !v || !(v.at in m.stops)) continue;
+      if (!m || !v || !Object.prototype.hasOwnProperty.call(m.stops,v.at)) continue;
       const p = m.stops[v.at];
       Object.assign(m, { at: v.at, from: p, to: p, t0: t, tMove: t, tEnd: t, leg: null, queue: [], after: undefined, halt: undefined, tripT0: t, tripT1: t });
-      if (v.to && v.to in m.stops) {
-        if (typeof v.pos === 'number') { const here = { ...p, [(m.data.axis ?? 'x') === 'h' ? 'h' : 'x']: v.pos }; Object.assign(m, { from: here, to: here }); }
+      const path=v.path,steps=path&&typeof path.name==='string'&&m.data.paths&&Object.prototype.hasOwnProperty.call(m.data.paths,path.name)?m.data.paths[path.name]:undefined,finite=(n:unknown)=>typeof n==='number'&&Number.isFinite(n)&&Math.abs(n)<=1e9;
+      if(path&&steps&&!steps.some(isChoice)&&Number.isInteger(path.step)&&path.step>=0&&path.step<steps.length&&finite(path.elapsed)&&path.elapsed>=0&&path.from&&finite(path.from.x)&&finite(path.from.h)&&(!path.lastTo||Object.prototype.hasOwnProperty.call(m.stops,path.lastTo))){
+        const step=steps[path.step];
+        if(!isRun(step)&&!isFrom(step)&&!isChoice(step)){
+          const plan=this.plan(m,step,path.from);
+          if(path.elapsed<=Math.max(plan.ms,plan.wait)){
+            Object.assign(m,{from:{...path.from},to:{...path.from},run:path.name,queue:steps.slice(path.step+1),plain:false,lastTo:path.lastTo,tripT0:t-path.elapsed});
+            this.begin(m,step,t-path.elapsed+plan.ahead,0,false);m.tripT1=m.tEnd;
+          }
+        }
+      }
+      if (!m.leg&&v.to && v.to in m.stops) {
+        if (finite(v.pos)) { const here = { ...p, [(m.data.axis ?? 'x') === 'h' ? 'h' : 'x']: v.pos! }; Object.assign(m, { from: here, to: here }); }
         this.go(k, v.to);
       }
       if (!m.leg) this.startAuto(m);

@@ -196,7 +196,7 @@ export class SceneHost {
     this.model = new SceneModel({
       say: (l, from,receipt) => this.say(l, from,receipt),
       feedbackScope:def.id,
-      cue: store?.cue ? (cue) => { if (this.active) store.cue!(cue); } : undefined,
+      cue: store?.cue ? (cue) => { if (this.visible) store.cue!(cue); } : undefined,
       open: (panel, arg) => this.panels.open(panel, arg),
       changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
       kick: (dev) => { if (this.schem.viewing === dev) this.schem.close(); },
@@ -213,6 +213,7 @@ export class SceneHost {
       program: store?.program,
       controlled: store?.controlled,
     }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.(),def.gameplay);
+    this.model.peopleSources=def.peopleFlows??[];this.model.peopleLevel=def.level;
     const shared=store?.gameplay?.(this.model);if(shared){attachNativeGameplay(this.model,shared);this.gameplay=shared;}
     if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id),...(store?.presentation?{presentation:operation=>store.presentation!(operation)}:{})});
     const known = new Set<string>();
@@ -362,7 +363,7 @@ export class SceneHost {
     this.schem.note(l); this.vision.note(l);
     if(l[1]&&(l[2]==='err'||l[2]==='ok'))this.store?.feedbackCue?.(receipt);
     if (from && l[1]) {
-      if(this.active&&this.locate(from)){this.fx.caption(from,l[1],l[2],this.locate);this.onReact(from,l[1],l[2]);}
+      if(this.visible&&this.locate(from)){this.fx.caption(from,l[1],l[2],this.locate);this.onReact(from,l[1],l[2]);}
       // A remote result or an absent anchor cannot own a world caption. The sourced
       // history write above suppresses terminal forwarding; offer its one visible result here.
       else if(l[2]!=='dim')this.store?.notice?.(l[1],l[2]==='err'?'error':l[2]==='ok'?'success':'info',receipt);
@@ -391,7 +392,7 @@ export class SceneHost {
 
   /** A ping where something of this scene is (a device, one of its targets, or what `where` knows); an edge arrow when it is off the view. */
   clearPing(from: string) { this.fx.clearPing(from); }
-  ping(from: string, kind: PingKind = 'look') { if (this.active) this.fx.ping(from, kind, this.locate); }
+  ping(from: string, kind: PingKind = 'look') { if (this.visible) this.fx.ping(from, kind, this.locate); }
 
   /**
    * Where a speaker is on screen now: a device (its spot), one of the scene's own targets
@@ -516,6 +517,7 @@ export class SceneHost {
   closeAll() { this.popup.close(); this.fx.clear(true); this.panels.close(); this.schem.close(); this.vision.close(); }
   /** This scene is the one on screen: its clock runs and its captions show. */
   private active = false;
+  private visible = false;
   private paused = false;
   /** The game's pause state; scene time and delayed actions share it. */
   setPaused(on: boolean) { this.paused = on; this.model.setPaused(on); }
@@ -530,7 +532,7 @@ export class SceneHost {
     if (this.paused || this.disposed) return;
     const perf=perfBegin('host.tick',this.id);try{
     this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
-    if (this.model.tick(ms, this.active)) { this.schem.meters(); this.vision.meters(); }
+    if (this.model.tick(ms, this.visible)) { this.schem.meters(); this.vision.meters(); }
     this.panels.step(ms);
     // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
     const h = this.heat(), now = this.model.now();
@@ -541,7 +543,7 @@ export class SceneHost {
    * The scene is on screen (or not). Its HACK and BOARD buttons show only here, and only when it
    * has devices: in a scene with nothing to hack they stay away (and H and B do nothing).
    */
-  show(on: boolean) { if(!on)this.cancelAcknowledgment('scene-hidden');this.active = on; this.btns.hidden = !on || !this.hackable; }
+  show(on: boolean, visible = on) { if(!on)this.cancelAcknowledgment('scene-hidden');this.active = on; this.visible = visible; this.btns.hidden = !on || !this.hackable; }
   /** The scene has devices, and hacking is yours: hack vision and the board mean something here. */
   get hackable() { return this.model.devices.size > 0 && !this.hackLock(); }
 

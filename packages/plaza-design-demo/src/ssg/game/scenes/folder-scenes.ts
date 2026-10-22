@@ -23,10 +23,6 @@ import mallComposition from './mall/composition.json';
 import mallScene from './mall/scene.json';
 import mallGameplay from './mall/gameplay.json';
 import mallDevices from './mall/devices.json';
-import harborShiftComposition from './harbor-shift/composition.json';
-import harborShiftScene from './harbor-shift/scene.json';
-import harborShiftGameplay from './harbor-shift/gameplay.json';
-import harborShiftDevices from './harbor-shift/devices.json';
 import marketComposition from './market/composition.json';
 import marketScene from './market/scene.json';
 import marketGameplay from './market/gameplay.json';
@@ -91,7 +87,6 @@ export const FOLDER_SOURCES={
  shop:{composition:shopComposition,scene:shopScene,gameplay:shopGameplay,devices:shopDevices},
  library:{composition:libraryComposition,scene:libraryScene,gameplay:libraryGameplay,devices:libraryDevices},
  mall:{composition:mallComposition,scene:mallScene,gameplay:mallGameplay,devices:mallDevices},
- harborShift:{composition:harborShiftComposition,scene:harborShiftScene,gameplay:harborShiftGameplay,devices:harborShiftDevices},
  market:{composition:marketComposition,scene:marketScene,gameplay:marketGameplay,devices:marketDevices},
  laundromat:{composition:laundromatComposition,scene:laundromatScene,gameplay:laundromatGameplay,devices:laundromatDevices},
  stacks:{composition:stacksComposition,scene:stacksScene,gameplay:stacksGameplay,devices:stacksDevices},
@@ -107,6 +102,6 @@ export const FOLDER_SOURCES={
  train:{composition:trainComposition,scene:trainScene,gameplay:trainGameplay,devices:trainDevices},
 } satisfies Record<string,FolderSceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
-export const FOLDER_DIRS:Readonly<Record<string,string>>={harborShift:'harbor-shift'};
+export const FOLDER_DIRS:Readonly<Record<string,string>>={};
 /** The same sources by any scene id (undefined for scenes that still have code). */
 export const FOLDER_BY_ID:Readonly<Record<string,FolderSceneSource>>=FOLDER_SOURCES;

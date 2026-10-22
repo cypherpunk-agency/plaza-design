@@ -4,8 +4,7 @@
  * from the raised platform down the stair (or the lift) to the quay, east through the checkout's turnstile (a level
  * barrier over the shared `shift.*` state: in at dusk, refused mid-shift, open once the tag is returned, shut again
  * behind the player), into the yard and the shed and up to its staff room; the night shift runs across three zones'
- * gameplay on one Save.gameplay.shift block (deliver in the yard, read in the shed and at the checkout); the M2
- * prototype `harborShift` keeps its own flags.
+ * gameplay on one Save.gameplay.shift block (deliver in the yard, read in the shed and at the checkout); the old prototype is no longer registered.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -29,7 +28,7 @@ const pieces = Object.fromEntries(Object.keys(S).filter(k => S[k].level).map(k =
 assert.deepEqual(worldProblems(graph, zones, pieces), [], 'worldProblems is clean');
 assert.deepEqual(ZONES.map(z => S[z].width), [1440, 1600, 640, 1280, 1280], 'zone widths from HARBOR-ZONES.md');
 const fromQuay = placeFrom(graph, 'harbor-quay', 4);
-assert.deepEqual(ZONES.map(z => [fromQuay.get(z)!.dx, fromQuay.get(z)!.dh]), [[0, 160], [0, 0], [1600, 0], [2240, 0], [3520, 0]], 'offsets: the station 160 over the quay, then walk seams east');
+assert.deepEqual(ZONES.map(z => [fromQuay.get(z)!.dx, fromQuay.get(z)!.dh]), [[-900, 160], [0, 0], [1600, 0], [2240, 0], [3520, 0]], 'offsets: the station 160 over the quay, then walk seams east');
 const city = JSON.parse(fs.readFileSync('src/ssg/game/world/city.json', 'utf8'));
 validateCitySource(city);
 assert.deepEqual(city.PLACES.find((p: {id: string}) => p.id === 'harbor-works').scenes, ZONES, 'one harbor place holds the five zones');
@@ -46,7 +45,7 @@ let active = 'harbor-station';
 const build = (zone: string): LevelSource => mergeLevels([...placeFrom(graph, zone)].map(([z, at]) => ({zone: z, source: S[z].level!, dx: at.dx, dh: at.dh, width: S[z].width})));
 const p: LevelPlayer = {x: S[active].spawn, y: 0, vy: 0, face: 1, onGround: true, moving: false};
 let L: Level = {source: build(active), state: levelArrive(build(active), p, 0)};
-const follow = () => { const z = levelZone(L); if (z && z !== active) { const at = placeFrom(graph, active).get(z)!; p.x -= at.dx; p.y -= at.dh; active = z; const source = build(z); L = levelRejoin({source, state: L.state}, source); } };
+const follow = () => { const z = levelZone(L); if (z && z !== active) { const at = placeFrom(graph, active).get(z)!; p.x -= at.dx; p.y -= at.dh; if(L.state.vehicle){L.state.vehicle.x-=at.dx;L.state.vehicle.h-=at.dh;} active = z; const source = build(z); L = levelRejoin({source, state: L.state}, source); } };
 const walk = (dir: number, frames: number) => { for (let i = 0; i < frames; i++) { if (!levelStep(L, p, dir, 1, liftModel)) { const [a, b] = levelBounds(L, S[active].width, p.x); p.x = Math.max(a, Math.min(b, p.x + dir * 1.3)); } follow(); } };
 const ride = () => { for (let i = 0; i < 600 && L.state.ride; i++) { levelStep(L, p, 0, 1, liftModel); follow(); } };
 const ask = (id: string) => levelPass(L, id, b => barrierAccess(b, save.flags, save.keyring, port.read()));
@@ -55,19 +54,19 @@ assert.equal(levelFloor(L).id, 'harbor-station/floor-platform', 'arrival on the 
 const lift = L.source.lifts.find(l => l.id === 'harbor-station/via-lift')!;
 assert.deepEqual(lift.stops.map(s => [s.floor, s.h]), [['harbor-quay/floor-quay', -160], ['harbor-station/floor-platform', 0]], 'the lift stops at the quay below too');
 // the lift down and back up
-p.x = 410; assert.ok(levelHints(L, p, liftModel).some(h => h.id === 'lift:harbor-station/via-lift'), 'the lift is offered on the platform');
+p.x = 1150; assert.ok(levelHints(L, p, liftModel).some(h => h.id === 'lift:harbor-station/via-lift'), 'the lift is offered on the platform');
 const LIFT = 'lift:harbor-station/via-lift';
-assert.ok(levelInteract(L, LIFT, p, liftModel) && L.state.ride?.kind === 'lift', 'step in');
-(L.state.ride as {pick: number}).pick = 0; levelInteract(L, LIFT, p, liftModel); levelStep(L, p, 0, 1, liftModel); follow();
+assert.ok(levelInteract(L, LIFT, p, liftModel) && !!L.state.vehicle?.panel, 'step in');
+L.state.vehicle!.panel!.pick = 0; levelInteract(L, LIFT, p, liftModel); levelStep(L, p, 0, 1, liftModel); follow();
 assert.equal(active, 'harbor-quay', 'the car reaches the quay: the player is in the quay zone');
 levelInteract(L, LIFT, p, liftModel); assert.equal(L.state.ride, null, 'stepped out on the quay'); assert.equal(levelFloor(L).id, 'harbor-quay/floor-quay');
-assert.ok(levelInteract(L, LIFT, p, liftModel) && L.state.ride, 'in again');
-(L.state.ride as {pick: number}).pick = 1; levelInteract(L, LIFT, p, liftModel); levelStep(L, p, 0, 1, liftModel); follow();
+assert.ok(levelInteract(L, LIFT, p, liftModel) && L.state.vehicle?.panel, 'in again');
+L.state.vehicle!.panel!.pick = 1; levelInteract(L, LIFT, p, liftModel); levelStep(L, p, 0, 1, liftModel); follow();
 assert.equal(active, 'harbor-station', 'and back up to the platform'); levelInteract(L, LIFT, p, liftModel); assert.equal(L.state.ride, null, 'stepped out');
 // the stair: west to its head, down onto the quay
-walk(-1, 400); p.x = 150; assert.ok(levelDown(L, p), 'the stair head is on the platform');
+walk(1, 50); p.x = 1210; assert.ok(levelDown(L, p), 'the stair head is on the platform');
 for (let i = 0; i < 600 && L.state.ride; i++) { levelStep(L, p, 1, 1, liftModel); follow(); }
-assert.equal(active, 'harbor-quay', 'down the stair: on the quay'); assert.equal(levelFloor(L).id, 'harbor-quay/floor-quay'); assert.ok(Math.abs(p.y) < 0.5 && Math.abs(p.x - 350) < 2, 'at the stair foot (quay x 350): ' + p.x);
+assert.equal(active, 'harbor-quay', 'down the stair: on the quay'); assert.equal(levelFloor(L).id, 'harbor-quay/floor-quay'); assert.ok(Math.abs(p.y) < 0.5 && Math.abs(p.x - 510) < 2, 'at the stair foot (quay x 510): ' + p.x);
 // east along the quay into the checkout: the turnstile lets staff in at dusk (no tag yet) and shuts behind them
 walk(1, 1300); assert.equal(active, 'harbor-checkout', 'over the walk seam into the checkout');
 walk(1, 400); assert.ok(p.x < 302 && p.x > 280, 'the turnstile stops the player: ' + p.x);
@@ -94,9 +93,9 @@ assert.equal(available('harbor-yard', 'mara', yard), true, 'the yard reads the a
 ok(shed, 'shift.collect'); assert.equal(S['harbor-yard'].dockworkerCarry!(save.flags, save.gameplay), 'parcel', 'carrying the parcel into the yard');
 ok(yard, 'shift.deliver'); assert.equal(save.gameplay!.shift.parcelDelivered, true, 'delivered in the yard (its reaction records it)');
 assert.equal(available('harbor-shed', 'rack', shed), true, 'the shed sees the delivery'); assert.equal(shed.state().values!.shift.parcelDelivered, true);
-assert.equal(S['harbor-shed'].storyMinute!(save.flags, shed.state()), 1320, 'the shed\'s clock follows the yard\'s delivery (22:00)');
+assert.equal(S['harbor-shed'].storyMinute!(save.flags, shed.state()), undefined, 'delivery does not jump the clock'); assert.deepEqual(S['harbor-shed'].storyRun!(save.flags, shed.state()), {rate:3,until:370});
 ok(yard, 'shift.collect-case'); assert.equal(S['harbor-shed'].dockworkerCarry!(save.flags, save.gameplay), 'case');
-ok(shed, 'shift.return-case'); assert.equal(S['harbor-checkout'].storyDay!(save.flags, checkout.state()), 2, 'past midnight: day 2, read at the checkout');
+ok(shed, 'shift.return-case'); assert.equal(S['harbor-checkout'].storyDay!(save.flags, checkout.state()), undefined, 'the running city clock owns midnight');
 assert.equal(available('harbor-checkout', 'checkout', checkout), false, 'no checkout before the last job');
 ok(shed, 'shift.assign-trolley', 'conversation'); ok(yard, 'shift.inspect'); ok(yard, 'shift.release'); ok(yard, 'shift.park');
 assert.equal(available('harbor-checkout', 'checkout', checkout), true, 'the checkout reads the trolley the yard parked');
@@ -123,9 +122,9 @@ for (const s of [shed, yard, checkout]) s.dispose();
   assert.deepEqual(ask('barrier:harbor-checkout/turnstile'), {ok: true}, 'and opens for the checked-out worker'); walk(-1, 600); assert.equal(active, 'harbor-quay', 'out onto the public quay');
 }
 
-// 4 · the M2 prototype is untouched: its own scene, its flags, its profile
-const m2 = S.harborShift; assert.ok(m2, '?play=harborShift scene'); assert.equal(m2.gameplay!.sharedState, undefined); assert.ok(m2.gameplay!.flags.includes('shift:assigned'));
+// 4 · the profile launches the connected harbor; no duplicate prototype scene survives.
+assert.equal(S.harborShift, undefined, 'the replaced scene is absent');
 const profiles = JSON.parse(fs.readFileSync('src/ssg/game/runtime/play-profiles.json', 'utf8')).profiles as {id: string; start: {scene?: string}}[];
-assert.equal(profiles.find(p => p.id === 'harborShift')!.start.scene, 'harborShift'); assert.equal(profiles.find(p => p.id === 'harborZones')!.start.scene, 'harbor-station');
-console.log('Harbor zones PASS: five zones validate and join (worldProblems clean); one merged level walks platform → lift/stair → quay → checkout turnstile (in at dusk, shut behind, refused mid-shift, open at dawn) → yard → shed staff room; the shift runs on one shared shift.* block across shed, yard and checkout; harborShift keeps its own flags.');
+assert.equal(profiles.find(p => p.id === 'harborShift')!.start.scene, 'harbor-station'); assert.equal(profiles.find(p => p.id === 'harborZones')!.start.scene, 'harbor-station');
+console.log('Harbor zones PASS: five zones validate and join (worldProblems clean); one merged level walks platform → lift/stair → quay → checkout turnstile (in at dusk, shut behind, refused mid-shift, open at dawn) → yard → shed staff room; the shift runs on one shared shift.* block across shed, yard and checkout; harborShift launches the connected harbor.');
 process.exit(0);

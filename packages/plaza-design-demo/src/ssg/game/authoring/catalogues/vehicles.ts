@@ -28,8 +28,8 @@ export const VEHICLE_FAMILIES:readonly VehicleFamily[]=[
  row('harbor.ferry','Night ferry 7','Water / embedded','art/assemblies/harbor-pier.ts','drawFerry',[],650,(-400-325)/.45,'Native route and reflections; no passenger/cargo variants.'),
  row('harbor.forklift','Harbor forklift assembly','Ground / embedded','art/assemblies/harbor-pier.ts','forkliftBody + forkliftRoof',[],350,0,'Ordered body/roof artwork receives an explicit frozen pose; native shuttle controller is not advanced.'),
  row('harbor.chassis','Customs container chassis','Ground / embedded','art/assemblies/harbor-pier.ts','archChassis',[],350,0,'Fixed inspection chassis; no independent driving state.'),
- row('opening.ship','Opening feeder ship','Water / embedded','art/sequences/opening/coast.ts','openingFrame coast.ship-*',[],1000,1780,'Exact ordered ship children, including container stacks.'),
- row('opening.boats','Distant bay boats','Water / embedded','art/sequences/opening/glide.ts','openingFrame boats',[],1000,0,'Seven fixed mast/stack silhouettes; native visibility exclusions preserved.'),
+ row('opening.ship','Container ship at berth','Water / embedded','art/harbor/shift-kit.ts','shift.ship',[],1000,1780,'Shared harbor ship primitive, including deck cargo.'),
+ row('opening.boats','Distant bay boats','Water / embedded','art/environment/coast.ts','coast.boats',[],1000,0,'Shared coast-kit boat silhouettes.'),
  row('canal.boat','Canal boat and occupant','Water / embedded','art/architecture/cutaway.ts','drawCanalGlimpse',['passengers'],900,0,'Full boat/occupant/lantern shown in deliberately cropped vault/water context. Occupant is an explicit prepared pose.')
 ];
 export const VEHICLE_OPERATIONS=['select','play','pause','step-forward','step-back','seek','loop','reduced-motion','zoom','pan','reset-camera'] as const;

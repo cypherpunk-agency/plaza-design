@@ -9,7 +9,7 @@ import {evaluateValue,type ValueEnv} from '../scene-values';
  * the scene declares and the declaration says where it comes from.
  */
 function sceneValues(ctx:BindingContext):Record<string,Value>{
- const values=ctx.source.stage?.values??{},env:ValueEnv={...ctx,presentation:ctx.source.presentation,flags:ctx.view.flags},out:Record<string,Value>={};
+ const values=ctx.source.stage?.values??{},env:ValueEnv={...ctx,presentation:ctx.source.presentation,flags:ctx.view.flags,values:ctx.view.values},out:Record<string,Value>={};
  for(const name of ctx.wanted??Object.keys(values)){
   if(!Object.prototype.hasOwnProperty.call(values,name))continue;
   const v=evaluateValue(values[name],env);if(v!==undefined)out[name]=v;

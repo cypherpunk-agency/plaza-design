@@ -1037,7 +1037,7 @@ Decided (save details):
   adapter), `composition.ts`/`composition.json`, and `index.ts` (canonical scene factory).
   Pixel's simulation is `game/runtime/companion.ts`. `START_SCENE` in `world/city.ts` remains
   the older-save fallback; the current new-run controller uses `story/title/` and `story/opening.ts`.
-  The separate `scenes/harbor-shift/` prototype is not yet the campaign opening.
+  The connected `harbor-*` zones in `scenes/authored.json` implement the shift; the retired one-room prototype is removed. The full campaign entry has not yet switched.
 - `game/scenes/yard/`: `effects.ts` (`YARD_RULES`), `camera.ts`, presentation/controller state,
   composition source/adapters and the scene factory. Its crane presentation prepares once per
   logical native frame before pure drawing; isolated previews capture/restore decorative history.

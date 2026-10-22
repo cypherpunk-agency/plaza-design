@@ -36,8 +36,7 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
   `world/zone-graph.json`; see the handbook's "zones and seams" recipe.
 - `?play=harbor-station` opens the harbor as joined zones (docs/design/HARBOR-ZONES.md "Build"): off the raised
   platform by stair or lift, east along the quay, through the checkout turnstile into the yard and Shed 3, and the
-  night shift on shared `shift.*` state. It has the harbor-shift controls and its own save; `?play=harborShift` is the
-  M2 prototype, unchanged.
+  night shift on shared `shift.*` state. `?play=harborShift` opens this connected harbor with its own isolated save.
 - The regular homepage also accepts the Konami code to enter the game.
 
 Arrow keys walk, E interacts, H opens hack vision, B the board, Enter the terminal, TAB/M the
@@ -48,7 +47,7 @@ appear beside ◀ ▶ when ↑/↓ does something (tap to step on or pick a lift
 ## Harbor shift prototype (milestone 2)
 
 Open `http://127.0.0.1:4174/?play=harborShift` after the homepage build and local server above.
-This is a separate playable work bay, not the campaign opening. Walk with arrows/A/D, interact
+This opens the five connected harbor zones at Harbor Station, before the shift. It is not yet the campaign opening. Walk with arrows/A/D, interact
 with E, and use E/Enter to advance dialogue. Item handovers use the existing contextual popup.
 
 New tasks briefly show the pink GOAL text near the centre after dialogue closes. After two
@@ -62,17 +61,17 @@ announcement, dialogue/popups hide it, and reduced motion uses a fade instead of
 
 The supervisor assigns a parcel for Mara; return her empty case, report back, release the
 loading trolley's clamp, park it, return the work tag and read the wage statement. The final
-objective reads SHIFT COMPLETE. There is no commute in this slice.
+objective reads SHIFT COMPLETE. The morning service now continues through the tunnel zones to underground Downtown Metro; climb the west stairs to the street and continue home.
 
-The prototype has a separate autosave (`access-denied-harbor-shift-v1`), manual slots and
-resume key. Reload resumes task progress at the work-bay spawn. MENU → NEW GAME resets only
-this prototype's autosave; its manual slots remain. The campaign and sudo saves are unchanged.
+The harbor has a separate autosave (`access-denied-shift-zones-v1`), manual slots and
+resume key. Reload restores shift progress and returns to Harbor Station. MENU → NEW GAME resets only
+this profile's autosave; its manual slots remain. The campaign and sudo saves are unchanged.
 No hacking, map, terminal or jump controls are available in the prototype, including with sudo.
 
-Implemented with `scenes/harbor-shift/` (JSON, with the carried item a scene value), ordinary `SceneUse` interactions and carried items;
-no engine device data or rule contract is added. `SceneUse.available` stages interactions,
-`SceneDef.objective` supplies the goal. Time is pinned to completed story beats, and wages
-are granted once. The player and workers use the existing character kit; distant water,
+Implemented by the `harbor-*` entries in `scenes/authored.json`, ordinary `SceneUse` interactions and carried items.
+`world/state-owners.json` owns the saved `shift.*` block shared by the zones. `SceneUse.available` stages interactions,
+`SceneDef.objective` supplies the goal. Time holds at 19:00 before assignment, then runs at 3× until 06:10; wages
+are granted once. The former one-room prototype source and registrations are removed. The player and workers use the existing character kit; distant water,
 ships, containers and the crane reuse harbor sets.
 
 Validation: both builds and focused task-state checks (including serialised reloads, premature
@@ -82,7 +81,7 @@ separately; a complete player playthrough and comprehension assessment remain pe
 ## Test District
 
 After the homepage build, open `http://127.0.0.1:4174/?demo` using the static server above.
-This separate saved demo world has three plain review areas: Purchases, Conversations, and Devices & wiring.
+This separate saved demo world has four plain review areas: Purchases, Conversations, Devices & wiring, and Vehicles.
 Only the people and objects needed for an example remain. Use **Review shortcuts** to jump directly;
 **Buy at counter**, **Pricing & stock**, both **Talk** buttons, and **Hatch permissions** work in place.
 H opens hacking; L offers timer and switch parts. MENU -> NEW GAME resets only the demo autosave.
@@ -96,6 +95,7 @@ Feedback to focus on:
 - **Guidance/access:** open Guidance example at Purchases. Start the task, try buying before permission, authorize, then buy. Is the refusal useful and the objective change noticeable?
 - **Devices:** jump here, press H, try the sensor and lamp. Is the cause of each change visible?
 - **Wiring & chains:** jump here, press H and L. Try linking the plate through a timer or switch to the hatch/fan. Is connecting and following a chain understandable?
+- **Vehicles:** jump here; E at an open door boards or alights. Walk between cars while aboard; E at a bench sits, E or movement stands. The shuttle waits 12 seconds at each end and takes 9 seconds to travel. Does the ride, door state and boarding distinction read clearly?
 - **Editor:** open Demo world after changing a supported definition. Does previewing and iterating feel straightforward?
 
 Technical checks for pricing arithmetic, atomic failure, source permissions, saved state and campaign isolation
@@ -156,7 +156,7 @@ lock toys and travel/wait transitions); see TIME.md.
 
 The autosave uses `access-denied-save-v3` in localStorage and now remembers its scene for
 Continue. Missing or invalid scene ids use the current opening/Downtown fallback. Resume starts at the scene's spawn, not an exact
-saved player position or train timestamp. Manual slots also retain their scene. Sudo uses
+saved free-walking player position. An occupied physical service retains its source-path checkpoint and vehicle-relative player position. Manual slots also retain their scene. Sudo uses
 separate storage keys. This change does not reset saves or introduce a new save version.
 
 ## Validation scope
@@ -169,7 +169,7 @@ The local [scene and animation composer](./authoring/README.md) starts with
 `pnpm --filter plaza-design-demo compose-scenes` from the repository root. Open
 `http://127.0.0.1:4192`; its separate loopback save service uses port 4193. Stop both with Ctrl+C.
 Its preview and private Play use the actual game renderer and pending validated source. Typed
-controls cover all 20 scenes, existing gameplay/device/controller definitions, world/story settings
+controls cover the registered scenes, existing gameplay/device/controller definitions, world/story settings
 and ordinary scene creation. History, bundles and protected source Save validate companion documents
 together. The public editor downloads bundles; it cannot write repository files. New art or physical
 algorithms remain registered code. Restart the composer after renderer/schema changes.

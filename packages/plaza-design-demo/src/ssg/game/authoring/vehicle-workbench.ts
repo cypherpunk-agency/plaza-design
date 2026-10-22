@@ -17,7 +17,7 @@ import { BOX40,type Crate } from '../art/props/containers';
 import { createHarborPierArtwork,type ArtworkInputs } from '../art/assemblies/harbor-pier';
 import { harborLayout } from '../engine/gameplay/binding-providers/harbor';
 import { FOLDER_SOURCES } from '../scenes/folder-scenes';
-import { openingFrame,paintOpeningPieces } from '../art/sequences/opening/glide';
+import {art,drawComposition,type Composition,type Properties} from '../art';
 import { BOATER,drawCanalGlimpse } from '../art/architecture/cutaway';
 import { prepareCharacter } from '../runtime/characters';
 import { prepareTrainFrame } from '../engine/gameplay/binding-providers/train';
@@ -91,7 +91,9 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
   else if(kind==='forklift'){job('forkliftBody',{view,visual:inputs.visual},x=>k.forkliftBody(x,view));job('forkliftRoof',{view,visual:inputs.visual},x=>k.forkliftRoof(x,view));}
   else{view.cam=L.arch.x0-100;view.sx=(x,p=1)=>Math.round(x-view.cam*p);job('archChassis',{view,layout:L.arch},x=>k.archChassis(x,view));}
  }else if(state.id.startsWith('opening.')){
-  job('openingFrame '+kind,{time:t/60,camera:state.camera},x=>{const frame=openingFrame(x,{W:width,H:height,reduced:state.reduced,lighting},t/60,0,{x:state.camera,h:0,actors:{}}),parts=frame.parts.filter(p=>kind==='boats'?p.id==='boats':p.id.startsWith('coast.ship-'));x.save();x.scale(frame.scale,frame.scale);paintOpeningPieces(x,parts,frame.drop);x.restore();});
+  const type=kind==='boats'?'coast.boats':'shift.ship',props:Properties=kind==='boats'?{boats:[{x:100,len:22,mast:0},{x:300,len:12,mast:1},{x:500,len:34,mast:0}],water:60}:{};
+  const doc:Composition={version:1,scene:'vehicle-preview',instances:[{id:'vehicle',type,props,placement:{x:0,h:0},order:0,layer:'set'}]};
+  job(type,{time:t/60,props},x=>drawComposition(x,art,doc,{view,reduced:state.reduced,state:{}},'backdrop'));
  }else{
   const boatPose=state.passengers?prepareCharacter(BOATER,t):nil,o={t,still:state.reduced,boatX:400,boatPose,lighting};job('drawCanalGlimpse',o,x=>drawCanalGlimpse(x,900,o));
  }
@@ -101,7 +103,6 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
 export function paintVehiclePreview(ctx:CanvasRenderingContext2D,p:PreparedVehiclePreview){
  ctx.save();try{
   ctx.clearRect(0,0,p.width,p.height);ctx.fillStyle='#0c0a12';ctx.fillRect(0,0,p.width,p.height);
-  if(p.state.id.startsWith('opening.')){ctx.translate(p.width/2,p.height/2+p.state.panY);ctx.scale(p.state.zoom,p.state.zoom);ctx.translate(-p.width/2,-p.height/2);for(const job of p.jobs)job.paint(ctx);return;}
   const scale=Math.min(p.width/p.family.width,p.family.height!==260?p.height*.65/p.family.height:p.height/260)*p.state.zoom;
   ctx.translate(p.width/2,p.height*.72+p.state.panY);ctx.scale(scale,scale);
   const local=p.state.id.startsWith('ground.')||p.state.id.startsWith('air.')||p.state.id.startsWith('water.')||p.state.id==='train.metro'||p.state.id==='cab.legacy';

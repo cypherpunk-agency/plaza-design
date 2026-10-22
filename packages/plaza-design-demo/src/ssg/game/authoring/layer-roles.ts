@@ -55,7 +55,6 @@ const RULES: [LayerRole, RegExp][] = [
 /** Artwork the keyword rules get wrong (a crane cab is not a vehicle, the people kit is not a robot). */
 const KIND_OF: Record<string, LayerRole> = {
   'character.resident': 'Human', 'sequence.opening.coast-mid.machine-tractor': 'Vehicle', 'harbor.fishStall': 'Furniture',
-  'sequence.opening.coast.lifeguard': 'Building', 'sequence.opening.coast.hub-drone-rack': 'Machine', 'sequence.opening.coast.galleria-taxi-pad': 'Building',
   'moth.resident-panel': 'Machine', 'station.track-base': 'Building', 'beach.tower': 'Building', 'beach.board': 'Prop',
   'warehouse.office': 'Building', 'warehouse.door': 'Building', 'harbor.craneCabBack': 'Machine', 'harbor.craneCabFront': 'Machine',
   'harbor.ferryNotice': 'Sign', 'terminal.trolley-cab': 'Machine', 'terminal.ferry-hatch': 'Building', 'terminal.ferry-kiosk': 'Machine',

@@ -1,37 +1,15 @@
 /**
- * The opening (ROADMAP "The opening: intro and tutorial", step 1): the title screen and the glide.
- *
- * Launching the game shows the beach on the west shore in the late afternoon (Tommi, 2026-10-22: the
- * beach scene, mirrored): the picture fades in and settles (RISE, about 7 s; any key or click skips
- * it), then the main menu pops in over it (menu.ts, `showTitle`). Reduced motion: settled from the
- * start. NEW GAME: the menu fades and the same shot starts moving east (glide.ts), not skippable,
- * about 68 s, while the sun goes down into the sea behind it: the beach and its pier, the canal's
- * inlet, Downtown in the rain, the Galleria, the Spire across the bay, and LINE 0's train overtaking
- * the camera on the viaduct and coming in at the raised Harbor Station at dusk; then the dark.
- * Camera, city clock, train and the district captions are tracks and cards in timeline.json.
- * CONTINUE and LOAD GAME cut straight into the save.
- *
- * The hand-over onto the Harbor Station's platform (P0: the prologue starts with the player stepping
- * off) waits for the harbor zones (docs/design/HARBOR-ZONES.md); until then the glide hands over to
- * the current opening below, unchanged.
- *
- * THE HANDOVER (to the story half of the opening, opening.ts: the train home, Downtown before,
- * the flat, the morning you are deleted). When the glide ends, game.ts `openingDone()`:
- *
- *     save = newSave()        // a fresh save (sudo: unlockAll(newSave())), every scene reset
- *     startOpening()          // game.ts: sets `opening:home` and enters `train` (car 3);
- *                             // entering it in that phase runs the scene's `ride` (scene.json
- *                             // `phases.home.ride`: the car's `home` path): LINE 0 on its run
- *                             // from the harbor's closed stop into Downtown, doors shut
- *
- * Nothing is reset before that: leave mid-glide (QUIT TO HOMEPAGE) and the old run is still there.
+ * Title and eastward coast glide. This controller owns playback only; the authored zones, world
+ * backdrop and timeline draw through runtime/render-scene.ts. The title's decorative clock keeps
+ * moving while the menu waits; the glide has a separate seekable timeline. Painting never advances
+ * either clock or commits its handoff. The closing shot blends into the playable Harbor platform.
  */
 
 import type { Timeline } from "../../ui/transport";
 import {renderOpeningDocument}from'./render';
 import{light}from'../../world/light';
 import { openingDocuments } from './documents';
-import type {OpeningDocuments} from '../../art/sequences/opening/sequence';
+import type {OpeningDocuments} from './documents';
 
 const titleSequence = openingDocuments.timeline.sequences.find(s => s.id === 'title')!;
 const glideSequence = openingDocuments.timeline.sequences.find(s => s.id === 'glide')!;
@@ -54,7 +32,7 @@ export class Opening {
   private titleTl: Timeline | null = null;
   private glideTl: Timeline | null = null;
 
-  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments) { this.t = reduced ? this.rise : 0; }
+  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/zone-sequence-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'>={}) { this.t = reduced ? this.rise : 0; }
   private get titleSequence(){return this.documents.timeline.sequences.find(s=>s.id==='title')!;}
   private get glideSequence(){return this.documents.timeline.sequences.find(s=>s.id==='glide')!;}
   private get rise(){return this.titleSequence.duration;}
@@ -106,9 +84,9 @@ export class Opening {
   }
 
   /** Draw a frame into a context already scaled to world units. */
-  draw(x: CanvasRenderingContext2D, W: number, H: number) {
+  draw(x: CanvasRenderingContext2D, W: number, H: number,playGround?:number) {
     x.save();
-    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting:light() }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ambientTime: this.t });
+    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting:light() }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ...this.world,ambientTime: this.t,playGround });
     x.restore();
   }
 }

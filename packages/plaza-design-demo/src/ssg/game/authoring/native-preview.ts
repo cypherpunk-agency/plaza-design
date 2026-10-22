@@ -14,6 +14,7 @@ import { joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zon
 import { authoredDocumentId } from '../engine/gameplay/scene-catalogue';
 import { zoneInfo, zoneName } from './zone-graph-context';
 import { city } from '../world/clock';
+import {backdropDocuments} from '../world/backdrops';
 import { light, lightAt, setLight } from '../world/light';
 import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
 import { CLIMATE_IDS, isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
@@ -124,7 +125,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         ...(def.level ? { level: restingLevelView(def.level, false) } : {}) };
       const outdoor = def.outdoor ?? !!(def.ambient?.weather || def.ambient?.sky);
       out.push({ view: zoneView, scene: def, sceneId: zone, host: { model, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
-        preparePresentation: () => def.preparePresentation?.(zoneView, engine),
+        preparePresentation: prepared => def.preparePresentation?.(prepared, engine),
         lighting: W => { const L = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor); setLight(L); return L; } });
     }
     return out;
@@ -182,11 +183,13 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       // joined scenes are drawn unless the composer's Show joined scenes is switched off
       const showJoined = settings.showJoined !== false, around = placed(request, request.composition.scene);
       const joined = showJoined && around.length ? neighbours(request, request.composition.scene, view, zoom, services, weather) : [];
-      renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id, ...(joined.length ? { joined } : {}),
+      const backdrops=new Map(backdropDocuments(request.documents));
+      if(document.scene.startsWith('backdrop-'))backdrops.set(document.scene.slice(9),document);
+      renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id, backdrops, ...(joined.length ? { joined } : {}),
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
-        preparePresentation: () => def.preparePresentation?.(view, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),
+        preparePresentation: prepared => def.preparePresentation?.(prepared, { ...engine, layer: vision && def.layers ? 'devices' : 'all' }),
         lighting(W: Weather | null) {
           const ambient = def.ambient ?? {}, outdoor = def.outdoor ?? !!(ambient.weather || ambient.sky);
           const light = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);

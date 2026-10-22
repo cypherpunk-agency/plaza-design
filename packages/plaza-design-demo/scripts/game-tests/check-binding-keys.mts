@@ -77,8 +77,8 @@ for(const id of ['metro','galleriaStation','harborStation'] as const){
 refused('train',bound('train.frame'),'train.frames',/does not offer it/);
 refused('train',bound(/^train\..*\.width$/),'train.nope.width',/no train\.windowFrame artwork instance "nope"/);
 // scene values: a name the scene's stage does not declare, and held artwork that is not in the composition
-refused('harborShift',bound('scene.checked'),'scene.notAValue',/declares no value "notAValue"/);
-refused('harborShift',bound('scene.cue.'),'scene.cue.nope',/declares no value "cue.nope"/);
+refused('moth',bound('scene.fed'),'scene.notAValue',/declares no value "notAValue"/);
+refused('moth',bound('scene.fed'),'scene.cue.nope',/declares no value "cue.nope"/);
 refused('moth',bound('scene.fed'),'scene.fedd',/declares no value "fedd"/);
 refused('laundromat',bound('scene.w1'),'scene.washer9',/declares no value "washer9"/);
 refused('mall',bound('held.'),'held.nowhere',/no artwork instance "nowhere"/);
@@ -88,7 +88,7 @@ assert.equal(knownBindingSource('nowhere.x'),false);
 
 // 4. The composer refuses the same edit on save (the pending registry validates the declared scene).
 const base=new Map(sourceDocuments.map(d=>[d.id,JSON.parse(fs.readFileSync('src/ssg/game/'+d.file,'utf8'))]));
-for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.window.nope.enabled'],['metro',bound('station.pose.regular.embedded'),'station.pose.nobody.embedded'],['harborShift',bound('scene.checked'),'scene.notAValue']] as const){
+for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.window.nope.enabled'],['metro',bound('station.pose.regular.embedded'),'station.pose.nobody.embedded'],['moth',bound('scene.fed'),'scene.notAValue']] as const){
  const docId=scene;
  const model=new ComposerModel(art,createSequenceValidationContext(art,{}),(d,all)=>{if(d.id===docId)pendingRegistry(new Map(all.map(x=>[x.id,x.value])));});
  model.load(sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:structuredClone(base.get(d.id))})));
@@ -99,9 +99,9 @@ for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.
 
 // 5. The editor can list what a provider offers in a scene: the scene provider offers exactly the values the stage declares.
 {
- const src=FOLDER_SOURCES.harborShift,doc=art.validate(src.composition),scope=bindingKeyScope(doc.instances,src.scene as never),names=offeredNames(BINDING_PROVIDERS.scene.keys,scope);
+ const src=FOLDER_SOURCES.moth,doc=art.validate(src.composition),scope=bindingKeyScope(doc.instances,src.scene as never),names=offeredNames(BINDING_PROVIDERS.scene.keys,scope);
  assert.deepEqual([...names].sort(),Object.keys((src.scene as {stage:{values:object}}).stage.values).sort(),'scene names list the stage values');
- assert.ok(names.includes('cue.boss')&&names.includes('trolleyX'));
+ assert.ok(names.includes('fed'));
 }
 // the inspector's binding choices (art registry bindingChoices) are all offered by their providers
 let choices=0;

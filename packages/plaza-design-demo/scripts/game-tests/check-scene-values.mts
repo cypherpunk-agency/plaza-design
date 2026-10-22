@@ -5,7 +5,7 @@
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
+import {FOLDER_SOURCES as FOLDER} from '../../src/ssg/game/scenes/folder-scenes';
 import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {renderSceneStage} from '../../src/ssg/game/authoring/scene-stage-authoring';
 import {TypedForm} from '../../src/ssg/game/authoring/typed-form';
@@ -21,6 +21,8 @@ import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequ
 import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
 
+import {harborEntry} from './harbor-source-fixture.mts';
+const FOLDER_SOURCES={...FOLDER,'harbor-yard':harborEntry('harbor-yard')};
 performance.now=()=>1000;
 class Element{children:Element[]=[];attrs:Record<string,string>={};value='';checked=false;textContent='';className='';open=false;disabled=false;type='';min='';max='';step='';
  onchange?:()=>void;onclick?:()=>void;ontoggle?:()=>void;
@@ -31,11 +33,11 @@ const player=new Proxy({save:()=>newSave()} as Record<string,unknown>,{get(o,k){
 type Id=keyof typeof FOLDER_SOURCES;
 
 /** The scene built from a document, and the binding values it gives one frame. */
-function bindings(id:Id,scene:SceneDocument,flags:Record<string,boolean>={}):Record<string,unknown>{
+function bindings(id:Id,scene:SceneDocument,flags:Record<string,boolean>={},values:Record<string,Record<string,boolean>>={}):Record<string,unknown>{
  const def:SceneDef=folderSceneDefinition(id,{...FOLDER_SOURCES[id],scene} as never);
  const rules=typeof def.rules==='function'?def.rules(player as never):def.rules??{effects:{}};
  const m=new SceneModel({say(){},changed(){},open(){}} as never,def.data??emptyData(def.id,def.name),rules as never,undefined,undefined,undefined,undefined,def.gameplay);m.setPaused(true);
- const view=referenceView({sx:(wx:number,p=1)=>Math.round(wx-p*100),y:(h:number)=>300-h,t:4321,cam:100,gy:300,viewW:960,viewH:390,flags});
+ const view=referenceView({sx:(wx:number,p=1)=>Math.round(wx-p*100),y:(h:number)=>300-h,t:4321,cam:100,gy:300,viewW:960,viewH:390,flags,values});
  return def.visualEnvironment!(view,{m,hover:null,layer:'all'}).bindings as Record<string,unknown>;
 }
 /** An editing session on one scene document: the form renders the real controls, every edit changes the document and re-renders. */
@@ -75,22 +77,20 @@ function session(id:Id){
  assert.throws(()=>bindings('moth',bad),/picture field/);
 }
 
-// 2. Flags and interactions become booleans, and a conditional position follows its flag (harbor shift).
+// 2. Current harbor artwork reads the same saved owner block as its interactions.
 {
- const s=session('harborShift'),on={'shift:parked':true},off={'shift:parked':false};
- const parkedOn=bindings('harborShift',s.doc,on)['scene.trolleyX'],parkedOff=bindings('harborShift',s.doc,off)['scene.trolleyX'];
- assert.notEqual(parkedOn,parkedOff,'the trolley stands at its bay once parked');
- assert.equal(bindings('harborShift',s.doc,{'shift:delivered':true})['scene.casePresent'],true);
- assert.equal(bindings('harborShift',s.doc,{'shift:delivered':true,'shift:case':true})['scene.casePresent'],false);
- // the flag role of a value is a typed choice; rebinding it changes which flag drives the picture
- s.choose('Value casePresent kind','flag');
- assert.ok(s.doc.stage!.values!.casePresent&&'flag' in (s.doc.stage!.values!.casePresent as object));
- assert.equal(bindings('harborShift',s.doc,{'shift:parcel':true})['scene.casePresent'],true);
- s.choose('Value casePresent flag role','delivered');
- assert.equal(bindings('harborShift',s.doc,{'shift:parcel':true})['scene.casePresent'],false);
- // the carried item is a value too: it is what the scene hands the game
- const def=folderSceneDefinition('harborShift',FOLDER_SOURCES.harborShift as never);
- assert.equal(def.dockworkerCarry!({'shift:parcel':true}),'parcel');assert.equal(def.dockworkerCarry!({'shift:case':true,'shift:delivered':true}),'case');assert.equal(def.dockworkerCarry!({}),null);
+ const s=session('harbor-yard'),view=(shift:Record<string,boolean>)=>bindings('harbor-yard',s.doc,{}, {shift});
+ assert.notEqual(view({trolleyMoved:true})['scene.trolleyX'],view({trolleyMoved:false})['scene.trolleyX']);
+ assert.equal(view({parcelDelivered:true,caseCollected:false})['scene.casePresent'],true);
+ assert.equal(view({parcelDelivered:true,caseCollected:true})['scene.casePresent'],false);
+ const field=s.control('Value casePresent 1 saved state (owner.key, declared by the gameplay or a shared owner it uses)');
+ field.value='shift.parcelCollected';field.onchange!();
+ assert.equal(view({parcelCollected:true,caseCollected:false})['scene.casePresent'],true);
+ assert.equal(view({parcelDelivered:true,caseCollected:false})['scene.casePresent'],false,'pending state rebinding changes the picture');
+ const def=folderSceneDefinition('harbor-yard',FOLDER_SOURCES['harbor-yard'] as never);
+ assert.equal(def.dockworkerCarry!({}, {shift:{parcelCollected:true}}),'parcel');
+ assert.equal(def.dockworkerCarry!({}, {shift:{caseCollected:true,parcelDelivered:true}}),'case');
+ assert.equal(def.dockworkerCarry!({}, {shift:{}}),null);
 }
 
 // 3. Actor rules: a hide rule keeps the beach guests ashore out of sight; removing it shows them.

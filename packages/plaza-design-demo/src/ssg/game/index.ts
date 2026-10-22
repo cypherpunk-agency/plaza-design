@@ -25,7 +25,7 @@ import { touchControls } from './ui/touch-controls';
 import { sound } from "./runtime/audio";
 import { runBoot } from "./ui/boot";
 import { Game } from "./runtime/game";
-import { isSceneId } from "./scenes/index";
+import { SCENES,isSceneId } from "./scenes/index";
 import { isCutsceneId } from "./story/cutscenes/index";
 import { takeResume } from "./runtime/slots";
 import { SUDO } from './runtime/mode';
@@ -45,7 +45,7 @@ const playScene = () => {
  * The home scene (Downtown) is a scene like any other when the URL names it (`named`); a LOAD GAME resume to it lets the game decide
  * (it continues the save, with its resume entrance).
  */
-const sceneParam = (z: string, named = false) => ((isSceneId(z) && (named || z !== playProfile().home) && (z !== 'sandbox' || SUDO) && !reservedScene(z)) || isCutsceneId(z) ? z : undefined);
+const sceneParam = (z: string, named = false) => ((isSceneId(z) && (named || z !== playProfile().home) && (!SCENES[z].sudoOnly || SUDO) && !reservedScene(z)) || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];

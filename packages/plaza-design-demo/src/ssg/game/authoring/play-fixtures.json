@@ -4,8 +4,10 @@
     {
       "id": "harbor-start",
       "name": "Harbor Shift · start",
-      "scene": "harborShift",
-      "flags": {},
+      "scene": "harbor-station",
+      "flags": {
+        "prologue:started": true
+      },
       "items": {},
       "tokens": 0,
       "modules": [
@@ -15,11 +17,47 @@
       "keyring": [],
       "state": {},
       "day": 1,
-      "minute": 1120,
+      "minute": 1140,
       "seed": 3,
       "weather": "forecast",
       "clock": "story",
       "spawn": null
+    },
+    {
+      "id": "harbor-commute",
+      "name": "Harbor · morning commute (board here)",
+      "scene": "harbor-station",
+      "flags": {
+        "prologue:started": true,
+        "opening:home": true
+      },
+      "items": {},
+      "tokens": 3,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {
+        "shift.tagReceived": true,
+        "shift.parcelCollected": true,
+        "shift.parcelDelivered": true,
+        "shift.caseCollected": true,
+        "shift.caseReturned": true,
+        "shift.trolleyAssigned": true,
+        "shift.clampFound": true,
+        "shift.clampReleased": true,
+        "shift.trolleyMoved": true,
+        "shift.checkedOut": true,
+        "shift.statementRead": true,
+        "shift.coffeeFixed": true
+      },
+      "day": 2,
+      "minute": 370,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": 84
     },
     {
       "id": "sandbox-start",

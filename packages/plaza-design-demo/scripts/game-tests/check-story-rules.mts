@@ -17,7 +17,7 @@ const scene=(id:string)=>json('scenes/'+id+'/scene.json');
 const story=openingStoryModel;
 
 // ---- the gate: a timed checkpoint (dots cycle, ok, done)
-{const gate=scene('metro').phases.home.exits.downtown.gate;
+{const gate=scene('metro').phases.home.barriers['gate-in'].gate;
  assert.equal(gate.verifyFrames,150);assert.equal(gate.okFrames,50);
  let f=gateFrame(gate,0);assert.equal(f.ok,false);assert.equal(f.done,false);assert.equal(f.bare,'TURNSTILE: verifying');assert.equal(f.text,'TURNSTILE: verifying.  ');
  assert.equal(gateFrame(gate,20).text,'TURNSTILE: verifying.. ');assert.equal(gateFrame(gate,40).text,'TURNSTILE: verifying...');assert.equal(gateFrame(gate,60).text,'TURNSTILE: verifying.  ');
@@ -66,7 +66,7 @@ const story=openingStoryModel;
  assert.deepEqual(clockPin({pinned:false,minute:null,wasPinned:true,releaseMinute:582}),{kind:'release',minute:582});
  assert.deepEqual(clockPin({pinned:false,minute:null,wasPinned:false,releaseMinute:582}),{kind:'free'});
  const times=Object.fromEntries(['train','metro','downtown','capsule'].map(id=>[id,Object.fromEntries(Object.entries(scene(id).phases).map(([p,v]:[string,any])=>[p,v.time]))]));
- assert.equal(times.train.home,'05:41');assert.equal(times.metro.home,'05:48');assert.equal(times.downtown.home,'05:52');assert.equal(times.capsule.flat,'06:04');assert.equal(times.capsule.deleted,'09:40');assert.equal(times.capsule.uplinked,'09:42');
+ assert.equal(times.train.home,'05:41');assert.equal(times.metro.home,'06:12');assert.equal(times.downtown.home,'06:14');assert.equal(times.capsule.flat,'06:20');assert.equal(times.capsule.deleted,'09:40');assert.equal(times.capsule.uplinked,'09:42');
  const release=story.CLOCK.release;assert.equal(times[release.scene][release.phase],'09:42','the clock is let go to the time the release scene names');
  assert.equal(story.isPinned({[story.OPENING.home]:true}),true);assert.equal(story.isPinned({[story.OPENING.home]:true,[story.OPENING.uplink]:true}),false,'pinned only until the uplink');}
 

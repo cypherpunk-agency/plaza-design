@@ -1,11 +1,217 @@
 {
   "version": 1,
   "seams": [
-    { "id": "tower-annex", "kind": "walk", "a": { "zone": "tower" }, "b": { "zone": "tower-annex" }, "dx": 1600, "dh": 0 },
-    { "id": "annex-deck", "kind": "stairs", "a": { "zone": "tower-annex", "piece": "stairs-deck" }, "b": { "zone": "tower-deck", "piece": "floor-deck" }, "dx": 0, "dh": 100 },
-    { "id": "station-quay", "kind": "stairs", "a": { "zone": "harbor-station", "piece": "via-stair" }, "b": { "zone": "harbor-quay", "piece": "floor-quay" }, "dx": 0, "dh": -160 },
-    { "id": "quay-checkout", "kind": "walk", "a": { "zone": "harbor-quay" }, "b": { "zone": "harbor-checkout" }, "dx": 1600, "dh": 0 },
-    { "id": "checkout-yard", "kind": "walk", "a": { "zone": "harbor-checkout" }, "b": { "zone": "harbor-yard" }, "dx": 640, "dh": 0 },
-    { "id": "yard-shed", "kind": "walk", "a": { "zone": "harbor-yard" }, "b": { "zone": "harbor-shed" }, "dx": 1280, "dh": 0 }
+    {
+      "id": "tower-annex",
+      "kind": "walk",
+      "a": {
+        "zone": "tower"
+      },
+      "b": {
+        "zone": "tower-annex"
+      },
+      "dx": 1600,
+      "dh": 0
+    },
+    {
+      "id": "annex-deck",
+      "kind": "stairs",
+      "a": {
+        "zone": "tower-annex",
+        "piece": "stairs-deck"
+      },
+      "b": {
+        "zone": "tower-deck",
+        "piece": "floor-deck"
+      },
+      "dx": 0,
+      "dh": 100
+    },
+    {
+      "id": "station-quay",
+      "kind": "stairs",
+      "a": {
+        "zone": "harbor-station",
+        "piece": "via-stair"
+      },
+      "b": {
+        "zone": "harbor-quay",
+        "piece": "floor-quay"
+      },
+      "dx": 900,
+      "dh": -160
+    },
+    {
+      "id": "quay-checkout",
+      "kind": "walk",
+      "a": {
+        "zone": "harbor-quay"
+      },
+      "b": {
+        "zone": "harbor-checkout"
+      },
+      "dx": 1600,
+      "dh": 0
+    },
+    {
+      "id": "checkout-yard",
+      "kind": "walk",
+      "a": {
+        "zone": "harbor-checkout"
+      },
+      "b": {
+        "zone": "harbor-yard"
+      },
+      "dx": 640,
+      "dh": 0
+    },
+    {
+      "id": "yard-shed",
+      "kind": "walk",
+      "a": {
+        "zone": "harbor-yard"
+      },
+      "b": {
+        "zone": "harbor-shed"
+      },
+      "dx": 1280,
+      "dh": 0
+    },
+    {
+      "id": "glide-1",
+      "kind": "walk",
+      "a": {
+        "zone": "glide-beach"
+      },
+      "b": {
+        "zone": "glide-downtown-west"
+      },
+      "dx": 4500,
+      "dh": 0
+    },
+    {
+      "id": "glide-2",
+      "kind": "walk",
+      "a": {
+        "zone": "glide-downtown-west"
+      },
+      "b": {
+        "zone": "glide-downtown"
+      },
+      "dx": 3390,
+      "dh": 0
+    },
+    {
+      "id": "glide-3",
+      "kind": "walk",
+      "a": {
+        "zone": "glide-downtown"
+      },
+      "b": {
+        "zone": "glide-galleria"
+      },
+      "dx": 2940,
+      "dh": 0
+    },
+    {
+      "id": "glide-4",
+      "kind": "walk",
+      "a": {
+        "zone": "glide-galleria"
+      },
+      "b": {
+        "zone": "glide-spire-bay"
+      },
+      "dx": 1080,
+      "dh": 0
+    },
+    {
+      "id": "glide-station",
+      "kind": "stairs",
+      "a": {
+        "zone": "glide-spire-bay",
+        "piece": "station-approach"
+      },
+      "b": {
+        "zone": "harbor-station",
+        "piece": "floor-platform"
+      },
+      "dx": 1380,
+      "dh": 160
+    },
+    {
+      "id": "line-link-1",
+      "kind": "walk",
+      "a": {
+        "zone": "harbor-station"
+      },
+      "b": {
+        "zone": "line-harbor-1"
+      },
+      "dx": -1600,
+      "dh": -180
+    },
+    {
+      "id": "line-link-2",
+      "kind": "walk",
+      "a": {
+        "zone": "line-harbor-1"
+      },
+      "b": {
+        "zone": "line-harbor-2"
+      },
+      "dx": -1600,
+      "dh": -77.5
+    },
+    {
+      "id": "line-link-3",
+      "kind": "walk",
+      "a": {
+        "zone": "line-harbor-2"
+      },
+      "b": {
+        "zone": "line-harbor-3"
+      },
+      "dx": -1600,
+      "dh": -77.5
+    },
+    {
+      "id": "line-link-4",
+      "kind": "walk",
+      "a": {
+        "zone": "line-harbor-3"
+      },
+      "b": {
+        "zone": "line-harbor-4"
+      },
+      "dx": -1600,
+      "dh": -77.5
+    },
+    {
+      "id": "line-metro",
+      "kind": "walk",
+      "a": {
+        "zone": "line-harbor-4"
+      },
+      "b": {
+        "zone": "metro"
+      },
+      "dx": -2160,
+      "dh": 102.5
+    },
+    {
+      "id": "downtown-metro",
+      "kind": "stairs",
+      "a": {
+        "zone": "metro",
+        "piece": "stairs-west"
+      },
+      "b": {
+        "zone": "downtown",
+        "piece": "floor-street"
+      },
+      "dx": -1380,
+      "dh": 150
+    }
   ]
 }

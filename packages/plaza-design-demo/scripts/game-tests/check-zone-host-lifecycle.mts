@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {Game} from '../../src/ssg/game/runtime/game';
+import {SceneHost} from '../../src/ssg/game/engine/host';
+const gone:string[]=[],seen:any[]=[];
+const host=(id:string)=>({model:{state:{}},gameplay:{},dispose(){gone.push(id);},show(active:boolean,visible:boolean){seen.push([id,active,visible]);}});
+const current=host('current'),near=host('near'),visible=host('visible'),old=host('old');
+const game=Object.create(Game.prototype);Object.assign(game,{here:'current',hosts:new Map([['current',current],['near',near],['visible',visible],['old',old]]),gameplaySessions:new Map([['old',old.gameplay]]),joinedZones:[{id:'near'},{id:'visible'}],zoneTiers:new Map([['near','near'],['visible','visible']])});
+(game as any).showHost();assert.deepEqual(gone,['old']);assert(!game.hosts.has('old'));assert(!game.gameplaySessions.has('old'));assert.deepEqual(seen,[['current',true,true],['near',false,false],['visible',false,true]]);
+const solo=host('solo');game.hosts.set('solo',solo);game.here='solo';game.joinedZones=[];(game as any).showHost();assert.deepEqual([...game.hosts.keys()],['solo'],'a cut to an unjoined zone releases the old component');
+const live:boolean[]=[];const h=Object.create(SceneHost.prototype);Object.assign(h,{def:{id:'visible'},disposed:false,model:{devices:new Map(),tick(_ms:number,on:boolean){live.push(on);return false;},now(){return 0;}},btns:{hidden:false},schem:{viewing:null},panels:{step(){}},heat(){return '';},lastHeat:'',cancelAcknowledgment(){}});
+Object.defineProperty(h,'paused',{value:false});h.show(false,true);h.tick(16);assert.equal(h.btns.hidden,true,'neighbor never owns active controls');assert.deepEqual(live,[true],'visible neighbor gets the live model tick');
+h.show(false,false);h.tick(16);assert.deepEqual(live,[true,false]);
+console.log('Unjoined host eviction and visible-neighbor live ticking PASS');

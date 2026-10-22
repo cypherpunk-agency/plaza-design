@@ -3,668 +3,132 @@
   "scene": "metro",
   "instances": [
     {
-      "id": "scene",
-      "type": "metro.marker",
+      "id": "hall",
+      "type": "metro.ticket-hall",
       "props": {
-        "role": "scene",
-        "width": 1300
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 0,
-      "layer": "distance"
-    },
-    {
-      "id": "spawn",
-      "type": "scene.player",
-      "props": {},
-      "placement": {
-        "x": 86,
-        "h": 0
-      },
-      "order": 0,
-      "layer": "playfield"
-    },
-    {
-      "id": "horizon",
-      "type": "metro.marker",
-      "props": {},
-      "placement": {
-        "x": 0,
-        "h": 16
-      },
-      "order": 1,
-      "layer": "distance"
-    },
-    {
-      "id": "canopy",
-      "type": "metro.marker",
-      "props": {
-        "role": "canopy"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 2,
-      "layer": "distance"
-    },
-    {
-      "id": "city-fill",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "fill"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 3,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-sky",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "sky"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 4,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-ships-far",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "ships-far"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 5,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-sun",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "sun"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 6,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-far",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "far"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 7,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-mid",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "mid"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 8,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-ships-near",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "ships-near"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 9,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-floor",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "floor"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 10,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-horizon",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "horizon"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 11,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-hero",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "hero"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 12,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-mast",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "mast"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 13,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-network",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "network"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 14,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-beacons",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "beacons"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 15,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-rain",
-      "type": "metro.skyline-part",
-      "props": {
-        "part": "rain"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 16,
-      "layer": "distance",
-      "bindings": {
-        "city": "station.city"
-      }
-    },
-    {
-      "id": "city-wash",
-      "type": "metro.city-wash",
-      "props": {},
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 17,
-      "layer": "distance",
-      "bindings": {
-        "daylight": "station.daylight",
-        "truss": "station.truss"
-      }
-    },
-    {
-      "id": "roof-wash",
-      "type": "metro.city-wash",
-      "props": {
-        "roofOnly": true
+        "width": 620,
+        "name": "DOWNTOWN",
+        "office": 270,
+        "machines": 2,
+        "machinesAt": 380,
+        "broken": 1,
+        "map": 446,
+        "gate": 560,
+        "gateNote": "TICKET AND ID REQUIRED",
+        "ends": "left",
+        "deadLamp": 4
       },
       "placement": {
         "x": 0,
         "h": 0
       },
       "order": 18,
-      "layer": "distance",
-      "bindings": {
-        "daylight": "station.daylight",
-        "truss": "station.truss"
-      }
+      "layer": "backdrop"
     },
     {
-      "id": "far-rail",
-      "type": "metro.far-rail",
+      "id": "platform",
+      "type": "metro.underground-platform",
       "props": {
-        "deck": 14
+        "width": 1540,
+        "name": "DOWNTOWN",
+        "ends": "right",
+        "nameEvery": 420
       },
       "placement": {
-        "x": 0,
+        "x": 620,
         "h": 0
       },
       "order": 19,
-      "layer": "distance"
+      "layer": "backdrop"
     },
     {
-      "id": "track",
-      "type": "metro.track-base",
+      "id": "well-west",
+      "type": "metro.stairs-up",
       "props": {
-        "deck": 14
+        "rises": "left",
+        "run": 190,
+        "rise": 150,
+        "flight": false,
+        "sign": "WAY OUT · STREET",
+        "post": true
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-west",
+      "type": "level.stairs",
+      "props": {
+        "run": -190,
+        "rise": 150,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 250,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "set"
+    },
+    {
+      "id": "gate-in",
+      "type": "level.barrier",
+      "props": {
+        "style": "turnstile",
+        "width": 24,
+        "refuse": "TICKET AND ID REQUIRED."
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "set"
+    },
+    {
+      "id": "floor-station",
+      "type": "level.floor",
+      "props": {
+        "width": 2160,
+        "label": "Ticket hall and platform",
+        "indoor": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "logic"
+    },
+    {
+      "id": "scene",
+      "type": "metro.marker",
+      "props": {
+        "role": "scene",
+        "width": 2160
       },
       "placement": {
         "x": 0,
         "h": 0
       },
       "order": 0,
-      "layer": "backdrop"
+      "layer": "set"
     },
     {
-      "id": "platform-train",
-      "type": "station.train",
+      "id": "spawn",
+      "type": "scene.player",
       "props": {},
       "placement": {
-        "x": 150,
-        "h": 0
-      },
-      "order": 1,
-      "layer": "backdrop",
-      "bindings": {
-        "train": "station.train"
-      }
-    },
-    {
-      "id": "track-edge",
-      "type": "metro.track-edge",
-      "props": {},
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 2,
-      "layer": "backdrop"
-    },
-    {
-      "id": "canopy-shell",
-      "type": "metro.canopy",
-      "props": {
-        "width": 1300,
-        "under": 168,
-        "fascia": 178,
-        "truss": 196
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 3,
-      "layer": "backdrop",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp0",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 100,
+        "x": 764,
         "h": 0
       },
       "order": 0,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp1",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 300,
-        "h": 0
-      },
-      "order": 1,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp2",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 500,
-        "h": 0
-      },
-      "order": 2,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp3",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 700,
-        "h": 0
-      },
-      "order": 3,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp4",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 900,
-        "h": 0
-      },
-      "order": 4,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp5",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 1100,
-        "h": 0
-      },
-      "order": 5,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "lamp6",
-      "type": "metro.lamp",
-      "props": {},
-      "placement": {
-        "x": 1300,
-        "h": 0
-      },
-      "order": 6,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "pillar0",
-      "type": "metro.pillar",
-      "props": {
-        "camera": true
-      },
-      "placement": {
-        "x": 330,
-        "h": 0
-      },
-      "order": 7,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "pillar1",
-      "type": "metro.pillar",
-      "props": {
-        "camera": false
-      },
-      "placement": {
-        "x": 730,
-        "h": 0
-      },
-      "order": 8,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "pillar2",
-      "type": "metro.pillar",
-      "props": {
-        "camera": false
-      },
-      "placement": {
-        "x": 1130,
-        "h": 0
-      },
-      "order": 9,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "sign0",
-      "type": "metro.sign",
-      "props": {},
-      "placement": {
-        "x": 118,
-        "h": 0
-      },
-      "order": 10,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "sign1",
-      "type": "metro.sign",
-      "props": {},
-      "placement": {
-        "x": 990,
-        "h": 0
-      },
-      "order": 11,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roofLocal"
-      },
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "map",
-      "type": "metro.notice",
-      "props": {
-        "first": "LINE",
-        "second": "MAP",
-        "phase": 1
-      },
-      "placement": {
-        "x": 0,
-        "h": 78
-      },
-      "order": 12,
-      "layer": "set",
-      "attach": {
-        "instance": "pillar1",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "poster",
-      "type": "metro.notice",
-      "props": {
-        "first": "ADS",
-        "phase": 2
-      },
-      "placement": {
-        "x": 0,
-        "h": 78
-      },
-      "order": 13,
-      "layer": "set",
-      "attach": {
-        "instance": "pillar2",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "board",
-      "type": "station.departures",
-      "props": {},
-      "placement": {
-        "x": 540,
-        "h": 112
-      },
-      "order": 14,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roof",
-        "departure": "station.departure"
-      }
-    },
-    {
-      "id": "screen",
-      "type": "station.screen",
-      "props": {},
-      "placement": {
-        "x": 850,
-        "h": 160
-      },
-      "order": 15,
-      "layer": "set",
-      "bindings": {
-        "roof": "station.roof"
-      }
+      "layer": "playfield"
     },
     {
       "id": "bench0",
@@ -674,7 +138,7 @@
         "sourceRider": true
       },
       "placement": {
-        "x": 930,
+        "x": 1050,
         "h": 0
       },
       "order": 16,
@@ -682,6 +146,17 @@
       "bindings": {
         "rider": "station.pose.regular.embedded"
       }
+    },
+    {
+      "id": "bench1",
+      "type": "station.bench",
+      "props": {},
+      "placement": {
+        "x": 1500,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "set"
     },
     {
       "id": "regular",
@@ -704,200 +179,11 @@
       }
     },
     {
-      "id": "bench1",
-      "type": "station.bench",
-      "props": {},
-      "placement": {
-        "x": 1235,
-        "h": 0
-      },
-      "order": 18,
-      "layer": "set"
-    },
-    {
-      "id": "waiting0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting0"
-      },
-      "placement": {
-        "x": 460,
-        "h": 0
-      },
-      "order": 19,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting0"
-      }
-    },
-    {
-      "id": "waiting1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting1"
-      },
-      "placement": {
-        "x": 640,
-        "h": 0
-      },
-      "order": 20,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting1"
-      }
-    },
-    {
-      "id": "waiting2",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting2"
-      },
-      "placement": {
-        "x": 1060,
-        "h": 0
-      },
-      "order": 21,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting2"
-      }
-    },
-    {
-      "id": "waiting3",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting3"
-      },
-      "placement": {
-        "x": 1180,
-        "h": 0
-      },
-      "order": 22,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting3"
-      }
-    },
-    {
-      "id": "below",
-      "type": "metro.below",
-      "props": {},
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 23,
-      "layer": "set"
-    },
-    {
-      "id": "pier0",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": -100,
-        "h": 0
-      },
-      "order": 24,
-      "layer": "set"
-    },
-    {
-      "id": "pier1",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": 160,
-        "h": 0
-      },
-      "order": 25,
-      "layer": "set"
-    },
-    {
-      "id": "pier2",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": 420,
-        "h": 0
-      },
-      "order": 26,
-      "layer": "set"
-    },
-    {
-      "id": "pier3",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": 680,
-        "h": 0
-      },
-      "order": 27,
-      "layer": "set"
-    },
-    {
-      "id": "pier4",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": 940,
-        "h": 0
-      },
-      "order": 28,
-      "layer": "set"
-    },
-    {
-      "id": "pier5",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": 1200,
-        "h": 0
-      },
-      "order": 29,
-      "layer": "set"
-    },
-    {
-      "id": "pier6",
-      "type": "metro.pier",
-      "props": {},
-      "placement": {
-        "x": 1460,
-        "h": 0
-      },
-      "order": 30,
-      "layer": "set"
-    },
-    {
-      "id": "girder",
-      "type": "metro.girder",
-      "props": {
-        "width": 1300
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 31,
-      "layer": "set"
-    },
-    {
-      "id": "slab",
-      "type": "metro.slab",
-      "props": {
-        "width": 1300
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 32,
-      "layer": "set"
-    },
-    {
       "id": "citymap",
       "type": "metro.city-map",
       "props": {},
       "placement": {
-        "x": 210,
+        "x": 380,
         "h": 0
       },
       "order": 33,
@@ -908,21 +194,10 @@
       "type": "metro.stairs",
       "props": {},
       "placement": {
-        "x": 32,
+        "x": 60,
         "h": 0
       },
       "order": 34,
-      "layer": "set"
-    },
-    {
-      "id": "turnstile",
-      "type": "metro.turnstile",
-      "props": {},
-      "placement": {
-        "x": 96,
-        "h": 0
-      },
-      "order": 35,
       "layer": "set"
     },
     {
@@ -932,141 +207,68 @@
         "role": "train-exit"
       },
       "placement": {
-        "x": 215,
+        "x": 764,
         "h": 0
       },
       "order": 36,
-      "layer": "set",
-      "attach": {
-        "instance": "platform-train",
-        "anchor": "origin"
-      }
+      "layer": "set"
     },
     {
-      "id": "light0",
-      "type": "metro.marker",
+      "id": "map",
+      "type": "metro.notice",
       "props": {
-        "role": "light",
-        "width": 60
+        "first": "LINE",
+        "second": "MAP",
+        "phase": 1
       },
       "placement": {
-        "x": 100,
-        "h": 164
+        "x": 446,
+        "h": 78
       },
-      "order": 37,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
+      "order": 12,
+      "layer": "set"
     },
     {
-      "id": "light1",
-      "type": "metro.marker",
+      "id": "poster",
+      "type": "metro.notice",
       "props": {
-        "role": "light",
-        "width": 60
+        "first": "ADS",
+        "phase": 2
       },
       "placement": {
-        "x": 300,
-        "h": 164
+        "x": 460,
+        "h": 78
       },
-      "order": 38,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
+      "order": 13,
+      "layer": "set"
     },
     {
-      "id": "light2",
-      "type": "metro.marker",
+      "id": "board",
+      "type": "sign.screen",
       "props": {
-        "role": "light",
-        "width": 60
+        "text": "LINE 0 · HARBOR",
+        "width": 180
       },
       "placement": {
-        "x": 500,
-        "h": 164
+        "x": 1280,
+        "h": 100
       },
-      "order": 39,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
+      "order": 14,
+      "layer": "set"
     },
     {
-      "id": "light3",
-      "type": "metro.marker",
+      "id": "screen",
+      "type": "sign.screen",
       "props": {
-        "role": "light",
-        "width": 60
+        "text": "REGISTRY · COMPLIANCE IS COMFORT",
+        "width": 180
       },
       "placement": {
-        "x": 700,
-        "h": 164
+        "x": 1600,
+        "h": 100
       },
-      "order": 40,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "light4",
-      "type": "metro.marker",
-      "props": {
-        "role": "light",
-        "width": 60
-      },
-      "placement": {
-        "x": 900,
-        "h": 164
-      },
-      "order": 41,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "light5",
-      "type": "metro.marker",
-      "props": {
-        "role": "light",
-        "width": 60
-      },
-      "placement": {
-        "x": 1100,
-        "h": 164
-      },
-      "order": 42,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "light6",
-      "type": "metro.marker",
-      "props": {
-        "role": "light",
-        "width": 60
-      },
-      "placement": {
-        "x": 1300,
-        "h": 164
-      },
-      "order": 43,
-      "layer": "set",
-      "attach": {
-        "instance": "canopy",
-        "anchor": "origin"
-      }
+      "order": 15,
+      "layer": "set"
     }
   ]
 }

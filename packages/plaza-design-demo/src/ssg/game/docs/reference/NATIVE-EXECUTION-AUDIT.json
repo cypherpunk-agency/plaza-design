@@ -1,7 +1,7 @@
 {
   "version": 1,
   "status": "current-surface-audit",
-  "scope": "Registered SceneRules callables for the exact 19-scene native corpus, resolving player-bound rule factories. This is not whole-controller, runtime, composition, panel or editor acceptance.",
+  "scope": "Registered SceneRules callables for the 18 remaining audited native scenes (the retired shift prototype is excluded), resolving player-bound rule factories. This is not whole-controller, runtime, composition, panel or editor acceptance.",
   "reviewedFrom": "47c4b95",
   "classificationPolicy": "Every callable is explicitly classified. Ordinary gaps block removal acceptance; simulation/presentation retention does not by itself prove parameter/editor coverage. Raw reports record current source and callable body hashes.",
   "scenes": [
@@ -423,16 +423,6 @@
         "engine/gameplay/mechanisms/sandbox-bay.ts",
         "engine/controllers/sandbox.ts",
         "scenes/sandbox/gameplay.json"
-      ]
-    },
-    {
-      "scene": "harborShift",
-      "controller": null,
-      "inputs": [],
-      "panels": [],
-      "functions": {},
-      "sourcePaths": [
-        "scenes/harbor-shift/scene.json"
       ]
     }
   ]

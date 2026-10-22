@@ -49,7 +49,7 @@ const pickSeam=(id:string)=>{const e=seamRows().find(e=>e.attributes['data-seam'
 const pressed=(group:string)=>field(group).children.find(b=>b.attributes['aria-pressed']==='true')?.textContent;
 assert.equal(status(),'✓ This seam meets both scenes.');
 // the list: each seam as From → To in scene names, its kind, a tick
-assert.deepEqual(seamRows().map(e=>e.attributes['data-seam']),['tower-annex','annex-deck','station-quay','quay-checkout','checkout-yard','yard-shed']);
+assert.deepEqual(seamRows().map(e=>e.attributes['data-seam']),graph().seams.map(s=>s.id));
 assert.equal(seamRows()[0].attributes['aria-label'],'Walk: Tower → Tower annex, no problems');
 assert.equal(seamRows()[1].attributes['aria-label'],'Stairs: Tower annex → Roof deck over the annex, no problems');
 assert.equal(selected(),'tower-annex','the open scene\'s seam is selected');

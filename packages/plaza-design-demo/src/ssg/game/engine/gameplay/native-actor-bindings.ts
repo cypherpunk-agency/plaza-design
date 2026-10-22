@@ -14,7 +14,6 @@ const controllers:Record<string,ActorBindingController>={
  capsule:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  yard:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  moth:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
- harborShift:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  harbor:{element:'character.prepared',prefix:'harbor.actor.',suffix:'',clipPrefix:'harbor.clip.',mutable:true},
  stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true},
  library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true},

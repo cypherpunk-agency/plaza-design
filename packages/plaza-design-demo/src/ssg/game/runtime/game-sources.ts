@@ -1,3 +1,4 @@
+import type {BackdropDocument} from '../world/backdrops';
 import type {OpeningStoryModel} from '../story/opening-source';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {RuntimeSequenceDocuments} from '../story/sequence-documents';
@@ -9,4 +10,4 @@ import type {ContactsModel} from '../story/contacts';
 import type {EndCardSource} from '../story/end-card';
 import type {ZoneGraphSource} from '../world/zone-graph';
 /** Private pending documents used by one native Game instance. */
-export interface GameRuntimeSources {openingStory?:OpeningStoryModel;sequences?:RuntimeSequenceDocuments;network?:EngineNetworkContext;companionGameplay?:GameplayDefinition;critters?:CritterReactionDocument;companion?:CompanionSource;reviewStations?:ReviewStationsDocument;contacts?:ContactsModel;endCard?:EndCardSource;zoneGraph?:ZoneGraphSource}
+export interface GameRuntimeSources {openingStory?:OpeningStoryModel;sequences?:RuntimeSequenceDocuments;network?:EngineNetworkContext;companionGameplay?:GameplayDefinition;critters?:CritterReactionDocument;companion?:CompanionSource;reviewStations?:ReviewStationsDocument;contacts?:ContactsModel;endCard?:EndCardSource;zoneGraph?:ZoneGraphSource;backdrops?:ReadonlyMap<string,BackdropDocument>}

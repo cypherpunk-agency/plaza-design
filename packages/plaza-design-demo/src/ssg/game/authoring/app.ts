@@ -21,7 +21,7 @@ import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, laye
 import type { Layer } from '../art/core/composition';
 
 export interface EditorDocument { id: string; kind: 'composition' | 'timeline' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; revision: string; value: unknown }
-export interface PreviewRequest { documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
+export interface PreviewRequest { sourceVersion?:object; documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineDocument; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 /** A scene joined to the previewed one by a seam, drawn beside it read-only: where it is on the canvas (canvas pixels) and on which side. */
 export interface JoinedPreview { zone: string; label: string; x: number; y: number; width: number; height: number; side: 'left' | 'right' | 'above' | 'below' }
 export interface PreviewResult { bounds: { id: string; x: number; y: number; width: number; height: number }[]; /** Joined scenes drawn beside this one, and the camera-x range (scene units) that holds the scene and them. */ joined?: JoinedPreview[]; extent?: { from: number; to: number }; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
@@ -75,7 +75,7 @@ export interface ComposerConfig {
   sceneTree?(documents: readonly EditorDocument[]): { label: string; places: { label: string; scenes: string[] }[] }[];
   workbenches?: WorkbenchConfig[];
   /** The Scene view's New scene dialog: the places a scene can belong to, why creation is blocked ('' when it is not), and creation as one undoable edit. */
-  newScene?: { places(api: NonNullable<WorkbenchContext['authoring']>): { places: string[]; initial: string }; blocked(api: NonNullable<WorkbenchContext['authoring']>): string; create(api: NonNullable<WorkbenchContext['authoring']>, id: string, name: string, place: string): void };
+  newScene?: { places(api: NonNullable<WorkbenchContext['authoring']>): { places: string[]; initial: string }; blocked(api: NonNullable<WorkbenchContext['authoring']>): string; create(api: NonNullable<WorkbenchContext['authoring']>, id: string, name: string, place: string, preset?:string): void; presets?:{value:string;label:string}[] };
   /** Tabs for the Scene inspector. Called for the open scene with the selected instance, or none for the scene itself. */
   inspector?(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[];
   /** Scenes joined to this one with no cut (one seam away). The Scene toolbar then offers Show joined scenes and Fit joined; the preview draws them. */
@@ -109,6 +109,8 @@ const message = (e: unknown) => e instanceof Error ? e.message : String(e);
 export class ComposerModel {
   private documents = new Map<string, EditorDocument>();
   private saved = new Map<string, unknown>();
+  /** Opaque immutable-snapshot identity for derived preview caches; edits/history replace it. */
+  get sourceVersion():object{return this.documents;}
   private past: Command[] = [];
   private future: Command[] = [];
   private validatedInputs?: readonly unknown[];
@@ -974,7 +976,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function updateTime() { if (scrub) scrub.value = String(time); if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
   function previewRequest(composition: Composition, overlay: boolean, scale: number, frame?: TimelineFrame): PreviewRequest {
     const timeline = currentTimeline();
-    return { documents: new Map(documentsForView().map(d => [d.id, d.value])), composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
+    return { sourceVersion:model.sourceVersion,documents: new Map(documentsForView().map(d => [d.id, d.value])), composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
   }
   async function draw() {
     if (disposed) return; if (previewPending) { renderAgain = true; return; } const doc = compositionDocument(); if (!doc) { preview = undefined; previewError.textContent = current()?.kind === 'world' ? 'World structure is read-only. Open a scene from the world panel to preview it.' : 'No composition selected.'; previewError.hidden = false; canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); return; }
@@ -986,8 +988,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       if (zoomable() && crop && cropFor !== currentId) {
         // Measure once per document at the full frame; the floor stays anchored to the bottom edge.
         sizeCanvas(baseWidth, baseHeight); const measured = await config.preview.render(canvas, request(false, 1));
-        const top = Math.min(baseHeight, ...measured.bounds.filter(b => b.x + b.width > 0 && b.x < baseWidth && b.height > 0).map(b => b.y));
-        cropHeight = Math.max(Math.min(baseHeight, 200), Math.min(baseHeight, Math.ceil(baseHeight - Math.max(0, top) + 12))); cropFor = currentId;
+        const visible = measured.bounds.filter(b => b.x + b.width > 0 && b.x < baseWidth && b.height > 0),top=Math.min(baseHeight,...visible.map(b=>b.y));
+        cropHeight = visible.length?Math.max(Math.min(baseHeight, 200), Math.min(baseHeight, Math.ceil(baseHeight - Math.max(0, top) + 12))):baseHeight; cropFor = currentId;
       }
       sizeCanvas(baseWidth, zoomable() ? Math.round((crop && cropHeight ? cropHeight : baseHeight) * viewZoom) : baseHeight);
       const result = await config.preview.render(canvas, request(overlays, viewZoom));
@@ -1065,17 +1067,18 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function openNewScene() {
     const setup = config.newScene; if (!setup) return; const api = authoringApi(), where = setup.places(api);
     const dialog = element('dialog', 'confirm-dialog'), error = element('p', 'error'), name = element('input'), id = element('input'), place = select(where.places.map(value => ({ value, label: value })), where.initial, () => {});
+    const preset=select([{value:'',label:'Empty scene'},...(setup.presets??[])],'',()=>{});
     error.setAttribute('role', 'alert'); name.value = 'New scene'; let idEdited = false;
     const slug = (text: string) => text.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     id.value = slug(name.value); name.oninput = () => { if (!idEdited) id.value = slug(name.value); }; id.oninput = () => { idEdited = true; };
     const field = (text: string, input: HTMLElement) => { const row = element('label'); row.append(element('span', '', text), input); return row; };
     const cancel = button('Cancel', () => dialog.close()), create = button('Create scene', () => {
-      try { setup.create(api, id.value.trim(), name.value.trim(), place.value); } catch (e) { error.textContent = message(e); return; }
+      try { setup.create(api, id.value.trim(), name.value.trim(), place.value,preset.value||undefined); } catch (e) { error.textContent = message(e); return; }
       dialog.close(); refresh(); openScene(id.value.trim());
     }); create.className = 'primary';
     const actions = element('div', 'dialog-actions'); actions.append(cancel, create);
     const form = element('form'); form.onsubmit = event => { event.preventDefault(); create.click(); };
-    form.append(element('h2', '', 'New scene'), element('p', '', 'An ordinary scene with a default starting state, in the place you choose. Build it with Layout, Logic and Play.'), field('Name', name), field('ID', id), field('Place', place), error, actions);
+    form.append(element('h2', '', 'New scene'), element('p', '', 'An ordinary scene with a default starting state, in the place you choose. Build it with Layout, Logic and Play.'), field('Name', name), field('ID', id), field('Place', place), ...(setup.presets?[field('Preset',preset)]:[]), error, actions);
     dialog.append(form); dialog.onclose = () => dialog.remove(); root.append(dialog); dialog.showModal(); name.select();
   }
   /** Validation reasons for a refused deletion, in the terms of the editor. */

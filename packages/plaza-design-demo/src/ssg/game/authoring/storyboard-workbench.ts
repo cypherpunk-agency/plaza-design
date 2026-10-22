@@ -23,7 +23,8 @@ export function mountStoryboard(host: HTMLElement, context: WorkbenchContext, re
   const city = docs.get('city-source')?.value as CitySource | undefined;
   const districtName = (id: string) => id ? city?.DISTRICTS.find(d => d.id === id)?.name ?? id : 'Between districts';
   // Scene choices: the city's scenes by district, other registered scenes, then the style-frame proposals.
-  const compositions = context.documents.filter(d => d.kind === 'composition' && !d.id.startsWith('sequence-') && !d.id.startsWith('authored.') && d.id !== 'demo-manifest').map(d => d.id);
+  const compositionDocs = new Map(context.documents.filter(d => d.kind === 'composition' && !(d.value as Composition).scene.startsWith('sequence-') && d.id !== 'demo-manifest').map(d => [(d.value as Composition).scene, d]));
+  const compositions = [...compositionDocs.keys()];
   const proposals = PROPOSAL_SCENES.filter(p => docs.get(p.id)?.kind === 'composition');
   const inCity = new Set((city?.PLACES ?? []).flatMap(p => p.scenes));
   const sceneGroups: { label: string; scenes: string[] }[] = [
@@ -56,7 +57,7 @@ export function mountStoryboard(host: HTMLElement, context: WorkbenchContext, re
     waiting.set(key, [canvas]);
     requestAnimationFrame(() => {
       if (disposed) return;
-      const composition = docs.get(scene)?.value as Composition | undefined, shot = el('canvas'); shot.width = 240; shot.height = 135;
+      const composition = compositionDocs.get(scene)?.value as Composition | undefined, shot = el('canvas'); shot.width = 240; shot.height = 135;
       if (composition) try { const v = look(district); render(shot, { documents: new Map(context.documents.map(d => [d.id, d.value])), composition: structuredClone(composition), time: 0, reduced: true, overlays: false, environment: { ...environment, cameraX: 0, minute: v.minute, weather: v.weather, renderScale: shot.width / 640 } }); }
       catch (e) { status.textContent = `Preview of ${sceneName(scene)} unavailable: ${e instanceof Error ? e.message : String(e)}`; }
       shots.set(key, shot);

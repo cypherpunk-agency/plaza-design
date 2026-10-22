@@ -339,7 +339,8 @@ export const lifeguardElement = kit({
 /** The mole out in the bay: rough blocks along the water from the anchor `length` west, the swell breaking white, the light tower at its seaward end. */
 export const breakwaterElement = kit({
   type: 'coast.breakwater', label: 'Breakwater with its light tower (coast kit, distance)',
-  fields: { length: num('Length (in its own depth)', 497, 30, 6000, 1, 'units'), water: num('Height on the water (over the ground line)', 85, -400, 600) },
+  fields: { windowFrom:num('Visible east of (world x)',-1e6,-1e7,1e7),windowTo:num('Visible west of (world x)',1e6,-1e7,1e7),
+    length: num('Length (in its own depth)', 497, 30, 6000, 1, 'units'), water: num('Height on the water (over the ground line)', 85, -400, 600) },
   bounds: p => ({ x: -n(p, 'length'), h: n(p, 'water') + 70, w: n(p, 'length'), tall: 80 }),
   draw(P, p) {
     const x = P.x, len = n(p, 'length') * S, a = P.u(-len), b = P.ax;
@@ -366,6 +367,7 @@ export const breakwaterElement = kit({
 export const farShoreElement = kit({
   type: 'coast.far-shore', label: 'Far shore: a low city along the horizon (coast kit, distance)',
   fields: {
+    windowFrom:num('Visible east of (world x)',-1e6,-1e7,1e7),windowTo:num('Visible west of (world x)',1e6,-1e7,1e7),
     length: num('Length (in its own depth)', 1566, 30, 40000, 1, 'units'), seed: num('Seed', 17, 0, 1e6), horizon: num('Horizon (over the ground line)', 189, -400, 1200),
     spacing: num('Block spacing (world units across the far shore)', 144, 4, 2000), rise: num('Taller toward the west, from (units west)', 378, 0, 40000), clipEast: num('Hidden east of (units west of the anchor; 0: none)', 0, 0, 40000),
   },
@@ -374,6 +376,7 @@ export const farShoreElement = kit({
     const x = P.x, rng = seeded(n(p, 'seed')), len = n(p, 'length') * S, base = P.y(n(p, 'horizon')), rise = n(p, 'rise') * S, clip = n(p, 'clipEast') * S;
     // laid out as the original row: 40 + r·90 apart in the shore's own units (`spacing` scales it)
     const unit = n(p, 'spacing') * S / 130;
+    x.save();x.beginPath();const lo=Math.max(0,P.sx(n(p,'windowFrom'),1)),hi=Math.min(P.W,P.sx(n(p,'windowTo'),1));x.rect(lo,0,Math.max(0,hi-lo),P.H);x.clip();
     for (let u = 0; u < len; u += (40 + rng() * 90) * unit) {
       const h = 3 + rng() * 7 + Math.max(0, u - rise) * 0.005 / unit, w = 4 + rng() * 12, r = rng();
       if (clip > 0 && u < clip) continue;
@@ -381,6 +384,7 @@ export const farShoreElement = kit({
       x.fillStyle = mixHex('#140a1e', '#3a1640', P.warm); x.fillRect(R(sx - w), R(base - h), R(w), R(h) + 1);
       if (r > 0.55) { x.fillStyle = 'rgba(255,160,90,.4)'; x.fillRect(R(sx - w + 2), R(base - h + 2), 1, 1); }
     }
+    x.restore();
   },
 });
 function seeded(seed: number) { let v = seed; return () => (v = (v * 9301 + 49297) % 233280) / 233280; }
@@ -460,4 +464,17 @@ export const reflectionElement = kit({
   },
 });
 
-export const coastElements: Element[] = [groundElement, wallElement, pierElement, footbridgeElement, lifeguardElement, breakwaterElement, farShoreElement, boatsElement, wipeElement, seaElement, reflectionElement];
+/** Low bay bridge: railing, end signals and widely spaced lamps, in the shared world's pixels. */
+export const bridgeElement = kit({
+  type: 'coast.bridge', label: 'Bay bridge rail, signals and lamps (coast kit)',
+  fields: {length:num('Length',1380,120,12000),paint:{kind:'color',label:'Rail',default:'#3a2a3a'}},
+  bounds:p=>({x:0,h:150,w:n(p,'length'),tall:150}),
+  draw(P,p,h){const x=P.x,len=n(p,'length')/ART,a=P.ax,b=P.u(len),gy=P.y(h),L=stripLines(P,h);
+    x.fillStyle=String(p.paint);x.fillRect(R(a),R(gy-5),R(b-a),1);
+    for(let u=0;u<len;u+=10){const s=R(P.u(u));if(P.onScreen(s,s,2))x.fillRect(s,R(gy-5),1,5);}
+    for(const u of [14,len-14]){const s=R(P.u(u)),top=gy-46;if(!P.onScreen(s,s,20))continue;x.fillStyle='#1e1222';x.fillRect(s-3,R(top),6,46);x.fillRect(s-5,R(top),10,3);x.fillStyle='rgba(255,136,0,.35)';x.fillRect(s+2,R(top),1,46);x.fillStyle=P.still||Math.floor(P.f/20)%2?'rgba(255,42,68,1)':'rgba(255,42,68,.3)';x.fillRect(s-1,R(top-3),3,3);}
+    for(let u=80;u<len-40;u+=115){const s=R(P.u(u)),top=L.BACK-36;if(!P.onScreen(s,s,30))continue;x.fillStyle='#0e080c';x.fillRect(s,R(top),2,R(L.BACK-top));x.fillRect(s-6,R(top),8,2);x.fillStyle='rgba(255,220,160,.95)';x.fillRect(s-6,R(top+2),4,1);const glow=x.createRadialGradient(s-4,top+3,1,s-4,top+3,22);glow.addColorStop(0,'rgba(255,210,150,.18)');glow.addColorStop(1,'rgba(255,210,150,0)');x.fillStyle=glow;x.fillRect(s-26,top-18,44,44);}
+  },
+});
+
+export const coastElements: Element[] = [groundElement, bridgeElement, wallElement, pierElement, footbridgeElement, lifeguardElement, breakwaterElement, farShoreElement, boatsElement, wipeElement, seaElement, reflectionElement];

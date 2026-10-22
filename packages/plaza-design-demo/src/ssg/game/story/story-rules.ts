@@ -69,7 +69,7 @@ export interface Trigger {
  do:Cue[];
 }
 export interface GoalHint {program:string;exceptScene:string;afterScene:string;afterGoal:string;line:string}
-export interface Persona {name:string;calmWeather:boolean;deck:{files:Record<string,string>;whoami:string}}
+export interface Persona {name:string;calmWeather:boolean;character?:import('../runtime/play-profiles').PlayerCharacter;deck:{files:Record<string,string>;whoami:string}}
 
 // ---------- the gate and the card: how far along are they ----------
 

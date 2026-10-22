@@ -48,7 +48,7 @@ export interface EventInspectionOptions{documents?:readonly EditorDocument[];net
 
 export interface EventInspection{nodes:EventNode[];edges:EventEdge[];scenes:string[];diagnostics:string[];coverage:{sceneCount:number;declarativeScenes:number;compositionDocuments:number;timelineSequences:number;opaqueNodes:number;missingNodes:number;conditionCount:number}}
 
-const dirs=(id:string)=>id==='harborShift'?'harbor-shift':id;
+const dirs=(id:string)=>id;
 
 const source=(scene:string,pointer?:string):EventSource=>AUTHORED.has(scene)?{file:'scenes/authored.json',pointer:'/scenes/'+AUTHORED.get(scene)+'/devices'+(pointer??'')}:scene==='library'&&pointer?.startsWith('/dialogue/catalog')?{file:'scenes/library/gameplay.json',pointer:'/conversations/catalog'}:({file:scene==='@net'?'data/net.json':scene==='@logic'?'data/logic.json':`scenes/${dirs(scene)}/devices.json`,...(pointer?{pointer}:{})});
 

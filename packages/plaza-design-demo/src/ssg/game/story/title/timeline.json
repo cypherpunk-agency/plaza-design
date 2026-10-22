@@ -11,7 +11,7 @@
           "from": 0,
           "to": 7,
           "camera": {
-            "x": 6220,
+            "x": 980,
             "h": 0,
             "zoom": 1
           }
@@ -74,7 +74,7 @@
           "from": 0,
           "to": 7,
           "camera": {
-            "x": 6220,
+            "x": 980,
             "h": 0,
             "zoom": 1
           }
@@ -137,7 +137,7 @@
           "from": 0,
           "to": 68,
           "camera": {
-            "x": 6220,
+            "x": 980,
             "h": 0,
             "zoom": 1
           }
@@ -153,22 +153,22 @@
           "keys": [
             {
               "time": 0,
-              "value": 6220,
+              "value": 980,
               "ease": "in"
             },
             {
               "time": 9,
-              "value": 5896,
+              "value": 1952,
               "ease": "linear"
             },
             {
               "time": 52.7,
-              "value": 2750,
+              "value": 11390,
               "ease": "out"
             },
             {
               "time": 62.7,
-              "value": 2390
+              "value": 13000
             }
           ]
         },
@@ -187,7 +187,7 @@
             },
             {
               "time": 68,
-              "value": 1192
+              "value": 1140
             }
           ]
         },
@@ -195,48 +195,135 @@
           "id": "train-arrives",
           "target": {
             "kind": "state",
-            "instance": "line0",
-            "property": "train"
+            "instance": "service",
+            "property": "x"
           },
           "keys": [
             {
               "time": 0,
-              "value": 4400,
+              "value": -6520,
               "ease": "hold"
             },
             {
               "time": 43.5,
-              "value": 4060,
+              "value": -5500,
               "ease": "linear"
             },
             {
               "time": 56.5,
-              "value": 2640,
+              "value": -1240,
               "ease": "out"
             },
             {
               "time": 64.5,
-              "value": 2220
+              "value": 20
             }
           ]
         },
         {
-          "id": "end-dark",
+          "id": "city-rain",
           "target": {
             "kind": "state",
-            "instance": "tunnel-fade",
-            "property": "dark"
+            "instance": "sky",
+            "property": "rain"
           },
           "keys": [
             {
               "time": 0,
+              "value": 0,
+              "ease": "hold"
+            },
+            {
+              "time": 17,
+              "value": 0,
+              "ease": "smooth"
+            },
+            {
+              "time": 20,
+              "value": 0.7,
+              "ease": "hold"
+            },
+            {
+              "time": 46,
+              "value": 0.7,
+              "ease": "smooth"
+            },
+            {
+              "time": 51,
               "value": 0
             }
-          ],
-          "motion": {
-            "type": "opening.tunnel-dark",
-            "props": {}
-          }
+          ]
+        },
+        {
+          "id": "arrival-doors",
+          "target": {
+            "kind": "state",
+            "instance": "service",
+            "property": "open"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 0,
+              "ease": "hold"
+            },
+            {
+              "time": 64.5,
+              "value": 0,
+              "ease": "smooth"
+            },
+            {
+              "time": 65.5,
+              "value": 1
+            }
+          ]
+        },
+        {
+          "id": "playable-framing",
+          "target": {
+            "kind": "state",
+            "instance": "sky",
+            "property": "playFit"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 0,
+              "ease": "hold"
+            },
+            {
+              "time": 63,
+              "value": 0,
+              "ease": "smooth"
+            },
+            {
+              "time": 68,
+              "value": 1
+            }
+          ]
+        },
+        {
+          "id": "platform-height",
+          "target": {
+            "kind": "camera",
+            "property": "h"
+          },
+          "keys": [
+            {
+              "time": 0,
+              "value": 0,
+              "ease": "hold"
+            },
+            {
+              "time": 63,
+              "value": 0,
+              "ease": "smooth"
+            },
+            {
+              "time": 68,
+              "value": 160
+            }
+          ]
         }
       ],
       "text": [
@@ -245,40 +332,40 @@
           "from": 1,
           "to": 6.5,
           "text": "THE BEACH · WEST SHORE",
-          "x": 14,
-          "h": -22
+          "x": 42,
+          "h": -66
         },
         {
           "id": "downtown",
           "from": 19,
           "to": 24.5,
           "text": "DOWNTOWN",
-          "x": 14,
-          "h": -22
+          "x": 42,
+          "h": -66
         },
         {
           "id": "galleria",
           "from": 47.5,
           "to": 52.5,
           "text": "GALLERIA",
-          "x": 14,
-          "h": -22
+          "x": 42,
+          "h": -66
         },
         {
           "id": "spire",
           "from": 54,
           "to": 58.5,
           "text": "THE SPIRE · ACROSS THE BAY",
-          "x": 14,
-          "h": -22
+          "x": 42,
+          "h": -66
         },
         {
           "id": "harbor",
           "from": 61,
           "to": 66,
           "text": "HARBOR STATION · LINE 0",
-          "x": 14,
-          "h": -22
+          "x": 42,
+          "h": -66
         }
       ],
       "fades": [],
@@ -317,7 +404,7 @@
         }
       ],
       "handoff": {
-        "scene": "train"
+        "scene": "harbor-station"
       }
     }
   ]

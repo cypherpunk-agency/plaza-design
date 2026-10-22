@@ -187,6 +187,7 @@ export interface SceneArtworkFrame {
   reflections?:[number,string][];
 }
 export interface SceneDef {
+  peopleFlows?:readonly import('../engine/people').PeopleSource[];
   artworkFrame?:SceneArtworkFrame;
   /** Pure registered dockworker presentation, reading the current source's flag roles (and saved state: the save's gameplay values). */
   dockworkerCarry?:(flags:Readonly<Record<string,boolean>>,values?:import('../engine/gameplay/types').StateValues)=>'parcel'|'case'|null;
@@ -200,8 +201,12 @@ export interface SceneDef {
   gameplay?: GameplayDefinition;
   /** Story objective for scenes without hacking goals. */
   attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
-  storyDay?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number;
-  storyMinute?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number;
+  /** The story's day (scene `timeDay`); undefined: the clock's own day. */
+  storyDay?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number|undefined;
+  /** The minute the story pins the clock to (scene `time`); undefined: it runs (see `storyRun`). */
+  storyMinute?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number|undefined;
+  /** While the story clock runs (a scene `time` row with `rate`): how fast, and the minute it holds at. */
+  storyRun?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{rate:number;until?:number}|undefined;
   /** What this scene says and does in each story phase (scene.json `phases`; story/story-rules.ts). The game loop reads `phases[phase]`; nothing else decides it. */
   phases?:Readonly<Record<string,import('../story/story-rules').ScenePhase>>;
   /** The room's light cue (scene.json `wash`; story-rules.ts `washTone`). */
@@ -220,6 +225,8 @@ export interface SceneDef {
   people?: Character[];
   /** Scene actor artwork in its authored order, before companion/player drawing. */
   drawActors?:(ctx:CanvasRenderingContext2D,view:View)=>void;
+  /** Read-only visibility of set/playfield rows overhanging a joined zone's logical window. */
+  artworkVisible?:(view:View,model:SceneModel)=>boolean;
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];
   /**
@@ -246,6 +253,8 @@ export interface SceneDef {
   outdoor?: boolean;
   /** The horizon's height over the ground (world units) for the engine's sky (`ambient.sky`); default 0. */
   horizon?: number;
+  /** Zone origin in an independent world backdrop's coordinates (not artwork owned by this zone). */
+  backdrop?: {id:string;x:number;h?:number};
   /** Light sources on the light layer (sets/lighting.ts `SceneLight`): lamps, windows, neon, screens. */
   lights?: SceneLight[];
   /** Key props that cast a shadow (people, robots and animals cast theirs anyway). */
