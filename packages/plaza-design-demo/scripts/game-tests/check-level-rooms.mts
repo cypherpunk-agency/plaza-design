@@ -75,3 +75,9 @@ for (const closed of (roomElement.fields.closed as {options: string[]}).options)
 drawn = 0; roomElement.draw(canvas, view, room, {} as never);
 assert.equal(drawn, openCalls, 'a room that opens always draws only its wall, as before');
 console.log('Level rooms PASS: rooms open on arrival, remember or close, never-rooms stay shut, contents fade with their room, the save hands seen rooms back, editor previews all or one floor, every closed look draws.');
+// a path of floors: rooms that remember stay open along it; a closing one only where the player stands
+assert.deepEqual(restingLevelView(src, false, 'ground, upper').rooms, {'room-ground': 1, 'room-upper': 1, 'room-store': 0}, 'after the ground floor and upstairs, both are open');
+assert.deepEqual(restingLevelView(src, false, 'upper, ground').rooms, {'room-ground': 1, 'room-upper': 0, 'room-store': 0}, 'back down, the upper room (it closes) is shut again');
+// the level hands the room its openness as visual state: the room declares it (open by default)
+assert.equal((roomElement.visualFields as Record<string, {default: number}>).open.default, 1);
+console.log('Level room paths PASS: preview along a path of floors; the room declares its open state.');

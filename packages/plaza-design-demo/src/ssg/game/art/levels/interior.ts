@@ -39,7 +39,10 @@ export const roomElement: Element = {
     keep: { kind: 'select', label: 'Once seen', options: ['remember', 'close'], default: 'remember' },
     closed: { kind: 'select', label: 'Looks while shut', options: ['dark', 'windows', 'section', 'earth'], default: 'dark' },
     doorLight: { kind: 'boolean', label: 'Light under a door while shut', default: false },
+    doorAt: num('Door at (units from the left of the room; -1: the middle)', -1, -1, 4000),
   },
+  // how open the room is, from the level while playing (1: open, the default for a room nobody set)
+  visualFields: { open: num('Open', 1, 0, 1, 0.01) },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: Number(p.height), role: 'mount' }, middle: { x: Number(p.width) / 2, h: 0, role: 'mount' } }),
   draw: (x, v, p, s) => {
@@ -94,7 +97,7 @@ function drawShut(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<strin
         if (lit && i % 2) rect(x, v, cx, t * 0.35 + Math.min(22, t * 0.45) * 0.5, 18, Math.min(22, t * 0.45) * 0.5, 'rgba(60,40,24,.8)');
       }
     }
-    if (p.doorLight === true) rect(x, v, w / 2 - 9, 0, 18, 1.5, 'rgba(255,200,130,.85)');
+    if (p.doorLight === true) { const at = Number(p.doorAt ?? -1), cx = at >= 0 ? Math.min(w - 9, Math.max(9, at)) : w / 2; rect(x, v, cx - 9, 0, 18, 1.5, 'rgba(255,200,130,.85)'); }
     x.restore();
 }
 
