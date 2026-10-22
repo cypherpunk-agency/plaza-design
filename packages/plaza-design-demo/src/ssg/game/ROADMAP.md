@@ -29,7 +29,8 @@ Decided with Tommi, 2026-10-22; detail in [SEAMLESS-WORLD.md](./docs/design/SEAM
 A **zone** is the unit that is authored, saved, loaded and unloaded (today's "scene"; code keeps
 "scene" for now). A **seam** joins two zones with no cut, an **exit** with a cut; the **world**
 is the graph of zones. City → district → place stays the logical layout. One engine, one
-renderer: a scene that joins nothing is a world with one zone.
+renderer: a scene that joins nothing is a world with one zone. (A scene model's trigger `Zones` in engine/model.ts are a
+different thing.)
 
 ## Next work
 
