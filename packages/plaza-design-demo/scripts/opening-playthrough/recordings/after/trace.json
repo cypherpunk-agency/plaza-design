@@ -1,0 +1,2402 @@
+[
+ {
+  "n": 1,
+  "name": "title-sunrise",
+  "note": "the sun is coming up out of the sea",
+  "shot": "01-title-sunrise.png",
+  "here": "downtown",
+  "phase": "free",
+  "flags": {},
+  "clock": {
+   "day": 1,
+   "min": 580,
+   "text": "09:40",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": null,
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 720,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": ""
+ },
+ {
+  "n": 2,
+  "name": "title-menu",
+  "note": "the settled shot with the main menu",
+  "shot": "02-title-menu.png",
+  "here": "downtown",
+  "phase": "free",
+  "flags": {},
+  "clock": {
+   "day": 1,
+   "min": 580,
+   "text": "09:40",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": null,
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 720,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": ""
+ },
+ {
+  "n": 3,
+  "name": "glide-starts",
+  "note": "the glide from the coast to Downtown and LINE 0 (not a still: the scene is the title)",
+  "shot": "03-glide-starts.png",
+  "here": "downtown",
+  "phase": "free",
+  "flags": {},
+  "clock": {
+   "day": 1,
+   "min": 580,
+   "text": "09:40",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": null,
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 720,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": ""
+ },
+ {
+  "n": 4,
+  "name": "train-arrival",
+  "note": "opening:home, car 3, 05:41",
+  "shot": "04-train-arrival.png",
+  "here": "train",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:train": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 341,
+   "text": "05:41",
+   "pinned": 341
+  },
+  "bubble": {
+   "name": "YOU",
+   "text": "End of shift. Fourteen parcels, zero complaints, one sore back."
+  },
+  "prompt": null,
+  "goal": "get off at DOWNTOWN",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 780,
+   "y": 0
+  },
+  "targets": [
+   "exit:line",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.",
+  "said": [
+   "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.",
+   "YOU: Downtown is next. Then bed.",
+   "YOU: ← → walk. E talks to people."
+  ]
+ },
+ {
+  "n": 5,
+  "name": "train-brake-popup",
+  "note": "the car device popup: story chips",
+  "shot": "05-train-brake-popup.png",
+  "here": "train",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:train": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 341,
+   "text": "05:41",
+   "pinned": 341
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "train",
+   "label": "[E] USE"
+  },
+  "goal": "get off at DOWNTOWN",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": true,
+  "captions": [],
+  "chips": [
+   "read the brake plate",
+   "pull the brake"
+  ],
+  "pings": 0,
+  "player": {
+   "x": 1138.7,
+   "y": 0
+  },
+  "targets": [
+   "exit:line",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.",
+  "chipsSeen": [
+   "read the brake plate",
+   "pull the brake"
+  ]
+ },
+ {
+  "n": 6,
+  "name": "train-brake-plate",
+  "note": "chip: read the brake plate",
+  "shot": "06-train-brake-plate.png",
+  "here": "train",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:train": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 341,
+   "text": "05:41",
+   "pinned": 341
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "train",
+   "label": "[E] USE"
+  },
+  "goal": "get off at DOWNTOWN",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "EMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE."
+  ],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 1138.7,
+   "y": 0
+  },
+  "targets": [
+   "exit:line",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE."
+ },
+ {
+  "n": 7,
+  "name": "train-talk-suit",
+  "note": "a stranger in the car (phase lines home train/suit)",
+  "shot": "07-train-talk-suit.png",
+  "here": "train",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:train": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 341,
+   "text": "05:41",
+   "pinned": 341
+  },
+  "bubble": {
+   "name": "MAN IN A SUIT",
+   "text": "Morning shift?"
+  },
+  "prompt": {
+   "id": "read:suit",
+   "label": "[E] TALK"
+  },
+  "goal": "get off at DOWNTOWN",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 226.3,
+   "y": 0
+  },
+  "targets": [
+   "exit:line",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.",
+  "said": [
+   "MAN IN A SUIT: Morning shift?",
+   "MAN IN A SUIT: Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
+  ]
+ },
+ {
+  "n": 8,
+  "name": "train-doors-open",
+  "note": "the car stands at DOWNTOWN with its doors open",
+  "shot": "08-train-doors-open.png",
+  "here": "train",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:train": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 341,
+   "text": "05:41",
+   "pinned": 341
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "exit:out",
+   "label": "[E] STEP OUT · DOWNTOWN"
+  },
+  "goal": "get off at DOWNTOWN",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 777.4,
+   "y": 0
+  },
+  "targets": [
+   "exit:line",
+   "exit:out",
+   "exit:out2",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
+ },
+ {
+  "n": 9,
+  "name": "metro-arrival",
+  "note": "metro platform, 05:48",
+  "shot": "09-metro-arrival.png",
+  "here": "metro",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 348,
+   "text": "05:48",
+   "pinned": 348
+  },
+  "bubble": {
+   "name": "YOU",
+   "text": "Downtown. The exit is at the far end, by the stairs."
+  },
+  "prompt": {
+   "id": "exit:train",
+   "label": "[E] BOARD · LINE 0 > GALLERIA"
+  },
+  "goal": "go home",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 365,
+   "y": 0
+  },
+  "targets": [
+   "exit:downtown",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:citymap",
+   "read:board",
+   "read:map",
+   "read:screen",
+   "read:regular",
+   "read:poster"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.",
+  "said": [
+   "YOU: Downtown. The exit is at the far end, by the stairs."
+  ]
+ },
+ {
+  "n": 10,
+  "name": "metro-talk-regular",
+  "note": "phase lines home metro/regular",
+  "shot": "10-metro-talk-regular.png",
+  "here": "metro",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 348,
+   "text": "05:48",
+   "pinned": 348
+  },
+  "bubble": {
+   "name": "MAN WITH A PAPER",
+   "text": "Morning paper. The Registry retired 1,204 records overnight."
+  },
+  "prompt": {
+   "id": "read:regular",
+   "label": "[E] TALK"
+  },
+  "goal": "go home",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 936.9,
+   "y": 0
+  },
+  "targets": [
+   "exit:downtown",
+   "exit:citymap",
+   "read:board",
+   "read:map",
+   "read:screen",
+   "read:regular",
+   "read:poster"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.",
+  "said": [
+   "MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.",
+   "MAN WITH A PAPER: Retired. Lucky records. I have been asking for that for years."
+  ]
+ },
+ {
+  "n": 11,
+  "name": "metro-at-turnstile",
+  "note": "standing at the exit gate",
+  "shot": "11-metro-at-turnstile.png",
+  "here": "metro",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 348,
+   "text": "05:48",
+   "pinned": 348
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "exit:downtown",
+   "label": "[E] STAIRS DOWN · DOWNTOWN"
+  },
+  "goal": "go home",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 33.6,
+   "y": 0
+  },
+  "targets": [
+   "exit:downtown",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:citymap",
+   "read:board",
+   "read:map",
+   "read:screen",
+   "read:regular",
+   "read:poster"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years."
+ },
+ {
+  "n": 12,
+  "name": "turnstile-verifying",
+  "note": "the checkpoint is verifying (the beat is timed in clock frames)",
+  "shot": "12-turnstile-verifying.png",
+  "here": "metro",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 348,
+   "text": "05:48",
+   "pinned": 348
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "exit:downtown",
+   "label": "[E] STAIRS DOWN · DOWNTOWN"
+  },
+  "goal": "go home",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": "TURNSTILE: verifying",
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 33.6,
+   "y": 0
+  },
+  "targets": [
+   "exit:downtown",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:train",
+   "exit:citymap",
+   "read:board",
+   "read:map",
+   "read:screen",
+   "read:regular",
+   "read:poster"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years."
+ },
+ {
+  "n": 13,
+  "name": "turnstile-ok",
+  "note": "the checkpoint says ok; the street opens next",
+  "shot": "13-turnstile-ok.png",
+  "here": "metro",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 348,
+   "text": "05:48",
+   "pinned": 348
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "exit:downtown",
+   "label": "[E] STAIRS DOWN · DOWNTOWN"
+  },
+  "goal": "go home",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": "TURNSTILE: verifying… … ok.",
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 33.6,
+   "y": 0
+  },
+  "targets": [
+   "exit:downtown",
+   "exit:citymap",
+   "read:board",
+   "read:map",
+   "read:screen",
+   "read:regular",
+   "read:poster"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years."
+ },
+ {
+  "n": 14,
+  "name": "downtown-before-arrival",
+  "note": "opening:street, Downtown before, 05:52",
+  "shot": "14-downtown-before-arrival.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": {
+   "name": "YOU",
+   "text": "Ten to six. The street is still warm from the night."
+  },
+  "prompt": {
+   "id": "exit:metro",
+   "label": "[E] METRO"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1440,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.",
+  "said": [
+   "YOU: Ten to six. The street is still warm from the night.",
+   "YOU: Home is the capsule tower, past the metro stairs."
+  ]
+ },
+ {
+  "n": 15,
+  "name": "downtown-talk-umbrella",
+  "note": "phase lines home downtown/umbrella",
+  "shot": "15-downtown-talk-umbrella.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": {
+   "name": "UMBRELLA",
+   "text": "Rain's late today. Like everybody."
+  },
+  "prompt": {
+   "id": "use:umbrella",
+   "label": "[E] TALK"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 603,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.",
+  "said": [
+   "UMBRELLA: Rain's late today. Like everybody."
+  ]
+ },
+ {
+  "n": 16,
+  "name": "downtown-shop-closed",
+  "note": "phase exit rule home downtown/shop",
+  "shot": "16-downtown-shop-closed.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": {
+   "name": "SHOP",
+   "text": "OPENS 07:00."
+  },
+  "prompt": {
+   "id": "exit:shop",
+   "label": "[E] CORNER SHOP"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 244.3,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": ": End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.",
+  "said": [
+   "SHOP: OPENS 07:00.",
+   "SHOP: DELIVERIES ROUND THE BACK."
+  ]
+ },
+ {
+  "n": 17,
+  "name": "downtown-moth-door",
+  "note": "phase exit rule home downtown/moth",
+  "shot": "17-downtown-moth-door.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": {
+   "name": "DOOR",
+   "text": "RESIDENTS ONLY. PRESENT KEY CHIP."
+  },
+  "prompt": {
+   "id": "exit:moth",
+   "label": "[E] FLAT 4C · MOTH"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1493.3,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": ".Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.",
+  "said": [
+   "DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.",
+   "DOOR: FLAT 4C · RESIDENT: MOTH."
+  ]
+ },
+ {
+  "n": 18,
+  "name": "downtown-gate-popup",
+  "note": "the market gate popup: story chips",
+  "shot": "18-downtown-gate-popup.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "gate",
+   "label": "[E] USE"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": true,
+  "captions": [],
+  "chips": [
+   "push the gate",
+   "read the counter"
+  ],
+  "pings": 0,
+  "player": {
+   "x": 70.1,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": ".Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.",
+  "chipsSeen": [
+   "push the gate",
+   "read the counter"
+  ]
+ },
+ {
+  "n": 19,
+  "name": "downtown-gate-chip",
+  "note": "chip: push the gate (a caption over the gate)",
+  "shot": "19-downtown-gate-chip.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "gate",
+   "label": "[E] USE"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "NEON MARKET GATE: closed. market hours 07:00 to 02:00."
+  ],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 70.1,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": "GENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00."
+ },
+ {
+  "n": 20,
+  "name": "downtown-at-tower",
+  "note": "at the capsule tower door",
+  "shot": "20-downtown-at-tower.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "exit:capsule",
+   "label": "[E] HOME · CAPSULE 7B"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1228.2,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": "GENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00."
+ },
+ {
+  "n": 21,
+  "name": "concierge-acknowledges",
+  "note": "",
+  "shot": "21-concierge-acknowledges.png",
+  "here": "downtown",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:downtown": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 352,
+   "text": "05:52",
+   "pinned": 352
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "exit:capsule",
+   "label": "[E] HOME · CAPSULE 7B"
+  },
+  "goal": "tell the fixer your name",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": "welcome home. you are expected. the lift is on its way down.",
+  "popup": false,
+  "captions": [
+   "CONCIERGE: welcome home. you are expected. the lift is on its way down.[E] CONTINUE"
+  ],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1228.2,
+   "y": 0
+  },
+  "targets": [
+   "exit:shop",
+   "exit:library",
+   "exit:yard",
+   "exit:capsule",
+   "exit:metro",
+   "exit:moth",
+   "exit:taxi",
+   "exit:map",
+   "use:fixer",
+   "use:hood",
+   "use:umbrella",
+   "use:hat",
+   "gate",
+   "box",
+   "sign",
+   "cam3",
+   "billboard",
+   "till",
+   "dlv9",
+   "relay",
+   "fence",
+   "scan",
+   "read:plaque"
+  ],
+  "term": "A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down."
+ },
+ {
+  "n": 22,
+  "name": "flat-arrival",
+  "note": "opening:flat, the flat at dawn, 06:04",
+  "shot": "22-flat-arrival.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": {
+   "name": "YOU",
+   "text": "Home. Four walls, one window, one cat."
+  },
+  "prompt": {
+   "id": "door",
+   "label": "[E] DOOR"
+  },
+  "goal": "get some sleep",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 56,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": "xit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.",
+  "said": [
+   "YOU: Home. Four walls, one window, one cat.",
+   "YOU: Kettle, blinds, bed. In that order, if I am lucky.",
+   "YOU: E or a tap on a thing: use it."
+  ]
+ },
+ {
+  "n": 23,
+  "name": "flat-door-bed-first",
+  "note": "phase exit rule flat capsule/door",
+  "shot": "23-flat-door-bed-first.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": {
+   "name": "YOU",
+   "text": "Bed first. The city will still be there."
+  },
+  "prompt": {
+   "id": "door",
+   "label": "[E] DOOR"
+  },
+  "goal": "get some sleep",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 37.8,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": " A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there."
+ },
+ {
+  "n": 24,
+  "name": "flat-kettle-popup",
+  "note": "kettle popup",
+  "shot": "24-flat-kettle-popup.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "kettle",
+   "label": "[E] USE"
+  },
+  "goal": "get some sleep",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": true,
+  "captions": [],
+  "chips": [
+   "boil"
+  ],
+  "pings": 0,
+  "player": {
+   "x": 184.7,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": " A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.",
+  "chipsSeen": [
+   "boil"
+  ]
+ },
+ {
+  "n": 25,
+  "name": "flat-kettle-boiled",
+  "note": "chip: boil (device verb)",
+  "shot": "25-flat-kettle-boiled.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "kettle",
+   "label": "[E] USE"
+  },
+  "goal": "get some sleep",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "KETTLE: boiled. 100°C."
+  ],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 184.7,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": "ired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C."
+ },
+ {
+  "n": 26,
+  "name": "flat-blinds-open",
+  "note": "chip: open the blinds (state change sun)",
+  "shot": "26-flat-blinds-open.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "blinds",
+   "label": "[E] USE"
+  },
+  "goal": "get some sleep",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "KETTLE: boiled. 100°C.",
+   "the blinds roll up. dawn, the colour of weak tea."
+  ],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 260,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": "king for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea."
+ },
+ {
+  "n": 27,
+  "name": "flat-idle-ping",
+  "note": "stood still at the bed until the attention ping showed: true",
+  "shot": "27-flat-idle-ping.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "story:bed",
+   "label": "[E] SLEEP"
+  },
+  "goal": "get some sleep",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 500.5,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.",
+  "pingShown": true,
+  "pingAfterS": 20
+ },
+ {
+  "n": 28,
+  "name": "flat-bed-prompt",
+  "note": "the bed prompt (an opening-only target)",
+  "shot": "28-flat-bed-prompt.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "story:bed",
+   "label": "[E] SLEEP"
+  },
+  "goal": "get some sleep",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 500.5,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off."
+ },
+ {
+  "n": 29,
+  "name": "sleep-card-from",
+  "note": "the card: from",
+  "shot": "29-sleep-card-from.png",
+  "here": "capsule",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "story:bed",
+   "label": "[E] SLEEP"
+  },
+  "goal": "get some sleep",
+  "hint": "",
+  "gate": null,
+  "card": {
+   "stage": "card",
+   "text": "06:04",
+   "label": "CAPSULE 7B"
+  },
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 500.5,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "story:bed",
+   "pixel"
+  ],
+  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off."
+ },
+ {
+  "n": 30,
+  "name": "sleep-card-to",
+  "note": "the card: to",
+  "shot": "30-sleep-card-to.png",
+  "here": "capsule",
+  "phase": "deleted",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 364,
+   "text": "06:04",
+   "pinned": 364
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "pixel",
+   "label": "[E] PET PIXEL"
+  },
+  "goal": "get out",
+  "hint": "",
+  "gate": null,
+  "card": {
+   "stage": "card",
+   "text": "09:40",
+   "label": "CAPSULE 7B"
+  },
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 466,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "pixel"
+  ],
+  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off."
+ },
+ {
+  "n": 31,
+  "name": "morning-wakes",
+  "note": "opening:slept; deleted; 09:40; the player says what is wrong",
+  "shot": "31-morning-wakes.png",
+  "here": "capsule",
+  "phase": "deleted",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 580,
+   "text": "09:40",
+   "pinned": 580
+  },
+  "bubble": {
+   "name": "YOU",
+   "text": "Morning. The light is wrong."
+  },
+  "prompt": {
+   "id": "pixel",
+   "label": "[E] PET PIXEL"
+  },
+  "goal": "get out",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 466,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "pixel"
+  ],
+  "term": "ay. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.",
+  "said": [
+   "YOU: Morning. The light is wrong.",
+   "YOU: Cold. Like the flat forgot who it is heating."
+  ]
+ },
+ {
+  "n": 32,
+  "name": "morning-door-denied",
+  "note": "chip: try the door (fail 1)",
+  "shot": "32-morning-door-denied.png",
+  "here": "capsule",
+  "phase": "deleted",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 580,
+   "text": "09:40",
+   "pinned": 580
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "lock",
+   "label": "[E] USE"
+  },
+  "goal": "get out",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "DOOR: rent: pending. identity: not found."
+  ],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 78.7,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "pixel"
+  ],
+  "term": "BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.> use bolt --openDOOR: rent: pending. identity: not found."
+ },
+ {
+  "n": 33,
+  "name": "morning-kettle-denied",
+  "note": "chip: boil (fail 2)",
+  "shot": "33-morning-kettle-denied.png",
+  "here": "capsule",
+  "phase": "deleted",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 580,
+   "text": "09:40",
+   "pinned": 580
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "kettle",
+   "label": "[E] USE"
+  },
+  "goal": "get out",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "DOOR: rent: pending. identity: not found.",
+   "KETTLE: no account. no water."
+  ],
+  "chips": [],
+  "pings": 1,
+  "player": {
+   "x": 185.3,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "pixel"
+  ],
+  "term": " 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.> use bolt --openDOOR: rent: pending. identity: not found.> use kettle --boilKETTLE: no account. no water."
+ },
+ {
+  "n": 34,
+  "name": "uplink-moth-message",
+  "note": "Moth writes; uplink.so arrives",
+  "shot": "34-uplink-moth-message.png",
+  "here": "capsule",
+  "phase": "uplinked",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "opening:uplink": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 582.42,
+   "text": "09:42",
+   "pinned": null
+  },
+  "bubble": {
+   "name": "MOTH › YOU",
+   "text": "they took you off the list. not a glitch. don't call anyone."
+  },
+  "prompt": {
+   "id": "kettle",
+   "label": "[E] USE"
+  },
+  "goal": "jack in to your PC",
+  "hint": "+ uplink.so",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [
+   "KETTLE: no account. no water."
+  ],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 185.3,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "rest:bed",
+   "pixel"
+  ],
+  "term": " the flat forgot who it is heating.> use bolt --openDOOR: rent: pending. identity: not found.> use kettle --boilKETTLE: no account. no water.moth> they took you off the list. not a glitch. don't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.so",
+  "said": [
+   "MOTH › YOU: they took you off the list. not a glitch. don't call anyone.",
+   "MOTH › YOU: here's a way back in. jack in to your PC.",
+   "MOTH › YOU: → uplink.so",
+   "MOTH › YOU: uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.",
+   "YOU: uplink.so. Moth wrote this. I can tell by the comments.",
+   "YOU: H: see how things work. B: the board. E at the PC, then ⌁ jack in."
+  ]
+ },
+ {
+  "n": 35,
+  "name": "uplinked",
+  "note": "opening:uplink; the clock is released",
+  "shot": "35-uplinked.png",
+  "here": "capsule",
+  "phase": "uplinked",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "opening:uplink": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 585.26,
+   "text": "09:45",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "kettle",
+   "label": "[E] USE"
+  },
+  "goal": "jack in to your PC",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 185.3,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "rest:bed",
+   "pixel"
+  ],
+  "term": "ount. no water.moth> they took you off the list. not a glitch. don't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in."
+ },
+ {
+  "n": 36,
+  "name": "uplinked-pc-popup",
+  "note": "HOME-PC popup",
+  "shot": "36-uplinked-pc-popup.png",
+  "here": "capsule",
+  "phase": "uplinked",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "opening:uplink": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 586.69,
+   "text": "09:46",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "pc",
+   "label": "[E] USE"
+  },
+  "goal": "jack in to your PC",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": true,
+  "captions": [],
+  "chips": [
+   "check mail",
+   "jack in",
+   "hack it"
+  ],
+  "pings": 0,
+  "player": {
+   "x": 349,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "rest:bed",
+   "pixel"
+  ],
+  "term": "ount. no water.moth> they took you off the list. not a glitch. don't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in.",
+  "chipsSeen": [
+   "check mail",
+   "jack in",
+   "hack it"
+  ]
+ },
+ {
+  "n": 37,
+  "name": "jacked-in",
+  "note": "jacked in to HOME-PC: opening:jacked, hacking is yours",
+  "shot": "37-jacked-in.png",
+  "here": "capsule",
+  "phase": "free",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:jacked": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "opening:uplink": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 587.6,
+   "text": "09:47",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "pc",
+   "label": "[E] USE"
+  },
+  "goal": "get the router online, and keep it on",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 349,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "rest:bed",
+   "pixel"
+  ],
+  "term": "on't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in.> login pcYour computer. Its fan has been sighing since Tuesday.",
+  "jackChip": "jack in"
+ },
+ {
+  "n": 38,
+  "name": "jacked-settled",
+  "note": "a moment later",
+  "shot": "38-jacked-settled.png",
+  "here": "capsule",
+  "phase": "free",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:jacked": true,
+   "opening:said:flat:capsule": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:said:home:train": true,
+   "opening:slept": true,
+   "opening:street": true,
+   "opening:uplink": true,
+   "scene:capsule": true,
+   "scene:downtown": true,
+   "seen:capsule": true,
+   "seen:downtown": true,
+   "seen:metro": true,
+   "seen:train": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 588.39,
+   "text": "09:48",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "pc",
+   "label": "[E] USE"
+  },
+  "goal": "get the router online, and keep it on",
+  "hint": "",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 349,
+   "y": 0
+  },
+  "targets": [
+   "door",
+   "lock",
+   "fridge",
+   "kettle",
+   "blinds",
+   "pc",
+   "plug",
+   "router",
+   "rest:bed",
+   "pixel"
+  ],
+  "term": "on't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in.> login pcYour computer. Its fan has been sighing since Tuesday."
+ }
+]
