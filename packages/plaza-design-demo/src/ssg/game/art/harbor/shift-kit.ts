@@ -776,7 +776,9 @@ const trolley = kit({
   fields: { cargo: bool('Load strapped on', true), color: colour('Deck plate', '#8b939a'), stripe: colour('Frame paint', '#c9862a') },
   box: () => ({ x: -34, w: 68, tall: 44 }),
   paint(x, p, c) {
-    const dx = Number.isFinite(Number(c.s.x)) && c.s.x !== undefined ? Number(c.s.x) - c.at.x : 0;
+    // `x` is a world position; the piece paints in its own (possibly turned or scaled) frame, so the move is taken into it:
+    // a trolley turned round (facing -1) still rolls the way it is pushed
+    const dx = Number.isFinite(Number(c.s.x)) && c.s.x !== undefined ? (Number(c.s.x) - c.at.x) / (c.at.scale * c.at.facing) : 0;
     x.translate(Math.round(dx), 0);
     // casters
     for (const wx of [-19, 17]) { R(x, wx - 1, 6, 4, 4, '#2a2e33'); R(x, wx - 4, 0, 9, 9, '#121417'); R(x, wx - 1, 3, 3, 3, '#8a8f94'); }
@@ -815,7 +817,8 @@ const clampEl = kit({
   box: () => ({ x: -12, w: 40, tall: 16 }),
   paint(x, p, c) {
     if (c.s.released === true) return;
-    const wx = Number(c.s.trolleyX ?? c.at.x) - Number(c.s.restX ?? c.at.x) + N(p, 'wheel');
+    // the trolley's move is in world units; the clamp paints in its own frame (turned with the trolley it is attached to)
+    const wx = (Number(c.s.trolleyX ?? c.at.x) - Number(c.s.restX ?? c.at.x)) / (c.at.scale * c.at.facing) + N(p, 'wheel');
     R(x, wx - 7, 0, 2, 12, '#b5352a'); R(x, wx + 5, 0, 2, 12, '#b5352a'); R(x, wx - 7, 10, 14, 3, '#d0453a'); R(x, wx - 7, 12, 14, 1, 'rgba(255,200,170,.6)');
     R(x, wx - 2, 6, 4, 4, '#e8c03a'); R(x, wx + 7, 2, 5, 6, '#2a2a2a'); R(x, wx + 8, 6, 3, 1, '#c9ced2');
   },

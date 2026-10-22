@@ -23,6 +23,8 @@ export interface ZoneFrame {
   host: Pick<SceneHost, 'draw' | 'model'>;
   lighting: (weather: Weather | null) => Light;
   preparePresentation?: () => void;
+  /** It lies below the zone the player is in (a quay under a raised platform): drawn first, behind that zone's own artwork. */
+  below?: boolean;
 }
 /** One frame of the world: the zone the player is in (the scene) and the zones joined to it that are on screen. */
 export interface WorldFrame {
@@ -70,6 +72,8 @@ function renderMeasuredFrame(frame: WorldFrame) {
   if (amb.sky) { drawSky(x, v, L, { horizon: v.y(s.horizon ?? 0) }); if (look) weatherSky(x, v, look); frame.skyTraffic?.(x, v); }
   if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
   if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);
+  // a zone below this one (stacked by a stairs seam) is further back: drawn before the zone's own artwork, which stands over it
+  for (const z of frame.joined ?? []) if (z.below) drawJoined(x, z, look, rain, vision);
   const mid = () => { if (look) { puddles(x, v, look, { width: s.width, seed: frame.sceneId.length * 97 + s.width, lights: amb.city ? s.artworkFrame?.reflections??frame.reflections : undefined }); weatherMid(x, v, look); } };
   if (vision && s.layers) {
     zh.draw(x, v, 'world');
@@ -83,7 +87,7 @@ function renderMeasuredFrame(frame: WorldFrame) {
     if (vision) { if (look) weatherFront(x, v, { ...look, still: true }); muteWorld(x, v, zh.model.spots()); }
   }
   if (!vision) drawCasters(x, v, s.casters);
-  for (const z of frame.joined ?? []) drawJoined(x, z, look, rain, vision);
+  for (const z of frame.joined ?? []) if (!z.below) drawJoined(x, z, look, rain, vision);
   perfEnd(pass);pass=perfBegin('render.actors');
   frame.roomWash?.(x, v);
   s.drawActors?.(x, v);

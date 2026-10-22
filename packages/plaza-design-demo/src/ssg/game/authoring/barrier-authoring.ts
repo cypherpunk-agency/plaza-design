@@ -3,6 +3,7 @@ import type {WorkbenchContext,WorkbenchHandle} from './app';
 import {pendingNetworkContext} from './pending-network';
 import {gameplayScene} from './gameplay-scenes';
 import {barrierAccess,conditionNames} from '../world/access';
+import {activeSharedState} from '../engine/gameplay/shared-state';
 import {barrierRuleOpens,type ExitRule,type ScenePhase} from '../story/story-rules';
 import type {LevelBarrier} from '../engine/level';
 import type {Condition,GameplayDefinition,GameplayState} from '../engine/gameplay/types';
@@ -154,8 +155,8 @@ export function mountBarrierAuthoring(host:HTMLElement,context:WorkbenchContext,
   picker('Key chip',[{value:'',label:'(none)'},...keys.map(([id,k])=>({value:id,label:k.label.toUpperCase()+' · '+id})),...(rule.key&&!vocab.keyring.has(rule.key)?[{value:rule.key,label:rule.key+' (unknown)'}]:[])],rule.key??'',key=>editProps(key?'Barrier key '+key:'Remove barrier key',p=>{p.key=key;}));
   const flags=[...vocab.flags].sort();
   picker('Flag',[{value:'',label:'(none)'},...flags.map(f=>({value:f,label:f})),...(rule.flag&&!vocab.flags.has(rule.flag)?[{value:rule.flag,label:rule.flag+' (undeclared)'}]:[])],rule.flag??'',flag=>editProps(flag?'Barrier flag '+flag:'Remove barrier flag',p=>{p.flag=flag;}));
-  // the shared gameplay condition picker, over what a barrier may read (no scene state, queries or objective)
-  const names=conditionNames(rule.when),doc:GameplayDefinition={version:1,flags:[...new Set([...flags,...names.flags])],items:[...new Set([...vocab.items,...names.items])].sort(),events:[],commands:{},reactions:[],conversations:{}};
+  // the shared gameplay condition picker, over what a barrier may read (the world-level shared state, but no scene's own state, queries or objective)
+  const names=conditionNames(rule.when),shared=((values.get('state-owners')??activeSharedState()) as Pick<GameplayDefinition,'state'>|undefined)?.state,doc:GameplayDefinition={version:1,flags:[...new Set([...flags,...names.flags])],items:[...new Set([...vocab.items,...names.items])].sort(),...(shared&&Object.keys(shared).length?{state:shared}:{}),events:[],commands:{},reactions:[],conversations:{}};
   form.allowObjectiveContext=false;
   form.condition(host,'Opens while',rule.when,when=>editProps(when?'Barrier condition':'Remove barrier condition',p=>{p.when=(when??null) as unknown;}),doc);
   form.text(host,'Refuses with',rule.refuse,refuse=>editProps('Barrier refusal',p=>{p.refuse=refuse;}));
