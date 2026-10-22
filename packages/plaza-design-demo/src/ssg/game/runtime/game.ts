@@ -830,8 +830,8 @@ export class Game {
     if (zh.visionOn && k === '0') { this.resetVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
     // in a level, ↑ and ↓ first mean a door, a flight, an escalator or the lift car; otherwise ↑ jumps
-    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && levelUp(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level)) this.keys.add('ArrowUp'); return; }
-    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && levelDown(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level)) this.keys.add('ArrowDown'); return; }
+    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && levelUp(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level) || levelRiding(this.level)) this.keys.add('ArrowUp'); return; }
+    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && levelDown(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level) || levelRiding(this.level)) this.keys.add('ArrowDown'); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && !(this.level && levelRiding(this.level))) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }

@@ -365,7 +365,8 @@ function stepFor(lv: Level, p: LevelPlayer, dir: 1 | -1): (() => void) | undefin
 export function levelArrows(lv: Level, p: LevelPlayer): { up: boolean; down: boolean } {
   const ride = lv.state.ride;
   if (ride?.kind === 'lift') { const n = lv.source.lifts.find(l => l.id === ride.lift)?.stops.length ?? 0; return { up: ride.pick < n - 1, down: ride.pick > 0 }; }
-  if (ride) { const climbing = levelClimbing(lv); return { up: climbing, down: climbing }; }
+  // on a ladder or spiral, and on a straight flight (walked with ↑/↓ held as well as ←/→); an escalator carries the player
+  if (ride) { const l = ride.kind === 'link' ? lv.source.links.find(k => k.id === ride.link) : undefined, on = levelClimbing(lv) || l?.kind === 'stairs'; return { up: on, down: on }; }
   return { up: !!stepFor(lv, p, 1), down: !!stepFor(lv, p, -1) };
 }
 
@@ -457,7 +458,8 @@ export function levelStep(lv: Level, p: LevelPlayer, walk: number, dt: number, m
   }
   const l = src.links.find(k => k.id === ride.link)!, line = l.path ?? [l.low, l.high], len = pathLength(line) || 1, upward = Math.sign(l.high.x - l.low.x) || 1;
   // stairs: ←/→ walk along a straight flight, ↑/↓ climb a ladder, spiral or switchback; both stop when let go. An escalator carries on by itself.
-  const move = l.kind === 'escalator' ? ride.dir : l.shape ? climb : walk * upward;
+  // a straight flight is walked with ←/→ along it, or with ↑/↓ held (up the flight or down it), whichever is pressed
+  const move = l.kind === 'escalator' ? ride.dir : l.shape ? climb : walk * upward || climb;
   ride.t += move * l.speed * dt / len;
   const at = pathAt(line, Math.max(0, Math.min(1, ride.t)));
   if (move && Math.abs(at.x - p.x) > 0.01) p.face = Math.sign(at.x - p.x) || p.face;
