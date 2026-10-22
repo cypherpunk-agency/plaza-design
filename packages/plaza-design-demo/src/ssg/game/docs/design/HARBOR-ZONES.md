@@ -175,7 +175,7 @@ ground line, scale, concrete, sodium and work-light palette across the seams.
    to `harbor-shed` and be read by the yard and checkout, or should a world-level owner be added?
 4. **The old pier's later-act content** (customs arch, bonded store, den, bribe, ghost mark): move it to
    the east end of the quay, put it in a separate `harbor-customs` zone, or keep it with `stacks`?
-5. **Train length**: 2 cars fits a 1,440-unit platform. Do we keep room for 3 (about 1,700)?
+5. **Train length**: decided (Tommi, 2026-10-22): 2 cars, a 1,440-unit platform for now.
 6. **P0**: does the glide land at the port-road gate as a sky taxi (as framed), or on the quay at dusk?
 7. **Zone sizes**: is a one-screen zone (`harbor-checkout`, 640) acceptable, or should the checkout merge
    into the yard's east end?
