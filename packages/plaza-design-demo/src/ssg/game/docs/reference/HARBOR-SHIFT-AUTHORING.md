@@ -8,6 +8,12 @@ Harbor Shift uses the same Commands & dialogue editor and native Play frame as o
 
 The scene, horizon, trolley and bay artwork remain registered primitive dependencies. Ordinary uses, actors, dialogue, objectives, flags and commands are not inferred from that artwork.
 
+## Artwork (2026-10-22)
+
+The scene is drawn with the harbor shift kit (`art/harbor/shift-kit.ts`, `shift.*` in Library › Artwork, category "harbor shift"): the bay with the city and the Spire across the water, a container ship at the berth, ship-to-shore cranes, the quay apron, container blocks with reefers and their plug gantry, high-mast sodium lights, fog, the transit shed with its canopy, the supervisor's glass booth (back and front parts round the supervisor), the dispatch and receiving windows, counters, the case-return rack, parcel, case, trolley, clamp and release, the checkout reader with its turnstile and shelter, the wage-slip printer, the shift board, station signs, lockers, floor markings, the bay's ends and the wet floor. Every look is a field on its piece.
+
+The functional instances keep their ids, placements, attachments and bindings (`dispatch-post`, `rack-post`, `receiving-post`, `checkout-post`, `office`, `trolley`, `release`, `clamp`, `bay`, `checkout`, `statement`, `complete`, the `use-*`, `cue-*` and `light-*` markers); only their artwork type changed, and the stateful pieces read the same presentation values (`visible`, `x`, `released`, `trolleyX`, `restX`, `checked`, `done`). To move a station, move its post or parent instance: its use marker, cue and light are attached to it and follow.
+
 The obsolete Harbor-only delivery laboratory UI was removed. Its synthetic circuit and clock helper have only regression-test consumers and now live in `scripts/scene-system/shift-{pilot,delivery}-fixture.mts`; they are no longer shipped engine/editor modules.
 
 ## Verification

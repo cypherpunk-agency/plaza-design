@@ -33,6 +33,20 @@
     { "id": "patrol-robogull", "label": "Patrol robogull", "kit": "character.resident", "note": "From Harbor's drone gull.",
       "props": { "kind": "robogull", "act": "scan" } },
     { "id": "digging-crab", "label": "Digging crab", "kit": "character.resident", "note": "From the beach crab.",
-      "props": { "kind": "crab", "act": "dig", "seed": 5 } }
+      "props": { "kind": "crab", "act": "dig", "seed": 5 } },
+    { "id": "diner-cook", "label": "Diner cook", "kit": "character.resident", "note": "Whites, a white cap, a towel; at the griddle.",
+      "props": { "kind": "human", "archetype": "cook", "act": "vend", "district": "downtown" } },
+    { "id": "diner-waitress", "label": "Diner waitress", "kit": "character.resident", "note": "Diner uniform, apron, notepad.",
+      "props": { "kind": "human", "archetype": "waitress", "act": "stand", "district": "downtown" } },
+    { "id": "shop-security", "label": "Shop security", "kit": "character.resident", "note": "Private security, not the Registry: dark SECURITY polo or hi-vis, a radio.",
+      "props": { "kind": "human", "archetype": "security", "act": "stand", "district": "downtown" } },
+    { "id": "store-cashier", "label": "Store cashier", "kit": "character.resident", "note": "A store tabard and a name badge.",
+      "props": { "kind": "human", "archetype": "cashier", "act": "stand", "district": "downtown" } },
+    { "id": "registry-clerk", "label": "Registry clerk", "kit": "character.resident", "note": "Office shirt, ID on a lanyard; behind a counter.",
+      "props": { "kind": "human", "archetype": "clerk", "act": "stand", "district": "downtown" } },
+    { "id": "stool-regular", "label": "Regular on a counter stool", "kit": "character.resident", "note": "Sits on a 19-unit diner stool, feet dangling.",
+      "props": { "kind": "human", "act": "sit", "sitting": "side", "seat": 19, "district": "downtown" } },
+    { "id": "patient-on-a-cot", "label": "Patient on a cot", "kit": "character.resident", "note": "Lying on the back at bed height 16, a blanket over them.",
+      "props": { "kind": "human", "act": "lie", "seat": 16, "lying": "asleep", "cover": "#6a7a6a" } }
   ]
 }

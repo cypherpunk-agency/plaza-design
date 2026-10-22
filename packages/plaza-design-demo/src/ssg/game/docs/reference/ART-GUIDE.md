@@ -86,6 +86,25 @@ Scene inspector's Behaviour tab sets colour style, district palette, visible tec
 act `wait` stands facing the camera (a queue seen from the front). Characters › Archetypes shows
 every look; People mix › Show 30 samples thirty people of a district and marks near-duplicates.
 
+**Seats, beds and staff (2026-10-22).** A person's `h` is the floor they stand on. A sitter's **seat
+height** (`seat`, Scene inspector: "Seat or bed height over the floor") puts their lap exactly on
+`h + seat`: the shins reach the floor while the seat is no higher than the legs are long, above that
+the feet dangle (diner stools are 19, booth benches 14). `0` keeps the kit's own height (the lap
+`ceil(leg / 2)` pixels up, about 6 to 9 units at the player's scale), so scenes placed before stay as
+they were. The act `lie` lies on the back on a surface at `h + seat` (a cot, a bench, a treatment chair,
+a cradle with a kid body), head toward the facing; "Lying" sets awake or asleep (eyes shut, a slow zzz)
+and "Blanket (lying)" covers them to the chest. `sleep` stays the curled-up sleeper under a newspaper.
+**Seat anchors:** furniture says where to sit or lie with `surface` anchors named `seat`, `seat0`,
+`seat1`… or `bed`, at the top of the cushion or mattress in the piece's own frame (the treatment chair's
+`seat` is at 22, the cot's `bed` at 12). Place the person at the piece's floor and copy the anchor's
+`h` into their seat height. Staff looks for counters and shops: **cook** (whites or an apron, a white
+cap or hairnet, a towel), **waitress** (diner uniform, white collar, waist apron, notepad), **security**
+(private security, never Registry grey or Skyport navy: a dark polo with SECURITY across the back or
+hi-vis, a radio on the chest), **cashier** (a store tabard over a shirt, a name badge) and **clerk** (an
+office shirt, an ID card on a lanyard). Their parts (`chefcap`, `hairnet`; `whites`, `diner`, `polo`,
+`tabard`, `shirt`; `towel`, `notepad`, `radio`, `badge`, `lanyard`) can be set on anyone. Presets: Diner
+cook, Diner waitress, Shop security, Store cashier, Registry clerk, Regular on a counter stool, Patient on a cot.
+
 ## 3. The player is the unit
 
 Measure everything against the player sprite:

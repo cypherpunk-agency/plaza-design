@@ -89,7 +89,7 @@ dependency rules still apply.
 | 9 | The back yard ✓ | Moth's parcel: cut and rewire | A8 |
 | 10 | Moth's stairwell ○ and flat ✓ | The note's phrase opens the door; the desk; a first known connection | A9–A11 |
 | 11 | The library ✓ | A public terminal: the deletion was deliberate; there is a list | A12 |
-| 12 | Registry back office or substation ○ | The combination challenge: restore the record by force; it trips an alarm | A13 |
+| 12 | The substation ○, then the dark Registry back office ○ | The combination challenge: cut the block's power at the substation, then break into the dark Registry and restore the record by force at the node; the backup power trips the alarm (decided 2026-10-22) | A13 |
 | 13 | A Downtown street at night ✓ (sweep variant ○) → Kessel's room ○ | A sweep collects unregistered persons; Kessel's emergency transfer into DLV-9 | Narrative only; no new mechanic |
 
 Optional places that can carry breathers or side errands: the 24h diner, the billboard catwalk

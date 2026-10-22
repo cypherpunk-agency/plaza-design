@@ -53,7 +53,7 @@ import type { SceneDocument } from '../engine/gameplay/scene-document';
 import { createNativePreview } from './native-preview';
 
 import { nativeSceneAdapters } from './scene-adapters';
-import { PROPOSAL_SCENES, proposalAdapters, proposalScene } from './proposal-scenes';
+import { PROPOSAL_SCENES, proposalAdapters, proposalLooksOnly, proposalScene } from './proposal-scenes';
 
 import { createSequencePreview } from './sequence-preview';
 
@@ -251,8 +251,8 @@ async function start() {
         }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
       } },
       {id:'play',area:'scene',mode:'play',label:'Play',title:'Play · pending scene from a starting state',authoring:true,documentDependent:true,primaryDocumentId:'play-fixtures',
-        supports:(scene,documents)=>(playScenes as readonly string[]).includes(scene)||scene==='demo-manifest'||(playScenes as readonly string[]).includes(proposalScene(scene)?.base??'')||!!(documents.find(d=>d.id==='authored-scenes')?.value as SceneCatalogue|undefined)?.scenes.some(s=>s.scene.id===scene),showScene(scene){playSelection.scene=scene==='demo-manifest'?'shop':proposalScene(scene)?.base??scene;},
-        unsupported:'Play runs scenes whose starting state can be set up in the editor. This scene is not one of them yet; play it in the game build instead.',
+        supports:(scene,documents)=>(playScenes as readonly string[]).includes(scene)||scene==='demo-manifest'||(playScenes as readonly string[]).includes(proposalScene(scene)?.base??'')&&!proposalLooksOnly(scene,documents.find(d=>d.id===scene)?.value)||!!(documents.find(d=>d.id==='authored-scenes')?.value as SceneCatalogue|undefined)?.scenes.some(s=>s.scene.id===scene),showScene(scene){playSelection.scene=scene==='demo-manifest'?'shop':proposalScene(scene)?.base??scene;},
+        unsupported:'Play runs scenes whose starting state can be set up in the editor. This scene is not one of them yet; play it in the game build instead. A style frame that takes only its base scene’s look (its Base scene use piece: look) is previewed, not played.',
         // A proposal plays as its base scene with the proposal's artwork in place of the base composition.
         mount:(host,context)=>mountPlayWorkbench(host,proposalScene(context.scene??'')?asProposal(context,proposalScene(context.scene!)!):context,playSelection,false,context.scene==='demo-manifest')},
       {id:'demo-world',area:'labs',label:'Demo world',title:'Test District: same engine, separate private progress',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,demoSelection,true,false,'Lab · the Test District: a small separate world on the same engine, with its own private progress. Used to try engine features outside the real city.')},

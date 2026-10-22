@@ -14,9 +14,11 @@ export const residentKinds=['human',...Object.keys(CRITTERS),...Object.keys(BOT)
 export const residentActs=[...new Set(Object.values(KIT_ACTS).flat())];
 const FACES:Face[]=['eyes','happy','blink','sad','dots','off','crack'];
 const isBot=(p:Properties)=>String(p.kind) in BOT,human=(p:Properties)=>p.kind==='human';
+/** Sitting (act sit, or any act done seated) or lying on the back: the seat or bed height applies. */
+const seatedOrLying=(p:Properties)=>human(p)&&(p.act==='sit'||p.act==='lie'||!!p.sitting&&p.sitting!=='no'),lying=(p:Properties)=>human(p)&&p.act==='lie';
 const sel=(label:string,options:readonly (string|number)[],showIf:(p:Properties)=>boolean):Field=>({kind:'select',label,options:[...options],default:options[0],showIf});
 /** An optional colour: empty keeps the seeded one. */
-const colour=(label:string,showIf:(p:Properties)=>boolean):Field=>({kind:'json',label,default:'',showIf,editor:{kind:'colour',empty:'Seeded'},validate:(v:Value)=>{if(v!==''&&!(typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v)))throw new Error(label+': expected a #rrggbb colour or empty');}});
+const colour=(label:string,showIf:(p:Properties)=>boolean,empty='Seeded'):Field=>({kind:'json',label,default:'',showIf,editor:{kind:'colour',empty},validate:(v:Value)=>{if(v!==''&&!(typeof v==='string'&&/^#[0-9a-f]{6}$/i.test(v)))throw new Error(label+': expected a #rrggbb colour or empty');}});
 const cache=new Map<string,Character>();
 /** Bounded cache keeps the existing renderer's WeakMap appearance identity stable across frames. */
 export function residentCharacter(props:Properties,point:Point):Character{
@@ -33,7 +35,9 @@ export function residentCharacter(props:Properties,point:Point):Character{
  const body=props.kind==='human'?(Object.keys(look).length?{look}:{}):{look:robot&&Object.keys(robot).length>1?robot:props.kind as Character['look']};
  // movers go between here and `range` units away (negative: to the left); speed 0 is the body's usual pace
  const range=Number(props.range??0),speed=Number(props.speed??0);
- actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:band.dim,parallax:band.parallax,...body,...sitting,...(range?{range}:{}),...(speed>0?{speed}:{})};
+ // a seat or bed height (0: the kit's own, as before); lying: asleep, a blanket
+ const seat=Number(props.seat??0),rest=props.kind==='human'?{...(seat>0?{seat}:{}),...(props.act==='lie'&&props.lying==='asleep'?{asleep:true}:{}),...(props.act==='lie'&&typeof props.cover==='string'&&props.cover!==''?{cover:props.cover}:{})}:{};
+ actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:band.dim,parallax:band.parallax,...body,...sitting,...rest,...(range?{range}:{}),...(speed>0?{speed}:{})};
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
 export const residentElement:Element={
@@ -50,6 +54,10 @@ export const residentElement:Element={
   district:{kind:'select',label:'District clothes',options:['',...DISTRICTS],default:'',showIf:human},
   tech:{kind:'select',label:'Visible tech',options:['automatic','yes','no'],default:'automatic',showIf:human},
   sitting:{kind:'select',label:'Sitting',options:['no',...SEATED_VIEWS],default:'no',showIf:human},
+  // h is the floor; the seat (a sitter's lap) or the bed (someone lying) is this far above it. Furniture's `seat` anchors give the number.
+  seat:{kind:'number',label:'Seat or bed height over the floor (0: the kit’s own)',default:0,min:0,max:120,step:1,unit:'units',showIf:seatedOrLying},
+  lying:{kind:'select',label:'Lying',options:['awake','asleep'],default:'awake',showIf:lying},
+  cover:colour('Blanket (lying)',lying,'No blanket'),
   body:sel('Build',['seeded',...BODY_KINDS],human),hair:sel('Hair or headwear',['seeded',...HAIR_KINDS],human),garb:sel('Clothes',['seeded',...GARB_KINDS],human),facial:sel('Facial hair',['seeded',...FACIAL_KINDS],human),
   extras:{kind:'json',label:'Extras',default:'auto',showIf:human,editor:{kind:'set',options:EXTRA_KINDS,auto:'Seeded extras'},validate:(v:Value)=>{if(v!=='auto'&&!(Array.isArray(v)&&v.every(e=>(EXTRA_KINDS as readonly string[]).includes(e as string))))throw new Error('Extras: expected "auto" or a list of '+EXTRA_KINDS.join(', '));}},
   skin:colour('Skin',human),hairColour:colour('Hair colour',human),top:colour('Top',human),bottom:colour('Trousers or skirt',human),accent:colour('Accent (hat, bag, umbrella)',human),

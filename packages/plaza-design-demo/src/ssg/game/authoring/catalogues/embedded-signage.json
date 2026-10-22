@@ -547,50 +547,6 @@
       ]
     },
     {
-      "id": "dockwork.clamp",
-      "family": "harbor work",
-      "tags": [
-        "harbor work",
-        "dockwork",
-        "clamp",
-        "backdrop",
-        "visual-state",
-        "world"
-      ],
-      "preview": "prepared-context",
-      "usages": [
-        {
-          "document": "harborShift",
-          "instance": "clamp",
-          "path": [
-            "clamp"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "dockwork.ground",
-      "family": "harbor work",
-      "tags": [
-        "harbor work",
-        "dockwork",
-        "ground",
-        "backdrop",
-        "visual-state",
-        "world"
-      ],
-      "preview": "prepared-context",
-      "usages": [
-        {
-          "document": "harborShift",
-          "instance": "ground",
-          "path": [
-            "ground"
-          ]
-        }
-      ]
-    },
-    {
       "id": "downtown.alley",
       "family": "architecture",
       "tags": [
@@ -7467,6 +7423,49 @@
           "instance": "towers",
           "path": [
             "towers"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shift.clamp",
+      "family": "harbor shift",
+      "tags": [
+        "harbor shift",
+        "shift",
+        "clamp",
+        "backdrop",
+        "visual-state",
+        "world"
+      ],
+      "preview": "prepared-context",
+      "usages": [
+        {
+          "document": "harborShift",
+          "instance": "clamp",
+          "path": [
+            "clamp"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shift.floor",
+      "family": "harbor shift",
+      "tags": [
+        "harbor shift",
+        "shift",
+        "floor",
+        "backdrop",
+        "world"
+      ],
+      "preview": "prepared-context",
+      "usages": [
+        {
+          "document": "harborShift",
+          "instance": "ground",
+          "path": [
+            "ground"
           ]
         }
       ]

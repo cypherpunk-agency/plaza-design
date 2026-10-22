@@ -317,12 +317,13 @@
       "type": "civic.floodlight",
       "props": {
         "kind": "pole",
-        "height": 120,
-        "heads": 2,
+        "height": 130,
+        "heads": 3,
         "aim": "right",
-        "reach": 70,
-        "spread": 120,
-        "strength": 0.7,
+        "reach": 90,
+        "spread": 150,
+        "strength": 0.95,
+        "on": true,
         "seed": 1
       },
       "placement": {
@@ -333,23 +334,45 @@
       "layer": "backdrop"
     },
     {
+      "id": "flood-2",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "pole",
+        "height": 150,
+        "heads": 2,
+        "aim": "down",
+        "reach": 0,
+        "spread": 130,
+        "strength": 0.8,
+        "on": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
       "id": "flood-1",
       "type": "civic.floodlight",
       "props": {
         "kind": "pole",
-        "height": 120,
-        "heads": 2,
+        "height": 130,
+        "heads": 3,
         "aim": "left",
-        "reach": 60,
-        "spread": 110,
-        "strength": 0.6,
+        "reach": 80,
+        "spread": 150,
+        "strength": 0.9,
+        "on": true,
         "seed": 2
       },
       "placement": {
         "x": 850,
         "h": 0
       },
-      "order": 17,
+      "order": 18,
       "layer": "backdrop"
     },
     {
@@ -363,18 +386,15 @@
         "out": "left",
         "outLength": 360,
         "outDrop": 30,
-        "plate": "DANGER · KEEP OFF"
+        "plate": "DANGER · KEEP OFF",
+        "power": "on"
       },
       "placement": {
         "x": 370,
         "h": 0
       },
-      "order": 18,
-      "layer": "backdrop",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 19,
+      "layer": "backdrop"
     },
     {
       "id": "gantry-1",
@@ -387,18 +407,15 @@
         "out": "left",
         "outLength": 44,
         "outDrop": 0,
-        "plate": ""
+        "plate": "",
+        "power": "on"
       },
       "placement": {
         "x": 560,
         "h": 0
       },
-      "order": 19,
-      "layer": "backdrop",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 20,
+      "layer": "backdrop"
     },
     {
       "id": "t1",
@@ -411,18 +428,15 @@
         "label": "T1",
         "voltage": "11 000 V",
         "state": "hum",
+        "power": "on",
         "seed": 2
       },
       "placement": {
         "x": 404,
         "h": 0
       },
-      "order": 20,
-      "layer": "set",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 21,
+      "layer": "set"
     },
     {
       "id": "t2",
@@ -434,19 +448,16 @@
         "fins": "both",
         "label": "T2",
         "voltage": "11 000 V",
-        "state": "on",
+        "state": "hum",
+        "power": "on",
         "seed": 3
       },
       "placement": {
         "x": 594,
         "h": 0
       },
-      "order": 21,
-      "layer": "set",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 22,
+      "layer": "set"
     },
     {
       "id": "tray",
@@ -457,18 +468,41 @@
         "mount": "posts",
         "every": 66,
         "cables": 6,
-        "drops": "both"
+        "drops": "both",
+        "pillar": "left",
+        "pillarLabel": "FEEDER 3 · REGISTRY BLOCK",
+        "tell": true,
+        "power": "on"
       },
       "placement": {
         "x": 700,
         "h": 0
       },
-      "order": 22,
-      "layer": "set",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 23,
+      "layer": "set"
+    },
+    {
+      "id": "breaker",
+      "type": "civic.cable-tray",
+      "props": {
+        "width": 40,
+        "height": 18,
+        "mount": "posts",
+        "every": 60,
+        "cables": 4,
+        "drops": "left",
+        "pillar": "right",
+        "pillarKind": "breaker",
+        "pillarLabel": "MAIN BREAKER",
+        "tell": true,
+        "power": "on"
+      },
+      "placement": {
+        "x": 818,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "set"
     },
     {
       "id": "catwalk",
@@ -483,12 +517,8 @@
         "x": 560,
         "h": 0
       },
-      "order": 23,
-      "layer": "set",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 25,
+      "layer": "set"
     },
     {
       "id": "catwalk-ladder",
@@ -502,12 +532,8 @@
         "x": 900,
         "h": 0
       },
-      "order": 24,
-      "layer": "set",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 26,
+      "layer": "set"
     },
     {
       "id": "cabinet",
@@ -520,12 +546,8 @@
         "x": 750,
         "h": 64
       },
-      "order": 25,
-      "layer": "backdrop",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 27,
+      "layer": "backdrop"
     },
     {
       "id": "hut-interior",
@@ -537,7 +559,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 26,
+      "order": 28,
       "layer": "logic"
     },
     {
@@ -559,7 +581,7 @@
         "x": 900,
         "h": 0
       },
-      "order": 27,
+      "order": 29,
       "layer": "backdrop",
       "attach": {
         "instance": "hut-interior",
@@ -576,13 +598,14 @@
         "mimic": true,
         "desk": true,
         "tell": 2,
+        "power": "on",
         "seed": 4
       },
       "placement": {
         "x": 908,
         "h": 0
       },
-      "order": 28,
+      "order": 30,
       "layer": "set",
       "attach": {
         "instance": "hut-interior",
@@ -600,7 +623,7 @@
         "x": 900,
         "h": 76
       },
-      "order": 29,
+      "order": 31,
       "layer": "backdrop",
       "attach": {
         "instance": "hut-interior",
@@ -618,7 +641,7 @@
         "x": 894,
         "h": 0
       },
-      "order": 30,
+      "order": 32,
       "layer": "backdrop",
       "attach": {
         "instance": "hut-interior",
@@ -636,7 +659,7 @@
         "x": 1070,
         "h": 0
       },
-      "order": 31,
+      "order": 33,
       "layer": "backdrop",
       "attach": {
         "instance": "hut-interior",
@@ -659,7 +682,7 @@
         "x": 1024,
         "h": 10
       },
-      "order": 32,
+      "order": 34,
       "layer": "playfield",
       "attach": {
         "instance": "hut-interior",
@@ -676,7 +699,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 33,
+      "order": 35,
       "layer": "logic"
     },
     {
@@ -687,16 +710,19 @@
         "height": 80,
         "door": 22,
         "label": "SUBSTATION DT-4",
-        "vents": 2,
+        "vents": 1,
         "window": 124,
+        "window2": 84,
         "lit": true,
+        "power": "on",
+        "breaker": -999,
         "seed": 3
       },
       "placement": {
         "x": 900,
         "h": 0
       },
-      "order": 34,
+      "order": 36,
       "layer": "set",
       "attach": {
         "instance": "hut-shell",
@@ -714,7 +740,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 35,
+      "order": 37,
       "layer": "logic"
     },
     {
@@ -742,7 +768,7 @@
         "x": 330,
         "h": 0
       },
-      "order": 36,
+      "order": 38,
       "layer": "set",
       "attach": {
         "instance": "yard-shell",
@@ -760,7 +786,7 @@
         "x": 460,
         "h": 110
       },
-      "order": 37,
+      "order": 39,
       "layer": "set",
       "attach": {
         "instance": "yard-shell",
@@ -782,7 +808,7 @@
         "x": 100,
         "h": 0
       },
-      "order": 38,
+      "order": 40,
       "layer": "playfield"
     },
     {
@@ -800,7 +826,7 @@
         "x": 1150,
         "h": 0
       },
-      "order": 39,
+      "order": 41,
       "layer": "playfield"
     },
     {
@@ -815,7 +841,7 @@
         "x": 338,
         "h": 0
       },
-      "order": 40,
+      "order": 42,
       "layer": "playfield"
     },
     {
@@ -833,7 +859,7 @@
         "x": 700,
         "h": 0
       },
-      "order": 41,
+      "order": 43,
       "layer": "playfield"
     },
     {
@@ -851,12 +877,8 @@
         "x": 580,
         "h": 70
       },
-      "order": 42,
-      "layer": "playfield",
-      "attach": {
-        "instance": "yard-interior",
-        "anchor": "origin"
-      }
+      "order": 44,
+      "layer": "playfield"
     },
     {
       "id": "spawn",
@@ -866,7 +888,7 @@
         "x": 220,
         "h": 0
       },
-      "order": 43,
+      "order": 45,
       "layer": "playfield"
     },
     {
@@ -881,7 +903,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 44,
+      "order": 46,
       "layer": "logic"
     },
     {
@@ -897,7 +919,7 @@
         "x": 330,
         "h": 0
       },
-      "order": 45,
+      "order": 47,
       "layer": "logic"
     },
     {
@@ -912,7 +934,7 @@
         "x": 560,
         "h": 70
       },
-      "order": 46,
+      "order": 48,
       "layer": "logic"
     },
     {
@@ -929,7 +951,7 @@
         "x": 900,
         "h": 0
       },
-      "order": 47,
+      "order": 49,
       "layer": "logic"
     },
     {
@@ -943,7 +965,7 @@
         "x": 395,
         "h": 0
       },
-      "order": 48,
+      "order": 50,
       "layer": "logic"
     },
     {
@@ -957,7 +979,7 @@
         "x": 936,
         "h": 0
       },
-      "order": 49,
+      "order": 51,
       "layer": "logic"
     }
   ]

@@ -37,7 +37,7 @@ import { validateTimeline } from '../art/core/timeline';
 import { NATIVE_SCENES } from '../scenes';
 import {validateSceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import { nativeSceneAdapters } from './scene-adapters';
-import { PROPOSAL_SCENES, proposalAdapters } from './proposal-scenes';
+import { PROPOSAL_SCENES, validateProposal } from './proposal-scenes';
 import { createSequenceValidationContext } from './sequence-preview';
 import type { DocumentDescriptor } from './server/store';
 import { preserveBoundIdentity } from './bound-identity';
@@ -91,7 +91,7 @@ export const sourceDocuments: DocumentDescriptor[] = [
     return value;
   } })),
   {id:'demo-manifest',file:'scenes/demo-manifest/composition.json',kind:'composition',validate:validateManifestComposition},
-  ...PROPOSAL_SCENES.map(p => ({ id: p.id, file: p.file, kind: 'composition' as const, validate: (value: unknown) => proposalAdapters[p.id].validate(value) })),
+  ...PROPOSAL_SCENES.map(p => ({ id: p.id, file: p.file, kind: 'composition' as const, validate: (value: unknown) => validateProposal(p.id, value) })),
 ];
 /** Every grouped save validates the complete prospective source set before any replacement. */
 export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>) {

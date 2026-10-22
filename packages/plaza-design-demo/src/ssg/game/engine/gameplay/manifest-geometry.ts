@@ -2,6 +2,7 @@ import {resolveArtworkRoles} from './artwork-roles';
 import {art,resolveComposition,type Composition,type Resolved} from '../../art';
 import {frameView} from '../../art/core/view';
 import type {SceneDocument} from './scene-document';
+import {compileLevel} from '../level';
 import {manifestGroups,targetInstance,type ManifestTarget,type ManifestGroup,type DeviceManifestTarget} from './manifest-contract';
 export interface BoundPoint {row:Resolved;x:number;h:number;promptH?:number;responseH?:number}
 export function resolveManifestPoint(rows:readonly Resolved[],target:ManifestTarget,width:number,ground=false,transformed=false):BoundPoint{const row=rows.find(r=>r.instance.id===targetInstance(target));if(!row)throw new Error('Missing manifest artwork: '+targetInstance(target));const pRow=row,p=pRow.placement,t=typeof target==='string'?{instance:target}:target;
@@ -36,8 +37,12 @@ export function manifestGeometry(scene:SceneDocument,rows:readonly Resolved[],gr
  for(const target of Object.values(manifest.devices??{}))resolveDevicePoint(rows,target,width);
  if(typeof manifest.spawn!=='string'&&(manifest.spawn.promptH!==undefined||manifest.spawn.responseH!==undefined))throw new Error('Spawn has no text height');
  const exitCheckpoints=Object.fromEntries(Object.entries(manifest.exitCheckpoints??{}).map(([id,target])=>{if(!scene.exits?.some(e=>e.id===id))throw Error('Exit checkpoint refers to absent exit: '+id);return[id,point(target)];}));
- return{exitCheckpoints,artwork:resolveArtworkRoles(scene.id,manifest.artwork,rows,width),width,spawn:point(manifest.spawn,options.groundSpawn!==false).x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
+  // a ground spawn stands on the street, or on a level floor at its height (the game arrives there: SceneDef.spawnH, levelArrive)
+ const spawn=point(manifest.spawn);if(options.groundSpawn!==false&&spawn.h!==0&&!onLevelFloor(rows,spawn.x,spawn.h))throw new Error('Manifest point outside scene bounds: spawn stands at height '+spawn.h+' with no level floor under it ('+targetInstance(manifest.spawn)+')');
+ return{exitCheckpoints,artwork:resolveArtworkRoles(scene.id,manifest.artwork,rows,width),width,spawn:spawn.x,bindings:bindings as Record<ManifestGroup,Record<string,BoundPoint>>};
 }
+/** A level floor (engine/level.ts compileLevel) under this point, within the level's own 2-unit tolerance. */
+export function onLevelFloor(rows:readonly Resolved[],x:number,h:number){return!!compileLevel(rows)?.floors.some(f=>Math.abs(f.h-h)<=2&&x>=f.x-0.5&&x<=f.x+f.w+0.5);}
 /** Geometry-only preview: registered visual defaults resolve bindings without stepping controllers. */
 export function manifestCompositionRows(composition:Composition){
  const bindings:Record<string,import('../../art').Value>={};

@@ -204,7 +204,8 @@
       "props": {
         "style": "sodium",
         "height": 116,
-        "seed": 0
+        "seed": 0,
+        "reach": 0
       },
       "placement": {
         "x": 20,
@@ -219,7 +220,8 @@
       "props": {
         "style": "sodium",
         "height": 116,
-        "seed": 1
+        "seed": 1,
+        "reach": 0
       },
       "placement": {
         "x": 1260,
@@ -263,7 +265,7 @@
         "width": 950,
         "height": 96,
         "kind": "hall",
-        "hours": "closed",
+        "hours": "cut",
         "exit": 34,
         "exitDir": "left",
         "clock": 540,
@@ -288,7 +290,7 @@
         "width": 100,
         "height": 96,
         "kind": "corridor",
-        "hours": "closed",
+        "hours": "cut",
         "tubeEvery": 50,
         "cameras": 0,
         "seed": 4
@@ -311,7 +313,7 @@
         "kind": "identity",
         "width": 44,
         "height": 46,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 384,
@@ -332,7 +334,7 @@
         "width": 44,
         "height": 46,
         "faded": 0.3,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 436,
@@ -355,7 +357,7 @@
         "start": 17,
         "open": "3",
         "wait": "ESTIMATED WAIT 4 H 10 MIN · PLEASE REMAIN SEATED",
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 506,
@@ -378,7 +380,7 @@
         "alternate": "premium",
         "period": 700,
         "position": 214,
-        "hours": "closed",
+        "hours": "cut",
         "rec": true
       },
       "placement": {
@@ -399,7 +401,7 @@
         "kind": "premium",
         "width": 44,
         "height": 50,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 774,
@@ -437,7 +439,7 @@
         "kind": "staff",
         "plate": "STAFF ONLY",
         "state": "forced",
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 1128,
@@ -465,7 +467,7 @@
         "gold": "#c8cdd0"
       },
       "placement": {
-        "x": 240,
+        "x": 262,
         "h": 0
       },
       "order": 23,
@@ -483,11 +485,11 @@
         "paper": "low",
         "litter": 0.7,
         "tell": true,
-        "hours": "closed",
+        "hours": "cut",
         "seed": 2
       },
       "placement": {
-        "x": 348,
+        "x": 356,
         "h": 0
       },
       "order": 24,
@@ -506,7 +508,7 @@
         "height": 10,
         "broken": 0.12,
         "seed": 9,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 490,
@@ -527,7 +529,7 @@
         "spacing": 34,
         "sign": "WAIT HERE",
         "slack": false,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 760,
@@ -548,7 +550,7 @@
         "width": 34,
         "height": 70,
         "occupied": "",
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 1042,
@@ -568,7 +570,7 @@
         "width": 210,
         "height": 80,
         "kind": "corridor",
-        "hours": "closed",
+        "hours": "cut",
         "cameras": 1,
         "exit": -1,
         "seed": 11
@@ -591,7 +593,7 @@
         "width": 740,
         "height": 80,
         "kind": "office",
-        "hours": "closed",
+        "hours": "cut",
         "clock": 700,
         "cameras": 1,
         "seed": 12
@@ -614,7 +616,7 @@
         "width": 100,
         "height": 80,
         "kind": "corridor",
-        "hours": "closed",
+        "hours": "cut",
         "tubeEvery": 50,
         "cameras": 0,
         "exit": 50,
@@ -638,7 +640,7 @@
         "kind": "plain",
         "plate": "INTERVIEW 2",
         "reader": false,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 200,
@@ -657,7 +659,7 @@
       "props": {
         "kind": "staff",
         "plate": "SUPERVISOR",
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 290,
@@ -677,7 +679,7 @@
         "kind": "conduct",
         "width": 44,
         "height": 46,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 348,
@@ -697,7 +699,7 @@
         "kind": "report",
         "width": 44,
         "height": 46,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 932,
@@ -719,7 +721,7 @@
         "mode": "appointment",
         "alternate": "none",
         "appointment": "IN 90 DAYS",
-        "hours": "closed",
+        "hours": "cut",
         "rec": false
       },
       "placement": {
@@ -738,7 +740,7 @@
       "type": "civic.alarm",
       "props": {
         "kind": "panel",
-        "state": "tripped"
+        "state": "armed"
       },
       "placement": {
         "x": 1094,
@@ -760,7 +762,7 @@
         "partitions": true,
         "tell": 4,
         "people": "1,3,6",
-        "hours": "alarm",
+        "hours": "cut",
         "seed": 4
       },
       "placement": {
@@ -784,7 +786,7 @@
         "fill": 0.9,
         "aisle": 0,
         "labels": true,
-        "hours": "closed",
+        "hours": "cut",
         "seed": 8
       },
       "placement": {
@@ -805,7 +807,7 @@
         "width": 480,
         "height": 80,
         "kind": "records",
-        "hours": "closed",
+        "hours": "cut",
         "cameras": 1,
         "seed": 21
       },
@@ -827,7 +829,7 @@
         "width": 470,
         "height": 80,
         "kind": "server",
-        "hours": "alarm",
+        "hours": "cut",
         "cameras": 2,
         "seed": 22
       },
@@ -849,7 +851,7 @@
         "width": 100,
         "height": 80,
         "kind": "corridor",
-        "hours": "closed",
+        "hours": "cut",
         "tubeEvery": 50,
         "cameras": 0,
         "seed": 23
@@ -873,7 +875,7 @@
         "plate": "SERVER ROOM · NO ENTRY",
         "state": "open",
         "tell": false,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 670,
@@ -891,7 +893,7 @@
       "type": "civic.alarm",
       "props": {
         "kind": "beacon",
-        "state": "tripped",
+        "state": "armed",
         "reach": 1.2
       },
       "placement": {
@@ -912,7 +914,7 @@
         "kind": "plain",
         "plate": "PLANT",
         "reader": true,
-        "hours": "closed"
+        "hours": "cut"
       },
       "placement": {
         "x": 1060,
@@ -935,7 +937,7 @@
         "fill": 0.88,
         "aisle": 6,
         "labels": true,
-        "hours": "closed",
+        "hours": "cut",
         "seed": 31
       },
       "placement": {
@@ -955,7 +957,7 @@
       "props": {
         "cabinets": 6,
         "height": 60,
-        "state": "tripped",
+        "state": "backup",
         "label": "LOCAL VERIFICATION NODE · DT-07",
         "tell": true,
         "cables": 0,
@@ -1140,10 +1142,17 @@
         "ground": 96,
         "floors": 2,
         "storey": 80,
-        "door": 14,
+        "door": 40,
         "doorWidth": 40,
-        "staffDoor": 990,
+        "staffDoor": 994,
         "closed": true,
+        "power": "cut",
+        "entrance": "bay",
+        "relief": 26,
+        "plaque": "REGISTRY OF PERSONS",
+        "recess": 400,
+        "recessWidth": 176,
+        "tower": 944,
         "lit": 0.05,
         "queue": 0.6,
         "cameras": 3,
@@ -1165,7 +1174,7 @@
       "type": "civic.alarm",
       "props": {
         "kind": "bell",
-        "state": "tripped",
+        "state": "armed",
         "reach": 1.4
       },
       "placement": {
@@ -1189,7 +1198,7 @@
         "glass": 60,
         "open": "3",
         "label": "COUNTERS 1–4",
-        "hours": "closed",
+        "hours": "cut",
         "seed": 2
       },
       "placement": {
@@ -1215,7 +1224,7 @@
         "archetype": "drifter"
       },
       "placement": {
-        "x": 240,
+        "x": 288,
         "h": 0
       },
       "order": 59,
@@ -1265,7 +1274,7 @@
       "props": {
         "kind": "scandrone",
         "depth": "play",
-        "act": "scan"
+        "act": "hover"
       },
       "placement": {
         "x": 970,
@@ -1361,7 +1370,7 @@
         "width": 34
       },
       "placement": {
-        "x": 204,
+        "x": 230,
         "h": 0
       },
       "order": 68,

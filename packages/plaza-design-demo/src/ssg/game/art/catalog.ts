@@ -45,17 +45,17 @@ export const SETS: SetEntry[] = [
   {
     id: 'spire', file: 'art/architecture/spire.ts',
     what: 'The Spire from far off, the monolith: a black slab on its plinth in the bay, thin seams of cold light, three docking decks with their lights, a pointed top with the Registry antenna and its red light, a halo ring of air traffic; with `traffic`, corporate shuttles docking and leaving and a Registry patrol on its loop.',
-    users: ['scenes/stacks/scene.ts: the bay in the far band (decks, no traffic)', 'story/cutscenes/act2.ts: across the water at the end of Act I (decks, no traffic)', 'story/title/glide.ts: in the bay, nameless, bigger, with its traffic; the camera eases off for it over the bay bridge'],
+    users: ['art/harbor/shift-kit.ts: across the bay behind the night-shift yard (`shift.far-shore`, with traffic)', 'scenes/stacks/scene.ts: the bay in the far band (decks, no traffic)', 'story/cutscenes/act2.ts: across the water at the end of Act I (decks, no traffic)', 'story/title/glide.ts: in the bay, nameless, bigger, with its traffic; the camera eases off for it over the bay bridge'],
   },
   {
     id: 'crane', file: 'art/machinery/crane.ts',
     what: 'The ship-to-shore gantry crane frame (STS-1, STS-2, STS-3) in painted steel: legs, beams, A-frame, Warren-truss boom (down and working, or raised about its hinge when idle), machinery house, warning lights.',
-    users: ['scenes/harbor/index.ts: STS-1 and STS-3 on the pier (booms down)', 'scenes/stacks/scene.ts: STS-2 over the blocks (back and front parts, boom down)', 'story/title/coast.ts: STS-1 and STS-3 booms up, STS-2 working, well apart; drawn at 1.7x the scenes\' scale (`CRANE`) so they stand over 12 m boxes'],
+    users: ['art/harbor/shift-kit.ts: `shift.crane`, the night-shift berth (STS-1 and STS-3, spreader, load and floodlights)', 'scenes/harbor/index.ts: STS-1 and STS-3 on the pier (booms down)', 'scenes/stacks/scene.ts: STS-2 over the blocks (back and front parts, boom down)', 'story/title/coast.ts: STS-1 and STS-3 booms up, STS-2 working, well apart; drawn at 1.7x the scenes\' scale (`CRANE`) so they stand over 12 m boxes'],
   },
   {
     id: 'containers', file: 'art/props/containers.ts',
     what: 'The shipping container (seeded paint, rust, codes, placards) and a crooked stack of them. A box can carry its own height (`h`); `BOX40`/`BOX20` are true to the player\'s scale (12.2 m and 6 m long, 2.6 m tall). The scenes keep their own boxes (128 x 58).',
-    users: ['scenes/harbor/index.ts: the pier stacks, the arch, the crane loads, the bonded store', 'scenes/stacks/scene.ts: blocks A, B, C and the crane loads', 'story/title/coast.ts: the stacks along the quay (NRLU 404 0451), the ship\'s deck, STS-2\'s load (true scale)', 'story/title/traffic.ts, art/vehicles/vehicles.ts, art/architecture/ring-highway.ts, art/vehicles/air-traffic.ts: the boxes on trucks, the straddle carrier, the reach stacker, the hauler'],
+    users: ['art/harbor/shift-kit.ts: `shift.stack`, the night-shift yard blocks and the crane loads', 'scenes/harbor/index.ts: the pier stacks, the arch, the crane loads, the bonded store', 'scenes/stacks/scene.ts: blocks A, B, C and the crane loads', 'story/title/coast.ts: the stacks along the quay (NRLU 404 0451), the ship\'s deck, STS-2\'s load (true scale)', 'story/title/traffic.ts, art/vehicles/vehicles.ts, art/architecture/ring-highway.ts, art/vehicles/air-traffic.ts: the boxes on trucks, the straddle carrier, the reach stacker, the hauler'],
   },
   {
     id: 'train-car', file: 'art/vehicles/train-car.ts',

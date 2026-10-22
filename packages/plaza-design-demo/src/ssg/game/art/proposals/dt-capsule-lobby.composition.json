@@ -560,13 +560,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "family",
+        "kind": "quiet",
         "number": "1A",
         "door": "left",
         "lock": "smart",
         "lit": 1,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 110
       },
       "placement": {
@@ -586,13 +587,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "1B",
         "door": "right",
         "lock": "smart",
-        "lit": 0.3,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 111
       },
       "placement": {
@@ -612,13 +614,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "studio",
+        "kind": "quiet",
         "number": "1C",
         "door": "left",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 112
       },
       "placement": {
@@ -665,13 +668,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "2A",
         "door": "left",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 120
       },
       "placement": {
@@ -698,6 +702,7 @@
         "lit": 1,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 121
       },
       "placement": {
@@ -717,13 +722,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "2C",
         "door": "left",
         "lock": "smart",
-        "lit": 0.3,
+        "lit": 1,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 122
       },
       "placement": {
@@ -770,13 +776,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "studio",
+        "kind": "quiet",
         "number": "3A",
         "door": "left",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 130
       },
       "placement": {
@@ -796,13 +803,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "empty",
+        "kind": "quiet",
         "number": "3B",
         "door": "right",
         "lock": "smart",
         "lit": 1,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 131
       },
       "placement": {
@@ -822,13 +830,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "family",
+        "kind": "quiet",
         "number": "3C",
         "door": "left",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 132
       },
       "placement": {
@@ -875,13 +884,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "4A",
         "door": "left",
         "lock": "smart",
-        "lit": 0.3,
+        "lit": 1,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 140
       },
       "placement": {
@@ -901,13 +911,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "4B",
         "door": "right",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 141
       },
       "placement": {
@@ -931,9 +942,10 @@
         "number": "4C",
         "door": "left",
         "lock": "none",
-        "lit": 1,
+        "lit": 0,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 142
       },
       "placement": {
@@ -980,13 +992,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "hoarder",
+        "kind": "family",
         "number": "5A",
         "door": "left",
         "lock": "smart",
         "lit": 1,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 150
       },
       "placement": {
@@ -1006,13 +1019,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "studio",
+        "kind": "quiet",
         "number": "5B",
         "door": "right",
         "lock": "smart",
-        "lit": 0.3,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 151
       },
       "placement": {
@@ -1032,13 +1046,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "5C",
         "door": "left",
         "lock": "smart",
         "lit": 1,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 152
       },
       "placement": {
@@ -1085,13 +1100,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "family",
+        "kind": "quiet",
         "number": "6A",
         "door": "left",
         "lock": "smart",
         "lit": 1,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 160
       },
       "placement": {
@@ -1111,13 +1127,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "quiet",
         "number": "6B",
         "door": "right",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 161
       },
       "placement": {
@@ -1137,13 +1154,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "empty",
+        "kind": "quiet",
         "number": "6C",
         "door": "left",
         "lock": "smart",
-        "lit": 0.3,
+        "lit": 0.25,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 162
       },
       "placement": {
@@ -1190,13 +1208,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "studio",
+        "kind": "quiet",
         "number": "7A",
         "door": "left",
         "lock": "smart",
-        "lit": 1,
+        "lit": 0.25,
         "window": true,
         "partition": false,
+        "plate": false,
         "seed": 170
       },
       "placement": {
@@ -1216,13 +1235,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "capsule",
+        "kind": "home",
         "number": "7B",
         "door": "right",
         "lock": "refusing",
         "lit": 0,
         "window": true,
         "partition": true,
+        "plate": true,
         "seed": 171
       },
       "placement": {
@@ -1242,13 +1262,14 @@
       "props": {
         "width": 80,
         "height": 76,
-        "kind": "hoarder",
+        "kind": "quiet",
         "number": "7C",
         "door": "left",
         "lock": "smart",
         "lit": 1,
         "window": true,
         "partition": true,
+        "plate": false,
         "seed": 172
       },
       "placement": {

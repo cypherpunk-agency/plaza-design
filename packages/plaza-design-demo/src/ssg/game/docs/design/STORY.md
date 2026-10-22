@@ -102,7 +102,8 @@ You are stripped of your identity, want it back, and learn hacking to get around
 obstacle the city puts in the way. Act I stays in Downtown and shows a different Downtown place
 at each step: the capsule lobby, the noodle stall, the Registry service point, Kessel's room
 behind the fixer's kitchen, the supermarket, the yard, Moth's stairwell, the library, the
-Registry back office or substation. A forced attempt to restore your record trips an alarm. A
+substation and, with the block's power cut, the dark Registry back office. A forced attempt to
+restore your record trips an alarm. A
 sweep collects "unregistered persons", and an unregistered body is the city's to take. Kessel
 moves your mind into a DLV-9 delivery robot in an emergency transfer, and your body is taken.
 

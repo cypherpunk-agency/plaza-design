@@ -23,10 +23,9 @@
  * Drawn in the piece's own frame: origin at its foot on the left, heights up (`y(h) = -h`).
  */
 import type { Element, Field, Properties } from '../core/composition';
-import { addLight, type SceneLight } from '../atmosphere/lighting';
 import { windowLit } from '../../world/light';
 import { text as paintText } from '../core/primitives';
-import { num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
+import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
 import { drawCar } from '../vehicles/vehicles';
 
 type X = CanvasRenderingContext2D;
@@ -34,8 +33,8 @@ type X = CanvasRenderingContext2D;
 // ---------------------------------------------------------------- shared
 
 const RED = '255,42,68', GOLD = '216,180,90', TUBE = '236,248,242', AMBER = '255,176,70', GO = '110,230,150', CYAN = '0,230,230', EXIT = '70,230,130';
-const HOURS = ['open', 'closed', 'alarm'] as const;
-const hoursField = (): Field => select('Hours (closed: tubes out; alarm: washed red)', HOURS, 'open');
+const HOURS = ['open', 'closed', 'alarm', 'cut'] as const;
+const hoursField = (): Field => select('Hours (closed: tubes out; alarm: washed red; cut: no power, battery lamps only)', HOURS, 'open');
 const colourField = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
 const hexOr = (v: unknown, d: string) => isHex(v) ? String(v) : d;
 /** Two #rrggbb colours mixed (k 0: a, 1: b), as #rrggbb. */
@@ -65,7 +64,7 @@ const pulse = (t: number, speed: number, phase = 0) => 0.5 + 0.5 * Math.sin(t * 
 /** After hours: the piece's area dimmed (room light gone), the alarm's red over it. */
 function after(x: X, hours: unknown, l: number, h: number, w: number, tall: number, t: number, k = 0.62) {
   if (hours === 'open' || !hours) return;
-  R(x, l, h, w, tall, 'rgba(5,8,12,' + k + ')');
+  R(x, l, h, w, tall, 'rgba(5,8,12,' + (hours === 'cut' ? Math.max(k, 0.8) : k) + ')');
   if (hours === 'alarm') R(x, l, h, w, tall, rgba(RED, 0.08 + 0.1 * pulse(t, 0.22)));
 }
 /** The Registry's seal: a ring with ticks and the Spire as a blade. */
@@ -74,29 +73,6 @@ function seal(x: X, cx: number, h: number, r: number, col: string) {
   R(x, cx - 1, h - r * 0.55, 2, r * 1.05, col); R(x, cx - r * 0.45, h - r * 0.55, r * 0.9, 1, col);
 }
 
-type Glow = (lx: number, lh: number, g: { kind?: SceneLight['kind']; col?: string; r?: number; a?: number; w?: number; hh?: number }) => void;
-interface CivicPaint extends Paint { glow?: Glow }
-/**
- * A placeable piece like `piece()` (buildings/types.ts), with one more callback: `glow` puts any kind of
- * light (a lamp's pool, a beacon, a floodlight) on the light layer at a point in the piece's frame.
- */
-function civic(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & { size: (p: Properties) => { w: number; tall: number }; reach?: (p: Properties) => number; paint: (x: X, p: Properties, o: CivicPaint) => void }): Element {
-  const { size, paint, reach, ...rest } = o;
-  return {
-    ...rest, version: 1, coordinates: 'world', parts: ['backdrop'],
-    draw(ctx, v, p, _s, _pass, at) {
-      const { w } = size(p), sx = v.sx(at.x), end = sx + w * at.scale * at.facing, m = 60 + (reach ? reach(p) : 0) * at.scale;
-      if (Math.max(sx, end) + m < 0 || Math.min(sx, end) - m > v.viewW) return;
-      const near = at.parallax === 1, wx = (lx: number) => at.x + lx * at.scale * at.facing, wh = (lh: number) => at.h + lh * at.scale;
-      const light = near ? (lx: number, lh: number, lw: number, hh: number, col: string, kind: 'window' | 'screen') =>
-        addLight(v, { x: wx(lx), h: wh(lh), kind, w: lw * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
-      const glow: Glow | undefined = near ? (lx, lh, g) => addLight(v, { x: wx(lx), h: wh(lh), kind: g.kind ?? 'lamp', ...(g.col ? { col: g.col } : {}), r: (g.r ?? 60) * at.scale, a: g.a ?? 0.8,
-        ...(g.w ? { w: g.w * at.scale } : {}), ...(g.hh ? { hh: g.hh * at.scale } : {}) }) : undefined;
-      ctx.save(); ctx.translate(sx, v.y(at.h));
-      try { paint(ctx, p, { t: v.t, lighting: v.lighting, view: v, ...(light ? { light } : {}), ...(glow ? { glow } : {}) }); } finally { ctx.restore(); }
-    },
-  };
-}
 const box = (w: number, tall: number, x0 = 0) => ({ x: x0, h: tall, w, tall });
 const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
 
@@ -108,7 +84,7 @@ const ROOM_DADO: Record<string, string> = { hall: '#6c7882', office: '#6f7a83', 
 const ROOM_CEIL: Record<string, string> = { hall: '#c7ccce', office: '#c2c7c9', corridor: '#b8bec1', records: '#a9aca6', server: '#1a1f23', plant: '#77806f' };
 
 /** A ceiling tube: lit, flickering, out, or the standby light that stays on after hours. */
-function tube(x: X, o: CivicPaint, cx: number, H: number, state: 'on' | 'off' | 'standby', cold: string) {
+function tube(x: X, o: Paint, cx: number, H: number, state: 'on' | 'off' | 'standby', cold: string) {
   R(x, cx - 15, H - 11, 30, 3, '#5c6366');
   if (state === 'off') { R(x, cx - 14, H - 11, 28, 1, 'rgba(210,220,220,.25)'); return; }
   const lit = state === 'on';
@@ -118,7 +94,7 @@ function tube(x: X, o: CivicPaint, cx: number, H: number, state: 'on' | 'off' | 
   if (lit) o.light?.(cx, H - 12, 28, 4, cold, 'window');
 }
 /** The green running-man exit sign, lit day and night. */
-function exitSign(x: X, o: CivicPaint, cx: number, h: number, dir: 1 | -1 = 1) {
+function exitSign(x: X, o: Paint, cx: number, h: number, dir: 1 | -1 = 1) {
   R(x, cx - 14, h - 1, 28, 11, '#0e1a12'); R(x, cx - 13, h, 26, 9, rgba(EXIT, 0.85));
   // the little running figure and the arrow
   const fx = cx - 9 * dir; R(x, fx, h + 6, 2, 2, '#0c2a16'); R(x, fx - 1, h + 3, 3, 3, '#0c2a16'); R(x, fx - 2 * dir, h + 1, 2, 2, '#0c2a16'); R(x, fx + 2 * dir, h + 1, 2, 2, '#0c2a16');
@@ -139,7 +115,7 @@ function clock(x: X, cx: number, h: number, min: number) {
   x.restore();
 }
 
-export const roomElement = civic({
+export const roomElement = piece({
   type: 'civic.room', label: 'Registry room, cut open (civic kit: hall, office, corridor, records, server, plant)', category: 'architecture', libraryUse: 'reusable',
   fields: {
     width: num('Width', 400, 40, 4000, 1, 'units'), height: num('Wall height', 92, 50, 300, 1, 'units'), kind: select('Room', ROOM_KINDS, 'hall'), hours: hoursField(),
@@ -185,20 +161,27 @@ export const roomElement = civic({
       const s = seed * 31 + i * 7, works = hash(s) < Number(p.tubes), flick = hash(s + 1) < Number(p.flicker);
       let state: 'on' | 'off' | 'standby' = works ? 'on' : 'off';
       if (state === 'on' && flick && ((t * 0.37 + i * 53) % 97 < 9 || (t * 0.11 + i * 17) % 61 < 3)) state = 'off';
-      if (hours !== 'open') state = i % 3 === 1 ? 'standby' : 'off';
+      if (hours !== 'open') state = hours !== 'cut' && i % 3 === 1 ? 'standby' : 'off';
       tube(x, o, k, H, state, cold);
     }
     const cams = Number(p.cameras);
     for (let i = 0; i < cams; i++) dome(x, (W * (i + 0.5)) / cams + 7, H - 9, t, seed * 13 + i * 37);
     if (Number(p.clock) >= 0) clock(x, Number(p.clock), H - 26, o.lighting.min ?? 600);
     after(x, hours, 0, 0, W, H, t, 0.7);
+    if (hours === 'cut') for (let k = 70; k < W - 20; k += 140) {
+      // battery emergency bulkheads: a small warm box under the ceiling, a weak pool below it
+      R(x, k - 6, H - 18, 12, 5, '#2a2c2a'); R(x, k - 5, H - 17, 10, 3, 'rgba(255,236,190,.95)');
+      const g = x.createLinearGradient(0, y(H - 18), 0, y(0)); g.addColorStop(0, 'rgba(255,236,190,.1)'); g.addColorStop(1, 'rgba(255,236,190,0)');
+      x.fillStyle = g; x.beginPath(); x.moveTo(k - 5, y(H - 18)); x.lineTo(k + 5, y(H - 18)); x.lineTo(k + 40, 0); x.lineTo(k - 40, 0); x.closePath(); x.fill();
+      o.light?.(k, H - 16, 10, 3, '255,236,190', 'window');
+    }
     if (Number(p.exit) >= 0) exitSign(x, o, Number(p.exit), H - 24, p.exitDir === 'left' ? -1 : 1);
   },
 });
 
 // ---------------------------------------------------------------- the public hall
 
-export const ticketMachineElement = civic({
+export const ticketMachineElement = piece({
   type: 'civic.ticket-machine', label: 'Ticket machine: take a number (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     label: text('Sign on its post (empty: none)', 'TAKE A NUMBER'), paper: select('Paper', ['ok', 'low', 'out'], 'ok'), litter: num('Tickets dropped on the floor', 0.6, 0, 1, 0.05),
@@ -231,7 +214,7 @@ export const ticketMachineElement = civic({
   },
 });
 
-export const numberDisplayElement = civic({
+export const numberDisplayElement = piece({
   type: 'civic.number-display', label: 'Now serving display (civic kit: queue numbers, the wait)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
     width: num('Width', 124, 60, 600, 1, 'units'), height: num('Height', 26, 18, 80, 1, 'units'), prefix: text('Number prefix', 'A'), start: num('First number', 17, 0, 999),
@@ -245,7 +228,7 @@ export const numberDisplayElement = civic({
     const W = Number(p.width), H = Number(p.height), rods = Number(p.rods), t = o.t, on = p.hours === 'open';
     if (rods > 0) for (const rx of [8, W - 9]) R(x, rx, H, 1, rods, '#4d5459');
     R(x, -1, -1, W + 2, H + 2, '#30363a'); R(x, 0, 0, W, H, '#0b0d0e');
-    if (!on) { T(x, p.hours === 'alarm' ? '- - -' : 'SERVICE CLOSED', W / 2, H / 2, rgba(AMBER, 0.35), 7, '700'); return; }
+    if (!on) { if (p.hours !== 'cut') T(x, p.hours === 'alarm' ? '- - -' : 'SERVICE CLOSED', W / 2, H / 2, rgba(AMBER, 0.35), 7, '700'); return; }
     const open = String(p.open ?? '').split(',').map(s => parseInt(s, 10)).filter(n => n > 0), counters = Number(p.counters);
     const step = Number(p.step), k = Math.floor(t / step), n = Number(p.start) + k, fresh = t - k * step < 90;
     const counter = open.length ? open[k % open.length] : (k % counters) + 1;
@@ -267,7 +250,7 @@ export const numberDisplayElement = civic({
   },
 });
 
-export const chairsElement = civic({
+export const chairsElement = piece({
   type: 'civic.chairs', label: 'Linked plastic chairs on a beam (civic kit: the waiting room)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     count: num('Seats', 8, 1, 40), seat: num('Seat width', 20, 10, 40, 1, 'units'), height: num('Seat height (sit people here)', 10, 6, 20, 1, 'units'),
@@ -298,7 +281,7 @@ export const chairsElement = civic({
   },
 });
 
-export const countersElement = civic({
+export const countersElement = piece({
   type: 'civic.counters', label: 'Service counters behind glass (civic kit: one window open)', category: 'architecture', libraryUse: 'reusable',
   fields: {
     windows: num('Windows', 4, 1, 16), bay: num('Window width', 50, 30, 120, 1, 'units'), counter: num('Counter height', 30, 20, 44, 1, 'units'),
@@ -351,7 +334,7 @@ export const countersElement = civic({
   },
 });
 
-export const boothsElement = civic({
+export const boothsElement = piece({
   type: 'civic.booths', label: 'Privacy booths (civic kit: frosted panels, a terminal inside)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     count: num('Booths', 2, 1, 12), width: num('Booth width', 34, 24, 80, 1, 'units'), height: num('Panel height', 70, 50, 120, 1, 'units'),
@@ -407,7 +390,7 @@ function holdPage(x: X, mode: string, W: number, H: number, t: number, p: Proper
   }
 }
 
-export const holdScreenElement = civic({
+export const holdScreenElement = piece({
   type: 'civic.hold-screen', label: 'Registry screen: please hold, appointments, Premium (civic kit)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
     width: num('Width', 110, 50, 600, 1, 'units'), height: num('Height', 46, 26, 300, 1, 'units'), mode: select('Shows', HOLD_MODES, 'hold'),
@@ -423,8 +406,8 @@ export const holdScreenElement = civic({
     if (rods > 0) for (const rx of [10, W - 11]) R(x, rx, H, 1, rods + 2, '#4d5459');
     R(x, -3, -3, W + 6, H + 6, '#1a1d20'); R(x, -3, H + 2, W + 6, 1, 'rgba(255,255,255,.15)');
     const alt = String(p.alternate), page = alt !== 'none' && Math.floor(t / Number(p.period)) % 2 === 1 ? alt : String(p.mode);
-    holdPage(x, p.hours === 'open' ? page : 'closed', W, H, t, p);
-    if (p.rec !== false && Math.floor(t / 40) % 2 === 0) R(x, W - 5, -2, 2, 1, rgba(RED, 0.95));
+    if (p.hours === 'cut') R(x, 0, 0, W, H, '#07090a'); else holdPage(x, p.hours === 'open' ? page : 'closed', W, H, t, p);
+    if (p.rec !== false && p.hours !== 'cut' && Math.floor(t / 40) % 2 === 0) R(x, W - 5, -2, 2, 1, rgba(RED, 0.95));
     if (p.hours === 'open') o.light?.(W / 2, H / 2, W, H, page === 'premium' ? GOLD : '220,230,236', 'screen');
   },
 });
@@ -437,7 +420,7 @@ const POSTERS: Record<string, { bg: string; ink: string; head?: string; lines: s
   report: { bg: '#e9ebe8', ink: 'rgba(40,46,52,.95)', head: 'REPORT', lines: ['UNREGIS-', 'TERED', 'PERSONS', 'AT ANY', 'COUNTER'] },
   custom: { bg: '#e9ebe8', ink: 'rgba(40,46,52,.95)', head: '', lines: [] },
 };
-export const posterElement = civic({
+export const posterElement = piece({
   type: 'civic.poster', label: 'Registry poster in a frame (civic kit: Premium, notices)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
     kind: select('Poster', Object.keys(POSTERS), 'premium'), width: num('Width', 46, 20, 300, 1, 'units'), height: num('Height', 62, 20, 300, 1, 'units'),
@@ -462,7 +445,7 @@ export const posterElement = civic({
   },
 });
 
-export const queueRailElement = civic({
+export const queueRailElement = piece({
   type: 'civic.queue-rail', label: 'Belt barrier posts (civic kit: queue here)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     posts: num('Posts', 4, 2, 30), spacing: num('Spacing', 28, 10, 120, 1, 'units'), height: num('Height', 30, 18, 44, 1, 'units'),
@@ -487,7 +470,7 @@ export const queueRailElement = civic({
 // ---------------------------------------------------------------- the back office
 
 const DOOR_KINDS = ['staff', 'fire', 'plain', 'cage'] as const;
-export const staffDoorElement = civic({
+export const staffDoorElement = piece({
   type: 'civic.staff-door', label: 'Door with a card reader (civic kit: staff only, fire exit, records cage)', category: 'architecture', libraryUse: 'reusable',
   fields: {
     kind: select('Door', DOOR_KINDS, 'staff'), width: num('Width', 26, 18, 60, 1, 'units'), height: num('Height', 56, 46, 90, 1, 'units'),
@@ -525,7 +508,7 @@ export const staffDoorElement = civic({
   },
 });
 
-export const terminalBankElement = civic({
+export const terminalBankElement = piece({
   type: 'civic.terminal-bank', label: 'Terminal bank: desks, monitors, partitions (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     desks: num('Desks', 4, 1, 20), desk: num('Desk width', 52, 36, 100, 1, 'units'), partitions: bool('Fabric partitions behind', true),
@@ -548,11 +531,11 @@ export const terminalBankElement = civic({
       R(x, dx + 5, 0, 13, 19, '#7a838a'); for (let k = 5; k < 18; k += 6) R(x, dx + 10, k, 4, 1, '#3a4045');
       R(x, cx - 1, 23, 3, 4, '#25292c'); R(x, cx - 12, 27, 24, 16, '#1b1f22');
       let screen = 'rgba(150,175,190,.55)';
-      if (hours === 'open') screen = 'rgba(190,215,228,.75)'; else if (hours === 'alarm') screen = Math.floor(t / 20) % 2 ? rgba(RED, 0.75) : 'rgba(60,10,16,.8)'; else screen = 'rgba(70,82,92,.55)';
+      if (hours === 'open') screen = 'rgba(190,215,228,.75)'; else if (hours === 'cut') screen = '#07090a'; else if (hours === 'alarm') screen = Math.floor(t / 20) % 2 ? rgba(RED, 0.75) : 'rgba(60,10,16,.8)'; else screen = 'rgba(70,82,92,.55)';
       R(x, cx - 11, 28, 22, 14, screen);
       if (hours === 'open') { for (let r = 0; r < 4; r++) R(x, cx - 9, 39 - r * 3, 6 + hash(s + r) * 12, 1, 'rgba(40,60,80,.6)'); o.light?.(cx, 35, 22, 14, '200,225,238', 'screen'); }
       else if (hours === 'alarm') { T(x, 'LOCKED', cx, 35, 'rgba(255,230,230,.95)', 5, '700'); o.light?.(cx, 35, 22, 14, RED, 'screen'); }
-      else seal(x, cx, 35, 4, 'rgba(200,215,225,.45)');
+      else if (hours !== 'cut') seal(x, cx, 35, 4, 'rgba(200,215,225,.45)');
       if (tell === i + 1) { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, cx - 12, 43, 24, 1, rgba(CYAN, k)); R(x, cx - 12, 27, 1, 16, rgba(CYAN, k * 0.8)); R(x, cx + 11, 27, 1, 16, rgba(CYAN, k * 0.8)); }
       R(x, cx - 9, 23, 18, 1, '#30363a'); if (hash(s + 9) < 0.6) { R(x, dx + D - 10, 23, 4, 4, hash(s + 2) < 0.5 ? '#c8c2b0' : '#8a3a3a'); }
       // the chair: tucked in, or pulled out where someone works
@@ -563,7 +546,7 @@ export const terminalBankElement = civic({
   },
 });
 
-export const recordsElement = civic({
+export const recordsElement = piece({
   type: 'civic.records', label: 'Records stacks: mobile shelving, archive boxes (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     units: num('Shelving units', 5, 1, 30), unit: num('Unit width', 30, 16, 80, 1, 'units'), height: num('Height', 64, 30, 200, 1, 'units'),
@@ -607,8 +590,8 @@ export const recordsElement = civic({
   },
 });
 
-const NODE_STATES = ['idle', 'verifying', 'tripped'] as const;
-export const nodeElement = civic({
+const NODE_STATES = ['idle', 'verifying', 'tripped', 'backup'] as const;
+export const nodeElement = piece({
   type: 'civic.node', label: 'Local verification node: server cabinets and the red watchdog (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     cabinets: num('Cabinets', 4, 1, 16), height: num('Height', 66, 40, 140, 1, 'units'), state: select('State', NODE_STATES, 'idle'),
@@ -630,7 +613,8 @@ export const nodeElement = civic({
       for (let r = 0; r < Math.floor((H - 14) / 4); r++) {
         const s = seed * 13 + i * 71 + r, ph = (t * (0.4 + hash(s) * 0.8) + hash(s + 1) * 400) % 100;
         let col = '';
-        if (state === 'tripped') col = Math.floor(t / 8 + r) % 2 ? rgba(RED, 0.95) : rgba(RED, 0.35);
+        if (state === 'backup') col = r % 4 === 0 ? rgba(RED, 0.4 + 0.5 * pulse(t, 0.04, r)) : 'rgba(40,10,14,.6)';
+        else if (state === 'tripped') col = Math.floor(t / 8 + r) % 2 ? rgba(RED, 0.95) : rgba(RED, 0.35);
         else if (state === 'verifying') col = Math.floor(t / 3) % Math.floor((H - 14) / 4) === r ? 'rgba(240,248,255,1)' : ph < 50 ? 'rgba(160,200,255,.7)' : 'rgba(160,200,255,.2)';
         else col = ph < 20 ? rgba(GO, 0.95) : hash(s + 2) < 0.7 ? rgba(GO, 0.45) : 'rgba(255,190,80,.5)';
         R(x, cx + 15, 8 + r * 4, 3, 1, col);
@@ -640,24 +624,26 @@ export const nodeElement = civic({
     // the node's own face on the middle cabinet: a small screen
     const sx = mid * 24 + 2;
     R(x, sx, 24, 12, 9, '#05080a');
-    if (state === 'tripped') { R(x, sx + 1, 25, 10, 7, Math.floor(t / 10) % 2 ? rgba(RED, 0.9) : 'rgba(80,10,16,.9)'); }
+    if (state === 'backup') { R(x, sx + 1, 25, 10, 7, 'rgba(120,14,24,.95)'); R(x, sx + 2, 28, 8, 1, 'rgba(255,170,170,.9)'); }
+    else if (state === 'tripped') { R(x, sx + 1, 25, 10, 7, Math.floor(t / 10) % 2 ? rgba(RED, 0.9) : 'rgba(80,10,16,.9)'); }
     else if (state === 'verifying') { R(x, sx + 1, 25, 10, 7, 'rgba(30,60,90,.9)'); R(x, sx + 1, 27, Math.round(((t * 0.3) % 100) / 10), 2, 'rgba(220,240,255,.95)'); }
     else { R(x, sx + 1, 25, 10, 7, 'rgba(20,50,30,.9)'); R(x, sx + 3, 28, 6, 1, rgba(GO, 0.9)); }
-    o.light?.(sx + 6, 28, 10, 8, state === 'tripped' ? RED : state === 'verifying' ? '200,225,255' : GO, 'screen');
+    o.light?.(sx + 6, 28, 10, 8, state === 'tripped' || state === 'backup' ? RED : state === 'verifying' ? '200,225,255' : GO, 'screen');
     if (p.tell !== false && state !== 'tripped') { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, 4, 28, 10, 4, '#06090a'); R(x, 5, 29, 8, 2, rgba(CYAN, 0.35 + 0.6 * k)); }
     if (p.watchdog !== false) {
       // the watchdog: a red eye on a short mast, slow when calm, fast and bright when tripped
-      const ex = mid * 24 + 11, eh = H + 8, fast = state === 'tripped', k = fast ? pulse(t, 0.6) : pulse(t, 0.03);
+      const ex = mid * 24 + 11, eh = H + 8, fast = state === 'tripped', k = fast ? pulse(t, 0.6) : pulse(t, 0.03), backup = state === 'backup';
       R(x, ex - 1, H, 2, 3, '#2a3035'); x.fillStyle = '#0b0d0f'; x.beginPath(); x.arc(ex, y(eh), 6, 0, Math.PI * 2); x.fill();
       x.strokeStyle = rgba(RED, 0.55 + 0.45 * k); x.lineWidth = 2; x.beginPath(); x.arc(ex, y(eh), 4, 0, Math.PI * 2); x.stroke();
       const a = t * (fast ? 0.2 : 0.02); R(x, ex + Math.cos(a) * 1.5 - 1, eh + Math.sin(a) * 1.5 - 1, 2, 2, rgba(RED, 1));
-      o.glow?.(ex, eh, { kind: 'neon', col: RED, r: fast ? 90 : 26, a: fast ? 0.5 + 0.5 * k : 0.35 });
+      o.glow?.(ex, eh, { kind: 'neon', col: RED, r: fast ? 90 : backup ? 110 : 26, a: fast ? 0.5 + 0.5 * k : backup ? 0.6 + 0.3 * k : 0.35 });
+      if (backup) { const g = x.createRadialGradient(n * 12, y(H * 0.6), 4, n * 12, y(H * 0.6), n * 16); g.addColorStop(0, rgba(RED, 0.16 + 0.06 * k)); g.addColorStop(1, rgba(RED, 0)); x.fillStyle = g; x.fillRect(-n * 6, y(H + 20), n * 36, H + 30); }
     }
     const label = String(p.label ?? ''); if (label) goldPlate(x, label, n * 12 - 1, H - 12);
   },
 });
 
-export const alarmElement = civic({
+export const alarmElement = piece({
   type: 'civic.alarm', label: 'Alarm: beacon, keypad panel or bell box (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     kind: select('Kind', ['beacon', 'panel', 'bell'], 'beacon'), state: select('State', ['off', 'armed', 'tripped'], 'armed'),
@@ -700,7 +686,7 @@ export const alarmElement = civic({
 
 // ---------------------------------------------------------------- the front
 
-export const registryFrontElement = civic({
+export const registryFrontElement = piece({
   type: 'civic.registry-front', label: 'Registry service point front (civic kit: grey-white panels, glazing, the seal)', category: 'architecture', libraryUse: 'reusable',
   fields: {
     width: num('Width', 720, 160, 4000, 1, 'units'), ground: num('Ground floor height', 96, 70, 200, 1, 'units'), floors: num('Floors above', 2, 0, 20),
@@ -709,7 +695,11 @@ export const registryFrontElement = civic({
     name: text('Name on the fascia', 'REGISTRY SERVICE POINT'), branch: text('Branch', 'DOWNTOWN 07'), hours: text('Opening hours (lines split by /)', 'MON–SAT/08:00–16:00/BY NUMBER ONLY'),
     contractor: text('Contractor plate (gold on black)', 'PLAZA HOLDINGS · UNDER CONTRACT'), closed: bool('After hours (shutters down)', false),
     lit: num('Office windows lit', 0.6, 0, 1, 0.05), queue: num('Heads seen through the glass', 0.6, 0, 1, 0.05), cameras: num('Cameras on brackets', 3, 0, 12),
-    watchdog: bool('Watchdog eye over the entrance', true), seed: num('Seed', 1, 0, 1000000),
+    watchdog: bool('Watchdog eye over the entrance', true), entrance: select('Entrance', ['bay', 'flush'], 'bay'),
+    relief: num('Seal relief over the entrance (radius; 0: none)', 26, 0, 80, 1, 'units'), plaque: text('Bronze plaque by the doors (empty: none)', 'REGISTRY OF PERSONS'),
+    recess: num('Recessed granite bay from the left (-1: none)', -1, -1, 4000, 1, 'units'), recessWidth: num('Granite bay width', 160, 40, 2000, 1, 'units'),
+    tower: num('Stair tower from the left (-1: none)', -1, -1, 4000, 1, 'units'), power: select('Power (cut: street lights and signs off)', ['on', 'cut'], 'on'),
+    seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.ground) + Number(p.floors) * Number(p.storey) + 40 }),
   bounds: p => { const tall = Number(p.ground) + Number(p.floors) * Number(p.storey) + 40; return { x: -8, h: tall, w: Number(p.width) + 16, tall: tall + 2 }; },
@@ -723,7 +713,8 @@ export const registryFrontElement = civic({
     const W = Number(p.width), G = Number(p.ground), F = Number(p.floors), S = Number(p.storey), top = G + F * S, seed = Number(p.seed), t = o.t, closed = p.closed === true;
     // the panels as the street sees them: pale by day, a cool grey under the sodium lamps at night
     const day = Math.max(0, Math.min(1, o.lighting.daylight)), wall = mixHex('#4f575c', hexOr(p.wall, '#8f979c'), day);
-    const door = Number(p.door), dw = Number(p.doorWidth), staff = Number(p.staffDoor);
+    const door = Number(p.door), dw = Number(p.doorWidth), staff = Number(p.staffDoor), cut = p.power === 'cut', bay = p.entrance !== 'flush';
+    const tw = 46, tx = Number(p.tower), rx = Number(p.recess), rw = Number(p.recessWidth);
     R(x, 0, 0, W, top, wall);
     // panels: a grid of joints, every other panel a shade lighter, rain streaks under the sills
     for (let k = 0; k < W; k += 40) for (let h = G; h < top; h += S / 2) if (hash(seed + k * 0.1 + h) < 0.5) R(x, k, h, 40, S / 2, 'rgba(255,255,255,.035)');
@@ -734,7 +725,7 @@ export const registryFrontElement = civic({
       const fh = G + f * S, sill = fh + Math.round(S * 0.3), wh = Math.round(S * 0.48);
       R(x, 10, sill - 2, W - 20, 2, '#c3c8cb'); R(x, 10, sill + wh, W - 20, 2, '#6c7479');
       for (let k = 12, i = 0; k < W - 14; k += 30, i++) {
-        const s = seed * 101 + f * 37 + i, on = !closed && hash(s) < Number(p.lit) && windowLit(s, o.lighting);
+        const s = seed * 101 + f * 37 + i, on = !closed && !cut && hash(s) < Number(p.lit) && windowLit(s, o.lighting);
         R(x, k, sill, 28, wh, on ? 'rgba(214,232,226,.78)' : '#1a2024');
         for (let b = k + 2; b < k + 27; b += 3) R(x, b, sill + (hash(s + 1) < 0.3 ? wh * 0.4 : 0), 1, wh - (hash(s + 1) < 0.3 ? wh * 0.4 : 0), on ? 'rgba(120,135,140,.45)' : 'rgba(80,90,96,.4)');
         R(x, k, sill, 1, wh, '#c3c8cb'); R(x, k + 27, sill, 1, wh, '#c3c8cb');
@@ -742,15 +733,54 @@ export const registryFrontElement = civic({
         R(x, k + 2, sill - 6 - hash(s + 2) * 14, 1, 6 + hash(s + 2) * 14, 'rgba(0,0,0,.08)');
       }
     }
+    // a recessed bay in dark granite: vertical fins, the windows deep in shadow
+    if (rx >= 0) {
+      const gr = mixHex('#24282b', '#5d6266', day);
+      R(x, rx, G, rw, top - G + 4, gr); R(x, rx, G, 3, top - G + 4, 'rgba(0,0,0,.45)'); R(x, rx + rw - 3, G, 3, top - G + 4, 'rgba(255,255,255,.08)');
+      for (let k = rx + 14; k < rx + rw - 8; k += 22) { R(x, k, G + 4, 4, top - G - 4, mixHex('#33383b', '#7a8085', day)); R(x, k, G + 4, 1, top - G - 4, 'rgba(255,255,255,.12)'); }
+      for (let f = 0; f < F; f++) for (let k = rx + 18; k < rx + rw - 22; k += 22) {
+        const s = seed * 7 + f * 13 + k, on = !closed && !cut && hash(s) < Number(p.lit) * 0.6 && windowLit(s, o.lighting), fh = G + f * S + 10;
+        R(x, k + 2, fh, 16, S - 22, on ? 'rgba(200,220,214,.55)' : '#121518'); if (on) o.light?.(k + 10, fh + (S - 22) / 2, 16, S - 22, TUBE, 'window');
+      }
+    }
+    // the entrance bay: a pale stone frame up two storeys, the Registry's seal in relief over the canopy
+    const bx0 = door - 26, bx1 = door + dw + 26, rr = Number(p.relief);
+    if (bay) {
+      const stone = mixHex('#5d6468', '#b9bfc2', day), shade = 'rgba(0,0,0,.28)';
+      R(x, bx0, 0, bx1 - bx0, Math.min(top, G + S + 20), stone); R(x, bx0, 0, 2, Math.min(top, G + S + 20), 'rgba(255,255,255,.18)'); R(x, bx1 - 3, 0, 3, Math.min(top, G + S + 20), shade);
+      R(x, bx0 - 4, Math.min(top, G + S + 20), bx1 - bx0 + 8, 5, mixHex('#4a5155', '#a3aaae', day)); R(x, bx0 - 4, Math.min(top, G + S + 25), bx1 - bx0 + 8, 1, 'rgba(255,255,255,.25)');
+      for (let h = 12; h < G + S + 18; h += 12) R(x, bx0 + 2, h, bx1 - bx0 - 5, 1, 'rgba(0,0,0,.08)');
+      if (rr > 0) {
+        // the seal cut into the stone: a deep ring, the ticks, the Spire as a blade; lit from below at night
+        const cx = (bx0 + bx1) / 2, ch = G + rr + 14, ink = cut ? 'rgba(30,34,38,.8)' : mixHex('#2c3236', '#5c6468', day);
+        x.save(); x.fillStyle = 'rgba(0,0,0,.18)'; x.beginPath(); x.arc(cx + 1, y(ch) + 1, rr + 2, 0, Math.PI * 2); x.fill(); x.restore();
+        seal(x, cx, ch, rr, ink); seal(x, cx, ch, rr - 4, ink);
+        for (let i = 0; i < 24; i++) { const a = (i / 24) * Math.PI * 2; R(x, cx + Math.cos(a) * (rr - 2) - 1, ch + Math.sin(a) * (rr - 2) - 1, 2, 2, ink); }
+        if (!cut && day < 0.5) { const g = x.createLinearGradient(0, y(G), 0, y(ch + rr)); g.addColorStop(0, rgba(TUBE, 0.22 * (1 - day))); g.addColorStop(1, rgba(TUBE, 0)); x.fillStyle = g; x.fillRect(cx - rr - 6, y(ch + rr), rr * 2 + 12, ch + rr - G); }
+      }
+    }
+    // a slim stair tower, proud of the front: a glazed slot up its height, a plaque at the top
+    if (tx >= 0) {
+      const tc = mixHex('#40474b', '#a0a7ab', day);
+      R(x, tx, 0, tw, top + 28, tc); R(x, tx, 0, 2, top + 28, 'rgba(255,255,255,.18)'); R(x, tx + tw - 3, 0, 3, top + 28, 'rgba(0,0,0,.3)'); R(x, tx - 2, top + 28, tw + 4, 4, mixHex('#34393c', '#7d8488', day));
+      const sl = !closed && !cut;
+      R(x, tx + tw / 2 - 5, G - 10, 10, top - G + 8, sl ? 'rgba(200,222,216,.6)' : '#101316');
+      for (let h = G - 6; h < top; h += S / 2) R(x, tx + tw / 2 - 5, h, 10, 1, 'rgba(0,0,0,.4)');
+      if (sl) o.light?.(tx + tw / 2, (G + top) / 2, 10, top - G, TUBE, 'window');
+      R(x, tx + 6, top + 8, tw - 12, 12, cut ? '#2a2e31' : '#e4e8e9'); T(x, 'R', tx + tw / 2, top + 14, cut ? 'rgba(80,86,90,.9)' : 'rgba(46,52,58,.95)', 9, '700');
+      if (!cut) o.light?.(tx + tw / 2, top + 14, tw - 12, 12, TUBE, 'window');
+    }
     // the ground floor: plinth, curtain wall, frosted band with the seal, the entrance
     R(x, 0, 0, W, 6, '#4b5156'); R(x, 0, 6, W, 1, 'rgba(255,255,255,.2)');
     const gTop = G - 24;
-    const skip = (k: number) => (k + 48 > door - 4 && k < door + dw + 210) || (staff >= 0 && k + 48 > staff - 4 && k < staff + 34);
+    const skip = (k: number) => (k + 48 > Math.min(door - 4, bay ? bx0 : door) && k < door + dw + 210) || (staff >= 0 && k + 48 > staff - 4 && k < staff + 34) || (tx >= 0 && k + 48 > tx && k < tx + tw);
     for (let k = 10; k < W - 10; k += 48) {
       if (skip(k)) continue;
       const pw = Math.min(48, W - 10 - k);
-      if (closed) {
-        R(x, k, 6, pw, gTop - 6, '#565d62'); for (let h = 8; h < gTop; h += 3) R(x, k, h, pw, 1, 'rgba(0,0,0,.18)'); R(x, k, gTop - 4, pw, 4, '#3d4448');
+      if (closed || cut) {
+        R(x, k, 6, pw, gTop - 6, closed ? '#565d62' : '#0c1013');
+        if (closed) { for (let h = 8; h < gTop; h += 3) R(x, k, h, pw, 1, 'rgba(0,0,0,.18)'); R(x, k, gTop - 4, pw, 4, '#3d4448'); }
+        else { R(x, k + 4, 10, 2, gTop - 18, 'rgba(255,255,255,.06)'); seal(x, k + pw / 2, 24, 9, 'rgba(70,78,84,.35)'); }
       } else {
         R(x, k, 6, pw, gTop - 6, 'rgba(200,220,222,.62)');
         const g = x.createLinearGradient(0, y(gTop), 0, y(30)); g.addColorStop(0, 'rgba(240,252,248,.35)'); g.addColorStop(1, 'rgba(240,252,248,0)'); x.fillStyle = g; x.fillRect(k, y(gTop), pw, gTop - 30);
@@ -765,15 +795,18 @@ export const registryFrontElement = civic({
     // the entrance: sliding glass doors, an ID scanner pillar, the hours, the contractor's plate
     R(x, door - 3, 0, dw + 6, gTop + 2, '#c8cdd0');
     if (closed) { R(x, door, 0, dw, gTop, '#4e555a'); for (let h = 2; h < gTop; h += 3) R(x, door, h, dw, 1, 'rgba(0,0,0,.2)'); }
+    else if (cut) R(x, door, 0, dw, gTop, '#0c1013');
     else {
       R(x, door, 0, dw, gTop, 'rgba(210,228,228,.7)'); const lw = dw / 2 - 4;
       R(x, door, 0, lw, gTop, 'rgba(160,190,195,.35)'); R(x, door + dw - lw, 0, lw, gTop, 'rgba(160,190,195,.35)'); R(x, door + lw, 0, 1, gTop, '#8f979c'); R(x, door + dw - lw - 1, 0, 1, gTop, '#8f979c');
       o.light?.(door + dw / 2, gTop / 2, dw, gTop, TUBE, 'window');
     }
-    R(x, door + dw / 2 - 6, gTop - 4, 12, 3, '#1a1d20'); R(x, door + dw / 2 - 1, gTop - 3, 2, 1, closed ? rgba(RED, 0.9) : rgba(GO, 0.9));
-    R(x, door + dw + 8, 0, 6, 40, '#5f686e'); R(x, door + dw + 8, 30, 6, 8, '#101416'); R(x, door + dw + 9, 31, 4, 6, closed ? 'rgba(40,50,56,.8)' : 'rgba(200,225,235,.85)');
+    R(x, door + dw / 2 - 6, gTop - 4, 12, 3, '#1a1d20'); R(x, door + dw / 2 - 1, gTop - 3, 2, 1, cut ? '#2a1a1c' : closed ? rgba(RED, 0.9) : rgba(GO, 0.9));
+    R(x, door + dw + 8, 0, 6, 40, '#5f686e'); R(x, door + dw + 8, 30, 6, 8, '#101416'); R(x, door + dw + 9, 31, 4, 6, closed || cut ? 'rgba(40,50,56,.8)' : 'rgba(200,225,235,.85)');
+    const plq = String(p.plaque ?? '');
+    if (bay && plq) { const pw = Math.min(bx1 - bx0 - 6, textW(x, plq, 5) + 6); R(x, (bx0 + bx1) / 2 - pw / 2, gTop + 30, pw, 9, '#6a5230'); R(x, (bx0 + bx1) / 2 - pw / 2, gTop + 38, pw, 1, 'rgba(255,220,160,.4)'); T(x, plq, (bx0 + bx1) / 2, gTop + 34.5, 'rgba(240,215,160,.9)', 5, '700'); }
     const hours = String(p.hours ?? '').split('/').filter(Boolean);
-    const hx = door + dw + 22;
+    const hx = door + dw + (bay ? 34 : 22);
     if (hours.length) { const ph = hours.length * 8 + 6; R(x, hx, 34, 66, ph, '#e8ebec'); R(x, hx, 34 + ph - 1, 66, 1, '#8b949a'); R(x, hx, 34, 66, 1, 'rgba(0,0,0,.3)'); hours.forEach((l, i) => T(x, l, hx + 33, 34 + ph - 7 - i * 8, 'rgba(40,46,52,.95)', 6, '600')); }
     const con = String(p.contractor ?? ''); if (con) { const cw = textW(x, con, 6) + 8; goldPlate(x, con, hx + 76 + cw / 2, 40, 6); }
     if (staff >= 0) {
@@ -781,16 +814,21 @@ export const registryFrontElement = civic({
       R(x, staff + 30, 28, 5, 8, '#202427'); R(x, staff + 31, 33, 3, 1, rgba(RED, 0.9)); plate(x, 'STAFF', staff + 13, 62, { fill: '#e6e9ea', size: 6, pad: 3 });
     }
     // the canopy and its fascia with the name, the seal and the branch
-    R(x, -6, gTop, W + 12, 4, '#2c3236'); for (let k = 20; k < W; k += 60) { R(x, k, gTop - 1, 6, 1, 'rgba(240,250,245,.9)'); if (!closed || hash(k) < 0.4) o.glow?.(k + 3, gTop - 2, { kind: 'lamp', col: TUBE, r: 38, a: 0.5 }); }
-    R(x, 0, gTop + 4, W, 20, closed ? mixHex('#7d8488', '#d6dadb', day) : '#e2e6e7'); R(x, 0, gTop + 4, W, 1, 'rgba(0,0,0,.25)'); R(x, 0, gTop + 23, W, 1, 'rgba(255,255,255,.6)');
+    R(x, -6, gTop, W + 12, 4, '#2c3236'); for (let k = 20; k < W; k += 60) { R(x, k, gTop - 1, 6, 1, cut ? 'rgba(90,96,100,.9)' : 'rgba(240,250,245,.9)'); if (!cut && (!closed || hash(k) < 0.4)) o.glow?.(k + 3, gTop - 2, { kind: 'lamp', col: TUBE, r: 38, a: 0.5 }); }
+    if (bay) {
+      // the bay's canopy stands out further and lower over the doors, lit underneath
+      R(x, bx0 - 10, gTop - 4, bx1 - bx0 + 20, 5, '#1f2427'); R(x, bx0 - 10, gTop + 1, bx1 - bx0 + 20, 1, 'rgba(255,255,255,.25)');
+      for (const k of [bx0 + 6, (bx0 + bx1) / 2 - 3, bx1 - 12]) { R(x, k, gTop - 5, 6, 1, cut ? 'rgba(90,96,100,.9)' : 'rgba(250,252,250,1)'); if (!cut) o.glow?.(k + 3, gTop - 6, { kind: 'lamp', col: TUBE, r: 46, a: 0.7 }); }
+    }
+    R(x, 0, gTop + 4, W, 20, cut ? '#3a3f43' : closed ? mixHex('#7d8488', '#d6dadb', day) : '#e2e6e7'); R(x, 0, gTop + 4, W, 1, 'rgba(0,0,0,.25)'); R(x, 0, gTop + 23, W, 1, 'rgba(255,255,255,.6)');
     const name = String(p.name ?? ''), nw = textW(x, name, 10, '700');
     seal(x, W / 2 - nw / 2 - 16, gTop + 14, 7, 'rgba(60,68,76,.9)');
-    T(x, name, W / 2, gTop + 14, 'rgba(46,52,58,.95)', 10, '700');
+    T(x, name, W / 2, gTop + 14, cut ? 'rgba(20,24,28,.8)' : 'rgba(46,52,58,.95)', 10, '700');
     const branch = String(p.branch ?? ''); if (branch) T(x, branch, W - 12, gTop + 14, 'rgba(90,98,106,.95)', 7, '600', 'right');
-    o.light?.(W / 2, gTop + 14, nw + 30, 16, TUBE, 'window');
+    if (!cut) o.light?.(W / 2, gTop + 14, nw + 30, 16, TUBE, 'window');
     // the watchdog over the entrance: a red ring that sweeps the street
     if (p.watchdog !== false) {
-      const ex = door + dw / 2, eh = gTop + 34; R(x, ex - 1, gTop + 24, 2, 4, '#2a3035');
+      const ex = door + dw / 2, eh = bay && rr > 0 ? G + 2 * rr + 24 : gTop + 34; R(x, ex - 1, eh - 10, 2, 4, '#2a3035');
       x.fillStyle = '#0b0d0f'; x.beginPath(); x.arc(ex, y(eh), 7, 0, Math.PI * 2); x.fill();
       x.strokeStyle = rgba(RED, 0.6 + 0.35 * pulse(t, 0.03)); x.lineWidth = 2; x.beginPath(); x.arc(ex, y(eh), 5, 0, Math.PI * 2); x.stroke();
       const a = Math.sin(t * 0.01) * 1.2; R(x, ex + Math.sin(a) * 2 - 1, eh - 1, 2, 2, rgba(RED, 1));
@@ -802,25 +840,26 @@ export const registryFrontElement = civic({
     // the roof: a parapet, plant, a mast with a red light
     R(x, 0, top, W, 6, '#6a7176'); R(x, 0, top + 6, W, 1, 'rgba(255,255,255,.25)');
     R(x, W * 0.2, top + 6, 30, 16, '#4e555a'); for (let k = 0; k < 28; k += 3) R(x, W * 0.2 + 1 + k, top + 8, 1, 12, 'rgba(0,0,0,.3)');
-    R(x, W * 0.62, top + 6, 2, 32, '#3d4448'); R(x, W * 0.62 - 6, top + 30, 14, 1, '#3d4448'); R(x, W * 0.62 - 1, top + 38, 3, 2, rgba(RED, 0.5 + 0.5 * pulse(t, 0.05)));
+    R(x, W * 0.62, top + 6, 2, 32, '#3d4448'); R(x, W * 0.62 - 6, top + 30, 14, 1, '#3d4448'); R(x, W * 0.62 - 1, top + 38, 3, 2, cut ? 'rgba(60,20,24,1)' : rgba(RED, 0.5 + 0.5 * pulse(t, 0.05)));
   },
 });
 
 // ---------------------------------------------------------------- the substation
 
-export const transformerElement = civic({
+export const transformerElement = piece({
   type: 'civic.transformer', label: 'Transformer in its bund (civic kit: fins, bushings, conservator)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     width: num('Tank width', 80, 30, 300, 1, 'units'), height: num('Tank height', 56, 24, 200, 1, 'units'), bushings: num('HV bushings', 3, 0, 6),
     fins: select('Cooling fins', ['both', 'left', 'right', 'none'], 'both'), conservator: bool('Conservator tank on top', true),
     label: text('Stencil on the tank', 'T2'), voltage: text('Danger plate (empty: none)', '11 000 V'), state: select('State', ['on', 'hum', 'fault', 'dead'], 'hum'),
-    paint: colourField('Paint', '#66746a'), bund: bool('Concrete bund and gravel', true), seed: num('Seed', 1, 0, 1000000),
+    paint: colourField('Paint', '#66746a'), bund: bool('Concrete bund and gravel', true), power: select('Power (cut: dead, lamps out)', ['on', 'cut'], 'on'),
+    gauge: bool('Lit oil-temperature gauge and warning lamp', true), tell: bool('Usable (cyan tell on its control box)', false), seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width) + 40, tall: Number(p.height) + 46 }),
   bounds: p => ({ x: -20, h: Number(p.height) + 46, w: Number(p.width) + 40, tall: Number(p.height) + 48 }),
   anchors: p => ({ ...origin(), top: { x: Number(p.width) / 2, h: Number(p.height) + 34, role: 'mount' } }),
   paint(x, p, o) {
-    const W = Number(p.width), H = Number(p.height), t = o.t, seed = Number(p.seed), col = hexOr(p.paint, '#66746a'), state = String(p.state);
+    const W = Number(p.width), H = Number(p.height), t = o.t, seed = Number(p.seed), col = hexOr(p.paint, '#66746a'), cut = p.power === 'cut', state = cut ? 'dead' : String(p.state);
     if (p.bund !== false) { R(x, -18, 0, W + 36, 6, '#4b4d48'); R(x, -18, 6, W + 36, 1, 'rgba(255,255,255,.15)'); for (let i = 0; i < W / 3; i++) R(x, -14 + hash(seed + i) * (W + 28), 6 + hash(i + seed * 2) * 2, 2, 1, 'rgba(160,155,140,.4)'); }
     R(x, -2, 6, W + 4, 4, '#4f5650');
     const fin = String(p.fins);
@@ -847,23 +886,35 @@ export const transformerElement = civic({
       const bx = (W * (i + 0.6)) / (n + 0.6);
       for (let k = 0; k < 7; k++) { const w = k % 2 ? 6 : 9; R(x, bx - w / 2, H + 3 + k * 4, w, 3, '#7a4a32'); R(x, bx - w / 2, H + 5 + k * 4, w, 1, 'rgba(255,200,170,.3)'); }
       R(x, bx - 2, H + 31, 4, 3, '#aab0b2');
+      if (!cut) { R(x, bx - 1, H + 34, 2, 1, 'rgba(255,214,150,' + (0.5 + 0.4 * pulse(t, 0.07, i)).toFixed(2) + ')'); o.glow?.(bx, H + 33, { kind: 'neon', col: '255,200,140', r: 16, a: 0.35 }); }
       if (state === 'fault' && i === 1 && Math.floor(t / 3) % 7 < 2) { for (let k = 0; k < 6; k++) R(x, bx + (hash(t + k) - 0.5) * 14, H + 30 + hash(t * 2 + k) * 10, 1, 1, 'rgba(255,250,200,1)'); o.glow?.(bx, H + 32, { kind: 'neon', col: '255,220,150', r: 70, a: 0.9 }); }
     }
     if (state === 'hum' || state === 'fault') {
       // heat shimmer over the tank: faint wavering lines
-      for (let k = 0; k < 4; k++) { const sx = W * (0.15 + k * 0.22), ph = t * 0.05 + k; for (let h = 0; h < 18; h += 2) R(x, sx + Math.sin(ph + h * 0.4) * 2, H + 4 + h, 1, 2, 'rgba(255,255,255,.05)'); }
+      for (let k = 0; k < 4; k++) { const sx = W * (0.15 + k * 0.22), ph = t * 0.05 + k; for (let h = 0; h < 18; h += 2) R(x, sx + Math.sin(ph + h * 0.4) * 2, H + 4 + h, 1, 2, 'rgba(255,240,220,.09)'); }
     }
+    if (p.gauge !== false) {
+      // the oil-temperature dial behind its window, and the amber lamp on the lid
+      const gx = W * 0.14, gh = H * 0.32 + 6;
+      R(x, gx - 7, gh - 7, 14, 14, '#1d2220'); x.fillStyle = cut ? '#3c403c' : '#f0ead4'; x.beginPath(); x.arc(gx, y(gh), 5, 0, Math.PI * 2); x.fill();
+      const a = cut ? 2.4 : -0.6 + Math.sin(t * 0.01 + seed) * 0.08; x.strokeStyle = '#b8262f'; x.lineWidth = 1; x.beginPath(); x.moveTo(gx, y(gh)); x.lineTo(gx + Math.cos(a) * 4, y(gh) + Math.sin(a) * 4); x.stroke();
+      if (!cut) o.light?.(gx, gh, 10, 10, '240,230,200', 'screen');
+      R(x, W * 0.08 - 2, H + 3, 5, 4, '#2a2a26'); R(x, W * 0.08 - 1, H + 4, 3, 2, cut ? 'rgba(70,50,20,1)' : rgba(AMBER, 0.55 + 0.45 * pulse(t, 0.05, seed)));
+      if (!cut) o.glow?.(W * 0.08, H + 6, { kind: 'neon', col: AMBER, r: 30, a: 0.55 });
+    }
+    if (p.tell === true) { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, W - 18, 14, 12, 16, '#2b302d'); R(x, W - 17, 15, 10, 14, cut ? '#1a1d1b' : '#3d4440'); R(x, W - 18, 30, 12, 1, rgba(CYAN, k)); R(x, W - 18, 14, 1, 16, rgba(CYAN, k * 0.8)); R(x, W - 7, 14, 1, 16, rgba(CYAN, k * 0.8)); }
     if (state === 'dead') R(x, -18, 0, W + 36, H + 40, 'rgba(0,0,0,.25)');
     else { R(x, W - 8, H - 8, 3, 3, '#0d0f0e'); R(x, W - 7, H - 7, 1, 1, state === 'fault' ? rgba(RED, Math.floor(t / 6) % 2) : rgba(GO, 0.9)); }
   },
 });
 
-export const busbarElement = civic({
+export const busbarElement = piece({
   type: 'civic.busbar', label: 'Busbar gantry: lattice portal, insulator strings, lines (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     width: num('Span', 140, 40, 600, 1, 'units'), height: num('Height', 120, 50, 400, 1, 'units'), phases: num('Phases', 3, 1, 6),
     down: num('Droppers down to (0: none)', 90, 0, 400, 1, 'units'), out: select('Lines leave', ['both', 'left', 'right', 'none'], 'right'),
     outLength: num('Line length', 260, 0, 2000, 1, 'units'), outDrop: num('Lines fall by', 20, -200, 200, 1, 'units'), plate: text('Plate on the leg (empty: none)', 'DANGER · KEEP OFF'),
+    power: select('Power (on: a faint corona on the insulators)', ['on', 'cut'], 'on'),
   },
   size: p => ({ w: Number(p.width) + 8, tall: Number(p.height) + 10 }), reach: p => Number(p.outLength),
   bounds: p => box(Number(p.width) + 8, Number(p.height) + 10),
@@ -879,6 +930,7 @@ export const busbarElement = civic({
       const px = 8 + ((W - 8) * (i + 0.5)) / n, end = H - 16;
       for (let k = 0; k < 6; k++) R(x, px - (k % 2 ? 2 : 3), H - 2 - k * 2.4, k % 2 ? 4 : 6, 2, k % 2 ? '#c7c2b4' : '#9f9a8c');
       R(x, px - 1, end - 1, 2, 2, '#aab0b2');
+      if (p.power !== 'cut') { R(x, px - 1, end - 1, 2, 1, 'rgba(190,210,255,' + (0.4 + 0.4 * pulse(o.t, 0.11, i * 2)).toFixed(2) + ')'); o.glow?.(px, end, { kind: 'neon', col: '170,200,255', r: 12, a: 0.3 }); }
       x.strokeStyle = 'rgba(30,32,34,.95)'; x.lineWidth = 1;
       if (down > 0) { x.beginPath(); x.moveTo(px + 0.5, y(end)); x.lineTo(px + 0.5 + (i - (n - 1) / 2) * 6, y(down)); x.stroke(); }
       const o2 = String(p.out);
@@ -889,22 +941,24 @@ export const busbarElement = civic({
       }
     }
     const pl = String(p.plate ?? ''); if (pl) plate(x, pl, 4, 40, { fill: '#e3c13c', ink: 'rgba(20,20,20,.95)', size: 6, pad: 3 });
-    void o;
   },
 });
 
-export const controlHutElement = civic({
+export const controlHutElement = piece({
   type: 'civic.control-hut', label: 'Substation control hut (civic kit: block walls, steel door, louvres)', category: 'architecture', libraryUse: 'reusable',
   fields: {
     width: num('Width', 150, 60, 800, 1, 'units'), height: num('Height', 80, 60, 200, 1, 'units'), wall: colourField('Block wall', '#6b685d'),
     door: num('Door from the left', 18, 0, 800, 1, 'units'), label: text('Plate over the door', 'SUBSTATION DT-4'), vents: num('Louvred vents', 2, 0, 10),
-    window: num('Barred window from the left (-1: none)', 110, -1, 800, 1, 'units'), lit: bool('Light on inside', true), seed: num('Seed', 1, 0, 1000000),
+    window: num('Barred window from the left (-1: none)', 110, -1, 800, 1, 'units'), window2: num('Second window from the left (-1: none)', -1, -1, 800, 1, 'units'),
+    lit: bool('Light on inside', true), power: select('Power (cut: battery lamp only)', ['on', 'cut'], 'on'),
+    breaker: num('Main breaker cabinet from the hut’s left (negative: beside it; -999: none)', -999, -999, 800, 1, 'units'), breakerLabel: text('Breaker plate', 'MAIN BREAKER'),
+    breakerTell: bool('Breaker usable (cyan tell)', true), seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 8 }),
-  bounds: p => box(Number(p.width) + 8, Number(p.height) + 8, -4),
+  bounds: p => { const b = Number(p.breaker), has = b > -999, l = Math.min(-4, has ? b - 30 : -4), r = Math.max(Number(p.width) + 4, has ? b + 34 : 0); return { x: l, h: Number(p.height) + 8, w: r - l, tall: Number(p.height) + 8 }; },
   anchors: p => ({ ...origin(), door: { x: Number(p.door) + 14, h: 0, role: 'entrance' } }),
   paint(x, p, o) {
-    const W = Number(p.width), H = Number(p.height), wall = hexOr(p.wall, '#6b685d'), d = Number(p.door), t = o.t, lit = p.lit !== false;
+    const W = Number(p.width), H = Number(p.height), wall = hexOr(p.wall, '#6b685d'), d = Number(p.door), t = o.t, cut = p.power === 'cut', lit = p.lit !== false && !cut;
     R(x, 0, 0, W, H, wall);
     for (let h = 8, r = 0; h < H; h += 8, r++) { R(x, 0, h, W, 1, 'rgba(0,0,0,.14)'); for (let k = (r % 2) * 12; k < W; k += 24) R(x, k, h - 8, 1, 8, 'rgba(0,0,0,.1)'); }
     R(x, 0, 0, W, 6, '#4f4d45');
@@ -915,35 +969,54 @@ export const controlHutElement = civic({
     R(x, d + 7, 34, 14, 12, '#e3c13c'); x.fillStyle = '#141414'; x.beginPath(); x.moveTo(d + 14, y(44)); x.lineTo(d + 10, y(37)); x.lineTo(d + 18, y(37)); x.closePath(); x.fill();
     T(x, '!', d + 14, 39.5, '#e3c13c', 5, '700');
     R(x, d + 9, 61, 10, 4, '#2a2c2a'); R(x, d + 10, 60, 8, 1, lit ? 'rgba(255,230,180,1)' : 'rgba(120,110,90,1)');
-    if (lit) o.glow?.(d + 14, 58, { kind: 'lamp', col: '255,220,160', r: 50, a: 0.7 });
+    if (lit) o.glow?.(d + 14, 58, { kind: 'lamp', col: '255,220,160', r: 64, a: 0.85 });
     const label = String(p.label ?? ''); if (label) plate(x, label, d + 14, 70, { fill: '#e6e9ea', edge: '#8d969b' });
     for (let i = 0; i < Number(p.vents); i++) { const vx = d + 44 + i * 30; if (vx + 22 > W) break; R(x, vx, 30, 22, 14, '#2f332f'); for (let k = 0; k < 14; k += 3) R(x, vx + 1, 30 + k, 20, 1, '#6e746c'); }
-    const wx = Number(p.window);
-    if (wx >= 0 && wx + 24 < W) { R(x, wx - 2, 34, 28, 22, '#4f4d45'); R(x, wx, 36, 24, 18, lit ? 'rgba(230,240,220,.7)' : '#121412'); for (let k = 3; k < 24; k += 5) R(x, wx + k, 36, 1, 18, '#2a2c2a'); if (lit) o.light?.(wx + 12, 45, 24, 18, '230,240,220', 'window'); }
+    for (const wx of [Number(p.window), Number(p.window2)]) {
+      if (wx < 0 || wx + 24 >= W) continue;
+      R(x, wx - 2, 34, 28, 22, '#4f4d45'); R(x, wx, 36, 24, 18, lit ? 'rgba(236,244,214,.92)' : cut ? 'rgba(90,60,30,.55)' : '#121412');
+      for (let k = 3; k < 24; k += 5) R(x, wx + k, 36, 1, 18, '#2a2c2a');
+      if (lit) { o.light?.(wx + 12, 45, 24, 18, '236,244,214', 'window'); o.glow?.(wx + 12, 34, { kind: 'lamp', col: '236,244,214', r: 40, a: 0.5 }); }
+      else if (cut) o.light?.(wx + 12, 45, 24, 18, '255,200,120', 'window');
+    }
     R(x, W - 30, 0, 6, 10, '#141414'); R(x, W - 22, 0, 6, 10, '#141414'); R(x, W - 30, 10, 14, 2, '#2a2c2a');
-    void t;
+    const b = Number(p.breaker);
+    if (b > -999) {
+      // the main breaker: an outdoor cabinet on a plinth, a big lever (up: on, down: off), its lamps, cable into the ground
+      R(x, b - 2, 0, 30, 4, '#4b4942'); R(x, b, 4, 26, 44, '#5e6b62'); R(x, b, 4, 1, 44, 'rgba(255,255,255,.25)'); R(x, b + 25, 4, 1, 44, 'rgba(0,0,0,.35)'); R(x, b - 1, 48, 28, 3, '#4a554e');
+      R(x, b + 4, 32, 18, 10, '#e3c13c'); x.fillStyle = '#141414'; x.beginPath(); x.moveTo(b + 13, y(41)); x.lineTo(b + 9, y(34)); x.lineTo(b + 17, y(34)); x.closePath(); x.fill();
+      R(x, b + 26, 14, 3, 18, '#3a3f3a');
+      if (cut) { R(x, b + 28, 6, 3, 10, '#c8ccd0'); R(x, b + 27, 5, 5, 3, '#b8262f'); } else { R(x, b + 28, 22, 3, 12, '#c8ccd0'); R(x, b + 27, 33, 5, 3, '#b8262f'); }
+      R(x, b + 5, 20, 4, 4, '#101210'); R(x, b + 6, 21, 2, 2, cut ? rgba(RED, 0.95) : 'rgba(40,20,20,1)'); R(x, b + 11, 20, 4, 4, '#101210'); R(x, b + 12, 21, 2, 2, cut ? 'rgba(20,40,24,1)' : rgba(GO, 0.95));
+      o.glow?.(b + 10, 22, { kind: 'neon', col: cut ? RED : GO, r: 14, a: 0.5 });
+      R(x, b + 6, 0, 3, 4, '#141414'); R(x, b + 14, 0, 3, 4, '#141414');
+      const bl = String(p.breakerLabel ?? ''); if (bl) plate(x, bl, b + 13, 57, { fill: '#e6e9ea', edge: '#8d969b', size: 6, pad: 3 });
+      if (p.breakerTell !== false) { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, b + 25, 4, 1, 44, rgba(CYAN, 0.35 + 0.5 * k)); R(x, b + 27, (cut ? 4 : 32) + 4, 5, 1, rgba(CYAN, k)); R(x, b, 4, 1, 44, rgba(CYAN, 0.25 + 0.4 * k)); }
+    }
   },
 });
 
-export const controlPanelsElement = civic({
+export const controlPanelsElement = piece({
   type: 'civic.control-panels', label: 'Switchgear and mimic board (civic kit: the control room)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     cabinets: num('Switchgear cabinets', 5, 1, 20), height: num('Height', 58, 30, 120, 1, 'units'), state: select('State', ['normal', 'alarm'], 'normal'),
-    mimic: bool('Mimic diagram along the top', true), desk: bool('Desk with logbook and kettle', true), tell: num('Usable cabinet (cyan tell; 0: none)', 3, 0, 20), seed: num('Seed', 1, 0, 1000000),
+    mimic: bool('Mimic diagram along the top', true), desk: bool('Desk with logbook and kettle', true), tell: num('Usable cabinet (cyan tell; 0: none)', 3, 0, 20),
+    power: select('Power (cut: meters at rest, lamps out)', ['on', 'cut'], 'on'), seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.cabinets) * 26 + (p.desk !== false ? 50 : 0), tall: Number(p.height) + 4 }),
   bounds: p => box(Number(p.cabinets) * 26 + (p.desk !== false ? 50 : 0), Number(p.height) + 4),
   anchors: () => origin(),
   paint(x, p, o) {
-    const n = Number(p.cabinets), H = Number(p.height), t = o.t, alarm = p.state === 'alarm', seed = Number(p.seed), tell = Number(p.tell);
+    const n = Number(p.cabinets), H = Number(p.height), t = o.t, cut = p.power === 'cut', alarm = p.state === 'alarm' && !cut, seed = Number(p.seed), tell = Number(p.tell);
     for (let i = 0; i < n; i++) {
       const cx = i * 26, s = seed * 19 + i;
       R(x, cx, 0, 25, H, '#8a9488'); R(x, cx, 0, 1, H, 'rgba(255,255,255,.3)'); R(x, cx + 24, 0, 1, H, 'rgba(0,0,0,.3)'); R(x, cx, H * 0.45, 25, 1, 'rgba(0,0,0,.25)');
       // meters, breaker lamps, a key switch
       x.fillStyle = '#efeee6'; x.beginPath(); x.arc(cx + 8, y(H - 12), 4, 0, Math.PI * 2); x.fill();
-      const a = -2.2 + hash(s) * 1.6 + Math.sin(t * 0.01 + i) * 0.05; x.strokeStyle = '#b8262f'; x.lineWidth = 1; x.beginPath(); x.moveTo(cx + 8, y(H - 12)); x.lineTo(cx + 8 + Math.cos(a) * 3.5, y(H - 12) + Math.sin(a) * 3.5); x.stroke();
+      const a = cut ? -2.6 : -2.2 + hash(s) * 1.6 + Math.sin(t * 0.01 + i) * 0.05; x.strokeStyle = '#b8262f'; x.lineWidth = 1; x.beginPath(); x.moveTo(cx + 8, y(H - 12)); x.lineTo(cx + 8 + Math.cos(a) * 3.5, y(H - 12) + Math.sin(a) * 3.5); x.stroke();
       const closed = hash(s + 1) < 0.8, warn = alarm && i === Math.floor(n / 2);
-      R(x, cx + 15, H - 10, 3, 3, closed ? rgba(RED, 0.9) : rgba(GO, 0.9)); R(x, cx + 19, H - 10, 3, 3, closed ? 'rgba(30,60,40,.9)' : 'rgba(80,20,20,.9)');
+      R(x, cx + 15, H - 10, 3, 3, cut ? 'rgba(50,20,20,.9)' : closed ? rgba(RED, 0.9) : rgba(GO, 0.9)); R(x, cx + 19, H - 10, 3, 3, cut ? 'rgba(20,40,24,.9)' : closed ? 'rgba(30,60,40,.9)' : 'rgba(80,20,20,.9)');
+      if (!cut && i % 2 === 0) o.light?.(cx + 17, H - 9, 8, 3, closed ? RED : GO, 'screen');
       if (warn && Math.floor(t / 8) % 2) { R(x, cx + 15, H - 16, 7, 3, rgba(AMBER, 1)); o.light?.(cx + 18, H - 15, 6, 3, AMBER, 'screen'); }
       R(x, cx + 10, H * 0.3, 5, 3, '#2a2c2a'); R(x, cx + 4, 6, 17, 1, 'rgba(0,0,0,.25)');
       if (tell === i + 1) { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, cx + 3, H * 0.6, 8, 5, '#0b0d0c'); R(x, cx + 4, H * 0.6 + 1, 6, 3, rgba(CYAN, 0.3 + 0.6 * k)); }
@@ -951,8 +1024,9 @@ export const controlPanelsElement = civic({
     if (p.mimic !== false) {
       // the single-line diagram along the top: busbars, feeders, breakers as little squares
       const mw = n * 26; R(x, 0, H, mw, 4, '#2a2f2a');
-      R(x, 4, H + 2, mw - 8, 1, rgba(alarm ? AMBER : '120,200,255', 0.9));
-      for (let i = 0; i < n; i++) R(x, i * 26 + 12, H, 1, 2, 'rgba(120,200,255,.8)');
+      R(x, 4, H + 2, mw - 8, 1, cut ? 'rgba(60,70,80,.8)' : rgba(alarm ? AMBER : '120,200,255', 0.9));
+      for (let i = 0; i < n; i++) R(x, i * 26 + 12, H, 1, 2, cut ? 'rgba(60,70,80,.8)' : 'rgba(120,200,255,.8)');
+      if (!cut) o.light?.(mw / 2, H + 2, mw - 8, 3, '120,200,255', 'screen');
     }
     if (p.desk !== false) {
       const dx = n * 26 + 6; R(x, dx, 0, 3, 22, '#3a3f3a'); R(x, dx + 38, 0, 3, 22, '#3a3f3a'); R(x, dx - 2, 22, 46, 3, '#7c6a52');
@@ -962,17 +1036,18 @@ export const controlPanelsElement = civic({
   },
 });
 
-export const cableTrayElement = civic({
+export const cableTrayElement = piece({
   type: 'civic.cable-tray', label: 'Cable tray on posts or brackets (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     width: num('Length', 300, 20, 4000, 1, 'units'), height: num('Height above its foot', 40, 0, 600, 1, 'units'), mount: select('Held by', ['posts', 'brackets', 'hangers'], 'posts'),
     every: num('A support every', 60, 20, 400, 1, 'units'), cables: num('Cables', 5, 1, 12), drops: select('Cables drop at', ['both', 'left', 'right', 'none'], 'right'),
-    seed: num('Seed', 1, 0, 1000000),
+    pillar: select('Feeder pillar at', ['none', 'left', 'right'], 'none'), pillarKind: select('Pillar', ['feeder', 'breaker'], 'feeder'), pillarLabel: text('Pillar plate', 'FEEDER 3 · REGISTRY BLOCK'), tell: bool('Pillar usable (cyan tell)', true),
+    power: select('Power (cut: the pillar lamp red)', ['on', 'cut'], 'on'), seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 30 }),
-  bounds: p => box(Number(p.width), Number(p.height) + 8),
+  bounds: p => box(Number(p.width) + (p.pillar === 'right' ? 36 : 0) + (p.pillar === 'left' ? 32 : 0), Math.max(Number(p.height) + 8, p.pillar !== 'none' ? 52 : 0), p.pillar === 'left' ? -32 : 0),
   anchors: () => origin(),
-  paint(x, p) {
+  paint(x, p, o) {
     const W = Number(p.width), H = Number(p.height), every = Number(p.every), n = Number(p.cables), mount = String(p.mount), seed = Number(p.seed);
     for (let k = 10; k < W; k += every) {
       if (mount === 'posts') { R(x, k, 0, 3, H, '#5b6267'); R(x, k - 2, 0, 7, 2, '#3b4045'); R(x, k - 4, H - 2, 11, 2, '#5b6267'); }
@@ -986,10 +1061,26 @@ export const cableTrayElement = civic({
       if (drops !== 'both' && drops !== side) continue;
       for (let i = 0; i < Math.min(n, 4); i++) R(x, dx + i * 2, 0, 1, H + 2, i === 1 ? '#5a1a1a' : '#111');
     }
+    const pil = String(p.pillar);
+    if (pil !== 'none') {
+      // the feeder pillar: a squat steel box where the block's cable leaves the yard, its lamp, its plate
+      const px = pil === 'left' ? -30 : W + 4, cut = p.power === 'cut', t = o.t;
+      R(x, px - 2, 0, 30, 3, '#4b4942'); R(x, px, 3, 26, 34, '#56635a'); R(x, px, 3, 1, 34, 'rgba(255,255,255,.25)'); R(x, px + 25, 3, 1, 34, 'rgba(0,0,0,.35)');
+      R(x, px - 1, 37, 28, 3, '#46524a'); for (let k = 8; k < 18; k += 2) R(x, px + 4, k, 18, 1, 'rgba(0,0,0,.3)');
+      if (p.pillarKind === 'breaker') {
+        // the main breaker: taller, a big lever on its side (up: on, down: off)
+        R(x, px, 37, 26, 12, '#56635a'); R(x, px - 1, 49, 28, 3, '#46524a'); R(x, px + 26, 14, 3, 20, '#3a3f3a');
+        if (cut) { R(x, px + 28, 6, 3, 10, '#c8ccd0'); R(x, px + 27, 5, 5, 3, '#b8262f'); } else { R(x, px + 28, 24, 3, 12, '#c8ccd0'); R(x, px + 27, 35, 5, 3, '#b8262f'); }
+      }
+      R(x, px + 10, 26, 6, 6, '#101210'); R(x, px + 11, 27, 4, 4, cut ? rgba(RED, 0.6 + 0.4 * pulse(t, 0.08)) : rgba(GO, 0.9));
+      o.glow?.(px + 13, 29, { kind: 'neon', col: cut ? RED : GO, r: 16, a: 0.55 });
+      const pl = String(p.pillarLabel ?? ''); if (pl) plate(x, pl, px + 13, p.pillarKind === 'breaker' ? 58 : 46, { fill: '#e6e9ea', edge: '#8d969b', size: 6, pad: 3 });
+      if (p.tell !== false) { const k = 0.5 + 0.5 * pulse(t, 0.05); R(x, px, 3, 26, 1, rgba(CYAN, k)); R(x, px, 3, 1, 34, rgba(CYAN, 0.3 + 0.5 * k)); R(x, px + 25, 3, 1, 34, rgba(CYAN, 0.3 + 0.5 * k)); }
+    }
   },
 });
 
-export const catwalkElement = civic({
+export const catwalkElement = piece({
   type: 'civic.catwalk', label: 'Maintenance catwalk: grating, handrail, legs (civic kit; walk it with a level floor)', category: 'architecture', libraryUse: 'reusable',
   fields: {
     width: num('Length', 240, 20, 4000, 1, 'units'), height: num('Deck height', 64, 10, 600, 1, 'units'), legs: num('A leg every', 80, 30, 400, 1, 'units'),
@@ -1010,7 +1101,7 @@ export const catwalkElement = civic({
 
 // ---------------------------------------------------------------- the sweep
 
-export const registryVanElement = civic({
+export const registryVanElement = piece({
   type: 'civic.registry-van', label: 'Registry van (civic kit: livery, light bar, doors open)', category: 'vehicles', libraryUse: 'reusable',
   fields: {
     face: select('Faces', ['right', 'left'], 'right'), paint: colourField('Paint', '#c3c8cb'), beacons: bool('Light bar flashing', true),
@@ -1046,7 +1137,7 @@ export const registryVanElement = civic({
   },
 });
 
-export const floodlightElement = civic({
+export const floodlightElement = piece({
   type: 'civic.floodlight', label: 'Floodlight: trailer tower, pole or tripod (civic kit: the sweep)', category: 'machinery', libraryUse: 'reusable',
   fields: {
     kind: select('Kind', ['tower', 'pole', 'tripod'], 'tower'), height: num('Lamp height', 110, 20, 400, 1, 'units'), heads: num('Lamp heads', 3, 1, 8),
@@ -1082,7 +1173,7 @@ export const floodlightElement = civic({
   },
 });
 
-export const checkpointElement = civic({
+export const checkpointElement = piece({
   type: 'civic.checkpoint', label: 'ID checkpoint: folding table, scanner, barrier, cones (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
     table: bool('Folding table with a scanner', true), barrier: num('Barrier width (0: none)', 56, 0, 300, 1, 'units'), text: text('Barrier boards (split by /)', 'IDENTITY CHECK/HAVE YOUR ID READY'),

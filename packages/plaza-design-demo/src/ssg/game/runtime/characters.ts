@@ -90,11 +90,15 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
 /**
  * What a person does. In place: stand (shifts weight, looks around), sit (on whatever is at `h`),
  * lean (legs crossed, arms folded), smoke, phone, haggle (gestures; pair two facing each other),
- * argue (faster, bigger), queue, sleep (lying on `h`), dance, vend (behind a counter, offers and waits),
+ * argue (faster, bigger), queue, sleep (curled up under a newspaper on `h`), lie (on the back on a cot, a bench, a
+ * bed or a treatment chair at `h + seat`, head toward `facing`; `asleep` shuts the eyes, `cover` adds a blanket), dance, vend (behind a counter, offers and waits),
  * talk (slow gestures and a nod; standing people also switch to it while their speech bubble is open),
  * read (a newspaper held up), doze (asleep on their feet or in a seat, head down), wait (stands facing
  * the camera, shifting weight, now and then glancing aside: a queue or a crowd seen from the front).
  * `seated: true` does any in-place act sitting down (a bench, a train seat): read, phone, doze, stand.
+ * `seat` (world units above `h`) puts a sitter's seat exactly there: `h` is the floor, the lap rests on
+ * `h + seat`, the shins reach the floor when the seat is no higher than the legs are long, else the feet
+ * dangle (a bar stool). Without `seat` a sitter sits on the kit's own leg height (ceil(leg / 2) pixels).
  * Sitters face the camera, three-quarter or side on as the people-style `seated` switch says
  * (art/characters/people-style.ts), unless the person sets `sitView`.
  * Moving between `x` and `range`: walk, run (longer strides, 2.6× as fast), sweep (with a broom), steal
@@ -108,7 +112,7 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * wall), charge (cabled to a wall socket), glitch (twitches), blink (the screen face changes mood),
  * slump (the derelict: a flicker, a twitch).
  */
-export type Act = 'stand' | 'walk' | 'run' | 'talk' | 'sit' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
+export type Act = 'stand' | 'walk' | 'run' | 'talk' | 'sit' | 'lie' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
   | 'read' | 'doze' | 'wait' | 'dig' | 'fly'
   | 'carry' | 'roll' | 'patrol' | 'serve' | 'crawl' | 'hover' | 'direct' | 'play' | 'weld' | 'scrub' | 'charge' | 'glitch' | 'blink' | 'slump';
 
@@ -165,6 +169,16 @@ export interface Character {
   seated?: boolean;
   /** How this person always sits (front, three-quarter or side on), instead of the people-style `seated` switch. */
   sitView?: SitPose;
+  /**
+   * Seat or bed height over `h` (world units): a sitter's lap, or the surface someone lying (`lie`) rests on.
+   * Unset: the kit's own height (a sitter sits ceil(leg / 2) pixels up, as before; someone lying lies on `h`).
+   * Furniture says where to sit with `seat` anchors (ART-GUIDE, "Seat anchors").
+   */
+  seat?: number;
+  /** Lying (`lie`): eyes shut and a slow zzz. */
+  asleep?: boolean;
+  /** Lying (`lie`): a blanket over them, this colour (hex). */
+  cover?: string;
   /** A robot's status light, drawn live over its sprite (state-driven: green, red). CSS colour. */
   light?: string;
   /** The scan beam of a scanning drone (act 'scan'). */
@@ -233,7 +247,7 @@ const TURN = 8;
  * body's idle) and existing scenes keep them; the editor offers these. Keys: 'human', a critter or a robot kind.
  */
 export const KIT_ACTS: Record<string, readonly Act[]> = {
-  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal', 'read', 'doze', 'wait'],
+  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lie', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal', 'read', 'doze', 'wait'],
   cat: ['stand', 'walk', 'sit'], pigeon: ['stand', 'walk'], gull: ['stand', 'walk', 'fly'], crab: ['stand', 'walk', 'dig'],
   cleaner: ['stand', 'walk'], drone: ['stand', 'hover', 'scan'], courier: ['stand', 'walk'], robogull: ['stand', 'fly', 'scan'],
   android: ['stand', 'walk', 'carry'], valet: ['stand', 'walk'], marshal: ['stand', 'walk', 'direct'],
@@ -256,22 +270,36 @@ export function setSpeaker(x: number | null) { speakerX = x; }
 /** Acts that switch to the talk pose while their person is speaking; movers and sitters keep theirs. */
 const TALKERS: readonly Act[] = ['stand', 'talk', 'smoke', 'phone', 'queue', 'haggle', 'vend', 'lean'];
 
-export interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean }
+/**
+ * `shin`: a sitter's lap row (pixels) when a `seat` height sets it; `lift`: world units the sprite is raised
+ * (dangling feet on a stool, a body on a cot). Both absent: the kit's own heights.
+ */
+export interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean; shin?: number; lift?: number }
 
 /** `drive`: a controller owns the position (p.x) and says whether the body moves; no range walking. */
 function frameOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
   const f = poseOf(p, R, t, drive);
   if (R.bot || R.critter) return f;
   // seated: an in-place act done sitting down
-  if (p.seated && f.legs !== 'lie' && !f.moving) f.legs = 'sit';
+  if (p.seated && f.legs !== 'lie' && f.legs !== 'rest' && !f.moving) f.legs = 'sit';
   // sitting on a bench or a seat that faces the camera: the person's own sitView, else the people-style switch
   // (`mixed`: their own pose, changing now and then)
   if (f.legs === 'sit') {
     const sw = seatedView(), view = p.sitView ?? (sw === 'mixed' ? sittingView(R.seed, t) : sw);
     if (view !== 'side') f.legs = view === 'front' ? 'sitFront' : 'sit3q';
   }
+  // a seat height: the lap on h + seat, the shins as long as that allows, then the feet dangle
+  if (p.seat !== undefined && p.seat > 0) {
+    if (f.legs === 'rest') f.lift = p.seat;
+    else if (f.legs === 'sit' || f.legs === 'sitFront' || f.legs === 'sit3q') {
+      const ps = psOf(p), shin = seatShin(BODIES[R.full!.body].leg, p.seat, ps);
+      f.shin = shin; f.lift = p.seat - shin * ps;
+    }
+  }
   return f;
 }
+/** A sitter's lap row (pixels) for a seat `seat` world units up: as close as whole pixels allow, at most the leg length. */
+export const seatShin = (leg: number, seat: number, ps: number) => Math.max(1, Math.min(leg, Math.round(seat / ps)));
 function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
   const act = p.act ?? 'stand', ph = R.ph, tt = t + ph;
   let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = drive ?? false, end = 0, since = Infinity;
@@ -314,6 +342,8 @@ function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
     case 'argue': { const k = slow(13); return { x, face, legs: k % 5 === 0 ? 'wide' : 'stand', arms: (['point', 'out', 'up', 'out', 'point', 'hip'] as Arms[])[k % 6], bob: k % 7 === 0 ? 1 : 0, moving }; }
     case 'queue': return { x, face, legs: shift, arms: R.full?.extras.includes('phone') ? 'phone' : slow(300) % 2 ? 'fold' : 'down', bob: 0, moving };
     case 'sleep': return { x, face, legs: 'lie', arms: 'down', bob: 0, moving };
+    // on the back, head toward `facing`; awake, they blink now and then and fold their hands for a while
+    case 'lie': return { x, face, legs: 'rest', arms: p.asleep || tt % 260 < 8 ? 'nod' : slow(600) % 2 ? 'fold' : 'down', bob: 0, moving };
     case 'dance': { const k = slow(16); return { x, face: k % 8 < 4 ? face : (-face as 1 | -1), legs: (['wide', 'stepA', 'wide', 'stepB'] as Legs[])[k % 4], arms: (['up', 'out', 'up', 'point'] as Arms[])[k % 4], bob: k % 2, moving }; }
     case 'vend': { const u = tt % 420; return { x, face, legs: 'stand', arms: u < 60 ? 'out' : u < 120 ? 'down' : u < 170 ? 'hip' : 'down', bob: 0, moving }; }
     case 'read': return { x, face, legs: shift, arms: 'paper', bob: 0, moving };
@@ -434,7 +464,9 @@ export function characterHeight(p: Character) {
   const R = ready(p), ps = psOf(p);
   if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (R.critter ? p.h ?? CRITTERS[R.critter].h ?? 0 : (p.h ?? 0) + (S.fly ?? 0)); }
   if (R.critter) return CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps + (p.h ?? CRITTERS[R.critter].h ?? 0);
-  const B = BODIES[R.full!.body];
+  const B = BODIES[R.full!.body], seat = p.seat !== undefined && p.seat > 0 ? p.seat : undefined;
+  if (p.act === 'lie') return 5 * ps + (seat ?? 0) + (p.h ?? 0);
+  if (seat !== undefined && (p.act === 'sit' || p.seated)) return seat + (B.torso + B.head + 1) * ps + (p.h ?? 0);
   return (B.leg + B.torso + B.head + 1) * ps + (p.h ?? 0);
 }
 

@@ -22,9 +22,21 @@ import type { Element, Field, Properties, Value } from '../core/composition';
 import { mono, neon, rng, text as paintText } from '../core/primitives';
 import { drawPane } from '../environment/sky';
 import { neonPlate } from '../signage/kit';
+import type { View } from '../core/view';
+import { residentCharacter } from '../characters/resident';
+import { drawCharacter } from '../../runtime/characters';
 import { piece, num, select, bool, text, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
 
 type X = CanvasRenderingContext2D;
+/** The view in a piece's own frame, so the character kit can draw a person inside a piece (seen through glass). */
+const localView = (v: View): View => ({ ...v, sx: (wx: number) => wx, y: (h: number) => -h, cam: 0, gy: 0, viewW: 1e5, viewH: 1e5 });
+const SEATED_ACTS = ['sit', 'read', 'phone', 'talk', 'doze'] as const;
+/** A seated kit person at (cx, h) in the piece's frame, back-band size and dimming, facing left or right. */
+function seated(x: X, o: Paint, cx: number, h: number, seed: number, face: 1 | -1) {
+  const p = residentCharacter({ kind: 'human', depth: 'back', district: 'downtown', seed, act: SEATED_ACTS[seed % SEATED_ACTS.length], sitting: 'side' }, { x: 0, h: 0 });
+  x.save(); x.translate(cx, -h); if (face < 0) x.scale(-1, 1);
+  try { drawCharacter(x, localView(o.view), p); } finally { x.restore(); }
+}
 
 // ---------------------------------------------------------------- shared helpers
 
@@ -610,10 +622,12 @@ export const dinerFrontElement = piece({
     if (p.booths !== false) for (let k = wl + 6, i = 0; k < wr - 30; k += 52, i++) {
       if (k + 40 > doorL - 4 && k < doorL + 32) continue;
       R(x, k, wb, 6, 18, 'rgba(150,30,40,.9)'); R(x, k + 34, wb, 6, 18, 'rgba(150,30,40,.9)'); R(x, k + 12, wb + 10, 16, 2, 'rgba(220,210,190,.8)'); R(x, k + 19, wb, 2, 10, '#555');
-      // heads and shoulders over the table; not every booth is taken
-      if (hash(seed + i) < 0.7) { R(x, k + 8, wb + 12, 5, 9, 'rgba(40,36,40,.95)'); R(x, k + 9, wb + 21, 4, 4, 'rgba(200,150,120,.9)'); }
-      if (hash(seed * 3 + i) < 0.45) { R(x, k + 27, wb + 12, 5, 9, 'rgba(50,60,80,.95)'); R(x, k + 27, wb + 21, 4, 4, 'rgba(150,100,80,.9)'); }
-      R(x, k + 17, wb + 12, 2, 2, 'rgba(250,250,240,.8)');
+      // the people at the table, drawn by the character kit and cut off by the sill; not every booth is taken
+      x.save(); x.beginPath(); x.rect(wl, y(wt), wr - wl, wt - wb); x.clip();
+      if (hash(seed + i) < 0.75) seated(x, o, k + 11, wb - 9, Math.floor(seed * 37 + i * 11), 1);
+      if (hash(seed * 3 + i) < 0.5) seated(x, o, k + 29, wb - 9, Math.floor(seed * 53 + i * 7), -1);
+      x.restore();
+      R(x, k + 12, wb + 10, 16, 2, 'rgba(220,210,190,.8)'); R(x, k + 17, wb + 12, 2, 2, 'rgba(250,250,240,.8)');
     }
     o.light?.((wl + wr) / 2, (wb + wt) / 2, wr - wl, wt - wb, '255,200,140', 'window');
     // chrome mullions, the sheen, and rain running down the outside
@@ -690,6 +704,7 @@ export const dinerRoomElement = piece({
     width: num('Width', 400, 120, 2000, 1, 'units'), height: num('Height', 86, 60, 160, 1, 'units'), windows: num('Window wall (share of the width)', 0.5, 0, 1, 0.01),
     rain: bool('Rain on the windows', true), blinds: bool('Blinds half down', true), griddle: bool('Griddle and hood', true), pie: bool('Pie case', true), coffee: bool('Coffee station', true),
     menu: text('Menu board (separate lines with |)', MENU_DEFAULT), plaque: text('Plaque (empty: none)', 'NO SLEEPING IN BOOTHS'), clock: bool('Wall clock', true),
+    jukebox: bool('Jukebox at the back', true), restroom: text('Restroom door sign (empty: no door)', 'RESTROOMS CUSTOMERS ONLY'),
     wall: colourField('Wall', '#3a2c22'), tile: colourField('Wall tiles', '#d8d0c0'), seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
@@ -722,7 +737,24 @@ export const dinerRoomElement = piece({
       }
     }
     // the kitchen side: the back counter, coffee, the pie case, the griddle under its hood, the menu board
-    const kl = split + 8, kr = w - 6;
+    const restroom = String(p.restroom ?? ''), back = (restroom ? 40 : 0) + (p.jukebox !== false ? 30 : 0), kl = split + 8, kr = w - 6 - back;
+    if (back > 0) {
+      // the back of the room: the jukebox glowing in the corner, the restroom door with its sign
+      let bx = w - 6 - back + 4;
+      if (p.jukebox !== false) {
+        const jc = bx + 12, pulse = 0.6 + 0.4 * Math.sin(o.t / 9);
+        R(x, bx, 0, 24, 30, '#3a1a14'); x.fillStyle = '#3a1a14'; x.beginPath(); x.arc(jc, y(30), 12, Math.PI, 0); x.fill();
+        x.strokeStyle = rgba('255,150,60', 0.6 + 0.35 * pulse); x.lineWidth = 2; x.beginPath(); x.arc(jc, y(30), 10, Math.PI, 0); x.stroke(); x.lineWidth = 1;
+        R(x, bx + 2, 4, 2, 26, rgba('255,90,110', 0.5 + 0.4 * pulse)); R(x, bx + 20, 4, 2, 26, rgba('255,90,110', 0.5 + 0.4 * pulse));
+        R(x, bx + 6, 18, 12, 9, 'rgba(255,230,180,.55)'); for (let k = 0; k < 4; k++) R(x, bx + 7, 19 + k * 2, 10, 1, 'rgba(60,30,20,.6)');
+        R(x, bx + 6, 6, 12, 8, '#20100c'); for (let k = bx + 7; k < bx + 18; k += 2) R(x, k, 7, 1, 6, 'rgba(200,190,170,.4)');
+        o.light?.(jc, 24, 22, 24, '255,150,60', 'screen'); bx += 30;
+      }
+      if (restroom) {
+        R(x, bx, 0, 30, 54, '#2a1e18'); R(x, bx + 2, 0, 26, 52, '#6a4a34'); R(x, bx + 22, 24, 3, 2, '#c8ccd0'); R(x, bx + 6, 44, 18, 4, 'rgba(0,0,0,.2)');
+        const sl = wrap(restroom, 9).slice(0, 3); notice(x, bx + 15, 56, Math.max(...sl.map(q => textW(q))) + 6, sl.length * 8 + 6, sl, 'rgba(30,30,30,.92)', 'rgba(236,230,214,.92)', 'rgba(60,60,60,.9)');
+      }
+    }
     if (kr - kl > 40) {
       R(x, kl, 0, kr - kl, 24, '#5a5048'); R(x, kl, 24, kr - kl, 3, '#b8bcc0'); R(x, kl, 27, kr - kl, 1, 'rgba(255,255,255,.3)');
       let at = kl + 6;
@@ -937,7 +969,8 @@ export const billboardElement = piece({
     ad: select('Advertiser', ADS), title: text('Headline (custom, or empty: the advertiser’s)', ''), lines: text('Copy (separate lines with |; empty: the advertiser’s)', ''),
     small: text('Small print (empty: the advertiser’s)', ''), gold: colourField('Gold', '#d8b45a'), back: colourField('Black of the panel', '#070605'),
     lamps: num('Lamps on goosenecks', 4, 0, 12), dead: num('Failing tube (0: none)', 2, 0, 12), ladder: select('Ladder up to the catwalk', ['left', 'right', 'none'], 'left'),
-    shelter: bool('Someone’s shelter under the catwalk', true), seed: num('Seed', 1, 0, 1000000),
+    shelter: bool('Someone’s shelter under the catwalk', true), box: num('Junction box on the catwalk (share of the width, 0: none)', 0.62, 0, 1, 0.01),
+    seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.legs) + Number(p.panel) + 10 }),
   bounds: p => ({ x: -12, h: Number(p.legs) + Number(p.panel) + 12, w: Number(p.width) + 24, tall: Number(p.legs) + Number(p.panel) + 12 }),
@@ -996,6 +1029,17 @@ export const billboardElement = piece({
       const g = x.createLinearGradient(0, y(L + 26), 0, y(pt)); g.addColorStop(0, rgba('255,240,210', 0.16 * lamp)); g.addColorStop(1, 'rgba(255,240,210,0)');
       x.fillStyle = g; x.beginPath(); x.moveTo(lx + 7, y(L + 27)); x.lineTo(lx + 11, y(L + 27)); x.lineTo(lx + 40, y(pt)); x.lineTo(lx - 22, y(pt)); x.closePath(); x.fill();
     }
+    // the sign's junction box on the catwalk: the reason anyone climbs up here; its cyan tell blinks, conduit runs up the panel
+    const jb = Number(p.box ?? 0);
+    if (jb > 0) {
+      const bx = Math.round(jb * w) - 8;
+      R(x, bx + 6, L + 20, 3, pb - L - 18, '#2a2c30'); R(x, bx + 6, pb - 2, 3, 4, '#3a3c40');
+      R(x, bx, L + 2, 18, 18, '#4a5258'); R(x, bx + 1, L + 3, 16, 16, '#5a646a'); R(x, bx + 1, L + 18, 16, 1, 'rgba(255,255,255,.25)');
+      R(x, bx + 3, L + 6, 8, 6, '#3a4248'); R(x, bx + 14, L + 9, 1, 4, '#2a2c30');
+      for (let k = 0; k < 3; k++) R(x, bx + 4 + k * 2, L + 14, 1, 2, 'rgba(250,214,60,.85)');
+      const tell = Math.floor(t / 24) % 2 === 0; R(x, bx + 13, L + 15, 2, 2, tell ? 'rgba(0,255,255,1)' : 'rgba(0,140,150,.7)');
+      if (tell) o.light?.(bx + 14, L + 16, 2, 2, '0,255,255', 'screen');
+    }
     // the ladder from the roof to the catwalk, caged above head height
     const lad = String(p.ladder);
     if (lad !== 'none' && L > 6) {
@@ -1049,8 +1093,88 @@ export const rainElement = piece({
   },
 });
 
+
+export const roofSignElement = piece({
+  type: 'everyday.roof-sign', label: 'Rooftop letters on a steel frame (kit, Downtown)', category: 'signage', libraryUse: 'reusable',
+  fields: {
+    text: text('Letters', 'FRESHCO'), size: num('Letter height', 26, 10, 80, 1, 'units'), legs: num('Frame height under the letters', 16, 0, 120, 1, 'units'),
+    colour: colourField('Letters', '#fff3dc'), backing: colourField('Backing box', '#b81f2a'), leaf: colourField('Mark', '#7cc04a'),
+    bulbs: bool('Bulbs round the box', true), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: signW(p), tall: Number(p.legs) + Number(p.size) + 12 }),
+  bounds: p => ({ x: -4, h: Number(p.legs) + Number(p.size) + 12, w: signW(p) + 8, tall: Number(p.legs) + Number(p.size) + 12 }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const s = String(p.text ?? ''), sz = Number(p.size), L = Number(p.legs), w = signW(p), bh = sz + 12, t = o.t, glow = 0.45 + 0.55 * o.lighting.lamps;
+    const back = rgbField(p.backing, '184,31,42'), ink = rgbField(p.colour, '255,243,220'), leaf = rgbField(p.leaf, '124,192,74');
+    // the frame: posts on base plates, X-bracing, a rail for whoever changes the bulbs
+    const posts: number[] = []; for (let k = 6; k < w - 12; k += 46) posts.push(Math.round(k)); posts.push(Math.round(w - 8));
+    for (const px of posts) { R(x, px, 0, 3, L + bh, '#1c1d20'); R(x, px - 3, 0, 9, 2, '#2a2b2e'); }
+    x.strokeStyle = 'rgba(40,42,46,.95)'; x.lineWidth = 1;
+    for (let i = 0; i + 1 < posts.length && L > 6; i++) { x.beginPath(); x.moveTo(posts[i] + 1, y(2)); x.lineTo(posts[i + 1] + 1, y(L)); x.moveTo(posts[i + 1] + 1, y(2)); x.lineTo(posts[i] + 1, y(L)); x.stroke(); }
+    if (L > 4) R(x, 0, L - 2, w, 2, '#26272a');
+    // the box and its letters, lit
+    R(x, 0, L, w, bh, rgba(back, 0.55 + 0.4 * glow)); R(x, 0, L + bh - 1, w, 1, 'rgba(255,255,255,.3)'); R(x, 0, L, w, 1, 'rgba(0,0,0,.4)');
+    x.fillStyle = rgba(leaf, 0.95); x.beginPath(); x.ellipse(sz * 0.8 + 4, y(L + bh / 2 + 1), sz * 0.45, sz * 0.26, -0.6, 0, Math.PI * 2); x.fill();
+    paintText(x, s, sz * 1.6 + 8 + (w - sz * 1.6 - 16) / 2, y(L + bh / 2), rgba(ink, 0.75 + 0.25 * glow), sz, '700');
+    if (p.bulbs !== false) for (let k = 4; k < w - 2; k += 8) for (const hh of [L + 2, L + bh - 3]) { const dead = hash(Number(p.seed) * 7 + k + hh) < 0.1; R(x, k, hh, 2, 1, dead ? '#3a2a1a' : rgba('255,230,170', 0.5 + 0.5 * glow * (0.85 + 0.15 * Math.sin(t / 13 + k)))); }
+    o.light?.(w / 2, L + bh / 2, w, bh, back, 'screen');
+  },
+});
+
+export const fireEscapeElement = piece({
+  type: 'everyday.fire-escape', label: 'Fire escape: landings down a building face (kit; the flights are level stairs)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Landing width', 64, 30, 200, 1, 'units'), landings: num('Landings', 2, 1, 10), storey: num('Storey height', 66, 40, 120, 1, 'units'),
+    top: num('Top landing height (from this piece’s foot)', 208, 40, 2000, 1, 'units'), door: bool('A window onto each landing', true),
+    plants: bool('Pots and a chair on the top landing', true), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.top) + 36 }),
+  bounds: p => ({ x: -4, h: Number(p.top) + 36, w: Number(p.width) + 8, tall: Number(p.top) + 36 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: 0, h: Number(p.top), role: 'mount' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), n = Number(p.landings), st = Number(p.storey), top = Number(p.top), seed = Number(p.seed), lamp = 0.4 + 0.6 * o.lighting.lamps;
+    for (let i = 0; i < n; i++) {
+      const h = top - i * st; if (h < 10) break;
+      // the opening onto the landing: a sash window, lit or dark
+      if (p.door !== false) { R(x, w / 2 - 9, h + 4, 18, 30, '#0c0a09'); R(x, w / 2 - 8, h + 5, 16, 28, hash(seed + i) < 0.5 ? rgba('255,200,140', 0.2 + 0.4 * lamp) : '#15120f'); R(x, w / 2 - 8, h + 18, 16, 1, '#3a2a1c'); }
+      // the grating, its brackets into the wall, the railing
+      R(x, -2, h - 3, w + 4, 3, '#2a2b2e'); for (let k = -2; k < w + 2; k += 3) R(x, k, h - 3, 1, 3, 'rgba(0,0,0,.4)'); R(x, -2, h, w + 4, 1, 'rgba(255,190,120,.3)');
+      x.strokeStyle = 'rgba(42,43,46,.95)'; x.beginPath(); x.moveTo(2, y(h - 3)); x.lineTo(10, y(h - 16)); x.moveTo(w - 2, y(h - 3)); x.lineTo(w - 10, y(h - 16)); x.stroke();
+      R(x, -2, h + 20, w + 4, 1, '#3a3c40'); R(x, -2, h + 10, w + 4, 1, '#2e3034'); for (let k = -2; k <= w + 2; k += 8) R(x, k, h, 1, 20, '#34363a');
+      if (p.plants !== false && i === 0) { R(x, w - 14, h, 7, 5, '#7a4a2a'); R(x, w - 13, h + 5, 5, 4, 'rgba(90,150,70,.9)'); }
+    }
+  },
+});
+
+export const deepGapElement = piece({
+  type: 'everyday.deep-gap', label: 'Down a gap between buildings: walls falling away to the lit street (kit)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 30, 10, 200, 1, 'units'), height: num('Depth (roof to street)', 340, 40, 2000, 1, 'units'), light: colourField('Street light at the bottom', '#ffb35a'),
+    escape: bool('Fire escape zigzag on one wall', true), cables: bool('Cables slung across', true), steam: bool('Steam rising', true), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => box(p),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: 0, h: Number(p.height), role: 'mount' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t, col = rgbField(p.light, '255,179,90'), lamp = 0.4 + 0.6 * o.lighting.lamps;
+    // the far wall: dark at the top, the street's light climbing it from below
+    const g = x.createLinearGradient(0, y(H), 0, y(0)); g.addColorStop(0, '#050506'); g.addColorStop(0.65, '#0d0b0b'); g.addColorStop(1, rgba(col, 0.3 * lamp + 0.08));
+    x.fillStyle = g; x.fillRect(0, y(H), w, H);
+    // the inner faces of the two buildings, with a few lit windows down them
+    R(x, 0, 0, 4, H, '#151416'); R(x, w - 4, 0, 4, H, '#121114');
+    for (let h = 30; h < H - 20; h += 33) { if (hash(seed + h) < 0.35) R(x, 1, h, 2, 6, rgba('255,200,140', 0.5 * lamp)); if (hash(seed * 3 + h) < 0.3) R(x, w - 3, h + 10, 2, 6, rgba('255,200,140', 0.5 * lamp)); }
+    // the street at the bottom: a lit strip, a car's lights now and then
+    R(x, 4, 0, w - 8, 3, rgba(col, 0.5 + 0.4 * lamp)); const car = (t * 0.9 + seed * 40) % 260; if (car < w) R(x, car - 3, 1, 6, 2, 'rgba(255,240,210,.9)');
+    if (p.escape !== false) for (let h = 40; h < H - 30; h += 66) { R(x, 4, h, Math.min(12, w - 10), 1, '#2e3034'); x.strokeStyle = 'rgba(46,48,52,.9)'; x.beginPath(); x.moveTo(5, y(h)); x.lineTo(Math.min(15, w - 6), y(h + 33)); x.stroke(); }
+    if (p.cables !== false) { x.strokeStyle = 'rgba(0,0,0,.9)'; for (let k = 0; k < 3; k++) { const ch = H - 30 - k * 70 - hash(seed + k) * 20; x.beginPath(); x.moveTo(0, y(ch)); x.quadraticCurveTo(w / 2, y(ch - 8), w, y(ch + 2)); x.stroke(); } }
+    if (p.steam !== false) for (let k = 0; k < 4; k++) { const f = (t * 0.25 + k * 60 + seed * 13) % H; R(x, w / 2 - 3 + Math.sin(t / 40 + k) * 3, f, 6, 3, 'rgba(200,200,200,' + (0.1 * (1 - f / H)).toFixed(3) + ')'); }
+  },
+});
+const signW = (p: Properties) => Math.round(String(p.text ?? '').length * Number(p.size) * 0.66 + Number(p.size) * 1.6 + 20);
+
 export const downtownEveryday: Element[] = [
   freshcoFrontElement, trolleysElement, freshcoFloorElement, aisleEndElement, fruitDisplayElement, securityGateElement, selfCheckoutsElement, stockroomElement,
   dinerFrontElement, dinerSignElement, dinerRoomElement, dinerCounterElement, dinerBoothsElement,
-  roofDeckElement, billboardElement, roofPlankElement, rainElement,
+  roofDeckElement, billboardElement, roofPlankElement, rainElement, roofSignElement, fireEscapeElement, deepGapElement,
 ];

@@ -268,13 +268,24 @@
         },
         {
           "id": "act1-12",
-          "title": "Restore by force",
-          "place": "Registry back office or substation",
+          "title": "Lights out",
+          "place": "The substation",
           "district": "downtown",
           "status": "new",
-          "happens": "The combination challenge: restore the record by force; it trips an alarm.",
+          "happens": "Cut the power to the block at the substation.",
           "teaches": "A13",
-          "note": "Style frame dt-registry-night (2026-10-22).",
+          "note": "Decided 2026-10-22 (Tommi): the combination challenge starts here, then the dark Registry. Style frame dt-substation.",
+          "scene": "dt-substation"
+        },
+        {
+          "id": "act1-12b",
+          "title": "The dark Registry",
+          "place": "The Registry back office after hours",
+          "district": "downtown",
+          "status": "new",
+          "happens": "Into the dark Registry; restore the record by force at the local verification node; the backup power trips the alarm.",
+          "teaches": "A13",
+          "note": "Style frame dt-registry-night.",
           "scene": "dt-registry-night"
         },
         {
@@ -314,16 +325,6 @@
           "status": "new",
           "happens": "Downtown from above; the Registry Premium billboard; someone sheltering behind it.",
           "note": "Optional place; style frame dt-roofs (2026-10-22)."
-        },
-        {
-          "id": "opt-substation",
-          "title": "The substation",
-          "place": "The substation",
-          "district": "downtown",
-          "scene": "dt-substation",
-          "status": "new",
-          "happens": "The block's power; a candidate for the Act I combination challenge.",
-          "note": "Optional place; style frame dt-substation (2026-10-22)."
         }
       ]
     },

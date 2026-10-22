@@ -17,7 +17,7 @@
       "id": "skyline-far",
       "type": "building.row",
       "props": {
-        "width": 1600,
+        "width": 1900,
         "seed": 61,
         "parallax": 0.2,
         "minHeight": 200,
@@ -44,7 +44,7 @@
         "traffic": true
       },
       "placement": {
-        "x": 520,
+        "x": 620,
         "h": 60,
         "parallax": 0.12
       },
@@ -55,7 +55,7 @@
       "id": "skyline-near",
       "type": "building.row",
       "props": {
-        "width": 1500,
+        "width": 1800,
         "seed": 62,
         "parallax": 0.5,
         "minHeight": 160,
@@ -121,7 +121,7 @@
       "id": "freshco-body",
       "type": "building.front",
       "props": {
-        "width": 640,
+        "width": 800,
         "floors": 1,
         "storey": 76,
         "ground": 92,
@@ -154,13 +154,13 @@
       "id": "freshco-front",
       "type": "everyday.freshco-front",
       "props": {
-        "width": 640,
+        "width": 800,
         "height": 92,
         "logo": "FRESHCO",
         "tagline": "GROCERIES · OPEN 06–24",
         "door": "left",
         "gate": true,
-        "posters": "MEMBER PRICES|PRICES SET DAILY|ID REQUIRED AT CHECKOUT",
+        "posters": "MEMBER PRICES|PRICES SET DAILY|ID REQUIRED AT CHECKOUT|NO REFUNDS WITHOUT ID",
         "index": true,
         "lit": 1,
         "seed": 3
@@ -192,7 +192,7 @@
         "seed": 5
       },
       "placement": {
-        "x": 790,
+        "x": 950,
         "h": 0
       },
       "order": 9,
@@ -225,7 +225,7 @@
         "top": 0
       },
       "placement": {
-        "x": 824,
+        "x": 984,
         "h": 0
       },
       "order": 10,
@@ -256,7 +256,7 @@
         "top": 0
       },
       "placement": {
-        "x": 1004,
+        "x": 1164,
         "h": 0
       },
       "order": 11,
@@ -266,9 +266,9 @@
       "id": "roof",
       "type": "everyday.roof-deck",
       "props": {
-        "width": 640,
+        "width": 800,
         "parapet": 6,
-        "units": 4,
+        "units": 5,
         "condensers": true,
         "tank": "right",
         "hut": "hatch",
@@ -290,7 +290,7 @@
       "id": "street",
       "type": "street.surface",
       "props": {
-        "width": 1204,
+        "width": 1364,
         "ground": "#040302",
         "edge": "#ffb35a",
         "sheen": 0.5
@@ -326,7 +326,7 @@
         "seed": 1
       },
       "placement": {
-        "x": 560,
+        "x": 640,
         "h": 0
       },
       "order": 15,
@@ -341,7 +341,7 @@
         "seed": 2
       },
       "placement": {
-        "x": 980,
+        "x": 1140,
         "h": 0
       },
       "order": 16,
@@ -359,7 +359,7 @@
         "seed": 2
       },
       "placement": {
-        "x": 660,
+        "x": 820,
         "h": 0
       },
       "order": 17,
@@ -368,6 +368,26 @@
         "instance": "freshco-shell",
         "anchor": "origin"
       }
+    },
+    {
+      "id": "roof-sign",
+      "type": "everyday.roof-sign",
+      "props": {
+        "text": "FRESHCO",
+        "size": 26,
+        "legs": 28,
+        "colour": "#fff3dc",
+        "backing": "#b81f2a",
+        "leaf": "#7cc04a",
+        "bulbs": true,
+        "seed": 4
+      },
+      "placement": {
+        "x": 430,
+        "h": 168
+      },
+      "order": 18,
+      "layer": "backdrop"
     },
     {
       "id": "cam-door",
@@ -379,7 +399,7 @@
         "x": 160,
         "h": 104
       },
-      "order": 18,
+      "order": 19,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-shell",
@@ -396,14 +416,14 @@
         "x": 0,
         "h": 0
       },
-      "order": 19,
+      "order": 20,
       "layer": "logic"
     },
     {
       "id": "shop-floor",
       "type": "interior.freshco-floor",
       "props": {
-        "width": 640,
+        "width": 800,
         "height": 92,
         "sections": [
           {
@@ -413,27 +433,27 @@
           },
           {
             "kind": "tobacco",
-            "width": 110,
+            "width": 200,
             "sign": ""
           },
           {
             "kind": "produce",
-            "width": 100,
+            "width": 110,
+            "sign": "PRODUCE"
+          },
+          {
+            "kind": "shelves",
+            "width": 110,
             "sign": ""
           },
           {
             "kind": "shelves",
-            "width": 90,
-            "sign": ""
-          },
-          {
-            "kind": "shelves",
-            "width": 80,
+            "width": 110,
             "sign": ""
           },
           {
             "kind": "chiller",
-            "width": 110,
+            "width": 120,
             "sign": "DAIRY · CHILLED"
           },
           {
@@ -453,7 +473,7 @@
         "x": 150,
         "h": 0
       },
-      "order": 20,
+      "order": 21,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -464,9 +484,9 @@
       "id": "stockroom",
       "type": "interior.stockroom",
       "props": {
-        "width": 640,
+        "width": 800,
         "height": 76,
-        "racks": 3,
+        "racks": 4,
         "boxes": 0.75,
         "staff": true,
         "monitors": 6,
@@ -480,7 +500,7 @@
         "x": 150,
         "h": 92
       },
-      "order": 21,
+      "order": 22,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -491,14 +511,14 @@
       "id": "slab-0",
       "type": "level.slab",
       "props": {
-        "width": 640,
+        "width": 800,
         "thickness": 10
       },
       "placement": {
         "x": 150,
         "h": 0
       },
-      "order": 22,
+      "order": 23,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -509,14 +529,14 @@
       "id": "slab-1",
       "type": "level.slab",
       "props": {
-        "width": 640,
+        "width": 800,
         "thickness": 8
       },
       "placement": {
         "x": 150,
         "h": 92
       },
-      "order": 23,
+      "order": 24,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -527,14 +547,14 @@
       "id": "slab-2",
       "type": "level.slab",
       "props": {
-        "width": 640,
+        "width": 800,
         "thickness": 8
       },
       "placement": {
         "x": 150,
         "h": 168
       },
-      "order": 24,
+      "order": 25,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -552,7 +572,7 @@
         "x": 142,
         "h": 60
       },
-      "order": 25,
+      "order": 26,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -567,10 +587,10 @@
         "thickness": 8
       },
       "placement": {
-        "x": 790,
+        "x": 950,
         "h": 0
       },
-      "order": 26,
+      "order": 27,
       "layer": "backdrop",
       "attach": {
         "instance": "freshco-interior",
@@ -592,7 +612,7 @@
         "x": 164,
         "h": 0
       },
-      "order": 27,
+      "order": 28,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -617,7 +637,7 @@
         "x": 244,
         "h": 0
       },
-      "order": 28,
+      "order": 29,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -661,10 +681,10 @@
         "seed": 3
       },
       "placement": {
-        "x": 442,
+        "x": 452,
         "h": 0
       },
-      "order": 29,
+      "order": 30,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -685,10 +705,10 @@
         "seed": 3
       },
       "placement": {
-        "x": 536,
+        "x": 632,
         "h": 0
       },
-      "order": 30,
+      "order": 31,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -709,10 +729,10 @@
         "seed": 4
       },
       "placement": {
-        "x": 588,
+        "x": 742,
         "h": 0
       },
-      "order": 31,
+      "order": 32,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -728,10 +748,10 @@
         "style": "concrete"
       },
       "placement": {
-        "x": 726,
+        "x": 886,
         "h": 0
       },
-      "order": 32,
+      "order": 33,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -747,10 +767,10 @@
         "style": "steel-ladder"
       },
       "placement": {
-        "x": 730,
+        "x": 866,
         "h": 92
       },
-      "order": 33,
+      "order": 34,
       "layer": "set",
       "attach": {
         "instance": "freshco-interior",
@@ -772,7 +792,7 @@
         "x": 214,
         "h": 0
       },
-      "order": 34,
+      "order": 35,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -794,7 +814,7 @@
         "x": 256,
         "h": 0
       },
-      "order": 35,
+      "order": 36,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -816,7 +836,7 @@
         "x": 300,
         "h": 0
       },
-      "order": 36,
+      "order": 37,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -835,10 +855,10 @@
         "archetype": "office"
       },
       "placement": {
-        "x": 500,
+        "x": 512,
         "h": 0
       },
-      "order": 37,
+      "order": 38,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -857,10 +877,10 @@
         "archetype": "kid"
       },
       "placement": {
-        "x": 470,
+        "x": 478,
         "h": 0
       },
-      "order": 38,
+      "order": 39,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -877,13 +897,13 @@
         "seed": 3106,
         "act": "walk",
         "archetype": "courier",
-        "range": 120
+        "range": 140
       },
       "placement": {
-        "x": 560,
+        "x": 666,
         "h": 0
       },
-      "order": 39,
+      "order": 40,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -899,10 +919,10 @@
         "act": "carry"
       },
       "placement": {
-        "x": 672,
+        "x": 806,
         "h": 0
       },
-      "order": 40,
+      "order": 41,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -922,7 +942,7 @@
         "x": 380,
         "h": 0
       },
-      "order": 41,
+      "order": 42,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -942,10 +962,10 @@
         "sitting": "side"
       },
       "placement": {
-        "x": 389,
+        "x": 447,
         "h": 92
       },
-      "order": 42,
+      "order": 43,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -964,10 +984,10 @@
         "archetype": "student"
       },
       "placement": {
-        "x": 340,
+        "x": 404,
         "h": 92
       },
-      "order": 43,
+      "order": 44,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -987,10 +1007,10 @@
         "sitting": "side"
       },
       "placement": {
-        "x": 531,
+        "x": 589,
         "h": 92
       },
-      "order": 44,
+      "order": 45,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -1009,7 +1029,7 @@
         "x": 250,
         "h": 92
       },
-      "order": 45,
+      "order": 46,
       "layer": "playfield",
       "attach": {
         "instance": "freshco-interior",
@@ -1032,7 +1052,7 @@
         "x": 128,
         "h": 0
       },
-      "order": 46,
+      "order": 47,
       "layer": "playfield"
     },
     {
@@ -1047,7 +1067,7 @@
         "x": 196,
         "h": 70
       },
-      "order": 47,
+      "order": 48,
       "layer": "playfield"
     },
     {
@@ -1066,7 +1086,7 @@
         "x": 300,
         "h": 0
       },
-      "order": 48,
+      "order": 49,
       "layer": "playfield"
     },
     {
@@ -1079,13 +1099,13 @@
         "seed": 3123,
         "act": "walk",
         "archetype": "courier",
-        "range": -260
+        "range": -300
       },
       "placement": {
-        "x": 960,
+        "x": 1200,
         "h": 0
       },
-      "order": 49,
+      "order": 50,
       "layer": "playfield"
     },
     {
@@ -1099,10 +1119,10 @@
         "act": "smoke"
       },
       "placement": {
-        "x": 900,
+        "x": 1060,
         "h": 0
       },
-      "order": 50,
+      "order": 51,
       "layer": "playfield"
     },
     {
@@ -1113,13 +1133,13 @@
         "depth": "back",
         "seed": 3125,
         "act": "walk",
-        "range": 500
+        "range": 700
       },
       "placement": {
         "x": 400,
         "h": 0
       },
-      "order": 51,
+      "order": 52,
       "layer": "playfield"
     },
     {
@@ -1130,14 +1150,14 @@
         "x": 80,
         "h": 0
       },
-      "order": 52,
+      "order": 53,
       "layer": "playfield"
     },
     {
       "id": "floor-street",
       "type": "level.floor",
       "props": {
-        "width": 1204,
+        "width": 1364,
         "building": "",
         "label": ""
       },
@@ -1145,14 +1165,14 @@
         "x": 0,
         "h": 0
       },
-      "order": 53,
+      "order": 54,
       "layer": "logic"
     },
     {
       "id": "floor-shop",
       "type": "level.floor",
       "props": {
-        "width": 640,
+        "width": 800,
         "building": "freshco",
         "label": "Shop floor"
       },
@@ -1160,14 +1180,14 @@
         "x": 150,
         "h": 0
       },
-      "order": 54,
+      "order": 55,
       "layer": "logic"
     },
     {
       "id": "floor-stock",
       "type": "level.floor",
       "props": {
-        "width": 640,
+        "width": 800,
         "building": "freshco",
         "label": "Stockroom"
       },
@@ -1175,14 +1195,14 @@
         "x": 150,
         "h": 92
       },
-      "order": 55,
+      "order": 56,
       "layer": "logic"
     },
     {
       "id": "floor-roof",
       "type": "level.floor",
       "props": {
-        "width": 640,
+        "width": 800,
         "building": "freshco",
         "label": "Roof"
       },
@@ -1190,7 +1210,7 @@
         "x": 150,
         "h": 168
       },
-      "order": 56,
+      "order": 57,
       "layer": "logic"
     }
   ]

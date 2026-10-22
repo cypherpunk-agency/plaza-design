@@ -14,7 +14,7 @@
  * Everything is drawn in the piece's own frame: origin at its foot on the left, x to the right,
  * heights up (`y = -h`). Unset choices come from the seed; same props, same building.
  */
-import { addLight } from '../atmosphere/lighting';
+import { addLight, type SceneLight } from '../atmosphere/lighting';
 import type { Element, Field, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { rng } from '../core/primitives';
@@ -37,12 +37,36 @@ export const colour = (label: string, empty = 'Seeded'): Field => ({ kind: 'json
   validate: (v: Value) => { if (v !== '' && !isHex(v)) throw new Error(label + ': expected a #rrggbb colour or empty'); } });
 export const rgbOf = (hex: string) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 3 - 1), 16)).join(',');
 
-export interface Paint { t: number; lighting: Light; view: View; light?: (x: number, h: number, w: number, hh: number, col: string, kind: 'window' | 'screen') => void }
-/** A placeable piece: culls itself, paints in its own frame, hands its lit windows to the light layer. */
+/**
+ * A light a piece casts onto the scene's light layer (art/atmosphere/lighting.ts `drawLights`), at a point in the
+ * piece's own frame (`lx` from its left, `lh` up from its foot). `kind` (default `lamp`): `lamp` a glow and a pool on
+ * the ground (it also throws the night's short shadows), `neon` / `screen` a round glow, `window` a lit pane `w` × `hh`,
+ * `head` a beam pointing `dir`. `r` is the radius in the piece's units (default 60), `col` "r,g,b", `a` its strength
+ * (default 0.8). Radius and sizes follow the placement's scale; like every light it is weak by day, full at night.
+ */
+export type Glow = (lx: number, lh: number, g: { kind?: SceneLight['kind']; col?: string; r?: number; a?: number; w?: number; hh?: number; dir?: 1 | -1 }) => void;
+export interface Paint {
+  t: number; lighting: Light; view: View;
+  /** A lit window or screen (a pane `w` × `hh` centred on (x, h)): the light layer's soft glow round it. */
+  light?: (x: number, h: number, w: number, hh: number, col: string, kind: 'window' | 'screen') => void;
+  /** Any light of any radius and colour: a lamp's pool, neon, a beacon, a floodlight (`Glow`). */
+  glow?: Glow;
+}
+/**
+ * A placeable piece: culls itself, paints in its own frame, hands its lights to the light layer (`Paint.light` for
+ * lit windows and screens, `Paint.glow` for lamps, neon and beacons). Lights are offered only on the play plane
+ * (parallax 1), where the light layer draws them. `reach`: how far (in the piece's units) its light spills past
+ * its sides, so a lamp just off screen still lights the edge of the view.
+ *
+ * Zoom: the composition has already scaled and mirrored the canvas round the placement (core/composition.ts
+ * `paint`), and a camera zoom is a canvas transform too (runtime/render-scene.ts `scale`), so a piece never
+ * scales itself; its cull box is the placement's scale times its size, in the view's own units.
+ */
 export function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & { size: (p: Properties) => { w: number; tall: number }; paint: (x: CanvasRenderingContext2D, p: Properties, o: Paint) => void;
+  reach?: (p: Properties) => number;
   /** A building that can stand for sale, empty or under construction (state.ts): its props while vacant, and its size for the state's layer. */
   state?: { vacant: (p: Properties) => Properties; box: (p: Properties) => { w: number; h: number; g: number; seed: number } } }): Element {
-  const { size, paint: own, state, ...rest } = o;
+  const { size, paint: own, state, reach, ...rest } = o;
   const paint = state ? (x: CanvasRenderingContext2D, p: Properties, q: Paint) => {
     const out = vacant(p); own(x, out ? state.vacant(p) : p, q);
     if (out) { const b = state.box(p); paintState(x, p, b.w, b.h, b.g, q, b.seed); }
@@ -50,13 +74,15 @@ export function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'par
   return {
     ...rest, version: 1, coordinates: 'world', parts: ['backdrop'],
     draw(ctx, v, p, _s, _pass, at) {
-      const { w } = size(p), sx = v.sx(at.x), end = sx + w * at.scale * at.facing;
-      if (Math.max(sx, end) + 60 < 0 || Math.min(sx, end) - 60 > v.viewW) return;
-      const light = at.parallax === 1 ? (lx: number, lh: number, lw: number, hh: number, col: string, kind: 'window' | 'screen') =>
-        addLight(v, { x: at.x + lx * at.scale * at.facing, h: at.h + lh * at.scale, kind, w: lw * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
-      // the composition has already scaled and mirrored the canvas round the placement (core/composition.ts)
+      const { w } = size(p), sx = v.sx(at.x), end = sx + w * at.scale * at.facing, m = 60 + (reach ? reach(p) : 0) * at.scale;
+      if (Math.max(sx, end) + m < 0 || Math.min(sx, end) - m > v.viewW) return;
+      const near = at.parallax === 1, wx = (lx: number) => at.x + lx * at.scale * at.facing, wh = (lh: number) => at.h + lh * at.scale;
+      const light = near ? (lx: number, lh: number, lw: number, hh: number, col: string, kind: 'window' | 'screen') =>
+        addLight(v, { x: wx(lx), h: wh(lh), kind, w: lw * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
+      const glow: Glow | undefined = near ? (lx, lh, g) => addLight(v, { x: wx(lx), h: wh(lh), kind: g.kind ?? 'lamp', ...(g.col ? { col: g.col } : {}), r: (g.r ?? 60) * at.scale, a: g.a ?? 0.8,
+        ...(g.w ? { w: g.w * at.scale } : {}), ...(g.hh ? { hh: g.hh * at.scale } : {}), ...(g.dir ? { dir: (g.dir * at.facing) as 1 | -1 } : {}) }) : undefined;
       ctx.save(); ctx.translate(sx, v.y(at.h));
-      try { paint(ctx, p, { t: v.t, lighting: v.lighting, view: v, ...(light ? { light } : {}) }); } finally { ctx.restore(); }
+      try { paint(ctx, p, { t: v.t, lighting: v.lighting, view: v, ...(light ? { light, glow } : {}) }); } finally { ctx.restore(); }
     },
   };
 }

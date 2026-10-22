@@ -108,6 +108,22 @@ const TABLE = {
   drifter: { label: 'Undercity drifter', note: 'Everything they own on them, salvaged tech worn openly.', age: 'adult',
     body: ['avg', 'slim', 'old', 'frail'], hair: ['hood', 'beanie', 'long', 'scarf'], garb: ['coat', 'patched'], maybe: ['backpack', 'bag', 'muffler'], tech: ['respirator', 'cyberarm', 'visor'], kitted: 0.35,
     facial: ['beard', 'stubble', 'none'], colours: { hair: NATURAL_AND_GREY }, act: 'lean' },
+  // staff (2026-10-22): the diner, the shops and the counters
+  cook: { label: 'Cook', note: 'Kitchen whites or an apron, a white cap or a hairnet, a towel over the shoulder.', age: 'adult',
+    body: ['wide', 'heavy', 'avg', 'broad', 'tall'], hair: ['chefcap', 'chefcap', 'hairnet'], garb: ['whites', 'whites', 'apron'], extras: ['towel'], tech: ['earpiece', 'wristscreen'], kitted: 0.25,
+    facial: ['none', 'stubble', 'moustache', 'beard'], colours: { top: ['#e8e4d8', '#d8d4c8'], bottom: ['#2a2a30', '#3a3a40', '#4a463e'], acc: ['#e8e4d8'] }, act: 'vend' },
+  waitress: { label: 'Waitress / waiter', note: 'A diner uniform with a white collar, an apron and a notepad.', age: 'adult',
+    body: ['slim', 'avg', 'short', 'tall'], hair: ['ponytail', 'bun', 'short', 'long', 'buzz'], garb: ['diner'], extras: ['notepad'], maybe: ['badge', 'badge', 'glasses'], tech: ['earpiece', 'wristscreen'], kitted: 0.25,
+    facial: ['none', 'none', 'none', 'moustache'], colours: { top: ['#b84a5a', '#8a3a4a', '#c8a040', '#5a7a4a'], bottom: ['#2a2a30', '#3a3438', '#4a3a3a'], acc: ['#ece4d6'] }, act: 'stand' },
+  security: { label: 'Shop security', note: 'Private security: a dark polo with SECURITY across the back, or hi-vis; a radio on the chest.', age: 'adult',
+    body: ['broad', 'tall', 'heavy', 'avg'], hair: ['buzz', 'short', 'cap', 'bald'], garb: ['polo', 'polo', 'hivis'], extras: ['radio'], tech: ['earpiece'], kitted: 0.4,
+    facial: ['none', 'stubble', 'moustache', 'beard'], colours: { top: ['#1e2024', '#22262c', '#2a2a2e'], bottom: ['#1a1a1e', '#2a2a30'], acc: ['#1e2024', '#2a2a30'], vest: ['#c9a227', '#d8b030'], light: ['#ffd23a'] }, act: 'stand' },
+  cashier: { label: 'Cashier', note: 'A store tabard over a shirt and a name badge.', age: 'adult',
+    body: ['avg', 'slim', 'short', 'teen', 'heavy'], hair: ['ponytail', 'short', 'bun', 'buzz', 'long'], garb: ['tabard'], extras: ['badge'], maybe: ['glasses'], tech: ['earpiece', 'wristscreen'], kitted: 0.3,
+    facial: ['none', 'none', 'stubble'], colours: { top: ['#2e6a3a', '#b8462a', '#3a4a7a', '#c88a2a'], bottom: ['#2a2a30', '#3a3a40', '#4a4438'], acc: ['#d8d0c0', '#2a2a30', '#e8e0d0'] }, act: 'stand' },
+  clerk: { label: 'Clerk', note: 'An office shirt and an ID card on a lanyard; behind a Registry counter or a desk.', age: 'adult',
+    body: ['avg', 'slim', 'old', 'heavy', 'short'], hair: ['short', 'bun', 'bald', 'ponytail', 'buzz'], garb: ['shirt'], extras: ['lanyard'], maybe: ['glasses', 'glasses'], tech: ['earpiece', 'arglasses'], kitted: 0.3,
+    facial: ['none', 'none', 'moustache', 'stubble'], colours: { top: ['#d8d4c8', '#b8c0c8', '#c8c0a8', '#a8b0a0'], bottom: ['#2a2a30', '#3a3a40', '#4a4438'], acc: ['#a82020', '#2e4a7a', '#5a6470'] }, act: 'stand' },
 } satisfies Record<string, Archetype>;
 
 export type ArchetypeId = keyof typeof TABLE;

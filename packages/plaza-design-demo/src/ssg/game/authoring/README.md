@@ -82,7 +82,15 @@ Library holds the artwork explorer and the kit viewers. **Characters** edits the
 named looks, actions and robots with weights and tech/robot shares) above a lineup, an Archetypes sheet
 and a district mix sample; its preview selects switch styles without saving. **Style frames** pairs each
 district's card with its scenes on the stage, including the `downtown-next` proposal built from the
-building kit. **Storyboard** edits the Storyboard document (`authoring/storyboard.json`, validated by
+building kit. A proposal (style frame, `authoring/proposal-scenes.ts`) borrows its base scene in one of two ways, set
+by its composition's **Base scene use** piece (`scene.base`, logic layer, from ＋ Add artwork › scene): *play* (no
+piece, or `use: play`) runs the base's whole definition, so the frame must carry every device, person and exit the
+base's manifest names, and Play runs it as the base scene (`downtown-next`, `dt-sweep`); *look* takes only the base's
+look (its district climate, so weather and time; its environment's sky, weather, facing and indoor/outdoor; its stage
+lamps and casters) and none of its gameplay, with the piece's width as the frame width and the player row as spawn.
+A look frame is previewed, not played (`dt-diner` on base `downtown`). The build and Save compile every proposal the
+way the stage previews it (`validateProposal`, against the base's saved documents), so a frame the stage refuses fails `pnpm build:homepage`. A
+spawn may stand on any level floor (manifest-geometry.ts `onLevelFloor`; the game arrives there through `spawnH`). **Storyboard** edits the Storyboard document (`authoring/storyboard.json`, validated by
 `storyboard.ts`): the acts as strips of beats in order, each a place with its district, status (exists,
 rework, new), what happens, what it teaches and the scene or style-frame proposal that shows it; picking a
 beat puts its scene on the stage. The game does not read it. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**

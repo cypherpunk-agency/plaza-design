@@ -96,8 +96,13 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const cam = request.frame?.camera.x ?? number(settings.cameraX, 0), cameraH = request.frame?.camera.h ?? number(settings.cameraH, 0);
       const flags = object(settings.flags, 'Flags');
       for (const v of Object.values(flags)) if (typeof v !== 'boolean') throw new Error('Flags must contain booleans');
-      const view: View = { ...frameView(request.time * 60), viewW: width, viewH: height, cam, gy: height - 54,
-        sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom), y: h => height - 54 - (h - cameraH) * zoom,
+      // The camera zoom is a canvas transform, as hack vision's in the game (runtime/game.ts `zoomed`): the whole frame is
+      // drawn at renderScale × zoom over a view that much smaller, scaled about the top left so the ground stays where it
+      // was on screen. Everything (kits, pieces in their own frame, people, lights, culling) then scales alike. Positions
+      // still snap to whole zoomed pixels (`sx`), so where things land on screen is exactly as before the transform.
+      const k = renderScale * zoom, zw = width / zoom, zh = height / zoom, ground = (height - 54) / zoom;
+      const view: View = { ...frameView(request.time * 60), viewW: zw, viewH: zh, cam, gy: ground,
+        sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom) / zoom, y: h => ground - (h - cameraH),
         flags: flags as Record<string, boolean>, ...(def.level ? { level: restingLevelView(def.level, settings.inside === true) } : {}) };
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
@@ -129,7 +134,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       canvas.width = canvas.width;
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
-      renderSceneFrame({ context, scale: renderScale, view, scene: def, sceneId: def.id,
+      renderSceneFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id,
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
@@ -144,9 +149,10 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
       const env = { ...preparedEnvironment, ...options, state };
       const bounds = previewBounds(resolveComposition(art, document, env), view, options, document);
-      const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * renderScale, y: b.y * renderScale, width: b.width * renderScale, height: b.height * renderScale })),
-        deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / renderScale, dy / renderScale) };
-      if (request.overlays && def.level) drawLevelOverlay(context, def.level, view, renderScale);
+      const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * k, y: b.y * k, width: b.width * k, height: b.height * k })),
+        deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / k, dy / k) };
+      // the level overlay keeps its 1-unit lines and 7 px labels: drawn at renderScale over the view's zoomed positions
+      if (request.overlays && def.level) drawLevelOverlay(context, def.level, { ...view, sx: (x, parallax) => view.sx(x, parallax) * zoom, y: h => view.y(h) * zoom }, renderScale);
       if (request.overlays) drawSelectionOverlay(context, result, request.selectedId);
       return result;
   };

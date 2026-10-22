@@ -197,9 +197,10 @@ interface Meta { hand: Cell; mouth: Cell; top: number; eye?: Cell; wrist?: Cell;
 
 /**
  * Legs: side-on poses, and the front and three-quarter views (`sitFront`, `sit3q` on a bench or a seat that
- * faces the camera; `front`, `front3q` standing toward the camera).
+ * faces the camera; `front`, `front3q` standing toward the camera). `lie` is curled up under a newspaper
+ * (sleep); `rest` lies on the back, head toward +c (a patient, a cot, a cradle).
  */
-export type Legs = 'stand' | 'shift' | 'stepA' | 'stepB' | 'cross' | 'wide' | 'sit' | 'lie' | 'sitFront' | 'sit3q' | 'front' | 'front3q';
+export type Legs = 'stand' | 'shift' | 'stepA' | 'stepB' | 'cross' | 'wide' | 'sit' | 'lie' | 'rest' | 'sitFront' | 'sit3q' | 'front' | 'front3q';
 
 /** `nod`: arms folded, eyes shut (dozing). */
 export type Arms = 'down' | 'raise' | 'phone' | 'out' | 'point' | 'reach' | 'up' | 'hip' | 'fold' | 'hold' | 'broomA' | 'broomB' | 'paper' | 'nod';
@@ -208,12 +209,15 @@ const FRONTAL: readonly Legs[] = ['sitFront', 'sit3q', 'front', 'front3q'];
 
 /** The colours a garment puts on the body: torso, sleeves and legs. */
 function clothOf(L: Full) {
-  const top = L.garb === 'hivis' ? L.vest ?? '#c9a227' : L.garb === 'suit' ? L.suit ?? '#26262e' : L.top;
-  return { top, sleeve: L.garb === 'tee' ? L.skin : shade(top, 0.82), legCol: L.garb === 'dress' ? shade(L.skin, 0.8) : L.bottom };
+  const top = L.garb === 'hivis' ? L.vest ?? '#c9a227' : L.garb === 'suit' ? L.suit ?? '#26262e' : L.garb === 'whites' ? WHITES : L.top;
+  // a tabard is worn over a shirt: the sleeves are the shirt (the accent colour)
+  return { top, sleeve: L.garb === 'tee' || L.garb === 'polo' ? (L.garb === 'polo' ? top : L.skin) : L.garb === 'tabard' ? L.acc : shade(top, 0.82), legCol: L.garb === 'dress' ? shade(L.skin, 0.8) : L.bottom };
 }
 /** Coats that reach the thighs. */
 const LONG: readonly Garb[] = ['coat', 'robe', 'oilskin', 'patched'];
 const METAL = '#8e949e';
+/** Kitchen whites, a white apron or collar, paper (a notepad, a name badge, an ID card). */
+const WHITES = '#e8e4d8', LINEN = '#ece4d6', PAPER = '#f2efe6';
 
 /** A few patches sewn on, at the given cells. */
 function patches(g: Grid, L: Full, at: Cell[]) { const cols = L.patch ?? [L.acc, shade(L.top, 1.4)]; at.forEach(([c, r], i) => put(g, c, r, cols[i % cols.length])); }
@@ -265,6 +269,15 @@ function hairOn(g: Grid, L: Full, front: boolean, hl: number, hr: number, hb: nu
       put(g, hx, ht + 1, shade(acc, 1.25));
       break;
     case 'headwrap': rect(g, hl, ht, hr, ht + 1, acc); clr(g, hr, ht + 1); if (front) { clr(g, hl, ht + 1); put(g, hx, ht + 1, shade(acc, 0.8)); } else { put(g, hl - 1, ht, shade(acc, 0.8)); put(g, hl - 1, ht - 1, shade(acc, 0.8)); } break;
+    case 'chefcap':
+      // a cook's white cap, a little hair under it at the back
+      rect(g, hl, ht, hr, ht + 1, PAPER); put(g, front ? hr : hl, ht + 1, shade(PAPER, 0.85)); if (front) clr(g, hl, ht + 1); else put(g, hl, ht - 1, hc);
+      break;
+    case 'hairnet':
+      // hair pulled up under a net: lighter, a few knots of the net over it
+      rect(g, hl, ht, hr, ht, shade(hc, 1.2)); put(g, hl, ht - 1, hc); if (front) { put(g, hr, ht - 1, hc); rect(g, hx - 1, ht + 1, hx, ht + 1, shade(hc, 1.2)); } else rect(g, hl, ht + 1, hl + 1, ht + 1, shade(hc, 1.2));
+      for (let c = hl; c <= hr; c += 2) put(g, c, ht, '#b8b0a4');
+      break;
     case 'peaked':
       // a uniform cap: the crown wider than the head, a dark band, the peak over the eyes
       rect(g, hl - 1, ht + 1, hr + (front ? 1 : 0), ht + 1, acc); rect(g, hl, ht, hr, ht, shade(acc, 0.6));
@@ -302,12 +315,14 @@ function faceOn(g: Grid, L: Full, front: boolean, q: number, hl: number, hr: num
   if (has('earpiece')) { const c: Cell = front ? (q ? [hl, eye] : [hr + 1, eye]) : [hl + 1, eye]; put(g, c[0], c[1], L.visor); meta.ear = c; }
 }
 
-export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
+/** `shin`: a seated person's lap row when a seat height sets it (default ceil(leg / 2)); `cover`: a blanket colour when lying on the back. */
+export function human(L: Full, legs: Legs, arms: Arms, shin?: number, cover?: string): [Grid, Meta] {
   if (legs === 'lie') return lying(L);
-  if (FRONTAL.includes(legs)) return humanFront(L, legs, arms);
+  if (legs === 'rest') return resting(L, arms, cover);
+  if (FRONTAL.includes(legs)) return humanFront(L, legs, arms, shin);
   const B = BODIES[L.body], g = grid(), has = (e: Extra) => L.extras.includes(e);
   const tw = B.tw, Lc = CX - (tw >> 1), Rc = Lc + tw - 1, T = B.torso, belly = B.belly ?? 0;
-  const sit = legs === 'sit', seat = Math.ceil(B.leg / 2);
+  const sit = legs === 'sit', seat = sit && shin ? shin : Math.ceil(B.leg / 2);
   const base = sit ? seat + 1 : B.leg, sh = base + T - 1, hb = sh + 1, ht = hb + B.head - 1;
   const hx = CX + (B.stoop ?? 0), hl = hx - 2, hr = hl + B.hw - 1;
   const { top, sleeve, legCol } = clothOf(L);
@@ -342,6 +357,11 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   if (L.garb === 'coat' || L.garb === 'patched') { put(g, CX, sh, shade(top, 1.35)); put(g, CX + 1, sh - 1, shade(top, 1.35)); }
   if (L.garb === 'apron') { rect(g, Lc + 1, sit ? base : Math.max(1, base - 2), Rc - 1, sh - 1, '#cbbd9c'); put(g, Lc + 2, base + 1, '#8a5a3a'); }
   if (L.garb === 'hivis') rect(g, Lc, sh - 2, Rc, sh - 2, '#efe6c8');
+  if (L.garb === 'whites') { for (let r = base + 1; r < sh; r += 2) put(g, Rc - 1, r, '#b8b0a0'); rect(g, CX, sh, Rc, sh, shade(WHITES, 0.88)); }
+  if (L.garb === 'diner') { rect(g, Lc + 1, sh, Rc, sh, LINEN); rect(g, Rc - 1, sit ? base : Math.max(1, base - 2), Rc, base + 1, LINEN); put(g, Rc - 1, base, shade(LINEN, 0.8)); }
+  if (L.garb === 'polo') { rect(g, CX, sh, Rc, sh, shade(top, 1.35)); for (let c = Lc; c < CX; c++) put(g, c, sh - 1, (c - Lc) % 2 ? shade(top, 1.4) : '#d8d0c0'); }
+  if (L.garb === 'tabard') rect(g, CX - 1, base + 1, CX - 1, sh - 2, sleeve);
+  if (L.garb === 'shirt') { put(g, Rc, sh, shade(top, 1.15)); put(g, Rc - 1, sh, shade(top, 0.8)); }
   if (L.garb === 'suit') { put(g, CX, sh, '#ddd5c5'); put(g, CX + 1, sh, '#ddd5c5'); put(g, CX, sh - 1, L.tie ?? '#a82020'); put(g, CX, sh - 2, L.tie ?? '#a82020'); }
   if (L.garb === 'hoodie') { rect(g, Lc + 2, base + 1, Rc, base + 1, shade(top, 0.8)); put(g, Lc, sh + 1, shade(top, 0.9)); put(g, Lc + 1, sh + 1, shade(top, 0.9)); }
   if (L.garb === 'shell') { rect(g, Rc - 1, base + 1, Rc - 1, sh - 1, shade(top, 1.25)); put(g, Rc, sh, shade(top, 1.15)); if (!sit) rect(g, Lc, base - 1, Rc, base - 1, top); }
@@ -354,6 +374,11 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   if (has('bag')) { for (let k = 0; k < Math.min(tw, T); k++) put(g, Rc - k, sh - k, shade(L.acc, 0.6)); if (!sit) rect(g, Lc - 2, base - 1, Lc - 1, base + 1, L.acc); }
   // a parcel up on the back shoulder (the head is drawn over its front corner)
   if (has('parcel')) { rect(g, Lc - 2, sh + 1, Lc + 1, sh + 3, '#a07040'); rect(g, Lc - 2, sh + 2, Lc + 1, sh + 2, '#d8c8a0'); }
+  // staff things: a towel over the shoulder, a name badge, an ID card on a lanyard, a radio on the chest
+  if (has('towel')) { rect(g, Lc, sh, Lc + 2, sh, LINEN); rect(g, Lc, Math.max(base, sh - 3), Lc, sh, LINEN); put(g, Lc, Math.max(base, sh - 3), shade(LINEN, 0.8)); }
+  if (has('badge')) put(g, Rc - 1, sh - 1, PAPER);
+  if (has('lanyard')) { put(g, Rc - 1, sh, L.acc); put(g, Rc - 1, sh - 1, L.acc); rect(g, Rc - 1, Math.max(base, sh - 3), Rc - 1, sh - 2, PAPER); }
+  if (has('radio')) { rect(g, Rc, sh - 2, Rc, sh - 1, '#16161a'); put(g, Rc, sh, '#3a3a40'); put(g, Rc - 1, sh - 1, '#c83a2a'); }
 
   // arms: the back one (darker) first, then the front one in the pose
   const cyber = has('cyberarm'), front = cyber ? METAL : sleeve, hand = cyber ? '#bfc4cc' : L.skin;
@@ -375,6 +400,7 @@ export function human(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   if (arms === 'phone') put(g, R + 2, sh, '#e4ecff');
   // a newspaper held up in front of the face, columns of print on it
   if (arms === 'paper') { rect(g, R + 2, sh - 2, R + 3, hb + 2, '#d8d0c0'); for (let r = sh - 1; r <= hb + 1; r += 2) put(g, R + 3, r, '#8a8478'); put(g, R + 2, hb + 2, '#b8ad94'); hc = R + 2; hrow = sh + 1; }
+  if (has('notepad') && arms !== 'paper' && arms !== 'fold' && arms !== 'nod') { rect(g, hc, hrow + 1, hc + 1, hrow + 2, PAPER); put(g, hc + 1, hrow + 2, '#8a8478'); }
   // a briefcase: hanging from the hand, or on the floor by a sitter's feet
   if (has('briefcase')) {
     if (sit) { rect(g, Lc - 4, 0, Lc - 1, 2, '#3a2418'); put(g, Lc - 3, 3, '#2a1a10'); put(g, Lc - 2, 1, '#c8a050'); }
@@ -419,11 +445,11 @@ const armDown = (T: number): Cell[] => Array.from({ length: T }, (_, k) => [0, -
  * A person seen from the front (`sitFront`, `front`) or turned three-quarter toward +c (`sit3q`, `front3q`):
  * on a bench or a train seat that faces the camera, or waiting in a crowd. Same parts and colours as side on.
  */
-function humanFront(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
+function humanFront(L: Full, legs: Legs, arms: Arms, shin?: number): [Grid, Meta] {
   const B = BODIES[L.body], g = grid(), has = (e: Extra) => L.extras.includes(e);
   const q = legs === 'sit3q' || legs === 'front3q' ? 1 : 0, sit = legs === 'sitFront' || legs === 'sit3q';
   const half = (B.tw + 1) >> 1, L0 = CX - half, R0 = CX + half, T = B.torso, belly = B.belly ?? 0, lw = B.lw;
-  const seat = Math.ceil(B.leg / 2), base = sit ? seat + 1 : B.leg, sh = base + T - 1, hb = sh + 1, ht = hb + B.head - 1;
+  const seat = sit && shin ? shin : Math.ceil(B.leg / 2), base = sit ? seat + 1 : B.leg, sh = base + T - 1, hb = sh + 1, ht = hb + B.head - 1;
   const hl = CX - 2 + q, hr = hl + 4, eye = hb + 1;
   const { top, sleeve, legCol } = clothOf(L);
   // sitting, an umbrella stays furled against the knee; standing, it is up
@@ -462,6 +488,11 @@ function humanFront(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
     case 'shell': rect(g, L0 + 1, base + 1, L0 + 1, sh - 1, shade(top, 1.25)); rect(g, CX + q, base + 1, CX + q, sh, shade(top, 0.75)); break;
     case 'oilskin': rect(g, CX + q, lo, CX + q, sh - 1, shade(top, 0.75)); put(g, L0 + 1, base + 2, shade(top, 1.35)); put(g, R0 - 1, sh - 1, shade(top, 1.35)); put(g, CX - 1 + q, sh, shade(top, 0.7)); put(g, CX + 1 + q, sh, shade(top, 0.7)); break;
     case 'uniform': rect(g, L0, base + 1, R0, base + 1, '#1c1a18'); put(g, CX + q, base + 1, '#c8a050'); put(g, CX + q, base + 3, shade(top, 1.3)); put(g, L0, sh, shade(top, 1.25)); put(g, R0, sh, shade(top, 1.25)); break;
+    case 'whites': for (let r = base + 1; r < sh; r += 2) { put(g, CX - 1 + q, r, '#b8b0a0'); put(g, CX + 1 + q, r, '#b8b0a0'); } rect(g, CX - 1 + q, sh, CX + 1 + q, sh, shade(WHITES, 0.88)); break;
+    case 'diner': rect(g, CX - 1 + q, sh, CX + 1 + q, sh, LINEN); rect(g, L0 + 1, sit ? base : Math.max(1, base - 2), R0 - 1, base + 1, LINEN); put(g, CX + q, base, shade(LINEN, 0.8)); break;
+    case 'polo': rect(g, CX - 1 + q, sh, CX + 1 + q, sh, shade(top, 1.35)); put(g, CX + q, sh - 1, shade(top, 1.35)); rect(g, L0 + 1, sh - 1, CX - 2 + q, sh - 1, '#d8d0c0'); break;
+    case 'tabard': rect(g, L0, base + 1, L0, sh - 1, sleeve); rect(g, R0, base + 1, R0, sh - 1, sleeve); put(g, CX + q, sh, sleeve); break;
+    case 'shirt': put(g, CX - 1 + q, sh, shade(top, 1.15)); put(g, CX + 1 + q, sh, shade(top, 1.15)); for (let r = base + 1; r < sh; r += 2) put(g, CX + q, r, shade(top, 0.8)); break;
   }
   if (L.garb === 'patched' || has('patches')) patches(g, L, [[L0 + 1, base + 2], [R0 - 1, sh - 1], [CX + 1, base + 1]]);
   if (has('ledtrim')) rect(g, L0, base, R0, base, L.visor);
@@ -469,6 +500,10 @@ function humanFront(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
   if (has('bag')) { for (let k = 0; k < Math.min(R0 - L0, T); k++) put(g, R0 - k, sh - k, shade(L.acc, 0.6)); if (sit) rect(g, L0 + 1, seat + 1, L0 + 3, seat + 2, L.acc); else rect(g, L0 - 2, base - 1, L0 - 1, base + 1, L.acc); }
   if (has('parcel')) { rect(g, R0 - 1, sh + 1, R0 + 2, sh + 3, '#a07040'); rect(g, R0 - 1, sh + 2, R0 + 2, sh + 2, '#d8c8a0'); }
   if (has('muffler')) { rect(g, L0 + 1, sh, R0 - 1, sh, L.acc); put(g, CX - 1 + q, sh - 1, shade(L.acc, 0.85)); put(g, CX - 1 + q, sh - 2, shade(L.acc, 0.85)); }
+  if (has('towel')) { rect(g, L0, Math.max(base, sh - 3), L0 + 1, sh, LINEN); put(g, L0, Math.max(base, sh - 3), shade(LINEN, 0.8)); }
+  if (has('badge')) rect(g, R0 - 2, sh - 1, R0 - 1, sh - 1, PAPER);
+  if (has('lanyard')) { put(g, CX - 1 + q, sh, L.acc); put(g, CX + 1 + q, sh, L.acc); put(g, CX + q, sh - 1, L.acc); rect(g, CX + q, Math.max(base, sh - 3), CX + q, sh - 2, PAPER); }
+  if (has('radio')) { rect(g, L0 + 1, sh - 2, L0 + 1, sh - 1, '#16161a'); put(g, L0 + 1, sh, '#3a3a40'); }
 
   // arms: the left-hand one hangs (darker when turned away), the right-hand one does the pose
   const aL = L0 - 1 - belly, aR = R0 + 1 + belly, cyber = has('cyberarm');
@@ -500,6 +535,7 @@ function humanFront(L: Full, legs: Legs, arms: Arms): [Grid, Meta] {
     if (sit) { rect(g, R0 + 2 + q, 0, R0 + 5 + q, 2, '#3a2418'); put(g, R0 + 3 + q, 3, '#2a1a10'); put(g, R0 + 4 + q, 1, '#c8a050'); }
     else if (arms === 'down') { const hr0 = sh - T + 1; rect(g, aR - 1, Math.max(1, hr0 - 3), aR + 2, Math.max(1, hr0 - 1), '#3a2418'); put(g, aR + 1, Math.max(1, hr0 - 2), '#c8a050'); }
   }
+  if (has('notepad') && arms !== 'paper' && arms !== 'fold' && arms !== 'nod' && arms !== 'phone') { rect(g, hc, hrow + 1, hc + 1, hrow + 2, PAPER); put(g, hc + 1, hrow + 2, '#8a8478'); }
   if (arms === 'hold') held(g, L, aR + 1, sh, ht);
   if (arms === 'broomA' || arms === 'broomB') { for (let r = hrow; r >= 1; r--) put(g, hc + 1, r, '#6a4a2a'); rect(g, hc, 0, hc + 2, 0, '#b89a50'); }
   if (L.garb === 'hoodie') { put(g, hl - 1, hb, top); put(g, hr + 1, hb, top); }
@@ -533,6 +569,57 @@ function lying(L: Full): [Grid, Meta] {
   return [g, { hand: [hs - 1, 2], mouth: [hs + 2, 2], top: 4 }];
 }
 
+/**
+ * Lying on the back, side on, head toward +c (`rest`): a patient on a cot or in a treatment chair, a
+ * sleeper on a bench, a baby in a cradle. Row 0 rests on the surface. The feet stand up at the far end,
+ * the front arm lies along the side (`fold`: hands on the chest; `nod`: eyes shut). `cover`: a blanket to the chest.
+ */
+function resting(L: Full, arms: Arms, cover?: string): [Grid, Meta] {
+  const B = BODIES[L.body], g = grid(), has = (e: Extra) => L.extras.includes(e), { top, sleeve, legCol } = clothOf(L);
+  const len = 1 + B.leg + B.torso + B.head + 1, a = CX - (len >> 1), th = B.tw > 6 ? 3 : 2, belly = B.belly ?? 0;
+  // feet up at the end, the legs, the torso (a little thicker), the head on its back
+  const l0 = a + 1, t0 = l0 + B.leg, hs = t0 + B.torso, he = hs + B.head - 1;
+  rect(g, a, 0, a, 2, L.shoes);
+  rect(g, l0, 0, t0 - 1, 1, LONG.includes(L.garb) || L.garb === 'dress' ? top : legCol);
+  if (LONG.includes(L.garb)) rect(g, t0 - 2, 0, t0 - 1, 1, top);
+  rect(g, t0, 0, hs - 1, th, top);
+  if (belly) rect(g, t0 + 1, th + 1, hs - 2, th + belly, top);
+  rect(g, t0, 0, t0, th, shade(L.bottom, 0.7));
+  if (L.garb === 'hivis') rect(g, hs - 2, 0, hs - 2, th, '#efe6c8');
+  if (L.garb === 'apron' || L.garb === 'whites') rect(g, t0 + 1, th, hs - 2, th, L.garb === 'whites' ? '#f2efe6' : '#cbbd9c');
+  if (L.garb === 'suit') { put(g, hs - 1, th, '#ddd5c5'); put(g, hs - 2, th, L.tie ?? '#a82020'); }
+  if (has('lanyard') || has('badge')) put(g, hs - 2, th, has('badge') ? '#ece4d6' : L.acc);
+  // the front arm: along the side, or the hands folded on the chest
+  const hand = has('cyberarm') ? '#bfc4cc' : L.skin, arm = has('cyberarm') ? METAL : sleeve;
+  let hc: Cell = [t0 + 1, 1];
+  if (arms === 'fold' || arms === 'nod') { rect(g, t0 + 2, th, hs - 2, th, arm); put(g, t0 + 2, th + 1 + belly, hand); hc = [t0 + 2, th + 1 + belly]; }
+  else { rect(g, t0 + 2, 1, hs - 1, 1, shade(arm, 0.9)); put(g, t0 + 1, 1, hand); }
+  // head: the face looks up (the nose a pixel higher), the back of the head on the surface
+  const skin = L.hair === 'hood' ? shade(L.skin, 0.62) : L.skin, ht = 3;
+  rect(g, hs, 0, he, ht, skin); put(g, hs + 1, ht + 1, skin);
+  const eye: Cell = [hs + 2, ht];
+  put(g, eye[0], eye[1], arms === 'nod' ? shade(skin, 0.55) : '#1a0d05');
+  const hc0 = L.hairCol, acc = L.acc;
+  switch (L.hair) {
+    case 'bald': break;
+    case 'cap': case 'beanie': case 'helmet': case 'hardhat': case 'peaked': case 'beret': case 'headwrap': case 'scarf': case 'chefcap': case 'hairnet':
+      rect(g, he, 0, he + 1, ht, L.hair === 'chefcap' ? '#f2efe6' : L.hair === 'hairnet' ? shade(hc0, 1.15) : acc); put(g, he - 1, ht, L.hair === 'chefcap' ? '#f2efe6' : acc); break;
+    case 'hood': rect(g, he, 0, he + 1, ht + 1, top); put(g, hs, ht + 1, top); break;
+    case 'long': case 'ponytail': case 'afro': rect(g, he, 0, he + 1, ht, hc0); rect(g, hs, 0, he, 0, hc0); if (L.hair === 'afro') put(g, he + 2, 1, hc0); break;
+    case 'mohawk': rect(g, he + 1, 1, he + 2, 2, hc0); break;
+    default: rect(g, he, 0, he, ht, hc0); put(g, he - 1, ht, hc0); put(g, he + 1, 1, hc0);
+  }
+  if (L.facial === 'beard') rect(g, hs, 0, hs + 1, 1, hc0); else if (L.facial === 'moustache') put(g, hs, ht, hc0);
+  if (has('glasses') || has('arglasses')) put(g, eye[0] - 1, eye[1], '#0d0806');
+  if (has('respirator') || has('mask')) rect(g, hs, ht, hs + 1, ht, has('mask') ? '#e8e0d0' : '#2a2a30');
+  // a blanket up to the chest, a lighter fold at the top, the feet a bump under it
+  if (cover) {
+    rect(g, a, 0, hs - 2, th, cover); rect(g, a, th + 1, a + 1, th + 1, cover); put(g, a, th + 2, cover);
+    rect(g, hs - 2, 0, hs - 2, th + 1, shade(cover, 1.3)); if (belly) rect(g, t0 + 1, th + 1, hs - 3, th + belly, cover);
+    if (arms === 'fold' || arms === 'nod') { rect(g, hs - 4, th + 1, hs - 3, th + 1, arm); put(g, hs - 4, th + 1, hand); hc = [hs - 4, th + 1]; }
+  }
+  return [g, { hand: hc, mouth: [hs, ht + 1], top: ht + 2, ...(has('arglasses') ? { eye } : {}) }];
+}
 
 // ---------- non-humans ----------
 
@@ -1252,10 +1339,10 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
   const sx = v.sx(f.x, p.parallax ?? 1);
   if (sx < -40 || sx > v.viewW + 40) return;
   // a critter with a robot body (the drone) keeps the critter's height rule: h (or its default), no extra flight height
-  const crit = R.critter, bot = R.bot, hDraw = (p.h ?? (crit ? CRITTERS[crit].h ?? 0 : 0)) + (bot && !crit ? BOT[bot.kind].fly ?? 0 : 0) + f.bob;
+  const crit = R.critter, bot = R.bot, lift = f.lift ?? 0, hDraw = (p.h ?? (crit ? CRITTERS[crit].h ?? 0 : 0)) + (bot && !crit ? BOT[bot.kind].fly ?? 0 : 0) + f.bob + lift;
   const flip = f.face < 0, act = p.act ?? 'stand', tt = v.t + R.ph;
-  const key = R.key + ':' + f.legs + '.' + f.arms;
-  const b = bake(key, () => (bot ? robot(bot, f.legs, f.arms) : crit ? critter(crit, f.legs, R.seed) : human(R.full!, f.legs as Legs, f.arms)), ps, flip, p.dim ?? 0, p.rim ?? true);
+  const key = R.key + ':' + f.legs + '.' + f.arms + (f.shin !== undefined ? '~' + f.shin : '') + (f.legs === 'rest' && p.cover ? '#' + p.cover : '');
+  const b = bake(key, () => (bot ? robot(bot, f.legs, f.arms) : crit ? critter(crit, f.legs, R.seed) : human(R.full!, f.legs as Legs, f.arms, f.shin, f.legs === 'rest' ? p.cover : undefined)), ps, flip, p.dim ?? 0, p.rim ?? true);
   // a glitching robot jumps a pixel or two, now and then
   const glitch = bot && (act === 'glitch' ? tt % 90 < 10 : bot.glitchy && tt % 400 < 14);
   const left = Math.round(sx - CX * ps - ps / 2) - 1 + (glitch ? ((tt * 7) % 5) - 2 : 0), topY = Math.round(v.y(hDraw)) - H * ps - 1;
@@ -1263,7 +1350,8 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
   const fly = bot ? BOT[bot.kind].fly ?? 0 : 0, sw = ps * (bot ? 6 : crit ? 3 : 4);
   if (p.shadow === false) { /* flying against the sky, or inside a window */ }
   else if (fly) castShadow(x, v, f.x, 6, sw * 0.6, crit ? 0 : p.h ?? 0, p.parallax ?? 1, 0.6);
-  else castShadow(x, v, f.x, p.act === 'sleep' ? ps * 3 : height - (p.h ?? 0), sw, hDraw - f.bob, p.parallax ?? 1, p.dim ?? 0);
+  else if (lift) castShadow(x, v, f.x, f.legs === 'rest' ? ps * 3 : height - (p.h ?? 0) - lift, f.legs === 'rest' ? sw * 2 : sw, hDraw - f.bob - lift, p.parallax ?? 1, p.dim ?? 0);
+  else castShadow(x, v, f.x, p.act === 'sleep' || p.act === 'lie' ? ps * 3 : height - (p.h ?? 0), p.act === 'lie' ? sw * 2 : sw, hDraw - f.bob, p.parallax ?? 1, p.dim ?? 0);
   x.drawImage(b.c, left, topY);
   if (p.dim && p.dim > 0.4) return;
   // live effects, from the baked hand and mouth
@@ -1284,7 +1372,7 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
     x.fillStyle = 'rgba(210,225,255,.12)'; x.fillRect(Math.round(hx - 7), Math.round(hy - 10), 14, 12);
   }
   if (R.full) techFx(x, b.meta, cell, tt, ps);
-  if (act === 'sleep' || act === 'doze') {
+  if (act === 'sleep' || act === 'doze' || act === 'lie' && p.asleep) {
     const [mx, my] = cell(b.meta.mouth[0], b.meta.mouth[1]);
     for (let i = 0; i < (act === 'doze' ? 2 : 3); i++) {
       const k = ((tt * 0.01 + i / 3) % 1);

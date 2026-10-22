@@ -16,6 +16,9 @@ import { beginLayeredFrame, flushLayeredSlot } from '../art/core/composition';
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 export interface SceneFrame {
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
+  /** A camera zoom already folded into `scale` (the world drawn larger; `view` is in zoomed units): overlays in logical
+   * viewport coordinates draw at `scale / zoom`. Default 1. */
+  zoom?: number;
   host: Pick<SceneHost, 'visionOn' | 'draw' | 'model'>;
   reduced: boolean; clock: number; weather: () => Weather;
   /** Also installs native shared light/shade inputs before any artwork runs. */
@@ -77,6 +80,6 @@ function renderMeasuredFrame(frame: SceneFrame) {
   if (look && !vision) weatherFront(x, v, look);
   frame.prompts?.(x, v);
   frame.bubbles?.(x, v);
-  if(frame.timeline)drawTimelineOverlay(x,{width:v.viewW,height:v.viewH,scale:k},frame.timeline);
+  if(frame.timeline){const z=frame.zoom??1;drawTimelineOverlay(x,{width:v.viewW*z,height:v.viewH*z,scale:k/z},frame.timeline);}
   perfEnd(pass);
 }

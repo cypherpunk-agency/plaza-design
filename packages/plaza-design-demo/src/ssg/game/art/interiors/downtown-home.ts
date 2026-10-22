@@ -371,7 +371,7 @@ export const serviceLatchElement = piece({
 
 // ---------------------------------------------------------------- flats
 
-const FLAT_KINDS = ['capsule', 'studio', 'family', 'hoarder', 'empty', 'sealed', 'hideout'] as const;
+const FLAT_KINDS = ['capsule', 'studio', 'family', 'hoarder', 'empty', 'sealed', 'hideout', 'quiet', 'home'] as const;
 
 /** One micro-flat seen cut open: what a life fits in, by kind; a door to the corridor behind, its lock, its light. */
 export const microFlatElement = piece({
@@ -380,22 +380,31 @@ export const microFlatElement = piece({
     width: num('Width', 70, 36, 300, 1, 'units'), height: num('Height (floor to ceiling)', 68, 40, 200, 1, 'units'),
     kind: select('Kind', FLAT_KINDS), number: text('Flat number', '7B'), door: select('Door to the corridor', ['left', 'right', 'none']),
     lock: select('Lock', ['smart', 'keys', 'refusing', 'none']), lit: num('Room light', 1, 0, 1, 0.05), window: bool('Window', true),
-    wall: colour('Wall colour', 'Seeded'), partition: bool('Partition on the left', true), seed: num('Seed', 1, 0, 1000000),
+    wall: colour('Wall colour', 'Seeded'), partition: bool('Partition on the left', true), plate: bool('Brass number plate on the door', false),
+    curtain: colour('Curtain colour (quiet)', 'Seeded'), seed: num('Seed', 1, 0, 1000000),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, middle: { x: Number(p.width) / 2, h: 0, role: 'mount' } }),
   paint(x, p, o) {
     const w = Number(p.width), H = Number(p.height), kind = String(p.kind), s = Number(p.seed), r = rng(s * 911 + 17), t = o.t;
-    const walls = ['#4a4438', '#3e463e', '#4a3e3e', '#3c4248', '#46443a'], dark = kind === 'sealed' || kind === 'empty';
+    const walls = kind === 'quiet' || kind === 'home' ? ['#3a3a36', '#363a38', '#3a3634'] : ['#4a4438', '#3e463e', '#4a3e3e', '#3c4248', '#46443a'], dark = kind === 'sealed' || kind === 'empty';
     const lit = (kind === 'sealed' ? 0 : Number(p.lit)) * (o.lighting.outdoor ? 0.6 + 0.4 * o.lighting.lamps : 1);
     wall(x, w, H, hexOr(p.wall, pick(r, walls)), '#2a2824', 0, s, kind === 'empty' || kind === 'sealed' ? 0.6 : 0.2, 0.4);
     const door = String(p.door), dw = 18, dx = door === 'left' ? 4 : w - dw - 4;
-    if (p.window !== false) { const ww = Math.min(26, Math.max(16, Math.round(w * 0.3))), wl = door === 'left' ? w - ww - 8 : door === 'right' ? 8 : Math.round(w / 2 - ww / 2); backWindow(x, o, wl, 22, ww, Math.min(30, H - 32), s, kind === 'hideout' ? 0 : 0.3 + r() * 0.5, kind === 'hideout'); }
+    if (p.window !== false) { const ww = Math.min(26, Math.max(16, Math.round(w * 0.3))), wl = door === 'left' ? w - ww - 8 : door === 'right' ? 8 : Math.round(w / 2 - ww / 2); backWindow(x, o, wl, 22, ww, Math.min(30, H - 32), s, kind === 'hideout' ? 0 : kind === 'home' ? 0.45 : 0.3 + r() * 0.5, kind === 'hideout');
+      if (kind === 'quiet') {
+        // curtains drawn: the room's light through them when it is on, a dark fold when not
+        const wt = Math.min(30, H - 32), cc = rgbOr(p.curtain, pick(r, ['150,60,50', '60,80,110', '120,110,80', '80,100,70'])), on = Number(p.lit) > 0.5;
+        R(x, wl - 3, 22 + wt + 2, ww + 6, 1, '#1a1a1a'); R(x, wl - 2, 20, ww + 4, wt + 2, rgba(cc, on ? 0.75 : 0.55));
+        for (let k = wl; k < wl + ww + 2; k += 3) R(x, k, 20, 1, wt + 2, 'rgba(0,0,0,.22)');
+        if (on) R(x, wl, 22, ww, wt, rgba('255,190,120', 0.18));
+      } }
     if (door !== 'none') {
       doorLeaf(x, dx, dw, 46, kind === 'sealed' ? '#3a2e26' : '#4a3a2a');
       R(x, dx + (door === 'left' ? dw - 4 : 2), 22, 2, 3, 'rgba(210,190,120,.8)');
-      paintText(x, String(p.number ?? ''), dx + dw / 2, y(40), 'rgba(235,225,200,.9)', 7, '700');
+      if (p.plate) { R(x, dx + 2, 36, dw - 4, 9, '#8a7238'); R(x, dx + 3, 37, dw - 6, 7, '#b8983e'); R(x, dx + 2, 44, dw - 4, 1, 'rgba(255,240,190,.5)'); }
+      paintText(x, String(p.number ?? ''), dx + dw / 2, y(40), p.plate ? 'rgba(30,22,10,.95)' : 'rgba(235,225,200,.9)', 7, '700');
       const lock = String(p.lock), lkx = door === 'left' ? dx + dw + 4 : dx - 8;
       if (lock !== 'none' && lock !== 'keys') { R(x, lkx, 20, 4, 8, '#16181a'); R(x, lkx + 1, 25, 2, 2, lock === 'refusing' ? rgba('255,50,40', 0.55 + 0.45 * Math.sin(t / 12)) : 'rgba(60,230,120,.9)'); }
       if (kind === 'sealed') { x.save(); x.strokeStyle = 'rgba(220,40,30,.85)'; x.lineWidth = 2; x.beginPath(); x.moveTo(dx - 2, y(8)); x.lineTo(dx + dw + 2, y(40)); x.moveTo(dx - 2, y(40)); x.lineTo(dx + dw + 2, y(8)); x.stroke(); x.restore(); sheet(x, dx + 3, 26, 12, 9, s, true, 0.85); }
@@ -428,6 +437,18 @@ export const microFlatElement = piece({
     } else if (kind === 'hoarder') {
       for (let k = fl; k < fr - 4; k += 9) { const st = 2 + Math.floor(r() * 5); for (let j = 0; j < st; j++) { const bh = j * 9; if (bh + 9 > H - 6) break; R(x, k, bh, 8 + (j % 2), 8, pick(r, ['#7a5a3a', '#6a4a2a', '#8a6a42', '#5a5a5a', '#c8c0b0'])); R(x, k, bh + 7, 8, 1, 'rgba(255,255,255,.12)'); } }
       R(x, fl + Math.round(fw * 0.4), 0, 10, 2, '#2a2420');
+    } else if (kind === 'quiet') {
+      // the calm base: a low bed, a shelf, a stool; little else
+      R(x, fl + 2, 0, Math.min(34, fw - 4), 7, '#2e2a26'); R(x, fl + 2, 7, Math.min(34, fw - 4), 3, pick(r, ['#5a5a6a', '#6a5a4a', '#4a5a5a'])); R(x, fl + 3, 10, 8, 2, '#8a8478');
+      R(x, fr - 16, 34, 14, 2, '#2a221a'); for (let k = 0; k < 3; k++) R(x, fr - 15 + k * 4, 36, 3, 5 + (k % 2) * 2, pick(r, ['#5a4a3a', '#4a5a6a', '#6a4a4a']));
+    } else if (kind === 'home') {
+      // the hero's: dark and locked; a jacket on the hook, the kettle, Pixel's bed and bowl, the deck on the desk on standby
+      const jx = door === 'left' ? dx + dw + 10 : dx - 24; R(x, jx + 3, 46, 3, 1, '#8a8a80'); R(x, jx, 26, 10, 19, '#2a3a52'); R(x, jx + 1, 42, 8, 3, '#22324a'); R(x, jx + 4, 26, 2, 18, 'rgba(0,0,0,.3)'); R(x, jx, 26, 1, 19, 'rgba(255,255,255,.12)');
+      const kx = fl + 14; R(x, kx - 2, 0, 22, 18, '#2a2622'); R(x, kx - 2, 18, 22, 1, 'rgba(255,230,190,.25)'); R(x, kx + 2, 19, 6, 6, '#c8ccd0'); R(x, kx + 8, 22, 2, 1, '#c8ccd0'); R(x, kx + 4, 25, 2, 1, '#1a1a1a'); R(x, kx + 3, 20, 1, 1, rgba('255,60,40', 0.5 + 0.5 * Math.sin(t / 30)));
+      const dk = Math.min(fr - 26, kx + 24); R(x, dk, 16, 24, 2, '#3a2a1a'); R(x, dk + 2, 0, 2, 16, '#2a2018'); R(x, dk + 20, 0, 2, 16, '#2a2018');
+      R(x, dk + 4, 18, 14, 3, '#1a1c20'); for (let k = 0; k < 6; k++) R(x, dk + 5 + k * 2, 19, 1, 1, 'rgba(150,160,170,.6)'); R(x, dk + 16, 20, 1, 1, rgba('0,255,255', 0.4 + 0.6 * (Math.floor(t / 40) % 2)));
+      o.light?.(dk + 16, 20, 2, 1, '0,255,255', 'screen');
+      const px = Math.max(fl, dk - 2) + 26 > fr ? fl + 2 : dk + 24; R(x, px, 0, 14, 3, '#5a3a2a'); R(x, px + 1, 3, 12, 2, '#8a6a4a'); R(x, px + 3, 2, 8, 2, '#c8b8a0'); R(x, px + 15, 0, 5, 2, '#a83a2a'); R(x, px + 16, 2, 3, 1, '#c84a3a');
     } else if (kind === 'empty') {
       R(x, fl + 4, 0, Math.min(34, fw - 4), 6, '#8a8270'); for (let k = 0; k < 3; k++) R(x, fl + 8 + k * 9, 6, 6, 1, 'rgba(0,0,0,.25)');
       R(x, fr - 12, 26, 8, 10, 'rgba(225,220,205,.25)');
@@ -449,7 +470,7 @@ export const microFlatElement = piece({
       const cx = Math.round(w * (door === 'left' ? 0.62 : 0.4)); R(x, cx - 4, H - 3, 8, 2, rgba('255,225,170', 0.6 + 0.4 * lit));
       const g = x.createRadialGradient(cx, y(H - 6), 0, cx, y(H - 6), Math.max(w, H) * 0.8); g.addColorStop(0, rgba('255,200,130', 0.16 * lit)); g.addColorStop(1, 'rgba(255,200,130,0)');
       x.fillStyle = g; x.fillRect(0, y(H), w, H); o.light?.(cx, H - 4, 8, 3, '255,210,150', 'screen');
-    } else { const g = x.createLinearGradient(0, y(H), 0, 0); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,.2)'); x.fillStyle = g; x.fillRect(0, y(H), w, H); }
+    } else { const home = kind === 'home', g = x.createLinearGradient(0, y(H), 0, 0); g.addColorStop(0, home ? 'rgba(0,0,0,.3)' : 'rgba(0,0,0,.45)'); g.addColorStop(1, home ? 'rgba(0,0,0,.08)' : 'rgba(0,0,0,.2)'); x.fillStyle = g; x.fillRect(0, y(H), w, H); }
   },
 });
 
@@ -907,6 +928,286 @@ export const stockShelvesElement = piece({
   },
 });
 
+// ---------------------------------------------------------------- underneath: the clinic going down (Tommi, 2026-10-22: a normal front room, the improvised room, then the cyber room)
+
+/** Sacks, crates and drums of dry goods stacked against a cellar wall: rice, flour, cooking oil. */
+export const drySacksElement = piece({
+  type: 'interior.dt-dry-goods', label: 'Dry goods: sacks, crates, oil drums (kit)', category: 'props', libraryUse: 'reusable',
+  fields: { width: num('Width', 60, 16, 300, 1, 'units'), sacks: num('Sacks', 6, 0, 30), crates: num('Crates', 3, 0, 12), drums: num('Oil drums', 1, 0, 6), print: select('Print on the sacks', ['red', 'blue', 'green']), seed: num('Seed', 1, 0, 1000000) },
+  size: p => ({ w: Number(p.width), tall: 40 }),
+  bounds: p => ({ x: 0, h: 40, w: Number(p.width), tall: 40 }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p) {
+    const w = Number(p.width), r = rng(Number(p.seed) * 13 + 1), ink = p.print === 'blue' ? 'rgba(40,70,170,.8)' : p.print === 'green' ? 'rgba(40,120,60,.8)' : 'rgba(180,40,30,.8)';
+    let at = 0;
+    for (let k = 0; k < Number(p.drums) && at < w - 12; k++) { R(x, at, 0, 12, 20, pick(r, ['#2a5a8a', '#8a2a1a', '#d8b030'])); R(x, at, 6, 12, 1, 'rgba(0,0,0,.35)'); R(x, at, 14, 12, 1, 'rgba(0,0,0,.35)'); R(x, at + 1, 0, 2, 20, 'rgba(255,255,255,.18)'); at += 14; }
+    for (let k = 0; k < Number(p.crates) && at < w - 14; k++) { const st = 1 + (k % 2); for (let j = 0; j < st; j++) { R(x, at, j * 11, 14, 10, '#6a4a2a'); R(x, at, j * 11 + 4, 14, 1, 'rgba(0,0,0,.35)'); R(x, at + 1, j * 11 + 9, 12, 1, 'rgba(255,220,170,.2)'); } at += 16; }
+    const n = Number(p.sacks), per = Math.max(1, Math.ceil(n / 3));
+    for (let k = 0; k < n; k++) { const row = Math.floor(k / per), col = k % per, sx = at + col * 12 + (row % 2) * 6, sh = row * 7; if (sx + 12 > w) continue; R(x, sx, sh, 12, 8, pick(r, ['#d8d0b8', '#ccc4a8', '#e0d8c0'])); R(x, sx + 1, sh + 7, 10, 1, 'rgba(0,0,0,.25)'); R(x, sx + 3, sh + 3, 6, 2, ink); }
+  },
+});
+
+/** A bundle of cables: along the ceiling in sagging loops, ties every so often, then down the wall to the floor. */
+export const cableRunElement = piece({
+  type: 'interior.dt-cables', label: 'Cable bundles along a ceiling and down a wall (kit)', category: 'electronics', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 160, 20, 1200, 1, 'units'), height: num('Ceiling height', 90, 20, 400, 1, 'units'), cables: num('Cables', 6, 1, 20), sag: num('Sag', 10, 0, 40, 1, 'units'),
+    drops: num('Drops to the floor', 2, 0, 10), colours: select('Colours', ['black', 'mixed', 'neon']), lit: num('Glowing cables', 0.2, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), n = Number(p.cables), r = rng(Number(p.seed) * 41 + 9), sag = Number(p.sag);
+    const cols = p.colours === 'black' ? ['16,16,18', '26,26,28', '36,34,32'] : p.colours === 'neon' ? ['0,230,255', '255,60,200', '20,20,24', '120,255,160'] : ['16,16,18', '170,40,30', '40,80,170', '200,180,60', '30,30,30'];
+    x.save(); x.lineWidth = 1;
+    for (let k = 0; k < n; k++) {
+      const c = pick(r, cols), glow = r() < Number(p.lit), base = H - 3 - (k % 3), span = 30 + Math.round(r() * 40);
+      x.strokeStyle = glow ? rgba(p.colours === 'neon' ? c : '0,230,255', 0.55 + 0.35 * Math.sin(o.t / 15 + k)) : rgba(c, 0.95);
+      x.beginPath(); x.moveTo(0, y(base));
+      for (let sx = 0; sx < w; sx += span) { const e = Math.min(w, sx + span); x.quadraticCurveTo((sx + e) / 2, y(base - sag * (0.5 + r() * 0.7)), e, y(base)); }
+      x.stroke();
+      if (glow) o.light?.(w / 2, base - sag / 2, w, 2, '0,230,255', 'screen');
+    }
+    for (let k = 20; k < w; k += 46) R(x, k, H - 6, 2, 6, '#5a5a56');
+    for (let d = 0; d < Number(p.drops); d++) {
+      const dx = Math.round(((d + 0.5) * w) / Number(p.drops)) + Math.round(r() * 10 - 5);
+      for (let k = 0; k < 3; k++) { x.strokeStyle = rgba(pick(r, cols), 0.95); x.beginPath(); x.moveTo(dx + k * 2, y(H - 3)); x.bezierCurveTo(dx + k * 2 + 6, y(H * 0.6), dx + k * 2 - 6, y(H * 0.3), dx + k * 3 + 4, y(0)); x.stroke(); }
+      R(x, dx - 1, 0, 12, 2, '#1a1a1a');
+    }
+    x.restore();
+  },
+});
+
+const SCAN_KINDS = ['brain', 'body', 'spine', 'waveform'] as const;
+/** A diagnostic screen: a brain scan with a slice moving through it, a body map with its implants marked, a spine, a waveform. */
+export const diagnosticElement = piece({
+  type: 'interior.dt-diagnostic', label: 'Diagnostic screen: brain scan, body map, waveform (kit)', category: 'electronics', libraryUse: 'reusable',
+  fields: {
+    kind: select('Shows', SCAN_KINDS), width: num('Width', 30, 12, 160, 1, 'units'), height: num('Height', 22, 8, 120, 1, 'units'), from: num('Bottom edge height', 40, 0, 300, 1, 'units'),
+    mount: select('Mount', ['wall', 'arm from the ceiling', 'stand']), ceiling: num('Ceiling height (arm)', 90, 20, 400, 1, 'units'),
+    colour: select('Colour', ['cyan', 'magenta', 'green', 'amber']), glitch: num('Glitch', 0.1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
+  bounds: p => { const tall = p.mount === 'arm from the ceiling' ? Number(p.ceiling) : Number(p.from) + Number(p.height); return { x: 0, h: tall, w: Number(p.width), tall }; },
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), f = Number(p.from), t = o.t, s = Number(p.seed), kind = String(p.kind);
+    const col = p.colour === 'magenta' ? '255,60,200' : p.colour === 'green' ? '80,255,140' : p.colour === 'amber' ? '255,180,60' : '0,230,255';
+    if (p.mount === 'arm from the ceiling') { const C = Number(p.ceiling); R(x, w / 2 - 1, f + H, 2, Math.max(0, C - f - H), '#4a4e52'); R(x, w / 2 - 4, C - 2, 8, 2, '#2a2c2e'); }
+    else if (p.mount === 'stand') { R(x, w / 2 - 1, 0, 2, f, '#4a4e52'); R(x, w / 2 - 7, 0, 14, 2, '#2a2c2e'); }
+    R(x, -1, f - 1, w + 2, H + 2, '#0a0b0c'); R(x, 0, f, w, H, '#03080a'); R(x, 0, f, w, H, rgba(col, 0.08));
+    const cx = w / 2, cy = f + H / 2;
+    x.save(); x.beginPath(); x.rect(0, y(f + H), w, H); x.clip();
+    if (kind === 'brain') {
+      const rx = Math.min(w * 0.2, H * 0.38), ry = H * 0.32, slice = (t / 3) % (rx * 2);
+      for (const k of [-1, 1]) {
+        const bx = cx + k * w * 0.24; x.lineWidth = 1; x.strokeStyle = rgba(col, 0.85); x.beginPath(); x.ellipse(bx, y(cy), rx, ry, 0, 0, Math.PI * 2); x.stroke();
+        for (let j = 0; j < 4; j++) { x.strokeStyle = rgba(col, 0.35); x.beginPath(); x.ellipse(bx + Math.sin(j + s) * 1.5, y(cy + Math.cos(j * 2)), rx * (0.3 + j * 0.15), ry * (0.25 + j * 0.16), 0, 0, Math.PI * 2); x.stroke(); }
+        R(x, bx - rx / 2 + Math.round(hash(s + k) * rx), cy - 1, 2, 2, 'rgba(255,60,200,.95)');
+      }
+      R(x, cx - w * 0.24 - rx + slice, f + 1, 1, H - 2, rgba(col, 0.7));
+    } else if (kind === 'body' || kind === 'spine') {
+      R(x, cx - 2, f + H - 7, 4, 4, rgba(col, 0.8)); R(x, cx - 3, f + H * 0.4, 6, H * 0.6 - 8, rgba(col, 0.55));
+      if (kind === 'body') { R(x, cx - 6, f + H * 0.55, 3, H * 0.3, rgba(col, 0.45)); R(x, cx + 3, f + H * 0.55, 3, H * 0.3, rgba(col, 0.45)); R(x, cx - 3, f + 2, 2, H * 0.4, rgba(col, 0.45)); R(x, cx + 1, f + 2, 2, H * 0.4, rgba(col, 0.45)); }
+      for (let k = 0; k < 6; k++) R(x, cx - 1, f + H * 0.42 + k * (H * 0.08), 2, 1, 'rgba(255,255,255,.7)');
+      const mark = Math.floor(t / 30) % 3; R(x, cx - 2 + (mark - 1) * 3, f + H - 9 - mark * 4, 2, 2, 'rgba(255,60,200,.95)');
+      for (let k = 0; k < 3; k++) R(x, 2, f + H - 4 - k * 3, Math.round(w * 0.25 * hash(s + k + Math.floor(t / 40))), 1, rgba(col, 0.6));
+    } else {
+      x.strokeStyle = rgba(col, 0.85); x.lineWidth = 1; x.beginPath();
+      for (let k = 0; k <= w; k++) { const ph = (k + t * 0.6) % 24, v = ph > 10 && ph < 12 ? H * 0.35 : ph > 12 && ph < 13 ? -H * 0.2 : Math.sin(k / 3) * 1.2; if (k === 0) x.moveTo(k, y(cy + v)); else x.lineTo(k, y(cy + v)); }
+      x.stroke();
+    }
+    for (let k = f + 1; k < f + H; k += 2) R(x, 0, k, w, 1, 'rgba(0,0,0,.25)');
+    if (hash(Math.floor(t / 4) + s) < Number(p.glitch) * 0.3) R(x, 0, f + Math.round(hash(t) * H), w, 2, rgba(col, 0.5));
+    x.restore();
+    o.light?.(cx, cy, w, H, col, 'screen');
+  },
+});
+
+/** A shelf of specimen jars: implants and grafts floating in tinted fluid, lit from below. */
+export const jarShelfElement = piece({
+  type: 'interior.dt-jars', label: 'Shelf of implant jars (kit: ripperdoc)', category: 'props', libraryUse: 'reusable',
+  fields: { width: num('Width', 40, 10, 200, 1, 'units'), from: num('Shelf height', 46, 0, 200, 1, 'units'), jars: num('Jars', 5, 1, 20), fluid: select('Fluid', ['amber', 'cyan', 'green', 'magenta', 'mixed']), glow: num('Glow', 0.7, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000) },
+  size: p => ({ w: Number(p.width), tall: Number(p.from) + 14 }),
+  bounds: p => ({ x: 0, h: Number(p.from) + 14, w: Number(p.width), tall: 22 }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), f = Number(p.from), n = Number(p.jars), r = rng(Number(p.seed) * 23 + 3), g = Number(p.glow) * glowOf(o);
+    const fl: Record<string, string> = { amber: '255,180,60', cyan: '0,230,255', green: '120,255,140', magenta: '255,60,200' };
+    // a steel shelf on two brackets screwed to the wall
+    R(x, 0, f - 2, w, 2, '#6a6e72'); R(x, 2, f - 8, 2, 6, '#3a3c3e'); R(x, w - 4, f - 8, 2, 6, '#3a3c3e');
+    for (let k = 0; k < n; k++) {
+      const jw = 6, jx = 2 + Math.round(((w - jw - 4) * k) / Math.max(1, n - 1)), jh = 8 + Math.round(r() * 4), c = p.fluid === 'mixed' ? pick(r, Object.values(fl)) : fl[String(p.fluid)];
+      R(x, jx, f, jw, jh, rgba(c, 0.25 + 0.35 * g)); R(x, jx, f, 1, jh, 'rgba(255,255,255,.35)'); R(x, jx - 1, f + jh, jw + 2, 2, '#8a8e90');
+      const bob = Math.round(Math.sin(o.t / 40 + k) * 0.8); R(x, jx + 2, f + 3 + bob, 2, 3, pick(r, ['rgba(220,220,210,.9)', 'rgba(200,120,110,.9)', 'rgba(60,60,64,.95)']));
+      R(x, jx + 4, f + 2 + ((Math.floor(o.t / 6) + k) % (jh - 3)), 1, 1, 'rgba(255,255,255,.5)');
+      if (g > 0) o.light?.(jx + 3, f + jh / 2, 6, jh, c, 'screen');
+    }
+  },
+});
+
+// ---------------------------------------------------------------- the cyber room
+
+const STRIP: Record<string, string> = { cyan: '0,230,255', magenta: '255,50,200', white: '220,235,255', amber: '255,170,60' };
+/** The clean room: black glass panels, LED strips in two colours, a lit grating floor, frosted cooling pipes on the ceiling. */
+export const labRoomElement = piece({
+  type: 'interior.dt-lab-room', label: 'Cyber lab room, cut open (kit: panels, LED strips, grating, cooling pipes)', category: 'architecture', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 300, 40, 2000, 1, 'units'), height: num('Height (floor to ceiling)', 120, 40, 400, 1, 'units'), panel: colour('Panel colour', '#0c0e14'),
+    stripA: select('Strip colour A', Object.keys(STRIP)), stripB: select('Strip colour B', ['magenta', 'cyan', 'white', 'amber']),
+    strips: num('LED strips', 3, 0, 8), grating: bool('Lit grating floor', true), pipes: num('Cooling pipes on the ceiling', 3, 0, 8), frost: num('Frost on the pipes', 0.5, 0, 1, 0.05),
+    cut: select('Cut wall (section)', ['none', 'left', 'right', 'both']), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: Number(p.height), role: 'mount' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), t = o.t, A = STRIP[String(p.stripA)] ?? STRIP.cyan, B = STRIP[String(p.stripB)] ?? STRIP.magenta;
+    R(x, 0, 0, w, H, hexOr(p.panel, '#0c0e14'));
+    for (let k = 0; k < w; k += 24) { R(x, k, 0, 1, H, 'rgba(255,255,255,.06)'); R(x, k + 1, 0, 1, H, 'rgba(0,0,0,.4)'); }
+    for (let h = 30; h < H; h += 30) R(x, 0, h, w, 1, 'rgba(255,255,255,.05)');
+    const g = x.createLinearGradient(0, y(H), 0, 0); g.addColorStop(0, rgba(B, 0.16)); g.addColorStop(1, rgba(A, 0.16)); x.fillStyle = g; x.fillRect(0, y(H), w, H);
+    const n = Number(p.strips);
+    for (let k = 0; k < n; k++) { const sh = Math.round(H * (n === 1 ? 0.5 : 0.18 + (0.55 * k) / (n - 1))), c = k % 2 ? B : A, pulse = 0.75 + 0.25 * Math.sin(t / 30 + k); R(x, 0, sh, w, 1, rgba(c, 0.85 * pulse)); R(x, 0, sh - 1, w, 3, rgba(c, 0.14 * pulse)); o.light?.(w / 2, sh, w, 2, c, 'screen'); }
+    for (let k = 0; k < Number(p.pipes); k++) {
+      const ph = H - 7 - k * 5; R(x, 0, ph, w, 4, '#5a6470'); R(x, 0, ph + 3, w, 1, 'rgba(255,255,255,.25)');
+      if (Number(p.frost) > 0) for (let j = 6 + k * 9; j < w; j += 17) R(x, j, ph - 1, 6, 1, rgba('220,240,255', 0.5 * Number(p.frost)));
+      for (let j = 30 + k * 13; j < w; j += 70) R(x, j, ph - 1, 3, 6, '#2a2e34');
+    }
+    if (p.grating !== false) { R(x, 0, 0, w, 4, '#14181e'); for (let k = 0; k < w; k += 3) R(x, k, 0, 1, 4, rgba(A, 0.25 + 0.15 * Math.sin(k / 9 + t / 20))); R(x, 0, 4, w, 1, rgba(A, 0.6)); }
+    else R(x, 0, 0, w, 3, '#1a1c22');
+    const cut = String(p.cut);
+    for (const side of ['left', 'right'] as const) if (cut === side || cut === 'both') { const cx = side === 'left' ? 0 : w - 6; R(x, cx, 0, 6, H, '#2a2c30'); R(x, side === 'left' ? cx + 5 : cx, 0, 1, H, rgba(A, 0.5)); }
+  },
+});
+
+/** The surgical rig: a ceiling gantry with a carriage and articulated arms (laser, drill, suture, manipulator) over the cradle. */
+export const surgicalGantryElement = piece({
+  type: 'interior.dt-surgical-gantry', label: 'Surgical rig on a ceiling gantry, articulated arms (kit)', category: 'machinery', libraryUse: 'reusable',
+  fields: {
+    width: num('Rail length', 120, 30, 600, 1, 'units'), ceiling: num('Ceiling height', 120, 50, 400, 1, 'units'), reach: num('Arm reach down', 60, 10, 300, 1, 'units'),
+    arms: num('Arms', 4, 1, 6), active: num('Working', 1, 0, 1, 0.05), laser: select('Laser colour', ['magenta', 'cyan', 'red']), body: colour('Body colour', '#c8ccd2'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.ceiling) }),
+  bounds: p => ({ x: 0, h: Number(p.ceiling), w: Number(p.width), tall: Number(p.reach) + 20 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, tip: { x: Number(p.width) / 2, h: Number(p.ceiling) - Number(p.reach), role: 'mount' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), C = Number(p.ceiling), reach = Number(p.reach), n = Number(p.arms), act = Number(p.active), t = o.t, body = hexOr(p.body, '#c8ccd2');
+    const lc = p.laser === 'cyan' ? '0,230,255' : p.laser === 'red' ? '255,40,40' : '255,50,200';
+    R(x, 0, C - 8, w, 5, '#2a2e34'); R(x, 0, C - 4, w, 1, 'rgba(255,255,255,.25)'); for (let k = 4; k < w; k += 40) R(x, k, C - 3, 3, 3, '#1a1c20');
+    const cx = Math.round(w / 2 + Math.sin(t / 120) * w * 0.12 * act);
+    R(x, cx - 18, C - 16, 36, 9, body); R(x, cx - 18, C - 8, 36, 1, 'rgba(0,0,0,.4)'); R(x, cx - 16, C - 13, 4, 2, rgba('0,230,255', 0.9)); R(x, cx + 12, C - 13, 3, 2, rgba(lc, 0.6 + 0.4 * Math.sin(t / 7)));
+    for (let k = 0; k < n; k++) {
+      const sx = cx - 14 + Math.round((28 * k) / Math.max(1, n - 1)), side = k < n / 2 ? -1 : 1, ph = t / (40 + k * 7) + k;
+      const ex = sx + side * (10 + Math.sin(ph) * 3 * act), eh = C - 16 - reach * 0.45;
+      const tx = Math.round(w / 2 + side * (4 + k * 2) + Math.sin(ph * 1.3) * 2 * act), th = C - 16 - reach + Math.round(Math.abs(Math.sin(ph)) * 4 * act);
+      x.save(); x.strokeStyle = body; x.lineWidth = 3; x.lineCap = 'round'; x.beginPath(); x.moveTo(sx, y(C - 16)); x.lineTo(ex, y(eh)); x.lineTo(tx, y(th + 5)); x.stroke();
+      x.strokeStyle = '#3a3e44'; x.lineWidth = 1; x.beginPath(); x.moveTo(sx + 1, y(C - 16)); x.lineTo(ex + 1, y(eh)); x.lineTo(tx + 1, y(th + 5)); x.stroke(); x.restore();
+      R(x, ex - 2, eh - 2, 4, 4, '#3a3e44'); R(x, ex - 1, eh - 1, 2, 2, rgba('0,230,255', 0.85));
+      R(x, tx - 1, th, 3, 5, '#e8ecf0');
+      if (k === 0 && act > 0 && Math.sin(t / 9) > 0) { R(x, tx, th - 10, 1, 10, rgba(lc, 0.9)); R(x, tx - 1, th - 11, 3, 2, 'rgba(255,255,255,.95)'); o.light?.(tx, th - 10, 6, 6, lc, 'screen'); }
+    }
+  },
+});
+
+/** Racks of neural hardware: glowing modules in rows, status lights chasing, coolant lines up into the ceiling. */
+export const neuralRackElement = piece({
+  type: 'interior.dt-neural-rack', label: 'Racks of glowing neural hardware (kit)', category: 'electronics', libraryUse: 'reusable',
+  fields: {
+    racks: num('Racks', 2, 1, 8), height: num('Height', 90, 30, 300, 1, 'units'), colour: select('Module light', ['cyan', 'magenta', 'mixed', 'amber']),
+    glass: bool('Glass doors', true), coolant: bool('Coolant lines to the ceiling', true), ceiling: num('Ceiling height (coolant)', 120, 30, 400, 1, 'units'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.racks) * 26, tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.ceiling), w: Number(p.racks) * 26, tall: Number(p.ceiling) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const n = Number(p.racks), H = Number(p.height), t = o.t, s = Number(p.seed), r = rng(s * 17 + 1);
+    const cols = p.colour === 'cyan' ? ['0,230,255'] : p.colour === 'magenta' ? ['255,50,200'] : p.colour === 'amber' ? ['255,170,60'] : ['0,230,255', '255,50,200'];
+    for (let k = 0; k < n; k++) {
+      const l = k * 26; R(x, l, 0, 24, H, '#08090c'); R(x, l, H - 1, 24, 1, 'rgba(255,255,255,.25)'); R(x, l, 0, 1, H, 'rgba(255,255,255,.12)');
+      for (let u = 6; u < H - 8; u += 7) {
+        const c = pick(r, cols), on = hash(s + k * 31 + u) < 0.85;
+        R(x, l + 3, u, 18, 5, '#15181e'); if (on) { R(x, l + 4, u + 1, 10, 3, rgba(c, 0.35 + 0.25 * Math.sin(t / 20 + u + k))); R(x, l + 4, u + 2, 10, 1, rgba(c, 0.85)); }
+        R(x, l + 16 + ((Math.floor(t / 5) + u + k) % 4), u + 2, 1, 1, 'rgba(120,255,160,.95)');
+      }
+      if (p.glass !== false) { R(x, l + 1, 2, 22, H - 4, 'rgba(160,200,230,.06)'); x.strokeStyle = 'rgba(200,230,255,.15)'; x.lineWidth = 1; x.beginPath(); x.moveTo(l + 4, y(8)); x.lineTo(l + 12, y(H - 8)); x.stroke(); }
+      o.light?.(l + 12, H / 2, 20, H - 10, cols[k % cols.length], 'screen');
+      if (p.coolant !== false) { const C = Number(p.ceiling); R(x, l + 5, H, 3, Math.max(0, C - H), '#4a6a8a'); R(x, l + 15, H, 3, Math.max(0, C - H), '#8a4a6a'); R(x, l + 5, H, 3, 1, 'rgba(220,240,255,.6)'); }
+    }
+  },
+});
+
+/** The transfer cradle: a padded couch under a halo ring, a crown of contacts on a thick cable loom, a glass lid raised. */
+export const transferCradleElement = piece({
+  type: 'interior.dt-transfer-cradle', label: 'Mind-transfer cradle (kit)', category: 'machinery', libraryUse: 'reusable',
+  fields: {
+    length: num('Length', 60, 40, 140, 1, 'units'), ring: bool('Halo ring', true), lid: num('Lid open', 0.7, 0, 1, 0.05), glow: select('Glow', ['cyan', 'magenta']),
+    active: num('Transfer running', 0.5, 0, 1, 0.05), loom: num('Cable loom to the left', 40, 0, 300, 1, 'units'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.length), tall: 50 }),
+  bounds: p => ({ x: -Number(p.loom), h: 56, w: Number(p.length) + Number(p.loom), tall: 56 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, bed: { x: Number(p.length) / 2, h: 20, role: 'surface' } }),
+  paint(x, p, o) {
+    const L = Number(p.length), t = o.t, act = Number(p.active), c = p.glow === 'magenta' ? '255,50,200' : '0,230,255', c2 = p.glow === 'magenta' ? '0,230,255' : '255,50,200';
+    R(x, 6, 0, L - 12, 12, '#1a1c22'); R(x, 6, 11, L - 12, 1, 'rgba(255,255,255,.2)'); R(x, 8, 1, L - 16, 2, rgba(c, 0.75)); o.light?.(L / 2, 2, L - 16, 2, c, 'screen');
+    R(x, 2, 12, L - 4, 6, '#d8dce2'); R(x, 4, 18, L - 8, 3, '#2a3a4a'); R(x, L - 14, 21, 10, 3, '#2a3a4a');
+    const hx = L - 6; R(x, hx - 6, 20, 12, 10, '#3a3e44'); for (let k = 0; k < 5; k++) R(x, hx - 5 + k * 2, 28, 1, 4, rgba(c, 0.5 + 0.5 * Math.sin(t / 6 + k)));
+    x.save(); x.lineWidth = 2; for (let k = 0; k < 4; k++) { x.strokeStyle = k % 2 ? '#14161a' : rgba(c2, 0.65); x.beginPath(); x.moveTo(hx - 4 + k * 2, y(22)); x.bezierCurveTo(hx + 10, y(10 - k), -Number(p.loom) * 0.4, y(40 + k * 3), -Number(p.loom), y(0)); x.stroke(); } x.restore();
+    const lid = Number(p.lid); x.save(); x.translate(4, y(21)); x.rotate(-lid * 1.1); x.fillStyle = rgba('180,220,255', 0.16); x.fillRect(0, -6, L - 8, 6); x.fillStyle = 'rgba(220,240,255,.5)'; x.fillRect(0, -6, L - 8, 1); x.restore();
+    if (p.ring !== false) {
+      const rx = Math.round(L * 0.62), rh = 32, sp = t / 10;
+      R(x, rx - 2, 0, 4, rh - 20, '#2a2e34');
+      x.save(); x.strokeStyle = '#2a2e34'; x.lineWidth = 4; x.beginPath(); x.ellipse(rx, y(rh), 5, 20, 0, 0, Math.PI * 2); x.stroke();
+      x.strokeStyle = rgba(c, 0.5 + 0.5 * act); x.lineWidth = 1; x.beginPath(); x.ellipse(rx, y(rh), 5, 20, 0, 0, Math.PI * 2); x.stroke(); x.restore();
+      for (let k = 0; k < 3; k++) { const a = sp + k * 2.1; R(x, rx + Math.round(Math.cos(a) * 4), rh + Math.round(Math.sin(a) * 19), 2, 2, 'rgba(255,255,255,.95)'); }
+      if (act > 0) { x.fillStyle = rgba(c, 0.14 * act); x.fillRect(rx - 4, y(rh + 18), 8, 36); o.light?.(rx, rh, 10, 40, c, 'screen'); }
+    }
+  },
+});
+
+/** A charging frame: a steel cage with clamps holding a robot body off the floor, a charge bar, the umbilical. Place the body (a DLV-9) in it. */
+export const robotFrameElement = piece({
+  type: 'interior.dt-robot-frame', label: 'Charging frame for a robot body (kit; put a DLV-9 in it)', category: 'machinery', libraryUse: 'reusable',
+  fields: {
+    width: num('Width', 34, 16, 120, 1, 'units'), height: num('Height', 56, 20, 200, 1, 'units'), lift: num('Body held at', 18, 0, 120, 1, 'units'),
+    charge: num('Charge', 0.6, 0, 1, 0.05), status: select('Status light', ['cyan', 'amber', 'magenta', 'green']), label: text('Plate (empty: none)', 'DLV-9'), seed: num('Seed', 1, 0, 1000000),
+  },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height) + 12, w: Number(p.width), tall: Number(p.height) + 12 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, body: { x: Number(p.width) / 2, h: Number(p.lift), role: 'mount' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), H = Number(p.height), lift = Number(p.lift), t = o.t, sc = p.status === 'amber' ? '255,170,60' : p.status === 'magenta' ? '255,50,200' : p.status === 'green' ? '80,255,140' : '0,230,255';
+    R(x, 0, 0, w, 3, '#2a2e34'); R(x, 0, 0, 3, H, '#4a4e54'); R(x, w - 3, 0, 3, H, '#4a4e54'); R(x, 0, H - 4, w, 4, '#4a4e54'); R(x, 1, 0, 1, H, 'rgba(255,255,255,.25)');
+    R(x, 0, 2, w, 1, rgba(sc, 0.6));
+    R(x, 3, lift - 1, 7, 3, '#8a8e94'); R(x, w - 10, lift - 1, 7, 3, '#8a8e94'); R(x, 3, lift + 12, 6, 2, '#8a8e94'); R(x, w - 9, lift + 12, 6, 2, '#8a8e94');
+    x.save(); x.strokeStyle = '#14161a'; x.lineWidth = 2; x.beginPath(); x.moveTo(w / 2, y(H - 4)); x.bezierCurveTo(w / 2 + 6, y(H - 14), w / 2 - 6, y(lift + 24), w / 2 + 2, y(lift + 14)); x.stroke(); x.restore();
+    const ch = Math.round((H - 12) * Number(p.charge)); R(x, w - 2, 4, 1, H - 12, 'rgba(0,0,0,.6)'); R(x, w - 2, 4, 1, ch, rgba(sc, 0.6 + 0.4 * Math.sin(t / 25)));
+    o.light?.(w / 2, H - 4, w, 2, sc, 'screen');
+    const lb = String(p.label ?? ''); if (lb) label(x, o, w / 2, H + 6, lb, 'board', 6);
+  },
+});
+
+/** Cold fog rolling along a floor, thickest at the foot, drifting. */
+export const floorFogElement = piece({
+  type: 'interior.dt-fog', label: 'Floor fog (kit)', category: 'atmosphere', libraryUse: 'reusable',
+  fields: { width: num('Width', 300, 20, 2000, 1, 'units'), depth: num('Depth', 18, 4, 80, 1, 'units'), density: num('Density', 0.5, 0, 1, 0.05), colour: select('Colour', ['cyan', 'magenta', 'white']), seed: num('Seed', 1, 0, 1000000) },
+  size: p => ({ w: Number(p.width), tall: Number(p.depth) }),
+  bounds: p => ({ x: 0, h: Number(p.depth), w: Number(p.width), tall: Number(p.depth) }),
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  paint(x, p, o) {
+    const w = Number(p.width), D = Number(p.depth), a = Number(p.density), s = Number(p.seed), c = p.colour === 'magenta' ? '255,140,230' : p.colour === 'white' ? '230,236,245' : '170,235,255';
+    x.save(); x.beginPath(); x.rect(0, y(D + 8), w, D + 8); x.clip();
+    const g = x.createLinearGradient(0, y(D), 0, 0); g.addColorStop(0, rgba(c, 0)); g.addColorStop(1, rgba(c, 0.24 * a)); x.fillStyle = g; x.fillRect(0, y(D), w, D);
+    for (let k = 0; k < Math.round(w / 14); k++) {
+      const bx = ((k * 37 + hash(s + k) * 200 + o.t * (0.08 + hash(k) * 0.1)) % (w + 40)) - 20, bh = 2 + Math.round(hash(s * 3 + k) * D * 0.6), bw = 18 + Math.round(hash(k + s) * 26);
+      x.fillStyle = rgba(c, 0.08 * a); x.beginPath(); x.ellipse(bx, y(bh), bw / 2, 3 + bh / 4, 0, 0, Math.PI * 2); x.fill();
+    }
+    x.restore();
+  },
+});
+
 export const downtownHomeInteriors: Element[] = [dtRoomElement, conciergeElement, mailboxesElement, noticeBoardElement, fireExitElement, serviceLatchElement,
   microFlatElement, flatDoorElement, bikeElement, skylightElement, courtyardElement, areawayElement, parcelElement, servicePlantElement,
-  noodleKitchenElement, docChairElement, partsFridgeElement, privacyScreenElement, cotElement, stockShelvesElement];
+  noodleKitchenElement, docChairElement, partsFridgeElement, privacyScreenElement, cotElement, stockShelvesElement,
+  drySacksElement, cableRunElement, diagnosticElement, jarShelfElement, labRoomElement, surgicalGantryElement, neuralRackElement, transferCradleElement, robotFrameElement, floorFogElement];

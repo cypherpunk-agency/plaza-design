@@ -23,6 +23,7 @@
         "run",
         "talk",
         "sit",
+        "lie",
         "lean",
         "smoke",
         "phone",
@@ -533,7 +534,9 @@
       "beret",
       "hardhat",
       "headwrap",
-      "peaked"
+      "peaked",
+      "chefcap",
+      "hairnet"
     ],
     "garb": [
       "tee",
@@ -548,7 +551,12 @@
       "shell",
       "oilskin",
       "uniform",
-      "patched"
+      "patched",
+      "whites",
+      "diner",
+      "polo",
+      "tabard",
+      "shirt"
     ],
     "extra": [
       "umbrella",
@@ -571,7 +579,12 @@
       "earpiece",
       "exobrace",
       "patches",
-      "muffler"
+      "muffler",
+      "towel",
+      "notepad",
+      "radio",
+      "badge",
+      "lanyard"
     ],
     "facial": [
       "none",
@@ -601,7 +614,12 @@
       "technician",
       "guard",
       "fixer",
-      "drifter"
+      "drifter",
+      "cook",
+      "waitress",
+      "security",
+      "cashier",
+      "clerk"
     ]
   },
   "humanColorCases": {

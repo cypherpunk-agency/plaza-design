@@ -465,7 +465,7 @@
         "gold": "#c8cdd0"
       },
       "placement": {
-        "x": 240,
+        "x": 262,
         "h": 0
       },
       "order": 23,
@@ -487,7 +487,7 @@
         "seed": 2
       },
       "placement": {
-        "x": 348,
+        "x": 356,
         "h": 0
       },
       "order": 24,
@@ -1140,10 +1140,17 @@
         "ground": 96,
         "floors": 2,
         "storey": 80,
-        "door": 14,
+        "door": 40,
         "doorWidth": 40,
-        "staffDoor": 990,
+        "staffDoor": 994,
         "closed": false,
+        "power": "on",
+        "entrance": "bay",
+        "relief": 26,
+        "plaque": "REGISTRY OF PERSONS",
+        "recess": 400,
+        "recessWidth": 176,
+        "tower": 944,
         "lit": 0.7,
         "queue": 0.6,
         "cameras": 3,
@@ -1344,7 +1351,7 @@
         "archetype": "inspector"
       },
       "placement": {
-        "x": 320,
+        "x": 342,
         "h": 0
       },
       "order": 67,
@@ -1366,7 +1373,7 @@
         "archetype": "elder"
       },
       "placement": {
-        "x": 378,
+        "x": 392,
         "h": 0
       },
       "order": 68,
@@ -1932,7 +1939,7 @@
         "width": 34
       },
       "placement": {
-        "x": 204,
+        "x": 230,
         "h": 0
       },
       "order": 95,

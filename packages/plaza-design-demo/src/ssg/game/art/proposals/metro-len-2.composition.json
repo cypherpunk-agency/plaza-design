@@ -1,0 +1,417 @@
+{
+  "version": 1,
+  "scene": "metro-len-2",
+  "instances": [
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 1626
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "platform",
+      "type": "metro.underground-platform",
+      "props": {
+        "width": 1626,
+        "name": "DOWNTOWN"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-west",
+      "type": "metro.stairs-up",
+      "props": {
+        "rises": "left",
+        "run": 190
+      },
+      "placement": {
+        "x": 230,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stairs-east",
+      "type": "metro.stairs-up",
+      "props": {
+        "rises": "right",
+        "run": 190
+      },
+      "placement": {
+        "x": 1396,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "backdrop"
+    },
+    {
+      "id": "train",
+      "type": "metro.cutaway-train",
+      "props": {
+        "cars": 2,
+        "destination": "RING · GALLERIA"
+      },
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "car1-seat0-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5401,
+        "act": "read",
+        "archetype": "office",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 375,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 5,
+      "layer": "playfield"
+    },
+    {
+      "id": "car1-seat2-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5402,
+        "act": "doze",
+        "archetype": "student",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 648,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 6,
+      "layer": "playfield"
+    },
+    {
+      "id": "car1-stand",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5403,
+        "act": "phone",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 519,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 7,
+      "layer": "playfield"
+    },
+    {
+      "id": "car2-seat0-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5404,
+        "act": "talk",
+        "archetype": "courier",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 928,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 8,
+      "layer": "playfield"
+    },
+    {
+      "id": "car2-seat0-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5405,
+        "act": "phone",
+        "archetype": "elder",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 981,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 9,
+      "layer": "playfield"
+    },
+    {
+      "id": "car2-seat1-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5406,
+        "act": "read",
+        "archetype": "punk",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1064,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 10,
+      "layer": "playfield"
+    },
+    {
+      "id": "car2-seat1-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5407,
+        "act": "doze",
+        "archetype": "teen",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1091,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 11,
+      "layer": "playfield"
+    },
+    {
+      "id": "car2-seat1-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5408,
+        "act": "sit",
+        "archetype": "shopper",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1117,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 12,
+      "layer": "playfield"
+    },
+    {
+      "id": "car2-seat2-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5409,
+        "act": "talk",
+        "archetype": "sleeper",
+        "sitting": "side",
+        "seat": 14
+      },
+      "placement": {
+        "x": 1201,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 13,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5410,
+        "act": "stand",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 813,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 14,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5411,
+        "act": "phone",
+        "archetype": "commuter"
+      },
+      "placement": {
+        "x": 650,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 15,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5412,
+        "act": "read",
+        "archetype": "reader"
+      },
+      "placement": {
+        "x": 943,
+        "h": 0,
+        "facing": 1
+      },
+      "order": 16,
+      "layer": "playfield"
+    },
+    {
+      "id": "wait-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5413,
+        "act": "stand",
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 1366,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 17,
+      "layer": "playfield"
+    },
+    {
+      "id": "walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5414,
+        "act": "walk",
+        "archetype": "office",
+        "range": 543
+      },
+      "placement": {
+        "x": 310,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "playfield"
+    },
+    {
+      "id": "ruler-walk",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 1166,
+        "title": "PLATFORM, STAIRS TO STAIRS (the walk end to end)",
+        "size": 8
+      },
+      "placement": {
+        "x": 230,
+        "h": 214
+      },
+      "order": 20,
+      "layer": "foreground"
+    },
+    {
+      "id": "ruler-train",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 1086,
+        "title": "TRAIN: 2 CARS OF 20 m + 1 GANGWAY",
+        "size": 8
+      },
+      "placement": {
+        "x": 270,
+        "h": 166
+      },
+      "order": 21,
+      "layer": "foreground"
+    },
+    {
+      "id": "label",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 0,
+        "bar": false,
+        "numbers": false,
+        "size": 9,
+        "title": "METRO · 2-CAR TRAIN AT AN UNDERGROUND PLATFORM",
+        "note": "Platform 1,166 units = 1.21 screens; with both stairwells the frame is 1,626 (1.69 screens)|Stair foot to the far end: 1,166 units, walk 14.9 s, run 8.4 s|Stairs at both ends: the middle of the train is 583 units (7.5 s walk) from the nearest stairs|Player 42 tall, walks 78 units/s (run 138); one screen 960 units at zoom 1"
+      },
+      "placement": {
+        "x": 50,
+        "h": 268
+      },
+      "order": 22,
+      "layer": "foreground"
+    }
+  ]
+}

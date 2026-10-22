@@ -35,6 +35,8 @@ export interface CharacterWorkbenchConfig {
  inPlace?:boolean;
  /** Humans: do the act sitting down (a bench, a train seat), in the people-style seated view. */
  seated?:boolean;
+ /** Humans sitting or lying: the seat or bed height over the floor (world units; absent: the kit's own). A bench or cot is drawn at it. */
+ seat?:number;
 }
 export interface CharacterWorkbenchSnapshot {config:CharacterWorkbenchConfig;time:number;pose?:PreparedCharacter;pixel?:PixelAppearance}
 export const defaultCharacterConfig=():CharacterWorkbenchConfig=>({family:'human',variant:'seeded',action:'stand',seed:73,facing:1,pixelSize:3,dim:0,minute:580,day:1,camera:0});
@@ -46,6 +48,7 @@ export function validateCharacterWorkbenchConfig(input:CharacterWorkbenchConfig)
  if(!Number.isInteger(input.seed)||input.seed<0||input.seed>1e6||![1,-1].includes(input.facing))throw new Error('Invalid seed/facing');
  if(input.pixelSize!==undefined&&(!Number.isInteger(input.pixelSize)||input.pixelSize<1||input.pixelSize>5))throw new Error('Pixel size must be 1–5');
  if(input.dim!==undefined&&(!Number.isFinite(input.dim)||input.dim<0||input.dim>1))throw new Error('Invalid dimming');
+ if(input.seat!==undefined&&(!Number.isFinite(input.seat)||input.seat<0||input.seat>120))throw new Error('Seat height must be 0–120');
  if(input.minute!==undefined&&(!Number.isFinite(input.minute)||input.minute<0||input.minute>=1440)||input.day!==undefined&&(!Number.isInteger(input.day)||input.day<1)||input.camera!==undefined&&!Number.isFinite(input.camera))throw new Error('Invalid preview environment');
  if(input.seated!==undefined&&typeof input.seated!=='boolean')throw new Error('Invalid seated flag');
  if(input.look){const l=input.look,a=inventory.humanAppearanceAxes;for(const [key,values] of Object.entries({body:a.body,hair:a.hair,garb:a.garb,facial:a.facial,archetype:a.archetype}))if(l[key as keyof Look]!==undefined&&!has(values,String(l[key as keyof Look])))throw new Error('Unsupported human '+key);if(l.extras?.some(e=>!has(a.extra,e)))throw new Error('Unsupported human extra');for(const key of ['skin','hairCol','top','bottom','acc'] as const)if(l[key]!==undefined&&!/^#[\da-f]{6}$/i.test(l[key]!))throw new Error('Invalid appearance color');}
@@ -58,7 +61,7 @@ export function characterWorkbenchView(config:CharacterWorkbenchConfig,time:numb
 export function createCharacterWorkbenchSession(){
  const actors=new Map<string,Character>();
  function actor(config:CharacterWorkbenchConfig):Character{
-  const key=JSON.stringify({family:config.family,variant:config.variant,action:config.action,seed:config.seed,facing:config.facing,look:config.look,robot:config.robot,pixelSize:config.pixelSize,dim:config.dim,inPlace:config.inPlace,seated:config.seated});let p=actors.get(key);if(p)return p;
+  const key=JSON.stringify({family:config.family,variant:config.variant,action:config.action,seed:config.seed,facing:config.facing,look:config.look,robot:config.robot,pixelSize:config.pixelSize,dim:config.dim,inPlace:config.inPlace,seated:config.seated,seat:config.seat});let p=actors.get(key);if(p)return p;
   const family=inventory.families.find(f=>f.id===config.family)!,bot=family.group==='Robots';
   const look=bot?{bot:config.family as Bot,v:Number(config.variant) as 0|1|2,...config.robot}:config.family==='human'?structuredClone(config.look??{}):config.family as Character['look'];
   // On the spot: a two-unit range crossed very slowly keeps the stepping animation without crossing the stage.
@@ -66,6 +69,7 @@ export function createCharacterWorkbenchSession(){
   p={seed:config.seed,x:moving.has(config.action)?start:220,act:(config.action==='follow'?'walk':config.action) as Act,look,facing:config.facing,ps:config.pixelSize??3,dim:config.dim??0,...(moving.has(config.action)?{range:[start,end] as [number,number]}:{}),...(config.inPlace&&moving.has(config.action)?{speed:.004}:{}),...(config.family==='gull'&&config.action==='fly'?{h:60}:{})};
   if(config.action==='follow')p.follow={seed:18,x:start,range:[start,end],act:'walk',speed:.32};
   if(config.seated&&config.family==='human')p.seated=true;
+  if(config.seat&&config.family==='human')p.seat=config.seat;
   if(config.family==='dockworker')p={seed:7303,x:config.action==='walk'?start:220,act:config.action as Act,facing:config.facing,look:{body:'avg',garb:'hivis',hair:'short',top:'#b77a29',bottom:'#303746'},...(config.action==='walk'?{range:[start,end] as [number,number],...(config.inPlace?{speed:.004}:{})}:{})};
   if(actors.size>=128)actors.clear();actors.set(key,p);return p;
  }
@@ -217,6 +221,7 @@ export function mountCharacterWorkbench(host:HTMLElement,options:{people?(host:H
    for(const key of ['archetype','body','hair','garb','facial'] as const)select(key==='archetype'?'Named look':key,['seeded',...inventory.humanAppearanceAxes[key]],String(config.look?.[key]??'seeded'),value=>{config.look={...config.look};if(value==='seeded')delete config.look[key];else(config.look as Record<string,unknown>)[key]=value;},true);
    select('Extra',['seeded','none',...inventory.humanAppearanceAxes.extra],config.look?.extras?.[0]??(config.look?.extras?'none':'seeded'),value=>{config.look={...config.look};if(value==='seeded')delete config.look.extras;else config.look.extras=value==='none'?[]:[value as NonNullable<Look['extras']>[number]];},true);
    check('Sit down',config.seated??false,v=>{if(v)config.seated=true;else delete config.seated;});
+   numeric('Seat or bed height',config.seat??0,0,120,1,v=>{if(v>0)config.seat=v;else delete config.seat;});
    if(mode==='single'){const pose=session.prepare(config,clock.effectiveTime()).pose,native=pose?.visible?pose.ready.full:undefined;
     for(const key of ['skin','hairCol','top','bottom','acc'] as const)colour(key,config.look?.[key],native?.[key],v=>{config.look={...config.look};if(v===undefined)delete config.look[key];else config.look[key]=v;});}
   }
@@ -237,8 +242,9 @@ export function mountCharacterWorkbench(host:HTMLElement,options:{people?(host:H
  function player(ctx:CanvasRenderingContext2D,view:View,x:number){drawPlayer(ctx,view,SPR.stand,{x,y:0,face:1},undefined,0);ctx.fillStyle='rgba(143,162,185,.6)';ctx.font='10px "IBM Plex Mono", monospace';ctx.fillText('player',x-16,view.gy+26);}
  /** The same view with its ground line at `gy` (rows of people on one canvas). */
  const rowView=(view:View,gy:number):View=>({...view,gy,y:h=>gy-h});
- /** A plain bench for seated people to sit on (its seat at SEAT_H). */
- function bench(ctx:CanvasRenderingContext2D,view:View,x:number){const top=Math.round(view.y(SEAT_H));ctx.fillStyle='#3a2a20';ctx.fillRect(x-16,top,32,view.gy-top);ctx.fillStyle='#5a4232';ctx.fillRect(x-17,top,34,2);}
+ /** A plain bench for seated people to sit on (its seat at SEAT_H, or at the chosen seat height); someone lying gets a longer cot. */
+ function bench(ctx:CanvasRenderingContext2D,view:View,x:number,c?:CharacterWorkbenchConfig){const w=c?.action==='lie'?56:32,top=Math.round(view.y(c?.seat??SEAT_H));ctx.fillStyle='#3a2a20';ctx.fillRect(x-w/2,top,w,view.gy-top);ctx.fillStyle='#5a4232';ctx.fillRect(x-w/2-1,top,w+2,2);}
+ const onFurniture=(c:CharacterWorkbenchConfig)=>c.family==='human'&&(c.seated||c.action==='sit'&&c.seat!==undefined||c.action==='lie'&&c.seat!==undefined);
  /** Draw one prepared person at world x (the session prepares them at 220) in the row view `rv`. */
  function at(ctx:CanvasRenderingContext2D,rv:View,x:number,c:CharacterWorkbenchConfig,t:number){ctx.save();ctx.translate(x-220,0);const s=session.prepare(c,t);drawCharacterWorkbenchSnapshot(ctx,rv,s);ctx.restore();return s;}
  function draw(){if(disposed)return;transport?.refresh();const ctx=canvas.getContext('2d');if(!ctx)return;try{
@@ -279,10 +285,10 @@ export function mountCharacterWorkbench(host:HTMLElement,options:{people?(host:H
   }else if(mode==='lineup'){
    ruler(ctx,view);
    const rows=characterLineup(config),ps=config.pixelSize??3,step=Math.min(100,Math.max(80,Math.round(30*ps))),first=150;player(ctx,view,70);
-   for(const [i,row] of rows.entries()){const x=first+i*step+step/2;if(row.seated)bench(ctx,view,x);at(ctx,view,x,row,t);slots.push({x0:x-step/2,x1:x+step/2,config:row});
+   for(const [i,row] of rows.entries()){const x=first+i*step+step/2;if(onFurniture(row))bench(ctx,view,x,row);at(ctx,view,x,row,t);slots.push({x0:x-step/2,x1:x+step/2,config:row});
     ctx.fillStyle='rgba(143,162,185,.55)';ctx.fillText(rows.length>1&&row.variant!==config.variant?row.variant:'#'+row.seed,x-18,view.gy+26);}
    shown=session.prepare(rows[0],t);
-  }else{ruler(ctx,view);player(ctx,view,120);if(config.seated)bench(ctx,view,220);shown=session.prepare(config,t);drawCharacterWorkbenchSnapshot(ctx,view,shown);}
+  }else{ruler(ctx,view);player(ctx,view,120);if(onFurniture(config))bench(ctx,view,220,config);shown=session.prepare(config,t);drawCharacterWorkbenchSnapshot(ctx,view,shown);}
   error.textContent='';const {pose,...rest}=shown;json.textContent=JSON.stringify({...rest,...(pose?{pose:pose.visible?{visible:true,frame:pose.frame,height:pose.height,appearance:pose.ready.full??pose.ready.bot??pose.ready.critter}:{visible:false}}:{})},null,2);}catch(e){error.textContent=e instanceof Error?e.message:String(e);}}
  canvas.onclick=event=>{if(mode==='single')return;const r=canvas.getBoundingClientRect(),x=(event.clientX-r.left)*canvas.width/r.width,y=(event.clientY-r.top)*canvas.height/r.height,slot=[...slots].reverse().find(s=>x>=s.x0&&x<s.x1&&(s.y0===undefined||y>=s.y0&&y<=s.y1!));if(!slot)return;config={...slot.config,inPlace:false};setMode('single');};
  const frame=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(frame);};
