@@ -1,0 +1,888 @@
+{
+  "version": 1,
+  "scene": "harbor-yard",
+  "instances": [
+    {
+      "id": "base",
+      "type": "scene.base",
+      "props": {
+        "use": "look",
+        "width": 1280
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "bay-across",
+      "type": "shift.far-shore",
+      "props": {
+        "parallax": 0.08,
+        "seed": 7,
+        "tall": 105,
+        "low": 18,
+        "lit": 0.4,
+        "haze": 0.85,
+        "spireX": 420,
+        "spireSize": 0.72,
+        "traffic": true,
+        "water": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 84
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "ship",
+      "type": "shift.ship",
+      "props": {
+        "length": 1100,
+        "freeboard": 36,
+        "name": "MERIDIAN CONSTANCE",
+        "tiers": 4,
+        "box": 20,
+        "bay": 46,
+        "bridge": 0.2,
+        "dim": 0.3,
+        "lights": true,
+        "seed": 31
+      },
+      "placement": {
+        "x": 120,
+        "h": 44,
+        "parallax": 0.42
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "apron",
+      "type": "shift.quay",
+      "props": {
+        "top": 34,
+        "parallax": 0.5,
+        "rails": true,
+        "lanes": 2,
+        "pools": [
+          {
+            "x": 330,
+            "width": 160
+          },
+          {
+            "x": 900,
+            "width": 180
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "crane-0",
+      "type": "shift.crane",
+      "props": {
+        "gantry": "sts3",
+        "boomUp": 0,
+        "trolley": -100,
+        "hang": 110,
+        "load": true,
+        "loadPaint": 2,
+        "floods": 0.8,
+        "phase": 0.0
+      },
+      "placement": {
+        "x": 180,
+        "h": 34,
+        "parallax": 0.45,
+        "scale": 0.62
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "crane-1",
+      "type": "shift.crane",
+      "props": {
+        "gantry": "sts1",
+        "boomUp": 0,
+        "trolley": -40,
+        "hang": 110,
+        "load": true,
+        "loadPaint": 3,
+        "floods": 0.8,
+        "phase": 2.1
+      },
+      "placement": {
+        "x": 720,
+        "h": 34,
+        "parallax": 0.45,
+        "scale": 0.62
+      },
+      "order": 5,
+      "layer": "distance"
+    },
+    {
+      "id": "crane-2",
+      "type": "shift.crane",
+      "props": {
+        "gantry": "sts2",
+        "boomUp": 1,
+        "trolley": 0,
+        "hang": 40,
+        "load": false,
+        "loadPaint": 4,
+        "floods": 0,
+        "phase": 4.2
+      },
+      "placement": {
+        "x": 1220,
+        "h": 34,
+        "parallax": 0.45,
+        "scale": 0.62
+      },
+      "order": 6,
+      "layer": "distance"
+    },
+    {
+      "id": "mast-far-0",
+      "type": "shift.mast",
+      "props": {
+        "height": 300,
+        "lamps": 6,
+        "color": "255,176,92",
+        "cone": 0.5,
+        "halo": 1,
+        "spread": 110,
+        "dead": -1,
+        "glow": true
+      },
+      "placement": {
+        "x": 420,
+        "h": 20,
+        "parallax": 0.62,
+        "scale": 0.8
+      },
+      "order": 7,
+      "layer": "distance"
+    },
+    {
+      "id": "mast-far-1",
+      "type": "shift.mast",
+      "props": {
+        "height": 300,
+        "lamps": 6,
+        "color": "255,176,92",
+        "cone": 0.5,
+        "halo": 1,
+        "spread": 110,
+        "dead": 3,
+        "glow": true
+      },
+      "placement": {
+        "x": 1100,
+        "h": 20,
+        "parallax": 0.62,
+        "scale": 0.8
+      },
+      "order": 8,
+      "layer": "distance"
+    },
+    {
+      "id": "block-0",
+      "type": "shift.stack",
+      "props": {
+        "columns": 4,
+        "tiers": 3,
+        "box": "40ft",
+        "ragged": 0.5,
+        "reefers": 0,
+        "codes": true,
+        "dim": 0.5,
+        "gap": 3,
+        "seed": 57
+      },
+      "placement": {
+        "x": 820,
+        "h": 6,
+        "parallax": 0.72,
+        "scale": 0.5
+      },
+      "order": 9,
+      "layer": "distance"
+    },
+    {
+      "id": "block-1",
+      "type": "shift.stack",
+      "props": {
+        "columns": 2,
+        "tiers": 2,
+        "box": "40ft",
+        "ragged": 0.5,
+        "reefers": 0.85,
+        "codes": true,
+        "dim": 0.5,
+        "gap": 3,
+        "seed": 23
+      },
+      "placement": {
+        "x": 1080,
+        "h": 6,
+        "parallax": 0.72,
+        "scale": 0.5
+      },
+      "order": 10,
+      "layer": "distance"
+    },
+    {
+      "id": "fog",
+      "type": "shift.fog",
+      "props": {
+        "top": 80,
+        "density": 0.5,
+        "drift": 0.06,
+        "parallax": 0.6
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "distance"
+    },
+    {
+      "id": "reefer-rack",
+      "type": "shift.reefer-rack",
+      "props": {
+        "tiers": 2,
+        "width": 36,
+        "cable": "both",
+        "reach": 22,
+        "dim": 0.55,
+        "seed": 5
+      },
+      "placement": {
+        "x": 1215,
+        "h": 6,
+        "parallax": 0.72,
+        "scale": 0.5
+      },
+      "order": 12,
+      "layer": "distance"
+    },
+    {
+      "id": "forklift",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "forklift",
+        "depth": "far",
+        "motion": "shuttle",
+        "direction": "left",
+        "speed": 0.45,
+        "lane": 360,
+        "dwell": 360,
+        "cargo": true,
+        "pose": 0.2,
+        "lights": true
+      },
+      "placement": {
+        "x": 520,
+        "h": 16,
+        "parallax": 0.55
+      },
+      "order": 13,
+      "layer": "distance"
+    },
+    {
+      "id": "ground",
+      "type": "shift.floor",
+      "props": {
+        "width": 1280,
+        "concrete": "#26241f",
+        "joint": 96,
+        "walkway": true,
+        "puddles": [
+          {
+            "x": 140,
+            "width": 90,
+            "depth": 10
+          },
+          {
+            "x": 520,
+            "width": 70,
+            "depth": 13
+          },
+          {
+            "x": 860,
+            "width": 120,
+            "depth": 9
+          },
+          {
+            "x": 1160,
+            "width": 70,
+            "depth": 12
+          }
+        ],
+        "glints": [
+          {
+            "x": 80,
+            "color": "255,232,196"
+          },
+          {
+            "x": 260,
+            "color": "255,232,196"
+          },
+          {
+            "x": 540,
+            "color": "255,176,92"
+          },
+          {
+            "x": 700,
+            "color": "255,214,160"
+          },
+          {
+            "x": 900,
+            "color": "255,170,40"
+          },
+          {
+            "x": 1140,
+            "color": "255,176,92"
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "distance"
+    },
+    {
+      "id": "rcv-shed",
+      "type": "shift.shed",
+      "props": {
+        "width": 330,
+        "height": 150,
+        "canopy": 116,
+        "fascia": 12,
+        "overhang": 14,
+        "name": "RECEIVING",
+        "sub": "SHED 3 · EAST END",
+        "columns": [
+          10,
+          170,
+          320
+        ],
+        "strips": [
+          90,
+          250
+        ],
+        "stripColor": "255,232,196",
+        "pipes": true,
+        "seed": 8
+      },
+      "placement": {
+        "x": -20,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "receiving-post",
+      "type": "shift.sign",
+      "props": {
+        "text": "RECEIVING",
+        "sub": "SIGN ON RECEIPT",
+        "code": "",
+        "height": 101,
+        "mount": "wall",
+        "to": 116,
+        "lamp": false,
+        "width": 0
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "receiving-window",
+      "type": "shift.hatch",
+      "props": {
+        "width": 112,
+        "sill": 26,
+        "top": 84,
+        "shutter": 0.22,
+        "stock": "cases",
+        "screen": "RCV 03 · OPEN",
+        "room": "#4a3f2f",
+        "seed": 21
+      },
+      "placement": {
+        "x": 12,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "receiving-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "mara",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "clerk",
+        "seed": 7362,
+        "act": "stand",
+        "depth": "play",
+        "district": "harbor"
+      },
+      "placement": {
+        "x": 162,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 18,
+      "layer": "playfield"
+    },
+    {
+      "id": "receiving-counter",
+      "type": "shift.counter",
+      "props": {
+        "width": 92,
+        "height": 23,
+        "color": "#4a5058",
+        "edge": "#b3b9bd",
+        "style": "panel",
+        "label": ""
+      },
+      "placement": {
+        "x": 19,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "receiving-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "case",
+      "type": "shift.case",
+      "props": {
+        "width": 26,
+        "height": 14,
+        "color": "#77664d"
+      },
+      "placement": {
+        "x": 31,
+        "h": 23
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "receiving-post",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "trolley-park",
+      "type": "shift.trolley-park",
+      "props": {
+        "spots": 3,
+        "pitch": 64,
+        "first": 3,
+        "prefix": "T"
+      },
+      "placement": {
+        "x": 400,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "trolley",
+      "type": "shift.trolley",
+      "props": {
+        "cargo": true,
+        "color": "#8b939a",
+        "stripe": "#c9862a"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop"
+    },
+    {
+      "id": "release",
+      "type": "shift.release",
+      "props": {
+        "label": "CLAMP"
+      },
+      "placement": {
+        "x": 44,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "trolley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "clamp",
+      "type": "shift.clamp",
+      "props": {
+        "wheel": 17
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "trolley",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bay",
+      "type": "shift.bay",
+      "props": {
+        "width": 76,
+        "label": "LOADING BAY 2",
+        "stencil": "BAY 2",
+        "post": 50,
+        "beacon": true
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "backdrop"
+    },
+    {
+      "id": "crates",
+      "type": "market.crates",
+      "props": {
+        "boxes": 2,
+        "tall": 3,
+        "crates": 4,
+        "crateColour": "blue",
+        "contents": "empty",
+        "cart": "flatbed",
+        "cartLoad": 2,
+        "ice": false,
+        "seed": 3
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "backdrop"
+    },
+    {
+      "id": "yard-mast",
+      "type": "shift.mast",
+      "props": {
+        "height": 260,
+        "lamps": 6,
+        "color": "255,176,92",
+        "cone": 0.6,
+        "halo": 1.1,
+        "spread": 130,
+        "dead": 4,
+        "glow": true
+      },
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "backdrop"
+    },
+    {
+      "id": "straddle",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "straddle",
+        "depth": "back",
+        "motion": "parked",
+        "direction": "left",
+        "cargo": true,
+        "pose": 0.6,
+        "lights": true
+      },
+      "placement": {
+        "x": 1030,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stacks-fence",
+      "type": "street.fence",
+      "props": {
+        "width": 210,
+        "height": 80,
+        "spacing": 70,
+        "top": "razor",
+        "gate": 60,
+        "gateWidth": 70,
+        "gateOpen": 0,
+        "gateLabel": "TERMINAL 2",
+        "notice": "STACKS/BONDED · NO ENTRY",
+        "header": "TERMINAL 2",
+        "noticeEvery": 2,
+        "lampEvery": 3,
+        "seed": 6
+      },
+      "placement": {
+        "x": 1070,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "backdrop"
+    },
+    {
+      "id": "signaller",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "dockworker",
+        "seed": 7344,
+        "act": "direct",
+        "depth": "play",
+        "district": "harbor"
+      },
+      "placement": {
+        "x": 760,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "dockworker",
+        "seed": 7342,
+        "act": "smoke",
+        "depth": "back",
+        "district": "harbor"
+      },
+      "placement": {
+        "x": 960,
+        "h": 2,
+        "facing": 1
+      },
+      "order": 31,
+      "layer": "backdrop"
+    },
+    {
+      "id": "gulls",
+      "type": "character.flock",
+      "props": {
+        "kind": "gull",
+        "count": 5,
+        "seed": 3,
+        "low": 120,
+        "high": 220,
+        "parallaxFar": 0.7,
+        "parallaxNear": 1,
+        "driftMin": 0.25,
+        "driftMax": 0.6,
+        "wander": 0,
+        "span": 1400,
+        "margin": 200,
+        "ps": 1,
+        "big": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-rcv-0",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 80,
+        "color": "255,232,196",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 70,
+        "h": 112
+      },
+      "order": 33,
+      "layer": "logic"
+    },
+    {
+      "id": "light-rcv-1",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 80,
+        "color": "255,232,196",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 230,
+        "h": 112
+      },
+      "order": 34,
+      "layer": "logic"
+    },
+    {
+      "id": "light-mast",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "lamp",
+        "r": 140,
+        "color": "255,176,92",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 640,
+        "h": 40
+      },
+      "order": 35,
+      "layer": "logic"
+    },
+    {
+      "id": "light-bay",
+      "type": "harbor.marker",
+      "props": {
+        "role": "light",
+        "kind": "neon",
+        "r": 50,
+        "color": "255,170,40",
+        "width": 0,
+        "lightHeight": 0
+      },
+      "placement": {
+        "x": 770,
+        "h": 60
+      },
+      "order": 36,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-yard",
+      "type": "level.floor",
+      "props": {
+        "width": 1280,
+        "building": "",
+        "label": "Yard"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "logic"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "label",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 0,
+        "title": "HARBOR ZONE 2 · harbor-yard · 1,280 units (2 views)",
+        "note": "Receiving at the east end of Shed 3 (Mara: P3 hand-over, P4 the empty case) · trolley bay and clamp (P5) · loading bay 2 · the berth|Terminal 2 gate: ordinary exit to stacks (a cut) · room at the east end for the P14 siding stair to land later (a stairs seam)",
+        "size": 9,
+        "bar": false,
+        "numbers": false
+      },
+      "placement": {
+        "x": 20,
+        "h": 300
+      },
+      "order": 39,
+      "layer": "foreground"
+    },
+    {
+      "id": "seam-west",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 0,
+        "bar": false,
+        "numbers": false,
+        "title": "← WALK SEAM|harbor-shed",
+        "size": 8,
+        "ink": "#ffd23c"
+      },
+      "placement": {
+        "x": 10,
+        "h": 230
+      },
+      "order": 40,
+      "layer": "foreground"
+    },
+    {
+      "id": "seam-east",
+      "type": "metro.scale-ruler",
+      "props": {
+        "span": 0,
+        "bar": false,
+        "numbers": false,
+        "title": "WALK SEAM →|harbor-checkout",
+        "size": 8,
+        "ink": "#ffd23c"
+      },
+      "placement": {
+        "x": 1090,
+        "h": 230
+      },
+      "order": 41,
+      "layer": "foreground"
+    }
+  ]
+}
