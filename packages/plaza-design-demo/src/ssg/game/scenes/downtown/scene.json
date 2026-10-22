@@ -496,5 +496,440 @@
       "vehicleRun",
       "streetCamera"
     ]
+  },
+  "phases": {
+    "home": {
+      "time": "05:52",
+      "goal": "go home (7B)",
+      "intro": {
+        "pages": [
+          "Ten to six. The street is still warm from the night.",
+          "Home is the capsule tower, past the metro stairs."
+        ],
+        "touchPages": [
+          "Ten to six. The street is still warm from the night.",
+          "Home is the capsule tower, past the metro stairs."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "exit": "capsule"
+      },
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Rain's late today. Like everybody."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "Night shift?",
+            "You walk like one. Get indoors before the day shift sees you."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Early or late, courier?",
+            "At this hour you cannot tell who is going home."
+          ]
+        },
+        "fixer": {
+          "name": "FIXER",
+          "pages": [
+            "Morning, courier. Long night?",
+            "Till takes your key, same as always. It knows you better than I do."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "acknowledge": {
+            "speaker": "CONCIERGE",
+            "pages": [
+              "welcome home. you are expected. the lift is on its way down."
+            ],
+            "height": 60,
+            "begin": [
+              {
+                "sound": "granted"
+              }
+            ],
+            "then": [
+              {
+                "milestone": "flat"
+              }
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "SHOP",
+            "pages": [
+              "OPENS 07:00.",
+              "DELIVERIES ROUND THE BACK."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not at this hour."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "A sky taxi, on a courier's pay. Sure."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "Bed first. The city will still be there."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: closed. market hours 07:00 to 02:00.",
+              "dim"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 0. opens 07:00."
+            ]
+          }
+        ],
+        "sign": [
+          {
+            "label": "look at the tubes",
+            "say": [
+              "cat tubes",
+              "V·RIFY. tube 2 (E): dark. repair ticket open since installation."
+            ]
+          }
+        ],
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: key ok. one noodle bowl. thank you, regular.",
+              "ok"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: courier, registered.",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: verified in 0.2 s. have a compliant day.",
+              "ok"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: courier, 7B · identity: verified · record: current."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. good morning, resident."
+            ]
+          }
+        ]
+      }
+    },
+    "flat": {
+      "time": "06:04",
+      "goal": "go home (7B)",
+      "ping": {
+        "exit": "capsule"
+      },
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Rain's late today. Like everybody."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "Night shift?",
+            "You walk like one. Get indoors before the day shift sees you."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Early or late, courier?",
+            "At this hour you cannot tell who is going home."
+          ]
+        },
+        "fixer": {
+          "name": "FIXER",
+          "pages": [
+            "Morning, courier. Long night?",
+            "Till takes your key, same as always. It knows you better than I do."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "acknowledge": {
+            "speaker": "CONCIERGE",
+            "pages": [
+              "welcome home. you are expected. the lift is on its way down."
+            ],
+            "height": 60,
+            "begin": [
+              {
+                "sound": "granted"
+              }
+            ],
+            "then": [
+              {
+                "milestone": "flat"
+              }
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "SHOP",
+            "pages": [
+              "OPENS 07:00.",
+              "DELIVERIES ROUND THE BACK."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not at this hour."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "A sky taxi, on a courier's pay. Sure."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "Bed first. The city will still be there."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: closed. market hours 07:00 to 02:00.",
+              "dim"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 0. opens 07:00."
+            ]
+          }
+        ],
+        "sign": [
+          {
+            "label": "look at the tubes",
+            "say": [
+              "cat tubes",
+              "V·RIFY. tube 2 (E): dark. repair ticket open since installation."
+            ]
+          }
+        ],
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: key ok. one noodle bowl. thank you, regular.",
+              "ok"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: courier, registered.",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: verified in 0.2 s. have a compliant day.",
+              "ok"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: courier, 7B · identity: verified · record: current."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. good morning, resident."
+            ]
+          }
+        ]
+      }
+    },
+    "free": {
+      "arrival": [
+        {
+          "unless": "arrived",
+          "set": [
+            "arrived",
+            "schematics"
+          ],
+          "rainThreshold": 0.2,
+          "speaker": "YOU",
+          "height": 46,
+          "pages": [
+            {
+              "text": "Downtown. Rain, neon, and nobody who sees me.",
+              "rain": true
+            },
+            {
+              "text": "Downtown. Neon, wet streets, and nobody who sees me.",
+              "rain": false
+            },
+            {
+              "companion": true
+            },
+            "The noodle stall is still lit. Worth a try.",
+            "Every machine here does something: E or a tap. H shows how they all work, B is the board."
+          ],
+          "touchPages": [
+            {
+              "text": "Downtown. Rain, neon, and nobody who sees me.",
+              "rain": true
+            },
+            {
+              "text": "Downtown. Neon, wet streets, and nobody who sees me.",
+              "rain": false
+            },
+            {
+              "companion": true
+            },
+            "The noodle stall is still lit. Worth a try.",
+            "Every machine here does something: tap it. HACK, bottom right, shows how they all work."
+          ]
+        },
+        {
+          "unless": "schematics",
+          "set": [
+            "schematics"
+          ],
+          "speaker": "YOU",
+          "height": 46,
+          "pages": [
+            "My deck sees this street differently now.",
+            "Every machine here does something: E or a tap. H shows how they all work, B is the board."
+          ],
+          "touchPages": [
+            "My deck sees this street differently now.",
+            "Every machine here does something: tap it. HACK, bottom right, shows how they all work."
+          ]
+        }
+      ]
+    }
   }
 }

@@ -54,7 +54,7 @@ installPlayProfiles(SHIPPED_PROFILES,true);assert.equal(playProfile().id,'demo')
 const noHack=structuredClone(SHIPPED_PROFILES);noHack.profiles.find(p=>p.id==='demo')!.abilities.hack=false;installPlayProfiles(validatePlayProfiles(noHack),true);assert.equal(hackLocked(story(false)),true,'a profile without hack locks it whatever the story says');
 const clock=Object.getOwnPropertyDescriptor(Game.prototype,'clockText')!.get!;assert.equal(clock.call({}),'','minimal HUD: no clock text');
 installPlayProfiles(SHIPPED_PROFILES,false);assert.notEqual(clock.call({}),'');
-const me=Object.getOwnPropertyDescriptor(Game.prototype,'me')!.get!;assert.equal(me.call({openingStory:{isBefore:()=>false,CONTROLLER:{playerBefore:'courier'}},save:{flags:{},handle:'neo'}}),'neo');
+const me=Object.getOwnPropertyDescriptor(Game.prototype,'me')!.get!;assert.equal(me.call({openingStory:{persona:()=>undefined},save:{flags:{},handle:'neo'}}),'neo');
 
 // ---- 5. Validation refuses incoherent profiles ----
 const bad=(change:(d:PlayProfiles)=>void,pattern:RegExp)=>{const d=structuredClone(SHIPPED_PROFILES);change(d);assert.throws(()=>validatePlayProfiles(d),pattern);};

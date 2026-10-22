@@ -3,6 +3,8 @@ import type {GameplayDefinition} from '../engine/gameplay/types';
 import {pendingOpeningStory} from './pending-opening';
 import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
 import {validateOpeningSource} from '../story/opening-source';
+import {validateContacts} from '../story/contacts';
+import {validateEndCard} from '../story/end-card';
 import {pendingRegistry} from './pending-registry';
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {validateNetworkShape} from './network-source';
@@ -74,6 +76,8 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'companion',file:'engine/gameplay/companion.json',kind:'rules',validate:validateCompanionSource,validateContext:validatePendingCompanion},
   {id:'critter-reactions',file:'engine/gameplay/critter-reactions.json',kind:'rules',validate:validateCritterReactions},
   {id:'review-stations',file:'demo/review-stations.json',kind:'rules',validate:validateReviewStations},
+  {id:'contacts',file:'data/contacts.json',kind:'rules',validate:validateContacts},
+  {id:'end-card',file:'story/end-card.json',kind:'rules',validate:validateEndCard},
   ...nativeGameplayScenes.filter(s=>!gameplayScenes.some(g=>g.gameplayId===s.gameplayId)).map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
   ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>validatePendingSceneContent(s,value,documents)},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
   {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents))},

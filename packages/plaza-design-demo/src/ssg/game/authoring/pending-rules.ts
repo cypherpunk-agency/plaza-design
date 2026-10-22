@@ -2,6 +2,8 @@ import {validateCompanionSource,type CompanionSource} from '../engine/gameplay/c
 import {COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import {validateCritterReactions} from '../engine/gameplay/critter-reactions';
 import {validateReviewStations} from '../demo/review-stations';
+import {validateContacts} from '../story/contacts';
+import {validateEndCard} from '../story/end-card';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 /**
  * Game rules documents the loop reads (companion, critter reactions, review stations): one place for the
@@ -18,5 +20,7 @@ export function validatePendingRules(id:string,value:unknown,documents:ReadonlyM
  if(id==='companion')validatePendingCompanion(value,documents);
  else if(id==='critter-reactions')validateCritterReactions(value);
  else if(id==='review-stations')validateReviewStations(value);
+ else if(id==='contacts')validateContacts(value);
+ else if(id==='end-card')validateEndCard(value);
  else throw new Error('Unsupported rules document '+id);
 }

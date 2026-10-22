@@ -17,6 +17,8 @@ import type {SceneDef,SceneUse,UseCtx,ItemId,SceneSaid} from '../../scenes/kit';
 import type {NativeTargetDocument} from './native-targets';
 import type {PresentationCue} from './presentation-signals';
 import {validateGameplayText,renderGameplayText} from './text-template';
+import {validateScenePhases,validateWash} from '../../story/story-shapes';
+import type {ScenePhase,WashRule} from '../../story/story-rules';
 
 export interface InteractionRoute {speaker?:string;template?:true;when?:Condition;command?:string;conversation?:string;pages?:string[];failure?:string[]}
 /** Rotation cursors are ordinary declared state; no compiler-local progress is retained. */
@@ -27,6 +29,10 @@ export interface SceneDocument {
   version:1;id:string;name:string;intro:string[];introTouch?:string[];manifest?:SceneManifest;
   /** What the scene takes from its artwork: facing, shade, lights, casters, actor rules (scene-stage.ts). */
   stage?:SceneStage;
+  /** What this scene says and does in each phase of the story (story/story-rules.ts `ScenePhase`; the phase ids are the story's `PHASES`). */
+  phases?:Record<string,ScenePhase>;
+  /** The room's light cue: the first rule that holds sets the wash (story-rules.ts `washTone`). */
+  wash?:WashRule[];
   environment?:SceneEnvironment;companion?:SceneCompanion;presentation?:ScenePresentation;
   actors?:ActorDefinition[];
   nativeTargets?:NativeTargetDocument[];
@@ -50,9 +56,11 @@ const responsePages=(v:unknown)=>{if(Array.isArray(v)&&v.length===0)return;pages
 export function validateSceneDocument(value:unknown,gameplay:GameplayDefinition,options:{actors?:boolean;manifest?:boolean;nativeTargets?:(doc:SceneDocument,gameplay:GameplayDefinition)=>void;presentationTargets?:readonly string[]}={}):SceneDocument {
   const seen=new Set<object>();function plain(v:unknown,depth=0):void{if(depth>24)fail('nesting limit');if(v===null||['string','boolean'].includes(typeof v)||typeof v==='number'&&Number.isFinite(v))return;if(!v||typeof v!=='object'||seen.has(v))fail('finite JSON required');if(!Array.isArray(v))object(v);seen.add(v as object);for(const[k,child]of Object.entries(v as object)){if(['__proto__','prototype','constructor'].includes(k))fail('reserved field');plain(child,depth+1);}seen.delete(v as object);}plain(value);
   if(JSON.stringify(value).length>128000)fail('size limit');
-  const d=fields(value,['version','id','name','intro','introTouch','environment','stage','presentation','companion','actors','nativeTargets','cues','manifest','objectives','time','timeDay','uses','readables','people','exits','rests'],['version','id','name','intro','uses']);if(d.version!==1)fail('version');text(d.id);text(d.name);responsePages(d.intro);if(d.introTouch!==undefined)pages(d.introTouch);if(d.nativeTargets!==undefined&&!options.nativeTargets)fail('engine targets require their registered adapter');if(d.manifest!==undefined){if(!options.manifest)fail('manifest requires its registered declared-scene adapter');validateManifest(d.manifest);}
+  const d=fields(value,['version','id','name','intro','introTouch','environment','stage','phases','wash','presentation','companion','actors','nativeTargets','cues','manifest','objectives','time','timeDay','uses','readables','people','exits','rests'],['version','id','name','intro','uses']);if(d.version!==1)fail('version');text(d.id);text(d.name);responsePages(d.intro);if(d.introTouch!==undefined)pages(d.introTouch);if(d.nativeTargets!==undefined&&!options.nativeTargets)fail('engine targets require their registered adapter');if(d.manifest!==undefined){if(!options.manifest)fail('manifest requires its registered declared-scene adapter');validateManifest(d.manifest);}
   if(d.companion!==undefined)validateSceneCompanion(d.companion);
   if(d.stage!==undefined)validateSceneStage(d.stage);
+  if(d.phases!==undefined)validateScenePhases(d.phases);
+  if(d.wash!==undefined)validateWash(d.wash);
   if(d.environment!==undefined)validateSceneEnvironment(d.environment,String(d.id));
   if(d.actors!==undefined){if(!options.actors)fail('actors require their registered adapter');validateActors(d.actors);}
   if(d.presentation!==undefined)validateScenePresentation(d.presentation,String(d.id),gameplay,((d.actors??[])as ActorDefinition[]).map(a=>a.id));

@@ -38,14 +38,14 @@ export const segments = [
   ['train', async (d, b) => {
     await d.until('glide lands on the train', p => !p.title, 200000, 400);
     await speak(d, 'train-arrival', 'opening:home, car 3, 05:41');
-    // an everyday device in the car (OPENING_EVERYDAY home train/train) and a stranger (OPENING_LINES home train/suit)
+    // an everyday device in the car (everyday home train/train) and a stranger (phase lines home train/suit)
     await d.use('train');
     const dom = await d.dom(); const rec = await d.beat('train-brake-popup', 'the car device popup: story chips', { chipsSeen: dom.chips });
     await d.chip('read the brake plate');
     await sleep(500); await d.beat('train-brake-plate', 'chip: read the brake plate');
     await d.closePopup(b);
     await d.use('read:suit');
-    await speak(d, 'train-talk-suit', 'a stranger in the car (OPENING_LINES home train/suit)');
+    await speak(d, 'train-talk-suit', 'a stranger in the car (phase lines home train/suit)');
     // the home run is the Train mover's `home` path: the doors open at Downtown after ~30 s of scene time
     await d.until('doors open', p => p.targets.some(t => t.id === 'exit:out'), 90000, 200);
     await d.goTo('exit:out'); await sleep(200);
@@ -56,7 +56,7 @@ export const segments = [
   ['metro', async (d, b) => {
     await speak(d, 'metro-arrival', 'metro platform, 05:48');
     await d.use('read:regular');
-    await speak(d, 'metro-talk-regular', 'OPENING_LINES home metro/regular');
+    await speak(d, 'metro-talk-regular', 'phase lines home metro/regular');
     await d.goTo('exit:downtown'); await sleep(250);
     await d.beat('metro-at-turnstile', 'standing at the exit gate');
     await b.tap('e');
@@ -69,11 +69,11 @@ export const segments = [
   ['downtown', async (d, b) => {
     await speak(d, 'downtown-before-arrival', 'opening:street, Downtown before, 05:52');
     await d.use('use:umbrella');
-    await speak(d, 'downtown-talk-umbrella', 'OPENING_LINES home downtown/umbrella');
+    await speak(d, 'downtown-talk-umbrella', 'phase lines home downtown/umbrella');
     await d.use('exit:shop');
-    await speak(d, 'downtown-shop-closed', 'OPENING_EXITS home downtown/shop');
+    await speak(d, 'downtown-shop-closed', 'phase exit rule home downtown/shop');
     await d.use('exit:moth');
-    await speak(d, 'downtown-moth-door', 'OPENING_EXITS home downtown/moth');
+    await speak(d, 'downtown-moth-door', 'phase exit rule home downtown/moth');
     await d.use('gate');
     await d.beat('downtown-gate-popup', 'the market gate popup: story chips', { chipsSeen: (await d.dom()).chips });
     await d.chip('push the gate'); await sleep(500);
@@ -88,7 +88,7 @@ export const segments = [
   ['flat', async (d, b) => {
     await speak(d, 'flat-arrival', 'opening:flat, the flat at dawn, 06:04');
     await d.use('door');
-    await d.beat('flat-door-bed-first', 'OPENING_EXITS flat capsule/door');
+    await d.beat('flat-door-bed-first', 'phase exit rule flat capsule/door');
     await b.tap('e'); await sleep(400); // a say rule: bubble
     await d.readBubbles();
     await d.use('kettle');

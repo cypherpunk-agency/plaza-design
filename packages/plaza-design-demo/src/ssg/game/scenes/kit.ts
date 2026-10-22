@@ -202,6 +202,10 @@ export interface SceneDef {
   attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
   storyDay?: (flags:Readonly<Record<string,boolean>>)=>number;
   storyMinute?: (flags:Readonly<Record<string,boolean>>)=>number;
+  /** What this scene says and does in each story phase (scene.json `phases`; story/story-rules.ts). The game loop reads `phases[phase]`; nothing else decides it. */
+  phases?:Readonly<Record<string,import('../story/story-rules').ScenePhase>>;
+  /** The room's light cue (scene.json `wash`; story-rules.ts `washTone`). */
+  wash?:readonly import('../story/story-rules').WashRule[];
   objectives?:readonly import('../engine/gameplay/objectives').ObjectiveDefinition[];
   objective?: (flags: Readonly<Record<string, boolean>>,state?:GameplayState) => string;
   id: string;

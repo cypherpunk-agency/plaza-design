@@ -29,6 +29,7 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
 - `?play=library` (or another id in `scenes/index.ts`) opens a scene directly for inspection.
   Direct scene entry bypasses normal travel, so it is not evidence of story progression.
 - `?sudo` opens developer mode with separate saves, unlocks, the LEVELS menu and time controls.
+- `?probe` adds the read-only `window.__game` handle (`probe()`: scene, story phase, flags, clock, dialogue, prompts, captions) to the ordinary game, with no unlocks. `scripts/opening-playthrough/` uses it.
 - `?play=sandbox&sudo` opens the engine's manual demonstration bay.
 - The regular homepage also accepts the Konami code to enter the game.
 

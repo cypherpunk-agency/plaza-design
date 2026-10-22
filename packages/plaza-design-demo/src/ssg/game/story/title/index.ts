@@ -14,7 +14,8 @@
  *
  *     save = newSave()        // a fresh save (sudo: unlockAll(newSave())), every scene reset
  *     startOpening()          // game.ts: sets `opening:home` and enters `train` (car 3);
- *                             // entering it in that state runs `rideHome()`: LINE 0 on its run
+ *                             // entering it in that phase runs the scene's `ride` (scene.json
+ *                             // `phases.home.ride`: the car's `home` path): LINE 0 on its run
  *                             // from the harbor's closed stop into Downtown, doors shut
  *
  * Nothing is reset before that: leave mid-glide (QUIT TO HOMEPAGE) and the old run is still there.

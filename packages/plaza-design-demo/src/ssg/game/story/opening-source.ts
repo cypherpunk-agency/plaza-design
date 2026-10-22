@@ -2,69 +2,68 @@ import baseline from './opening.json';
 import {matches,validateGameplay} from '../engine/gameplay/validation';
 import {validateGameplayRewards} from '../engine/gameplay/rewards';
 import type {Condition,GameplayDefinition} from '../engine/gameplay/types';
-import type {Line} from '../engine/index';
-import type {Station} from '../world/city';
 import type {Handoff} from '../art/core/timeline';
 import {SUDO} from '../runtime/mode';
-export type OpeningWorkflow='home'|'street'|'flat'|'slept'|'uplink'|'jacked';
-export type OpeningState='home'|'flat'|'deleted'|'uplinked'|'free';
-export type PerScene<T>=Partial<Record<OpeningState,Record<string,T>>>;
-export interface StoryChip {label:string;say?:Line;act?:[noun:string,verb:string];set?:[key:string,value:boolean];fail?:boolean;mail?:boolean}
-export type ExitRule={say:{name:string;pages:string[]}}|{turnstile:true}|{concierge:true}|{react:string;line:Line;fail?:boolean};
-export type PingTarget={door:true}|{exit:string}|{story:string}|{device:string};
-export interface OpeningPhase {hackLocked:boolean;before:boolean;pinned:boolean;resume:{whenFlag?:string;destination:Handoff}[]}
+import {fail,object,fields,text,id,list,bool,num,hm,phaseId,validateCues,cueRefs} from './story-shapes';
+import type {CardSpec,Cue,GoalHint,Persona,ScenePhase,StoryTarget,Trigger,WashRule} from './story-rules';
+export type {CardSpec,Cue,GoalHint,Persona,ScenePhase,StoryTarget,Trigger,WashRule,ExitRule,StoryChip,PingTarget,StoryIntro,ArrivalRow,ArrivalPage,GateRule,AckRule,Say,StoryLine}from './story-rules';
+/** A milestone the story reaches: the name of an entry of `WORKFLOWS` (home, street, flat, slept, uplink, jacked; a second timeline adds its own). */
+export type OpeningWorkflow=string;
+/** A phase of the story: a key of `PHASES`. */
+export type OpeningState=string;
+export interface OpeningPhase {hackLocked:boolean;pinned:boolean;resume:{whenFlag?:string;destination:Handoff}[];persona?:Persona}
 export interface OpeningPhaseRule {when?:Condition;phase:OpeningState}
-export interface OpeningTarget {label:string;promptH:number;x?:number;bind?:{kind:'rest'|'use'|'exit';id:string;offsetX?:number}}
+/** A sudo LEVELS entry: the opening from one of its points. `reset` scenes start over (the flat as on the first night). */
+export interface OpeningLevel {id:string;name:string;flags:string[];reset?:string[];/** A card whose `end` cues run on arrival (the morning's words). */end?:string}
+export type OpeningRoles=Record<'home'|'street'|'flat'|'slept'|'uplink'|'jacked',string>;
+/** Where the opening begins, where a save with no usable resume point lands, and the scene whose first visit means the opening is behind the save. */
+export interface OpeningStart {start:Handoff;fallback:Handoff;settled:string}
+export interface OpeningSource {
+ version:1;OPENING:OpeningRoles;OPENING_LEVELS:OpeningLevel[];
+ PHASES:Record<OpeningState,OpeningPhase>;PHASE_RULES:OpeningPhaseRule[];
+ START:OpeningStart;
+ /** How long standing still (clock frames) is before the next goal's target pings. */
+ ATTENTION:{after:number};
+ /** When the story lets go of the city clock, it runs on from the time this scene names in this phase. */
+ CLOCK:{release:{phase:OpeningState;scene:string}};
+ CARDS:Record<string,CardSpec>;TRIGGERS:Trigger[];GOAL_HINTS:GoalHint[];
+ GAMEPLAY:GameplayDefinition;WORKFLOWS:Record<string,string>;
+}
 export interface OpeningTargetScene {exits:readonly {id:string;x?:number;h?:number}[];rests?:readonly {id:string;x?:number;h?:number}[];uses?:readonly {id:string;x?:number;h?:number}[]}
 /** Resolve against the same compiled scene that owns physical interaction geometry. */
-export function resolveOpeningTarget(target:OpeningTarget,scene:OpeningTargetScene):{x:number;h:number;label:string;promptH:number}|null{if(target.x!==undefined)return{x:target.x,h:0,label:target.label,promptH:target.promptH};const binding=target.bind;if(!binding)return null;const rows=binding.kind==='rest'?scene.rests:binding.kind==='use'?scene.uses:scene.exits,at=rows?.find(r=>r.id===binding.id);if(!at||typeof at.x!=='number')return null;const h=at.h??0;return{x:at.x+(binding.offsetX??0),h,label:target.label,promptH:h+target.promptH};}
-export interface OpeningIntro {pages:string[];touchPages?:string[];consume?:boolean;speaker:string;height:number}
-export interface OpeningSource extends Omit<typeof baseline,'OPENING_TIME'|'OPENING_GOAL'|'OPENING_INTRO'|'OPENING_LINES'|'OPENING_EVERYDAY'|'OPENING_EXITS'|'OPENING_TARGETS'|'OPENING_PINGS'|'PHASES'|'PHASE_RULES'|'DECK_BEFORE'|'CONTROLLER'|'GAMEPLAY'|'WORKFLOWS'> {
- GAMEPLAY:GameplayDefinition;WORKFLOWS:Record<OpeningWorkflow,string>;
- PHASE_RULES:OpeningPhaseRule[];
- OPENING_TIME:PerScene<string>;OPENING_GOAL:PerScene<string>;OPENING_INTRO:PerScene<OpeningIntro>;
- OPENING_LINES:PerScene<{name?:string;pages:string[]}>;OPENING_EVERYDAY:PerScene<StoryChip[]>;OPENING_EXITS:PerScene<ExitRule>;
- OPENING_TARGETS:PerScene<OpeningTarget>;OPENING_PINGS:PerScene<PingTarget>;PHASES:Record<OpeningState,OpeningPhase>;
- DECK_BEFORE:{files:Record<string,string>;whoami:string};
- CONTROLLER:Omit<typeof baseline.CONTROLLER,'start'|'fallback'|'homeRun'|'releaseClock'>&{start:Handoff;fallback:Handoff;homeRun:{from:Station;to:Station;announcement:string};releaseClock:{phase:OpeningState;scene:string}};
-}
+export function resolveOpeningTarget(target:StoryTarget,scene:OpeningTargetScene):{x:number;h:number;label:string;promptH:number}|null{if(target.x!==undefined)return{x:target.x,h:0,label:target.label,promptH:target.promptH};const binding=target.bind;if(!binding)return null;const rows=binding.kind==='rest'?scene.rests:binding.kind==='use'?scene.uses:scene.exits,at=rows?.find(r=>r.id===binding.id);if(!at||typeof at.x!=='number')return null;const h=at.h??0;return{x:at.x+(binding.offsetX??0),h,label:target.label,promptH:h+target.promptH};}
+interface SceneNoun {id:string;verbs?:readonly string[];mover?:{paths?:Readonly<Record<string,unknown>>}}
+interface SceneDevice {id:string;nouns:readonly SceneNoun[]}
 /** Supplied only after prospective registry assembly; no registry import or live game dependency. */
 export interface OpeningSourceContext {
- scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly {id:string;nouns:readonly {id:string;verbs?:readonly string[]}[]}[];nodes?:readonly {id:string;nouns:readonly {id:string;verbs?:readonly string[]}[]}[]}}>>;
- keyring?:readonly string[];controlled?:readonly string[];stations?:readonly string[];programs?:readonly string[];contacts?:readonly string[];
+ scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];phases?:Readonly<Record<string,ScenePhase>>;wash?:readonly WashRule[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly SceneDevice[];nodes?:readonly SceneDevice[]}}>>;
+ keyring?:readonly string[];controlled?:readonly string[];programs?:readonly string[];
 }
-const phases:OpeningState[]=['home','flat','deleted','uplinked','free'];
 const ROLE_FLAGS={home:'opening:home',street:'opening:street',flat:'opening:flat',slept:'opening:slept',uplink:'opening:uplink',jacked:'opening:jacked'} as const;
-const ROOT_FIELDS=['version','OPENING','OPENING_LEVELS','OPENING_TIME','OPENING_GOAL','OPENING_LINES','OPENING_EVERYDAY','OPENING_EXITS','OPENING_TARGETS','OPENING_PINGS','IDLE_PING','HOME_RUN','TURNSTILE','SLEEP','MORNING','WAKE_LINES','MOTH_MESSAGE','GAMEPLAY','WORKFLOWS','DECK_BEFORE','OPENING_INTRO','UPLINK_LINES','PHASES','PHASE_RULES','CONTROLLER'];
-const CONTROLLER_FIELDS=['start','fallback','homeRun','home','releaseClock','sleep','playerBefore','concierge','wake','moth','uplink','turnstile','greeting','inbox','libraryGuidance'];
-const fail=(at:string,reason:string):never=>{throw new Error('Invalid opening source '+at+': '+reason);};
-const object=(v:unknown,at:string):Record<string,any>=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.getPrototypeOf(v)!==Object.prototype)fail(at,'plain object required');return v as Record<string,any>;};
-function fields(v:unknown,at:string,allowed:readonly string[],required=allowed){const row=object(v,at);if(Object.keys(row).some(k=>!allowed.includes(k))||required.some(k=>!Object.prototype.hasOwnProperty.call(row,k)))fail(at,'unknown or missing field');return row;}
-function text(v:unknown,at:string,empty=false){if(typeof v!=='string'||(!empty&&!v.trim())||v.length>4000)fail(at,'bounded text required');}
-function id(v:unknown,at:string){if(typeof v!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v)||['constructor','prototype','__proto__'].includes(v))fail(at,'identifier required');}
-function list(v:unknown,at:string,max=64):any[]{if(!Array.isArray(v)||v.length>max)fail(at,'bounded array required');return v as any[];}
-function bool(v:unknown,at:string){if(typeof v!=='boolean')fail(at,'boolean required');}
-function num(v:unknown,at:string,min=0,max=1000000){if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)fail(at,'bounded finite number required');}
-function pages(v:unknown,at:string){const rows=list(v,at,32);if(!rows.length)fail(at,'at least one page required');rows.forEach((p,i)=>text(p,at+'/'+i));}
-function line(v:unknown,at:string){const rows=list(v,at,3);if(rows.length<2)fail(at,'line tuple required');text(rows[0],at+'/input',true);text(rows[1],at+'/output',true);if(rows.length===3&&!['ok','err','dim'].includes(rows[2]))fail(at,'line tone required');}
+const ROOT_FIELDS=['version','OPENING','OPENING_LEVELS','PHASES','PHASE_RULES','START','ATTENTION','CLOCK','CARDS','TRIGGERS','GOAL_HINTS','GAMEPLAY','WORKFLOWS'];
 export function validateOpeningSource(value:unknown,context?:OpeningSourceContext):OpeningSource{
  const seen=new Set<object>();const json=(v:unknown,at:string,depth=0):void=>{if(depth>32)fail(at,'depth limit');if(v===null||typeof v==='string'||typeof v==='boolean'||typeof v==='number'&&Number.isFinite(v))return;if(!v||typeof v!=='object'||seen.has(v))fail(at,'finite acyclic JSON required');if(!Array.isArray(v))object(v,at);const node=v as object;seen.add(node);for(const[k,c]of Object.entries(node)){if(['__proto__','constructor','prototype'].includes(k))fail(at,'reserved key');json(c,at+'/'+k,depth+1);}seen.delete(node);};json(value,'root');if(JSON.stringify(value).length>256000)fail('root','size limit');
  const d=fields(value,'root',ROOT_FIELDS);if(d.version!==1)fail('version','version 1 required');
  const roles=fields(d.OPENING,'OPENING',Object.keys(ROLE_FLAGS));for(const[k,v]of Object.entries(roles))id(v,'OPENING/'+k);
  const knownFlags=new Set<string>(Object.values(roles));if(knownFlags.size!==Object.keys(ROLE_FLAGS).length)fail('OPENING','distinct phase-role flags required');
- const gameplay=validateGameplay(d.GAMEPLAY),workflows=fields(d.WORKFLOWS,'WORKFLOWS',Object.keys(ROLE_FLAGS));
+ const gameplay=validateGameplay(d.GAMEPLAY),workflows=object(d.WORKFLOWS,'WORKFLOWS');
  for(const flag of knownFlags)if(!gameplay.flags.includes(flag))fail('GAMEPLAY/flags','opening phase role references missing flag '+flag);
  if(gameplay.native||gameplay.checkpoint)fail('GAMEPLAY','story workflows do not own physical scene bindings or checkpoint policies');
- for(const[name,command]of Object.entries(workflows)){id(command,'WORKFLOWS/'+name);const c=gameplay.commands[command];if(!c||c.sources.length!==1||c.sources[0]!=='system')fail('WORKFLOWS/'+name,'system command required');}
+ if(!('home'in workflows))fail('WORKFLOWS','the home milestone (a new game) is required');
+ if(Object.keys(workflows).length>32)fail('WORKFLOWS','milestone limit');
+ for(const[name,command]of Object.entries(workflows)){id(name,'WORKFLOWS/'+name);id(command,'WORKFLOWS/'+name);const c=gameplay.commands[command];if(!c||c.sources.length!==1||c.sources[0]!=='system')fail('WORKFLOWS/'+name,'system command required');}
  for(const[key,c]of Object.entries(gameplay.commands))for(const action of c.actions)if('wire'in action||'trace'in action)fail('GAMEPLAY/commands/'+key,'scene domain actions require a scene host');
  if(context?.keyring)validateGameplayRewards(gameplay,{keyring:new Set(context.keyring),controlled:new Set(context.controlled??[])});
 
+ // the phases: data-defined ids, each with its story-wide metadata (hack, clock pin, resume, persona)
+ const metadata=object(d.PHASES,'PHASES'),phaseKeys=Object.keys(metadata);if(!phaseKeys.length||phaseKeys.length>16)fail('PHASES','one to sixteen phases required');
+ const phases=new Set(phaseKeys);
  const phaseRules=list(d.PHASE_RULES,'PHASE_RULES',32);if(!phaseRules.length)fail('PHASE_RULES','ordered rules and final fallback required');
  // Reuse the common condition validator/evaluator. This flags-only lifecycle context does not
  // expose inventory, time, player or scene scalars; the editor uses the same flags-only controls.
  const flagCondition=(value:Condition):boolean=>'flag'in value||'not'in value&&flagCondition(value.not)||'all'in value&&value.all.every(flagCondition)||'any'in value&&value.any.every(flagCondition);
  for(const[index,value]of phaseRules.entries()){
-  const at='PHASE_RULES/'+index,row=fields(value,at,['when','phase'],['phase']);if(!phases.includes(row.phase))fail(at,'unknown phase');
+  const at='PHASE_RULES/'+index,row=fields(value,at,['when','phase'],['phase']);if(typeof row.phase!=='string'||!phases.has(row.phase))fail(at,'unknown phase');
   if(row.when===undefined){if(index!==phaseRules.length-1)fail(at,'fallback must be last');}
   else{if(index===phaseRules.length-1)fail(at,'final fallback required');validateGameplay({version:1,flags:[...knownFlags],items:[],events:[],commands:{phase:{sources:['system'],when:row.when,actions:[]}},reactions:[],conversations:{}});if(!flagCondition(row.when))fail(at,'opening flags only');}
  }
@@ -72,33 +71,90 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  const destination=(v:unknown,at:string)=>{const r=fields(v,at,['scene','entrance'],['scene']);const s=scene(r.scene,at+'/scene');if(r.entrance!==undefined){id(r.entrance,at+'/entrance');if(context&&!context.scenes[s].exits.some(e=>e.id===r.entrance))fail(at,'unknown arrival');}};
  const devices=(s:string)=>context?[...context.scenes[s].data?.devices??[],...context.scenes[s].data?.nodes??[]]:[];
  const device=(s:string,name:unknown,at:string)=>{id(name,at);const found=devices(s).find(d=>d.id===name);if(context&&!found)fail(at,'unknown device or node');return found;};
- const resource=(key:string,at:string,kind:'scene'|'entity'|'exit'|'device'|'target')=>{const split=key.split('/');if(kind==='scene'){scene(key,at);return{scene:key,id:''};}if(split.length!==2)fail(at,'scene/id reference required');const s=scene(split[0],at),name=split[1];id(name,at);if(context){const def=context.scenes[s];if(kind==='exit'&&!def.exits.some(e=>e.id===name))fail(at,'unknown exit');if(kind==='device')device(s,name,at);if(kind==='entity'&&![...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...devices(s)].some(e=>e.id===name))fail(at,'unknown person/readable/device/exit');}return{scene:s,id:name};};
- const table=(v:unknown,at:string,kind:'scene'|'entity'|'exit'|'device'|'target',check:(v:any,at:string,ref:{scene:string;id:string})=>void)=>{const root=object(v,at);if(Object.keys(root).some(k=>!phases.includes(k as OpeningState)))fail(at,'unknown phase');for(const[p,rows]of Object.entries(root)){const entries=Object.entries(object(rows,at+'/'+p));if(entries.length>128)fail(at,'row limit');for(const[k,row]of entries){const path=at+'/'+p+'/'+k;check(row,path,resource(k,path,kind));}}};
- const metadata=fields(d.PHASES,'PHASES',phases);for(const[p,v]of Object.entries(metadata)){const r=fields(v,'PHASES/'+p,['hackLocked','before','pinned','resume']);for(const k of ['hackLocked','before','pinned'])bool(r[k],'PHASES/'+p+'/'+k);const rules=list(r.resume,'PHASES/'+p+'/resume',8);let fallback=false;for(const[index,rule]of rules.entries()){const a='PHASES/'+p+'/resume/'+index,r=fields(rule,a,['whenFlag','destination'],['destination']);if(fallback)fail(a,'unreachable resume rule after fallback');if(r.whenFlag!==undefined){if(!knownFlags.has(r.whenFlag))fail(a,'unknown opening flag');}else fallback=true;destination(r.destination,a);}if(p!=='free'&&!fallback)fail('PHASES/'+p,'resume fallback required');}
- const levels=list(d.OPENING_LEVELS,'OPENING_LEVELS',16),levelIds=new Set();for(const l of levels){const r=fields(l,'OPENING_LEVELS',['id','name','flags']);id(r.id,'level/id');text(r.name,'level/name');if(levelIds.has(r.id))fail('levels','duplicate id');levelIds.add(r.id);for(const flag of list(r.flags,'level/flags',6))if(!knownFlags.has(flag))fail('level/flags','unknown opening flag');}
- table(d.OPENING_TIME,'OPENING_TIME','scene',(v,a)=>{if(typeof v!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(v))fail(a,'HH:MM required');});table(d.OPENING_GOAL,'OPENING_GOAL','scene',(v,a)=>text(v,a));
- table(d.OPENING_INTRO,'OPENING_INTRO','scene',(v,a)=>{const r=fields(v,a,['pages','touchPages','consume','speaker','height'],['pages','speaker','height']);pages(r.pages,a);text(r.speaker,a);num(r.height,a,0,10000);if(r.touchPages!==undefined)pages(r.touchPages,a);if(r.consume!==undefined)bool(r.consume,a);});
- table(d.OPENING_LINES,'OPENING_LINES','entity',(v,a)=>{const r=fields(v,a,['name','pages'],['pages']);if(r.name!==undefined)text(r.name,a);pages(r.pages,a);});
- table(d.OPENING_EVERYDAY,'OPENING_EVERYDAY','device',(v,a,ref)=>{for(const[index,chip]of list(v,a,16).entries()){const at=a+'/'+index,c=fields(chip,at,['label','say','act','set','fail','mail'],['label']);text(c.label,at);if(c.say!==undefined)line(c.say,at);if(c.act!==undefined){const pair=list(c.act,at,2);if(pair.length!==2)fail(at,'noun/verb pair required');id(pair[0],at);text(pair[1],at);if(context&&!device(ref.scene,ref.id,at)?.nouns.some(n=>n.id===pair[0]&&n.verbs?.includes(pair[1])))fail(at,'unknown native noun verb');}if(c.set!==undefined){const pair=list(c.set,at,2);if(pair.length!==2)fail(at,'state/bool pair required');id(pair[0],at);bool(pair[1],at);if(context&&typeof context.scenes[ref.scene].data?.state[pair[0]]!=='boolean')fail(at,'unknown boolean state');}if(c.fail!==undefined)bool(c.fail,at);if(c.mail!==undefined)bool(c.mail,at);}});
- table(d.OPENING_EXITS,'OPENING_EXITS','exit',(v,a,ref)=>{const r=object(v,a),variants=['say','react','turnstile','concierge'].filter(k=>k in r);if(variants.length!==1)fail(a,'one registered exit handler required');const k=variants[0];fields(r,a,k==='react'?['react','line','fail']:[k],k==='react'?['react','line']:[k]);if(k==='say'){const q=fields(r.say,a,['name','pages']);text(q.name,a);pages(q.pages,a);}else if(k==='react'){device(ref.scene,r.react,a);line(r.line,a);if(r.fail!==undefined)bool(r.fail,a);}else if(r[k]!==true)fail(a,'native handler must be true');});
- table(d.OPENING_TARGETS,'OPENING_TARGETS','target',(v,a,ref)=>{const r=fields(v,a,['x','bind','label','promptH'],['label','promptH']);if(('x'in r)===('bind'in r))fail(a,'exactly one point or scene binding required');if(r.x!==undefined)num(r.x,a,-1000000);if(r.bind!==undefined){const binding=fields(r.bind,a+'/bind',['kind','id','offsetX'],['kind','id']);if(!['rest','use','exit'].includes(binding.kind))fail(a,'registered scene anchor kind required');id(binding.id,a+'/bind/id');if(binding.offsetX!==undefined)num(binding.offsetX,a+'/bind/offsetX',-1000000);if(context&&!resolveOpeningTarget(r as OpeningTarget,context.scenes[ref.scene]))fail(a,'missing scene binding');}text(r.label,a);num(r.promptH,a,0,10000);});
- table(d.OPENING_PINGS,'OPENING_PINGS','scene',(v,a,ref)=>{const r=object(v,a),keys=Object.keys(r);if(keys.length!==1||!['door','exit','story','device'].includes(keys[0]))fail(a,'one registered ping target required');const k=keys[0];if(k==='door'){if(r.door!==true||context&&!context.scenes[ref.scene].exits.some(e=>e.action==='out'))fail(a,'train door required');}else if(k==='device')device(ref.scene,r.device,a);else if(k==='exit'){id(r.exit,a);if(context&&!context.scenes[ref.scene].exits.some(e=>e.id===r.exit))fail(a,'unknown exit');}else{id(r.story,a);const phase=a.split('/')[1];if(!d.OPENING_TARGETS[phase]?.[ref.scene+'/'+r.story])fail(a,'unknown authored story target');}});
- num(d.IDLE_PING,'IDLE_PING',1);for(const[k,v]of Object.entries(fields(d.HOME_RUN,'HOME_RUN',['frames','start'])))num(v,'HOME_RUN/'+k,k==='frames'?1:0);if(d.HOME_RUN.start>=d.HOME_RUN.frames)fail('HOME_RUN','start must precede completion');
- for(const[k,v]of Object.entries(fields(d.TURNSTILE,'TURNSTILE',['verify','ok'])))num(v,'TURNSTILE/'+k,1);
- const sleep=fields(d.SLEEP,'SLEEP',['out','card','in','from','to']);for(const k of['out','card','in'])num(sleep[k],'SLEEP/'+k,1);for(const k of['from','to'])if(typeof sleep[k]!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(sleep[k]))fail('SLEEP/'+k,'HH:MM required');
- for(const[k,v]of Object.entries(fields(d.MORNING,'MORNING',['tries','wait','after'])))num(v,'MORNING/'+k,k==='tries'?1:0);if(!Number.isSafeInteger(d.MORNING.tries))fail('MORNING/tries','integer required');pages(d.WAKE_LINES,'WAKE_LINES');pages(d.MOTH_MESSAGE,'MOTH_MESSAGE');
- const uplink=fields(d.UPLINK_LINES,'UPLINK_LINES',['pages','touchPages']);pages(uplink.pages,'UPLINK_LINES/pages');pages(uplink.touchPages,'UPLINK_LINES/touchPages');
- const deck=fields(d.DECK_BEFORE,'DECK_BEFORE',['files','whoami']);text(deck.whoami,'DECK_BEFORE/whoami');const files=object(deck.files,'DECK_BEFORE/files');if(Object.keys(files).length>32)fail('DECK_BEFORE/files','file limit');for(const[k,v]of Object.entries(files)){id(k,'DECK_BEFORE/file');text(v,'DECK_BEFORE/'+k);}
- const c=fields(d.CONTROLLER,'CONTROLLER',CONTROLLER_FIELDS);for(const k of['start','fallback'])destination(c[k],'CONTROLLER/'+k);
- const run=fields(c.homeRun,'CONTROLLER/homeRun',['from','to','announcement']);for(const k of['from','to']){id(run[k],'homeRun/'+k);if(context?.stations&&!context.stations.includes(run[k]))fail('homeRun/'+k,'unknown station');}if(run.from===run.to)fail('homeRun','distinct stations required');text(run.announcement,'homeRun/announcement');
- const home=fields(c.home,'CONTROLLER/home',['scene','jackDevice']);const homeScene=scene(home.scene,'CONTROLLER/home/scene');device(homeScene,home.jackDevice,'CONTROLLER/home/jackDevice');
- const release=fields(c.releaseClock,'CONTROLLER/releaseClock',['phase','scene']);if(!phases.includes(release.phase))fail('CONTROLLER/releaseClock','unknown phase');scene(release.scene,'CONTROLLER/releaseClock/scene');
- const card=fields(c.sleep,'CONTROLLER/sleep',['target','label']);id(card.target,'CONTROLLER/sleep/target');text(card.label,'CONTROLLER/sleep/label');if(!d.OPENING_TARGETS.flat?.[homeScene+'/'+card.target])fail('CONTROLLER/sleep/target','unknown authored flat-phase story target');for(const rows of Object.values(d.OPENING_TARGETS)as Record<string,unknown>[])for(const ref of Object.keys(rows))if(ref.split('/')[1]!==card.target)fail('OPENING_TARGETS/'+ref,'only the registered sleep target has a native action');text(c.playerBefore,'CONTROLLER/playerBefore');
- for(const k of['concierge','wake','moth','uplink']){const keys=['speaker','height',...(k==='concierge'?['pages']:k==='moth'?['terminalPrefix']:k==='uplink'?['received']:[])],r=fields(c[k],'CONTROLLER/'+k,keys);text(r.speaker,'CONTROLLER/'+k+'/speaker');num(r.height,'CONTROLLER/'+k+'/height',0,10000);if(k==='concierge')pages(r.pages,'CONTROLLER/concierge/pages');if(k==='moth')text(r.terminalPrefix,'CONTROLLER/moth/terminalPrefix');if(k==='uplink')text(r.received,'CONTROLLER/uplink/received');}
- const greeting=fields(c.greeting,'CONTROLLER/greeting',['scene','speaker','height','rainThreshold','wet','dry','stall','how','relearn']);scene(greeting.scene,'CONTROLLER/greeting/scene');text(greeting.speaker,'greeting/speaker');num(greeting.height,'greeting/height',0,10000);num(greeting.rainThreshold,'greeting/rainThreshold',0,1);for(const k of['wet','dry','stall','relearn'])text(greeting[k],'greeting/'+k);const how=fields(greeting.how,'greeting/how',['pages','touchPages']);pages(how.pages,'greeting/how/pages');pages(how.touchPages,'greeting/how/touchPages');
- const inbox=fields(c.inbox,'CONTROLLER/inbox',['contact','speaker','height','pages','touchPages','terminal']);id(inbox.contact,'inbox/contact');if(context?.contacts&&!context.contacts.includes(inbox.contact))fail('inbox/contact','unknown contact');text(inbox.speaker,'inbox/speaker');num(inbox.height,'inbox/height',0,10000);pages(inbox.pages,'inbox/pages');pages(inbox.touchPages,'inbox/touchPages');for(const[k,v]of Object.entries(fields(inbox.terminal,'inbox/terminal',['prefix','separator','countSuffix','commandPrefix'])))text(v,'inbox/terminal/'+k);
- const guidance=fields(c.libraryGuidance,'CONTROLLER/libraryGuidance',['program','destinationScene','completedScene','completedGoal','line']);id(guidance.program,'libraryGuidance/program');if(context?.programs&&!context.programs.includes(guidance.program))fail('libraryGuidance/program','unknown program');scene(guidance.destinationScene,'libraryGuidance/destinationScene');const completed=scene(guidance.completedScene,'libraryGuidance/completedScene');id(guidance.completedGoal,'libraryGuidance/completedGoal');if(context&&!context.scenes[completed].data?.goals?.some(g=>g.id===guidance.completedGoal))fail('libraryGuidance/completedGoal','unknown completed native goal');text(guidance.line,'libraryGuidance/line');
- const beat=fields(c.turnstile,'CONTROLLER/turnstile',['verifying','ok','dotEvery']);text(beat.verifying,'CONTROLLER/turnstile/verifying');text(beat.ok,'CONTROLLER/turnstile/ok');num(beat.dotEvery,'CONTROLLER/turnstile/dotEvery',1);
+ for(const[p,v]of Object.entries(metadata)){
+  phaseId(p,'PHASES/'+p);
+  const r=fields(v,'PHASES/'+p,['hackLocked','pinned','resume','persona'],['hackLocked','pinned','resume']);for(const k of ['hackLocked','pinned'])bool(r[k],'PHASES/'+p+'/'+k);
+  const rules=list(r.resume,'PHASES/'+p+'/resume',8);let fallback=false;for(const[index,rule]of rules.entries()){const a='PHASES/'+p+'/resume/'+index,q=fields(rule,a,['whenFlag','destination'],['destination']);if(fallback)fail(a,'unreachable resume rule after fallback');if(q.whenFlag!==undefined){if(!knownFlags.has(q.whenFlag))fail(a,'unknown opening flag');}else fallback=true;destination(q.destination,a);}
+  if(r.persona!==undefined){const a='PHASES/'+p+'/persona',q=fields(r.persona,a,['name','calmWeather','deck']);text(q.name,a+'/name');bool(q.calmWeather,a+'/calmWeather');const deck=fields(q.deck,a+'/deck',['files','whoami']);text(deck.whoami,a+'/deck/whoami');const files=object(deck.files,a+'/deck/files');if(Object.keys(files).length>32)fail(a+'/deck/files','file limit');for(const[k,t]of Object.entries(files)){id(k,a+'/deck/file');text(t,a+'/deck/'+k);}}
+ }
+ // a phase with resume rules needs a fallback (the last phase, which may have none, is the story's end)
+ for(const[p,v]of Object.entries(metadata)){const rules=(v as {resume:{whenFlag?:string}[]}).resume;if(rules.length&&!rules.some(r=>r.whenFlag===undefined))fail('PHASES/'+p,'resume fallback required');}
+ const levels=list(d.OPENING_LEVELS,'OPENING_LEVELS',16),levelIds=new Set();for(const l of levels){const r=fields(l,'OPENING_LEVELS',['id','name','flags','reset','end'],['id','name','flags']);id(r.id,'level/id');text(r.name,'level/name');if(r.reset!==undefined)for(const s of list(r.reset,'level/reset',8))scene(s,'level/reset');if(levelIds.has(r.id))fail('levels','duplicate id');levelIds.add(r.id);for(const flag of list(r.flags,'level/flags',6))if(!knownFlags.has(flag))fail('level/flags','unknown opening flag');}
+
+ const start=fields(d.START,'START',['start','fallback','settled']);for(const k of['start','fallback'])destination(start[k],'START/'+k);scene(start.settled,'START/settled');
+ const attention=fields(d.ATTENTION,'ATTENTION',['after']);num(attention.after,'ATTENTION/after',1);
+ const clock=fields(d.CLOCK,'CLOCK',['release']),release=fields(clock.release,'CLOCK/release',['phase','scene']);if(typeof release.phase!=='string'||!phases.has(release.phase))fail('CLOCK/release','unknown phase');scene(release.scene,'CLOCK/release/scene');
+
+ // cues name milestones, scenes and counters; counters are the loop's own numbers, named here and nowhere else declared
+ const checkCues=(cues:Cue[],at:string)=>{const refs=cueRefs(cues);for(const m of refs.milestones)if(!Object.prototype.hasOwnProperty.call(workflows,m))fail(at,'unknown milestone '+m);for(const s of refs.scenes)scene(s,at);};
+ const cards=object(d.CARDS,'CARDS');if(Object.keys(cards).length>16)fail('CARDS','card limit');
+ for(const[cardId,v]of Object.entries(cards)){
+  id(cardId,'CARDS/'+cardId);const a='CARDS/'+cardId,c=fields(v,a,['out','card','in','from','to','label','mid','end'],['out','card','in','from','to','label']);
+  for(const k of['out','card','in'])num(c[k],a+'/'+k,1,100000);hm(c.from,a+'/from');hm(c.to,a+'/to');text(c.label,a+'/label');
+  for(const k of['mid','end'])if(c[k]!==undefined){validateCues(c[k],a+'/'+k);checkCues(c[k],a+'/'+k);}
+ }
+ for(const l of levels)if((l as {end?:string}).end!==undefined&&!Object.prototype.hasOwnProperty.call(cards,(l as {end:string}).end))fail('OPENING_LEVELS/'+(l as {id:string}).id,'unknown card');
+ const triggers=list(d.TRIGGERS,'TRIGGERS',16),triggerIds=new Set<string>();
+ for(const[index,v]of triggers.entries()){
+  const a='TRIGGERS/'+index,t=fields(v,a,['id','phase','scene','viewing','start','once','quiet','when','do'],['id','phase','scene','do']);
+  id(t.id,a+'/id');if(triggerIds.has(t.id))fail(a,'duplicate trigger id');triggerIds.add(t.id);
+  if(typeof t.phase!=='string'||!phases.has(t.phase))fail(a+'/phase','unknown phase');const s=scene(t.scene,a+'/scene');
+  if(t.viewing!==undefined)device(s,t.viewing,a+'/viewing');
+  if(t.start!==undefined)id(t.start,a+'/start');if(t.once!==undefined)id(t.once,a+'/once');
+  if(t.quiet!==undefined){const q=fields(t.quiet,a+'/quiet',['bubble','popup','since','frames']);if(q.bubble!==true||q.popup!==true)fail(a+'/quiet','bubble and popup must be true');id(q.since,a+'/quiet/since');num(q.frames,a+'/quiet/frames',0,1000000);}
+  if(t.when!==undefined){const tests=list(t.when,a+'/when',8);if(!tests.length)fail(a+'/when','at least one test required');for(const[j,test]of tests.entries()){const b=a+'/when/'+j,o=object(test,b);if('counter'in o){fields(o,b,['counter','atLeast']);id(o.counter,b);num(o.atLeast,b+'/atLeast',1,1000000);}else{fields(o,b,['elapsed','frames']);id(o.elapsed,b);num(o.frames,b+'/frames',0,1000000);if(t.start===undefined&&o.elapsed!==t.start)fail(b,'an elapsed test needs a start counter that is stamped (set start, or stamp it in a cue)');}}}
+  validateCues(t.do,a+'/do');checkCues(t.do,a+'/do');
+ }
+ const hints=list(d.GOAL_HINTS,'GOAL_HINTS',8);
+ for(const[index,v]of hints.entries()){
+  const a='GOAL_HINTS/'+index,h=fields(v,a,['program','exceptScene','afterScene','afterGoal','line']);id(h.program,a+'/program');if(context?.programs&&!context.programs.includes(h.program))fail(a+'/program','unknown program');
+  scene(h.exceptScene,a+'/exceptScene');const after=scene(h.afterScene,a+'/afterScene');id(h.afterGoal,a+'/afterGoal');if(context&&!context.scenes[after].data?.goals?.some(g=>g.id===h.afterGoal))fail(a+'/afterGoal','unknown completed native goal');text(h.line,a+'/line');
+ }
+
+ // what each scene says and does in each phase (scene.json `phases`, `wash`): the scene document checked its shape; here the names are real
+ if(context){
+  const targetsOf=(phase?:ScenePhase)=>phase?.targets??{};
+  for(const[sceneId,def]of Object.entries(context.scenes)){
+   for(const[p,ph]of Object.entries(def.phases??{})){
+    const at='scenes/'+sceneId+'/phases/'+p;if(!phases.has(p))fail(at,'unknown phase');
+    const known=(name:string)=>[...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...devices(sceneId)].some(e=>e.id===name);
+    for(const key of Object.keys(ph.lines??{}))if(!known(key))fail(at+'/lines/'+key,'unknown person/readable/device/exit');
+    for(const[key,rule]of Object.entries(ph.exits??{})){
+     const a=at+'/exits/'+key;if(!def.exits.some(e=>e.id===key))fail(a,'unknown exit');
+     if('react'in rule){device(sceneId,rule.react,a);checkCues(rule.cues??[],a);}
+     else if('gate'in rule){checkCues([...rule.gate.begin??[],...rule.gate.then],a);}
+     else if('acknowledge'in rule){checkCues([...rule.acknowledge.begin??[],...rule.acknowledge.then],a);}
+    }
+    for(const[key,chips]of Object.entries(ph.everyday??{})){
+     const dev=device(sceneId,key,at+'/everyday/'+key);
+     for(const[i,chip]of chips.entries()){
+      const a=at+'/everyday/'+key+'/'+i;
+      if(chip.act&&!dev?.nouns.some(n=>n.id===chip.act![0]&&n.verbs?.includes(chip.act![1])))fail(a,'unknown native noun verb');
+      if(chip.set&&typeof def.data?.state[chip.set[0]]!=='boolean')fail(a,'unknown boolean state');
+      checkCues(chip.cues??[],a);
+     }
+    }
+    for(const[key,target]of Object.entries(targetsOf(ph))){
+     const a=at+'/targets/'+key;
+     if(!resolveOpeningTarget(target,def))fail(a,'missing scene binding');
+     if(target.card!==undefined&&!Object.prototype.hasOwnProperty.call(cards,target.card))fail(a,'unknown card');
+    }
+    const ping=ph.ping;
+    if(ping){
+     const a=at+'/ping';
+     if('door'in ping){if(!def.exits.some(e=>e.action==='out'))fail(a,'train door required');}
+     else if('device'in ping)device(sceneId,ping.device,a);
+     else if('exit'in ping){if(!def.exits.some(e=>e.id===ping.exit))fail(a,'unknown exit');}
+     else if(!targetsOf(ph)[ping.target])fail(a,'unknown authored story target');
+    }
+    if(ph.ride!==undefined){const[dev,noun]=ph.ride.mover.split('.'),paths=devices(sceneId).find(dv=>dv.id===dev)?.nouns.find(n=>n.id===noun)?.mover?.paths;if(!paths||!Object.prototype.hasOwnProperty.call(paths,ph.ride.path))fail(at+'/ride','unknown mover path');}
+   }
+   for(const[i,rule]of (def.wash??[]).entries()){
+    const a='scenes/'+sceneId+'/wash/'+i;if(rule.phase!==undefined&&!phases.has(rule.phase))fail(a,'unknown phase');
+    if(rule.unlessState!==undefined&&!(def.data&&Object.prototype.hasOwnProperty.call(def.data.state,rule.unlessState)))fail(a,'unknown state');
+   }
+  }
+ }
  return structuredClone(d) as OpeningSource;
 }
 type Flags=Readonly<Record<string,boolean>>;
@@ -106,11 +162,12 @@ export function createOpeningModel(value:unknown,context?:OpeningSourceContext){
  const source=validateOpeningSource(value,context),OPENING=source.OPENING;
  const openingState=(f:Flags):OpeningState=>source.PHASE_RULES.find(row=>matches(row.when,{flags:f,items:{},tokens:0}))!.phase;
  const openingResumeDestination=(f:Flags)=>{const rule=source.PHASES[openingState(f)].resume.find(r=>!r.whenFlag||f[r.whenFlag]);return rule?{...rule.destination}:null;};
- return{...source,source,resolveTarget:resolveOpeningTarget,OPENING_FLAGS:Object.values(OPENING),OPENING_INTRO:Object.fromEntries(Object.entries(source.OPENING_INTRO).map(([phase,rows])=>[phase,Object.fromEntries(Object.entries(rows!).map(([scene,row])=>[scene,{speaker:row.speaker,height:row.height,...(row.consume!==undefined?{consume:row.consume}:{}),lines:(touch:boolean)=>[...(touch?row.touchPages??row.pages:row.pages)]}]))])) as PerScene<{lines:(touch:boolean)=>string[];consume?:boolean;speaker:string;height:number}>,
- UPLINK_LINES:(touch:boolean)=>[...(touch?source.UPLINK_LINES.touchPages:source.UPLINK_LINES.pages)],openingState,openingResumeDestination,openingResume:(f:Flags)=>openingResumeDestination(f)?.scene??null,
- openingLevel:(id:string)=>source.OPENING_LEVELS.find(l=>l.id===id),hackLocked:(f:Flags)=>SUDO?false:source.PHASES[openingState(f)].hackLocked,isBefore:(f:Flags)=>source.PHASES[openingState(f)].before,
+ return{...source,source,resolveTarget:resolveOpeningTarget,OPENING_FLAGS:Object.values(OPENING),
+ phaseIds:Object.keys(source.PHASES),openingState,openingResumeDestination,openingResume:(f:Flags)=>openingResumeDestination(f)?.scene??null,
+ openingLevel:(id:string)=>source.OPENING_LEVELS.find(l=>l.id===id),hackLocked:(f:Flags)=>SUDO?false:source.PHASES[openingState(f)].hackLocked,
+ /** Who you are while the phase has a persona (the courier before the deletion): its name, deck, and whether the weather is kept calm. */
+ persona:(f:Flags):Persona|undefined=>source.PHASES[openingState(f)].persona,
  isPinned:(f:Flags)=>source.PHASES[openingState(f)].pinned};
 }
 export type OpeningStoryModel=ReturnType<typeof createOpeningModel>;
 export const openingStoryModel=createOpeningModel(baseline);
-export function pick<T>(table:PerScene<T>,state:OpeningState,scene:string,id?:string):T|undefined{return table[state]?.[id===undefined?scene:scene+'/'+id];}

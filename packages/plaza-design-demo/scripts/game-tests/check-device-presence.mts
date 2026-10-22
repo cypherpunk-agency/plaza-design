@@ -16,7 +16,7 @@ function exercise(scene:any,stackInstead=false){
 }
 function targetExercise(scene:any,rebound=false){
  const rules=typeof scene.rules==='function'?scene.rules({save:()=>({handle:'QA',tokens:5,jump:false,controlled:[],flags:{}}),nodes:()=>0,persist(){},granted(){},end(){}}):scene.rules,m=new SceneModel({say(){},open(){},changed(){}},scene.data,rules);m.setPaused(true);let state:any={flags:{},items:{},tokens:5};const session=new GameplaySession(scene.gameplay,fixtureGameplayPort(scene.gameplay,{read:()=>state,write:s=>{state=s;}},()=>m));attachNativeGameplay(m,session);
- const context:any={def:scene,here:scene.id,platforms:[],exitTargets:()=>[],lifeTargets:()=>[],openingStory:{OPENING_TARGETS:{}},story:'',pixelHere:false,zh:{model:m,targets:()=>m.spots().map(s=>({...s,label:'open',promptH:60}))}};
+ const context:any={def:scene,here:scene.id,platforms:[],exitTargets:()=>[],lifeTargets:()=>[],openingStory:{},story:'',pixelHere:false,zh:{model:m,targets:()=>m.spots().map(s=>({...s,label:'open',promptH:60}))}};
  try{const spots=structuredClone(m.spots());for(const end of[false,true]){state.flags.end=end;const targets=Game.prototype['targets'].call(context),wanted=m.spots().filter(s=>s.id!=='gate'||(rebound?end:!end)).map(s=>s.id);assert.deepEqual(targets.map((t:any)=>t.id),wanted);assert.deepEqual(m.spots(),spots,'nearby E policy never changes world/hack geometry');let picked='';SceneHost.prototype.use.call({model:m,pick:(id:string)=>{picked=id;}}as any,'gate');assert.equal(picked,'gate','pointer access remains unchanged');}session.dispose();assert(!Game.prototype['targets'].call(context).some((t:any)=>t.id==='gate'),'missing query owner fails closed');}finally{session.dispose();m.reset();m.setPaused(true);}
 }
 targetExercise(SCENES.downtown);

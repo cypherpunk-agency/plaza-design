@@ -1,12 +1,5 @@
 {
   "version": 1,
-  "PHASE_RULES": [
-    {"when": {"any": [{"flag": "opening:home", "is": false}, {"flag": "opening:jacked"}]}, "phase": "free"},
-    {"when": {"flag": "opening:uplink"}, "phase": "uplinked"},
-    {"when": {"flag": "opening:slept"}, "phase": "deleted"},
-    {"when": {"flag": "opening:flat"}, "phase": "flat"},
-    {"phase": "home"}
-  ],
   "OPENING": {
     "home": "opening:home",
     "street": "opening:street",
@@ -21,6 +14,9 @@
       "name": "OPENING · TRAIN HOME",
       "flags": [
         "opening:home"
+      ],
+      "reset": [
+        "capsule"
       ]
     },
     {
@@ -31,825 +27,16 @@
         "opening:street",
         "opening:flat",
         "opening:slept"
-      ]
+      ],
+      "reset": [
+        "capsule"
+      ],
+      "end": "sleep"
     }
   ],
-  "OPENING_TIME": {
-    "home": {
-      "train": "05:41",
-      "metro": "05:48",
-      "downtown": "05:52"
-    },
-    "flat": {
-      "capsule": "06:04",
-      "downtown": "06:04"
-    },
-    "deleted": {
-      "capsule": "09:40"
-    },
-    "uplinked": {
-      "capsule": "09:42"
-    }
-  },
-  "OPENING_GOAL": {
-    "home": {
-      "train": "get off at DOWNTOWN",
-      "metro": "go home",
-      "downtown": "go home (7B)"
-    },
-    "flat": {
-      "capsule": "get some sleep",
-      "downtown": "go home (7B)"
-    },
-    "deleted": {
-      "capsule": "get out"
-    },
-    "uplinked": {
-      "capsule": "jack in to your PC"
-    }
-  },
-  "OPENING_LINES": {
-    "home": {
-      "train/suit": {
-        "pages": [
-          "Morning shift?",
-          "Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
-        ]
-      },
-      "train/courier": {
-        "pages": [
-          "Night shift? You have the look. Like a receipt somebody kept.",
-          "Me, I am on my ninth loop with a parcel for \"whoever is at the Harbor\". Still no whoever."
-        ]
-      },
-      "train/elder": {
-        "pages": [
-          "Downtown next, dear. Then Galleria. Then Downtown.",
-          "I have ridden this line since it was a straight line.",
-          "Get some sleep. You look registered, but tired."
-        ]
-      },
-      "train/punk": {
-        "pages": [
-          "They retired a thousand records overnight. It was on the screen.",
-          "Retired. Like they get a watch and a cake."
-        ]
-      },
-      "train/ad": {
-        "name": "LINE 0 NEWS",
-        "pages": [
-          "REGISTRY AUDIT: 1,204 RECORDS RETIRED OVERNIGHT.",
-          "NO ACTION NEEDED."
-        ]
-      },
-      "train/staff": {
-        "name": "STAFF DOOR",
-        "pages": [
-          "STAFF ONLY. LOCKED.",
-          "NO PASSENGER ACCESS."
-        ]
-      },
-      "metro/regular": {
-        "name": "MAN WITH A PAPER",
-        "pages": [
-          "Morning paper. The Registry retired 1,204 records overnight.",
-          "Retired. Lucky records. I have been asking for that for years."
-        ]
-      },
-      "metro/screen": {
-        "name": "REGISTRY SCREEN",
-        "pages": [
-          "REGISTRY AUDIT COMPLETE.",
-          "ALL REMAINING RECORDS ARE CURRENT. NO ACTION NEEDED."
-        ]
-      },
-      "downtown/umbrella": {
-        "name": "UMBRELLA",
-        "pages": [
-          "Rain's late today. Like everybody."
-        ]
-      },
-      "downtown/hood": {
-        "name": "HOODED STRANGER",
-        "pages": [
-          "Night shift?",
-          "You walk like one. Get indoors before the day shift sees you."
-        ]
-      },
-      "downtown/hat": {
-        "name": "MAN IN A HAT",
-        "pages": [
-          "Early or late, courier?",
-          "At this hour you cannot tell who is going home."
-        ]
-      },
-      "downtown/fixer": {
-        "name": "FIXER",
-        "pages": [
-          "Morning, courier. Long night?",
-          "Till takes your key, same as always. It knows you better than I do."
-        ]
-      }
-    },
-    "flat": {
-      "train/suit": {
-        "pages": [
-          "Morning shift?",
-          "Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
-        ]
-      },
-      "train/courier": {
-        "pages": [
-          "Night shift? You have the look. Like a receipt somebody kept.",
-          "Me, I am on my ninth loop with a parcel for \"whoever is at the Harbor\". Still no whoever."
-        ]
-      },
-      "train/elder": {
-        "pages": [
-          "Downtown next, dear. Then Galleria. Then Downtown.",
-          "I have ridden this line since it was a straight line.",
-          "Get some sleep. You look registered, but tired."
-        ]
-      },
-      "train/punk": {
-        "pages": [
-          "They retired a thousand records overnight. It was on the screen.",
-          "Retired. Like they get a watch and a cake."
-        ]
-      },
-      "train/ad": {
-        "name": "LINE 0 NEWS",
-        "pages": [
-          "REGISTRY AUDIT: 1,204 RECORDS RETIRED OVERNIGHT.",
-          "NO ACTION NEEDED."
-        ]
-      },
-      "train/staff": {
-        "name": "STAFF DOOR",
-        "pages": [
-          "STAFF ONLY. LOCKED.",
-          "NO PASSENGER ACCESS."
-        ]
-      },
-      "metro/regular": {
-        "name": "MAN WITH A PAPER",
-        "pages": [
-          "Morning paper. The Registry retired 1,204 records overnight.",
-          "Retired. Lucky records. I have been asking for that for years."
-        ]
-      },
-      "metro/screen": {
-        "name": "REGISTRY SCREEN",
-        "pages": [
-          "REGISTRY AUDIT COMPLETE.",
-          "ALL REMAINING RECORDS ARE CURRENT. NO ACTION NEEDED."
-        ]
-      },
-      "downtown/umbrella": {
-        "name": "UMBRELLA",
-        "pages": [
-          "Rain's late today. Like everybody."
-        ]
-      },
-      "downtown/hood": {
-        "name": "HOODED STRANGER",
-        "pages": [
-          "Night shift?",
-          "You walk like one. Get indoors before the day shift sees you."
-        ]
-      },
-      "downtown/hat": {
-        "name": "MAN IN A HAT",
-        "pages": [
-          "Early or late, courier?",
-          "At this hour you cannot tell who is going home."
-        ]
-      },
-      "downtown/fixer": {
-        "name": "FIXER",
-        "pages": [
-          "Morning, courier. Long night?",
-          "Till takes your key, same as always. It knows you better than I do."
-        ]
-      }
-    }
-  },
-  "OPENING_EVERYDAY": {
-    "home": {
-      "train/train": [
-        {
-          "label": "read the brake plate",
-          "say": [
-            "cat plate",
-            "EMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE."
-          ]
-        },
-        {
-          "label": "pull the brake",
-          "say": [
-            "use brake --pull",
-            "BRAKE: no emergency registered to this passenger.",
-            "err"
-          ]
-        }
-      ],
-      "downtown/gate": [
-        {
-          "label": "push the gate",
-          "say": [
-            "use lock --open",
-            "NEON MARKET GATE: closed. market hours 07:00 to 02:00.",
-            "dim"
-          ]
-        },
-        {
-          "label": "read the counter",
-          "say": [
-            "cat door",
-            "COUNTER: today: 0. opens 07:00."
-          ]
-        }
-      ],
-      "downtown/sign": [
-        {
-          "label": "look at the tubes",
-          "say": [
-            "cat tubes",
-            "V·RIFY. tube 2 (E): dark. repair ticket open since installation."
-          ]
-        }
-      ],
-      "downtown/till": [
-        {
-          "label": "pay with your key",
-          "say": [
-            "pay --key",
-            "TILL: key ok. one noodle bowl. thank you, regular.",
-            "ok"
-          ]
-        }
-      ],
-      "downtown/fence": [
-        {
-          "label": "read the plate",
-          "act": [
-            "plate",
-            "read"
-          ]
-        },
-        {
-          "label": "open the gate",
-          "say": [
-            "use gate --open",
-            "REGISTRY PROPERTY: root only. current user: courier, registered.",
-            "err"
-          ]
-        }
-      ],
-      "downtown/scan": [
-        {
-          "label": "walk in",
-          "say": [
-            "enter",
-            "IDENTITY SCAN: verified in 0.2 s. have a compliant day.",
-            "ok"
-          ]
-        },
-        {
-          "label": "look at the screen",
-          "say": [
-            "cat scanner",
-            "subject: courier, 7B · identity: verified · record: current."
-          ]
-        }
-      ],
-      "downtown/billboard": [
-        {
-          "label": "watch the ad",
-          "say": [
-            "cat ads",
-            "REGISTRY PREMIUM. Be seen everywhere. good morning, resident."
-          ]
-        }
-      ]
-    },
-    "flat": {
-      "downtown/gate": [
-        {
-          "label": "push the gate",
-          "say": [
-            "use lock --open",
-            "NEON MARKET GATE: closed. market hours 07:00 to 02:00.",
-            "dim"
-          ]
-        },
-        {
-          "label": "read the counter",
-          "say": [
-            "cat door",
-            "COUNTER: today: 0. opens 07:00."
-          ]
-        }
-      ],
-      "downtown/sign": [
-        {
-          "label": "look at the tubes",
-          "say": [
-            "cat tubes",
-            "V·RIFY. tube 2 (E): dark. repair ticket open since installation."
-          ]
-        }
-      ],
-      "downtown/till": [
-        {
-          "label": "pay with your key",
-          "say": [
-            "pay --key",
-            "TILL: key ok. one noodle bowl. thank you, regular.",
-            "ok"
-          ]
-        }
-      ],
-      "downtown/fence": [
-        {
-          "label": "read the plate",
-          "act": [
-            "plate",
-            "read"
-          ]
-        },
-        {
-          "label": "open the gate",
-          "say": [
-            "use gate --open",
-            "REGISTRY PROPERTY: root only. current user: courier, registered.",
-            "err"
-          ]
-        }
-      ],
-      "downtown/scan": [
-        {
-          "label": "walk in",
-          "say": [
-            "enter",
-            "IDENTITY SCAN: verified in 0.2 s. have a compliant day.",
-            "ok"
-          ]
-        },
-        {
-          "label": "look at the screen",
-          "say": [
-            "cat scanner",
-            "subject: courier, 7B · identity: verified · record: current."
-          ]
-        }
-      ],
-      "downtown/billboard": [
-        {
-          "label": "watch the ad",
-          "say": [
-            "cat ads",
-            "REGISTRY PREMIUM. Be seen everywhere. good morning, resident."
-          ]
-        }
-      ],
-      "capsule/lock": [
-        {
-          "label": "try the door",
-          "say": [
-            "use bolt --open",
-            "DOOR LOCK: unlocked. welcome home.",
-            "ok"
-          ]
-        },
-        {
-          "label": "read the plate",
-          "say": [
-            "cat plate",
-            "RENT: PAID. NEXT DUE IN 9 DAYS."
-          ]
-        }
-      ],
-      "capsule/fridge": [
-        {
-          "label": "open the fridge",
-          "say": [
-            "open fridge",
-            "one lemon, a battery, and the noodles you did not eat on shift.",
-            "dim"
-          ]
-        },
-        {
-          "label": "read the note",
-          "act": [
-            "note",
-            "read"
-          ]
-        }
-      ],
-      "capsule/kettle": [
-        {
-          "label": "boil",
-          "act": [
-            "kettle",
-            "boil"
-          ]
-        }
-      ],
-      "capsule/blinds": [
-        {
-          "label": "open",
-          "set": [
-            "sun",
-            true
-          ],
-          "say": [
-            "use motor --open",
-            "the blinds roll up. dawn, the colour of weak tea.",
-            "ok"
-          ]
-        },
-        {
-          "label": "close",
-          "act": [
-            "motor",
-            "close"
-          ]
-        }
-      ],
-      "capsule/pc": [
-        {
-          "label": "check mail",
-          "say": [
-            "cat inbox",
-            "HOME-PC: no new mail. 1 old message, from Moth: \"if I go dark, my place is yours. my key is with the noodle fixer. follow the trains.\""
-          ]
-        }
-      ],
-      "capsule/plug": [
-        {
-          "label": "switch on",
-          "say": [
-            "use power --on",
-            "SMART PLUG: schedule: night. it is always night in here.",
-            "dim"
-          ]
-        }
-      ],
-      "capsule/router": [
-        {
-          "label": "feel how warm it is",
-          "act": [
-            "temp",
-            "read"
-          ]
-        }
-      ]
-    },
-    "deleted": {
-      "capsule/lock": [
-        {
-          "label": "try the door",
-          "say": [
-            "use bolt --open",
-            "DOOR: rent: pending. identity: not found.",
-            "err"
-          ],
-          "fail": true
-        },
-        {
-          "label": "read the plate",
-          "act": [
-            "plate",
-            "read"
-          ]
-        }
-      ],
-      "capsule/kettle": [
-        {
-          "label": "boil",
-          "say": [
-            "use kettle --boil",
-            "KETTLE: no account. no water.",
-            "err"
-          ],
-          "fail": true
-        }
-      ],
-      "capsule/blinds": [
-        {
-          "label": "open",
-          "say": [
-            "use motor --open",
-            "BLINDS: privacy mode. account: not found.",
-            "err"
-          ],
-          "fail": true
-        }
-      ],
-      "capsule/plug": [
-        {
-          "label": "switch on",
-          "say": [
-            "use power --on",
-            "SMART PLUG: no account. schedule: night.",
-            "err"
-          ],
-          "fail": true
-        }
-      ],
-      "capsule/pc": [
-        {
-          "label": "check mail",
-          "say": [
-            "cat inbox",
-            "HOME-PC: 1 new message. MOTH, 09:38.",
-            "ok"
-          ],
-          "mail": true
-        }
-      ]
-    }
-  },
-  "OPENING_EXITS": {
-    "home": {
-      "metro/train": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "That was my stop. Bed is the other way."
-          ]
-        }
-      },
-      "metro/downtown": {
-        "turnstile": true
-      },
-      "downtown/capsule": {
-        "concierge": true
-      },
-      "downtown/shop": {
-        "say": {
-          "name": "SHOP",
-          "pages": [
-            "OPENS 07:00.",
-            "DELIVERIES ROUND THE BACK."
-          ]
-        }
-      },
-      "downtown/yard": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "The fixer's yard. Not at this hour."
-          ]
-        }
-      },
-      "downtown/moth": {
-        "say": {
-          "name": "DOOR",
-          "pages": [
-            "RESIDENTS ONLY. PRESENT KEY CHIP.",
-            "FLAT 4C · RESIDENT: MOTH."
-          ]
-        }
-      },
-      "downtown/taxi": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "A sky taxi, on a courier's pay. Sure."
-          ]
-        }
-      },
-      "downtown/market": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "Bed first. The city will still be there."
-          ]
-        }
-      }
-    },
-    "flat": {
-      "downtown/capsule": {
-        "concierge": true
-      },
-      "downtown/shop": {
-        "say": {
-          "name": "SHOP",
-          "pages": [
-            "OPENS 07:00.",
-            "DELIVERIES ROUND THE BACK."
-          ]
-        }
-      },
-      "downtown/yard": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "The fixer's yard. Not at this hour."
-          ]
-        }
-      },
-      "downtown/moth": {
-        "say": {
-          "name": "DOOR",
-          "pages": [
-            "RESIDENTS ONLY. PRESENT KEY CHIP.",
-            "FLAT 4C · RESIDENT: MOTH."
-          ]
-        }
-      },
-      "downtown/taxi": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "A sky taxi, on a courier's pay. Sure."
-          ]
-        }
-      },
-      "downtown/market": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "Bed first. The city will still be there."
-          ]
-        }
-      },
-      "capsule/door": {
-        "say": {
-          "name": "YOU",
-          "pages": [
-            "Bed first. The city will still be there."
-          ]
-        }
-      }
-    },
-    "deleted": {
-      "capsule/door": {
-        "react": "lock",
-        "line": [
-          "open door",
-          "DOOR: rent: pending. identity: not found.",
-          "err"
-        ],
-        "fail": true
-      }
-    }
-  },
-  "OPENING_TARGETS": {
-    "flat": {
-      "capsule/bed": {
-        "label": "[E] SLEEP",
-        "promptH": 46,
-        "bind": {
-          "kind": "rest",
-          "id": "bed",
-          "offsetX": 6
-        }
-      }
-    }
-  },
-  "OPENING_PINGS": {
-    "home": {
-      "train": {
-        "door": true
-      },
-      "metro": {
-        "exit": "downtown"
-      },
-      "downtown": {
-        "exit": "capsule"
-      }
-    },
-    "flat": {
-      "capsule": {
-        "story": "bed"
-      },
-      "downtown": {
-        "exit": "capsule"
-      }
-    },
-    "deleted": {
-      "capsule": {
-        "device": "pc"
-      }
-    },
-    "uplinked": {
-      "capsule": {
-        "device": "pc"
-      }
-    }
-  },
-  "IDLE_PING": 1200,
-  "HOME_RUN": {
-    "frames": 1800,
-    "start": 240
-  },
-  "TURNSTILE": {
-    "verify": 150,
-    "ok": 50
-  },
-  "SLEEP": {
-    "out": 50,
-    "card": 110,
-    "in": 50,
-    "from": "06:04",
-    "to": "09:40"
-  },
-  "MORNING": {
-    "tries": 2,
-    "wait": 1500,
-    "after": 100
-  },
-  "WAKE_LINES": [
-    "Morning. The light is wrong.",
-    "Cold. Like the flat forgot who it is heating."
-  ],
-  "MOTH_MESSAGE": [
-    "they took you off the list. not a glitch. don't call anyone.",
-    "here's a way back in. jack in to your PC.",
-    "→ uplink.so",
-    "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely."
-  ],
-  "DECK_BEFORE": {
-    "files": {
-      "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
-    },
-    "whoami": "courier, capsule 7B (registered) · night shift"
-  },
-  "OPENING_INTRO": {
-    "home": {
-      "train": {
-        "pages": [
-          "End of shift. Fourteen parcels, zero complaints, one sore back.",
-          "Downtown is next. Then bed.",
-          "← → walk. E talks to people."
-        ],
-        "touchPages": [
-          "End of shift. Fourteen parcels, zero complaints, one sore back.",
-          "Downtown is next. Then bed.",
-          "The arrows at the bottom walk. Tap someone to talk."
-        ],
-        "speaker": "YOU",
-        "height": 46
-      },
-      "metro": {
-        "pages": [
-          "Downtown. The exit is at the far end, by the stairs."
-        ],
-        "touchPages": [
-          "Downtown. The exit is at the far end, by the stairs."
-        ],
-        "speaker": "YOU",
-        "height": 46
-      },
-      "downtown": {
-        "pages": [
-          "Ten to six. The street is still warm from the night.",
-          "Home is the capsule tower, past the metro stairs."
-        ],
-        "touchPages": [
-          "Ten to six. The street is still warm from the night.",
-          "Home is the capsule tower, past the metro stairs."
-        ],
-        "consume": true,
-        "speaker": "YOU",
-        "height": 46
-      }
-    },
-    "flat": {
-      "capsule": {
-        "pages": [
-          "Home. Four walls, one window, one cat.",
-          "Kettle, blinds, bed. In that order, if I am lucky.",
-          "E or a tap on a thing: use it."
-        ],
-        "touchPages": [
-          "Home. Four walls, one window, one cat.",
-          "Kettle, blinds, bed. In that order, if I am lucky.",
-          "Tap a thing to use it."
-        ],
-        "consume": true,
-        "speaker": "YOU",
-        "height": 46
-      }
-    }
-  },
-  "UPLINK_LINES": {
-    "pages": [
-      "uplink.so. Moth wrote this. I can tell by the comments.",
-      "H: see how things work. B: the board. E at the PC, then ⌁ jack in."
-    ],
-    "touchPages": [
-      "uplink.so. Moth wrote this. I can tell by the comments.",
-      "HACK, top right: see how things work. Tap the PC: ⌁ jack in."
-    ]
-  },
   "PHASES": {
     "home": {
       "hackLocked": true,
-      "before": true,
       "pinned": true,
       "resume": [
         {
@@ -863,11 +50,20 @@
             "scene": "train"
           }
         }
-      ]
+      ],
+      "persona": {
+        "name": "courier",
+        "calmWeather": true,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+          },
+          "whoami": "courier, capsule 7B (registered) · night shift"
+        }
+      }
     },
     "flat": {
       "hackLocked": true,
-      "before": true,
       "pinned": true,
       "resume": [
         {
@@ -875,11 +71,20 @@
             "scene": "capsule"
           }
         }
-      ]
+      ],
+      "persona": {
+        "name": "courier",
+        "calmWeather": true,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+          },
+          "whoami": "courier, capsule 7B (registered) · night shift"
+        }
+      }
     },
     "deleted": {
       "hackLocked": true,
-      "before": false,
       "pinned": true,
       "resume": [
         {
@@ -891,7 +96,6 @@
     },
     "uplinked": {
       "hackLocked": false,
-      "before": false,
       "pinned": false,
       "resume": [
         {
@@ -903,107 +107,225 @@
     },
     "free": {
       "hackLocked": false,
-      "before": false,
       "pinned": false,
       "resume": []
     }
   },
-  "CONTROLLER": {
+  "PHASE_RULES": [
+    {
+      "when": {
+        "any": [
+          {
+            "flag": "opening:home",
+            "is": false
+          },
+          {
+            "flag": "opening:jacked"
+          }
+        ]
+      },
+      "phase": "free"
+    },
+    {
+      "when": {
+        "flag": "opening:uplink"
+      },
+      "phase": "uplinked"
+    },
+    {
+      "when": {
+        "flag": "opening:slept"
+      },
+      "phase": "deleted"
+    },
+    {
+      "when": {
+        "flag": "opening:flat"
+      },
+      "phase": "flat"
+    },
+    {
+      "phase": "home"
+    }
+  ],
+  "START": {
     "start": {
       "scene": "train"
     },
     "fallback": {
       "scene": "train"
     },
-    "homeRun": {
-      "from": "harbor",
-      "to": "downtown",
-      "announcement": "NEXT: DOWNTOWN"
-    },
-    "home": {
-      "scene": "capsule",
-      "jackDevice": "pc"
-    },
-    "releaseClock": {
+    "settled": "downtown"
+  },
+  "ATTENTION": {
+    "after": 1200
+  },
+  "CLOCK": {
+    "release": {
       "phase": "uplinked",
       "scene": "capsule"
-    },
-    "sleep": {
-      "target": "bed",
-      "label": "CAPSULE 7B"
-    },
-    "playerBefore": "courier",
-    "concierge": {
-      "speaker": "CONCIERGE",
-      "pages": [
-        "welcome home. you are expected. the lift is on its way down."
-      ],
-      "height": 60
-    },
-    "wake": {
-      "speaker": "YOU",
-      "height": 46
-    },
-    "moth": {
-      "speaker": "MOTH › YOU",
-      "terminalPrefix": "moth> ",
-      "height": 46
-    },
-    "uplink": {
-      "speaker": "YOU",
-      "height": 46,
-      "received": "[deck] uplink.so received. hack vision: H · the board: B"
-    },
-    "turnstile": {
-      "verifying": "TURNSTILE: verifying",
-      "ok": "TURNSTILE: verifying… … ok.",
-      "dotEvery": 20
-    },
-    "greeting": {
-      "scene": "downtown",
-      "speaker": "YOU",
-      "height": 46,
-      "rainThreshold": 0.2,
-      "wet": "Downtown. Rain, neon, and nobody who sees me.",
-      "dry": "Downtown. Neon, wet streets, and nobody who sees me.",
-      "stall": "The noodle stall is still lit. Worth a try.",
-      "how": {
-        "pages": [
-          "Every machine here does something: E or a tap. H shows how they all work, B is the board."
-        ],
-        "touchPages": [
-          "Every machine here does something: tap it. HACK, bottom right, shows how they all work."
-        ]
-      },
-      "relearn": "My deck sees this street differently now."
-    },
-    "inbox": {
-      "contact": "moth",
-      "speaker": "YOU",
-      "height": 46,
-      "pages": [
-        "Moth is on my deck now. One bar of signal, out on the water.",
-        "ENTER for the terminal, then: msg moth."
-      ],
-      "touchPages": [
-        "Moth is on my deck now. One bar of signal, out on the water.",
-        "TERMINAL, then: msg moth."
-      ],
-      "terminal": {
-        "prefix": "[deck] ",
-        "separator": " · ",
-        "countSuffix": " message(s)",
-        "commandPrefix": " · type: msg "
-      }
-    },
-    "libraryGuidance": {
-      "program": "scan.so",
-      "destinationScene": "library",
-      "completedScene": "capsule",
-      "completedGoal": "door",
-      "line": "the public library, down the street: scan.so (Moth's tip)"
     }
   },
+  "CARDS": {
+    "sleep": {
+      "out": 50,
+      "card": 110,
+      "in": 50,
+      "from": "06:04",
+      "to": "09:40",
+      "label": "CAPSULE 7B",
+      "mid": [
+        {
+          "milestone": "slept"
+        },
+        {
+          "stage": {
+            "scene": "capsule",
+            "reset": true,
+            "face": -1
+          }
+        },
+        {
+          "counter": {
+            "prefix": "morning",
+            "reset": true
+          }
+        },
+        {
+          "counter": {
+            "id": "morning.at",
+            "stamp": true
+          }
+        }
+      ],
+      "end": [
+        {
+          "counter": {
+            "id": "morning.at",
+            "stamp": true
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Morning. The light is wrong.",
+              "Cold. Like the flat forgot who it is heating."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    }
+  },
+  "TRIGGERS": [
+    {
+      "id": "morning",
+      "phase": "deleted",
+      "scene": "capsule",
+      "start": "morning.at",
+      "once": "morning.sent",
+      "quiet": {
+        "bubble": true,
+        "popup": true,
+        "since": "morning.last",
+        "frames": 100
+      },
+      "when": [
+        {
+          "counter": "morning.due",
+          "atLeast": 1
+        },
+        {
+          "counter": "morning.tries",
+          "atLeast": 2
+        },
+        {
+          "elapsed": "morning.at",
+          "frames": 1500
+        }
+      ],
+      "do": [
+        {
+          "milestone": "uplink"
+        },
+        {
+          "counter": {
+            "id": "morning.sent"
+          }
+        },
+        {
+          "print": {
+            "prefix": "moth> ",
+            "tone": "ok",
+            "lines": [
+              "they took you off the list. not a glitch. don't call anyone.",
+              "here's a way back in. jack in to your PC.",
+              "→ uplink.so",
+              "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely."
+            ]
+          }
+        },
+        {
+          "print": {
+            "tone": "ok",
+            "lines": [
+              "[deck] uplink.so received. hack vision: H · the board: B"
+            ]
+          }
+        },
+        {
+          "sound": "granted"
+        },
+        {
+          "say": {
+            "speaker": "MOTH › YOU",
+            "pages": [
+              "they took you off the list. not a glitch. don't call anyone.",
+              "here's a way back in. jack in to your PC.",
+              "→ uplink.so",
+              "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "uplink.so. Moth wrote this. I can tell by the comments.",
+              "H: see how things work. B: the board. E at the PC, then ⌁ jack in."
+            ],
+            "touchPages": [
+              "uplink.so. Moth wrote this. I can tell by the comments.",
+              "HACK, top right: see how things work. Tap the PC: ⌁ jack in."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "jack",
+      "phase": "uplinked",
+      "scene": "capsule",
+      "viewing": "pc",
+      "do": [
+        {
+          "milestone": "jacked"
+        }
+      ]
+    }
+  ],
+  "GOAL_HINTS": [
+    {
+      "program": "scan.so",
+      "exceptScene": "library",
+      "afterScene": "capsule",
+      "afterGoal": "door",
+      "line": "the public library, down the street: scan.so (Moth's tip)"
+    }
+  ],
   "GAMEPLAY": {
     "version": 1,
     "flags": [

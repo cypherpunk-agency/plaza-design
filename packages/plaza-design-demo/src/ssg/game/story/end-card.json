@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "END": {
+    "title": "END OF TRANSMISSION",
+    "lines": [
+      "Downtown cleared. Nodes that answer to you: {controlled}. You are still a ghost, {handle}.",
+      "The Neon Market gate stands open at the west end. Your progress is saved in this browser."
+    ],
+    "prompt": "ENTER keep exploring · ESC menu"
+  }
+}

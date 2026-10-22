@@ -32,6 +32,7 @@ inspection do not commit actions or advance dialogue.
 | Places, routes, access, transport and narrative/timeline handoffs | Existing world/story source documents; authoring/source-documents.ts registers their ownership |
 | Typed controls and pending source | authoring/source-documents.ts, ComposerModel and the appropriate typed authoring module |
 | Player runtime state | Save.gameplay owner blocks, with SceneModel referencing the same block; engine snapshots keep goals/cables/locks/board metadata |
+| A story timeline (the opening): phases, gates, cards, triggers, what a scene says in a phase | story/opening.json plus each scene.json `phases` and `wash`; story/story-rules.ts holds the pure rules |
 
 Existing scene factories adapt source and retained drawing/simulation; do not copy a factory's
 old shape to create an ordinary scene. Use the authored-scene catalogue instead. Source documents
@@ -281,6 +282,42 @@ ends with `run`; a loop line is a `ring`; what a leg needs from the scene's stat
 (`dlv9.chassis`, `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`), the yard's hook (`crane.hook`) and the metro car
 (`train.car`, `train.doors`: `pnpm test:game train-ride`) are the examples. Words: docs/design/CIRCUIT-VOCABULARY.md.
 
+## Recipe: a story timeline (phases, gates, cards, triggers)
+
+The opening is data, not a controller. There is no story runtime: `story/story-rules.ts` holds source types and pure functions; the one
+game loop (`runtime/game.ts` `stepLoop` -> `updateStory`, `pinStory`, `update`, `drawBeat`/`drawSleep`) applies them, and the few numbers they read
+(the frame clock, the loop's `counters`, the player's stillness) are the loop's own. Nothing schedules; scene time still moves only on the
+model's tick. A second timeline (shift -> commute -> home) is authored in the same files, with no new loop code.
+
+| Wanted | Where |
+| --- | --- |
+| Which phase the story is in, what each phase locks, pins and resumes at, who you are in it (`persona`) | story/opening.json `PHASES`, `PHASE_RULES` (ordered flag rules, last row the fallback) |
+| What one scene says and does in one phase: goal line, clock time, arrival words, the scripted ride, who answers, exits that act differently, everyday popup actions, story targets, the attention ping | scenes/<id>/scene.json `phases.<phase>` (editor: Scene › Story phases, or Game opening › Scene phases) |
+| The room's light cue | scene.json `wash` rules (`washTone`) |
+| A timed checkpoint (turnstile), an acknowledging device (concierge) | an exit rule `gate` / `acknowledge` in a phase's `exits` (`gateFrame`) |
+| Sleep / wait: fade, a card with two clock readings, fade | opening.json `CARDS` (`cardFrame`); a story target with `card` starts one; "wait until..." builds the same card |
+| A workflow that fires when counters, elapsed frames and quiet say so (the morning's message, jacking in) | opening.json `TRIGGERS` (`triggerFires`, `triggerStarts`) |
+| Counters (tries, last, due, at) | named by the source: a chip or react-exit `cues: [{counter}]`, a trigger's tests; the loop's `counters` record |
+| The clock pin and release | a phase's `time` in each scene; `PHASES.<p>.pinned`; `CLOCK.release` (`clockPin`) |
+| The attention (idle) ping | `ATTENTION.after` and a phase's `ping` (`attentionDue`, `attentionAim`) |
+| The scripted ride | a phase's `ride: {mover, path}`: the Train mover's `home` path (`train.car`), run on the model's tick when the scene is entered |
+| A goal hint (a program still missing) | `GOAL_HINTS` (`goalHint`) |
+| Contacts and the inbox's words | data/contacts.json (World › Game opening › Contacts) |
+| The END card's words | story/end-card.json (World › Game opening › End card); opened by a handoff `presentation: "end"` |
+
+**Cues** are the finite things a gate, an acknowledgment, a card or a trigger makes happen, run in order: `milestone` (a system command of
+`WORKFLOWS`; a refused one ends the list), `say` (spoken in chain after the other cues), `print` (deck lines), `sound`, `stage` (bring the
+player to a scene's spawn, reset it, companion home), `counter` (add / stamp / reset a group) and `advance` (the city clock jumps). A new kind of
+effect is one more cue in `story-rules.ts` and one case in `runCues`; the editor offers it from the same list (authoring/story-fields.ts).
+
+To add a phase: add it to `PHASES` and a `PHASE_RULES` row, then give each scene its `phases.<id>` (only the scenes that differ). The source set
+is validated as one graph: a scene's names (exits, devices, nouns, states, readables, mover paths), a phase, a card, a milestone or a stage scene
+that does not exist is refused whole (check-opening-from-data.mts). Check: `pnpm test:game story-rules opening-from-data story-authoring`.
+
+The opening can also be played from a script: `scripts/opening-playthrough/` (README there) drives a NEW GAME through it in headless Chrome
+against `dist-homepage` and records a trace per beat; `?probe` in the URL exposes the read-only `window.__game.probe()` it reads. That is
+a tool for comparing a refactor with a recording, not a regression suite.
+
 ## Recipe: a way of playing (play profiles)
 
 The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: World ›
@@ -349,6 +386,7 @@ isolated copies, not the working game's files or your recovery journal.
 | Play profiles (ways of playing) | play-profiles demo-district play-storage |
 | Companion, critters, locks, review stations, reset flags | companion-source critter-reactions review-stations city-locks scene-reset-flags loop-scene-ids |
 | Editor bundles and source service | public-editor-build authoring-save public-document-bundle |
+| The story timeline (opening) | story-rules opening-from-data story-authoring opening-workflows opening-source-save scene-parity |
 
 Choose focused checks for routine work. Run the full suite for broad engine changes. Visual
 snapshots describe the approved current renderer; compare pixels in the same browser/font/viewport

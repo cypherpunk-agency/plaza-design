@@ -11,7 +11,7 @@
  * - **Travel:** a metro ride is the ride (the car is a scene: the clock runs on board); quick
  *   travel adds `TRAVEL.quick`, the sky taxi `TRAVEL.taxi` (the clock stands still while either plays).
  * - **Pinning:** a story beat pins the clock to a minute (`pin`), and it does not run until
- *   `release`. The opening pins it (opening.ts `OPENING_TIME`: 05:41 on the train … 09:40 the
+ *   `release`. The opening pins it (each scene's `phases.<phase>.time`, story/story-rules.ts `clockPin`: 05:41 on the train … 09:40 the
  *   morning after) and lets go after uplink.so, from 09:42.
  * - **Waiting:** a bench, a bar stool or your bed offers "wait until…" (`WAITS`): the next hour,
  *   dusk, night, morning. The clock jumps (`advance`) behind a short fade and a time card.
