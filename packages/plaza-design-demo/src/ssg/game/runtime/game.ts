@@ -79,7 +79,7 @@ import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from 
 import { sound } from './audio';
 import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './characters';
 import { Companion, COMPANION_LOOKS } from './companion';
-import { EDITOR_PLAY } from "./mode";
+import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import { levelArrive, levelBounds, levelDown, levelFloor, levelHints, levelInteract, levelRiding, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
@@ -260,7 +260,7 @@ export class Game {
   constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
     // sudo (developer) mode: browser checks read the player and the level, and place the player, through window.__game
     const game = this;
-    if (SUDO) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.level; }, get here() { return game.here; }, prompt: () => game.nearest(), place: (x: number) => { game.p.x = x; } };
+    if (SUDO || PROBE) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.level; }, get here() { return game.here; }, prompt: () => game.nearest(), probe: () => game.probeFrame(), ...(SUDO ? { place: (x: number) => { game.p.x = x; } } : {}) };
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'game-canvas';
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: Downtown');
@@ -1086,6 +1086,25 @@ export class Game {
 
   private nearest(): Target | null { return nearestPrompt(this.targets(), this.p); }
 
+  /** What the HUD's hint lane drew last (the probe reads it; nothing else does). */
+  private hudHint = '';
+  /** `?probe` / `?sudo`: a read-only snapshot of the story for scripts (scripts/opening-playthrough). It writes nothing and advances nothing. */
+  private probeFrame() {
+    const t = this.nearest(), b = this.bubble;
+    return {
+      here: this.here, phase: this.story, flags: { ...this.save.flags },
+      clock: { day: city.day, min: Math.round(city.min * 100) / 100, text: city.text, pinned: city.pinned },
+      title: !!this.opening, glide: !!this.opening?.gliding, menu: this.menu.open, cut: !!this.cut, end: this.showEnd, map: !!this.mapView,
+      bubble: b ? { name: b.name, text: b.pages[b.page], page: b.page, pages: b.pages.length, full: b.chars >= b.pages[b.page].length } : null,
+      prompt: t ? { kind: t.kind, id: t.id, label: t.label, x: Math.round(t.x) } : null,
+      targets: this.targets().map(z => ({ kind: z.kind, id: z.id, label: z.label, x: Math.round(z.x) })),
+      hint: this.hudHint, goal: this.goalText(), popup: this.zh.popupOpen, acknowledging: this.zh.acknowledgmentText ?? null,
+      gate: this.probeGate(), card: this.probeCard(),
+      player: { x: Math.round(this.p.x * 10) / 10, y: Math.round(this.p.y * 10) / 10 },
+      term: (this.term.out.textContent ?? '').slice(-700),
+    };
+  }
+
   private say(name: string, pages: string[], x: number, h: number) {
     if(!pages.length)return;
     this.bubble = { name, pages, page: 0, chars: 0, x, h };
@@ -1552,6 +1571,7 @@ export class Game {
     }
     // the hint lane (ui/hints.ts): one line at a time, on a dark strip so it reads over any scene
     const hint = this.hints.step(this.hints.notices.time,this.communicationCovered||!!this.bubble||!!this.zh.popupOpen||this.zh.acknowledgmentPending);
+    this.hudHint = hint?.text ?? '';
     if (hint) {
       y += 11;
       x.fillStyle = 'rgba(0,0,0,' + 0.6 * hint.alpha + ')'; x.fillRect(6, y - 8, x.measureText(hint.text).width + 4, 11);
@@ -1939,6 +1959,10 @@ export class Game {
     const tone = this.story === 'flat' ? 'warm' : f[this.openingStory.OPENING.slept] && !this.zh.model.get(this.zh.model.data.controller?.kind==='capsule'?capsuleController(this.zh.model.data).state.doorOpen:'doorOpen') ? 'cold' : null;
     if (tone) drawCapsuleWash(this.x, this.viewW, this.viewH, tone);
   }
+
+  /** The probe's view of the gate's line and the card's stage. */
+  private probeGate() { if (!this.beat) return null; const e = this.clock - this.beat.start, ok = e >= this.openingStory.TURNSTILE.verify; return ok ? this.openingStory.CONTROLLER.turnstile.ok : this.openingStory.CONTROLLER.turnstile.verifying; }
+  private probeCard() { if (!this.sleep) return null; const e = this.clock - this.sleep.start, S = this.sleep.card; return { stage: e < S.out ? 'out' : e < S.out + S.card ? 'card' : 'in', text: (e - S.out) / S.card < 0.5 ? this.sleep.from : this.sleep.to, label: this.sleep.label }; }
 
   /** The turnstile verifying, over the gate: dots, one beat too long, then ok. */
   private drawBeat() {
