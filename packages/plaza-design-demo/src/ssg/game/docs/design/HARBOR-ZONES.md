@@ -1,9 +1,9 @@
 # Harbor zones: the harbor replan
 
-> **Proposal, 2026-10-22. Not implemented.** A design pass for step 5 of
+> **Design 2026-10-22; first build 2026-10-22** (see "Build" at the end). A design pass for step 4 of
 > [SEAMLESS-WORLD.md](./SEAMLESS-WORLD.md) (§4 "Harbor replan", §7), for review with Tommi.
-> No engine, gameplay or scene changes are made here. The style frames are editor-only proposals
-> (`art/proposals/harbor-*.composition.json`, Library › proposals, "Harbor zones · …").
+> The style frames are editor-only proposals (`art/proposals/harbor-*.composition.json`, Library › proposals,
+> "Harbor zones · …"); the playable zones built from them are in `scenes/authored.json`.
 
 
 ## Decided (Tommi, 2026-10-22, after the first review)
@@ -253,6 +253,44 @@ a story-level session, flags or a `harbor-shed` owner read by the others would e
 make two zones depend on a third. `stateReads` remains the way to only *look* at another scene's own state.
 `shift:*` flags should become `shift.*` state when the prototype is split across the three zones.
 
-**Not done yet.** Moving `harborShift`'s flags onto `shift.*`, and splitting its stations across
-`harbor-checkout`, `harbor-yard` and `harbor-shed`. Play-fixture state presets cover only scene-owned keys so
-far. Check: `pnpm test:game shared-state-owner`.
+**Done in the build below.** The shift's progress is `shift.*` (tagReceived, parcelCollected, parcelDelivered,
+caseCollected, caseReturned, trolleyAssigned, clampFound, clampReleased, trolleyMoved, checkedOut, statementRead,
+coffeeFixed). Play-fixture state presets still cover only scene-owned keys. Check: `pnpm test:game shared-state-owner`.
+
+## Build (2026-10-22, parallel to the M2 prototype)
+
+The five zones are ordinary authored scenes in `scenes/authored.json` (like `tower-annex`): each is JSON only and
+needs no per-scene TypeScript, so the catalogue was the fit rather than five `scenes/<id>/` folders (the folder route
+would add five registry entries for nothing it needs). Their compositions start from the frames; the frames' look
+base, annotations and each other's stand-ins are dropped, and one zone owns each shared piece: the station owns the
+platform deck, the stair (`via-stair`) and the glass lift (mover `lift.car`, stops quay -160 and platform 0); the quay
+owns the viaduct piers. Seams in `world/zone-graph.json`: `station-quay` (stairs, station → quay, dh -160), then walk
+seams quay → checkout → yard → shed (dx 1,600, 640, 1,280).
+
+- **The turnstile** is `level.barrier` `turnstile` in `harbor-checkout` (x 302, the reader on its staff side), with
+  `closes` (it shuts again behind the player) and the rule `when: any(shift.tagReceived is false, shift.checkedOut)`:
+  at dusk, before the shift, a worker without a tag is let in; during the shift it refuses ("Return your work tag at
+  the reader"); once the tag is returned it opens. No story phase is needed, so the opening is untouched; a phase rule
+  can still replace it later (`phases.<p>.barriers.turnstile`). The STAFF GATE fence beside it is scenery.
+- **The shift** is split by station ids: supervisor (P1–P2, trolley assignment), dispatch and case returns in
+  `harbor-shed`; Mara at receiving, the empty case, trolley T4 and its clamp (P3–P5) in `harbor-yard`; the reader and
+  the wage statement (P6) in `harbor-checkout`. Each zone's gameplay has `sharedState: ["shift"]`; conversations and
+  objectives carry over (directions rewritten for west → east). Every zone has the same objective list (targets only
+  where the target is in that zone) and the same clock rules (19:00 dusk … 06:10 dawn, day 2 after midnight).
+- **Coffee machine**: an optional use in the shed's staff room (`shift.fix-coffee`, +1 token, once); Mara mentions
+  it after the case is back.
+- **The trolley** is turned (facing -1); `shift.trolley` and `shift.clamp` now take their world-unit move into their
+  own frame, so it rolls west when pushed west.
+- **City**: place `harbor-works` holds the five zones. `world/city.json` has no station elevation field yet; the metro
+  line, `STATIONS.harbor` and the opening still use `harborStation` and today's scenes.
+- **Play**: `?play=harbor-station` is the `harborZones` play profile (dockworker, scene clock, no hacking, its own
+  save); `?play=harbor-quay` … `?play=harbor-shed` open a zone directly under the full profile, for inspection.
+  `?play=harborShift` is the unchanged M2 prototype. Check: `pnpm test:game harbor-zones`.
+
+Engine support added for this: availability and the scene clock may read saved state; scene values `{state}` and
+`{instance, get}`; barrier rules over world-level shared state, and `closes`; a lift stops on a joined zone's floor its
+shaft reaches; a zone below the active one draws first; uses and readables in a level scene are offered on their floor.
+
+Left: the Terminal 2 exit to `stacks` (scenery only), new art (raised-station kit, coffee machine, staff gate,
+quay edge), departures from the real timetable, the P0 hand-over onto the platform and P7 boarding, the editor's
+pending zone graph in Play, and the switch from `harborShift` (Tommi's call).

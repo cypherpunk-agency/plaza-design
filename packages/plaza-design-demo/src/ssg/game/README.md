@@ -34,6 +34,10 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
 - `?play=tower` opens the zone lab: walk right off the Tower lab's street into `tower-annex` with no
   cut, then take the annex stair up to `tower-deck`. `?play=tower-annex` starts in the annex. Seams are in
   `world/zone-graph.json`; see the handbook's "zones and seams" recipe.
+- `?play=harbor-station` opens the harbor as joined zones (docs/design/HARBOR-ZONES.md "Build"): off the raised
+  platform by stair or lift, east along the quay, through the checkout turnstile into the yard and Shed 3, and the
+  night shift on shared `shift.*` state. It has the harbor-shift controls and its own save; `?play=harborShift` is the
+  M2 prototype, unchanged.
 - The regular homepage also accepts the Konami code to enter the game.
 
 Arrow keys walk, E interacts, H opens hack vision, B the board, Enter the terminal, TAB/M the

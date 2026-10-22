@@ -98,7 +98,8 @@ source fields from a compiled original. No historic save-format migration is req
 State that belongs to no single scene (the harbor night shift across its zones) is declared once in
 [world/state-owners.json](../../world/state-owners.json); a scene's gameplay lists the owner in
 `sharedState` and then reads and writes its keys like its own. Never copy those declarations into a
-scene, and use `stateReads` only to look at another scene's own state. Check: `shared-state-owner`.
+scene, and use `stateReads` only to look at another scene's own state. Interaction availability (`when`), the scene
+clock's `time`/`timeDay` rules and scene values (`{state}`) read saved state too. Check: `shared-state-owner harbor-zones`.
 
 Examples: [Library dialogue source](../../scenes/library/scene.json),
 [shared conversation compiler](../../engine/gameplay/scene-conversations.ts),
@@ -192,7 +193,9 @@ opens and stays open: `LevelState.opened`, kept in `Save.barriers` by scene (`sa
 its picture's `open` is eased in the level step. `mergeLevels` namespaces barriers like every piece; a barrier key is
 validated with the exits' keys. The Tower annex's turnstile is the example. The composer's Access tab (authoring/barrier-authoring.ts) edits the
 rule with typed pickers, tries it over a fixture through `barrierAccess`, lists its phase rules and warns of a rule that can never pass.
-Check with `pnpm test:game level-barriers barrier-authoring`.
+A barrier's `when` may also read world-level shared state (world/state-owners.json, e.g. `shift.checkedOut`), never a
+scene's own. `closes` (a turnstile letting one person through) shuts it again once the player has walked on; it is not
+kept on the save, so its rule is asked each time. Check with `pnpm test:game level-barriers barrier-authoring harbor-zones`.
 
 The street door seen from inside is `level.entrance` (its `building`; `style` glass, shop, flat or service, each the
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
@@ -259,6 +262,12 @@ Limits today:
 - There is no residency or unloading: a neighbour's host is made (`hostOf`) and kept.
 - The game imports the built zone graph, so editor Play does not take a pending one. The composer previews each
   zone alone, and there is no world canvas or seam tool yet.
+
+Stacked zones (a raised platform over a quay): the zone below the active one is drawn first, behind it
+(`ZoneFrame.below`), so only one of the two may carry the distance and backdrop bands. A lift owned by one zone stops
+on another zone's floor its shaft reaches (`mergeLevels`); its mover needs a stop at that height. The harbor
+(`?play=harbor-station`, docs/design/HARBOR-ZONES.md "Build") is the full example: five zones, a stairs + lift seam,
+walk seams and a turnstile over shared state; check `pnpm test:game harbor-zones`.
 
 Try it: `?play=tower`, walk right into the annex and take its stair up to the deck (README "Build and
 preview"). Check with `pnpm test:game zone-graph level-visual-state`; check-zone-graph.mts is the small
