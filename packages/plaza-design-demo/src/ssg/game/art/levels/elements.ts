@@ -9,7 +9,7 @@
  * Floors, doors and the handles are logic (drawn only as editor diagrams). Stairs, escalators and
  * lifts are artwork with a mechanism. Heights are world units over the street (the player is 42).
  */
-import type { Element, Field } from '../core/composition';
+import type { Element, Field, Properties } from '../core/composition';
 import type { View } from '../core/view';
 
 const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
@@ -128,9 +128,16 @@ const RAILS: Record<string, string> = { steel: C.rail, timber: '#6b4728', gold: 
 /** A view moved by (dx, dh): a piece drawn from another origin (a switchback's upper flight). */
 const shifted = (v: View, dx: number, dh: number): View => ({ ...v, sx: (wx: number) => v.sx(wx + dx), y: (h: number) => v.y(h + dh) });
 
+/**
+ * Which part of a stair to draw: all of it (at rest), its back (stringer, treads, a spiral's far side: behind the player)
+ * or its near handrail and posts (over the player while they are on or beside it: `level.stairs` `drawNear`).
+ */
+type StairPart = 'whole' | 'back' | 'near';
+const back = (part: StairPart) => part !== 'near', front = (part: StairPart) => part !== 'back';
 /** Steps from the foot (origin) to the top at (run, rise): a flight with a stringer and a handrail, in its material. */
-function drawFlight(x: CanvasRenderingContext2D, v: View, run: number, rise: number, moving: number | null, look: StairLook = LOOKS.concrete, rail = look.rail) {
+function drawFlight(x: CanvasRenderingContext2D, v: View, run: number, rise: number, moving: number | null, look: StairLook = LOOKS.concrete, rail = look.rail, part: StairPart = 'whole') {
   const n = Math.max(2, Math.round(Math.abs(rise) / 8)), dx = run / n, dh = rise / n, dir = Math.sign(run) || 1;
+  if (back(part)) {
   // stringer under the steps (the side we see), with its underside following the slope
   x.fillStyle = look.stringer;
   x.beginPath(); x.moveTo(v.sx(0), v.y(0)); x.lineTo(v.sx(run), v.y(rise)); x.lineTo(v.sx(run), v.y(rise - 10)); x.lineTo(v.sx(0), v.y(-10)); x.closePath(); x.fill();
@@ -141,8 +148,9 @@ function drawFlight(x: CanvasRenderingContext2D, v: View, run: number, rise: num
     rect(x, v, sx, sh - 2, dx, 2, look.nose);
     rect(x, v, sx, sh - dh, dx, Math.max(1, dh - 2), look.tread);
   }
+  }
   void dir;
-  if (!rail) return;
+  if (!rail || !front(part)) return;
   // handrail on posts, a warm rim on top so the line reads against dark walls
   x.strokeStyle = rail; x.lineWidth = 1;
   x.beginPath(); x.moveTo(v.sx(0), v.y(30)); x.lineTo(v.sx(run), v.y(rise + 30)); x.stroke();
@@ -151,11 +159,13 @@ function drawFlight(x: CanvasRenderingContext2D, v: View, run: number, rise: num
 }
 
 /** A steep ladder-stair: one heavy stringer along the slope, plank treads, a single rail. */
-function drawLadderStair(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string) {
+function drawLadderStair(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string, part: StairPart = 'whole') {
   const n = Math.max(3, Math.round(Math.abs(rise) / 9)), dir = Math.sign(run) || 1;
-  x.strokeStyle = look.stringer; x.lineWidth = 3; x.beginPath(); x.moveTo(v.sx(0), v.y(-2)); x.lineTo(v.sx(run), v.y(rise - 2)); x.stroke();
-  for (let i = 1; i <= n; i++) { const k = i / n; rect(x, v, run * k - 4 * dir, rise * k - 2, 8 * dir, 2, look.tread); rect(x, v, run * k - 4 * dir, rise * k, 8 * dir, 1, look.nose); }
-  if (!rail) return;
+  if (back(part)) {
+    x.strokeStyle = look.stringer; x.lineWidth = 3; x.beginPath(); x.moveTo(v.sx(0), v.y(-2)); x.lineTo(v.sx(run), v.y(rise - 2)); x.stroke();
+    for (let i = 1; i <= n; i++) { const k = i / n; rect(x, v, run * k - 4 * dir, rise * k - 2, 8 * dir, 2, look.tread); rect(x, v, run * k - 4 * dir, rise * k, 8 * dir, 1, look.nose); }
+  }
+  if (!rail || !front(part)) return;
   x.strokeStyle = rail; x.lineWidth = 1; x.beginPath(); x.moveTo(v.sx(0), v.y(28)); x.lineTo(v.sx(run), v.y(rise + 28)); x.stroke();
   x.strokeStyle = look.rim; x.beginPath(); x.moveTo(v.sx(0), v.y(29)); x.lineTo(v.sx(run), v.y(rise + 29)); x.stroke();
   // posts down to the stringer at both ends and the middle, so the rail stands on the stair
@@ -170,23 +180,32 @@ function drawRungs(x: CanvasRenderingContext2D, v: View, rise: number, look: Sta
   for (let h = lo + 40; h < hi - 4; h += 18) { rect(x, v, -10, h, 20, 1, look.rail); rect(x, v, -10, h, 1, 6, look.rail); rect(x, v, 9, h, 1, 6, look.rail); }
 }
 /** A spiral stair: a central column, wedge treads turning round it (the back ones darker), a rail winding with them. */
-function drawSpiral(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string) {
+function drawSpiral(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string, part: StairPart = 'whole') {
   const r = Math.max(12, Math.abs(run) / 2 || 14), n = Math.max(6, Math.round(Math.abs(rise) / 7)), dh = rise / n;
   const tread = (i: number, front: boolean) => { const a = i * 0.85, c = Math.cos(a), h = i * dh; if ((Math.sin(a) >= 0) !== front) return; const w = r * c; rect(x, v, Math.min(0, w) - 1, h - 3, Math.max(4, Math.abs(w) + 2), 3, front ? look.tread : look.stringer); if (front) rect(x, v, Math.min(0, w) - 1, h, Math.max(4, Math.abs(w) + 2), 1, look.nose); };
-  for (let i = 1; i <= n; i++) tread(i, false);
-  rect(x, v, -2, Math.min(0, rise) - 2, 4, Math.abs(rise) + 34, look.stringer); rect(x, v, -1, Math.min(0, rise) - 2, 1, Math.abs(rise) + 34, look.nose);
-  for (let i = 1; i <= n; i++) tread(i, true);
+  if (back(part)) {
+    for (let i = 1; i <= n; i++) tread(i, false);
+    rect(x, v, -2, Math.min(0, rise) - 2, 4, Math.abs(rise) + 34, look.stringer); rect(x, v, -1, Math.min(0, rise) - 2, 1, Math.abs(rise) + 34, look.nose);
+    for (let i = 1; i <= n; i++) tread(i, true);
+  }
   if (!rail) return;
-  x.strokeStyle = rail; x.lineWidth = 1; x.beginPath();
-  for (let i = 0; i <= n * 4; i++) { const k = i / 4, a = k * 0.85, px = v.sx(r * Math.cos(a)), py = v.y(k * dh + 26); if (i) x.lineTo(px, py); else x.moveTo(px, py); }
+  x.strokeStyle = rail; x.lineWidth = 1;
+  const at = (i: number) => { const k = i / 4, a = k * 0.85; return [v.sx(r * Math.cos(a)), v.y(k * dh + 26)] as const; };
+  if (part === 'whole') { x.beginPath(); for (let i = 0; i <= n * 4; i++) { const [px, py] = at(i); if (i) x.lineTo(px, py); else x.moveTo(px, py); } x.stroke(); return; }
+  // passing it: the rail's turns on the near side of the column go over the player, those behind it stay behind
+  x.beginPath();
+  for (let i = 1; i <= n * 4; i++) { const mid = (i - 0.5) / 4 * 0.85; if ((Math.sin(mid) >= 0) !== (part === 'near')) continue; const [ax, ay] = at(i - 1), [bx, by] = at(i); x.moveTo(ax, ay); x.lineTo(bx, by); }
   x.stroke();
 }
 /** A narrow switchback: a flight to a landing over its width, a second flight back above it (drawn behind). */
-function drawSwitchback(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string) {
-  const half = rise / 2, dir = Math.sign(run) || 1, back: StairLook = { ...look, tread: look.stringer, nose: look.tread };
-  x.save(); x.globalAlpha *= 0.85; drawFlight(x, shifted(v, run, half), -run, half, null, back, rail); x.restore();
-  rect(x, v, run - 2 * dir, half - 4, 16 * dir, 4, look.stringer); rect(x, v, run - 2 * dir, half, 16 * dir, 1, look.nose);
-  drawFlight(x, v, run, half, null, look, rail);
+function drawSwitchback(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string, part: StairPart = 'whole') {
+  const half = rise / 2, dir = Math.sign(run) || 1, far: StairLook = { ...look, tread: look.stringer, nose: look.tread };
+  // the upper flight runs behind, its rail with it; the near flight's rail is the one the player passes behind
+  if (back(part)) {
+    x.save(); x.globalAlpha *= 0.85; drawFlight(x, shifted(v, run, half), -run, half, null, far, rail); x.restore();
+    rect(x, v, run - 2 * dir, half - 4, 16 * dir, 4, look.stringer); rect(x, v, run - 2 * dir, half, 16 * dir, 1, look.nose);
+  }
+  drawFlight(x, v, run, half, null, look, rail, part);
 }
 
 export const stairsElement: Element = {
@@ -196,18 +215,27 @@ export const stairsElement: Element = {
     speed: num('Climbing speed (units per frame)', 1, 0.1, 4, 0.05), reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
     style: { kind: 'select', label: 'Style (spiral, rungs and switchback: run is the width; climbed with ↑/↓)', options: Object.keys(STAIR_STYLES), default: 'concrete' },
     rail: { kind: 'select', label: 'Handrail', options: ['auto', ...Object.keys(RAILS)], default: 'auto' },
+    railInFront: { kind: 'boolean', label: 'Handrail in front of the player on the stair', default: true },
   },
+  visualFields: { near: num('The player is on or beside it (level)', 0, 0, 1, 1) },
   bounds: p => { const r = Number(p.run), h = Number(p.rise), d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight'; return d === 'rungs' || d === 'spiral' ? { x: -Math.max(12, Math.abs(r) / 2 + 2), h: Math.min(0, h) - 4, w: Math.max(24, Math.abs(r) + 4), tall: Math.abs(h) + 40 } : { x: Math.min(0, r), h: Math.min(0, h) - 10, w: Math.max(8, Math.abs(r) + (d === 'switchback' ? 16 : 0)), tall: Math.abs(h) + 42 }; },
   anchors: p => { const d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight'; return { ...origin(), top: { x: d === 'flight' || d === 'ladder' ? Number(p.run) : 0, h: Number(p.rise), role: 'mount' } }; },
-  draw: (x, v, p) => {
-    const style = STAIR_STYLES[String(p.style)] ?? STAIR_STYLES.concrete, look = LOOKS[style.look], rail = p.rail && p.rail !== 'auto' ? RAILS[String(p.rail)] ?? look.rail : look.rail, run = Number(p.run), rise = Number(p.rise);
-    if (style.draw === 'ladder') drawLadderStair(x, v, run, rise, look, rail);
-    else if (style.draw === 'rungs') drawRungs(x, v, rise, look);
-    else if (style.draw === 'spiral') drawSpiral(x, v, run, rise, look, rail);
-    else if (style.draw === 'switchback') drawSwitchback(x, v, run, rise, look, rail);
-    else drawFlight(x, v, run, rise, null, look, rail);
-  },
+  draw: (x, v, p, s) => drawStairs(x, v, p, nearRail(p, s) ? 'back' : 'whole'),
+  drawNear: (x, v, p, s) => { if (nearRail(p, s)) drawStairs(x, v, p, 'near'); },
 };
+/** Does this stair have a near handrail to draw over the player now (it has a rail, they are on or beside it: `near`)? Rungs have none. */
+function nearRail(p: Properties, s: Properties) {
+  const style = STAIR_STYLES[String(p.style)] ?? STAIR_STYLES.concrete;
+  return Number(s.near ?? 0) > 0 && p.railInFront !== false && style.draw !== 'rungs' && !!(p.rail && p.rail !== 'auto' ? RAILS[String(p.rail)] ?? LOOKS[style.look].rail : LOOKS[style.look].rail);
+}
+function drawStairs(x: CanvasRenderingContext2D, v: View, p: Properties, part: StairPart) {
+  const style = STAIR_STYLES[String(p.style)] ?? STAIR_STYLES.concrete, look = LOOKS[style.look], rail = p.rail && p.rail !== 'auto' ? RAILS[String(p.rail)] ?? look.rail : look.rail, run = Number(p.run), rise = Number(p.rise);
+  if (style.draw === 'ladder') drawLadderStair(x, v, run, rise, look, rail, part);
+  else if (style.draw === 'rungs') drawRungs(x, v, rise, look);
+  else if (style.draw === 'spiral') drawSpiral(x, v, run, rise, look, rail, part);
+  else if (style.draw === 'switchback') drawSwitchback(x, v, run, rise, look, rail, part);
+  else drawFlight(x, v, run, rise, null, look, rail, part);
+}
 
 export const escalatorElement: Element = {
   type: 'level.escalator', version: 1, label: 'Escalator between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',

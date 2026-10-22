@@ -994,9 +994,9 @@ export class Game {
   }
   /** Each lift reads its own zone's movers. */
   private readonly movers: Movers = (zone) => zone && zone !== this.here && this.hasScene(zone) ? this.hostOf(zone).model : this.zh.model;
-  /** A zone's part of the level's view, in its own ids. */
+  /** A zone's part of the level's view, in its own ids (with where the player is: what they pass behind). */
   private levelViewOf(id: SceneId) {
-    const view = levelView(this.level!, this.movers);
+    const view = levelView(this.level!, this.movers, this.p);
     return this.level!.source.zones ? splitLevelView(view, id) : view;
   }
   /** Is there a walk seam at this edge of the zone the player is in (no edge exit there: the street goes on)? */

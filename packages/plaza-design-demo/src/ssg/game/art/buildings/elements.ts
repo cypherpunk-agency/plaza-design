@@ -5,7 +5,7 @@
  * fascia, storey1.., bay0..) let signs, devices, entrances or a custom balcony attach without the kit
  * knowing about them; `frontMasks` (masks.ts) hides the windows behind what is attached.
  */
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { Element, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { addLight } from '../atmosphere/lighting';
 import { adScreen } from '../signage/screens';
@@ -62,6 +62,7 @@ const frontFields: Record<string, Field> = {
   seed: num('Seed', 1, 0, 1000000000),
   clear: rects('Keep clear of windows'),
   ...stateFields,
+  jamb: num('Wall edge the player passes behind (a walk-in building: its shell front)', 0, 0, 200, 1, 'units'),
   trim: { kind: 'color', label: 'Trim colour (rims, courses, mullions)', default: '#c2410c' },
   rooms: select('Room light behind glass', ['warm', 'cold']),
   wall: { kind: 'json', label: 'Wall colour', default: '', editor: { kind: 'colour', empty: 'The skin’s own' },
@@ -80,24 +81,37 @@ export function frontSpec(p: Properties): FrontSpec {
 /** A view whose coordinates are a piece's own frame (after translating to its foot), for shared screen kernels. */
 const frameOf = (v: View): View => ({ ...v, sx: x => x, y: h => -h, cam: 0, gy: 0, viewW: 1e5, viewH: 1e5 });
 
-export const buildingFrontElement: Element = {
-  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
-  fields: frontFields, visualFields: { masks: rects('Windows hidden behind attached signs (resolved)') },
-  bounds: p => { const f = frontSpec(p), top = wallTop(f) + (shapeOf(f).gear.length ? 30 : 0); return { x: -2, h: top, w: f.w + 4, tall: top }; },
-  anchors: p => frontAnchors(frontSpec(p)),
-  draw(ctx, v, p, s, _pass, at) {
-    const f = frontSpec(p), sx = v.sx(at.x), end = sx + f.w * at.scale * at.facing;
+/**
+ * A walk-in building's wall edges (`jamb` units in from either side of its shell front): the player passes behind them
+ * on the way in. While the player is in one (its `near` state, engine/level.ts `levelNear`), the front draws without
+ * them and `drawNear` paints just them over the player. Clip rectangles in the front's own frame (x right, y = -h).
+ */
+const jambStrips = (ctx: CanvasRenderingContext2D, w: number, j: number) => { const reach = 1e5; ctx.rect(-4, -reach, j + 4, 2 * reach); ctx.rect(w - j, -reach, j + 4, 2 * reach); };
+const jambOf = (p: Properties, s: Properties) => Number(s.near ?? 0) > 0 ? Math.max(0, Math.min(Number(p.width) / 2, Number(p.jamb ?? 0))) : 0;
+/** The front, whole, without its wall edges (`part` back) or only them (near: no lights added, they are the whole front's). */
+function drawFront(ctx: CanvasRenderingContext2D, v: View, p: Properties, s: Properties, at: Readonly<Required<Placement>>, part: 'whole' | 'back' | 'near') {
+    const f = frontSpec(p), sx = v.sx(at.x), end = sx + f.w * at.scale * at.facing, j = part === 'whole' ? 0 : jambOf(p, s);
     if (Math.max(sx, end) + 40 < 0 || Math.min(sx, end) - 40 > v.viewW) return;
-    const light = at.parallax === 1 ? (lx: number, lh: number, w: number, hh: number, col: string, kind: 'window' | 'screen') =>
+    if (part === 'near' && !j) return;
+    const light = at.parallax === 1 && part !== 'near' ? (lx: number, lh: number, w: number, hh: number, col: string, kind: 'window' | 'screen') =>
       addLight(v, { x: at.x + lx * at.scale * at.facing, h: at.h + lh * at.scale, kind, w: w * at.scale, hh: hh * at.scale, r: kind === 'screen' ? 40 : 14, col, a: kind === 'screen' ? 0.45 : 0.6 }) : undefined;
     ctx.save(); ctx.translate(sx, v.y(at.h));
+    if (j) { ctx.beginPath(); if (part === 'back') ctx.rect(-1e5, -1e5, 2e5, 2e5); jambStrips(ctx, f.w, j); ctx.clip(part === 'back' ? 'evenodd' : 'nonzero'); }
     const out = vacant(p), look = { t: v.t, lighting: v.lighting, view: frameOf(v), masks: (s.masks ?? []) as Rect[], ...(light ? { light } : {}) };
     try {
       paintFront(ctx, out ? { ...f, lit: 0, bays: f.bays === 'auto' ? 'auto' : f.bays.map(([bx, bw, k]) => [bx, bw, k === 'glass' ? 'sealed' : k] as BaySpec) } : f, look);
       if (out) paintState(ctx, p, f.w, f.h, f.ground, { t: v.t, lighting: v.lighting, view: v, ...(light ? { light } : {}) }, f.seed);
     }
     finally { ctx.restore(); }
-  },
+}
+
+export const buildingFrontElement: Element = {
+  type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  fields: frontFields, visualFields: { masks: rects('Windows hidden behind attached signs (resolved)'), near: num('The player passes behind its wall edges (level)', 0, 0, 1, 1) },
+  bounds: p => { const f = frontSpec(p), top = wallTop(f) + (shapeOf(f).gear.length ? 30 : 0); return { x: -2, h: top, w: f.w + 4, tall: top }; },
+  anchors: p => frontAnchors(frontSpec(p)),
+  draw(ctx, v, p, s, _pass, at) { drawFront(ctx, v, p, s, at, jambOf(p, s) ? 'back' : 'whole'); },
+  drawNear(ctx, v, p, s, at) { drawFront(ctx, v, p, s, at, 'near'); },
 };
 
 const rowFields: Record<string, Field> = {

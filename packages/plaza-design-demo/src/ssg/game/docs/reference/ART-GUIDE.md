@@ -358,7 +358,9 @@ the player is on one of its floors the shell fades to a ghost and the interior s
 interior kit (`art/levels/interior.ts`) draws the cut-open storeys: rooms by kind (lobby, office,
 corridor, basement, platform), slabs between them, section walls and the ground in section. The camera
 follows the floor's height. Keep a storey at least 62 units (the player is 42) and land every flight and
-lift stop exactly on a floor. The Tower lab scene (`?play=tower`) shows all of it.
+lift stop exactly on a floor. Give a walk-in building's shell front a `jamb` (its wall's thickness at the sides, about
+the wall before the first bay) so the player walks behind the wall edge into the building; a stair's handrail goes over
+the player on the flight (`railInFront`). The Tower lab scene (`?play=tower`) shows all of it.
 
 ## 13. Before you call a scene done
 

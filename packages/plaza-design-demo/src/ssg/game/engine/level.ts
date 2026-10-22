@@ -82,7 +82,13 @@ export interface LevelRoom { id: string; building: string; x: number; w: number;
  * What the renderer needs this frame: how open each building is (0 outside, 1 inside), each lift car and its doors, each call button lit or not,
  * each room's openness (`rooms`) and how much the player is in it (`here`: 1 live, 0 a room remembered from before).
  */
-export interface LevelView { reveal: Record<string, number>; lifts: Record<string, { car: number; doors: number }>; buttons?: Record<string, number>; rooms?: Record<string, number>; here?: Record<string, number>; barriers?: Record<string, number> }
+export interface LevelView { reveal: Record<string, number>; lifts: Record<string, { car: number; doors: number }>; buttons?: Record<string, number>; rooms?: Record<string, number>; here?: Record<string, number>; barriers?: Record<string, number>; at?: LevelPlace }
+/**
+ * Where the player is this frame, as the pieces they pass in front of or behind need it (`levelNear`): x and height, the
+ * floor, the flight they are on (`link`) or riding a lift (`lift`). In a joined level, in the units and ids of `zone`, the
+ * zone the player is in; `splitLevelView` hands it only to that zone. Absent at rest (the editor) and in parity views.
+ */
+export interface LevelPlace { x: number; h: number; floor: string; link?: string; lift?: true; zone?: string }
 
 const near = (a: number, b: number, d = 0.75) => Math.abs(a - b) <= d;
 export type StairShape = 'ladder' | 'rungs' | 'spiral' | 'switchback';
@@ -517,15 +523,24 @@ function easeBarriers(lv: Level, dt: number) {
 /** The rooms seen on this visit that stay open: the game keeps them in the save. */
 export const levelSeen = (lv: Level): readonly string[] => lv.state.seen ?? [];
 
-/** The renderer's inputs this frame: each building's openness, each lift car (from its mover) and doors, each call button. */
-export function levelView(lv: Level, m: Movers): LevelView {
+/** The renderer's inputs this frame: each building's openness, each lift car (from its mover) and doors, each call button; with `p`, where the player is. */
+export function levelView(lv: Level, m: Movers, p?: Pick<LevelPlayer, 'x' | 'y'>): LevelView {
   const lifts: LevelView['lifts'] = {}, buttons: Record<string, number> = {};
   for (const l of lv.source.lifts) {
     const c = car(l, m);
     lifts[l.id] = { car: (c?.h ?? l.stops[0]?.h ?? l.bottom) - l.bottom, doors: c?.doors ?? 0 };
     for (const b of l.buttons ?? []) buttons[b.id] = c && c.target !== null && near(c.target, b.h, 2) ? 1 : 0;
   }
-  return { reveal: { ...lv.state.reveal }, lifts, ...(Object.keys(buttons).length ? { buttons } : {}), ...(lv.state.rooms ? { rooms: { ...lv.state.rooms }, here: { ...lv.state.here } } : {}), ...(lv.state.barriers ? { barriers: { ...lv.state.barriers } } : {}) };
+  return { reveal: { ...lv.state.reveal }, lifts, ...(Object.keys(buttons).length ? { buttons } : {}), ...(lv.state.rooms ? { rooms: { ...lv.state.rooms }, here: { ...lv.state.here } } : {}), ...(lv.state.barriers ? { barriers: { ...lv.state.barriers } } : {}), ...(p ? { at: placeOf(lv, p) } : {}) };
+}
+/** The player's place for the renderer: a joined level's in the player's zone's own units and ids. */
+function placeOf(lv: Level, p: Pick<LevelPlayer, 'x' | 'y'>): LevelPlace {
+  const s = lv.state, f = levelFloor(lv), ride = s.ride, h = ride ? p.y : f.h;
+  const place: LevelPlace = { x: p.x, h, floor: f.id, ...(ride?.kind === 'link' ? { link: ride.link } : {}), ...(ride?.kind === 'lift' ? { lift: true as const } : {}) };
+  const zones = lv.source.zones, id = ride?.kind === 'link' ? ride.link : f.id, i = id.indexOf('/'), zone = zones && i > 0 ? id.slice(0, i) : undefined;
+  if (!zones || !zone || !zones[zone]) return place;
+  const z = zones[zone], local = (k: string | undefined) => k && k.startsWith(zone + '/') ? k.slice(zone.length + 1) : k;
+  return { ...place, x: p.x - z.x, h: h - z.h, floor: local(f.id)!, ...(place.link ? { link: local(place.link) } : {}), zone };
 }
 
 /**
@@ -606,7 +621,9 @@ export const levelZone = (lv: Level): string | undefined => levelFloor(lv).zone;
 export function splitLevelView(view: LevelView, zone: string): LevelView {
   const pre = zone + '/', own = <T>(r: Record<string, T> | undefined) => r && Object.fromEntries(Object.entries(r).filter(([k]) => k.startsWith(pre)).map(([k, v]) => [k.slice(pre.length), v]));
   const rooms = own(view.rooms), here = own(view.here), buttons = own(view.buttons), barriers = own(view.barriers);
-  return { reveal: own(view.reveal)!, lifts: own(view.lifts)!, ...(buttons && Object.keys(buttons).length ? { buttons } : {}), ...(rooms && Object.keys(rooms).length ? { rooms, here } : {}), ...(barriers && Object.keys(barriers).length ? { barriers } : {}) };
+  // the player's place goes to their own zone only (a neighbour's pieces are not passed)
+  const at = view.at?.zone === zone ? (({ zone: _z, ...rest }) => rest)(view.at) : undefined;
+  return { reveal: own(view.reveal)!, lifts: own(view.lifts)!, ...(buttons && Object.keys(buttons).length ? { buttons } : {}), ...(rooms && Object.keys(rooms).length ? { rooms, here } : {}), ...(barriers && Object.keys(barriers).length ? { barriers } : {}), ...(at ? { at } : {}) };
 }
 /** A level's ids kept on the save by scene (opened barriers): a joined level's `zone/id` by zone, one scene's own under `here`. */
 export const savedByScene = (source: LevelSource, here: string, ids: readonly string[]): Record<string, string[]> => source.zones ? seenByZone(ids) : { [here]: [...ids] };
@@ -628,6 +645,54 @@ export function levelVisualState(view: LevelView): Record<string, Record<string,
   return { ...Object.fromEntries(Object.entries(view.lifts).map(([id, c]) => [id, { car: c.car, doors: c.doors }])), ...Object.fromEntries(Object.entries(view.buttons ?? {}).map(([id, lit]) => [id, { lit }])),
     ...Object.fromEntries(Object.entries(view.rooms ?? {}).map(([id, open]) => [id, { open, here: view.here?.[id] ?? 1 }])),
     ...Object.fromEntries(Object.entries(view.barriers ?? {}).map(([id, open]) => [id, { open }])) };
+}
+
+/**
+ * Pieces the player passes in front of or behind, whose near part draws over them while they do (art/core/composition.ts
+ * `Element.drawNear`, the over-player slot). `jamb`: a walk-in building's wall edges (`strips`, world x from..to: a shell
+ * front's `jamb` units in from either side); the player passing through one at a walk-in floor's height is behind it.
+ * `rail`: a stair's near handrail; the player on its flight, or at either end within its reach, is behind it.
+ * Presentation only: compiled beside the level (not into it) from the resolved composition.
+ */
+export type LevelOccluder = { id: string; kind: 'jamb'; building: string; strips: [number, number][] } | { id: string; kind: 'rail'; link: string };
+/** The occluders a composition places: stairs (their rail), and shell-attached pieces with a `jamb` of their own. */
+export function compileOccluders(rows: readonly Resolved[]): LevelOccluder[] {
+  const byId = new Map(rows.map(r => [r.instance.id, r])), parent = new Map<string, string>();
+  for (const r of rows) for (const c of r.instance.children ?? []) parent.set(c.id, r.instance.id);
+  const shellOf = (id: string) => {
+    for (let at: string | undefined = id, n = 0; at && n < 64; n++) { const r = byId.get(at); if (!r) break; if (r.element.type === 'level.shell') return String(r.props.building ?? '').trim(); at = r.instance.attach?.instance ?? parent.get(at); }
+    return '';
+  };
+  const out: LevelOccluder[] = [];
+  for (const r of rows) {
+    if (!r.element.drawNear || !r.element.visualFields?.near) continue;
+    if (r.element.type === 'level.stairs') { out.push({ id: r.instance.id, kind: 'rail', link: r.instance.id }); continue; }
+    const j = Number(r.props.jamb ?? 0), w = Number(r.props.width) * r.placement.scale, building = shellOf(r.instance.id);
+    if (!(j > 0) || !(w > 0) || !building) continue;
+    const a = r.placement.x, b = a + w * r.placement.facing, lo = Math.min(a, b), hi = Math.max(a, b), t = Math.min(j * r.placement.scale, w / 2);
+    out.push({ id: r.instance.id, kind: 'jamb', building, strips: [[lo, lo + t], [hi - t, hi]] });
+  }
+  return out;
+}
+/** Half the player's width: their body overlaps a wall edge before their middle reaches it. */
+const HALF_BODY = 7;
+/** Each occluder's `near` (1: the player is passing it, its near part over them) for this frame's view; none without the player's place. */
+export function levelNear(source: LevelSource, view: LevelView, occluders: readonly LevelOccluder[]): Record<string, { near: number }> {
+  const at = view.at, out: Record<string, { near: number }> = {};
+  if (!at || !occluders.length) return out;
+  for (const o of occluders) {
+    let on = false;
+    if (o.kind === 'jamb') {
+      // walking (not riding) at the height of one of the building's walk-in floors, the body inside a wall edge
+      on = !at.link && !at.lift && source.floors.some(f => f.building === o.building && !!street(source, f) && near(f.h, at.h, 2))
+        && o.strips.some(([a, b]) => at.x + HALF_BODY > a && at.x - HALF_BODY < b);
+    } else {
+      const l = source.links.find(k => k.id === o.link);
+      on = !!l && (at.link === l.id || !at.link && !at.lift && [l.low, l.high].some(e => near(e.h, at.h, 2) && Math.abs(e.x - at.x) <= (l.reach ?? LEVEL_DEFAULTS.reach)));
+    }
+    if (on) out[o.id] = { near: 1 };
+  }
+  return out;
 }
 
 /** How much a remembered room's things fade while the player is elsewhere (its wall darkens by `level.room`'s own `here`). */
