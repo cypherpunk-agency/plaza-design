@@ -73,6 +73,16 @@ hold → 3 s, then Shift; the quay→checkout crossing comes about 6.5–7 s aft
 `/opt/node-tools/node_modules/playwright-core`, Chromium at `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`,
 serve `dist-homepage` with `scripts/opening-playthrough/serve.mjs`.
 
+## First priority: one render path (decided 2026-10-22)
+
+ROADMAP.md item 0 / SEAMLESS-WORLD §7 step R. Three frame paths exist today: world `renderWorldFrame`, opening
+`renderOpeningSequence` → `openingFrame` (art/sequences/opening, ~2,600 lines; own projection
+`sx = W/2 + p·(g − X)`, own scale `H/195`, own sky mood/warmth/rain, pieces are draw closures wrapped by
+`sequence.opening.*` rows), cinematic `renderCinematicPicture` (art/sequences/cinematics.ts; `drawFlight` is a
+wrapper). Order: guard check + AGENTS.md rule (done in docs; the check is still to write) → director config on
+`renderWorldFrame` + cutscenes/taxi on it → the glide as zones with a timeline camera ending in `harbor-station` →
+dockworker on the character kit. Until then do not add features to the opening or cinematic paths.
+
 ## Title glide
 
 - Performance: about 3.7× cheaper (render CPU p50 45.5 → 12.3 ms; Downtown 56 → 14.7) by skipping occluded

@@ -40,8 +40,12 @@ The ride from the raised Harbor Station to Downtown joins the two.
 
 - **One engine.** An unjoined scene is a world with one zone. There is no separate seamless mode: every
   scene runs through the same zone graph, residency and frame.
-- **One renderer.** `renderWorldFrame` (§3) is the only frame renderer, for one zone or many. There is no
-  second render path for joined zones.
+- **One renderer.** `renderWorldFrame` (§3) is the only frame renderer, for one zone or many, for play, the
+  editor and every sequence (title glide, cutscenes, the taxi flight). There is no second render path. What a
+  sequence needs is configuration of the one frame (a **director**: camera from a timeline track, which passes
+  run, overlays such as fades, cards and letterbox, time of day, pixel scale), never its own projection, pass
+  order or atmosphere. Hand-drawn art stays as registered art pieces placed in compositions (Tommi, 2026-10-22:
+  "only one render path that may get configured … I want to optimize one engine").
 - **One main way for each thing.** Trains and lifts are vehicles (§4). Waiting and riding people are people
   flows (§5), replacing `platformQueue` and `trainCrowd`. No special-case controllers.
 - **Interiors may become their own zones later.** The zone graph allows a building's interior to be one or
@@ -73,6 +77,7 @@ The ride from the raised Harbor Station to Downtown joins the two.
 | 20 | Train length | **Two cars**, keeping three possible. |
 | 21 | Names | **city → district → place** is logical (a place is a named area; a zone may hold several, a place may span zones). A **zone** is the one unit authored, saved, loaded and unloaded (today's scene). A **seam** joins two zones with no cut; an **exit** joins them with a cut. The **world** is the graph of zones over seams and exits. Storeys are **storeys/floors**, not levels. "Chunk" is dropped: what is loaded is the zones near or visible to the player. A zone is about 1–4 screens wide (the view is 640 units; Downtown's 2000-unit street is the upper end). Interiors may be split into more, smaller zones later; the zone graph must allow it. |
 | 22 | Hacking across a seam | *Open.* Proposed: what is on screen can be hacked, since visible zones are loaded; wires between zones stay out (13). |
+| 23 | One render path | **Decided.** Every frame (play, editor, title glide, cutscenes, taxi flight) goes through `renderWorldFrame`, configured by a director; separate renderers are removed (step R in §7). |
 
 ## 1. Goals and non-goals
 
@@ -790,6 +795,7 @@ its feature in the editor and Save it (the "features configurable in editor" rul
 
 | # | Step | Needs | Editor support in the same step (§6) | Size | What Tommi sees |
 | --- | --- | --- | --- | --- | --- |
+| R | **One render path, first.** A guard check that only `runtime/render-scene.ts` assembles a frame; a director configuration on `renderWorldFrame` (timeline camera, passes, overlays, time of day, pixel scale); the cutscenes and the taxi flight on it; then the title glide as a timeline camera over real zones ending inside `harbor-station`; the dockworker on the shared character kit. Removes `renderOpeningSequence`/`openingFrame` and `renderCinematicPicture` as frame paths. | — | Sequences authored as zones/compositions plus a timeline in the existing editor; the composer previews them through the same frame | M (cutscenes) + L (glide) | The intro looks as reviewed but is drawn by the game's own renderer, and ends on the platform with control handed over, no cut. Fixes and speed-ups reach the intro and play at once. |
 | 1 | **Tower-lab pilot**: `world/zone-graph.json`/`zone-graph.ts` (graph, floating origin), `mergeLevels` (merged floors), `renderWorldFrame` as the one renderer for every scene, `crossInto`, a camera over the union, zone facing and city-wide weather. A second lab zone joined horizontally and by stairs. | — | World › Zones: join zones, the world canvas with snapping, the seam tool (walk, stairs), the alignment inspector, live neighbours in the composer, zone ownership and multi-zone undo/Save, the compass dial applied across joined zones, seam/floor/reach validation (6.1–6.3, 6.8) | L | Join the pilot zones himself in the editor, then walk from the Tower lab into the annex and up its stairs with no cut. Turn the compass dial and watch the sun move across both zones. Every other scene looks as before. |
 | 2 | **Barrier pieces** in the lab. | 1 | Barrier pieces, readable rules, *Try it*, phase overrides (6.6) | M | Place a turnstile, set "opens when you carry X", try it in the editor, then play it: it refuses, verifies and lets you through, in the world. |
 | 3 | **Residency and reload by zone**: tiers, prefetch, unloading, reload from save, transient rebuild from time. A lab chain of six zones. | 1 | Residency settings, the overlay with reasons and dropped items, the walk simulation, *Play from here* (6.3, 6.7) | L | Simulate a walk along the chain and see the loads ahead of time. Play it and the overlay agrees. A door you opened far away is still open when you return, and the lab's patrol is where the time says. |

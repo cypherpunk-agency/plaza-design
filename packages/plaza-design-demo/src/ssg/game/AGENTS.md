@@ -40,8 +40,11 @@ have been retired; do not recreate them or restart the completed consolidation.
   dialogue and timers do not become native controllers just because a scene is unusual.
   Existing trigger phases include beforeNative, afterNative and onPersist; choose the phase
   that preserves the relevant behavior. Do not add an independent evaluator or scheduler.
-- Art belongs in the registered art library, placements in composition sources. Game and editor
-  share runtime/render-scene.ts. Painting/bounds/queries never advance gameplay or give rewards.
+- Art belongs in the registered art library, placements in composition sources. Game, editor and every
+  sequence (title glide, cutscenes, travel pictures) share runtime/render-scene.ts `renderWorldFrame`: there is
+  one render path, configured (a sequence's camera, passes and overlays are settings of that frame), never a
+  second frame renderer, projection or pass order (Tommi, 2026-10-22). The existing opening and cinematic frame
+  paths are being moved onto it (ROADMAP.md item 0); do not extend them. Painting/bounds/queries never advance gameplay or give rewards.
   Preserve seeded variation, canvas state, geometry, draw order and animation cadence unless
   the user requests a visual change. Supply explicit View.lighting/View.illumination and prepared
   state; do not read or mutate a global lighting frame inside artwork.
