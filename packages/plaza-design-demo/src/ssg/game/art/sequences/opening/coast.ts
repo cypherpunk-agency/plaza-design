@@ -274,15 +274,9 @@ function ground(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     }
     const br = c.still ? 0.5 : (c.t * 0.5) % 1; x.fillStyle = 'rgba(255,240,230,' + (0.55 * Math.sin(br * Math.PI) * lerp(0.4, 1, c.warm)).toFixed(2) + ')'; x.fillRect(a, GY - 3 + R(br * 3), b - a, 1);
   }
-  // the rocks: big dark blocks from the sand down into the inlet
-  const rk = span(c, PLACES.sand - 10, PLACES.rocks + 6);
-  if (rk) for (let i = 0; i < 9; i++) {
-    const X = PLACES.sand - 6 + i * 6, s = c.sx(X), d = R(i * 3.2 * L.k);
-    x.fillStyle = mixHex('#1a0e16', '#33202a', c.warm * (0.6 + hash(i) * 0.4)); x.beginPath(); x.moveTo(s - 8, bottom); x.lineTo(s - 8, GY + d - 2); x.lineTo(s - 3, GY + d - 6 - R(hash(i + 4) * 4)); x.lineTo(s + 5, GY + d - 4); x.lineTo(s + 8, bottom); x.closePath(); x.fill();
-    x.fillStyle = 'rgba(' + DAWN + ',' + (0.25 * c.warm).toFixed(2) + ')'; x.fillRect(R(s - 3), GY + d - 6 - R(hash(i + 4) * 4), 6, 1);
-  }
-  // the inlet: open water in the strip, deeper toward the camera, the swell coming in from the bay
-  const inl = span(c, PLACES.inlet[0], PLACES.inlet[1]);
+  // the inlet: open water in the strip, deeper toward the camera, the swell coming in from the bay;
+  // it starts under the rocks, so the water shows between the blocks as they go down into it (no gap to the sand)
+  const inl = span(c, PLACES.sand - 10, PLACES.inlet[1]);
   if (inl) {
     const [a, b] = inl, wg = x.createLinearGradient(0, GY, 0, c.H); wg.addColorStop(0, mixHex('#2a1438', '#6a2a5a', c.warm)); wg.addColorStop(1, mixHex('#0c0418', '#1e0c2a', c.warm));
     x.fillStyle = wg; x.fillRect(a, GY, b - a, bottom - GY);
@@ -295,6 +289,13 @@ function ground(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     x.fillStyle = 'rgba(255,170,90,' + (0.18 * c.warm).toFixed(2) + ')'; x.fillRect(R(Math.max(a, c.sunX - 10)), GY + 2, R(Math.max(0, Math.min(b, c.sunX + 10) - Math.max(a, c.sunX - 10))), c.H - GY);
     x.fillStyle = 'rgba(10,4,16,.45)'; x.fillRect(a, L.MID + 2, b - a, 3);
   }
+  // the rocks: big dark blocks from the sand down into the inlet
+  const rk = span(c, PLACES.sand - 10, PLACES.rocks + 6);
+  if (rk) for (let i = 0; i < 9; i++) {
+    const X = PLACES.sand - 6 + i * 6, s = c.sx(X), d = R(i * 3.2 * L.k);
+    x.fillStyle = mixHex('#1a0e16', '#33202a', c.warm * (0.6 + hash(i) * 0.4)); x.beginPath(); x.moveTo(s - 8, bottom); x.lineTo(s - 8, GY + d - 2); x.lineTo(s - 3, GY + d - 6 - R(hash(i + 4) * 4)); x.lineTo(s + 5, GY + d - 4); x.lineTo(s + 8, bottom); x.closePath(); x.fill();
+    x.fillStyle = 'rgba(' + DAWN + ',' + (0.25 * c.warm).toFixed(2) + ')'; x.fillRect(R(s - 3), GY + d - 6 - R(hash(i + 4) * 4), 6, 1);
+  }
   // the buffer: gravel and weeds, a puddle, tyre ruts
   const buf = fill(PLACES.inlet[1], PLACES.buffer[1], '#2a2026', '#120c10');
   if (buf) {
@@ -303,7 +304,8 @@ function ground(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(a, L.MID + 6, b - a, 1); x.fillRect(a, L.MID + 12, b - a, 1);
   }
   // the quay: concrete, its coping along the water, the cranes' rails, bollards
-  const quay = fill(PLACES.quay[0], PLACES.quay[1] + 60, '#2e2228', '#120c10');
+  // (on to the bridge's abutment: no gap under the road where the bay bridge lands on the quay)
+  const quay = fill(PLACES.quay[0], PLACES.bridge[0] - 8, '#2e2228', '#120c10');
   if (quay) {
     const [a, b] = quay;
     x.fillStyle = '#4a3a40'; x.fillRect(a, GY, b - a, 2); x.fillStyle = 'rgba(' + ORANGE + ',.55)'; x.fillRect(a, GY, b - a, 1);
@@ -724,7 +726,7 @@ function galleria(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:str
   const a = R(c.sx(X1)), b = R(c.sx(X0)), top = L.BACK - 58, w = b - a;
   const part=(id:string,draw:()=>void)=>{if(!only||only===id)draw();};
   part('dome',()=>{
-  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: c.piece?.paintMode==='fixed'?ps(c.piece,'paint','#3a2440'):mixHex('#1a0e1e','#3a2440',c.warm), lit: pn(c.piece,'lit',1.5), label: false }));
+  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: c.piece?.paintMode==='fixed'?ps(c.piece,'paint','#3a2440'):mixHex('#1a0e1e','#3a2440',c.warm), lit: pn(c.piece,'lit',1.5), label: false, glazed: true, warm: c.warm, t: c.f, still: c.still }));
   });
   part('plinth',()=>{
   x.fillStyle = ps(c.piece,'paint','#2a1830'); x.fillRect(a, top, w, L.BACK - top + 1);

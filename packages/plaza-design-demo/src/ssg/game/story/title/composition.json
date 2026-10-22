@@ -3519,6 +3519,17 @@
       "layer": "backdrop"
     },
     {
+      "id": "gate",
+      "type": "sequence.opening.gate",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18.5,
+      "layer": "backdrop"
+    },
+    {
       "id": "coast-front",
       "type": "assembly.group",
       "props": {},

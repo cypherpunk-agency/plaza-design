@@ -417,15 +417,49 @@ function plate(x: CanvasRenderingContext2D, s: string, col: string, cx: number, 
   neonText(x, s, cx, cy + 0.5, col, size, o, dead, false, s.length * 7 + h, pw - size * 0.8);
 }
 
+/**
+ * Where a vertical sign (blade or stack) sits, kept on its facade (Tommi, 2026-10-22: signs ran past
+ * the floors, down past the slab to the street): its top under the roof (of the massing it is mounted
+ * on, setbacks included), its foot over the shopfront's awning (or a storey's sill). A text too long for
+ * that wall gets smaller letters, and below about 0.6 of its size only its first part (up to a `·`).
+ */
+export function bladeFit(b: Tower, s: TowerSign, st: number) {
+  const at = s.at ?? 0.5, size0 = Math.max(5, st * 0.22);
+  let txt = s.text.replace(/ · /g, '·');
+  const edge = (bw: number) => Math.round(at < 0.5 ? b.w * 0.04 : b.w * 0.96 - bw);
+  let top = 0;
+  for (const [l, rr, h0, h1] of segments(b)) { const bx = edge(size0 * 1.5); if (h0 > top + 1 || l > bx || rr < bx + size0 * 1.5) break; top = h1; }
+  const lo = b.shop ? st * 1.2 : st * 0.4, hi = Math.max(lo + size0 * 3, top - st * 0.3), room = hi - lo;
+  const fit = (t: string) => Math.min(size0, room / ([...t].length * 1.08 + 1));
+  let size = fit(txt);
+  if (size < size0 * 0.6 && txt.includes('·')) { txt = txt.split('·')[0]; size = fit(txt); }
+  size = Math.max(Math.min(size0, 3), size);
+  const n = [...txt].length, len = n * size * 1.08 + size, bw = size * 1.5;
+  const h = len >= room ? (lo + hi) / 2 : Math.max(lo + len / 2, Math.min(hi - len / 2, s.h));
+  return { txt, n, size, len, bw, bx: edge(bw), h };
+}
+
 /** One sign of any kind on the tower. */
 function drawSign(x: CanvasRenderingContext2D, b: Tower, s: TowerSign, o: TowerLook, st: number, u: number) {
   const y = (h: number) => -h, w = b.w, at = s.at ?? 0.5, seed = b.seed * 13 + s.h;
-  if (s.kind === 'plate') { plate(x, s.text, s.col, Math.round(w * (0.25 + at * 0.5)), s.h, w - 4 * u, Math.max(5, st * 0.42), o, s.dead ?? -1); return; }
+  if (s.kind === 'plate') {
+    // a plate keeps clear of the tower's blades: moved off one it would cover, narrower if it must be
+    const size = Math.max(5, st * 0.42), ph = size * 1.8;
+    let cx = Math.round(w * (0.25 + at * 0.5)), maxW = w - 4 * u;
+    for (const v of b.signs ?? []) {
+      if (v.kind !== 'blade' && v.kind !== 'stack') continue;
+      const f = bladeFit(b, v, st);
+      if (Math.abs(f.h - s.h) > (f.len + ph) / 2) continue;
+      const pw = Math.min(maxW, Math.round(s.text.length * size * 0.64 + size * 1.4));
+      if (cx + pw / 2 <= f.bx - u || cx - pw / 2 >= f.bx + f.bw + u) continue;
+      const room = (v.at ?? 0.5) < 0.5 ? [f.bx + f.bw + 2 * u, w - 2 * u] : [2 * u, f.bx - 2 * u];
+      maxW = Math.max(size * 3, Math.min(maxW, room[1] - room[0])); cx = Math.round((room[0] + room[1]) / 2);
+    }
+    plate(x, s.text, s.col, cx, s.h, maxW, size, o, s.dead ?? -1); return;
+  }
   if (s.kind === 'blade' || s.kind === 'stack') {
     // vertical: a blade on brackets off the facade's edge, or stacked letter boxes flush to the wall
-    const size = Math.max(5, st * 0.22), n = s.text.replace(/ · /g, '·').length, len = n * size * 1.08 + size, bw = size * 1.5;
-    const bx = Math.round(at < 0.5 ? w * 0.04 : w * 0.96 - bw), cy = y(s.h);
-    const txt = s.text.replace(/ · /g, '·');
+    const { txt, n, size, len, bw, bx, h } = bladeFit(b, s, st), cy = y(h);
     const g = x.createRadialGradient(bx + bw / 2, cy, 2, bx + bw / 2, cy, len * 0.7); g.addColorStop(0, 'rgba(' + s.col + ',.18)'); g.addColorStop(1, 'rgba(' + s.col + ',0)');
     x.fillStyle = g; x.fillRect(bx - len * 0.5, cy - len * 0.7, len + bw, len * 1.4);
     if (s.kind === 'blade') {
