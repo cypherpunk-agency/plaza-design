@@ -112,6 +112,16 @@ artwork would go with it, a dialog lists it first, and gameplay-bound pieces ref
 scene without a starting state adds the default one and starts. World › Districts creates, renames,
 places and removes districts.
 
+**World › Zones** (`zone-graph-authoring.ts`) edits `world/zone-graph.json`, the seams that join scenes
+with no cut (docs/design/SEAMLESS-WORLD.md §2, §6.1). Each seam has a kind (walk, stairs, door),
+two zones, an optional level piece on each side, and `dx`/`dh`: where zone b's origin lies in zone a's
+units. **Align** moves a walk seam's zone b to zone a's edge. Each edit is one history step and is
+checked for its shape. Problems against the zones (`worldProblems`: unknown zone or piece, an edge that
+does not meet, a loop that disagrees) are listed in the panel, and protected Save refuses them. A scene
+joined by seams shows its neighbours one seam away in the Scene preview, drawn live from their
+pending sources by the shared frame renderer. They are read-only, so pan past the scene's edge to see
+them. Private Play uses the pending graph.
+
 ## Isolation and source safety
 
 Private Play uses an opaque-origin frame and memory storage. The static public bundle contains no

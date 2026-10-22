@@ -19,6 +19,8 @@ import {createLineSystem} from '../world/transport/line';
 import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {validatePendingCity,createPendingCity} from './pending-city';
 import {mountCityAuthoring} from './city-authoring';
+import {mountZoneGraphAuthoring} from './zone-graph-authoring';
+import {validateZoneGraph} from '../world/zone-graph';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
 import {validatePendingRules} from './pending-rules';
 import {mountCompanionSourceAuthoring} from './companion-source-authoring';
@@ -199,6 +201,7 @@ async function start() {
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='storyboard'){if(document.id!=='storyboard')throw new Error('Unsupported storyboard document');validateStoryboard(document.value,new Set(documents.filter(d=>d.kind==='composition').map(d=>d.id)));}
+      if(document.id==='zone-graph'){validateZoneGraph(document.value);return;} // its seams against the zones: listed in World › Zones, enforced on Save
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroLocks(validateMetroSource(document.value),(validationSnapshot(documents).get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}
       if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
       if(document.kind==='rules')validatePendingRules(document.id,document.value,validationSnapshot(documents));
@@ -226,6 +229,7 @@ async function start() {
       {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
       {id:'companion',area:'world',layout:'sections',label:'Companion',title:'The companion: look, unlock flag, follow modes, speaker and greeting',authoring:true,documentDependent:true,documentIds:['companion','companion-gameplay'],primaryDocumentId:'companion',mount:mountCompanionSourceAuthoring},
       {id:'critter-reactions',area:'world',label:'Critter dialogue',title:'Cat and pigeon reactions',authoring:true,documentDependent:true,documentIds:['critter-reactions'],primaryDocumentId:'critter-reactions',mount:mountCritterReactionAuthoring},
+      {id:'zone-graph',area:'world',layout:'sections',label:'Zones',title:'Zones and seams: which scenes join with no cut, and where each lies from the other',authoring:true,documentDependent:true,primaryDocumentId:'zone-graph',mount:mountZoneGraphAuthoring},
       {id:'review-stations',area:'world',layout:'sections',label:'Review stations',title:'Review navigator: bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
       {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions · shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab · the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},

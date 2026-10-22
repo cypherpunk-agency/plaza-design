@@ -7,5 +7,6 @@ import type {CritterReactionDocument} from '../engine/gameplay/critter-reactions
 import type {EngineNetworkContext} from '../engine/network-context';
 import type {ContactsModel} from '../story/contacts';
 import type {EndCardSource} from '../story/end-card';
+import type {ZoneGraphSource} from '../world/zone-graph';
 /** Private pending documents used by one native Game instance. */
-export interface GameRuntimeSources {openingStory?:OpeningStoryModel;sequences?:RuntimeSequenceDocuments;network?:EngineNetworkContext;companionGameplay?:GameplayDefinition;critters?:CritterReactionDocument;companion?:CompanionSource;reviewStations?:ReviewStationsDocument;contacts?:ContactsModel;endCard?:EndCardSource}
+export interface GameRuntimeSources {openingStory?:OpeningStoryModel;sequences?:RuntimeSequenceDocuments;network?:EngineNetworkContext;companionGameplay?:GameplayDefinition;critters?:CritterReactionDocument;companion?:CompanionSource;reviewStations?:ReviewStationsDocument;contacts?:ContactsModel;endCard?:EndCardSource;zoneGraph?:ZoneGraphSource}
