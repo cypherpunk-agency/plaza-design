@@ -187,6 +187,19 @@
       ]
     },
     {
+      "id": "harbor-works",
+      "name": "HARBOR · STATION TO SHED 3",
+      "district": "harbor",
+      "entrance": "harbor-station",
+      "scenes": [
+        "harbor-station",
+        "harbor-quay",
+        "harbor-checkout",
+        "harbor-yard",
+        "harbor-shed"
+      ]
+    },
+    {
       "id": "warehouse",
       "name": "WAREHOUSE 4",
       "district": "harbor",

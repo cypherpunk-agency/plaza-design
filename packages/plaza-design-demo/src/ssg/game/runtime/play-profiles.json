@@ -34,6 +34,22 @@
       "seed": {"handle": "", "tokens": 0, "modules": [], "flags": []}
     },
     {
+      "id": "harborZones",
+      "label": "Harbor zones",
+      "select": {"url": {"param": "play", "value": "harbor-station"}},
+      "home": "downtown",
+      "start": {"scene": "harbor-station", "title": true, "urlScene": true},
+      "routes": "start",
+      "world": "campaign",
+      "namespace": {"save": "access-denied-harbor-zones-v1", "resume": "access-denied-harbor-zones-resume-v1", "slots": "harbor-zones-"},
+      "abilities": {"map": false, "mapKey": true, "deck": false, "jump": false, "hack": false, "sudo": false, "review": false},
+      "player": {"avatar": "dockworker", "name": "worker"},
+      "guidance": {"style": "shift", "controlHints": true},
+      "clock": {"rule": "scene"},
+      "chrome": {"pageClass": "shift-prototype", "minimalHud": false},
+      "seed": {"handle": "", "tokens": 0, "modules": [], "flags": []}
+    },
+    {
       "id": "full",
       "label": "Full game",
       "home": "downtown",

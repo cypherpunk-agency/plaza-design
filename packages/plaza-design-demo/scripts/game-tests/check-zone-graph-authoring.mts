@@ -44,18 +44,18 @@ const click=(label:string)=>{const e=rows().find(e=>e.textContent===label&&e.onc
 const problems=()=>field('Zone graph problems').children.map(c=>c.textContent);
 const graph=()=>model.get('zone-graph').value as ZoneGraphSource;
 assert.deepEqual(problems(),['No problems: every seam meets its zones.']);
-assert.deepEqual(field('Seam').children.map(o=>o.value),['tower-annex','annex-deck']);
+assert.deepEqual(field('Seam').children.map(o=>o.value),['tower-annex','annex-deck','station-quay','quay-checkout','checkout-yard','yard-shed']);
 assert(field('Zone b').children.some(o=>o.value==='tower-deck'),'zones are picked from the scenes, authored ones included');
 
 // add a seam from the open scene, join it to the deck: the walk seam no longer meets the edge, listed inline; Align fixes it
-click('Add seam');assert.equal(field('Seam').value,'seam-1');assert.deepEqual(graph().seams[2],{id:'seam-1',kind:'walk',a:{zone:'tower'},b:{zone:graph().seams[2].b.zone},dx:1600,dh:0});
+const N=graph().seams.length;click('Add seam');assert.equal(field('Seam').value,'seam-1');assert.deepEqual(graph().seams[N],{id:'seam-1',kind:'walk',a:{zone:'tower'},b:{zone:graph().seams[N].b.zone},dx:1600,dh:0});
 change('Zone a','tower-deck');change('Zone b','tower-annex');
 assert.match(problems().join(),/seam-1: a walk seam puts tower-annex at the edge of tower-deck \(dx 800, not 1600\)/);
-click('Align');assert.equal(graph().seams[2].dx,800);
+click('Align');assert.equal(graph().seams[N].dx,800);
 change('Seam kind','door');assert.match(problems().join(),/seam-1: a door seam names the piece on both sides/);
 assert.deepEqual(field('Piece a').children.map(o=>o.value),['','deck','floor-deck'],'pieces are the zone\'s level.* instances');
 change('Piece a','floor-deck');change('Piece b','floor-street');change('Offset dx','0');change('Offset dh','-100');
-const edited=graph().seams[2];assert.deepEqual(edited,{id:'seam-1',kind:'door',a:{zone:'tower-deck',piece:'floor-deck'},b:{zone:'tower-annex',piece:'floor-street'},dx:0,dh:-100});
+const edited=graph().seams[N];assert.deepEqual(edited,{id:'seam-1',kind:'door',a:{zone:'tower-deck',piece:'floor-deck'},b:{zone:'tower-annex',piece:'floor-street'},dx:0,dh:-100});
 assert.deepEqual(problems(),['No problems: every seam meets its zones.'],'the deck → annex door closes the loop the stairs seam makes');
 assert.deepEqual(worldProblems(graph(),zoneInfo(values(model.list())),zonePieces(values(model.list()))),[]);
 change('Seam id','deck-door');assert.equal(field('Seam').value,'deck-door');

@@ -8,11 +8,12 @@ import {validatePendingPlayProfiles} from '../../src/ssg/game/authoring/play-pro
 import {Game} from '../../src/ssg/game/runtime/game';
 
 // ---- 1. The shipped document: three profiles, each with the capabilities and start the game relied on ----
-assert.deepEqual(SHIPPED_PROFILES.profiles.map(p=>p.id).sort(),['demo','full','harborShift']);
+assert.deepEqual(SHIPPED_PROFILES.profiles.map(p=>p.id).sort(),['demo','full','harborShift','harborZones']);
 const by=(id:string)=>SHIPPED_PROFILES.profiles.find(p=>p.id===id)!;
 const expected:Record<string,{abilities:string[];routes:string;start?:string;avatar:string;name?:string;clock:string;guidance:string;world:string}>={
  full:{abilities:['map','mapKey','deck','jump','hack','sudo'],routes:'world',avatar:'hacker',clock:'opening',guidance:'none',world:'campaign'},
  harborShift:{abilities:['mapKey'],routes:'start',start:'harborShift',avatar:'dockworker',name:'worker',clock:'scene',guidance:'shift',world:'campaign'},
+ harborZones:{abilities:['mapKey'],routes:'start',start:'harbor-station',avatar:'dockworker',name:'worker',clock:'scene',guidance:'shift',world:'campaign'},
  demo:{abilities:['map','deck','jump','hack','sudo','review'],routes:'content',start:'shop',avatar:'hacker',clock:'opening',guidance:'shift',world:'testDistrict'},
 };
 for(const[id,e]of Object.entries(expected)){const p=by(id);assert.deepEqual(Object.entries(p.abilities).filter(([,on])=>on).map(([a])=>a).sort(),[...e.abilities].sort(),id+' abilities');assert.equal(p.routes,e.routes);assert.equal(p.start.scene,e.start);assert.equal(p.player.avatar,e.avatar);assert.equal(p.player.name,e.name);assert.equal(p.clock.rule,e.clock);assert.equal(p.guidance.style,e.guidance);assert.equal(p.world,e.world);assert.equal(p.home,'downtown');}
