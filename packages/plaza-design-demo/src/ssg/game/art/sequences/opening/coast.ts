@@ -49,6 +49,8 @@ export interface CoastView {
   warm: number; city: number; rain: number;
   sx: (X: number) => number;
   sunX: number;
+  /** LINE 0's eastbound train's nose (X), arriving at the Harbor Station (finale.ts); none if absent. */
+  train?: number;
   piece?: Properties;
   cull?: PieceCull;
 }

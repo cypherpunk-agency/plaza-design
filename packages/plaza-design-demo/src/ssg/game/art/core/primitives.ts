@@ -36,18 +36,20 @@ export interface NeonOptions {
   bright?: boolean;
 }
 /** Neon letters with a glow, like the street's signs. Always put a plate or bracket behind them. */
+/** Set (true) by a context that turns text back on a flipped canvas (the opening's mirrored west beach): letter-by-letter signs then also keep their reading order. */
+export const READABLE_MIRROR = Symbol('readable mirror');
 export function neon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, cy: number, col: string, opt: NeonOptions = {}) {
   const size = opt.size ?? 9, dead = opt.dead ?? -1, bright = !!opt.bright, lit = opt.lit ?? null;
   const flick = lit === null && (t + (opt.phase ?? 0)) % (bright ? 240 : 300) > (bright ? 232 : 293) && Math.floor(t) % 4 < 2;
   x.save();
   x.font = mono(size, '600'); x.textAlign = 'center'; x.textBaseline = 'middle';
-  const chars = [...s];
+  const chars = [...s], readable = READABLE_MIRROR in x && x.getTransform().a < 0;
   chars.forEach((ch, i) => {
     const off = flick || i === dead || (lit !== null && i !== lit);
     x.fillStyle = 'rgba(' + col + ',' + (off ? (bright ? 0.13 : 0.15) : 0.95) + ')';
     x.shadowColor = 'rgba(' + col + (bright ? ',.9)' : ',.85)'); x.shadowBlur = off ? 0 : bright ? 8 : 7;
     if (opt.vertical) x.fillText(ch, cx, cy + i * (size + 2));
-    else x.fillText(ch, cx + (i - (chars.length - 1) / 2) * size * 0.64, cy);
+    else x.fillText(ch, cx + ((readable ? chars.length - 1 - i : i) - (chars.length - 1) / 2) * size * 0.64, cy);
   });
   x.restore();
 }

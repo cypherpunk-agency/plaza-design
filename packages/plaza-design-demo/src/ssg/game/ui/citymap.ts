@@ -120,7 +120,7 @@ interface Cache { key: string; canvas: HTMLCanvasElement; cam: Cam; box: Box }
 export function createCityMap(world:CityModel=defaultCity,geography:ReturnType<typeof createCityPlan>=createCityPlan(world)){
  const {DISTRICT_MAP,DISTRICT_REVEAL,DISTRICTS,districtName,districtPlaces,districtStage,FARE,knownPlaces,LINES_PLANNED,lineKnownFlag,linkKnown,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,placeBlocked,transportPermission,placeKnown,placeOf,seenPlace,STAND_IDS,STANDS,standOf,STATION_MAP,stationKnown,STATIONS,TRANSPORT}=world;
  type Layout = ReturnType<typeof layout>;
- const {CANAL,CANAL_W,COAST,coastX,districtAt,FENCE,hash,ISLE,onIsle,PARK,plan}=geography;
+ const {CANAL,CANAL_W,COAST,coastX,districtAt,FENCE,hash,ISLE,onIsle,PARK,plan,WEST,westX}=geography;
 
 const LAYERS: Layer[] = ['street', 'metro', 'above', 'below'];
 
@@ -304,10 +304,10 @@ const pickable = (layer: Layer) => DIDS.map((_, i) => i).filter((i) => (layer ==
 /** The district on the plan under a point of the sheet (the Spire: its island, or its tower standing up). */
 function districtUnder(st: MapState, sx: number, sy: number): number {
   const flat = st.view.flat, [px, py] = unproj(flat, sx, sy);
-  if (st.view.layer === 'below') return px > 0 && px < coastX(py) && py > 0 && py < MAP_H ? UNDER : -1;
+  if (st.view.layer === 'below') return px > 0 && px > westX(py) && px < coastX(py) && py > 0 && py < MAP_H ? UNDER : -1;
   if (!flat) { const [ix, iy] = tiltP(ISLE.x, ISLE.y); if (Math.abs(sx - ix) < 14 && sy < iy + 8 && sy > iy - 160) return DIDS.indexOf('spire'); }
   if (onIsle(px, py)) return DIDS.indexOf('spire');
-  if (px < 0 || py < 0 || py > MAP_H || px >= coastX(py)) return -1;
+  if (px < 0 || py < 0 || py > MAP_H || px >= coastX(py) || px <= westX(py)) return -1;
   return DIDS.indexOf(districtAt(px, py));
 }
 
@@ -517,10 +517,13 @@ function paintGround(g: Ctx, look: (d: DistrictId) => Look) {
   { const [x, y, w, h] = FENCE; g.strokeStyle = 'rgba(255,42,68,.6)'; g.lineWidth = 1; g.setLineDash([4, 2]); g.strokeRect(x, y, w, h); g.setLineDash([]); g.fillStyle = 'rgba(255,42,68,.05)'; g.fillRect(x, y, w, h); }
   for (const [lx, ly] of [[34, 50], [70, 44]]) { g.strokeStyle = 'rgba(170,190,210,.6)'; g.beginPath(); g.arc(lx, ly, 7, 0, 7); g.stroke(); g.beginPath(); g.arc(lx, ly, 3, 0, 7); g.stroke(); }
   // the Fringe's landfill and the farms' fields
-  if (look('fringe') !== 'veiled') { g.fillStyle = 'rgba(90,74,48,.55)'; g.beginPath(); g.ellipse(104, 348, 34, 16, -0.2, 0, 7); g.fill(); for (let k = 0; k < 5; k++) { g.fillStyle = 'rgba(60,160,80,.28)'; g.fillRect(108 + k * 9, 168, 6, 22); } }
+  if (look('fringe') !== 'veiled') { g.fillStyle = 'rgba(90,74,48,.55)'; g.beginPath(); g.ellipse(60, 206, 30, 14, -0.2, 0, 7); g.fill(); for (let k = 0; k < 5; k++) { g.fillStyle = 'rgba(60,160,80,.28)'; g.fillRect(108 + k * 9, 168, 6, 22); } }
   // the sea and the shore
   g.fillStyle = '#071420'; g.beginPath(); g.moveTo(W + 60, -40); g.lineTo(COAST[0][0], -40); COAST.forEach(([a, b]) => g.lineTo(a, b)); g.lineTo(COAST[COAST.length - 1][0], H + 40); g.lineTo(W + 60, H + 40); g.closePath(); g.fill();
   g.strokeStyle = 'rgba(120,190,210,.45)'; g.lineWidth = 1.5; g.beginPath(); COAST.forEach(([a, b], i) => (i ? g.lineTo(a, b) : g.moveTo(a, b))); g.stroke();
+  // the west sea in the south-west (the beach's shore, the canal's mouth)
+  g.fillStyle = '#071420'; g.beginPath(); g.moveTo(-60, WEST[0][1]); WEST.forEach(([a, b]) => g.lineTo(a, b)); g.lineTo(WEST[WEST.length - 1][0], H + 40); g.lineTo(-60, H + 40); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(120,190,210,.45)'; g.beginPath(); WEST.forEach(([a, b], i) => (i ? g.lineTo(a, b) : g.moveTo(a, b))); g.stroke();
   // the Spire's island
   g.fillStyle = '#141020'; g.beginPath(); g.arc(ISLE.x, ISLE.y, ISLE.r, 0, 7); g.fill(); g.strokeStyle = 'rgba(' + O + ',.3)'; g.stroke();
   // the veil over the districts you know nothing of: their cells, softened at the edges
@@ -654,6 +657,8 @@ function drawBoats(x: Ctx, t: number, k: Knowledge, a: number) {
   { const py = ((t * 0.08) % (MAP_H + 80)) - 40; boat(812, py, -Math.PI / 2, 26, 7, '#7a2a1a', 'rgba(255,255,255,.8)'); x.globalAlpha = a; for (let i = 0; i < 4; i++) { x.fillStyle = ['#1f4a52', '#5a4a14', '#3a2050', '#2c3a24'][i]; x.fillRect(809, py - 8 + i * 5, 6, 4); } x.globalAlpha = 1; }
   { const bob = Math.sin(t * 0.02) * 0.6; boat(800, 60 + bob, -0.4, 28, 7, '#3a3a40', 'rgba(255,42,68,.9)', false); }
   { const px = MAP_W + 40 - ((t * 0.05) % (MAP_W * 0.5 + 80)), py = 22; if (px < MAP_W + 30 && px > 650) { boat(px, py, Math.PI, 34, 8, '#e8e0f0', null); x.globalAlpha = a; for (let i = 0; i < 6; i++) { x.fillStyle = i % 2 ? 'rgba(255,190,110,.9)' : 'rgba(255,240,215,.9)'; x.fillRect(px - 12 + i * 4, py - 1, 2, 2); } x.globalAlpha = 1; } }
+  // fishing boats off the beach, in the west sea
+  if (shows('oldq', k)) for (let i = 0; i < 3; i++) { const px = 44 + i * 14 + Math.sin(t * 0.01 + i) * 3, py = 356 + i * 8 + Math.cos(t * 0.013 + i) * 2; boat(px, py, Math.sin(t * 0.005 + i) * 0.3, 5, 2, '#e8e0d0', null, false); x.globalAlpha = a; x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(px, py - 4, 1, 4); x.globalAlpha = 1; }
   if (!shows('harbor', k)) return;
   // two ships moored at the quay
   for (const [py, len, hull] of [[262, 30, '#2a3a5a'], [300, 24, '#5a2a1a']] as [number, number, string][]) {
@@ -661,9 +666,8 @@ function drawBoats(x: Ctx, t: number, k: Knowledge, a: number) {
     x.globalAlpha = a; for (let i = 0; i < len / 6 - 1; i++) { x.fillStyle = ['#7a2a1a', '#1f4a52', '#5a4a14', '#3a2050'][i % 4]; x.fillRect(px - 3, py - len / 2 + 3 + i * 6, 6, 5); }
     x.fillStyle = 'rgba(255,230,180,.8)'; x.fillRect(px - 1, py + len / 2 - 4, 2, 2); x.globalAlpha = 1;
   }
-  // the harbor patrol, and fishing boats off the beach
+  // the harbor patrol
   { const g = t * 0.004, px = 770 + Math.cos(g) * 26, py = 260 + Math.sin(g) * 46; boat(px, py, g + Math.PI / 2, 8, 3, '#2a2d33', Math.floor(t / 6) % 2 ? 'rgba(255,42,68,.95)' : 'rgba(80,120,255,.95)'); }
-  for (let i = 0; i < 3; i++) { const px = 782 + i * 14 + Math.sin(t * 0.01 + i) * 3, py = 360 + i * 6 + Math.cos(t * 0.013 + i) * 2; boat(px, py, Math.sin(t * 0.005 + i) * 0.3, 5, 2, '#e8e0d0', null, false); x.globalAlpha = a; x.fillStyle = 'rgba(255,255,255,.7)'; x.fillRect(px, py - 4, 1, 4); x.globalAlpha = 1; }
 }
 
 
@@ -680,7 +684,7 @@ function drawLandmarks(x: Ctx, t: number, k: Knowledge, px: number, still: boole
   if (shows('galleria', k)) { const [gx, gy] = at(560, 100); x.save(); x.translate(gx, gy); x.scale(0.28, 0.28); drawGalleriaDome(x, { label: false, lit: lookOf('galleria', k) === 'lit' ? 1.4 : 0.5 }); x.restore(); }
   // the Church of the Algorithm: a white cube, one eye
   if (shows('galleria', k)) { const [cx, cy] = at(612, 96); x.fillStyle = '#d8dee6'; x.fillRect(cx - 8, cy - 16, 16, 16); x.fillStyle = '#0a0a10'; x.beginPath(); x.ellipse(cx, cy - 9, 5, 3, 0, 0, 7); x.fill(); x.fillStyle = 'rgba(170,225,235,' + (still ? 0.8 : 0.6 + 0.4 * Math.sin(t * 0.04)).toFixed(2) + ')'; x.beginPath(); x.arc(cx, cy - 9, 1.6, 0, 7); x.fill(); }
-  // the harbor's cranes and SALT on the beach, its palms
+  // the harbor's cranes
   if (shows('harbor', k)) {
     for (const [cx0, cy0, up] of [[650, 300, true], [690, 318, false], [716, 298, true]] as [number, number, boolean][]) {
       const [cx, cy] = at(cx0, cy0); x.strokeStyle = '#d07020'; x.lineWidth = 1.5; x.beginPath();
@@ -688,7 +692,10 @@ function drawLandmarks(x: Ctx, t: number, k: Knowledge, px: number, still: boole
       x.beginPath(); if (up) { x.moveTo(cx - 6, cy - 26); x.lineTo(cx - 3, cy - 46); } else { x.moveTo(cx - 6, cy - 26); x.lineTo(cx + 20, cy - 26); } x.stroke();
       x.fillStyle = blink(20) ? 'rgba(255,42,68,.95)' : 'rgba(90,16,32,.9)'; x.fillRect(cx - 1, cy - 30, 2, 2);
     }
-    const [bx, by] = at(722, 346); x.fillStyle = '#2a1222'; x.fillRect(bx - 8, by - 8, 16, 8); x.fillStyle = 'rgba(255,140,200,.85)'; x.fillRect(bx - 6, by - 11, 12, 2);
+  }
+  // SALT on the west beach, its palms
+  if (shows('oldq', k)) {
+    const [bx, by] = at(124, 344); x.fillStyle = '#2a1222'; x.fillRect(bx - 8, by - 8, 16, 8); x.fillStyle = 'rgba(255,140,200,.85)'; x.fillRect(bx - 6, by - 11, 12, 2);
     sign('SALT', bx, by - 15, 'rgba(255,190,220,.9)', 5);
     for (const dx of [-16, 14]) { x.strokeStyle = '#1a0a14'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(bx + dx, by); x.lineTo(bx + dx + 2, by - 18); x.stroke(); x.fillStyle = '#1a0a14'; for (let i = 0; i < 5; i++) { const a = -Math.PI + (i * Math.PI) / 4; x.fillRect(bx + dx + 2 + Math.cos(a) * 6, by - 18 + Math.abs(Math.sin(a)) * 3, 2, 1); } }
   }
@@ -834,7 +841,7 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
   // now in sheet units
   x.save(); x.translate(c.ox, c.oy); x.scale(c.s, c.s);
   // the sea's swell (flat), the boats
-  if (m.flat && !still) { x.strokeStyle = 'rgba(120,190,210,.12)'; x.lineWidth = 1 / c.s; for (let i = 0; i < 16; i++) { const yy = (i * 25 + t * 0.2) % MAP_H, cx = coastX(yy) + 6; x.beginPath(); x.moveTo(cx, yy); x.lineTo(MAP_W, yy + 6); x.stroke(); } }
+  if (m.flat && !still) { x.strokeStyle = 'rgba(120,190,210,.12)'; x.lineWidth = 1 / c.s; for (let i = 0; i < 16; i++) { const yy = (i * 25 + t * 0.2) % MAP_H, cx = coastX(yy) + 6; x.beginPath(); x.moveTo(cx, yy); x.lineTo(MAP_W, yy + 6); x.stroke(); const wx = westX(yy) - 6; if (wx > 0) { x.beginPath(); x.moveTo(0, yy); x.lineTo(wx, yy + 4); x.stroke(); } } }
   x.save(); if (!m.flat) x.transform(TILT.a, 0, TILT.c, TILT.d, TILT.e, TILT.f);
   x.beginPath(); x.rect(0, 0, MAP_W, MAP_H); x.clip();
   drawBoats(x, t, st, layer === 'street' ? 1 : 0.4);

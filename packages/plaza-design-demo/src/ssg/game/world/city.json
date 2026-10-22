@@ -199,7 +199,7 @@
     {
       "id": "beach",
       "name": "BEACH",
-      "district": "harbor",
+      "district": "oldq",
       "entrance": "beach",
       "at": "harbor",
       "scenes": [
@@ -333,23 +333,23 @@
     },
     "oldq": {
       "centre": [
-        300,
-        318
+        250,
+        326
       ],
       "sep": 9,
       "dens": 0.5,
       "col": "214,150,96",
       "frame": [
-        150,
+        96,
         282,
-        330,
-        84
+        384,
+        92
       ],
       "label": [
         318,
         374
       ],
-      "note": "OLD TOWN · THE CANAL · AGEING"
+      "note": "OLD TOWN · THE CANAL · THE WEST BEACH"
     },
     "market": {
       "centre": [
@@ -409,7 +409,7 @@
         612,
         206
       ],
-      "note": "INDUSTRY · LEISURE · WATER"
+      "note": "INDUSTRY · THE PORT · WATER"
     },
     "spire": {
       "centre": null,
@@ -457,11 +457,11 @@
         8,
         124,
         158,
-        250
+        186
       ],
       "label": [
-        86,
-        380
+        92,
+        306
       ],
       "note": "AUTOMATED · NO RESIDENTS"
     },
@@ -544,8 +544,8 @@
       238
     ],
     "beach": [
-      730,
-      356
+      122,
+      350
     ]
   },
   "STATION_MAP": {
@@ -627,6 +627,18 @@
       "width": 2.4,
       "path": [
         [
+          120,
+          352
+        ],
+        [
+          100,
+          318
+        ],
+        [
+          70,
+          282
+        ],
+        [
           60,
           270
         ],
@@ -657,17 +669,17 @@
         [
           610,
           300
-        ],
-        [
-          700,
-          320
-        ],
-        [
-          730,
-          346
         ]
       ],
       "stops": [
+        {
+          "name": "BEACH",
+          "pt": [
+            120,
+            352
+          ],
+          "district": "oldq"
+        },
         {
           "name": "FRINGE DEPOT",
           "pt": [
@@ -697,14 +709,6 @@
           "pt": [
             610,
             300
-          ],
-          "district": "harbor"
-        },
-        {
-          "name": "BEACH",
-          "pt": [
-            730,
-            346
           ],
           "district": "harbor"
         }
@@ -793,31 +797,6 @@
         "market"
       ],
       "access": "market-gate"
-    },
-    {
-      "kind": "walk",
-      "name": "SHORE PATH",
-      "from": "harbor",
-      "to": "harbor",
-      "path": [
-        [
-          690,
-          286
-        ],
-        [
-          716,
-          320
-        ],
-        [
-          728,
-          350
-        ]
-      ],
-      "state": "open",
-      "at": [
-        "harbor",
-        "beach"
-      ]
     },
     {
       "kind": "road",

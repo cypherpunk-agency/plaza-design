@@ -42,6 +42,21 @@ export const PLACES = {
   portal: 4010,
 };
 
+/**
+ * The city map since 2026-10-22 (Tommi): the beach is in the west, the harbor in the east, and the
+ * glide runs east. The near coast above is drawn as it always was (its own X runs west, the harbor
+ * east of Downtown); the beach is drawn a second time, mirrored, west of Downtown's street: a beach
+ * point `Xb` of the native layout stands at `WEST.beach − Xb`, so the inlet (the canal's mouth) and
+ * its sea wall meet the street at `WEST.junction` (the street's last tower ends before it). The
+ * title looks at that mirrored beach (`WEST.beach`); the glide's camera runs from there east,
+ * through Downtown, the Galleria and over the bay to the raised Harbor Station (`HARBOR_STATION`,
+ * over the truck gate where the bay bridge lands on the quay). Camera, clock and train come from
+ * the timeline (story/title/timeline.json).
+ */
+export const WEST = { junction: 5260, beach: 5260 + PLACES.inlet[1] };
+/** LINE 0's raised Harbor Station (X east end, west end) on the viaduct over the bridge's landing; a two-car train stops in it. */
+export const HARBOR_STATION: [number, number] = [2200, 2580];
+
 /** The Spire, in the bay at depth 0.3 (centred a little right of the middle while the camera eases over the bridge). */
 export const SPIRE_P = 0.3;
 /** The camera's slow stretch over the bridge (X), and how much it eases off there. */

@@ -37,13 +37,16 @@ export function createCityPlan(world:CityModel=defaultCity){
  const {DISTRICT_MAP,DISTRICTS,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,PLACES,STAND_IDS,STATION_MAP,STATIONS,placeOf}=world;
 
 
-/** The shore, north to south; the sea lies east of it. */
+/** The shore, north to south; the sea lies east of it (the harbor's bay). */
  const COAST: Pt[] = [[700, 0], [690, 60], [660, 92], [650, 150], [700, 188], [740, 230], [736, 290], [760, 340], [790, 390]];
+
+/** The west shore, north to south; the open sea lies west of it, in the south-west: the beach, the canal's mouth (Tommi, 2026-10-22: the beach in the west, the harbor in the east). North of its first point there is no sea. */
+ const WEST: Pt[] = [[0, 244], [26, 266], [52, 298], [78, 330], [98, 358], [112, 390]];
 
 /** The Spire's island in the bay. */
  const ISLE = { x: 770, y: 120, r: 26 };
 
-/** The canal, from the west into the bay, and its width. */
+/** The canal, from the west sea's mouth by the beach through the Old Quarter into the bay, and its width. */
  const CANAL: Pt[] = [[0, 300], [90, 292], [160, 310], [230, 300], [300, 318], [390, 306], [470, 318], [540, 304], [600, 320], [660, 330], [720, 334], [800, 338]];
 
  const CANAL_W = 8;
@@ -75,6 +78,16 @@ export function createCityPlan(world:CityModel=defaultCity){
   return 790;
 }
 
+/** The west shore's x at a plan y (no sea north of it: -Infinity). */
+ function westX(y: number) {
+  if (y < WEST[0][1]) return -Infinity;
+  for (let i = 1; i < WEST.length; i++) {
+    const [x0, y0] = WEST[i - 1], [x1, y1] = WEST[i];
+    if (y >= y0 && y <= y1) return x0 + ((x1 - x0) * (y - y0)) / (y1 - y0);
+  }
+  return WEST[WEST.length - 1][0];
+}
+
 /** How far a point is from the canal's middle line. */
  function canalDist(px: number, py: number) {
   let best = 1e9;
@@ -87,8 +100,8 @@ export function createCityPlan(world:CityModel=defaultCity){
   return Math.sqrt(best);
 }
 
-/** Dry land of the city (not the sea, not the canal, not the island). */
- const onLand = (px: number, py: number) => px > 3 && py > 3 && py < MAP_H - 3 && px < coastX(py) - 3 && canalDist(px, py) > CANAL_W / 2 + 1.5;
+/** Dry land of the city (not either sea, not the canal, not the island). */
+ const onLand = (px: number, py: number) => px > 3 && px > westX(py) + 3 && py > 3 && py < MAP_H - 3 && px < coastX(py) - 3 && canalDist(px, py) > CANAL_W / 2 + 1.5;
 
  const onIsle = (px: number, py: number) => Math.hypot(px - ISLE.x, py - ISLE.y) <= ISLE.r;
 
@@ -215,7 +228,7 @@ function build(): Plan {
     const pts: Pt[] = [];
     for (let i = 0; i < b.length - 1; i++) {
       const [a, c] = [b[i], b[i + 1]], n = Math.ceil(Math.hypot(c[0] - a[0], c[1] - a[1]) / 2);
-      for (let k = 0; k < n; k++) { const px = a[0] + ((c[0] - a[0]) * k) / n, py = a[1] + ((c[1] - a[1]) * k) / n; if (px < coastX(py) - 3) pts.push([px, py]); }
+      for (let k = 0; k < n; k++) { const px = a[0] + ((c[0] - a[0]) * k) / n, py = a[1] + ((c[1] - a[1]) * k) / n; if (px < coastX(py) - 3 && px > westX(py) + 3) pts.push([px, py]); }
     }
     const id = nextId++;
     for (const [px, py] of pts) { put(0, px, py, id); put(1, px, py, id); }
@@ -331,7 +344,7 @@ function build(): Plan {
   const ids = DISTRICTS.map((d) => d.id) as DistrictId[];
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
     const px = i * CELL + CELL / 2, py = j * CELL + CELL / 2;
-    const wet = px >= coastX(py) && !onIsle(px, py);
+    const wet = (px >= coastX(py) || px <= westX(py)) && !onIsle(px, py);
     cells[j * cols + i] = wet ? 0 : ids.indexOf(districtAt(px, py)) + 1;
   }
   const ms = typeof performance !== 'undefined' ? performance.now() - t0 : 0;
@@ -355,7 +368,7 @@ function build(): Plan {
   for (const s of STAND_IDS) at(`pad "${s}"`, PAD_MAP[s], null);
   return out;
 }
- return {COAST,ISLE,CANAL,CANAL_W,AVENUES,PARK,FENCE,coastX,canalDist,onLand,onIsle,districtAt,hash,plan,planProblems};
+ return {COAST,WEST,westX,ISLE,CANAL,CANAL_W,AVENUES,PARK,FENCE,coastX,canalDist,onLand,onIsle,districtAt,hash,plan,planProblems};
 }
 const shipping=createCityPlan();
-export const {COAST,ISLE,CANAL,CANAL_W,AVENUES,PARK,FENCE,coastX,canalDist,onLand,onIsle,districtAt,hash,plan,planProblems}=shipping;
+export const {COAST,WEST,westX,ISLE,CANAL,CANAL_W,AVENUES,PARK,FENCE,coastX,canalDist,onLand,onIsle,districtAt,hash,plan,planProblems}=shipping;
