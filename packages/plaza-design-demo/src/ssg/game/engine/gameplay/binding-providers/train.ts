@@ -7,6 +7,7 @@ import type {Character} from '../../../runtime/characters';
 import * as defaultMetro from '../../../world/transport/line';
 import type {LineSystem} from '../../../world/transport/line';
 import type {CityModel} from '../../../world/city';
+import type {Movers} from '../../movers';
 import {light} from '../../../world/light';
 import {openingState} from '../../../story/opening';
 import {prepareActor} from '../actor-frame';
@@ -37,7 +38,7 @@ export function trainLayoutOf(source:SceneDocument,rows:readonly Resolved[],role
  return{width,spawn,ceil:roles.ceiling.placement.h,windows:of('windowFrame').map(r=>r.placement.x),winW:Number(window.props.width),win:{h0:Number(window.props.h0),h1:Number(window.props.h1)},doors:of('door').map(r=>r.placement.x),lineMap:roles.lineMap.placement.x,ads:of('advert').map(r=>({x:r.placement.x,text:String(r.props.text)})),adsHome:of('advert').map(r=>String(r.props.homeText)),news:String(roles.news.props.text),people,poles:of('drawPole').filter(r=>r.instance.layer!=='foreground').map(r=>r.placement.x),frontPoles:of('drawPole').filter(r=>r.instance.layer==='foreground').map(r=>r.placement.x),bar:roles.handrail.placement.h,standing:(source.actors??[]).filter(a=>a.presentation?.kind==='rider'&&a.presentation.controller?.kind==='trainCrowd'&&a.presentation.controller.standing).map(a=>x(a.instance)),cams:of('drawCam').map(r=>r.placement.x),staff:roles.staff.placement.x,gangway:roles.gangway.placement.x,gangDoor:roles.gangDoor.placement.x,brake:roles.brake.placement.x};
 }
 /** The ride and line state the car paints now (the world the game bound, else the line module). */
-export function trainVisual(view:View,world?:{metro:LineSystem}):TrainVisualState{return{...(world?.metro??defaultMetro).trainVisualState(),lighting:light(),home:openingState(view.flags)==='home'};}
+export function trainVisual(view:View,world?:{metro:LineSystem},movers?:Movers):TrainVisualState{return{...(world?.metro??defaultMetro).trainVisualState(movers),lighting:light(),home:openingState(view.flags)==='home'};}
 export interface TrainWorld {metro?:LineSystem;city?:CityModel}
 /** One frame of the car: the layout, the ride, the roof, windows, doors and each rider's look. */
 export function prepareTrainFrame(sc:TrainScenery,view:View,hover:string|null,visual:TrainVisualState=trainVisual(view),context:TrainWorld={}):TrainFrame{
@@ -56,7 +57,7 @@ export function trainValues(sc:TrainScenery,view:View,frame:TrainFrame,context:T
 const provider=(ctx:BindingContext):Record<string,Value>=>{
  const layout=ctx.shared?.get(TRAIN_LAYOUT_KEY) as TrainLayout|undefined;if(!layout)return{};
  const sc:TrainScenery={source:ctx.source,rows:ctx.rows,roles:ctx.roles,actors:ctx.actors,layout},context:TrainWorld={metro:ctx.world?.metro,city:ctx.world?.city};
- const frame=(ctx.shared!.get(TRAIN_FRAME_KEY) as TrainFrame|undefined)??prepareTrainFrame(sc,ctx.view,ctx.engine?.hover??null,trainVisual(ctx.view,ctx.world),context);
+ const frame=(ctx.shared!.get(TRAIN_FRAME_KEY) as TrainFrame|undefined)??prepareTrainFrame(sc,ctx.view,ctx.engine?.hover??null,trainVisual(ctx.view,ctx.world,ctx.engine?.m.movers),context);
  return trainValues(sc,ctx.view,frame,context);
 };
 

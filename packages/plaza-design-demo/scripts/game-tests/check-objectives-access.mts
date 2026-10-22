@@ -1,10 +1,10 @@
-import {PLACES,placeBlocked,seenPlace,placeOf} from '../../src/ssg/game/world/city';
+import {PLACES,placeBlocked,seenPlace,placeOf,transportPermission} from '../../src/ssg/game/world/city';
 import assert from 'node:assert/strict';
 import downtownDocument from '../../src/ssg/game/scenes/downtown/scene.json';
 import {currentObjective} from '../../src/ssg/game/engine/gameplay/objectives';
 import {newSave} from '../../src/ssg/game/runtime/save';
 import {evaluateAccess,validateAccess} from '../../src/ssg/game/engine/gameplay/access';
-import {capabilityView,exitPermission,exitVisibility,harborTransportPermission} from '../../src/ssg/game/world/access';
+import {capabilityView,exitPermission,exitVisibility} from '../../src/ssg/game/world/access';
 import {compileSceneDocument,validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import {matches} from '../../src/ssg/game/engine/gameplay/validation';
 import shiftSceneJson from '../../src/ssg/game/scenes/harbor-shift/scene.json';
@@ -37,7 +37,7 @@ for(const p of PLACES)for(const scene of ['downtown','harbor'] as const)for(let 
 }
 let state:GameplayState={flags:{},items:{},tokens:8};const before=structuredClone(state);
 assert.deepEqual(evaluateAccess([{when:{flag:'ready'},reason:'Need permission'}],{state}),{ok:false,reason:'Need permission',index:0,hidden:false});assert.deepEqual(state,before);
-assert.equal(exitVisibility({requires:'door'},state.flags).ok,false);assert.equal(exitPermission({needs:{key:'chip',name:'Door',pages:['Need chip'],h:40}},['chip']).ok,true);assert.equal(harborTransportPermission('harbor',false).ok,false);
+assert.equal(exitVisibility({requires:'door'},state.flags).ok,false);assert.equal(exitPermission({needs:{key:'chip',name:'Door',pages:['Need chip'],h:40}},['chip']).ok,true);assert.equal(transportPermission('harbor',false).ok,false);assert.equal(transportPermission('harbor',true).ok,true);assert.equal(transportPermission('downtown',false).ok,true);
 const save=newSave();save.jump=true;save.programs=['scan.so'];save.keyring=['chip'];const caps=capabilityView(save,false,{scanProgram:'scan.so'});assert.equal(caps.jump,true);assert.equal(caps.network,false);caps.jump=false;assert.equal(save.jump,true);
 for(const access of [[{when:{flag:'unknown'},reason:'x'}],[{command:'unknown',reason:'x'}],[{command:'demo.mission.start',reason:'x'}],[{capability:'unknown',reason:'x'}],[{reason:'x'}],[{when:{all:[]},reason:'x',script:'bad'}]])assert.throws(()=>validateAccess(access,DEMO_GAMEPLAY));
 assert.throws(()=>validateSceneDocument({...DEMO_COUNTER,version:2},DEMO_GAMEPLAY));

@@ -15,8 +15,8 @@ import {pendingNetworkContext} from '../../src/ssg/game/authoring/pending-networ
 import {mechanismDeviceId} from '../../src/ssg/game/engine/gameplay/mechanism-parts';
 import {buildEventInspection} from '../../src/ssg/game/authoring/event-inspector-model';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
+import {steaming} from '../../src/ssg/game/engine/gameplay/mechanisms/thermal';
 
-const wait=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 const thermal=mechanismDeviceId('thermal'),gantry=mechanismDeviceId('gantryLift');
 assert.equal(thermal,'mechanism-thermal');
 
@@ -75,19 +75,19 @@ assert(bare.mechanisms.has(thermal));
 bare.input('capsule.router.onlineDue');assert.equal(bare.inspect().time.pending.length,0,'a milestone nobody listens to schedules nothing');
 let m=build(cables);
 assert.equal(m.links.length,3);
-m.set('sun',false);m.input('capsule.router.onlineDue');await wait(400);
+m.set('sun',false);m.input('capsule.router.onlineDue');m.tick(400,false);
 assert.equal(m.get('sun'),true,'a mechanism milestone carried by a cable ran a device verb (blinds open)');
-assert.equal(m.scratch.steamUntil,undefined);
-m.emit('kettle.kettle:boiled');await wait(400);
-assert(m.scratch.steamUntil>0,'a device event ran the mechanism effect through a cable (kettle steam)');
+assert(!steaming(m),'no steam yet');
+m.emit('kettle.kettle:boiled');m.tick(400,false);
+assert(steaming(m),'a device event ran the mechanism effect through a cable (kettle steam)');
 // a derived value raises changed when it differs between ticks (the first sight only notes it)
-m.set('plugOn',false);m.tick(50,true);m.set('sun',true);m.tick(50,true);await wait(400);assert.equal(m.get('sun'),true,'no change, no signal');
-m.set('plugOn',true);m.tick(50,true);await wait(400);assert.equal(m.get('sun'),false,'routerUp changed: the cable closed the blinds');
+m.set('plugOn',false);m.tick(50,true);m.set('sun',true);m.tick(50,true);m.tick(400,false);assert.equal(m.get('sun'),true,'no change, no signal');
+m.set('plugOn',true);m.tick(50,true);m.tick(400,false);assert.equal(m.get('sun'),false,'routerUp changed: the cable closed the blinds');
 // cut cables stay cut; a snapshot keeps the cables and a restore wires them again
 const snap=m.snapshot();assert(snap.links.some(l=>l.from===thermal+'.milestones:capsule.router.onlineDue'&&l.to==='blinds.motor'));
 const again=build(cables);again.restore(snap);assert.equal(again.links.length,3);
-again.set('sun',false);again.input('capsule.router.onlineDue');await wait(400);assert.equal(again.get('sun'),true,'a restored cable fires');
-const cut=build(cables);cut.cut(cut.links.find(l=>l.from.startsWith(thermal+'.milestones'))!);cut.set('sun',false);cut.input('capsule.router.onlineDue');await wait(400);assert.equal(cut.get('sun'),false,'a cut mechanism cable is cut');
+again.set('sun',false);again.input('capsule.router.onlineDue');again.tick(400,false);assert.equal(again.get('sun'),true,'a restored cable fires');
+const cut=build(cables);cut.cut(cut.links.find(l=>l.from.startsWith(thermal+'.milestones'))!);cut.set('sun',false);cut.input('capsule.router.onlineDue');cut.tick(400,false);assert.equal(cut.get('sun'),false,'a cut mechanism cable is cut');
 // the player can wire to a mechanism part through the model as to any noun
 const loose=build([]);assert.equal(loose.wireEligibility(thermal+'.milestones:capsule.router.rebooted','blinds.motor','open').ok,true);
 assert.equal(loose.wireEligibility(thermal+'.milestones:capsule.router.rebooted',thermal+'.routerUp','read').ok,false);

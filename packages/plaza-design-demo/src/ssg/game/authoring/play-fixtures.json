@@ -139,34 +139,8 @@
       "spawn": null,
       "metro": {
         "version": 1,
-        "line": [
-          "downtown",
-          "galleria",
-          "harbor"
-        ],
-        "ride": {
-          "at": 1,
-          "to": 0,
-          "phase": "dwell",
-          "timer": 0,
-          "dwell": 330,
-          "pos": 3000,
-          "d": 0,
-          "span": 3000,
-          "frames": 780,
-          "v": 0,
-          "open": 1,
-          "doors": false,
-          "halt": null,
-          "haltFor": 0,
-          "decel": 0.032,
-          "say": "GALLERIA"
-        },
-        "shift": {
-          "downtown": 0,
-          "galleria": 0,
-          "harbor": 0
-        },
+        "start": "at-station",
+        "station": "galleria",
         "lineOpen": {
           "downtown": true,
           "galleria": true,
@@ -200,34 +174,8 @@
       "spawn": null,
       "metro": {
         "version": 1,
-        "line": [
-          "downtown",
-          "galleria",
-          "harbor"
-        ],
-        "ride": {
-          "at": 1,
-          "to": 0,
-          "phase": "running",
-          "timer": 416.00000000000006,
-          "dwell": 330,
-          "pos": 4500,
-          "d": 1500,
-          "span": 6000,
-          "frames": 1248,
-          "v": 0,
-          "open": 0,
-          "doors": false,
-          "halt": null,
-          "haltFor": 0,
-          "decel": 0.032,
-          "say": "NEXT: DOWNTOWN"
-        },
-        "shift": {
-          "downtown": 0,
-          "galleria": 0,
-          "harbor": 0
-        },
+        "start": "running",
+        "station": "galleria",
         "lineOpen": {
           "downtown": true,
           "galleria": true,
@@ -261,34 +209,8 @@
       "spawn": null,
       "metro": {
         "version": 1,
-        "line": [
-          "downtown",
-          "galleria",
-          "harbor"
-        ],
-        "ride": {
-          "at": 1,
-          "to": 0,
-          "phase": "halted",
-          "timer": 0,
-          "dwell": 330,
-          "pos": 5350,
-          "d": 2350,
-          "span": 6000,
-          "frames": 1248,
-          "v": 0,
-          "open": 0,
-          "doors": false,
-          "halt": "siding",
-          "haltFor": 420,
-          "decel": 0.032,
-          "say": "STOPPED · NOT A STATION"
-        },
-        "shift": {
-          "downtown": 0,
-          "galleria": 0,
-          "harbor": 0
-        },
+        "start": "siding",
+        "station": "galleria",
         "lineOpen": {
           "downtown": true,
           "galleria": true,
@@ -324,34 +246,8 @@
       "spawn": null,
       "metro": {
         "version": 1,
-        "line": [
-          "downtown",
-          "galleria",
-          "harbor"
-        ],
-        "ride": {
-          "at": 1,
-          "to": 0,
-          "phase": "halted",
-          "timer": 0,
-          "dwell": 330,
-          "pos": 5350,
-          "d": 2350,
-          "span": 6000,
-          "frames": 1248,
-          "v": 0,
-          "open": 1,
-          "doors": true,
-          "halt": "siding",
-          "haltFor": 2400,
-          "decel": 0.032,
-          "say": "STOPPED · NOT A STATION"
-        },
-        "shift": {
-          "downtown": 0,
-          "galleria": 0,
-          "harbor": 0
-        },
+        "start": "siding-open",
+        "station": "galleria",
         "lineOpen": {
           "downtown": true,
           "galleria": true,

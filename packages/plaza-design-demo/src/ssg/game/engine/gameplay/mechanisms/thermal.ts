@@ -8,8 +8,10 @@ export {capsuleController} from '../../controllers/capsule';
  * the sun on the floor once the blinds are open.
  *
  * Everything said comes from capsule.json's `texts`. What changes every tick
- * (the router's temperature, when it finishes booting) lives in `scratch`: it
- * is not saved, and a loaded flat starts from a calm router.
+ * (the router's temperature, when it finishes booting, when the steam ends) is
+ * declared model state (gameplay.json, session lifetime, bound by the controller's
+ * state roles), so the pictures and the editor read the model; the two deadlines are
+ * scene time. A loaded flat starts from a calm router.
  *
  * Pure: no DOM, so node can run it (the build's check, scratch scripts).
  */
@@ -23,18 +25,21 @@ import type { SceneMechanism } from '../scene-mechanisms';
 export type PixelAt = 'bed' | 'router' | 'sun';
 
 export const capsuleState=(m:SceneModel,key:keyof CapsuleController['state'])=>m.get(capsuleController(m.data).state[key]);
+const setCapsuleState=(m:SceneModel,key:keyof CapsuleController['state'],v:number)=>m.set(capsuleController(m.data).state[key],v);
 
 const tune = (m: SceneModel, k:keyof CapsuleController['tuning']) => m.data.tuning[capsuleController(m.data).tuning[k]];
-/** The router's temperature, °C. Starts calm: warm if the plug is on, room temperature if not. */
-const tempOf = (m: SceneModel) => (m.scratch.temp ??= tune(m, capsuleState(m,'plugOn') ? 'idleTemp' : 'roomTemp'));
+/** The router's temperature, °C. 0 (not simulated yet) is calm: warm if the plug is on, room temperature if not. */
+const tempOf = (m: SceneModel) => Number(capsuleState(m,'routerTemp')) || tune(m, capsuleState(m,'plugOn') ? 'idleTemp' : 'roomTemp');
 /** Powered, and done booting (or rebooting). */
-export const routerUp = (m: SceneModel) => !!capsuleState(m,'plugOn') && m.now() >= (m.scratch.bootUntil ?? 0);
+export const routerUp = (m: SceneModel) => !!capsuleState(m,'plugOn') && m.now() >= Number(capsuleState(m,'bootUntil') ?? 0);
+/** The kettle's steam is up (scene time). */
+export const steaming = (m: SceneModel) => m.now() < Number(capsuleState(m,'steamUntil') ?? 0);
 
 const EFFECTS: Record<string, Effect> = {
   /** The plug came on: the router boots, and says so when it is up (if the plug is still on by then). */
   'router.boot': (w) => {
     const m = w.m, ms = tune(m,'bootMs');
-    m.scratch.bootUntil = m.now() + ms;
+    setCapsuleState(m,'bootUntil',m.now() + ms);
     m.later(ms + capsuleController(m.data).onlineNoticeDelayMs, () => {
       // Physical timer expiry is an input; source owns readiness and the reply.
       if (w.input('capsule.router.onlineDue').ok) w.changed();
@@ -42,7 +47,7 @@ const EFFECTS: Record<string, Effect> = {
   },
 
   /** Steam for a moment (the scene draws it). */
-  'kettle.boil': (w) => { w.m.scratch.steamUntil = w.m.now() + tune(w.m,'steamMs'); },
+  'kettle.boil': (w) => { setCapsuleState(w.m,'steamUntil',w.m.now() + tune(w.m,'steamMs')); },
 };
 
 /**
@@ -60,9 +65,9 @@ function tick(w: World, dt: number) {
   let t = tempOf(m);
   if (up && capsuleState(m,'pixelAt') === 'router') t += tune(m, 'heatPerS') * dt / 1000;
   else t = Math.max(tune(m, up ? 'idleTemp' : 'roomTemp'), t - tune(m, 'coolPerS') * dt / 1000);
-  s.temp = t;
+  setCapsuleState(m,'routerTemp',t);
   if (up && t >= tune(m, 'rebootTemp')) {
-    s.bootUntil = m.now() + tune(m, 'rebootMs');
+    setCapsuleState(m,'bootUntil',m.now() + tune(m, 'rebootMs'));
     // Physical threshold/timing stays here; shared source owns the response and speaker.
     w.input('capsule.router.rebooted');
     m.later(tune(m, 'rebootMs') + capsuleController(m.data).onlineNoticeDelayMs, () => { if (w.input('capsule.router.onlineDue').ok) w.changed(); });

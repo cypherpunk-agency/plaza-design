@@ -53,7 +53,7 @@ covered by contract checks. Pixel snapshots do not establish campaign playabilit
 | All-scene device definitions and representative typed forms | general-device-sources, general-device-forms, general-device-save |
 | Source service, bundles and recovery | authoring-save, public-document-bundle, source-removal, public-editor-build |
 | Physical inputs, deadlines and source workflows | native-inputs, native-workflow-phases, parallel-deadlines, scene-domains-save and scene-specific workflow checks |
-| World, transport and scene creation | scene-catalogue, all-scene-world-routes, metro-snapshots, network-source-save |
+| World, transport and scene creation | scene-catalogue, all-scene-world-routes, train-ride, network-source-save |
 | Rendering, animation and current pixels | all-scene-layers, scene-layers, animated-authoring, visuals |
 | Private Play, lifecycle and storage | play-startup, play-storage, native-session-disposal, game-reopen-lifecycle |
 

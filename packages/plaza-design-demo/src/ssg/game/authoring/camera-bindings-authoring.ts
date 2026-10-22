@@ -3,7 +3,7 @@ import type {TypedForm} from './typed-form';
 import {cameraBindingRoles} from '../engine/controllers/camera-bindings';
 /** Finite inputs to native camera panels, using the current scene's materialized state. */
 export function renderCameraBindings(host:HTMLElement,form:TypedForm,data:SceneData,edit:(label:string,change:(d:SceneData)=>void)=>void){
- const roles=cameraBindingRoles(data.id);if(!roles.length)return;
+ const roles=cameraBindingRoles(data.controller);if(!roles.length)return;
  const b=data.camera?.bindings??{},keys=(type:string)=>Object.keys(data.state).filter(k=>typeof data.state[k]===type),strings=keys('string'),numbers=keys('number');
  const change=(label:string,run:(b:NonNullable<NonNullable<SceneData['camera']>['bindings']>)=>void)=>edit(label,d=>{d.camera!.bindings??={};run(d.camera!.bindings);});
  if(roles.includes('pan'))form.select(host,'Camera pan state',['',...numbers],b.pan?.state??'',state=>change('Rebind camera pan',b=>{if(state)b.pan={state,scale:b.pan?.scale??40};else delete b.pan;}));

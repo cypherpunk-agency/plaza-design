@@ -150,15 +150,16 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
 - How high a device sits in the world (`layout.spot.y`: a sign on a wall, a relay on a roof):
   **data**, next to `x`, `w`, `h`. Hack vision frames it there, taps find it there, and its E
   target says how high it is (`SceneTarget.y`) so the game can tell which ledge you reach it from.
-- A device that moves in the world (DLV-9 driving to the market gate): **code**, `SceneRules.place`
-  (where it stands now, or null while it is out of the world). Its home stays `layout.spot`.
+- A device that moves in the world (DLV-9 driving to the market gate): a Circuit **mover** (`dlv9.chassis`, §Movers);
+  the mechanism's `SceneRules.place` only reads it (where it stands now, or null while it is out of the world).
+  Its home stays `layout.spot`.
 - Typing in the deck (the terminal, last resort) on a scene: **engine**, `SceneHost.typed(fn)` runs
   what was typed without echoing the shell line a second time; `SceneHost.viewing` is the device
   whose schematic is open. What the commands mean (`ls`, `cat`, `login`) is the scene's code.
 - Downtown's progress stays in the save's own fields (`handle`, `tokens`, `jump`, `controlled`,
   `flags.till`, `flags.end`), as before the engine: **code** reads them as derived values
   (`till`, `controlled2F`, `jump`, `end`, `handle`, …) and its effects write them (`node.control`,
-  `legs.install`, `till.pay`, `dlv.drive`), in `engine/gameplay/mechanisms/vehicle-run.ts`. The scene's own `state` is only
+  `legs.install`, `till.pay`), in `engine/gameplay/mechanisms/vehicle-run.ts`. The scene's own `state` is only
   what is new on the street (the gate's lock, DLV-9, the billboard's feed). Current scalar state
   has one owner in Save.gameplay. Source-authored onPersist triggers synchronize goal markers;
   no historic save reconciliation or duplicate scalar store remains.
@@ -170,7 +171,7 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   `scenes/downtown/gameplay.json`, using the same runner as choices and other actors.
 - The market gate (P12): the gate's logic is **data** (pre-wired `scanner:matched → lock open`,
   `door:passed → lock shut`; the lock opens only on the scanner's word, `scanned`); DLV-9's drive
-  is **code** (`dlv.drive`, `place`). DISPATCH's shield rings are, for now, a `sequence` seal
+  is a **mover** with a scan-area **zone** (`dlv9.chassis`, `gate.beam`); the code is the two orders that send it (`dlv.inward`, `dlv.outward`) and `place`. DISPATCH's shield rings are, for now, a `sequence` seal
   (outer, middle, inner); when the rings toy exists, that sector's seal becomes `{ "guard":
   "shields" }` on a toy GUARD: a data change. COPY between nodes stands in as a verb on DISPATCH's
   `routes` (`send to dlv9`). The watchdog is not used yet.
@@ -276,9 +277,9 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   cycle is not saved: it comes back stopped, its load still in (`settle`).
 - **The stacks (P15) and the end of Act I** (2026-10-15): STS-2, the thermal gate, the ferry, the
   reefer and the watchdog are **data** (`stacks.json`; the scope's boxes reuse the yard's `camera`
-  field); the lift's timeline, the gate's moment, the watchdog's wiring check and the ending are
-  **code** (the `gantryLift` mechanism, `engine/gameplay/mechanisms/gantry-lift.ts`; the trolley is a pure function of the clock, `trolley`, read by the
-  drawing). The rules are made for the player (`rules(player)`, like Downtown's): two new optional
+  field); the lift's legs, the gate's plane and its timing are a **mover** and a **zone** (`sts2.trolley`, `port.beam`, §Movers), the
+  watchdog's wiring check and the ending are **code** (the `gantryLift` mechanism, `engine/gameplay/mechanisms/gantry-lift.ts`;
+  the two orders `sts2.lift` and `port.return` start a path, `trolley` reads the mover for the drawing). The rules are made for the player (`rules(player)`, like Downtown's): two new optional
   `Player` hooks, **engine-side code** in game.ts: `cutscene(id)` (a story beat asks for a cutscene;
   the game plays it once nothing is open: `pendingCut`) and `sceneState(scene, key)` (another
   scene's state: Moth asks whether Sprat was fed). **Contacts on the deck** (`contacts.ts`): who and
@@ -761,7 +762,9 @@ laundromat opening).
 ## Movers
 
 A mover (`mover`, on an `act` part) travels between named stops: a lift car, a crane trolley, a
-delivery robot (engine/movers.ts). The Tower lab's lift car:
+delivery robot, a claw's hook (engine/movers.ts). It is the only thing that moves: a scene's code
+never keeps a trajectory, a timer or a second copy of a position; pictures read `movers.place(key)` and
+`position(key)`, a zone watches it, a state key may mirror it. The Tower lab's lift car:
 
 ```json
 { "id": "car", "layer": "hardware", "function": "act", "events": ["started", "arrived"],
@@ -769,15 +772,82 @@ delivery robot (engine/movers.ts). The Tower lab's lift car:
              "stops": { "metro": -190, "b1": -90, "lobby": 0, "f2": 110, "f3": 200, "roof": 290 } } }
 ```
 
-- `stops`: name → position along `axis` (`x` across the scene, the default, or `h` up it), world
-  units. It starts at the first, or at `start`. `across`: where it runs on the other axis (the
-  shaft's x). `speed`: units per second; it eases out of and into each stop.
-- Engine verbs `go <stop>` for every stop and `return`; your own verbs come after. A new order on
-  the way turns it round from where it is.
-- Events `started` and `arrived`; `set` writes the stop it is at, or `moving`, into a state key.
+- `stops`: name → place. A place is a number along `axis` (`x` across the scene, the default, or `h` up
+  it), world units; or a **point** `{ "x": …, "h": … }` for a part that moves on both axes (a gantry trolley and
+  its spreader are one mover); or a reference, in any coordinate: `{ "place": "slot" }` (a place the scene's
+  code measured from its artwork: the gantry's roles, the yard's slots) or `{ "spot": "gate", "edge": "right",
+  "plus": 22 }` (the standing place of a device, its `left` or `right` edge or its middle, moved on). It starts at
+  the first stop, or `start`. `across`: where it runs on the other axis (the shaft's x).
+- Any number may be a **tuning name** (`"speed": "dlvSpeed"`, `"ms": "liftOverMs"`): the scene's `tuning` holds it.
+- `speed`: units per second (or `ms`: every plain trip takes that long, whatever the distance). `ease`: how
+  it moves between two stops: `smooth` (the default: eases out of and into each stop), `sine` (a cosine
+  ease, the metro car's run), `linear`, `ease-in`, `ease-out`, or a timing table `[[time, progress], …]` (both 0 to 1).
+- Engine verbs `go <stop>` for every stop and `return`; your own verbs come after. A new order on the way
+  turns it round from where it is. `wired: false` gives it no verbs: only the scene's own effect sends it
+  (`SceneModel.runPath`, `moveTo`), so a cable or a finger cannot drive it.
+- Events `started` and `arrived`; `set` writes the stop it is at, or `moving` (or what `moving` says), into a
+  state key, and a mover whose state already names a stop starts there. `follow` names a state key that holds
+  the stop it should be at: when the key changes to one of its stops, the mover goes there (a claw's hook follows
+  the arm's state).
+- **Paths** (`paths`): named trips of several legs, run from wherever the mover is:
+
+  ```json
+  "paths": {
+    "reefer": [
+      { "to": "slot", "ms": "liftOverMs" },
+      { "to": "slotLow", "ms": "liftHoistMs", "share": 0.5 },
+      { "to": "slot", "ms": "liftHoistMs", "share": 0.5, "load": "box" },
+      { "to": "deck", "ms": "liftTravelMs", "ease": "linear", "load": "box" },
+      { "to": "deckLow", "ms": "liftLowerMs", "load": "box" },
+      { "to": "deck", "ms": 0, "event": "landed" }
+    ],
+    "inward": [
+      { "to": "door", "minMs": "dlvSignalMs", "event": "door" },
+      { "if": "lock=open", "then": [{ "to": "market", "event": "through" }], "else": [{ "to": "gate", "event": "back" }] }
+    ]
+  }
+  ```
+
+  A leg goes `to` a stop (leave it out to stay) in `ms` (times `share`) or at `speed` (default: the mover's),
+  with its own `ease`; it lasts at least `minMs` (the mover waits at its end). `load` labels what rides along
+  during the leg: the picture reads it (`movers.load`). `event` is raised when the leg ends (list it in the part's
+  `events`). A `choice` (`if`, `then`, `else`) looks at the scene's state, as any `if` does, when it is reached.
+  A new path replaces the one under way, from where the mover is: that is how an alarm sends a lift back.
+  `movers.lastRun(key)` names the path last run.
+- **Routes that go round** (the metro car, `scenes/train/devices.json`): a path may end with the step `{ "run": "stand" }`: when the trip
+  ends the named path of the same mover goes on from where it stands, at the very instant the last leg ended, so a route cycles with no
+  scheduler (a trip that only waits and is followed by another raises no `arrived`; a chained trip raises `started`). A path may begin
+  with `{ "from": "harbor" }`: the trip starts from that stop, wherever the mover was. `runPath` also takes `from` (a stop) and
+  `ahead` (ms): a train boarded at a station, already part way through its dwell. A `ring` (a number or tuning name: the loop's length)
+  makes the axis a loop: positions wrap, a leg always goes forward round it, and a leg to the stop the mover stands at goes once round.
+  `auto` names a path that runs whenever the mover is idle: when the scene starts, and when a save brings it back. A leg `to` may be
+  `"@trainNext"`: the stop that a state key or computed value of the scene names when the leg begins (the station the car runs to, a closed
+  one passed). A leg may begin already `ahead` ms in, send another mover of the same device along one of its paths (`"drives":
+  "doors:shut"`: the train's doors are a mover too), and play a sound as it ends (`"cue": "open"` or `"close"`, only while the scene is
+  on screen). `movers.legInfo` and `etaTo(key, load)` give what a read-out needs: the leg's label and times, the time until the next leg
+  labelled so ends (the doors open). A route that goes round without taking any time is stopped with an error.
+- **The emergency stop** (`brake`, `SceneModel.brake(dev, noun)`, the one calculation here that is not an eased leg): `{ "decel": "brakeDecel",
+  "snap": [{ "stop": "siding", "window": "brakeWindow" }], "then": { "track": "halt", "siding": "halt.siding" }, "load": "braking",
+  "event": "stopped" }`. From its speed when pulled the mover slows at `decel` (units per second squared) to rest ahead of where it is,
+  exactly at a `snap` stop that it would have stopped within `window` of (at least `minAhead`, default 30, ahead), then runs the path in
+  `then` for where it stopped: a hold, then a leg `@heading`-style on to the stop it was heading for. `movers.halted(key)` says where
+  it stopped (`track` or the snap stop) until it moves on, a path started while it is held keeps the stop it was heading for, and a brake
+  pulled while it stands, while it brakes, or too near its stop to stop (it goes on to it) does nothing. `brakePreview` says what a
+  pull would do. A zone with `"track": "stop"` watches the point where the mover would rest if it braked now (the train's
+  `approach` zone raises `harbor siding`), not where it is.
+- **Milestones**: a part's `milestone` maps an event of its own (a leg's `event`, `arrived`, a zone's `enters`)
+  to a physical milestone of the scene's code (`SceneRules.inputs`): raising the event reports it, and the
+  scene's gameplay answers with its ordinary `native.inputs` cases. Nothing in code listens.
 - A level's elevator names its mover in its `device` field (`lift.car`): the level then rides the
   mover, and cables, hack vision and the world all move the same car.
-- Saved: the stop it is at, and where it was going.
+- Saved: the stop it is at, and where a plain trip was going. A path under way is saved settled where it set
+  off (the scene's checkpoint settles the state that goes with it), and restoring writes the stop into `set`.
+- Editor: Logic › Devices, a mover part: its stops (each a number, a place, a spot or a point), the optional
+  settings, the paths with their legs and choices, and its milestones are typed controls; data/check.ts
+  validates every one.
+- Examples: the Downtown DLV-9 van (`dlv9.chassis`: stops, the paths `inward` and `outward`, its scan area
+  `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`), the yard's hook (`crane.hook`), the metro car (`train.car` on a ring with
+  its doors `train.doors`, its zones `tunnel` and `approach`; see TRAIN-LINE-RIDE.md).
 
 ## Zones
 
@@ -789,10 +859,15 @@ its edge (engine/zones.ts).
   "zone": { "from": 890, "to": 975, "watch": "player", "within": [-5, 60] } }
 ```
 
-- `from`..`to` along `axis` (default `x`); `within`: optional limits on the other axis (one floor).
+- `from`..`to` along `axis` (default `x`), each a number or a reference like a mover's stop (`{ "place": "gate" }`,
+  `{ "spot": "gate", "edge": "left", "plus": -32 }`); `within`: optional limits on the other axis (one floor).
   `watch`: `player`, or a mover as `device.part`.
-- Events `enters` and `leaves`, only on a crossing: standing inside when the scene starts raises
-  nothing. `set` writes true or false into a state key.
+- Events `enters` and `leaves`, only on a crossing noticed on a frame: standing inside when the scene starts
+  (or when the zone is first looked at) raises nothing. `set` writes true or false into a state key. A
+  `milestone` reports an event to the scene's code (the thermal gate's `port.beam`, the van's `gate.beam`).
+- `track: "stop"` (a zone that watches a braking mover): see the emergency stop above.
+- A part's `relay` (`{ "enters": "position:tunnel" }`) raises another part's event of the same device whenever this one raises its own: the
+  train's `tunnel` zone reports as the `position` sense part, so cables wired from `position:tunnel` (P14) keep working.
 - Engine verbs `arm` and `disarm`; `armed: false` starts it disarmed. Saved: which zones are
   disarmed.
 
@@ -816,7 +891,7 @@ data gives the module, and a module some file gives must say so in `foundIn` (un
 
 - **Named effects** (the yard's `gameplay.json` commands and the `yardCrane` mechanism, `engine/gameplay/mechanisms/yard-crane.ts`): `crane.claw` (what can be grabbed, dropping into
   the chute), `hatch.open` (open for `gateOpenMs`), plus the parcel's slide that the claw
-  starts. The engine's `timer.wait` (wait, then raise `done`) is in `engine/rules.ts`. They read
+  starts (the claw's hook is a mover, `crane.hook`, that follows the arm's state). The engine's `timer.wait` (wait, then raise `done`) is in `engine/rules.ts`. They read
   their wording from `texts`.
 - **Panels and drawing**: how CAM-1 zooms, how the board drags cables, the canvas scene.
   They read their words and crate positions from data, but the look is code.
@@ -1061,7 +1136,7 @@ allowlist updates where applicable, rather than only adding an arbitrary drawing
    engine took it: a guard's own success line (`guard.say`, from the sketches' `on.opened` lines).
 5. Built since: the watchdog, `give` for modules and tokens, the lock toys, `fixed` cables, CLOCK
    nouns. Not built: the `effect`s the sketches name (`node.control`, `pixel.move`,
-   `dlv.drive`, `washer.run`, `train.brake`, …): scene code, written with each scene.
+   `dlv.inward`, `washer.run`, `train.brake`, …): scene code, written with each scene.
 6. **Toys and trace:** playing a toy does not count as being inside the device (only `probe` and
    answers touch it). Should a LOG fill while a toy panel is open?
 7. Should the fixer's hints move into `downtown.json` (a `hints` field per goal)?

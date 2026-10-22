@@ -4,10 +4,12 @@ import {createCityModel} from '../world/city';
 import {validateCitySource} from '../world/city-source';
 import {createCityPlan} from '../world/cityplan';
 import {sharedWorldFlags} from './world-flag-references';
+import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {pendingRegistry} from './pending-registry';
 /** Map and runtime validate the same prospective scene registry and arrival anchors. */
 function checkedCity(value:unknown,documents?:ReadonlyMap<string,unknown>){
  const scenes=documents?pendingRegistry(documents):SCENES,story=documents?validateOpeningSource(documents.get('opening-story')):openingStoryModel.source,source=validateCitySource(value,{scenes,flags:sharedWorldFlags(scenes,story.GAMEPLAY)}),world=createCityModel(source,{scenes});
+ if(documents?.has('metro-source'))validateMetroLocks(validateMetroSource(documents.get('metro-source')),source.LOCKS);
  const problems=[...world.cityProblems(),...createCityPlan(world).planProblems()];if(problems.length)throw new Error('Invalid city source: '+problems.join('; '));
  return{source,world};
 }

@@ -22,7 +22,7 @@ export interface World {
   data: SceneData;
   line(key: string, vars?: Vars): Line;
   has(key: string): boolean;
-  /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, `'pixel'`). */
+  /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, the companion's speaker id). */
   say(l: Line, from?: string): FeedbackReceipt;
   receipt(l:Line,from?:string):FeedbackReceipt;
   changed(): void;
@@ -47,6 +47,8 @@ export interface SceneRules {
   derived?: Record<string, (m: SceneModel) => Value>;
   /** Scalar types of physical observations available to authored read-only queries. */
   derivedTypes?:Readonly<Record<string,import('./gameplay/queries').NativeReadType>>;
+  /** Named places the code measured from the scene's artwork (a gantry's `slot`, a crane's slots): where a mover's stop or a zone's edge may say `{ "place": name }`. */
+  places?: Readonly<Record<string, { x: number; h: number }>>;
   /** What the code relies on: state keys, goals it ticks, text keys it asks for. */
   needs?: { devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;function?:PartFunction;events?:readonly string[]}[]}[]; state?: readonly StateRequirement[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
   /** Extra checks only this scene's code knows (a crate the parcel sits in). One message per problem. */
@@ -94,6 +96,8 @@ export function contractOf(r: SceneRules,routes:readonly {device:string;noun:str
     effects: [...Object.keys(ENGINE_EFFECTS), ...Object.keys(r.effects)],
     panels: [...ENGINE_PANELS, ...(r.panels ?? [])],
     state: r.needs?.state ?? [],
+    inputs: [...(r.inputs ?? [])],
+    ...(r.places ? { places: Object.keys(r.places) } : {}),
     derived: [...new Set([...Object.keys(r.derived ?? {}),...queries])],
     goals: r.needs?.goals ?? [],
     texts: { ...ENGINE_TEXTS, ...(r.needs?.texts ?? {}) },

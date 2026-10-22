@@ -119,6 +119,30 @@
     },
     "targetAnchors": [
       "door"
-    ]
+    ],
+    "values": {
+      "hover": {
+        "engine": "hover"
+      },
+      "deskHeight": {
+        "role": "deskSurface",
+        "get": "top"
+      },
+      "playing": {
+        "picture": "playing"
+      },
+      "nextMs": {
+        "picture": "nextMs"
+      },
+      "fed": {
+        "picture": "fed"
+      },
+      "wet": {
+        "picture": "wet"
+      },
+      "fresh": {
+        "picture": "fresh"
+      }
+    }
   }
 }

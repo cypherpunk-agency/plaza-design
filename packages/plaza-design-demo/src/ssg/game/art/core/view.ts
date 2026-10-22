@@ -24,6 +24,12 @@ export interface View {
   flags: Readonly<Record<string, boolean>>;
   /** A scene with a level (engine/level.ts): how open each building is and where its lift cars are. */
   level?: import('../../engine/level').LevelView;
+  /**
+   * The platform timetable's clock (world/transport/line.ts `Timeline`): the frames of the station scene's own time and its
+   * `platformShift`. The game supplies it from the scene model, so it follows scene time, not `t` (which stands still under
+   * reduced motion); a picture painted without a scene follows `t`.
+   */
+  timetable?: { t: number; shift: number };
 }
 
 /** A `View` for drawing in a set piece's own frame (after `translate` to its foot): no camera, nothing culled. */

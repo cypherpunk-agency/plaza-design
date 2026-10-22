@@ -1,8 +1,7 @@
 import {validValue,stateAddress} from '../engine/gameplay/state';
 import type {StateDeclaration,StateValue} from '../engine/gameplay/types';
 import type {SceneDef} from '../scenes/kit';
-import {validateMetroSnapshot,type MetroSnapshot} from '../world/transport/metro-snapshot';
-import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
+import {validateMetroStart,type MetroStart} from '../world/transport/metro-start';
 import * as defaultCity from '../world/city';
 import type {CityModel} from '../world/city';
 import {SCENES,type SceneId} from '../scenes';
@@ -22,7 +21,7 @@ export const playScenes=Object.keys(SCENES) as SceneId[];
 
 export type PlayScene=typeof playScenes[number];
 
-export interface PlayFixture {metro?:MetroSnapshot;id:string;name:string;scene:PlayScene;flags:Record<string,boolean>;items:Record<string,number>;tokens:number;modules:string[];programs:string[];keyring:string[];state:Record<string,StateValue>;day:number;minute:number;seed:number;weather:'forecast'|WeatherKind;clock:'story'|'fixed'|'running';spawn:number|null}
+export interface PlayFixture {metro?:MetroStart;id:string;name:string;scene:PlayScene;flags:Record<string,boolean>;items:Record<string,number>;tokens:number;modules:string[];programs:string[];keyring:string[];state:Record<string,StateValue>;day:number;minute:number;seed:number;weather:'forecast'|WeatherKind;clock:'story'|'fixed'|'running';spawn:number|null}
 
 export interface PlayFixtures {version:1;fixtures:PlayFixture[]}
 export interface PlayFixtureVocabulary {flags:ReadonlySet<string>;programs:ReadonlySet<string>;keyring:ReadonlySet<string>;states?:FixtureStateMetadata}
@@ -56,7 +55,7 @@ export function validatePlayFixtures(value:unknown,single=false,additionalScenes
 
  for(const f of doc.fixtures){if(Object.keys(record(f)).filter(k=>k!=='metro').sort().join()!==fields)fail('unsupported/missing fields');if(typeof f.id!=='string'||! /^[a-z][a-z0-9-]{0,63}$/.test(f.id)||ids.has(f.id))fail('fixture ID');ids.add(f.id);if(typeof f.name!=='string'||!f.name.trim()||f.name.length>120)fail('name');if(!playScenes.includes(f.scene)&&!additionalScenes.includes(f.scene))fail('scene');integer(f.tokens,0,1000000);integer(f.day,1,10000);integer(f.minute,0,1439);integer(f.seed,0,2147483647);if(f.spawn!==null){if(!Number.isFinite(f.spawn)||f.spawn<12||f.spawn>100000)fail('spawn');}if(!['story','fixed','running'].includes(f.clock)||!['forecast',...WEATHER_KINDS].includes(f.weather))fail('clock/weather');
 
-  if(f.metro!==undefined)validateMetroSnapshot(f.metro);
+  if(f.metro!==undefined)validateMetroStart(f.metro);
   for(const[k,v]of Object.entries(record(f.flags)))if(!(vocabulary?vocabulary.flags.has(k):fixtureFlags.includes(k))||typeof v!=='boolean')fail('flag');
 
   for(const[k,v]of Object.entries(record(f.items))){if(!Object.prototype.hasOwnProperty.call(ITEMS,k))fail('item');integer(v,0,1000000);}
@@ -82,4 +81,4 @@ export function fixtureSave(fixture:PlayFixture,additionalScenes:readonly string
 export function defaultPlayFixture(scene:PlayScene,scanner:string|null=NET.scanProgram):PlayFixture {return {id:scene==='harborShift'?'harbor-start':scene.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())+'-start',name:scene==='harborShift'?'Harbor Shift · start':scene==='sandbox'?'Sandbox · QA start':scene[0].toUpperCase()+scene.slice(1)+' · start',scene,flags:{},items:{},tokens:scene==='harborShift'?0:5,modules:scene==='harborShift'?['timer.so']:['timer.so','switch.so'],programs:scene==='harborShift'||scanner===null?[]:[scanner],keyring:[],state:{},day:1,minute:scene==='harborShift'?1120:580,seed:3,weather:'forecast',clock:scene==='harborShift'?'story':'fixed',spawn:null};}
 
 /** Route and phase-offset validation uses the complete prospective world/transport source. */
-export function validateFixtureMetro(doc:PlayFixtures,world:CityModel=defaultCity,source:MetroSource=METRO_SOURCE){for(const f of doc.fixtures)if(f.metro)validateMetroSnapshot(f.metro,{line:world.LINE,source});return doc;}
+export function validateFixtureMetro(doc:PlayFixtures,world:CityModel=defaultCity){for(const f of doc.fixtures)if(f.metro)validateMetroStart(f.metro,world.LINE);return doc;}

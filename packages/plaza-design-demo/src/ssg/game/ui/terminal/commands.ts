@@ -2,7 +2,7 @@ import { gameStorage, reloadRuntime } from '../../runtime/storage';
 /** Extracted commands responsibilities; function bodies and stored identifiers are preserved. */
 import { type Save, ownedModules, who, nodeCount } from '../../runtime/save';
 import { contactsOf, messagesOf, readFlag } from "../../story/contacts";
-import { SAVE_KEY } from '../../runtime/mode';
+import { saveKey } from '../../runtime/play-profile';
 
 
 // ---------- terminal ----------
@@ -39,10 +39,8 @@ export interface Ctx {
   clear: () => void;
   leaveMachine: () => void;
   persist: () => void;
-  /** Start the back yard over (its part of the save only). */
-  resetYard: () => void;
-  /** Sudo: start the sandbox (QA bay 3) over (its part of the save only). */
-  resetSandbox?: () => void;
+  /** The scenes `reset <scene id> --yes` can start over (their part of the save only): scene.json `stage.resettable`. */
+  resettable: { id: string; label: string; confirm: string; done: string; reset: () => void }[];
   /** Your own deck while you still exist (the opening, opening.ts): its files and what `whoami` says. */
   deck?: { files: Record<string, string>; whoami: string };
   /** The Registry's weather report for where you are (weather.ts `reportLines`). */
@@ -71,12 +69,14 @@ const MAN: Record<string, string> = {
   sound: 'sound: chiptune on or off. M does the same.',
   exit: 'exit: closes the terminal.',
   clear: 'clear: wipes the screen.',
-  reset: 'reset --yes: wipes your progress and starts over. reset yard: only the back yard.',
   contacts: 'contacts: who is on your deck, and whether they have signal.',
   weather: 'weather: the Registry\'s forecast for where you are and the rest of the city, the next 12 hours.',
   msg: 'msg <contact>: reads what they sent you.',
 };
 
+
+/** `man reset`: the full wipe, and every scene the deck can start over. */
+const manReset = (c: Ctx) => 'reset --yes: wipes your progress and starts over.' + c.resettable.map((r) => ' reset ' + r.id + ': only ' + r.label + '.').join('');
 
 /** Your own deck's files, when the terminal talks to no machine. */
 const DECK: Record<string, string> = { 'inbox.txt': 'From: the Registry\nSubject: your identity\nStatus: REVOKED\nEffective: immediately\nAppeal: not available.' };
@@ -125,7 +125,7 @@ export function suggest(c: Ctx, line: string): string[] {
     case 'install': return pick(c.machine && c.shell ? c.shell.installable(c.machine) : []);
     case 'man': return pick(commands(c));
     case 'set': return pick(['handle']);
-    case 'reset': return pick(['--yes', 'yard']);
+    case 'reset': return pick(['--yes', ...c.resettable.map((r) => r.id)]);
     case 'msg': return pick(contactsOf(c.save.flags).map((k) => k.id));
     case 'connect': return pick(c.net?.names() ?? []);
     default: return [];
@@ -154,7 +154,7 @@ export function run(c: Ctx, line: string) {
       if (!c.machine) c.print('stand at a machine and the deck talks to it. E or a tap opens its schematic.', 'dim');
       return;
     }
-    case 'man': c.print((MAN[(args[0] || '').toLowerCase()] ?? 'man <command>: explains a command. Try: man login').replace('{scanProgram}',c.scanProgram??'an installed scanner program'), 'dim'); return;
+    case 'man': c.print(((MAN[(args[0] || '').toLowerCase()] ?? ((args[0] || '').toLowerCase() === 'reset' ? manReset(c) : undefined)) ?? 'man <command>: explains a command. Try: man login').replace('{scanProgram}',c.scanProgram??'an installed scanner program'), 'dim'); return;
     case 'ls': c.print(at ? at.sh.ls(at.dev) : Object.keys(c.deck?.files ?? DECK).join('   ')); return;
     case 'cat': {
       if (at) { at.sh.cat(at.dev, args[0] || ''); return; }
@@ -191,14 +191,11 @@ export function run(c: Ctx, line: string) {
     case 'clear': c.clear(); return;
     case 'exit': case 'logout': c.leaveMachine(); return;
     case 'reset':
-      if (args[0] === '--yes') { gameStorage.removeItem(SAVE_KEY); reloadRuntime(); return; }
-      if ((args[0] || '').toLowerCase() === 'yard') {
-        if (args[1] === '--yes') { c.resetYard(); c.print('back yard reset: cables, parts, the parcel, HINGE\'s mood. Everything else is kept.', 'ok'); return; }
-        c.print('this resets the back yard only (cables, parts, the parcel, its goals). Type: reset yard --yes', 'err'); return;
-      }
-      if ((args[0] || '').toLowerCase() === 'sandbox' && c.resetSandbox) {
-        if (args[1] === '--yes') { c.resetSandbox(); c.print('sandbox reset: QA bay 3 as on the first visit. Everything else is kept.', 'ok'); return; }
-        c.print('this resets the sandbox only (QA bay 3: devices, cables, parts, trace). Type: reset sandbox --yes', 'err'); return;
+      if (args[0] === '--yes') { gameStorage.removeItem(saveKey()); reloadRuntime(); return; }
+      const scene = c.resettable.find((r) => r.id.toLowerCase() === (args[0] || '').toLowerCase());
+      if (scene) {
+        if (args[1] === '--yes') { scene.reset(); c.print(scene.done, 'ok'); return; }
+        c.print(scene.confirm + ' Type: reset ' + scene.id + ' --yes', 'err'); return;
       }
       c.print('this wipes your progress. Type: reset --yes', 'err'); return;
     case 'login':

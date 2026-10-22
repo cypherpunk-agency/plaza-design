@@ -2,7 +2,12 @@
   "id": "stacks",
   "name": "the stacks",
   "tuning": {
-    "tamperTrace": 30
+    "tamperTrace": 30,
+    "liftOverMs": 700,
+    "liftHoistMs": 600,
+    "liftTravelMs": 1600,
+    "liftLowerMs": 500,
+    "returnMs": 1900
   },
   "devices": [
     {
@@ -41,7 +46,8 @@
         "dir": {
           "camera": "up",
           "schedule": "left",
-          "spreader": "down"
+          "spreader": "down",
+          "trolley": "up"
         },
         "row": [
           "camera",
@@ -148,6 +154,186 @@
               }
             ]
           }
+        },
+        {
+          "id": "trolley",
+          "layer": "hardware",
+          "function": "act",
+          "events": [
+            "started",
+            "arrived",
+            "landed",
+            "returned"
+          ],
+          "milestone": {
+            "landed": "stacks.crane.landed",
+            "returned": "stacks.crane.returned"
+          },
+          "mover": {
+            "wired": false,
+            "start": "rest",
+            "stops": {
+              "rest": {
+                "x": {
+                  "place": "rest"
+                },
+                "h": {
+                  "place": "rest"
+                }
+              },
+              "slot": {
+                "x": {
+                  "place": "slot"
+                },
+                "h": {
+                  "place": "rest"
+                }
+              },
+              "slotLow": {
+                "x": {
+                  "place": "slot"
+                },
+                "h": {
+                  "place": "slot"
+                }
+              },
+              "chassis": {
+                "x": {
+                  "place": "chassis"
+                },
+                "h": {
+                  "place": "rest"
+                }
+              },
+              "chassisLow": {
+                "x": {
+                  "place": "chassis"
+                },
+                "h": {
+                  "place": "chassis"
+                }
+              },
+              "hatch": {
+                "x": {
+                  "place": "hatch"
+                },
+                "h": {
+                  "place": "rest"
+                }
+              },
+              "hold": {
+                "x": {
+                  "place": "hatch"
+                },
+                "h": {
+                  "place": "hatch"
+                }
+              },
+              "deck": {
+                "x": {
+                  "place": "deck"
+                },
+                "h": {
+                  "place": "rest"
+                }
+              },
+              "deckLow": {
+                "x": {
+                  "place": "deck"
+                },
+                "h": {
+                  "place": "deck"
+                }
+              }
+            },
+            "paths": {
+              "regular": [
+                {
+                  "to": "chassis",
+                  "ms": "liftOverMs"
+                },
+                {
+                  "to": "chassisLow",
+                  "ms": "liftHoistMs",
+                  "share": 0.5
+                },
+                {
+                  "to": "chassis",
+                  "ms": "liftHoistMs",
+                  "share": 0.5,
+                  "load": "regular"
+                },
+                {
+                  "to": "hatch",
+                  "ms": "liftTravelMs",
+                  "ease": "linear",
+                  "load": "regular"
+                },
+                {
+                  "to": "hold",
+                  "ms": "liftLowerMs",
+                  "load": "regular"
+                },
+                {
+                  "to": "hatch",
+                  "ms": 0,
+                  "event": "landed"
+                }
+              ],
+              "reefer": [
+                {
+                  "to": "slot",
+                  "ms": "liftOverMs"
+                },
+                {
+                  "to": "slotLow",
+                  "ms": "liftHoistMs",
+                  "share": 0.5
+                },
+                {
+                  "to": "slot",
+                  "ms": "liftHoistMs",
+                  "share": 0.5,
+                  "load": "box"
+                },
+                {
+                  "to": "deck",
+                  "ms": "liftTravelMs",
+                  "ease": "linear",
+                  "load": "box"
+                },
+                {
+                  "to": "deckLow",
+                  "ms": "liftLowerMs",
+                  "load": "box"
+                },
+                {
+                  "to": "deck",
+                  "ms": 0,
+                  "event": "landed"
+                }
+              ],
+              "return": [
+                {
+                  "to": "slot",
+                  "ms": "returnMs",
+                  "share": 0.7,
+                  "load": "box"
+                },
+                {
+                  "to": "slotLow",
+                  "ms": "returnMs",
+                  "share": 0.3,
+                  "load": "box"
+                },
+                {
+                  "to": "slot",
+                  "ms": 0,
+                  "event": "returned"
+                }
+              ]
+            }
+          }
         }
       ]
     },
@@ -183,7 +369,8 @@
         "dir": {
           "scanner": "up",
           "alarm": "right",
-          "log": "left"
+          "log": "left",
+          "beam": "up"
         },
         "row": [
           "scanner",
@@ -258,6 +445,24 @@
                 "say": "alarm.box"
               }
             ]
+          }
+        },
+        {
+          "id": "beam",
+          "layer": "hardware",
+          "function": "sense",
+          "events": [
+            "enters"
+          ],
+          "milestone": {
+            "enters": "stacks.crane.scanned"
+          },
+          "zone": {
+            "from": {
+              "place": "gate"
+            },
+            "to": 100000,
+            "watch": "sts2.trolley"
           }
         }
       ]
@@ -782,14 +987,8 @@
   "controller": {
     "kind": "stacks",
     "version": 1,
-    "lift": {
-      "overMs": 700,
-      "hoistMs": 600,
-      "travelMs": 1600,
-      "lowerMs": 500
-    },
-    "returnMs": 1900,
     "scannerDevice": "port",
+    "mover": "sts2.trolley",
     "state": {
       "boxAt": "boxAt",
       "departed": "departed",

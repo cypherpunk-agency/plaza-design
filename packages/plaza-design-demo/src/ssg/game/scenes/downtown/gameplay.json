@@ -6,8 +6,6 @@
     "greeted",
     "gloves",
     "till",
-    "downtown.dlv.through",
-    "downtown.dlv.inside",
     "downtown.progress.has.handle",
     "downtown.progress.has.till",
     "downtown.progress.has.box",
@@ -1723,38 +1721,6 @@
         }
       ]
     },
-    "checkpoint.downtown.drive-home": {
-      "sources": [
-        "system"
-      ],
-      "actions": [
-        {
-          "state": "downtown.dlvAt",
-          "set": "home"
-        },
-        {
-          "state": "downtown.lock",
-          "set": "shut"
-        }
-      ]
-    },
-    "checkpoint.downtown.drive-origin": {
-      "sources": [
-        "system"
-      ],
-      "actions": [
-        {
-          "state": "downtown.dlvAt",
-          "set": {
-            "state": "downtown.dlvFrom"
-          }
-        },
-        {
-          "state": "downtown.lock",
-          "set": "shut"
-        }
-      ]
-    },
     "checkpoint.downtown.scan": {
       "sources": [
         "system"
@@ -1959,23 +1925,6 @@
         }
       ]
     },
-    "downtown.dlv.started": {
-      "sources": [
-        "system"
-      ],
-      "actions": [
-        {
-          "state": "downtown.dlvFrom",
-          "set": {
-            "state": "downtown.dlvAt"
-          }
-        },
-        {
-          "state": "downtown.dlvAt",
-          "set": "driving"
-        }
-      ]
-    },
     "downtown.dlv.scanned": {
       "sources": [
         "system"
@@ -2021,12 +1970,6 @@
         {
           "state": "downtown.scanned",
           "set": false
-        },
-        {
-          "state": "downtown.dlvAt",
-          "set": {
-            "query": "downtown.dlv.destination"
-          }
         }
       ]
     },
@@ -2038,12 +1981,6 @@
         {
           "state": "downtown.scanned",
           "set": false
-        },
-        {
-          "state": "downtown.dlvAt",
-          "set": {
-            "query": "downtown.dlv.destination"
-          }
         },
         {
           "flag": "end",
@@ -2147,6 +2084,17 @@
       "actions": [
         {
           "emit": "downtown.progress.gate"
+        }
+      ]
+    },
+    "checkpoint.downtown.drive": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.lock",
+          "set": "shut"
         }
       ]
     }
@@ -2953,12 +2901,6 @@
       "type": "string",
       "default": "home"
     },
-    "downtown.dlvFrom": {
-      "owner": "downtown",
-      "lifetime": "save",
-      "type": "string",
-      "default": "home"
-    },
     "downtown.routeFixed": {
       "owner": "downtown",
       "lifetime": "save",
@@ -3148,22 +3090,7 @@
   },
   "checkpoint": [
     {
-      "command": "checkpoint.downtown.drive-home",
-      "when": {
-        "all": [
-          {
-            "state": "downtown.dlvAt",
-            "is": "driving"
-          },
-          {
-            "state": "downtown.dlvFrom",
-            "is": "driving"
-          }
-        ]
-      }
-    },
-    {
-      "command": "checkpoint.downtown.drive-origin",
+      "command": "checkpoint.downtown.drive",
       "when": {
         "state": "downtown.dlvAt",
         "is": "driving"
@@ -3255,43 +3182,6 @@
         {
           "value": {
             "literal": false
-          }
-        }
-      ]
-    },
-    "downtown.dlv.passage": {
-      "kind": "select",
-      "cases": [
-        {
-          "when": {
-            "state": "downtown.lock",
-            "is": "open"
-          },
-          "value": {
-            "literal": true
-          }
-        },
-        {
-          "value": {
-            "literal": false
-          }
-        }
-      ]
-    },
-    "downtown.dlv.destination": {
-      "kind": "select",
-      "cases": [
-        {
-          "when": {
-            "flag": "downtown.dlv.inside"
-          },
-          "value": {
-            "literal": "market"
-          }
-        },
-        {
-          "value": {
-            "literal": "gate"
           }
         }
       ]
@@ -3489,16 +3379,6 @@
           }
         ]
       },
-      "downtown.dlv.started": {
-        "origin": {
-          "kind": "physical"
-        },
-        "cases": [
-          {
-            "command": "downtown.dlv.started"
-          }
-        ]
-      },
       "downtown.dlv.scanned": {
         "origin": {
           "kind": "physical"
@@ -3516,7 +3396,8 @@
         "cases": [
           {
             "when": {
-              "flag": "downtown.dlv.through"
+              "state": "downtown.lock",
+              "is": "open"
             },
             "command": "downtown.dlv.passed"
           },
@@ -3525,7 +3406,7 @@
           }
         ]
       },
-      "downtown.dlv.completed": {
+      "downtown.dlv.through": {
         "origin": {
           "kind": "physical"
         },
@@ -3533,9 +3414,6 @@
           {
             "when": {
               "all": [
-                {
-                  "flag": "downtown.dlv.through"
-                },
                 {
                   "state": "downtown.lock",
                   "is": "open"
@@ -3549,6 +3427,16 @@
             },
             "command": "downtown.dlv.finished"
           },
+          {
+            "command": "downtown.dlv.completed"
+          }
+        ]
+      },
+      "downtown.dlv.back": {
+        "origin": {
+          "kind": "physical"
+        },
+        "cases": [
           {
             "command": "downtown.dlv.completed"
           }
@@ -3671,8 +3559,6 @@
       }
     },
     "reads": {
-      "downtown.dlv.through": "dlvThrough",
-      "downtown.dlv.inside": "dlvInside",
       "downtown.progress.has.handle": "goal.handle",
       "downtown.progress.has.till": "goal.till",
       "downtown.progress.has.box": "goal.box",

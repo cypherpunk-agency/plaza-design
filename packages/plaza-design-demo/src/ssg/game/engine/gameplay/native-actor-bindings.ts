@@ -14,11 +14,7 @@ const controllers:Record<string,ActorBindingController>={
  capsule:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  yard:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
  moth:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
- market:{element:'character.prepared',prefix:'market.actor.',suffix:'',mutable:true},
  harborShift:{element:'character.prepared',prefix:'actor.',suffix:'.pose',mutable:true},
- // the beach is a folder scene: its people come from the `beach` binding provider (binding-providers/beach.ts), which hides the bartender's body and the ashore guests
- beach:{element:'character.prepared',prefix:'beach.actor.',suffix:'',mutable:true},
- mall:{element:'character.prepared',prefix:'mall.actor.',suffix:'',mutable:true},
  harbor:{element:'character.prepared',prefix:'harbor.actor.',suffix:'',clipPrefix:'harbor.clip.',mutable:true},
  stacks:{element:'character.prepared',prefix:'terminal.actor.',suffix:'',clipPrefix:'terminal.clip.',mutable:true},
  library:{element:'library.person',prefix:'actor.',suffix:'.pose',mutable:true},

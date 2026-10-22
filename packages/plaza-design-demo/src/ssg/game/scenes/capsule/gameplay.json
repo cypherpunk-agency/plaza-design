@@ -380,6 +380,33 @@
       "lifetime": "save",
       "type": "string",
       "default": "pending"
+    },
+    "capsule.routerTemp": {
+      "owner": "capsule",
+      "lifetime": "session",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1000,
+      "integer": false
+    },
+    "capsule.bootUntil": {
+      "owner": "capsule",
+      "lifetime": "session",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1000000000000,
+      "integer": false
+    },
+    "capsule.steamUntil": {
+      "owner": "capsule",
+      "lifetime": "session",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1000000000000,
+      "integer": false
     }
   },
   "native": {

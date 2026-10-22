@@ -1,7 +1,21 @@
 {
   "id": "train",
   "name": "Metro car",
-  "tuning": {},
+  "tuning": {
+    "dwellMs": 5500,
+    "closeMs": 600,
+    "openMs": 600,
+    "runMs": 13000,
+    "runLongMs": 20800,
+    "brakeDecel": 115.2,
+    "brakeWindow": 260,
+    "resumeSpeed": 280,
+    "haltTrackMs": 4000,
+    "haltSidingMs": 7000,
+    "haltOpenMs": 40000,
+    "homeRunMs": 30000,
+    "homeAheadMs": 4000
+  },
   "devices": [
     {
       "id": "train",
@@ -53,14 +67,20 @@
           "emergency.reg": "left",
           "plate": "left",
           "brake": "right",
-          "doors": "down"
+          "doors": "down",
+          "car": "down",
+          "tunnel": "up",
+          "approach": "up"
         },
         "row": [
           "position",
           "emergency.reg",
           "plate",
           "brake",
-          "doors"
+          "doors",
+          "car",
+          "tunnel",
+          "approach"
         ]
       },
       "nouns": [
@@ -206,6 +226,41 @@
             "open",
             "lock"
           ],
+          "mover": {
+            "wired": false,
+            "ease": "linear",
+            "start": "open",
+            "stops": {
+              "shut": 0,
+              "open": 1
+            },
+            "paths": {
+              "open": [
+                {
+                  "to": "open",
+                  "ms": "openMs"
+                }
+              ],
+              "shut": [
+                {
+                  "to": "shut",
+                  "ms": "closeMs"
+                }
+              ],
+              "set.open": [
+                {
+                  "to": "open",
+                  "ms": 0
+                }
+              ],
+              "set.shut": [
+                {
+                  "to": "shut",
+                  "ms": 0
+                }
+              ]
+            }
+          },
           "on": {
             "open": [
               {
@@ -250,6 +305,266 @@
                 "say": "doors.locked"
               }
             ]
+          }
+        },
+        {
+          "id": "car",
+          "layer": "hardware",
+          "function": "act",
+          "events": [
+            "started",
+            "arrived",
+            "depart",
+            "arrive",
+            "stopped",
+            "resumed"
+          ],
+          "milestone": {
+            "stopped": "train.halted",
+            "resumed": "train.resumed"
+          },
+          "relay": {
+            "stopped": "brake:stopped"
+          },
+          "mover": {
+            "wired": false,
+            "axis": "x",
+            "ring": 9000,
+            "start": "downtown",
+            "auto": "board",
+            "stops": {
+              "downtown": {
+                "place": "downtown"
+              },
+              "galleria": {
+                "place": "galleria"
+              },
+              "harbor": {
+                "place": "harbor"
+              },
+              "siding": {
+                "place": "siding"
+              }
+            },
+            "brake": {
+              "decel": "brakeDecel",
+              "snap": [
+                {
+                  "stop": "siding",
+                  "window": "brakeWindow"
+                }
+              ],
+              "then": {
+                "track": "halt",
+                "siding": "halt.siding"
+              },
+              "load": "braking",
+              "event": "stopped"
+            },
+            "paths": {
+              "board": [
+                {
+                  "ms": "dwellMs",
+                  "load": "dwell",
+                  "drives": "doors:set.open"
+                },
+                {
+                  "ms": "closeMs",
+                  "ease": "linear",
+                  "load": "closing",
+                  "drives": "doors:shut",
+                  "event": "depart",
+                  "cue": "close"
+                },
+                {
+                  "run": "go"
+                }
+              ],
+              "stand": [
+                {
+                  "ms": "openMs",
+                  "ease": "linear",
+                  "load": "opening",
+                  "drives": "doors:open"
+                },
+                {
+                  "ms": "dwellMs",
+                  "load": "dwell"
+                },
+                {
+                  "ms": "closeMs",
+                  "ease": "linear",
+                  "load": "closing",
+                  "drives": "doors:shut",
+                  "event": "depart",
+                  "cue": "close"
+                },
+                {
+                  "run": "go"
+                }
+              ],
+              "go": [
+                {
+                  "if": "trainPass",
+                  "then": [
+                    {
+                      "to": "@trainNext",
+                      "ms": "runLongMs",
+                      "ease": "sine",
+                      "load": "running",
+                      "event": "arrive",
+                      "cue": "open"
+                    }
+                  ],
+                  "else": [
+                    {
+                      "to": "@trainNext",
+                      "ms": "runMs",
+                      "ease": "sine",
+                      "load": "running",
+                      "event": "arrive",
+                      "cue": "open"
+                    }
+                  ]
+                },
+                {
+                  "run": "stand"
+                }
+              ],
+              "halt": [
+                {
+                  "ms": "haltTrackMs",
+                  "load": "halted",
+                  "event": "resumed"
+                },
+                {
+                  "to": "@trainHeading",
+                  "speed": "resumeSpeed",
+                  "ease": "smooth",
+                  "load": "resuming",
+                  "event": "arrive",
+                  "cue": "open"
+                },
+                {
+                  "run": "stand"
+                }
+              ],
+              "halt.siding": [
+                {
+                  "ms": "haltSidingMs",
+                  "load": "halted",
+                  "event": "resumed"
+                },
+                {
+                  "to": "@trainHeading",
+                  "speed": "resumeSpeed",
+                  "ease": "smooth",
+                  "load": "resuming",
+                  "event": "arrive",
+                  "cue": "open"
+                },
+                {
+                  "run": "stand"
+                }
+              ],
+              "halt.siding.open": [
+                {
+                  "ms": "haltOpenMs",
+                  "load": "halted",
+                  "drives": "doors:open"
+                },
+                {
+                  "if": "trainDoorsAjar",
+                  "then": [
+                    {
+                      "ms": "closeMs",
+                      "ease": "linear",
+                      "load": "halted",
+                      "drives": "doors:shut"
+                    }
+                  ]
+                },
+                {
+                  "ms": 0,
+                  "load": "halted",
+                  "event": "resumed"
+                },
+                {
+                  "to": "@trainHeading",
+                  "speed": "resumeSpeed",
+                  "ease": "smooth",
+                  "load": "resuming",
+                  "event": "arrive",
+                  "cue": "open"
+                },
+                {
+                  "run": "stand"
+                }
+              ],
+              "home": [
+                {
+                  "from": "harbor"
+                },
+                {
+                  "to": "downtown",
+                  "ms": "homeRunMs",
+                  "ease": "sine",
+                  "ahead": "homeAheadMs",
+                  "load": "running",
+                  "drives": "doors:set.shut",
+                  "event": "arrive",
+                  "cue": "open"
+                },
+                {
+                  "ms": "openMs",
+                  "ease": "linear",
+                  "load": "opening",
+                  "drives": "doors:open"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "tunnel",
+          "layer": "hardware",
+          "function": "sense",
+          "events": [
+            "enters",
+            "leaves"
+          ],
+          "relay": {
+            "enters": "position:tunnel"
+          },
+          "zone": {
+            "from": {
+              "place": "tunnelIn"
+            },
+            "to": {
+              "place": "tunnelOut"
+            },
+            "watch": "train.car"
+          }
+        },
+        {
+          "id": "approach",
+          "layer": "hardware",
+          "function": "sense",
+          "events": [
+            "enters",
+            "leaves"
+          ],
+          "relay": {
+            "enters": "position:harbor siding"
+          },
+          "zone": {
+            "from": {
+              "place": "siding",
+              "plus": -110
+            },
+            "to": 8999,
+            "watch": "train.car",
+            "track": "stop"
           }
         }
       ]

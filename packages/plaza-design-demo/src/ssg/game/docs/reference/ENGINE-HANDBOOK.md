@@ -7,6 +7,16 @@ Tests exercise the current engine directly; completed migration evidence is not 
 
 ## The execution model
 
+There is one runtime: the game loop (runtime/game.ts) and each scene's model (SceneModel). Every frame
+the loop ticks every hosted scene (`SceneHost.tick`); the model's tick moves its scene time (engine/time.ts
+`SceneTime.advance`), and delayed signals, deadlines, movers, zones, clocks and watchdogs follow that time.
+No browser timer or second loop drives the game; pausing the engine holds scene time still. Wall-clock
+lockouts deliberately keep real time. A scene's open panel (toys, the camera) steps on that same tick
+(`SceneHost.tick` calls `Panels.step`): a panel's `kit.frame((dt, t) => ...)` gets scene-time deltas, so
+easing is scaled by `dt` (`FRAME_MS`), and a panel's delays are `kit.later` (the model's `later`, cancelled
+on close). A panel never calls `requestAnimationFrame` or `setTimeout`. The hint lane takes its time from the
+communication lane's readable clock (`notices.time`), never `performance.now`.
+
 A scene source binds artwork/entities to interactions, dialogue, objectives and exits. A user
 interaction, conversation choice or authorized native event requests a command. GameplaySession
 checks permission and conditions, stages actions and reactions atomically, commits once, then
@@ -121,12 +131,34 @@ local loopback service alone writes validated source. See [composer workflow](..
 ## Recipe: floors, stairs, lifts and buildings (levels)
 
 Place the level kit in the composition (ART-GUIDE §12, "Levels"); no code. Declared scenes compile it
-with engine/level.ts `compileLevel` into `SceneDef.level`; `LevelRuntime` is the single owner of
-vertical movement there (the floor under the player, rides, lift cars, building reveal) and
-runtime/game.ts only asks it. A scene without floors keeps one street line and its jump ledges. Arrival
-uses the spawn's or the exit marker's height (`spawnH`, `SceneExit.arriveH`). The renderer receives
-`View.level` (reveal, lift cars); the editor previews it at rest or opened (environment `inside`).
-Check with `pnpm test:game levels`; the Tower lab (scenes/authored.json) is the example.
+with engine/level.ts `compileLevel` into `SceneDef.level` (data). There is no level runtime: the game
+loop keeps the player's place in the level (`LevelState`: floor, a walk on a flight or a ride in a car,
+each building's openness) beside the player and steps it with the pure functions in engine/level.ts
+(`levelStep`, `levelUp`/`levelDown`, `levelInteract`, `levelHints`, `levelView`). A lift car is only
+its Circuit mover in the scene's model (the elevator's `device`, required); the level reads where it
+is, asks it to go, and derives its doors from the mover's trip. A scene without floors keeps one street
+line and its jump ledges. Arrival uses the spawn's or the exit marker's height (`spawnH`,
+`SceneExit.arriveH`). The renderer receives `View.level` (reveal, lift cars, call buttons); the editor
+previews it at rest or opened (environment `inside`).
+
+What the player sees is what the player can use: a flight or lift attached to a building's interior
+handle works only from that building's floors. A building floor at street height is walked into from
+either side (floor `entry: walk`, the default; `door` keeps a `level.door`); its facade fades with the
+player's depth and inside the shell keeps only its `ghost` (none by default). Stairs: ↑/↓ steps on, ←/→
+walk along it and letting go stops. An escalator takes whoever walks onto its boarding end. In a car,
+↑/↓ choose a floor on its panel and E sends the car; `level.lift-button` pieces (their `lift` field)
+light while it is called to their floor. A zone may watch only one `building`'s floors. Stair speed,
+reach, door time and reveal speed are kit fields. What E acts on is `nearestPrompt` (a level prompt wins
+over a device on the same spot). Check with `pnpm test:game levels level-styles tower-lift circuit-movers`;
+the Tower lab (scenes/tower) is the example.
+
+Every piece has a `style` field (the default is the original look). Stairs: concrete, timber, stone (straight
+flights, walked with ←/→), ladder (a steep ladder-stair, leaning its run), switchback (two half-flights and a
+landing; comes out above its foot), spiral, rusty-spiral and steel-ladder (straight up; `run` is the width).
+Everything but a straight flight is climbed with ↑/↓ held (engine/level.ts `STAIR_SHAPES`); `rail` overrides the
+handrail. Escalators: standard, glass. Lifts: goods, cage, passenger-old, glass, gold, service, and broken (an
+OUT OF ORDER sign, never called). A flight lands on its own building's floor before the street at the same
+height. A floor marked `indoor` (a tunnel, a cellar) is lit as indoors while the player stands on it.
 
 ## Recipe: make or change any scene (folder scenes)
 
@@ -154,21 +186,51 @@ and `horizon` (an artwork role's property), `shade` front/back, `lights` (`eleme
 `groundSpawn`, `transformedExits`, `elevatedResponses`, `omitGroundRestHeight`.
 
 **Binding sources** (engine/gameplay/binding-sources.ts). A composition names a source and the engine
-supplies it every frame. Built in: `world.light`, `actor.<id>.pose` / `.clip`, `device.<id>.hover`,
-`value.<key>` (gameplay values and device observations) and `artwork.<type>.spans`. Anything else is
-`<provider>.<key>` from a registered provider.
+supplies it every frame. Built in: `world.light`, `actor.<id>.pose` / `.clip`, `held.<instance>`,
+`device.<id>.hover`, `value.<key>` (gameplay values and device observations), `artwork.<type>.spans` and
+`scene.<name>` (the scene's own values, below). Anything else is `<provider>.<key>` from a registered provider.
+
+**Actors** share one pose source for every scene: `actor.<id>.pose` is the prepared character moved to where its
+artwork stands, `actor.<id>.clip` the window it is seen through. What differs between scenes is data in
+scene.json `stage.actors` (editor: Scene › Stage & compile › Actor visibility, Held and hidden actors):
+`clip` and `cull` (seen through / hidden with an artwork role), `held` (artwork of a type or id that paints its
+actor, a stall's vendor or a booth's clerk: the actor's own artwork shows nothing and the holder binds
+`held.<its id>`; rebinding the holder gives the actor back), `hide` (a presentation role hidden while a value
+holds, e.g. the beach guests ashore until the beach is dangerous) and `stage.atrium` (two artwork roles; the
+`far`, `gallery` and `riders` presentation actors are lifted to a storey, the slab or an escalator step,
+engine/gameplay/scene-atrium.ts). Harbor, the terminal, Downtown, the stations and the train still pose their
+people in their own providers because their positions come from a simulation or a ride.
+
+**Scene values** (scene.json `stage.values`; engine/gameplay/scene-values.ts; editor: Scene › Stage & compile ›
+Values; binding `scene.<name>`). A value is a literal or an object that says where it comes from: `flag` (a
+presentation flag role) and `use` (an interaction is available) as booleans; `not`, `all`, `any`, `sum`, `list`
+and `if/then/else` to combine them ("role A's position if the flag, else role B's"); `role` + `get` (x, h, width,
+height, top, right or `prop:<name>` of an artwork role of manifest.artwork) and `rows` + `get` (x or h of every row
+of an artwork type); `visible` (an artwork role is on screen, within a margin); `actor` (x, h or "bare" of a
+presentation actor); `picture` (a field of the picture the scene's controller prepares,
+engine/gameplay/controller-pictures.ts: moth, beach, capsule, laundromat and sandbox register theirs); `engine`
+(hover), `signal` (a cosmetic cue stamp: the scene's cues may target it), `world` (the ticker, the dusk palette),
+`shared` (a picture a mechanism keeps, e.g. the yard claw) and `live` (only while an engine frame paints,
+otherwise the artwork's own default stands). The value `carry` is also what the scene hands the game as the carried
+item. Everything is a pure function of the frame; nothing here keeps state or advances anything. A value naming
+an interaction, an atrium role or a picture field the scene lacks is refused when the scene is checked
+and on the composer's save. Add a controller's picture by registering one function in controller-pictures.ts;
+do not add a provider for a scene.
 
 **A binding provider** works out what a picture needs once per frame from the scene as it stands
-(`ctx.engine`, `roles`, `presentation`, `shared`, `world`). Add engine/gameplay/binding-providers/<name>.ts
-exporting `provide(keys, (ctx)=>Record<string,Value>)` (binding-keys.ts), add one line to `BINDING_PROVIDERS` in that folder's
-index.ts, and name `<name>.<key>` in the composition's bindings. A provider that drives cues declares
-`signals` (name and starting stamp); the scene's presentation cues may then target them. Nothing else
-registers it: validation and the editor read the same table. `keys` lists what the provider offers:
-exact keys and patterns with one typed hole (`front.<instance:downtown.front>.metrics`, `pose.<actor>`,
-`<role>` for a presentation flag role, `<use>`); `keysOf<T>()` makes a snapshot's key list complete at
-compile time. A composition binding the provider does not offer, or whose hole names nothing that
+(`ctx.engine`, `roles`, `presentation`, `shared`, `world`). It is for what cannot be stated as scene values: a
+simulation's frame (the metro platform timetable, the train's picture over its movers, Downtown's machines, the harbor's cranes, the terminal's gantry).
+Add engine/gameplay/binding-providers/<name>.ts exporting `provide(keys, (ctx)=>Record<string,Value>)`
+(binding-keys.ts), add one line to `BINDING_PROVIDERS` in that folder's index.ts, and name `<name>.<key>` in the
+composition's bindings. Current set: `scene` (the generic one), `station`, `train`, `downtown`, `harbor`,
+`terminal`. A provider that drives cues declares `signals` (name and starting stamp); the scene's presentation
+cues may then target them. Nothing else registers it: validation and the editor read the same table. `keys` lists
+what the provider offers: exact keys and patterns with one typed hole (`front.<instance:downtown.front>.metrics`,
+`pose.<actor>`, `<value>` for a value the scene declares); `keysOf<T>()` makes a snapshot's key list complete
+at compile time. A composition binding the provider does not offer, or whose hole names nothing that
 exists, is refused when the scene is checked (also on the composer's save). check-binding-keys.mts
-runs every folder scene and fails when a provider returns a key it does not declare.
+runs every folder scene and fails when a provider returns a key it does not declare; check-scene-values.mts
+proves the editor controls for values, the atrium and the held/hide actor rules drive the pictures and save.
 
 **A mechanism** is what a scene takes from the engine beyond its documents: SceneDef fields, `rules`
 and `panels` (several are merged, `mergeRules`; a name defined twice is refused), `anchors` for engine
@@ -176,7 +238,7 @@ targets, picture-side state and a world binding (`world: true` rebuilds the scen
 the city and line system). Add engine/gameplay/mechanisms/<name>.ts exporting a `SceneMechanism`
 (`label`, `requires` artwork roles, `world`, `apply`, optionally `rulesShape`, `check`, `anchors`), add one line to `SCENE_MECHANISMS` in engine/gameplay/scene-mechanisms.ts, and list
 the name in `stage.mechanisms`. The editor checkbox appears from the registry. Current set: transitPlatform,
-citySkyline, lineRide, gantryLift, dockworkerCarry, devicePulse, targetReset, sandboxBay, yardCrane,
+citySkyline, lineRide, gantryLift, devicePulse, targetReset, sandboxBay, yardCrane,
 thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
 fixed value, a light or a shade line is stage data, not a mechanism. Give it a `face`
 (`{function, controller?}`): in Logic › Devices and Wiring the scene's mechanisms appear as devices
@@ -194,10 +256,11 @@ no world presence, board node or hack-vision part, no state of their own. Cables
 other (`devices.json` `cables`, or `native.wires` for scenes whose shared gameplay owns them), listed
 in the Wiring panel and checked by data/check.ts and validateNativeBindings.
 
-State a mechanism keeps for the picture (a hook that eases, a simulation, a prepared frame) has one
+State a mechanism keeps for the picture (a simulation, a prepared frame) has one
 home: `ctx.shared`, the per-built-scene map `apply` receives; binding providers read it as
-`ctx.shared` under the mechanism's exported key. If that state changes per frame, `apply` also
-returns `presentation: {prepare, capture?, restore?}`; the scene runs every mechanism's `prepare`
+`ctx.shared` under the mechanism's exported key. Anything that moves is not picture state: it is a
+Circuit mover in the model (the gantry's trolley, the van, the claw's hook, the metro car and its doors) and the picture reads it. If
+such state changes per frame, `apply` also returns `presentation: {prepare, capture?, restore?}`; the scene runs every mechanism's `prepare`
 in order before painting and saves/restores the `capture`s as one record keyed by mechanism name
 (beside `signals` when the scene has presentation signals), see `composePresentations`.
 
@@ -209,12 +272,60 @@ when the change is meant to alter the scene, and say so. The Tower lab is the sm
 
 ## Recipe: something that moves, or a place that notices
 
-Give a device an `act` part with a `mover` (stops, speed, axis) or a `sense` part with a `zone`
-(from, to, watch); GAME-DATA.md "Movers" and "Zones". No code: the engine adds the verbs
-(`go <stop>`, `return`, `arm`, `disarm`) and events (`started`, `arrived`, `enters`, `leaves`), so
-pre-wired cables, hack vision and the editor treat them like any part. A level elevator rides a
-mover named in its `device` field. Check with `pnpm test:game circuit-movers`; the Tower lab's lift
-and lobby sensor are the example. Words: docs/design/CIRCUIT-VOCABULARY.md.
+Give a device an `act` part with a `mover` (stops, speed or ms, axis, ease, paths of legs) or a `sense` part
+with a `zone` (from, to, watch); GAME-DATA.md "Movers" and "Zones". No code: the engine adds the verbs
+(`go <stop>`, `return`, `arm`, `disarm`) and events (`started`, `arrived`, a leg's `event`, `enters`,
+`leaves`), so pre-wired cables, hack vision and the editor treat them like any part. A level elevator
+rides a mover named in its `device` field. Use a path for a trip of several legs (a crane's lift: over,
+down, up, across, down), a `choice` in it for a branch that reads the scene's state, `follow` for a part
+that chases a state key, `load` for what rides along (the picture reads `movers.load`), and a `milestone` on
+the part to report a leg's end or a crossing to the scene's code (a physical `input` of its `rules`). A
+stop's place may name the scene's artwork (`SceneRules.places`, which a mechanism measures from its roles) or
+a device's spot. The one thing code does is send the mover along a path (`SceneModel.runPath` in an effect, or `brake` for its emergency stop); the
+picture reads `movers.place`, `position`, `load`, `lastRun`, `legInfo`, `halted`, never a copy. A route that goes round (the metro) is a path that
+ends with `run`; a loop line is a `ring`; what a leg needs from the scene's state is `@key`; a part that moves another (a train's doors) is
+`drives`; see GAME-DATA.md "Movers" and TRAIN-LINE-RIDE.md. Scene time moves it: drive checks with
+`model.tick(ms)`. Check with `pnpm test:game circuit-movers mover-authoring motion-controller`; the Tower lab's lift and lobby sensor, the Downtown van
+(`dlv9.chassis`, `gate.beam`), the stacks' gantry (`sts2.trolley`, `port.beam`), the yard's hook (`crane.hook`) and the metro car
+(`train.car`, `train.doors`: `pnpm test:game train-ride`) are the examples. Words: docs/design/CIRCUIT-VOCABULARY.md.
+
+## Recipe: a way of playing (play profiles)
+
+The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: World ›
+Play profiles) declares each way of playing; runtime/play-profile.ts picks the active one from the URL
+(`?demo`, `?play=harborShift`, else the default) or the editor Play frame, and the existing game loop, save and
+slot code read it: `can('map'|'mapKey'|'deck'|'jump'|'hack'|'sudo'|'review')`, `playProfile().start/routes/
+player/guidance/clock/chrome/seed`, `saveKey()`, `resumeKey()`, `slotPrefix()`. A profile is data plus pure
+helpers; it has no state or tick of its own, and `runtime/game.ts` stays the one loop. The profile decides whether
+an ability exists (`Game.hackLocked()` is `!can('hack')` or the opening's own lock); the story still decides when it
+is locked. To add or change a way of playing, edit the document; to add an ability, add it to `ABILITIES` in
+play-profiles.ts (validated, editor checkbox appears), read it with `can()` where the loop needs it and set it in
+every profile. A new player body is one entry in `AVATAR_PAINTERS` (runtime/avatars.ts) and `AVATARS`. Private Play
+installs the pending document before it builds the game (`installPlayProfiles`). Check:
+`pnpm test:game play-profiles`.
+
+## Recipe: a character, a lock or a review shortcut (game rules documents)
+
+The loop never names a scene, a person or a conversation. What used to be a literal in `runtime/game.ts` is a
+source document the loop reads (private Play passes the pending one through `GameRuntimeSources`):
+
+| Document (editor: World ›) | Holds | Loop reads it as |
+| --- | --- | --- |
+| `engine/gameplay/companion.json` (Companion) | the companion's id, name, painter `look` (`COMPANION_LOOKS`), `speaker`, saved `unlockFlag`, scene `modes`, `avoidPopups`, arrival `greeting`, `follow` tuning, default `pet` recipe | `companionDoc`, `companionHere()` (companion-source.ts); scenes keep `scene.json` `companion` (mode, perches, pet graphs) |
+| `engine/gameplay/critter-reactions.json` (Critter dialogue) | per critter `look`, speaker `name`, `prompt`, cycling `talk` replies | `critterReaction()`; the cat and pigeon target and reply |
+| `demo/review-stations.json` (Review stations) | review bookmarks (anchored on a use, device or person, with conversation conditions), navigator buttons, the remote-device example, the hint | `reviewStations()`, `reviewActions()`; the navigator only draws what it is given |
+| `world/city.json` `LOCKS` (City & travel) | destination locks: `unlockedBy` world flag role, `destinations` (districts, stations, taxi stands), `reason` | `city.transportPermission/transportAccess/lockOpen`; taxi, map and `placeBlocked` |
+| `world/transport/metro.json` `locked` (City & travel › station lock) | station → lock id: LINE 0 does not stop there until the lock opens | `metro.syncLocks(world, flags)` each travel tick |
+
+Scene-level flags live in `scene.json`: `stage.resettable {label, confirm, done}` makes `reset <scene id> --yes` start
+that scene over in the deck (generic command; its manual line and completion list the declared scenes),
+`stage.sudoOnly` keeps a scene out of resume and its reset out of the deck without sudo, and a person's
+`promptH` (scene people, editor: People) sets the height of their `[E] TALK` prompt. The jack cable is drawn
+for whichever scene's schematic is open and stood at. Controllers dispatch on `controller.kind` (never the scene
+id), including camera binding roles. To change any of these, edit the document; to add another critter, painter or
+review station, add an entry. Checks: `pnpm test:game companion-source critter-reactions review-stations
+scene-reset-flags city-locks loop-scene-ids`. `scene-parity` tolerates the two additive stage fields
+(`resettable`, `sudoOnly`) on recorded scenes; every other scene field still must match its golden.
 
 ## Choose verification by what changed
 
@@ -243,6 +354,8 @@ isolated copies, not the working game's files or your recovery journal.
 | Appearance and rendering | all-scene-layers scene-layers drawing-boundaries art-light lighting-context |
 | Communication | communication device-reply |
 | Demo isolation | demo-district |
+| Play profiles (ways of playing) | play-profiles demo-district play-storage |
+| Companion, critters, locks, review stations, reset flags | companion-source critter-reactions review-stations city-locks scene-reset-flags loop-scene-ids |
 | Editor bundles and source service | public-editor-build authoring-save public-document-bundle |
 
 Choose focused checks for routine work. Run the full suite for broad engine changes. Visual

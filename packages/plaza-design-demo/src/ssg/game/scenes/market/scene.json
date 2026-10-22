@@ -1380,6 +1380,26 @@
           }
         }
       }
-    ]
+    ],
+    "values": {
+      "exitOpen": {
+        "flag": "exitOpen"
+      },
+      "ticker": {
+        "world": "ticker"
+      }
+    },
+    "actors": {
+      "held": [
+        {
+          "type": "market.stall",
+          "anchor": "vendor"
+        },
+        {
+          "type": "market.booth",
+          "anchor": "vendor"
+        }
+      ]
+    }
   }
 }

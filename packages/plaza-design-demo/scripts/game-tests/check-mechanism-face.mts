@@ -31,10 +31,10 @@ assert(stacks.nouns.some(n=>n.events.includes('stacks.crane.landed')),'gantryLif
 assert(mechanismFaces(['gantryLift','nope','devicePulse']).length===2);
 assert(mechanismsRulesShape(['gantryLift']));
 
-// 2. Numbers come from the controller of its kind and the tuning it names.
+// 2. Numbers come from the controller of its kind and the tuning it names, and the tuning its mover runs on.
 const stacksData=(SCENES as any).stacks.data;
 const lift=mechanismNumbers(stacks,stacksData);
-assert(lift.some(n=>n.label==='controller.lift.overMs'&&n.value===700),'gantryLift lift.overMs');
+assert(lift.some(n=>n.label==='tuning.liftOverMs'&&n.value===700),'gantryLift lift.overMs (the tuning its trolley mover runs on)');
 assert.deepEqual(mechanismNumbers(mechanismFace('devicePulse')!,stacksData),[]);
 assert.deepEqual(mechanismNumbers(mechanismFace('yardCrane')!,stacksData),[],'a controller of another kind is not read');
 const capsule=mechanismNumbers(mechanismFace('thermal')!,(SCENES as any).capsule.data);
@@ -60,9 +60,9 @@ assert(all(picker).some(o=>o.value==='mechanism-gantryLift'),'device picker list
 m=mount('stacks',false,{scene:'stacks',device:'mechanism-gantryLift'});
 assert(all(m.host).some(n=>/Engine mechanism · gantryLift/.test(n.textContent)),'inspector heading');
 assert(all(m.host).some(n=>/^Mechanism part gantryLift\.effects/.test(n.textContent)),'inspector lists the effects part');
-const before=(model.get(ids.devices).value as any).controller.lift.overMs;assert.equal(before,700);
-const f=m.field('Mechanism gantryLift controller.lift.overMs');f.value='777';f.onchange!();
-assert.equal((model.get(ids.devices).value as any).controller.lift.overMs,777,'the number saved into the device document');
+const before=(model.get(ids.devices).value as any).tuning.liftOverMs;assert.equal(before,700);
+const f=m.field('Mechanism gantryLift tuning.liftOverMs');f.value='777';f.onchange!();
+assert.equal((model.get(ids.devices).value as any).tuning.liftOverMs,777,'the number saved into the device document');
 // capsule: a tuning value reached through the controller edits tuning, not the controller
 const cap=deviceSourceIdentity('capsule'),tuningKey=mechanismNumbers(mechanismFace('thermal')!,(model.get(cap.devices).value as any)).find(n=>n.path[0]==='tuning')!;
 m=mount('capsule',false,{scene:'capsule',device:'mechanism-thermal'});

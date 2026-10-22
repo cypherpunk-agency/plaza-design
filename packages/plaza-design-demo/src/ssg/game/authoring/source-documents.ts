@@ -12,9 +12,13 @@ import {deviceSceneIds,deviceDocumentId,deviceSourceIdentity,validateDeviceSourc
 import {pendingDestinations,validatePendingSceneCatalogue} from './pending-destinations';
 import {pendingScene} from './pending-scene';
 import {validateFixtureMetro} from './play-fixtures';
-import {validateMetroSource} from '../world/transport/metro-source';
+import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {validatePendingCity,createPendingCity} from './pending-city';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
+import {validateCompanionSource} from '../engine/gameplay/companion-source';
+import {validateCritterReactions} from '../engine/gameplay/critter-reactions';
+import {validateReviewStations} from '../demo/review-stations';
+import {validatePendingCompanion} from './pending-rules';
 import {validateManifestComposition,validateManifestSources} from '../scenes/demo-manifest';
 import {validateDeclaredDestinations} from '../engine/gameplay/declared-scene';
 import {nativeGameplayScenes} from './native-gameplay-scenes';
@@ -22,6 +26,8 @@ import {gameplayScenes} from './gameplay-scenes';
 import {validatePlayFixtures} from './play-fixtures';
 import {validatePeople} from '../art/characters/people-source';
 import {validatePresets} from './kit-presets';
+import {validatePendingPlayProfiles} from './play-profile-source';
+import {validatePlayProfiles} from '../runtime/play-profiles';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
 import { art, type Composition } from '../art';
 import { validateTimeline } from '../art/core/timeline';
@@ -59,14 +65,18 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'network',file:'data/net.json',kind:'devices',validate:validateNetworkShape,validateContext:(value,documents)=>validatePendingNetwork(new Map([...documents,['network',value]]),pendingRegistry(new Map([...documents,['network',value]])))},
   {id:'authored-scenes',file:'scenes/authored.json',kind:'scene',validate:value=>validateSceneCatalogue(value,NATIVE_SCENES),validateContext:validatePendingSceneCatalogue},
   ...deviceSceneIds.map(id=>({id:deviceDocumentId(id),file:deviceSourceIdentity(id).file!,kind:'devices' as const,validate:(value:unknown)=>validateDeviceSource(id,value),validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>pendingScene(id,documents.get(id),{devices:value,sceneDocument:documents.get(deviceSourceIdentity(id).scene),gameplay:documents.get(deviceSourceIdentity(id).gameplay)},pendingNetworkContext(documents)).data})),
+  {id:'play-profiles',file:'runtime/play-profiles.json',kind:'profiles',validate:validatePlayProfiles,validateContext:validatePendingPlayProfiles},
   {id:'kit-presets',file:'art/presets/kit-presets.json',kind:'presets',validate:value=>validatePresets(value,art)},
   {id:'people',file:'art/characters/people.json',kind:'people',validate:validatePeople},
-  {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource},
+  {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource,validateContext:(value,documents)=>{validateMetroLocks(validateMetroSource(value),(documents.get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
   {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'conversations',validate:validateBotReactions},
+  {id:'companion',file:'engine/gameplay/companion.json',kind:'rules',validate:validateCompanionSource,validateContext:validatePendingCompanion},
+  {id:'critter-reactions',file:'engine/gameplay/critter-reactions.json',kind:'rules',validate:validateCritterReactions},
+  {id:'review-stations',file:'demo/review-stations.json',kind:'rules',validate:validateReviewStations},
   ...nativeGameplayScenes.filter(s=>!gameplayScenes.some(g=>g.gameplayId===s.gameplayId)).map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
   ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>validatePendingSceneContent(s,value,documents)},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
-  {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents),validateMetroSource(documents.get('metro-source')))},
+  {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents))},
   ...scenes.map(scene => ({ id: scene, file: `scenes/${scene === 'harborShift' ? 'harbor-shift' : scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art) })),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art), validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
   ...Object.entries(timelineFiles).map(([id, file]) => ({ id, file, kind: 'timeline' as const, validate(value: unknown) {
@@ -87,7 +97,7 @@ export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>)
     if (descriptor.kind === 'composition') compositions[descriptor.id] = documents.get(descriptor.id) as Composition;
   }
   for(const s of gameplayScenes)validatePendingSceneContent(s,documents.get(s.prefix+'-scene'),documents);
-  validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents),validateMetroSource(documents.get('metro-source')));
+  validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents));
   const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);
   const context = createSequenceValidationContext(art, compositions, pendingDestinations(documents));
   for (const [id] of Object.entries(timelineFiles)) validateTimeline(documents.get(id), context);

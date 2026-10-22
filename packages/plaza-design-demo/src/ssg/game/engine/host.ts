@@ -69,6 +69,8 @@ export interface EngineDraw { m: SceneModel; hover: string | null; layer: DrawLa
 export interface SceneStore {
   notice?:(text:string,tone?:import('../ui/communication').MessageTone,receipt?:FeedbackReceipt)=>void;
   feedbackCue?:(receipt:FeedbackReceipt)=>void;
+  /** A mover's leg ended with a sound (a train's doors): played while this scene is the one on screen. */
+  cue?:(cue:import('../data/types').MoverCue)=>void;
   hints?:Hints;
   hintBusy?:()=>boolean;
   feedbackTime?:()=>number;
@@ -110,8 +112,6 @@ export interface SceneStore {
 
 /** How long things must be quiet before the scene writes the save. */
 const SAVE_AFTER_MS = 800;
-/** How often trace moves. */
-const TICK_MS = 250;
 /** While trace or a lockout moves, the save hears of it this often at most. */
 const HEAT_SAVE_MS = 2000;
 /** World (x along the scene, h above the ground) to CSS px inside the canvas. */
@@ -139,7 +139,7 @@ export class SceneHost {
   /** Captions over the thing that reacted, and pings (scene/feedback.ts). */
   private fx: Feedback;
   private deviceAcknowledgment?:DeviceAcknowledgment;
-  /** Speakers that are not devices or targets (the game's: 'pixel'), as world points; null when not here. */
+  /** Speakers that are not devices or targets (the game's: the companion's speaker), as world points; null when not here. */
   where: (from: string) => { x: number; h: number } | null = () => null;
   /** Things the game keeps the popup away from besides the player (Pixel), as world points. */
   extras: () => { x: number; h: number }[] = () => [];
@@ -196,6 +196,7 @@ export class SceneHost {
     this.model = new SceneModel({
       say: (l, from,receipt) => this.say(l, from,receipt),
       feedbackScope:def.id,
+      cue: store?.cue ? (cue) => { if (this.active) store.cue!(cue); } : undefined,
       open: (panel, arg) => this.panels.open(panel, arg),
       changed: () => { this.schem?.render(); this.vision?.render(); this.dirty(); },
       kick: (dev) => { if (this.schem.viewing === dev) this.schem.close(); },
@@ -259,21 +260,7 @@ export class SceneHost {
     if (saved) this.restore(saved);
     this.saved = JSON.stringify({...this.snapshot(),state:this.model.state});
     this.sync();
-    // trace: the meter fills while you look into a logged device, and drains when you leave
-    // (the watchdog walks and clocks beat on the same tick)
-    let last = this.model.now(), heat = this.heat(), wrote = 0;
-    window.setInterval(() => {
-      const now = this.model.now(), dt = now - last;
-      last = now;
-      if (this.paused) return;
-      const perf=perfBegin('host.tick',this.id);try{
-      this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
-      if (this.model.tick(dt, this.active)) { this.schem.meters(); this.vision.meters(); }
-      // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
-      const h = this.heat();
-      if (h !== heat && now - wrote > HEAT_SAVE_MS) { heat = h; wrote = now; this.persist(); }
-      }finally{perfEnd(perf);}
-    }, TICK_MS);
+    this.lastHeat = this.heat();
     window.addEventListener('pagehide', () => this.persist());
   }
 
@@ -501,6 +488,24 @@ export class SceneHost {
   private paused = false;
   /** The game's pause state; scene time and delayed actions share it. */
   setPaused(on: boolean) { this.paused = on; this.model.setPaused(on); }
+  private lastHeat = '';
+  private heatWritten = 0;
+  /**
+   * The game loop's frame for this scene (every hosted scene, on screen or not): `ms` of scene time pass.
+   * Trace fills while you look into a logged device and drains when you leave; watchdogs walk, clocks
+   * beat, movers move, zones notice and delayed signals arrive on this one tick.
+   */
+  tick(ms: number) {
+    if (this.paused) return;
+    const perf=perfBegin('host.tick',this.id);try{
+    this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
+    if (this.model.tick(ms, this.active)) { this.schem.meters(); this.vision.meters(); }
+    this.panels.step(ms);
+    // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
+    const h = this.heat(), now = this.model.now();
+    if (h !== this.lastHeat && now - this.heatWritten > HEAT_SAVE_MS) { this.lastHeat = h; this.heatWritten = now; this.persist(); }
+    }finally{perfEnd(perf);}
+  }
   /**
    * The scene is on screen (or not). Its HACK and BOARD buttons show only here, and only when it
    * has devices: in a scene with nothing to hack they stay away (and H and B do nothing).

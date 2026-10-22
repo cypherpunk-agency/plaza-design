@@ -28,18 +28,20 @@ import { Game } from "./runtime/game";
 import { isSceneId } from "./scenes/index";
 import { isCutsceneId } from "./story/cutscenes/index";
 import { takeResume } from "./runtime/slots";
-import { SHIFT_PROTOTYPE, SUDO,DEMO_MODE } from './runtime/mode';
+import { SUDO } from './runtime/mode';
+import { playProfile, reservedScene, urlAsksForPlay } from './runtime/play-profile';
+import { applyProfileChrome } from './runtime/profile-chrome';
 
 export { runBoot };
 
 /** `?play` (or `?sudo`, sudo.ts) in the URL skips the boot and the Konami code: straight into the game. */
-export const playParam = () => { try { const q = new URLSearchParams(location.search); return q.has('play') || q.has('sudo')||q.has('demo'); } catch { return false; } };
+export const playParam = () => { try { return urlAsksForPlay(location.search); } catch { return false; } };
 /** `?play=yard` starts in the fixer's back yard, `?play=harbor` on the harbor pier: any scene. */
 const playScene = () => {
-  try { if(DEMO_MODE)return undefined;return sceneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
+  try { if(!playProfile().start.urlScene)return undefined;return sceneParam(new URLSearchParams(location.search).get('play') ?? ''); } catch { return undefined; }
 };
 /** A scene (or cutscene) id the game can start in; Downtown (and anything unknown) is undefined: the game decides. The sandbox only with `?sudo`. */
-const sceneParam = (z: string) => ((isSceneId(z) && z !== 'downtown' && (z !== 'sandbox' || SUDO) && (z !== 'harborShift' || SHIFT_PROTOTYPE)) || isCutsceneId(z) ? z : undefined);
+const sceneParam = (z: string) => ((isSceneId(z) && z !== playProfile().home && (z !== 'sandbox' || SUDO) && !reservedScene(z)) || isCutsceneId(z) ? z : undefined);
 
 const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
@@ -53,8 +55,7 @@ export interface AccessDeniedOpts {
 
 export function initAccessDenied(opts: AccessDeniedOpts) {
   const html = document.documentElement;
-  if (SHIFT_PROTOTYPE) html.classList.add('shift-prototype');
-  if(DEMO_MODE){const style=document.createElement('style');style.textContent='.game-mode .header-online,.game-mode .plaza-window-header>span:last-child,.game-mode .footer-timestamp{display:none}';document.head.append(style);}
+  applyProfileChrome(html);
   const cta = document.getElementById('cta');
   const windowEl = document.querySelector('.demo-window') as HTMLElement | null;
   const header = document.querySelector('.plaza-window-header') as HTMLElement | null;
@@ -90,11 +91,11 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
       onExit: exit,
       setNodes: (n) => { if (nodes) nodes.textContent = String(n); },
       setScene: (text) => { if (sceneLabel) sceneLabel.textContent = text; },
-    },DEMO_MODE?demoContent():{});
+    },playProfile().world==='testDistrict'?demoContent():{});
     if (isTouch() && !controls) { controls = true; touchControls(windowEl); }
     // launching (the Konami code, `?play` or `?sudo` with no scene named): the title screen first (title/)
     const named = (() => { try { return !!new URLSearchParams(location.search).get('play'); } catch { return false; } })();
-    game.start(resumeScene !== undefined ? sceneParam(resumeScene) : playScene(), resumeScene === undefined && !named&&!DEMO_MODE);
+    game.start(resumeScene !== undefined ? sceneParam(resumeScene) : playScene(), resumeScene === undefined && !named&&playProfile().start.title);
   };
 
   // Back from a LOAD GAME reload: the slot's save is in place, straight into its scene.

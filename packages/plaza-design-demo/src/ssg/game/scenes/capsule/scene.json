@@ -168,6 +168,67 @@
     ],
     "mechanisms": [
       "thermal"
-    ]
+    ],
+    "values": {
+      "hover": {
+        "live": {
+          "engine": "hover"
+        }
+      },
+      "plugOn": {
+        "picture": "plugOn"
+      },
+      "up": {
+        "picture": "up"
+      },
+      "sun": {
+        "picture": "sun"
+      },
+      "open": {
+        "picture": "open"
+      },
+      "hot": {
+        "picture": "hot"
+      },
+      "temp": {
+        "picture": "temp"
+      },
+      "steam": {
+        "picture": "steam"
+      },
+      "pixelAt": {
+        "picture": "pixelAt"
+      },
+      "routerX": {
+        "live": {
+          "role": "router",
+          "get": "x"
+        }
+      },
+      "deskRight": {
+        "live": {
+          "role": "deskSurface",
+          "get": "right"
+        }
+      },
+      "deskHeight": {
+        "live": {
+          "role": "deskSurface",
+          "get": "top"
+        }
+      },
+      "sunFrom": {
+        "live": {
+          "role": "sunPatch",
+          "get": "x"
+        }
+      },
+      "sunTo": {
+        "live": {
+          "role": "sunPatch",
+          "get": "right"
+        }
+      }
+    }
   }
 }

@@ -94,7 +94,8 @@
             "within": [
               -5,
               60
-            ]
+            ],
+            "building": "tower"
           }
         }
       ]

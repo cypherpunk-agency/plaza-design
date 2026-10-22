@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "pixel",
+  "name": "Pixel",
+  "look": "pixel",
+  "speaker": "pixel",
+  "unlockFlag": "pixel",
+  "modes": [
+    "home",
+    "along"
+  ],
+  "avoidPopups": true,
+  "greeting": "Pixel came along. Nobody asked Pixel. Nobody ever does.",
+  "follow": {
+    "distance": 28,
+    "trail": 20,
+    "lostAt": 300
+  },
+  "pet": {
+    "prompt": "[E] PET PIXEL",
+    "conversations": {
+      "sleep": [
+        "companion.pet.sleep.0",
+        "companion.pet.sleep.1"
+      ],
+      "sun": "companion.pet.sun",
+      "moving": "companion.pet.moving",
+      "idle": [
+        "companion.pet.idle.0",
+        "companion.pet.idle.1",
+        "companion.pet.idle.2",
+        "companion.pet.idle.3"
+      ]
+    }
+  }
+}
