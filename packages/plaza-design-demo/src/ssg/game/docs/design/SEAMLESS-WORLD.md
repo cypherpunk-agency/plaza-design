@@ -553,6 +553,47 @@ controller beside them.
 - **Named regulars** (MAN WITH A PAPER) keep fixed actor routes in scene.json.
 - **Density cap**: a proposed 12 people per visible zone.
 
+### Implementation notes (spike, 2026-10-22)
+
+A pure-model spike is in `world/people-flow.ts`, checked by `scripts/game-tests/check-people-flow.mts`. It is not
+wired into the loop, the renderer or the actor controllers yet.
+
+- **Source**: `FlowSource` = `{ id, clock, seed, spawn, route, looks, speed?, maxWait? }`. The waypoints are `walk`,
+  `wait` (dwell), `queue` (a gate: slots, spacing, gap, `every`), `board` (a queue let through at a vehicle's doors)
+  and `leave`. The spawns are `interval` (with an optional 24-value rate by hour), `trip` (a cohort per vehicle trip),
+  `alight` (people stepping off at the doors) and `routine` (`at: "07:40"`, the same person every day).
+- **Time** is in flow seconds, real seconds as the player experiences them. `cityFlowTime(city.abs)` is used for
+  routines and rates by hour; at CLOCK_RATE the 60 s memory is 30 game minutes. `sceneFlowTime(timeline)` is used
+  for platforms on today's timetable.
+- **Pure people**: `personAt(flow, world, index, t, lags?)` returns `here` (zone, x, h, facing, act, step), `aboard`
+  (vehicle, trip, door) or null. `flowPeople` returns everyone in a flow, and `populate(flows, world, zone, t, {keep,
+  lags, cap})` returns a zone's people under the cap; on-screen and remembered people are kept first.
+- **Queues** are worked out per release batch: everyone waiting for one trip or one gate opening, in order of
+  arrival. People stand `spacing` apart and shuffle forward at walking speed, and are let through one every `gap`
+  seconds. Stragglers from the previous batch stay in front. Whether a person fits in the queue is decided before
+  they set off, so nobody vanishes on the way. A route has one queue or board point.
+- **Seams**: a walk between zones joined by a seam changes zone at the shared edge (a walk seam) or at the midpoint
+  (stairs and doors), using the offsets in `zone-graph.json`.
+- **On-screen state** is only `Lags`, the holds of people held up on screen (`hold(lags, key, now, s)`: they stand
+  still, then run that much later). `remember` / `recall` keep the holds and who was on screen for `PEOPLE_MEMORY`
+  (60 s). This is the `SceneSave.people` candidate.
+- **Vehicles**: the model needs only `FlowVehicle { id, tripAt(t), doors(trip) → { open, close, doors: {zone, x}[] } }`.
+  `world/vehicles.ts` should provide it per berth; `timetableVehicle` adapts today's `metro.json` timetable.
+  `handedOff(flow, world, trip)` returns the people who boarded a trip, which is the car's manifest from that
+  platform.
+
+| Today | As a flow |
+| --- | --- |
+| `platformQueue`: a crowd of `count` slots from `crowd(seed, count)` (each on at 55 %), shown from the moment the last train has gone until half the dwell (`boarded`), then hidden all at once | `platformFlow(...)`: a `trip` cohort per train, `count` places each filled at 55 %. They walk in from an entry after the last train has gone, queue at a door and board one by one from the doors opening. The last is aboard by half the dwell, as today: the check compares it with `platformQueue` over four loops of the Downtown timetable. |
+| `platformQueue` slots are authored actors at fixed x | Queue slots come from the board point (door x, spacing). Each door is one flow (or one board point). |
+| `trainCrowd`: the car is reseeded at each stop (`crowd(500 + ride.at·31)`), so the people inside are not the people who got on | The car seats `handedOff` people for that trip (the same keys and looks), plus through riders. Alighting is an `alight` flow at the next station. Seating, standing and who stays aboard belong to the vehicle (step 8). |
+| `trainCrowd.standing` (offset ±10) | A standing spot of the vehicle (§4 seats). |
+
+Still to wire: an `engine/people.ts` tick over visible zones (materialise on entering view, `remember` on leaving
+it, `SceneSave.people`), drawing `PersonHere` through the rider/kit people art, the vehicle adapter in
+`world/vehicles.ts`, `flow` replacing the rider controllers in actor authoring, presentation and frame, the route
+tool and flow inspector (§6.5), and `flowProblems` in `worldProblems`/validation.
+
 ### Editor
 
 See §6.5. Actor authoring replaces the rider controllers `platformQueue` and `trainCrowd` (in
