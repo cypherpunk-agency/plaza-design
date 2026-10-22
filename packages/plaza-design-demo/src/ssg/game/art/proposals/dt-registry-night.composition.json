@@ -1,0 +1,1371 @@
+{
+  "version": 1,
+  "scene": "dt-registry-night",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.18,
+        "seed": 7,
+        "minHeight": 70,
+        "maxHeight": 150,
+        "alpha": 0.18,
+        "litChance": 0.12
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.45,
+        "seed": 19,
+        "minHeight": 50,
+        "maxHeight": 120,
+        "alpha": 0.3,
+        "litChance": 0.18
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 520,
+        "h": 60
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "front-w",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 60,
+            "tenant": "loans"
+          },
+          {
+            "kind": "door",
+            "from": 100,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "density": 0.7,
+        "seed": 301,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley-w",
+      "type": "building.alley",
+      "props": {
+        "width": 20,
+        "height": 300,
+        "depth": 0.5,
+        "light": "warm",
+        "escape": "none",
+        "bins": true,
+        "steam": true,
+        "cables": true,
+        "seed": 5
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-e0",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 12,
+            "width": 56
+          },
+          {
+            "kind": "door",
+            "from": 100,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "density": 0.6,
+        "seed": 302,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 1228,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-e1",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 58,
+            "tenant": "noodles"
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "escape": "right",
+        "density": 0.85,
+        "seed": 303,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1368,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1600,
+        "ground": "#030201",
+        "edge": "#ff8800",
+        "sheen": 0.7
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 0
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 1260,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1550,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "registry-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "registry"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "logic"
+    },
+    {
+      "id": "hall",
+      "type": "civic.room",
+      "props": {
+        "width": 950,
+        "height": 96,
+        "kind": "hall",
+        "hours": "closed",
+        "exit": 34,
+        "exitDir": "left",
+        "clock": 540,
+        "cameras": 3,
+        "seed": 3
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-g",
+      "type": "civic.room",
+      "props": {
+        "width": 100,
+        "height": 96,
+        "kind": "corridor",
+        "hours": "closed",
+        "tubeEvery": 50,
+        "cameras": 0,
+        "seed": 4
+      },
+      "placement": {
+        "x": 1120,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "poster-id",
+      "type": "civic.poster",
+      "props": {
+        "kind": "identity",
+        "width": 44,
+        "height": 46,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 384,
+        "h": 34
+      },
+      "order": 16,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "poster-docs",
+      "type": "civic.poster",
+      "props": {
+        "kind": "documents",
+        "width": 44,
+        "height": 46,
+        "faded": 0.3,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 436,
+        "h": 34
+      },
+      "order": 17,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "number-display",
+      "type": "civic.number-display",
+      "props": {
+        "width": 118,
+        "height": 26,
+        "prefix": "A",
+        "start": 17,
+        "open": "3",
+        "wait": "ESTIMATED WAIT 4 H 10 MIN · PLEASE REMAIN SEATED",
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 506,
+        "h": 52
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hold-screen",
+      "type": "civic.hold-screen",
+      "props": {
+        "width": 104,
+        "height": 34,
+        "mode": "hold",
+        "alternate": "premium",
+        "period": 700,
+        "position": 214,
+        "hours": "closed",
+        "rec": true
+      },
+      "placement": {
+        "x": 642,
+        "h": 50
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "poster-premium",
+      "type": "civic.poster",
+      "props": {
+        "kind": "premium",
+        "width": 44,
+        "height": 50,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 774,
+        "h": 30
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cam-hall",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "phase": 12
+      },
+      "placement": {
+        "x": 830,
+        "h": 80
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-door",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "staff",
+        "plate": "STAFF ONLY",
+        "state": "forced",
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 1128,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gates",
+      "type": "interior.id-gates",
+      "props": {
+        "lanes": 3,
+        "lane": 22,
+        "height": 26,
+        "glass": 0.5,
+        "cycle": 260,
+        "refuse": 0.3,
+        "seed": 6,
+        "stone": "#5d666c",
+        "gold": "#c8cdd0"
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "ticket",
+      "type": "civic.ticket-machine",
+      "props": {
+        "label": "TAKE A NUMBER",
+        "paper": "low",
+        "litter": 0.7,
+        "tell": true,
+        "hours": "closed",
+        "seed": 2
+      },
+      "placement": {
+        "x": 348,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "chairs",
+      "type": "civic.chairs",
+      "props": {
+        "count": 12,
+        "seat": 20,
+        "height": 10,
+        "broken": 0.12,
+        "seed": 9,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 490,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rail-in",
+      "type": "civic.queue-rail",
+      "props": {
+        "posts": 3,
+        "spacing": 34,
+        "sign": "WAIT HERE",
+        "slack": false,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "booths",
+      "type": "civic.booths",
+      "props": {
+        "count": 2,
+        "width": 34,
+        "height": 70,
+        "occupied": "",
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 1042,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "corridor-1",
+      "type": "civic.room",
+      "props": {
+        "width": 210,
+        "height": 80,
+        "kind": "corridor",
+        "hours": "closed",
+        "cameras": 1,
+        "exit": -1,
+        "seed": 11
+      },
+      "placement": {
+        "x": 170,
+        "h": 96
+      },
+      "order": 28,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "office-1",
+      "type": "civic.room",
+      "props": {
+        "width": 740,
+        "height": 80,
+        "kind": "office",
+        "hours": "closed",
+        "clock": 700,
+        "cameras": 1,
+        "seed": 12
+      },
+      "placement": {
+        "x": 380,
+        "h": 96
+      },
+      "order": 29,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-1",
+      "type": "civic.room",
+      "props": {
+        "width": 100,
+        "height": 80,
+        "kind": "corridor",
+        "hours": "closed",
+        "tubeEvery": 50,
+        "cameras": 0,
+        "exit": 50,
+        "seed": 13
+      },
+      "placement": {
+        "x": 1120,
+        "h": 96
+      },
+      "order": 30,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "door-interview",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "plain",
+        "plate": "INTERVIEW 2",
+        "reader": false,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 200,
+        "h": 96
+      },
+      "order": 31,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "door-supervisor",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "staff",
+        "plate": "SUPERVISOR",
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 290,
+        "h": 96
+      },
+      "order": 32,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "poster-conduct",
+      "type": "civic.poster",
+      "props": {
+        "kind": "conduct",
+        "width": 44,
+        "height": 46,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 348,
+        "h": 118
+      },
+      "order": 33,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "poster-report",
+      "type": "civic.poster",
+      "props": {
+        "kind": "report",
+        "width": 44,
+        "height": 46,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 932,
+        "h": 118
+      },
+      "order": 34,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "staff-screen",
+      "type": "civic.hold-screen",
+      "props": {
+        "width": 96,
+        "height": 32,
+        "mode": "appointment",
+        "alternate": "none",
+        "appointment": "IN 90 DAYS",
+        "hours": "closed",
+        "rec": false
+      },
+      "placement": {
+        "x": 990,
+        "h": 130
+      },
+      "order": 35,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "panel-1",
+      "type": "civic.alarm",
+      "props": {
+        "kind": "panel",
+        "state": "tripped"
+      },
+      "placement": {
+        "x": 1094,
+        "h": 124
+      },
+      "order": 36,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "desks",
+      "type": "civic.terminal-bank",
+      "props": {
+        "desks": 8,
+        "desk": 52,
+        "partitions": true,
+        "tell": 4,
+        "people": "1,3,6",
+        "hours": "alarm",
+        "seed": 4
+      },
+      "placement": {
+        "x": 406,
+        "h": 96
+      },
+      "order": 37,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "files-1",
+      "type": "civic.records",
+      "props": {
+        "units": 2,
+        "unit": 26,
+        "height": 52,
+        "fill": 0.9,
+        "aisle": 0,
+        "labels": true,
+        "hours": "closed",
+        "seed": 8
+      },
+      "placement": {
+        "x": 860,
+        "h": 96
+      },
+      "order": 38,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "records-room",
+      "type": "civic.room",
+      "props": {
+        "width": 480,
+        "height": 80,
+        "kind": "records",
+        "hours": "closed",
+        "cameras": 1,
+        "seed": 21
+      },
+      "placement": {
+        "x": 170,
+        "h": 176
+      },
+      "order": 39,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "server-room",
+      "type": "civic.room",
+      "props": {
+        "width": 470,
+        "height": 80,
+        "kind": "server",
+        "hours": "alarm",
+        "cameras": 2,
+        "seed": 22
+      },
+      "placement": {
+        "x": 650,
+        "h": 176
+      },
+      "order": 40,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-2",
+      "type": "civic.room",
+      "props": {
+        "width": 100,
+        "height": 80,
+        "kind": "corridor",
+        "hours": "closed",
+        "tubeEvery": 50,
+        "cameras": 0,
+        "seed": 23
+      },
+      "placement": {
+        "x": 1120,
+        "h": 176
+      },
+      "order": 41,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cage-door",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "cage",
+        "plate": "SERVER ROOM · NO ENTRY",
+        "state": "open",
+        "tell": false,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 670,
+        "h": 176
+      },
+      "order": 42,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "beacon-2",
+      "type": "civic.alarm",
+      "props": {
+        "kind": "beacon",
+        "state": "tripped",
+        "reach": 1.2
+      },
+      "placement": {
+        "x": 1010,
+        "h": 240
+      },
+      "order": 43,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "plant-door",
+      "type": "civic.staff-door",
+      "props": {
+        "kind": "plain",
+        "plate": "PLANT",
+        "reader": true,
+        "hours": "closed"
+      },
+      "placement": {
+        "x": 1060,
+        "h": 176
+      },
+      "order": 44,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "records",
+      "type": "civic.records",
+      "props": {
+        "units": 14,
+        "unit": 30,
+        "height": 64,
+        "fill": 0.88,
+        "aisle": 6,
+        "labels": true,
+        "hours": "closed",
+        "seed": 31
+      },
+      "placement": {
+        "x": 190,
+        "h": 176
+      },
+      "order": 45,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "node",
+      "type": "civic.node",
+      "props": {
+        "cabinets": 6,
+        "height": 60,
+        "state": "tripped",
+        "label": "LOCAL VERIFICATION NODE · DT-07",
+        "tell": true,
+        "cables": 0,
+        "watchdog": true,
+        "seed": 5
+      },
+      "placement": {
+        "x": 830,
+        "h": 176
+      },
+      "order": 46,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 1050,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-1",
+      "type": "level.slab",
+      "props": {
+        "width": 1050,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 170,
+        "h": 96
+      },
+      "order": 48,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-2",
+      "type": "level.slab",
+      "props": {
+        "width": 1050,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 170,
+        "h": 176
+      },
+      "order": 49,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-3",
+      "type": "level.slab",
+      "props": {
+        "width": 1050,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 170,
+        "h": 256
+      },
+      "order": 50,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-w",
+      "type": "level.section-wall",
+      "props": {
+        "height": 256,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 162,
+        "h": 0
+      },
+      "order": 51,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-e",
+      "type": "level.section-wall",
+      "props": {
+        "height": 256,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 1220,
+        "h": 0
+      },
+      "order": 52,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-1",
+      "type": "level.stairs",
+      "props": {
+        "run": 80,
+        "rise": 96,
+        "style": "concrete"
+      },
+      "placement": {
+        "x": 1130,
+        "h": 0
+      },
+      "order": 53,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-2",
+      "type": "level.stairs",
+      "props": {
+        "run": -80,
+        "rise": 80,
+        "style": "concrete"
+      },
+      "placement": {
+        "x": 1210,
+        "h": 96
+      },
+      "order": 54,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "registry-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "registry"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 55,
+      "layer": "logic"
+    },
+    {
+      "id": "registry-front",
+      "type": "civic.registry-front",
+      "props": {
+        "width": 1050,
+        "ground": 96,
+        "floors": 2,
+        "storey": 80,
+        "door": 14,
+        "doorWidth": 40,
+        "staffDoor": 990,
+        "closed": true,
+        "lit": 0.05,
+        "queue": 0.6,
+        "cameras": 3,
+        "seed": 4
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 56,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "bell",
+      "type": "civic.alarm",
+      "props": {
+        "kind": "bell",
+        "state": "tripped",
+        "reach": 1.4
+      },
+      "placement": {
+        "x": 1030,
+        "h": 206
+      },
+      "order": 57,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "counters",
+      "type": "civic.counters",
+      "props": {
+        "windows": 4,
+        "bay": 50,
+        "counter": 30,
+        "glass": 60,
+        "open": "3",
+        "label": "COUNTERS 1–4",
+        "hours": "closed",
+        "seed": 2
+      },
+      "placement": {
+        "x": 838,
+        "h": 0
+      },
+      "order": 58,
+      "layer": "set",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "doorway-sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4501,
+        "act": "sleep",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 59,
+      "layer": "playfield"
+    },
+    {
+      "id": "night-walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "district": "downtown",
+        "seed": 4502,
+        "act": "walk",
+        "range": -200
+      },
+      "placement": {
+        "x": 1420,
+        "h": 0
+      },
+      "order": 60,
+      "layer": "playfield"
+    },
+    {
+      "id": "hall-bot",
+      "type": "character.resident",
+      "props": {
+        "kind": "litterbot",
+        "depth": "play",
+        "act": "roll",
+        "range": 300
+      },
+      "placement": {
+        "x": 590,
+        "h": 0
+      },
+      "order": 61,
+      "layer": "playfield",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "node-drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "scan"
+      },
+      "placement": {
+        "x": 970,
+        "h": 186
+      },
+      "order": 62,
+      "layer": "playfield",
+      "attach": {
+        "instance": "registry-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 130,
+        "h": 0
+      },
+      "order": 63,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1600,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 64,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-g",
+      "type": "level.floor",
+      "props": {
+        "width": 1050,
+        "building": "registry",
+        "label": "G · Service point",
+        "entry": "door",
+        "indoor": true
+      },
+      "placement": {
+        "x": 170,
+        "h": 0
+      },
+      "order": 65,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-1",
+      "type": "level.floor",
+      "props": {
+        "width": 1050,
+        "building": "registry",
+        "label": "1 · Back office",
+        "indoor": true
+      },
+      "placement": {
+        "x": 170,
+        "h": 96
+      },
+      "order": 66,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-2",
+      "type": "level.floor",
+      "props": {
+        "width": 1050,
+        "building": "registry",
+        "label": "2 · Records, node",
+        "indoor": true
+      },
+      "placement": {
+        "x": 170,
+        "h": 176
+      },
+      "order": 67,
+      "layer": "logic"
+    },
+    {
+      "id": "registry-door",
+      "type": "level.door",
+      "props": {
+        "building": "registry",
+        "width": 34
+      },
+      "placement": {
+        "x": 204,
+        "h": 0
+      },
+      "order": 68,
+      "layer": "logic"
+    }
+  ]
+}

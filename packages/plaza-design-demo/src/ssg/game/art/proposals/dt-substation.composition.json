@@ -1,0 +1,964 @@
+{
+  "version": 1,
+  "scene": "dt-substation",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.18,
+        "seed": 11,
+        "minHeight": 70,
+        "maxHeight": 150,
+        "alpha": 0.18,
+        "litChance": 0.12
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.45,
+        "seed": 23,
+        "minHeight": 50,
+        "maxHeight": 120,
+        "alpha": 0.3,
+        "litChance": 0.18
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "row",
+      "type": "building.row",
+      "props": {
+        "width": 2000,
+        "seed": 77,
+        "parallax": 0.7,
+        "minHeight": 140,
+        "maxHeight": 260,
+        "haze": 0.4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "front-0",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 60,
+            "width": 60,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "tenement",
+        "density": 0.8,
+        "seed": 501,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-1",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 20,
+            "width": 60
+          },
+          {
+            "kind": "tagged",
+            "from": 100,
+            "width": 40
+          }
+        ],
+        "skin": "concrete",
+        "density": 0.6,
+        "seed": 502,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-2",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 20,
+            "width": 24
+          },
+          {
+            "kind": "sealed",
+            "from": 70,
+            "width": 30
+          }
+        ],
+        "skin": "brick",
+        "balconies": "some",
+        "density": 0.7,
+        "seed": 503,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 1110,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-3",
+      "type": "building.front",
+      "props": {
+        "width": 170,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 56,
+            "tenant": "repair"
+          },
+          {
+            "kind": "door",
+            "from": 120,
+            "width": 24
+          }
+        ],
+        "skin": "panel",
+        "density": 0.5,
+        "seed": 504,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 1270,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1700,
+        "ground": "#030201",
+        "edge": "#ff8800",
+        "sheen": 0.7
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 290,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1450,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "yard-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "substation"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "logic"
+    },
+    {
+      "id": "yard-ground",
+      "type": "street.surface",
+      "props": {
+        "width": 760,
+        "ground": "#0b0a08",
+        "edge": "#e3c13c",
+        "sheen": 0.15,
+        "kerb": false
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "party-wall",
+      "type": "building.front",
+      "props": {
+        "width": 760,
+        "bays": [],
+        "skin": "brick",
+        "windows": "none",
+        "roof": "parapet",
+        "gear": [
+          "tank"
+        ],
+        "escape": "none",
+        "balconies": "none",
+        "fascia": false,
+        "density": 0.4,
+        "seed": 505,
+        "floors": 5,
+        "top": 0,
+        "ground": 70
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "wall-sign",
+      "type": "sign.billboard",
+      "props": {
+        "width": 180,
+        "height": 50,
+        "lines": [
+          "PLAZA GRID|UNINTERRUPTED SUPPLY"
+        ],
+        "seed": 4
+      },
+      "placement": {
+        "x": 800,
+        "h": 190
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "flood-0",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "pole",
+        "height": 120,
+        "heads": 2,
+        "aim": "right",
+        "reach": 70,
+        "spread": 120,
+        "strength": 0.7,
+        "seed": 1
+      },
+      "placement": {
+        "x": 348,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "flood-1",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "pole",
+        "height": 120,
+        "heads": 2,
+        "aim": "left",
+        "reach": 60,
+        "spread": 110,
+        "strength": 0.6,
+        "seed": 2
+      },
+      "placement": {
+        "x": 850,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "gantry-0",
+      "type": "civic.busbar",
+      "props": {
+        "width": 140,
+        "height": 150,
+        "phases": 3,
+        "down": 90,
+        "out": "left",
+        "outLength": 360,
+        "outDrop": 30,
+        "plate": "DANGER · KEEP OFF"
+      },
+      "placement": {
+        "x": 370,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gantry-1",
+      "type": "civic.busbar",
+      "props": {
+        "width": 140,
+        "height": 150,
+        "phases": 3,
+        "down": 90,
+        "out": "left",
+        "outLength": 44,
+        "outDrop": 0,
+        "plate": ""
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "t1",
+      "type": "civic.transformer",
+      "props": {
+        "width": 80,
+        "height": 56,
+        "bushings": 3,
+        "fins": "both",
+        "label": "T1",
+        "voltage": "11 000 V",
+        "state": "hum",
+        "seed": 2
+      },
+      "placement": {
+        "x": 404,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "t2",
+      "type": "civic.transformer",
+      "props": {
+        "width": 80,
+        "height": 56,
+        "bushings": 3,
+        "fins": "both",
+        "label": "T2",
+        "voltage": "11 000 V",
+        "state": "on",
+        "seed": 3
+      },
+      "placement": {
+        "x": 594,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "tray",
+      "type": "civic.cable-tray",
+      "props": {
+        "width": 200,
+        "height": 26,
+        "mount": "posts",
+        "every": 66,
+        "cables": 6,
+        "drops": "both"
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "catwalk",
+      "type": "civic.catwalk",
+      "props": {
+        "width": 330,
+        "height": 70,
+        "legs": 82,
+        "rail": 24
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "catwalk-ladder",
+      "type": "level.stairs",
+      "props": {
+        "run": 14,
+        "rise": 70,
+        "style": "steel-ladder"
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cabinet",
+      "type": "civic.alarm",
+      "props": {
+        "kind": "bell",
+        "state": "armed"
+      },
+      "placement": {
+        "x": 750,
+        "h": 64
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hut-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "hut"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "logic"
+    },
+    {
+      "id": "hut-room",
+      "type": "civic.room",
+      "props": {
+        "width": 170,
+        "height": 76,
+        "kind": "plant",
+        "hours": "open",
+        "tubeEvery": 56,
+        "tubes": 1,
+        "flicker": 0.3,
+        "clock": 150,
+        "cameras": 0,
+        "seed": 41
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "hut-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hut-panels",
+      "type": "civic.control-panels",
+      "props": {
+        "cabinets": 4,
+        "height": 56,
+        "state": "normal",
+        "mimic": true,
+        "desk": true,
+        "tell": 2,
+        "seed": 4
+      },
+      "placement": {
+        "x": 908,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "set",
+      "attach": {
+        "instance": "hut-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hut-slab",
+      "type": "level.slab",
+      "props": {
+        "width": 170,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 900,
+        "h": 76
+      },
+      "order": 29,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "hut-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hut-wall-w",
+      "type": "level.section-wall",
+      "props": {
+        "height": 84,
+        "thickness": 6
+      },
+      "placement": {
+        "x": 894,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "hut-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hut-wall-e",
+      "type": "level.section-wall",
+      "props": {
+        "height": 84,
+        "thickness": 6
+      },
+      "placement": {
+        "x": 1070,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "hut-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "engineer",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5101,
+        "act": "read",
+        "archetype": "technician",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 1024,
+        "h": 10
+      },
+      "order": 32,
+      "layer": "playfield",
+      "attach": {
+        "instance": "hut-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "hut-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "hut"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "logic"
+    },
+    {
+      "id": "hut",
+      "type": "civic.control-hut",
+      "props": {
+        "width": 170,
+        "height": 80,
+        "door": 22,
+        "label": "SUBSTATION DT-4",
+        "vents": 2,
+        "window": 124,
+        "lit": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "set",
+      "attach": {
+        "instance": "hut-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "yard-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "substation",
+        "ghost": 0.15
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "logic"
+    },
+    {
+      "id": "front-fence",
+      "type": "street.fence",
+      "props": {
+        "width": 760,
+        "height": 82,
+        "spacing": 96,
+        "top": "barbed",
+        "mesh": "#aab4bc",
+        "density": 0.35,
+        "footing": true,
+        "gate": 20,
+        "gateWidth": 90,
+        "gateOpen": 0,
+        "gateLabel": "DT-4",
+        "notice": "DANGER OF DEATH/HIGH VOLTAGE",
+        "header": "PLAZA GRID",
+        "noticeEvery": 2,
+        "lampEvery": 3,
+        "seed": 5
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cam-yard",
+      "type": "sign.camera",
+      "props": {
+        "pole": true,
+        "phase": 30
+      },
+      "placement": {
+        "x": 460,
+        "h": 110
+      },
+      "order": 37,
+      "layer": "set",
+      "attach": {
+        "instance": "yard-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "walker-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5201,
+        "act": "walk",
+        "range": 220
+      },
+      "placement": {
+        "x": 100,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5202,
+        "act": "smoke",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield"
+    },
+    {
+      "id": "cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 338,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield"
+    },
+    {
+      "id": "back-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "district": "downtown",
+        "seed": 5203,
+        "act": "walk",
+        "range": -300
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield"
+    },
+    {
+      "id": "yard-tech",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5204,
+        "act": "stand",
+        "archetype": "technician"
+      },
+      "placement": {
+        "x": 580,
+        "h": 70
+      },
+      "order": 42,
+      "layer": "playfield",
+      "attach": {
+        "instance": "yard-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 220,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1700,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-yard",
+      "type": "level.floor",
+      "props": {
+        "width": 570,
+        "building": "substation",
+        "label": "Yard",
+        "entry": "door"
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-catwalk",
+      "type": "level.floor",
+      "props": {
+        "width": 340,
+        "building": "substation",
+        "label": "Catwalk"
+      },
+      "placement": {
+        "x": 560,
+        "h": 70
+      },
+      "order": 46,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-hut",
+      "type": "level.floor",
+      "props": {
+        "width": 170,
+        "building": "hut",
+        "label": "Control room",
+        "entry": "door",
+        "indoor": true
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "logic"
+    },
+    {
+      "id": "yard-gate",
+      "type": "level.door",
+      "props": {
+        "building": "substation",
+        "width": 60
+      },
+      "placement": {
+        "x": 395,
+        "h": 0
+      },
+      "order": 48,
+      "layer": "logic"
+    },
+    {
+      "id": "hut-door",
+      "type": "level.door",
+      "props": {
+        "building": "hut",
+        "width": 28
+      },
+      "placement": {
+        "x": 936,
+        "h": 0
+      },
+      "order": 49,
+      "layer": "logic"
+    }
+  ]
+}

@@ -1,0 +1,2367 @@
+{
+  "version": 1,
+  "scene": "dt-capsule-lobby",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1860,
+        "seed": 7,
+        "parallax": 0.2,
+        "minHeight": 240,
+        "maxHeight": 460,
+        "haze": 0.6,
+        "lit": 0.4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "traffic": true
+      },
+      "placement": {
+        "x": 567,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1660,
+        "seed": 19,
+        "parallax": 0.45,
+        "minHeight": 180,
+        "maxHeight": 340,
+        "haze": 0.3,
+        "lit": 0.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "ground",
+      "type": "level.ground-section",
+      "props": {
+        "width": 1260,
+        "depth": 200,
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "floors": 8,
+        "storey": 66,
+        "ground": 76,
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "escape": "right",
+        "density": 0.7,
+        "seed": 701,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 60,
+            "tenant": "laundry"
+          },
+          {
+            "kind": "door",
+            "from": 96,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "floors": 6,
+        "storey": 66,
+        "ground": 76,
+        "skin": "tenement",
+        "balconies": "some",
+        "density": 0.8,
+        "seed": 702,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 64,
+            "tenant": "convenience"
+          },
+          {
+            "kind": "door",
+            "from": 86,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "courtyard",
+      "type": "interior.dt-courtyard",
+      "props": {
+        "width": 300,
+        "height": 420,
+        "wall": "#3a2420",
+        "lines": 3,
+        "lowest": 110,
+        "spacing": 78,
+        "washing": 0.55,
+        "pole": true,
+        "bins": 3,
+        "binsFrom": 140,
+        "puddles": true,
+        "lamp": true,
+        "seed": 31
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "floors": 7,
+        "storey": 66,
+        "ground": 76,
+        "skin": "concrete",
+        "windows": "punched",
+        "roof": "parapet",
+        "density": 0.6,
+        "seed": 703,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 12,
+            "width": 54
+          },
+          {
+            "kind": "glass",
+            "from": 80,
+            "width": 64,
+            "tenant": "pawn"
+          }
+        ]
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-d",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "floors": 5,
+        "storey": 66,
+        "ground": 76,
+        "skin": "brick",
+        "windows": "curtained",
+        "escape": "left",
+        "density": 0.8,
+        "seed": 704,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 50,
+            "width": 70,
+            "tenant": "noodles"
+          }
+        ]
+      },
+      "placement": {
+        "x": 1160,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1260,
+        "ground": "#050302",
+        "edge": "#ff8800",
+        "sheen": 0.7,
+        "kerb": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "areaway",
+      "type": "interior.dt-areaway",
+      "props": {
+        "width": 96,
+        "depth": 76,
+        "railing": 18,
+        "gate": true,
+        "rubbish": 0.6,
+        "seed": 4
+      },
+      "placement": {
+        "x": 702,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "latch",
+      "type": "interior.dt-service-latch",
+      "props": {
+        "kind": "door",
+        "state": "locked",
+        "width": 24,
+        "height": 50,
+        "stencil": "SERVICE",
+        "plate": "NO ENTRY",
+        "lamp": true,
+        "tell": true
+      },
+      "placement": {
+        "x": 710,
+        "h": -76
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "count": 1,
+        "reach": 0.9,
+        "seed": 2
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "count": 1,
+        "reach": 0.9,
+        "seed": 5
+      },
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "block-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "capsule"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "logic"
+    },
+    {
+      "id": "room-basement",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 440,
+        "height": 76,
+        "kind": "service",
+        "floor": "concrete",
+        "light": "flicker",
+        "lights": 2,
+        "peel": 0.1,
+        "grime": 0.7,
+        "pipes": true,
+        "label": "B",
+        "labelFrom": 12,
+        "seed": 2
+      },
+      "placement": {
+        "x": 260,
+        "h": -76
+      },
+      "order": 17,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "plant",
+      "type": "interior.dt-service-plant",
+      "props": {
+        "width": 230,
+        "meters": 14,
+        "heater": true,
+        "cabinet": "CONCIERGE",
+        "cabinetFrom": 196,
+        "bins": 2,
+        "mop": true,
+        "tell": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 268,
+        "h": -76
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-lobby",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 440,
+        "height": 96,
+        "kind": "lobby",
+        "floor": "terrazzo",
+        "light": "tube",
+        "lights": 3,
+        "peel": 0.25,
+        "grime": 0.5,
+        "pipes": false,
+        "seed": 4
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "entrance-inside",
+      "type": "interior.dt-fire-exit",
+      "props": {
+        "width": 26,
+        "height": 54,
+        "open": 0,
+        "hinge": "left",
+        "sign": "none",
+        "sticker": "",
+        "propped": false,
+        "leaf": "#2c3a40",
+        "outside": "street"
+      },
+      "placement": {
+        "x": 274,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "concierge",
+      "type": "interior.dt-concierge",
+      "props": {
+        "mount": "wall",
+        "mood": "refusing",
+        "name": "CONCIERGE",
+        "line": "IDENTITY NOT FOUND",
+        "conduit": 18,
+        "camera": true,
+        "slot": true,
+        "tell": true,
+        "seed": 1
+      },
+      "placement": {
+        "x": 310,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "mailboxes",
+      "type": "interior.dt-mailboxes",
+      "props": {
+        "columns": 5,
+        "rows": 7,
+        "from": 14,
+        "metal": "steel",
+        "stuffed": 0.35,
+        "taped": 2,
+        "parcels": 2,
+        "floor": 5,
+        "seed": 7
+      },
+      "placement": {
+        "x": 364,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "notices",
+      "type": "interior.dt-notices",
+      "props": {
+        "width": 84,
+        "height": 36,
+        "from": 24,
+        "style": "glass case",
+        "header": "NOTICE",
+        "headline": "LIFT OUT OF ORDER",
+        "second": "NO SUBLETTING",
+        "papers": 7,
+        "seed": 9
+      },
+      "placement": {
+        "x": 412,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "fire-exit",
+      "type": "interior.dt-fire-exit",
+      "props": {
+        "width": 26,
+        "height": 54,
+        "open": 0,
+        "hinge": "right",
+        "sign": "lit",
+        "signText": "EXIT",
+        "sticker": "ALARM WILL SOUND",
+        "propped": false,
+        "leaf": "#5a1e16",
+        "outside": "yard"
+      },
+      "placement": {
+        "x": 666,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-1A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "family",
+        "number": "1A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": false,
+        "seed": 110
+      },
+      "placement": {
+        "x": 260,
+        "h": 96
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-1B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "1B",
+        "door": "right",
+        "lock": "smart",
+        "lit": 0.3,
+        "window": true,
+        "partition": true,
+        "seed": 111
+      },
+      "placement": {
+        "x": 340,
+        "h": 96
+      },
+      "order": 26,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-1C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "studio",
+        "number": "1C",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 112
+      },
+      "placement": {
+        "x": 420,
+        "h": 96
+      },
+      "order": 27,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-1",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "1/F",
+        "labelFrom": 50,
+        "seed": 21
+      },
+      "placement": {
+        "x": 500,
+        "h": 96
+      },
+      "order": 28,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-2A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "2A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": false,
+        "seed": 120
+      },
+      "placement": {
+        "x": 260,
+        "h": 172
+      },
+      "order": 29,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-2B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "hoarder",
+        "number": "2B",
+        "door": "right",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 121
+      },
+      "placement": {
+        "x": 340,
+        "h": 172
+      },
+      "order": 30,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-2C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "2C",
+        "door": "left",
+        "lock": "smart",
+        "lit": 0.3,
+        "window": true,
+        "partition": true,
+        "seed": 122
+      },
+      "placement": {
+        "x": 420,
+        "h": 172
+      },
+      "order": 31,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-2",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "2/F",
+        "labelFrom": 50,
+        "seed": 22
+      },
+      "placement": {
+        "x": 500,
+        "h": 172
+      },
+      "order": 32,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-3A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "studio",
+        "number": "3A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": false,
+        "seed": 130
+      },
+      "placement": {
+        "x": 260,
+        "h": 248
+      },
+      "order": 33,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-3B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "empty",
+        "number": "3B",
+        "door": "right",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 131
+      },
+      "placement": {
+        "x": 340,
+        "h": 248
+      },
+      "order": 34,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-3C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "family",
+        "number": "3C",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 132
+      },
+      "placement": {
+        "x": 420,
+        "h": 248
+      },
+      "order": 35,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-3",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "flicker",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "3/F",
+        "labelFrom": 50,
+        "seed": 23
+      },
+      "placement": {
+        "x": 500,
+        "h": 248
+      },
+      "order": 36,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-4A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "4A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 0.3,
+        "window": true,
+        "partition": false,
+        "seed": 140
+      },
+      "placement": {
+        "x": 260,
+        "h": 324
+      },
+      "order": 37,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-4B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "4B",
+        "door": "right",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 141
+      },
+      "placement": {
+        "x": 340,
+        "h": 324
+      },
+      "order": 38,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-4C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "sealed",
+        "number": "4C",
+        "door": "left",
+        "lock": "none",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 142
+      },
+      "placement": {
+        "x": 420,
+        "h": 324
+      },
+      "order": 39,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-4",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "4/F",
+        "labelFrom": 50,
+        "seed": 24
+      },
+      "placement": {
+        "x": 500,
+        "h": 324
+      },
+      "order": 40,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-5A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "hoarder",
+        "number": "5A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": false,
+        "seed": 150
+      },
+      "placement": {
+        "x": 260,
+        "h": 400
+      },
+      "order": 41,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-5B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "studio",
+        "number": "5B",
+        "door": "right",
+        "lock": "smart",
+        "lit": 0.3,
+        "window": true,
+        "partition": true,
+        "seed": 151
+      },
+      "placement": {
+        "x": 340,
+        "h": 400
+      },
+      "order": 42,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-5C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "5C",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 152
+      },
+      "placement": {
+        "x": 420,
+        "h": 400
+      },
+      "order": 43,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-5",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "5/F",
+        "labelFrom": 50,
+        "seed": 25
+      },
+      "placement": {
+        "x": 500,
+        "h": 400
+      },
+      "order": 44,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-6A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "family",
+        "number": "6A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": false,
+        "seed": 160
+      },
+      "placement": {
+        "x": 260,
+        "h": 476
+      },
+      "order": 45,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-6B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "6B",
+        "door": "right",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 161
+      },
+      "placement": {
+        "x": 340,
+        "h": 476
+      },
+      "order": 46,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-6C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "empty",
+        "number": "6C",
+        "door": "left",
+        "lock": "smart",
+        "lit": 0.3,
+        "window": true,
+        "partition": true,
+        "seed": 162
+      },
+      "placement": {
+        "x": 420,
+        "h": 476
+      },
+      "order": 47,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-6",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "flicker",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "6/F",
+        "labelFrom": 50,
+        "seed": 26
+      },
+      "placement": {
+        "x": 500,
+        "h": 476
+      },
+      "order": 48,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-7A",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "studio",
+        "number": "7A",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": false,
+        "seed": 170
+      },
+      "placement": {
+        "x": 260,
+        "h": 552
+      },
+      "order": 49,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-7B",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "capsule",
+        "number": "7B",
+        "door": "right",
+        "lock": "refusing",
+        "lit": 0,
+        "window": true,
+        "partition": true,
+        "seed": 171
+      },
+      "placement": {
+        "x": 340,
+        "h": 552
+      },
+      "order": 50,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "flat-7C",
+      "type": "interior.dt-flat",
+      "props": {
+        "width": 80,
+        "height": 76,
+        "kind": "hoarder",
+        "number": "7C",
+        "door": "left",
+        "lock": "smart",
+        "lit": 1,
+        "window": true,
+        "partition": true,
+        "seed": 172
+      },
+      "placement": {
+        "x": 420,
+        "h": 552
+      },
+      "order": 51,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "core-7",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 200,
+        "height": 76,
+        "kind": "stairwell",
+        "floor": "lino",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.35,
+        "grime": 0.5,
+        "label": "7/F",
+        "labelFrom": 50,
+        "seed": 27
+      },
+      "placement": {
+        "x": 500,
+        "h": 552
+      },
+      "order": 52,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 53,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-1",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 96
+      },
+      "order": 54,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-2",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 172
+      },
+      "order": 55,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-3",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 248
+      },
+      "order": 56,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-4",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 324
+      },
+      "order": 57,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-5",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 400
+      },
+      "order": 58,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-6",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 476
+      },
+      "order": 59,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-7",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 260,
+        "h": 552
+      },
+      "order": 60,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-roof",
+      "type": "level.slab",
+      "props": {
+        "width": 440,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 260,
+        "h": 628
+      },
+      "order": 61,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 714,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 252,
+        "h": -76
+      },
+      "order": 62,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 714,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 700,
+        "h": -76
+      },
+      "order": 63,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "block-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "capsule"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 64,
+      "layer": "logic"
+    },
+    {
+      "id": "block-front",
+      "type": "building.front",
+      "props": {
+        "width": 440,
+        "floors": 7,
+        "storey": 76,
+        "ground": 96,
+        "skin": "panel",
+        "windows": "framed",
+        "roof": "parapet",
+        "escape": "none",
+        "balconies": "none",
+        "density": 0.9,
+        "lit": 0.6,
+        "seed": 710,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 26
+          },
+          {
+            "kind": "sealed",
+            "from": 120,
+            "width": 24
+          },
+          {
+            "kind": "shutter",
+            "from": 330,
+            "width": 60
+          }
+        ]
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 65,
+      "layer": "set",
+      "attach": {
+        "instance": "block-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "capsule-door",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "capsule"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 66,
+      "layer": "set",
+      "attach": {
+        "instance": "block-front",
+        "anchor": "bay0"
+      }
+    },
+    {
+      "id": "block-sign",
+      "type": "sign.plate",
+      "props": {
+        "text": "CAPSULE HOUSING · BLOCK 7",
+        "color": "255,136,0",
+        "size": 10,
+        "mask": [
+          -90,
+          90,
+          -10,
+          10
+        ]
+      },
+      "placement": {
+        "x": 220,
+        "h": 108
+      },
+      "order": 67,
+      "layer": "set",
+      "attach": {
+        "instance": "block-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "block-camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "phase": 12
+      },
+      "placement": {
+        "x": 50,
+        "h": 92
+      },
+      "order": 68,
+      "layer": "set",
+      "attach": {
+        "instance": "block-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "block-notice",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 50,
+        "height": 24,
+        "header": "NOTICE",
+        "lines": [
+          "RESIDENTS ONLY",
+          "ID AT THE DOOR"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 78,
+        "h": 34
+      },
+      "order": 69,
+      "layer": "set",
+      "attach": {
+        "instance": "block-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "block-blade",
+      "type": "sign.blade",
+      "props": {
+        "text": "BEDS · LONG STAY",
+        "color": "255,217,165",
+        "size": 9,
+        "phase": 40,
+        "mask": []
+      },
+      "placement": {
+        "x": 434,
+        "h": 300
+      },
+      "order": 70,
+      "layer": "set",
+      "attach": {
+        "instance": "block-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-0",
+      "type": "level.stairs",
+      "props": {
+        "run": 120,
+        "rise": 96,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 542,
+        "h": 0
+      },
+      "order": 71,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-1",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 662,
+        "h": 96
+      },
+      "order": 72,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-2",
+      "type": "level.stairs",
+      "props": {
+        "run": 120,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 542,
+        "h": 172
+      },
+      "order": 73,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-3",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 662,
+        "h": 248
+      },
+      "order": 74,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-4",
+      "type": "level.stairs",
+      "props": {
+        "run": 120,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 542,
+        "h": 324
+      },
+      "order": 75,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-5",
+      "type": "level.stairs",
+      "props": {
+        "run": -120,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 662,
+        "h": 400
+      },
+      "order": 76,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-6",
+      "type": "level.stairs",
+      "props": {
+        "run": 120,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 542,
+        "h": 476
+      },
+      "order": 77,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-basement",
+      "type": "level.stairs",
+      "props": {
+        "run": -100,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 660,
+        "h": -76
+      },
+      "order": 78,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lift",
+      "type": "level.elevator",
+      "props": {
+        "height": 704,
+        "width": 34,
+        "device": "",
+        "style": "broken"
+      },
+      "placement": {
+        "x": 518,
+        "h": -76
+      },
+      "order": 79,
+      "layer": "set",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "areaway-stairs",
+      "type": "level.stairs",
+      "props": {
+        "run": 70,
+        "rise": 76,
+        "style": "concrete",
+        "rail": "steel"
+      },
+      "placement": {
+        "x": 722,
+        "h": -76
+      },
+      "order": 80,
+      "layer": "set"
+    },
+    {
+      "id": "parcel",
+      "type": "interior.dt-parcel",
+      "props": {
+        "width": 18,
+        "height": 12,
+        "wrap": "cardboard",
+        "sticker": "fragile",
+        "seed": 3
+      },
+      "placement": {
+        "x": 886,
+        "h": 25
+      },
+      "order": 81,
+      "layer": "set"
+    },
+    {
+      "id": "commuter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4101,
+        "act": "walk",
+        "range": 200,
+        "archetype": "commuter"
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 82,
+      "layer": "playfield"
+    },
+    {
+      "id": "smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4102,
+        "act": "smoke",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 236,
+        "h": 0
+      },
+      "order": 83,
+      "layer": "playfield"
+    },
+    {
+      "id": "courier",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4103,
+        "act": "carry",
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 84,
+      "layer": "playfield"
+    },
+    {
+      "id": "washing",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4104,
+        "act": "stand",
+        "archetype": "elder",
+        "garb": "apron"
+      },
+      "placement": {
+        "x": 820,
+        "h": 0
+      },
+      "order": 85,
+      "layer": "playfield"
+    },
+    {
+      "id": "yard-cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 852,
+        "h": 28
+      },
+      "order": 86,
+      "layer": "playfield"
+    },
+    {
+      "id": "mail-reader",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4105,
+        "act": "read",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 386,
+        "h": 0
+      },
+      "order": 87,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lobby-wait",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4106,
+        "act": "phone",
+        "archetype": "teen"
+      },
+      "placement": {
+        "x": 474,
+        "h": 0
+      },
+      "order": 88,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "caretaker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4107,
+        "act": "sweep",
+        "archetype": "technician",
+        "garb": "hivis"
+      },
+      "placement": {
+        "x": 380,
+        "h": -76
+      },
+      "order": 89,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f1-cook",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4111,
+        "act": "vend"
+      },
+      "placement": {
+        "x": 310,
+        "h": 96
+      },
+      "order": 90,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f2-sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4112,
+        "act": "sleep",
+        "archetype": "sleeper"
+      },
+      "placement": {
+        "x": 400,
+        "h": 172
+      },
+      "order": 91,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f3-reader",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4113,
+        "act": "read",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 480,
+        "h": 248
+      },
+      "order": 92,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f3-kid",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4114,
+        "act": "play",
+        "archetype": "kid"
+      },
+      "placement": {
+        "x": 290,
+        "h": 248
+      },
+      "order": 93,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f5-tv",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4115,
+        "act": "sit",
+        "sitting": "front"
+      },
+      "placement": {
+        "x": 390,
+        "h": 400
+      },
+      "order": 94,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f6-stairs",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4116,
+        "act": "smoke",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 560,
+        "h": 476
+      },
+      "order": 95,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "f7-neighbour",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4117,
+        "act": "phone"
+      },
+      "placement": {
+        "x": 290,
+        "h": 552
+      },
+      "order": 96,
+      "layer": "playfield",
+      "attach": {
+        "instance": "block-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 97,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1260,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 98,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-basement",
+      "type": "level.floor",
+      "props": {
+        "width": 504,
+        "building": "capsule",
+        "label": "B · Service",
+        "indoor": true
+      },
+      "placement": {
+        "x": 260,
+        "h": -76
+      },
+      "order": 99,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-lobby",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "Lobby",
+        "entry": "door"
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 100,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-1",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "1/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 96
+      },
+      "order": 101,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-2",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "2/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 172
+      },
+      "order": 102,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-3",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "3/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 248
+      },
+      "order": 103,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-4",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "4/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 324
+      },
+      "order": 104,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-5",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "5/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 400
+      },
+      "order": 105,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-6",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "6/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 476
+      },
+      "order": 106,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-7",
+      "type": "level.floor",
+      "props": {
+        "width": 440,
+        "building": "capsule",
+        "label": "7/F"
+      },
+      "placement": {
+        "x": 260,
+        "h": 552
+      },
+      "order": 107,
+      "layer": "logic"
+    },
+    {
+      "id": "door-front",
+      "type": "level.door",
+      "props": {
+        "building": "capsule",
+        "width": 26
+      },
+      "placement": {
+        "x": 287,
+        "h": 0
+      },
+      "order": 108,
+      "layer": "logic"
+    },
+    {
+      "id": "door-exit",
+      "type": "level.door",
+      "props": {
+        "building": "capsule",
+        "width": 26
+      },
+      "placement": {
+        "x": 679,
+        "h": 0
+      },
+      "order": 109,
+      "layer": "logic"
+    }
+  ]
+}

@@ -82,7 +82,10 @@ Library holds the artwork explorer and the kit viewers. **Characters** edits the
 named looks, actions and robots with weights and tech/robot shares) above a lineup, an Archetypes sheet
 and a district mix sample; its preview selects switch styles without saving. **Style frames** pairs each
 district's card with its scenes on the stage, including the `downtown-next` proposal built from the
-building kit. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
+building kit. **Storyboard** edits the Storyboard document (`authoring/storyboard.json`, validated by
+`storyboard.ts`): the acts as strips of beats in order, each a place with its district, status (exists,
+rework, new), what happens, what it teaches and the scene or style-frame proposal that shows it; picking a
+beat puts its scene on the stage. The game does not read it. **Buildings**, **Vehicles** (ground, air, water and rail classes) and **Signs & light**
 show the building, vehicle and sign kits. Kit pieces are placed from **＋ Add artwork** on the Scene
 stage like any other artwork (ART-GUIDE §2 and §12); it opens the same artwork browser as the Library,
 with the same filters, and adds a piece with its Add button or a double-click. The level kit's floors, doors and building

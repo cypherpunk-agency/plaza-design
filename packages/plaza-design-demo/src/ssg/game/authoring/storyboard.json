@@ -1,0 +1,347 @@
+{
+  "version": 1,
+  "acts": [
+    {
+      "id": "prologue",
+      "title": "Prologue",
+      "arc": "An ordinary night shift at the harbor, the train home and a quiet morning in Capsule 7B: the life about to be deleted.",
+      "beats": [
+        {
+          "id": "p0",
+          "title": "Glide to the harbor",
+          "place": "Harbor at sundown",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "See the city, settle beside the workplace at sundown.",
+          "teaches": "Ambient priming only",
+          "note": "Cinematic, then a clear handover; no faction or name lesson."
+        },
+        {
+          "id": "p1",
+          "title": "Walk to the supervisor",
+          "place": "Work bay",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "Walk to the supervisor; establish the hierarchy.",
+          "teaches": "Movement",
+          "note": "One visible destination cue."
+        },
+        {
+          "id": "p2",
+          "title": "The work tag",
+          "place": "Supervisor desk",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "Receive a work tag and the first delivery assignment.",
+          "teaches": "Talk and interact",
+          "note": "A short instruction naming the visible crate and the receiving counter."
+        },
+        {
+          "id": "p3",
+          "title": "First delivery",
+          "place": "Bay to receiving counter",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "Carry a labelled parcel to the coworker.",
+          "teaches": "Pick up, carry, give",
+          "note": "A wrong recipient gives a useful response and returns the item."
+        },
+        {
+          "id": "p4",
+          "title": "The empty case",
+          "place": "Counter to trolley rack",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "Return the coworker’s empty transport case to its rack.",
+          "teaches": "Independent item practice",
+          "note": "Same verbs, no repeated control lesson."
+        },
+        {
+          "id": "p5",
+          "title": "The clamped trolley",
+          "place": "Trolley bay",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "Release a trolley wheel clamp, then move the trolley to the marked loading spot.",
+          "teaches": "Observation and ordinary machine state",
+          "note": "The clamp has a readable state; no puzzle timing."
+        },
+        {
+          "id": "p6",
+          "title": "Checkout",
+          "place": "Checkout",
+          "district": "harbor",
+          "scene": "harborShift",
+          "status": "exists",
+          "happens": "Return the work tag, check out and read the pay statement.",
+          "teaches": "Combining familiar actions",
+          "note": "The boss’s pressure is in the content: an unpaid minute on the statement."
+        },
+        {
+          "id": "p7-platform",
+          "title": "To the platform",
+          "place": "Harbor Metro platform",
+          "district": "harbor",
+          "scene": "harborStation",
+          "status": "exists",
+          "happens": "Walk to the homeward train and board it.",
+          "teaches": "Guided travel",
+          "note": "P7 in the plan, split by scene. Homebound boarding only."
+        },
+        {
+          "id": "p7-train",
+          "title": "The train home",
+          "place": "Line 0",
+          "district": "",
+          "scene": "train",
+          "status": "exists",
+          "happens": "Ride home and leave at Downtown; an optional passenger conversation.",
+          "teaches": "Guided travel",
+          "note": "Destination shown; no missed-train penalty or surprise destination."
+        },
+        {
+          "id": "p8-metro",
+          "title": "Downtown Metro",
+          "place": "Downtown Metro",
+          "district": "downtown",
+          "scene": "metro",
+          "status": "exists",
+          "happens": "Leave the train at Downtown and head up to the street.",
+          "teaches": "Orientation",
+          "note": "P8 in the plan, split by scene."
+        },
+        {
+          "id": "p8-street",
+          "title": "Breakfast at the stall",
+          "place": "Downtown street, the fixer’s noodle stall",
+          "district": "downtown",
+          "scene": "downtown",
+          "status": "exists",
+          "happens": "Collect the usual breakfast at the fixer’s stall, then go home.",
+          "teaches": "Orientation and exchange",
+          "note": "Ordinary identity pays and opens the building. The fixer is recognised later."
+        },
+        {
+          "id": "p9",
+          "title": "Home",
+          "place": "Capsule 7B",
+          "district": "downtown",
+          "scene": "capsule",
+          "status": "exists",
+          "happens": "Make a drink, greet Pixel, then rest.",
+          "teaches": "Household state and a deliberate transition",
+          "note": "Deletion begins only after the rest transition."
+        }
+      ]
+    },
+    {
+      "id": "act-1",
+      "title": "Act I",
+      "arc": "Stripped of identity, wanting it back and learning to hack around the obstacles; it ends in a DLV-9 robot body.",
+      "beats": [
+        {
+          "id": "act1-01",
+          "title": "Identity not found",
+          "place": "Capsule 7B",
+          "district": "downtown",
+          "scene": "capsule",
+          "status": "exists",
+          "happens": "The door panel refuses: identity not found.",
+          "teaches": "A1 changed circumstance",
+          "note": ""
+        },
+        {
+          "id": "act1-02",
+          "title": "Locked out",
+          "place": "Capsule lobby",
+          "district": "downtown",
+          "status": "new",
+          "happens": "CONCIERGE will not help; the emergency exit works; locked out.",
+          "teaches": "A2 recovery through ordinary action",
+          "note": "Style frame dt-capsule-lobby (2026-10-22).",
+          "scene": "dt-capsule-lobby"
+        },
+        {
+          "id": "act1-03",
+          "title": "The fixer remembers",
+          "place": "Street and noodle stall",
+          "district": "downtown",
+          "scene": "downtown",
+          "status": "exists",
+          "happens": "The fixer remembers you; the till refuses payment; a referral to Kessel.",
+          "teaches": "A2",
+          "note": ""
+        },
+        {
+          "id": "act1-04",
+          "title": "Please hold",
+          "place": "Registry service point",
+          "district": "downtown",
+          "status": "new",
+          "happens": "The official route: a ticket, a queue, “Please hold”, an appointment in 90 days.",
+          "teaches": "Motive: wanting it back",
+          "note": "Style frame dt-registry (2026-10-22).",
+          "scene": "dt-registry"
+        },
+        {
+          "id": "act1-05",
+          "title": "The implant",
+          "place": "Kessel’s room, behind the fixer’s kitchen",
+          "district": "downtown",
+          "status": "new",
+          "happens": "The implant; the privacy shutter’s `open`.",
+          "teaches": "A3 direct hacking",
+          "note": "Style frame dt-kessel-clinic (2026-10-22).",
+          "scene": "dt-kessel-clinic"
+        },
+        {
+          "id": "act1-06",
+          "title": "Back in",
+          "place": "Capsule lobby",
+          "district": "downtown",
+          "status": "new",
+          "happens": "Back in through the service latch: `release`.",
+          "teaches": "A4 independent practice",
+          "note": "Style frame dt-capsule-lobby (2026-10-22).",
+          "scene": "dt-capsule-lobby"
+        },
+        {
+          "id": "act1-07",
+          "title": "Food without identity",
+          "place": "FRESHCO supermarket or the corner shop",
+          "district": "downtown",
+          "scene": "dt-freshco",
+          "status": "rework",
+          "happens": "Food without identity; the self-checkout accuses you; an event → action wire.",
+          "teaches": "A5 (and A6 at home)",
+          "note": "FRESHCO supermarket would be new; the corner shop exists. Style frame dt-freshco (2026-10-22)."
+        },
+        {
+          "id": "act1-08",
+          "title": "The faulty sensor",
+          "place": "Shop or supermarket back room",
+          "district": "downtown",
+          "status": "new",
+          "happens": "A faulty sensor; cut the wire.",
+          "teaches": "A7",
+          "note": "Style frame dt-freshco (2026-10-22).",
+          "scene": "dt-freshco"
+        },
+        {
+          "id": "act1-09",
+          "title": "Moth’s parcel",
+          "place": "The back yard",
+          "district": "downtown",
+          "scene": "yard",
+          "status": "exists",
+          "happens": "Moth’s parcel: cut and rewire.",
+          "teaches": "A8",
+          "note": ""
+        },
+        {
+          "id": "act1-10",
+          "title": "Moth’s door",
+          "place": "Moth’s stairwell and flat",
+          "district": "downtown",
+          "scene": "dt-moth-stairwell",
+          "status": "rework",
+          "happens": "The note’s phrase opens the door; the desk; a first known connection.",
+          "teaches": "A9–A11",
+          "note": "The stairwell is new; the flat exists. Style frame dt-moth-stairwell (2026-10-22)."
+        },
+        {
+          "id": "act1-11",
+          "title": "It was deliberate",
+          "place": "The library",
+          "district": "downtown",
+          "scene": "library",
+          "status": "exists",
+          "happens": "A public terminal: the deletion was deliberate; there is a list.",
+          "teaches": "A12",
+          "note": ""
+        },
+        {
+          "id": "act1-12",
+          "title": "Restore by force",
+          "place": "Registry back office or substation",
+          "district": "downtown",
+          "status": "new",
+          "happens": "The combination challenge: restore the record by force; it trips an alarm.",
+          "teaches": "A13",
+          "note": "Style frame dt-registry-night (2026-10-22).",
+          "scene": "dt-registry-night"
+        },
+        {
+          "id": "act1-13",
+          "title": "The sweep",
+          "place": "A Downtown street at night, then Kessel’s room",
+          "district": "downtown",
+          "scene": "dt-sweep",
+          "status": "rework",
+          "happens": "A sweep collects unregistered persons; Kessel’s emergency transfer into DLV-9.",
+          "teaches": "Narrative only; no new mechanic",
+          "note": "The street’s sweep variant and Kessel’s room are new. Style frame dt-sweep (2026-10-22)."
+        }
+      ]
+    },
+    {
+      "id": "act-1-optional",
+      "title": "Act I · optional places",
+      "arc": "Breathers and side errands in Downtown between the required steps.",
+      "beats": [
+        {
+          "id": "opt-diner",
+          "title": "The 24h diner",
+          "place": "The 24h diner",
+          "district": "downtown",
+          "scene": "dt-diner",
+          "status": "new",
+          "happens": "Breakfast at dawn with the night shift; a Registry inspector at the counter.",
+          "note": "Optional place; style frame dt-diner (2026-10-22)."
+        },
+        {
+          "id": "opt-roofs",
+          "title": "The roofs",
+          "place": "Roofs and the billboard catwalk",
+          "district": "downtown",
+          "scene": "dt-roofs",
+          "status": "new",
+          "happens": "Downtown from above; the Registry Premium billboard; someone sheltering behind it.",
+          "note": "Optional place; style frame dt-roofs (2026-10-22)."
+        },
+        {
+          "id": "opt-substation",
+          "title": "The substation",
+          "place": "The substation",
+          "district": "downtown",
+          "scene": "dt-substation",
+          "status": "new",
+          "happens": "The block's power; a candidate for the Act I combination challenge.",
+          "note": "Optional place; style frame dt-substation (2026-10-22)."
+        }
+      ]
+    },
+    {
+      "id": "act-2",
+      "title": "Act II",
+      "arc": "Waking up as DLV-9; the goal is the body.",
+      "beats": [
+        {
+          "id": "act2-01",
+          "title": "Wake up as DLV-9",
+          "place": "To be decided",
+          "district": "",
+          "status": "new",
+          "happens": "Wake up as DLV-9; the goal is the body.",
+          "note": "Placeholder until Act II is planned."
+        }
+      ]
+    }
+  ]
+}

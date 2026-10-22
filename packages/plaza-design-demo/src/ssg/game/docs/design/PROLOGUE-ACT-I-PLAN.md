@@ -67,7 +67,36 @@ through working badges and transactions; avoid delivering its history in the shi
 | P8 | Short route with optional nearby looks. Ordinary identity opens the building; advanced interiors stay outside this episode | Fixer met, service recognition and home arrival |
 | P9 | No meal economy or survival requirement. Rest follows the short required routine; optional details remain optional | Familiar household states and prologue completion; deletion begins only after transition |
 
-## Act I matrix
+## Revised Act I route (2026-10-22)
+
+Agreed with Tommi: Act I is about being stripped of identity, wanting it back and learning
+hacking to circumvent the obstacles. It shows a different Downtown place at each step and ends
+with an emergency transfer into a DLV-9 robot body (see STORY.md, "Decided 2026-10-22").
+The teaching spine below is kept; the encounters move to the new places. The matrix after this
+section is the earlier version and is to be reworked to this route; its access, recovery and
+dependency rules still apply.
+
+| Step | Place (✓ scene exists · ○ new) | What happens | Teaches (from the matrix) |
+| --- | --- | --- | --- |
+| 1 | Capsule 7B ✓ | The door panel refuses: identity not found | A1 changed circumstance |
+| 2 | Capsule lobby ○ | CONCIERGE will not help; the emergency exit works; locked out | A2 recovery through ordinary action |
+| 3 | Street and noodle stall ✓ | The fixer remembers you; the till refuses payment; referral to Kessel | A2 |
+| 4 | Registry service point ○ | The official route: ticket, queue, "Please hold", an appointment in 90 days | Motive: wanting it back |
+| 5 | Kessel's room, behind the fixer's kitchen ○ | The implant; the privacy shutter's `open` | A3 direct hacking |
+| 6 | Capsule lobby ○ | Back in through the service latch, `release` | A4 independent practice |
+| 7 | FRESHCO supermarket ○ or the corner shop ✓ | Food without identity; the self-checkout accuses you; event → action wire | A5 (and A6 at home) |
+| 8 | Shop or supermarket back room ○ | A faulty sensor; cut the wire | A7 |
+| 9 | The back yard ✓ | Moth's parcel: cut and rewire | A8 |
+| 10 | Moth's stairwell ○ and flat ✓ | The note's phrase opens the door; the desk; a first known connection | A9–A11 |
+| 11 | The library ✓ | A public terminal: the deletion was deliberate; there is a list | A12 |
+| 12 | Registry back office or substation ○ | The combination challenge: restore the record by force; it trips an alarm | A13 |
+| 13 | A Downtown street at night ✓ (sweep variant ○) → Kessel's room ○ | A sweep collects unregistered persons; Kessel's emergency transfer into DLV-9 | Narrative only; no new mechanic |
+
+Optional places that can carry breathers or side errands: the 24h diner, the billboard catwalk
+and Downtown roofs, the police precinct. The harbor finale is not part of this route; it may
+return as Act I's or the final act's finale. Whether Moth is met in Act I is open.
+
+## Act I matrix (earlier version)
 
 The sequence alternates instruction with independent action and story. Familiar places
 change meaning instead of being replaced by new districts at every step.

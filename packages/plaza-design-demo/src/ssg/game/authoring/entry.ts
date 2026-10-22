@@ -92,6 +92,8 @@ import { mountSignageWorkbench } from './signage-workbench';
 import { applyPeople, validatePeople } from '../art/characters/people-source';
 import { validatePresets } from './kit-presets';
 import { mountPeopleAuthoring } from './people-authoring';
+import { validateStoryboard } from './storyboard';
+import { mountStoryboard, type StoryboardSession } from './storyboard-workbench';
 
 
 
@@ -131,7 +133,7 @@ async function start() {
   await document.fonts.ready;
 
   const initialEnvironment = { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' };
-  const styleFrameSession: StyleFrameSession = {};
+  const styleFrameSession: StyleFrameSession = {}, storyboardSession: StoryboardSession = {};
   const native = createNativePreview({...nativeSceneAdapters,...proposalAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>{const catalogue=request.documents?.get('authored-scenes') as SceneCatalogue|undefined,entry=catalogue?.scenes.find(s=>s.scene.id===id);if(!entry)return;return{validate:value=>{const c=art.validate(value);if(c.scene!==id)throw new Error('Authored composition identity');return c;},definition:(composition,_state,options)=>declaredScene(entry.scene,composition,entry.gameplay,options,entry.devices)};}), sequences = createSequencePreview(art);
 
   const mapSession: WorldPanelSession = {};
@@ -196,6 +198,7 @@ async function start() {
       if(document.kind==='profiles'){if(document.id!=='play-profiles')throw new Error('Unsupported profiles document');validatePendingPlayProfiles(document.value,validationSnapshot(documents));}
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
+      if(document.kind==='storyboard'){if(document.id!=='storyboard')throw new Error('Unsupported storyboard document');validateStoryboard(document.value,new Set(documents.filter(d=>d.kind==='composition').map(d=>d.id)));}
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroLocks(validateMetroSource(document.value),(validationSnapshot(documents).get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}
       if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
       if(document.kind==='rules')validatePendingRules(document.id,document.value,validationSnapshot(documents));
@@ -257,6 +260,9 @@ async function start() {
 
       { id: 'style-frames', area: 'library', beside: true, label: 'Style frames', title: 'Style frames · each district’s card, people mix and scenes · read-only', documentDependent: true, mount(panel, context) {
         return mountStyleFrames(panel, context, native.render, initialEnvironment, styleFrameSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
+      } },
+      { id: 'storyboard', area: 'library', beside: true, label: 'Storyboard', title: 'Storyboard · the acts as places in order, each with its scene or style frame', authoring: true, documentDependent: true, documentIds: ['storyboard'], primaryDocumentId: 'storyboard', mount(panel, context) {
+        return mountStoryboard(panel, context, native.render, initialEnvironment, storyboardSession, scene => proposalScene(scene)?.label ?? (isSceneId(scene) ? sceneTitle(SCENES[scene]) : scene));
       } },
       { id: 'vehicles', area: 'library', label: 'Vehicles', title: 'Vehicle workbench · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountVehicleWorkbench(panel); } },
       { id: 'buildings', area: 'library', label: 'Buildings', title: 'Building kit · fronts and rows · read-only', mount(panel) { panel.classList.add('vehicle-workbench'); return mountBuildingWorkbench(panel); } },

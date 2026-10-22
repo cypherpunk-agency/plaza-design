@@ -1,0 +1,768 @@
+{
+  "version": 1,
+  "scene": "dt-roofs",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 1700,
+        "seed": 81,
+        "parallax": 0.2,
+        "minHeight": 300,
+        "maxHeight": 560,
+        "haze": 0.65,
+        "lit": 0.3,
+        "signs": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 1.1,
+        "fill": "#0a0610",
+        "edge": 0.12,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 560,
+        "h": 40,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 1600,
+        "seed": 82,
+        "parallax": 0.45,
+        "minHeight": 220,
+        "maxHeight": 420,
+        "haze": 0.35,
+        "lit": 0.35,
+        "signs": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "gap-bc",
+      "type": "building.alley",
+      "props": {
+        "width": 30,
+        "height": 340,
+        "depth": 0.7,
+        "light": "red",
+        "escape": "none",
+        "bins": true,
+        "steam": true,
+        "cables": true,
+        "yard": false,
+        "seed": 13
+      },
+      "placement": {
+        "x": 620,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 262,
+        "floors": 3,
+        "storey": 66,
+        "ground": 76,
+        "skin": "brick",
+        "roof": "flat",
+        "gear": [],
+        "escape": "none",
+        "density": 0.7,
+        "seed": 501,
+        "top": 0,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 20,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 70,
+            "width": 90,
+            "tenant": "repair"
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 358,
+        "floors": 4,
+        "storey": 66,
+        "ground": 76,
+        "skin": "tenement",
+        "roof": "flat",
+        "gear": [],
+        "escape": "right",
+        "density": 0.7,
+        "seed": 502,
+        "top": 0,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 20,
+            "width": 80,
+            "tenant": "phones"
+          },
+          {
+            "kind": "door",
+            "from": 140,
+            "width": 24
+          },
+          {
+            "kind": "shutter",
+            "from": 220,
+            "width": 80
+          }
+        ]
+      },
+      "placement": {
+        "x": 262,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 310,
+        "floors": 4,
+        "storey": 66,
+        "ground": 76,
+        "skin": "concrete",
+        "roof": "flat",
+        "gear": [],
+        "escape": "none",
+        "density": 0.7,
+        "seed": 503,
+        "top": 0,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 14,
+            "width": 90,
+            "tenant": "loans"
+          },
+          {
+            "kind": "door",
+            "from": 150,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 650,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-d",
+      "type": "building.front",
+      "props": {
+        "width": 300,
+        "floors": 2,
+        "storey": 66,
+        "ground": 76,
+        "skin": "panel",
+        "roof": "flat",
+        "gear": [],
+        "escape": "none",
+        "density": 0.7,
+        "seed": 504,
+        "top": 0,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 20,
+            "width": 80
+          },
+          {
+            "kind": "door",
+            "from": 200,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "roof-a",
+      "type": "everyday.roof-deck",
+      "props": {
+        "width": 262,
+        "parapet": 8,
+        "units": 2,
+        "condensers": false,
+        "tank": "none",
+        "hut": "left",
+        "vents": 1,
+        "dishes": 1,
+        "cables": true,
+        "puddles": true,
+        "sign": "NO ACCESS",
+        "seed": 11
+      },
+      "placement": {
+        "x": 0,
+        "h": 274
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "roof-b",
+      "type": "everyday.roof-deck",
+      "props": {
+        "width": 358,
+        "parapet": 8,
+        "units": 3,
+        "condensers": false,
+        "tank": "right",
+        "hut": "none",
+        "vents": 2,
+        "dishes": 1,
+        "cables": true,
+        "puddles": true,
+        "sign": "",
+        "hangout": "middle",
+        "seed": 12
+      },
+      "placement": {
+        "x": 262,
+        "h": 340
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "roof-c",
+      "type": "everyday.roof-deck",
+      "props": {
+        "width": 310,
+        "parapet": 8,
+        "units": 0,
+        "condensers": false,
+        "tank": "none",
+        "hut": "none",
+        "vents": 1,
+        "dishes": 0,
+        "cables": true,
+        "puddles": true,
+        "sign": "",
+        "seed": 13
+      },
+      "placement": {
+        "x": 650,
+        "h": 340
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "roof-d",
+      "type": "everyday.roof-deck",
+      "props": {
+        "width": 300,
+        "parapet": 6,
+        "units": 3,
+        "condensers": true,
+        "tank": "left",
+        "hut": "right",
+        "vents": 2,
+        "dishes": 1,
+        "cables": true,
+        "puddles": true,
+        "sign": "NO ACCESS",
+        "seed": 14
+      },
+      "placement": {
+        "x": 960,
+        "h": 208
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "plank",
+      "type": "everyday.roof-plank",
+      "props": {
+        "width": 30,
+        "kind": "plank",
+        "rail": false,
+        "sag": 1,
+        "seed": 1
+      },
+      "placement": {
+        "x": 620,
+        "h": 340
+      },
+      "order": 14,
+      "layer": "set"
+    },
+    {
+      "id": "billboard",
+      "type": "everyday.billboard",
+      "props": {
+        "width": 260,
+        "panel": 110,
+        "legs": 40,
+        "ad": "registry",
+        "title": "",
+        "lines": "",
+        "small": "",
+        "gold": "#d8b45a",
+        "back": "#070605",
+        "lamps": 4,
+        "dead": 3,
+        "ladder": "none",
+        "shelter": true,
+        "seed": 2
+      },
+      "placement": {
+        "x": 690,
+        "h": 340
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "ladder-ab",
+      "type": "level.stairs",
+      "props": {
+        "run": 14,
+        "rise": 66,
+        "style": "steel-ladder"
+      },
+      "placement": {
+        "x": 254,
+        "h": 274
+      },
+      "order": 16,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-cat",
+      "type": "level.stairs",
+      "props": {
+        "run": 14,
+        "rise": 40,
+        "style": "steel-ladder"
+      },
+      "placement": {
+        "x": 684,
+        "h": 340
+      },
+      "order": 17,
+      "layer": "set"
+    },
+    {
+      "id": "ladder-cd",
+      "type": "level.stairs",
+      "props": {
+        "run": 14,
+        "rise": 132,
+        "style": "steel-ladder"
+      },
+      "placement": {
+        "x": 968,
+        "h": 208
+      },
+      "order": 18,
+      "layer": "set"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1300,
+        "ground": "#040302",
+        "edge": "#ffb35a",
+        "sheen": 0.6
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 0
+      },
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1080,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop"
+    },
+    {
+      "id": "shelter-sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5101,
+        "act": "sit",
+        "archetype": "drifter",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 716,
+        "h": 340
+      },
+      "order": 23,
+      "layer": "playfield"
+    },
+    {
+      "id": "hut-smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5102,
+        "act": "smoke",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 66,
+        "h": 274
+      },
+      "order": 24,
+      "layer": "playfield"
+    },
+    {
+      "id": "ac-tech",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5103,
+        "act": "stand",
+        "archetype": "technician"
+      },
+      "placement": {
+        "x": 330,
+        "h": 340
+      },
+      "order": 25,
+      "layer": "playfield"
+    },
+    {
+      "id": "roof-teen",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5104,
+        "act": "phone",
+        "archetype": "teen",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 424,
+        "h": 340
+      },
+      "order": 26,
+      "layer": "playfield"
+    },
+    {
+      "id": "roof-friend",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5106,
+        "act": "talk",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 460,
+        "h": 340,
+        "facing": -1
+      },
+      "order": 27,
+      "layer": "playfield"
+    },
+    {
+      "id": "catwalk-painter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 5105,
+        "act": "walk",
+        "archetype": "dockworker",
+        "range": 160
+      },
+      "placement": {
+        "x": 760,
+        "h": 380
+      },
+      "order": 28,
+      "layer": "playfield"
+    },
+    {
+      "id": "roof-cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 1100,
+        "h": 208
+      },
+      "order": 29,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "stand"
+      },
+      "placement": {
+        "x": 760,
+        "h": 498
+      },
+      "order": 30,
+      "layer": "playfield"
+    },
+    {
+      "id": "pigeon-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "pigeon",
+        "depth": "play",
+        "act": "walk",
+        "range": 20
+      },
+      "placement": {
+        "x": 800,
+        "h": 498
+      },
+      "order": 31,
+      "layer": "playfield"
+    },
+    {
+      "id": "drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "minidrone",
+        "depth": "play",
+        "act": "hover"
+      },
+      "placement": {
+        "x": 1010,
+        "h": 400
+      },
+      "order": 32,
+      "layer": "playfield"
+    },
+    {
+      "id": "street-walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "seed": 5121,
+        "act": "walk",
+        "range": 400
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 140,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1260,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-a",
+      "type": "level.floor",
+      "props": {
+        "width": 266,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 274
+      },
+      "order": 36,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-bc",
+      "type": "level.floor",
+      "props": {
+        "width": 728,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 246,
+        "h": 340
+      },
+      "order": 37,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-catwalk",
+      "type": "level.floor",
+      "props": {
+        "width": 272,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 684,
+        "h": 380
+      },
+      "order": 38,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-d",
+      "type": "level.floor",
+      "props": {
+        "width": 300,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 960,
+        "h": 208
+      },
+      "order": 39,
+      "layer": "logic"
+    }
+  ]
+}

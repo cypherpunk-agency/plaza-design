@@ -1,0 +1,1197 @@
+{
+  "version": 1,
+  "scene": "dt-freshco",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 1600,
+        "seed": 61,
+        "parallax": 0.2,
+        "minHeight": 200,
+        "maxHeight": 380,
+        "haze": 0.6,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.8,
+        "fill": "#0a0610",
+        "edge": 0.1,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 520,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 1500,
+        "seed": 62,
+        "parallax": 0.5,
+        "minHeight": 160,
+        "maxHeight": 300,
+        "haze": 0.3,
+        "lit": 0.35,
+        "signs": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 12,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 50,
+            "width": 80,
+            "tenant": "pharmacy"
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.6,
+        "seed": 201,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "freshco-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "freshco"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "logic"
+    },
+    {
+      "id": "freshco-body",
+      "type": "building.front",
+      "props": {
+        "width": 640,
+        "floors": 1,
+        "storey": 76,
+        "ground": 92,
+        "skin": "panel",
+        "windows": "punched",
+        "roof": "parapet",
+        "gear": [],
+        "fascia": false,
+        "bays": [],
+        "escape": "none",
+        "balconies": "none",
+        "density": 0.5,
+        "lit": 0.6,
+        "seed": 202,
+        "top": 0,
+        "rooms": "cold"
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "freshco-front",
+      "type": "everyday.freshco-front",
+      "props": {
+        "width": 640,
+        "height": 92,
+        "logo": "FRESHCO",
+        "tagline": "GROCERIES · OPEN 06–24",
+        "door": "left",
+        "gate": true,
+        "posters": "MEMBER PRICES|PRICES SET DAILY|ID REQUIRED AT CHECKOUT",
+        "index": true,
+        "lit": 1,
+        "seed": 3
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "alley",
+      "type": "building.alley",
+      "props": {
+        "width": 34,
+        "height": 420,
+        "depth": 0.6,
+        "light": "warm",
+        "escape": "none",
+        "bins": true,
+        "steam": true,
+        "cables": true,
+        "yard": false,
+        "seed": 5
+      },
+      "placement": {
+        "x": 790,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 180,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 70,
+            "tenant": "laundry"
+          },
+          {
+            "kind": "door",
+            "from": 120,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "windows": "curtained",
+        "escape": "right",
+        "density": 0.8,
+        "seed": 203,
+        "floors": 6,
+        "top": 0
+      },
+      "placement": {
+        "x": 824,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 200,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 12,
+            "width": 60
+          },
+          {
+            "kind": "glass",
+            "from": 100,
+            "width": 80,
+            "tenant": "pawn"
+          }
+        ],
+        "skin": "concrete",
+        "density": 0.6,
+        "seed": 204,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1004,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "roof",
+      "type": "everyday.roof-deck",
+      "props": {
+        "width": 640,
+        "parapet": 6,
+        "units": 4,
+        "condensers": true,
+        "tank": "right",
+        "hut": "hatch",
+        "vents": 3,
+        "dishes": 1,
+        "cables": true,
+        "puddles": true,
+        "sign": "",
+        "seed": 7
+      },
+      "placement": {
+        "x": 150,
+        "h": 168
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1204,
+        "ground": "#040302",
+        "edge": "#ffb35a",
+        "sheen": 0.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 0
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-2",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 2
+      },
+      "placement": {
+        "x": 980,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "backdrop"
+    },
+    {
+      "id": "trolleys",
+      "type": "everyday.trolleys",
+      "props": {
+        "count": 6,
+        "loose": 1,
+        "handle": "#b81f2a",
+        "bay": true,
+        "sign": "RETURN TROLLEYS HERE",
+        "seed": 2
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cam-door",
+      "type": "sign.camera",
+      "props": {
+        "pole": false
+      },
+      "placement": {
+        "x": 160,
+        "h": 104
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "freshco-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "freshco"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "logic"
+    },
+    {
+      "id": "shop-floor",
+      "type": "interior.freshco-floor",
+      "props": {
+        "width": 640,
+        "height": 92,
+        "sections": [
+          {
+            "kind": "entrance",
+            "width": 80,
+            "sign": ""
+          },
+          {
+            "kind": "tobacco",
+            "width": 110,
+            "sign": ""
+          },
+          {
+            "kind": "produce",
+            "width": 100,
+            "sign": ""
+          },
+          {
+            "kind": "shelves",
+            "width": 90,
+            "sign": ""
+          },
+          {
+            "kind": "shelves",
+            "width": 80,
+            "sign": ""
+          },
+          {
+            "kind": "chiller",
+            "width": 110,
+            "sign": "DAIRY · CHILLED"
+          },
+          {
+            "kind": "staff",
+            "width": 70,
+            "sign": ""
+          }
+        ],
+        "light": "tube",
+        "wall": "#2a2f2c",
+        "brand": "#b81f2a",
+        "screen": "CUSTOMER VERIFICATION IN PROGRESS",
+        "cameras": true,
+        "seed": 4
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stockroom",
+      "type": "interior.stockroom",
+      "props": {
+        "width": 640,
+        "height": 76,
+        "racks": 3,
+        "boxes": 0.75,
+        "staff": true,
+        "monitors": 6,
+        "notice": "LOSSES ARE DEDUCTED FROM WAGES",
+        "light": "flicker",
+        "wall": "#262826",
+        "brand": "#b81f2a",
+        "seed": 9
+      },
+      "placement": {
+        "x": 150,
+        "h": 92
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 640,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-1",
+      "type": "level.slab",
+      "props": {
+        "width": 640,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 150,
+        "h": 92
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-2",
+      "type": "level.slab",
+      "props": {
+        "width": 640,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 150,
+        "h": 168
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 116,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 142,
+        "h": 60
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 176,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 790,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gate",
+      "type": "interior.security-gate",
+      "props": {
+        "lanes": 1,
+        "lane": 24,
+        "height": 46,
+        "state": "cycle",
+        "label": "",
+        "seed": 2
+      },
+      "placement": {
+        "x": 164,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "checkouts",
+      "type": "interior.self-checkouts",
+      "props": {
+        "count": 4,
+        "spacing": 40,
+        "alarm": 4,
+        "message": "UNEXPECTED ITEM|IDENTITY NOT FOUND",
+        "header": "SELF CHECKOUT",
+        "gantry": 82,
+        "brand": "#b81f2a",
+        "attendant": true,
+        "seed": 1
+      },
+      "placement": {
+        "x": 244,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "fruit",
+      "type": "interior.fruit-display",
+      "props": {
+        "width": 84,
+        "tiers": 3,
+        "fruits": [
+          {
+            "kind": "oranges",
+            "price": "3.10"
+          },
+          {
+            "kind": "apples",
+            "price": "2.40"
+          },
+          {
+            "kind": "bananas",
+            "price": "1.90"
+          },
+          {
+            "kind": "limes",
+            "price": "0.60"
+          },
+          {
+            "kind": "grapes",
+            "price": "4.80"
+          },
+          {
+            "kind": "tomatoes",
+            "price": "2.20"
+          }
+        ],
+        "mist": true,
+        "scale": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 442,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "aisle-3",
+      "type": "interior.aisle-end",
+      "props": {
+        "number": 3,
+        "label": "TINS · RICE",
+        "promo": "LIMIT 2",
+        "width": 36,
+        "height": 46,
+        "blade": 82,
+        "brand": "#b81f2a",
+        "seed": 3
+      },
+      "placement": {
+        "x": 536,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "aisle-4",
+      "type": "interior.aisle-end",
+      "props": {
+        "number": 4,
+        "label": "HOUSEHOLD",
+        "promo": "",
+        "width": 36,
+        "height": 46,
+        "blade": 82,
+        "brand": "#b81f2a",
+        "seed": 4
+      },
+      "placement": {
+        "x": 588,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs",
+      "type": "level.stairs",
+      "props": {
+        "run": 60,
+        "rise": 92,
+        "style": "concrete"
+      },
+      "placement": {
+        "x": 726,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "roof-ladder",
+      "type": "level.stairs",
+      "props": {
+        "run": 14,
+        "rise": 76,
+        "style": "steel-ladder"
+      },
+      "placement": {
+        "x": 730,
+        "h": 92
+      },
+      "order": 33,
+      "layer": "set",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "guard",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3101,
+        "act": "stand",
+        "archetype": "guard"
+      },
+      "placement": {
+        "x": 214,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "checkout-elder",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3102,
+        "act": "wait",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 256,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "checkout-teen",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3103,
+        "act": "phone",
+        "archetype": "teen"
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "fruit-shopper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3104,
+        "act": "read",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 500,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "aisle-kid",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3105,
+        "act": "stand",
+        "archetype": "kid"
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "aisle-courier",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3106,
+        "act": "walk",
+        "archetype": "courier",
+        "range": 120
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stocker",
+      "type": "character.resident",
+      "props": {
+        "kind": "loader",
+        "depth": "play",
+        "act": "carry"
+      },
+      "placement": {
+        "x": 672,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "floor-cleaner",
+      "type": "character.resident",
+      "props": {
+        "kind": "litterbot",
+        "depth": "play",
+        "act": "sweep",
+        "range": 160
+      },
+      "placement": {
+        "x": 380,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "break-sitter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3111,
+        "act": "sit",
+        "archetype": "vendor",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 389,
+        "h": 92
+      },
+      "order": 42,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "break-phone",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3112,
+        "act": "phone",
+        "archetype": "student"
+      },
+      "placement": {
+        "x": 340,
+        "h": 92
+      },
+      "order": 43,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "manager",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3113,
+        "act": "sit",
+        "archetype": "office",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 531,
+        "h": 92
+      },
+      "order": 44,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stock-bot",
+      "type": "character.resident",
+      "props": {
+        "kind": "android",
+        "depth": "play",
+        "act": "carry"
+      },
+      "placement": {
+        "x": 250,
+        "h": 92
+      },
+      "order": 45,
+      "layer": "playfield",
+      "attach": {
+        "instance": "freshco-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "door-drifter",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3121,
+        "act": "sit",
+        "archetype": "drifter",
+        "sitting": "front"
+      },
+      "placement": {
+        "x": 128,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "playfield"
+    },
+    {
+      "id": "door-drone",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "scan"
+      },
+      "placement": {
+        "x": 196,
+        "h": 70
+      },
+      "order": 47,
+      "layer": "playfield"
+    },
+    {
+      "id": "bag-shopper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3122,
+        "act": "walk",
+        "archetype": "shopper",
+        "range": 260
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 48,
+      "layer": "playfield"
+    },
+    {
+      "id": "street-courier",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3123,
+        "act": "walk",
+        "archetype": "courier",
+        "range": -260
+      },
+      "placement": {
+        "x": 960,
+        "h": 0
+      },
+      "order": 49,
+      "layer": "playfield"
+    },
+    {
+      "id": "laundry-smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 3124,
+        "act": "smoke"
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 50,
+      "layer": "playfield"
+    },
+    {
+      "id": "back-walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "seed": 3125,
+        "act": "walk",
+        "range": 500
+      },
+      "placement": {
+        "x": 400,
+        "h": 0
+      },
+      "order": 51,
+      "layer": "playfield"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 80,
+        "h": 0
+      },
+      "order": 52,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1204,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 53,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-shop",
+      "type": "level.floor",
+      "props": {
+        "width": 640,
+        "building": "freshco",
+        "label": "Shop floor"
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 54,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-stock",
+      "type": "level.floor",
+      "props": {
+        "width": 640,
+        "building": "freshco",
+        "label": "Stockroom"
+      },
+      "placement": {
+        "x": 150,
+        "h": 92
+      },
+      "order": 55,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-roof",
+      "type": "level.floor",
+      "props": {
+        "width": 640,
+        "building": "freshco",
+        "label": "Roof"
+      },
+      "placement": {
+        "x": 150,
+        "h": 168
+      },
+      "order": 56,
+      "layer": "logic"
+    }
+  ]
+}

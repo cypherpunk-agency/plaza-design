@@ -63,7 +63,7 @@ ghosts tip well. Knows more than he says; owes Moth a favour.
 you meet; it remembers how you treated it.
 
 **DLV-9.** A lost delivery robot with one glove. Lonely, loyal once helped; the signature that
-opens the market gate.
+opens the market gate. Its model is the body you wake up in at the start of Act II (2026-10-22).
 
 **J.** Lives in the Downtown penthouse behind a cryptex. A Registry insider who wrote the
 deletion list and kept a copy as insurance. Afraid, funny, not a good person. Holds a root
@@ -87,18 +87,30 @@ until the music stops.
 excellent posture. Sincere, which is worse.
 
 **Dr. Kessel.** Ripperdoc in the night clinic. Fitted Moth's deck. Patches up Ghosts, sells
-their data to stay open. Guilty about it.
+their data to stay open. Guilty about it. In Act I he works from a storeroom behind the fixer's
+kitchen, fits your implant, and at the end moves you into a robot body before the city takes
+your unregistered one.
 
 **PENNY.** NEOBANK's chatbot, with feelings. Sees every account, including the deleted ones
 the bank still charges fees to.
 
 ## The acts
 
-**Act I: Where is Moth?** (built and planned: Capsule 7B → Downtown → the yard → Moth's
-computer → the market gate → laundromat → metro → harbor)
-You get out of your flat, earn your legs on the street, follow Moth's breadcrumbs, and find
-Moth at the harbor. The reveal: you were deleted on purpose; the proof is the list, split into
-seven root fragments; the Registry knows Moth has it.
+**Act I: Erased** (revised 2026-10-22; the route is in
+[PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md#revised-act-i-route-2026-10-22))
+You are stripped of your identity, want it back, and learn hacking to get around every
+obstacle the city puts in the way. Act I stays in Downtown and shows a different Downtown place
+at each step: the capsule lobby, the noodle stall, the Registry service point, Kessel's room
+behind the fixer's kitchen, the supermarket, the yard, Moth's stairwell, the library, the
+Registry back office or substation. A forced attempt to restore your record trips an alarm. A
+sweep collects "unregistered persons", and an unregistered body is the city's to take. Kessel
+moves your mind into a DLV-9 delivery robot in an emergency transfer, and your body is taken.
+
+(The earlier Act I, built and still running: Capsule 7B → Downtown → the yard → Moth's
+computer → the market gate → laundromat → metro → harbor, with Moth found at the harbor.)
+
+**Act II goal: your body.** Recover the human body. Fragments, factions and the list support
+that goal with evidence, access or favours rather than standing as a separate collection.
 
 **Act II: Seven fragments.** The city opens up. Each fragment sits with a faction or a place,
 and each faction wants something for it:
@@ -134,3 +146,18 @@ Registry's verification off for one night.
 6. **Downtown's finale** stays the DLV-9 gate puzzle.
 7. **Next story level:** Moth's place (Level 3).
 8. **Sudo mode** (`?sudo`) stays public.
+
+## Decided (Tommi, 2026-10-22)
+
+1. **Act I arc:** stripped of identity → wants it back → learns hacking to circumvent the
+   obstacles. It is rewritten to show many different Downtown places; Downtown's places are
+   developed alongside (style frames first).
+2. **End of Act I:** an emergency transfer into a robot body by a ripperdoc (Dr. Kessel),
+   because the deleted body counts as unregistered and is collected.
+3. **The robot body is DLV-9's model** for now.
+4. **Act II's goal is the body.**
+5. **The harbor finale** may end Act I or the final act; undecided.
+6. **Open:** whether Moth is found in Act I or remains Act II's lead.
+
+These supersede, where they differ, the Act I finale and transition proposals in
+PROGRESSION-CONCEPT.md and the Act I matrix in PROLOGUE-ACT-I-PLAN.md.

@@ -26,6 +26,7 @@ import {gameplayScenes} from './gameplay-scenes';
 import {validatePlayFixtures} from './play-fixtures';
 import {validatePeople} from '../art/characters/people-source';
 import {validatePresets} from './kit-presets';
+import {validateStoryboard} from './storyboard';
 import {validatePendingPlayProfiles} from './play-profile-source';
 import {validatePlayProfiles} from '../runtime/play-profiles';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
@@ -68,6 +69,8 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'play-profiles',file:'runtime/play-profiles.json',kind:'profiles',validate:validatePlayProfiles,validateContext:validatePendingPlayProfiles},
   {id:'kit-presets',file:'art/presets/kit-presets.json',kind:'presets',validate:value=>validatePresets(value,art)},
   {id:'people',file:'art/characters/people.json',kind:'people',validate:validatePeople},
+  // Beats' scenes must be composition documents: real scenes or style-frame proposals.
+  {id:'storyboard',file:'authoring/storyboard.json',kind:'storyboard',validate:value=>validateStoryboard(value),validateContext:(value,documents)=>validateStoryboard(value,new Set(sourceDocuments.filter(d=>d.kind==='composition'&&documents.has(d.id)).map(d=>d.id)))},
   {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource,validateContext:(value,documents)=>{validateMetroLocks(validateMetroSource(value),(documents.get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
   {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'conversations',validate:validateBotReactions},

@@ -1,0 +1,961 @@
+{
+  "version": 1,
+  "scene": "dt-kessel-clinic",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1720,
+        "seed": 41,
+        "parallax": 0.2,
+        "minHeight": 240,
+        "maxHeight": 460,
+        "haze": 0.6,
+        "lit": 0.4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "traffic": true
+      },
+      "placement": {
+        "x": 504,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1520,
+        "seed": 43,
+        "parallax": 0.45,
+        "minHeight": 180,
+        "maxHeight": 340,
+        "haze": 0.3,
+        "lit": 0.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "ground",
+      "type": "level.ground-section",
+      "props": {
+        "width": 1120,
+        "depth": 120,
+        "seed": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "floors": 7,
+        "storey": 66,
+        "ground": 76,
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "escape": "right",
+        "density": 0.7,
+        "seed": 901,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 60,
+            "tenant": "pharmacy"
+          },
+          {
+            "kind": "door",
+            "from": 100,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "floors": 8,
+        "storey": 66,
+        "ground": 76,
+        "skin": "panel",
+        "windows": "framed",
+        "density": 0.6,
+        "seed": 902,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 10,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 50,
+            "width": 80,
+            "tenant": "repair"
+          }
+        ]
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley",
+      "type": "building.alley",
+      "props": {
+        "width": 50,
+        "height": 480,
+        "depth": 0.7,
+        "light": "red",
+        "escape": "none",
+        "bins": true,
+        "steam": false,
+        "cables": true,
+        "yard": true,
+        "seed": 12
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "floors": 7,
+        "storey": 66,
+        "ground": 76,
+        "skin": "concrete",
+        "windows": "punched",
+        "roof": "stepped",
+        "density": 0.5,
+        "seed": 903,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 12,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 910,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1120,
+        "ground": "#050302",
+        "edge": "#ff8800",
+        "sheen": 0.7,
+        "kerb": true,
+        "seed": 7
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "count": 1,
+        "reach": 0.9,
+        "seed": 4
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stall-wall",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 140,
+        "height": 104,
+        "kind": "kitchen",
+        "wall": "#3a2a1c",
+        "dado": "#2a1c10",
+        "floor": "tile",
+        "light": "off",
+        "lights": 0,
+        "peel": 0.1,
+        "grime": 0.6,
+        "seed": 2
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "noodle-stall",
+      "type": "downtown.stall",
+      "props": {
+        "width": 140,
+        "mask": []
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stall-pool",
+      "type": "downtown.stall-pool",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "fixer",
+      "type": "downtown.fixer",
+      "props": {},
+      "placement": {
+        "x": 374,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "playfield"
+    },
+    {
+      "id": "stall-counter",
+      "type": "downtown.counter",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "playfield",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cash-only",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 34,
+        "height": 24,
+        "header": "NOTICE",
+        "lines": [
+          "CASH",
+          "ONLY"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 420,
+        "h": 62
+      },
+      "order": 17,
+      "layer": "backdrop"
+    },
+    {
+      "id": "annex-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "annex"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "logic"
+    },
+    {
+      "id": "kitchen",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 150,
+        "height": 100,
+        "kind": "kitchen",
+        "floor": "tile",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.1,
+        "grime": 0.6,
+        "seed": 3
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "kitchen-fit",
+      "type": "interior.dt-noodle-kitchen",
+      "props": {
+        "width": 150,
+        "height": 100,
+        "pots": 3,
+        "burners": 1,
+        "steam": 0.9,
+        "hood": true,
+        "curtain": "right",
+        "slips": 6,
+        "sacks": 2,
+        "seed": 4
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "clinic",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 270,
+        "height": 100,
+        "kind": "storeroom",
+        "floor": "concrete",
+        "light": "bulb",
+        "lights": 1,
+        "peel": 0.3,
+        "grime": 0.7,
+        "cut": "left",
+        "window": "none",
+        "seed": 5
+      },
+      "placement": {
+        "x": 590,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "fridge",
+      "type": "interior.dt-parts-fridge",
+      "props": {
+        "width": 26,
+        "height": 58,
+        "contents": "mixed",
+        "lit": 1,
+        "chain": true,
+        "label": "NO FOOD",
+        "seed": 6
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "shelves",
+      "type": "interior.dt-shelves",
+      "props": {
+        "width": 34,
+        "height": 80,
+        "shelves": 5,
+        "fill": 0.85,
+        "stock": "mixed",
+        "seed": 7
+      },
+      "placement": {
+        "x": 630,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cot",
+      "type": "interior.dt-cot",
+      "props": {
+        "length": 46,
+        "blanket": "#5a4a32",
+        "crate": true,
+        "lamp": 0.7,
+        "seed": 8
+      },
+      "placement": {
+        "x": 668,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "screen",
+      "type": "interior.dt-privacy-screen",
+      "props": {
+        "kind": "folding",
+        "width": 36,
+        "height": 50,
+        "closed": 0.7,
+        "fabric": "#bfd0c8",
+        "seed": 9
+      },
+      "placement": {
+        "x": 734,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "chair",
+      "type": "interior.dt-doc-chair",
+      "props": {
+        "recline": 0.65,
+        "upholstery": "#2a5a5a",
+        "lamp": "ceiling arm",
+        "lampOn": 1,
+        "ceiling": 100,
+        "tray": true,
+        "monitor": true,
+        "straps": true,
+        "sheeting": true,
+        "seed": 10
+      },
+      "placement": {
+        "x": 776,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 420,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "roof",
+      "type": "level.slab",
+      "props": {
+        "width": 420,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 440,
+        "h": 100
+      },
+      "order": 28,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 110,
+        "thickness": 6
+      },
+      "placement": {
+        "x": 434,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 110,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 852,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "annex-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "annex"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "logic"
+    },
+    {
+      "id": "annex-front",
+      "type": "building.front",
+      "props": {
+        "width": 420,
+        "floors": 0,
+        "storey": 66,
+        "ground": 110,
+        "skin": "brick",
+        "windows": "none",
+        "roof": "flat",
+        "fascia": false,
+        "gear": [],
+        "escape": "none",
+        "balconies": "none",
+        "density": 0.7,
+        "seed": 910,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 40,
+            "width": 70
+          },
+          {
+            "kind": "sealed",
+            "from": 200,
+            "width": 30
+          },
+          {
+            "kind": "door",
+            "from": 380,
+            "width": 24
+          }
+        ]
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-note",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 40,
+        "height": 18,
+        "header": "",
+        "lines": [
+          "RING ONCE"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 410,
+        "h": 62
+      },
+      "order": 33,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "annex-camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "phase": 30
+      },
+      "placement": {
+        "x": 392,
+        "h": 84
+      },
+      "order": 34,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-over",
+      "type": "building.front",
+      "props": {
+        "width": 420,
+        "floors": 6,
+        "storey": 66,
+        "ground": 14,
+        "skin": "tenement",
+        "windows": "curtained",
+        "roof": "parapet",
+        "escape": "left",
+        "balconies": "some",
+        "fascia": false,
+        "density": 0.8,
+        "lit": 0.5,
+        "seed": 905,
+        "bays": []
+      },
+      "placement": {
+        "x": 440,
+        "h": 110
+      },
+      "order": 35,
+      "layer": "backdrop"
+    },
+    {
+      "id": "customer",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6101,
+        "act": "sit",
+        "sitting": "side",
+        "archetype": "office"
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield"
+    },
+    {
+      "id": "customer-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6102,
+        "act": "talk",
+        "archetype": "courier"
+      },
+      "placement": {
+        "x": 412,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "playfield"
+    },
+    {
+      "id": "walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6103,
+        "act": "walk",
+        "range": 200,
+        "archetype": "commuter"
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "waiting",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6104,
+        "act": "wait",
+        "archetype": "drifter",
+        "hair": "hood"
+      },
+      "placement": {
+        "x": 886,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield"
+    },
+    {
+      "id": "cook",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6111,
+        "act": "vend",
+        "garb": "apron"
+      },
+      "placement": {
+        "x": 510,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "playfield",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "kessel",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6112,
+        "act": "stand",
+        "archetype": "technician",
+        "garb": "coat",
+        "top": "#d8dcd8",
+        "hair": "bald",
+        "facial": "stubble"
+      },
+      "placement": {
+        "x": 772,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "playfield",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "patient",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6113,
+        "act": "sleep",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 694,
+        "h": 12
+      },
+      "order": 42,
+      "layer": "playfield",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1120,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-annex",
+      "type": "level.floor",
+      "props": {
+        "width": 420,
+        "building": "annex",
+        "label": "Kitchen · back room",
+        "entry": "door"
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "logic"
+    },
+    {
+      "id": "door-stall",
+      "type": "level.door",
+      "props": {
+        "building": "annex",
+        "width": 24
+      },
+      "placement": {
+        "x": 452,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "logic"
+    },
+    {
+      "id": "door-back",
+      "type": "level.door",
+      "props": {
+        "building": "annex",
+        "width": 24
+      },
+      "placement": {
+        "x": 832,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "logic"
+    }
+  ]
+}

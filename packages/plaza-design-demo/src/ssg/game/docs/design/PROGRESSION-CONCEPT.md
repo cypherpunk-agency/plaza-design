@@ -28,6 +28,11 @@ invisibility and a literal spectral body do not automatically follow. â€œGhostâ€
 describes social and administrative exclusion. This interpretation gives the losses in later
 acts distinct meanings; the precise technology still needs a fiction pass.
 
+**Update 2026-10-22 (Tommi):** Act I ends with Kessel's emergency transfer into a DLV-9 robot
+body because the deleted body counts as unregistered and is collected; Act II's goal is the
+body. Act I is rewritten to visit many Downtown places. See STORY.md "Decided (2026-10-22)"
+and the revised route in PROLOGUE-ACT-I-PLAN.md.
+
 ## 2. The story spine
 
 | Phase | Player's situation and immediate desire | Scope | Learning responsibility |

@@ -1,0 +1,2908 @@
+{
+  "version": 1,
+  "scene": "dt-sweep",
+  "instances": [
+    {
+      "id": "scene",
+      "type": "downtown.marker",
+      "props": {
+        "role": "scene",
+        "width": 2000,
+        "height": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "distance"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 359,
+      "layer": "playfield"
+    },
+    {
+      "id": "skyline-far",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.18,
+        "seed": 7,
+        "minHeight": 70,
+        "maxHeight": 150,
+        "alpha": 0.18,
+        "litChance": 0.12
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "bindings": {
+        "width": "downtown.width"
+      },
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "downtown.skyline",
+      "props": {
+        "parallax": 0.45,
+        "seed": 19,
+        "minHeight": 50,
+        "maxHeight": 120,
+        "alpha": 0.3,
+        "litChance": 0.18
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 3,
+      "bindings": {
+        "width": "downtown.width"
+      },
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 404,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3.5,
+      "layer": "distance"
+    },
+    {
+      "id": "tenement-0",
+      "type": "market.facade",
+      "props": {
+        "width": 120,
+        "seed": 400,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": -60,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-1",
+      "type": "market.facade",
+      "props": {
+        "width": 157,
+        "seed": 413,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-2",
+      "type": "market.facade",
+      "props": {
+        "width": 144,
+        "seed": 426,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-3",
+      "type": "market.facade",
+      "props": {
+        "width": 131,
+        "seed": 439,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 390,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-5",
+      "type": "market.facade",
+      "props": {
+        "width": 155,
+        "seed": 465,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 690,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-6",
+      "type": "market.facade",
+      "props": {
+        "width": 142,
+        "seed": 478,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 840,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-7",
+      "type": "market.facade",
+      "props": {
+        "width": 129,
+        "seed": 491,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "tenement-10",
+      "type": "market.facade",
+      "props": {
+        "width": 140,
+        "seed": 530,
+        "parallax": 0.7,
+        "alpha": 0.5
+      },
+      "placement": {
+        "x": 1440,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "antenna",
+      "type": "downtown.antenna",
+      "props": {},
+      "placement": {
+        "x": 1600,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "distance"
+    },
+    {
+      "id": "front-0",
+      "type": "building.front",
+      "props": {
+        "width": 104,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 8,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "density": 0.8,
+        "seed": 101,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley-market",
+      "type": "building.alley",
+      "props": {
+        "width": 46,
+        "height": 300,
+        "depth": 0.5,
+        "light": "warm",
+        "escape": "right",
+        "bins": true,
+        "steam": true,
+        "cables": true,
+        "yard": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 104,
+        "h": 0
+      },
+      "order": 15.5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-1",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 56,
+            "tenant": "convenience"
+          },
+          {
+            "kind": "door",
+            "from": 80,
+            "width": 24
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "density": 0.5,
+        "seed": 102,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-2",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 6,
+            "width": 62,
+            "tenant": "clinic"
+          },
+          {
+            "kind": "door",
+            "from": 112,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "density": 0.7,
+        "seed": 103,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 50,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-3",
+      "type": "building.front",
+      "props": {
+        "width": 130,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 50,
+            "width": 64,
+            "tenant": "phones"
+          }
+        ],
+        "skin": "tenement",
+        "balconies": "some",
+        "density": 0.6,
+        "seed": 104,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 420,
+        "h": 0
+      },
+      "order": 74,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-4",
+      "type": "building.front",
+      "props": {
+        "width": 170,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 54,
+            "tenant": "loans"
+          },
+          {
+            "kind": "door",
+            "from": 70,
+            "width": 26
+          },
+          {
+            "kind": "glass",
+            "from": 104,
+            "width": 58,
+            "tenant": "pharmacy"
+          }
+        ],
+        "skin": "panel",
+        "density": 0.5,
+        "seed": 105,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 550,
+        "h": 0
+      },
+      "order": 94,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-5",
+      "type": "building.front",
+      "props": {
+        "width": 140,
+        "bays": [],
+        "skin": "brick",
+        "windows": "curtained",
+        "density": 0.7,
+        "seed": 106,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 124,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-6",
+      "type": "building.front",
+      "props": {
+        "width": 90,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 24,
+            "width": 50,
+            "tenant": "bar"
+          }
+        ],
+        "skin": "glass",
+        "density": 0.3,
+        "seed": 107,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 860,
+        "h": 0
+      },
+      "order": 142,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-7",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 16,
+            "width": 52
+          },
+          {
+            "kind": "door",
+            "from": 124,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "roof": "ledge",
+        "fascia": false,
+        "gear": [],
+        "escape": "none",
+        "balconies": "none",
+        "density": 0.6,
+        "seed": 108,
+        "floors": 0,
+        "top": 0,
+        "ground": 62
+      },
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 153,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-8",
+      "type": "building.front",
+      "props": {
+        "width": 60,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 18,
+            "width": 24
+          }
+        ],
+        "skin": "panel",
+        "density": 0.6,
+        "seed": 109,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 1200,
+        "h": 0
+      },
+      "order": 156,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-9",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 46,
+            "tenant": "pawn"
+          },
+          {
+            "kind": "sealed",
+            "from": 68,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 104,
+            "width": 46,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "concrete",
+        "windows": "punched",
+        "roof": "stepped",
+        "density": 0.4,
+        "seed": 110,
+        "clear": [
+          [
+            58,
+            102,
+            180,
+            300
+          ]
+        ],
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 1260,
+        "h": 0
+      },
+      "order": 164,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-10",
+      "type": "building.front",
+      "props": {
+        "width": 100,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 44,
+            "tenant": "noodles"
+          },
+          {
+            "kind": "door",
+            "from": 64,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "escape": "right",
+        "density": 0.9,
+        "seed": 111,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1420,
+        "h": 0
+      },
+      "order": 194,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-11",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 64,
+            "tenant": "hotel"
+          }
+        ],
+        "skin": "glass",
+        "density": 0.4,
+        "seed": 112,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1680,
+        "h": 0
+      },
+      "order": 210,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-12",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 8,
+            "width": 58,
+            "tenant": "repair"
+          },
+          {
+            "kind": "tagged",
+            "from": 104,
+            "width": 44
+          }
+        ],
+        "skin": "brick",
+        "density": 0.8,
+        "seed": 113,
+        "floors": 4,
+        "top": 0
+      },
+      "placement": {
+        "x": 1840,
+        "h": 0
+      },
+      "order": 233,
+      "layer": "backdrop"
+    },
+    {
+      "id": "penthouse",
+      "type": "downtown.penthouse",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 256,
+      "attach": {
+        "instance": "front-9",
+        "anchor": "bay1"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "market-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 96,
+        "height": 15,
+        "text": "< NEON MARKET",
+        "color": "255,217,165",
+        "size": 10,
+        "phase": 120,
+        "mask": [
+          -50,
+          50,
+          -10,
+          10
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 90,
+        "h": 100
+      },
+      "order": 257,
+      "attach": {
+        "instance": "front-0",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "spaceport-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 82,
+        "height": 15,
+        "text": "SPACEPORT >",
+        "color": "255,136,0",
+        "size": 10,
+        "phase": 70,
+        "mask": [
+          -43,
+          43,
+          -10,
+          10
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 90,
+        "h": 110
+      },
+      "order": 258,
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "open-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 88,
+        "height": 13,
+        "text": "OPEN 24/7",
+        "color": "255,136,0",
+        "size": 8,
+        "phase": 160,
+        "mask": [
+          -47,
+          47,
+          -10,
+          10
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 45,
+        "h": 104
+      },
+      "order": 259,
+      "attach": {
+        "instance": "front-6",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "weather-ticker",
+      "type": "downtown.weather-ticker",
+      "props": {
+        "width": 80,
+        "height": 11,
+        "mask": [
+          -44,
+          44,
+          -4,
+          22
+        ],
+        "smear": true
+      },
+      "placement": {
+        "x": 60,
+        "h": 90
+      },
+      "order": 260,
+      "bindings": {
+        "text": "downtown.weatherText"
+      },
+      "attach": {
+        "instance": "front-1",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "billboard-frame",
+      "type": "downtown.billboard",
+      "props": {
+        "mask": [
+          -66,
+          66,
+          106,
+          160
+        ],
+        "smearColor": "255,90,110"
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 261,
+      "attach": {
+        "instance": "front-4",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "noodle-stall",
+      "type": "downtown.stall",
+      "props": {
+        "width": 140,
+        "mask": [
+          -20,
+          140,
+          60,
+          142
+        ]
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 262,
+      "attach": {
+        "instance": "front-5",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "antenna-fence",
+      "type": "downtown.fence",
+      "props": {},
+      "placement": {
+        "x": 1540,
+        "h": 0
+      },
+      "order": 263,
+      "layer": "backdrop"
+    },
+    {
+      "id": "yard-alley",
+      "type": "downtown.alley",
+      "props": {
+        "doorOffset": 22
+      },
+      "placement": {
+        "x": 950,
+        "h": 0
+      },
+      "order": 264,
+      "bindings": {
+        "doorOffset": "downtown.doorOffset"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "dumpster",
+      "type": "downtown.dumpster",
+      "props": {
+        "width": 40,
+        "height": 22
+      },
+      "placement": {
+        "x": 1000,
+        "h": 0
+      },
+      "order": 265,
+      "layer": "backdrop"
+    },
+    {
+      "id": "exit-shop",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "shop",
+        "smearColor": "0,255,255"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 266,
+      "attach": {
+        "instance": "front-1",
+        "anchor": "bay1"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "exit-capsule",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "capsule"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 267,
+      "attach": {
+        "instance": "front-8",
+        "anchor": "bay0"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "exit-moth",
+      "type": "downtown.entrance",
+      "props": {
+        "kind": "moth"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 268,
+      "attach": {
+        "instance": "front-10",
+        "anchor": "bay1"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "street-surface",
+      "type": "downtown.street",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 269,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stall-pool",
+      "type": "downtown.stall-pool",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 270,
+      "bindings": {
+        "metrics": "downtown.stall",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-device-sign",
+      "type": "downtown.smear",
+      "props": {
+        "source": "device-sign"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 271,
+      "bindings": {
+        "x": "downtown.smear.device-sign.x",
+        "color": "downtown.smear.device-sign.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-noodle-stall",
+      "type": "downtown.smear",
+      "props": {
+        "source": "noodle-stall"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 272,
+      "bindings": {
+        "x": "downtown.smear.noodle-stall.x",
+        "color": "downtown.smear.noodle-stall.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-billboard-frame",
+      "type": "downtown.smear",
+      "props": {
+        "source": "billboard-frame"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 273,
+      "bindings": {
+        "x": "downtown.smear.billboard-frame.x",
+        "color": "downtown.smear.billboard-frame.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-market-neon",
+      "type": "downtown.smear",
+      "props": {
+        "source": "market-neon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 274,
+      "bindings": {
+        "x": "downtown.smear.market-neon.x",
+        "color": "downtown.smear.market-neon.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-spaceport-neon",
+      "type": "downtown.smear",
+      "props": {
+        "source": "spaceport-neon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 275,
+      "bindings": {
+        "x": "downtown.smear.spaceport-neon.x",
+        "color": "downtown.smear.spaceport-neon.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-open-neon",
+      "type": "downtown.smear",
+      "props": {
+        "source": "open-neon"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 276,
+      "bindings": {
+        "x": "downtown.smear.open-neon.x",
+        "color": "downtown.smear.open-neon.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-exit-metro",
+      "type": "downtown.smear",
+      "props": {
+        "source": "exit-metro"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 277,
+      "bindings": {
+        "x": "downtown.smear.exit-metro.x",
+        "color": "downtown.smear.exit-metro.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-exit-taxi",
+      "type": "downtown.smear",
+      "props": {
+        "source": "exit-taxi"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 278,
+      "bindings": {
+        "x": "downtown.smear.exit-taxi.x",
+        "color": "downtown.smear.exit-taxi.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-exit-shop",
+      "type": "downtown.smear",
+      "props": {
+        "source": "exit-shop"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 279,
+      "bindings": {
+        "x": "downtown.smear.exit-shop.x",
+        "color": "downtown.smear.exit-shop.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "smear-weather-ticker",
+      "type": "downtown.smear",
+      "props": {
+        "source": "weather-ticker"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 280,
+      "bindings": {
+        "x": "downtown.smear.weather-ticker.x",
+        "color": "downtown.smear.weather-ticker.color",
+        "rain": "downtown.rain",
+        "city": "downtown.city"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "fixer",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "fixer"
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 281,
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "pose": "downtown.pose.fixer"
+      },
+      "layer": "playfield"
+    },
+    {
+      "id": "stall-counter",
+      "type": "downtown.counter",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 282,
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "metrics": "downtown.stall"
+      },
+      "layer": "playfield"
+    },
+    {
+      "id": "npc-hood",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "hood"
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 283,
+      "bindings": {
+        "pose": "downtown.pose.hood"
+      },
+      "layer": "playfield"
+    },
+    {
+      "id": "npc-umbrella",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "umbrella"
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 284,
+      "bindings": {
+        "pose": "downtown.pose.umbrella"
+      },
+      "layer": "playfield"
+    },
+    {
+      "id": "npc-hat",
+      "type": "actor.prepared",
+      "props": {
+        "actor": "hat"
+      },
+      "placement": {
+        "x": 1112,
+        "h": 0
+      },
+      "order": 285,
+      "bindings": {
+        "pose": "downtown.pose.hat"
+      },
+      "layer": "playfield"
+    },
+    {
+      "id": "exit-library",
+      "type": "downtown.library-front",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 286,
+      "attach": {
+        "instance": "front-4",
+        "anchor": "bay1"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-sign",
+      "type": "downtown.device-sign",
+      "props": {
+        "spotY": 66,
+        "spotWidth": 22,
+        "spotHeight": 96,
+        "mask": [
+          -14,
+          14,
+          64,
+          164
+        ]
+      },
+      "placement": {
+        "x": 102,
+        "h": 0
+      },
+      "order": 287,
+      "bindings": {
+        "snapshot": "downtown.device.sign.snapshot"
+      },
+      "attach": {
+        "instance": "front-2",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-box",
+      "type": "downtown.device-box",
+      "props": {
+        "spotY": 34,
+        "spotWidth": 30,
+        "spotHeight": 38
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 288,
+      "bindings": {
+        "snapshot": "downtown.device.box.snapshot"
+      },
+      "attach": {
+        "instance": "front-2",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-till",
+      "type": "downtown.device-till",
+      "props": {
+        "spotY": 28,
+        "spotWidth": 22,
+        "spotHeight": 20
+      },
+      "placement": {
+        "x": -20,
+        "h": 0
+      },
+      "order": 289,
+      "bindings": {
+        "snapshot": "downtown.device.till.snapshot"
+      },
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "right"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-relay",
+      "type": "downtown.device-relay",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 26,
+        "spotHeight": 40
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 290,
+      "bindings": {
+        "snapshot": "downtown.device.relay.snapshot"
+      },
+      "attach": {
+        "instance": "front-7",
+        "anchor": "top"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-gate",
+      "type": "downtown.device-gate",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 80,
+        "spotHeight": 80
+      },
+      "placement": {
+        "x": 70,
+        "h": 0
+      },
+      "order": 291,
+      "bindings": {
+        "snapshot": "downtown.device.gate.snapshot"
+      },
+      "attach": {
+        "instance": "front-0",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-fence",
+      "type": "downtown.device-fence",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 40,
+        "spotHeight": 50
+      },
+      "placement": {
+        "x": 50,
+        "h": 0
+      },
+      "order": 292,
+      "bindings": {
+        "snapshot": "downtown.device.fence.snapshot"
+      },
+      "attach": {
+        "instance": "antenna-fence",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-scan",
+      "type": "downtown.device-scan",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 44,
+        "spotHeight": 84
+      },
+      "placement": {
+        "x": 110,
+        "h": 0
+      },
+      "order": 293,
+      "bindings": {
+        "snapshot": "downtown.device.scan.snapshot"
+      },
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-cam3",
+      "type": "downtown.device-cam3",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 18,
+        "spotHeight": 86
+      },
+      "placement": {
+        "x": 100,
+        "h": 0
+      },
+      "order": 294,
+      "bindings": {
+        "snapshot": "downtown.device.cam3.snapshot"
+      },
+      "attach": {
+        "instance": "front-3",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-billboard",
+      "type": "downtown.device-billboard",
+      "props": {
+        "spotY": 108,
+        "spotWidth": 124,
+        "spotHeight": 42
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 295,
+      "bindings": {
+        "snapshot": "downtown.device.billboard.snapshot"
+      },
+      "attach": {
+        "instance": "billboard-frame",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-dlv9",
+      "type": "downtown.device-dlv9",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 26,
+        "spotHeight": 28
+      },
+      "placement": {
+        "x": 22,
+        "h": 0
+      },
+      "order": 296,
+      "bindings": {
+        "snapshot": "downtown.device.dlv9.snapshot",
+        "position": "downtown.device.dlv9.position"
+      },
+      "attach": {
+        "instance": "dumpster",
+        "anchor": "right"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "map",
+      "type": "downtown.device-map",
+      "props": {
+        "spotY": 0,
+        "spotWidth": 26,
+        "spotHeight": 80
+      },
+      "placement": {
+        "x": -48,
+        "h": 0
+      },
+      "order": 297,
+      "bindings": {
+        "snapshot": "downtown.device.map.snapshot"
+      },
+      "attach": {
+        "instance": "exit-metro",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "device-hover",
+      "type": "downtown.device-hover",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 298,
+      "bindings": {
+        "snapshot": "downtown.device.hover.snapshot"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "exit-metro",
+      "type": "downtown.metro-stairs",
+      "props": {
+        "mask": [
+          8,
+          56,
+          70,
+          100
+        ]
+      },
+      "placement": {
+        "x": 20,
+        "h": 0
+      },
+      "order": 299,
+      "attach": {
+        "instance": "front-10",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "exit-taxi",
+      "type": "downtown.taxi-pad",
+      "props": {
+        "mask": [
+          -50,
+          16,
+          88,
+          114
+        ]
+      },
+      "placement": {
+        "x": 90,
+        "h": 0
+      },
+      "order": 300,
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "exit-market",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 301,
+      "attach": {
+        "instance": "device-gate",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "exit-yard",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 22,
+        "h": 0
+      },
+      "order": 302,
+      "attach": {
+        "instance": "yard-alley",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "exit-map",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 303,
+      "attach": {
+        "instance": "map",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "readable-plaque",
+      "type": "downtown.marker",
+      "props": {
+        "role": "readable"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 304,
+      "attach": {
+        "instance": "penthouse",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "platform-dumpster",
+      "type": "downtown.marker",
+      "props": {
+        "role": "platform"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 305,
+      "attach": {
+        "instance": "dumpster",
+        "anchor": "top"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "platform-annex",
+      "type": "downtown.marker",
+      "props": {
+        "role": "platform"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 306,
+      "attach": {
+        "instance": "front-7",
+        "anchor": "top"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-stall-left",
+      "type": "downtown.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 56
+      },
+      "placement": {
+        "x": 26,
+        "h": 96
+      },
+      "order": 307,
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-stall-right",
+      "type": "downtown.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 56
+      },
+      "placement": {
+        "x": -26,
+        "h": 96
+      },
+      "order": 308,
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "right"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-alley",
+      "type": "downtown.light",
+      "props": {
+        "kind": "lamp",
+        "radius": 48,
+        "color": "255,180,100"
+      },
+      "placement": {
+        "x": 45,
+        "h": 70
+      },
+      "order": 309,
+      "attach": {
+        "instance": "yard-alley",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-noodles",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 48,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 130
+      },
+      "order": 310,
+      "attach": {
+        "instance": "fixer",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-market",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 44,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 311,
+      "attach": {
+        "instance": "market-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-spaceport",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 44
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 312,
+      "attach": {
+        "instance": "spaceport-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-open",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 313,
+      "attach": {
+        "instance": "open-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-billboard",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 64,
+        "color": "255,90,110"
+      },
+      "placement": {
+        "x": 0,
+        "h": 132
+      },
+      "order": 314,
+      "attach": {
+        "instance": "billboard-frame",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-penthouse",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 30,
+        "alpha": 0.7
+      },
+      "placement": {
+        "x": 0,
+        "h": 220
+      },
+      "order": 315,
+      "attach": {
+        "instance": "penthouse",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "light-yard-blade",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 30,
+        "color": "168,130,255"
+      },
+      "placement": {
+        "x": 26,
+        "h": 140
+      },
+      "order": 316,
+      "attach": {
+        "instance": "yard-alley",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "caster-dumpster",
+      "type": "downtown.marker",
+      "props": {
+        "role": "caster"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 317,
+      "attach": {
+        "instance": "dumpster",
+        "anchor": "topCenter"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "clinic-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 88,
+        "height": 15,
+        "text": "CLINIC 24H",
+        "color": "255,42,68",
+        "size": 10,
+        "phase": 44,
+        "mask": [
+          -48,
+          48,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 75,
+        "h": 210
+      },
+      "order": 318,
+      "attach": {
+        "instance": "front-2",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-clinic-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,42,68"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 319,
+      "attach": {
+        "instance": "clinic-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "soy-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 80,
+        "height": 15,
+        "text": "KOBA SOY",
+        "color": "255,136,0",
+        "size": 10,
+        "phase": 155,
+        "mask": [
+          -44,
+          44,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 70,
+        "h": 236
+      },
+      "order": 320,
+      "attach": {
+        "instance": "front-5",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-soy-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 321,
+      "attach": {
+        "instance": "soy-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "pawn-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 92,
+        "height": 15,
+        "text": "PAWN · CASH",
+        "color": "255,217,165",
+        "size": 10,
+        "phase": 46,
+        "mask": [
+          -50,
+          50,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 80,
+        "h": 170
+      },
+      "order": 322,
+      "attach": {
+        "instance": "front-9",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-pawn-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 323,
+      "attach": {
+        "instance": "pawn-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "hotel-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 112,
+        "height": 15,
+        "text": "HOTEL · HOURLY",
+        "color": "168,130,255",
+        "size": 10,
+        "phase": 153,
+        "mask": [
+          -60,
+          60,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 80,
+        "h": 300
+      },
+      "order": 324,
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-hotel-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "168,130,255"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 325,
+      "attach": {
+        "instance": "hotel-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "repair-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 72,
+        "height": 15,
+        "text": "REPAIRS",
+        "color": "255,136,0",
+        "size": 10,
+        "phase": 98,
+        "mask": [
+          -40,
+          40,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 80,
+        "h": 150
+      },
+      "order": 326,
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-repair-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 327,
+      "attach": {
+        "instance": "repair-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "verify-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 92,
+        "height": 15,
+        "text": "VERIFY HERE",
+        "color": "255,217,165",
+        "size": 10,
+        "phase": 90,
+        "mask": [
+          -50,
+          50,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 60,
+        "h": 236
+      },
+      "order": 328,
+      "attach": {
+        "instance": "front-1",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-verify-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,217,165"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 329,
+      "attach": {
+        "instance": "verify-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "loans-neon",
+      "type": "downtown.neon-sign",
+      "props": {
+        "width": 116,
+        "height": 15,
+        "text": "LOANS IN 5 MIN",
+        "color": "255,42,68",
+        "size": 10,
+        "phase": 9,
+        "mask": [
+          -62,
+          62,
+          -10,
+          12
+        ],
+        "smear": false
+      },
+      "placement": {
+        "x": 85,
+        "h": 330
+      },
+      "order": 330,
+      "attach": {
+        "instance": "front-4",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-loans-neon",
+      "type": "downtown.light",
+      "props": {
+        "kind": "neon",
+        "radius": 40,
+        "color": "255,42,68"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 331,
+      "attach": {
+        "instance": "loans-neon",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "blade-sim",
+      "type": "market.blade",
+      "props": {
+        "text": "SIM",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 83
+      },
+      "placement": {
+        "x": 120,
+        "h": 160
+      },
+      "order": 332,
+      "attach": {
+        "instance": "front-3",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "blade-bar",
+      "type": "market.blade",
+      "props": {
+        "text": "BAR",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 15
+      },
+      "placement": {
+        "x": 82,
+        "h": 220
+      },
+      "order": 333,
+      "attach": {
+        "instance": "front-6",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "blade-noodle",
+      "type": "market.blade",
+      "props": {
+        "text": "NOODLE",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 186
+      },
+      "placement": {
+        "x": 6,
+        "h": 200
+      },
+      "order": 334,
+      "attach": {
+        "instance": "front-10",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "blade-capsule",
+      "type": "market.blade",
+      "props": {
+        "text": "BEDS",
+        "parallax": 1,
+        "dim": 1,
+        "phase": 147
+      },
+      "placement": {
+        "x": 150,
+        "h": 260
+      },
+      "order": 335,
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "ad-front-5",
+      "type": "market.ad",
+      "props": {
+        "w": 92,
+        "tall": 40,
+        "parallax": 1,
+        "seed": 90,
+        "phase": 186
+      },
+      "placement": {
+        "x": 24,
+        "h": 150
+      },
+      "order": 336,
+      "attach": {
+        "instance": "front-5",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-ad-front-5",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 50,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 337,
+      "attach": {
+        "instance": "ad-front-5",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "ad-front-11",
+      "type": "market.ad",
+      "props": {
+        "w": 92,
+        "tall": 40,
+        "parallax": 1,
+        "seed": 98,
+        "phase": 178
+      },
+      "placement": {
+        "x": 34,
+        "h": 130
+      },
+      "order": 338,
+      "attach": {
+        "instance": "front-11",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-ad-front-11",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 50,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 339,
+      "attach": {
+        "instance": "ad-front-11",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "ad-front-0",
+      "type": "market.ad",
+      "props": {
+        "w": 92,
+        "tall": 40,
+        "parallax": 1,
+        "seed": 463,
+        "phase": 110
+      },
+      "placement": {
+        "x": 30,
+        "h": 260
+      },
+      "order": 340,
+      "attach": {
+        "instance": "front-0",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "light-ad-front-0",
+      "type": "downtown.light",
+      "props": {
+        "kind": "screen",
+        "radius": 50,
+        "color": "255,136,0"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 341,
+      "attach": {
+        "instance": "ad-front-0",
+        "anchor": "origin"
+      },
+      "layer": "set"
+    },
+    {
+      "id": "camera-front-3",
+      "type": "market.camera",
+      "props": {
+        "parallax": 1,
+        "facing": 1,
+        "phase": 8
+      },
+      "placement": {
+        "x": 8,
+        "h": 104
+      },
+      "order": 342,
+      "attach": {
+        "instance": "front-3",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "camera-front-9",
+      "type": "market.camera",
+      "props": {
+        "parallax": 1,
+        "facing": -1,
+        "phase": 35
+      },
+      "placement": {
+        "x": 150,
+        "h": 112
+      },
+      "order": 343,
+      "attach": {
+        "instance": "front-9",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "camera-front-6",
+      "type": "market.camera",
+      "props": {
+        "parallax": 1,
+        "facing": 1,
+        "phase": 49
+      },
+      "placement": {
+        "x": 4,
+        "h": 100
+      },
+      "order": 344,
+      "attach": {
+        "instance": "front-6",
+        "anchor": "origin"
+      },
+      "layer": "backdrop"
+    },
+    {
+      "id": "crowd-7",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 41922,
+        "act": "stand",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 230,
+        "h": 0
+      },
+      "order": 352,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-8",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 84608,
+        "act": "phone",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 353,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-9",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 66559,
+        "act": "stand",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1150,
+        "h": 0
+      },
+      "order": 354,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-10",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 14387,
+        "act": "talk",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1480,
+        "h": 0
+      },
+      "order": 355,
+      "layer": "playfield"
+    },
+    {
+      "id": "crowd-11",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "seed": 29568,
+        "act": "smoke",
+        "depth": "back"
+      },
+      "placement": {
+        "x": 1900,
+        "h": 0
+      },
+      "order": 356,
+      "layer": "playfield"
+    },
+    {
+      "id": "van-0",
+      "type": "civic.registry-van",
+      "props": {
+        "face": "right",
+        "beacons": true,
+        "rear": true,
+        "lights": true,
+        "fleetNo": "R-114",
+        "phase": 0
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 360,
+      "layer": "set"
+    },
+    {
+      "id": "van-1",
+      "type": "civic.registry-van",
+      "props": {
+        "face": "left",
+        "beacons": true,
+        "rear": false,
+        "side": true,
+        "lights": true,
+        "fleetNo": "R-207",
+        "phase": 13,
+        "flood": true
+      },
+      "placement": {
+        "x": 1300,
+        "h": 0
+      },
+      "order": 361,
+      "layer": "set"
+    },
+    {
+      "id": "flood-0",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "tower",
+        "height": 120,
+        "heads": 3,
+        "aim": "right",
+        "reach": 150,
+        "spread": 170,
+        "strength": 0.85,
+        "seed": 1
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 362,
+      "layer": "set"
+    },
+    {
+      "id": "flood-1",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "tower",
+        "height": 120,
+        "heads": 3,
+        "aim": "left",
+        "reach": 140,
+        "spread": 160,
+        "strength": 0.8,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1560,
+        "h": 0
+      },
+      "order": 363,
+      "layer": "set"
+    },
+    {
+      "id": "checkpoint",
+      "type": "civic.checkpoint",
+      "props": {
+        "table": true,
+        "barrier": 64,
+        "text": "IDENTITY CHECK/HAVE YOUR ID READY",
+        "cones": 3,
+        "scanning": true
+      },
+      "placement": {
+        "x": 760,
+        "h": 0
+      },
+      "order": 364,
+      "layer": "set"
+    },
+    {
+      "id": "notice",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 66,
+        "height": 34,
+        "lines": [
+          "UNREGISTERED",
+          "PERSONS WILL",
+          "BE COLLECTED"
+        ],
+        "header": "REGISTRY NOTICE",
+        "post": true
+      },
+      "placement": {
+        "x": 690,
+        "h": 60
+      },
+      "order": 365,
+      "layer": "set"
+    },
+    {
+      "id": "officer-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6001,
+        "act": "stand",
+        "archetype": "inspector"
+      },
+      "placement": {
+        "x": 812,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 366,
+      "layer": "playfield"
+    },
+    {
+      "id": "checked-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6002,
+        "act": "argue"
+      },
+      "placement": {
+        "x": 860,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 367,
+      "layer": "playfield"
+    },
+    {
+      "id": "checked-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6003,
+        "act": "wait",
+        "archetype": "elder"
+      },
+      "placement": {
+        "x": 892,
+        "h": 0
+      },
+      "order": 368,
+      "layer": "playfield"
+    },
+    {
+      "id": "officer-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6004,
+        "act": "talk",
+        "archetype": "inspector"
+      },
+      "placement": {
+        "x": 338,
+        "h": 0
+      },
+      "order": 369,
+      "layer": "playfield"
+    },
+    {
+      "id": "taken",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6005,
+        "act": "wait",
+        "archetype": "drifter"
+      },
+      "placement": {
+        "x": 368,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 370,
+      "layer": "playfield"
+    },
+    {
+      "id": "officer-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6006,
+        "act": "phone",
+        "archetype": "inspector"
+      },
+      "placement": {
+        "x": 1238,
+        "h": 0
+      },
+      "order": 371,
+      "layer": "playfield"
+    },
+    {
+      "id": "officer-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6007,
+        "act": "walk",
+        "archetype": "inspector",
+        "range": -120
+      },
+      "placement": {
+        "x": 1620,
+        "h": 0
+      },
+      "order": 372,
+      "layer": "playfield"
+    },
+    {
+      "id": "drone-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "scan"
+      },
+      "placement": {
+        "x": 900,
+        "h": 30
+      },
+      "order": 373,
+      "layer": "playfield"
+    },
+    {
+      "id": "drone-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "scandrone",
+        "depth": "play",
+        "act": "hover",
+        "range": 300
+      },
+      "placement": {
+        "x": 1050,
+        "h": 70
+      },
+      "order": 374,
+      "layer": "playfield"
+    },
+    {
+      "id": "mech",
+      "type": "character.resident",
+      "props": {
+        "kind": "mech",
+        "depth": "back",
+        "act": "patrol",
+        "range": 200
+      },
+      "placement": {
+        "x": 560,
+        "h": 0
+      },
+      "order": 375,
+      "layer": "playfield"
+    },
+    {
+      "id": "hiding-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "district": "downtown",
+        "seed": 6011,
+        "act": "lean"
+      },
+      "placement": {
+        "x": 1222,
+        "h": 0
+      },
+      "order": 376,
+      "layer": "playfield"
+    },
+    {
+      "id": "hiding-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "district": "downtown",
+        "seed": 6012,
+        "act": "wait",
+        "archetype": "ghost"
+      },
+      "placement": {
+        "x": 122,
+        "h": 0
+      },
+      "order": 377,
+      "layer": "playfield"
+    },
+    {
+      "id": "hiding-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 6013,
+        "act": "sit",
+        "archetype": "kid"
+      },
+      "placement": {
+        "x": 990,
+        "h": 0
+      },
+      "order": 378,
+      "layer": "playfield"
+    },
+    {
+      "id": "hiding-3",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "district": "downtown",
+        "seed": 6014,
+        "act": "lean",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 1880,
+        "h": 0
+      },
+      "order": 379,
+      "layer": "playfield"
+    },
+    {
+      "id": "watcher",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "district": "downtown",
+        "seed": 6015,
+        "act": "smoke"
+      },
+      "placement": {
+        "x": 1040,
+        "h": 0
+      },
+      "order": 380,
+      "layer": "playfield"
+    }
+  ]
+}

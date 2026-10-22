@@ -1,0 +1,811 @@
+{
+  "version": 1,
+  "scene": "dt-diner",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "street.sky",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "width": 1400,
+        "seed": 71,
+        "parallax": 0.2,
+        "minHeight": 220,
+        "maxHeight": 400,
+        "haze": 0.65,
+        "lit": 0.3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "size": 0.7,
+        "fill": "#0a0610",
+        "edge": 0.08,
+        "seams": 1,
+        "glow": true,
+        "traffic": true
+      },
+      "placement": {
+        "x": 470,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "width": 1300,
+        "seed": 72,
+        "parallax": 0.5,
+        "minHeight": 170,
+        "maxHeight": 320,
+        "haze": 0.3,
+        "lit": 0.4,
+        "signs": 2
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 190,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 60,
+            "width": 110,
+            "tenant": "laundry"
+          }
+        ],
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "escape": "right",
+        "density": 0.7,
+        "seed": 301,
+        "floors": 6,
+        "top": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lot-wall",
+      "type": "building.alley",
+      "props": {
+        "width": 70,
+        "height": 160,
+        "depth": 0.5,
+        "light": "warm",
+        "escape": "none",
+        "bins": true,
+        "steam": false,
+        "cables": true,
+        "yard": true,
+        "seed": 8
+      },
+      "placement": {
+        "x": 190,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "diner-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "diner"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "logic"
+    },
+    {
+      "id": "diner-front",
+      "type": "everyday.diner-front",
+      "props": {
+        "width": 380,
+        "height": 96,
+        "name": "MARLA’S",
+        "sub": "DINER · OPEN 24H",
+        "neon": "#ff6a5a",
+        "door": 0.74,
+        "booths": true,
+        "rain": true,
+        "panel": "#7a1f24",
+        "lit": 1,
+        "exhaust": true,
+        "seed": 4
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "diner-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 220,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 80,
+            "tenant": "bar"
+          },
+          {
+            "kind": "door",
+            "from": 150,
+            "width": 24
+          }
+        ],
+        "skin": "tenement",
+        "windows": "curtained",
+        "density": 0.8,
+        "seed": 302,
+        "floors": 5,
+        "top": 0
+      },
+      "placement": {
+        "x": 660,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "bays": [
+          {
+            "kind": "tagged",
+            "from": 14,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ],
+        "skin": "concrete",
+        "density": 0.6,
+        "seed": 303,
+        "floors": 7,
+        "top": 0
+      },
+      "placement": {
+        "x": 880,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1040,
+        "ground": "#030304",
+        "edge": "#ffb35a",
+        "sheen": 1
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 0
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-1",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 116,
+        "seed": 1
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "sign",
+      "type": "everyday.diner-sign",
+      "props": {
+        "height": 116,
+        "text": "DINER",
+        "sub": "OPEN 24H",
+        "neon": "#ff6a5a",
+        "arrow": true,
+        "dead": 3,
+        "seed": 2
+      },
+      "placement": {
+        "x": 228,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "taxi",
+      "type": "vehicle.road",
+      "props": {
+        "kind": "cab",
+        "paint": "#c8a020",
+        "depth": "play",
+        "motion": "parked",
+        "lights": true
+      },
+      "placement": {
+        "x": 720,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "set"
+    },
+    {
+      "id": "diner-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "diner"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "logic"
+    },
+    {
+      "id": "room",
+      "type": "interior.diner-room",
+      "props": {
+        "width": 380,
+        "height": 96,
+        "windows": 0.45,
+        "rain": true,
+        "blinds": true,
+        "griddle": true,
+        "pie": true,
+        "coffee": true,
+        "menu": "EGGS ANY STYLE 6|HASH BROWNS 3|PANCAKES 5|PIE OF THE DAY 4|COFFEE 2 · REFILLS 2",
+        "plaque": "NO SLEEPING IN BOOTHS",
+        "clock": true,
+        "wall": "#3a2c22",
+        "tile": "#d8d0c0",
+        "seed": 5
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-0",
+      "type": "level.slab",
+      "props": {
+        "width": 380,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-roof",
+      "type": "level.slab",
+      "props": {
+        "width": 380,
+        "thickness": 6
+      },
+      "placement": {
+        "x": 260,
+        "h": 102
+      },
+      "order": 19,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 102,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 252,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 102,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 640,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "booths",
+      "type": "interior.diner-booths",
+      "props": {
+        "count": 3,
+        "booth": 54,
+        "seat": "#8a1f2a",
+        "table": "#d8d0c0",
+        "items": true,
+        "seed": 6
+      },
+      "placement": {
+        "x": 266,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "set",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cook",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4101,
+        "act": "vend",
+        "archetype": "vendor"
+      },
+      "placement": {
+        "x": 566,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "waitress",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4102,
+        "act": "lean",
+        "archetype": "vendor"
+      },
+      "placement": {
+        "x": 512,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "counter",
+      "type": "interior.diner-counter",
+      "props": {
+        "width": 176,
+        "height": 24,
+        "stools": 5,
+        "top": "#d8d0c0",
+        "front": "#7a1f24",
+        "seat": "#b02a34",
+        "items": true,
+        "seed": 7
+      },
+      "placement": {
+        "x": 452,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stool-inspector",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4103,
+        "act": "sit",
+        "archetype": "inspector",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 478,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stool-docker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4104,
+        "act": "read",
+        "archetype": "dockworker",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 538,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stool-nurse",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4105,
+        "act": "doze",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 598,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "booth-sleeper",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4106,
+        "act": "sleep",
+        "archetype": "sleeper",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 280,
+        "h": 0
+      },
+      "order": 29,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "booth-a",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4107,
+        "act": "talk",
+        "archetype": "courier",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 334,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "booth-b",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4108,
+        "act": "phone",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 360,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 31,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "booth-c",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4109,
+        "act": "read",
+        "archetype": "reader",
+        "sitting": "side"
+      },
+      "placement": {
+        "x": 388,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "playfield",
+      "attach": {
+        "instance": "diner-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rain-walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4121,
+        "act": "walk",
+        "archetype": "office",
+        "range": 380
+      },
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "playfield"
+    },
+    {
+      "id": "door-smoker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "play",
+        "district": "downtown",
+        "seed": 4122,
+        "act": "smoke",
+        "archetype": "punk"
+      },
+      "placement": {
+        "x": 655,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "playfield"
+    },
+    {
+      "id": "lot-cat",
+      "type": "character.resident",
+      "props": {
+        "kind": "cat",
+        "depth": "play",
+        "act": "sit"
+      },
+      "placement": {
+        "x": 214,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield"
+    },
+    {
+      "id": "back-courier",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "depth": "back",
+        "seed": 4123,
+        "act": "walk",
+        "range": -500
+      },
+      "placement": {
+        "x": 900,
+        "h": 0
+      },
+      "order": 36,
+      "layer": "playfield"
+    },
+    {
+      "id": "rain",
+      "type": "everyday.rain",
+      "props": {
+        "width": 1040,
+        "height": 480,
+        "density": 0.45,
+        "slant": 0.2,
+        "colour": "#a8bcd0",
+        "when": "always",
+        "splash": true,
+        "seed": 3
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "foreground"
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1040,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-diner",
+      "type": "level.floor",
+      "props": {
+        "width": 380,
+        "building": "diner",
+        "label": "Diner"
+      },
+      "placement": {
+        "x": 260,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "logic"
+    }
+  ]
+}

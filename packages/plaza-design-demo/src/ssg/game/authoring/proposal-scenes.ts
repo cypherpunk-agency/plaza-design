@@ -38,6 +38,19 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'undercity-entry', base: 'tower', file: 'art/proposals/undercity-entry.composition.json', label: 'Undercity · the way down', district: 'undercity' },
   { id: 'undercity-tunnels', base: 'tower', file: 'art/proposals/undercity-tunnels.composition.json', label: 'Undercity · tunnels and canals, several levels down', district: 'undercity' },
   { id: 'undercity-data-hall', base: 'tower', file: 'art/proposals/undercity-data-hall.composition.json', label: 'Undercity · the flooded data hall', district: 'undercity' },
+  // Downtown everyday (dt-everyday, 2026-10-22): the FRESHCO supermarket, the 24h diner, the roofs and the billboard.
+  { id: 'dt-freshco', base: 'tower', file: 'art/proposals/dt-freshco.composition.json', label: 'Downtown · FRESHCO supermarket: front, shop floor, stockroom', district: 'downtown' },
+  { id: 'dt-diner', base: 'tower', file: 'art/proposals/dt-diner.composition.json', label: 'Downtown · the 24h diner in the rain', district: 'downtown' },
+  { id: 'dt-roofs', base: 'tower', file: 'art/proposals/dt-roofs.composition.json', label: 'Downtown · the roofs and the billboard catwalk', district: 'downtown' },
+  // Downtown home ground (dt-home, 2026-10-22): the capsule block, Moth's walk-up, Kessel's room behind the fixer's kitchen.
+  { id: 'dt-capsule-lobby', base: 'tower', file: 'art/proposals/dt-capsule-lobby.composition.json', label: 'Downtown · the capsule block: lobby, flats, basement, courtyard', district: 'downtown' },
+  { id: 'dt-moth-stairwell', base: 'tower', file: 'art/proposals/dt-moth-stairwell.composition.json', label: 'Downtown · Moth’s walk-up: the stairwell up to 4C', district: 'downtown' },
+  { id: 'dt-kessel-clinic', base: 'tower', file: 'art/proposals/dt-kessel-clinic.composition.json', label: 'Downtown · the noodle stall, its kitchen and Kessel’s back room', district: 'downtown' },
+  // Downtown civic (dt-civic, 2026-10-22): the Registry service point, its back office after hours, the substation and the sweep.
+  { id: 'dt-registry', base: 'tower', file: 'art/proposals/dt-registry.composition.json', label: 'Downtown · the Registry service point: front, hall, back office, node', district: 'downtown' },
+  { id: 'dt-registry-night', base: 'tower', file: 'art/proposals/dt-registry-night.composition.json', label: 'Downtown · the Registry after hours: the alarm at the node', district: 'downtown' },
+  { id: 'dt-substation', base: 'tower', file: 'art/proposals/dt-substation.composition.json', label: 'Downtown · the substation: yard, transformers, control hut', district: 'downtown' },
+  { id: 'dt-sweep', base: 'downtown', file: 'art/proposals/dt-sweep.composition.json', label: 'Downtown · the sweep: Registry vans, floodlights, ID checks (best at night)', district: 'downtown' },
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 
