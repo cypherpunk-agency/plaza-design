@@ -40,7 +40,7 @@ import { type Line, type Spot, SceneModel } from './model';
 import { Panels } from './panels';
 import type { SceneRules } from './rules';
 import { type Box, Feedback, type PingKind, type Spot2D } from './feedback';
-import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
+import { Popup, type PopupAnchor, type PopupItem, type PopupRoom, type PopupOpts } from './popup';
 import { type Anchor, Schematic } from './schematic';
 import { ENGINE_PANEL_FNS } from "./toys/index";
 
@@ -669,6 +669,26 @@ export class SceneHost {
     this.popupAt = this.player.x;
     const wrapped = items.map((it) => ({ ...it, run: () => { this.popup.close(); it.run(); } }));
     this.popup.open(id, name, name, wrapped, this.seen.get(id), this.project ? this.room(id) : undefined);
+  }
+
+  /** Is the list menu `id` (`list`) what the popup shows now? */
+  listOpen(id: string) { return this.popup.isOpen && this.popup.dev === id; }
+  /** Close the list menu `id`, if it is the one open. */
+  closeList(id: string) { if (this.listOpen(id)) this.popup.close(); }
+
+  /**
+   * A list menu beside a moving thing (the lift car's floors), over the box at world `x` (centre), `y` up from the
+   * ground, `w` × `h`: open it, or, already open, bring its rows, selection and the thing's place up to date. The
+   * host that owns the state calls it every frame it applies. Its rows run what they run (the popup stays open for
+   * them); `step` is what ↑ and ↓ do (1 up, -1 down), `sel` the row selected.
+   */
+  list(id: string, name: string, items: PopupItem[], at: { x: number; y: number; w: number; h: number }, sel: number, step: (dir: 1 | -1) => void) {
+    this.chosen = { id, ...at };
+    if (this.listOpen(id)) { this.popup.refresh(items, sel); return; }
+    this.refollow();
+    this.popupAt = this.player.x;
+    const opts: PopupOpts = { placement: 'list', step, sel };
+    this.popup.open(id, name, name, items, this.seen.get(id), this.project ? this.room(id) : undefined, opts);
   }
 
   private popupItems(id: string): PopupItem[] {
