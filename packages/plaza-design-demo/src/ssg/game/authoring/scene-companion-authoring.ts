@@ -1,13 +1,14 @@
 import {TypedForm} from './typed-form';
 import {renderManifestTarget} from './manifest-target-authoring';
-import {DEFAULT_COMPANION_PET,type SceneCompanion} from '../engine/gameplay/scene-companion';
+import type {SceneCompanion} from '../engine/gameplay/scene-companion';
+import {COMPANION_SOURCE,type CompanionSource} from '../engine/gameplay/companion-source';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
 import type {Resolved} from '../art';
 import type {GameplayDefinition} from '../engine/gameplay/types';
-export function renderSceneCompanion(form:TypedForm,host:HTMLElement,source:SceneDocument,rows:readonly Resolved[],stateKeys:readonly string[],graphs:readonly string[],gameplay:GameplayDefinition,edit:(label:string,change:(d:SceneDocument)=>void)=>void,refresh:()=>void){
+export function renderSceneCompanion(form:TypedForm,host:HTMLElement,source:SceneDocument,rows:readonly Resolved[],stateKeys:readonly string[],graphs:readonly string[],gameplay:GameplayDefinition,edit:(label:string,change:(d:SceneDocument)=>void)=>void,refresh:()=>void,companion:CompanionSource=COMPANION_SOURCE){
  const c=source.companion??{mode:'off' as const},update=(label:string,change:(c:SceneCompanion)=>void)=>{edit(label,d=>{d.companion??={mode:'off'};change(d.companion);});refresh();},target=source.manifest!.spawn;
- form.select(host,'Companion mode',['off','home','along'],c.mode,mode=>update('Change companion mode',v=>{if(mode==='home'&&!v.home){if(!stateKeys.length)throw Error('Home companion needs a string state in scene devices');v.home={state:stateKeys[0],default:'home',perches:[{id:'home',point:structuredClone(target),rest:'sit'}]};}v.mode=mode as SceneCompanion['mode'];if(mode!=='off'){v.unlockFlag??='pixel';v.pet??=structuredClone(DEFAULT_COMPANION_PET);}}));
- form.text(host,'Companion unlock flag',c.unlockFlag??'pixel',flag=>update('Bind companion unlock flag',v=>{v.unlockFlag=flag;}));
+ form.select(host,'Companion mode',['off',...companion.modes],c.mode,mode=>update('Change companion mode',v=>{if(mode==='home'&&!v.home){if(!stateKeys.length)throw Error('Home companion needs a string state in scene devices');v.home={state:stateKeys[0],default:'home',perches:[{id:'home',point:structuredClone(target),rest:'sit'}]};}v.mode=mode as SceneCompanion['mode'];if(mode!=='off'){v.unlockFlag??=companion.unlockFlag;v.pet??=structuredClone(companion.pet);}}));
+ form.text(host,'Companion unlock flag',c.unlockFlag??companion.unlockFlag,flag=>update('Bind companion unlock flag',v=>{v.unlockFlag=flag;}));
  const flagList=document.createElement('p');flagList.textContent='Along mode follows the saved flag. Scene flags: '+gameplay.flags.join(', ');host.append(flagList);
  form.check(host,'Companion home mapping',!!c.home,on=>update('Toggle companion home mapping',v=>{if(on){if(!stateKeys.length)throw Error('Home companion needs a string state in scene devices');v.home={state:stateKeys[0],default:'home',perches:[{id:'home',point:structuredClone(target),rest:'sit'}]};}else{if(v.mode==='home')throw Error('Change mode before removing home mapping');delete v.home;}}));
  const perches=(kind:'warm'|'home')=>{const list=kind==='warm'?c.warm??[]:c.home?.perches??[],box=form.section(host,kind==='warm'?'Warm resting places':'Home resting places');
@@ -16,6 +17,6 @@ export function renderSceneCompanion(form:TypedForm,host:HTMLElement,source:Scen
   });form.button(box,'Add companion '+kind+' perch',()=>update('Add companion perch',v=>{const items=kind==='warm'?(v.warm??=[]):v.home!.perches;let i=1;while(items.some(p=>p.id==='perch-'+i))i++;items.push({id:'perch-'+i,point:structuredClone(target),rest:'sleep'});}),list.length>=32);
  };
  if(c.home){form.select(host,'Companion home state',stateKeys,c.home.state,state=>update('Bind companion home state',v=>{v.home!.state=state;}));form.select(host,'Companion default perch',c.home.perches.map(p=>p.id),c.home.default,id=>update('Bind companion default perch',v=>{v.home!.default=id;}));perches('home');}perches('warm');
- form.check(host,'Companion pet interaction',!!c.pet,on=>update('Toggle companion pet interaction',v=>{if(on)v.pet=structuredClone(DEFAULT_COMPANION_PET);else delete v.pet;}));
+ form.check(host,'Companion pet interaction',!!c.pet,on=>update('Toggle companion pet interaction',v=>{if(on)v.pet=structuredClone(companion.pet);else delete v.pet;}));
  if(c.pet){form.text(host,'Companion pet prompt',c.pet.prompt,prompt=>update('Edit companion prompt',v=>{v.pet!.prompt=prompt;}));for(const key of ['sun','moving'] as const)form.select(host,'Companion pet '+key,graphs,c.pet.conversations[key],id=>update('Bind companion pet graph',v=>{v.pet!.conversations[key]=id;}));for(const key of ['sleep','idle'] as const){const box=form.section(host,'Pet '+key+' recurrence');c.pet.conversations[key].forEach((id,i)=>{form.select(box,'Companion pet '+key+' '+(i+1),graphs,id,id=>update('Bind companion pet recurrence',v=>{v.pet!.conversations[key][i]=id;}));form.button(box,'Remove pet '+key+' '+(i+1),()=>update('Remove companion pet recurrence',v=>{v.pet!.conversations[key].splice(i,1);}));});form.button(box,'Add pet '+key,()=>update('Add companion pet recurrence',v=>{v.pet!.conversations[key].push(graphs[0]);}),!graphs.length||c.pet.conversations[key].length>=32);}}
 }

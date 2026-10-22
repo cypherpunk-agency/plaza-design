@@ -1,0 +1,232 @@
+{
+  "version": 1,
+  "hint": "Jump directly to an example. Your current experiment is preserved.",
+  "stations": [
+    {
+      "id": "purchases",
+      "label": "Purchases",
+      "scene": "shop",
+      "at": {
+        "use": "buy"
+      },
+      "when": {
+        "conversation": "demo.desk"
+      },
+      "prompt": "Try a purchase. Pricing & stock opens the controls here; no room change needed."
+    },
+    {
+      "id": "dialogue",
+      "label": "Conversations",
+      "scene": "library",
+      "at": {
+        "person": "librarian"
+      },
+      "when": {
+        "conversation": "demo.desk"
+      },
+      "prompt": "Talk to the librarian or SHELF-E. Is it clear who is speaking and how to continue?"
+    },
+    {
+      "id": "devices",
+      "label": "Devices",
+      "at": {
+        "device": "sensor"
+      },
+      "when": {
+        "conversation": "workshop.operator"
+      },
+      "prompt": "Wave at the sensor or switch the lamp directly. Can you see what caused the change?"
+    },
+    {
+      "id": "wiring",
+      "label": "Wiring & chains",
+      "at": {
+        "device": "plate"
+      },
+      "when": {
+        "conversation": "workshop.operator"
+      },
+      "prompt": "Use H and L to try the pressure plate, timer, switch, hatch and fan. Permissions opens the controls here."
+    },
+    {
+      "id": "shop-counter",
+      "label": "Shop counter",
+      "scene": "shop",
+      "at": {
+        "use": "buy"
+      },
+      "when": {
+        "withoutConversation": "demo.desk"
+      },
+      "prompt": "Try the purchase interaction. Comment on presentation and feedback."
+    },
+    {
+      "id": "catalog",
+      "label": "Library catalog",
+      "scene": "library",
+      "at": {
+        "device": "catalog",
+        "fallback": "spawn"
+      },
+      "when": {
+        "withoutConversation": "demo.desk"
+      },
+      "prompt": "Open the catalog conversation. Are the choices and their consequences understandable?"
+    },
+    {
+      "id": "talk-cook",
+      "scene": "market",
+      "at": {
+        "person": "cook",
+        "talking": true
+      },
+      "prompt": "Talk here. Judge the wording and response; progress is saved by the shared runner."
+    },
+    {
+      "id": "talk-fish",
+      "scene": "market",
+      "at": {
+        "person": "fish",
+        "talking": true
+      },
+      "prompt": "Talk here. Judge the wording and response; progress is saved by the shared runner."
+    },
+    {
+      "id": "talk-repair",
+      "scene": "market",
+      "at": {
+        "person": "repair",
+        "talking": true
+      },
+      "prompt": "Talk here. Judge the wording and response; progress is saved by the shared runner."
+    },
+    {
+      "id": "talk-sleeper",
+      "scene": "market",
+      "at": {
+        "person": "sleeper",
+        "talking": true
+      },
+      "prompt": "Talk here. Judge the wording and response; progress is saved by the shared runner."
+    },
+    {
+      "id": "fortune",
+      "label": "Market fortune",
+      "scene": "market",
+      "at": {
+        "use": "fortune"
+      },
+      "prompt": "Ask for a fortune. Does the price and response feel clear and worthwhile?"
+    },
+    {
+      "id": "laundry",
+      "label": "Laundry counter",
+      "scene": "laundromat",
+      "at": {
+        "firstUse": true
+      },
+      "prompt": "Try the counter interaction. Comment on clarity, tone and feedback."
+    },
+    {
+      "id": "meter",
+      "label": "Beach meter",
+      "scene": "beach",
+      "at": {
+        "device": "kiosk"
+      },
+      "prompt": "Rent a sunbed and inspect its meter. Is the billing behavior understandable?"
+    },
+    {
+      "id": "mixer",
+      "label": "Beach mixer",
+      "scene": "beach",
+      "at": {
+        "device": "mixer"
+      },
+      "prompt": "Try the mixer and jukebox. Does the manual refusal suggest a useful next action?"
+    }
+  ],
+  "actions": [
+    {
+      "id": "buy",
+      "label": "Buy at counter",
+      "scene": "shop",
+      "when": {
+        "conversation": "demo.desk"
+      },
+      "run": {
+        "use": "buy"
+      }
+    },
+    {
+      "id": "pricing",
+      "label": "Pricing & stock",
+      "scene": "shop",
+      "when": {
+        "conversation": "demo.desk"
+      },
+      "run": {
+        "talk": "demo.desk"
+      }
+    },
+    {
+      "id": "guidance",
+      "label": "Guidance example",
+      "scene": "shop",
+      "when": {
+        "conversation": "demo.desk"
+      },
+      "run": {
+        "talk": "demo.mission"
+      }
+    },
+    {
+      "id": "librarian",
+      "label": "Talk: Librarian",
+      "scene": "library",
+      "when": {
+        "station": "dialogue"
+      },
+      "run": {
+        "actor": "librarian"
+      }
+    },
+    {
+      "id": "shelfe",
+      "label": "Talk: SHELF-E",
+      "scene": "library",
+      "when": {
+        "station": "dialogue"
+      },
+      "run": {
+        "actor": "shelfe"
+      }
+    },
+    {
+      "id": "catalog",
+      "label": "Catalog choices",
+      "when": {
+        "conversation": "catalog"
+      },
+      "run": {
+        "talk": "catalog"
+      }
+    },
+    {
+      "id": "permissions",
+      "label": "Hatch permissions",
+      "when": {
+        "conversation": "workshop.operator"
+      },
+      "run": {
+        "talk": "workshop.operator"
+      }
+    }
+  ],
+  "communication": {
+    "remote": {
+      "station": "devices",
+      "device": "fan"
+    }
+  }
+}

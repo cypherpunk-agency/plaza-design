@@ -9,12 +9,14 @@ export interface CameraBindings {
  /** Feed things (`camera.crates` ids) the picture draws as reefers (the stacks' scope). */
  reefers?:string[];
 }
-export const cameraBindingRoles=(scene:string):readonly (keyof CameraBindings)[]=>scene==='yard'?['pan','parcel']:scene==='downtown'?['feed','loop']:scene==='stacks'?['reefers']:[];
+/** Which camera inputs a controller's picture reads: by controller kind, never by scene id. */
+const BINDING_ROLES:Readonly<Record<string,readonly (keyof CameraBindings)[]>>={yard:['pan','parcel'],downtown:['feed','loop'],stacks:['reefers']};
+export const cameraBindingRoles=(controller:{kind:string}|undefined):readonly (keyof CameraBindings)[]=>controller?BINDING_ROLES[controller.kind]??[]:[];
 export function cameraBindingProblems(data:SceneData):string[]{
  const errors:string[]=[],b=data.camera?.bindings;
  if(b===undefined)return errors;
  const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
- if(!object(b)||!cameraBindingRoles(data.id).length||Object.keys(b).some(k=>!cameraBindingRoles(data.id).includes(k as keyof CameraBindings)))return['camera.bindings: registered roles required'];
+ if(!object(b)||!cameraBindingRoles(data.controller).length||Object.keys(b).some(k=>!cameraBindingRoles(data.controller).includes(k as keyof CameraBindings)))return['camera.bindings: registered roles required'];
  const state=(key:unknown,type:string)=>typeof key==='string'&&Object.prototype.hasOwnProperty.call(data.state,key)&&typeof data.state[key]===type;
  if(b.pan!==undefined&&(!object(b.pan)||Object.keys(b.pan).sort().join()!=='scale,state'||!state(b.pan.state,'number')||typeof b.pan.scale!=='number'||!Number.isFinite(b.pan.scale)||Math.abs(b.pan.scale)>1000000))errors.push('camera.bindings.pan: numeric state and finite scale required');
  if(b.parcel!==undefined&&!state(b.parcel,'string'))errors.push('camera.bindings.parcel: string state required');

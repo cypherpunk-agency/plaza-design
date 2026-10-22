@@ -7,6 +7,7 @@ import {validatePendingFixtures,pendingFixtureVocabulary} from './pending-fixtur
 import {deviceSceneIds,deviceDocumentId} from './device-sources';
 import {metroStartingState,metroStartingStates,type MetroStartingState} from './metro-starting-state';
 import {type Station} from '../world/city';
+import {validateMetroSource} from '../world/transport/metro-source';
 import {validateMetroStart} from '../world/transport/metro-start';
 import {nativeGameplayScene} from './native-gameplay-scenes';
 import demoCoverage from '../demo/coverage.json';
@@ -61,13 +62,13 @@ export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,sel
   form.select(details,'Weather',['forecast',...WEATHER_KINDS],f.weather,weather=>edit('Edit fixture weather',f=>{f.weather=weather as PlayFixture['weather'];}));
   form.check(details,'Override spawn',f.spawn!==null,on=>edit('Edit fixture spawn',f=>{f.spawn=on?80:null;}));if(f.spawn!==null)form.number(details,'Starting X',f.spawn,spawn=>edit('Edit fixture spawn',f=>{f.spawn=spawn;}),12,100000);
   const city=createPendingCity(api.get('city-source').value,currentDocuments());
-  const metroPanel=form.section(details,'Metro starting state');
-  form.check(metroPanel,'Override metro state',!!f.metro,on=>edit('Edit fixture metro override',f=>{if(on)f.metro=metroStartingState('at-station',city.stationAt(f.scene)??'galleria',city);else delete f.metro;}));
+  const metroSource=validateMetroSource(api.get('metro-source').value),metroPanel=form.section(details,'Metro starting state');
+  form.check(metroPanel,'Override metro state',!!f.metro,on=>edit('Edit fixture metro override',f=>{if(on)f.metro=metroStartingState('at-station',city.stationAt(f.scene)??'galleria',city,metroSource);else delete f.metro;}));
   if(f.metro){const start=validateMetroStart(f.metro,city.LINE);
    const change=(label:string,apply:(s:NonNullable<PlayFixture['metro']>)=>void)=>edit(label,f=>{apply(f.metro!);f.metro=validateMetroStart(f.metro,city.LINE);});
    form.select(metroPanel,'Metro start',[...metroStartingStates],start.start,kind=>change('Apply metro starting state',s=>{s.start=kind as MetroStartingState;}));
    form.select(metroPanel,'Metro from station',city.LINE,start.station,station=>change('Edit starting metro station',s=>{s.station=station as Station;}));
-   for(const station of city.LINE)if(station!=='harbor')form.check(metroPanel,'Metro stop '+station,start.lineOpen[station],value=>change('Edit starting metro access',s=>{s.lineOpen[station]=value;}));
+   for(const station of city.LINE)if(!metroSource.locked[station])form.check(metroPanel,'Metro stop '+station,start.lineOpen[station],value=>change('Edit starting metro access',s=>{s.lineOpen[station]=value;}));
   }
   const fixtureDocuments=currentDocuments(),vocabulary=Object.keys(NATIVE_SCENES).every(id=>fixtureDocuments.has(id))?pendingFixtureVocabulary(fixtureDocuments):undefined;
   const flags=form.section(details,'Flags');for(const id of vocabulary?[...vocabulary.flags]:fixtureFlags)form.check(flags,id,!!f.flags[id],value=>edit('Edit fixture flag',f=>{f.flags[id]=value;}));

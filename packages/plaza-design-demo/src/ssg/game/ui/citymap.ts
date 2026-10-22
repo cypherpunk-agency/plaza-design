@@ -1,7 +1,6 @@
 import * as defaultCity from '../world/city';
 import type {CityModel} from '../world/city';
 import {createCityPlan} from '../world/cityplan';
-import {harborTransportPermission} from '../world/access';
 
 /**
  * The city map (CITY.md, "The map"): the street plan, tilted back so the towers stand up (or flat),
@@ -119,7 +118,7 @@ type Look = 'lit' | 'dark' | 'veiled';
 interface Cache { key: string; canvas: HTMLCanvasElement; cam: Cam; box: Box }
 /** Map rendering/input and caches consume one isolated city/plan pair. */
 export function createCityMap(world:CityModel=defaultCity,geography:ReturnType<typeof createCityPlan>=createCityPlan(world)){
- const {DISTRICT_MAP,DISTRICT_REVEAL,DISTRICTS,districtName,districtPlaces,districtStage,FARE,knownPlaces,LINES_PLANNED,lineKnownFlag,linkKnown,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,placeBlocked,placeKnown,placeOf,seenPlace,STAND_IDS,STANDS,standOf,STATION_MAP,stationKnown,STATIONS,TRANSPORT}=world;
+ const {DISTRICT_MAP,DISTRICT_REVEAL,DISTRICTS,districtName,districtPlaces,districtStage,FARE,knownPlaces,LINES_PLANNED,lineKnownFlag,linkKnown,LINKS,LOOP_MAP,MAP_H,MAP_W,PAD_MAP,PLACE_MAP,placeBlocked,transportPermission,placeKnown,placeOf,seenPlace,STAND_IDS,STANDS,standOf,STATION_MAP,stationKnown,STATIONS,TRANSPORT}=world;
  type Layout = ReturnType<typeof layout>;
  const {CANAL,CANAL_W,COAST,coastX,districtAt,FENCE,hash,ISLE,onIsle,PARK,plan}=geography;
 
@@ -916,7 +915,7 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
       const [a, b] = V(...STATION_MAP[s]), lx = a + r + 5;
       plate(x, (next ? 'NEXT: ' : '') + STATIONS[s].name, lx, b - 2, rgba(PAPER, st.seen(STATIONS[s].scene) ? 0.95 : 0.6), 7, null, 'left');
       if (inter) chips(lx - 3, b + 5, joins);
-      if (!harborTransportPermission(s,st.harborOpen).ok) plate(x, 'CLOSED UNTIL THE SIDING', lx, b + (inter ? 18 : 9), 'rgba(' + RED + ',.9)', 7, null, 'left');
+      if (!transportPermission(s,st.harborOpen).ok) plate(x, 'CLOSED UNTIL THE SIDING', lx, b + (inter ? 18 : 9), 'rgba(' + RED + ',.9)', 7, null, 'left');
       if (inter) legend.push(['CHANGE HERE', '255,255,255', -1, []]);
     }
   } else if (layer === 'above') {
@@ -969,7 +968,7 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
     }
     STAND_IDS.forEach((s, i) => {
       if (!taxi && !st.seen(STANDS[s].scene)) return;
-      const [a, b] = V(...PAD_MAP[s]), sel = taxi && m.index === i, hov = taxi && m.hover === i, shut = !harborTransportPermission(s,st.harborOpen).ok;
+      const [a, b] = V(...PAD_MAP[s]), sel = taxi && m.index === i, hov = taxi && m.hover === i, shut = !transportPermission(s,st.harborOpen).ok;
       const col = taxi ? (shut ? RED : C) : '255,190,110', r = Math.max(5, Math.min(9, c.s * 7));
       x.fillStyle = '#060404'; x.beginPath(); x.arc(a, b, r, 0, 7); x.fill();
       x.strokeStyle = rgba(col, sel ? (blink ? 1 : 0.55) : 0.85); x.lineWidth = 1.5; x.stroke();
@@ -1154,7 +1153,7 @@ function drawMap(x: Ctx, vw: number, vh: number, st: MapState, dpr: number) {
   const keys = (s: string) => text(x, s, fr, fy + 11, 'rgba(' + PAPER + ',.6)', 7, '', 'right');
   if (taxi) {
     const s = STAND_IDS[m.index], name = st.seen(STANDS[s].scene) ? STANDS[s].name : '???';
-    text(x, '> ' + name + (standOf(st.scene) === s ? '  (YOU ARE HERE)' : !harborTransportPermission(s,st.harborOpen).ok ? '  (CLOSED)' : ''), fx, fy, 'rgba(' + C + ',.95)', 9, '600', 'left');
+    text(x, '> ' + name + (standOf(st.scene) === s ? '  (YOU ARE HERE)' : !transportPermission(s,st.harborOpen).ok ? '  (CLOSED)' : ''), fx, fy, 'rgba(' + C + ',.95)', 9, '600', 'left');
     keys(st.touch ? 'TAP A PAD · TAP AGAIN TO FLY · TAP OUTSIDE TO CANCEL' : '<- -> CHOOSE · E FLY · ESC CANCEL');
   } else if (m.zoomed) {
     const i = m.hover >= 0 ? m.hover : m.index, q = ps[i];

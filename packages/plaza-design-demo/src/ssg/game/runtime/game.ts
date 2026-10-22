@@ -6,18 +6,20 @@ import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/
 import {capsuleController} from '../engine/controllers/capsule';
 import {type SceneModel} from '../engine/model';
 import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
+import {COMPANION_SOURCE,companionFlag,companionHere} from '../engine/gameplay/companion-source';
 import type {GameRuntimeSources} from './game-sources';
 import {runtimeSequenceDocuments} from '../story/sequence-documents';
 import {defaultNetworkContext} from '../engine/network-context';
 import {mintFeedback,type FeedbackReceipt} from '../engine/feedback-receipt';
 import type {MetroStart} from '../world/transport/metro-start';
 import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
+import {CRITTER_REACTIONS,critterReaction,critterReply} from '../engine/gameplay/critter-reactions';
 import {BOT_REACTIONS,withBotConversations,botVoice,botConversationId,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
 import {perfBegin,perfEnd,perfSample} from './diagnostics/performance';
 import {mountPerformancePanel} from './diagnostics/performance-panel';
-import {capabilityView,sceneExitAccess,exitVisibility,exitPermission,harborTransportPermission} from '../world/access';
+import {capabilityView,sceneExitAccess,exitVisibility,exitPermission} from '../world/access';
 import {mountReviewNavigator} from '../demo/review-navigator';
-import {reviewStations} from '../demo/review-stations';
+import {reviewStations,reviewActions,REVIEW_STATIONS,type ReviewActionSource} from '../demo/review-stations';
 import {nativeGameplayPort} from '../engine/gameplay/native-bindings';
 import {ConversationSession} from '../engine/gameplay/conversation';
 import { gameStorage, reloadRuntime } from './storage';
@@ -37,7 +39,7 @@ import { clearWorld } from '../art/core/canvas';
  * pins) and asks the forecast (weather.ts) what the sky does in each scene.
  * Downtown artwork lives in art/assemblies/downtown.ts; this runtime supplies
  * its view. Dialogue and terminal behavior remain in level.ts.
- * Pixel the robot cat, who follows you once you leave the flat, is companion.ts.
+ * The companion (companion.ts, engine/gameplay/companion.json) follows you once its flag is set.
  *
  * The canvas fills the landing page's window between its header and footer and
  * is drawn at an integer pixel scale so the sprites stay crisp.
@@ -76,29 +78,18 @@ import {boardRide,rideHome,startRide} from '../engine/gameplay/mechanisms/line-r
 import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
 import { characterHeight,characterX,isBot,isHere,setSpeaker,talkTo } from './characters';
-import { Companion } from './companion';
+import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import { levelArrive, levelBounds, levelDown, levelFloor, levelHints, levelInteract, levelRiding, levelStep, levelUp, levelView, nearestPrompt, type Level } from "../engine/level";
 
-/** What petting a scene's cat, or shooing its pigeon, gets you. */
-const PET_CAT = [
-  ['The cat allows it. Then it decides it did not, and leaves.'],
-  ['The cat purrs, which is a lot of commitment from a street cat.'],
-  ['The cat sniffs your hand, finds no fish, and looks betrayed.'],
-];
-const PET_PIGEON = [
-  ['The pigeon takes one step to the side. Exactly one.'],
-  ['The pigeon flaps, lands a metre away, and looks at you like you started it.'],
-];
-
 /**
  * Something to press E on: a way out (`exit`), the scene's life (`life`: a readable, a use, someone
  * to talk to, an animal, a robot), a device or the scene's own target on the engine (`device`),
- * Pixel (`pixel`), and Downtown's street people and the fixer (`talk`, level.ts).
+ * the companion (`companion`), and Downtown's street people and the fixer (`talk`, level.ts).
  */
-type Target = { kind: 'exit' | 'life' | 'device' | 'pixel' | 'level'; id: string; x: number; h: number; label: string; promptH?: number };
+type Target = { kind: 'exit' | 'life' | 'device' | 'companion' | 'level'; id: string; x: number; h: number; label: string; promptH?: number };
 /** A speech bubble; `then` runs once its last page is read (the fixer's question opens the deck). */
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number; then?: () => void }
 
@@ -151,10 +142,14 @@ export class Game {
   private reviewAllowed(){return can('review')||EDITOR_PLAY;}
   /** Hack is out of reach: the profile has no hacking, or the story has not given it yet (the opening's phases). */
   private hackLocked(){return !can('hack')||this.openingStory.hackLocked(this.save.flags);}
-  private refreshReview(){this.reviewNav?.refresh(this.here,this.here==='shop'&&!!this.def.gameplay?.conversations['demo.desk'],!!this.def.gameplay?.conversations['workshop.operator'],!!this.def.gameplay?.conversations.catalog);}
+  private get reviewDoc(){return this.sources?.reviewStations??REVIEW_STATIONS;}
+  private refreshReview(){this.reviewNav?.refresh(this.here,reviewActions(this.def,this.here,reviewStations(this.content,this.reviewDoc),this.reviewDoc).map(a=>a.id));}
+  /** A review button (demo/review-stations.json `actions`): a use, a conversation or a person in the scene. */
+  private reviewRun(a:ReviewActionSource){const r=a.run;if(r.use!==undefined)this.reviewUse(r.use);else if(r.talk!==undefined)this.reviewTalk(r.talk);else if(r.actor!==undefined)this.reviewActor(r.actor);}
+  private reviewActor(id:string){if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}
   /** Explicit review bookmarks; never available in campaign play. */
   reviewJump(id:string){
-    if(!this.reviewAllowed())return;const station=reviewStations(this.content).find(s=>s.id===id);if(!station)return;
+    if(!this.reviewAllowed())return;const station=reviewStations(this.content,this.reviewDoc).find(s=>s.id===id);if(!station)return;
     this.keys.clear();this.bubble=null;this.zh.closeAll();this.menu.hide();this.mapView=null;this.netView=null;this.term.close();
     this.enter(station.scene as SceneId,true);this.bubble=null;Object.assign(this.p,{x:station.x,y:0,vy:0,onGround:true});
     this.cam=Math.max(0,Math.min(this.levelW-this.viewW,this.p.x-this.viewW*.45));if(this.levelW<this.viewW)this.cam=(this.levelW-this.viewW)/2;
@@ -167,7 +162,7 @@ export class Game {
     this.keys.clear();this.zh.closeAll();this.bubble=null;this.hints.sceneChanged();
     runCommunicationReview(id,{
       status:(text,tone)=>this.notify(text,tone),
-      remote:()=>{this.reviewJump('devices');this.zh.react('fan',['','Remote device reply example.']);this.zh.ping('fan','look');},
+      remote:()=>{const r=this.reviewDoc.communication.remote;this.reviewJump(r.station);this.zh.react(r.device,['','Remote device reply example.']);this.zh.ping(r.device,'look');},
       dialogue:()=>{this.say('REVIEWER',['A character is speaking. Press E to finish.'],this.p.x,60);this.hints.show('review.waiting','Optional help waited until the character finished.',{repeat:true,first:true});},
       repeat:()=>{const receipt=mintFeedback('demo','review-repeat','info');for(let n=0;n<4;n++)this.hints.notify('One signal, delivered four times.','info',receipt);this.term.print('One signal, delivered four times.','out',false);},
       motion:()=>this.reduced=!this.reduced,
@@ -185,6 +180,12 @@ export class Game {
   private hosts = new Map<SceneId, SceneHost>();
   private gameplaySessions = new Map<SceneId, GameplaySession>();
   private compiledScenes=new Map<SceneId,SceneDef>();
+  /** Where a saved game may resume: any scene, except a `stage.sudoOnly` one (the sandbox) without sudo. */
+  private resumable(id: string): boolean { return this.hasScene(id) && (!this.sceneDefinition(id).sudoOnly || SUDO); }
+  /** Scenes the deck can start over (`stage.resettable`; `stage.sudoOnly` ones only under sudo), in scene order. */
+  private resettableScenes(): [string, SceneDef][] { return Object.entries({ ...SCENES, ...this.content } as Record<string, SceneDef | undefined>).filter((e): e is [string, SceneDef] => !!e[1]?.resettable && (!e[1].sudoOnly || SUDO)); }
+  private get companionDoc(){return this.sources?.companion??COMPANION_SOURCE;}
+  private get critters(){return this.sources?.critters??CRITTER_REACTIONS;}
   private get openingStory(){return this.sources?.openingStory??openingStoryModel;}
   private get sequenceDocuments(){return this.sources?.sequences??runtimeSequenceDocuments;}
   private get networkContext(){return this.sources?.network??defaultNetworkContext;}
@@ -241,8 +242,8 @@ export class Game {
     return {...save,gameplay:values,scenes};
   }
   private persistSave(){storeSave(this.save,save=>this.prepareSave(save));}
-  /** Pixel the robot cat: at home in the flat, at your heels outside once you have left it (`flags.pixel`). */
-  private pixel = new Companion();
+  /** The companion body (engine/gameplay/companion.json): at home where a scene says so, at your heels once its flag is set. */
+  private companionBody = new Companion();
   private started = false;
   /** Frames since the game started; runs even with reduced motion (rides and flights are timed on it). */
   private clock = 0;
@@ -390,9 +391,9 @@ export class Game {
       load: () => this.save.scenes[id],
       store: (z) => { this.save.scenes[id] = z; this.persistSave(); },
     }, def, rules,this.networkContext);
-    // Pixel is the game's, not the scene's: lines about Pixel stand over Pixel, and popups keep clear of the cat
+    // the companion is the game's, not the scene's: lines about it stand over it, and popups keep clear of it
     zh.where = (from) => {
-      if(from==='pixel'&&this.pixelHere)return {x:this.pixel.x,h:this.pixel.h};
+      if(from===this.companionDoc.speaker&&this.companionPresent)return {x:this.companionBody.x,h:this.companionBody.h};
       if(from==='goal'&&this.goalAt!==null)return {x:this.goalAt,h:20};
       const source=from.startsWith('use:')?def.uses?.find(u=>u.id===from.slice(4)):from.startsWith('exit:')?def.exits.find(e=>e.id===from.slice(5)):undefined;
       return source?{x:source.x,h:'h'in source?source.h??0:0}:null;
@@ -400,7 +401,7 @@ export class Game {
     // the opening (opening.ts): hacking is not yours until uplink.so, and some everyday actions say something else
     zh.hackLock = () => this.hackLocked();
     zh.story = (dev) => this.storyChips(id, dev);
-    zh.extras = () => (this.pixelHere ? [{ x: this.pixel.x, h: this.pixel.h }] : []);
+    zh.extras = () => (this.companionDoc.avoidPopups && this.companionPresent ? [{ x: this.companionBody.x, h: this.companionBody.h }] : []);
     // captions never cover the player's speech bubble, and keep their lane over people's heads
     zh.shield = () => { const b = this.bubbleBox, s = this.cssScale; return b ? [{ l: b.x * s, t: b.y * s, r: (b.x + b.w) * s, b: (b.y + b.h) * s }] : []; };
     zh.crowd = () => this.heads();
@@ -432,8 +433,6 @@ export class Game {
   /** The scene the player is in: its definition, and its host on the engine. */
   private get def(): SceneDef { return this.sceneDefinition(this.here); }
   private get zh(): SceneHost { return this.hostOf(this.here); }
-  /** Downtown's host: its goals follow the save's own fields. */
-  private get downtown(): SceneHost { return this.hostOf('downtown'); }
 
   /** Write current progress, refresh the HUD and evaluate source-authored persistence triggers. */
   private persist() {
@@ -478,7 +477,7 @@ export class Game {
     const first = !this.started;
     this.started = true;
     this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
-    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),use:id=>this.reviewUse(id),talk:id=>this.reviewTalk(id),actor:id=>{if(this.reviewAllowed()&&this.def.people?.some(p=>p.id===id)){this.bubble=null;this.keys.clear();this.zh.closeAll();this.useLife('talk:'+id);this.canvas.focus();}}});this.refreshReview();}
+    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content,this.reviewDoc);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,actions:this.reviewDoc.actions,hint:this.reviewDoc.hint,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),run:a=>this.reviewRun(a)});this.refreshReview();}
   }
 
   /**
@@ -491,7 +490,7 @@ export class Game {
     if(routes==='content')scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:start.scene as SceneId);
     this.started = true;
     const resume = !scene && first ? this.openingStory.openingResumeDestination(this.save.flags) : null;let resumeEntrance:string|undefined;
-    if (!scene && first && this.save.scene && this.hasScene(this.save.scene) && (this.save.scene !== 'sandbox' || SUDO)) scene = this.save.scene;
+    if (!scene && first && this.save.scene && this.resumable(this.save.scene)) scene = this.save.scene as SceneId;
     else if (resume && this.hasScene(resume.scene)) {scene=resume.scene;resumeEntrance=resume.entrance;}
     else if (!scene && first && !this.save.flags.arrived && !this.save.flags[this.world.seenFlag('downtown')]) {
       // a save that never got going: the opening, on the train home (no glide: that is NEW GAME's)
@@ -608,7 +607,7 @@ export class Game {
     if (!this.save.flags.arrived) {
       this.save.flags.arrived = true; this.save.flags.schematics = true;
       const pages=[this.weatherHere().rain>greeting.rainThreshold?greeting.wet:greeting.dry,greeting.stall,...how];
-      if (this.save.flags.pixel) pages.splice(1,0,greeting.pixel);
+      if (this.save.flags[this.companionDoc.unlockFlag]) pages.splice(1,0,this.companionDoc.greeting);
       this.say(greeting.speaker,pages,this.p.x,greeting.height);
     } else if (!this.save.flags.schematics) {
       this.save.flags.schematics = true;
@@ -910,7 +909,7 @@ export class Game {
 
   /**
    * Walk into a scene: at its exit `at` (the door you came through, seen from inside), else at its spawn.
-   * Pixel comes along where it follows you, or is at home; the first visit has the player say a few words.
+   * The companion comes along where it follows you, or is at home; the first visit has the player say a few words.
    */
   private enter(id: SceneId, quiet = false, at?: string) {
     const { routes, start, label } = playProfile();
@@ -936,12 +935,12 @@ export class Game {
     this.syncHud();
     setHereClimate(sceneClimate(id));
     if (!quiet) sound.open();
-    // Pixel: at home (coming in behind you through the door, or already asleep there), at your heels where it follows you
+    // the companion: at home (coming in behind you through the door, or already asleep there), at your heels where it follows you
     if (s.perch) {
       const home = s.perch(this.zh.model);
-      if (at && this.save.flags[s.companion?.unlockFlag??'pixel']) this.pixel.place(x - 14, 0, 'walk', 1);
-      else this.pixel.place(home.x, home.h, home.rest);
-    } else if (this.pixelHere) this.pixel.place(x - this.p.face * 20, 0, 'sit', this.p.face);
+      if (at && this.save.flags[companionFlag(s, this.companionDoc)]) this.companionBody.place(x - 14, 0, 'walk', 1);
+      else this.companionBody.place(home.x, home.h, home.rest);
+    } else if (this.companionPresent) this.companionBody.place(x - this.p.face * 20, 0, 'sit', this.p.face);
     // the opening: the train home runs into Downtown; arriving, the player says the opening's words instead
     const st = this.story, said = pick(this.openingStory.OPENING_INTRO, st, id);
     if (id === this.world.TRANSPORT.boarding.scene && st === 'home') this.rideHome();
@@ -1037,8 +1036,7 @@ export class Game {
       clear: () => this.term.clear(),
       leaveMachine: () => this.term.close(),
       persist: () => this.persist(),
-      resetYard: () => this.hostOf('yard').reset(),
-      resetSandbox: SUDO ? () => this.hostOf('sandbox').reset() : undefined,
+      resettable: this.resettableScenes().map(([id, s]) => ({ id, ...s.resettable!, reset: () => this.hostOf(id as SceneId).reset() })),
       // your own deck, while you still exist
       deck: this.openingStory.isBefore(this.save.flags) ? this.openingStory.DECK_BEFORE : undefined,
       // the Registry's forecast, where you are
@@ -1060,7 +1058,7 @@ export class Game {
 
   /**
    * Everything to press E on here, in one list for every scene: its ways out, Downtown's street
-   * people, the devices and the scene's own targets on the engine, the scene's life, and Pixel.
+   * people, the devices and the scene's own targets on the engine, the scene's life, and the companion.
    */
   private targets(): Target[] {
     const s = this.def, list: Target[] = [...this.exitTargets(s)];
@@ -1081,8 +1079,8 @@ export class Game {
     }
     // a level's doors, flights, escalators and lifts where the player stands
     if (this.level) for (const t of levelHints(this.level, this.p, this.zh.model)) list.push({ kind: 'level', ...t });
-    // Pixel can always be petted, wherever it is with you
-    if (this.pixelHere&&this.def.companion?.pet) list.push({ kind: 'pixel', id: 'pixel', x: this.pixel.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.pixel.h + 24 });
+    // the companion can always be petted, wherever it is with you
+    if (this.companionPresent&&this.def.companion?.pet) list.push({ kind: 'companion', id: this.companionDoc.id, x: this.companionBody.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.companionBody.h + 24 });
     return list;
   }
 
@@ -1126,7 +1124,7 @@ export class Game {
       if (rule && this.storyExit(rule, target.x, () => {},undefined,target.id)) return;
     }
     if (target.kind === 'device') { const out = this.zh.use(target.id), e = out ? this.def.exits.find((z) => z.id === out) : undefined; if (e) this.useExit(e); return; }
-    if (target.kind === 'pixel') { const pet=this.def.companion?.pet;if(!pet)return;const conversation=new ConversationSession(this.gameplayFor(this.here)!,this.pixel.pet(pet)),frame=conversation.frame();sound.blip();if(frame.choices?.length){this.zh.presentConversation(conversation);}else{conversation.close();this.say(frame.speaker,frame.pages,this.pixel.x,this.pixel.h+14);this.dialogueCompletion(frame.completion);}return; }
+    if (target.kind === 'companion') { const pet=this.def.companion?.pet;if(!pet)return;const conversation=new ConversationSession(this.gameplayFor(this.here)!,this.companionBody.pet(pet)),frame=conversation.frame();sound.blip();if(frame.choices?.length){this.zh.presentConversation(conversation);}else{conversation.close();this.say(frame.speaker,frame.pages,this.companionBody.x,this.companionBody.h+14);this.dialogueCompletion(frame.completion);}return; }
   }
 
   private update(dt: number) {
@@ -1187,7 +1185,7 @@ export class Game {
       const goalH = Math.max(this.level.source.low, Math.min(this.level.source.high, p.onGround || riding ? p.y : levelFloor(this.level).h));
       this.camH += (goalH - this.camH) * Math.min(1, 0.1 * dt); this.gy = this.gyBase + Math.round(this.camH);
     }
-    if (this.pixelHere) this.pixel.update(dt, { px: p.x, face: p.face, moving: p.moving, perch: this.def.perch?.(this.zh.model) ?? null, warm: this.def.companion?.warm });
+    if (this.companionPresent) this.companionBody.update(dt, { px: p.x, face: p.face, moving: p.moving, follow: this.companionDoc.follow, perch: this.def.perch?.(this.zh.model) ?? null, warm: this.def.companion?.warm });
     this.host.setNodes(nodeCount(this.save));
     // the opening's idle ping: standing still a while, the next goal's target pings (opening.ts)
     const aim = this.shiftGuidance ? null : pick(this.openingStory.OPENING_PINGS, this.story, this.here);
@@ -1195,8 +1193,8 @@ export class Game {
     else if (this.clock - this.still > this.openingStory.IDLE_PING) { this.still = this.clock; this.pingGoal(aim); }
   }
 
-  /** Pixel is drawn at home (the flat), and where it follows you (`pixel: 'along'`) once it does (`flags.pixel`). */
-  private get pixelHere() { const s = this.def; return s.pixel === 'home' || (!!this.save.flags[s.companion?.unlockFlag??'pixel'] && s.pixel === 'along'); }
+  /** The companion is drawn at home (`companion.mode: home`), and where it follows you (`along`) once its flag is set (companion-source.ts). */
+  private get companionPresent() { return companionHere(this.def, this.save.flags, this.companionDoc); }
 
   // ---------- drawing ----------
 
@@ -1205,7 +1203,7 @@ export class Game {
 
   /**
    * One frame, the same way for every scene: the engine's sky and Downtown's street walls where
-   * the scene has them (`ambient`), the scene's own drawing, the player and Pixel, the scene's
+   * the scene has them (`ambient`), the scene's own drawing, the player and the companion, the scene's
    * foreground, rain, then prompts, bubbles and the HUD. Hack vision mutes the world: a scene
    * that draws in two passes (`layers`) gets its devices drawn bright over the muted world; any
    * other keeps holes round its devices' frames (none: everything is muted). The player stays bright.
@@ -1274,10 +1272,10 @@ export class Game {
 
   private drawCharacters() {
     const x = this.x, p = this.p;
-    if (this.pixelHere) this.pixel.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t);
-    // jacked in: a Downtown machine's schematic is open and you stand at it, so the deck's cable runs to it
-    const open = this.here === 'downtown' ? this.downtown.viewing : null;
-    const jack = open ? this.downtown.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
+    if (this.companionPresent) this.companionBody.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t, COMPANION_LOOKS[this.companionDoc.look]);
+    // jacked in: a machine's schematic is open and you stand at it, so the deck's cable runs to it (any scene)
+    const open = this.zh.viewing;
+    const jack = open ? this.zh.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
     AVATAR_PAINTERS[playProfile().player.avatar]({ x, view: this.view(), p, t: this.t, jack, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags) ?? null });
   }
@@ -1299,7 +1297,7 @@ export class Game {
     const x = this.x;
     x.save(); x.font = '600 9px "IBM Plex Mono", monospace'; x.textAlign = 'center';
     x.fillStyle = 'rgba(0,255,255,.95)'; x.shadowColor = 'rgba(0,255,255,.8)'; x.shadowBlur = 6;
-    const h = t.promptH ?? (t.id === 'fixer' ? 66 : 62);
+    const h = t.promptH ?? 62;
     // kept inside the view, so a way out at a scene's very end still reads in full
     const half = x.measureText(t.label).width / 2 + 4;
     x.fillText(t.label, Math.max(half, Math.min(this.viewW - half, this.sx(t.x))), this.y(h));
@@ -1898,7 +1896,7 @@ export class Game {
     this.morning = { at: this.clock, tries: 0, last: -1e9, sent: false, due: false };
     Object.assign(this.p, { x: this.sceneDefinition(this.openingStory.CONTROLLER.home.scene as SceneId).spawn, y: 0, vy: 0, onGround: true, face: -1 });
     const home = this.def.perch?.(this.zh.model);
-    if (home) this.pixel.place(home.x, home.h, home.rest);
+    if (home) this.companionBody.place(home.x, home.h, home.rest);
     this.persistSave();
     this.syncHud();
   }
@@ -2101,11 +2099,12 @@ export class Game {
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
     if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
-    for (const p of s.people ?? []) if (p.id && p.talk && isHere(p)) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: characterHeight(p) + 16 });
+    for (const p of s.people ?? []) if (p.id && p.talk && isHere(p)) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: p.promptH ?? characterHeight(p) + 16 });
     // animals: people always want to pet the cat (and the pigeon gets shooed)
     (s.people ?? []).forEach((p, i) => {
       if (!isHere(p)) return;
-      if (!p.talk && (p.look === 'cat' || p.look === 'pigeon')) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: p.look === 'cat' ? '[E] PET' : '[E] SHOO', promptH: characterHeight(p) + 14 });
+      const critter = critterReaction(p, this.critters);
+      if (!p.talk && critter) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, this.t), h: 0, label: critter.prompt, promptH: characterHeight(p) + 14 });
       // robots without talk still answer: a beep, a status, a polite refusal
       else if (!p.talk && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, this.t), h: 0, label: botVoice(p,this.botReactions).label, promptH: characterHeight(p) + 14 });
     });
@@ -2123,10 +2122,10 @@ export class Game {
       return;
     }
     if (kind === 'pet') {
-      const p = s.people![Number(id)], n = this.petCount++;
-      const lines = p.look === 'cat' ? PET_CAT : PET_PIGEON;
+      const p = s.people![Number(id)], critter = critterReaction(p, this.critters), n = this.petCount++;
+      if (!critter) return;
       sound.blip();
-      this.say(p.look === 'cat' ? 'CAT' : 'PIGEON', lines[n % lines.length], characterX(p, this.t), characterHeight(p) + 4);
+      this.say(critter.name, critterReply(critter, n), characterX(p, this.t), characterHeight(p) + 4);
       return;
     }
     if (kind === 'bot') {
@@ -2212,7 +2211,7 @@ export class Game {
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
     if (!this.hasScene(e.to)) return;
-    // the flat's door: Pixel comes along from now on
+    // the flat's door: the companion comes along from now on
     if (e.sets) { this.save.flags[e.sets] = true; this.persistSave(); }
     this.travel(e.to, e.at);
   }
@@ -2322,8 +2321,8 @@ export class Game {
     this.mapView = null;
     this.canvas.style.cursor = '';
     if (to === this.world.standOf(this.here)) { this.flash('you are already here'); return; }
-    // the harbor lock: no flights to the pier until P14
-    if (!harborTransportPermission(to,this.world.harborOpen(this.save.flags)).ok) { this.driverReply(this.world.DRIVER_HARBOR); return; }
+    // a destination lock (city.json `LOCKS`; the harbor: P14): no flights to a shut destination
+    if (!this.world.transportAccess(to, this.save.flags).ok) { this.driverReply(this.world.DRIVER_HARBOR); return; }
     this.save.tokens -= this.world.FARE;
     this.persistSave();
     this.syncHud();
@@ -2378,8 +2377,8 @@ export class Game {
   private updateTravel() {
     // Maps hold the ride as well as the engine that reads its position (P14).
     if (this.mapView || this.netView) return;
-    // the harbor lock: LINE 0 stops there only once P14 is solved
-    this.metro.lineOpen.harbor = harborTransportPermission('harbor',this.world.harborOpen(this.save.flags)).ok;
+    // locked stations (metro source `locked`): LINE 0 stops there only once the city lock opens (the harbor: P14)
+    this.metro.syncLocks(this.world, this.save.flags);
     if (this.flight && this.clock - this.flight.start >= taxiDurationFor(this.sequenceDocuments.cinematics) * 60) {
       const to = this.flight.to;
       this.flight = null;

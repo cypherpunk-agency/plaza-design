@@ -10,6 +10,7 @@ import {createLineSystem,CAR,DOORS,LOOP,SEG,SIDING,TUNNEL_IN} from '../../src/ss
 import {boardRide,rideHome,startRide,createTrainRules} from '../../src/ssg/game/engine/gameplay/mechanisms/line-ride';
 import {validateMetroStart,metroStartingStates} from '../../src/ssg/game/world/transport/metro-start';
 import {createCityModel} from '../../src/ssg/game/world/city';import citySource from '../../src/ssg/game/world/city.json';
+import {METRO_SOURCE} from '../../src/ssg/game/world/transport/metro-source';
 import {metroStartingState} from '../../src/ssg/game/authoring/metro-starting-state';
 import {FRAME,advance} from './train-ride.mts';
 const city=createCityModel(citySource);
@@ -115,7 +116,7 @@ assert.equal(TUNNEL_IN,SEG-470);assert.equal(SIDING,2*SEG-650);assert.equal(LOOP
 
 // ---- a fixture's starting states run the car's own movers to them
 for(const kind of metroStartingStates){
- const start=metroStartingState(kind,'galleria',city);assert.deepEqual(validateMetroStart(start,city.LINE),start);
+ const start=metroStartingState(kind,'galleria',city,METRO_SOURCE);assert.deepEqual(validateMetroStart(start,city.LINE),start);
  const r=rig(false),{metro,m,mv}=r;r.metro.lineOpen.harbor=false;startRide(m,metro,start);
  const phase=metro.ridePhase(mv);
  if(kind==='at-station'){assert.equal(phase,'dwell');assert.equal(metro.rideStop(mv),'galleria');assert.equal(Math.round(metro.rideLeft(mv)),330);}
@@ -125,6 +126,6 @@ for(const kind of metroStartingStates){
  if(kind==='siding'||kind==='siding-open'){assert.equal(phase,'halted');assert(metro.rideAtSiding(mv));assert(Math.abs(metro.ridePos(mv)-SIDING)<1e-6);}
  if(kind==='siding-open')assert(metro.rideOpen(mv),'doors released');if(kind==='siding')assert(!metro.rideOpen(mv));
 }
-for(const mutate of [(s:any)=>s.start='nonsense',(s:any)=>s.station='nowhere',(s:any)=>s.lineOpen.harbor='yes',(s:any)=>s.extra='code',(s:any)=>s.version=2,(s:any)=>delete s.lineOpen.galleria]){const bad:any=structuredClone(metroStartingState('siding','galleria',city));mutate(bad);assert.throws(()=>validateMetroStart(bad,city.LINE));}
+for(const mutate of [(s:any)=>s.start='nonsense',(s:any)=>s.station='nowhere',(s:any)=>s.lineOpen.harbor='yes',(s:any)=>s.extra='code',(s:any)=>s.version=2,(s:any)=>delete s.lineOpen.galleria]){const bad:any=structuredClone(metroStartingState('siding','galleria',city,METRO_SOURCE));mutate(bad);assert.throws(()=>validateMetroStart(bad,city.LINE));}
 console.log('Train ride PASS: the car and its doors are movers of the Train scene on scene time (cycle, arrivals/departures, closed stop passed, cues, siding brake snap, halts, doors at the siding, train home, saved with the scene), fixture starting states, invalid starts rejected.');
 void advance;

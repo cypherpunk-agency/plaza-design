@@ -602,6 +602,12 @@
     "mode": "off"
   },
   "stage": {
+    "sudoOnly": true,
+    "resettable": {
+      "label": "the sandbox",
+      "confirm": "this resets the sandbox only (QA bay 3: devices, cables, parts, trace).",
+      "done": "sandbox reset: QA bay 3 as on the first visit. Everything else is kept."
+    },
     "targetAnchors": [
       "reset"
     ],

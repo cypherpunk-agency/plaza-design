@@ -258,8 +258,12 @@ function trainVisualState(mv?: Movers) {
 
  /** Retains object identities held by bound rules while clearing the session's mutable state: which stops LINE 0 stops at. */
  function reset(){for(const id of LINE)lineOpen[id]=true;}
- return {reset,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformShiftFor,platformDoors,lineOpen,nextStation,platformQueue,clock,SEG,LOOP,TUNNEL_IN,SIDING,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,ridePhase:phase,rideDoors:doorsAt,ridePos,rideView,platformTrainVisual,departureVisual,trainVisualState};
+ /** The city lock that keeps LINE 0 from stopping at this station until it opens (metro source `locked`). */
+ const lockOf=(station:Station):string|undefined=>config.locked[station];
+ /** Open or shut every locked station by its city lock and the saved flags (a lock holds LINE 0 from stopping until its flag is set). */
+ function syncLocks(world:Pick<CityModel,'lockOpen'>,flags:Readonly<Record<string,boolean>>){for(const[station,lock]of Object.entries(config.locked))lineOpen[station as Station]=world.lockOpen(lock as string,flags);}
+ return {reset,lockOf,syncLocks,TIMETABLE,STOP,TRAIN,platformTrain,platformOpen,platformLeft,platformDue,platformShiftFor,platformDoors,lineOpen,nextStation,platformQueue,clock,SEG,LOOP,TUNNEL_IN,SIDING,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,ridePhase:phase,rideDoors:doorsAt,ridePos,rideView,platformTrainVisual,departureVisual,trainVisualState};
 }
 export type LineSystem=ReturnType<typeof createLineSystem>;
 const shippingLine=createLineSystem();
-export const {reset,TIMETABLE,platformTrain,platformOpen,platformLeft,platformDue,platformShiftFor,platformDoors,lineOpen,nextStation,platformQueue,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,ridePhase,rideDoors,ridePos,rideView,platformTrainVisual,departureVisual,trainVisualState}=shippingLine;
+export const {reset,lockOf,syncLocks,TIMETABLE,platformTrain,platformOpen,platformLeft,platformDue,platformShiftFor,platformDoors,lineOpen,nextStation,platformQueue,rideStop,rideNext,between,rideAtSiding,rideOpen,rideLeft,rideDue,rideRun,ridePhase,rideDoors,ridePos,rideView,platformTrainVisual,departureVisual,trainVisualState}=shippingLine;
