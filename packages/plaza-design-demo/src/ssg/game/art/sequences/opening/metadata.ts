@@ -13,7 +13,7 @@ import type { TowerSign } from '../../architecture/downtown-towers';
 import { drawPalm } from '../../environment/palm';
 import {drawLounger,drawDjBooth,drawBonfire} from '../../props/beach-party';
 import {frameView} from '../../core/view';
-import {measureArtwork,type Measured} from './measure';
+import {measureArtwork,type Measured} from '../../core/measure';
 
 export interface PieceGeometry { bounds: Bounds; anchors: Record<string, Anchor> }
 const numeric = (label: string, value: number, min?: number, max?: number): Field => ({ kind: 'number', label, default: value, ...(min === undefined ? {} : { min }), ...(max === undefined ? {} : { max }), animatable: true });

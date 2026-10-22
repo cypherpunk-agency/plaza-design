@@ -8,6 +8,7 @@ import { addLight } from '../atmosphere/lighting';
 import type { Element, Field } from '../core/composition';
 import { glowLevel } from '../../world/light';
 import { drawSky } from '../environment/sky';
+import { inPixels, SHORE } from '../core/pixels';
 
 const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
 const rgbOf = (hex: unknown, fallback: string) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex)); return m ? m.slice(1).map(h => parseInt(h, 16)).join(',') : fallback; };
@@ -65,8 +66,8 @@ export const streetSurfaceElement: Element = {
   },
 };
 
-const LAMP_STYLES = ['sodium', 'lantern', 'led', 'string'] as const;
-const LAMP_COL: Record<string, string> = { sodium: '#ffb35a', lantern: '#ff6a3a', led: '#dce8ff', string: '#ffd28a' };
+const LAMP_STYLES = ['sodium', 'lantern', 'led', 'string', 'coast'] as const;
+const LAMP_COL: Record<string, string> = { sodium: '#ffb35a', lantern: '#ff6a3a', led: '#dce8ff', string: '#ffd28a', coast: '#ffdca0' };
 
 export const streetLampElement: Element = {
   type: 'street.lamp', version: 1, label: 'Street light (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
@@ -89,7 +90,14 @@ export const streetLampElement: Element = {
     const near = at.parallax === 1, glowAt = (wx: number, h: number, r: number, a: number) => { if (near && reach > 0) addLight(v, { x: wx, h, kind: 'lamp', col, r: r * reach, a }); };
     const head = (cx: number, cy: number, w: number, hgt: number) => { x.fillStyle = 'rgba(' + col + ',' + (0.35 + 0.6 * on).toFixed(3) + ')'; x.fillRect(Math.round(cx - w / 2), Math.round(cy), w, hgt); };
     const foot = v.y(at.h);
-    if (style === 'sodium') {
+    if (style === 'coast') {
+      // the coast kit's lamp (the title glide's), in its pixels: a post, an arm, a warm bar and its round glow, a pool on the pavement
+      inPixels(x, v, at, P => { const s = Math.round(P.ax), top = P.y(at.h + H), base = P.y(at.h), road = P.y(at.h + SHORE.road0 - SHORE.back);
+        x.fillStyle = '#0e080c'; x.fillRect(s, top, 2, base - top); x.fillRect(s - 7, top, 9, 2);
+        x.fillStyle = 'rgba(255,220,160,.95)'; x.fillRect(s - 7, top + 2, 5, 1);
+        const gg = x.createRadialGradient(P.ax - 4, top + 3, 1, P.ax - 4, top + 3, 28); gg.addColorStop(0, 'rgba(255,210,150,.22)'); gg.addColorStop(1, 'rgba(255,210,150,0)'); x.fillStyle = gg; x.fillRect(P.ax - 32, top - 24, 56, 56);
+        x.fillStyle = 'rgba(255,210,150,.08)'; x.fillRect(s - 14, base, 20, road - base); });
+    } else if (style === 'sodium') {
       // a steel post with an arm out over the street
       x.fillStyle = '#0c0807'; x.fillRect(sx - 1, v.y(at.h + H), 3, foot - v.y(at.h + H)); x.fillRect(sx - 3, foot - 6, 7, 6);
       x.fillRect(sx, v.y(at.h + H), 16, 2); x.fillStyle = '#1a120c'; x.fillRect(sx + 10, v.y(at.h + H) + 2, 10, 3);

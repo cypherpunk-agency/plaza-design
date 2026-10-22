@@ -1,5 +1,5 @@
 /**
- * Skyline occlusion (the glide's slowest piece, 2026-10-22 measurement): a far skyline tower that a
+ * Skyline occlusion (the title glide's slowest piece, 2026-10-22 measurement): a far skyline tower that a
  * nearer tower's opaque body will paint over completely is skipped. Exact, not approximate: a pixel
  * counts as covered only when it lies wholly inside one opaque body rectangle (device pixels,
  * rounded inward) drawn later at full opacity with source-over, so the later fill replaces it
@@ -7,8 +7,8 @@
  * filters, shadows, a rotated or skewed transform) keeps the tower. No state of its own beyond
  * a per-tower cache of its extent in its own units.
  */
-import { drawTower, segments, type Tower, type TowerLook } from '../../architecture/downtown-towers';
-import { measureArtwork, type Measured } from './measure';
+import { drawTower, segments, type Tower, type TowerLook } from './downtown-towers';
+import { measureArtwork, type Measured } from '../core/measure';
 
 /** One tower as drawSkyline places it: `placed(x, tx, ty, sc, …)`, drawn with `look`. */
 export interface PlacedTower { tower: Tower; tx: number; ty: number; sc: number; look: TowerLook }

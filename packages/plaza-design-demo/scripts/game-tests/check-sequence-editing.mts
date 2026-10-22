@@ -10,7 +10,7 @@ import type {Composition,Instance,Properties} from '../../src/ssg/game/art/core/
 import type {TimelineDocument} from '../../src/ssg/game/art/core/timeline';
 import {cinematicDocuments} from '../../src/ssg/game/story/cutscenes/documents';
 import {visiblePoint} from '../../src/ssg/game/art/sequences/opening/piece-inputs';
-import {measureArtwork} from '../../src/ssg/game/art/sequences/opening/measure';
+import {measureArtwork} from '../../src/ssg/game/art/core/measure';
 
 function recorder(){const commands:unknown[][]=[];const values:Record<string,unknown>={globalAlpha:1,getTransform:()=>({a:2}),measureText:(s:string)=>({width:s.length*6})};const ctx=new Proxy(values,{get(t,k:string){if(k in t)return t[k];if(k.startsWith('create'))return()=>({addColorStop(){}});return(...args:unknown[])=>commands.push([k,...args]);},set(t,k:string,v){t[k]=v;commands.push(['set',k,v]);return true;}}) as unknown as CanvasRenderingContext2D;return{ctx,commands};}
 (globalThis as unknown as {document:unknown}).document={createElement:()=>({width:0,height:0,getContext:()=>recorder().ctx})};

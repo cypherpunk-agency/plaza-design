@@ -37,7 +37,7 @@ export function residentCharacter(props:Properties,point:Point):Character{
  const range=Number(props.range??0),speed=Number(props.speed??0);
  // a seat or bed height (0: the kit's own, as before); lying: asleep, a blanket
  const seat=Number(props.seat??0),rest=props.kind==='human'?{...(seat>0?{seat}:{}),...(props.act==='lie'&&props.lying==='asleep'?{asleep:true}:{}),...(props.act==='lie'&&typeof props.cover==='string'&&props.cover!==''?{cover:props.cover}:{})}:{};
- actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:band.dim,parallax:band.parallax,...body,...sitting,...rest,...(range?{range}:{}),...(speed>0?{speed}:{})};
+ actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:Number(props.dim??-1)>=0?Number(props.dim):band.dim,parallax:band.parallax,...(props.facing==='left'?{facing:-1 as const}:props.facing==='right'?{facing:1 as const}:{}),...body,...sitting,...rest,...(range?{range}:{}),...(speed>0?{speed}:{})};
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
 export const residentElement:Element={
@@ -50,6 +50,9 @@ export const residentElement:Element={
   range:{kind:'number',label:'Travel range (movers; negative: to the left)',default:0,min:-4000,max:4000,step:1,unit:'units'},
   speed:{kind:'number',label:'Speed (0: usual pace)',default:0,min:0,max:10,step:0.05},
   depth:{kind:'select',label:'Depth',options:[...DEPTH_ORDER],default:'play'},
+  // a silhouette against the light (the pier at sunset): darker than its depth band makes it; -1 keeps the band's
+  dim:{kind:'number',label:'Dimming (-1: the depth band’s)',default:-1,min:-1,max:1,step:0.01},
+  facing:{kind:'select',label:'Faces (standing; walkers face where they go)',options:['auto','right','left'],default:'auto'},
   style:{kind:'select',label:'Colour style',options:['automatic','vivid','muted'],default:'automatic',showIf:human},
   district:{kind:'select',label:'District clothes',options:['',...DISTRICTS],default:'',showIf:human},
   tech:{kind:'select',label:'Visible tech',options:['automatic','yes','no'],default:'automatic',showIf:human},

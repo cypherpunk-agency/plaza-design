@@ -19,7 +19,7 @@ import type { Character } from "../../../runtime/characters";
 import { drawTower, signGlows, towerRow, type Tower } from "../../architecture/downtown-towers";
 import { drawRing, RING, ringTraffic } from "../../architecture/ring-highway";
 import { frameView, placed } from "../../core/view";
-import { hiddenTowers, type PlacedTower } from './occlusion';
+import { hiddenTowers, type PlacedTower } from '../../architecture/tower-occlusion';
 import { type CoastView, type Lines, hash, lerp, mixHex, R, S } from "./coast";
 import { PLACES, TOWER_X } from "./path";
 import { text } from "../../core/primitives";
