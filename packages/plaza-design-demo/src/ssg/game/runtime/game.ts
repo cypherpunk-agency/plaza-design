@@ -1345,7 +1345,7 @@ export class Game {
       skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
-      ...(this.joinedZones.length ? { joined: this.joinedZones.map(z => this.zoneFrame(z)) } : {}),
+      ...(this.joinedZones?.length ? { joined: this.joinedZones.map(z => this.zoneFrame(z)) } : {}),
     });
   }
 
