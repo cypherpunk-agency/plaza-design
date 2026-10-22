@@ -45,6 +45,14 @@ export const QUAY_END = 1500;
  * drawn over the traffic, so a vehicle passes into it rather than appearing out of the air.
  */
 export const RING_ENDS = { west: WEST.junction, east: PLACES.ring };
+/**
+ * The street's west end (X): the west gate's street portal (town.ts `GATE[1]`, the sea wall's line). Street traffic
+ * enters the glide's street from the portal's dark and leaves into it: a route to or from `PORTAL` is cut exactly here
+ * (the part west of it is never drawn), and the gate block, painted after the traffic (glide.ts 'gate'), closes the end.
+ */
+export const STREET_WEST_PORTAL = RING_ENDS.west;
+/** The end index of the street portal (SIDE_STREETS are 0..n-1, the truck gate -1): always the westmost far end. */
+const PORTAL = SIDE_STREETS.length;
 /** The route's zone: the glide's one strip of road, in view units (x is X, h is depth behind the lane's wheel line). */
 const ZONE = 'glide-road';
 
@@ -56,9 +64,9 @@ export const LANES: readonly { lane: LaneId; dir: 1 | -1; v: number; gap: number
 ];
 /**
  * The near end of a slot's route (westbound: its origin, eastbound: its destination) and how likely: the gate
- * takes trucks, the side streets cars; the last side street is only ever the far end. The rest of the slots are empty.
+ * takes trucks, the side streets cars; the last side street only a little (to the portal), and the portal is only ever a far end. The rest of the slots are empty.
  */
-const ENDS: [number, number][] = [[-1, 0.2], [0, 0.12], [1, 0.14], [2, 0.14], [3, 0.14]];
+const ENDS: [number, number][] = [[-1, 0.2], [0, 0.12], [1, 0.14], [2, 0.14], [3, 0.14], [4, 0.08]];
 const PAINTS = ['#8a2a2a', '#2a4a6a', '#c8c0b0', '#3a3a3a', '#6a5a2a', '#e8e0d0', '#4a2a4a'];
 const TRUCK_PAINTS = ['#c8c0b0', '#8a2a2a', '#3a5a3a', '#2a3a5a'];
 const KINDS = ['sedan', 'hatch', 'cab', 'van', 'sedan', 'bus', 'hatch', 'cab'] as const;
@@ -74,7 +82,7 @@ function endsOf(k: number, seed: number): { near: number; far: number } | null {
   for (const [i, p] of ENDS) { if (v < p) { near = i; break; } v -= p; }
   if (near === null) return null;
   // the far end: a side street west of the near end, the last one (the city's way out) three times as likely as each other
-  const options = SIDE_STREETS.map((_, i) => i).filter(i => i > near!), weight = (i: number) => i === SIDE_STREETS.length - 1 ? 3 : 1;
+  const options = [...SIDE_STREETS.map((_, i) => i), PORTAL].filter(i => i > near!), weight = (i: number) => i === SIDE_STREETS.length - 1 || i === PORTAL ? 3 : 1;
   let w = h01(k * 13 + seed * 5 + 3) * options.reduce((n, i) => n + weight(i), 0);
   for (const i of options) { w -= weight(i); if (w < 0) return { near, far: i }; }
   return { near, far: options[options.length - 1] };
@@ -104,19 +112,20 @@ function mouthOut(e: number, u: 1 | -1, hb: number, half: number, facing: 1 | -1
 }
 
 /** A vehicle's whole route and where on it the lane's conveyor slot is: `entry` route units before the lane leg starts at `laneX`. */
-export interface TrafficRoute { route: VehicleRoute; total: number; entry: number; laneX: number; mouths: (number | null)[] }
+export interface TrafficRoute { route: VehicleRoute; total: number; entry: number; laneX: number; mouths: (number | null)[]; portal: boolean }
 const ROUTES = new Map<string, TrafficRoute>();
 /** The route from end `from` to end `to` (side-street indices, -1 the gate) for a lane travelling `u` (1 west). */
 export function trafficRoute(from: number, to: number, u: 1 | -1, hb: number, half: number): TrafficRoute {
   const key = [from, to, u, hb, half].join('|'), hit = ROUTES.get(key);
   if (hit) return hit;
-  const facing = (-u) as 1 | -1, X = (i: number) => i < 0 ? PLACES.road : SIDE_STREETS[i];
-  const pre = from < 0 ? [] : mouthIn(X(from), u, hb, half, facing), post = to < 0 ? [] : mouthOut(X(to), u, hb, half, facing);
-  const laneX = from < 0 ? QUAY_END : X(from) + u * 24, endX = to < 0 ? QUAY_END : X(to) - u * 24;
+  const facing = (-u) as 1 | -1, X = (i: number) => i < 0 ? PLACES.road : i === PORTAL ? STREET_WEST_PORTAL : SIDE_STREETS[i];
+  const pre = from < 0 || from === PORTAL ? [] : mouthIn(X(from), u, hb, half, facing), post = to < 0 || to === PORTAL ? [] : mouthOut(X(to), u, hb, half, facing);
+  // the portal: the vehicle's whole body starts (ends) just past it, where it is cut away
+  const laneX = from < 0 ? QUAY_END : from === PORTAL ? X(from) - u * (half + 2) : X(from) + u * 24, endX = to < 0 ? QUAY_END : to === PORTAL ? X(to) + u * (half + 2) : X(to) - u * 24;
   const lane: RouteLeg = { zone: ZONE, from: { x: laneX, h: 0 }, to: { x: endX, h: 0 }, facing };
   const legs = [...pre, lane, ...post], route: VehicleRoute = { legs };
   const out: TrafficRoute = { route, total: routeLength(route), entry: routeLength({ legs: pre.length ? pre : [lane] }) * (pre.length ? 1 : 0), laneX,
-    mouths: [...pre.map(() => X(from)), null, ...post.map(() => X(to))] };
+    mouths: [...pre.map(() => X(from)), null, ...post.map(() => X(to))], portal: from === PORTAL || to === PORTAL };
   if (ROUTES.size > 256) ROUTES.clear();
   ROUTES.set(key, out);
   return out;
@@ -130,6 +139,8 @@ export interface TrafficVehicle {
   X: number; sx: number; y: number; half: number; tall: number;
   /** The side street (X) whose mouth it is in (it shows only through the mouth and in front of the building line), or null on the road. */
   mouth: number | null;
+  /** It drives out of or into the street portal (`STREET_WEST_PORTAL`): cut away west of it, the gate's face drawn over the rest. */
+  portal: boolean;
   /** `street`: still behind the pavement's people, drawn with its side street; `road`: drawn with the road. */
   pass: 'street' | 'road';
   paint: string; box: Crate | null;
@@ -155,7 +166,7 @@ export function trafficPlan(c: CoastView, L: Lines): TrafficVehicle[] {
       if (s <= 0 || s >= r.total) continue;
       const p = routeAt(r.route, s), sx = c.sx(p.x), y = ly - p.h, mouth = r.mouths[p.leg];
       if (sx + half < -60 || sx - half > c.W + 60) continue;
-      out.push({ id: ln.lane + '#' + k, lane: ln.lane, k, kind, face: ln.dir, s, total: r.total, X: p.x, sx, y, half, tall: TALL[kind], mouth, pass: mouth !== null && y < L.MID ? 'street' : 'road',
+      out.push({ id: ln.lane + '#' + k, lane: ln.lane, k, kind, face: ln.dir, s, total: r.total, X: p.x, sx, y, half, tall: TALL[kind], mouth, portal: r.portal, pass: mouth !== null && y < L.MID ? 'street' : 'road',
         paint: gate ? at(TRUCK_PAINTS, k) : kind === 'cab' ? '#d8b040' : kind === 'bus' ? '#3a5a6a' : at(PAINTS, k), box: gate && h01(k * 3 + 1) < 0.75 ? at(LOADS, k) : null });
     }
   }
@@ -173,6 +184,7 @@ export function mouthClip(c: CoastView, L: Lines, mouth: number) {
 function drawVehicle(x: CanvasRenderingContext2D, c: CoastView, L: Lines, v: TrafficVehicle) {
   const lit = c.city > 0.2 || c.warm < 0.6;
   x.save();
+  if (v.portal) { x.beginPath(); x.rect(R(c.sx(STREET_WEST_PORTAL)), -4000, c.W + 8000, 8000); x.clip(); }
   if (v.mouth !== null) {
     const m = mouthClip(c, L, v.mouth);
     x.beginPath(); x.rect(m.x0, -4000, m.x1 - m.x0, 8000); x.rect(-4000, m.line, c.W + 8000, 8000); x.clip();

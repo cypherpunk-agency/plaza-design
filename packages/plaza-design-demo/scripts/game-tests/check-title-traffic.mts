@@ -5,7 +5,8 @@
  * - the road's vehicles (art/sequences/opening/traffic.ts) are drawn far lane first, near lane last, by depth;
  * - no vehicle is ever drawn with globalAlpha < 1 (the canvas is instrumented);
  * - a vehicle shows first as a sliver at the view's edge or in a side street's mouth, moves continuously, and
- *   leaves the same way (never appears or vanishes whole inside the view); the Ring's traffic is clipped at RING_ENDS;
+ *   leaves the same way (never appears or vanishes whole inside the view; at the west gate's street portal the clip edge
+ *   is the portal itself, STREET_WEST_PORTAL); the first stretch of street (X 4800 to the portal) has traffic at tau 14-22; the Ring's traffic is clipped at RING_ENDS;
  * - people (every character sprite the opening paints) never appear or vanish inside the view, except at the view's
  *   edge or at a door (the Galleria's doors, the dome, the train's doors at the Harbor Station);
  * - the Harbor Station's crowd boards the timeline's train, after its doors open;
@@ -19,9 +20,10 @@ import { openingTimelineContext } from '../../src/ssg/game/art/sequences/opening
 import { openingFrame } from '../../src/ssg/game/art/sequences/opening/glide';
 import { lines, ESCALATOR } from '../../src/ssg/game/art/sequences/opening/coast';
 import { harborDoors, HARBOR_STAIRS } from '../../src/ssg/game/art/sequences/opening/finale';
-import { drawSideStreetTraffic, drawTraffic, LANES, mouthClip, RING_ENDS, SIDE_STREETS, trafficPlan, type TrafficVehicle } from '../../src/ssg/game/art/sequences/opening/traffic';
+import { drawSideStreetTraffic, drawTraffic, LANES, mouthClip, RING_ENDS, SIDE_STREETS, STREET_WEST_PORTAL, trafficPlan, type TrafficVehicle } from '../../src/ssg/game/art/sequences/opening/traffic';
 import { flowPlace } from '../../src/ssg/game/art/sequences/opening/poses';
 import { evaluateTimeline } from '../../src/ssg/game/art/core/timeline';
+import { GATE } from '../../src/ssg/game/art/sequences/opening/town';
 import { lightAt } from '../../src/ssg/game/world/light';
 import { WEST, PLACES } from '../../src/ssg/game/art/sequences/opening/path';
 
@@ -93,14 +95,16 @@ function coastAt(tau: number) {
 
 // vehicles: visible area (inside the view and, in a mouth, its clip), continuity, order and alpha
 const area = (v: TrafficVehicle, c: ReturnType<typeof coastAt>['c'], L: ReturnType<typeof coastAt>['L']) => {
-  const x0 = Math.max(0, v.sx - v.half), x1 = Math.min(c.W, v.sx + v.half), y0 = Math.max(0, v.y - v.tall), y1 = Math.min(c.H, v.y);
+  let x0 = Math.max(0, v.sx - v.half); const x1 = Math.min(c.W, v.sx + v.half), y0 = Math.max(0, v.y - v.tall), y1 = Math.min(c.H, v.y);
   if (x1 <= x0 || y1 <= y0) return { area: 0, w: 0, h: 0 };
+  if (v.portal) x0 = Math.max(x0, c.sx(STREET_WEST_PORTAL)); // cut away west of the portal (its dark closes the street)
+  if (x1 <= x0) return { area: 0, w: 0, h: 0 };
   if (v.mouth === null) return { area: (x1 - x0) * (y1 - y0), w: x1 - x0, h: y1 - y0 };
   const m = mouthClip(c, L, v.mouth), sx0 = Math.max(x0, m.x0), sx1 = Math.min(x1, m.x1), by0 = Math.max(y0, m.line);
   const strip = Math.max(0, sx1 - sx0) * (y1 - y0), below = (x1 - x0) * Math.max(0, y1 - by0), both = Math.max(0, sx1 - sx0) * Math.max(0, y1 - by0);
   return { area: strip + below - both, w: Math.max(Math.max(0, sx1 - sx0), below > 0 ? x1 - x0 : 0), h: Math.max(below > 0 ? y1 - by0 : 0, strip > 0 ? y1 - y0 : 0) };
 };
-let prev = new Map<string, { v: TrafficVehicle; a: number; w: number; h: number; g: number }>(), seenMouth = 0, seenGate = 0, frames = 0, shown = 0;
+let prev = new Map<string, { v: TrafficVehicle; a: number; w: number; h: number; g: number }>(), seenMouth = 0, seenGate = 0, seenPortal = 0, stretch = 0, frames = 0, shown = 0;
 for (let i = 0; i <= glide.duration * FPS; i++) {
   const tau = i / FPS, { c, L } = coastAt(tau), plan = trafficPlan(c, L), next = new Map<string, { v: TrafficVehicle; a: number; w: number; h: number; g: number }>();
   for (let k = 1; k < plan.length; k++) assert(plan[k - 1].y <= plan[k].y, `tau ${tau}: ${plan[k - 1].id} (y ${plan[k - 1].y}) is drawn before ${plan[k].id} (y ${plan[k].y})`);
@@ -113,9 +117,10 @@ for (let i = 0; i <= glide.duration * FPS; i++) {
     if (was) {
       const moved = Math.abs((v.sx - was.v.sx) - (c.g - was.g)), step = (LANES.find(l => l.lane === v.lane)!.v * 60 / FPS) * 1.6 + 1;
       assert(moved <= step && Math.abs(v.y - was.v.y) <= step, `tau ${tau}: ${v.id} jumps (${moved.toFixed(1)}, ${(v.y - was.v.y).toFixed(1)})`);
-      if (was.a === 0 && a.area > 0) { assert(Math.min(a.w, a.h) <= SLIVER, `tau ${tau}: ${v.id} appears whole (${a.w.toFixed(1)} × ${a.h.toFixed(1)}) inside the view`); if (v.mouth !== null) seenMouth++; }
+      if (was.a === 0 && a.area > 0) { assert(Math.min(a.w, a.h) <= SLIVER, `tau ${tau}: ${v.id} appears whole (${a.w.toFixed(1)} × ${a.h.toFixed(1)}) inside the view`); if (v.mouth !== null) seenMouth++; if (v.portal) seenPortal++; }
     } else assert(a.area === 0, `tau ${tau}: ${v.id} is new but already shows (${a.w.toFixed(1)} × ${a.h.toFixed(1)}) at ${v.sx.toFixed(0)},${v.y}`);
     if (v.kind === 'truck' && a.area > 0) seenGate++;
+    if (tau >= 14 && tau <= 22 && a.area > 0 && v.mouth === null && v.X >= SIDE_STREETS[SIDE_STREETS.length - 1] && v.X <= STREET_WEST_PORTAL) stretch++;
   }
   for (const [id, was] of prev) if (!next.has(id)) assert(Math.min(was.w, was.h) <= SLIVER, `tau ${tau}: ${id} vanishes whole (${was.w.toFixed(1)} × ${was.h.toFixed(1)}) inside the view`);
   // drawn with full alpha, back to front (the road pass and every side street's pass)
@@ -128,6 +133,9 @@ for (let i = 0; i <= glide.duration * FPS; i++) {
   prev = next; frames++;
 }
 assert(seenMouth >= 3, `cars roll out of the side streets (${seenMouth} seen)`);
+assert(seenPortal >= 2, `cars come out of the street portal (${seenPortal} seen)`);
+assert(stretch > 0, `the street between the last side street and the portal has traffic at tau 14-22 (${stretch} vehicle-frames)`);
+assert.equal(STREET_WEST_PORTAL, GATE[1], 'the street portal is the west gate\'s west face');
 assert(seenGate > 0 && shown > frames, 'trucks and cars show on the road');
 assert.deepEqual(RING_ENDS, { west: WEST.junction, east: PLACES.ring }, 'the Ring\'s traffic ends where its deck does today');
 
