@@ -111,6 +111,23 @@
             "layer": "set"
           },
           {
+            "id": "turnstile",
+            "type": "level.barrier",
+            "props": {
+              "style": "turnstile",
+              "width": 24,
+              "key": "uplink",
+              "flag": "",
+              "refuse": "TURNSTILE · NO VALID CHIP. PRESENT UPLINK."
+            },
+            "placement": {
+              "x": 600,
+              "h": 0
+            },
+            "order": 265,
+            "layer": "set"
+          },
+          {
             "id": "spawn",
             "type": "scene.player",
             "props": {},

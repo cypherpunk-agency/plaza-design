@@ -175,6 +175,14 @@ lifts and buttons get theirs; every key must be one of the element's visual fiel
 or (environment "Rooms as the player sees them") the view after a path of floors, `floor` or `floor@x`, by the
 same rule as play. Check with `pnpm test:game level-rooms level-visual-state`.
 
+A barrier (`level.barrier`; `style` turnstile, gate or door; `width` its passage) stands across a floor in the world, not
+at a scene exit: shut, `levelBounds` (given the player's x) stops the player on their side, on that floor only. E there
+(`barrier:` prompt) goes through `levelPass`, which asks world/access.ts `barrierAccess`: the exits' own rule shapes, a
+keyring chip carried (`key`, like an exit's `needs`) and a flag set (`flag`, like `requires`), refusing with `refuse`. Passing, it
+opens and stays open: `LevelState.opened`, kept in `Save.barriers` by scene (`savedByScene`/`savedForLevel`, like seen rooms);
+its picture's `open` is eased in the level step. `mergeLevels` namespaces barriers like every piece; a barrier key is
+validated with the exits' keys. The Tower annex's turnstile is the example. Check with `pnpm test:game level-barriers`.
+
 The street door seen from inside is `level.entrance` (its `building`; `style` glass, shop, flat or service, each the
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
 player is in that building.

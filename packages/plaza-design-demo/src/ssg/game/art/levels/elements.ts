@@ -337,4 +337,63 @@ export const liftButtonElement: Element = {
   },
 };
 
-export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, entranceElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement];
+/** Barrier looks: a ticket-hall turnstile, a barred sliding gate, a locked door with a card reader. */
+export const BARRIER_STYLES = ['turnstile', 'gate', 'door'] as const;
+/**
+ * A barrier across a floor (origin: the middle of its passage, `width` wide): shut, it stops the player on either side
+ * until its rule passes (engine/level.ts `levelPass`, world/access.ts `barrierAccess`: the exits' key and flag); E asks it.
+ * Its rule is these fields: `key`, a keyring chip the player must carry; `flag`, a flag that must be set; `refuse`, the
+ * words when it refuses. It draws shut or open from `open` (0..1), which the level eases once it has opened; it stays open.
+ */
+export const barrierElement: Element = {
+  type: 'level.barrier', version: 1, label: 'Barrier (turnstile, gate, locked door)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  fields: {
+    style: { kind: 'select', label: 'Style', options: [...BARRIER_STYLES], default: 'turnstile' },
+    width: num('Passage width', 24, 10, 200, 1, 'units'),
+    key: text('Opens for: key chip carried (keyring id; empty: none)'),
+    flag: text('Opens once: flag set (empty: none)'),
+    refuse: text('Refuses with', 'ACCESS DENIED.'),
+  },
+  visualFields: { open: num('Open', 0, 0, 1, 0.01) },
+  bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 0, w: Number(p.width) + 20, tall: 58 }),
+  anchors: origin,
+  draw: (x, v, p, s) => {
+    const w = Number(p.width), hw = w / 2, open = Math.max(0, Math.min(1, Number(s.open ?? 0))), style = String(p.style ?? 'turnstile'), lamp = open > 0.5 ? C.go : C.stop;
+    if (style === 'gate') {
+      // two posts and a barred leaf that slides into the right post as it opens
+      rect(x, v, -hw - 4, 0, 4, 48, C.mid); rect(x, v, hw, 0, 4, 48, C.mid);
+      rect(x, v, -hw - 4, 46, 4, 2, C.edge); rect(x, v, hw, 46, 4, 2, C.edge);
+      const leaf = w * (1 - open), left = hw - leaf;
+      if (leaf > 0.5) {
+        rect(x, v, left, 4, leaf, 2, C.rail); rect(x, v, left, 40, leaf, 2, C.rail); rect(x, v, left, 22, leaf, 1, C.edge);
+        for (let i = left + 1; i < hw; i += 4) rect(x, v, i, 4, 1, 38, C.rail);
+        rect(x, v, left, 41, leaf, 1, C.rim);
+      }
+      rect(x, v, hw + 1, 34, 2, 3, lamp);
+      return;
+    }
+    if (style === 'door') {
+      // a steel door in its frame, swinging away (its leaf narrows), a card reader beside it
+      rect(x, v, -hw - 3, 0, 3, 52, C.edge); rect(x, v, hw, 0, 3, 52, C.edge); rect(x, v, -hw - 3, 49, w + 6, 3, C.edge);
+      rect(x, v, -hw, 0, w, 49, C.dark);
+      const leaf = w * (1 - open * 0.85);
+      rect(x, v, -hw, 0, leaf, 49, '#4a4e57'); rect(x, v, -hw + 1, 0, Math.max(1, leaf - 2), 6, C.face);
+      if (leaf > 6) rect(x, v, -hw + leaf - 4, 22, 2, 4, C.rail);
+      rect(x, v, -hw, 49, leaf, 1, C.rim);
+      rect(x, v, hw + 4, 24, 5, 8, C.mid); rect(x, v, hw + 5, 29, 3, 2, lamp);
+      return;
+    }
+    // turnstile: a waist-high cabinet each side, the arm across the passage dropping as it opens, a lamp on top
+    rect(x, v, -hw - 8, 0, 8, 34, C.mid); rect(x, v, hw, 0, 8, 34, C.mid);
+    rect(x, v, -hw - 8, 32, 8, 2, C.edge); rect(x, v, hw, 32, 8, 2, C.edge);
+    rect(x, v, -hw - 6, 26, 4, 3, C.face); rect(x, v, -hw - 5, 27, 2, 1, lamp);
+    rect(x, v, hw + 2, 34, 4, 2, lamp);
+    // the arm hinges on the left cabinet: level when shut, hanging down when open
+    const a = open * Math.PI / 2, len = w - 1, hx = -hw, hh = 26;
+    x.strokeStyle = C.rail; x.lineWidth = 2; x.beginPath(); x.moveTo(v.sx(hx), v.y(hh)); x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh - Math.min(len, hh - 2) * Math.sin(a))); x.stroke();
+    x.strokeStyle = C.rim; x.lineWidth = 1; x.beginPath(); x.moveTo(v.sx(hx), v.y(hh + 1)); x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh + 1 - Math.min(len, hh - 2) * Math.sin(a))); x.stroke();
+    rect(x, v, -hw - 1, hh - 2, 3, 4, C.edge);
+  },
+};
+
+export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, entranceElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement, barrierElement];

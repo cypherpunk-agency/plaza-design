@@ -41,6 +41,8 @@ export interface Save {
   seenHints?: string[];
   /** Rooms seen and remembered (engine/level.ts `LevelRoom`, keep 'remember'), by scene id: they stay open. Older saves: none. */
   rooms?: Record<string, string[]>;
+  /** Level barriers opened (engine/level.ts `LevelBarrier`: turnstiles, gates, locked doors), by scene id: they stay open. */
+  barriers?: Record<string, string[]>;
   /** The city clock (clock.ts): day, minute of the day, the weather's seed. Older saves: day 1, 09:40, seed 1. */
   clock: ClockSave;
 }

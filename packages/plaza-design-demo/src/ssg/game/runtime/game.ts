@@ -16,7 +16,7 @@ import {CRITTER_REACTIONS,critterReaction,critterReply} from '../engine/gameplay
 import {BOT_REACTIONS,withBotConversations,botVoice,botConversationId,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
 import {perfBegin,perfEnd,perfSample} from './diagnostics/performance';
 import {mountPerformancePanel} from './diagnostics/performance-panel';
-import {capabilityView,sceneExitAccess,exitVisibility,exitPermission} from '../world/access';
+import {capabilityView,sceneExitAccess,exitVisibility,exitPermission,barrierAccess} from '../world/access';
 import {mountReviewNavigator} from '../demo/review-navigator';
 import {reviewStations,reviewActions,REVIEW_STATIONS,type ReviewActionSource} from '../demo/review-stations';
 import {nativeGameplayPort} from '../engine/gameplay/native-bindings';
@@ -83,7 +83,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, type Level, type LevelSource, type Movers } from "../engine/level";
+import { levelArrive, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
 import { joined as zoneJoined, placeFrom, seamsOf, validateZoneGraph } from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
@@ -937,6 +937,17 @@ export class Game {
     for (const [z, rooms] of Object.entries(by)) if (lv.source.zones ? rooms.length > (this.save.rooms?.[z]?.length ?? 0) : rooms.length !== (this.save.rooms?.[z]?.length ?? 0)) { (this.save.rooms ??= {})[z] = lv.source.zones ? [...new Set([...(this.save.rooms?.[z] ?? []), ...rooms])] : [...rooms]; changed = true; }
     if (changed) this.persistSave();
   }
+  /**
+   * E at a level barrier (turnstile, gate, locked door): its rule over the save (world/access.ts `barrierAccess`) refuses with
+   * its words, or it opens and stays open on this save (`Save.barriers`, by scene). False: the prompt is not a barrier's.
+   */
+  private passBarrier(id: string): boolean {
+    const lv = this.level!, result = levelPass(lv, id, b => barrierAccess(b, this.save.flags, this.save.keyring));
+    if (!result) return false;
+    if (!result.ok) { this.zh.react(id, ['', result.reason, 'err']); return true; }
+    this.save.barriers = { ...this.save.barriers, ...savedByScene(lv.source, this.here, levelOpened(lv)) }; this.persistSave();
+    return true;
+  }
   /** Each lift reads its own zone's movers. */
   private readonly movers: Movers = (zone) => zone && zone !== this.here && this.hasScene(zone) ? this.hostOf(zone).model : this.zh.model;
   /** A zone's part of the level's view, in its own ids. */
@@ -973,7 +984,7 @@ export class Game {
     this.companionBody.x -= dx; this.companionBody.h -= dh;
     this.nudge = null; this.easeBack = false;
     const source = this.joinLevel(id)!;
-    this.level = levelRejoin({ source, state }, source, this.seenRooms(source, id) ?? []);
+    this.level = levelRejoin({ source, state }, source, this.seenRooms(source, id) ?? [], savedForLevel(source, id, this.save.barriers));
     // the view keeps its scale over a seam (only a cut refits it)
     this.fitW = this.spanW;
     this.showHost();
@@ -1017,7 +1028,7 @@ export class Game {
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
     const source = this.joinLevel(id), arriveH = (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0;
-    this.level = source ? { source, state: levelArrive(source, this.p, arriveH, this.seenRooms(source, id)) } : null;
+    this.level = source ? { source, state: levelArrive(source, this.p, arriveH, this.seenRooms(source, id), savedForLevel(source, id, this.save.barriers)) } : null;
     this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
     this.cam = this.camFollow(this.p.x);
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
@@ -1223,7 +1234,7 @@ export class Game {
     if(this.zh.acknowledgmentPending){this.zh.advanceAcknowledgment();return;}
     const target = this.nearest();
     if (!target) return;
-    if (target.kind === 'level') { if (this.level) levelInteract(this.level, target.id, this.p, this.movers); return; }
+    if (target.kind === 'level') { if (this.level && !this.passBarrier(target.id)) levelInteract(this.level, target.id, this.p, this.movers); return; }
     if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
@@ -1260,7 +1271,7 @@ export class Game {
     if (zone && zone !== this.here && this.hasScene(zone)) this.crossInto(zone);
     // a room seen for the first time stays open on this save
     if (this.level) this.keepSeenRooms();
-    const [minX, maxX] = this.level && !riding ? levelBounds(this.level, this.levelW) : [12, this.levelW - 12];
+    const [minX, maxX] = this.level && !riding ? levelBounds(this.level, this.levelW, p.x) : [12, this.levelW - 12];
     if (!riding) p.x = Math.max(minX, Math.min(maxX, p.x + dir * speed * dt));
     // Walking into an open border (the yard's passage, a street's end) leaves without E.
     if (dir < 0 && p.x <= 12 && !this.seamAt('left')) this.walkOff('left');
