@@ -74,6 +74,9 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
   { id: 'metro-len-3', base: 'tower', file: 'art/proposals/metro-len-3.composition.json', label: 'Metro · 3-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-4', base: 'tower', file: 'art/proposals/metro-len-4.composition.json', label: 'Metro · 4-car train at an underground platform', district: 'downtown' },
   { id: 'metro-len-6', base: 'tower', file: 'art/proposals/metro-len-6.composition.json', label: 'Metro · 6-car train at an underground platform (long)', district: 'downtown' },
+  // The walkable train (SEAMLESS-WORLD.md decided 5 and 20): two cars and a gangway from the consist kit (vehicle.*), cut open,
+  // its deck, doors and seats matching art/proposals/train-two-car.vehicle.json. On the harbor's look, at the raised platform.
+  { id: 'train-two-car', base: 'harbor', file: 'art/proposals/train-two-car.composition.json', label: 'Metro · the walkable 2-car train at a platform (consist kit; morning, night)', district: 'harbor' },
   // Harbor replan (docs/design/HARBOR-ZONES.md, 2026-10-22): the harbor as joined zones, west to east along the prologue's walk.
   // Look frames on the harbor's look (sky, weather, facing 90); all share ground line h 0 (the station: 160 over the quay).
   { id: 'harbor-shed', base: 'harbor', file: 'art/proposals/harbor-shed.composition.json', label: 'Harbor zones · 1 Transit Shed 3: staff gate, staff room, supervisor, dispatch, case returns (dusk, night)', district: 'harbor' },
