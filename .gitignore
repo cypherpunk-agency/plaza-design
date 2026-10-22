@@ -56,3 +56,5 @@ dist-homepage/
 
 # agent worktrees (temporary checkouts)
 .claude/worktrees/
+# review captures (PNG screenshots for review pages)
+.claude/captures/
