@@ -1,0 +1,90 @@
+diff --git a/packages/plaza-design-demo/src/ssg/game/engine/gameplay/manifest-content-compiler.ts b/packages/plaza-design-demo/src/ssg/game/engine/gameplay/manifest-content-compiler.ts
+index 3f92d46..fdad139 100644
+--- a/packages/plaza-design-demo/src/ssg/game/engine/gameplay/manifest-content-compiler.ts
++++ b/packages/plaza-design-demo/src/ssg/game/engine/gameplay/manifest-content-compiler.ts
+@@ -12,12 +12,12 @@ export function compileManifestDocument(source:SceneDocument,rows:readonly Resol
+   const promptH=row.promptH??point.promptH,h=row.h??point.responseH??(options.elevatedResponses&&point.h?point.h+defaultHeight:undefined);
+   return{...(promptH!==undefined?{promptH}:{}),...(h!==undefined?{h}:{})};
+  };
+- const content:Pick<SceneDef,'width'|'spawn'|'uses'|'readables'|'rests'|'exits'|'objective'|'objectives'|'attention'|'storyMinute'|'storyDay'|'pixel'|'perch'|'companion'|keyof SceneEnvironment>={
++ const content:Pick<SceneDef,'width'|'spawn'|'uses'|'readables'|'rests'|'exits'|'objective'|'objectives'|'attention'|'storyMinute'|'storyRun'|'storyDay'|'pixel'|'perch'|'companion'|keyof SceneEnvironment>={
+   ...sceneEnvironment(source.environment),...compileSceneCompanion(source.companion,rows,geometry.width),width:geometry.width,spawn:geometry.spawn,uses:compiled.uses.map(u=>({...u,...heights(u,geometry.bindings.uses[u.id],60)})),
+   readables:source.readables?.map(r=>({...r,x:geometry.bindings.readables[r.id].x,...heights(r,geometry.bindings.readables[r.id],70)})),
+   rests:source.rests?.map(r=>{const h=geometry.bindings.rests[r.id].h+(r.h??0);return{...r,x:geometry.bindings.rests[r.id].x,...(!options.omitGroundRestHeight||h!==0||r.h!==undefined?{h}:{}),...(r.promptH!==undefined?{promptH:r.promptH}:geometry.bindings.rests[r.id].promptH!==undefined?{promptH:geometry.bindings.rests[r.id].promptH}:{})};}),
+   exits:(source.exits??[]).map(e=>({...e,x:geometry.bindings.exits[e.id].x,...heights(e,geometry.bindings.exits[e.id],0),...(geometry.exitCheckpoints[e.id]?{checkpoint:{x:geometry.exitCheckpoints[e.id].x,h:geometry.exitCheckpoints[e.id].h}}:{})})),
+-  objectives:compiled.objectives,objective:compiled.objective,attention:compiled.attention?((flags,state)=>compiled.attention!(flags,undefined,state)):undefined,storyMinute:compiled.minute,storyDay:compiled.day,
++  objectives:compiled.objectives,objective:compiled.objective,attention:compiled.attention?((flags,state)=>compiled.attention!(flags,undefined,state)):undefined,storyMinute:compiled.minute,storyRun:compiled.run,storyDay:compiled.day,
+  };
+  return{geometry,content};
+ }
+diff --git a/packages/plaza-design-demo/src/ssg/game/engine/gameplay/scene-document.ts b/packages/plaza-design-demo/src/ssg/game/engine/gameplay/scene-document.ts
+index 94d47ca..ae7a54a 100644
+--- a/packages/plaza-design-demo/src/ssg/game/engine/gameplay/scene-document.ts
++++ b/packages/plaza-design-demo/src/ssg/game/engine/gameplay/scene-document.ts
+@@ -39,8 +39,13 @@ export interface SceneDocument {
+   nativeTargets?:NativeTargetDocument[];
+   cues?:PresentationCue[];
+   objectives?:ObjectiveDefinition[];
+-  time?:{when?:Condition;minute:number}[];
+-  timeDay?:{when?:Condition;day:number}[];
++  /**
++   * The story clock, first matching row: `minute` pins the city clock there; `rate` lets it run on from where it is (no jump),
++   * at `rate` times the city's usual speed, holding once it reaches `until` (a minute of the day) if given.
++   */
++  time?:{when?:Condition;minute?:number;rate?:number;until?:number}[];
++  /** The story's day, first matching row; the final fallback may leave `day` out: the clock's own day (a running clock passes midnight itself). */
++  timeDay?:{when?:Condition;day?:number}[];
+   uses:UseDocument[];
+   rests?:{id:string;kind:'bench'|'stool'|'bed';promptH?:number;h?:number}[];
+   readables?:{id:string;name:string;pages:string[];label?:string;promptH?:number}[];
+@@ -74,8 +79,8 @@ export function validateSceneDocument(value:unknown,gameplay:GameplayDefinition,
+   checkObjectives(gameplay);for(const interval of Object.values(gameplay.native?.intervals??{}))checkConditionObjectives(interval.active);for(const deadline of Object.values(gameplay.native?.deadlines??{})){checkConditionObjectives(deadline.armWhen);checkConditionObjectives(deadline.while);}for(const person of d.people as ScenePerson[]|undefined??[])for(const line of person.lines??[])checkConditionObjectives(line.condition);for(const row of d.objectives as ObjectiveDefinition[]|undefined??[])checkConditionObjectives(row.when,true);for(const[key,value]of Object.entries(d))if(key!=='objectives')checkObjectives(value);
+   const ids=new Set<string>();for(const row of (Array.isArray(d.uses)&&d.uses.length===0?[]:list(d.uses,32))){const u=fields(row,['id','name','label','pricedLabel','conversationPresentation','targetOrder','speakerKind','promptH','h','price','purchase','cycleState','act','cycle','when','access','routes','items'],['id','name','label','routes']);for(const key of ['promptH','h'])if(u[key]!==undefined&&(typeof u[key]!=='number'||!Number.isFinite(u[key])||Number(u[key])<0||Number(u[key])>10000))fail('interaction height');if(u.speakerKind!==undefined&&!['character','device','system'].includes(String(u.speakerKind)))fail('speaker kind');text(u.id);if(ids.has(String(u.id)))fail('duplicate interaction');ids.add(String(u.id));text(u.name);text(u.label);if(u.targetOrder!==undefined&&!['before-devices','after-devices'].includes(String(u.targetOrder)))fail('interaction target order');if(u.pricedLabel!==undefined)text(u.pricedLabel);if(u.conversationPresentation!==undefined&&!['bubble','panel'].includes(String(u.conversationPresentation)))fail('conversation presentation');condition(u.when,true);if(u.access!==undefined)validateAccess(u.access,gameplay);if(u.purchase!==undefined&&(!gameplay.purchases?.[String(u.purchase)]||u.price!==undefined))fail('purchase binding or duplicated price');if(u.cycle===true&&!rotationStateIds(gameplay).includes(String(u.cycleState))||u.cycleState!==undefined&&!u.cycle)fail('rotation requires an explicit non-negative integer state');if(u.price!==undefined&&(!Number.isSafeInteger(u.price)||Number(u.price)<0||Number(u.price)>1000000))fail('price range');if(u.act!==undefined)text(u.act);if(u.cycle!==undefined&&typeof u.cycle!=='boolean')fail('cycle boolean');routes(u.routes,u.cycle===true);if(u.items!==undefined){if(!Array.isArray(u.items)||u.items.length>2)fail('at most two carried-item actions');const items=new Set<string>();for(const row of u.items as unknown[]){const i=fields(row,['item','label','routes'],['item','label','routes']);if(!gameplay.items.includes(String(i.item))||items.has(String(i.item)))fail('item reference/duplicate');items.add(String(i.item));text(i.label);routes(i.routes);}}}
+   if(d.objectives!==undefined){const objectives=list(d.objectives);ordered(objectives);const goals=new Set<string>();for(const row of objectives){const g=fields(row,['id','text','when','target','gentle'],['id','text']);text(g.id);if(goals.has(String(g.id)))fail('duplicate objective');goals.add(String(g.id));text(g.text);condition(g.when);if(g.target!==undefined&&!ids.has(String(g.target)))fail('guidance target');if(g.gentle!==undefined&&typeof g.gentle!=='boolean')fail('gentle boolean');}}
+-  if(d.timeDay!==undefined){const rows=list(d.timeDay);ordered(rows);for(const row of rows){const t=fields(row,['when','day'],['day']);condition(t.when,true);if(!Number.isSafeInteger(t.day)||Number(t.day)<1||Number(t.day)>10000)fail('day range');}}
+-  if(d.time!==undefined){const time=list(d.time);ordered(time);for(const row of time){const t=fields(row,['when','minute'],['minute']);condition(t.when,true);if(!Number.isInteger(t.minute)||Number(t.minute)<0||Number(t.minute)>1439)fail('minute range');}}
++  if(d.timeDay!==undefined){const rows=list(d.timeDay);ordered(rows);for(const [i,row]of rows.entries()){const t=fields(row,['when','day'],i===rows.length-1?[]:['day']);condition(t.when,true);if(t.day!==undefined&&(!Number.isSafeInteger(t.day)||Number(t.day)<1||Number(t.day)>10000))fail('day range');}}
++  if(d.time!==undefined){const time=list(d.time);ordered(time);for(const row of time){const t=fields(row,['when','minute','rate','until']);condition(t.when,true);if((t.minute===undefined)===(t.rate===undefined))fail('story clock row: a minute (pin) or a rate (runs)');const minute=(m:unknown)=>{if(!Number.isInteger(m)||Number(m)<0||Number(m)>1439)fail('minute range');};if(t.minute!==undefined)minute(t.minute);if(t.rate!==undefined&&(typeof t.rate!=='number'||!Number.isFinite(t.rate)||t.rate<=0||t.rate>60))fail('clock rate range');if(t.until!==undefined){if(t.rate===undefined)fail('until requires a rate');minute(t.until);}}}
+   if(d.rests!==undefined){const seen=new Set<string>();for(const row of list(d.rests)){const r=fields(row,['id','kind','promptH','h'],['id','kind']);text(r.id);if(seen.has(String(r.id)))fail('duplicate rest');seen.add(String(r.id));if(!['bench','stool','bed'].includes(String(r.kind)))fail('rest kind');for(const key of ['promptH','h'])if(r[key]!==undefined&&(typeof r[key]!=='number'||!Number.isFinite(r[key])||Number(r[key])<0||Number(r[key])>10000))fail('rest height');}}
+   for(const key of ['readables','people','exits'] as const){if(d[key]===undefined)continue;const rows=list(d[key]),seen=new Set<string>();for(const row of rows){const r=fields(row,key==='readables'?['id','name','pages','label','promptH']:key==='people'?['id','name','promptH','talk','repeat','lines','conversation']:['id','to','at','label','action','promptH','engine','sets','edge','requires','needs'],key==='readables'?['id','name','pages']:key==='people'?['id','name']:['id','to','label']);if(r.promptH!==undefined&&(typeof r.promptH!=='number'||!Number.isFinite(r.promptH)||r.promptH<0||r.promptH>10000))fail('prompt height');text(r.id);if(seen.has(String(r.id)))fail('duplicate '+key);seen.add(String(r.id));if(key==='readables'){text(r.name);pages(r.pages);if(r.label!==undefined)text(r.label);}else if(key==='people'){text(r.name);if(r.conversation!==undefined){text(r.conversation);if(!Object.prototype.hasOwnProperty.call(gameplay.conversations,String(r.conversation))||r.talk!==undefined||r.repeat!==undefined||r.lines!==undefined)fail('person conversation reference requires one existing graph and no duplicate pages');}else list(r.talk,32).forEach(pages);if(r.lines!==undefined){for(const raw of list(r.lines,32)){const line=fields(raw,['when','weather','condition','pages'],['pages']);pages(line.pages);condition(line.condition);if(line.when!==undefined&&windowProblem(line.when))fail('actor time window');if(line.weather!==undefined&&(!Array.isArray(line.weather)||!line.weather.length||line.weather.some(w=>!WEATHER_KINDS.includes(w as WeatherKind))))fail('actor weather');}}if(r.repeat!==undefined&&!['last','cycle'].includes(String(r.repeat)))fail('conversation repeat policy');}else{if(r.requires!==undefined&&!gameplay.flags.includes(String(r.requires)))fail('exit flag reference');if(r.needs!==undefined){const n=fields(r.needs,['key','name','pages','h'],['key','name','pages','h']);text(n.key);text(n.name);pages(n.pages);if(typeof n.h!=='number'||!Number.isFinite(n.h)||n.h<0||n.h>10000)fail('exit refusal height');}if(r.engine!==undefined&&typeof r.engine!=='boolean')fail('engine exit boolean');if(r.sets!==undefined)text(r.sets);if(r.edge!==undefined&&!['left','right'].includes(String(r.edge)))fail('exit edge');if(r.action!==undefined&&!['board','out','taxi','map'].includes(String(r.action)))fail('exit action');if(r.to!==''||r.action===undefined)text(r.to);if(r.at!==undefined)text(r.at);if(typeof r.label!=='string'||r.label.length>2000)fail('exit label');}}}
+   if(d.cues!==undefined){if(!options.presentationTargets)fail('presentation cues require a registered adapter');if(!Array.isArray(d.cues)||d.cues.length>32)fail('cue list');const seen=new Set<string>();for(const row of d.cues as unknown[]){const c=fields(row,['event','target'],['event','target']);if(!gameplay.events.includes(String(c.event))||!options.presentationTargets!.includes(String(c.target)))fail('presentation cue reference');const key=JSON.stringify([c.event,c.target]);if(seen.has(key))fail('duplicate presentation cue');seen.add(key);}}
+@@ -92,7 +97,10 @@ export function compileSceneDocument(doc:SceneDocument,positions:Record<string,n
+   const objective=(flags:Readonly<Record<string,boolean>>,state?:import('./types').GameplayState)=>objectiveRow(flags,state).text;
+   const attention=(flags:Readonly<Record<string,boolean>>,at=positions,state?:import('./types').GameplayState)=>{return objectiveAttention(objectiveRow(flags,state),at);};
+   const day=(flags:Readonly<Record<string,boolean>>,state:import('./types').GameplayState|undefined=undefined)=>doc.timeDay!.find(t=>test(t.when,flags,state))!.day;
+-  const minute=(flags:Readonly<Record<string,boolean>>,state:import('./types').GameplayState|undefined=undefined)=>doc.time!.find(t=>test(t.when,flags,state))!.minute;
++  /** The story clock's row: a pin (`minute`) or a run (`rate`, `until`). */
++  const clockRow=(flags:Readonly<Record<string,boolean>>,state:import('./types').GameplayState|undefined=undefined)=>doc.time!.find(t=>test(t.when,flags,state))!;
++  const minute=(flags:Readonly<Record<string,boolean>>,state:import('./types').GameplayState|undefined=undefined)=>clockRow(flags,state).minute;
++  const run=(flags:Readonly<Record<string,boolean>>,state:import('./types').GameplayState|undefined=undefined)=>{const r=clockRow(flags,state);return r.rate===undefined?undefined:{rate:r.rate,...(r.until!==undefined?{until:r.until}:{})};};
+   const execute=(routes:InteractionRoute[],c:UseCtx,cycle?:string,cycleState?:string,access:AccessRequirement[]=[]):SceneSaid=>{
+     const permission=evaluateAccess(access,{state:c.gameplay?.state()??{flags:c.flags,items:{},tokens:0},reads:c.gameplay?.queryContext(),eligibility:id=>c.gameplay?.eligibility(id,'interaction')??{ok:false}});if(!permission.ok)return [permission.reason];
+     if(!c.gameplay)throw new Error('Scene requires its gameplay session');
+@@ -104,7 +112,7 @@ export function compileSceneDocument(doc:SceneDocument,positions:Record<string,n
+     const pages=!ok&&r.failure?r.failure:r.pages!,rendered=r.template?renderGameplayText(pages,c.gameplay.state(),{},c.gameplay.queryContext()):[...pages];return r.speaker?{name:r.speaker,pages:rendered}:rendered;
+   };
+   const uses:SceneUse[]=doc.uses.map(u=>({id:u.id,x:positions[u.id],name:u.name,label:u.label,...(u.targetOrder?{targetOrder:u.targetOrder}:{}),...(u.pricedLabel!==undefined?{pricedLabel:u.pricedLabel}:{}),...(u.conversationPresentation?{conversationPresentation:u.conversationPresentation}:{}),...(u.promptH!==undefined?{promptH:u.promptH}:{}),...(u.h!==undefined?{h:u.h}:{}),...(u.speakerKind?{speakerKind:u.speakerKind}:{}),...(u.access?{eligibility:(flags:Readonly<Record<string,boolean>>,session?:import('./session').GameplaySession)=>evaluateAccess(u.access!,{state:session?.state()??{flags:flags as Record<string,boolean>,items:{},tokens:0},reads:session?.queryContext(),eligibility:id=>session?.eligibility(id,'interaction')??{ok:false}})}:{}),...(u.purchase?{price:(_flags:Readonly<Record<string,boolean>>,session?:import('./session').GameplaySession)=>{if(!session)throw new Error('Purchase requires gameplay session');return session.quote(u.purchase!).quote;}}:u.price!==undefined?{price:u.price}:{}),...(u.act!==undefined?{act:u.act}:{}),...(u.when?{available:(flags:Readonly<Record<string,boolean>>,state:import('./types').GameplayState|undefined=undefined)=>test(u.when,flags,state)}:{}),use:c=>execute(u.routes,c,u.cycle?u.id:undefined,u.cycleState,u.access),...(u.items?{items:u.items.map(i=>({item:i.item as ItemId,label:i.label,use:(c:UseCtx)=>execute(i.routes,c,undefined,undefined,u.access)}))}:{})}));
+-  return {uses,...(doc.objectives?{objectives:doc.objectives,objective,attention}:{}),...(doc.time?{minute}:{}),...(doc.timeDay?{day}:{})};
++  return {uses,...(doc.objectives?{objectives:doc.objectives,objective,attention}:{}),...(doc.time?{minute,run}:{}),...(doc.timeDay?{day}:{})};
+ }
+ /** Authored text/routes bind to native geometry and actors; painting and actor order stay native. */
+ export function applyScenePresentation(scene:SceneDef,doc:SceneDocument):SceneDef {
+diff --git a/packages/plaza-design-demo/src/ssg/game/scenes/kit.ts b/packages/plaza-design-demo/src/ssg/game/scenes/kit.ts
+index c4bcb0e..d361d50 100644
+--- a/packages/plaza-design-demo/src/ssg/game/scenes/kit.ts
++++ b/packages/plaza-design-demo/src/ssg/game/scenes/kit.ts
+@@ -200,8 +200,12 @@ export interface SceneDef {
+   gameplay?: GameplayDefinition;
+   /** Story objective for scenes without hacking goals. */
+   attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
+-  storyDay?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number;
+-  storyMinute?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number;
++  /** The story's day (scene `timeDay`); undefined: the clock's own day. */
++  storyDay?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number|undefined;
++  /** The minute the story pins the clock to (scene `time`); undefined: it runs (see `storyRun`). */
++  storyMinute?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number|undefined;
++  /** While the story clock runs (a scene `time` row with `rate`): how fast, and the minute it holds at. */
++  storyRun?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{rate:number;until?:number}|undefined;
+   /** What this scene says and does in each story phase (scene.json `phases`; story/story-rules.ts). The game loop reads `phases[phase]`; nothing else decides it. */
+   phases?:Readonly<Record<string,import('../story/story-rules').ScenePhase>>;
+   /** The room's light cue (scene.json `wash`; story-rules.ts `washTone`). */

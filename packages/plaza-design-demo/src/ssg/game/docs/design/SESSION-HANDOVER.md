@@ -9,19 +9,38 @@ performance commits merged after it (not yet deployed).
 
 ## Open from Tommi's play-test of `?play=harbor-station` (2026-10-22)
 
-Content (harbor zones in `scenes/authored.json`; an agent was working on these at hand-over, branch
-`worktree-agent-a451357d160c76337` if it was pushed, else redo):
+Content (harbor zones in `scenes/authored.json`):
 
-1. The player has no proper walk cycle in the harbor profile (dockworker look).
-2. Stairs: ↓ at the station stair makes the player glide along the floor to the stair's right edge, then pop
-   down: the stair's level link (`run * facing`, foot/top) does not match its drawing for a stair rising west.
+1. ~~No walk cycle~~ and 2. ~~gliding then popping on the stair~~: **fixed** (merged). Both came from the
+   dockworker avatar (`runtime/dockworker.ts`): its pose was never marked as moved by the game and ignored the
+   player's height. The stair link was right. Still to add: a check that a mirrored stair's link ends match its
+   drawing.
 3. Station redesign: the player must walk right (east) first along the platform; stairs and lift at the
    platform's east end; then east on the quay to the checkout (station↔quay seam offset changes).
+   Worked-out layout: train at x 20, spawn 200; stair `via-stair` at x 1410, h −160, run −200 (top 1210, foot
+   1410); lift `via-lift` at 1150 (mover `across` and `spot.x` 1150, buttons 1174); WAY OUT sign ~1270. Seam
+   `station-quay` dx 900, dh −160 (foot lands at quay x 510, lift at 250); station-owned piers over the water
+   west of the quay (`level.section-wall` at h −160). Quay: keep piers 100 and 470, drop 840/1210/1422, add ~530;
+   station sign ~600, notice ~680, tea stall ~760, quay spawn ~560. Update check-harbor-zones (station offset
+   `[-900,160]`, stair head 1210, foot quay x 510) and HARBOR-ZONES.md.
 4. Turnstile: the player passes between two barriers, one in front and one behind (`drawNear` in the
    over-player slot).
+   Plan: occluder kind `{kind:'barrier', barrier:id}` in `engine/level.ts` (`compileOccluders` adds
+   `level.barrier`; `levelNear` while walking at its height within `w/2 + 8 + HALF_BODY` of its x);
+   `level.barrier` gets `visualFields.near` and `drawNear` (far cabinet + arm behind, near cabinet over the player).
+   No parity scene uses barriers.
 5. Talking to the supervisor jumps the clock: the zones' story clock pins on `shift.*`; let time run instead.
+   A started patch is saved at [wip/harbor-clock-run.patch](./wip/harbor-clock-run.patch) (scene-document,
+   manifest-content-compiler, scenes/kit): a scene `time` row may carry `rate` (the clock runs on from where it is,
+   at that multiple) and `until` (holds there); the final `timeDay` row may omit `day`. Remaining: `pace` on
+   `CityClock` (world/clock.ts: tick × pace, saved in withSnapshot); `runtime/game.ts` `pinStory` scene-rule
+   branch sets `city.pace` from `def.storyRun` and pins at `until`; guard rows without `minute`/`day` in
+   authoring/scene-authoring.ts; harbor zones' time rows → checkedOut `minute 370`, tagReceived
+   `rate 3, until 370`, fallback `minute 1140`; timeDay → checkedOut `day 2`, fallback `{}`; update
+   check-harbor-zones (lines ~97, 99, 111).
 6. Shed: the staff-room stair runs across the wages NOTICE; the coffee note covers the STAFF sign. No sign
-   under a flight or over another sign, in all five zones.
+   under a flight or over another sign, in all five zones. Specifically: `locker-notice` sits under the staff stair (x 750–864)
+   — move to ~1000, h 30 or west of 740; `coffee-note` (x 938, h 150) covers the STAFF ROOM label — lower to ~120.
 
 Engine at seams (causes found, nothing fixed; plan below is the investigating agent's):
 
