@@ -1,4 +1,4 @@
-import{paintOpeningActor,type OpeningActors}from'./poses';
+import{actorOffset,flowPlace,paintOpeningActor,type OpeningActors}from'./poses';
 import type{Light}from'../../../world/light';
 /**
  * The glide's near coast (glide.ts), east of the city: ONE ground line from the title's beach to
@@ -31,6 +31,7 @@ import { drawCar, drawForklift, drawReachStacker, drawStraddle, drawTruck } from
 import { drawCraft } from "../../vehicles/air-traffic";
 import { frameView, placed } from "../../core/view";
 import { PLACES } from "./path";
+import type { FlowSource } from "../../../world/people-flow";
 import type { Properties } from "../../core/composition";
 import { pieceNumber as pn, pieceString as ps, visiblePoint, viewportSpan, strictlyVisiblePoint, type PieceInputs, type PieceCull } from "./piece-inputs";
 
@@ -274,15 +275,9 @@ function ground(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     }
     const br = c.still ? 0.5 : (c.t * 0.5) % 1; x.fillStyle = 'rgba(255,240,230,' + (0.55 * Math.sin(br * Math.PI) * lerp(0.4, 1, c.warm)).toFixed(2) + ')'; x.fillRect(a, GY - 3 + R(br * 3), b - a, 1);
   }
-  // the rocks: big dark blocks from the sand down into the inlet
-  const rk = span(c, PLACES.sand - 10, PLACES.rocks + 6);
-  if (rk) for (let i = 0; i < 9; i++) {
-    const X = PLACES.sand - 6 + i * 6, s = c.sx(X), d = R(i * 3.2 * L.k);
-    x.fillStyle = mixHex('#1a0e16', '#33202a', c.warm * (0.6 + hash(i) * 0.4)); x.beginPath(); x.moveTo(s - 8, bottom); x.lineTo(s - 8, GY + d - 2); x.lineTo(s - 3, GY + d - 6 - R(hash(i + 4) * 4)); x.lineTo(s + 5, GY + d - 4); x.lineTo(s + 8, bottom); x.closePath(); x.fill();
-    x.fillStyle = 'rgba(' + DAWN + ',' + (0.25 * c.warm).toFixed(2) + ')'; x.fillRect(R(s - 3), GY + d - 6 - R(hash(i + 4) * 4), 6, 1);
-  }
-  // the inlet: open water in the strip, deeper toward the camera, the swell coming in from the bay
-  const inl = span(c, PLACES.inlet[0], PLACES.inlet[1]);
+  // the inlet: open water in the strip, deeper toward the camera, the swell coming in from the bay;
+  // it starts under the rocks, so the water shows between the blocks as they go down into it (no gap to the sand)
+  const inl = span(c, PLACES.sand - 10, PLACES.inlet[1]);
   if (inl) {
     const [a, b] = inl, wg = x.createLinearGradient(0, GY, 0, c.H); wg.addColorStop(0, mixHex('#2a1438', '#6a2a5a', c.warm)); wg.addColorStop(1, mixHex('#0c0418', '#1e0c2a', c.warm));
     x.fillStyle = wg; x.fillRect(a, GY, b - a, bottom - GY);
@@ -295,6 +290,13 @@ function ground(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     x.fillStyle = 'rgba(255,170,90,' + (0.18 * c.warm).toFixed(2) + ')'; x.fillRect(R(Math.max(a, c.sunX - 10)), GY + 2, R(Math.max(0, Math.min(b, c.sunX + 10) - Math.max(a, c.sunX - 10))), c.H - GY);
     x.fillStyle = 'rgba(10,4,16,.45)'; x.fillRect(a, L.MID + 2, b - a, 3);
   }
+  // the rocks: big dark blocks from the sand down into the inlet
+  const rk = span(c, PLACES.sand - 10, PLACES.rocks + 6);
+  if (rk) for (let i = 0; i < 9; i++) {
+    const X = PLACES.sand - 6 + i * 6, s = c.sx(X), d = R(i * 3.2 * L.k);
+    x.fillStyle = mixHex('#1a0e16', '#33202a', c.warm * (0.6 + hash(i) * 0.4)); x.beginPath(); x.moveTo(s - 8, bottom); x.lineTo(s - 8, GY + d - 2); x.lineTo(s - 3, GY + d - 6 - R(hash(i + 4) * 4)); x.lineTo(s + 5, GY + d - 4); x.lineTo(s + 8, bottom); x.closePath(); x.fill();
+    x.fillStyle = 'rgba(' + DAWN + ',' + (0.25 * c.warm).toFixed(2) + ')'; x.fillRect(R(s - 3), GY + d - 6 - R(hash(i + 4) * 4), 6, 1);
+  }
   // the buffer: gravel and weeds, a puddle, tyre ruts
   const buf = fill(PLACES.inlet[1], PLACES.buffer[1], '#2a2026', '#120c10');
   if (buf) {
@@ -303,7 +305,8 @@ function ground(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(a, L.MID + 6, b - a, 1); x.fillRect(a, L.MID + 12, b - a, 1);
   }
   // the quay: concrete, its coping along the water, the cranes' rails, bollards
-  const quay = fill(PLACES.quay[0], PLACES.quay[1] + 60, '#2e2228', '#120c10');
+  // (on to the bridge's abutment: no gap under the road where the bay bridge lands on the quay)
+  const quay = fill(PLACES.quay[0], PLACES.bridge[0] - 8, '#2e2228', '#120c10');
   if (quay) {
     const [a, b] = quay;
     x.fillStyle = '#4a3a40'; x.fillRect(a, GY, b - a, 2); x.fillStyle = 'rgba(' + ORANGE + ',.55)'; x.fillRect(a, GY, b - a, 1);
@@ -724,7 +727,7 @@ function galleria(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?:str
   const a = R(c.sx(X1)), b = R(c.sx(X0)), top = L.BACK - 58, w = b - a;
   const part=(id:string,draw:()=>void)=>{if(!only||only===id)draw();};
   part('dome',()=>{
-  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: c.piece?.paintMode==='fixed'?ps(c.piece,'paint','#3a2440'):mixHex('#1a0e1e','#3a2440',c.warm), lit: pn(c.piece,'lit',1.5), label: false }));
+  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: c.piece?.paintMode==='fixed'?ps(c.piece,'paint','#3a2440'):mixHex('#1a0e1e','#3a2440',c.warm), lit: pn(c.piece,'lit',1.5), label: false, glazed: true, warm: c.warm, t: c.f, still: c.still }));
   });
   part('plinth',()=>{
   x.fillStyle = ps(c.piece,'paint','#2a1830'); x.fillRect(a, top, w, L.BACK - top + 1);
@@ -789,15 +792,39 @@ export const RIDERS_UP: Character[] = [
   { seed: 4182, look: { garb: 'jacket', hair: 'cap' }, x: 0, act: 'phone', facing: 1 },
   { seed: 4183, look: { body: 'old', garb: 'coat', hair: 'brim', extras: ['bag'] }, x: 0, act: 'stand', facing: 1 },
 ];
+/**
+ * Where the escalator's riders go (X; `rise`: the flow's height units at the terrace): out of the Galleria's doors on
+ * the plaza, along to the escalator's foot, up it, and along the terrace into the dome. Nobody appears or vanishes
+ * anywhere else (Tommi, 2026-10-22); story/title/actors.ts runs the flow and prepares each rider.
+ */
+export const ESCALATOR = { door: Math.round((PLACES.galleria[0] + PLACES.galleria[1]) / 2), foot: PLACES.galleria[0] - 28, head: PLACES.galleria[0] + 4, dome: PLACES.galleria[0] + 56, rise: 40 };
+/** The riders as a people flow (world/people-flow.ts) in the glide's own zone: x is X, h runs 0 (the plaza) to `rise` (the terrace). Looks are RIDERS_UP indices. */
+export const ESCALATOR_FLOW: FlowSource = {
+  id: 'galleria-escalator', clock: 'scene', seed: 4181, looks: RIDERS_UP.map((_, i) => String(i)), speed: 7,
+  spawn: { kind: 'interval', every: 7, jitter: 0.6 },
+  route: [
+    { kind: 'walk', zone: 'glide', x: ESCALATOR.door, h: 0 },
+    { kind: 'walk', zone: 'glide', x: ESCALATOR.foot, h: 0 },
+    { kind: 'walk', zone: 'glide', x: ESCALATOR.head, h: ESCALATOR.rise },
+    { kind: 'leave', zone: 'glide', x: ESCALATOR.dome, h: ESCALATOR.rise },
+  ],
+};
+/** The flow's step while riding (heading for the escalator's head): they stand on it. */
+export const ESCALATOR_RIDE_STEP = 2;
 function escalator(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
-  const X0 = PLACES.galleria[0] - 28, X1 = PLACES.galleria[0] + 4;
-  if (!seen(c, X1, X0, 40)) return;
+  const X0 = ESCALATOR.foot, X1 = ESCALATOR.head;
   const s0 = c.sx(X0), s1 = c.sx(X1), y0 = L.MID, y1 = L.BACK - 58;
-  x.strokeStyle = '#4a3450'; x.lineWidth = 5; x.beginPath(); x.moveTo(s0, y0); x.lineTo(s1, y1); x.stroke();
-  x.strokeStyle = 'rgba(255,190,110,.6)'; x.lineWidth = 1; x.beginPath(); x.moveTo(s0, y0 - 6); x.lineTo(s1, y1 - 6); x.stroke();
-  for (let i = 0; i < 3; i++) {
-    const k = ((c.still ? 0.3 : c.f * 0.0025) + i / 3) % 1, px = lerp(s0, s1, k), py = lerp(y0, y1, k) - 2;
-    placed(x, R(px), R(py), S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.actors['escalator.'+i],'escalator.'+i));
+  if (seen(c, X1, X0, 40)) {
+    x.strokeStyle = '#4a3450'; x.lineWidth = 5; x.beginPath(); x.moveTo(s0, y0); x.lineTo(s1, y1); x.stroke();
+    x.strokeStyle = 'rgba(255,190,110,.6)'; x.lineWidth = 1; x.beginPath(); x.moveTo(s0, y0 - 6); x.lineTo(s1, y1 - 6); x.stroke();
+  }
+  // the riders, each where the flow has them (culled one by one: on the plaza they are well away from the escalator)
+  for (const [id, pose] of Object.entries(c.actors)) {
+    const at = id.startsWith('escalator.') ? flowPlace(pose) : undefined;
+    if (!at) continue;
+    const s = c.sx(at.x), k = Math.max(0, Math.min(1, at.h / ESCALATOR.rise)), py = lerp(y0, y1, k) - (k > 0 && k < 1 ? 2 : 0);
+    if (!visiblePoint(c, s, 60)) continue;
+    placed(x, R(s), R(py), S, () => paintOpeningActor(x, frameView(c.f, c.lighting), pose, id));
   }
 }
 
@@ -853,7 +880,7 @@ export function coastMiddlePieces(x: CanvasRenderingContext2D, c: CoastView, inp
   return [
     ...['dj','bonfire',...LOUNGERS.map((_,i)=>'lounger-'+i)].map(id=>({id,draw:()=>beach(x,cv(id),L,id)})),
     ...['straddle','reach-stacker','forklift','truck','tractor'].map(id=>({id:'machine-'+id,draw:()=>machines(x,cv('machine-'+id),L,id)})),
-    ...PEOPLE.map((w,i)=>({id:'person-'+i,draw:()=>{const p=cv('person-'+i),s=p.sx(pn(p.piece,'worldX',w.X));if(!visiblePoint(p,s,60))return;placed(x,R(s),lineY(L,p,w.line),S,()=>paintOpeningActor(x,frameView(p.f,p.lighting),p.pose??p.actors['coast.person-'+i],'coast.person-'+i));}})),
+    ...PEOPLE.map((w,i)=>({id:'person-'+i,draw:()=>{const p=cv('person-'+i),s=p.sx(pn(p.piece,'worldX',w.X)),pose=p.pose??p.actors['coast.person-'+i];if(!visiblePoint(p,s+actorOffset(pose)*S,60))return;placed(x,R(s),lineY(L,p,w.line),S,()=>paintOpeningActor(x,frameView(p.f,p.lighting),pose,'coast.person-'+i));}})),
     {id:'escalator',draw:()=>escalator(x,cv('escalator'),L)},
   ];
 }

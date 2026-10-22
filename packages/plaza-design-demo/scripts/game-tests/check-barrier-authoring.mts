@@ -1,7 +1,7 @@
 /**
  * A level barrier's Access tab (authoring/barrier-authoring.ts, docs/design/SEAMLESS-WORLD.md §6.6, §6.8): the rule reads as a
  * sentence; the key, flag and `when` pickers edit the composition through the actual ComposerModel (history, projected
- * authored scene, bundle); Try it runs world/access.ts `barrierAccess` over a fixture; a phase override
+ * authored scene, bundle); Test the rule runs world/access.ts `barrierAccess` over a fixture; a phase override
  * (`phases.<p>.barriers.<id>`, an exit rule) opens or refuses through story-rules.ts and an unknown barrier id is refused;
  * never-passing rules are warned about, not blocked; protected Save round-trips and undoes to the bytes.
  */
@@ -40,39 +40,44 @@ const all=(e:Element):Element[]=>[e,...e.children.flatMap(all)],rows=()=>all(hos
 const field=(name:string)=>{const e=rows().find(e=>e.attributes['aria-label']===name);assert(e,'field '+name);return e;};
 const has=(name:string)=>rows().some(e=>e.attributes['aria-label']===name);
 const change=(name:string,value:string|boolean)=>{const e=field(name);if(typeof value==='boolean')e.checked=value;else e.value=value;e.onchange!();};
+// Test the rule's toggles are buttons: switch one to the wanted state
+const toggle=(label:string,on:boolean)=>{const e=rows().find(e=>e.textContent===label&&e.onclick);assert(e,'toggle '+label);if((e.attributes['aria-pressed']==='true')!==on)e.onclick!();assert.equal(rows().find(e=>e.textContent===label)!.attributes['aria-pressed'],String(on));};
 const props=()=>((model.get(DOC).value as Composition).instances.find(n=>n.id===ID)!.props);
-const tried=()=>field('Try it result').textContent,warnings=()=>field('Barrier warnings').children.map(c=>c.textContent);
+const tried=()=>field('Test result').textContent,warnings=()=>field('Barrier warnings').children.map(c=>c.textContent);
 const REFUSE='TURNSTILE · NO VALID CHIP. PRESENT UPLINK.';
 
 // the annex turnstile's rule as a sentence; the key comes from the pending keyring
 assert.equal(field('Barrier rule').textContent,'Opens when you carry UPLINK.SO · Refuses with: “'+REFUSE+'”');
-assert(field('Key chip').children.some(o=>o.value==='uplink'&&o.textContent==='UPLINK.SO · uplink'),'keys are picked from the keyring');
-assert(field('Flag').children.some(o=>o.value==='opening:street'),'flags are picked from the declared flags');
+// the Access header with the rule comes first; the pickers say what the barrier needs
+assert.equal(host.children[1].className,'barrier-head');assert.equal(host.children[1].children[0].textContent,'Access · when turnstile opens');
+assert(['What it needs','Test the rule','Story phases','Checks'].every(t=>rows().some(e=>e.textContent===t)),'the sections are named in plain words');
+assert(field('Needs key chip').children.some(o=>o.value==='uplink'&&o.textContent==='UPLINK.SO · uplink'),'keys are picked from the keyring');
+assert(field('Needs flag').children.some(o=>o.value==='opening:street'),'flags are picked from the declared flags');
 assert.deepEqual(warnings(),['No warnings: the sources can open it.']);
 
-// Try it: pure barrierAccess over a fixture, nothing committed
+// Test the rule: pure barrierAccess over a fixture, nothing committed
 assert.equal(tried(),'Refuses: “'+REFUSE+'”');
-change('Carrying UPLINK.SO',true);assert.equal(tried(),'Opens.');
-const undoBefore=model.undoLabel;assert.equal(model.dirty(),false,'Try it edits no source');assert.equal(model.undoLabel,undoBefore);
+toggle('Carrying UPLINK.SO',true);assert.equal(tried(),'Opens');assert.equal(field('Test result').className,'barrier-result ok');
+const undoBefore=model.undoLabel;assert.equal(model.dirty(),false,'Test the rule edits no source');assert.equal(model.undoLabel,undoBefore);
 
 // the flag picker: one history step of the projected composition (its catalogue owner)
-change('Flag','opening:street');assert.equal(props().flag,'opening:street');assert.equal(model.undoLabel,'Barrier flag opening:street');
+change('Needs flag','opening:street');assert.equal(props().flag,'opening:street');assert.equal(model.undoLabel,'Barrier flag opening:street');
 assert.deepEqual(model.edits().map(e=>e.id),['authored-scenes'],'the projected composition edits its catalogue owner');
 assert.equal(field('Barrier rule').textContent,'Opens when you carry UPLINK.SO and once flag opening:street is set · Refuses with: “'+REFUSE+'”');
 assert.equal(tried(),'Refuses: “'+REFUSE+'”','the new flag is not set in the fixture');
-change('Flag opening:street set',true);assert.equal(tried(),'Opens.');
+toggle('Flag opening:street set',true);assert.equal(tried(),'Opens');
 
 // the shared gameplay condition picker writes `when`
-change('Opens while type','flag');assert.equal(typeof props().when,'object');
-change('Opens while flag','opening:uplink');assert.deepEqual(props().when,{flag:'opening:uplink'});
+change('Only while type','flag');assert.equal(typeof props().when,'object');
+change('Only while flag','opening:uplink');assert.deepEqual(props().when,{flag:'opening:uplink'});
 assert.match(field('Barrier rule').textContent,/, once flag opening:street is set and while flag opening:uplink is set · /);
-assert.equal(tried(),'Refuses: “'+REFUSE+'”');change('Flag opening:uplink set',true);assert.equal(tried(),'Opens.');
-assert(!field('Opens while type').children.some(o=>o.value==='objective'),'a barrier condition reads no objective');
+assert.equal(tried(),'Refuses: “'+REFUSE+'”');toggle('Flag opening:uplink set',true);assert.equal(tried(),'Opens');
+assert(!field('Only while type').children.some(o=>o.value==='objective'),'a barrier condition reads no objective');
 // the only saved state it offers is the world-level shared state (world/state-owners.json), never a scene's own
-change('Opens while type','state');assert(Object.keys(props().when as object).includes('state'));
-assert.deepEqual(field('Opens while state').children.map(o=>o.value).filter(v=>!v.startsWith('shift.')),[],'only shared shift.* keys are offered');
+change('Only while type','state');assert(Object.keys(props().when as object).includes('state'));
+assert.deepEqual(field('Only while state').children.map(o=>o.value).filter(v=>!v.startsWith('shift.')),[],'only shared shift.* keys are offered');
 assert.doesNotThrow(()=>validateBarrierCondition(props().when));
-change('Opens while type','flag');change('Opens while flag','opening:uplink');
+change('Only while type','flag');change('Only while flag','opening:uplink');
 // an invalid condition is refused atomically by the composition's own validation
 {const before=structuredClone(model.get(DOC).value),label=model.undoLabel;
  const bad=structuredClone(before) as Composition;bad.instances.find(n=>n.id===ID)!.props.when=[1,2] as never;
@@ -85,7 +90,7 @@ const rule=barrierRule(props());
 assert.equal(barrierAccess(rule,{'opening:street':true},['uplink']).ok,false,'without a state a when refuses');
 assert.equal(barrierAccess(rule,{'opening:street':true},['uplink'],{flags:{'opening:uplink':true},items:{},tokens:0}).ok,true);
 // undo / redo through the model
-change('Opens while type','always');assert.equal(props().when,null);model.undo();assert.deepEqual(props().when,{flag:'opening:uplink'});
+change('Only while type','always');assert.equal(props().when,null);model.undo();assert.deepEqual(props().when,{flag:'opening:uplink'});
 change('Refuses with','STAFF ONLY.');assert.equal(props().refuse,'STAFF ONLY.');
 
 // §6.8: warnings listed, not blocking
@@ -106,8 +111,8 @@ assert.throws(()=>validateSourceDocuments(new Map([...sources(model.list())].map
 api.edit('authored-scenes','Add barrier phase rule',withPhases({[ID]:GATE,}));
 validateSourceDocuments(sources(model.list()));
 assert.equal(field('Phase rule home').textContent,'In phase home: verify 150 frames, ok 50, milestone street, then it opens.');
-change('Carrying UPLINK.SO',false);assert.match(tried(),/^Refuses/);
-change('Story phase','home');assert.equal(tried(),'In phase home: verify 150 frames, ok 50, milestone street, then it opens.','the phase rule replaces the barrier\'s own');
+toggle('Carrying UPLINK.SO',false);assert.match(tried(),/^Refuses/);assert.equal(field('Test result').className,'barrier-result error');
+change('During story phase','home');assert.equal(tried(),'In phase home: verify 150 frames, ok 50, milestone street, then it opens.','the phase rule replaces the barrier\'s own');
 assert.deepEqual(tryBarrier(rule,{keys:[],flags:{}},{id:'home',rule:SAY}),{opens:false,text:'In phase home: YOU says “Not this way.”; it stays shut.'});
 // what the game loop asks (runtime/game.ts passBarrier → storyExit): the pending registry's compiled level and phases
 const def=pendingRegistry(values(model.list()))[SCENE]!,barriers=def.level!.barriers!;
@@ -133,5 +138,5 @@ const reread=new AuthoringStore({root,documents:sourceDocuments,validateAll:vali
 assert.deepEqual(annex.composition.instances.find((n:any)=>n.id===ID).props,{style:'turnstile',width:24,key:'uplink',flag:'opening:street',refuse:'STAFF ONLY.',when:{flag:'opening:uplink'}});
 assert.deepEqual(annex.scene.phases,{home:{barriers:{[ID]:GATE}}});
 store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));assert.equal(fs.readFileSync(file,'utf8'),bytes);
-console.log('Barrier authoring PASS: readable rule, keyring/flag/condition pickers through the model/history/bundle, Try it over barrierAccess, phase overrides open and refuse through story-rules and unknown ids are refused, §6.8 warnings listed, protected Save round-trip and byte undo. Evidence: '+root);
+console.log('Barrier authoring PASS: readable rule, keyring/flag/condition pickers through the model/history/bundle, Test the rule over barrierAccess, phase overrides open and refuse through story-rules and unknown ids are refused, §6.8 warnings listed, protected Save round-trip and byte undo. Evidence: '+root);
 process.exit(0);

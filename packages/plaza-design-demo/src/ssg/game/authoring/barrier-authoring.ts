@@ -14,7 +14,7 @@ import {SCENES} from '../scenes';
 /**
  * A level barrier's access rule in the composer's inspector (docs/design/SEAMLESS-WORLD.md §6.6): the rule as a sentence,
  * typed pickers for its key chip (the pending keyring), its flag (the flags the sources declare) and an optional `when`
- * condition (the shared gameplay condition picker), its refusal; a Try it fixture that runs world/access.ts `barrierAccess`
+ * condition (the shared gameplay condition picker), its refusal; a Test the rule fixture that runs world/access.ts `barrierAccess`
  * (or the phase rule that replaces it, story-rules.ts `barrierRuleOpens`) without Play; the phase rules that apply
  * (edited in Scene › Story phases); and warnings for a rule that can never pass (§6.8: listed, never blocking). Every
  * edit is one ComposerModel history step of the composition holding the barrier.
@@ -62,10 +62,10 @@ export function phaseRuleSentence(rule:ExitRule){
  return rule.react+' answers “'+rule.line[1]+'”; it stays shut';
 }
 
-/** A Try it fixture: which chips are carried, which flags set, which items held; the rest of the state is a fixed sample. */
+/** A Test the rule fixture: which chips are carried, which flags set, which items held; the rest of the state is a fixed sample. */
 export interface BarrierFixture {keys:readonly string[];flags:Readonly<Record<string,boolean>>;items?:Readonly<Record<string,number>>}
 export const FIXTURE_WORLD={day:1,minute:12*60,weather:'clear'} as const;
-/** The state Try it evaluates against: the fixture's flags, items and chips; no tokens; noon on day 1, clear. */
+/** The state Test the rule evaluates against: the fixture's flags, items and chips; no tokens; noon on day 1, clear. */
 export function fixtureState(f:BarrierFixture):GameplayState{
  return {flags:{...f.flags},items:{...f.items},tokens:0,player:{handle:'',jump:false,controlled:[],keyring:[...f.keys]},world:{...FIXTURE_WORLD}};
 }
@@ -76,7 +76,7 @@ export function fixtureState(f:BarrierFixture):GameplayState{
 export function tryBarrier(rule:BarrierRule,fixture:BarrierFixture,phase?:{id:string;rule:ExitRule}):{opens:boolean;text:string}{
  if(phase){const opens=barrierRuleOpens(phase.rule);return {opens,text:'In phase '+phase.id+': '+phaseRuleSentence(phase.rule)+'.'};}
  const result=barrierAccess(rule,fixture.flags,fixture.keys,fixtureState(fixture));
- return result.ok?{opens:true,text:'Opens.'}:{opens:false,text:'Refuses: “'+result.reason+'”'};
+ return result.ok?{opens:true,text:'Opens'}:{opens:false,text:'Refuses: “'+result.reason+'”'};
 }
 
 /** What the sources declare and set, for the pickers and the warnings: the keyring, the declared flags and items, the flags something sets. */
@@ -130,7 +130,7 @@ export interface BarrierAuthoringOptions {scene:string;document:string;instance:
 export function mountBarrierAuthoring(host:HTMLElement,context:WorkbenchContext,options:BarrierAuthoringOptions):WorkbenchHandle{
  const api=context.authoring!;let disposed=false;
  const error=document.createElement('p');error.setAttribute('role','alert');const form=new TypedForm(e=>{error.textContent=e instanceof Error?e.message:String(e);});
- // Try it: a disposable fixture kept across refreshes (never a source edit)
+ // Test the rule: a disposable fixture kept across refreshes (never a source edit)
  const fixture={keys:new Set<string>(),flags:new Set<string>(),items:new Set<string>(),phase:''};
  const live=()=>context.documents.map(d=>({id:d.id,value:api.get(d.id).value}));
  const read=()=>{const c=api.get(options.document).value as Composition;return findInstance(c.instances,options.instance);};
@@ -149,33 +149,41 @@ export function mountBarrierAuthoring(host:HTMLElement,context:WorkbenchContext,
   if(disposed)return;host.replaceChildren(error);
   const node=read();if(!node){para('This barrier is no longer in the scene.');return;}
   const docs=live(),values=new Map(docs.map(d=>[d.id,d.value])),vocab=barrierVocabulary(values),rule=barrierRule(node.props as Record<string,unknown>);
-  para(barrierSentence(rule,vocab.keyring),'Barrier rule','barrier-rule');
-  heading('Rule');
+  // the rule first, in large type: this tab opens first when a barrier is selected
+  const top=document.createElement('div');top.className='barrier-head';host.append(top);
+  const title=document.createElement('h3');title.textContent='Access · when '+options.instance+' opens';top.append(title);
+  const sentence=document.createElement('p');sentence.className='barrier-rule';sentence.textContent=barrierSentence(rule,vocab.keyring);sentence.setAttribute('aria-label','Barrier rule');top.append(sentence);
+  heading('What it needs');
+  para('Leave a picker empty when the barrier does not need it. Every rule that is set must pass.','','muted');
   const keys=[...vocab.keyring.entries()].sort(([a],[b])=>a.localeCompare(b));
-  picker('Key chip',[{value:'',label:'(none)'},...keys.map(([id,k])=>({value:id,label:k.label.toUpperCase()+' · '+id})),...(rule.key&&!vocab.keyring.has(rule.key)?[{value:rule.key,label:rule.key+' (unknown)'}]:[])],rule.key??'',key=>editProps(key?'Barrier key '+key:'Remove barrier key',p=>{p.key=key;}));
+  picker('Needs key chip',[{value:'',label:'No key chip'},...keys.map(([id,k])=>({value:id,label:k.label.toUpperCase()+' · '+id})),...(rule.key&&!vocab.keyring.has(rule.key)?[{value:rule.key,label:rule.key+' (unknown)'}]:[])],rule.key??'',key=>editProps(key?'Barrier key '+key:'Remove barrier key',p=>{p.key=key;}));
   const flags=[...vocab.flags].sort();
-  picker('Flag',[{value:'',label:'(none)'},...flags.map(f=>({value:f,label:f})),...(rule.flag&&!vocab.flags.has(rule.flag)?[{value:rule.flag,label:rule.flag+' (undeclared)'}]:[])],rule.flag??'',flag=>editProps(flag?'Barrier flag '+flag:'Remove barrier flag',p=>{p.flag=flag;}));
+  picker('Needs flag',[{value:'',label:'No flag'},...flags.map(f=>({value:f,label:f})),...(rule.flag&&!vocab.flags.has(rule.flag)?[{value:rule.flag,label:rule.flag+' (undeclared)'}]:[])],rule.flag??'',flag=>editProps(flag?'Barrier flag '+flag:'Remove barrier flag',p=>{p.flag=flag;}));
   // the shared gameplay condition picker, over what a barrier may read (the world-level shared state, but no scene's own state, queries or objective)
   const names=conditionNames(rule.when),shared=((values.get('state-owners')??activeSharedState()) as Pick<GameplayDefinition,'state'>|undefined)?.state,doc:GameplayDefinition={version:1,flags:[...new Set([...flags,...names.flags])],items:[...new Set([...vocab.items,...names.items])].sort(),...(shared&&Object.keys(shared).length?{state:shared}:{}),events:[],commands:{},reactions:[],conversations:{}};
-  form.allowObjectiveContext=false;
-  form.condition(host,'Opens while',rule.when,when=>editProps(when?'Barrier condition':'Remove barrier condition',p=>{p.when=(when??null) as unknown;}),doc);
+  form.allowObjectiveContext=false;form.prefix='Only while ';
+  form.condition(host,'Only while',rule.when,when=>editProps(when?'Barrier condition':'Remove barrier condition',p=>{p.when=(when??null) as unknown;}),doc);
+  form.prefix=undefined;
   form.text(host,'Refuses with',rule.refuse,refuse=>editProps('Barrier refusal',p=>{p.refuse=refuse;}));
 
   const phases=Object.entries(scenePhases(docs,options.scene)).flatMap(([id,p])=>p.barriers?.[options.instance]?[{id,rule:p.barriers[options.instance]}]:[]);
-  heading('Story phases');
-  if(phases.length)for(const p of phases)para('In phase '+p.id+': '+phaseRuleSentence(p.rule)+'.','Phase rule '+p.id);
-  else para('No story phase changes this barrier. Add one under Scene › Story phases (Barriers that act differently).','Phase rules','muted');
 
-  heading('Try it');
-  para('Pick what the player has. Nothing is played or saved; no tokens, noon on day 1, clear weather.','','muted');
-  const toggle=(name:string,on:boolean,set:(on:boolean)=>void)=>form.check(host,name,on,v=>{set(v);render();});
+  heading('Test the rule');
+  para('Switch on what the player has, then read what pressing E here would do. Nothing is played or saved (no tokens, noon on day 1, clear weather).','','muted');
+  const toggles=document.createElement('div');toggles.className='barrier-toggles';toggles.setAttribute('role','group');toggles.setAttribute('aria-label','What the player has');host.append(toggles);
+  const toggle=(name:string,on:boolean,set:(on:boolean)=>void)=>{const b=document.createElement('button');b.type='button';b.className='toggle';b.textContent=name;b.setAttribute('aria-pressed',String(on));b.title=(on?'Switch off: ':'Switch on: ')+name;b.onclick=()=>form.run(()=>{set(!on);render();});toggles.append(b);};
   if(rule.key)toggle('Carrying '+keyWord(rule.key,vocab.keyring),fixture.keys.has(rule.key),on=>{if(on)fixture.keys.add(rule.key!);else fixture.keys.delete(rule.key!);});
   for(const f of [...new Set([...(rule.flag?[rule.flag]:[]),...names.flags])])toggle('Flag '+f+' set',fixture.flags.has(f),on=>{if(on)fixture.flags.add(f);else fixture.flags.delete(f);});
   for(const i of names.items)toggle('Holding '+i,fixture.items.has(i),on=>{if(on)fixture.items.add(i);else fixture.items.delete(i);});
+  if(!toggles.children.length)para('This rule needs nothing, so there is nothing to switch.','','muted');
   if(fixture.phase&&!phases.some(p=>p.id===fixture.phase))fixture.phase='';
-  if(phases.length)picker('Story phase',[{value:'',label:'(no phase rule)'},...phases.map(p=>({value:p.id,label:p.id}))],fixture.phase,v=>{fixture.phase=v;render();});
+  if(phases.length)picker('During story phase',[{value:'',label:'No phase rule (its own rule)'},...phases.map(p=>({value:p.id,label:p.id}))],fixture.phase,v=>{fixture.phase=v;render();});
   const tried=tryBarrier(rule,{keys:[...fixture.keys],flags:Object.fromEntries([...fixture.flags].map(f=>[f,true])),items:Object.fromEntries([...fixture.items].map(i=>[i,1]))},phases.find(p=>p.id===fixture.phase));
-  para(tried.text,'Try it result',tried.opens?'ok':'error');
+  para(tried.text,'Test result','barrier-result '+(tried.opens?'ok':'error'));
+
+  heading('Story phases');
+  if(phases.length)for(const p of phases)para('In phase '+p.id+': '+phaseRuleSentence(p.rule)+'.','Phase rule '+p.id);
+  else para('No story phase changes this barrier. Add one under Scene › Story phases (Barriers that act differently).','Phase rules','muted');
 
   const problems=barrierProblems(rule,vocab);
   heading('Checks');

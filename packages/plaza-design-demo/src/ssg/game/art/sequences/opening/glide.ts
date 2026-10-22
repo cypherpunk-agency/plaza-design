@@ -41,8 +41,8 @@ import { drawAir, drawAirNear } from "./air";
 import { type CoastView, drawBreakwater, coastPieces, coastFrontPieces, coastMiddlePieces, drawForeground, lines } from "./coast";
 import { drawLine0, drawUnder } from "./finale";
 import { DROP1, DROP2, GLIDE, GLIDE_BEATS, glideDist, PLACES, SPIRE_P, SPIRE_X, WEST } from "./path";
-import { drawRingOver, drawSkyline, drawStreetGround, townPieces, townLampPieces, townPeoplePieces } from "./town";
-import { drawTraffic } from "./traffic";
+import { drawRingOver, drawSkyline, drawStreetGround, drawWestGate, townPieces, townLampPieces, townPeoplePieces } from "./town";
+import { drawSideStreetTraffic, drawTraffic } from "./traffic";
 import { readableMirror } from "./mirror";
 import type { PieceInputs } from './piece-inputs';
 
@@ -101,7 +101,7 @@ export interface OpeningPiece { id: string; space: 'base' | 'near'; draw(): void
 export function openingFrame(x: CanvasRenderingContext2D, v: GlideView, t: number, tau: number | null, camera: OpeningCamera = {}) {
   const k = Math.abs(x.getTransform().a) || 1, raw = Math.min(v.H / 195, v.W / 420);
   const scale = Math.max(1, Math.round(raw * k)) / k;
-  return { ...frame(x, v.W / scale, v.H / scale, v.reduced, t, tau, camera,v.lighting), scale };
+  return { ...frame(x, v.W / scale, v.H / scale, v.reduced, t, tau, camera,v.lighting, scale * k), scale };
 }
 
 /** Keep one native context across consecutive near-coast pieces. */
@@ -119,7 +119,7 @@ export function drawGlide(x: CanvasRenderingContext2D, v: GlideView, t: number, 
   x.save(); x.scale(f.scale, f.scale); paintOpeningPieces(x, f.parts, f.drop); x.restore();
 }
 
-function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean, t: number, tau: number | null, options: OpeningCamera,lighting:Light) {
+function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean, t: number, tau: number | null, options: OpeningCamera,lighting:Light, device = 1) {
   const parts: OpeningPiece[] = [];
   let space: 'base' | 'near' = 'base';
   const paint = (id: string, draw: () => void) => parts.push({ id, space, draw });
@@ -237,7 +237,9 @@ function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean
   // Its pieces are the same pieces drawn a second time with the camera mirrored (g' = beach − g) and
   // the canvas flipped about the view's middle, so a beach point Xb stands at WEST.beach − Xb; text is
   // turned back so signs still read. The city's pieces keep east of the junction, the beach's west.
-  const gw = WEST.beach - g, xj = W / 2 + g - WEST.junction;
+  // the junction's seam snapped to a device pixel: the beach's clip and the city's meet on it with no
+  // half-covered column between them (the sea or the canvas showing through a hairline)
+  const gw = WEST.beach - g, xj = Math.round((W / 2 + g - WEST.junction) * device) / device;
   const westOn = xj > -60, cityAll = xj < -60;
   const xm = readableMirror(x);
   const cvw: CoastView = { ...cv, g: gw, sx: (X) => W / 2 + (gw - X), sunX: W - sunX };
@@ -257,7 +259,8 @@ function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean
   };
   const cityOnly = (id: string, draw: () => void) => paint(id, () => east(draw));
   both('coast.', coastPieces(x, cv, (Lc) => drawStreetGround(x, cv, Lc), options.pieces), coastPieces(xm, cvw, undefined, options.pieces));
-  for (const part of townPieces(x, cv, L, options.pieces)) cityOnly('town.' + part.id, part.draw);
+  // a side street's piece also draws the cars still behind the pavement in it (traffic.ts), before the towers and the people
+  for (const part of townPieces(x, cv, L, options.pieces)) cityOnly('town.' + part.id, part.id.startsWith('side-street-') ? () => { part.draw(); drawSideStreetTraffic(x, cv, L, Number(part.id.slice('side-street-'.length))); } : part.draw);
   cityOnly('air-canyon', () => drawAirNear(x, cv, (p) => -drop * p + drop, 'canyon'));
   cityOnly('ring', () => drawRingOver(x, cv, L));
   cityOnly('air-over', () => drawAirNear(x, cv, (p) => -drop * p + drop, 'over'));
@@ -266,6 +269,8 @@ function frame(x: CanvasRenderingContext2D, W: number, H: number, still: boolean
   both('coast-mid.', coastMiddlePieces(x, cv, options.pieces), coastMiddlePieces(xm, cvw, options.pieces));
   for (const part of townPeoplePieces(x, cv, L, options.pieces)) cityOnly('people.' + part.id, part.draw);
   cityOnly('traffic', () => drawTraffic(x, cv, L));
+  // Downtown's west gate over the Ring and the street, in front of their traffic (town.ts)
+  cityOnly('gate', () => drawWestGate(x, cv, L));
   both('coast-front.', coastFrontPieces(x, cv, options.pieces), coastFrontPieces(xm, cvw, options.pieces));
   paint('under', () => drawUnder(x, cv, L, drop));
   paint('foreground', () => { drawForeground(x, cv); mirrored(() => drawForeground(xm, cvw), false); });

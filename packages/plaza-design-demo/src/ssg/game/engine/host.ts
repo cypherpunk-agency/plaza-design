@@ -40,7 +40,7 @@ import { type Line, type Spot, SceneModel } from './model';
 import { Panels } from './panels';
 import type { SceneRules } from './rules';
 import { type Box, Feedback, type PingKind, type Spot2D } from './feedback';
-import { Popup, type PopupAnchor, type PopupItem, type PopupRoom } from './popup';
+import { Popup, type PopupAnchor, type PopupItem, type PopupRoom, type PopupOpts } from './popup';
 import { type Anchor, Schematic } from './schematic';
 import { ENGINE_PANEL_FNS } from "./toys/index";
 
@@ -213,7 +213,7 @@ export class SceneHost {
       program: store?.program,
       controlled: store?.controlled,
     }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.(),def.gameplay);
-    const shared=store?.gameplay?.(this.model);if(shared)attachNativeGameplay(this.model,shared);
+    const shared=store?.gameplay?.(this.model);if(shared){attachNativeGameplay(this.model,shared);this.gameplay=shared;}
     if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id),...(store?.presentation?{presentation:operation=>store.presentation!(operation)}:{})});
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen });
@@ -261,7 +261,35 @@ export class SceneHost {
     this.saved = JSON.stringify({...this.snapshot(),state:this.model.state});
     this.sync();
     this.lastHeat = this.heat();
-    window.addEventListener('pagehide', () => this.persist());
+    window.addEventListener('pagehide', this.onPageHide);
+  }
+  private onPageHide = () => this.persist();
+  /** The scene's gameplay session, bound to this host's model (engine/gameplay/native-bindings.ts). */
+  gameplay?: GameplaySession;
+  private disposed = false;
+  get isDisposed() { return this.disposed; }
+
+  /**
+   * The zone is unloaded (SEAMLESS-WORLD.md §3 "Unloaded zones are reloaded"): the save is written, then everything
+   * this host owns goes: its popup, panels, schematics and captions (their nodes and window listeners), its HACK/BOARD
+   * strip, a pending acknowledgment, the save timer, the session bound to its model and the model's delayed actions
+   * (dropped, as on a page reload). The save is all that is left; hosting the scene again rebuilds it from there, as
+   * Continue does. Idempotent.
+   */
+  dispose() {
+    if (this.disposed) return;
+    this.persist();
+    this.disposed = true;
+    this.cancelAcknowledgment('disposed');
+    this.closeAll();
+    clearTimeout(this.saveTimer);
+    window.removeEventListener('pagehide', this.onPageHide);
+    this.gameplay?.dispose();
+    this.model.dispose();
+    this.popup.dispose(); this.panels.dispose(); this.schem.dispose(); this.vision.dispose(); this.fx.dispose();
+    this.btns.remove();
+    this.active = false; this.project = null; this.seen.clear();
+    this.onClose = this.onReact = () => {};
   }
 
   /** Trace (whole %) and running lockouts, as a string: when it changes, the save should hear of it. */
@@ -293,7 +321,7 @@ export class SceneHost {
 
   /** Something changed: write the save once things have been quiet for a moment. */
   private dirty() {
-    if (!this.store) return;
+    if (!this.store || this.disposed) return;
     clearTimeout(this.saveTimer);
     this.saveTimer = window.setTimeout(() => this.persist(), SAVE_AFTER_MS);
   }
@@ -301,7 +329,8 @@ export class SceneHost {
   /** Write the scene's progress now, if it changed since the last write. */
   persist() {
     clearTimeout(this.saveTimer);
-    if (!this.store) return;
+    // a disposed host never writes again: a fresh host for the scene owns its save block now
+    if (!this.store || this.disposed) return;
     const z = this.snapshot(), json = JSON.stringify({...z,state:this.model.state});
     if (json === this.saved) return;
     this.saved = json;
@@ -498,7 +527,7 @@ export class SceneHost {
    * beat, movers move, zones notice and delayed signals arrive on this one tick.
    */
   tick(ms: number) {
-    if (this.paused) return;
+    if (this.paused || this.disposed) return;
     const perf=perfBegin('host.tick',this.id);try{
     this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
     if (this.model.tick(ms, this.active)) { this.schem.meters(); this.vision.meters(); }
@@ -640,6 +669,26 @@ export class SceneHost {
     this.popupAt = this.player.x;
     const wrapped = items.map((it) => ({ ...it, run: () => { this.popup.close(); it.run(); } }));
     this.popup.open(id, name, name, wrapped, this.seen.get(id), this.project ? this.room(id) : undefined);
+  }
+
+  /** Is the list menu `id` (`list`) what the popup shows now? */
+  listOpen(id: string) { return this.popup.isOpen && this.popup.dev === id; }
+  /** Close the list menu `id`, if it is the one open. */
+  closeList(id: string) { if (this.listOpen(id)) this.popup.close(); }
+
+  /**
+   * A list menu beside a moving thing (the lift car's floors), over the box at world `x` (centre), `y` up from the
+   * ground, `w` × `h`: open it, or, already open, bring its rows, selection and the thing's place up to date. The
+   * host that owns the state calls it every frame it applies. Its rows run what they run (the popup stays open for
+   * them); `step` is what ↑ and ↓ do (1 up, -1 down), `sel` the row selected.
+   */
+  list(id: string, name: string, items: PopupItem[], at: { x: number; y: number; w: number; h: number }, sel: number, step: (dir: 1 | -1) => void) {
+    this.chosen = { id, ...at };
+    if (this.listOpen(id)) { this.popup.refresh(items, sel); return; }
+    this.refollow();
+    this.popupAt = this.player.x;
+    const opts: PopupOpts = { placement: 'list', step, sel };
+    this.popup.open(id, name, name, items, this.seen.get(id), this.project ? this.room(id) : undefined, opts);
   }
 
   private popupItems(id: string): PopupItem[] {

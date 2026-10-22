@@ -83,7 +83,7 @@ import { Companion, COMPANION_LOOKS } from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
 import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
-import { levelArrive, levelArrows, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
+import { levelArrive, levelArrows, levelBounds, levelClimbing, levelDown, levelFloor, levelHints, levelIndoor, levelInteract, levelRiding, levelSeen, levelStep, levelUp, levelView, nearestPrompt, mergeLevels, levelRejoin, seenByZone, splitLevelView, levelZone, levelPass, levelOpened, levelLiftList, levelPick, savedByScene, savedForLevel, type Level, type LevelSource, type Movers } from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
 import { joined as zoneJoined, residency, seamsOf, validateZoneGraph, type ResidencyTier } from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
@@ -767,6 +767,7 @@ export class Game {
     this.checkGain();
     const renderSpan=perfBegin('game.render');
     try{this.draw();}finally{perfEnd(renderSpan);}
+    this.syncCarList();
     this.followHost();
     this.raf = requestAnimationFrame((n) => this.loop(n));
   }
@@ -799,6 +800,8 @@ export class Game {
     // a thing's popup takes arrows, Enter / E and Esc; any other key closes it and goes on as usual
     if (zh && zh.popupOpen && zh.popupKey(e)) return;
     const k = e.key;
+    // the car's list was closed (Esc): the panel's own keys bring it back
+    if (this.carListOff && ['e', 'E', 'ArrowUp', 'ArrowDown', 'w', 'W', 's', 'S'].includes(k)) this.carListOff = false;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(k)) e.preventDefault();
     if (e.repeat && !['ArrowLeft', 'ArrowRight', 'a', 'd', 'A', 'D'].includes(k)) return;
     if (this.showEnd) {
@@ -830,8 +833,8 @@ export class Game {
     if (zh.visionOn && k === '0') { this.resetVision(); return; }
     if (k === 'e' || k === 'E') { this.interact(); return; }
     // in a level, ↑ and ↓ first mean a door, a flight, an escalator or the lift car; otherwise ↑ jumps
-    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && levelUp(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level)) this.keys.add('ArrowUp'); return; }
-    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && levelDown(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level)) this.keys.add('ArrowDown'); return; }
+    if ((k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && this.level && !this.levelLocked() && levelUp(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level) || levelRiding(this.level)) this.keys.add('ArrowUp'); return; }
+    if ((k === 'ArrowDown' || k === 's' || k === 'S') && !this.bubble && this.level && !this.levelLocked() && levelDown(this.level, this.p)) { this.keys.clear(); if (levelClimbing(this.level) || levelRiding(this.level)) this.keys.add('ArrowDown'); return; }
     if ((k === ' ' || k === 'ArrowUp' || k === 'w' || k === 'W') && !this.bubble && !(this.level && levelRiding(this.level))) this.jump();
     this.keys.add(k.length === 1 ? k.toLowerCase() : k);
   }
@@ -921,17 +924,23 @@ export class Game {
       const d = this.sceneDefinition(z); if (!d.level) continue;
       parts.push({ zone: z, source: d.level, dx: zr.at.dx, dh: zr.at.dh, width: d.width });
       this.zoneTiers.set(z, zr.tier);
-      if (z !== id) { this.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); this.hostOf(z); }
+      // a visible zone is hosted now (it is drawn); a near one is compiled by `followResidency`, one per frame
+      if (z !== id) { this.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); if (zr.tier === 'visible') this.hostOf(z); }
     }
     return parts.length > 1 ? mergeLevels(parts) : s.level;
   }
   /** Each joined zone's residency tier this frame: only visible ones are drawn; near ones are hosted and walked, not drawn. */
   private zoneTiers = new Map<string, ResidencyTier>();
-  /** Residency for zone `id` with the camera at `cam` (horizontal: the view's width across). Hosts are not unloaded yet (they keep ticking, as every visited scene does today). */
+  /**
+   * Residency for zone `id` with the camera at `cam` (horizontal: the view's width across). Only joined zones (in the
+   * zone graph) take part: a scene with no seams is kept hosted after you leave it, as before (decided for now).
+   * A zone with a panel, popup, hack vision or acknowledgment open is held.
+   */
   private residencyAt(id: SceneId, cam: number) {
     const zones: Record<string, { width: number }> = {};
     for (const seam of this.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (this.hasScene(z)) zones[z] = { width: this.sceneDefinition(z).width };
-    return residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: [...this.hosts.keys()].filter(z => zones[z]) });
+    const hosted = [...this.hosts].filter(([z]) => zones[z]), held = hosted.filter(([, h]) => h.overlayOpen || h.popupOpen || h.visionOn || h.acknowledgmentPending);
+    return residency(this.zoneGraph, { active: id, camera: { x: cam, w: this.viewW }, viewW: this.viewW, zones, hosted: hosted.map(([z]) => z), held: held.map(([z]) => z) });
   }
   /**
    * Each frame in a joined zone: the resident set follows the camera. A zone coming into reach joins the level (its pieces
@@ -944,10 +953,19 @@ export class Game {
     const have = Object.keys(this.level.source.zones).sort();
     for (const [z, zr] of r.zones) if (this.zoneTiers.has(z)) this.zoneTiers.set(z, zr.tier);
     // never drop the zone the player stands in (mid-flight a ride can be in the neighbour's floors)
-    if (want.join() === have.join() || !want.includes(this.here)) return;
+    if (!want.includes(this.here)) return;
     const floor = levelFloor(this.level).zone; if (floor && !want.includes(floor)) return;
-    const source = this.joinLevel(this.here);
+    const source = want.join() === have.join() ? undefined : this.joinLevel(this.here);
     if (source?.zones) this.level = levelRejoin({ source, state: this.level.state }, source, this.seenRooms(source, this.here) ?? [], savedForLevel(source, this.here, this.save.barriers));
+    // out of the level now: zones past the eviction distance unload; one zone coming into reach is compiled per frame
+    for (const z of r.evict) if (z !== this.here) this.unload(z as SceneId);
+    const next = r.load.find(z => !this.hosts.has(z as SceneId) && this.hasScene(z)); if (next) this.hostOf(next as SceneId);
+  }
+  /** Unload a zone (SEAMLESS-WORLD.md §3): its host persists and is disposed, with the session bound to its model; the save stays, and `hostOf` rebuilds it from there. */
+  private unload(id: SceneId) {
+    const host = this.hosts.get(id); if (!host) return;
+    host.dispose(); this.hosts.delete(id);
+    if (this.gameplaySessions.get(id) === host.gameplay) this.gameplaySessions.delete(id);
   }
   /** The rooms the save remembers, as a level names them (a joined level: `zone/room` for each of its zones). */
   private seenRooms(source: LevelSource, id: SceneId): string[] | undefined {
@@ -979,9 +997,9 @@ export class Game {
   }
   /** Each lift reads its own zone's movers. */
   private readonly movers: Movers = (zone) => zone && zone !== this.here && this.hasScene(zone) ? this.hostOf(zone).model : this.zh.model;
-  /** A zone's part of the level's view, in its own ids. */
+  /** A zone's part of the level's view, in its own ids (with where the player is: what they pass behind). */
   private levelViewOf(id: SceneId) {
-    const view = levelView(this.level!, this.movers);
+    const view = levelView(this.level!, this.movers, this.p);
     return this.level!.source.zones ? splitLevelView(view, id) : view;
   }
   /** Is there a walk seam at this edge of the zone the player is in (no edge exit there: the street goes on)? */
@@ -1207,7 +1225,8 @@ export class Game {
       if (target) list.push({ kind: 'life', id: 'story:' + id, ...target });
     }
     // a level's doors, flights, escalators and lifts where the player stands
-    if (this.level) for (const t of levelHints(this.level, this.p, this.movers)) list.push({ kind: 'level', ...t });
+    // (the list menu beside the car is the lift's panel while it is open: no prompt over it)
+    if (this.level) for (const t of levelHints(this.level, this.p, this.movers)) if (!(this.carListOn && t.id.startsWith('lift:'))) list.push({ kind: 'level', ...t });
     // the companion can always be petted, wherever it is with you
     if (this.companionPresent&&this.def.companion?.pet) list.push({ kind: 'companion', id: this.companionDoc.id, x: this.companionBody.x, h: 0, label: this.def.companion.pet.prompt, promptH: this.companionBody.h + 24 });
     return list;
@@ -1629,6 +1648,39 @@ export class Game {
     html.toggle('hack-ok', zh.hackable); html.toggle('hack-on', on);
     html.toggle('logic-open', zh.logicOpen); html.toggle('unfold-on', zh.unfoldAll);
   }
+
+  /** The list menu beside the lift car is showing (the car's own prompt steps aside), and the player closed it (Esc): it stays shut until they use the panel's keys again or leave the car. */
+  private carListOn = false;
+  private carListOff = false;
+  /**
+   * In a lift car the floors are a list menu beside it (engine/popup.ts 'list', through the scene's host), not a floating
+   * prompt: it reflects the panel (engine/level.ts `levelLiftList`: `ride.pick` is its one state), ↑ ↓ move the choice
+   * as `levelUp`/`levelDown` do, a row or E sends the car through `levelInteract`; stepping out closes it.
+   */
+  private syncCarList() {
+    const zh = this.zh, lv = this.level, list = lv && !this.bubble && !this.levelLocked() && !this.zh.visionOn ? levelLiftList(lv, this.movers) : null;
+    const id = list ? 'lift:' + list.id : '';
+    const was = this.carListOn;
+    if (!list || !lv) {
+      this.carListOn = false; this.carListOff = false;
+      for (const l of this.liftIds) zh.closeList(l);
+      return;
+    }
+    this.liftIds.add(id);
+    // the player closed it (Esc, a tap elsewhere): leave it shut
+    if (was && !zh.listOpen(id)) this.carListOff = true;
+    if (this.carListOff || (!zh.listOpen(id) && zh.popupOpen)) { this.carListOn = false; return; }
+    const items = list.rows.map((r) => ({
+      key: r.key, label: r.label, cur: r.here,
+      tag: r.here ? (r.picked ? 'step out' : 'you are here') : r.called ? 'called' : '',
+      point: () => levelPick(lv, r.index),
+      run: () => { levelPick(lv, r.index); levelInteract(lv, id, this.p, this.movers); },
+    }));
+    const sel = Math.max(0, list.rows.findIndex((r) => r.picked));
+    zh.list(id, 'LIFT', items, { x: list.x, y: list.h, w: list.w, h: list.tall }, sel, (dir) => { if (dir > 0) levelUp(lv, this.p); else levelDown(lv, this.p); });
+    this.carListOn = zh.listOpen(id);
+  }
+  private liftIds = new Set<string>();
 
   /** The last `level-up`/`level-down` pair set on the page (syncLevelArrows). */
   private arrowsKey = '';

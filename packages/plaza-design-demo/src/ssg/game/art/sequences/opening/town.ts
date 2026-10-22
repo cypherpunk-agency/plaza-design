@@ -1,4 +1,4 @@
-import{paintOpeningActor}from'./poses';
+import{actorOffset,paintOpeningActor}from'./poses';
 /**
  * The glide's Downtown (glide.ts), from the Galleria's plaza west to LINE 0's tunnel. Second pass
  * (Tommi, 2026-10-15):
@@ -21,7 +21,8 @@ import { drawRing, RING, ringTraffic } from "../../architecture/ring-highway";
 import { frameView, placed } from "../../core/view";
 import { type CoastView, type Lines, hash, lerp, mixHex, R, S } from "./coast";
 import { PLACES, TOWER_X } from "./path";
-import { SIDE_STREETS } from "./traffic";
+import { text } from "../../core/primitives";
+import { RING_ENDS, SIDE_STREETS } from "./traffic";
 import {pieceNumber as pn,pieceString as ps,visiblePoint,viewportSpan,strictlyVisiblePoint,type PieceInputs} from "./piece-inputs";
 import type {Properties} from "../../core/composition";
 
@@ -173,7 +174,9 @@ export function drawRingOver(x: CanvasRenderingContext2D, c: CoastView, L: Lines
   if (b > a) {
     placed(x, R(o0), L.BACK, S, () => {
       drawRing(x, a, b, { t: c.f, still: c.still, fill: mixHex('#18121a', '#241a24', c.warm * 0.4), gantries: [-3900 / S], lamps: lights }, () => {
-        x.save(); x.beginPath(); x.rect(a, -2000, b - a, 2000); x.clip();
+        // its traffic runs between the deck's two ends (traffic.ts RING_ENDS), where it passes into the structures that close them
+        const ta = Math.max(a, fx(c.sx(RING_ENDS.west))), tb = Math.min(b, fx(c.sx(RING_ENDS.east)));
+        x.save(); x.beginPath(); x.rect(ta, -2000, Math.max(0, tb - ta), 2000); x.clip();
         ringTraffic(x, a, b, c.f, c.still, true);
         x.restore();
       });
@@ -188,6 +191,8 @@ export function drawRingOver(x: CanvasRenderingContext2D, c: CoastView, L: Lines
       x.fillStyle = 'rgba(255,190,110,' + (0.4 * k).toFixed(2) + ')'; x.fillRect(R(sx), R(under), R(w), 1);
     }
   }
+  // the deck and its traffic end in the interchange tower's portal there (no end in mid-air)
+  drawRingEastTower(x, c, L);
 }
 
 /** Downtown's street lamps, their light on the pavement. */
@@ -208,10 +213,85 @@ export function drawTownLamps(x: CanvasRenderingContext2D, c: CoastView, L: Line
 export function drawTownPeople(x: CanvasRenderingContext2D, c: CoastView, L: Lines, only?: number) {
   for (const [index,w] of PEOPLE.entries()) {
     if (only !== undefined && only !== index) continue;
-    const s = c.sx(pn(c.piece,"worldX",w.X));
-    if (!visiblePoint(c,s,60)) continue;
-    placed(x, R(s), L.MID, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),c.pose??c.actors['people.person-'+PEOPLE.indexOf(w)],'people.person-'+PEOPLE.indexOf(w)));
+    // culled where the walker is now, not where it is anchored (a walker's range reaches 50 view units from it)
+    const s = c.sx(pn(c.piece,"worldX",w.X)), pose = c.pose??c.actors['people.person-'+index];
+    if (!visiblePoint(c,s+actorOffset(pose)*S,60)) continue;
+    placed(x, R(s), L.MID, S, () => paintOpeningActor(x,frameView(c.f,c.lighting),pose,'people.person-'+index));
   }
+}
+
+/**
+ * Downtown's WEST GATE (Tommi, 2026-10-22: the Ring at the beginning of the towers ended in mid-air over the sea):
+ * the westmost block, on the canal's sea wall, built over the road. THE RING and the street run
+ * through its base in two portals, so they begin and end inside a building instead of over the
+ * inlet; their traffic (cut at the junction) disappears into the portals' dark. Drawn in front of the
+ * Ring and the street (east of the junction only), its west face the sea wall's line (`RING_WEST`, path.ts `WEST.junction`),
+ * its east face against the street's last tower.
+ */
+/** RING_ENDS (traffic.ts will export them): where THE RING's deck and its traffic stop (X), each end in a portal. */
+// where THE RING is cut: its traffic enters and leaves only past these (traffic.ts `RING_ENDS`), the faces drawn over it here
+const RING_WEST = RING_ENDS.west, RING_EAST = RING_ENDS.east;
+export const GATE: [number, number] = [STREET.reduce((m, t) => Math.max(m, t.X + t.w * S), 0) + 4, RING_WEST];
+/**
+ * A block the roads run through, screen x `a`..`b`: up out of the view and down to `foot`, a floor
+ * line and windows each storey over the Ring, THE RING's portal (and the street's, `street`) with the
+ * jamb on the side the traffic comes in from (`entry`). Drawn over the Ring (and the street) so what
+ * drives in disappears into the portal's dark.
+ */
+function throughBlock(x: CanvasRenderingContext2D, c: CoastView, L: Lines, a: number, b: number, entry: 'east' | 'west', foot: number, street: boolean) {
+  const ringY = (h: number) => L.BACK - h * S, jamb = 5, rim = 'rgba(255,150,90,' + (0.35 * c.warm + 0.1).toFixed(2) + ')';
+  const wall = mixHex('#1a1016', '#2a1c24', c.warm * 0.5), dark = 'rgba(6,3,8,.74)';
+  x.fillStyle = wall; x.fillRect(a, -10, b - a, foot + 10);
+  x.fillStyle = rim; x.fillRect(a, -10, 1, foot + 10);
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(b - 2, -10, 2, foot + 10);
+  // its storeys above the Ring: a floor line each storey, windows on a bay pitch, some lit
+  const st = STOREY * S, top = ringY(RING.rail + 100);
+  for (let k = 0, fy = top - 6; fy > -st; k++, fy -= st) {
+    x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(a + 1, R(fy), b - a - 3, 1);
+    for (let bx = a + 6, i = 0; bx + 4 < b - 4; bx += 9, i++) {
+      const lit = hash(k * 31 + i * 7 + 5) < 0.3 + 0.3 * c.city;
+      x.fillStyle = lit ? 'rgba(255,200,140,.55)' : 'rgba(10,6,12,.8)'; x.fillRect(bx, R(fy - st * 0.7), 4, R(st * 0.45));
+    }
+  }
+  // a portal: the dark of the passage (what drives in shows faint), its lamps, a concrete frame
+  const portal = (y0: number, y1: number, lamps: number, deck: [number, number]) => {
+    const p0 = entry === 'east' ? a + jamb + 2 : a + jamb, p1 = entry === 'east' ? b - jamb : b - jamb - 2, j = entry === 'east' ? p1 : a;
+    x.fillStyle = dark; x.fillRect(p0, R(y0), p1 - p0, R(y1 - y0));
+    // the carriageway going on inside, its edge catching the tunnel lamps
+    x.fillStyle = 'rgba(46,32,40,.55)'; x.fillRect(p0, R(deck[0]), p1 - p0, R(deck[1] - deck[0]));
+    x.fillStyle = 'rgba(255,190,120,.22)'; x.fillRect(p0, R(deck[0]), p1 - p0, 1);
+    for (let lx = p1 - 6; lx > p0 + 2; lx -= 12) { x.fillStyle = 'rgba(255,214,150,' + lamps + ')'; x.fillRect(lx - 2, R(y0) + 1, 4, 1); }
+    const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(255,190,120,.10)'); g.addColorStop(1, 'rgba(255,190,120,0)'); x.fillStyle = g; x.fillRect(p0, R(y0), p1 - p0, R(y1 - y0));
+    x.fillStyle = wall; x.fillRect(j, R(y0) - 3, jamb, R(y1 - y0) + 3); x.fillRect(p0 - 2, R(y0) - 4, p1 - p0 + 4, 4);
+    x.fillStyle = rim; x.fillRect(Math.min(p0 - 2, j), R(y0) - 4, p1 - p0 + 2 + jamb, 1);
+    x.fillStyle = 'rgba(255,217,165,.18)'; x.fillRect(entry === 'east' ? p1 : p0 - 1, R(y0), 1, R(y1 - y0));
+  };
+  // THE RING's portal, over its deck to over its lamps; the street's over the pavement and the road
+  portal(ringY(RING.rail + 80), ringY(RING.under - 8), 0.8, [ringY(RING.road), ringY(RING.under)]);
+  if (street) portal(L.BACK - 40, L.ROAD1 + 2, 0.7, [L.ROAD0, L.ROAD1]);
+}
+
+/** THE RING's east end (`RING_EAST`): an interchange tower on the back line it turns into, inland, the curve going on behind it. */
+export function drawRingEastTower(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
+  const e = c.sx(RING_EAST), a = Math.floor(e - 30), b = Math.ceil(e + 24);
+  if (b < -4 || a > c.W + 4) return;
+  throughBlock(x, c, L, a, b, 'west', L.BACK + 2, false);
+  text(x, 'R4 · INLAND', R((a + b) / 2), R(L.BACK - (RING.rail + 80) * S) - 9, 'rgba(255,217,165,.35)', 4, '600');
+}
+
+export function drawWestGate(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
+  const a = Math.floor(c.sx(GATE[1])), b = Math.ceil(c.sx(GATE[0]));
+  if (b < -4 || a > c.W + 4) return;
+  const ringY = (h: number) => L.BACK - h * S;
+  throughBlock(x, c, L, a, b, 'east', c.H + 400, true);
+  // the plates: the Ring's stencil and the gate's name, on the wall between the portals
+  const mid = R((a + b) / 2), py = R((ringY(RING.under - 8) + L.BACK - 44) / 2);
+  x.fillStyle = '#0d0705'; x.fillRect(mid - 18, py - 5, 36, 10); x.strokeStyle = 'rgba(255,136,0,.6)'; x.lineWidth = 1; x.strokeRect(mid - 17.5, py - 4.5, 35, 9);
+  text(x, 'WEST GATE', mid, py + 0.5, 'rgba(255,217,165,.85)', 3.6, '600');
+  text(x, 'R4 · W', mid, R(ringY(RING.rail + 80)) - 9, 'rgba(255,217,165,.35)', 4, '600');
+  // the footing under the road: the sea wall's coping carried across
+  x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(a + 1, L.ROAD1 + 3, b - a - 3, 2);
+  for (let h = L.ROAD1 + 9; h < c.H + 40; h += 6) { x.fillStyle = 'rgba(0,0,0,.2)'; x.fillRect(a + 1, h, b - a - 3, 1); }
 }
 
 export const townPieceIds = [...SIDE_STREETS.map(X=>'side-street-'+X), ...[...STREET,PORTAL_TOWER].map(b=>'tower-'+b.seed)];

@@ -1,4 +1,6 @@
-import{paintOpeningActor}from'./poses';
+import{flowPlace,paintOpeningActor}from'./poses';
+import{visiblePoint}from'./piece-inputs';
+import type{FlowSource,FlowVehicle}from'../../../world/people-flow';
 /**
  * The glide's end (Tommi, 2026-10-15, second pass): LINE 0 has its own way and comes from somewhere,
  * and the ending opens the ground.
@@ -50,6 +52,41 @@ export const WAITING: { X: number; c: Character }[] = [
   { X: 3130, c: { seed: 5103, look: { body: 'kid', garb: 'tee', hair: 'cap' }, x: 0, act: 'stand', facing: 1 } },
 ];
 
+/** Who waits at the Harbor Station for the train in from Downtown (at the player's scale): looks for its people flow. */
+export const HARBOR_RIDERS: Character[] = [
+  { seed: 5111, look: { garb: 'coat', hair: 'short', extras: ['bag'] }, x: 0, act: 'stand' },
+  { seed: 5112, look: { body: 'slim', garb: 'jacket', hair: 'beanie', extras: ['phone'] }, x: 0, act: 'stand' },
+  { seed: 5113, look: { body: 'tall', garb: 'suit', hair: 'brim' }, x: 0, act: 'stand' },
+  { seed: 5114, look: { ...{ garb: 'hivis' as const, hair: 'helmet' as const, acc: '#e8c020' }, body: 'avg', extras: ['backpack'] }, x: 0, act: 'stand' },
+];
+/** The Harbor Station's crowd in flow units (zone `glide`): x is X, h the height over the street's back line; up its stairs at the east end. */
+export const HARBOR_STAIRS = { foot: HARBOR_STATION[0] - 28, top: HARBOR_STATION[0] + 2, deck: LINE0.deck * S };
+/** Where LINE 0's doors stand when the eastbound train has stopped with its nose at `nose` (one door a car; each car's 0.37 door). */
+export const harborDoors = (nose: number) => [0, 1].map(k => Math.round(nose + k * (CAR_L + GAP) + METRO.doors[1] * CAR_L));
+/**
+ * The train at the Harbor Station as a people flow's vehicle (world/people-flow.ts `FlowVehicle`): one stop, its doors
+ * open from `open` (glide seconds; story/title/actors.ts reads it from the timeline's `line0.train` track) to the end.
+ */
+export function harborTrain(nose: number, open: number): FlowVehicle {
+  const doors = harborDoors(nose).map(x => ({ zone: 'glide', x }));
+  return { id: 'line0-harbor', tripAt: () => 0, doors: n => n === 0 ? { trip: 0, open, close: open + 40, doors } : null };
+}
+/**
+ * The people waiting there: for each door a cohort that walks up the stairs and along the platform long before the
+ * camera gets there, queues at the door and boards as the doors open (the queue's board rule), one by one.
+ */
+export function harborFlows(nose: number): FlowSource[] {
+  return harborDoors(nose).map((door, i) => ({
+    id: 'harbor-door-' + i, clock: 'scene', seed: 5120 + i * 7, looks: HARBOR_RIDERS.map((_, k) => String(k)), speed: 9,
+    spawn: { kind: 'trip', vehicle: 'line0-harbor', count: 3, on: 0.8, window: [-78, -24] },
+    route: [
+      { kind: 'walk', zone: 'glide', x: HARBOR_STAIRS.foot, h: 0 },
+      { kind: 'walk', zone: 'glide', x: HARBOR_STAIRS.top, h: HARBOR_STAIRS.deck },
+      { kind: 'board', zone: 'glide', x: door, h: HARBOR_STAIRS.deck, vehicle: 'line0-harbor', slots: 3, spacing: 10, gap: 0.45 },
+    ],
+  } satisfies FlowSource));
+}
+
 /** The viaduct, the station, the tower's portal, the train above ground, the tunnel's headwall: drawn on the back line, above it only. */
 export function drawLine0(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
   // with the eastbound train (the glide since 2026-10-22) the viaduct goes on over the bay bridge to the raised Harbor Station
@@ -69,6 +106,14 @@ export function drawLine0(x: CanvasRenderingContext2D, c: CoastView, L: Lines) {
     const pa = Math.max(-200, c.sx(PLACES.portal)); x.save(); x.beginPath(); x.rect(pa, -4000, c.W + 200 - pa, L.BACK + 4000); x.clip();
     eastbound(x, c, c.train!, (X) => L.BACK - railH(X));
     x.restore();
+    // its crowd on the platform's near edge, in front of the train: up the stairs, along to a door, queueing, stepping in
+    for (const [id, pose] of Object.entries(c.actors)) {
+      const at = id.startsWith('harbor.') ? flowPlace(pose) : undefined;
+      if (!at) continue;
+      const s = c.sx(at.x);
+      if (!visiblePoint(c, s, 60)) continue;
+      placed(x, R(s), R(L.BACK - at.h), S, () => paintOpeningActor(x, frameView(c.f, c.lighting), pose, id));
+    }
   }
   // the tower's portal (the tower itself is the street's, town.ts): a lit opening behind the track
   const ts = c.sx(PORTAL_TOWER.X) - PORTAL_TOWER.w * S;

@@ -22,7 +22,8 @@ import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-s
 import {validatePendingCity,createPendingCity} from './pending-city';
 import {mountCityAuthoring} from './city-authoring';
 import {mountZoneGraphAuthoring} from './zone-graph-authoring';
-import {validateZoneGraph} from '../world/zone-graph';
+import {placeFrom,validateZoneGraph} from '../world/zone-graph';
+import {zoneName} from './zone-graph-context';
 import {validateBotReactions} from '../engine/gameplay/bot-conversations';
 import {validatePendingRules} from './pending-rules';
 import {mountCompanionSourceAuthoring} from './companion-source-authoring';
@@ -234,7 +235,7 @@ async function start() {
       {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
       {id:'companion',area:'world',layout:'sections',label:'Companion',title:'The companion: look, unlock flag, follow modes, speaker and greeting',authoring:true,documentDependent:true,documentIds:['companion','companion-gameplay'],primaryDocumentId:'companion',mount:mountCompanionSourceAuthoring},
       {id:'critter-reactions',area:'world',label:'Critter dialogue',title:'Cat and pigeon reactions',authoring:true,documentDependent:true,documentIds:['critter-reactions'],primaryDocumentId:'critter-reactions',mount:mountCritterReactionAuthoring},
-      {id:'zone-graph',area:'world',layout:'sections',label:'Zones',title:'Zones and seams: which scenes join with no cut, and where each lies from the other',authoring:true,documentDependent:true,primaryDocumentId:'zone-graph',mount:mountZoneGraphAuthoring},
+      {id:'zone-graph',area:'world',label:'Zones',title:'Zones and seams: which scenes join with no cut, and where each lies from the other',authoring:true,documentDependent:true,primaryDocumentId:'zone-graph',mount:mountZoneGraphAuthoring},
       {id:'review-stations',area:'world',layout:'sections',label:'Review stations',title:'Review navigator: bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
       {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions · shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab · the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},
@@ -295,6 +296,8 @@ async function start() {
     preview: { render: (canvas, request) => { if (request.documents?.has('people')) applyPeople(request.documents.get('people')); return sequences.render(canvas, request) ?? native.render(canvas, request); } },
 
     inspector: (scene, instance, documents) => inspectorSections(scene, instance, documents),
+    // the scenes one seam away (world/zone-graph.json), which the Scene preview draws beside the open one
+    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = validateZoneGraph(source); } catch { return []; } const values = new Map(documents.map(d => [d.id, d.value])); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
 
     worldPanel(panel, openScene, documents, scene) {
 
@@ -367,7 +370,7 @@ function barrierSection(scene: string, instance: Instance, documents: readonly E
   if (instance.type !== 'level.barrier') return [];
   const holds = (nodes: readonly Instance[]): boolean => nodes.some(n => n.id === instance.id || holds(n.children ?? []));
   const doc = documents.find(d => d.kind === 'composition' && (d.value as Composition).scene === scene && holds((d.value as Composition).instances));
-  return doc ? [{ id: 'access', label: 'Access', title: 'When this barrier opens: its rule, Try it, phase rules and checks', mount: (host, context) => mountBarrierAuthoring(host, context, { scene, document: doc.id, instance: instance.id }) }] : [];
+  return doc ? [{ id: 'access', label: 'Access', primary: true, title: 'When this barrier opens: its rule, Test the rule, phase rules and checks', mount: (host, context) => mountBarrierAuthoring(host, context, { scene, document: doc.id, instance: instance.id }) }] : [];
 }
 function inspectorSections(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
   const barrier = instance ? barrierSection(scene, instance, documents) : [];

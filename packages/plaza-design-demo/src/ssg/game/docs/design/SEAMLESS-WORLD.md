@@ -491,6 +491,10 @@ every function only reads them.
   two trips and finds the cabin height and doors equal to `levelView`'s on every sampled frame. Boarding is
   possible exactly when the level offers STEP IN.
 
+**First use (2026-10-22):** the title glide's road traffic (`art/sequences/opening/traffic.ts`) runs each vehicle on a
+`VehicleRoute` with `routeAt`: from the truck gate or a side street's back street, out of the mouth (hidden by the towers,
+not faded), along its lane, and off the same way; drawn by depth, far lane first. `check-title-traffic` covers it.
+
 **What remains to wire**:
 
 - the game loop adds each resident vehicle's part to the merged level every frame and calls `carry`;
@@ -588,6 +592,10 @@ wired into the loop, the renderer or the actor controllers yet.
 | `platformQueue` slots are authored actors at fixed x | Queue slots come from the board point (door x, spacing). Each door is one flow (or one board point). |
 | `trainCrowd`: the car is reseeded at each stop (`crowd(500 + ride.at·31)`), so the people inside are not the people who got on | The car seats `handedOff` people for that trip (the same keys and looks), plus through riders. Alighting is an `alight` flow at the next station. Seating, standing and who stays aboard belong to the vehicle (step 8). |
 | `trainCrowd.standing` (offset ±10) | A standing spot of the vehicle (§4 seats). |
+
+First use (2026-10-22): the title glide's escalator riders (out of the Galleria's doors, up, into the dome) and the
+Harbor Station's crowd (a `board` queue per door on the timeline's `line0.train` stop) are flows; `story/title/actors.ts`
+prepares their poses (`prepareCharacter(..., moving)`) and the art places them. `check-title-traffic` covers it.
 
 Still to wire: an `engine/people.ts` tick over visible zones (materialise on entering view, `remember` on leaving
 it, `SceneSave.people`), drawing `PersonHere` through the rider/kit people art, the vehicle adapter in
@@ -710,7 +718,7 @@ functions as the game.
 - **Try it**: a fixture panel (flag and item toggles) shows the result sentence the barrier would give.
   Evaluation is pure, so nothing is committed.
 - **The world access policy**: City & travel › Access can name a barrier instead of an exit.
-- *Built (step 2):* the Access tab (authoring/barrier-authoring.ts) with the sentence, keyring/flag/condition pickers, Try it
+- *Built (step 2):* the Access tab (authoring/barrier-authoring.ts) with the sentence, keyring/flag/condition pickers, Test the rule (was Try it)
   and §6.8 warnings; `phases.<p>.barriers.<id>` validated and run by `storyExit` (a gate's beat ends by opening the barrier).
   Not yet: the *hidden while shut* checkbox, multi-row access lists and the world access policy.
 

@@ -402,7 +402,8 @@
             "width": 160
           }
         ],
-        "seed": 30
+        "seed": 30,
+        "jamb": 20
       },
       "placement": {
         "x": 520,

@@ -194,4 +194,66 @@ export const composerStyles = `
   .scene-composer .add-picker{position:fixed;inset:0;z-index:50;border-radius:0}.scene-composer .play-button{margin-left:0}
   .scene-composer .timeline-grid{grid-template-columns:1fr}
 }
+/* World › Zones */
+.scene-composer .zone-intro{font-size:14px;margin:0 0 10px}
+.scene-composer .zone-editor{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:16px;align-items:start}
+.scene-composer .seam-list{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px}
+.scene-composer .seam-list h2{margin:2px 4px 8px}
+.scene-composer .seam-list ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.scene-composer .seam-row{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;border-left:2px solid transparent;border-radius:0;background:none;padding:6px 8px;white-space:normal}
+.scene-composer .seam-row:hover{background:var(--raised)}
+.scene-composer .seam-row[aria-pressed=true]{background:var(--raised);border-left-color:var(--accent)}
+.scene-composer .seam-icon{flex:none;display:inline-flex;color:var(--accent)}
+.scene-composer .seam-words{flex:1;min-width:0;display:flex;flex-direction:column}
+.scene-composer .seam-words small{color:var(--muted);font:11px/1.3 var(--mono)}
+.scene-composer .seam-badge{flex:none;font:600 11px/1 var(--mono);padding:3px 7px;border-radius:999px}
+.scene-composer .seam-badge.ok{color:var(--accent);background:#173238}
+.scene-composer .seam-badge.bad{color:#ffc8c8;background:#3a1f2c}
+.scene-composer .seam-list .row{margin-top:8px}
+.scene-composer .seam-card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;max-width:780px}
+.scene-composer .seam-head h3{font:600 15px/1.3 system-ui,sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);margin:0 0 8px}
+.scene-composer .seam-kind{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.scene-composer .seam-ends-grid,.scene-composer .seam-offsets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin:8px 0}
+.scene-composer .seam-end{display:flex;flex-direction:column;gap:6px}
+.scene-composer .seam-field label{display:flex;flex-direction:column;align-items:stretch;gap:3px;margin:0}
+.scene-composer .seam-field label>span{color:var(--muted);font-size:12px}
+.scene-composer .seam-control{display:flex;gap:6px;align-items:center}
+.scene-composer .seam-control>select,.scene-composer .seam-control>input{flex:1;min-width:0;width:auto}
+.scene-composer .seam-control>button{flex:none}
+.scene-composer button.link{background:none;border-color:transparent;color:var(--accent);padding:4px 6px;text-decoration:underline;min-height:0}
+.scene-composer .hint{color:var(--muted);font-size:12px;margin:2px 0 0}
+.scene-composer .field-problem{color:#ffc8c8;background:#3a1f2c;border-radius:4px;padding:4px 8px;font-size:12px;margin:4px 0 0}
+.scene-composer .zone-diagram{margin:10px 0;border:1px solid var(--line);border-radius:6px;background:#05080c;padding:6px}
+.scene-composer .zone-diagram svg{display:block;width:100%;height:auto;max-height:240px}
+.scene-composer .zone-diagram rect,.scene-composer .zone-diagram line{vector-effect:non-scaling-stroke}
+.scene-composer .zone-diagram rect{stroke-width:1.5}
+.scene-composer .zone-diagram rect.zone-from{fill:#18222f;stroke:var(--line-strong)}
+.scene-composer .zone-diagram rect.zone-to{fill:#72dbca;fill-opacity:.12;stroke:var(--accent);stroke-dasharray:6 4}
+.scene-composer .zone-diagram line.floor{stroke:var(--muted);stroke-width:2}
+.scene-composer .zone-diagram line.floor.zone-to{stroke:var(--accent)}
+.scene-composer .zone-diagram .seam{stroke:var(--warn);stroke-width:3;fill:var(--warn)}
+.scene-composer .zone-diagram .seam.bad{stroke:var(--danger);fill:var(--danger)}
+.scene-composer .zone-diagram .seam.gap{stroke-dasharray:4 3}
+.scene-composer .zone-diagram text{fill:var(--ink);font-family:var(--mono)}
+.scene-composer .zone-diagram text.caption{fill:var(--muted)}
+.scene-composer .seam-status{font-weight:600;margin:6px 0}
+.scene-composer .seam-status.ok{color:var(--accent)}.scene-composer .seam-status.bad{color:var(--danger)}
+.scene-composer .seam-foot{justify-content:space-between;align-items:flex-end;border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+@media(max-width:760px){.scene-composer .zone-editor,.scene-composer .seam-ends-grid,.scene-composer .seam-offsets{grid-template-columns:1fr}}
+/* Scene preview: joined scenes (read-only neighbours) */
+.scene-composer .joined-tags{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.scene-composer .stage-play:not([hidden])~.joined-tags{display:none}
+.scene-composer .joined-tag{position:absolute;display:flex;align-items:center;gap:6px;flex-wrap:nowrap;width:max-content;padding:4px 6px 4px 10px;border:1px solid var(--accent);border-radius:999px;background:#0b1017e6;color:var(--accent);font:12px/1.3 var(--mono);pointer-events:auto}
+.scene-composer .joined-tag>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.scene-composer .joined-tag>button{flex:none}
+.scene-composer .joined-tag button{min-height:24px;padding:2px 8px;font-size:12px;border-radius:999px}
+/* A barrier's Access tab, and its mark in the outline */
+.scene-composer .barrier-head{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;background:var(--raised);padding:10px 12px;margin:4px 0 10px}
+.scene-composer .barrier-head h3{margin:0 0 6px}
+.scene-composer .barrier-rule{font-size:16px;line-height:1.4;color:var(--ink);margin:0}
+.scene-composer .barrier-toggles{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 8px}
+.scene-composer .barrier-toggles .toggle::before{content:'○ '}.scene-composer .barrier-toggles .toggle[aria-pressed=true]::before{content:'● '}
+.scene-composer .barrier-result{font-size:17px;font-weight:600;padding:8px 12px;border-radius:6px;margin:6px 0 4px}
+.scene-composer .barrier-result.ok{color:var(--accent);background:#173238}
+.scene-composer .barrier-result.error{color:#ffc8c8;background:#3a1f2c}
+.scene-composer .layer-badge{display:inline-flex;vertical-align:-2px;margin-right:6px;color:var(--warn)}
 `;

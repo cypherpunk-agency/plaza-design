@@ -12,11 +12,12 @@ import type { SceneDef } from '../scenes/kit';
 import { renderWorldFrame, type ZoneFrame } from '../runtime/render-scene';
 import { joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zone-graph';
 import { authoredDocumentId } from '../engine/gameplay/scene-catalogue';
+import { zoneInfo, zoneName } from './zone-graph-context';
 import { city } from '../world/clock';
 import { light, lightAt, setLight } from '../world/light';
 import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
 import { CLIMATE_IDS, isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
-import type { PreviewRequest, PreviewResult } from './app';
+import type { JoinedPreview, PreviewRequest, PreviewResult } from './app';
 import type { PlayerServices, PlayerState } from '../runtime/player';
 import { BASE_NODES } from '../runtime/save';
 import { drawSelectionOverlay } from './selection-overlay';
@@ -96,6 +97,14 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
    * `zoneFrame` draws them: each its own pending scene, isolated model and light, its view moved by where it lies.
    * Read-only: they give no bounds, so nothing in them is selected or dragged.
    */
+  /** The zones one seam away and where they lie (scene units), for the composer's tags, dimming and Fit joined. */
+  const placed = (request: PreviewRequest, sceneId: string) => {
+    const documents = request.documents, source = documents?.get('zone-graph');
+    if (!documents || source === undefined) return [];
+    const graph = validateZoneGraph(source); if (!zoneJoined(graph, sceneId)) return [];
+    const info = zoneInfo(documents);
+    return [...placeFrom(graph, sceneId)].flatMap(([zone, at]) => zone === sceneId || !info[zone] ? [] : [{ zone, label: zoneName(zone, documents), dx: at.dx, dh: at.dh, width: info[zone].width }]);
+  };
   const neighbours = (request: PreviewRequest, sceneId: string, view: View, zoom: number, services: PlayerServices, weather: () => Weather): ZoneFrame[] => {
     const documents = request.documents, source = documents?.get('zone-graph');
     if (!documents || source === undefined) return [];
@@ -170,7 +179,9 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       canvas.width = canvas.width;
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
-      const joined = neighbours(request, request.composition.scene, view, zoom, services, weather);
+      // joined scenes are drawn unless the composer's Show joined scenes is switched off
+      const showJoined = settings.showJoined !== false, around = placed(request, request.composition.scene);
+      const joined = showJoined && around.length ? neighbours(request, request.composition.scene, view, zoom, services, weather) : [];
       renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id, ...(joined.length ? { joined } : {}),
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
@@ -191,6 +202,10 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       // the level overlay keeps its 1-unit lines and 7 px labels: drawn at renderScale over the view's zoomed positions
       if (request.overlays && def.level) drawLevelOverlay(context, def.level, { ...view, sx: (x, parallax) => view.sx(x, parallax) * zoom, y: h => view.y(h) * zoom }, renderScale);
       if (request.overlays) drawSelectionOverlay(context, result, request.selectedId);
+      if (around.length) {
+        result.extent = { from: Math.min(0, ...around.map(z => z.dx)), to: Math.max(def.width, ...around.map(z => z.dx + z.width)) };
+        if (showJoined) result.joined = joinedOverlay(context, around, def.width, view, k, canvas, !!request.overlays);
+      }
       return result;
   };
   return { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult {
@@ -202,6 +217,32 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     try { return city.withSnapshot({ day: number(request.environment.day, 1), min: number(request.environment.minute, 580), seed: number(request.environment.seed, 3) }, () => withSceneWeather(adapters[request.composition.scene]?.climateScene ?? request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, { ...request, weather: snapshot }), request.climate)); }
     finally { setLight(beforeLight); }
   } };
+}
+/**
+ * Where each joined scene lies on the canvas, and (with overlays) the composer's read-only look for it: the part beside
+ * the open scene is dimmed and its edge dashed, so it reads as a neighbour, not as editable artwork.
+ */
+function joinedOverlay(context: CanvasRenderingContext2D, around: { zone: string; label: string; dx: number; dh: number; width: number }[], width: number, view: View, k: number, canvas: HTMLCanvasElement, overlays: boolean): JoinedPreview[] {
+  const out: JoinedPreview[] = [], px = (x: number) => view.sx(x) * k, py = (h: number) => view.y(h) * k;
+  for (const z of around) {
+    const x1 = px(z.dx), x2 = px(z.dx + z.width), side = z.dh > 0 ? 'above' : z.dh < 0 ? 'below' : z.dx >= 0 ? 'right' : 'left';
+    const top = side === 'above' || side === 'below' ? Math.max(0, Math.min(canvas.height, py(z.dh + 240))) : 0, bottom = side === 'above' || side === 'below' ? Math.max(0, Math.min(canvas.height, py(z.dh))) : canvas.height;
+    if (x2 <= 0 || x1 >= canvas.width) continue;
+    out.push({ zone: z.zone, label: z.label, x: x1, y: top, width: x2 - x1, height: Math.max(0, bottom - top), side });
+    if (!overlays) continue;
+    context.save(); context.setTransform(1, 0, 0, 1, 0, 0);
+    // dim what lies beside the open scene (a scene stacked over it stays undimmed: only its floor is marked)
+    const a = px(0), b = px(width);
+    context.fillStyle = 'rgba(6,10,16,0.5)';
+    if (x1 < a) context.fillRect(x1, 0, Math.min(x2, a) - x1, canvas.height);
+    if (x2 > b) context.fillRect(Math.max(x1, b), 0, x2 - Math.max(x1, b), canvas.height);
+    context.strokeStyle = 'rgba(114,219,202,0.85)'; context.lineWidth = Math.max(1, k); context.setLineDash([6 * k, 5 * k]); context.beginPath();
+    if (side === 'right') { context.moveTo(x1, 0); context.lineTo(x1, canvas.height); }
+    else if (side === 'left') { context.moveTo(x2, 0); context.lineTo(x2, canvas.height); }
+    else { context.moveTo(x1, bottom); context.lineTo(x2, bottom); }
+    context.stroke(); context.restore();
+  }
+  return out;
 }
 /** The layered composition's player row, which is also where the player arrives. */
 function playerRow(nodes: readonly Instance[]): Instance | undefined { for (const n of nodes) { if (n.type === PLAYER_ROW) return n; const child = playerRow(n.children ?? []); if (child) return child; } return undefined; }

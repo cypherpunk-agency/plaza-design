@@ -33,7 +33,15 @@
  */
 
 /** One entry: an everyday action (cyan), or a hacking one (pink). `cur`: the state it is in now. `own`: it uses something you carry (dashed). */
-export interface PopupItem { label: string; hack?: boolean; cur?: boolean; own?: boolean; run: () => void }
+export interface PopupItem {
+  label: string; hack?: boolean; cur?: boolean; own?: boolean; run: () => void;
+  /** A list's row: its short key before the label, and a tag after it (green when `cur`). */
+  key?: string; tag?: string;
+  /** The pointer is over it (a list reflects the host's state, so the host takes the hover as its choice). */
+  point?: () => void;
+}
+/** How one `open` differs from the default: a placement of its own, and a list's ↑/↓ (the host moves its state) and starting selection. */
+export interface PopupOpts { placement?: PopupPlacement; step?: (dir: 1 | -1) => void; sel?: number }
 /** Where the thing stands on screen: its box centre and size, in CSS px of the game view. */
 export interface PopupAnchor { x: number; y: number; w: number; h: number }
 /** What placing the popup keeps in mind (CSS px of the game view). */
@@ -56,9 +64,12 @@ export interface PopupRoom {
  *   the place of the action buttons (ESC, MAP, JMP, ACT) while it is open; the walk arrows stay.
  * - 'top': the same row along the top of the free view, under the HUD (HACK and BOARD step aside).
  * - 'beside': next to the thing, on the side away from what it affects.
+ * - 'list': a vertical list of rows (key, label, tag) beside the thing, at its height, on the side with room;
+ *   kept inside the free view (clear of the touch bar and its buttons) and following the thing. For a menu
+ *   the player picks from by moving a selection (the lift car's floors): `step` moves it, E or a tap on a row picks.
  * The rows mark the thing with a ring and a thin connector down (or up) to it.
  */
-export type PopupPlacement = 'plate' | 'bottom' | 'top' | 'beside';
+export type PopupPlacement = 'plate' | 'bottom' | 'top' | 'beside' | 'list';
 export const POPUP_PLACEMENT: PopupPlacement = 'plate';
 
 /** Space between the thing's frame and the popup, and from the edges of the view (px). */
@@ -128,6 +139,24 @@ const besideLayout: PopupLayoutFn = ({ anchor: a, size: { w, h }, view: { W, H }
   const b = best ? best.s.b : (() => { const l = Math.max(EDGE, Math.min(W - w - EDGE, a.x - w / 2)); return { l, t: top + EDGE, r: l + w, b: top + EDGE + h }; })();
   const px = Math.max(b.l, Math.min(b.r, a.x)), py = Math.max(b.t, Math.min(b.b, a.y));
   return { box: b, ring: null, wire: [[px, py], [Math.max(thing.l, Math.min(thing.r, px)), Math.max(thing.t, Math.min(thing.b, py))]] };
+};
+
+/**
+ * A vertical list beside the thing (a lift car), at its height: on the right or the left, whichever has room (the
+ * right when both do), its middle at the thing's middle, clamped into the free view under the HUD and over the touch
+ * bar, and moved off the walk arrows' and action buttons' boxes. A ring on the thing and a short line to the list.
+ */
+const listLayout: PopupLayoutFn = ({ anchor: a, size: { w, h }, view: { W, H, top }, pads }) => {
+  const thing = boxOf(a), pad = 3, ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
+  const right = thing.r + GAP, left = thing.l - GAP - w;
+  const fitsRight = right + w <= W - EDGE, fitsLeft = left >= EDGE;
+  const l = fitsRight ? right : fitsLeft ? left : (W - thing.r > thing.l ? Math.min(right, W - w - EDGE) : Math.max(left, EDGE));
+  let t = Math.max(top + EDGE, Math.min(H - h - EDGE, a.y - h / 2));
+  // on a touch screen the list stays out of the walk arrows' and the action buttons' boxes (the view above the bar already is)
+  for (const p of pads ? [pads.walk, pads.act] : []) if (meets({ l, t, r: l + w, b: t + h }, p)) t = Math.max(top + EDGE, Math.min(t, p.t - EDGE - h));
+  const b = { l, t, r: l + w, b: t + h }, onRight = b.l >= thing.r;
+  const y = Math.max(b.t + 6, Math.min(b.b - 6, a.y));
+  return { box: b, ring, wire: [[onRight ? b.l : b.r, y], [onRight ? ring.r : ring.l, y]] };
 };
 
 /** The plate: the gap between chips, the cyan arm from the plate to its nearest chip, the pink arm up to the hacking row (px). */
@@ -205,7 +234,7 @@ const plateLayout: PopupLayoutFn = ({ anchor: a, view: { W, H, top }, room, part
 };
 
 /** Every placement, by name: a new one is one more entry here. */
-export const POPUP_LAYOUTS: Record<PopupPlacement, PopupLayoutFn> = { plate: plateLayout, bottom: rowLayout('bottom'), top: rowLayout('top'), beside: besideLayout };
+export const POPUP_LAYOUTS: Record<PopupPlacement, PopupLayoutFn> = { plate: plateLayout, bottom: rowLayout('bottom'), top: rowLayout('top'), beside: besideLayout, list: listLayout };
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
   const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e;
@@ -220,7 +249,17 @@ export class Popup {
   private room: PopupRoom = { avoid: [], keepClear: [], top: 0 };
   private items: PopupItem[] = [];
   private sel = 0;
-  private outside = (e: PointerEvent) => { if (!this.box.contains(e.target as Node)) this.close(); };
+  /** A click elsewhere closes it; a list also lets the touch bar's buttons (▲ ▼ ACT) through: they drive it. */
+  private outside = (e: PointerEvent) => {
+    const t = e.target as Element;
+    if (this.box.contains(t) || (this.placement === 'list' && t.closest?.('#touch'))) return;
+    this.close();
+  };
+  /** A list menu's ↑ (1) and ↓ (-1): the host moves the one state it reflects (the lift's `ride.pick`). */
+  private step: ((dir: 1 | -1) => void) | null = null;
+  /** What the rows said last (a list is rebuilt only when it changes). */
+  private shown = '';
+  readonly placement0: PopupPlacement;
   /** The ring round the thing (the rows, the plate), and the last layout (it stays put while open). */
   private ring: HTMLDivElement;
   private last: PopupLayout | null = null;
@@ -230,20 +269,20 @@ export class Popup {
   dev: string | null = null;
   onClose: () => void = () => {};
 
-  constructor(host: HTMLElement, readonly placement: PopupPlacement = POPUP_PLACEMENT) {
-    this.layer = el('div', 'thing-layer' + (placement === 'plate' ? ' plate' : '')); this.layer.hidden = true;
-    const row = placement === 'bottom' || placement === 'top';
-    this.box = el('div', 'thing-pop' + (row ? ' row ' + placement : placement === 'plate' ? ' plate' : '')); this.box.setAttribute('role', 'menu');
+  /** Where it opens: the default, or a list for the one open (`open`'s `opts`). */
+  placement: PopupPlacement;
+  constructor(host: HTMLElement, placement: PopupPlacement = POPUP_PLACEMENT) {
+    this.placement0 = this.placement = placement;
+    this.layer = el('div', 'thing-layer'); this.layer.hidden = true;
+    this.box = el('div', 'thing-pop'); this.box.setAttribute('role', 'menu');
     this.title = el('div', 'thing-title');
     this.list = el('div', 'thing-list');
     this.box.append(this.title, this.list);
-    // the rows close with ✕ as well as Esc or a tap elsewhere
-    if (row) {
-      const x = el('button', 'thing-item thing-x', '✕'); x.type = 'button'; x.tabIndex = -1; x.setAttribute('aria-label', 'close');
-      x.addEventListener('click', (e) => { e.stopPropagation(); this.close(); });
-      this.box.appendChild(x);
-    }
-    this.ring = el('div', 'thing-ring'); this.ring.hidden = placement === 'beside';
+    // the rows close with ✕ as well as Esc or a tap elsewhere (drawn for them only)
+    const x = el('button', 'thing-item thing-x', '✕'); x.type = 'button'; x.tabIndex = -1; x.setAttribute('aria-label', 'close');
+    x.addEventListener('click', (e) => { e.stopPropagation(); this.close(); });
+    this.box.appendChild(x);
+    this.ring = el('div', 'thing-ring');
     // the connector: a short line from the popup to its thing
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'thing-wire');
     this.wire = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); this.wire.setAttribute('class', 'thing-stalk');
@@ -251,6 +290,17 @@ export class Popup {
     svg.append(this.wire, this.arms);
     this.layer.append(svg, this.ring, this.box);
     host.appendChild(this.layer);
+    this.style(placement);
+  }
+
+  /** The look of a placement: the layer's and the box's classes (the plate, a row, a list). */
+  private style(placement: PopupPlacement) {
+    this.placement = placement;
+    const row = placement === 'bottom' || placement === 'top';
+    this.layer.className = 'thing-layer' + (placement === 'plate' ? ' plate' : '');
+    this.box.className = 'thing-pop' + (row ? ' row ' + placement : placement === 'plate' ? ' plate' : placement === 'list' ? ' list' : '');
+    this.ring.hidden = placement === 'beside';
+    this.last = null; this.shown = '';
   }
 
   get isOpen() { return !this.layer.hidden; }
@@ -263,14 +313,18 @@ export class Popup {
   }
 
   /** Open for a device: its name, its entries, next to where it stands. */
-  open(dev: string, name: string, aria: string, items: PopupItem[], at: PopupAnchor | undefined, room?: PopupRoom) {
+  open(dev: string, name: string, aria: string, items: PopupItem[], at: PopupAnchor | undefined, room?: PopupRoom, opts?: PopupOpts) {
     const again = this.dev === dev && this.isOpen;
     if (!again) this.last = null;
+    const placement = opts?.placement ?? this.placement0;
+    if (placement !== this.placement) this.style(placement);
+    this.step = opts?.step ?? null;
     this.dev = dev;
     if (room) this.room = room;
     this.title.textContent = name;
     this.box.setAttribute('aria-label', aria);
     if (!again) this.sel = 0;
+    if (opts?.sel !== undefined) this.sel = Math.max(0, Math.min(items.length - 1, opts.sel));
     this.fill(items);
     if (this.layer.hidden) {
       this.layer.hidden = false;
@@ -285,19 +339,33 @@ export class Popup {
   /** The entries again (after an action: which one is current may have changed). */
   fill(items: PopupItem[]) {
     this.items = items;
-    this.sel = Math.min(this.sel, items.length - 1);
+    this.sel = Math.max(0, Math.min(this.sel, items.length - 1));
+    // the same rows again: only what a tap runs has changed (the rows are not rebuilt under a finger)
+    const sig = items.map((it) => [it.label, it.key, it.tag, it.hack, it.cur, it.own].join('\u0001')).join('\u0002');
+    if (sig === this.shown && this.list.childElementCount === items.length) { this.select(this.sel); return; }
+    this.shown = sig;
     this.list.textContent = '';
     items.forEach((it, i) => {
       const b = el('button', 'thing-item' + (it.hack ? ' hack' : '') + (it.cur ? ' cur' : '') + (it.own ? ' own' : '') + (i === this.sel ? ' sel' : ''));
       // the hacking entries' mark (⌁, missing from IBM Plex Mono) is drawn: a small jack plug
       const label = it.label.replace(/^⌁\s*/, '');
       if (label !== it.label) b.appendChild(el('span', 'thing-ico'));
-      b.appendChild(document.createTextNode(label));
+      // a list's row: key, label, tag
+      if (it.key !== undefined || it.tag !== undefined) {
+        b.classList.add('row3');
+        b.append(el('span', 'thing-key', it.key ?? ''), el('span', 'thing-name', label), el('span', 'thing-tag', it.tag ?? ''));
+      } else b.appendChild(document.createTextNode(label));
       b.type = 'button'; b.setAttribute('role', 'menuitem'); b.tabIndex = -1;
-      b.addEventListener('pointerenter', () => this.select(i));
-      b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = i; it.run(); });
+      b.addEventListener('pointerenter', () => { this.select(i); this.items[i]?.point?.(); });
+      b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = i; this.items[i]?.run(); });
       this.list.appendChild(b);
     });
+  }
+
+  /** An open list again, as the host's state moved on: its rows (rebuilt only if they read differently) and which one is selected. */
+  refresh(items: PopupItem[], sel: number) {
+    this.sel = sel;
+    this.fill(items);
   }
 
   /** The free view's height: on a phone the touch buttons lie over the bottom of it. */
@@ -318,6 +386,11 @@ export class Popup {
 
   /** Every frame while open: the placement (POPUP_LAYOUTS) says where the box (or each part), the ring, the connector and the arms go. */
   place(a: PopupAnchor) {
+    // a list taller than the free view scrolls inside it
+    if (this.placement === 'list') {
+      const room = this.freeHeight() - this.room.top - 2 * EDGE - this.title.offsetHeight - 14;
+      this.list.style.maxHeight = Math.max(88, Math.round(room)) + 'px';
+    }
     const chips = [...this.list.children] as HTMLElement[];
     const lay = POPUP_LAYOUTS[this.placement]({
       anchor: a, size: { w: this.box.offsetWidth, h: this.box.offsetHeight },
@@ -351,15 +424,22 @@ export class Popup {
 
   close() {
     if (this.layer.hidden) return;
-    this.layer.hidden = true; this.dev = null; this.items = []; this.last = null;
+    this.layer.hidden = true; this.dev = null; this.items = []; this.last = null; this.step = null; this.shown = '';
     document.documentElement.classList.remove('thing-bottom', 'thing-top');
     window.removeEventListener('pointerdown', this.outside, true);
     this.onClose();
   }
 
+  /** The host is disposed: closed (its window listener goes with it) and off the page. */
+  dispose() { this.onClose = () => {}; this.close(); this.layer.remove(); }
+
   private select(i: number) {
     this.sel = i;
-    [...this.list.children].forEach((b, j) => b.classList.toggle('sel', j === i));
+    [...this.list.children].forEach((b, j) => {
+      const was = b.classList.contains('sel');
+      b.classList.toggle('sel', j === i);
+      if (j === i && !was) (b as HTMLElement).scrollIntoView?.({ block: 'nearest' });
+    });
   }
 
   /**
@@ -385,6 +465,12 @@ export class Popup {
   key(e: KeyboardEvent): boolean {
     const n = this.items.length, k = e.key;
     if (k === 'Escape') { e.preventDefault(); this.close(); return true; }
+    // a list the host drives: ↑ ↓ (W S) go to the host (one step up or down the building, as without the list), ← → are not for walking here
+    if (this.step) {
+      const dir = k === 'ArrowUp' || k === 'w' || k === 'W' ? 1 : k === 'ArrowDown' || k === 's' || k === 'S' ? -1 : 0;
+      if (dir) { e.preventDefault(); if (!e.repeat) this.step(dir); return true; }
+      if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); return true; }
+    }
     if (this.last?.parts && k.startsWith('Arrow')) { e.preventDefault(); if (n) this.select(this.toward(k)); return true; }
     if (k === 'ArrowDown' || k === 'ArrowUp') { e.preventDefault(); if (n) this.select((this.sel + (k === 'ArrowDown' ? 1 : n - 1)) % n); return true; }
     if (k === 'Enter' || k === 'e' || k === 'E' || k === ' ') { e.preventDefault(); if (!e.repeat) this.items[this.sel]?.run(); return true; }
@@ -540,6 +626,20 @@ export const POPUP_STYLES = `
     .thing-layer.plate .thing-wire g polyline { animation-delay: 0.16s; }
     @keyframes thing-in { from { opacity: 0; } }
     @media (prefers-reduced-motion: reduce) { .thing-pop.plate .thing-title, .thing-pop.plate .thing-item, .thing-layer .thing-wire polyline { animation: none; } }
+
+    /* a list (placement 'list': the lift car's floors): a vertical list beside the thing, rows of key, label and tag */
+    .thing-pop:not(.row) .thing-x { display: none; }
+    .thing-pop.list { min-width: 12em; max-width: min(18em, 60%); }
+    .thing-pop.list .thing-title { padding: 2px 6px 4px; font-size: 10px; border-bottom: 1px solid rgba(0, 255, 255, 0.25); margin-bottom: 2px; }
+    .thing-pop.list .thing-list { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #0d4a52 transparent; }
+    .thing-item.row3 { display: grid; grid-template-columns: 2.4em 1fr auto; align-items: center; gap: 6px; padding: 3px 8px; }
+    .thing-item.row3 .thing-key { color: rgba(0, 255, 255, 0.55); }
+    .thing-item.row3 .thing-tag { font-size: 9px; letter-spacing: 0.04em; color: rgba(0, 255, 255, 0.5); }
+    .thing-item.row3.sel .thing-key { color: var(--color-accent-400); }
+    .thing-item.row3.cur .thing-key, .thing-item.row3.cur .thing-tag { color: var(--color-success); }
+    /* touch: rows keep a thumb's height (the list scrolls if the view is short) */
+    html.touch .thing-item.row3 { min-height: 44px; font-size: 13px; }
+    html.touch .thing-item.row3 .thing-tag { font-size: 10px; }
 
     /* while a row is open it takes the place of the touch actions (bottom) or of HACK/BOARD (top) */
     html.thing-bottom #touch .pad:last-child,

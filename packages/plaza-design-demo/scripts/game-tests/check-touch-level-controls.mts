@@ -131,7 +131,7 @@ try {
     assert.ok(levelRiding(L) && !levelClimbing(L), 'tap ▲: on the flight');
     assert.ok(!g.keys.has('ArrowUp') && p.vy === 0, 'one press, nothing held, no jump');
     frame();
-    assert.ok(!shown('up') && !shown('down'), 'a straight flight is walked with ◀ ▶: ▲ ▼ step aside');
+    assert.ok(shown('up') && shown('down'), 'a straight flight is walked with ◀ ▶ or with ▲ ▼ held: both show');
     frame(200, 1);
     assert.ok(!levelRiding(L) && levelFloor(L).id === 'deck', 'walked up to the deck');
     frame();
