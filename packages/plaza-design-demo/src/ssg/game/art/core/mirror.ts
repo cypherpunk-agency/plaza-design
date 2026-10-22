@@ -3,7 +3,7 @@
  * as it is, except that text is turned back about its anchor (its alignment swapped) while the canvas
  * is flipped, so signs and destination boards still read. Its only state is the bound methods.
  */
-import { READABLE_MIRROR } from '../../core/primitives';
+import { READABLE_MIRROR } from './primitives';
 
 const mirrors = new WeakMap<CanvasRenderingContext2D, CanvasRenderingContext2D>();
 /** One mirror per context (it holds nothing that a frame changes), so every frame reuses it. */

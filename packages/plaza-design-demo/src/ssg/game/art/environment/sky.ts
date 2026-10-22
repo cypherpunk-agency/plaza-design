@@ -21,6 +21,7 @@
 
 import { FOV, lerp, rel, smooth, windowLit, type Body, type Light } from "../../world/light";
 import type { View } from "../core/view";
+import { drawSunsetSky } from "./sunset-sky";
 
 type RGB = number[];
 const R = Math.round, clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
@@ -91,12 +92,21 @@ export interface SkyOpts {
   stars?: boolean;
   /** Fill below the horizon with the horizon's colour down to here (screen y; default: the view's bottom). */
   fillTo?: number;
+  /**
+   * `sunset`: the coast's sky (the title glide's, Tommi's reviewed look): a sunset gradient mixed from the light
+   * (night, the golden hour, day), a big slatted sun sinking into the sea with its glow, twinkling stars, thin
+   * clouds. Opt-in (scene `skyStyle`); the default is the city sky below.
+   */
+  style?: 'city' | 'sunset';
+  /** Sunset style: how much of the sky is the city's (0 the open coast .. 1 over Downtown: redder, hazier, fewer stars). */
+  town?: number;
 }
 
 const STARS = Array.from({ length: 90 }, (_, i) => [hash(i) * 2400, hash(i + 0.37), 0.3 + hash(i + 0.71) * 0.7]);
 
 /** The whole sky over a scene (the light's facing): gradient, glow, stars, moon, sun. */
 export function drawSky(x: CanvasRenderingContext2D, v: View, l: Light, o: SkyOpts) {
+  if (o.style === 'sunset') { drawSunsetSky(x, v, l, o); return; }
   const hz = Math.round(o.horizon), top = o.top ?? 0, [a, b, c] = skyCols(l);
   const g = x.createLinearGradient(0, top, 0, hz);
   g.addColorStop(0, rgba(a)); g.addColorStop(0.62, rgba(b)); g.addColorStop(1, rgba(c));

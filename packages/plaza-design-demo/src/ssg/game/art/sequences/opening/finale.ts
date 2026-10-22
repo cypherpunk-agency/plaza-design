@@ -27,7 +27,7 @@ import { drawBogies } from "../../vehicles/rail";
 import { frameView, placed } from "../../core/view";
 import { type CoastView, type Lines, ORANGE, PAPER, R, S } from "./coast";
 import { DROP2, glideDist, HARBOR_STATION, NOSE_IN, PLACES, TOWER_X, TRAIN_V } from "./path";
-import { readableMirror } from "./mirror";
+import { readableMirror } from "../../core/mirror";
 import { PORTAL_TOWER } from "./town";
 
 /** A car's length and the coupling gap, in view units at the coast's scale. */

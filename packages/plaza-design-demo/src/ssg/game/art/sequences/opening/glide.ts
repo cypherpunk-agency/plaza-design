@@ -43,7 +43,7 @@ import { drawLine0, drawUnder } from "./finale";
 import { DROP1, DROP2, GLIDE, GLIDE_BEATS, glideDist, PLACES, SPIRE_P, SPIRE_X, WEST } from "./path";
 import { drawRingOver, drawSkyline, drawStreetGround, drawWestGate, townPieces, townLampPieces, townPeoplePieces } from "./town";
 import { drawSideStreetTraffic, drawTraffic } from "./traffic";
-import { readableMirror } from "./mirror";
+import { readableMirror } from "../../core/mirror";
 import type { PieceInputs } from './piece-inputs';
 
 export { GLIDE, GLIDE_BEATS, glideDist };
