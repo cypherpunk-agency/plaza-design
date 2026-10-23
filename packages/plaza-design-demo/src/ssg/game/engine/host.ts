@@ -48,7 +48,7 @@ import { ENGINE_PANEL_FNS } from "./toys/index";
  * Something to stand next to and press E on. `promptH`: how high its prompt hangs above the street;
  * `y`: how high the thing itself sits (a box on a roof), so the game can tell where you stand to reach it.
  */
-export interface SceneTarget { id: string; x: number; label: string; promptH: number; y?: number }
+export interface SceneTarget { id: string; x: number; label: string; promptH: number; y?: number;floorH?:number }
 
 /** How the game's canvas maps world units for a scene's drawing. */
 export interface DrawView { sx: (wx: number) => number; y: (h: number) => number; t: number; viewW: number; viewH: number }
@@ -134,6 +134,8 @@ export class SceneHost {
   private popup: Popup;
   /** Where the player stood when the popup opened: walking off closes it. */
   private popupAt = 0;
+  /** Movement of the thing itself is not the player walking away. */
+  private popupAnchorX = 0;
   /** Where each device stood on screen in the last frame (for the popup). */
   private seen = new Map<string, Anchor>();
   /** Captions over the thing that reacted, and pings (scene/feedback.ts). */
@@ -567,8 +569,9 @@ export class SceneHost {
     this.project = project; this.width = width;
     this.vision.unit = (project(100, 0).x - project(0, 0).x) / 100 || 1;
     if (player) this.player = { x: player.x, h: player.h };
-    const m = this.model, seen = new Map<string, Anchor>();
+    const m = this.model, seen = new Map<string, Anchor>(), anchors = new Map<string, number>();
     const add = (id: string, x: number, base: number, w: number, h: number) => {
+      anchors.set(id, x);
       const c = project(x, base + h / 2), e = project(x + w / 2, base + h);
       const sw = (e.x - c.x) * 2, sh = (c.y - e.y) * 2;
       if (c.x + sw / 2 < 0 || c.x - sw / 2 > width) return;
@@ -576,12 +579,16 @@ export class SceneHost {
     };
     m.spots().forEach((s) => add(s.id, s.x, s.y, s.w, s.h));
     // a thing of the game's that has a popup open (a bench's "wait until…": `choose`)
-    if (this.chosen) add(this.chosen.id, this.chosen.x, this.chosen.y, this.chosen.w, this.chosen.h);
+    if (this.chosen) {
+      const at = this.chosen.follow ? this.chosen.follow() : this.chosen;
+      if (at) add(this.chosen.id, at.x, at.y, at.w, at.h);
+    }
     this.seen = new Map(seen);
     if (this.popup.isOpen) {
       const at = this.popup.dev ? seen.get(this.popup.dev) : undefined;
       // walked off, or the thing left the view: the popup goes
-      if (!at || Math.abs(this.player.x - this.popupAt) > POPUP_WALK) this.popup.close(); else this.popup.place(at);
+      const moved = this.popup.dev ? (anchors.get(this.popup.dev) ?? this.popupAnchorX) - this.popupAnchorX : 0;
+      if (!at || Math.abs(this.player.x - this.popupAt - moved) > POPUP_WALK) this.popup.close(); else this.popup.place(at);
     }
     this.fx.top = this.uiTop;
     this.vision.top = this.uiTop;
@@ -655,20 +662,24 @@ export class SceneHost {
     // nothing to do with it yet (hacking locked, no everyday actions): it only shows how it looks
     if (!items.length) { this.say(['', d.look, 'dim'], id); return; }
     this.popupAt = this.player.x;
+    this.popupAnchorX = this.model.spots().find(s => s.id === id)?.x ?? this.player.x;
     this.popup.open(id, d.name, this.model.label('menu.aria', { device: d.name }), items, this.seen.get(id), this.project ? this.room(id) : undefined);
   }
 
   /** What `choose` opened the popup for (not a device), while it is open. */
-  private chosen: { id: string; x: number; y: number; w: number; h: number } | null = null;
+  private chosen: { id: string; x: number; y: number; w: number; h: number; follow?: () => {x:number;y:number;w:number;h:number} | null } | null = null;
 
   /**
    * The popup for something that is not a device (the game's: a bench's "wait until…"): `name` on
    * the plate, these actions, over the box at world `x` (centre), `y` up from the ground, `w` × `h`.
+   * A moving anchor supplies a pure `follow` query in the same owner-local coordinates. Returning
+   * null closes the menu; no timer or additional frame state drives its position.
    */
-  choose(id: string, name: string, items: PopupItem[], at: { x: number; y: number; w: number; h: number }) {
-    this.chosen = { id, ...at };
+  choose(id: string, name: string, items: PopupItem[], at: { x: number; y: number; w: number; h: number }, follow?: () => {x:number;y:number;w:number;h:number} | null) {
+    this.chosen = { id, ...at, follow };
     this.refollow();
     this.popupAt = this.player.x;
+    this.popupAnchorX = at.x;
     const wrapped = items.map((it) => ({ ...it, run: () => { this.popup.close(); it.run(); } }));
     this.popup.open(id, name, name, wrapped, this.seen.get(id), this.project ? this.room(id) : undefined);
   }
@@ -689,6 +700,7 @@ export class SceneHost {
     if (this.listOpen(id)) { this.popup.refresh(items, sel); return; }
     this.refollow();
     this.popupAt = this.player.x;
+    this.popupAnchorX = at.x;
     const opts: PopupOpts = { placement: 'list', step, sel };
     this.popup.open(id, name, name, items, this.seen.get(id), this.project ? this.room(id) : undefined, opts);
   }
@@ -754,7 +766,7 @@ export class SceneHost {
   /** Things you can stand next to and press E on: the scene's own (an exit), then every device in the world. */
   targets(): SceneTarget[] {
     const m = this.model, own = this.def.targets?.(m) ?? [];
-    const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, y: s.y, label: m.label('prompt.open'), promptH: s.y + Math.min(s.h + 12, 100) }));
+    const devs = m.spots().map((s: Spot) => ({ id: s.id, x: s.x, y: s.y, label: m.label('prompt.open'), promptH: s.y + Math.min(s.h + 12, 100),...(s.floorH!==undefined?{floorH:s.floorH}:{}) }));
     return [...own, ...devs];
   }
 

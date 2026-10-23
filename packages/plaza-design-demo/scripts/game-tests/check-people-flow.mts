@@ -3,17 +3,15 @@
  * queue and board vehicles. Checks: the same seed and time give the same people; queues keep arrival order and
  * spacing and shuffle forward; the short memory keeps the same people for about a minute and then lets go; a
  * routine sets off at its time on the city clock; a walk crosses a seam continuously; boarding hands people to the
- * vehicle's trip; and today's platformQueue timing (world/transport/line.ts) is kept as the player sees it.
+ * vehicle's trip. Actual shipping train source coverage is in check-train-physical-source.mts.
  */
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import {validateZoneGraph} from '../../src/ssg/game/world/zone-graph';
 import {CLOCK_RATE} from '../../src/ssg/game/world/clock';
 import {
-  flowPeople, flowProblems, handedOff, hold, personAt, platformFlow, populate, recall, remember, routineTime, sceneFlowTime,
-  timetableVehicle, cityFlowTime, type FlowSource, type FlowVehicle, type FlowWorld, type PersonHere,
+  flowPeople, flowProblems, handedOff, hold, personAt, populate, recall, remember, routineTime,
+  cityFlowTime, type FlowSource, type FlowVehicle, type FlowWorld, type PersonHere,
 } from '../../src/ssg/game/world/people-flow';
-import {platformQueue} from '../../src/ssg/game/world/transport/line';
 
 const graph = validateZoneGraph({version: 1, seams: [
   {id: 'lab-annex', kind: 'walk', a: {zone: 'lab'}, b: {zone: 'annex'}, dx: 400, dh: 0},
@@ -154,36 +152,4 @@ const off: FlowSource = {id: 'off', clock: 'scene', seed: 9, looks, spawn: {kind
 const steps = flowPeople(off, world, 3 * 30 + 10 + 0.1).filter((p): p is PersonHere => p.state === 'here');
 assert.ok(steps.length >= 1 && steps.every(p => Math.abs(p.x - 200) < 5 || Math.abs(p.x - 260) < 5), 'they step off at the doors');
 
-// ---- today's platform queue, kept as experienced (Decided 9) ----
-const metro = JSON.parse(fs.readFileSync('src/ssg/game/world/transport/metro.json', 'utf8'));
-const T = metro.timetable, OFF = metro.offset.downtown;
-const train = timetableVehicle({id: 'downtown-service', zone: 'metro', timetable: T, offset: OFF, doors: [300, 420]});
-const pworld: FlowWorld = {graph, vehicles: {'downtown-service': train}};
-const platform = platformFlow({id: 'metro-door-1', zone: 'metro', vehicle: 'downtown-service', entry: {zone: 'metro', x: 120}, door: 300, count: 5, seed: 300, looks, timetable: T});
-assert.deepEqual(flowProblems(platform, pworld), []);
-let present = 0, boardedChecks = 0;
-for (let frames = T.loop * 3; frames < T.loop * 7; frames += 5) {
-  const tl = {t: frames, shift: 0}, t = sceneFlowTime(tl), q = platformQueue('downtown', tl);
-  const people = flowPeople(platform, pworld, t), here = people.filter(p => p.state === 'here');
-  // today: the queue for train q.train stands until it has boarded; flows: those people are on the platform or aboard
-  if (q.boarded) { boardedChecks++; assert.equal(here.length, 0, `nobody waits once platformQueue says boarded (frame ${frames})`); }
-  for (const p of here) assert.equal(Math.floor(p.index / 5), q.train, 'whoever waits waits for the train platformQueue names');
-  present += here.length;
-}
-assert.ok(present > 0 && boardedChecks > 0);
-// the doors and the trip numbers are today's: open from 7.5 % into the dwell, trip n = floor((t + offset) / loop)
-const w4 = train.doors(4)!;
-assert.ok(Math.abs(w4.open - (4 * T.loop - OFF + T.arrive + 0.075 * T.dwell) / 60) < 1e-9);
-assert.equal(platformQueue('downtown', {t: w4.open * 60, shift: 0}).train, 4);
-// handed to trip 4 of the service: the car's manifest from this door
-const on4 = handedOff(platform, pworld, 4);
-assert.ok(on4.every(p => p.vehicle === 'downtown-service' && p.trip === 4 && p.door === 0));
-assert.deepEqual(on4.map(p => p.key), flowPeople(platform, pworld, (w4.open + w4.close) / 2 + 3).filter(p => p.state === 'aboard' && p.trip === 4).map(p => p.key), 'the same people as seen on the platform');
-assert.equal(flowPeople(platform, pworld, w4.open - 0.01).filter(p => p.state === 'here').length, on4.length, 'all of them stand on the platform as the doors open');
-
-// the memory's minute is longer than a train (25 s): back after it, the people waiting are a later train's
-const waiting = (t: number) => flowPeople(platform, pworld, t).filter(p => p.state === 'here').map(p => p.key);
-assert.ok(waiting(w4.open - 1).length > 0);
-assert.equal(waiting(w4.open - 1 + 61).filter(k => waiting(w4.open - 1).includes(k)).length, 0, 'new people a minute later');
-
-console.log('people-flow: determinism, queues, seams, memory, routines, boarding and platform timing ok');
+console.log('people-flow: determinism, queues, seams, memory, routines and boarding ok');

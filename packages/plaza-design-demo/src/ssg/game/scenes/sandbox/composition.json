@@ -1515,6 +1515,27 @@
       }
     },
     {
+      "id": "spool-cable",
+      "type": "sandbox.spool-cable",
+      "props": {
+        "width": 32,
+        "height": 30
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 83,
+      "layer": "set",
+      "bindings": {
+        "snapshot": "scene.visual"
+      },
+      "attach": {
+        "instance": "spool",
+        "anchor": "origin"
+      }
+    },
+    {
       "id": "trace-meter",
       "type": "sandbox.trace-meter",
       "props": {},
@@ -1522,7 +1543,7 @@
         "x": 2205,
         "h": 0
       },
-      "order": 83,
+      "order": 84,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1539,7 +1560,7 @@
         "x": 2310,
         "h": 30
       },
-      "order": 84,
+      "order": 85,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1553,10 +1574,28 @@
         "x": 2370,
         "h": 0
       },
-      "order": 85,
+      "order": 86,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
+      }
+    },
+    {
+      "id": "server-cables",
+      "type": "sandbox.server-cables",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 87,
+      "layer": "set",
+      "bindings": {
+        "snapshot": "scene.visual"
+      },
+      "attach": {
+        "instance": "server-rack",
+        "anchor": "origin"
       }
     },
     {
@@ -1570,7 +1609,7 @@
         "x": 2430,
         "h": 78
       },
-      "order": 86,
+      "order": 88,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1587,7 +1626,7 @@
         "x": 2490,
         "h": 26
       },
-      "order": 87,
+      "order": 89,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1604,7 +1643,7 @@
         "x": 2600,
         "h": 0
       },
-      "order": 88,
+      "order": 90,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1621,7 +1660,7 @@
         "x": 2700,
         "h": 0
       },
-      "order": 89,
+      "order": 91,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1638,7 +1677,7 @@
         "x": 2800,
         "h": 70
       },
-      "order": 90,
+      "order": 92,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1655,7 +1694,7 @@
         "x": 2930,
         "h": 0
       },
-      "order": 91,
+      "order": 93,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1672,7 +1711,7 @@
         "x": 3010,
         "h": 26
       },
-      "order": 92,
+      "order": 94,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1686,7 +1725,7 @@
         "x": 3060,
         "h": 0
       },
-      "order": 93,
+      "order": 95,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1703,7 +1742,7 @@
         "x": 3100,
         "h": 0
       },
-      "order": 94,
+      "order": 96,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1720,7 +1759,7 @@
         "x": 30,
         "h": 0
       },
-      "order": 95,
+      "order": 97,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1738,7 +1777,7 @@
         "x": 3370,
         "h": 0
       },
-      "order": 96,
+      "order": 98,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1752,7 +1791,7 @@
         "x": 3300,
         "h": 0
       },
-      "order": 97,
+      "order": 99,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1766,7 +1805,7 @@
         "x": -25,
         "h": 0
       },
-      "order": 98,
+      "order": 100,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1784,7 +1823,7 @@
         "x": -60,
         "h": 0
       },
-      "order": 99,
+      "order": 101,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1802,7 +1841,7 @@
         "x": 3320,
         "h": 0
       },
-      "order": 100,
+      "order": 102,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1819,7 +1858,7 @@
         "x": 3452,
         "h": 30
       },
-      "order": 101,
+      "order": 103,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1835,7 +1874,7 @@
         "x": 3500,
         "h": 40
       },
-      "order": 102,
+      "order": 104,
       "layer": "set",
       "bindings": {
         "pose": "actor.outside.pose",
@@ -1853,7 +1892,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 103,
+      "order": 105,
       "layer": "set",
       "attach": {
         "instance": "window",
@@ -1871,7 +1910,7 @@
         "x": 3446,
         "h": 0
       },
-      "order": 104,
+      "order": 106,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1887,7 +1926,7 @@
         "x": 3600,
         "h": 156
       },
-      "order": 105,
+      "order": 107,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1904,7 +1943,7 @@
         "x": 3480,
         "h": 0
       },
-      "order": 106,
+      "order": 108,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1921,7 +1960,7 @@
         "x": 3555,
         "h": 32
       },
-      "order": 107,
+      "order": 109,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1938,7 +1977,7 @@
         "x": 3650,
         "h": 70
       },
-      "order": 108,
+      "order": 110,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1952,7 +1991,7 @@
         "x": 3600,
         "h": 0
       },
-      "order": 109,
+      "order": 111,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1966,7 +2005,7 @@
         "x": 3722,
         "h": 0
       },
-      "order": 110,
+      "order": 112,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -1983,7 +2022,7 @@
         "x": 1960,
         "h": 150
       },
-      "order": 111,
+      "order": 113,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -2000,7 +2039,7 @@
         "x": 3190,
         "h": 150
       },
-      "order": 112,
+      "order": 114,
       "layer": "set",
       "bindings": {
         "snapshot": "scene.visual"
@@ -2016,7 +2055,7 @@
         "x": 235,
         "h": 0
       },
-      "order": 0,
+      "order": 2,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.lead.pose"
@@ -2032,7 +2071,7 @@
         "x": 900,
         "h": 0
       },
-      "order": 1,
+      "order": 3,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.unit0.pose"
@@ -2048,7 +2087,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 2,
+      "order": 4,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.tech.pose"
@@ -2068,7 +2107,7 @@
         "x": 0,
         "h": 22
       },
-      "order": 3,
+      "order": 5,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.cat.pose"
@@ -2086,7 +2125,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 4,
+      "order": 6,
       "layer": "playfield",
       "bindings": {
         "snapshot": "scene.visual"
@@ -2102,7 +2141,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 5,
+      "order": 7,
       "layer": "playfield",
       "bindings": {
         "snapshot": "scene.visual"
@@ -2116,7 +2155,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 6,
+      "order": 8,
       "layer": "playfield",
       "attach": {
         "instance": "zone-1",
@@ -2134,7 +2173,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 7,
+      "order": 9,
       "layer": "playfield",
       "attach": {
         "instance": "zone-2",
@@ -2152,7 +2191,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 8,
+      "order": 10,
       "layer": "playfield",
       "attach": {
         "instance": "zone-3",
@@ -2170,7 +2209,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 9,
+      "order": 11,
       "layer": "playfield",
       "attach": {
         "instance": "zone-4",
@@ -2188,7 +2227,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 10,
+      "order": 12,
       "layer": "playfield",
       "attach": {
         "instance": "zone-5",
@@ -2206,7 +2245,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 11,
+      "order": 13,
       "layer": "playfield",
       "attach": {
         "instance": "zone-6",
@@ -2224,7 +2263,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 12,
+      "order": 14,
       "layer": "playfield",
       "attach": {
         "instance": "zone-7",
@@ -2242,7 +2281,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 13,
+      "order": 15,
       "layer": "playfield",
       "attach": {
         "instance": "zone-8",
@@ -2260,7 +2299,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 14,
+      "order": 16,
       "layer": "playfield",
       "attach": {
         "instance": "zone-9",
@@ -2278,7 +2317,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 15,
+      "order": 17,
       "layer": "playfield",
       "attach": {
         "instance": "zone-10",
@@ -2298,7 +2337,7 @@
         "x": 235,
         "h": 0
       },
-      "order": 16,
+      "order": 18,
       "layer": "playfield",
       "attach": {
         "instance": "zone-1",
@@ -2318,7 +2357,7 @@
         "x": 215,
         "h": 0
       },
-      "order": 17,
+      "order": 19,
       "layer": "playfield",
       "attach": {
         "instance": "zone-2",
@@ -2338,7 +2377,7 @@
         "x": 200,
         "h": 0
       },
-      "order": 18,
+      "order": 20,
       "layer": "playfield",
       "attach": {
         "instance": "zone-3",
@@ -2358,7 +2397,7 @@
         "x": 180,
         "h": 0
       },
-      "order": 19,
+      "order": 21,
       "layer": "playfield",
       "attach": {
         "instance": "zone-4",
@@ -2378,7 +2417,7 @@
         "x": 127.5,
         "h": 0
       },
-      "order": 20,
+      "order": 22,
       "layer": "playfield",
       "attach": {
         "instance": "zone-5",
@@ -2398,7 +2437,7 @@
         "x": 142.5,
         "h": 0
       },
-      "order": 21,
+      "order": 23,
       "layer": "playfield",
       "attach": {
         "instance": "zone-6",
@@ -2418,7 +2457,7 @@
         "x": 155,
         "h": 0
       },
-      "order": 22,
+      "order": 24,
       "layer": "playfield",
       "attach": {
         "instance": "zone-7",
@@ -2438,7 +2477,7 @@
         "x": 165,
         "h": 0
       },
-      "order": 23,
+      "order": 25,
       "layer": "playfield",
       "attach": {
         "instance": "zone-8",
@@ -2458,7 +2497,7 @@
         "x": 110,
         "h": 0
       },
-      "order": 24,
+      "order": 26,
       "layer": "playfield",
       "attach": {
         "instance": "zone-9",
@@ -2478,7 +2517,7 @@
         "x": 140,
         "h": 0
       },
-      "order": 25,
+      "order": 27,
       "layer": "playfield",
       "attach": {
         "instance": "zone-10",
@@ -2496,7 +2535,7 @@
         "x": 1090,
         "h": 0
       },
-      "order": 26,
+      "order": 28,
       "layer": "playfield",
       "bindings": {
         "snapshot": "scene.visual"
@@ -2510,7 +2549,7 @@
         "x": 2700,
         "h": 0
       },
-      "order": 27,
+      "order": 29,
       "layer": "playfield",
       "bindings": {
         "snapshot": "scene.visual"
@@ -2524,7 +2563,7 @@
         "x": 80,
         "h": 0
       },
-      "order": 28,
+      "order": 30,
       "layer": "playfield"
     },
     {
@@ -2537,7 +2576,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 0,
+      "order": 2,
       "layer": "logic",
       "attach": {
         "instance": "door",
@@ -2556,7 +2595,7 @@
         "x": 290,
         "h": 0
       },
-      "order": 1,
+      "order": 3,
       "layer": "logic"
     },
     {
@@ -2571,7 +2610,7 @@
         "x": 770,
         "h": 0
       },
-      "order": 2,
+      "order": 4,
       "layer": "logic"
     },
     {
@@ -2586,7 +2625,7 @@
         "x": 1210,
         "h": 0
       },
-      "order": 3,
+      "order": 5,
       "layer": "logic"
     },
     {
@@ -2601,7 +2640,7 @@
         "x": 1620,
         "h": 0
       },
-      "order": 4,
+      "order": 6,
       "layer": "logic"
     },
     {
@@ -2616,7 +2655,7 @@
         "x": 1990,
         "h": 0
       },
-      "order": 5,
+      "order": 7,
       "layer": "logic"
     },
     {
@@ -2631,7 +2670,7 @@
         "x": 2255,
         "h": 0
       },
-      "order": 6,
+      "order": 8,
       "layer": "logic"
     },
     {
@@ -2646,7 +2685,7 @@
         "x": 2550,
         "h": 0
       },
-      "order": 7,
+      "order": 9,
       "layer": "logic"
     },
     {
@@ -2661,7 +2700,7 @@
         "x": 2870,
         "h": 0
       },
-      "order": 8,
+      "order": 10,
       "layer": "logic"
     },
     {
@@ -2676,7 +2715,7 @@
         "x": 3210,
         "h": 0
       },
-      "order": 9,
+      "order": 11,
       "layer": "logic"
     },
     {
@@ -2691,7 +2730,7 @@
         "x": 3440,
         "h": 0
       },
-      "order": 10,
+      "order": 12,
       "layer": "logic"
     }
   ]

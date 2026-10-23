@@ -11,12 +11,12 @@ import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
 import { renderWorldFrame, type ZoneFrame } from '../runtime/render-scene';
 import { joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zone-graph';
+import shippedGraph from '../world/zone-graph.json';
 import { authoredDocumentId } from '../engine/gameplay/scene-catalogue';
 import { zoneInfo, zoneName } from './zone-graph-context';
 import { city } from '../world/clock';
 import {backdropDocuments} from '../world/backdrops';
 import { light, lightAt, setLight } from '../world/light';
-import { createSkyShips, drawSkyShips } from '../art/environment/sky-ships';
 import { CLIMATE_IDS, isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
 import type { JoinedPreview, PreviewRequest, PreviewResult } from './app';
 import type { PlayerServices, PlayerState } from '../runtime/player';
@@ -81,16 +81,27 @@ function parentOf(rows: Resolved[], id: string): string | undefined {
 }
 /** No Game construction, controller stepping, player-save reads or player-save writes occur here. */
 export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>,bindWorld?:(definition:SceneDef,request:PreviewRequest)=>SceneDef,resolveAdapter?:(scene:string,request:PreviewRequest)=>NativeSceneAdapter|undefined) {
-  const ships = createSkyShips();
   /** Inspection never advances simulation: deadlines are reinitialised after replacing host time, so a clock/countdown
    * snapshot cannot depend on render duration or warmup. */
-  const inspectionModel = (def: SceneDef, services: PlayerServices) => {
+  const inspectionModel = (def: SceneDef, services: PlayerServices, request: PreviewRequest) => {
     const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
     const rules = typeof def.rules === 'function' ? def.rules(services) : def.rules ?? NO_RULES;
     const model = new SceneModel({ say: forbidden, open: forbidden, changed() {} }, def.data ?? emptyData(def.id, def.name), rules,undefined,undefined,undefined,undefined,def.gameplay);
     model.now = () => 0;
     model.wall = () => 0;
     model.reset();
+    if (def.level) {
+      const graph = validateZoneGraph(request.documents?.get('zone-graph') ?? shippedGraph);
+      model.peopleLevel = { ...def.level, vehicleZones: Object.fromEntries([...placeFrom(graph, def.id, Infinity)].map(([id, p]) => [id, { x: p.dx, h: p.dh }])) };
+    }
+    const player = services.save();
+      // Inspection uses the shipping read evaluator over its isolated state. It never installs
+      // command/timer hooks or advances simulation, and calculated values have no saved owner.
+      if(def.gameplay?.queries){
+        const definition=def.gameplay,ids=new Set(Object.keys(definition.queries??{}));model.gameplayQueryIds=ids;
+        model.gameplayQuery=id=>{if(!ids.has(id))return undefined;const state={flags:player.flags,items:{},tokens:player.tokens,values:{[def.id]:model.state},world:{day:city.day,minute:city.min,weather:(request.weather??weatherNow(sceneClimate(def.id))).kind}};
+          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates,nativeRead:key=>model.rules.derivedTypes?.[key]?model.rules.derived?.[key]?.(model):undefined});};
+      }
     return model;
   };
   /**
@@ -118,7 +129,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const adapter = adapters[zone] ?? resolveAdapter?.(zone, nearby); if (!adapter) continue;
       const document = adapter.validate(value), options: NativeOptions = { reduced: request.reduced, sequenceTime: request.time };
       const original = adapter.pendingDefinition ? adapter.pendingDefinition(document, {}, options, documents) : adapter.definition(document, {}, options);
-      const def = bindWorld?.(original, { ...nearby, composition: document }) ?? original, model = inspectionModel(def, services);
+      const def = bindWorld?.(original, { ...nearby, composition: document }) ?? original, model = inspectionModel(def, services, request);
       const cam = view.cam - at.dx, engine: EngineDraw = { m: model, hover: null, layer: 'all' };
       const zoneView: View = { ...frameView(request.time * 60), viewW: view.viewW, viewH: view.viewH, cam, gy: view.gy - at.dh,
         sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom) / zoom, y: h => view.y(h + at.dh), flags: view.flags,
@@ -159,20 +170,13 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
       const services: PlayerServices = { save: () => player, nodes: () => number(settings.nodes, BASE_NODES + player.controlled.length), persist: forbidden, granted: forbidden, end: forbidden, cutscene: forbidden };
-      const model = inspectionModel(def, services);
+      const model = inspectionModel(def, services, request);
       const snapshot = object(settings.state, 'Scene state');
       for (const [key, value] of Object.entries(snapshot)) {
         if (!Object.prototype.hasOwnProperty.call(model.data.state, key)) throw new Error(`Unknown scene state: ${key}`);
         const scalar = value === null || ['string', 'boolean', 'number'].includes(typeof value);
         if (!scalar || (model.data.state[key] !== null && typeof value !== typeof model.data.state[key]) || (typeof value === 'number' && !Number.isFinite(value))) throw new Error(`Invalid scene state: ${key}`);
         model.set(key, value as Parameters<SceneModel['set']>[1]);
-      }
-      // Inspection uses the shipping read evaluator over its isolated state. It never installs
-      // command/timer hooks or advances simulation, and calculated values have no saved owner.
-      if(def.gameplay?.queries){
-        const definition=def.gameplay,ids=new Set(Object.keys(definition.queries??{}));model.gameplayQueryIds=ids;
-        model.gameplayQuery=id=>{if(!ids.has(id))return undefined;const state={flags:flags as Record<string,boolean>,items:{},tokens:player.tokens,values:{[def.id]:model.state},world:{day:city.day,minute:city.min,weather:(request.weather??weatherNow(sceneClimate(def.id))).kind}};
-          return readQuery(id,{...state,values:resolveValues(definition,state)},{definition,tuning:model.data.tuning,labels:model.texts,cables:model.links,sceneTime:model.now(),cameraCrates:model.data.camera?.crates,nativeRead:key=>model.rules.derivedTypes?.[key]?model.rules.derived?.[key]?.(model):undefined});};
       }
       const vision = settings.hack === true, engine: EngineDraw = { m: model, hover: typeof settings.hover === 'string' ? settings.hover || null : null, layer: 'all' };
       // A complete editor frame starts from native canvas defaults, including inherited
@@ -194,11 +198,11 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
           const ambient = def.ambient ?? {}, outdoor = def.outdoor ?? !!(ambient.weather || ambient.sky);
           const light = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);
           setLight(light); return light;
-        }, skyTraffic: (ctx, view) => drawSkyShips(ctx, view, ships),
+        },
       });
       const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
-      const env = { ...preparedEnvironment, ...options, state };
+      const env = { ...options, ...preparedEnvironment };
       const bounds = previewBounds(resolveComposition(art, document, env), view, options, document);
       const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * k, y: b.y * k, width: b.width * k, height: b.height * k })),
         deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / k, dy / k) };

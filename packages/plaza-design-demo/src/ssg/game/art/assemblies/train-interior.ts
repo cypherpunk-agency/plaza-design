@@ -1,3 +1,5 @@
+import {drawCabCamera,drawCabPole,drawCabWindow,drawCabStaffDoor,drawCabSeatBack,drawCabSeatFront} from '../vehicles/train-fittings';
+import {drawEmergencyBrake} from '../electronics/emergency-brake';
 
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { type View } from "../../scenes/kit";
@@ -5,16 +7,14 @@ import { LINE,STATIONS } from "../../world/city";
 import type { Light } from '../../world/light';
 import { clock, LOOP, SEG, SIDING, type trainVisualState } from '../../world/transport/line';
 import { ticker } from '../signage/line-departures';
-import { paperSign, scroll } from '../signage/kit';
-import { sloganScreen } from '../signage/screens';
 import { drawGalleriaDome } from "../architecture/galleria-dome";
 import { drawGrade } from "../atmosphere/lighting";
-import { crowd,drawRider,SEAT_H,type RiderKind } from "../characters/riders";
+import { crowd,drawRider,type RiderKind } from "../characters/riders";
 import { box,O,onScreen,PAPER,RED,rng,tell,text,towers } from "../core/primitives";
 import { placed } from "../core/view";
 import { drawSky } from "../environment/sky";
 export type TrainVisualState = ReturnType<typeof trainVisualState> & { lighting: Light; home: boolean };
-export interface TrainLayout { width: number; spawn: number; ceil: number; windows: number[]; winW: number; win: { h0: number; h1: number; }; doors: number[]; lineMap: number; ads: { x: number; text: string; }[]; adsHome: string[]; news: string; people: { id: string; kind: RiderKind; x: number; sit: boolean; name: string; pages: string[]; }[]; poles: number[]; frontPoles: number[]; bar: number; standing: number[]; cams: number[]; staff: number; gangway: number; gangDoor: number; brake: number; }
+export interface TrainLayout { width: number; spawn: number; ceil: number; windows: number[]; winW: number; win: { h0: number; h1: number; }; doors: number[]; lineMap: number; news: string; people: { id: string; kind: RiderKind; x: number; sit: boolean; name: string; pages: string[]; }[]; poles: number[]; frontPoles: number[]; cams: number[]; staff: number; gangway: number; gangDoor: number; brake: number; }
 export interface TrainRoof{cove:number;shell:number;wire:number;messenger:number}
 export interface TrainOpening{x:number;h:number;width:number;h0:number;h1:number}
 export interface ArtworkInputs{L:TrainLayout;visual:TrainVisualState;hover:string|null;roof:TrainRoof;windows:TrainOpening[];doors:{x:number;h:number}[]}
@@ -435,58 +435,21 @@ function drawDoorDisplay(x: CanvasRenderingContext2D, v: View, s: number) {
   // the door's lamp: green while it is open
   x.fillStyle = visual.open ? 'rgba(34,197,94,.95)' : 'rgba(' + RED + ',.5)'; x.fillRect(s + 44, y(70), 3, 3);
 }
-function drawCam(x: CanvasRenderingContext2D, v: View, wx: number) {
-  const { y, t } = v, s = v.sx(wx);
-  if (!onScreen(v, s - 10, 20)) return;
-  box(x, s - 7, y(L.ceil - 1), 14, 5, '#100c0a', 'rgba(' + O + ',.6)');
-  x.fillStyle = '#16100c'; x.beginPath(); x.arc(s, y(L.ceil - 6), 5, 0, Math.PI); x.fill();
-  x.fillStyle = Math.floor((t + wx) / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s - 1, y(L.ceil - 8), 2, 2);
-}
-function drawPole(x: CanvasRenderingContext2D, v: View, wx: number) {
-  const s = v.sx(wx);
-  if (s < -4 || s > v.viewW + 4) return;
-  box(x, s - 1, v.y(L.ceil), 3, L.ceil, 'rgba(255,190,110,.55)');
-  x.fillStyle = 'rgba(255,240,215,.7)'; x.fillRect(s - 1, v.y(L.ceil), 1, L.ceil);
-}
-function fill(x:CanvasRenderingContext2D,v:View){x.fillStyle='#020101';x.fillRect(0,0,v.viewW,v.viewH);
+function drawCam(x: CanvasRenderingContext2D, v: View, wx: number) {drawCabCamera(x,v,wx, L.ceil);}
+function drawPole(x: CanvasRenderingContext2D, v: View, wx: number) {drawCabPole(x,v,wx, L.ceil);}
+function fill(x:CanvasRenderingContext2D,v:View){const left=Math.max(0,v.sx(0)),right=Math.min(v.viewW,v.sx(L.width));if(right<=left)return;x.fillStyle='#020101';x.fillRect(left,0,right-left,v.viewH);
 }
 function wall(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;    box(x, w0, y(L.ceil), w1 - w0, L.ceil, '#0e0a08');
     box(x, w0, y(L.win.h0), w1 - w0, L.win.h0, '#130d0a');
 
 }
-function windowFrame(x:CanvasRenderingContext2D,v:View,wx:number,width:number,h0:number,h1:number){const s=v.sx(wx),y=v.y;if(!onScreen(v,s,width))return;      x.strokeStyle = 'rgba(' + O + ',.75)'; x.lineWidth = 3; x.strokeRect(s + 1.5, y(h1) + 1.5, width - 3, h1 - h0 - 3); x.lineWidth = 1;
+function windowFrame(x:CanvasRenderingContext2D,v:View,wx:number,width:number,h0:number,h1:number){drawCabWindow(x,v,wx,width,h0,h1);}
 
-}
-function ceilingLight(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;    box(x, w0, y(L.ceil - 2), w1 - w0, 3, 'rgba(255,240,215,.75)');
-    const g = x.createLinearGradient(0, y(L.ceil), 0, y(L.ceil - 40));
-    g.addColorStop(0, 'rgba(255,240,215,.08)'); g.addColorStop(1, 'rgba(255,240,215,0)');
-    x.fillStyle = g; x.fillRect(w0, y(L.ceil), w1 - w0, 40);
 
-}
-function advert(x:CanvasRenderingContext2D,v:View,a:{x:number;text:string},i:number){const{sx,y,t}=v,home=visual.home;      const s = sx(a.x);
-      if (!onScreen(v, s - 72, 144)) return;
-      box(x, s - 70, y(156), 140, 16, '#1a120b', 'rgba(' + O + ',.5)');
-      if (home && i === 1) {
-        // LINE 0's news: its name, then the morning's item scrolling past
-        text(x, 'NEWS', s - 56, y(148), 'rgba(' + PAPER + ',.9)', 7, '600');
-        scroll(x, t, L.news + '   ·   ', s - 44, y(148), 108, { col: '255,200,170', alpha: 0.85, speed: 0.4 });
-      } else text(x, home ? L.adsHome[i] : a.text, s - 2, y(148), 'rgba(' + PAPER + ',.75)', 7, '600');
-}
-function adTell(x:CanvasRenderingContext2D,v:View,wx:number){tell(x,v.t,v.sx(wx)+65,v.y(148));
-}
+
 function lineMap(x:CanvasRenderingContext2D,v:View){const mp=v.sx(L.lineMap);if(onScreen(v,mp-48,96))drawLineMap(x,v,mp);
 }
-function staffDoor(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;    const ed = sx(L.staff);
-    if (onScreen(v, ed - 16, 32)) {
-      box(x, ed - 14, y(56), 28, 56, '#020100', 'rgba(' + O + ',.6)');
-      box(x, ed - 11, y(52), 22, 52, '#0a0603', 'rgba(' + O + ',.35)');
-      box(x, ed - 12, y(70), 24, 10, '#1a120b', 'rgba(' + O + ',.5)');
-      text(x, 'STAFF', ed, y(65), 'rgba(' + PAPER + ',.7)', 7, '600');
-      x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(ed + 6, y(32), 3, 3);
-      tell(x, t, ed + 10, y(66), 1);
-    }
-
-}
+function staffDoor(x:CanvasRenderingContext2D,v:View){drawCabStaffDoor(x,v,L.staff);}
 function gangwayWall(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;      box(x, gw, y(L.ceil), L.width - L.gangway, L.ceil, '#16100c', 'rgba(' + O + ',.8)');
 
 }
@@ -495,24 +458,12 @@ function gangwayDoor(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx
       x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(gd + 10, y(30), 3, 3);
 
 }
-function carPlate(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;      paperSign(x, t, gw + 35, y(D + 18), 66, 12, { lines: ['CAR 3 OF 3'], edge: 'rgba(' + O + ',.5)', ink: 'rgba(' + PAPER + ',.8)', tell: 3, tellAt: [29, 10] });
 
+function brake(x:CanvasRenderingContext2D,v:View){
+ if(!onScreen(v,v.sx(L.gangway),80))return;
+ drawEmergencyBrake(x,v,L.brake,visual.ride.phase==='braking'||visual.ride.phase==='halted',inputs.hover==='train');
 }
-function brake(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;      const pulled = visual.ride.phase === 'braking' || visual.ride.phase === 'halted';
-      box(x, bk - 12, y(60), 24, 8, '#1a120b', 'rgba(' + O + ',.5)');
-      text(x, 'EMERGENCY', bk, y(56), 'rgba(' + PAPER + ',.75)', 5, '600');
-      box(x, bk - 8, y(52), 16, 22, '#1a0a0a', 'rgba(' + RED + ',.8)');
-      x.fillStyle = 'rgba(' + RED + ',.95)'; x.fillRect(bk - 4, y(pulled ? 37 : 46), 8, 3);
-      box(x, bk - 6, y(28), 12, 6, '#0d1416', 'rgba(' + O + ',.5)');
-      x.fillStyle = pulled ? 'rgba(34,197,94,.9)' : 'rgba(' + O + ',.6)'; x.fillRect(bk - 4, y(26), 2, 2);
-      tell(x, t, bk + 4, y(34), 2);
-      if (inputs.hover === 'train') { x.save(); x.strokeStyle = 'rgba(255,61,242,.85)'; x.shadowColor = 'rgba(255,61,242,.8)'; x.shadowBlur = 8; x.strokeRect(bk - 15.5, y(62) - 3.5, 31, 47); x.restore(); }
 
-}
-function registryScreen(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;const gw=sx(L.gangway);if(!onScreen(v,gw,80))return;const D=56,gd=sx(L.gangDoor),bk=sx(L.brake);void D;void gd;void bk;const home=visual.home;      // the Registry's slogan screen (sign kit), its own lines for the morning after
-      sloganScreen(x, v, { x: L.gangway + 35, h: 96, w: 58, tall: 26, ads: home ? [['REGISTRY AUDIT', 'COMPLETE'], ['1,204 RECORDS', 'RETIRED'], ['NO ACTION', 'NEEDED']] : [['KEEP YOUR ID', 'VISIBLE'], ['ALL JOURNEYS', 'RECORDED'], ['REPORT', 'IRREGULARITIES']], cols: ['255,200,170'], scan: false });
-
-}
 function door(x:CanvasRenderingContext2D,v:View,d:number){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;      const s = sx(d);
       if (!onScreen(v, s - 52, 104)) return;
       const g = Math.round(visual.ride.open * 22);
@@ -529,25 +480,14 @@ function door(x:CanvasRenderingContext2D,v:View,d:number){const{sx,y,t,gy}=v,w0=
       drawDoorDisplay(x, v, s);
 
 }
-function seatBack(x:CanvasRenderingContext2D,v:View,wx:number,width:number){const s=v.sx(wx),y=v.y;if(!onScreen(v,s-4,width+8))return;      box(x, s - 2, y(46), width + 4, 34, '#14262a', 'rgba(' + O + ',.6)');
-      box(x, s + 4, y(SEAT_H - 3), width - 8, SEAT_H - 3, '#0a0706');
+function seatBack(x:CanvasRenderingContext2D,v:View,wx:number,width:number){drawCabSeatBack(x,v,wx,width);}
+function seatFront(x:CanvasRenderingContext2D,v:View,wx:number,width:number){drawCabSeatFront(x,v,wx,width);}
 
-}
-function seatFront(x:CanvasRenderingContext2D,v:View,wx:number,width:number){const s=v.sx(wx);if(onScreen(v,s-4,width+8))box(x,s-4,v.y(SEAT_H+1),width+8,4,'#1c3237','rgba('+O+',.8)');
-}
-function handrail(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;x.fillStyle='rgba(255,190,110,.6)';x.fillRect(w0,y(L.bar),w1-w0,2);
-}
-function strap(x:CanvasRenderingContext2D,v:View,wx:number){const{sx,y,t}=v;const swing=visual.ride.phase==='running'?2+2*Math.sin(Math.PI*visual.run):1;      const s = sx(wx);
-      if (s < -6 || s > v.viewW + 6) return;
-      const sw = Math.round(Math.sin(t * 0.05 + wx * 0.02) * swing);
-      x.strokeStyle = 'rgba(255,190,110,.4)'; x.beginPath(); x.moveTo(s + 0.5, y(L.bar - 2)); x.lineTo(s + 0.5 + sw, y(L.bar - 12)); x.stroke();
-      x.strokeRect(s - 2.5 + sw, y(L.bar - 12) + 0.5, 6, 5);
 
-}
 function floor(x:CanvasRenderingContext2D,v:View){const{sx,y,t,gy}=v,w0=sx(0),w1=sx(L.width);void sx;void y;void t;void gy;void w0;void w1;    x.fillStyle = '#070504'; x.fillRect(w0, gy, w1 - w0, v.viewH - gy);
     x.fillStyle = 'rgba(' + O + ',.55)'; x.fillRect(w0, gy, w1 - w0, 1);
     for (let i = 0; i < 4; i++) { x.fillStyle = 'rgba(255,217,165,.035)'; x.fillRect(w0, gy + 6 + i * 10, w1 - w0, 2); }
 
 }
-return{outside,roofOutside,roofShell,aircon,pantograph,drawLineMap,drawDoorDisplay,drawCam,drawPole,fill,wall,windowFrame,ceilingLight,advert,adTell,lineMap,staffDoor,gangwayWall,gangwayDoor,carPlate,brake,registryScreen,door,seatBack,seatFront,handrail,strap,floor};
+return{outside,roofOutside,roofShell,aircon,pantograph,drawLineMap,drawDoorDisplay,drawCam,drawPole,fill,wall,windowFrame,lineMap,staffDoor,gangwayWall,gangwayDoor,brake,door,seatBack,seatFront,floor};
 }

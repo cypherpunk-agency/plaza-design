@@ -65,6 +65,8 @@ export interface SceneRules {
    * its home from `layout.spot`; null while it is out of the world. Read every frame, so keep it cheap.
    */
   place?: (m: SceneModel, home: Spot) => Spot | null;
+  /** Compiler-owned displacement of device/interaction artwork attached to moving vehicle frames. */
+  attachmentOffsets?: (m:SceneModel)=>import('./gameplay/moving-manifest-geometry').AttachmentOffsets;
 }
 
 /** The engine's own texts, by kind: every scene has them (engine.json), and may override them with the same kind. */

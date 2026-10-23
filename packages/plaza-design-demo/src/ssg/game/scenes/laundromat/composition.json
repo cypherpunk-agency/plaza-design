@@ -626,21 +626,10 @@
       "layer": "set",
       "bindings": {
         "hover": "scene.hover",
-        "tripped": "scene.tripped",
-        "clear": "scene.clear",
         "nextRunning": "scene.nextRunning",
         "nextMs": "scene.nextMs",
-        "door3": "scene.door3",
-        "breakerX": "scene.breakerX",
-        "washerXs": "scene.washerXs",
-        "w1": "scene.w1",
-        "w2": "scene.w2",
-        "w3": "scene.w3",
-        "w4": "scene.w4",
-        "p1": "scene.p1",
-        "p2": "scene.p2",
-        "p3": "scene.p3",
-        "p4": "scene.p4"
+        "cableConnected": "scene.scheduleCableConnected",
+        "cableTo": "scene.scheduleCableTo"
       }
     },
     {

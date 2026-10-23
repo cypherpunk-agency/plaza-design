@@ -11,7 +11,7 @@ const n=(label:string,defaultValue:number):Field=>({kind:'number',label,default:
 const str=(label:string,defaultValue=''):Field=>({kind:'string',label,default:defaultValue});
 const list=(label:string,values:string[]):Field=>({kind:'json',label,default:values,validate:v=>{if(!Array.isArray(v)||v.some(q=>typeof q!=='string'))throw new Error('Expected string list');}});
 const raised=(v:import('../core/view').View,h:number)=>h===0?v:({...v,gy:v.gy-h,y:(value:number)=>v.y(value+h)});
-const el=(id:string,fields:Record<string,Field>,draw:Element['draw'],bounds:Element['bounds']=(p)=>({x:0,h:Number(p.height??100),w:Number(p.width??100),tall:Number(p.height??100)})):Element=>({type:'market.'+id,version:1,label:id,category:'Market',bindingIdentity:'presentation',coordinates:'world',fields,parts:['backdrop'],bounds,anchors:p=>({origin:{x:0,h:0,role:'origin'},center:{x:Number(p.width??0)/2,h:0,role:'origin'}}),draw});
+const el=(id:string,fields:Record<string,Field>,draw:Element['draw'],bounds:Element['bounds']=(p)=>({x:0,h:Number(p.height??100),w:Number(p.width??100),tall:Number(p.height??100)})):Element=>({type:'market.'+id,version:1,label:id,category:'Market',bindingIdentity:'presentation',coordinates:'world',libraryUse:!['marker','far','wet-floor','stall','booth','ticker'].includes(id)?'reusable':undefined,fields,parts:['backdrop'],bounds,anchors:p=>({origin:{x:0,h:0,role:'origin'},center:{x:Number(p.width??0)/2,h:0,role:'origin'}}),draw});
 const far=towers(51,2600,[30,60],[160,320],.07);
 export const marketElements:Element[]=[
 {...el('marker',{role:str('Role'),width:n('Width',2080)},()=>{},()=>({x:-4,h:4,w:8,tall:8})),parts:[]},
@@ -55,3 +55,6 @@ marketElements.push(el('blade',{text:str('text',"HOTEL"),parallax:n('parallax',0
 marketElements.push(el('odds',{w:n('w',76),tall:n('tall',52),mount:str('mount',"pole"),title:str('title',"TONIGHT"),rows:list('rows',["RAIN 02:00","LINE 0 ON TIME","CURFEW RAID","POWER CUT"])},(x,v,p,_s,_pass,at)=>oddsBoard(x,v,{...p,x:at.x,h:at.h} as unknown as Parameters<typeof oddsBoard>[2])));
 marketElements.push(el('score',{w:n('w',76),tall:n('tall',32),mount:str('mount',"pole"),name:str('name',"QUEUE BY SCORE"),score:n('score',712)},(x,v,p,_s,_pass,at)=>scoreDisplay(x,v,{...p,x:at.x,h:at.h} as unknown as Parameters<typeof scoreDisplay>[2])));
 applyMarketMetadata(marketElements,far);
+
+// Audited local fittings: optional scalar/pose inputs have standalone defaults.
+for(const e of marketElements)if(["stall", "booth", "ticker"].includes(e.type.slice(7)))e.libraryUse='reusable';

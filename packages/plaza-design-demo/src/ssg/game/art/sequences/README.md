@@ -1,11 +1,25 @@
 # Animated artwork and authoring
 
-`opening/sequence.ts` is the opening's dispatcher for shipping playback and the composer (still its own frame path, being moved onto the one frame). `cinematics.ts` registers the cutscene and taxi pieces as ordinary art elements; `runtime/sequence-frame.ts` draws a cinematic sequence as a one-zone frame through `renderWorldFrame`, directed by its timeline. Source documents live under `story/title/` and `story/cutscenes/`. Trusted motion kernels preserve the original formulas; JSON controls sequences, composition, shots, tracks, cards, fades and named handoffs. Preview seeking uses an isolated `IntroSeekSession`; it does not apply gameplay handoffs.
+Current paths, 2026-10-23. [ROADMAP.md](../../ROADMAP.md) owns remaining work and priorities.
 
-The opening currently has 219 registered drawing pieces, including nested coast/town groups. Individual pieces expose meaningful typed appearance fields, with exact original defaults materialized in the composition document. Palms, loungers, the DJ booth, bonfire, stacks, cranes, port vehicles, people, towers/signs and lamps consume these fields in their existing drawing kernels. Cinematics have 28 pieces; nine expose appearance/text fields. Duplicated furniture, vehicles and cinematic parts receive their own properties.
+The title and glide use ordinary authored zones and world backdrops. `story/title/render.ts`
+calls `runtime/zone-sequence-frame.ts`, which evaluates the timeline and configures
+`renderWorldFrame`. The former `opening/` artwork dispatcher, metadata and measurement wrappers
+are removed. Do not recreate them or the removed `nativeOpeningFrame` comparison path.
 
-Coast `worldX` follows the original west-facing coast coordinate system. Generic instance placement is an offset applied after the native layout. Point/viewport culling accounts for moved, scaled and flipped instances; changed appearance uses an uncropped native pass so enlarged or relocated artwork cannot disappear behind its original culling envelope. The real canvas clips the result.
+`cinematics.ts` registers intro, Act II and taxi artwork in the art library. Their source lives
+under `story/cutscenes/`; `runtime/sequence-frame.ts` evaluates its timeline and presents its
+composition as a one-zone frame through `renderWorldFrame`. These adapters supply camera, passes,
+state and overlays; they do not own another frame renderer. Piece thumbnails are isolated art
+previews, not another world render path.
 
-`opening/metadata.ts` and `cinematic-metadata.ts` supply the same bounds and anchors to registry and preview. Common-kit furniture/plants/cranes and named coast assemblies measure their actual canvas operations through `opening/measure.ts`. Text, curves, glows and several procedural backgrounds use conservative extents, not raster-tight selection. SALT now has ten independently selectable bar, sign, counter, stool and lighting pieces; the pier has thirteen deck, kiosk, bench and lighting pieces; the buffer has eight fence, sign, surveillance, lighting, car and gate pieces. Each sits inside an assembly group with inherited placement and visibility. The hub has twelve shed, roller-door, sign, drone-rack and pad-light pieces; the ship has eight hull, cargo and superstructure pieces; the bridge has six rail/signal/lamp pieces; Galleria has eighteen dome, facade, terrace, taxi, shopfront, entrance, sign, advert and planter pieces. A finite bounds contract does not establish full G4 addressability.
+JSON controls compositions, shots, tracks, cards, fades and handoffs. New drawing algorithms
+remain registered code primitives with typed inputs, bounds and anchors. A sequence/context
+piece is not automatically a reusable independent object; the library's usability label describes
+its supported placement contract.
 
-Lighting and actor scheduling are explicit frame inputs. `story/title/render.ts` prepares immutable actor poses and calls the artwork dispatcher; `nativeOpeningFrame` supplies the equivalent native command path for comparisons. Every nested local View carries the selected Light with shadows disabled, matching the original cinematic local frames. Artwork metadata consumes the prepared pose for resident bounds. `story/cutscenes/skyline-session.ts` owns continuous intro timing and independent seek checkpoints; the skyline pieces receive an explicit city and packet step as `View.skyline`. Taxi travel documents and handoff duration belong to `story/cutscenes/taxi.ts`, which draws the flight through the same one frame. Art imports no story documents or scheduling functions.
+The intro's existing `IntroPlaybackSession.advance` advances packets before painting. `Skyline.parts`
+paints prepared network commands without changing packet state. The isolated `IntroSeekSession`
+reconstructs deterministic state for editor inspection, including backward seeking, without touching
+live playback. Same-time paint and bounds must not advance authoritative animation; light comes
+from the explicit View. ROADMAP C1 records the remaining visual preservation closeout.

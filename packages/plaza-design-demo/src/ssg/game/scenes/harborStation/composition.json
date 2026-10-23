@@ -34,15 +34,11 @@
         "role": "exit"
       },
       "placement": {
-        "x": 215,
+        "x": 365,
         "h": 0
       },
       "order": 1,
-      "layer": "set",
-      "attach": {
-        "instance": "platform-train",
-        "anchor": "origin"
-      }
+      "layer": "set"
     },
     {
       "id": "horizon",
@@ -133,20 +129,6 @@
       },
       "order": 7,
       "layer": "set"
-    },
-    {
-      "id": "platform-train",
-      "type": "station.train",
-      "props": {},
-      "placement": {
-        "x": 150,
-        "h": 0
-      },
-      "order": 8,
-      "layer": "set",
-      "bindings": {
-        "train": "station.train"
-      }
     },
     {
       "id": "track-edge",
@@ -497,86 +479,6 @@
       }
     },
     {
-      "id": "waiting-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-0"
-      },
-      "placement": {
-        "x": 240,
-        "h": 0
-      },
-      "order": 29,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-0"
-      }
-    },
-    {
-      "id": "waiting-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-1"
-      },
-      "placement": {
-        "x": 420,
-        "h": 0
-      },
-      "order": 30,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-1"
-      }
-    },
-    {
-      "id": "waiting-2",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-2"
-      },
-      "placement": {
-        "x": 640,
-        "h": 0
-      },
-      "order": 31,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-2"
-      }
-    },
-    {
-      "id": "waiting-3",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-3"
-      },
-      "placement": {
-        "x": 1040,
-        "h": 0
-      },
-      "order": 32,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-3"
-      }
-    },
-    {
-      "id": "waiting-4",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-4"
-      },
-      "placement": {
-        "x": 1170,
-        "h": 0
-      },
-      "order": 33,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-4"
-      }
-    },
-    {
       "id": "checkpoint",
       "type": "station.notice-stand",
       "props": {
@@ -747,6 +649,32 @@
       "bindings": {
         "pose": "station.pose.regular"
       }
+    },
+    {
+      "id": "sky-traffic",
+      "type": "environment.sky-traffic",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -100,
+      "layer": "distance"
+    },
+    {
+      "id": "platform-floor",
+      "type": "level.floor",
+      "props": {
+        "width": 1200,
+        "label": "Harbor platform",
+        "indoor": false
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -1,
+      "layer": "logic"
     }
   ]
 }

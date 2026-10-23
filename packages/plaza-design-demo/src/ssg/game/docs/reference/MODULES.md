@@ -2,14 +2,14 @@
 
 The directories express ownership. For current extension recipes read
 [ENGINE-HANDBOOK.md](./ENGINE-HANDBOOK.md) and [AGENTS.md](../../AGENTS.md).
-All 20 existing scenes use the shared engine and editor contracts.
+All 19 current folder scenes and catalogue scenes use the shared engine and editor contracts.
 
 | Location | Owns |
 | --- | --- |
 | `index.ts` at the game root | Homepage integration and launch controls |
 | `runtime/` | Game lifecycle, input/movement orchestration, saves, slots, audio and actor simulation |
 | `engine/` | Shared commands, conditions, conversations, purchases and state; device execution, signals, scene time and hacking interfaces |
-| `scenes/<id>/` | Authored scene/gameplay/device/composition definitions, source adapters and registered physical/presentation primitives |
+| `scenes/<id>/` | Authored scene/gameplay/device/composition JSON definitions; registered physical/presentation primitives live in engine/art |
 | `world/` | Geography, climate, clock, lighting and transport shared between locations |
 | `story/` | Cross-scene progression, contacts and presentation controllers |
 | `art/` | Procedural artwork and visual construction/composition contracts |
@@ -19,7 +19,8 @@ All 20 existing scenes use the shared engine and editor contracts.
 | `docs/design/` | Current design proposals and progression concepts |
 | `docs/reference/` | Technical authoring references and visual principles |
 
-The root keeps the entry point, README, agent guidance and active roadmap. New location code belongs in its scene package, not at the root.
+The root keeps the entry point, README, agent guidance and active roadmap. New ordinary locations
+use catalogue documents; new registered primitives belong in engine/art, not in per-scene runtimes.
 
 ## Packaging logic
 
@@ -31,7 +32,7 @@ Cross-location timetables belong in `world/transport/`; campaign progression bel
 `story/`. Do not put unrelated logic in a generic helpers directory.
 
 `engine/gameplay/` owns the common command, condition, event, conversation, commerce and state
-contracts across all 20 scenes. The runtime supplies player/world ports; native device integration
+contracts across the current scene catalogue. The runtime supplies player/world ports; native device integration
 uses explicit authorized bindings to the same owner blocks. Ordinary content is not a pilot-only
 capability. engine/shell.ts is the shared terminal adapter onto SceneModel.
 
@@ -94,8 +95,10 @@ The scene adapter prepares state before paint; `SceneDef.preparePresentation`,
 `presentationState` and `visualEnvironment` support explicit decorative history and its read-only
 bindings. Painting and bounds evaluation must not advance simulation or presentation history.
 
-`world/transport/line.ts` owns the platform timetable (a function of a `Timeline`: a station scene's scene time and its `platformShift`) and the ride read-outs (pure functions of the train model's movers; the car is the mover `train.car`, with no ride state of its own). Train and departure-board
-pictures live in `art/vehicles/platform-train.ts` and `art/signage/line-departures.ts`.
+`world/transport/line.ts` reads departures and journey state from the actual train model's movers.
+The car is `train.car`, doors are `train.doors`; platforms have no independent timetable or phase offset.
+Shared vehicle geometry owns boarding, alighting and passenger continuity. Departure-board artwork lives
+in `art/signage/line-departures.ts`; `art/vehicles/platform-train.ts` remains a stateless library drawing.
 `story/title/` and `story/cutscenes/` own animation scheduling, actor preparation, timeline documents
 and gameplay handoffs; their pictures use `art/sequences/`. Preview seeking uses independent sessions.
 

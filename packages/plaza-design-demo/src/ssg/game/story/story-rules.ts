@@ -143,10 +143,10 @@ export const attentionDue=(clock:number,still:number,after:number)=>clock-still>
  * Where the attention ping points: a device (the ping goes to it), or a world x (a train door, an exit, a story target of the scene).
  * `targetX` resolves a story target's id against the scene's own geometry.
  */
-export function attentionAim(t:PingTarget,def:{exits:readonly{id:string;action?:string;x:number}[]},playerX:number,targetX:(id:string)=>number|undefined):{device:string}|{x:number}|null{
+export function attentionAim(t:PingTarget,def:{exits:readonly{id:string;action?:string;x:number}[]},playerX:number,targetX:(id:string)=>number|undefined,doors:readonly number[]=[]):{device:string}|{x:number}|null{
  if('device'in t)return{device:t.device};
  let x:number|undefined;
- if('door'in t)x=def.exits.filter(e=>e.action==='out').map(e=>e.x).sort((a,b)=>Math.abs(a-playerX)-Math.abs(b-playerX))[0];
+ if('door'in t)x=[...doors].sort((a,b)=>Math.abs(a-playerX)-Math.abs(b-playerX))[0];
  else if('exit'in t)x=def.exits.find(e=>e.id===t.exit)?.x;
  else x=targetX(t.target);
  return x===undefined?null:{x};

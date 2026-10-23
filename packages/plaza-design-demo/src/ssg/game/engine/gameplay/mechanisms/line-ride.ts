@@ -170,15 +170,15 @@ const segments=(m:SceneModel)=>{const at=LINE.indexOf(rideStop(m.movers)),to=LIN
 export const lineRide:SceneMechanism={
  face:{function:'act'},
  label:'LINE 0 car (ride, brake, doors, passengers)',
- requires:['ceiling','roof','news','windowStyle','lineMap','handrail','staff','gangway','gangDoor','brake'],world:true,ownsRoom:true,
+ requires:['ceiling','roof','news','windowStyle','lineMap','staff','gangway','gangDoor','brake'],world:true,ownsRoom:true,
  rulesShape:()=>createTrainRules(),
  check:({roles})=>{const w=roles.windowStyle;if(Number(w.props.h1)<=Number(w.props.h0)+6||Number(w.props.width)<=6)throw Error('Train requires a valid window style');},
  apply:({scene,rows,roles,actors,width,content,world,shared})=>{
-  const layout=trainLayoutOf(scene,rows,roles,width,content.spawn),context={metro:world?.metro,city:world?.city};
+  const layout=trainLayoutOf(scene,rows,roles,width,content.spawn);
   shared.set(TRAIN_LAYOUT_KEY,layout);
   return{
    rules:createTrainRules(world?.metro,world?.city),
-   presentation:{prepare:(v,e)=>{shared.set(TRAIN_FRAME_KEY,prepareTrainFrame({source:scene,rows,roles,actors,layout},v,e.hover,trainVisual(v,world,e.m.movers),context));}},
+   presentation:{prepare:(v,e)=>{shared.set(TRAIN_FRAME_KEY,prepareTrainFrame({source:scene,rows,roles,actors,layout},v,e.hover,trainVisual(v,world,e.m.movers)));}},
   };
  },
 };

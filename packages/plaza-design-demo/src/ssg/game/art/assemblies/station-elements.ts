@@ -59,6 +59,28 @@ export const stationElements:Element[]=[
 
 for(const element of stationElements)element.bindingChoices=composition=>{
  if(!['metro','galleriaStation','harborStation'].includes(composition.scene))return{};
- const sources:Record<string,string[]>={train:['station.train'],departure:['station.departure'],roof:['station.roof'],...(composition.scene==='harborStation'?{closed:['station.closed']}:{})};
+ const sources:Record<string,string[]>={departure:['station.departure'],roof:['station.roof'],...(composition.scene==='harborStation'?{closed:['station.closed']}:{})};
  return Object.fromEntries(Object.keys(element.visualFields??{}).filter(key=>sources[key]).map(key=>[key,sources[key]]));
 };
+
+// Individual fittings use local placement; platform spans, route trains and prepared passengers retain context.
+for(const e of stationElements)if(['poster','camera','bench','snacks','escalator','reflection','harbor-crane','pier-gate'].includes(e.type.slice(8)))e.libraryUse='reusable';
+
+// Audited local fittings: optional scalar/pose inputs have standalone defaults.
+for(const e of stationElements)if(["nameplate", "screen", "departures", "notice-stand", "strip-lamp", "column", "canopy-lamp", "canopy-post"].includes(e.type.slice(8)))e.libraryUse='reusable';
+
+// Bounds include the real suspension/ground span; these fittings' height is their mounting point.
+for(const id of ['nameplate','screen','departures','notice-stand','strip-lamp','column','canopy-lamp','canopy-post']){
+ const e=stationElements.find(e=>e.type==='station.'+id)!;
+ e.bounds=(p,state,context)=>{
+  const h=context?.placement.h??0,roof=Number(state.roof??0);
+  const span=(x:number,w:number,top:number,bottom:number)=>({x,h:top-h,w,tall:Math.max(0,top-bottom)});
+  if(id==='nameplate'){const w=40+String(p.name).length*7;return span(-w/2,w,p.hang?Math.max(h,roof):h,p.hang?Math.min(h-20,roof):h-20);}
+  if(id==='departures')return span(-62,124,Math.max(h,roof),Math.min(h-42,roof));
+  if(id==='screen')return span(-38,76,Math.max(h,roof),Math.min(h-64,roof));
+  if(id==='notice-stand'){const w=Math.max(Number(p.width),p.red?60:0);return span(-w/2,w,Math.max(44,h),Math.min(0,h-Number(p.height)));}
+  if(id==='column')return span(-15,30,Math.max(10,h),Math.min(0,h));
+  if(id==='canopy-post')return span(-27,54,h+1,Math.min(0,h-27));
+  const w=id==='strip-lamp'?80:68;return span(-w/2,w,h,Math.min(0,h-4));
+ };
+}

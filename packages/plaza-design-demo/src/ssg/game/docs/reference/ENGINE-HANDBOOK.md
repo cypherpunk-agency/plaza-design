@@ -1,9 +1,22 @@
 # Using and extending the shared game engine
 
-Current implementation guide,2026-10-20. Read [AGENTS.md](../../AGENTS.md) for working rules.
-All 20 existing scenes use shared source and typed editor support. Everything remains in design;
+Current implementation guide, 2026-10-23. Read [AGENTS.md](../../AGENTS.md) for working rules.
+All 19 folder scenes and catalogue scenes use shared source and typed editor support. Everything remains in design;
 this guide describes implementation ownership, not immutable product decisions.
 Tests exercise the current engine directly; completed migration evidence is not required.
+
+Animation ownership: the existing intro playback session advances skyline packets before painting;
+isolated seek sessions reconstruct their own state. Painting consumes prepared drawing commands.
+The owner also prepares viewport/layout changes before ticking; paint cannot initialize or reset
+packet layout. Live timeline seeks reconstruct independently before playback adopts the picture.
+The unused `citySkyline` mechanism and its unused `metro.skyline-part` registration are removed.
+Presentation reads lighting from the supplied View rather than a global frame. ROADMAP C1/C2 are complete locally after visual acceptance and native reload verification;
+C3 owns outstanding asset extraction. Registered mechanisms remain validated code primitives;
+typed editor parameters do not make arbitrary algorithm bodies editable.
+The focused `pnpm test:game:visuals --intro-only` check compares actual native playback, seeking
+and paused painting at two sizes, scales 1/2/3 and both reduced-motion settings, including canvas
+resize and seek/resume. It cannot accept or replace
+stored scene images. Comparison surfaces use consistent readback rasterization.
 
 ## The execution model
 
@@ -135,6 +148,29 @@ Keep opaque-origin private Play and memory storage; the public editor downloads 
 local loopback service alone writes validated source. See [composer workflow](../../authoring/README.md).
 
 ## Recipe: floors, stairs, lifts and buildings (levels)
+
+A vehicle-only composition needs no stationary `level.floor`: `compileLevel` retains its vehicle
+source and native arrival attaches to the real consist floor through `arriveVehicleLevel`.
+Composition artwork and manifest interactions follow that same vehicle frame; presentation
+prepares moving actor rows without changing their authoritative appearance/motion state. The
+occupied car extends the camera span, and a private fixture's source-local starting X is passed
+to `Game.start(scene, false, x)`. Do not mutate a bound SceneDef to set a private start. The actual
+train/siding/Galleria/Harbor examples and safety checks are in `check-train-physical-source.mts`.
+`check-siding-source.mts` edits the shipping vehicle's Galleria berth and route through history,
+bundle and protected Save, then checks actual vehicle arrival from the reloaded source. The legacy platform clock, boarding cuts and crowd controllers are removed. Native saved-source
+reload passes all six route cases; current visual references are accepted. See ROADMAP C2.
+Station passengers are `character.flow` instances in the train composition. Approach waypoints
+are local to the selected boarding berth's zone; exit waypoints are local to the destination zone.
+The existing train model records boarding windows and passenger identity, and projects both
+platform routes through its existing vehicle-zone placements. Do not restore separate platform
+or interior crowd selectors. Rider looks can use `{rider, phase, ps}` and the original rider art;
+the passenger form exposes these fields. Named passengers remain ordinary source actors.
+The normal line now has a Downtown berth on `metro/floor-station`. A vehicle's optional
+`presenceQuery` names an ordinary gameplay query: it controls physical presence and the
+visibility inherited by attached artwork. This differs from `boardQuery`, which only authorizes
+boarding. Keep transitions that remove a vehicle outside occupied journeys: an occupied vehicle
+must remain present. Source compilation validates both query references. Foreground drawing
+receives the same host model as backdrop drawing, including presence queries.
 
 Place the level kit in the composition (ART-GUIDE §12, "Levels"); no code. Declared scenes compile it
 with engine/level.ts `compileLevel` into `SceneDef.level` (data). There is no level runtime: the game
@@ -371,7 +407,7 @@ targets, picture-side state and a world binding (`world: true` rebuilds the scen
 the city and line system). Add engine/gameplay/mechanisms/<name>.ts exporting a `SceneMechanism`
 (`label`, `requires` artwork roles, `world`, `apply`, optionally `rulesShape`, `check`, `anchors`), add one line to `SCENE_MECHANISMS` in engine/gameplay/scene-mechanisms.ts, and list
 the name in `stage.mechanisms`. The editor checkbox appears from the registry. Current set: transitPlatform,
-citySkyline, lineRide, gantryLift, devicePulse, targetReset, sandboxBay, yardCrane,
+lineRide, gantryLift, devicePulse, targetReset, sandboxBay, yardCrane,
 thermal, streetLayers, vehicleRun, streetCamera. Add one only for a new physical calculation; a
 fixed value, a light or a shade line is stage data, not a mechanism. Give it a `face`
 (`{function, controller?}`): in Logic › Devices and Wiring the scene's mechanisms appear as devices
@@ -560,6 +596,38 @@ existing Devices inspector for mover paths and timing. Physical floors remain un
 existing Circuit owner stays resident while a route zone is active. Geometry placements do not
 require every intervening scene host to remain loaded. New scene presets create complete ordinary
 service source. Do not add a vehicle loop or a second renderer.
+
+Joined hosts retain local manifest coordinates. `Game.followHost` maps each visible host through
+its seam placement, matching `zoneFrame`, and supplies the player in that host's local coordinates.
+Do not rewrite device/source coordinates when crossing a seam or pass active-zone coordinates
+to a neighbouring host. `check-joined-host-projection.mts` covers this presentation contract.
+Attached ordinary uses/readables/rests retain an explicit owner through target selection,
+eligibility, prices and dispatch; local IDs are never interpreted in another owner's session.
+Only attached interactions are offered across zones. Their popup/conversation input stays with
+the existing source host (`Game.interactionHost`), while weather, story and location still use
+the player's actual zone. `check-joined-interactions.mts` covers native E and dispatch ownership.
+Device menus read live model spots. Ordinary use/rest menus pass a pure owner-local anchor query
+to `SceneHost.choose`; returning null closes a removed target. Walk-away dismissal is relative to
+the object's movement, so riding together does not count as walking away. No menu timer or second
+frame loop drives geometry. `check-moving-popup.mts` exercises the real host methods.
+`Game.crossInto` retains the existing vehicle owner's interaction when its rider crosses a route
+seam; ordinary departures still close previous-scene UI. `check-seamless-commute.mts` uses that
+native handoff through the actual four-tunnel route rather than duplicating its rebasing logic.
+Attached device targets carry the same owner as ordinary interactions. E and pointer selection
+use that host; hack-vision taps subtract its seam placement before hit testing. The interaction
+host also supplies terminal shell/model lookup and train controls while riding. An existing
+local popup has priority; lifts retain their previous control ownership. The shared world frame
+reads hack vision from visible joined hosts and applies world/device passes to its owner.
+`Game.syncPlayerLocations` projects the same player into each resident host before the next native
+model tick. Building tags belong to their floor owner; unrelated/departed hosts receive no player.
+It adds no timer, save block or alternate sensor evaluator. `check-joined-player-zones.mts` exercises
+the real model's horizontal/vertical zone crossings and building ownership without projection ticks.
+Focused joined-interaction/frame-director checks cover these methods; native route/reload checks
+use the same shipping Game and owner mapping.
+`check-train-shared-vehicle.mts` exercises the actual P14 source/GameplaySession/Circuit against shared
+vehicle floors and boarding, including pass refusal, automatic signal braking, safety rewiring,
+harbor unlock and current train checkpoint behavior. Its small track is a physical contract fixture;
+the shipping route is covered by check-train-physical-source.mts and the native route checks.
 
 Seats live in the existing LevelState vehicle attachment. The level step pins a seated player to
 the moving bench; E or movement stands, and jumping while seated is refused. A linked seat

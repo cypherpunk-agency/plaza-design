@@ -10,7 +10,6 @@
 import type {Resolved} from '../../../art/core/composition';
 import type {YardVisual} from '../../../art/assemblies/fixer-yard';
 import {renderDowntownStreet} from './street-layers';
-import {light} from '../../../world/light';
 import {yardController,yardRead,type YardController} from '../../controllers/yard';
 import type {EngineDraw} from '../../host';
 import type {SceneModel} from '../../model';
@@ -40,7 +39,7 @@ export class YardPresentation{
   if(at===c.places.bounced)return[x1-4,h1];if(at===c.places.tray){const p=find(this.rows,c.anchors.tray);return[p.x,p.h+8];}return null;
  }
  /** What the frame paints, worked out from the model as it stands: bounds queries and repeated painting never advance anything. */
- visual(engine:EngineDraw):YardVisual{const l=light(),c=yardController(engine.m.data),held=c!==undefined&&yardRead(engine.m,'parcelAt')===c.places.hook;return{layer:engine.layer,highlight:engine.hover??'',pan:Number(yardRead(engine.m,'pan')??0),gateOpen:!!(c?.gateOpen&&engine.m.value(c.gateOpen)),gateAllowed:!!yardRead(engine.m,'gateAllowed'),held,hookVisible:this.hookVisible,hookX:this.hookX(engine.m),parcel:held&&!this.hookVisible?null:this.parcel(engine.m),night:l.night*(1-l.cover)};}
+ visual(engine:EngineDraw,view:import('../../../art/core/view').View):YardVisual{const l=view.lighting,c=yardController(engine.m.data),held=c!==undefined&&yardRead(engine.m,'parcelAt')===c.places.hook;return{layer:engine.layer,highlight:engine.hover??'',pan:Number(yardRead(engine.m,'pan')??0),gateOpen:!!(c?.gateOpen&&engine.m.value(c.gateOpen)),gateAllowed:!!yardRead(engine.m,'gateAllowed'),held,hookVisible:this.hookVisible,hookX:this.hookX(engine.m),parcel:held&&!this.hookVisible?null:this.parcel(engine.m),night:l.night*(1-l.cover)};}
 }
 
 export const yardCrane:SceneMechanism={

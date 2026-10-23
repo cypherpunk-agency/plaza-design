@@ -17,9 +17,12 @@ const origin:Anchor={x:0,h:0,role:'origin'};
 const box=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 const raised=(v:View,h:number):View=>h===0?v:{...v,gy:v.gy-h,y:q=>v.y(q+h)};
 const kernel=new DowntownArtwork();
+// These kernels consume only their own properties, placement and explicit visual state.
+// Parent metrics, screen fills and the routed delivery sprite retain their context contract.
+const independent=new Set(['front','window','bay','penthouse','neon-sign','weather-ticker','billboard','stall','fence','alley','dumpster','entrance','fixer','counter','pedestrian','library-front','metro-stairs','taxi-pad',...['sign','box','till','relay','gate','fence','scan','cam3','billboard','map'].map(id=>'device-'+id)]);
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
 function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:Element['bounds'],draw:Draw,visualFields:Record<string,Field>={}):Element {
- return {type:'downtown.'+type,version:1,label,category,coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},right:{x:Number(p.width??0),h:0,role:'mount'},topCenter:{x:Number(p.width??0)/2,h:Number(p.height??0),role:'surface'}}),
+ return {type:'downtown.'+type,version:1,label,category,coordinates:'world',libraryUse:independent.has(type)?'reusable':undefined,fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},right:{x:Number(p.width??0),h:0,role:'mount'},topCenter:{x:Number(p.width??0)/2,h:Number(p.height??0),role:'surface'}}),
   draw(x,v,p,s,_pass,at){kernel.set(x,raised(v,at.h));draw(x,v,p,s,at);}};
 }
 const mask:Field=windowMask;

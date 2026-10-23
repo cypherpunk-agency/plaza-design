@@ -1,0 +1,10 @@
+/** The classic fleet as ordinary authored artwork, painted in the one frame's sky pass. */
+import type {Element,Value,Field} from '../core/composition';
+import {createSkyShips,drawSkyShips,type Ship} from './sky-ships';
+import {screenBounds} from '../assemblies/static-bounds';
+const number=(label:string,value:number):Field=>({kind:'number',label,default:value,min:-100000,max:100000,step:.01});
+export function validateSkyShips(value:Value){if(!Array.isArray(value)||value.length>128)throw Error('Sky fleet has at most 128 ships');for(const row of value){const s=row as unknown as Ship;if(!s||typeof s!=='object'||Object.keys(s).some(k=>!['kind','ps','y','speed','offset','flip','depth'].includes(k))||!['spinner','freighter','skydrone'].includes(s.kind)||![1,2].includes(s.ps)||![s.y,s.speed,s.offset,s.depth].every(Number.isFinite)||typeof s.flip!=='boolean'||Math.abs(s.speed)>100||s.depth<0||s.depth>1)throw Error('Invalid sky ship');}}
+export const skyTrafficElement:Element={type:'environment.sky-traffic',version:1,label:'Sky traffic',category:'Atmosphere',libraryUse:'reusable',coordinates:'world',framePhase:'sky',parts:['backdrop'],
+ fields:{inSequences:{kind:'boolean',label:'Also draw in camera sequences',default:false},ships:{kind:'json',label:'Sky fleet',default:createSkyShips() as unknown as Value,validate:validateSkyShips,editor:{kind:'list',addLabel:'Add ship',item:{kind:{kind:'select',label:'Craft',default:'spinner',options:['spinner','freighter','skydrone']},ps:{kind:'select',label:'Pixel size',default:1,options:[1,2]},y:number('Height on screen',60),speed:number('Speed',.1),offset:number('Lane offset',0),flip:{kind:'boolean',label:'Fly left',default:false},depth:number('Parallax',.4)}}}},
+ bounds:(_p,_s,c)=>screenBounds(c,{x:c?.placement.x??0,y:-(c?.placement.h??0),w:c?.view.viewW??640,h:220},{x:0,h:0,w:640,tall:220}),anchors:()=>({origin:{x:0,h:0,role:'origin'}}),
+ draw(ctx,v,p,_s,_pass,at){if(v.sequence&&!p.inSequences)return;ctx.save();ctx.translate(at.x,-at.h);drawSkyShips(ctx,v,p.ships as unknown as Ship[]);ctx.restore();}};

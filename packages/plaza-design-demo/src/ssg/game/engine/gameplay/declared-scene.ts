@@ -1,10 +1,11 @@
 import {compilePeople} from '../people';
+import {movingManifestGeometry} from './moving-manifest-geometry';
 import {projectSceneState,type SceneDeviceSource} from './scene-state';
 import {emptyData} from '../empty-data';
 import {nativeDeviceData} from './native-bindings';
 import {projectDeviceBindings} from './device-bindings';
 import {compileManifestDocument} from './manifest-content-compiler';
-import {art,resolveComposition,drawComposition,type Environment} from '../../art';
+import {art,resolveComposition,drawComposition,drawCompositionSlot,type Environment} from '../../art';
 import {frameView} from '../../art/core/view';
 import {drawReviewRoom} from '../../art/assemblies/review-room';
 import {residentCharacter} from '../../art/characters/resident';
@@ -13,14 +14,14 @@ import {withSceneConversations,actorConversationId} from './scene-conversations'
 import type {SceneDef} from '../../scenes/kit';
 import {validateSceneDocument,type SceneDocument} from './scene-document';
 import {compileLevel,compileOccluders,levelNear,levelOpacity,levelVisualState,restingLevelView} from '../level';
-import {levelVehicleVisuals} from '../level-vehicles';
+import {levelVehicleVisuals,levelVehicleVisibility} from '../level-vehicles';
 import {routeProblems} from '../../world/vehicles';
 import {EMPTY_ZONE_GRAPH} from '../../world/zone-graph';
 import type {GameplayDefinition} from './types';
 import type {View} from '../../art/core/view';
 import type {EngineDraw} from '../host';
 import {compileSceneActors} from './actors';
-import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources,unofferedBindings} from './binding-sources';
+import {bindingDefaults,bindingValues,providerSignals,unknownBindingSources,unofferedBindings,worldBindings} from './binding-sources';
 import {PresentationSignals} from './presentation-signals';
 import {stageContent} from './scene-stage';
 import {SCENE_MECHANISMS,mergeRules,mechanismsRulesShape,withMechanismDevices,composePresentations,type MechanismPresentation} from './scene-mechanisms';
@@ -94,8 +95,10 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,anchorRows[a].placement])),{reset:resetPermitted(d),anchors}):{};
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
+ const attachmentOffsets=movingManifestGeometry(d,validated.composition,rows,level);
  for(const v of level?.vehicles??[]){
   if(v.source.boardQuery&&!gameplay.queries?.[v.source.boardQuery])throw Error('Vehicle references a missing boarding query: '+v.source.boardQuery);
+  if(v.source.presenceQuery&&!gameplay.queries?.[v.source.presenceQuery])throw Error('Vehicle references a missing presence query: '+v.source.presenceQuery);
   const local=v.source.route.legs.every(l=>l.zone===d.id||l.zone==='here');
   if(local){const problems=routeProblems(v.source,EMPTY_ZONE_GRAPH,{[d.id]:{},here:{}});if(problems.length)throw Error(problems.join('; '));}
   for(const berth of v.source.berths)if((berth.zone===d.id||berth.zone==='here')&&berth.floor&&!level!.floors.some(f=>f.id===berth.floor))throw Error('Vehicle berth names a missing floor: '+berth.floor);
@@ -112,8 +115,8 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
   const pieces=live?levelVisualState(live):{},near=level&&live?levelNear(level,live,occluders):{},vehicles=level?.vehicles?.length&&engine?levelVehicleVisuals(engine.m.peopleLevel??level,engine.m):{},state:Record<string,import('../../art').Properties>={...(options.state??{}),...vehicles,...pieces};
   for(const[id,v]of Object.entries(near))state[id]={...(state[id]??{}),...v};
-  return {...options,view,state:{...state,...view.sequence?.state},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
-   bindings:bindingValues(validated.composition,{view,rows,roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:view.reduced??options.reduced??false};};
+  return {...options,view,state:{...state,...view.sequence?.state},visibility:{...options.visibility,...(level&&engine?levelVehicleVisibility(level,engine.m):{})},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
+   bindings:bindingValues(validated.composition,{view,rows:(()=>{if(!level?.vehicles?.length||!d.actors?.length)return rows;const moved=new Map(resolveComposition(art,validated.composition,{view,state,bindings:bindingDefaults(validated.composition),reduced:false},d.actors.map(a=>a.instance)).map(r=>[r.instance.id,r]));return rows.map(r=>moved.get(r.instance.id)??r);})(),roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:view.reduced??options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const artworkVisible:NonNullable<SceneDef['artworkVisible']>=(view,model)=>resolveComposition(art,validated.composition,environment(view,{m:model,hover:null,layer:'all'})).some(r=>{
   if(!r.element.parts.length||['distance','backdrop','logic'].includes(r.instance.layer))return false;
@@ -121,17 +124,19 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
   return Math.max(a,z)>0&&Math.min(a,z)<view.viewW;
  });
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
- const base:SceneDef={peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
-  visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View)=>draw(ctx,v,undefined,true)}:{})};
+ const base:SceneDef={peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,introOnFoot:d.introOnFoot,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+  visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View,engine?:EngineDraw)=>draw(ctx,v,engine,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  // each mechanism may return picture-side state (`presentation`); the scene prepares, saves and restores them together, beside its presentation signals
+ if(attachmentOffsets)base.rules=base.rules?combine(base.rules,{effects:{},attachmentOffsets}):{effects:{},attachmentOffsets};
  const presentations:(readonly[string,MechanismPresentation])[]=[];
  const built=mechanisms.reduce<SceneDef>((acc,m,i)=>{const {presentation,...part}=m.apply({composition:validated.composition,environment,scene:d,gameplay,rows,roles,width:validated.width,content:acc,actors:validated.actors,world,shared});
   if(presentation)presentations.push([d.stage!.mechanisms![i],presentation]);
   // mechanisms that run code each supply rules; they combine
   return{...acc,...part,...(acc.rules&&part.rules?{rules:combine(acc.rules,part.rules)}:{})};},base);
  Object.assign(built,composePresentations(presentations,signals));
+ if(rows.some(r=>r.element.framePhase==='sky'))built.drawSkyArtwork=(ctx,v)=>drawCompositionSlot(ctx,art,validated.composition,environment(v),'behind-player',undefined,'sky');
  // the rules carry the mechanisms' Circuit devices, so the model, the contracts and the editor see the same cable endpoints
  if(built.rules&&contract?.mechanisms?.length)built.rules=withMechanismDevices(built.rules,contract.mechanisms);
- return mechanisms.some(m=>m.world)?{...built,bindWorld:services=>declaredScene(scene,composition,gameplay,options,devices,services)}:built;
+ return mechanisms.some(m=>m.world)||worldBindings(validated.composition)?{...built,bindWorld:services=>declaredScene(scene,composition,gameplay,options,devices,services)}:built;
 }

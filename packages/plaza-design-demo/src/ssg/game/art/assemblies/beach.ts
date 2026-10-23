@@ -19,7 +19,7 @@ const RESCUE_DRONE: Character = { seed: 4, look: { bot: 'scandrone', paint: '#e8
 export const RESCUE_AIR = 113, RESCUE_HALF = 17;
 /** The gulls over the beach, wheeling about their spots (the beach's own seeded birds). */
 const hash = (n: number) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
-export const BEACH_FLOCK: FlockOptions = { kind: 'gull', wander: 120, span: 1700, margin: 100, birds: Array.from({ length: 7 }, (_, i) => { const r = hash(i + 50); return { x: r * 1600, h: 130 + hash(i + 70) * 80, speed: 0, parallax: 0.3 + r * 0.5, phase: i, ps: r > 0.6 ? 2 : 1 }; }) };
+export const BEACH_FLOCK: FlockOptions = { kind: 'gull', appearance: 'white silhouette', bob:-8,screenWrap:true,wander: 120, span: 1700, margin: 100, birds: Array.from({ length: 7 }, (_, i) => { const r = hash(i + 50); return { x: r * 1600, h: 130 + hash(i + 70) * 80, speed: 0, parallax: 0.3 + r * 0.5, phase: i, bobPhase:i*2,flapPhase:i*3,ps: r > 0.6 ? 2 : 1 }; }) };
 export interface BeachLayout{stairs:number;board:number;boardwalk:number;kiosk:number;sunbeds:number[];mine:number;shack:{x0:number;x1:number};jukebox:number;lime:number;order:number;mixer:number;crab:number;tower:number;drone:number;net:number;castle:number;surfer:number;shore:number;pier0:number;pierLights:number;fisher:number;gull:number;boat:number}
 export interface BeachVisualState{rented:boolean;billingPaused:boolean;billed:number;freeDrink:boolean;danger:boolean;lamps:boolean;gullShooed:number}
 export interface ArtworkInputs{HORIZON:number;WATERLINE:number;L:BeachLayout;BEACH_W:number}
@@ -323,18 +323,13 @@ function jukebox(x:CanvasRenderingContext2D,V:View,hover:string|null){const y=V.
   for (let k = 0; k < 3; k++) { const f = ((V.t * 0.01 + k / 3) % 1); x.fillStyle = 'rgba(255,217,165,' + (0.5 * (1 - f)).toFixed(2) + ')'; x.fillRect(jx + 6 + f * 10, y(48 + f * 20), 2, 2); x.fillRect(jx + 7 + f * 10, y(52 + f * 20), 1, 4); }
   if (hover === 'jukebox') glow(x, jx - 13, y(44), 26, 44);
 }
-function mixer(x:CanvasRenderingContext2D,V:View,state:BeachVisualState,hover:string|null,drinkX:number,drinkH=0){const y=V.y;  // the mixer on the counter: bottles upside down over one pump
+function mixer(x:CanvasRenderingContext2D,V:View,state:BeachVisualState,hover:string|null){const y=V.y;  // the mixer on the counter: bottles upside down over one pump
   const mx = V.sx(L.mixer), poured = state.freeDrink;
   box(x, mx - 11, y(52), 22, 26, '#2a2a30', 'rgba(255,190,120,.8)');
   for (let k = 0; k < 4; k++) { x.fillStyle = ['#d8b040', '#c83a2a', '#e8e0d0', '#3a6ad8'][k]; x.fillRect(mx - 9 + k * 5, y(52), 3, 8); }
   box(x, mx - 7, y(40), 14, 6, '#04100f', 'rgba(' + C + ',.7)');
   x.fillStyle = 'rgba(' + C + ',.9)'; x.fillRect(mx - 5, y(38), poured ? 10 : 4, 1);
   tell(x, V.t, mx + 8, y(30), 3);
-  if (poured) {
-    // the free drink, on the counter in front of the stool
-    x.fillStyle = 'rgba(255,170,90,.85)'; x.fillRect(V.sx(drinkX) - 2, y(32+drinkH), 5, 6);
-    x.fillStyle = '#7ab83a'; x.fillRect(V.sx(drinkX) + 2, y(33+drinkH), 2, 2);
-  }
   if (hover === 'mixer') glow(x, mx - 11, y(52), 22, 26);
 }
 function tower(x:CanvasRenderingContext2D,V:View,state:BeachVisualState){

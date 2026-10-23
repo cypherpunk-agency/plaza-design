@@ -86,17 +86,17 @@
     },
     {
       "id": "out",
-      "to": "",
-      "action": "out",
-      "label": "[E] STEP OUT",
-      "promptH": 114
+      "to": "train",
+      "label": "",
+      "promptH": 114,
+      "engine": true
     },
     {
       "id": "out2",
-      "to": "",
-      "action": "out",
-      "label": "[E] STEP OUT",
-      "promptH": 114
+      "to": "train",
+      "label": "",
+      "promptH": 114,
+      "engine": true
     }
   ],
   "manifest": {
@@ -163,7 +163,6 @@
       "news": "news",
       "windowStyle": "window0",
       "lineMap": "line-map",
-      "handrail": "handrail",
       "staff": "staff",
       "gangway": "gangway",
       "gangDoor": "gang-door",
@@ -180,261 +179,6 @@
     }
   },
   "actors": [
-    {
-      "id": "seat-rider0-0",
-      "instance": "seat-rider0-0",
-      "band": "background",
-      "reaction": "actor.seat-rider0-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 0,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider0-1",
-      "instance": "seat-rider0-1",
-      "band": "background",
-      "reaction": "actor.seat-rider0-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 1,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider1-0",
-      "instance": "seat-rider1-0",
-      "band": "background",
-      "reaction": "actor.seat-rider1-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 2,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider1-1",
-      "instance": "seat-rider1-1",
-      "band": "background",
-      "reaction": "actor.seat-rider1-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 3,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider2-0",
-      "instance": "seat-rider2-0",
-      "band": "background",
-      "reaction": "actor.seat-rider2-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 4,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider2-1",
-      "instance": "seat-rider2-1",
-      "band": "background",
-      "reaction": "actor.seat-rider2-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 5,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider3-0",
-      "instance": "seat-rider3-0",
-      "band": "background",
-      "reaction": "actor.seat-rider3-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 6,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider3-1",
-      "instance": "seat-rider3-1",
-      "band": "background",
-      "reaction": "actor.seat-rider3-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 7,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider4-0",
-      "instance": "seat-rider4-0",
-      "band": "background",
-      "reaction": "actor.seat-rider4-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 8,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider4-1",
-      "instance": "seat-rider4-1",
-      "band": "background",
-      "reaction": "actor.seat-rider4-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 9,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider5-0",
-      "instance": "seat-rider5-0",
-      "band": "background",
-      "reaction": "actor.seat-rider5-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 10,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "seat-rider5-1",
-      "instance": "seat-rider5-1",
-      "band": "background",
-      "reaction": "actor.seat-rider5-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": true,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 11,
-          "count": 15,
-          "standing": false
-        }
-      }
-    },
-    {
-      "id": "standing-rider0",
-      "instance": "standing-rider0",
-      "band": "background",
-      "reaction": "actor.standing-rider0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": false,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 12,
-          "count": 15,
-          "standing": true
-        }
-      }
-    },
-    {
-      "id": "standing-rider1",
-      "instance": "standing-rider1",
-      "band": "background",
-      "reaction": "actor.standing-rider1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": false,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 13,
-          "count": 15,
-          "standing": true
-        }
-      }
-    },
-    {
-      "id": "standing-rider2",
-      "instance": "standing-rider2",
-      "band": "background",
-      "reaction": "actor.standing-rider2",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "sit": false,
-        "controller": {
-          "kind": "trainCrowd",
-          "slot": 14,
-          "count": 15,
-          "standing": true
-        }
-      }
-    },
     {
       "id": "suit",
       "instance": "suit",

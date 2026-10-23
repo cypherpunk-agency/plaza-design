@@ -3099,6 +3099,17 @@
         "instance": "block-interior",
         "anchor": "origin"
       }
+    },
+    {
+      "id": "sky-traffic",
+      "type": "environment.sky-traffic",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -100,
+      "layer": "distance"
     }
   ]
 }

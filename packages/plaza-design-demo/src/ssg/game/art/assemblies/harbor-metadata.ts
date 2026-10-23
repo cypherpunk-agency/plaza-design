@@ -10,6 +10,7 @@ import {HARBOR_FLOCK,droneGullAt,type HarborLayout,type HarborVisual} from './ha
 import {flockRects} from '../characters/flock';
 import type {PreparedCharacter} from '../../runtime/characters';
 import {screenBounds} from './static-bounds';
+import {harborHutSize} from './harbor-fields';
 type Rect={x:number;y:number;w:number;h:number};
 const n=(p:Properties,k:string)=>Number(p[k]??0);
 const union=(rows:Rect[]):Rect=>{if(!rows.length)return{x:0,y:0,w:0,h:0};const x=Math.min(...rows.map(r=>r.x)),y=Math.min(...rows.map(r=>r.y));return{x,y,w:Math.max(...rows.map(r=>r.x+r.w))-x,h:Math.max(...rows.map(r=>r.y+r.h))-y};};
@@ -47,8 +48,6 @@ export function applyHarborMetadata(elements:Element[],root:(method:string,L:Har
   bondedFence:a=>{const F=a.L.fence,left=Math.min(a.v.sx(F.x0)-2,a.v.sx(F.gate)-4),right=Math.max(a.v.sx(F.x1)+40,a.v.sx(F.gate)+82);return{x:left,y:a.v.y(104),w:right-left,h:Math.max(104,a.v.y(0)-a.v.y(104))};},
   forkliftBody:a=>{const f=a.vis.forklift;return rect(a.v,f.x,46,64,47,f.dir>0?-24:-40);},
   forkliftRoof:a=>rect(a.v,a.vis.forklift.x,60,28,43,-15),
-  hutBack:a=>rect(a.v,a.L.hut.x,Math.max(60,a.L.hut.h),Math.max(68,a.L.hut.w),Math.max(60,a.L.hut.h)),
-  hutFront:a=>rect(a.v,a.L.hut.x,a.L.hut.h+4,a.L.hut.w+8,Math.max(a.L.hut.h+4-34,25),-4),
   fishStall:a=>stallBounds(a,false),teaStall:a=>stallBounds(a,true),
   farSky:a=>({x:0,y:0,w:a.v.viewW,h:Math.max(0,a.v.y(HZ)+1)}),
   horizon:a=>({x:0,y:a.v.y(HZ)-45,w:a.v.viewW,h:48}),
@@ -63,7 +62,12 @@ export function applyHarborMetadata(elements:Element[],root:(method:string,L:Har
   frontBollard:a=>({x:a.v.sx(a.x,1.3)-14,y:a.v.gy+15,w:135,h:32}),
   container:a=>rect(a.v,a.x,a.h+n(a.p,'height'),n(a.p,'width'),n(a.p,'height')),
  };
- for(const e of elements){const id=e.type.slice(7);if(id==='marker'){e.parts=[];continue;}const shape=shapes[id];if(!shape)throw new Error('Missing harbor metadata: '+id);
+ for(const e of elements){const id=e.type.slice(7);if(id==='marker'){e.parts=[];continue;}
+  if(id==='hutBack'||id==='hutFront'){
+   e.bounds=(p,s)=>{const{w,h}=harborHutSize(p,s);if(id==='hutBack'){const top=Math.max(60,h);return{x:0,h:top,w:Math.max(68,w),tall:top};}const top=Math.max(59,h+4),bottom=Math.min(34,h-1);return{x:-4,h:top,w:Math.max(72,w+8),tall:top-bottom};};
+   continue;
+  }
+  const shape=shapes[id];if(!shape)throw new Error('Missing harbor metadata: '+id);
   e.bounds=(p,s,c)=>{
    const v=c?.view??fallbackView(),a=c?.placement??{x:0,h:0,scale:1,facing:1,parallax:1},L=s.layout as unknown as HarborLayout,vis=s.visual as unknown as HarborVisual;
    let base=id==='container'?{x:a.x,h:a.h}:root(id,L,p);
@@ -78,7 +82,7 @@ export function applyHarborMetadata(elements:Element[],root:(method:string,L:Har
  for(const[id,points]of Object.entries(anchors))get(id).anchors=()=>({origin,...points});
  get('container').anchors=p=>({origin,top:{x:n(p,'width')/2,h:n(p,'height'),role:'surface'},left:{x:0,h:0,role:'origin'},right:{x:n(p,'width'),h:0,role:'origin'}});
  for(const id of ['fishStall','teaStall'])get(id).anchors=(_p,s)=>{const L=s.layout as unknown as HarborLayout|undefined,tea=id==='teaStall',w=(tea?L?.drinks.w:L?.fish.w)??0,shape=stallBox({x:0,w,seed:tea?34:31});return{origin,counter:{x:w/2,h:shape.counter,role:'surface'},awning:{x:w/2,h:shape.awning,role:'mount'}};};
- for(const id of ['hutBack','hutFront'])get(id).anchors=(_p,s)=>{const L=s.layout as unknown as HarborLayout|undefined;return{origin,window:{x:54,h:48,role:'surface'},roof:{x:(L?.hut.w??0)/2,h:(L?.hut.h??0)+4,role:'surface'}};};
+ for(const id of ['hutBack','hutFront'])get(id).anchors=(p,s)=>{const{w,h}=harborHutSize(p,s);return{origin,window:{x:54,h:48,role:'surface'},roof:{x:w/2,h:h+4,role:'surface'}};};
  for(const id of ['craneFrame','craneCabBack','craneCabFront','craneCables','craneLoad','craneLight'])get(id).anchors=(p,s):Record<string,Anchor>=>{
   const L=s.layout as unknown as HarborLayout|undefined,vis=s.visual as unknown as HarborVisual|undefined,ci=n(p,'index'),base=L?.cranes[ci]?.x??0,c=vis?.cranes[ci],dx=(c?.twx??base)-base;
   if(id==='craneFrame')return{origin,rail:{x:0,h:0,role:'surface'},boom:{x:0,h:206,role:'mount'}};

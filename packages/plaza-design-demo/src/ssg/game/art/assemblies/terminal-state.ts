@@ -21,5 +21,3 @@ export function validateTerminalVisual(value:Value):void{
  for(const k of ['sun','moon']){const body=exact(light[k],k==='sun'?['el','az','up']:['el','az','up','phase','lit'],k);for(const [f,v]of Object.entries(body))if(f==='up'?typeof v!=='boolean':typeof v!=='number'||!Number.isFinite(v))fail(k+'.'+f);}numbers(light.shadow,['len','dx','dy'],'shadow');
  if(light.w!==null){const w=exact(light.w,['kind','from','mix','cloud','rain','storm','fog','smog','heat','wet','wind'],'weather');for(const [k,v]of Object.entries(w))if(k==='kind'||k==='from'?typeof v!=='string':typeof v!=='number'||!Number.isFinite(v))fail('weather.'+k);}
 }
-/** Read-only compatibility queries for the extracted kernels; no engine or mutable model. */
-export class TerminalViewState {constructor(private readonly state:TerminalVisual){}get(key:string){return this.state[key as 'departed'|'boxAt'|'loaded'];}get scratch(){return this.state.scratch;}now(){return this.state.now;}frozen(_id:string){return this.state.portFrozen;}watchdogs(){return this.state.watchdogs;}}

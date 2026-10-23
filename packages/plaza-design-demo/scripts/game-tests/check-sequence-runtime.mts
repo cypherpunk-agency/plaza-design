@@ -21,10 +21,10 @@ function controller(destination?: { scene: string; entrance?: string }) {
   game.openingDone();
   return { game, arrivals };
 }
-assert.deepEqual(controller().arrivals, [['train', true, undefined]], 'unmodified opening preserves train-home handoff');
+assert.deepEqual(controller().arrivals, [['harbor-station', true, undefined]], 'opening hands off to the real Harbor platform');
 const variant = controller({ scene: 'capsule', entrance: 'door' });
 assert.deepEqual(variant.arrivals, [['capsule', true, 'door']], 'authored destination is captured before the title controller closes');
-assert.equal(variant.game.save.flags['opening:home'], true, 'story initialization remains owned by the game controller');
+assert.equal(variant.game.save.flags['prologue:started'], true, 'prologue initialization remains owned by the game controller');
 const { game } = controller(); game.here = 'capsule'; game.mapView = null; game.netView = null;
 game.save = newSave(); city.bind(game.save.clock);
 const minute = city.min, landings: unknown[][] = [];

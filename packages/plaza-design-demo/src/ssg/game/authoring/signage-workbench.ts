@@ -14,7 +14,10 @@ export{prepareSignage,paintSignage,signageState,signageFamily};export type{Signa
 export interface SignageWorkbenchConfig{registry:ArtRegistry;documents:EditorDocument[];openUsage(usage:AssetUsage):void;renderNative(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult;renderSequence?(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult|null}
 export interface EmbeddedSignage{entry:AssetEntry;usages:AssetUsage[]}
 /** Supported catalogue bindings are resolved against current source; missing references are errors. */
-export function embeddedSignageInventory(config:Pick<SignageWorkbenchConfig,'registry'|'documents'>):EmbeddedSignage[]{const all=assetInventory(config.registry,config.documents);return catalogue.registered.map(row=>{const entry=all.find(e=>e.id===row.id);if(!entry)throw new Error('Missing signage asset '+row.id);const usages=row.usages.map(ref=>{const u=entry.usages.find(u=>u.document===ref.document&&u.instance===ref.instance);if(!u)throw new Error('Missing signage source '+ref.document+'/'+ref.instance);return u;});return{entry,usages};});}
+export function embeddedSignageInventory(config:Pick<SignageWorkbenchConfig,'registry'|'documents'>):EmbeddedSignage[]{
+ const all=assetInventory(config.registry,config.documents),types=new Set(catalogue.types);
+ return all.filter(entry=>types.has(entry.id)&&entry.usages.length>0).map(entry=>({entry,usages:entry.usages}));
+}
 export interface EmbeddedSignageSettings{time:number;minute:number;seed:number;reduced:boolean;weather:'clear'|'rain'|'storm'|'fog';zoom:number;cameraX:number;cameraH:number;mode:'composed'|'isolated';state?:Record<string,boolean|string>}
 export function embeddedSignageRequest(config:SignageWorkbenchConfig,usage:AssetUsage,s:EmbeddedSignageSettings):PreviewRequest{
  const document=config.documents.find(d=>d.id===usage.document&&d.kind==='composition');if(!document)throw new Error('Missing source composition '+usage.document);

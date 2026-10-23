@@ -1,6 +1,5 @@
 import{IntroPlaybackSession,IntroSeekSession}from'./skyline-session';
-const introPlayback=new IntroPlaybackSession();
-import{light,type Light}from'../../world/light';
+import{lightAt,type Light}from'../../world/light';
 /**
  * Cutscenes: the registry and the player.
  *
@@ -34,7 +33,10 @@ export function createCutscenes(documents:CinematicDocuments=cinematicDocuments)
     if(!sequence?.handoff)throw new Error(`Cutscene ${id}: missing timeline or handoff`);
     const scene:Cutscene={id,title:meta.title,duration:sequence.duration,next:sequence.handoff.scene,handoff:{...sequence.handoff},ownsFade:true,
       cards:sequence.text.map(card=>({at:card.from,until:card.to,text:card.text,x:card.x,h:card.h})),beats:sequence.beats.map(beat=>({at:beat.time,name:beat.id})),
-      render:(ctx,view,time,scale,director)=>{renderSequenceFrame(ctx,{documents,sequenceId:id,scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:playback.prepare(time)}:{})});}};
+      ...(id==='intro'?{advance:(time:number)=>playback.advance(time)}:{}),
+      ...(id==='intro'?{seek:(time:number)=>playback.seek(time)}:{}),
+      ...(id==='intro'?{prepare:(ctx:CanvasRenderingContext2D,view:CutView,time:number)=>{playback.initialize(ctx,view,time,sequence.duration);}}:{}),
+      render:(ctx,view,time,scale,director)=>{renderSequenceFrame(ctx,{documents,sequenceId:id,scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:playback.prepare(ctx,view,time,sequence.duration)}:{})});}};
     return[id,scene];
   })) as Record<CutsceneId,Cutscene>;
   return registry;
@@ -58,18 +60,22 @@ export class CutscenePlay {
   done = false;
   private wrapped: { size: number; maxW: number; lines: string[][]; widths: number[] } | null = null;
 
-  constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean }) {}
+  constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean }) {scene.advance?.(0);}
+
+  /** Initialize viewport-dependent art inputs before the first animation tick. No animation advances. */
+  prepare(x:CanvasRenderingContext2D,W:number,H:number,lighting:Light){const size=Math.max(10,Math.min(18,Math.round(H/26)));this.scene.prepare?.(x,{lighting,viewW:W,viewH:H,barTop:Math.round(Math.max(16,H*.09)),barBottom:Math.round(Math.max(size*3.6,H*.16)),reduced:this.opts.reduced},this.t);}
 
   /** Advance by `dt` seconds of play. Done once play runs it to its end (a seek never ends it). */
   step(dt: number) {
     if (dt <= 0) return;
     this.t = Math.min(this.scene.duration, this.t + dt);
+    this.scene.advance?.(this.t);
     if (this.t >= this.scene.duration) this.done = true;
   }
 
   /**
-   * Sudo's time control (transport.ts): the frame is drawn from `t` alone (the skyline's packets
-   * are the one exception: ambient, they move with the frames), so seeking is setting `t`.
+   * Sudo's time control (transport.ts): setting time also advances the existing playback
+   * owner. Editor inspection reconstructs skyline packets in a separate seek session.
    */
   get timeline(): Timeline {
     return this.tl ??= {
@@ -78,7 +84,7 @@ export class CutscenePlay {
       duration: this.scene.duration,
       beats: this.scene.beats ?? this.scene.cards.map((c, i) => ({ at: c.at, name: 'CARD ' + (i + 1) })),
       time: () => this.t,
-      seek: (s) => { this.t = Math.max(0, Math.min(this.scene.duration, s)); },
+      seek: (s) => { this.t = Math.max(0, Math.min(this.scene.duration, s)); this.scene.seek?.(this.t); },
     };
   }
   private tl: Timeline | null = null;
@@ -94,7 +100,7 @@ export class CutscenePlay {
    * Draw a frame at `scale` pixels per world unit: the cutscene's picture through the one frame (renderWorldFrame),
    * directed with the letterbox and fades, then the typed card and the skip hint over it (the cutscene's own UI, like the HUD).
    */
-  draw(x: CanvasRenderingContext2D, viewW: number, viewH:number,lighting:Light=light(),scale=x.getTransform().a) {
+  draw(x: CanvasRenderingContext2D, viewW: number, viewH:number,lighting:Light=lightAt(1,580,90,null),scale=x.getTransform().a) {
     const size = Math.max(10, Math.min(18, Math.round(viewH / 26)));
     const barTop = Math.round(Math.max(16, viewH * 0.09));
     const barBottom = Math.round(Math.max(size * 3.6, viewH * 0.16));
@@ -177,7 +183,7 @@ export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H
   if (!sequence) throw new Error(`Cutscene ${id}: missing timeline sequence`);
   const scene: Cutscene = { id, title: data[id].title, duration: sequence.duration, next: sequence.handoff?.scene ?? '', ...(sequence.handoff?{handoff:{...sequence.handoff}}:{}), ownsFade: true,
     cards: sequence.text.map(card => ({ at: card.from, until: card.to, text: card.text, x: card.x, h: card.h })), beats: sequence.beats.map(beat => ({ at: beat.time, name: beat.id })),
-    render: (ctx, view, time, scale, director) => { renderSequenceFrame(ctx,{documents:options.documents??cinematicDocuments,sequenceId:options.sequenceId??id,timeline,...(options.composition?{composition:options.composition}:{}),...(options.registry?{registry:options.registry}:{}),...(options.frame?{frame:options.frame}:{}),...(options.ambient!==undefined?{ambient:options.ambient}:{}),scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:options.seek?options.seek.prepare(ctx,view,time,sequence.duration):introPlayback.prepare(time)}:{})}); },
+    render: (ctx, view, time, scale, director) => { renderSequenceFrame(ctx,{documents:options.documents??cinematicDocuments,sequenceId:options.sequenceId??id,timeline,...(options.composition?{composition:options.composition}:{}),...(options.registry?{registry:options.registry}:{}),...(options.frame?{frame:options.frame}:{}),...(options.ambient!==undefined?{ambient:options.ambient}:{}),scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:(options.seek??new IntroSeekSession()).prepare(ctx,view,time,sequence.duration)}:{})}); },
   };
-  const player = new CutscenePlay(scene, { reduced: options.reduced, touch: options.touch ?? false }); player.t = Math.max(0, Math.min(sequence.duration, seconds)); player.draw(x,W,H,options.lighting??light(),options.scale??x.getTransform().a);
+  const player = new CutscenePlay(scene, { reduced: options.reduced, touch: options.touch ?? false }); player.t = Math.max(0, Math.min(sequence.duration, seconds)); player.draw(x,W,H,options.lighting??lightAt(1,580,90,null),options.scale??x.getTransform().a);
 }

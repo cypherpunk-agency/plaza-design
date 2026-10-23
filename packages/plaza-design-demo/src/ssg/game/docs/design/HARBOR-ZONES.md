@@ -292,7 +292,7 @@ shaft reaches; a zone below the active one draws first; uses and readables in a 
 
 Left: the Terminal 2 exit to `stacks` (scenery only), new art (raised-station kit, coffee machine, staff gate,
 quay edge), and departures from the real timetable. The P0 platform hand-over and P7 physical boarding
-are now implemented locally; see the current commute status below.
+are implemented and on main; see the current commute status below.
 The pending zone graph reaches private Play; the shift profile switch is implemented and the former one-room source is removed.
 
 ## Current implementation notes (2026-10-22)

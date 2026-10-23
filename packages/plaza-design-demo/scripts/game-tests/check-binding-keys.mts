@@ -70,7 +70,8 @@ refused('downtown',bound('downtown.pose.'),'downtown.pose.nobody',/no actor "nob
 refused('downtown',bound('downtown.smear.'),'downtown.smear.open-sign.x',/does not offer it/);
 // stations: an unknown station binding, and an embedded rider naming no actor
 for(const id of ['metro','galleriaStation','harborStation'] as const){
- refused(id,bound('station.roof'),'station.roofs',/does not offer it/);
+ // Underground Metro no longer binds a canopy roof; corrupt a real station binding.
+ refused(id,bound('station.'),'station.roofs',/does not offer it/);
  refused(id,bound('station.pose.'),'station.pose.nobody',/no actor "nobody"/);
  refused(id,bound('station.pose.regular.embedded'),'station.pose.nobody.embedded',/no actor "nobody"/);
 }

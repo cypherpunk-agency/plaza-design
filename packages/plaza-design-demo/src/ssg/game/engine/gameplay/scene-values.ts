@@ -1,7 +1,6 @@
 import type {Resolved,Value} from '../../art/core/composition';
 import type {View} from '../../art/core/view';
 import type {Character} from '../../runtime/characters';
-import {light} from '../../world/light';
 import {screenLine} from '../../world/weather';
 import {TICKER} from '../../art/signage/screens';
 import type {EngineDraw} from '../host';
@@ -171,13 +170,13 @@ function evaluate(v:ValueExpr,env:ValueEnv):Value|undefined|typeof SKIP{
  if('signal' in v)return env.signals?env.signals.read(v.signal):-1e9;
  if('world' in v){
   if(v.world==='ticker')return TICKER.map(l=>l==='WEATHER'?screenLine():l).join('   ·   ');
-  const l=light();return Math.min(1,l.night*.9+(1-l.daylight)*.1);
+  const l=env.view?.lighting;if(!l)return SKIP;return Math.min(1,l.night*.9+(1-l.daylight)*.1);
  }
  if('shared' in v){
-  const o=v.shared,source=env.shared?.get(o.mechanism) as {visual?:(engine:EngineDraw)=>Record<string,Value>}|undefined;
-  if(!env.engine||!source?.visual)return SKIP;
+  const o=v.shared,source=env.shared?.get(o.mechanism) as {visual?:(engine:EngineDraw,view:View)=>Record<string,Value>}|undefined;
+  if(!env.engine||!env.view||!source?.visual)return SKIP;
   const memo=env.memo??(env.memo=new Map<string,unknown>()),key='shared:'+o.mechanism;
-  if(!memo.has(key))memo.set(key,source.visual(env.engine));
+  if(!memo.has(key))memo.set(key,source.visual(env.engine,env.view));
   const r=(memo.get(key) as Record<string,Value>)[o.field];return r===undefined?SKIP:r;
  }
  if('atrium' in v){const a=env.source?.stage?.atrium;return a&&env.view&&env.roles?atriumSnapshot(env.view,env.roles,env.rows??[],env.source!,a):SKIP;}

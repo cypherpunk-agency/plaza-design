@@ -32,17 +32,14 @@ export interface View {
   values?: Readonly<Record<string, Readonly<Record<string, string | number | boolean | null>>>>;
   /** A scene with a level (engine/level.ts): how open each building is and where its lift cars are. */
   level?: import('../../engine/level').LevelView;
+
+  /** Native station observation, prepared from the existing train Circuit before artwork reads it. */
+  transit?: {station:string;departure:import('../signage/line-departures').DepartureVisual};
   /**
-   * The platform timetable's clock (world/transport/line.ts `Timeline`): the frames of the station scene's own time and its
-   * `platformShift`. The game supplies it from the scene model, so it follows scene time, not `t` (which stands still under
-   * reduced motion); a picture painted without a scene follows `t`.
+   * The intro's prepared skyline (art/environment/skyline.ts). Its existing playback/seek owner
+   * advances packets before the frame; artwork only consumes the resulting picture.
    */
-  timetable?: { t: number; shift: number };
-  /**
-   * The intro's skyline (art/environment/skyline.ts): the city whose packets are in flight and this frame's packet step,
-   * prepared by its controller (story/cutscenes/skyline-session.ts: continuous playback or a deterministic seek).
-   */
-  skyline?: { city: import('../environment/skyline').Skyline; step: number };
+  skyline?: { city: import('../environment/skyline').Skyline };
 }
 
 /** A `View` for drawing in a set piece's own frame (after `translate` to its foot): no camera, nothing culled. */

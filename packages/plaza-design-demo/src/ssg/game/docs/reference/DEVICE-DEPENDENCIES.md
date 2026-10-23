@@ -16,7 +16,7 @@ The historical device/noun/state floor and ID-filtered geometry path have been r
 `authoring/device-sources.ts`. The unused `data/device-contracts.json` and its capture generator
 are deleted. Native shipping assembly retains source device content and receives only projected
 spot geometry from its native factory; it no longer replaces authored devices with whole default
-device objects. General device checks cover this ownership distinction in all 20 scenes.
+device objects. General device checks cover this ownership distinction across the current scene catalogue.
 
 Capsule and Sandbox also declare empty static endpoint requirements. Capsule's configurable
 controller validates its actual router, companion, state and text references. Sandbox's pulse and

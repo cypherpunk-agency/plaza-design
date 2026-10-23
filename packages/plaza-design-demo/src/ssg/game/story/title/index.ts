@@ -7,7 +7,7 @@
 
 import type { Timeline } from "../../ui/transport";
 import {renderOpeningDocument}from'./render';
-import{light}from'../../world/light';
+import{lightAt,type Light}from'../../world/light';
 import { openingDocuments } from './documents';
 import type {OpeningDocuments} from './documents';
 
@@ -84,9 +84,9 @@ export class Opening {
   }
 
   /** Draw a frame into a context already scaled to world units. */
-  draw(x: CanvasRenderingContext2D, W: number, H: number,playGround?:number) {
+  draw(x: CanvasRenderingContext2D, W: number, H: number,playGround?:number,lighting:Light=lightAt(1,580,90,null)) {
     x.save();
-    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting:light() }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ...this.world,ambientTime: this.t,playGround });
+    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ...this.world,ambientTime: this.t,playGround });
     x.restore();
   }
 }

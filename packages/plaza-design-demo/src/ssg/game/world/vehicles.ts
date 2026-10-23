@@ -52,6 +52,8 @@ export interface VehicleSource {
   mover: string;
   /** Optional shared gameplay query authorizing player boarding; alighting remains available. */
   boardQuery?:string;
+  /** Optional shared gameplay query controlling whether this service is physically present. */
+  presenceQuery?:string;
   doors: VehicleDoorsDrive;
   cars: VehicleCar[];
   /** Between cars, units (default 0). Gangways join neighbouring cars' floors at one height into one walk (default true). */
@@ -119,7 +121,12 @@ export function routeParamAt(route: VehicleRoute, zone: string, at: ZonePoint): 
   let best: number | undefined, bd = Infinity, start = route.origin ?? 0;
   for (const leg of route.legs) {
     const len = legLength(leg);
-    if (leg.zone === zone) for (let i = 0; i <= 400; i++) {
+    if(leg.zone===zone&&!leg.via&&!leg.drop){
+      const dx=leg.to.x-leg.from.x,dh=leg.to.h-leg.from.h,span=dx*dx+dh*dh,
+        u=span?Math.max(0,Math.min(1,((at.x-leg.from.x)*dx+(at.h-leg.from.h)*dh)/span)):0,
+        p=curve(leg,u).p,d=Math.hypot(p.x-at.x,p.h-at.h);
+      if(d<bd){bd=d;best=start+len*u;}
+    }else if (leg.zone === zone) for (let i = 0; i <= 400; i++) {
       const s = start + len * i / 400, p = routeAt({ ...route, ring: undefined }, s);
       const d = Math.hypot(p.x - at.x, p.h - at.h); if (d < bd) { bd = d; best = s; }
     }
@@ -291,6 +298,7 @@ export function validateVehicle(value: unknown): VehicleSource {
   if (!VEHICLE_KINDS.includes(v.kind as VehicleKind)) throw new Error(`${at}: kind is one of ${VEHICLE_KINDS.join(', ')}`);
   if (typeof v.mover !== 'string' || !/^[^.]+\.[^.]+$/.test(v.mover)) throw new Error(`${at}: mover is device.noun`);
   if(v.boardQuery!==undefined&&(typeof v.boardQuery!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v.boardQuery)))throw Error(`${at}: boarding query names a shared gameplay query`);
+  if(v.presenceQuery!==undefined&&(typeof v.presenceQuery!=='string'||!/^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,127}$/.test(v.presenceQuery)))throw Error(`${at}: presence query names a shared gameplay query`);
   const d = v.doors as Partial<{ mover: string; trip: number; open: number }> | undefined;
   if (!d || !finite(d.open) || d.open <= 0 || d.open > 1 || (typeof d.mover !== 'string' && !(finite(d.trip) && d.trip > 0))) throw new Error(`${at}: doors is { mover, open } or { trip, open } with open in (0, 1]`);
   if (!Array.isArray(v.cars) || !v.cars.length) throw new Error(`${at}: a vehicle has at least one car`);

@@ -1,4 +1,5 @@
 import baseline from './opening.json';
+import type {LevelSource} from '../engine/level';
 import {matches,validateGameplay} from '../engine/gameplay/validation';
 import {validateGameplayRewards} from '../engine/gameplay/rewards';
 import type {Condition,GameplayDefinition} from '../engine/gameplay/types';
@@ -37,7 +38,7 @@ interface SceneNoun {id:string;verbs?:readonly string[];mover?:{paths?:Readonly<
 interface SceneDevice {id:string;nouns:readonly SceneNoun[]}
 /** Supplied only after prospective registry assembly; no registry import or live game dependency. */
 export interface OpeningSourceContext {
- scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];level?:{barriers?:readonly {id:string}[]};rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];phases?:Readonly<Record<string,ScenePhase>>;wash?:readonly WashRule[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly SceneDevice[];nodes?:readonly SceneDevice[]}}>>;
+ scenes:Readonly<Record<string,{exits:readonly {id:string;action?:string;x?:number;h?:number}[];level?:{barriers?:readonly {id:string}[];vehicles?:LevelSource['vehicles']};rests?:readonly {id:string;x?:number;h?:number}[];people?:readonly {id?:string}[];uses?:readonly {id:string;x?:number;h?:number}[];readables?:readonly {id:string}[];phases?:Readonly<Record<string,ScenePhase>>;wash?:readonly WashRule[];data?:{state:Readonly<Record<string,unknown>>;goals?:readonly {id:string}[];devices:readonly SceneDevice[];nodes?:readonly SceneDevice[]}}>>;
  keyring?:readonly string[];controlled?:readonly string[];programs?:readonly string[];
 }
 const ROLE_FLAGS={home:'opening:home',street:'opening:street',flat:'opening:flat',slept:'opening:slept',uplink:'opening:uplink',jacked:'opening:jacked'} as const;
@@ -150,7 +151,7 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
     const ping=ph.ping;
     if(ping){
      const a=at+'/ping';
-     if('door'in ping){if(!def.exits.some(e=>e.action==='out'))fail(a,'train door required');}
+     if('door'in ping){if(!def.level?.vehicles?.some(v=>v.source.cars.some(c=>c.doors?.length)))fail(a,'train door required');}
      else if('device'in ping)device(sceneId,ping.device,a);
      else if('exit'in ping){if(!def.exits.some(e=>e.id===ping.exit))fail(a,'unknown exit');}
      else if(!targetsOf(ph)[ping.target])fail(a,'unknown authored story target');

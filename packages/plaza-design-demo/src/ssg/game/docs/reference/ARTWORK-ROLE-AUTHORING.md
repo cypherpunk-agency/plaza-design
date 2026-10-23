@@ -1,106 +1,80 @@
 # Registered artwork geometry roles
 
-2026-10-20. A continuation of the all19 goal; not whole-goal acceptance.
+Current reference, 2026-10-23. [ROADMAP.md](../../ROADMAP.md) owns priorities and completion status.
+Retired migration gate numbers are not an active acceptance process.
 
-`SceneDocument.manifest.artwork` binds finite registered picture roles to composition instance IDs.
-`engine/gameplay/artwork-roles.ts` owns the role/property contracts; `manifestGeometry` resolves
-current pending artwork and rejects unknown roles, missing instances and incompatible properties.
-There is no second state, simulation, evaluator, arbitrary expression or executable document.
-Optional removal disables the derived feature; it never restores an original artwork ID.
+`SceneDocument.manifest.artwork` binds registered picture roles to composition instance IDs.
+`engine/gameplay/artwork-roles.ts` owns role/property contracts; `manifestGeometry` resolves
+pending artwork and rejects unknown roles, missing instances and incompatible properties.
+There is no second state, simulation, evaluator or executable document. Optional removal disables
+its feature; it must not recover an original artwork ID from a fallback.
 
-Warehouse is the first ordinary scene using these shared roles:
+The Scene Content & bindings inspector exposes typed role selectors filtered by property contracts,
+plus width source/artwork/property controls. Geometry that would strand an interaction rejects
+atomically. Controller-specific physical anchors remain typed controller inputs; ordinary picture
+geometry should use the shared role contract.
 
-| Role | Input | Native consumer |
+Examples include Warehouse orientation, shade and casters; Library orientation; Moth desk/door;
+Beach sightlines and stairs; Capsule cable/door geometry; Mall atrium/escalator geometry; Harbor
+cranes/loads/regions; Downtown surfaces/reflections; and Train car/window geometry. Actual bindings,
+attachments and actor references must be rebound before their artwork can be removed.
+
+Device position and extent projection uses `manifest.devices`, including explicit property names
+for width, height and height offset. The former per-scene placement adapter registry is removed;
+see [DEVICE-DEPENDENCIES.md](./DEVICE-DEPENDENCIES.md). Current consumers and validation, rather
+than original object names or old migration fixtures, determine which dependencies are necessary.
+
+Geometry roles do not certify independent asset reuse or complete editor coverage of algorithm
+internals. Context-dependent drawing wrappers and embedded components remain a separate C3 audit.
+Independent train fittings use `art/vehicles/train-fittings.ts`: cameras/poles receive a ceiling,
+window frames receive width/sill/top, seats receive width, and the staff door needs only placement.
+The native car and standalone registered pieces call these same functions. Prepared native state
+can supply ceiling or window width; another scene can use explicit properties without a train frame.
+The emergency brake similarly uses `art/electronics/emergency-brake.ts` with pulled/highlight inputs.
+Ceiling lights, adverts/tells, car plates, Registry screens, handrails and straps now consume
+their own properties and scalar visual inputs, including in the native train. Their source binds
+width, ceiling, morning/news and motion values explicitly; these seven types have no room-frame
+input or room-factory method. Registry pages use validated text arrays. The handrail has no
+special geometry role, and the prepared layout no longer copies advert arrays or its height.
+`check-train-scalar-fittings.mts` covers geometry, news scrolling, seeded swing and native scalar
+binding; the ordinary authoring check exercises the new types and edited screen pages through Save.
+SALT's independent bar layers use their own width unless a source binds the shared bar width;
+the existing beach retains that link. The drink is its own `props.drink` instance attached to
+the stool. Its presence binds to the existing device state, rather than the mixer painting at
+another object's coordinates. Do not reintroduce drink-coordinate stage values or a proxy marker.
+Use existing scene/vehicle geometry for behavior; these are drawing kernels with no state ownership.
+Registered simulation mechanisms remain necessary where they own physical calculations; ordinary
+conditions, dialogue and rewards belong in shared gameplay source.
+
+Focused checks include `shared-device-geometry`, `artwork-role`, `scene-presentation`,
+`scene-batch` and `all-scene-layers` (use `pnpm test:game --list` for current selector names).
+Checks must exercise pending source, invalid edits, history/bundles and protected Save as applicable.
+
+## C3 dependency audit: retained context and remaining extraction
+
+These are dependency findings, not additional library categories. The current library keeps the
+existing Reusable anywhere / Requires source context / Scene helpers choices.
+
+| Family | Why some entries still require context | Remaining work |
 | --- | --- | --- |
-| orientation | artwork with numeric facing 0-360 | scene facing |
-| frontShade | artwork with positive height, resolved placement/scale | front shade height/gap |
-| casterWidth | artwork with positive width and scale | existing caster widths |
+| Prepared characters | `actor.prepared`, `character.prepared`, `library.person`, train riders, platform passengers and the native LIME sprite consume an actor-owned pose and position. | Retain that explicit contract. Place ordinary people/animals/robots with `character.resident`; do not create a second actor clock in artwork. |
+| Sequence parts | The intro network/skyline, fades, titles and taxi/act pictures consume their prepared sequence frame or viewport. | Retain sequence ownership and the shared frame director. Do not label an isolated screenshot as a portable object. |
+| Scene envelopes | Whole-room fills, floors, sky/water bands, street surfaces and cutaway envelopes intentionally span the source frame. | Keep the supported scene/frame contract explicit; independent furniture belongs in its own row. |
+| Connected machinery | Harbor cranes/forklifts and Terminal loads/gantries/watchdogs consume actual movers, cargo and shared source geometry. | Preserve physical ownership. Continue reviewing ordinary fixtures and actor-bearing stalls inside those assemblies for extraction. |
+| Connected wiring | QA cable rows, the laundry conduits and Moth/Capsule desk cables use other authored endpoints. | Retain explicit endpoint references; separate a device body when that connection prevents independent placement. Preserve hover drawing order during any split. |
+| Parent geometry | Window cutouts, wall trim, roof fittings, reflections and some Mall fronts/escalators use parent dimensions or source layout. | Review which dimensions can become own properties or scalar bindings. Remaining candidates include Mall fronts/escalators, Harbor stalls and ordinary train fittings. |
 
-The Scene Content & bindings inspector renders typed role selectors filtered by property contracts.
-The same inspector now exposes width source, artwork and numeric property selectors. A width that
-would strand an interaction still fails native manifest validation atomically. Existing numeric
-widths remain editable. This replaces the previous read-only width-reference note.
+Audited local station signs/lamps/posts, Market stalls/booths/tickers, the QA trace meter, beach
+stairs and the two Mall reflection patches do not require a source scene. Their registered
+defaults are sufficient; native source bindings remain optional presentation inputs. Station
+selection bounds now include their actual rods, mounting heights and spans down to the floor.
+The remaining contexts are not all certified intrinsic: C3 remains open until those extraction
+candidates and visual preservation have been resolved.
 
-Warehouse no longer enforces historical scene/wall/dock/van IDs/types globally. Actual manifest,
-attachment, actor and role references remain checked. Its drawing primitives are unchanged.
-The native factory supplies the explicit current width owner to shadow calculation. No omitted
-binding silently picks the original van. Shared actor/composition operations still own attachments.
+Harbor hut rear/front are independently placeable layers with width/height properties. Their
+native front follows rear dimensions through explicit `scene.hutWidth` / `scene.hutHeight`
+bindings; neither consumes the Harbor snapshot. Draw and selection anchors use the same dimensions.
 
-## Evidence
-
-Run commands from `packages/plaza-design-demo`:
-
-## Remaining
-
-Extend this same stateless role contract for real geometry dependencies in other native scenes.
-Do not delete a validator without replacing its actual consumers. Controller-specific physical
-anchors can remain typed controller inputs; ordinary picture geometry should reuse this contract.
-Then reconcile the matrix, lifecycle/current-state/world/network evidence and final removal ledger.
-G4/G8/G9/G10/G12/G13 remain open overall.
-
-## Library and Moth follow-through, 2026-10-20
-
-Library orientation now uses the same typed role. Its catalog.connected picture input reads the
-existing editable catalogConnected observation, so changing the observed node changes the picture.
-Removed duplicated observation backfills from source validation and the redundant Sandbox dialogue
-normalization. Omission stays omission; remaining dependent references fail current-source validation.
-
-Moth orientation, desk surface and door interaction also use shared roles. The real native door
-follows authored elevation. Desk/door artwork can be replaced and its former IDs removed after
-reanchoring children. Unused static layout exports and the superseded base definition are removed.
-The retained spawn helper derives only from the current manifest. Native interaction roles enforce
-supported unit transforms/depth and current scene bounds; invalid edits reject atomically and the
-inspector filters unsuitable artwork. Optional picture roles do not restore old IDs.
-
-## Beach geometry, 2026-10-20
-
-Beach now uses the same nine typed role bindings for horizon, waterline, bar/pier/boardwalk sightlines,
-tower, drink, shore and the stairs interaction. Its former blanket required-prop map is removed;
-actual manifest, attachment, actor and role references still validate. Optional absent bar input is
-invisible with zero width, with no original-ID fallback. Stairs require a valid physical role anchor.
-Removed unused shipping layout/width helpers; original kernel layout exists only in its test fixture.
-The retained edge helper reads the current stairs role rather than an obsolete exit ID.
-
-Beach still has native actor-role identity branches (`lime-talk`, `ashore-*`); these are explicitly
-remaining work, not hidden by the geometry proof. Move their configurable role references into the
-existing scene presentation source with typed actor selectors and atomic actor-removal cleanup.
-The danger predicate remains the one existing source-controlled Beach visual state read.
-
-The Beach actor-role follow-through is now independently verified in [SCENE-PRESENTATION-ACTORS.md](./SCENE-PRESENTATION-ACTORS.md); the earlier geometry-only scope above remains historical.
-
-## Capsule geometry inputs
-
-Capsule now exposes Orientation artwork, Desk cable surface artwork, Sun patch extent artwork,
-Cable router artwork and Door interaction artwork through the shared Scene inspector. The native
-factory and renderer consume these pending references. Physical door bounds/transforms are checked;
-its native capability requires a placement. Optional picture inputs may be absent without finding
-old geometry. The independent exit and dependent device/companion artwork still use real shared
-bindings/attachments, which must be reanchored before removing former geometry.
-
-## Mall geometry inputs
-
-Atrium geometry artwork selects the registered room dimension properties; Escalator motion artwork
-selects physical route geometry. Both are typed Scene inspector fields. The scene manifest owns
-width. Room and escalator roles are required by the native atrium controller and missing roles
-reject atomically. Escalator height drives rider elevation; non-unit physical transforms reject.
-Nine unused layout fields/lookup dependencies and the blanket prop ID floor were removed. Existing
-actors/ordinary interactions/attachments remain source validated. Motion group/phase and embedded
-vendor actor references remain a separate open continuation.
-
-## Harbor Shift position inputs
-
-## Harbor registered geometry
-
-Harbor's30 inputs now select source artwork for its regions, booths, crane slots/loads, forklift,
-stack culling, horizon/shade and decorative positions. Shared property contracts include finite
-numbers/positive dimensions, text and explicit numeric/string choices. Slot filters prevent the
-first crane/load from binding the second index; gantry choices are the existing registered types.
-Required native inputs reject absent refs. Width comes from the manifest; actual actor/ordinary/
-attachment dependencies must be rebound before deleting old artwork. Six unused layout fields
-were removed. Native actor IDs/prefixes remain a separate continuation, explicitly still open.
-
-## Stacks terminal geometry
-
-## Downtown geometry and parented fronts
-
-## Train car geometry and window readers
+The laundry schedule has no cable by default. Its explicit `cableConnected` / `cableTo` inputs
+draw an optional connection on the same wall; native scene values bind its endpoint to washer 1.
+The original body → cable → hover paint order is retained. The kernel does not read room geometry.

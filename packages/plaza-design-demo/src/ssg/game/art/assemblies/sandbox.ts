@@ -1,4 +1,4 @@
-import { sandboxPulse as pulse,SandboxViewState,type SandboxSnapshot } from './sandbox-state';
+import { sandboxPulse as pulse,type SandboxSnapshot } from './sandbox-state';
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
 import { box,C,drawTowers,GREEN,notice,O,onScreen,PAPER,RED,rng,RUST,tell,text,towers } from "../core/primitives";
 import { type View } from "../core/view";
@@ -44,8 +44,8 @@ const kindTag = (x: CanvasRenderingContext2D, cx: number, top: number, s: string
 
 
 /** The QA-WD lamp over a device on the watchdog's route: red while the watchdog sits on it. */
-function wdLamp(x: CanvasRenderingContext2D, m: SandboxViewState, v: View, id: string) {
-  const r = at(v, id), on = m.frozen(id);
+function wdLamp(x: CanvasRenderingContext2D, m: SandboxSnapshot, v: View, id: string) {
+  const r = at(v, id), on = m.frozen.includes(id);
   box(x, r.cx - 6, r.t - 12, 12, 7, '#140808', rgba(on ? RED : O, 0.6));
   x.fillStyle = rgba(RED, on ? (Math.floor(v.t / 8) % 2 ? 0.95 : 0.6) : 0.15); x.fillRect(r.cx - 4, r.t - 10, 8, 3);
   if (on) { const g = x.createRadialGradient(r.cx, r.t - 9, 1, r.cx, r.t - 9, 18); g.addColorStop(0, rgba(RED, 0.25)); g.addColorStop(1, rgba(RED, 0)); x.fillStyle = g; x.fillRect(r.cx - 18, r.t - 27, 36, 36); }
@@ -164,10 +164,10 @@ const SKYLINE = towers(77, 900, [14, 34], [40, 110], 0.18);
 const DROPS = (() => { const r = rng(55); return Array.from({ length: 50 }, () => [r() * 260, r() * 122, 0.6 + r()]); })();
 
 
-function windowBack(x: CanvasRenderingContext2D, v: View, m: SandboxViewState) {
+function windowBack(x: CanvasRenderingContext2D, v: View, m: SandboxSnapshot) {
   const { sx, y, t } = v, W = SB.window, l = sx(W.x0), top = y(W.h1), w = W.x1 - W.x0, h = W.h1 - W.h0;
   if (!onScreen(v, l - 20, w + 40)) return;
-  const wx = m.snapshot.weather, d = m.snapshot.daylight;
+  const wx = m.weather, d = m.daylight;
   x.save(); x.beginPath(); x.rect(l, top, w, h); x.clip();
   // the sky by the hour, greyer under cloud and in smog
   const sky = x.createLinearGradient(0, top, 0, top + h);
@@ -200,16 +200,16 @@ function windowFront(x:CanvasRenderingContext2D,v:View){
   box(x, l - 6, y(W.h0), w + 12, 5, '#2a1a10', rgba(O, 0.75));
 
 }
-function wallClock(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){const {sx,y}=v;
+function wallClock(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){const {sx,y}=v;
   // the clock and the forecast over the window
   const cx = sx(inputs.decorX??0);
   box(x, cx - 2, y(164), 4, 6, '#2a2420');
   x.fillStyle = '#d8d2c6'; x.beginPath(); x.arc(cx, y(150), 11, 0, 7); x.fill();
   x.strokeStyle = rgba(O, 0.8); x.stroke();
-  const mm = m.snapshot.minute, ha = ((mm / 60) % 12) / 12 * Math.PI * 2 - Math.PI / 2, ma = (mm % 60) / 60 * Math.PI * 2 - Math.PI / 2;
+  const mm = m.minute, ha = ((mm / 60) % 12) / 12 * Math.PI * 2 - Math.PI / 2, ma = (mm % 60) / 60 * Math.PI * 2 - Math.PI / 2;
   x.strokeStyle = '#1a120b'; x.lineWidth = 2; x.beginPath(); x.moveTo(cx, y(150)); x.lineTo(cx + Math.cos(ha) * 6, y(150) + Math.sin(ha) * 6); x.stroke();
   x.lineWidth = 1; x.beginPath(); x.moveTo(cx, y(150)); x.lineTo(cx + Math.cos(ma) * 9, y(150) + Math.sin(ma) * 9); x.stroke();
-  plate(x, cx, y(136), [m.snapshot.hourLabel], { size: 7, col: rgba(PAPER, 0.95) });
+  plate(x, cx, y(136), [m.hourLabel], { size: 7, col: rgba(PAPER, 0.95) });
 
 }
 
@@ -221,7 +221,7 @@ function wallClock(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){const {
 /** Draw the bay and everything in it. */
 
 
-function drawHeader(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawHeader(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const y = v.y;
 const hx = v.sx(inputs.decorX ?? 0);
 if (onScreen(v, hx - 150, 300)) {
@@ -230,7 +230,7 @@ if (onScreen(v, hx - 150, 300)) {
   }
 }
 
-function drawReset(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawReset(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const y = v.y;
 const t = v.t;
 const rx = v.sx(inputs.decorX ?? 0);
@@ -245,7 +245,7 @@ if (onScreen(v, rx - 30, 60)) {
   }
 }
 
-function drawSensor(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawSensor(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'sensor');
 if (onScreen(v, r.l - 10, 40)) {
     const p = pulse(m, 'sensor');
@@ -257,10 +257,10 @@ if (onScreen(v, r.l - 10, 40)) {
   }
 }
 
-function drawLamp(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawLamp(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'lamp');
 if (onScreen(v, r.l - 30, 80)) {
-    const on = !!m.get('lampOn');
+    const on = !!m.values['lampOn'];
     if (on) { const g = x.createRadialGradient(r.cx, r.t + 8, 2, r.cx, r.t + 8, 46); g.addColorStop(0, 'rgba(255,220,140,.35)'); g.addColorStop(1, 'rgba(255,220,140,0)'); x.fillStyle = g; x.fillRect(r.cx - 46, r.t - 38, 92, 92); }
     box(x, r.l + 3, r.b - 4, r.w - 6, 4, '#3a342c');
     x.fillStyle = '#4a4038'; x.fillRect(r.cx - 1, r.t + 14, 2, r.h - 18);
@@ -270,12 +270,12 @@ if (onScreen(v, r.l - 30, 80)) {
   }
 }
 
-function drawMemo(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawMemo(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'memo');
 if (onScreen(v, r.l - 10, 60)) {
     box(x, r.l, r.t, r.w, r.h - 4, '#141210', rgba(PAPER, 0.5));
     box(x, r.l + 2, r.t + 2, r.w - 4, r.h - 9, '#041416', rgba(C, 0.55));
-    const memo = Number(m.get('memo') ?? 0);
+    const memo = Number(m.values['memo'] ?? 0);
     text(x, memo === 2 ? 'EMPTY' : 'MEMO ' + (memo + 1), r.cx, r.t + 8, rgba(C, 0.95), 7, '600');
     for (let k = 0; k < (memo === 2 ? 0 : 2); k++) { x.fillStyle = rgba(C, 0.45); x.fillRect(r.l + 5, r.t + 13 + k * 3, r.w - 10 - k * 8 - memo * 4, 1); }
     x.fillStyle = '#2a2420'; x.fillRect(r.cx - 4, r.b - 4, 8, 4);
@@ -283,20 +283,20 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawPort(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawPort(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'port');
 if (onScreen(v, r.l - 10, 50)) {
     box(x, r.l, r.t, r.w, r.h, '#d8d2c6', rgba(PAPER, 0.75));
     box(x, r.cx - 5, r.t + 6, 10, 8, '#0a0a0c');
-    const up = m.net.get('qasrv') === 'connected';
+    const up = m.net['qasrv'] === 'connected';
     x.fillStyle = up ? rgba(GREEN, 0.95) : rgba(C, Math.sin(t * 0.08) > 0 ? 0.9 : 0.3); x.fillRect(r.cx - 1, r.t + 17, 3, 2);
     x.strokeStyle = 'rgba(80,140,200,.7)'; x.beginPath(); x.moveTo(r.cx, r.t + 14); x.quadraticCurveTo(r.cx + 10, r.b + 20, r.cx + 4, v.y(30)); x.stroke();
     kindTag(x, r.cx, r.t - 13, 'CONNECT');
   }
 }
 
-function drawUnit7(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawUnit7(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'unit7');
 if (onScreen(v, r.l - 10, 50)) {
@@ -313,12 +313,12 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawMetronome(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawMetronome(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'metronome');
 if (onScreen(v, r.l - 10, 40)) {
     x.fillStyle = '#5a3a24'; x.beginPath(); x.moveTo(r.l + 2, r.b); x.lineTo(r.l + r.w - 2, r.b); x.lineTo(r.cx + 3, r.t); x.lineTo(r.cx - 3, r.t); x.closePath(); x.fill();
     x.strokeStyle = rgba(O, 0.6); x.stroke();
-    const next = m.clocks.next('metronome.beat'), side = m.get('phase') === 'tick' ? 1 : -1;
+    const next = (m.clocks['metronome.beat']??null), side = m.values['phase'] === 'tick' ? 1 : -1;
     const ang = next ? side * 0.5 * Math.cos(Math.PI * (1 - next.ms / 1500)) : 0;
     x.strokeStyle = next ? 'rgba(230,220,200,.95)' : 'rgba(160,150,130,.6)'; x.lineWidth = 1.5;
     x.beginPath(); x.moveTo(r.cx, r.b - 4); x.lineTo(r.cx + Math.sin(ang) * 24, r.b - 4 - Math.cos(ang) * 24); x.stroke(); x.lineWidth = 1;
@@ -327,11 +327,11 @@ if (onScreen(v, r.l - 10, 40)) {
   }
 }
 
-function drawRecorder(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawRecorder(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'recorder');
 if (onScreen(v, r.l - 10, 50)) {
-    const on = !!m.get('recOn');
+    const on = !!m.values['recOn'];
     box(x, r.l, r.t + 4, r.w, r.h - 4, '#2a2622', rgba(PAPER, 0.5));
     for (const dx of [-7, 7]) {
       const cx = r.cx + dx, cy = r.t + 10, a = on ? t * 0.12 : 0;
@@ -343,7 +343,7 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawButtonCounterConduit(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawButtonCounterConduit(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const y = v.y;
 const b = at(v, 'button');
 const c = at(v, 'counter');
@@ -358,7 +358,7 @@ if (onScreen(v, b.l - 10, c.l - b.l + 60)) {
   }
 }
 
-function drawButton(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawButton(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const b = at(v, 'button');
 if (onScreen(v, b.l - 10, 40)) {
@@ -370,11 +370,11 @@ if (onScreen(v, b.l - 10, 40)) {
   }
 }
 
-function drawBeacon(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawBeacon(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'beacon');
 if (onScreen(v, r.l - 40, 100)) {
-    const on = !!m.get('beaconOn');
+    const on = !!m.values['beaconOn'];
     box(x, r.cx - 8, r.b - 3, 16, 3, '#3a342c');
     if (on) {
       const a = t * 0.15, dx = Math.cos(a);
@@ -386,7 +386,7 @@ if (onScreen(v, r.l - 40, 100)) {
   }
 }
 
-function drawHorn(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawHorn(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'horn');
 if (onScreen(v, r.l - 20, 70)) {
     const p = pulse(m, 'horn');
@@ -396,16 +396,16 @@ if (onScreen(v, r.l - 20, 70)) {
   }
 }
 
-function drawCounter(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawCounter(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const c = at(v, 'counter');
 if (onScreen(v, c.l - 10, 60)) {
     box(x, c.l, c.t, c.w, c.h, '#1a1612', rgba(PAPER, 0.55));
     box(x, c.l + 3, c.t + 3, c.w - 6, c.h - 6, '#0a0a06', rgba(YELLOW, 0.4));
-    text(x, String(Math.min(9999, Number(m.get('count') ?? 0))).padStart(4, '0'), c.cx, c.t + c.h / 2 + 0.5, pulse(m, 'counter') > 0 ? rgba(YELLOW, 1) : rgba(YELLOW, 0.8), 9, '600');
+    text(x, String(Math.min(9999, Number(m.values['count'] ?? 0))).padStart(4, '0'), c.cx, c.t + c.h / 2 + 0.5, pulse(m, 'counter') > 0 ? rgba(YELLOW, 1) : rgba(YELLOW, 0.8), 9, '600');
   }
 }
 
-function drawPlate(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawPlate(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'plate');
 if (onScreen(v, r.l - 80, 220)) {
     const p = pulse(m, 'plate');
@@ -415,10 +415,10 @@ if (onScreen(v, r.l - 80, 220)) {
   }
 }
 
-function drawHatch(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawHatch(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'hatch');
 if (onScreen(v, r.l - 20, 70)) {
-    const open = !!m.get('hatchOpen');
+    const open = !!m.values['hatchOpen'];
     box(x, r.l, r.t, r.w, r.h, 'rgba(0,0,0,0)', rgba(O, 0.8));
     x.fillStyle = '#2a1d14'; x.fillRect(r.l, r.t, 3, r.h); x.fillRect(r.l + r.w - 3, r.t, 3, r.h); x.fillRect(r.l, r.t, r.w, 3);
     if (open) { box(x, r.l + 3, r.t + 3, 8, r.h - 3, '#4a3a2c', rgba(PAPER, 0.5)); x.fillStyle = rgba(GREEN, 0.9); x.fillRect(r.cx - 2, r.t - 5, 5, 2); }
@@ -427,11 +427,11 @@ if (onScreen(v, r.l - 20, 70)) {
   }
 }
 
-function drawFan(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawFan(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'fan');
 if (onScreen(v, r.l - 10, 50)) {
-    const on = !!m.get('fanOn'), a = on ? t * 0.4 : 0.3;
+    const on = !!m.values['fanOn'], a = on ? t * 0.4 : 0.3;
     box(x, r.l, r.t, r.w, r.h, '#1a1612', rgba(PAPER, 0.55));
     x.fillStyle = '#5a5048';
     for (let k = 0; k < 3; k++) { const aa = a + k * 2.09; x.beginPath(); x.moveTo(r.cx, r.t + r.h / 2); x.arc(r.cx, r.t + r.h / 2, 11, aa, aa + 0.8); x.closePath(); x.fill(); }
@@ -440,10 +440,10 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawLogin(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawLogin(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'login');
 if (onScreen(v, r.l - 10, 60)) {
-    const ok = !!m.get('loginOk'), locked = m.lockLeft('login.login') > 0;
+    const ok = !!m.values['loginOk'], locked = (m.lockouts['login.login']??0) > 0;
     x.fillStyle = '#2a2420'; x.fillRect(r.cx - 2, r.t + 26, 4, r.h - 26); x.fillRect(r.cx - 9, r.b - 2, 18, 2);
     box(x, r.l, r.t, r.w, 28, '#1a1612', rgba(PAPER, 0.55));
     box(x, r.l + 3, r.t + 3, r.w - 6, 20, '#041416', rgba(ok ? GREEN : locked ? RED : C, 0.7));
@@ -452,11 +452,11 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawRings(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawRings(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'rings');
 if (onScreen(v, r.l - 10, 60)) {
-    const open = !!m.get('ringsOpen');
+    const open = !!m.values['ringsOpen'];
     box(x, r.l, r.t, r.w, r.h, '#3a4048', rgba(PAPER, 0.55));
     for (let k = 0; k < 3; k++) { x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(r.l + 4, r.t + 4 + k * 3, r.w - 8, 1); }
     const cx = r.cx, cy = r.t + 26;
@@ -468,11 +468,11 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawCipher(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawCipher(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'cipher');
 if (onScreen(v, r.l - 10, 50)) {
-    const open = !!m.get('cipherOpen');
+    const open = !!m.values['cipherOpen'];
     box(x, r.l, r.t + 6, r.w, r.h - 6, '#5a3a24', rgba(PAPER, 0.5));
     if (open) { box(x, r.l, r.t - 6, r.w, 4, '#6a4a30', rgba(GREEN, 0.7)); }
     else {
@@ -483,10 +483,10 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawCryptex(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawCryptex(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'cryptex');
 if (onScreen(v, r.l - 10, 50)) {
-    const open = !!m.get('cryptexOpen'), gap = open ? 5 : 0;
+    const open = !!m.values['cryptexOpen'], gap = open ? 5 : 0;
     x.fillStyle = '#2a1d14'; x.fillRect(r.l + 2, r.b - 3, r.w - 4, 3);
     box(x, r.l - gap, r.t + 3, 5, 10, '#8a6a30');
     for (let k = 0; k < 4; k++) box(x, r.l + 6 + k * 6 - (k < 2 ? gap : -gap), r.t + 2, 5, 12, '#c8a24a', 'rgba(60,40,10,.8)');
@@ -495,11 +495,11 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawMorse(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawMorse(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'morse');
 if (onScreen(v, r.l - 30, 80)) {
-    const open = !!m.get('morseOpen');
+    const open = !!m.values['morseOpen'];
     x.fillStyle = '#2a2420'; x.fillRect(r.l - 6, r.t + 10, 8, 3); x.fillRect(r.l - 8, r.t + 4, 3, 16);
     box(x, r.l, r.t, r.w, r.h, '#3a342c', rgba(PAPER, 0.5));
     // O = ---, K = -.- : units of 220 ms, a dash 3 units, 1 between marks, 3 between letters, 10 at the end
@@ -512,7 +512,7 @@ if (onScreen(v, r.l - 30, 80)) {
   }
 }
 
-function drawCutter(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawCutter(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'cutter');
 if (onScreen(v, r.l - 10, 50)) {
@@ -525,13 +525,13 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawCabinet(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawCabinet(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'cabinet');
 if (onScreen(v, r.l - 10, 60)) {
     box(x, r.l, r.t, r.w, r.h, '#3a3e44', rgba(PAPER, 0.6));
     const drawers: [string, string][] = [['keyed', 'A · KEY'], ['seq', 'B · SEQ'], ['cond', 'C · IF']];
     drawers.forEach(([id, label], k) => {
-      const open = m.opened.has('cabinet/' + id), top = r.t + 6 + k * 24, out = open ? 6 : 0;
+      const open = m.opened.includes('cabinet/' + id), top = r.t + 6 + k * 24, out = open ? 6 : 0;
       box(x, r.l + 3 + out, top, r.w - 6, 20, '#4a4e56', rgba(PAPER, 0.5));
       text(x, label, r.cx + out, top + 7, rgba(PAPER, 0.85), 7, '600');
       x.fillStyle = open ? rgba(GREEN, 0.95) : rgba(RED, 0.85); x.fillRect(r.cx - 2 + out, top + 13, 5, 3);
@@ -539,7 +539,7 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawRgb(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawRgb(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'rgb');
 if (onScreen(v, r.l - 10, 60)) {
     box(x, r.l, r.t, r.w, r.h, '#1a1612', rgba(PAPER, 0.55));
@@ -551,11 +551,11 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawMains(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawMains(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'mains');
 if (onScreen(v, r.l - 10, 50)) {
-    const up = !!m.get('mains');
+    const up = !!m.values['mains'];
     box(x, r.l, r.t, r.w, r.h, '#4a2a1a', rgba(PAPER, 0.55));
     box(x, r.cx - 2, r.t + 6, 4, r.h - 12, '#141416');
     x.fillStyle = up ? rgba(GREEN, 0.9) : rgba(RED, 0.9); x.fillRect(r.cx - 6, up ? r.t + 6 : r.b - 12, 12, 6);
@@ -564,13 +564,13 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawAudit(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawAudit(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
-const tr = m.traceOf('audit');
-const locked = m.lockLeft('audit');
+const tr = (m.traces['audit']??0);
+const locked = (m.lockouts['audit']??0);
 const r = at(v, 'audit');
 if (onScreen(v, r.l - 10, 70)) {
-    const on = !!m.get('auditOn');
+    const on = !!m.values['auditOn'];
     box(x, r.l, r.b - 22, r.w, 4, '#4a3a2c', rgba(PAPER, 0.45));
     x.fillStyle = '#241a12'; x.fillRect(r.l + 3, r.b - 18, 3, 18); x.fillRect(r.l + r.w - 6, r.b - 18, 3, 18);
     box(x, r.l + 3, r.t, r.w - 6, 22, '#1a1612', rgba(PAPER, 0.55));
@@ -580,17 +580,22 @@ if (onScreen(v, r.l - 10, 70)) {
   }
 }
 
-function drawSpool(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawSpool(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
-const tr = m.traceOf('audit');
-const locked = m.lockLeft('audit');
+const tr = (m.traces['audit']??0);
+const locked = (m.lockouts['audit']??0);
 const r = at(v, 'spool');
 if (onScreen(v, r.l - 10, 60)) {
-    const turning = !!m.get('auditOn') && m.links.some((l) => l.from === 'audit.log:entry') && tr > 0 && !locked;
+    const turning = !!m.values['auditOn'] && m.links.some((l) => l.from === 'audit.log:entry') && tr > 0 && !locked;
     box(x, r.l, r.t, r.w, r.h, '#1a1612', rgba(PAPER, 0.5));
     const a = turning ? t * 0.1 : 0;
     x.strokeStyle = 'rgba(210,200,180,.85)'; x.beginPath(); x.arc(r.cx, r.t + r.h / 2, 11, 0, 7); x.stroke();
     for (let k = 0; k < 3; k++) { const aa = a + k * 2.09; x.beginPath(); x.moveTo(r.cx, r.t + r.h / 2); x.lineTo(r.cx + Math.cos(aa) * 11, r.t + r.h / 2 + Math.sin(aa) * 11); x.stroke(); }
+  }
+}
+function drawSpoolCable(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
+const r=at(v,'spool');
+if(onScreen(v,r.l-10,60)){
     // the cable from the desk, along the wall
     const d = at(v, 'audit');
     x.strokeStyle = m.links.some((l) => l.from === 'audit.log:entry') ? rgba(RED, 0.5) : 'rgba(80,60,50,.4)';
@@ -598,11 +603,11 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawTraceMeter(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawTraceMeter(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const y = v.y;
 const t = v.t;
-const tr = m.traceOf('audit');
-const locked = m.lockLeft('audit');
+const tr = (m.traces['audit']??0);
+const locked = (m.lockouts['audit']??0);
 const mx = v.sx(inputs.decorX ?? 0);
 if (onScreen(v, mx - 30, 60)) {
     box(x, mx - 14, y(118), 28, 74, '#1a1612', rgba(PAPER, 0.55));
@@ -615,7 +620,7 @@ if (onScreen(v, mx - 30, 60)) {
   }
 }
 
-function drawNetjack(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawNetjack(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'netjack');
 if (onScreen(v, r.l - 10, 60)) {
@@ -626,12 +631,12 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawServerRack(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawServerRack(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const y = v.y;
 const t = v.t;
 const kx = v.sx(inputs.decorX ?? 0);
 if (onScreen(v, kx - 20, 40)) {
-    const up = m.net.get('qasrv') === 'connected';
+    const up = m.net['qasrv'] === 'connected';
     box(x, kx - 17, y(92), 34, 92, '#121418', rgba(PAPER, 0.4));
     for (let k = 0; k < 8; k++) {
       box(x, kx - 14, y(88 - k * 10), 28, 8, '#1a1c22', 'rgba(255,255,255,.08)');
@@ -639,6 +644,13 @@ if (onScreen(v, kx - 20, 40)) {
       x.fillStyle = up ? rgba(GREEN, lit ? 0.9 : 0.3) : rgba(C, lit ? 0.6 : 0.2); x.fillRect(kx + 8, y(85 - k * 10), 2, 2);
     }
     plate(x, kx, y(104), ['QA-SRV 01'], { size: 7 });
+  }
+}
+
+/** Cross-device cables are a separate scene piece; the rack itself is freely placeable. */
+function drawServerCables(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
+const y=v.y,kx=v.sx(inputs.decorX??0);
+if(onScreen(v,kx-20,40)){
     // its cable to the jack and to the bell
     const j = at(v, 'netjack'), b = at(v, 'bell');
     x.strokeStyle = 'rgba(80,140,200,.6)'; x.beginPath(); x.moveTo(j.l + j.w, j.t + 12); x.quadraticCurveTo(kx - 24, j.b + 14, kx - 17, y(60)); x.stroke();
@@ -646,7 +658,7 @@ if (onScreen(v, kx - 20, 40)) {
   }
 }
 
-function drawBell(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawBell(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'bell');
 if (onScreen(v, r.l - 20, 60)) {
@@ -659,7 +671,7 @@ if (onScreen(v, r.l - 20, 60)) {
   }
 }
 
-function drawPrinter(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawPrinter(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'printer');
 if (onScreen(v, r.l - 10, 50)) {
     const p = pulse(m, 'printer');
@@ -671,25 +683,25 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawStamp(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawStamp(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'stamp');
 if (onScreen(v, r.l - 10, 50)) {
-    const p = pulse(m, 'stamp'), ram = p > 0 ? Math.round(Math.sin(p * Math.PI) * 12) : 0, fr = m.frozen('stamp');
+    const p = pulse(m, 'stamp'), ram = p > 0 ? Math.round(Math.sin(p * Math.PI) * 12) : 0, fr = m.frozen.includes('stamp');
     box(x, r.l, r.t, r.w, 6, '#4a4a50', rgba(PAPER, 0.5));
     x.fillStyle = '#3a3a40'; x.fillRect(r.l + 2, r.t, 4, r.h); x.fillRect(r.l + r.w - 6, r.t, 4, r.h);
     box(x, r.cx - 6, r.t + 6 + ram, 12, 14, fr ? '#5a2a2a' : '#6a6a70', rgba(PAPER, 0.5));
     box(x, r.l + 6, r.b - 10, r.w - 12, 10, '#2a2420', rgba(PAPER, 0.4));
     box(x, r.cx - 8, r.b - 13, 16, 3, rgba(PAPER, 0.85));
-    if (Number(m.get('stamped') ?? 0) > 0) { x.fillStyle = rgba(RED, 0.75); x.fillRect(r.cx - 3, r.b - 13, 6, 2); }
+    if (Number(m.values['stamped'] ?? 0) > 0) { x.fillStyle = rgba(RED, 0.75); x.fillRect(r.cx - 3, r.b - 13, 6, 2); }
     wdLamp(x, m, v, 'stamp');
   }
 }
 
-function drawConveyor(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawConveyor(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'conveyor');
 if (onScreen(v, r.l - 10, 100)) {
-    const moving = !!m.get('belt') && !m.frozen('conveyor');
+    const moving = !!m.values['belt'] && !m.frozen.includes('conveyor');
     box(x, r.l, r.t + 16, r.w, 8, '#2a2622', rgba(PAPER, 0.5));
     x.fillStyle = '#241a12'; x.fillRect(r.l + 4, r.t + 24, 3, r.h - 24); x.fillRect(r.l + r.w - 7, r.t + 24, 3, r.h - 24);
     const off = moving ? (t * 0.6) % 26 : 0;
@@ -702,7 +714,7 @@ if (onScreen(v, r.l - 10, 100)) {
   }
 }
 
-function drawSiren(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawSiren(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'siren');
 if (onScreen(v, r.l - 40, 100)) {
@@ -714,14 +726,14 @@ if (onScreen(v, r.l - 40, 100)) {
   }
 }
 
-function drawCoffee(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawCoffee(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'coffee');
 if (onScreen(v, r.l - 10, 60)) {
     const p = pulse(m, 'coffee.cup');
     box(x, r.l, r.t, r.w, r.h, '#2a2a30', rgba(PAPER, 0.55));
     box(x, r.l + 4, r.t + 4, r.w - 8, 12, '#041416', rgba(C, 0.6));
-    text(x, Number(m.get('cups') ?? 0) + ' CUP', r.cx, r.t + 10, rgba(C, 0.95), 7, '600');
+    text(x, Number(m.values['cups'] ?? 0) + ' CUP', r.cx, r.t + 10, rgba(C, 0.95), 7, '600');
     box(x, r.l + 6, r.t + 26, r.w - 12, 20, '#0a0a0c');
     box(x, r.cx - 4, r.t + 38, 8, 8, 'rgba(230,220,200,.9)');
     if (p > 0) for (let k = 0; k < 3; k++) { x.fillStyle = 'rgba(230,230,230,' + 0.4 * p + ')'; x.fillRect(r.cx - 3 + k * 3, r.t + 36 - ((t * 0.5 + k * 4) % 10), 1, 2); }
@@ -729,7 +741,7 @@ if (onScreen(v, r.l - 10, 60)) {
   }
 }
 
-function drawReader(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawReader(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'reader');
 if (onScreen(v, r.l - 10, 50)) {
     const p = pulse(m, 'reader');
@@ -741,7 +753,7 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawChipDispenser(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawChipDispenser(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const y = v.y;
 const t = v.t;
 const dx = v.sx(inputs.decorX ?? 0);
@@ -755,19 +767,19 @@ if (onScreen(v, dx - 20, 40)) {
   }
 }
 
-function drawTill(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawTill(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'till');
 if (onScreen(v, r.l - 10, 50)) {
     const p = pulse(m, 'till');
     box(x, r.l, r.t + 8, r.w, r.h - 8, '#3a342c', rgba(PAPER, 0.55));
     box(x, r.l + 4, r.t, r.w - 8, 10, '#041416', rgba(C, 0.6));
-    text(x, (Number(m.get('paid') ?? 0)) + 'T', r.cx, r.t + 5.5, rgba(C, 0.95), 7, '600');
+    text(x, (Number(m.values['paid'] ?? 0)) + 'T', r.cx, r.t + 5.5, rgba(C, 0.95), 7, '600');
     if (p > 0) { box(x, r.l + 2, r.b - 6, r.w - 4, 5, '#4a4038', rgba(PAPER, 0.5)); box(x, r.cx - 3, r.t - 4 - Math.round((1 - p) * 6), 6, 6, rgba(PAPER, 0.95)); }
     plate(x, r.cx, r.b + 6, ['1 TOKEN'], { size: 7, col: rgba(YELLOW, 0.9) });
   }
 }
 
-function drawRadiator(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawRadiator(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const y = v.y;
 const t = v.t;
 const rx = v.sx(inputs.decorX ?? 0);
@@ -778,7 +790,7 @@ if (onScreen(v, rx - 30, 60)) {
   }
 }
 
-function drawTeaTable(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawTeaTable(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const y = v.y;
 const t = v.t;
 const tx = v.sx(inputs.decorX ?? 0);
@@ -791,13 +803,13 @@ if (onScreen(v, tx - 60, 120)) {
   }
 }
 
-function drawTeaStool(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){const{sx,y}=v;if(onScreen(v,sx((inputs.decorX??0)+25)-60,120)){    const stool = sx(inputs.decorX??0);
+function drawTeaStool(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){const{sx,y}=v;if(onScreen(v,sx((inputs.decorX??0)+25)-60,120)){    const stool = sx(inputs.decorX??0);
     box(x, stool - 7, y(16), 14, 3, '#3a2a1c', rgba(O, 0.5)); x.fillStyle = '#241a12'; x.fillRect(stool - 1, y(13), 2, 13);
 }}
-function drawTeaPlant(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){const{sx,y}=v;if(onScreen(v,sx((inputs.decorX??0)+60)-60,120)){    const px = sx(inputs.decorX??0);
+function drawTeaPlant(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){const{sx,y}=v;if(onScreen(v,sx((inputs.decorX??0)+60)-60,120)){    const px = sx(inputs.decorX??0);
     box(x, px - 6, y(12), 12, 12, '#5a3a24', rgba(O, 0.4));
     x.fillStyle = 'rgba(60,140,70,.85)'; for (let k = 0; k < 5; k++) x.fillRect(px - 6 + k * 3, y(24 + (k % 2) * 6), 2, 12 + (k % 2) * 6);}}
-function drawRoomNotices(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawRoomNotices(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const t = v.t;
 const sx = v.sx;
 const y = v.y;
@@ -808,24 +820,24 @@ if (onScreen(v, bx - 60, 120)) {
   }
 }
 
-function drawNightlight(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawNightlight(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const r = at(v, 'nightlight');
 if (onScreen(v, r.l - 50, 120)) {
-    const on = !!m.get('nightLight');
+    const on = !!m.values['nightLight'];
     if (on) { const g = x.createRadialGradient(r.cx, r.t + 6, 2, r.cx, r.t + 6, 70); g.addColorStop(0, 'rgba(255,210,130,.35)'); g.addColorStop(1, 'rgba(255,210,130,0)'); x.fillStyle = g; x.fillRect(r.cx - 70, r.t - 64, 140, 140); }
     x.fillStyle = '#2a2420'; x.fillRect(r.cx - 1, r.t + 10, 3, r.h - 10); x.fillRect(r.cx - 7, r.b - 2, 14, 2);
     x.fillStyle = '#3a342c'; x.beginPath(); x.moveTo(r.cx - 9, r.t + 12); x.lineTo(r.cx + 9, r.t + 12); x.lineTo(r.cx + 5, r.t + 4); x.lineTo(r.cx - 5, r.t + 4); x.closePath(); x.fill();
     x.fillStyle = on ? 'rgba(255,230,160,.98)' : 'rgba(90,80,60,.8)'; x.fillRect(r.cx - 6, r.t + 12, 12, 2);
-    x.fillStyle = m.value('night') ? rgba(C, 0.9) : rgba(YELLOW, 0.9); x.fillRect(r.cx - 1, r.t + 1, 3, 3);
+    x.fillStyle = m.derived['night'] ? rgba(C, 0.9) : rgba(YELLOW, 0.9); x.fillRect(r.cx - 1, r.t + 1, 3, 3);
     plate(x, r.cx, r.t - 14, ['18–06'], { size: 7 });
   }
 }
 
-function drawRain(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawRain(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'rain');
 if (onScreen(v, r.l - 10, 50)) {
-    const wx = m.snapshot.weather, a = t * (0.05 + wx.wind * 0.3);
+    const wx = m.weather, a = t * (0.05 + wx.wind * 0.3);
     box(x, r.l + 3, r.t + 8, r.w - 6, r.h - 8, '#d8d2c6', rgba(PAPER, 0.8));
     x.fillStyle = '#2a2420'; x.fillRect(r.cx - 1, r.t + 2, 2, 6);
     for (let k = 0; k < 3; k++) { const aa = a + k * 2.09; x.fillStyle = 'rgba(230,220,200,.95)'; x.fillRect(Math.round(r.cx + Math.cos(aa) * 8) - 2, r.t + 1 + Math.round(Math.sin(aa) * 2), 4, 3); }
@@ -833,18 +845,18 @@ if (onScreen(v, r.l - 10, 50)) {
   }
 }
 
-function drawVent(x:CanvasRenderingContext2D,v:View,m:SandboxViewState){
+function drawVent(x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot){
 const t = v.t;
 const r = at(v, 'vent');
 if (onScreen(v, r.l - 10, 60)) {
-    const open = !!m.get('ventOpen');
+    const open = !!m.values['ventOpen'];
     box(x, r.l, r.t, r.w, r.h, '#1a1612', rgba(PAPER, 0.6));
     for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(200,190,170,.75)'; x.fillRect(r.l + 3, r.t + 3 + k * 4, r.w - 6, open ? 1 : 3); }
     tell(x, t, r.l + r.w - 3, r.b - 3, 5);
   }
 }
 
-function drawWaitBench(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawWaitBench(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const y = v.y;
 const bx = v.sx(inputs.decorX ?? 0);
 if (onScreen(v, bx - 40, 80)) {
@@ -853,7 +865,7 @@ if (onScreen(v, bx - 40, 80)) {
   }
 }
 
-function drawEndWall(x:CanvasRenderingContext2D,v:View,_m:SandboxViewState){
+function drawEndWall(x:CanvasRenderingContext2D,v:View,_m:SandboxSnapshot){
 const ex = v.sx(inputs.decorX ?? 0);
 if (onScreen(v, ex - 4, 40)) { x.fillStyle = '#0a0706'; x.fillRect(ex, 0, 40, v.gy); x.fillStyle = rgba(O, 0.7); x.fillRect(ex, 0, 1, v.gy); }
 }
@@ -866,5 +878,5 @@ function tube(x:CanvasRenderingContext2D,v:View,tx:number,flicker:boolean){const
     x.fillStyle = g; x.beginPath(); x.moveTo(lx - 26, y(CEIL - 4)); x.lineTo(lx - 90, y(0)); x.lineTo(lx + 90, y(0)); x.lineTo(lx + 26, y(CEIL - 4)); x.closePath(); x.fill();
     box(x, lx - 26, y(CEIL - 2), 52, 3, dead ? 'rgba(225,240,255,.2)' : 'rgba(235,245,255,.85)');
 }
-return {overhead,hall,pillar,stationSign,stationCard,bench,windowBack,windowFront,wallClock,tube,drawHeader,drawReset,drawSensor,drawLamp,drawMemo,drawPort,drawUnit7,drawMetronome,drawRecorder,drawButtonCounterConduit,drawButton,drawBeacon,drawHorn,drawCounter,drawPlate,drawHatch,drawFan,drawLogin,drawRings,drawCipher,drawCryptex,drawMorse,drawCutter,drawCabinet,drawRgb,drawMains,drawAudit,drawSpool,drawTraceMeter,drawNetjack,drawServerRack,drawBell,drawPrinter,drawStamp,drawConveyor,drawSiren,drawCoffee,drawReader,drawChipDispenser,drawTill,drawRadiator,drawTeaTable,drawTeaStool,drawTeaPlant,drawRoomNotices,drawNightlight,drawRain,drawVent,drawWaitBench,drawEndWall};
+return {overhead,hall,pillar,stationSign,stationCard,bench,windowBack,windowFront,wallClock,tube,drawHeader,drawReset,drawSensor,drawLamp,drawMemo,drawPort,drawUnit7,drawMetronome,drawRecorder,drawButtonCounterConduit,drawButton,drawBeacon,drawHorn,drawCounter,drawPlate,drawHatch,drawFan,drawLogin,drawRings,drawCipher,drawCryptex,drawMorse,drawCutter,drawCabinet,drawRgb,drawMains,drawAudit,drawSpool,drawSpoolCable,drawTraceMeter,drawNetjack,drawServerRack,drawServerCables,drawBell,drawPrinter,drawStamp,drawConveyor,drawSiren,drawCoffee,drawReader,drawChipDispenser,drawTill,drawRadiator,drawTeaTable,drawTeaStool,drawTeaPlant,drawRoomNotices,drawNightlight,drawRain,drawVent,drawWaitBench,drawEndWall};
 }

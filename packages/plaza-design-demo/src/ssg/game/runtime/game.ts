@@ -1,4 +1,6 @@
+import { vehicleDoorsAt } from '../world/vehicles';
 import {runCommunicationReview,type CommunicationReview} from '../demo/communication-review';
+import {movingInteractions} from '../engine/gameplay/moving-interactions';
 import {nativeLiveConditionsTick} from '../engine/gameplay/native-live-conditions';
 import {attachGameplayHandoffs} from '../engine/gameplay/handoffs';
 import {registryLabels} from '../engine/gameplay/rewards';
@@ -23,9 +25,8 @@ import {nativeGameplayPort} from '../engine/gameplay/native-bindings';
 import {ConversationSession} from '../engine/gameplay/conversation';
 import { gameStorage, reloadRuntime } from './storage';
 import { drawCapsuleWash } from '../art/atmosphere/capsule-wash';
-import {vehicleSeatHeight,stepLevelVehicles,validateWorldVehicles,saveVehicle,restoreVehicle} from '../engine/level-vehicles';
+import {vehicleSeatHeight,stepLevelVehicles,validateWorldVehicles,saveVehicle,restoreVehicle,arriveVehicleLevel} from '../engine/level-vehicles';
 import { AVATAR_PAINTERS } from './avatars';
-import { createSkyShips,drawSkyShips,type Ship } from '../art/environment/sky-ships';
 import { renderWorldFrame, type ZoneFrame } from './render-scene';
 import { GameplaySession } from '../engine/gameplay/session';
 /**
@@ -70,11 +71,11 @@ import { Terminal,type LineKind } from "../ui/terminal";
 import { commands,NO_ARGS,run,suggest,type Ctx } from "../ui/terminal/commands";
 import { ClockBar,Transport } from "../ui/transport";
 import * as defaultCity from '../world/city';
-import type {CityModel,MapPlace,Stand,Station} from '../world/city';
+import type {CityModel,MapPlace,Stand} from '../world/city';
 import { city,parseHM,TRAVEL,WAIT_CARD,WAITS,type WaitTo } from "../world/clock";
 import { light,lightAt,setLight,type Light } from "../world/light";
 import { frameView } from '../art/core/view';
-import {createLineSystem,timelineOf,PLATFORM_SHIFT,type LineSystem} from '../world/transport/line';
+import {createLineSystem,type LineSystem} from '../world/transport/line';
 import {boardRide,startRide} from '../engine/gameplay/mechanisms/line-ride';
 import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
@@ -93,7 +94,7 @@ const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
  * to talk to, an animal, a robot), a device or the scene's own target on the engine (`device`),
  * the companion (`companion`), and Downtown's street people and the fixer (`talk`, level.ts).
  */
-type Target = { kind: 'exit' | 'life' | 'device' | 'companion' | 'level'; id: string; x: number; h: number; label: string; promptH?: number };
+type Target = { kind: 'exit' | 'life' | 'device' | 'companion' | 'level'; id: string; x: number; h: number; label: string; promptH?: number; owner?: SceneId };
 /** A speech bubble; `then` runs once its last page is read (the fixer's question opens the deck). */
 interface Bubble { name: string; pages: string[]; page: number; chars: number; x: number; h: number; then?: () => void }
 
@@ -144,7 +145,6 @@ export class Game {
   private showEnd = false;
 
   private touch = (() => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } })();
-  private ships: Ship[] = [];
   private disposePerformance?:()=>void;
   private reviewNav?:ReturnType<typeof mountReviewNavigator>;
   private reviewAllowed(){return can('review')||EDITOR_PLAY;}
@@ -164,7 +164,7 @@ export class Game {
     this.syncEnginePause();this.refreshReview();this.reviewNav?.station(id);this.canvas.focus();
   }
   private reviewTalk(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const session=this.gameplayFor(this.here);if(!session?.definition.conversations[id])return;this.bubble=null;this.keys.clear();this.zh.closeAll();this.zh.presentConversation(new ConversationSession(session,id));}
-  private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=this.def.uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags,this.gameplayFor(this.here)?.state()))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
+  private reviewUse(id:string){if(!this.reviewAllowed()||!this.content[this.here])return;const use=movingInteractions(this.def,this.zh.model).uses?.find(u=>u.id===id);if(!use||use.available&&!use.available(this.save.flags,this.gameplayFor(this.here)?.state()))return;this.bubble=null;this.zh.closeAll();this.keys.clear();this.runUse(use,use.use);this.canvas.focus();}
   private reviewCommunication(id:CommunicationReview){
     if(!can('review'))return;
     this.keys.clear();this.zh.closeAll();this.bubble=null;this.hints.sceneChanged();
@@ -336,8 +336,6 @@ export class Game {
     this.canvas.addEventListener('pointercancel', lift);
     this.canvas.addEventListener('wheel', (e) => this.visionWheel(e), { passive: false });
 
-    this.ships = createSkyShips();
-
 
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
@@ -406,7 +404,7 @@ export class Game {
     zh.where = (from) => {
       if(from===this.companionDoc.speaker&&this.companionPresent)return {x:this.companionBody.x,h:this.companionBody.h};
       if(from==='goal'&&this.goalAt!==null)return {x:this.goalAt,h:20};
-      const source=from.startsWith('use:')?def.uses?.find(u=>u.id===from.slice(4)):from.startsWith('exit:')?def.exits.find(e=>e.id===from.slice(5)):undefined;
+      const source=from.startsWith('use:')?movingInteractions(def,zh.model).uses?.find(u=>u.id===from.slice(4)):from.startsWith('exit:')?movingInteractions(def,zh.model).exits.find(e=>e.id===from.slice(5)):undefined;
       return source?{x:source.x,h:'h'in source?source.h??0:0}:null;
     };
     // the opening (opening.ts): hacking is not yours until uplink.so, and some everyday actions say something else
@@ -444,6 +442,34 @@ export class Game {
   /** The scene the player is in: its definition, and its host on the engine. */
   private get def(): SceneDef { return this.sceneDefinition(this.here); }
   private get zh(): SceneHost { return this.hostOf(this.here); }
+  /** A joined owner's ordinary popup/conversation keeps its own input until it closes. */
+  private get interactionHost(): SceneHost {
+    const here=this.zh;
+    if(here.overlayOpen||here.popupOpen||here.acknowledgmentPending||here.visionOn)return here;
+    for (const z of this.joinedZones) {
+      const host = this.hosts.get(z.id);
+      if (host && (host.overlayOpen || host.popupOpen || host.acknowledgmentPending || host.visionOn)) return host;
+    }
+    const ride=this.level?.state.vehicle;
+    const vehicle=ride&&(this.level!.source.vehicleBase??this.level!.source).vehicles?.find(v=>v.id===ride.id);
+    const owner=vehicle&&!vehicle.lift?vehicle.zone:undefined;
+    if(owner&&owner!==this.here){const host=this.hosts.get(owner as SceneId);if(host)return host;}
+    return here;
+  }
+  /** Scene hosts keep local coordinates even when their vehicle is in another zone. */
+  private hostPlacement(host: SceneHost) {
+    return host===this.zh?{id:this.here,dx:0,dh:0}:this.joinedZones.find(z=>this.hosts.get(z.id)===host);
+  }
+  /** The one player, expressed in each resident model's local coordinates for its native zones. */
+  private syncPlayerLocations() {
+    const floor=this.level&&!levelRiding(this.level)?levelFloor(this.level):undefined;
+    for(const host of this.hosts.values()){
+      const at=this.hostPlacement(host);
+      if(!at){host.model.player=null;continue;}
+      const building=floor?(!floor.building?'':floor.zone===at.id||!floor.zone?floor.building.replace(at.id+'/',''):undefined):undefined;
+      host.model.player={x:this.p.x-at.dx,h:this.p.y-at.dh,...(building===undefined?{}:{building})};
+    }
+  }
 
   /** Write current progress, refresh the HUD and evaluate source-authored persistence triggers. */
   private persist() {
@@ -470,7 +496,7 @@ export class Game {
    * Start the game. `title`: launching it (the Konami code, `?play` or `?sudo` without a scene):
    * the title screen first (title/). A scene, a cutscene or a LOAD GAME reload goes straight there.
    */
-  start(scene?: SceneId | CutsceneId, title = false) {
+  start(scene?: SceneId | CutsceneId, title = false, spawn?:number) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -488,6 +514,14 @@ export class Game {
     const first = !this.started;
     this.started = true;
     this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
+    // A private Play's source-local spawn is an arrival input, not a mutation of a bound SceneDef.
+    if(spawn!==undefined){
+      if(!Number.isFinite(spawn)||spawn<12||spawn>this.def.width-12)throw Error('Starting X is outside the scene');
+      const vehicle=saveVehicle(this.level,this.p,this.here);
+      if(vehicle&&this.level){if(!restoreVehicle(this.level,this.p,this.movers,{...vehicle,x:spawn}))throw Error('Starting X has no vehicle floor');}
+      else{this.p.x=spawn;if(this.level)this.level.state=levelArrive(this.level.source,this.p,this.def.spawnH??0,this.seenRooms(this.level.source,this.here),savedForLevel(this.level.source,this.here,this.save.barriers));}
+      this.cam=this.camFollow(this.p.x);this.camH=this.p.y;this.gy=this.gyBase+Math.round(this.camH);
+    }
     if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content,this.reviewDoc);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,actions:this.reviewDoc.actions,hint:this.reviewDoc.hint,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),run:a=>this.reviewRun(a)});this.refreshReview();}
   }
 
@@ -584,7 +618,7 @@ export class Game {
     x.imageSmoothingEnabled = false;
     // opt-in recording: the title's or the glide's beat owns the frame's render span
     const span = performanceRecording() ? perfBegin('game.render', o.gliding ? 'glide:' + o.beat : 'title') : -1;
-    try { o.draw(x, this.viewW, this.viewH,this.gyBase); } finally { perfEnd(span); }
+    try { o.draw(x, this.viewW, this.viewH,this.gyBase,light()); } finally { perfEnd(span); }
     if (o.done) this.openingDone();
   }
 
@@ -624,10 +658,13 @@ export class Game {
 
   /** The HACK and BOARD buttons belong to the scene you are in. */
   private showHost() {
-    const here = this.zh;
+    const here = this.zh, input = this.interactionHost;
+    // The platform observes this existing Circuit. Boarding must not create another journey.
+    const railOwner=this.world.stationAt(this.here)?this.world.TRANSPORT.boarding.scene as SceneId:undefined;
+    if(railOwner)this.hostOf(railOwner);
     for (const [id, h] of this.hosts) {
-      if (h !== here && !this.joinedZones.some(z => z.id === id)) { this.unload(id); continue; }
-      h.show(h === here, h === here || this.zoneTiers.get(id) === 'visible');
+      if (h !== here && id!==railOwner && !this.joinedZones.some(z => z.id === id)) { this.unload(id); continue; }
+      h.show(h === input, h === input || h === here || this.zoneTiers.get(id) === 'visible');
     }
   }
 
@@ -726,7 +763,7 @@ export class Game {
 
   /** Readability stops while another surface covers the world; simulation clocks keep their own policy. */
   private get communicationCovered() {
-    return document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.zh.overlayOpen;
+    return document.hidden||this.menu.open||!!this.opening||!!this.cut||!!this.mapView||!!this.netView||!!this.flight||this.showEnd||!!this.sleep||this.term.isOpen||!!this.interactionHost.overlayOpen;
   }
 
   private stepLoop(now: number) {
@@ -757,7 +794,7 @@ export class Game {
     this.syncLevelArrows();
     if (this.cut) { this.stepCutscene(dt); this.raf = requestAnimationFrame((n) => this.loop(n)); return; }
     // a story beat asked for a cutscene: it plays once nothing is open (the talk that asked for it has closed)
-    if (this.pendingCut && !this.zh.overlayOpen && !this.zh.popupOpen && !this.bubble && !this.mapView && !this.term.focused) {
+    if (this.pendingCut && !this.interactionHost.overlayOpen && !this.interactionHost.popupOpen && !this.bubble && !this.mapView && !this.term.focused) {
       const id = this.pendingCut;
       this.pendingCut = null;
       this.playCutscene(id, () => this.inbox(),'after-handoff');
@@ -771,7 +808,7 @@ export class Game {
     const updateSpan=perfBegin('game.update');
     try{this.update(dt);}finally{perfEnd(updateSpan);}
     this.shiftGuidance?.update(this.save.flags, readableDelta,
-      this.communicationCovered || !!this.bubble || !!this.zh.popupOpen,
+      this.communicationCovered || !!this.bubble || !!this.interactionHost.popupOpen,
       this.p.moving, this.p.x);
     this.checkGain();
     const renderSpan=perfBegin('game.render');
@@ -798,7 +835,7 @@ export class Game {
     if (this.flight || this.hop) { e.preventDefault(); return; }
     if (this.netView) { this.netKeyDown(e); return; }
     if (this.mapView) { this.mapKey(e); return; }
-    const zh = this.zh;
+    let zh = this.interactionHost;
     if (zh && zh.overlayOpen) {
       if (e.key === 'Escape') { e.preventDefault(); zh.closeOverlay(); }
       else if (e.key === 'b' || e.key === 'B') zh.toggleBoard();
@@ -808,6 +845,8 @@ export class Game {
     if(zh?.acknowledgmentPending&&['e','E','Enter',' '].includes(e.key)){e.preventDefault();if(!e.repeat)this.interact();return;}
     // a thing's popup takes arrows, Enter / E and Esc; any other key closes it and goes on as usual
     if (zh && zh.popupOpen && zh.popupKey(e)) return;
+    // An unconsumed key closes that popup; normal world shortcuts belong here again.
+    zh = this.interactionHost;
     const k = e.key;
     // the car's list was closed (Esc): the panel's own keys bring it back
     if (this.carListOff && ['e', 'E', 'ArrowUp', 'ArrowDown', 'w', 'W', 's', 'S'].includes(k)) this.carListOff = false;
@@ -858,20 +897,20 @@ export class Game {
     if (!can('deck')) return;
     if (!this.term.out.childElementCount) this.term.print('[DECK] ' + who(this.save) + ' · type help', 'head');
     const at = this.hackLocked() ? null : this.termMachine();
-    if (at) this.term.print('[' + (this.zh.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
+    if (at) this.term.print('[' + (this.interactionHost.model.devices.get(at)?.name ?? at) + '] the deck talks to it · ls, cat, login, use', 'dim');
     this.term.focus();
   }
 
   /** The machine the deck talks to: the scene's device whose schematic is open, else the one you stand at. */
   private termMachine(): string | null {
-    const zh = this.zh;
+    const zh = this.interactionHost;
     if (zh.viewing) return zh.viewing;
     const t = this.nearest();
-    return t?.kind === 'device' && zh.model.devices.has(t.id) ? t.id : null;
+    return t?.kind === 'device' && (t.owner??this.here) === this.hostPlacement(zh)?.id && zh.model.devices.has(t.id) ? t.id : null;
   }
 
   /** Overlays, the deck, travel and talk hold the level's ↑/↓ as they hold walking. */
-  private levelLocked() { return this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep; }
+  private levelLocked() { return this.showEnd || this.term.focused || !!this.interactionHost.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep; }
 
   private jump() {
     if (!can('jump')) return;
@@ -1031,6 +1070,8 @@ export class Game {
   private worldSpan(): [number, number] {
     let lo = 0, hi = this.levelW;
     for (const z of this.joinedZones) { lo = Math.min(lo, z.dx); hi = Math.max(hi, z.dx + this.sceneDefinition(z.id).width); }
+    const vehicle=this.level?.state.vehicle;
+    if(vehicle)for(const floor of this.level!.source.floors)if(floor.zone===vehicle.id){lo=Math.min(lo,floor.x);hi=Math.max(hi,floor.x+floor.w);}
     return [lo, hi];
   }
   private get spanW() { const [lo, hi] = this.worldSpan(); return hi - lo; }
@@ -1046,8 +1087,11 @@ export class Game {
   private crossInto(id: SceneId) {
     const to = this.joinedZones.find(z => z.id === id); if (!to || !this.level) return;
     const { dx, dh } = to, state = this.level.state;
-    // the zone left behind closes what it had open (hack vision, panels), as leaving a scene does
-    this.zh.closeAll(); this.zh.persist(); this.zh.model.player = null;
+    // A vehicle keeps its existing owner while crossing route zones. Its open interaction
+    // is still beside the rider; ordinary departures keep the usual close-on-leave behavior.
+    const vehicleOwner = saveVehicle(this.level,this.p,this.here)?.owner;
+    if (vehicleOwner !== this.here) this.zh.closeAll();
+    this.zh.persist(); this.zh.model.player = null;
     this.here = id;
     if(state.vehicle){state.vehicle.x-=dx;state.vehicle.h-=dh;}
     this.p.x -= dx; this.p.y -= dh; this.cam -= dx; this.camH -= dh; this.gy = this.gyBase + Math.round(this.camH);
@@ -1064,13 +1108,13 @@ export class Game {
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + this.def.name);
     this.syncHud();
     this.hints.sceneChanged();
-    const s = this.def, flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
-    if (intro && !this.save.flags[flag]) { this.save.flags[flag] = true; this.persistSave(); this.say('YOU', intro, this.p.x, 46); }
+    this.introduceScene();
   }
   /** A joined zone in this frame: its own view (the camera moved by where it lies), scene, host and light. */
   private zoneFrame(z: { id: SceneId; dx: number; dh: number }): ZoneFrame {
     const host = this.hostOf(z.id), scene = this.sceneDefinition(z.id), cam = this.cam - z.dx, gy = this.gy - z.dh;
     const view: SceneView = { ...frameView(0), t: this.t, viewW: this.viewW, viewH: this.viewH, cam, gy, sx: (wx, p = 1) => Math.round(wx - cam * p), y: (h) => gy - h, flags: this.save.flags, values: this.save.gameplay, level: this.level ? this.levelViewOf(z.id) : undefined };
+    const station=this.world.stationAt(z.id);if(station)view.transit={station,...this.metro.stationFrame(station,this.ride)};
     const outdoor = scene.outdoor ?? !!(scene.ambient?.weather || scene.ambient?.sky);
     return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: prepared => host.preparePresentation(prepared, 'all'),weather:()=>this.weatherOf(z.id),
       lighting: W => { const L = lightAt(city.day, city.min, scene.facing ?? 180, W ?? this.weatherOf(z.id), outdoor); setLight(L); return L; } };
@@ -1100,7 +1144,9 @@ export class Game {
     Object.assign(this.p, { x, y: 0, vy: 0, onGround: true, face: s.keepFace ? this.p.face : x > s.width / 2 ? -1 : 1 });
     // a level scene: arrive on the floor at the exit's (or the spawn's) height; the camera looks there at once
     const source = this.joinLevel(id, this.p.x - this.viewW * 0.45), arriveH = (at ? s.exits.find((e) => e.id === at)?.arriveH : undefined) ?? s.spawnH ?? 0;
-    this.level = source ? { source, state: levelArrive(source, this.p, arriveH, this.seenRooms(source, id), savedForLevel(source, id, this.save.barriers)) } : null;
+    const vehicleOnly=s.level&&!s.level.floors.length?s.level.vehicles:undefined;
+    if(vehicleOnly&&vehicleOnly.length!==1)throw Error('Vehicle-only arrival requires one source vehicle');
+    this.level = source ? vehicleOnly?arriveVehicleLevel(source,this.p,this.movers,id,vehicleOnly[0].source.id,arriveH):{ source, state: levelArrive(source, this.p, arriveH, this.seenRooms(source, id), savedForLevel(source, id, this.save.barriers)) } : null;
     this.camH = this.level ? Math.max(this.level.source.low, Math.min(this.level.source.high, this.p.y)) : 0; this.gy = this.gyBase + Math.round(this.camH);
     this.cam = this.camFollow(this.p.x);
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + s.name);
@@ -1117,17 +1163,22 @@ export class Game {
     const st = this.story, phase = s.phases?.[st], said = phase?.intro;
     if (phase?.ride) this.runRide(id, phase.ride);
     this.hints.sceneChanged();sound.cancelFeedback();
-    const flag = 'scene:' + id, intro = typeof s.intro === 'function' ? s.intro(this.touch) : s.intro;
+    const flag = 'scene:' + id;
     if (said) {
       const once = 'opening:said:' + st + ':' + id;
       if (said.consume) this.save.flags[flag] = true;
       if (!this.save.flags[once]) { this.save.flags[once] = true; this.persistSave(); this.say(said.speaker,this.touch?said.touchPages??said.pages:said.pages,this.p.x,said.height); }
-    } else if (intro && !this.save.flags[flag]) {
-      this.save.flags[flag] = true;
-      this.persistSave();
-      this.say('YOU', intro, this.p.x, 46);
-    }
+    } else this.introduceScene();
     this.greet();
+  }
+
+  /** Arrival speech belongs to scene source; an occupied vehicle can defer it until alighting. */
+  private introduceScene() {
+    const scene=this.def;
+    if(scene.introOnFoot&&this.level?.state.vehicle)return;
+    const flag='scene:'+this.here,intro=typeof scene.intro==='function'?scene.intro(this.touch):scene.intro;
+    if(!intro?.length||this.save.flags[flag])return;
+    this.save.flags[flag]=true;this.persistSave();this.say('YOU',intro,this.p.x,46);
   }
 
   /** Tap or click a thing to open its popup (in hack vision: its verbs); hovering lights it up. A tap on the scene's life within reach is E on it. */
@@ -1138,23 +1189,35 @@ export class Game {
     if (press && this.bubble) { e.preventDefault(); this.interact(); return; }
     if (this.netView) { this.netPointerAt(e, press); return; }
     if (this.mapView) { this.mapPointer(e, press); return; }
-    const zh = this.zh;
-    if (zh.overlayOpen || this.flight) return;
+    const zh = this.interactionHost;
+    if (this.interactionHost.overlayOpen || this.flight) return;
     if (zh.visionOn && this.visionPointer(e, press)) return;
     const r = this.canvas.getBoundingClientRect();
     const { wx, h } = this.zoomed(() => ({
       wx: ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam,
       h: this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k,
     }));
-    const id = zh.spotAt(wx, h);
+    const hit=this.deviceAt(wx,h),picked=hit?.host??zh,id=hit?.id??null;
+    for(const host of this.hosts.values())if(host!==picked)host.hover=null;
     // (pink is the hacking layer's colour: no pink bracket on hover until hacking is yours)
-    zh.hover = this.hackLocked() ? null : id;
+    picked.hover = this.hackLocked() ? null : id;
     this.canvas.style.cursor = id ? 'pointer' : '';
     if (press && zh.visionOn) { zh.poke(id); return; }
     // a thing's popup: its everyday actions, then jack in (computers) and hack it
-    if (press && id) { e.preventDefault(); zh.pick(id); return; }
+    if (press && id) { e.preventDefault(); picked.pick(id); return; }
     // a tap on someone or something within reach is E on them
     if (press) this.tapLife(e);
+  }
+
+  private deviceAt(x:number,h:number) {
+    const input=this.interactionHost;
+    const hosts=[input,this.zh,...this.joinedZones.filter(z=>this.zoneTiers.get(z.id)==='visible').map(z=>this.hosts.get(z.id)).filter((host):host is SceneHost=>!!host)];
+    for(const host of new Set(hosts)){
+      const at=this.hostPlacement(host);if(!at)continue;
+      const id=host.spotAt(x-at.dx,h-at.dh);
+      if(id&&(at.id===this.here||host.model.attachmentOffsets()?.devices?.[id]))return{host,id};
+    }
+    return null;
   }
 
   /**
@@ -1165,7 +1228,7 @@ export class Game {
     const r = this.canvas.getBoundingClientRect(), wx = ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam;
     const doors = !this.zh.model.devices.size;
     const t = this.targets().find((z) => (z.kind === 'life' || (doors && z.kind === 'exit')) && Math.abs(z.x - wx) < TAPPED && Math.abs(z.x - this.p.x) < TAP_REACH);
-    if (t) { e.preventDefault(); this.useLife(t.id); }
+    if (t) { e.preventDefault(); this.useLife(t.id, t.owner); }
   }
 
   /** Canvas world units (the view, after the pixel scale) → CSS px of the game view. */
@@ -1181,26 +1244,33 @@ export class Game {
 
   /** Hack vision hangs in the world: give the scene this frame's world → CSS px mapping (as `sx` and `y` draw it). */
   private followHost() {
-    const zh = this.zh;
-    // captions and the popup keep under the key bar and the HUD's lines (drawHud: ~46 world units under the bar)
-    zh.uiTop = this.keyBar.root.offsetHeight + 8 + this.hudH * this.cssScale;
     // (in hack vision the view may be panned and zoomed: the same mapping the world was drawn with)
     this.zoomed(() => {
-      const s = this.cssScale;
-      zh.follow((wx, h) => ({ x: Math.round(wx - this.cam) * s, y: (this.gy - h) * s }), this.canvas.clientWidth, { x: this.p.x, h: this.p.y });
+      const s = this.cssScale, top = this.keyBar.root.offsetHeight + 8 + this.hudH * s;
+      const follow = (host: SceneHost, dx: number, dh: number) => {
+        // The host retains local manifest coordinates, just like zoneFrame's artwork.
+        // Project both its anchors and the player through the same seam placement.
+        host.uiTop = top;
+        host.follow((wx, h) => ({ x: Math.round(wx + dx - this.cam) * s, y: (this.gy - h - dh) * s }), this.canvas.clientWidth, { x: this.p.x - dx, h: this.p.y - dh });
+      };
+      follow(this.zh, 0, 0);
+      for (const z of this.joinedZones) {
+        const host = this.hosts.get(z.id);
+        if (host && this.zoneTiers.get(z.id) === 'visible') follow(host, z.dx, z.dh);
+      }
     });
   }
 
   // ---------- world logic ----------
 
   private ctx(): Ctx {
-    const zh = this.zh;
+    const zh = this.interactionHost,scene=this.sceneDefinition(this.hostPlacement(zh)?.id??this.here);
     return {
       save: this.save,
       scanProgram:this.networkContext.net.scanProgram,
       machine: this.termMachine(),
       // the deck's commands reach the scene's machines, when it has any
-      shell: zh.model.devices.size && !this.hackLocked() ? sceneShell(zh, this.def.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
+      shell: zh.model.devices.size && !this.hackLocked() ? sceneShell(zh, scene.buzz ? (text, kind) => this.buzzPrint(text, kind) : (text, kind) => this.term.print(text, kind)) : null,
       print: (text, kind) => this.term.print(text, kind),
       denied: () => sound.denied(),
       granted: () => sound.granted(),
@@ -1217,7 +1287,7 @@ export class Game {
       net: this.hackLocked() ? undefined : {
         scan: () => this.deckScan(),
         connect: (name) => this.deckConnect(name),
-        names: () => this.zh.model.nodesHere().filter((id) => this.zh.model.net.has(id) || this.zh.model.ports().length),
+        names: () => zh.model.nodesHere().filter((id) => zh.model.net.has(id) || zh.model.ports().length),
       },
     };
   }
@@ -1237,13 +1307,36 @@ export class Game {
     const life=this.lifeTargets(s),before=new Set((s.uses??[]).filter(u=>u.targetOrder==='before-devices').map(u=>'use:'+u.id));
     list.push(...life.filter(t=>before.has(t.id)));
     // a device is reached from the ground, or from the ledge under it (the relay, from the low roof)
-    const stand = (x: number, y = 0) => Math.max(0, ...this.platforms.filter((p) => x > p.x && x < p.x + p.w && p.h <= y).map((p) => p.h));
+    const floors=[...this.platforms,...(this.level?.source.floors??[])];
+    const stand = (x: number, y = 0) => {const under=floors.filter(p=>x>p.x&&x<p.x+p.w&&p.h<=y).map(p=>p.h);return under.length?Math.max(...under):0;};
     for (const t of this.zh.targets()) {
       const query=s.data?.devices.find(d=>d.id===t.id)?.targetQuery;
       if(query!==undefined&&this.zh.model.gameplayQuery?.(query)!==true)continue;
-      list.push({ kind: 'device', id: t.id, x: t.x, h: stand(t.x, t.y), label: t.label, promptH: t.promptH });
+      list.push({ kind: 'device', id: t.id, x: t.x, h: t.floorH??stand(t.x, t.y), label: t.label, promptH: t.promptH });
     }
     list.push(...life.filter(t=>!before.has(t.id)));
+    // A route's Circuit stays in its source zone. Only its attached interactions travel
+    // into neighbouring zones; ordinary local people/shops are not duplicated there.
+    for (const z of this.joinedZones ?? []) {
+      const host = this.hosts.get(z.id);
+      if (!host || this.zoneTiers.get(z.id) !== 'visible') continue;
+      const offsets = host.model.attachmentOffsets();
+      if (!offsets) continue;
+      const scene = this.sceneDefinition(z.id);
+      const attached: SceneDef = { ...scene, people: undefined,
+        uses: scene.uses?.filter(u => offsets.uses?.[u.id]),
+        readables: scene.readables?.filter(r => offsets.readables?.[r.id]),
+        rests: scene.rests?.filter(r => offsets.rests?.[r.id]),
+      };
+      for (const t of host.targets()) {
+        if (!offsets.devices?.[t.id]) continue;
+        const query=scene.data?.devices.find(d=>d.id===t.id)?.targetQuery;
+        if(query!==undefined&&host.model.gameplayQuery?.(query)!==true)continue;
+        list.push({kind:'device',id:t.id,owner:z.id,x:t.x+z.dx,h:(t.floorH??this.promptFloor(scene,t.x,t.y))+z.dh,label:t.label,promptH:t.promptH+z.dh});
+      }
+      for (const t of this.lifeTargets(attached, host, z.id)) list.push({ ...t, owner: z.id,
+        x: t.x + z.dx, h: t.h + z.dh, ...(t.promptH === undefined ? {} : { promptH: t.promptH + z.dh }) });
+    }
     // the story's own things to press E on in this phase (the bed)
     for (const [id, t] of Object.entries(this.def.phases?.[this.story]?.targets ?? {})) {
       const target = this.openingStory.resolveTarget(t, this.def);
@@ -1304,13 +1397,18 @@ export class Game {
       b.then?.();
       return;
     }
-    if(this.zh.acknowledgmentPending){this.zh.advanceAcknowledgment();return;}
+    if(this.interactionHost.acknowledgmentPending){this.interactionHost.advanceAcknowledgment();return;}
     const target = this.nearest();
     if (!target) return;
-    if (target.kind === 'level') { if (this.level && !this.passBarrier(target.id)&&levelInteract(this.level, target.id, this.p, this.movers))this.persistSave(); return; }
-    if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id); return; }
+    if (target.kind === 'level') { if (this.level && !this.passBarrier(target.id)&&levelInteract(this.level, target.id, this.p, this.movers)){this.introduceScene();this.persistSave();} return; }
+    if (target.kind === 'exit' || target.kind === 'life') { this.useLife(target.id, target.owner); return; }
     // a device opens its popup; the scene's own target may be a way out (its code returns the exit)
     if (target.kind === 'device') {
+      if(target.owner&&target.owner!==this.here){
+        const host=this.hostOf(target.owner);
+        if(host.model.attachmentOffsets()?.devices?.[target.id])host.use(target.id);
+        return;
+      }
       // the opening: a scene's own way out (the flat's door) may say something else in this state
       const rule = this.def.phases?.[this.story]?.exits?.[target.id];
       if (rule && this.storyExit(rule, target.x, null, undefined, target.id)) return;
@@ -1328,7 +1426,7 @@ export class Game {
     }
     this.updateTravel();
     this.updateStory();
-    const locked = this.showEnd || this.term.focused || !!this.zh.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep;
+    const locked = this.showEnd || this.term.focused || !!this.interactionHost.overlayOpen || !!this.mapView || !!this.netView || !!this.flight || !!this.hop || !!this.beat || !!this.sleep;
     const left = !locked && (this.keys.has('ArrowLeft') || this.keys.has('a'));
     const right = !locked && (this.keys.has('ArrowRight') || this.keys.has('d'));
     const speed = this.keys.has('Shift') ? 2.3 : 1.3;
@@ -1343,7 +1441,7 @@ export class Game {
     const seated=this.level?.state.vehicle;if(seated?.seat){const definition=(this.level!.source.vehicleBase??this.level!.source).vehicles?.find(v=>v.id===seated.id),model=definition?.zone?this.hostOf(definition.zone as SceneId).model:this.zh.model;model.playerSeat={vehicle:seated.id.split('/').at(-1)!,seat:seated.seat};}
     // over a seam: the zone the player now stands in becomes the one they are in, with no cut
     const zone = this.level && levelZone(this.level);
-    if (zone && zone !== this.here && this.hasScene(zone)) this.crossInto(zone);
+    if (zone && zone !== this.here && this.hasScene(zone)) {if(!this.joinedZones.some(z=>z.id===zone))this.followResidency();this.crossInto(zone);}
     else this.followResidency();
     // a room seen for the first time stays open on this save
     if (this.level) this.keepSeenRooms();
@@ -1369,7 +1467,7 @@ export class Game {
 
     // zones (engine/zones.ts) watch where the player stands
     // (a joined level names buildings zone/building; the scene's own zones know them by their own name)
-    this.zh.model.player = { x: p.x, h: p.y, ...(this.level && !levelRiding(this.level) ? { building: levelFloor(this.level).building.replace(/^[^/]*\//, '') } : {}) };
+    this.syncPlayerLocations();
     // Camera follows, eased, clamped to the level. A nudge leans it towards something that reacted
     // off the view for a moment (walking, talking or the deck cancel it), then it eases back.
     if (this.zh.visionOn) this.nudge = null;
@@ -1435,7 +1533,6 @@ export class Game {
       host: this.zh, reduced: this.reduced, clock: this.clock,backdrops:this.sources.backdrops,
       weather: () => this.weatherHere(), lighting: W => this.lightHere(W),
       preparePresentation: prepared => this.zh.preparePresentation(prepared, this.zh.visionOn && this.def.layers ? 'devices' : 'all'),
-      skyTraffic: (x, view) => drawSkyShips(x, view, this.ships),
       roomWash: () => this.drawLight(), actors: () => this.drawCharacters(),
       prompts: () => this.drawPrompt(), bubbles: () => this.drawBubble(),
       ...(this.joinedZones?.length ? { joined: this.joinedZones.filter(z => this.zoneTiers?.get(z.id) === 'visible').map(z => this.zoneFrame(z)) } : {}),
@@ -1478,11 +1575,11 @@ export class Game {
     const x = this.x, p = this.p;
     if (this.companionPresent) this.companionBody.draw(x, (wx) => this.sx(wx), (h) => this.y(h), this.t, COMPANION_LOOKS[this.companionDoc.look]);
     // jacked in: a machine's schematic is open and you stand at it, so the deck's cable runs to it (any scene)
-    const open = this.zh.viewing;
-    const jack = open ? this.zh.model.spots().find((sp) => sp.id === open && Math.abs(sp.x - p.x) < 40 && Math.abs(this.p.y - (sp.y > 40 ? sp.y : 0)) < 8) : undefined;
+    const host=this.interactionHost,open = host.viewing,at=this.hostPlacement(host);
+    const jack = open&&at ? host.model.spots().map(sp=>({...sp,x:sp.x+at.dx,y:sp.y+at.dh,...(sp.floorH===undefined?{}:{floorH:sp.floorH+at.dh})})).find(sp=>sp.id===open&&Math.abs(sp.x-p.x)<40&&Math.abs(p.y-(sp.floorH??(sp.y>40?sp.y:0)))<8) : undefined;
     if (jack) p.face = jack.x >= p.x ? 1 : -1;
     const character=this.openingStory.persona(this.save.flags)?.character,player=character?{...playProfile().player,avatar:'person' as const,character}:playProfile().player;
-    AVATAR_PAINTERS[player.avatar]({ x, view: this.view(), p, t: this.t, jack, player, shadowGround: () => this.zh.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null,seat:this.level?vehicleSeatHeight(this.level):undefined });
+    AVATAR_PAINTERS[player.avatar]({ x, view: this.view(), p, t: this.t, jack, player, shadowGround: () => host.visionOn ? null : this.groundUnder(p.x, p.y), carry: this.def.dockworkerCarry?.(this.save.flags, this.save.gameplay) ?? null,seat:this.level?vehicleSeatHeight(this.level):undefined });
   }
 
   /**
@@ -1496,7 +1593,7 @@ export class Game {
 
 
   private drawPrompt() {
-    if (this.bubble || this.showEnd || this.zh.overlayOpen || this.zh.popupOpen || this.mapView || this.beat || this.sleep || this.hop || this.flight) return;
+    if (this.bubble || this.showEnd || this.interactionHost.overlayOpen || this.interactionHost.popupOpen || this.mapView || this.beat || this.sleep || this.hop || this.flight) return;
     const t = this.nearest();
     if (!t) return;
     const x = this.x;
@@ -1558,19 +1655,20 @@ export class Game {
   /** Keep hack vision's view on the scene (a scene narrower than the view sits in the middle). */
   private clampV() {
     const w = this.viewW / this.vz;
-    this.vcam = this.levelW <= w ? (this.levelW - w) / 2 : Math.max(0, Math.min(this.levelW - w, this.vcam));
+    const [lo,hi]=this.interactionHost===this.zh?[0,this.levelW]:this.worldSpan();
+    this.vcam = hi-lo <= w ? lo+(hi-lo-w)/2 : Math.max(lo, Math.min(hi-w, this.vcam));
   }
 
   /** Every frame: hack vision's view starts where the camera is, follows you until you move it, and hands back on leaving. */
   private visionCamera() {
-    const on = this.zh.visionOn && !this.mapView && !this.cut;
+    const on = this.interactionHost.visionOn && !this.mapView && !this.cut;
     if (on && !this.wasVision) { this.vz = 1; this.vcam = this.cam; this.panned = false; this.vptr.clear(); this.vgest = null; }
     if (!on && this.wasVision) {
       // back to you: the usual camera eases there from the middle of what you were looking at
       const w = this.viewW / this.vz;
       { const [lo, hi] = this.worldSpan(); this.cam = Math.max(lo, Math.min(hi - this.viewW, this.vcam + (w - this.viewW) / 2)); }
       this.vz = 1; this.panned = false; this.vptr.clear(); this.vgest = null;
-      this.zh.viewMoved(false);
+      this.interactionHost.viewMoved(false);
     }
     this.wasVision = on;
     if (!on) return;
@@ -1581,13 +1679,13 @@ export class Game {
       this.vcam += (this.p.x - w * 0.45 - this.vcam) * 0.12;
     }
     this.clampV();
-    this.zh.viewMoved(this.panned || this.vz < 0.999);
+    this.interactionHost.viewMoved(this.panned || this.vz < 0.999);
   }
 
   /** The reset button, a double tap on nothing, or 0: hack vision's view as usual again, on you. */
   private resetVision() {
     this.vz = 1; this.panned = false;
-    this.zh.viewMoved(false);
+    this.interactionHost.viewMoved(false);
   }
 
   /**
@@ -1636,13 +1734,13 @@ export class Game {
     if (this.vptr.size === 1 && g?.kind === 'pinch') { const [q] = [...this.vptr.values()]; this.vgest = { kind: 'pan', sx: q.x, sy: q.y, cam: this.vcam, z: this.vz, d: 0, mid: q.x }; return; }
     if (this.vptr.size) return;
     this.vgest = null;
-    if (g?.kind !== 'tap' || e.type === 'pointercancel' || !this.zh.visionOn) return;
+    if (g?.kind !== 'tap' || e.type === 'pointercancel' || !this.interactionHost.visionOn) return;
     const r = this.canvas.getBoundingClientRect();
     const { wx, h } = this.zoomed(() => ({
       wx: ((e.clientX - r.left) * (this.canvas.width / r.width)) / this.k + this.cam,
       h: this.gy - ((e.clientY - r.top) * (this.canvas.height / r.height)) / this.k,
     }));
-    const zh = this.zh, id = zh.spotAt(wx, h), now = performance.now();
+    const zh = this.interactionHost, at = this.hostPlacement(zh), id = at ? zh.spotAt(wx-at.dx, h-at.dh) : null, now = performance.now();
     if (!id && now - this.lastTap < 320) { this.lastTap = 0; this.resetVision(); return; }
     this.lastTap = id ? 0 : now;
     zh.poke(id);
@@ -1664,7 +1762,7 @@ export class Game {
    * (EXIT, BOARD, LOGIC, UNFOLD), as classes on the page; HACK only once hacking is yours here.
    */
   private syncModeUi() {
-    const zh = this.zh, on = zh.visionOn;
+    const zh = this.interactionHost, on = zh.visionOn;
     this.controlHints(on);
     const net = this.netOk, ping = net && !this.save.flags[NET_OPENED];
     const key = [on, zh.hackable, zh.logicOpen, zh.unfoldAll, net, ping].join();
@@ -1790,7 +1888,7 @@ export class Game {
   }
 
   private drawHud() {
-    const x = this.x, vision = this.zh.visionOn;
+    const x = this.x, vision = this.interactionHost.visionOn;
     x.save();
     x.font = '600 8px "IBM Plex Mono", monospace'; x.textAlign = 'left';
     // below the key bar along the top (its height in world units)
@@ -1805,7 +1903,7 @@ export class Game {
 
     }
     // the hint lane (ui/hints.ts): one line at a time, on a dark strip so it reads over any scene
-    const hint = this.hints.step(this.hints.notices.time,this.communicationCovered||!!this.bubble||!!this.zh.popupOpen||this.zh.acknowledgmentPending);
+    const hint = this.hints.step(this.hints.notices.time,this.communicationCovered||!!this.bubble||!!this.interactionHost.popupOpen||this.interactionHost.acknowledgmentPending);
     this.hudHint = hint?.text ?? '';
     if (hint) {
       y += 11;
@@ -1987,7 +2085,6 @@ export class Game {
   private get ride() { return this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model.movers; }
 
   /** The platform clock of the scene on screen: its own scene time and shift (a station's). */
-  private get platformTime() { return timelineOf(this.zh.model); }
 
   /** A private Play's train: boarded at its station and run to the starting state by the car's own movers. */
   private startMetro(start: MetroStart) {
@@ -2166,10 +2263,15 @@ export class Game {
   }
 
   /** E at a bench, a stool or the bed: the popup's "wait until…" choices. */
-  private offerWait(r: SceneRest) {
+  private offerWait(r: SceneRest, owner = this.here) {
     const bed = r.kind === 'bed';
     const items = WAITS.map((w) => ({ label: (bed && w.id === 'morning' ? 'sleep till ' : 'wait: ') + w.label, run: () => this.waitUntil(w, r) }));
-    this.zh.choose('rest:' + r.id, bed ? 'YOUR BED' : r.kind === 'stool' ? 'A STOOL' : 'A BENCH', items, { x: r.x, y: r.h ?? 0, w: 40, h: Math.max(16, (r.promptH ?? 60) - 24) });
+    const host = owner === this.here ? this.zh : this.hostOf(owner);
+    const box = (row: SceneRest) => ({ x: row.x, y: row.floorH ?? row.h ?? 0, w: 40, h: Math.max(16, (row.promptH ?? 60) - (row.floorH!==undefined?row.floorH:0) - 24) });
+    host.choose('rest:' + r.id, bed ? 'YOUR BED' : r.kind === 'stool' ? 'A STOOL' : 'A BENCH', items, box(r), () => {
+      const row = movingInteractions(owner === this.here ? this.def : this.sceneDefinition(owner),host.model).rests?.find(row => row.id === r.id);
+      return row ? box(row) : null;
+    });
     sound.open();
   }
 
@@ -2183,7 +2285,7 @@ export class Game {
 
   /** The attention ping: the next goal's target (the phase's `ping`): a device, or a point (a door, an exit, a story target such as the bed). */
   private pingGoal(t: PingTarget) {
-    const aim = attentionAim(t, this.def, this.p.x, (id) => { const target = this.def.phases?.[this.story]?.targets?.[id]; return target ? this.openingStory.resolveTarget(target, this.def)?.x : undefined; });
+    const aim = attentionAim(t, this.def, this.p.x, (id) => { const target = this.def.phases?.[this.story]?.targets?.[id]; return target ? this.openingStory.resolveTarget(target, this.def)?.x : undefined; }, (this.level?.source.vehicleFrames ?? []).flatMap(f => vehicleDoorsAt(f).map(d => d.x)));
     if (!aim) return;
     if ('device' in aim) { this.zh.ping(aim.device, 'look'); return; }
     this.goalAt = aim.x;
@@ -2192,8 +2294,8 @@ export class Game {
 
   /** The room's light cue (the scene's `wash` rules): under the player, over the room. */
   private drawLight() {
-    if (this.zh.visionOn) return;
-    const tone = washTone(this.def.wash, { phase: this.story, flags: this.save.flags, state: (key) => this.zh.model.get(key) });
+    if (this.interactionHost.visionOn) return;
+    const tone = washTone(this.def.wash, { phase: this.story, flags: this.save.flags, state: (key) => this.interactionHost.model.get(key) });
     if (tone) drawCapsuleWash(this.x, this.viewW, this.viewH, tone);
   }
 
@@ -2269,6 +2371,7 @@ export class Game {
     this.hosts.forEach((h) => h.closeAll());
     this.term.close();
     this.cut = new CutscenePlay(scene, { reduced: this.reduced, touch: this.touch });
+    this.cut.prepare(this.x,this.viewW,this.viewH,light());
     this.syncEnginePause();
     this.cutThen = after;
     document.documentElement.classList.add('cutscene');
@@ -2278,6 +2381,7 @@ export class Game {
 
   private stepCutscene(dt: number) {
     const c = this.cut!;
+    c.prepare(this.x,this.viewW,this.viewH,light());
     c.step((dt / 60) * (this.transport?.rate ?? 1));
     this.transport?.sync();
     const x = this.x;
@@ -2327,19 +2431,11 @@ export class Game {
    */
   private exitTargets(s: SceneDef): Target[] {
     const list: Target[] = [];
-    for (const e of s.exits) {
+    for (const e of movingInteractions(s,this.zh.model).exits) {
       if (e.edge || e.engine || !exitVisibility(e,this.save.flags).ok) continue;
-      if (e.action === 'board') {
-        const st = this.world.stationAt(this.here);
-        if (st) for (const dx of this.metro.platformDoors(st, this.platformTime, this.cam, s.platformStop ?? this.metro.STOP)) list.push({ kind: 'exit', id: 'exit:' + e.id, x: dx, h: 0, label: e.label + ' · LINE 0 > ' + this.world.STATIONS[this.metro.nextStation(st)].name, promptH: e.promptH ?? 70 });
-        continue;
-      }
-      // The train's door: only while it stands at a stop with the doors open.
-      if (e.action === 'out' && !this.metro.rideOpen(this.ride)) continue;
       // a taxi stand shows its fare and what you have (tokens show only where you pay)
-      const label = e.action === 'out' ? '[E] STEP OUT · ' + (this.metro.rideAtSiding(this.ride) ? 'SIDING' : this.world.STATIONS[this.metro.rideStop(this.ride)].name)
-        : e.action === 'taxi' ? e.label + ' · ' + priceTag(this.world.FARE, this.save.tokens) : e.label;
-      list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: 0, label, promptH: e.promptH ?? 70 });
+      const label = e.action === 'taxi' ? e.label + ' · ' + priceTag(this.world.FARE, this.save.tokens) : e.label;
+      list.push({ kind: 'exit', id: 'exit:' + e.id, x: e.x, h: (e as typeof e&{floorH?:number}).floorH??0, label, promptH: e.promptH ?? 70 });
     }
     return list;
   }
@@ -2350,16 +2446,18 @@ export class Game {
    */
   /** The floor a use or readable is offered on: in a scene with levels, the floor under where it answers (a mezzanine's machine); else the street. */
   private promptFloor(s: SceneDef, x: number, h: number | undefined): number {
-    if (!s.level || !h) return 0;
-    const under = s.level.floors.filter(f => x >= f.x - 0.5 && x <= f.x + f.w + 0.5 && f.h <= h + 2).map(f => f.h);
+    if (!s.level || h===undefined) return 0;
+    const floors=s.id===this.here&&this.level?this.level.source.floors:s.level.floors;
+    const under = floors.filter(f => x >= f.x - 0.5 && x <= f.x + f.w + 0.5 && f.h <= h + 2).map(f => f.h);
     return under.length ? Math.max(...under) : 0;
   }
-  private lifeTargets(s: SceneDef): Target[] {
+  private lifeTargets(s: SceneDef, host = this.zh, owner = this.here): Target[] {
+    s=movingInteractions(s,host.model);
     const list: Target[] = [];
-    for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: this.promptFloor(s, r.x, r.h), label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
-    for (const u of s.uses ?? []) {if(u.available&&!u.available(this.save.flags,this.gameplayFor(this.here)?.state()))continue;const permission=u.eligibility?.(this.save.flags,this.gameplayFor(this.here));if(permission&&!permission.ok&&permission.hidden)continue;list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: this.promptFloor(s, u.x, u.h), label: this.useLabel(u), promptH: u.promptH ?? 70 });}
+    for (const r of s.readables ?? []) list.push({ kind: 'life', id: 'read:' + r.id, x: r.x, h: r.floorH??this.promptFloor(s, r.x, r.h), label: r.label ?? '[E] READ', promptH: r.promptH ?? 70 });
+    for (const u of s.uses ?? []) {if(u.available&&!u.available(this.save.flags,this.gameplayFor(owner)?.state()))continue;const permission=u.eligibility?.(this.save.flags,this.gameplayFor(owner));if(permission&&!permission.ok&&permission.hidden)continue;list.push({ kind: 'life', id: 'use:' + u.id, x: u.x, h: u.floorH??this.promptFloor(s, u.x, u.h), label: this.useLabel(u,owner), promptH: u.promptH ?? 70 });}
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
-    if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
+    if (city.pinned === null) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.floorH ?? r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
     for (const p of s.people ?? []) if (p.id && p.talk && isHere(p)) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, this.t), h: 0, label: '[E] TALK', promptH: p.promptH ?? characterHeight(p) + 16 });
     // animals: people always want to pet the cat (and the pigeon gets shooed)
@@ -2374,13 +2472,20 @@ export class Game {
   }
 
   /** E next to a scene's exit or something of its life (`kind:id`, as `exitTargets` and `lifeTargets` make them). */
-  private useLife(target: string) {
-    const s = this.def, [kind, id] = target.split(':');
+  private useLife(target: string, owner = this.here) {
+    const placement = owner === this.here ? {dx:0,dh:0} : this.joinedZones.find(z => z.id === owner);
+    if (!placement) return;
+    const host = owner === this.here ? this.zh : this.hostOf(owner);
+    const s = movingInteractions(owner === this.here ? this.def : this.sceneDefinition(owner),host.model), [kind, id] = target.split(':');
+    if (owner !== this.here) {
+      const group = kind === 'use' ? 'uses' : kind === 'read' ? 'readables' : kind === 'rest' ? 'rests' : undefined;
+      if (!group || !host.model.attachmentOffsets()?.[group]?.[id]) return;
+    }
     if (kind === 'story') { const card = s.phases?.[this.story]?.targets?.[id]?.card; if (card) this.startCard(this.openingStory.CARDS[card], true); return; }
-    if (kind === 'rest') { const r = s.rests?.find((z) => z.id === id); if (r) this.offerWait(r); return; }
+    if (kind === 'rest') { const r = s.rests?.find((z) => z.id === id); if (r) this.offerWait(r,owner); return; }
     if (kind === 'read') {
       const r = s.readables!.find((z) => z.id === id)!, o = s.phases?.[this.story]?.lines?.[id];
-      this.say(o?.name ?? r.name, o?.pages ?? r.pages, r.x, r.h ?? 70);
+      this.say(o?.name ?? r.name, o?.pages ?? r.pages, r.x+placement.dx, (r.h ?? 70)+placement.dh);
       return;
     }
     if (kind === 'pet') {
@@ -2409,13 +2514,17 @@ export class Game {
       const u = s.uses!.find((z) => z.id === id)!;
       // something you carry that it takes: a popup, those first ("give the tea"), then the use itself
       const own = (u.items ?? []).filter((x) => (this.save.items[x.item] ?? 0) > 0);
-      if (!own.length) { this.runUse(u, u.use); return; }
-      const price = this.usePrice(u), base = u.act ?? u.label.replace(/^\[E\]\s*/, '').toLowerCase();
+      if (!own.length) { this.runUse(u, u.use, owner); return; }
+      const price = this.usePrice(u,owner), base = u.act ?? u.label.replace(/^\[E\]\s*/, '').toLowerCase();
       const items: PopupItem[] = [
-        ...own.map((x) => ({ label: x.label, own: true, run: () => this.runUse(u, x.use) })),
-        { label: base + (price ? ' · ' + priceTag(price, this.save.tokens).toLowerCase() : ''), run: () => this.runUse(u, u.use) },
+        ...own.map((x) => ({ label: x.label, own: true, run: () => this.runUse(u, x.use, owner) })),
+        { label: base + (price ? ' · ' + priceTag(price, this.save.tokens).toLowerCase() : ''), run: () => this.runUse(u, u.use, owner) },
       ].slice(0, MAX_EVERYDAY);
-      this.zh.choose('use:' + u.id, u.name, items, { x: u.x, y: 0, w: 40, h: Math.max(16, (u.promptH ?? 70) - 24) });
+      const box = (row: SceneUse) => ({ x: row.x, y: row.floorH??0, w: 40, h: Math.max(16, (row.promptH ?? 70) - (row.floorH??0) - 24) });
+      host.choose('use:' + u.id, u.name, items, box(u), () => {
+        const row = movingInteractions(owner === this.here ? this.def : this.sceneDefinition(owner),host.model).uses?.find(row => row.id === u.id);
+        return row ? box(row) : null;
+      });
       sound.open();
       return;
     }
@@ -2424,17 +2533,22 @@ export class Game {
   }
 
   /** What a use costs now (0: nothing to pay this time). */
-  private usePrice(u: SceneUse) { return typeof u.price === 'function' ? u.price(this.save.flags,this.gameplayFor(this.here)) : u.price ?? 0; }
+  private usePrice(u: SceneUse, owner = this.here) { return typeof u.price === 'function' ? u.price(this.save.flags,this.gameplayFor(owner)) : u.price ?? 0; }
   /** A use's E prompt: its price and what you have, only when there is something to pay. */
-  private useLabel(u: SceneUse) { const n = this.usePrice(u); return n ? (u.pricedLabel!==undefined?u.pricedLabel+' ':u.label+' · ') + priceTag(n, this.save.tokens) : u.label; }
+  private useLabel(u: SceneUse, owner = this.here) { const n = this.usePrice(u,owner); return n ? (u.pricedLabel!==undefined?u.pricedLabel+' ':u.label+' · ') + priceTag(n, this.save.tokens) : u.label; }
 
   /** Run a use (or what it does with something you carry), say what comes of it, write the save. */
-  private runUse(u: SceneUse, fn: (c: UseCtx) => SceneSaid) {
+  private runUse(u: SceneUse, fn: (c: UseCtx) => SceneSaid, owner = this.here) {
+    const placement = owner === this.here ? {dx:0,dh:0} : this.joinedZones.find(z => z.id === owner);
+    if (!placement) return;
+    const host = owner === this.here ? this.zh : this.hostOf(owner), scene = owner === this.here ? this.def : this.sceneDefinition(owner);
+    u=movingInteractions(scene,host.model).uses?.find(row=>row.id===u.id)??u;
+    const x=u.x+placement.dx, h=(u.h??60)+placement.dh;
     const save = this.save;
-    const opening=this.def.phases?.[this.story]?.lines?.[u.id];
-    if(opening){this.say(opening.name??'YOU',opening.pages,u.x,u.h??60);return;}
-    const gameplay=this.gameplayFor(this.here),tokensBefore=save.tokens;
-    const permission=u.eligibility?.(save.flags,gameplay);if(permission&&!permission.ok){this.zh.react('use:'+u.id,['',permission.reason,'err']);return;}
+    const opening=scene.phases?.[this.story]?.lines?.[u.id];
+    if(opening){this.say(opening.name??'YOU',opening.pages,x,h);return;}
+    const gameplay=this.gameplayFor(owner),tokensBefore=save.tokens;
+    const permission=u.eligibility?.(save.flags,gameplay);if(permission&&!permission.ok){host.react('use:'+u.id,['',permission.reason,'err']);return;}
     const out = fn({
       gameplay,
       tokens: save.tokens,
@@ -2457,19 +2571,17 @@ export class Game {
     this.persistSave();
     this.syncHud();
     const said = Array.isArray(out) ? { name: u.name, pages: out } : out;
-    if(said.conversation){if(!gameplay)throw new Error('Conversation requires gameplay session');const conversation=new ConversationSession(gameplay,said.conversation,{objective:this.def.objective?.(save.flags,gameplay.state())??''}),frame=conversation.frame();if(u.conversationPresentation==='bubble'&&!frame.choices?.length&&!frame.acceptsText){conversation.close();this.say(frame.speaker,frame.pages,u.x,u.h??60);this.dialogueCompletion(frame.completion);}else this.zh.presentConversation(conversation);return;}
-    if(said.pages.length){if(u.speakerKind==='device')this.zh.react('use:'+u.id,['',said.pages.join('\n')]);else if(u.speakerKind==='system')this.notify(said.pages.join(' '));else this.say(said.name,said.pages,u.x,u.h??60);}
+    if(said.conversation){if(!gameplay)throw new Error('Conversation requires gameplay session');const conversation=new ConversationSession(gameplay,said.conversation,{objective:scene.objective?.(save.flags,gameplay.state())??''}),frame=conversation.frame();if(u.conversationPresentation==='bubble'&&!frame.choices?.length&&!frame.acceptsText){conversation.close();this.say(frame.speaker,frame.pages,x,h);this.dialogueCompletion(frame.completion);}else host.presentConversation(conversation);return;}
+    if(said.pages.length){if(u.speakerKind==='device')host.react('use:'+u.id,['',said.pages.join('\n')]);else if(u.speakerKind==='system')this.notify(said.pages.join(' '));else this.say(said.name,said.pages,x,h);}
   }
 
-  /** Leave through an exit: board, step out, hail a taxi, look at the map, or walk to its scene, landing at its matching exit there. */
+  /** Use an authored scene exit, taxi or map. Physical vehicle transfers belong to the level. */
   private useExit(e: SceneExit) {
     // the story: some ways out do something else in this phase (a checkpoint, an acknowledgment, "bed first")
     const rule = this.def.phases?.[this.story]?.exits?.[e.id];
     if (rule && this.storyExit(rule, e.x, { to: e.to, at: e.at }, e.checkpoint,'exit:'+e.id)) return;
     // a door that reads key chips (Moth's building): only the right one opens it
     if (e.needs && !exitPermission(e,this.save.keyring).ok) { this.zh.react('exit:'+e.id,['',e.needs.pages.join('\n'),'err']); return; }
-    if (e.action === 'board') { const st = this.world.stationAt(this.here); if (st && this.metro.platformOpen(st, this.platformTime)) this.enterTrain(st); return; }
-    if (e.action === 'out') { this.stepOut(); return; }
     if (e.action === 'taxi') { this.hailTaxi(); return; }
     if (e.action === 'map') { this.showMap(); sound.open(); return; }
     if (!this.hasScene(e.to)) return;
@@ -2482,7 +2594,8 @@ export class Game {
   private view(): SceneView {
     const v = (this.sceneView ??= { ...frameView(0), sx: (wx, p = 1) => this.sx(wx, p), y: (h) => this.y(h), flags: this.save.flags });
     v.t = this.t; v.viewW = this.viewW; v.viewH = this.viewH; v.cam = this.cam; v.gy = this.gy; v.flags = this.save.flags; v.values = this.save.gameplay; v.level = this.level ? this.levelViewOf(this.here) : undefined;
-    v.timetable = this.world.stationAt(this.here) ? this.platformTime : undefined;
+    const station=this.world.stationAt(this.here);
+    v.transit=station?{station,...this.metro.stationFrame(station,this.ride)}:undefined;
     return v;
   }
 
@@ -2508,24 +2621,6 @@ export class Game {
     const f = this.world.seenFlag(id);
     this.save.flags[f] = true;
     this.persistSave();
-  }
-
-  /** Board the train standing at a station's platform: in the car by its door, which stays open as long as it would have on the platform. */
-  private enterTrain(at: Station) {
-    boardRide(this.hostOf(this.world.TRANSPORT.boarding.scene as SceneId).model, at, this.metro.platformLeft(at, this.platformTime));
-    this.travel(this.world.TRANSPORT.boarding.scene,this.world.TRANSPORT.boarding.entrance);
-  }
-
-  /** E at the train's open door: out onto the platform of the stop it stands at, the train still there behind you until it leaves. */
-  private stepOut() {
-    if (!this.metro.rideOpen(this.ride)) return;
-    // P14: the old siding has no station, only a service stair up to the harbor's pier
-    if (this.metro.rideAtSiding(this.ride)) { this.travel(this.world.TRANSPORT.siding.scene,this.world.TRANSPORT.siding.entrance); this.say('YOU', this.world.SIDING_OUT, this.p.x, 50); return; }
-    const st = this.metro.rideStop(this.ride), left = this.metro.rideLeft(this.ride);
-    this.travel(this.world.STATIONS[st].scene,this.world.STATIONS[st].at);
-    // the train you stepped off stands at this platform until it leaves: the platform's own clock is set to it
-    const platform = this.zh.model;
-    platform.set(PLATFORM_SHIFT, this.metro.platformShiftFor(st, timelineOf(platform).t, left));
   }
 
   /** The taxi answers at its stand; an unavailable anchor falls back to system feedback. */

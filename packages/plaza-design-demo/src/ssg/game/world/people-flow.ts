@@ -18,9 +18,9 @@
  *   there the vehicle owns them (seats, standing, alighting). `handedOff` lists who boarded a trip, which is the
  *   car's manifest, so the same people are seen on the platform and inside.
  *
- * Time is **flow seconds**: real seconds as the player experiences them. A `scene`-clock flow (a platform tied
- * to today's timetable, which runs on the station scene's time) uses `sceneFlowTime`; a `city`-clock flow
- * (routines, ambient walkers by hour) uses `cityFlowTime`, so a routine at 07:40 is where the city clock says
+ * Time is **flow seconds**: real seconds as the player experiences them. Scene-clock flows read the model's
+ * pausable scene time and actual vehicle door windows. City-clock flows (routines, ambient walkers by hour)
+ * use `cityFlowTime`, so a routine at 07:40 is where the city clock says
  * and still walks at walking speed (the clock runs CLOCK_RATE game minutes per real second).
  *
  * Limits of the spike: one queue or board waypoint per route; consecutive waypoints lie in the same zone or in
@@ -51,9 +51,6 @@ export function routineTime(at: string, day: number): number {
   if (m === null) throw new Error(`people flow: "${at}" is not a time of day (HH:MM)`);
   return cityFlowTime((day - 1) * DAY_MIN + m);
 }
-/** Flow seconds of a station scene's platform timeline (frames of scene time plus its `platformShift`, world/transport/line.ts). */
-export const sceneFlowTime = (tl: {t: number; shift: number}, fps = 60) => (tl.t + tl.shift) / fps;
-
 // ---------- source ----------
 
 /** A point on a zone's floor, in that zone's local units. */
@@ -121,21 +118,6 @@ export interface FlowVehicle {
 
 /** What the model reads about the world: the zone graph (seam offsets) and the vehicles by id. */
 export interface FlowWorld {graph: ZoneGraphSource; vehicles: Readonly<Record<string, FlowVehicle>>}
-
-/**
- * A FlowVehicle from a station's timetable as world/transport/line.ts runs it today (frames of the station
- * scene's time): trip n runs in from frame n·loop − offset, stands `dwell`, leaves. The doors read open from
- * 7.5 % into the dwell until 7.5 % before its end (line.ts `platformOpen`: open > 0.6). Doors at `doors` (x).
- */
-export function timetableVehicle(o: {id: string; zone: string; timetable: {loop: number; arrive: number; dwell: number; leave: number}; offset: number; doors: readonly number[]; fps?: number; stops?: (trip: number) => boolean}): FlowVehicle {
-  const fps = o.fps ?? 60, T = o.timetable, start = (n: number) => (n * T.loop - o.offset) / fps;
-  const open = (n: number) => start(n) + (T.arrive + 0.075 * T.dwell) / fps, close = (n: number) => start(n) + (T.arrive + 0.925 * T.dwell) / fps;
-  return {
-    id: o.id,
-    tripAt(t) { let n = Math.floor((t * fps + o.offset) / T.loop); while (close(n) <= t) n++; while (close(n - 1) > t) n--; return n; },
-    doors(n) { return o.stops && !o.stops(n) ? null : {trip: n, open: open(n), close: close(n), doors: o.doors.map(x => ({zone: o.zone, x}))}; },
-  };
-}
 
 // ---------- people ----------
 
@@ -484,24 +466,6 @@ export function remember(onScreen: readonly PersonHere[], lags: Lags, now: numbe
 export function recall(memory: PeopleMemory | undefined, now: number): {lags: Map<string, readonly Hold[]>; keep: Set<string>} | null {
   if (!memory || now >= memory.until || now < memory.at) return null;
   return {lags: new Map(memory.people.filter(p => p.holds.length).map(p => [p.key, p.holds])), keep: new Set(memory.people.map(p => p.key))};
-}
-
-// ---------- today's platform queue as a flow ----------
-
-/**
- * A flow that plays like today's `platformQueue` riders (world/transport/line.ts) at one door: a cohort of `count`
- * places per train, each filled with probability 0.55 as `crowd()` does, gathering after the last train has
- * gone, queueing at the door and all aboard by half the dwell, the moment `platformQueue` says `boarded`.
- * Instead of appearing and vanishing they walk in from `entry` and walk aboard.
- */
-export function platformFlow(o: {id: string; zone: string; vehicle: string; entry: FlowPoint; door: number; count: number; seed: number; looks: readonly string[]; timetable: {loop: number; arrive: number; dwell: number; leave: number}; fps?: number}): FlowSource {
-  const fps = o.fps ?? 60, T = o.timetable, open = T.arrive + 0.075 * T.dwell, gone = T.arrive + T.dwell + T.leave - T.loop;
-  const from = (gone - open) / fps, boardBy = (T.arrive + 0.5 * T.dwell - open) / fps, gap = boardBy / (o.count + 0.5);
-  return {
-    id: o.id, clock: 'scene', seed: o.seed, looks: o.looks,
-    spawn: {kind: 'trip', vehicle: o.vehicle, count: o.count, on: 0.55, window: [from, from * 0.4]},
-    route: [{kind: 'walk', ...o.entry}, {kind: 'board', zone: o.zone, x: o.door, vehicle: o.vehicle, slots: o.count, spacing: 14, gap}],
-  };
 }
 
 /** What is wrong with a flow against the world: unknown vehicles, waypoints in zones not joined by a seam, more than one queue, a queue that cannot board in time. */

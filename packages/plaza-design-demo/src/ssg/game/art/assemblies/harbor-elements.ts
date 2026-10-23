@@ -7,7 +7,7 @@ import { validatePreparedCharacter } from '../characters/prepared';
 import type { PreparedCharacter } from '../../runtime/characters';
 import { createHarborPierArtwork,type HarborLayout,type HarborVisual } from './harbor-pier';
 import {applyHarborMetadata} from './harbor-metadata';
-import {harborFields} from './harbor-fields';
+import {harborFields,harborHutFields,harborHutSize} from './harbor-fields';
 const num=(label:string,value=0):Field=>({kind:'number',label,default:value,min:-1e12,max:1e12,step:1});
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
 const dimension=(label:string):Field=>({...num(label),min:0,max:10000,unit:'world units'});
@@ -22,7 +22,15 @@ export const harborVisualFields:Record<string,Field>={forkliftOrigin:num('Forkli
 const origin={x:0,h:0,role:'origin' as const};
 type Method=keyof ReturnType<typeof createHarborPierArtwork>;
 function root(method:Method,L:HarborLayout,p:Properties):{x:number;h:number}{const ci=Number(p.index);if(method.startsWith('crane'))return{x:L.cranes[ci].x+(method==='craneLoad'?-64:0),h:method==='craneLoad'?-58:0};const names:Partial<Record<Method,keyof HarborLayout>>={noticePost:'notice',metroDoor:'metro',podium:'podium',manifest:'manifest',callBox:'callBox',denInside:'den',denTable:'den',denDoors:'den',denLamp:'den',drawTerminalGate:'terminal',berthSign:'berth',taxi:'taxi',ferryNotice:'ferry',rails:'rails',beacon:'beacon'};if(method.startsWith('arch'))return{x:L.arch.x0,h:0};const key=names[method];if(key)return{x:Number(L[key]),h:0};if(method.startsWith('hut'))return{x:L.hut.x,h:0};if(['bondedContainers','ghostMark','bondedFence'].includes(method))return{x:L.fence.x0,h:0};if(method==='fishStall')return{x:L.fish.x,h:0};if(method==='teaStall')return{x:L.drinks.x,h:0};return{x:0,h:0};}
-function element(type:string,label:string,method?:Method):Element{return{type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){if(!method)return;const L=s.layout as unknown as HarborLayout,vis=s.visual as unknown as HarborVisual,k=createHarborPierArtwork({L,visual:vis,fishPose:s.fishPose as unknown as PreparedCharacter,teaPose:s.teaPose as unknown as PreparedCharacter,loads:s.loads as any});let base=root(method,L,p);if(['drawLampBoat','drawFerry','drawPatrol','crates','fishingBox','portCamera','droneGull','forkliftBody','forkliftRoof'].includes(method)){const positions:Partial<Record<Method,[number,number]>>={drawLampBoat:[1650,56],drawFerry:[0,34],drawPatrol:[0,46],crates:[1112,0],fishingBox:[2112,0],portCamera:[156,136],droneGull:[1460,128],forkliftBody:[vis.forklift.x,0],forkliftRoof:[vis.forklift.x,0]};const pos=positions[method]!;base={x:pos[0],h:pos[1]};if(method.startsWith('forklift'))base.x=Number((s.forkliftOrigin as number)??0);}
+function element(type:string,label:string,method?:Method):Element{
+ const hut=method==='hutBack'||method==='hutFront';
+ return{type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:hut?harborHutFields:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){
+ if(!method)return;
+ if(method==='hutBack'||method==='hutFront'){
+  const size=harborHutSize(p,s),L={...blank,hut:{x:at.x,...size}},raised=at.h?{...v,gy:v.gy-at.h,y:(h:number)=>v.y(h+at.h)}:v;
+  createHarborPierArtwork({L,visual,fishPose:nil as unknown as PreparedCharacter,teaPose:nil as unknown as PreparedCharacter,loads:[]})[method](ctx,raised);return;
+ }
+ const L=s.layout as unknown as HarborLayout,vis=s.visual as unknown as HarborVisual,k=createHarborPierArtwork({L,visual:vis,fishPose:s.fishPose as unknown as PreparedCharacter,teaPose:s.teaPose as unknown as PreparedCharacter,loads:s.loads as any});let base=root(method,L,p);if(['drawLampBoat','drawFerry','drawPatrol','crates','fishingBox','portCamera','droneGull','forkliftBody','forkliftRoof'].includes(method)){const positions:Partial<Record<Method,[number,number]>>={drawLampBoat:[1650,56],drawFerry:[0,34],drawPatrol:[0,46],crates:[1112,0],fishingBox:[2112,0],portCamera:[156,136],droneGull:[1460,128],forkliftBody:[vis.forklift.x,0],forkliftRoof:[vis.forklift.x,0]};const pos=positions[method]!;base={x:pos[0],h:pos[1]};if(method.startsWith('forklift'))base.x=Number((s.forkliftOrigin as number)??0);}
  const dx=at.x-base.x,dh=at.h-base.h,V:View=dx===0&&dh===0?v:{...v,sx:(wx,depth=1)=>v.sx(wx+dx,depth),y:h=>v.y(h+dh),gy:v.gy-dh};
  if(method.startsWith('crane'))(k[method] as (ctx:CanvasRenderingContext2D,v:View,ci:number)=>void)(ctx,V,Number(p.index));else if(method==='bollard'||method==='frontBollard')k[method](ctx,v,at.x);else if(method==='rod')k.rod(ctx,v,at.x,at.h,Number(p.reach));else(k[method] as (ctx:CanvasRenderingContext2D,v:View)=>void)(ctx,V);
  }};}
@@ -31,3 +39,6 @@ export const harborElements:Element[]=[...methods.map(m=>element(m,m.replace(/([
  {type:'harbor.marker',version:1,label:'Harbor gameplay, light or shadow marker',category:'markers',coordinates:'world',fields:{role:str('Role'),width:dimension('Width'),height:dimension('Height'),kind:str('Light kind'),r:dimension('Radius'),color:str('Light color'),lightHeight:dimension('Window height')},parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin}),draw(){}},
 ];
 applyHarborMetadata(harborElements,(method,L,p)=>root(method as Method,L,p));
+// Each of these fittings cancels its source datum before applying its own placement.
+// Crane geometry, actor-bearing stalls and culling-dependent container rows remain contextual.
+for(const e of harborElements)if(['denInside','denTable','denDoors','denLamp','metroDoor','noticePost','podium','manifest','callBox','crates','bollard','rod','fishingBox','berthSign','taxi','ferryNotice','rails','beacon','portCamera','drawTerminalGate','hutBack','hutFront'].includes(e.type.slice(7)))e.libraryUse='reusable';

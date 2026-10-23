@@ -80,6 +80,8 @@ export interface AnimationClip {
 }
 export interface Element {
   type: string; version: 1; label: string; category: string;
+  /** Registered artwork in the shared frame's sky pass; ordinary composition rows use world. */
+  framePhase?:'sky';
   fields: Record<string, Field>;
   visualFields?: Record<string, Field>;
   /** Presentation bindings carry no instance-owned simulation state. Native validators still protect required artwork. */
@@ -184,6 +186,7 @@ export class ArtRegistry {
       let players = 0;
       for (const n of nodes) {
         const e = this.get(n.type);
+        if(e.framePhase==='sky'&&n.layer!=='distance')throw new Error(`${n.id}: sky artwork belongs in the distance layer`);
         if (e.role === 'player') { players++; if (n.layer !== 'playfield') throw new Error(`${n.id}: the player row belongs in the playfield`); continue; }
         if (e.role === 'group') continue;
         if (e.parts.length > 1) throw new Error(`${n.id}: multi-part artwork ${n.type} cannot be layered yet`);
@@ -212,14 +215,16 @@ export class ArtRegistry {
 }
 
 export interface Resolved { instance: Instance; placement: Required<Placement>; props: Properties; state: Properties; element: Element }
-export function resolveComposition(registry: ArtRegistry, doc: Composition, env: Environment): Resolved[] {
+/** An optional selection resolves only those rows and their attachment ancestors. */
+export function resolveComposition(registry: ArtRegistry, doc: Composition, env: Environment, selection?:readonly string[]): Resolved[] {
   const all = new Map<string, Instance>(), parents = new Map<string, string>();
   const collect = (nodes: Instance[], parent?: string) => nodes.forEach(n => { all.set(n.id, n); if (parent) parents.set(n.id, parent); collect(n.children ?? [], n.id); });
   collect(doc.instances);
   const resolved = new Map<string, Resolved>();
   const resolve = (id: string): Resolved => {
     const had = resolved.get(id); if (had) return had;
-    const n = all.get(id)!, p = n.placement, e = registry.get(n.type), props = registry.properties(n.type, n.props);
+    const n = all.get(id);if(!n)throw new Error('Missing composition instance: '+id);
+    const p = n.placement, e = registry.get(n.type), props = registry.properties(n.type, n.props);
     const bound: Properties = {};
     for (const [key, source] of Object.entries(n.bindings ?? {})) {
       if (!env.bindings || !owns(env.bindings, source)) throw new Error(`${id}.${key}: unresolved visual binding ${source}`);
@@ -239,7 +244,7 @@ export function resolveComposition(registry: ArtRegistry, doc: Composition, env:
     const target = n.attach?.instance ?? parents.get(id);
     if (target) {
       const owner = resolve(target), o = owner.placement;
-      const a = n.attach ? owner.element.anchors(owner.props, owner.state)[n.attach.anchor] : { x: 0, h: 0 };
+      const a = n.attach ? owner.element.anchors(owner.props, owner.state)[n.attach.anchor] : owner.element.role==='group' ? owner.element.anchors(owner.props,owner.state).origin??{x:0,h:0} : { x: 0, h: 0 };
       if (!a) throw new Error(`${id}: unavailable anchor ${n.attach?.anchor}`);
       placement = { x: o.x + (a.x + p.x) * o.scale * o.facing, h: o.h + (a.h + p.h) * o.scale,
         scale: o.scale * placement.scale, facing: o.facing * placement.facing as 1 | -1, parallax: p.parallax ?? o.parallax };
@@ -247,7 +252,7 @@ export function resolveComposition(registry: ArtRegistry, doc: Composition, env:
     const r = { instance: n, placement, props, state, element: e }; resolved.set(id, r); return r;
   };
   const rank = (n: Instance) => n.layer === undefined ? 0 : LAYERS.indexOf(n.layer);
-  return [...all.keys()].map(resolve).sort((a, b) => rank(a.instance) - rank(b.instance) || a.instance.order - b.instance.order);
+  return [...(selection??all.keys())].map(resolve).sort((a, b) => rank(a.instance) - rank(b.instance) || a.instance.order - b.instance.order);
 }
 
 /** Group/attachment appearance follows the same parent relation as placement. */
@@ -279,8 +284,8 @@ export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegi
 }
 /** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground.
  * `only` limits the slot to some layers, for scenes that draw layers into different engine moments. */
-export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean)) {
-  const keep = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer);
+export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean),phase:'world'|'sky'='world') {
+  const filter = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer),keep=(r:Resolved)=>(r.element.framePhase??'world')===phase&&filter(r);
   const rows = resolveComposition(registry, doc, env), found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
   const inSlot = (r: Resolved, index: number, s: LayerSlot) => s === 'foreground' ? r.instance.layer === 'foreground'
     : r.instance.layer === 'playfield' ? (s === 'behind-player') === (index < player)

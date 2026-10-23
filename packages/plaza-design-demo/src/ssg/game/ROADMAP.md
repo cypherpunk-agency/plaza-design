@@ -1,107 +1,97 @@
 # ACCESS DENIED: roadmap
 
-This is the single priority overview for the engine, editor and game experience. Everything
-remains in design. Use [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md) for implementation,
-[README.md](./README.md) for launch commands and current tests for verification. Design docs
-own design detail; this file owns order and status.
+Single priority overview, consolidated 2026-10-23. Everything remains in design.
+This roadmap owns status and order; the [engine handbook](./docs/reference/ENGINE-HANDBOOK.md)
+owns implementation guidance. Design documents are working context, not competing roadmaps.
 
-## Current foundation
+## Current status
 
-Existing campaign scenes use shared gameplay, conversations, state, devices, composition and
-world/story source, with typed editor controls and private native Play. Ordinary scene creation
-uses the catalogue rather than a new TypeScript registry entry. New artwork and physical
-calculations may require registered code primitives. Public editing downloads bundles; only
-the local source service writes validated repository files.
+| Area | Status | What this means |
+| --- | --- | --- |
+| Shared gameplay and editor foundation | Implemented | One Game loop, SceneModel, GameplaySession, ConversationSession and canonical state ownership. Folder and catalogue scenes use shared source, pending-document validation, typed editing and private native Play. |
+| One render path | Complete | Game, editor, title, cutscenes and taxi use renderWorldFrame; the former opening renderer and artwork wrappers are removed. |
+| C1: animation lifecycle and light | Complete | Playback owns animation advancement; seeking reconstructs in isolation; painting/bounds are read-only. Explicit View lighting replaces presentation reads of global light; unused citySkyline is removed. |
+| C2: transport consolidation | Complete | Regular train, P14 siding, Downtown, Galleria and Harbor use shared vehicles, movers, floors, seats and passenger flows. Old boarding cuts, platform clocks and replacement crowds are removed. |
+| C3: independent artwork placement | Partially implemented; next engineering closeout | Many scene fittings now have independent properties and placement. Remaining context-dependent families still need the bounded audit below. A registered preview alone does not prove portability. |
+| C4: guidance and current checks | Current for this release | Agent entry point, handbook and focused checks describe the shared engine. Keep them current with each change; this is not a separate historical migration project. |
+| M1: progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route are documented; comprehension is reviewed in the game. |
+| M2: Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion run in the connected harbor. |
+| M3: prologue journey and home | Implemented; experience review pending | Title lands at Harbor, shift leads into the two-car commute through four tunnel zones, underground Metro, Downtown and home/rest. This is not a claim of a full campaign playthrough. |
+| M4–M6: redesigned Downtown Act I | Planned | Sets/artwork can progress in parallel. The new deletion, augmentation and gradual hacking curriculum are not yet the completed campaign. |
+| M7–M9: robot body, Act II and remote Act III | Future | Story/body decisions and focused mechanics prototypes precede full chapters. |
 
-The opening story no longer has a separate gameplay controller: its phases, checkpoint gate, sleep card, morning trigger, clock pins, attention ping and light cue are
-story data (opening.json, each scene's `phases`) applied by the one game loop through pure rules (story/story-rules.ts), so the milestone 3
-timeline (shift, commute, home) can be authored without new loop code. Contacts and the END card are documents too.
+The existing multi-district game remains playable content; it is not evidence that the redesigned
+Downtown-only Act I or later body transitions have been implemented. Ordinary interactions,
+dialogue, objectives, access, rewards, prices and progression use shared source. Registered art
+and physical calculations may remain code primitives; arbitrary algorithm editing is not promised.
 
-ENG-01 through ENG-05, ENG-08 and ENG-09 consolidation is implemented across the existing game.
-ENG-06 measurement tools are available; no optimization is implied. ENG-07 remote identity/reach
-and future body/remote-presence mechanics remain future work. Completed engineering migration
-gates are retired; current contract tests own regression coverage. Current-format saves are
-supported; historic save-format compatibility is outside scope.
+## Release and verification
 
-## Terms
+This release is authorized for main and production. Git push and deployment completion are
+reported separately in the release response; a local green build alone is not a live deployment.
 
-Decided with Tommi, 2026-10-22; detail in [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md).
-A **zone** is the unit that is authored, saved, loaded and unloaded (today's "scene"; code keeps
-"scene" for now). A **seam** joins two zones with no cut, an **exit** with a cut; the **world**
-is the graph of zones. City → district → place stays the logical layout. One engine, one
-renderer: a scene that joins nothing is a world with one zone. (A scene model's trigger `Zones` in engine/model.ts are a
-different thing.)
+C1/C2 acceptance is complete, including Tommi's final approval of Train, Galleria Station,
+Harbor Station and Tower. Verification:
 
-## Next work
+- **24/24 current scene visual references match**, including accepted people/vehicle-kit changes,
+  requested seated-pose fixes, restored compliance sign and far gull silhouettes.
+- **84/84 actual Canvas2D lifecycle comparisons pass** across native/editor playback, isolated
+  seeking, repeated paused paint, resize, scales and reduced-motion settings.
+- **6/6 saved-source/fresh-native-reload cases pass**: Downtown, Galleria, Harbor, moving,
+  safety-locked siding and released-door siding. A real editor door edit passes protected Save,
+  a fresh source-store read and a fresh opaque native Play realm. Alighting/reboarding and unsafe
+  refusal use the shipping interaction path; private saves remain isolated.
+- Focused checks cover pass authorization, brake snap, safety rewiring, locks, dialogue after
+  alighting, passenger identity, source editing/history/bundles, read-only inspection and the
+  original prologue commute. Package TypeScript and builds are release checks.
 
-0. **One render path: implemented locally (2026-10-22).** Play, editor preview, the title glide,
-   cutscenes and taxi flight all use `renderWorldFrame`. The guard has no temporary exceptions.
-   The title's timeline travels through ordinary authored coast/city zones to the real harbor station;
-   its backdrop is a shared world composition. The old opening renderer and artwork wrappers are removed.
-   The glide now lands on the playable Harbor platform without the black fade. The dockworker
-   uses the shared character kit through the shift, commute and home phases.
+The reload verification found and fixed conditional mover paths restarting at their previous
+station. Current checkpoints keep an address to the chosen leg in validated source, elapsed time
+and halt identity; future choices stay in the ordinary mover queue. No saved executable steps,
+old-format codec, second runtime or fleet-management feature is added.
 
-1. **Seamless world, steps 1–9** (order and detail in
-   [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) §7): lab pilot of zones and seams with one
-   renderer over several zones; barriers; residency and reload by zone; harbor replan (a design
-   pass with Tommi, then the harbor as joined zones with the shift P0–P6 moved in); vehicles
-   pilot; people flows; Downtown and the underground Downtown Metro; a walkable train of two cars
-   (three kept possible); the seamless ride from the raised Harbor station to underground
-   Downtown, with P7–P9 authored on top. Step 9 completes milestone 3.
-2. **Parallel track: Act I sets** (below).
-   The precinct's role as a required Act I step or optional place remains undecided.
-3. Later seamless steps: the P14 siding (step 10), then the other stations (step 11).
-4. Keep gathering feedback on editor authoring comfort and communication clarity. Preserve the
-   current scene-centred editor and ongoing rendering/layer work.
-5. Prototype remote-presence requirements only when needed for M7 through M9. Settle body
-   location, transfer versus copy and Kessel's fate before M7.
+## Next work, in order
 
-Implemented locally: unjoined scenes unload after leaving and restore saved state on return.
-The `?play=harborShift` entry and Harbor start editor fixture now use the connected harbor zones.
-The former one-room prototype source and registrations are removed. The connected harbor is the sole shift implementation.
+1. **Finish C3 in bounded asset families.** Audit remaining Mall fronts/escalators and parent
+   geometry, Harbor stalls/ordinary fixtures, and any remaining train fittings against actual
+   consumers. Extract independent objects; retain context only when it is intrinsic. Do not
+   restart completed extractions or mistake every context entry for missing artwork.
+2. **Review M3's experience**, through frames/scenes: does the boss guide without rushing,
+   does travel read as one journey, and does home give breathing room? Mechanical verification
+   belongs to agents; Tommi's feedback concerns clarity, appeal, pacing and editor comfort.
+3. **Build M4**, then M5 and M6 using the progression table below. Introduce each mechanic through
+   an actual gameplay need, shared source, typed authoring, a compact demo and a real scene.
+   Keep Test District examples immediately reachable and free of unrelated clutter.
+4. **Continue Downtown sets in parallel.** Their artwork/layout can evolve before gameplay is
+   attached. The precinct's required versus optional role remains undecided.
+5. **Prototype later embodiment/remote mechanics when needed.** Before M7 settle body location,
+   transfer versus copy and Kessel's fate. Prove remote rules before building full Act III.
 
-Tommi reviews frames and scenes to give feedback; that is how review checkpoints are met. The
-Harbor Shift pacing review is done this way during the harbor replan, not as a separate player
-test. Playthrough scope and regression-suite/CI expansion are separate discussions; agents may
-add focused checks for a fix.
+## C3 completion conditions
 
-Purchases, objectives/access, conversations and devices received positive functional feedback.
-Wiring mostly works; revisit concrete details when reported. Player-facing level packs, loading
-and sharing require an explicit product decision; internal ordinary scene creation is already
-supported. A future pack must remain data-only and validate atomically through existing bundle
-contracts.
+Detailed dependency findings live in [artwork authoring](./docs/reference/ARTWORK-ROLE-AUTHORING.md).
+The Library retains Reusable anywhere / Requires source context / Scene helpers; no new taxonomy.
 
-## Parallel track: Act I sets
+Already implemented: independent fittings across the reviewed scene families; source-controlled
+sky traffic; property-based shelves/lights/rooms; standalone brake and train fittings; scalar
+bar/hut dimensions; explicit optional cable endpoints; temporary typed Library property/state
+controls; removal of the copied embedded listing and snapshot-wrapper classes.
 
-Act I plays only in Downtown. For now its places are built as **sets**: art and layout, no
-gameplay. Tommi reviews each set. The places and their order are in the
-[revised Act I route](./docs/design/PROLOGUE-ACT-I-PLAN.md#revised-act-i-route-2026-10-22).
-Wiring and hacking puzzles are not built yet; M4–M6 gameplay waits until the prologue is done.
+For each remaining family:
 
-## Current position
+- Inspect actual dependencies and decide independent piece versus explicit required context.
+- Use registered artwork with explicit properties, anchors, bounds, state inputs and normal
+  composition placements; share drawing kernels and the shipping renderer.
+- Prove add/move/duplicate/property/state editing in another supported scene, invalid-edit refusal,
+  undo/redo, bundles, protected Save, native source reload and pending native Play as applicable.
+- Preserve approved drawing order, seeded appearance, animation cadence and selection geometry;
+  remove replaced registrations/wrappers only after checking consumers.
+- Keep prepared actors, sequence frames, connected machinery and endpoint-based wiring with
+  their actual owners. Their context does not justify a second simulation or copied state.
 
-- **Milestone 1: design pass complete.** [PROLOGUE-ACT-I-PLAN.md](./docs/design/PROLOGUE-ACT-I-PLAN.md)
-  holds the prologue matrix, the teaching spine and the revised Act I route (2026-10-22).
-  It is a design deliverable, not evidence of player comprehension or implemented progression.
-- **Milestone 2: shift implemented in the connected harbor.** Launch `?play=harborShift`; see
-  [preview and validation notes](./README.md#harbor-shift-prototype-milestone-2). Boss, coworker,
-  deliveries, trolley/clamp, checkout and completion are present with isolated saves. Brief
-  centre-to-HUD goal text and contextual pings are in; the persistent task card was removed after
-  feedback. Its interactions and saved state now live in the replanned harbor zones; the one-room source is removed.
-- **Milestone 3: implemented locally; experiential review pending.** The title lands at Harbor;
-  the shift runs in joined zones; the two-car service carries the player and live passengers through
-  four tunnel zones to underground Metro; stairs continue to Downtown and the existing home/rest
-  beats. New-service presets, curved/drop demo, typed vehicle/passenger tools, shared-state Play
-  fixtures and current vehicle reload checkpoints are implemented. This is the Harbor–Downtown
-  vertical slice. City routines, general pedestrian routes through stairs and remaining stations
-  are later work. Current status: [SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md).
-- **Recent kit work:** rooms open on arrival; remembered rooms are shown darkened without their
-  people; street doors have inside faces; Act I place style frames are in their second round;
-  the storyboard is in the editor's Library.
-- A fresh campaign now starts with the Harbor prologue. The existing multi-district Act I, staged
-  augmentation and later body transitions have not been redesigned by this implementation pass.
-  P14 and the other stations retain their existing line until seamless steps 10–11 replace them.
-- No test session, regression-suite expansion, CI work or publication is implied by this roadmap.
+Stop C3 when all named remaining candidates are resolved and the supported contracts are verified.
+Do not claim every asset independently portable, or complete engine/asset consolidation, before then.
+The completed C1/C2 goal does not certify C3.
 
 ## Build sequence
 
@@ -117,39 +107,36 @@ Wiring and hacking puzzles are not built yet; M4–M6 gameplay waits until the p
 | 8. Act II chapters | Selected district leads toward recovering the body; separate lessons for logic, time, resources and security | Each chapter advances body recovery and teaches a manageable new concept | M7; bounded branching rather than all districts at once |
 | 9. Remote presence and Act III | Limited remote precursor in Act II, body-loss transition, network/ally play, resolution (the harbor finale may end it) | Remote rules are understood before dependence on them; ending addresses personal and Registry stakes | Prototype remote play before writing/building full Act III |
 
-## Milestone 2 scope
-
-Use P1–P6 in the [scene plan](./docs/design/PROLOGUE-ACT-I-PLAN.md). The prototype shares
-existing harbor sets and starts directly at shift arrival. It has one boss, one recurring
-coworker, two transport tasks, one ordinary physical problem, checkout and a clear end. The
-boss gives concise contextual instructions; fictional productivity pressure must not punish
-player learning speed. No new mechanics, security puzzles, robot abilities or hacking UI.
-Retargeting the cinematic, the harbor replan and the commute belong to milestone 3.
-
 ## Review checkpoints
 
-Tommi reviews frames and scenes at each checkpoint.
+- M3: independent movement/interaction/carrying, readable boss guidance, continuous journey,
+  breathing room at home.
+- M4 / early M5: deletion is understandable; a player can predict a verb or wire.
+- M6: Downtown sustains interest and the emergency transfer lands.
+- Before M8: robot embodiment justifies its narrative and mechanical cost.
+- Before M9: remote action is readable and enjoyable in familiar places.
 
-- Harbor replan (seamless step 4): can players move, interact and carry independently? Does the
-  boss guide without rushing?
-- After M3: does the seamless ride read as one journey, and does home give breathing room?
-- After M4 / early M5: is deletion understandable, and can players predict a verb or wire?
-- After M6: does Downtown sustain interest, and does the transfer land?
-- Before M8: does the robot body justify its narrative and mechanical cost?
-- Before M9: is remote action readable and enjoyable in familiar places?
+These are experience questions, not claims that a playthrough occurred. Purchases,
+objectives/access, conversations and devices received positive functional feedback. Wiring
+mostly works; revisit concrete issues when reported. Player-facing level-pack loading/sharing
+requires a product decision. Current-format saves are supported; historic compatibility is excluded.
 
-These are review questions, not claims that a playthrough occurred. Existing districts, devices,
-maps, transport and weather are reusable; availability does not require exposing all in Act I.
+## Plan ownership and references
 
-## Design references
+- This file owns C1–C4 status, M1–M9 priorities and next-work order.
+- [Seamless world](./docs/design/SEAMLESS-WORLD.md) owns zones/seams/vehicle implementation detail;
+  its steps are not a second milestone roadmap. A zone is authored/saved/loaded independently;
+  seams join zones continuously and exits join them with a cut.
+- [Progression concept](./docs/design/PROGRESSION-CONCEPT.md) and
+  [Prologue and Act I](./docs/design/PROLOGUE-ACT-I-PLAN.md) own story and learning design.
+- [Harbor zones](./docs/design/HARBOR-ZONES.md) owns harbor layout;
+  [Puzzles](./docs/reference/PUZZLES.md) describes existing puzzles and proposed dispositions.
+- [Engine handbook](./docs/reference/ENGINE-HANDBOOK.md), [AGENTS.md](./AGENTS.md),
+  [README](./README.md) and [authoring guidance](./authoring/README.md) describe current use.
+- SESSION-HANDOVER is a short session summary. DECK-SCREEN-PLAN describes a built feature;
+  PERFORMANCE-HARNESS-PLAN is an inactive optimization proposal. Neither is a parallel active goal.
 
-- [Seamless world](./docs/design/SEAMLESS-WORLD.md): zones, seams, vehicles, people flows and the step order.
-- [Progression concept](./docs/design/PROGRESSION-CONCEPT.md): story and learning direction.
-- [Prologue and Act I](./docs/design/PROLOGUE-ACT-I-PLAN.md): encounters and teaching dependencies.
-- [Puzzles](./docs/reference/PUZZLES.md): current puzzles and proposed dispositions.
-- [Story](./docs/design/STORY.md), [levels](./docs/design/LEVELS.md), [city](./docs/reference/CITY.md)
-  and [scene ideas](./docs/design/SCENE-IDEAS.md): design material; this roadmap owns priorities.
-
-Future goals need finite deliverables, named current contracts, verifiable completion conditions,
-exclusions and a stopping condition. Test current behavior and approved current visuals; do not
-retain an old engine or a migration ledger to prove ongoing correctness.
+Future goals need finite deliverables, named current contracts, completion conditions, exclusions
+and a stopping condition. Use current tests and approved visuals, not historical engine copies or
+migration ledgers. No campaign playthrough, CI expansion, optimization campaign or publication is
+implied by future roadmap edits; the user's current instructions control scope.

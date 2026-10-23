@@ -16,7 +16,8 @@ export function compilePeople(rows:readonly Resolved[],level:LevelSource|undefin
   const ref=r.props.vehicle as {frame:string;board:string;alight:string},vehicle=level?.vehicles?.find(v=>v.id===ref.frame);
   if(!vehicle)throw Error('Flow '+r.instance.id+' references a missing vehicle frame');
   for(const id of [ref.board,ref.alight])if(!vehicle.source.berths.some(b=>b.id===id))throw Error('Flow berth does not exist: '+id);
-  const raw=r.props.flow as unknown as FlowSource,flow:FlowSource={...raw,spawn:{...raw.spawn,...(raw.spawn.kind==='interval'?{start:0}:{})},id:r.instance.id,clock:'scene',looks:(r.props.looks as unknown[]).map((_,i)=>String(i)),route:raw.route.map(w=>({...w,zone:scene,x:w.x+r.placement.x,h:(w.h??0)+r.placement.h,...(w.kind==='board'?{vehicle:ref.frame}:{})}))};
+  const boardZone=vehicle.source.berths.find(b=>b.id===ref.board)!.zone,boarding=boardZone==='here'?scene:boardZone;
+  const raw=r.props.flow as unknown as FlowSource,flow:FlowSource={...raw,spawn:{...raw.spawn,...(raw.spawn.kind==='interval'?{start:0}:{})},id:r.instance.id,clock:'scene',looks:(r.props.looks as unknown[]).map((_,i)=>String(i)),route:raw.route.map(w=>({...w,zone:boarding,x:w.x+r.placement.x,h:(w.h??0)+r.placement.h,...(w.kind==='board'?{vehicle:ref.frame}:{})}))};
   const dummy:FlowVehicle={id:ref.frame,tripAt:()=>0,doors:()=>null},problems=flowProblems(flow,{graph:EMPTY_ZONE_GRAPH,vehicles:{[ref.frame]:dummy}});if(problems.length)throw Error(problems.join('; '));
   if(flow.spawn.kind!=='interval'||flow.spawn.every<=0||!Number.isFinite(flow.spawn.every)||flow.spawn.every<1)throw Error('Live passenger flow uses an interval of at least one second');
   const bounded=(v:number|undefined,lo:number,hi:number)=>v!==undefined&&Number.isFinite(v)&&v>=lo&&v<=hi;
@@ -45,7 +46,8 @@ export function stepPeople(state:PeopleState,sources:readonly PeopleSource[],lev
  }
  for(const source of sources){
   const frame=frames.find(f=>f.vehicle.id===source.frame);if(!frame)continue;
-  const history=state.windows[source.frame]??[],windows=history.filter(w=>w.berth===source.board);
+  const boarding=source.flow.route[0].zone;
+  const history=state.windows[source.frame]??[],windows=history.filter(w=>w.berth===source.board).map(w=>({...w,doors:w.doors.map(d=>({...d,zone:boarding}))}));
   // An unknown next opening only arranges the waiting line. Actual open doors still authorize boarding.
   if(frame.berth?.id!==source.board||frame.doors<frame.vehicle.doors.open){
    const berth=frame.vehicle.berths.find(b=>b.id===source.board)!,at=level.vehicleZones?.[berth.zone];
@@ -53,7 +55,8 @@ export function stepPeople(state:PeopleState,sources:readonly PeopleSource[],lev
    windows.push({trip:(history.at(-1)?.trip??-1)+1,open:t+30,close:t+45,berth:source.board,doors:doors.map(d=>({zone:source.flow.route[0].zone,x:d.x,h:d.h}))});
   }
   const adapter:FlowVehicle={id:source.frame,tripAt:at=>windows.find(w=>w.close>at)?.trip??((windows.at(-1)?.trip??-1)+1),doors:trip=>windows.find(w=>w.trip===trip)??null};
-  const people=flowPeople(source.flow,{graph:EMPTY_ZONE_GRAPH,vehicles:{[source.frame]:adapter}},t).filter(p=>p.index>=0);const out:FlowPicture[]=pictures[source.id]=[];
+  const projected={...source.flow,route:source.flow.route.map(w=>{const at=level.vehicleZones?.[w.zone];return{...w,x:w.x+(at?.x??0),h:(w.h??0)+(at?.h??0)};})};
+  const people=flowPeople(projected,{graph:EMPTY_ZONE_GRAPH,vehicles:{[source.frame]:adapter}},t).filter(p=>p.index>=0);const out:FlowPicture[]=pictures[source.id]=[];
   for(const p of people){
    if(state.riders[p.key])continue;
    if(p.state==='aboard'){

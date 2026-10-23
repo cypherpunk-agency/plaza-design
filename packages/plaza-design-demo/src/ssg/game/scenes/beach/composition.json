@@ -24,7 +24,7 @@
         "x": 70,
         "h": 0
       },
-      "order": 62,
+      "order": 63,
       "layer": "playfield"
     },
     {
@@ -106,10 +106,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -139,10 +137,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -172,10 +168,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -205,10 +199,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -238,10 +230,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -274,10 +264,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -310,10 +298,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -346,10 +332,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -382,10 +366,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -418,10 +400,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -454,10 +434,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -490,10 +468,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -523,10 +499,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -556,10 +530,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -701,10 +673,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -753,10 +723,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -786,10 +754,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -823,10 +789,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -860,10 +824,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -897,10 +859,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -934,10 +894,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1027,10 +985,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1047,25 +1003,8 @@
       "layer": "playfield",
       "bindings": {
         "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "barWidth": "scene.barWidth"
       }
     },
     {
@@ -1084,25 +1023,8 @@
       },
       "bindings": {
         "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "barWidth": "scene.barWidth"
       }
     },
     {
@@ -1136,10 +1058,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1173,10 +1093,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
         "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH",
         "limeVisible": "scene.limeVisible",
         "limeX": "scene.limeX",
         "limeH": "scene.limeH"
@@ -1218,25 +1136,8 @@
       },
       "bindings": {
         "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "barWidth": "scene.barWidth"
       }
     },
     {
@@ -1255,25 +1156,8 @@
       },
       "bindings": {
         "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "barWidth": "scene.barWidth"
       }
     },
     {
@@ -1307,10 +1191,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1361,10 +1243,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1398,10 +1278,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1435,10 +1313,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1457,25 +1333,8 @@
       },
       "bindings": {
         "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "barWidth": "scene.barWidth"
       }
     },
     {
@@ -1509,10 +1368,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1546,27 +1403,27 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
       "id": "drink",
-      "type": "beach.marker",
-      "props": {
-        "role": "drink"
-      },
+      "type": "props.drink",
+      "props": {},
       "placement": {
         "x": 0,
-        "h": 0
+        "h": 26
       },
-      "order": 7,
-      "layer": "logic",
+      "order": 33,
+      "layer": "set",
       "attach": {
         "instance": "stool-2",
         "anchor": "origin"
+      },
+      "bindings": {
+        "present": "scene.freeDrink",
+        "visible": "scene.barVisible"
       }
     },
     {
@@ -1575,39 +1432,6 @@
       "props": {},
       "placement": {
         "x": 694,
-        "h": 0
-      },
-      "order": 33,
-      "layer": "playfield",
-      "bindings": {
-        "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
-        "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
-      }
-    },
-    {
-      "id": "tower",
-      "type": "beach.tower",
-      "props": {},
-      "placement": {
-        "x": 770,
         "h": 0
       },
       "order": 34,
@@ -1629,10 +1453,39 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
+      }
+    },
+    {
+      "id": "tower",
+      "type": "beach.tower",
+      "props": {},
+      "placement": {
+        "x": 770,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "playfield",
+      "bindings": {
+        "palette": "scene.palette",
+        "horizon": "scene.horizon",
+        "waterline": "scene.waterline",
+        "rented": "scene.rented",
+        "billingPaused": "scene.billingPaused",
+        "billed": "scene.billed",
+        "freeDrink": "scene.freeDrink",
+        "danger": "scene.danger",
+        "lamps": "scene.lamps",
+        "gullShooed": "scene.gullShooed",
+        "hover": "scene.hover",
+        "barVisible": "scene.barVisible",
+        "barWidth": "scene.barWidth",
+        "towerVisible": "scene.towerVisible",
+        "pierVisible": "scene.pierVisible",
+        "boardwalkVisible": "scene.boardwalkVisible",
+        "shore": "scene.shore",
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1643,7 +1496,7 @@
         "x": 28,
         "h": 0
       },
-      "order": 35,
+      "order": 36,
       "layer": "playfield",
       "attach": {
         "instance": "tower",
@@ -1666,10 +1519,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1682,7 +1533,7 @@
         "x": -14,
         "h": 62
       },
-      "order": 36,
+      "order": 37,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.guard.pose"
@@ -1698,39 +1549,6 @@
       "props": {},
       "placement": {
         "x": 908,
-        "h": 0
-      },
-      "order": 37,
-      "layer": "playfield",
-      "bindings": {
-        "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
-        "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
-      }
-    },
-    {
-      "id": "castle",
-      "type": "beach.castle",
-      "props": {},
-      "placement": {
-        "x": 1004,
         "h": 0
       },
       "order": 38,
@@ -1752,10 +1570,39 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
+      }
+    },
+    {
+      "id": "castle",
+      "type": "beach.castle",
+      "props": {},
+      "placement": {
+        "x": 1004,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "playfield",
+      "bindings": {
+        "palette": "scene.palette",
+        "horizon": "scene.horizon",
+        "waterline": "scene.waterline",
+        "rented": "scene.rented",
+        "billingPaused": "scene.billingPaused",
+        "billed": "scene.billed",
+        "freeDrink": "scene.freeDrink",
+        "danger": "scene.danger",
+        "lamps": "scene.lamps",
+        "gullShooed": "scene.gullShooed",
+        "hover": "scene.hover",
+        "barVisible": "scene.barVisible",
+        "barWidth": "scene.barWidth",
+        "towerVisible": "scene.towerVisible",
+        "pierVisible": "scene.pierVisible",
+        "boardwalkVisible": "scene.boardwalkVisible",
+        "shore": "scene.shore",
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1766,7 +1613,7 @@
         "x": 12,
         "h": 0
       },
-      "order": 39,
+      "order": 40,
       "layer": "playfield",
       "attach": {
         "instance": "surfer",
@@ -1789,10 +1636,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -1805,7 +1650,7 @@
         "x": 936,
         "h": 0
       },
-      "order": 40,
+      "order": 41,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-0.pose"
@@ -1821,7 +1666,7 @@
         "x": 966,
         "h": 0
       },
-      "order": 41,
+      "order": 42,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-1.pose"
@@ -1837,7 +1682,7 @@
         "x": 852,
         "h": 0
       },
-      "order": 42,
+      "order": 43,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-2.pose"
@@ -1853,7 +1698,7 @@
         "x": 990,
         "h": 0
       },
-      "order": 43,
+      "order": 44,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-3.pose"
@@ -1869,7 +1714,7 @@
         "x": 300,
         "h": 0
       },
-      "order": 44,
+      "order": 45,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-4.pose"
@@ -1885,7 +1730,7 @@
         "x": 600,
         "h": 0
       },
-      "order": 45,
+      "order": 46,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-5.pose"
@@ -1901,7 +1746,7 @@
         "x": 290,
         "h": 56
       },
-      "order": 46,
+      "order": 47,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.beachgoer-6.pose"
@@ -1917,7 +1762,7 @@
         "x": -30,
         "h": 0
       },
-      "order": 47,
+      "order": 48,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.volley.pose"
@@ -1937,7 +1782,7 @@
         "x": 18,
         "h": 0
       },
-      "order": 48,
+      "order": 49,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.kid.pose"
@@ -1957,7 +1802,7 @@
         "x": 1066,
         "h": 0
       },
-      "order": 49,
+      "order": 50,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.surfer.pose"
@@ -1969,42 +1814,6 @@
       "props": {},
       "placement": {
         "x": 1440,
-        "h": 0
-      },
-      "order": 50,
-      "layer": "playfield",
-      "bindings": {
-        "palette": "scene.palette",
-        "horizon": "scene.horizon",
-        "waterline": "scene.waterline",
-        "rented": "scene.rented",
-        "billingPaused": "scene.billingPaused",
-        "billed": "scene.billed",
-        "freeDrink": "scene.freeDrink",
-        "danger": "scene.danger",
-        "lamps": "scene.lamps",
-        "gullShooed": "scene.gullShooed",
-        "hover": "scene.hover",
-        "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
-        "towerVisible": "scene.towerVisible",
-        "pierVisible": "scene.pierVisible",
-        "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
-        "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
-      }
-    },
-    {
-      "id": "pier",
-      "type": "beach.pier-deck",
-      "props": {
-        "width": 472,
-        "railingLength": 302
-      },
-      "placement": {
-        "x": 1078,
         "h": 0
       },
       "order": 51,
@@ -2026,26 +1835,23 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
-      "id": "pier-lamp-0",
-      "type": "beach.pier-lamp",
-      "props": {},
+      "id": "pier",
+      "type": "beach.pier-deck",
+      "props": {
+        "width": 472,
+        "railingLength": 302
+      },
       "placement": {
-        "x": 110,
+        "x": 1078,
         "h": 0
       },
       "order": 52,
       "layer": "playfield",
-      "attach": {
-        "instance": "pier",
-        "anchor": "origin"
-      },
       "bindings": {
         "palette": "scene.palette",
         "horizon": "scene.horizon",
@@ -2063,18 +1869,16 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
-      "id": "pier-lamp-1",
+      "id": "pier-lamp-0",
       "type": "beach.pier-lamp",
       "props": {},
       "placement": {
-        "x": 176,
+        "x": 110,
         "h": 0
       },
       "order": 53,
@@ -2100,18 +1904,16 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
-      "id": "pier-lamp-2",
+      "id": "pier-lamp-1",
       "type": "beach.pier-lamp",
       "props": {},
       "placement": {
-        "x": 242,
+        "x": 176,
         "h": 0
       },
       "order": 54,
@@ -2137,18 +1939,16 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
-      "id": "pier-controller",
-      "type": "beach.pier-controller",
+      "id": "pier-lamp-2",
+      "type": "beach.pier-lamp",
       "props": {},
       "placement": {
-        "x": 68,
+        "x": 242,
         "h": 0
       },
       "order": 55,
@@ -2174,18 +1974,16 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
-      "id": "berth-sign",
-      "type": "beach.berth-sign",
+      "id": "pier-controller",
+      "type": "beach.pier-controller",
       "props": {},
       "placement": {
-        "x": 118,
+        "x": 68,
         "h": 0
       },
       "order": 56,
@@ -2211,10 +2009,43 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
+      }
+    },
+    {
+      "id": "berth-sign",
+      "type": "beach.berth-sign",
+      "props": {},
+      "placement": {
+        "x": 118,
+        "h": 0
+      },
+      "order": 57,
+      "layer": "playfield",
+      "attach": {
+        "instance": "pier",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "palette": "scene.palette",
+        "horizon": "scene.horizon",
+        "waterline": "scene.waterline",
+        "rented": "scene.rented",
+        "billingPaused": "scene.billingPaused",
+        "billed": "scene.billed",
+        "freeDrink": "scene.freeDrink",
+        "danger": "scene.danger",
+        "lamps": "scene.lamps",
+        "gullShooed": "scene.gullShooed",
+        "hover": "scene.hover",
+        "barVisible": "scene.barVisible",
+        "barWidth": "scene.barWidth",
+        "towerVisible": "scene.towerVisible",
+        "pierVisible": "scene.pierVisible",
+        "boardwalkVisible": "scene.boardwalkVisible",
+        "shore": "scene.shore",
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -2227,7 +2058,7 @@
         "x": 222,
         "h": 8
       },
-      "order": 57,
+      "order": 58,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.fisher.pose"
@@ -2245,7 +2076,7 @@
         "x": 0,
         "h": -8
       },
-      "order": 58,
+      "order": 59,
       "layer": "playfield",
       "attach": {
         "instance": "fisher",
@@ -2268,10 +2099,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -2284,7 +2113,7 @@
         "x": 174,
         "h": 0
       },
-      "order": 59,
+      "order": 60,
       "layer": "playfield",
       "bindings": {
         "pose": "actor.cat.pose"
@@ -2302,7 +2131,7 @@
         "x": 274,
         "h": 0
       },
-      "order": 60,
+      "order": 61,
       "layer": "playfield",
       "attach": {
         "instance": "pier",
@@ -2325,10 +2154,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {
@@ -2339,7 +2166,7 @@
         "x": 0,
         "h": 0
       },
-      "order": 61,
+      "order": 62,
       "layer": "playfield",
       "bindings": {
         "palette": "scene.palette",
@@ -2358,10 +2185,8 @@
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
-        "drinkX": "scene.drinkX",
         "shore": "scene.shore",
-        "lampPositions": "scene.lampPositions",
-        "drinkH": "scene.drinkH"
+        "lampPositions": "scene.lampPositions"
       }
     },
     {

@@ -6,7 +6,10 @@
 > built. [ROADMAP.md](../../ROADMAP.md) owns priorities, and
 > [ENGINE-HANDBOOK.md](../reference/ENGINE-HANDBOOK.md) describes the engine as it is.
 
-**Status (2026-10-22, current local work; not published).**
+**Status (2026-10-23): steps 1–9 implemented for Harbor–Downtown and pushed to main at `7e10e9a`;
+experience review pending. Production unchanged.** Remaining animation, transport and asset
+consolidation is tracked as C1–C4 in [ROADMAP.md](../../ROADMAP.md); this table does not certify
+the whole city or complete asset extraction.
 
 | Step | State |
 | --- | --- |
@@ -14,7 +17,7 @@
 | 2 Barriers | Built: `level.barrier` (turnstile, gate, door; `closes`), access rules incl. shared state, editor Access tab with Test the rule, story-phase barrier rules |
 | 3 Residency | Built: camera-driven joined-zone residency; unjoined scenes dispose on departure and restore saved state on return. Visible neighbours tick live; active controls remain with the player's zone. |
 | 4 Harbor | Five playable connected zones; `?play=harborShift` starts at the raised station. East-first layout, stair/lift geometry, turnstile near cabinet, running shift clock and shed signs fixed. One independent coast backdrop spans the joins; set pieces can overhang. Focused checks cover traversal, shift commands, clock, lifecycle, drawing endpoints and seam continuity. |
-| 5 Vehicles | Built locally: working-shuttle and curved/drop-cart creation presets; boarding, seats, gangways, shared lift attachment; typed consist/route/berth controls; pending Play, history, bundle and Save. Cross-zone services retain their Circuit owner and geometry through floating-origin changes. |
+| 5 Vehicles | Built and on main: working-shuttle and curved/drop-cart creation presets; boarding, seats, gangways, shared lift attachment; typed consist/route/berth controls; pending Play, history, bundle and Save. Cross-zone services retain their Circuit owner and geometry through floating-origin changes. |
 | 6 People flows | Live interval passenger flows in the shuttle pilot and real Harbor service: approach, queue, actual-door boarding, seats, ride, alight and leave with stable identities. SceneModel owns bounded, 60-second reload memory. Typed Passenger inspector. General city routines and routes through stairs are still future work; the older Galleria/HarborStation/train crowd controllers remain with those not-yet-replaced routes. |
 | 7 Downtown + Metro | Underground Metro replaces the raised Downtown platform. West stair joins the real Downtown street; the opening verification is a level barrier. Both are editable together. |
 | 8 Walkable train | The real Harbor–Downtown service uses the same two-car source, doors, gangways, seats and live passengers as the pilot. Vehicle checkpoints retain the source path step and player attachment during a reload. |
@@ -170,7 +173,7 @@ City & travel › Stations. It has three effects:
   around it;
 - it picks the station kit preset:
   - underground: a ceiling slab, tiled walls and no sky;
-  - raised: piers, a canopy and the `citySkyline` view;
+  - raised: piers, a canopy and registered distant artwork;
   - indoor: the host building's interior;
 - it sets whether the station's floors are `indoor` for lighting.
 
@@ -253,7 +256,7 @@ each layer's parallax.
 For Downtown the handover is simple because the station is underground. Downtown's street, with its
 `streetLayers` city and street moments, is above the ground line. The station's walls and slab are below it.
 The street's ground is the station's ceiling, so a camera on the stairs sees both in cross-section. Raised
-stations (the Harbor) keep `citySkyline`, which advances once per painted frame while its zone is drawn.
+stations use registered distant artwork. The unused `citySkyline` mechanism is removed; intro packet animation is advanced by its playback owner before painting. Sky fleets are authored `environment.sky-traffic` placements in the shared sky pass.
 `renderDowntownStreet`, the borrower path the back yard uses today, is the precedent for sharing a zone's
 backdrop.
 
@@ -435,18 +438,20 @@ Today, three separate things make up the metro:
 - the ride is the Train scene's `train.car`;
 - boarding is a cut (`enterTrain` → `boardRide` → `travel`).
 
-The player-facing service stays as it is, with the same timing and frequency (decided).
+Current direction, confirmed by Tommi on 2026-10-23: preserve journey and P14 timings; align station
+timing to them. The prior 25-second platform animation is not a separate schedule to preserve. No fleet
+management, independent platform service scheduler or boarding-time train swap is required.
 
-1. **The platform train becomes a vehicle in the station zone.** Its mover runs one `service` path built from
-   today's `TIMETABLE`: arrive, dwell, leave, wait, repeat. The path starts at today's `OFFSET`, so each
-   platform keeps its rhythm. It is drawn at the player's plane (parallax 1), using the Train composition's
-   shell, so its doors are where the player walks. `platformDoors`' parallax correction goes away.
-2. **The swap, in one sentence:** when you step aboard a train standing at a platform, the engine makes it
-   the train you ride, the Train scene's car, at the same spot, with the same open doors and the same
-   people, so nothing on screen changes.
-
-   This is today's `boardRide(from, ahead)`. When you arrive at a station, the reverse happens: the station's
-   `service` mover is set to the dwell, which replaces `platformShiftFor`/`PLATFORM_SHIFT`.
+1. **The platform and onboard views use the same vehicle.** The existing Circuit mover owns arrival,
+   dwell, doors, travel and braking. The shared vehicle contract supplies its moving floor and berths.
+   It is drawn at the player's plane (parallax 1), using source-authored shell/interior artwork, so
+   its doors are where the player walks. `platformDoors`' parallax correction goes away.
+2. **Boarding changes the player's attachment.** The native level rules attach the player through
+   open doors at a stationary berth and detach them when they step off. The mover and people retain
+   their owners and state; boarding does not replace the vehicle or restart its schedule.
+   Remove `boardRide` handoffs and `platformShiftFor`/`PLATFORM_SHIFT` once their actual consumers
+   have moved. During the puzzle's emergency stop, station departure signs show a delay derived from
+   that train's state. No extra timer or saved delay copy is needed.
 3. **Departure**: the camera rides with the car. The station slides away and the train runs on along its
    route into the tunnel zone, which is an authored zone using `train-scenery.ts` and the `train` provider.
    The station becomes near, then unloaded.
@@ -460,8 +465,9 @@ The player-facing service stays as it is, with the same timing and frequency (de
 a service ledge, sits on the route at `SIDING` (ring 5350). With the doors cable rewired, the player steps out
 onto it without a cut. Its stair to the pier is a **temporary ordinary exit** to `harbor`
 (`TRANSPORT.siding`), which is acceptable (decided). If the replanned harbor (step 4) leaves room for it, the
-stair becomes a seam into the harbor's zones. `train.car` saves are unchanged, the scene id stays `train`, and
-`startRide` fixtures keep working.
+stair becomes a seam into the harbor's zones. Current source-owned checkpoint behavior and private Play
+starting states must remain explicit and tested. This does not require historical save compatibility,
+alias maps or a promise to retain a superseded scene solely for its old id.
 
 **Harbor replan, before Downtown + Metro (decided).** The harbor, including the prologue's harbor shift
 (`?play=harborShift`), is replanned as several joined zones: the pier, the raised Harbor Station, the work bay

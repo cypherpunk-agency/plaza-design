@@ -16,6 +16,12 @@ export function validateWorldVehicles(scenes:Readonly<Record<string,{level?:Leve
 export interface LevelVehicle {id:string;source:VehicleSource;zone?:string;x:number;h:number;lift?:string}
 export interface VehicleAttachment {id:string;x:number;h:number;seat?:string;panel?:{lift:string;pick:number}}
 export interface VehicleSave {owner:string;id:string;x:number;h:number;seat?:string}
+/** A vehicle-only composition arrives on its real moving floor, without an invisible stationary copy. */
+export function arriveVehicleLevel(source:LevelSource,p:LevelPlayer,m:Movers,owner:string,vehicle:string,h:number):Level{
+ const lv:Level={source,state:{floor:'',ride:null,reveal:{}}};
+ if(!restoreVehicle(lv,p,m,{owner,id:vehicle,x:p.x,h}))throw Error('Vehicle arrival has no floor under its source spawn: '+owner+'/'+vehicle);
+ return lv;
+}
 /** The player's current place in the vehicle, independent of the world's floating origin. */
 export function saveVehicle(lv:Level|undefined|null,p:LevelPlayer,here:string):VehicleSave|undefined{
  const rider=lv?.state.vehicle,definition=rider&&(lv!.source.vehicleBase??lv!.source).vehicles?.find(v=>v.id===rider.id);
@@ -56,8 +62,10 @@ const model=(m:Movers,zone?:string):MoverModel=>typeof m==='function'?m(zone):m;
 export function levelVehicleFrames(source:LevelSource,m:Movers):VehicleFrame[]{
  const base=source.vehicleBase??source,placed=new Map(Object.entries(base.vehicleZones??base.zones??{}).map(([id,z])=>[id,{dx:z.x,dh:z.h}]));
  return(base.vehicles??[]).flatMap(v=>{
+  if(v.source.presenceQuery&&model(m,v.zone).gameplayQuery?.(v.source.presenceQuery)!==true)return[];
   const placements=new Map(placed);
   if(v.zone&&placed.has(v.zone))placements.set('here',placed.get(v.zone)!);
+  if(!v.zone&&!placements.has('here'))placements.set('here',{dx:0,dh:0});
   if(!base.zones&&!base.vehicleZones)for(const leg of v.source.route.legs)placements.set(leg.zone,{dx:0,dh:0});
   for(const[id,p]of placements)placements.set(id,{dx:p.dx+v.x,dh:p.dh+v.h});
   const framed={...v.source,id:v.id},frame=vehicleFrame(framed,model(m,v.zone),placements,consistLevel(framed));
@@ -144,3 +152,5 @@ export function levelVehicleVisuals(source:LevelSource,m:Movers){return Object.f
  const host=v.zone?source.zones?.[v.zone]:undefined,x=f.part.dx-(host?.x??0)-v.x,h=f.part.dh-(host?.h??0)-v.h;
  return[v.id,{x,h,open:f.doors}];
 }));}
+/** The same query hides the frame and all attached artwork; hidden vehicles have no floors or prompts. */
+export function levelVehicleVisibility(source:LevelSource,m:Movers){return Object.fromEntries((source.vehicleBase??source).vehicles?.filter(v=>v.source.presenceQuery).map(v=>[v.id,model(m,v.zone).gameplayQuery?.(v.source.presenceQuery!)===true])??[]);}

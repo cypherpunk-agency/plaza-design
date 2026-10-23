@@ -36,6 +36,10 @@ export interface Cutscene extends CutsceneData {
   id: string;
   /** JSON compositions own their exact transition envelope; custom pictures retain the default. */
   ownsFade?: boolean;
+  /** Existing cutscene player owns animation advancement; painting only reads prepared pictures. */
+  advance?: (time:number) => void;
+  seek?: (time:number) => void;
+  prepare?: (context:CanvasRenderingContext2D,view:CutView,time:number) => void;
   /**
    * Draw the frame at `t` seconds through the one frame (runtime/render-scene.ts renderWorldFrame) at `scale`, adding
    * `director` (the player's letterbox and default fade) to the sequence's own direction.

@@ -6,7 +6,7 @@ import { cinematicDocuments } from '../../src/ssg/game/story/cutscenes/documents
 import {art} from '../../src/ssg/game/art';
 import { cinematicTimelineContext, cutView } from '../../src/ssg/game/art/sequences/cinematics';
 import { Skyline } from '../../src/ssg/game/art/environment/skyline';
-import{introFrame}from'../../src/ssg/game/art/sequences/skyline';
+import{introFrame,introLayout}from'../../src/ssg/game/art/sequences/skyline';
 import{IntroSeekSession}from'../../src/ssg/game/story/cutscenes/skyline-session';
 import{lightAt}from'../../src/ssg/game/world/light';
 const lighting=lightAt(1,580,90,null);
@@ -40,11 +40,13 @@ for (const composition of [openingDocuments.composition, ...Object.values(cinema
 const view = cutView(640,360,false,lighting);
 for (const reduced of [false, true]) {
   const forward = new Skyline(), seek = new IntroSeekSession(), f = recording(), r = recording(), expected = new Map<number, string>();
-  const v = { ...view, reduced };
+  const v = { ...view, reduced };forward.prepareLayout(f.ctx,introLayout(v));
   for (let frame = 0; frame <= 1560; frame++) {
     const time = frame / 60, previous = frame ? (frame - 1) / 60 : 0;
     f.commands.length = 0; r.commands.length = 0;
-    const parts = introFrame(f.ctx, v, time, 26, { city: forward, step: Math.min(3, Math.max(0, (time - previous) * 60)) }).parts;
+    const prepared = introFrame(f.ctx, v, time, 26, { city: forward });
+    forward.advance(f.ctx,prepared.frame,Math.min(3,Math.max(0,(time-previous)*60)),reduced);
+    const parts=prepared.parts;
     parts.find(p => p.id === 'network')!.draw();
     const sought = seek.parts(r.ctx, v, time, 26); sought.find(p => p.id === 'network')!.draw();
     assert.deepEqual(r.commands, f.commands, `Packet seek differs at ${time}, reduced ${reduced}`);
@@ -54,11 +56,12 @@ for (const reduced of [false, true]) {
     r.commands.length = 0; seek.parts(r.ctx, v, frame / 60, 26).find(p => p.id === 'network')!.draw(); assert.equal(JSON.stringify(r.commands), expected.get(frame));
   }
   const a = new Skyline(), b = new Skyline(), ca = recording(), cb = recording();
-  const initial = introFrame(ca.ctx, v, 0, 26, { city: a, step: 0 }); introFrame(cb.ctx, v, 0, 26, { city: b, step: 0 });
+  a.prepareLayout(ca.ctx,introLayout(v));b.prepareLayout(cb.ctx,introLayout(v));const initial = introFrame(ca.ctx, v, 0, 26, { city: a }); introFrame(cb.ctx, v, 0, 26, { city: b });
   for (let frame = 0; frame < 1000; frame++) {
     ca.commands.length = cb.commands.length = 0;
     const k = frame % 11 === 0 ? 3 : frame % 7 === 0 ? 0 : 1;
-    a.parts(ca.ctx, initial.frame, { ...initial.draw, k }).find(p => p.id === 'network')!.draw(); b.advance(cb.ctx, initial.frame, k, reduced);
+    a.advance(ca.ctx,initial.frame,k,reduced);const beforePaint=a.snapshot();
+    a.parts(ca.ctx, initial.frame, initial.draw).find(p => p.id === 'network')!.draw();assert.deepEqual(a.snapshot(),beforePaint,'painting is read-only');b.advance(cb.ctx, initial.frame, k, reduced);
     assert.deepEqual(a.snapshot(), b.snapshot());
   }
   const snapshot = a.snapshot(); a.advance(ca.ctx, initial.frame, 100, reduced); a.restore(snapshot); assert.deepEqual(a.snapshot(), snapshot);

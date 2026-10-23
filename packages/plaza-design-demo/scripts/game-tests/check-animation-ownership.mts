@@ -1,0 +1,25 @@
+/** Painting, duplicate inspection and seeking never advance the playback owner's packet state. */
+import assert from 'node:assert/strict';
+import {Skyline} from '../../src/ssg/game/art/environment/skyline';
+import {IntroPlaybackSession,IntroSeekSession} from '../../src/ssg/game/story/cutscenes/skyline-session';
+import {introFrame,introLayout} from '../../src/ssg/game/art/sequences/skyline';
+import {lightAt} from '../../src/ssg/game/world/light';
+const commands:unknown[]=[];
+const target:Record<string,unknown>={},ctx=new Proxy(target,{get(o,k:string){if(k.startsWith('create'))return()=>({addColorStop(){}});return o[k]??((...args:unknown[])=>commands.push([k,...args]));},set(o,k:string,v){o[k]=v;commands.push([k,v]);return true;}}) as CanvasRenderingContext2D;
+const view={viewW:640,viewH:360,barTop:32,barBottom:58,reduced:false,lighting:lightAt(1,1140,90,null)};
+const owner=new IntroPlaybackSession();owner.initialize(ctx,view,0,26);
+const zeroSeek=new IntroSeekSession(),zero=zeroSeek.prepare(ctx,view,0,26);assert.deepEqual(owner.prepare(ctx,view,0,26).city.snapshot(),zero.city.snapshot(),'initial playback picture matches time-zero seeking');
+for(let i=1;i<=600;i++)owner.advance(i/60);
+const options=owner.prepare(ctx,view,10,26),before=options.city.snapshot();
+const paint=()=>{commands.length=0;for(const p of introFrame(ctx,view,10,26,options).parts)p.draw();return JSON.stringify(commands);};
+const first=paint();assert.equal(paint(),first,'same-time redraw is command-identical');assert.deepEqual(options.city.snapshot(),before,'painting does not mutate animation state');
+owner.prepare(ctx,view,10,26);assert.deepEqual(options.city.snapshot(),before,'inspection does not advance playback');
+owner.initialize(ctx,view,10,26);assert.deepEqual(options.city.snapshot(),before,'preparing the same playback viewport cannot advance a paused picture');
+const seek=new IntroSeekSession();seek.prepare(ctx,view,18,26);seek.prepare(ctx,view,3,26);const sought=seek.prepare(ctx,view,10,26);assert.deepEqual(sought.city.snapshot(),before,'continuous owner and isolated seek agree after 600 real ticks');
+assert.deepEqual(options.city.snapshot(),before,'independent seeking cannot mutate playback');
+const city=new Skyline(),frame=introLayout(view);assert.throws(()=>city.parts(ctx,frame,{cam:0,a:0,still:false,floor:false,rain:0}),/Prepare/);city.prepareLayout(ctx,frame);
+city.advance(ctx,frame,1,false);const saved=city.snapshot();city.parts(ctx,frame,{cam:0,a:10,still:false,floor:false,rain:0}).find(p=>p.id==='network')!.draw();assert.deepEqual(city.snapshot(),saved,'draw consumes prepared state');
+assert.throws(()=>owner.prepare(ctx,{...view,viewW:800},10,26),/Initialize/,'painting cannot silently reset authoritative state for a new viewport');
+assert.deepEqual(options.city.snapshot(),before,'a rejected unprepared resize leaves playback untouched');owner.initialize(ctx,{...view,viewW:800},10,26);assert.notEqual(owner.prepare(ctx,{...view,viewW:800},10,26).city.snapshot().key,before.key,'the playback owner handles resize before painting');
+const resized={...view,viewW:800},reference=new IntroSeekSession();owner.seek(3);assert.deepEqual(owner.prepare(ctx,resized,3,26).city.snapshot(),reference.prepare(ctx,resized,3,26).city.snapshot(),'live timeline seeking adopts an isolated reconstruction');owner.advance(3+1/60);assert.deepEqual(owner.prepare(ctx,resized,3+1/60,26).city.snapshot(),reference.prepare(ctx,resized,3+1/60,26).city.snapshot(),'resuming after a seek continues the normal cadence');
+console.log('Animation ownership PASS: frame/inspection idempotence, tick-owned advancement and independent seek.');

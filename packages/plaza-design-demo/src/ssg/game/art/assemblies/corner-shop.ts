@@ -1,6 +1,4 @@
 /** Extracted artwork. Scene-owned layout, actors and visual inputs are supplied explicitly. */
-import type { PreparedCharacter } from "../../runtime/characters";
-import { drawCharacterFrame } from "../characters/appearance";
 import { type View } from "../core/view";
 import type { Light } from "../../world/light";
 import { drawGrade } from "../atmosphere/lighting";
@@ -8,15 +6,11 @@ import { box,C,exitDoor,O,onScreen,PAPER,rng,tell,text } from "../core/primitive
 import { ALARM, paperSign } from '../signage/kit';
 import { drawPane,windowShaft } from "../environment/sky";
 import { adScreen,camera,lotteryScreen,ticker,wallSign } from "../signage/screens";
-import { fridge,shelf,type ShelfSpec } from "./construction";
-export interface ArtworkInputs { L: { width: number; spawn: number; ceil: number; window: { x: number; w: number; h0: number; h1: number; }; mirror: { x: number; h: number; }; shelves: ShelfSpec[]; vend: { x: number; w: number; h: number; }; fridge: { x: number; w: number; h: number; seed: number; doors: number; }; counter: { x: number; w: number; h: number; }; till: number; keeper: number; tubes: number[]; slab: number; storey: number; risers: number[]; };
-lighting: Light; OUTSIDE: PreparedCharacter[];
-keeper: PreparedCharacter;
-PEOPLE: PreparedCharacter[]; foregroundParallax?:number; labels?:{ticker?:string;limit?:string;vending?:string;cash?:string;counter?:string} }
+import { fridge } from "./construction";
+export interface ArtworkInputs { L: { width: number; spawn: number; ceil: number; window: { x: number; w: number; h0: number; h1: number; }; mirror: { x: number; h: number; }; vend: { x: number; w: number; h: number; }; fridge: { x: number; w: number; h: number; seed: number; doors: number; }; counter: { x: number; w: number; h: number; }; till: number; keeper: number; slab: number; storey: number; risers: number[]; };
+lighting: Light; foregroundParallax?:number; labels?:{ticker?:string;limit?:string;vending?:string;cash?:string;counter?:string} }
 export function createCornerShopArtwork(inputs: ArtworkInputs) {
-const { L, OUTSIDE, keeper, PEOPLE } = inputs;
-const drawCharacter=(x:CanvasRenderingContext2D,v:View,p:PreparedCharacter)=>{if(p.visible)drawCharacterFrame(x,v,p.character,p.ready,p.pixelSize,p.frame,p.height);};
-const drawCharacters=(x:CanvasRenderingContext2D,v:View,ps:PreparedCharacter[])=>ps.forEach(p=>drawCharacter(x,v,p));
+const { L } = inputs;
 
 
 /** The shop is on the street's east side: its window looks west (light.ts facing). */
@@ -115,19 +109,6 @@ const {sx}=v;const {y}=v;const w0=sx(0);const w1=sx(L.width);
 
 
 }
-function piece_tubes(x:CanvasRenderingContext2D,v:View,index=0){
-const {sx,y,t}=v;
-    // tube lights; one of them is on its way out
-    { const i = index;
-      const lx = sx(L.tubes[i]), dying = i === 1 && (t % 200 > 180 || (t % 200 > 150 && Math.floor(t) % 6 < 3));
-      const g = x.createLinearGradient(0, y(L.ceil - 4), 0, y(0));
-      g.addColorStop(0, 'rgba(255,230,190,' + (dying ? 0.04 : 0.12) + ')'); g.addColorStop(1, 'rgba(255,230,190,0)');
-      x.fillStyle = g; x.beginPath(); x.moveTo(lx - 30, y(L.ceil - 4)); x.lineTo(lx - 110, y(0)); x.lineTo(lx + 110, y(0)); x.lineTo(lx + 30, y(L.ceil - 4)); x.closePath(); x.fill();
-      box(x, lx - 30, y(L.ceil - 2), 60, 3, dying ? 'rgba(255,230,190,.25)' : 'rgba(255,240,215,.9)');
-    }
-
-
-}
 function piece_door(x:CanvasRenderingContext2D,v:View,_index=0){
 
     exitDoor(x, v, 32, '#0a0603');
@@ -144,12 +125,6 @@ function piece_ticker(x:CanvasRenderingContext2D,v:View,_index=0){
     // the back wall's top band: the Registry's strip running over the shelves
     ticker(x, v, { x: 330, h: 136, w: 290, tall: 10, text: 'ID REQUIRED FOR ALL PURCHASES   ·   CASH TRANSACTIONS ARE LOGGED   ·   SHOPLIFTING IS REPORTED TO THE REGISTRY   ·   CURFEW 01:00', col: ALARM, speed: 0.4 });
 
-
-}
-function piece_shelves(x:CanvasRenderingContext2D,v:View,index=0){
-
-    // play band: shelves, the label, the vending machine, the fridges
-    shelf(x, v, L.shelves[index]);
 
 }
 function piece_limit(x:CanvasRenderingContext2D,v:View,_index=0){
@@ -183,12 +158,6 @@ function piece_fridge(x:CanvasRenderingContext2D,v:View,_index=0){
 function piece_advert(x:CanvasRenderingContext2D,v:View,_index=0){
 
     adScreen(x, v, { x: L.fridge.x + L.fridge.w / 2, h: 116, w: 96, tall: 26, mount: 'hang', to: L.ceil, ads: [['COLD DRINKS', 'VERIFIED RESIDENTS'], ['OXYGEN SURCHARGE', 'IN EFFECT'], ['WATER 2L', 'PER ID PER DAY']], period: 240 });
-
-
-}
-function piece_people(x:CanvasRenderingContext2D,v:View,_index=0){
-
-    drawCharacters(x, v, PEOPLE);
 
 
 }
@@ -272,15 +241,6 @@ const {sx}=v;
     }
 
 }
-function piece_keeper(x:CanvasRenderingContext2D,v:View,_index=0){
-const {sx}=v;
-    // the counter: lottery behind, the camera over the till, the keeper
-    const K = L.counter, kx = sx(K.x);
-    if (onScreen(v, kx - 60, K.w + 120)) {
-      drawCharacter(x, v, keeper);
-    }
-
-}
 function piece_counter(x:CanvasRenderingContext2D,v:View,_index=0){
 const {sx,y}=v;
     // the counter: lottery behind, the camera over the till, the keeper
@@ -333,7 +293,6 @@ const {sx,y}=v;
     }
 
 }
-function piece_outside(x:CanvasRenderingContext2D,v:View){const W=L.window,wx=v.sx(W.x),top=v.y(W.h1);if(!onScreen(v,wx,W.w))return;x.save();x.beginPath();x.rect(wx,top,W.w,W.h1-W.h0);x.clip();drawCharacters(x,v,OUTSIDE);x.restore();}
 function drawFront(x: CanvasRenderingContext2D, v: View) {
     // a near rack of crisps at the bottom of the view, every bag a different colour
     const s = v.sx(250, inputs.foregroundParallax??1.25), base = v.gy + 56;
@@ -342,5 +301,5 @@ function drawFront(x: CanvasRenderingContext2D, v: View) {
     const cols = ['#d83a2a', '#e8c83a', '#5aa83a', '#f08a2a', '#3a6ad8', '#c83a8a'];
     for (let i = 6, k = 0; i < 84; i += 14, k++) { x.fillStyle = cols[k % cols.length]; x.globalAlpha = 0.32; x.fillRect(s + i, base - 30, 10, 12); x.globalAlpha = 1; }
   }
-return { upstairsSlab, upstairsRoom, upstairsPipes, drawFront, clear:piece_clear, wall:piece_wall, wall_edges:piece_wall_edges, tubes:piece_tubes, window_back:piece_window_back, outside:piece_outside, window_front:piece_window_front, door:piece_door, mirror:piece_mirror, ticker:piece_ticker, shelves:piece_shelves, limit:piece_limit, vending:piece_vending, fridge:piece_fridge, advert:piece_advert, lottery:piece_lottery, cash_sign:piece_cash_sign, camera:piece_camera, keeper:piece_keeper, counter:piece_counter, till:piece_till, sweets:piece_sweets, counter_label:piece_counter_label, stickers:piece_stickers, people:piece_people, floor:piece_floor, reflection:piece_reflection };
+return { upstairsSlab, upstairsRoom, upstairsPipes, drawFront, clear:piece_clear, wall:piece_wall, wall_edges:piece_wall_edges, window_back:piece_window_back, window_front:piece_window_front, door:piece_door, mirror:piece_mirror, ticker:piece_ticker, limit:piece_limit, vending:piece_vending, fridge:piece_fridge, advert:piece_advert, lottery:piece_lottery, cash_sign:piece_cash_sign, camera:piece_camera, counter:piece_counter, till:piece_till, sweets:piece_sweets, counter_label:piece_counter_label, stickers:piece_stickers, floor:piece_floor, reflection:piece_reflection };
 }

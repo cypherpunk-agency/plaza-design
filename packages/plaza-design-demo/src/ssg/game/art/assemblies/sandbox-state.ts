@@ -18,16 +18,4 @@ export function validateSandboxSnapshot(value:Value):void {
  for(const k of Object.keys(emptySandboxSnapshot.weather))if(typeof (value.weather as Record<string,unknown>)[k]!=='number'||!Number.isFinite((value.weather as Record<string,unknown>)[k]))throw new Error('Invalid Sandbox weather');
  if(typeof value.minute!=='number'||!Number.isFinite(value.minute)||typeof value.daylight!=='number'||!Number.isFinite(value.daylight)||typeof value.forecast!=='string'||typeof value.hourLabel!=='string'||typeof value.windowVisible!=='boolean')throw new Error('Invalid Sandbox environment');
 }
-export class SandboxViewState {
- constructor(readonly snapshot:SandboxSnapshot){}
- get=(key:string)=>this.snapshot.values[key];
- value=(key:string)=>this.snapshot.derived[key];
- net={get:(key:string)=>this.snapshot.net[key]};
- clocks={next:(key:string)=>this.snapshot.clocks[key]??null};
- opened={has:(key:string)=>this.snapshot.opened.includes(key)};
- get links(){return this.snapshot.links;}
- frozen=(id:string)=>this.snapshot.frozen.includes(id);
- traceOf=(id:string)=>this.snapshot.traces[id]??0;
- lockLeft=(id:string)=>this.snapshot.lockouts[id]??0;
-}
-export const sandboxPulse=(model:SandboxViewState,key:string)=>model.snapshot.pulses[key]??0;
+export const sandboxPulse=(snapshot:SandboxSnapshot,key:string)=>snapshot.pulses[key]??0;

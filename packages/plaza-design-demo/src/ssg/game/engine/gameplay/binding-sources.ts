@@ -2,7 +2,6 @@ import type {Resolved,Value,Composition,Instance} from '../../art/core/compositi
 import type {View} from '../../art/core/view';
 import {art} from '../../art';
 import {prepareCharacter,type Character,type PreparedCharacter} from '../../runtime/characters';
-import {light} from '../../world/light';
 import {onScreen} from '../../art/core/primitives';
 import type {SceneDocument} from './scene-document';
 import type {EngineDraw} from '../host';
@@ -56,6 +55,8 @@ export const knownBindingSource=(name:string)=>name==='world.light'||BUILT_IN.so
 const flatten=(nodes:readonly Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** Every binding name the composition uses, with its artwork field's default. */
 export function bindingDefaults(doc:Composition):Record<string,Value>{const out:Record<string,Value>={};for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))out[source]=art.get(node.type).visualFields![field].default;return out;}
+/** Presentation dependencies do not depend on the presence of an unrelated native mechanism. */
+export function worldBindings(doc:Composition):boolean{return Object.keys(bindingDefaults(doc)).some(name=>{const provider=providerOf(name);return provider?BINDING_PROVIDERS[provider].world===true:false;});}
 /** The presentation signals (name and starting stamp) the composition's providers and the scene's values offer: the targets a scene's cues may name. */
 export function providerSignals(doc:Composition,values?:Parameters<typeof valueSignals>[0]):Record<string,number>{const out:Record<string,number>={};for(const name of Object.keys(bindingDefaults(doc))){const p=providerOf(name);if(p)Object.assign(out,BINDING_PROVIDERS[p].signals);}return{...out,...valueSignals(values)};}
 /**
@@ -79,7 +80,7 @@ const roleList=(source:SceneDocument,role:string):readonly string[]=>{const ref=
 /** This frame's values for every binding the composition uses. */
 export function bindingValues(doc:Composition,ctx:BindingContext,rules:StageActorRules|undefined):Record<string,Value>{
  const out=bindingDefaults(doc),{view,rows,roles}=ctx,used=new Set(Object.keys(out)),memo=ctx.memo??new Map<string,unknown>();
- if(used.has('world.light'))out['world.light']=light() as unknown as Value;
+ if(used.has('world.light'))out['world.light']=view.lighting as unknown as Value;
  const wanted=new Map<string,Set<string>>();
  for(const name of used){let m:RegExpExecArray|null;const provider=providerOf(name);
   if(provider&&!BUILT_IN.some(r=>r.test(name))){if(!wanted.has(provider))wanted.set(provider,new Set());wanted.get(provider)!.add(name.slice(provider.length+1));continue;}

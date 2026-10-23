@@ -1,5 +1,6 @@
 /** Laundromat catalogue. Each furnishing/device and each clipped resident is editable separately. */
 import { createLaundromatArtwork, type ArtworkInputs } from './laundromat';
+import {drawWashSchedule} from '../electronics/wash-schedule';
 import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { box, exitDoor, notice } from '../core/primitives';
@@ -13,11 +14,11 @@ const origin:Anchor={x:0,h:0,role:'origin'};
 const raised=(v:View,h:number):View=>h===0?v:({...v,gy:v.gy-h,y:value=>v.y(value+h)});
 export const laundromatVisualFields:Record<string,Field>={hover:str('Hovered device'),tripped:bool('Breaker tripped'),clear:bool('Queue clear'),nextRunning:bool('Schedule running'),nextMs:{...num('Next slot in ms',0),max:1000000000},door3:str('Washer 3 door'),breakerX:num('Breaker position',530),washerXs:{kind:'json',label:'Washer cable targets',default:[290,350,410,470],validate:v=>{if(!Array.isArray(v)||v.length!==4||v.some(x=>typeof x!=='number'||!Number.isFinite(x)))throw new Error('Invalid washer targets');}}};
 for(let i=1;i<=4;i++){laundromatVisualFields['w'+i]=str('Washer '+i+' status');laundromatVisualFields['p'+i]=num('Washer '+i+' progress',0);}
-function layout():ArtworkInputs['L']{return{door:0,spawn:0,notice:0,soap:0,clock:0,washers:[0,0,0,0],breaker:0,suds:0,table:{x0:0,x1:60,h:26},folder:0,bench:{x0:0,x1:82,h:10},gran:0,sleeper:0,window:{x0:0,x1:192,h0:40,h1:124},cat:0,socks:0,tubes:[]};}
+function layout():ArtworkInputs['L']{return{door:0,spawn:0,notice:0,soap:0,washers:[0,0,0,0],breaker:0,suds:0,table:{x0:0,x1:60,h:26},folder:0,bench:{x0:0,x1:82,h:10},gran:0,sleeper:0,window:{x0:0,x1:192,h0:40,h1:124},cat:0,socks:0,tubes:[]};}
 const cache=new Map<string,ReturnType<typeof createLaundromatArtwork>>();
 function kernel(L=layout(),width=880,originX=0,ceiling=150,facing=180){const key=JSON.stringify([L,width,originX,ceiling,facing]);let k=cache.get(key);if(!k){k=createLaundromatArtwork({L,LAUNDROMAT_W:width,LAUNDROMAT_FACING:facing,originX,ceiling});if(cache.size>=2048)cache.clear();cache.set(key,k);}return k;}
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'laundromat.'+id,version:1,label,category,coordinates:'world',bindingIdentity:'presentation',fields,visualFields:laundromatVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,s,at)};}
+function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'laundromat.'+id,version:1,label,category,coordinates:'world',libraryUse:!['marker','background','room','floor','conduits','puddle','schedule'].includes(id)?'reusable':undefined,bindingIdentity:'presentation',fields,visualFields:laundromatVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,s,at)};}
 const rectangle=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 const roomFields={width:num('Width',880,1),ceiling:num('Ceiling',150,1)};
 const windowFields={width:num('Width',192,1),height:num('Height',84,1),facing:num('Compass facing',180,0)};
@@ -36,7 +37,9 @@ element('dryer','Dead stacked dryer','electronics',{index:{kind:'select',label:'
 element('door','Market exit door','architecture',{},()=>rectangle(36,74,-18),(x,v,_p,_s,at)=>exitDoor(x,raised(v,at.h),at.x,'#0a0603','< MARKET'),()=>({origin,entrance:{...origin,role:'entrance'}})),
 element('notice','Registry laundry notice','signage',{},()=>({x:-20,h:0,w:40,tall:30}),(x,v,_p,_s,at)=>notice(x,v.t,v.sx(at.x),v.y(at.h),40,30,['REGISTRY','NOTICE'])),
 element('soap','Soap dispenser','electronics',{},()=>rectangle(36,88,-18),(x,v,_p,_s,at)=>{const L=layout();L.soap=at.x;kernel(L).soap(x,raised(v,at.h));}),
-element('schedule','Wash schedule controller','electronics',{},()=>rectangle(54,104,-23),(x,v,_p,s,at)=>{const L=layout();L.clock=at.x;L.washers=s.washerXs as number[];kernel(L).schedule(x,raised(v,at.h),s.nextRunning?{ms:n(s,'nextMs')}:null,s.hover==='clock');}),
+{...element('schedule','Wash schedule controller','electronics',{},()=>rectangle(54,104,-23),(x,v,_p,s,at)=>drawWashSchedule(x,raised(v,at.h),at.x,s.nextRunning?{ms:n(s,'nextMs')}:null,s.hover==='clock',s.cableConnected?n(s,'cableTo'):null)),libraryUse:'reusable',
+ visualFields:{hover:laundromatVisualFields.hover,nextRunning:laundromatVisualFields.nextRunning,nextMs:laundromatVisualFields.nextMs,cableConnected:bool('Draw cable'),cableTo:num('Cable endpoint X on the same wall',0)},
+ bounds(_p,s,c){const target=s.cableConnected?n(s,'cableTo')-(c?.placement.x??0):0,left=Math.min(-23,target),right=Math.max(31,target);return{x:left,h:104,w:right-left,tall:104};}},
 element('conduits','Breaker washer conduits','electronics',{},()=>rectangle(260,56),(x,v,_p,s,at)=>{const L=layout();L.washers=(s.washerXs as number[]).map(x=>x+at.x);L.breaker=n(s,'breakerX')+at.x;kernel(L).conduits(x,raised(v,at.h),!!s.tripped);}),
 element('washer','Working front-load washer','electronics',{index:{kind:'select',label:'Washer number',default:0,options:[0,1,2,3]}},()=>rectangle(56,54,-28),(x,v,p,s,at)=>{const i=n(p,'index'),L=layout();L.washers[i]=at.x;kernel(L).washer(x,raised(v,at.h),String(s['w'+(i+1)]),String(s.door3),n(s,'p'+(i+1)),i,s.hover==='washer'+(i+1));}),
 element('note','Taped washer note','signage',{first:str('First line'),second:str('Second line'),tilt:num('Tilt',0)},()=>({x:-20,h:0,w:40,tall:24}),(x,v,p,_s,at)=>taped(x,v,{x:at.x,h:at.h,text:[String(p.first),String(p.second)],tilt:n(p,'tilt')})),

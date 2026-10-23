@@ -9,6 +9,7 @@ export function newVehicleScene(scene:string,name:string,kind:VehiclePreset='shu
  const add=(id:string,type:string,x:number,h:number,props:Instance['props']={},attach?:Instance['attach'],layer:Instance['layer']='set',bindings?:Instance['bindings'])=>nodes.push({id,type,props,placement:{x,h},order:nodes.length,layer,...(attach?{attach}:{}),...(bindings?{bindings}:{})});
  entry.scene.manifest!.width=2400;nodes[0].placement.x=224;
  entry.scene.environment={outdoor:true,ambient:{sky:true,weather:false}};
+ add('sky-traffic','environment.sky-traffic',0,0,{},undefined,'distance');
  add('platform','level.floor',0,0,{width:2400,label:'Platform'},undefined,'logic');
  add('surface','level.slab',0,0,{width:2400,thickness:18},undefined,'backdrop');
  const vehicle:VehicleSource={id:'service',kind:kind==='cart'?'cart':'shuttle',mover:'service.frame',doors:{mover:'service.doors',open:.9},cars:[],gap:20,gangways:true,

@@ -12,7 +12,7 @@ const origin={x:0,h:0,role:'origin' as const};
 type Paint=(x:CanvasRenderingContext2D,v:View,p:Properties,at:Required<Placement>)=>void;
 const rectangle=(w:number,h:number,x=0,bottom=0):Bounds=>({x,h,w,tall:h-bottom});
 function item(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,paint?:Paint):Element {
-  return {type:'warehouse.'+type,version:1,label,category,coordinates:'world',fields,parts:['backdrop'],bounds,anchors:p=>({origin,topLeft:{x:0,h:n(p,'height')||0,role:'surface'},seat:{x:0,h:n(p,'height')||0,role:'surface'},shadow:{x:n(p,'width')/2||0,h:46,role:'mount'}}),
+  return {type:'warehouse.'+type,version:1,label,category,coordinates:'world',libraryUse:!['marker','light','caster','city','floor'].includes(type)?'reusable':undefined,fields,parts:['backdrop'],bounds,anchors:p=>({origin,topLeft:{x:0,h:n(p,'height')||0,role:'surface'},seat:{x:0,h:n(p,'height')||0,role:'surface'},shadow:{x:n(p,'width')/2||0,h:46,role:'mount'}}),
     draw(x,v,p,_state,_pass,at){if(paint){paint(x,v,p,at);return;}const local:View={...v,sx:(wx,depth=at.parallax)=>v.sx(wx+at.x,depth),y:h=>v.y(h+at.h),gy:v.gy-at.h};drawWarehousePiece(type,x,local,p);}};
 }
 const silent:Paint=()=>{};
@@ -23,7 +23,7 @@ export const warehouseElements:Element[]=[
   item('spire','Spire antenna silhouette','architecture',{},()=>rectangle(22,266,-10,40)),
   item('stack','Container silhouette','environment',{height:num('Height',60,1)},p=>rectangle(64,n(p,'height'))),
   item('wall','Corrugated warehouse and gable','architecture',{width:num('Width',740,1),height:num('Wall height',240,1)},p=>rectangle(n(p,'width'),n(p,'height')+50)),
-  item('label','Painted warehouse lettering','signage',{text:str('Text'),color:str('Canvas color','rgba(255,217,165,.5)'),size:num('Font size',16,1),weight:{kind:'select',label:'Font weight',default:'700',options:['400','500','600','700']}},p=>rectangle(String(p.text).length*n(p,'size')*.65,n(p,'size'),-String(p.text).length*n(p,'size')*.325,-4),(x,v,p,at)=>text(x,String(p.text),v.sx(at.x),v.y(at.h),String(p.color),n(p,'size'),String(p.weight))),
+  item('label','Painted warehouse lettering','signage',{text:str('Text','WAREHOUSE'),color:str('Canvas color','rgba(255,217,165,.5)'),size:num('Font size',16,1),weight:{kind:'select',label:'Font weight',default:'700',options:['400','500','600','700']}},p=>rectangle(String(p.text).length*n(p,'size')*.65,n(p,'size'),-String(p.text).length*n(p,'size')*.325,-4),(x,v,p,at)=>text(x,String(p.text),v.sx(at.x),v.y(at.h),String(p.color),n(p,'size'),String(p.weight))),
   item('office','Lit office window and clerk lamp','architecture',{},()=>rectangle(30,0,0,-22)),
   item('dark-window','Unlit warehouse window','architecture',{},()=>rectangle(30,0,0,-22)),
   item('camera','Warehouse surveillance camera','electronics',{direction:{kind:'select',label:'Direction',default:1,options:[1,-1]},phase:num('Sweep phase',21)},()=>rectangle(48,12,-24,-12),(x,v,p,at)=>camera(x,v,{x:at.x,h:at.h,facing:n(p,'direction') as 1|-1,phase:n(p,'phase')})),

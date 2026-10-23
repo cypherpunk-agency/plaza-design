@@ -11,10 +11,8 @@
  * page stays exactly as it is. Everything is laid out once per view size; a
  * frame only reads the layout (no per-frame allocations beyond a few gradients).
  *
- * Shared by the intro cutscene (cutscenes/skyline.ts: the whole picture, wet
- * floor and rain) and the metro platform (scenes/metro.ts: the far band behind
- * the elevated station, no floor, dimmed). Each user owns a `Skyline`, so the
- * layouts and the packets in flight never mix.
+ * The intro's playback and isolated seek sessions each own their `Skyline`.
+ * Advance prepares packet drawing commands; painting only reads them.
  */
 
 import { drawSprite, HULL, SPR, type Sprite } from "../core/sprites";
@@ -35,11 +33,10 @@ export interface SkyFrame {
   camMax: number;
 }
 
-/** One frame: camera, animation clock (frames), frames since the last draw (steps the packets). */
+/** One picture: camera, animation clock and presentation settings. */
 export interface SkyDraw {
   cam: number;
   a: number;
-  k: number;
   still: boolean;
   /** The wet reflecting floor under the horizon (the cutscene); off where something stands in front of it. */
   floor: boolean;
@@ -465,20 +462,27 @@ function rain(x: CanvasRenderingContext2D, l: Layout, level: number, a: number, 
  */
 export interface SkylineSnapshot { key: string; packets: Packet[]; random: number }
 export const skylinePartIds = ['fill', 'sky', 'ships-far', 'sun', 'far', 'mid', 'ships-near', 'floor', 'horizon', 'hero', 'mast', 'network', 'beacons', 'rain'] as const;
-const packetSink = { fillRect() {}, fillStyle: '' } as unknown as CanvasRenderingContext2D;
 export class Skyline {
   private l: Layout | null = null;
+  private packetPicture: {color:string;x:number;y:number;w:number;h:number}[] = [];
   private ensure(x: CanvasRenderingContext2D, frame: SkyFrame) {
-    if (!this.l || this.l.key !== frameKey(frame)) this.l = layout(x, frame);
+    if (!this.l || this.l.key !== frameKey(frame)) { this.l = layout(x, frame); this.packetPicture=[]; }
     return this.l;
   }
-  reset() { this.l = null; }
+  reset() { this.l = null; this.packetPicture=[]; }
+  /** Lifecycle preparation belongs to the playback/seek owner, never a paint call. */
+  prepareLayout(x:CanvasRenderingContext2D,frame:SkyFrame){this.ensure(x,frame);}
   snapshot(): SkylineSnapshot { if (!this.l) throw new Error('Initialize the skyline before taking a snapshot'); return { key: this.l.key, packets: structuredClone(this.l.packets), random: this.l.rnd.state() }; }
-  restore(snapshot: SkylineSnapshot) { if (!this.l || this.l.key !== snapshot.key) throw new Error('Skyline snapshot belongs to another viewport/layout'); this.l.packets = structuredClone(snapshot.packets); this.l.rnd.restore(snapshot.random); }
+  restore(snapshot: SkylineSnapshot) { if (!this.l || this.l.key !== snapshot.key) throw new Error('Skyline snapshot belongs to another viewport/layout'); this.l.packets = structuredClone(snapshot.packets); this.l.rnd.restore(snapshot.random); this.packetPicture=[]; }
   /** Replays the exact existing packet transition body; its drawing sink has no pixels. */
-  advance(x: CanvasRenderingContext2D, frame: SkyFrame, k: number, still: boolean) { packets(packetSink, this.ensure(x, frame), k, still); }
+  advance(x: CanvasRenderingContext2D, frame: SkyFrame, k: number, still: boolean) {
+    const picture:typeof this.packetPicture=[],sink={fillStyle:'',fillRect(px:number,py:number,w:number,h:number){picture.push({color:this.fillStyle,x:px,y:py,w,h});}};
+    packets(sink as unknown as CanvasRenderingContext2D,this.ensure(x,frame),k,still);
+    this.packetPicture=picture;
+  }
   parts(x: CanvasRenderingContext2D, frame: SkyFrame, d: SkyDraw) {
-    const l = this.ensure(x, frame), { cam, a, still } = d, off = -Math.round(cam * PAR_HERO);
+    const l=this.l;if(!l||l.key!==frameKey(frame))throw Error('Prepare the skyline layout before painting');
+    const { cam, a, still } = d, off = -Math.round(cam * PAR_HERO);
     return [
       { id: 'fill', draw: () => { if (!d.over) { x.fillStyle = BG; x.fillRect(0, 0, l.W, l.H); } } },
       { id: 'sky', draw: () => { if (!d.over || d.over.stars > 0.05) { x.globalAlpha = 1; x.save(); if (d.over) x.globalAlpha = d.over.stars; sky(x, l, cam, a); x.restore(); } } },
@@ -491,7 +495,7 @@ export class Skyline {
       { id: 'horizon', draw: () => { x.fillStyle = l.horizon; x.fillRect(0, l.HY - 14, l.W, 28); } },
       { id: 'hero', draw: () => drawBand(x, l, l.hero, off, a, 1) },
       { id: 'mast', draw: () => mast(x, l, off, a) },
-      { id: 'network', draw: () => { x.save(); x.translate(off, 0); cables(x, l); packets(x, l, d.k, still); x.restore(); } },
+      { id: 'network', draw: () => { x.save(); x.translate(off, 0); cables(x, l); for(const p of this.packetPicture){x.fillStyle=p.color;x.fillRect(p.x,p.y,p.w,p.h);} x.restore(); } },
       { id: 'beacons', draw: () => beacons(x, l, off, a, true) },
       { id: 'rain', draw: () => rain(x, l, d.rain, a, cam) },
     ];

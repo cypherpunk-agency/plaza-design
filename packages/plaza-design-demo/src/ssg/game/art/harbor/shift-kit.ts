@@ -1065,3 +1065,6 @@ const floor = band({
 });
 
 export const shiftKitElements: Element[] = [farShore, ship, crane, quay, stackBlock, reeferRack, mast, fogBank, shed, booth, counter, hatch, rack, parcel, caseEl, trolley, release, clampEl, reader, printer, board, sign, lockers, trolleyPark, bay, end, floor];
+
+// Local state (printed, released, complete) does not require a source-scene controller.
+for(const e of shiftKitElements)if(['parcel','release','reader','printer','board'].includes(e.type.slice(6)))e.libraryUse='reusable';

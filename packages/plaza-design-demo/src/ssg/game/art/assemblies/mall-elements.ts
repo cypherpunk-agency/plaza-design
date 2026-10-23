@@ -78,3 +78,9 @@ for(const e of mallElements){e.bindingIdentity='presentation';const id=e.type.sl
  if(id==='ad')e.bounds=p=>({x:-Number(p.width)/2-3,h:Number(p.height)+3,w:Number(p.width)+6,tall:Number(p.height)+6});
 }
 mallElements.push(mallTableStool);
+// Furniture/fittings below ignore the atrium layout in the shared kernel. Storey-wide
+// sections, shop geometry and prepared vendors continue to declare that dependency.
+for(const e of mallElements)if(['directory','registry','escalator-sign','fountain','table','security','bench','door','camera','ad','table-stool'].includes(e.type.slice(5)))e.libraryUse='reusable';
+
+// Audited local fittings: optional scalar/pose inputs have standalone defaults.
+for(const e of mallElements)if(["fountain-reflection", "pillar-reflection"].includes(e.type.slice(5)))e.libraryUse='reusable';

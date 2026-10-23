@@ -385,6 +385,16 @@
       },
       "washerXs": {
         "picture": "washerXs"
+      },
+      "scheduleCableConnected": true,
+      "scheduleCableTo": {
+        "sum": [
+          {
+            "instance": "washer1",
+            "get": "x"
+          },
+          -23
+        ]
       }
     }
   }

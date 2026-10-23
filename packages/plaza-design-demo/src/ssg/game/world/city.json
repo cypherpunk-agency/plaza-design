@@ -182,12 +182,13 @@
       "entrance": "harbor",
       "scenes": [
         "harbor",
-        "stacks"
+        "stacks",
+        "metro-siding"
       ]
     },
     {
       "id": "harbor-works",
-      "name": "HARBOR · STATION TO SHED 3",
+      "name": "HARBOR \u00b7 STATION TO SHED 3",
       "district": "harbor",
       "entrance": "harbor-station",
       "scenes": [
@@ -242,7 +243,7 @@
     },
     {
       "id": "tower",
-      "name": "LEVEL LAB · TOWER",
+      "name": "LEVEL LAB \u00b7 TOWER",
       "district": null,
       "entrance": "tower",
       "scenes": [
@@ -308,13 +309,9 @@
       "destinations": [
         "harbor"
       ],
-      "reason": "HARBOR CLOSED · LINE 0 DOES NOT STOP"
+      "reason": "HARBOR CLOSED \u00b7 LINE 0 DOES NOT STOP"
     }
   },
-  "SIDING_OUT": [
-    "A service stair. Two hundred steps, a door marked AUTHORISED PERSONNEL, not locked.",
-    "The harbor. Moth booked this stop two days ago. For me."
-  ],
   "DRIVER_HARBOR": [
     "Harbor pier is closed to air traffic. Port Authority notice. I can show you the notice.",
     "I can also take you somewhere that is open. Those are my two services."
@@ -368,7 +365,7 @@
         392,
         126
       ],
-      "note": "WORKING CLASS · MIXED · RAIN"
+      "note": "WORKING CLASS \u00b7 MIXED \u00b7 RAIN"
     },
     "oldq": {
       "centre": [
@@ -388,7 +385,7 @@
         318,
         374
       ],
-      "note": "OLD TOWN · THE CANAL · THE WEST BEACH"
+      "note": "OLD TOWN \u00b7 THE CANAL \u00b7 THE WEST BEACH"
     },
     "market": {
       "centre": [
@@ -408,7 +405,7 @@
         234,
         176
       ],
-      "note": "LOW INCOME · PACKED · LOW TECH"
+      "note": "LOW INCOME \u00b7 PACKED \u00b7 LOW TECH"
     },
     "galleria": {
       "centre": [
@@ -428,7 +425,7 @@
         560,
         40
       ],
-      "note": "MIDDLE CLASS AND UP · RETAIL"
+      "note": "MIDDLE CLASS AND UP \u00b7 RETAIL"
     },
     "harbor": {
       "centre": [
@@ -448,7 +445,7 @@
         612,
         206
       ],
-      "note": "INDUSTRY · THE PORT · WATER"
+      "note": "INDUSTRY \u00b7 THE PORT \u00b7 WATER"
     },
     "spire": {
       "centre": null,
@@ -465,7 +462,7 @@
         770,
         160
       ],
-      "note": "RESTRICTED · HIGH TECH · FEW PEOPLE"
+      "note": "RESTRICTED \u00b7 HIGH TECH \u00b7 FEW PEOPLE"
     },
     "undercity": {
       "centre": null,
@@ -482,7 +479,7 @@
         440,
         352
       ],
-      "note": "CANALS · SEWERS · UNREGISTERED"
+      "note": "CANALS \u00b7 SEWERS \u00b7 UNREGISTERED"
     },
     "fringe": {
       "centre": [
@@ -502,7 +499,7 @@
         92,
         306
       ],
-      "note": "AUTOMATED · NO RESIDENTS"
+      "note": "AUTOMATED \u00b7 NO RESIDENTS"
     },
     "skyport": {
       "centre": [
@@ -522,7 +519,7 @@
         54,
         10
       ],
-      "note": "RESTRICTED · LAUNCHES · FENCED"
+      "note": "RESTRICTED \u00b7 LAUNCHES \u00b7 FENCED"
     }
   },
   "PLACE_MAP": {
@@ -660,7 +657,7 @@
   "LINES_PLANNED": [
     {
       "id": "line1",
-      "name": "LINE 1 · CANAL LINE",
+      "name": "LINE 1 \u00b7 CANAL LINE",
       "short": "L1",
       "col": "0,200,200",
       "width": 2.4,
@@ -1088,8 +1085,8 @@
       "entrance": "out"
     },
     "siding": {
-      "scene": "harbor",
-      "entrance": "metro"
+      "scene": "metro-siding",
+      "entrance": "train"
     }
   },
   "ACCESS": {

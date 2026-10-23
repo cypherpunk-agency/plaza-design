@@ -18,7 +18,7 @@ import type {View} from '../../art/core/view';
 import type {Value,Composition,Environment} from '../../art/core/composition';
 import type {SceneData} from '../../data/types';
 import {thermal} from './mechanisms/thermal';
-import {citySkyline} from './mechanisms/city-skyline';
+
 import {lineRide} from './mechanisms/line-ride';
 import type {Character} from '../../runtime/characters';
 import type {CityModel} from '../../world/city';
@@ -94,9 +94,11 @@ export function mergeRules(parts:readonly SceneRules[]):SceneRules{
  if(parts.length===1)return parts[0];
  const dup=(what:string,lists:string[][])=>{const all=lists.flat();if(new Set(all).size!==all.length)throw new Error('Scene mechanisms define the same '+what+' twice');};
  dup('effect',parts.map(p=>Object.keys(p.effects)));dup('panel',parts.map(p=>p.panels??[]));dup('derived value',parts.map(p=>Object.keys(p.derived??{})));
- const tick=parts.filter(p=>p.tick),place=parts.filter(p=>p.place);
+ const tick=parts.filter(p=>p.tick),place=parts.filter(p=>p.place),offsets=parts.filter(p=>p.attachmentOffsets);
+ if(offsets.length>1)throw Error('Manifest attachment motion has one compiler owner');
  return{
   effects:Object.assign({},...parts.map(p=>p.effects)),
+  ...(offsets.length?{attachmentOffsets:offsets[0].attachmentOffsets}:{}),
   ...(parts.some(p=>p.inputs)?{inputs:parts.flatMap(p=>p.inputs??[])}:{}),
   ...(parts.some(p=>p.places)?{places:Object.assign({},...parts.map(p=>p.places??{}))}:{}),
   ...(parts.some(p=>p.panels)?{panels:parts.flatMap(p=>p.panels??[])}:{}),
@@ -131,17 +133,15 @@ export function withMechanismDevices<R extends NonNullable<SceneDef['rules']>>(r
  return (typeof rules==='function'?(player:Parameters<Extract<R,Function>>[0])=>tag({...(rules as Extract<R,Function>)(player)},mechanisms):tag({...(rules as object)} as SceneRules,mechanisms)) as unknown as R;
 }
 /**
- * transitPlatform: a LINE 0 platform. The `stop` role is where the train's nose stops (the
- * timetable and the boarding doors share that marker); a scene with a `water` role is the harbor's:
- * its horizon is the water's `horizon`; a scene with a `water` or a `horizon` role has the sky covered
- * under the canopy (`roof` role), its horizon line being the stage's.
+ * transitPlatform: the canopy cover and optional waterfront horizon of a LINE 0 platform.
+ * Physical train placement and boarding are owned by the source vehicle and level.
  */
 const transitPlatform:SceneMechanism={
  face:{function:'time'},
- label:'LINE 0 platform (train stop, boarding, canopy)',requires:['roof','stop'],world:true,ownsRoom:true,
- apply:({roles,width,content})=>{const {roof,stop,water}=roles;
-  return{platformStop:stop.placement.x,...(water?{horizon:Number(water.props.horizon??0)}:{}),...(water||roles.horizon?{ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},
+ label:'LINE 0 platform canopy',requires:['roof'],world:true,ownsRoom:true,
+ apply:({roles,width,content})=>{const {roof,water}=roles;
+  return{...(water?{horizon:Number(water.props.horizon??0)}:{}),...(water||roles.horizon?{ambient:{...content.ambient,covers:[{from:-60,to:width+60,under:Number(roof.props.under)+roof.placement.h}]}}:{})};},
 };
 export const SCENE_MECHANISMS:Readonly<Record<string,SceneMechanism>>={
- transitPlatform,citySkyline,lineRide,gantryLift,devicePulse,targetReset,sandboxBay,yardCrane,thermal,vehicleRun,streetCamera,streetLayers,
+ transitPlatform,lineRide,gantryLift,devicePulse,targetReset,sandboxBay,yardCrane,thermal,vehicleRun,streetCamera,streetLayers,
 };

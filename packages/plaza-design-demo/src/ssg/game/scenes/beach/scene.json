@@ -26,7 +26,7 @@
       "id": "notice",
       "name": "PUBLIC BEACH",
       "pages": [
-        "PUBLIC BEACH. OPEN TO VERIFIED PERSONS 06:00\u201322:00.",
+        "PUBLIC BEACH. OPEN TO VERIFIED PERSONS 06:00–22:00.",
         "TOWELS MUST DISPLAY A VALID ID. SAND IS MUNICIPAL PROPERTY. DO NOT REMOVE.",
         "UNVERIFIED BATHERS: SECTOR 4 (THE ROCKS). SWIMMING BEYOND THE BUOY IS NOT RECORDED AND NOT ADVISED."
       ]
@@ -675,7 +675,6 @@
       "pier": "pier",
       "boardwalk": "boardwalk",
       "tower": "tower",
-      "drink": "drink",
       "shore": "shore-edge",
       "stairs-exit": "stairs-exit"
     },
@@ -864,14 +863,6 @@
           "role": "boardwalk",
           "margin": 4
         }
-      },
-      "drinkX": {
-        "role": "drink",
-        "get": "x"
-      },
-      "drinkH": {
-        "role": "drink",
-        "get": "h"
       },
       "shore": {
         "role": "shore",

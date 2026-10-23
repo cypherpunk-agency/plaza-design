@@ -72,7 +72,7 @@ export function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'par
     if (out) { const b = state.box(p); paintState(x, p, b.w, b.h, b.g, q, b.seed); }
   } : own;
   return {
-    ...rest, version: 1, coordinates: 'world', parts: ['backdrop'],
+    ...rest, libraryUse:rest.libraryUse??'reusable', version: 1, coordinates: 'world', parts: ['backdrop'],
     draw(ctx, v, p, _s, _pass, at) {
       const { w } = size(p), sx = v.sx(at.x), end = sx + w * at.scale * at.facing, m = 60 + (reach ? reach(p) : 0) * at.scale;
       if (Math.max(sx, end) + m < 0 || Math.min(sx, end) - m > v.viewW) return;

@@ -16,7 +16,7 @@ import { seaCols,sunPath } from "../environment/sky";
 import { drawGantry,STS2 } from "../machinery/crane";
 import { CH,container } from "../props/containers";
 import { camera as securityCamera,taped,ticker,YELLOW } from "../signage/screens";
-import { TerminalViewState,type TerminalVisual } from './terminal-state';
+import {type TerminalVisual } from './terminal-state';
 export interface TerminalLayout {blocks:{x:number}[];ladder:number;quay:number;kiosk:number;bridge:{x0:number};boom:number}
 export interface ArtworkInputs {L:TerminalLayout;STACKS_W:number;STACKS_HZ:number;x:number;width:number;visual:TerminalVisual;part?:'far'|'near';open?:boolean;}
 /** Gulls high over the terminal, drifting east at different speeds (the kit's flock). */
@@ -28,7 +28,7 @@ const {L,STACKS_W}=inputs,HZ=inputs.STACKS_HZ;
 const SKYLINE=towers(57,1700,[16,40],[18,66],.08);
 const ripples:[number,number,number][]=(()=>{const r=rng(61);return Array.from({length:90},()=>[r()*2000,4+r()*70,4+r()*14]);})();
 function far_band(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual);
+const m=inputs.visual;
 
   const { y, t } = v;
   drawTowers(x, v, SKYLINE, 0.12, y(HZ), 0.12, '#030100', 1);
@@ -52,7 +52,7 @@ const m=new TerminalViewState(inputs.visual);
   // a ship at anchor, and once the ferry has gone, its lights far out on the water
   const s1 = v.sx(260, 0.12);
   if (onScreen(v, s1, 200)) { x.fillStyle = '#040302'; x.fillRect(s1, y(HZ + 10), 190, 10); for (let k = 10; k < 150; k += 9) x.fillRect(s1 + k, y(HZ + 26), 8, 16); x.fillStyle = 'rgba(' + GREEN + ',.4)'; x.fillRect(s1 + 2, y(HZ + 12), 2, 2); }
-  if (m.get('departed')) {
+  if (m.departed) {
     const fx = v.sx(1900 - Math.min(700, (t % 40000) * 0.02), 0.25), wl = y(HZ - 18);
     if (onScreen(v, fx - 40, 80)) { x.fillStyle = '#060403'; x.fillRect(fx - 30, wl - 6, 60, 6); x.fillStyle = 'rgba(255,217,165,.6)'; for (let i = -24; i < 24; i += 6) x.fillRect(fx + i, wl - 4, 2, 2); x.fillStyle = 'rgba(' + GREEN + ',.7)'; x.fillRect(fx + 28, wl - 8, 2, 2); }
   }
@@ -88,7 +88,7 @@ function gantry_front(x:CanvasRenderingContext2D,v:View){
 placed(x,v.sx(inputs.x),v.y(0),1,()=>drawGantry(x,STS2,v.t,'front'));
 }
 function ladder_panel(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual);
+const m=inputs.visual;
 const {sx,y,t}=v;
   // the ladder and its cage
   const ld = sx(inputs.x);
@@ -103,9 +103,9 @@ const {sx,y,t}=v;
 
 }
 function berth_ticker(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual);
+const m=inputs.visual;
   // the berth ticker on the far leg
-  ticker(x, v, { x: inputs.x, h: 120, w: 86, tall: 10, mount: 'wall', text: m.get('departed') ? 'BERTH 4 · NIGHT FERRY 8 · LOADING · DEPARTS WHEN FULL' : m.get('boxAt') === 'ferry' ? 'BERTH 4 · NIGHT FERRY 7 · 12 OF 12 · CLEARED TO DEPART' : 'BERTH 4 · NIGHT FERRY 7 · 11 OF 12 · AWAITING NRLU 404 0451', col: YELLOW, speed: 0.35 });
+  ticker(x, v, { x: inputs.x, h: 120, w: 86, tall: 10, mount: 'wall', text: m.departed ? 'BERTH 4 · NIGHT FERRY 8 · LOADING · DEPARTS WHEN FULL' : m.boxAt === 'ferry' ? 'BERTH 4 · NIGHT FERRY 7 · 12 OF 12 · CLEARED TO DEPART' : 'BERTH 4 · NIGHT FERRY 7 · 11 OF 12 · AWAITING NRLU 404 0451', col: YELLOW, speed: 0.35 });
 
 }
 function trolley_cab(x:CanvasRenderingContext2D,v:View){
@@ -130,13 +130,13 @@ const {sx,y}=v,tr=inputs.visual.trolley,tx=sx(tr.x),edge='rgba('+O+',.8)';if(!on
 
 }
 function carried_load(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual),KIND={none:0,regular:1,box:2};
+const m=inputs.visual,KIND={none:0,regular:1,box:2};
 const {t}=v,tr=inputs.visual.trolley,tx=v.sx(tr.x);if(!onScreen(v,tx-90,180))return;
   if (!tr.carry) return;
   // what it carries, cut off at the deck when it goes down into the hold
   x.save(); x.beginPath(); x.rect(0, 0, v.viewW, v.gy - (tr.x > L.quay ? 0 : -60)); x.clip();
   if (tr.carry === KIND.box) reeferKernel(x, v, tr.x - 64, tr.h, false, t);
-  else container(x, v, tr.x - 64, tr.h, { w: 128, p: [0, 3, 5, 6, 2][Number(m.get('loaded') ?? 0) % 5], seed: 70 + Number(m.get('loaded') ?? 0) % 9 });
+  else container(x, v, tr.x - 64, tr.h, { w: 128, p: [0, 3, 5, 6, 2][Number(m.loaded ?? 0) % 5], seed: 70 + Number(m.loaded ?? 0) % 9 });
   x.restore();
 
 
@@ -145,13 +145,13 @@ function reefer(x:CanvasRenderingContext2D,v:View){
 reeferKernel(x,v,inputs.x,inputs.visual.geometry.H.deck,!!inputs.open,v.t);
 }
 function thermal_gate(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual),hover=inputs.visual.hover==='port',part=inputs.part??'near';
+const m=inputs.visual,hover=inputs.visual.hover==='port',part=inputs.part??'near';
 
-  const { sx, y, t } = v, g = sx(inputs.x), s = m.scratch, now = m.now();
+  const { sx, y, t } = v, g = sx(inputs.x), s = m.scratch, now = m.now;
   if (!onScreen(v, g - 40, 80)) return;
   const steel = '#2a2622', edge = 'rgba(220,200,160,.6)';
   const alarm = s.alarm !== undefined && now - s.alarm < 3500, cold = s.cold !== undefined && now - s.cold < 1200, warm = s.warm !== undefined && now - s.warm < 1500;
-  const frozen = m.frozen('port');
+  const frozen = m.portFrozen;
   if (part === 'far') {
     box(x, g + 6, y(204), 6, 204, '#1c1a16', 'rgba(220,200,160,.35)');
     // the scanning sheet, a band of light across the boom's path
@@ -186,9 +186,9 @@ const m=new TerminalViewState(inputs.visual),hover=inputs.visual.hover==='port',
 
 }
 function watchdog(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual),X=inputs.visual.geometry.X;
+const m=inputs.visual,X=inputs.visual.geometry.X;
 
-  const d = m.watchdogs()[0];
+  const d = m.watchdogs[0];
   if (!d) return;
   const at: Record<string, number> = { port: X.gate - 4, sts2: L.ladder + 40, ferry: L.kiosk + 6 };
   const k = d.progress * d.progress * (3 - 2 * d.progress);
@@ -203,8 +203,8 @@ const m=new TerminalViewState(inputs.visual),X=inputs.visual.geometry.X;
 
 }
 function bridge(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual);
-const {sx,y,t}=v,q=sx(L.quay),right=sx(STACKS_W);if(!onScreen(v,q,right-q))return;const name=m.get('departed')?'NIGHT FERRY 8':'NIGHT FERRY 7';
+const m=inputs.visual;
+const {sx,y,t}=v,q=sx(L.quay),right=sx(STACKS_W);if(!onScreen(v,q,right-q))return;const name=m.departed?'NIGHT FERRY 8':'NIGHT FERRY 7';
   // the bridge: tall, windows lit, a funnel and a mast with its lights
   const b0 = sx(inputs.x), b1 = sx((inputs.x+inputs.width));
   box(x, b0, y(108), b1 - b0, 108, '#2a0e0a', 'rgba(' + O + ',.7)');
@@ -249,14 +249,14 @@ const {sx,y}=v,q=sx(L.quay),right=sx(STACKS_W);if(!onScreen(v,q,right-q))return;
 
 }
 function hull(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual);
+const m=inputs.visual;
 
   const { sx, gy, t } = v, q = sx(L.quay + 6), r = sx(STACKS_W + 20);
   if (r < 0 || q > v.viewW) return;
   x.fillStyle = '#3a120c'; x.fillRect(q, gy, r - q, 26);
   x.fillStyle = 'rgba(' + O + ',.6)'; x.fillRect(q, gy, r - q, 1);
   x.fillStyle = 'rgba(0,0,0,.25)'; for (let i = q; i < r; i += 30) x.fillRect(i, gy + 2, 1, 24);
-  text(x, m.get('departed') ? 'NIGHT FERRY 8' : 'NIGHT FERRY 7', sx(1420), gy + 15, 'rgba(240,230,215,.7)', 9, '700');
+  text(x, m.departed ? 'NIGHT FERRY 8' : 'NIGHT FERRY 7', sx(1420), gy + 15, 'rgba(240,230,215,.7)', 9, '700');
   x.fillStyle = '#1a0806'; x.fillRect(q, gy + 26, r - q, 4);
   x.fillStyle = 'rgba(' + RED + ',.3)'; x.fillRect(q, gy + 30, r - q, 1);
   // the gap of black water between quay and hull, and fenders
@@ -305,13 +305,13 @@ function straddle(x:CanvasRenderingContext2D,v:View){
   placed(x, s, v.y(0), PORT_SCALE, () => paintRoadVehicle(x, { kind: 'straddle', depth: 'back', motion: 'shuttle', cargo: loaded, pose: 0.2, fleetNo: 'SC-11', stripe: '#1a1206' }, v.t, at.face, at.driven));
 }
 function chassis(x:CanvasRenderingContext2D,v:View){
-const m=new TerminalViewState(inputs.visual),H=inputs.visual.geometry.H,KIND={none:0,regular:1,box:2};
+const m=inputs.visual,H=inputs.visual.geometry.H,KIND={none:0,regular:1,box:2};
 
   const { sx, y } = v, c = sx(inputs.x - 64), s = m.scratch;
   if (!onScreen(v, c - 10, 150)) return;
   placed(x, sx(inputs.x), y(0), PORT_TRAILER_SCALE, () => drawTruck(x, { t: v.t, paint: '#2a2622', box: null, tractor: false }));
-  const taken = s.liftT0 !== undefined && s.liftKind === KIND.regular && m.now() - s.liftT0 > 1000;
-  if (!taken) container(x, v, inputs.x - 64, H.chassis, { w: 128, p: [5, 0, 3, 6, 2][(Number(m.get('loaded') ?? 0) + 1) % 5], seed: 71 + Number(m.get('loaded') ?? 0) % 9 });
+  const taken = s.liftT0 !== undefined && s.liftKind === KIND.regular && m.now - s.liftT0 > 1000;
+  if (!taken) container(x, v, inputs.x - 64, H.chassis, { w: 128, p: [5, 0, 3, 6, 2][(Number(m.loaded ?? 0) + 1) % 5], seed: 71 + Number(m.loaded ?? 0) % 9 });
 
 }
 function urn(x:CanvasRenderingContext2D,v:View){

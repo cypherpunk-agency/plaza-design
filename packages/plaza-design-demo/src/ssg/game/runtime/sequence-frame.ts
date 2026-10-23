@@ -8,7 +8,6 @@ import { drawComposition, resolveComposition, compositionAppearance, type ArtReg
 import { evaluateTimeline, type TimelineDocument, type TimelineFrame } from '../art/core/timeline';
 import { frameView, type View } from '../art/core/view';
 import { cinematicRegistry, cinematicTimelineContext, cutView, isScreenFade, type CinematicDocuments } from '../art/sequences/cinematics';
-import type { Skyline } from '../art/environment/skyline';
 import type { Light } from '../world/light';
 import type { SceneDef } from '../scenes/kit';
 import { directorFromTimeline, renderWorldFrame, type FrameDirector, type FramePass } from './render-scene';
@@ -28,7 +27,7 @@ export interface SequenceFrame {
   /** The decorative clock (60 per second; default `time` × 60), the flight's progress (0 → 1) and its stand's name. */
   ambient?: number; progress?: number; destination?: string;
   /** The intro's prepared skyline (story/cutscenes/skyline-session.ts). */
-  skyline?: { city: Skyline; step: number };
+  skyline?: View['skyline'];
   /** What the controller adds to the timeline's direction: the letterbox, fades after the timeline's own. */
   director?: FrameDirector;
   /** Draw the timeline's text cards as frame cards (default). A cutscene types them in its bar instead (CutscenePlay). */

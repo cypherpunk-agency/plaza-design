@@ -10,7 +10,7 @@ import { createFrame, frameStyles, sectionNavigator } from './frame';
 import { preserveBoundIdentity } from './bound-identity';
 import type { Light } from '../world/light';
 import type { Climate, Weather } from '../world/weather';
-import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetPreset, type AssetUsage, type AssetPreviewReport } from './asset-browser';
+import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetPreset, type AssetUsage, type AssetPreviewReport, type AssetPreviewOverrides } from './asset-browser';
 import { createThumbnails } from './asset-thumbnails';
 import { PRESETS_DOCUMENT, presetId, presetProps, presetsFor, type KitPreset, type KitPresets } from './kit-presets';
 import type { Environment } from '../art/core/composition';
@@ -66,7 +66,7 @@ export interface ComposerConfig {
   /** Compositions the stage can show beside a scene (a proposal and its base). Same request, same camera. */
   compareWith?(scene: string, documents: EditorDocument[]): { id: string; label: string }[];
   assetDistricts?(documents: EditorDocument[]): { list: { id: string; name: string }[]; of(scene: string): string | undefined };
-  assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
+  assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>&AssetPreviewOverrides): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
   /** Display name for a composition's scene id in the scene picker and empty states. */
   sceneLabel?(scene: string): string;
   /** Source documents that belong to a scene beyond its composition, for unsaved-change markers. */
@@ -200,7 +200,7 @@ export class ComposerModel {
     const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
     for (const [key, field] of Object.entries(element.fields)) props[key] = copy(settings[key] ?? field.default) as Value;
     const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
-    const layer: Layer = element.parts.length || element.role === 'group' ? 'set' : 'logic', order = frontOrder(doc, layer);
+    const layer: Layer = element.framePhase==='sky'?'distance':element.parts.length || element.role === 'group' ? 'set' : 'logic', order = frontOrder(doc, layer);
     doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, layer }); return instanceId;
   }
   /** Layered compositions: move artwork to a back-to-front position in a layer. */
@@ -616,7 +616,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function mountArtwork(host: HTMLElement, scene: string, add: (entry: AssetEntry) => void, addPreset: (kit: AssetEntry, settings: Properties) => void) {
     return mountAssetBrowser(host, { registry: config.registry, documents: documentsForView(),
       openUsage(usage) { closePicker(); openInstance(usage.document, usage.instance); },
-      preview: (canvas, entry, usage, zoom) => config.assetPreview!(canvas, entry, usage, documentsForView(), { time, reduced, environment: { ...environment, renderScale: zoom } }),
+      preview: (canvas, entry, usage, zoom, overrides) => config.assetPreview!(canvas, entry, usage, documentsForView(), { time, reduced, environment: { ...environment, renderScale: zoom },...overrides }),
+      fieldControl:fieldInput,
       ...(config.assetDistricts ? { districts: config.assetDistricts(documentsForView()) } : {}),
       ...(thumbnails ? { thumbnail: (entry: AssetEntry) => thumbnails.thumbnail(entry) } : {}),
       ...(scene ? { useInScene: { label: `Add to ${sceneName(scene)}`, run: add } } : {}),

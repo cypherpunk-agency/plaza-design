@@ -123,7 +123,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     building: String(r.props.building ?? '').trim(), label: String(r.props.label ?? '').trim(),
     ...(r.props.entry === 'door' ? { entry: 'door' as const } : {}), ...(r.props.indoor === true ? { indoor: true as const } : {}),
   }));
-  if (!floors.length) return undefined;
+  if (!floors.length&&!rows.some(r=>r.element.type==='vehicle.frame')) return undefined;
   // which building's interior shows a piece: follow its attachments (and parents) up to an interior handle
   const byId = new Map(rows.map(r => [r.instance.id, r])), parent = new Map<string, string>();
   for (const r of rows) for (const c of r.instance.children ?? []) parent.set(c.id, r.instance.id);
@@ -173,7 +173,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     return { id: r.instance.id, x: r.placement.x, h: r.placement.h, w: Number(r.props.width) * r.placement.scale, style: String(r.props.style ?? 'turnstile'),
       ...(key ? { key } : {}), ...(flag ? { flag } : {}), ...(when ? { when: structuredClone(when) } : {}), refuse: String(r.props.refuse ?? '').trim() || 'ACCESS DENIED.', ...insideOf(r.instance.id), ...(r.props.closes === true ? { closes: true as const } : {}) };
   });
-  const hs = floors.map(f => f.h), revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
+  const hs = floors.length?floors.map(f => f.h):[0], revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
   for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }
   const vehicles=compileLevelVehicles(rows),shells=group(rows,'level.shell');
   for(const lift of lifts){const source=liftVehicle(lift,'here');if(source)vehicles.push({id:source.id,source,lift:lift.id,x:0,h:0});}
@@ -662,7 +662,7 @@ export function mergeLevels(parts: readonly LevelPart[]): LevelSource {
     if (crossed.length) l.stops = [...l.stops, ...crossed.filter((f, i) => !crossed.slice(0, i).some(o => near(o.h, f.h))).map(f => ({ h: f.h, floor: f.id, label: f.label || f.id }))].sort((a, b) => a.h - b.h);
   }
   for(const v of vehicles)if(v.lift){const l=lifts.find(l=>l.id===v.lift)!,z=zones[v.zone!];v.source=liftVehicle({...l,id:l.id.split('/').at(-1)!,x:l.x-z.x,bottom:l.bottom-z.h,stops:l.stops.map(s=>({...s,h:s.h-z.h})),...(l.inside?{inside:l.inside.replace(v.zone!+'/','')}:{} )},'here')!;}
-  const hs = floors.map(f => f.h);
+  const hs = floors.length?floors.map(f => f.h):[0];
   return { floors, links, doors, lifts, shells, interiors, low: Math.min(...hs), high: Math.max(...hs), zones,...(vehicles.length?{vehicles}:{}),
     ...(Object.keys(revealSpeed).length ? { revealSpeed } : {}), ...(Object.keys(ghost).length ? { ghost } : {}), ...(rooms.length ? { rooms } : {}), ...(Object.keys(entrances).length ? { entrances } : {}), ...(barriers.length ? { barriers } : {}) };
 }

@@ -9,7 +9,9 @@
     "train:positionStation",
     "train:positionHalted",
     "train:positionBetween",
-    "train:positionDoorsOpen"
+    "train:positionDoorsOpen",
+    "prologue:started",
+    "opening:home"
   ],
   "items": [
     "maglev.pass"
@@ -663,6 +665,32 @@
         {
           "value": {
             "query": "train.statusLabel.station"
+          }
+        }
+      ]
+    },
+    "line.present": {
+      "kind": "select",
+      "cases": [
+        {
+          "when": {
+            "any": [
+              {
+                "flag": "prologue:started",
+                "is": false
+              },
+              {
+                "flag": "opening:home"
+              }
+            ]
+          },
+          "value": {
+            "literal": true
+          }
+        },
+        {
+          "value": {
+            "literal": false
           }
         }
       ]

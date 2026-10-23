@@ -51,6 +51,7 @@ interface Mover {
   /** The leg in progress: where it started, where it ends, when it set off, reached its end, and is done (after any wait). On a ring the points are not wrapped: `to` is ahead of `from`. */
   from: Pt; to: Pt; t0: number; tMove: number; tEnd: number;
   leg: Leg | null;
+  sourceLeg?: MoverLeg;
   /** The steps still to come on this trip. */
   queue: MoverStep[];
   /** The path to run when this trip ends (the trip's last step was a `run`). */
@@ -64,6 +65,26 @@ interface Mover {
   /** The path last run (while it runs, and after). */
   run?: string;
   tripT0: number; tripT1: number;
+}
+
+/** Locate an already chosen leg in current source; branch entries are 0=then, 1=else. */
+function legAddress(steps:readonly MoverStep[],leg:MoverLeg|undefined):number[]|undefined{
+  for(let i=0;i<steps.length;i++){
+    const step=steps[i];if(step===leg)return[i];
+    if(isChoice(step))for(const branch of [0,1]){const nested=legAddress(branch===0?step.then:step.else??[],leg);if(nested)return[i,branch,...nested];}
+  }
+}
+/** Reconstruct only from validated current source; no saved executable step is accepted. */
+function legAt(steps:readonly MoverStep[],address:readonly number[]):{step:MoverLeg;queue:MoverStep[]}|undefined{
+  if(!address.length||address.length>33||address.some(n=>!Number.isInteger(n)||n<0))return;
+  const [i,...tail]=address,step=steps[i];if(!step)return;
+  if(isChoice(step)){
+    const [branch,...nested]=tail;if(branch!==0&&branch!==1)return;
+    const chosen=legAt(branch===0?step.then:step.else??[],nested);
+    return chosen?{step:chosen.step,queue:[...chosen.queue,...steps.slice(i+1)]}:undefined;
+  }
+  if(tail.length||isRun(step)||isFrom(step))return;
+  return{step,queue:steps.slice(i+1)};
 }
 
 /** The mover's own happenings: a leg's `event`, `arrived` and `started` (carrying what `set` writes), and a leg's sound. */
@@ -260,7 +281,7 @@ export class Movers {
 
   private begin(m: Mover, step: MoverLeg, t: number, ahead = 0,drive = true) {
     const from = this.norm(m, m.to), p = this.plan(m, step, from), t0 = t - p.ahead - ahead;
-    Object.assign(m, { from, to: p.to, t0, tMove: t0 + p.ms, tEnd: t0 + Math.max(p.ms, p.wait), leg: { to: p.name, load: step.load, event: step.event, cue: step.cue, ease: step.ease ?? m.data.ease } });
+    Object.assign(m, { from, to: p.to, t0, tMove: t0 + p.ms, tEnd: t0 + Math.max(p.ms, p.wait), sourceLeg: step, leg: { to: p.name, load: step.load, event: step.event, cue: step.cue, ease: step.ease ?? m.data.ease } });
     if (p.name !== undefined) m.lastTo = p.name;
     if (p.moves) m.halt = undefined;
     if (drive&&step.drives) this.drive(m, step.drives);
@@ -460,9 +481,9 @@ export class Movers {
     for (const m of this.movers.values()) {
       out[m.key]=m.leg&&m.plain?{at:m.at,to:this.heading(m),pos:Math.round((this.position(m.key)??0)*100)/100}:{at:m.at};
       const steps=m.run&&m.data.paths?.[m.run];
-      if(keepPaths.has(m.key)&&m.leg&&!m.plain&&steps&&!steps.some(isChoice)){
-        const step=steps.length-m.queue.length-1;
-        if(step>=0&&!isRun(steps[step])&&!isFrom(steps[step]))out[m.key].path={name:m.run!,step,elapsed:this.host.now()-m.t0,from:{...m.from},...(m.lastTo?{lastTo:m.lastTo}:{})};
+      if(keepPaths.has(m.key)&&m.leg&&!m.leg.braking&&!m.plain&&steps){
+        const address=legAddress(steps,m.sourceLeg);
+        if(address)out[m.key].path={name:m.run!,step:address[0],...(address.length>1?{nested:address.slice(1)}:{}),elapsed:this.host.now()-m.t0,from:{...m.from},...(m.lastTo?{lastTo:m.lastTo}:{}),...(m.halt?{halt:m.halt}:{})};
       }
     }
     return out;
@@ -477,14 +498,13 @@ export class Movers {
       const p = m.stops[v.at];
       Object.assign(m, { at: v.at, from: p, to: p, t0: t, tMove: t, tEnd: t, leg: null, queue: [], after: undefined, halt: undefined, tripT0: t, tripT1: t });
       const path=v.path,steps=path&&typeof path.name==='string'&&m.data.paths&&Object.prototype.hasOwnProperty.call(m.data.paths,path.name)?m.data.paths[path.name]:undefined,finite=(n:unknown)=>typeof n==='number'&&Number.isFinite(n)&&Math.abs(n)<=1e9;
-      if(path&&steps&&!steps.some(isChoice)&&Number.isInteger(path.step)&&path.step>=0&&path.step<steps.length&&finite(path.elapsed)&&path.elapsed>=0&&path.from&&finite(path.from.x)&&finite(path.from.h)&&(!path.lastTo||Object.prototype.hasOwnProperty.call(m.stops,path.lastTo))){
-        const step=steps[path.step];
-        if(!isRun(step)&&!isFrom(step)&&!isChoice(step)){
-          const plan=this.plan(m,step,path.from);
-          if(path.elapsed<=Math.max(plan.ms,plan.wait)){
-            Object.assign(m,{from:{...path.from},to:{...path.from},run:path.name,queue:steps.slice(path.step+1),plain:false,lastTo:path.lastTo,tripT0:t-path.elapsed});
-            this.begin(m,step,t-path.elapsed+plan.ahead,0,false);m.tripT1=m.tEnd;
-          }
+      const resolved=path&&steps?legAt(steps,[path.step,...(Array.isArray(path.nested)?path.nested:[])]):undefined;
+      if(path&&resolved&&finite(path.elapsed)&&path.elapsed>=0&&path.from&&finite(path.from.x)&&finite(path.from.h)&&(!path.lastTo||Object.prototype.hasOwnProperty.call(m.stops,path.lastTo))&&(!path.halt||path.halt==='track'||Object.prototype.hasOwnProperty.call(m.stops,path.halt))){
+        const {step,queue}=resolved;
+        const plan=this.plan(m,step,path.from);
+        if(path.elapsed<=Math.max(plan.ms,plan.wait)){
+          Object.assign(m,{from:{...path.from},to:{...path.from},run:path.name,queue,plain:false,lastTo:path.lastTo,halt:path.halt,tripT0:t-path.elapsed});
+          this.begin(m,step,t-path.elapsed+plan.ahead,0,false);m.tripT1=m.tEnd;
         }
       }
       if (!m.leg&&v.to && v.to in m.stops) {

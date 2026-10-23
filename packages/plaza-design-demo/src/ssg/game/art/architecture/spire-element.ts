@@ -8,7 +8,7 @@ import type { Element } from '../core/composition';
 import { drawSpire } from './spire';
 
 export const spireElement: Element = {
-  type: 'landmark.spire', version: 1, label: 'Spire on the skyline (landmark)', category: 'architecture', coordinates: 'world', parts: ['backdrop'],
+  type: 'landmark.spire', version: 1, label: 'Spire on the skyline (landmark)', category: 'architecture', libraryUse:'reusable', coordinates: 'world', parts: ['backdrop'],
   fields: {
     size: { kind: 'number', label: 'Size (1: as seen from the Stacks)', default: 1, min: 0.1, max: 6, step: 0.05 },
     fill: { kind: 'color', label: 'Silhouette', default: '#040203' },

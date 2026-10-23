@@ -20,6 +20,7 @@ export function mountVehicleAuthoring(host:HTMLElement,context:WorkbenchContext,
  function render(){host.replaceChildren(error);error.textContent='';const doc=read(),v=validateVehicle(flat(doc.instances).find(n=>n.id===instanceId)!.props.vehicle);
   form.text(host,'Frame mover (device.part)',v.mover,value=>edit('Set vehicle frame mover',v=>{v.mover=value;}));
   form.text(host,'Boarding query (optional)',v.boardQuery??'',value=>edit('Set boarding query',v=>{if(value)v.boardQuery=value;else delete v.boardQuery;}));
+  form.text(host,'Presence query (optional)',v.presenceQuery??'',value=>edit('Set vehicle presence query',v=>{if(value)v.presenceQuery=value;else delete v.presenceQuery;}));
   form.decimal(host,'Door threshold',v.doors.open,value=>edit('Set vehicle boarding threshold',v=>{v.doors.open=value;}),.01,1);
   if('mover'in v.doors)form.text(host,'Doors mover (device.part)',v.doors.mover,value=>edit('Set vehicle doors mover',v=>{v.doors={mover:value,open:v.doors.open};}));
   else form.decimal(host,'Trip door time (ms)',v.doors.trip,value=>edit('Set trip doors',v=>{v.doors={trip:value,open:v.doors.open};}),1,60000);

@@ -24,7 +24,7 @@ export interface ArtworkInputs{L:HarborLayout;visual:HarborVisual;fishPose:Prepa
 const SKYLINE = towers(41, 1700, [16, 40], [18, 70], 0.08);
 
 /** Gulls in flight over the harbour, drifting east (the kit's flock, with the harbour's own seeded birds). */
-export const HARBOR_FLOCK: FlockOptions = { kind: 'gull', span: 2800, margin: 200, birds: (() => { const r = rng(91); return Array.from({ length: 7 }, () => ({ x: r() * 2600, h: 130 + r() * 150, speed: 0.25 + r() * 0.35, parallax: 0.7 + r() * 0.3, phase: r() * 100 })); })() };
+export const HARBOR_FLOCK: FlockOptions = { kind: 'gull', appearance: 'grey silhouette', span: 2800, margin: 200, birds: (() => { const r = rng(91); return Array.from({ length: 7 }, () => ({ x: r() * 2600, h: 130 + r() * 150, speed: 0.25 + r() * 0.35, parallax: 0.7 + r() * 0.3, phase: r() * 100 })); })() };
 /** The Registry's robot gull: a kit robogull on its figure-of-eight route, scanning the pier now and then. */
 const DRONE_GULL: Character = { seed: 3, look: 'robogull', x: 0, ps: 1, parallax: 0.95, rim: false, shadow: false };
 export function droneGullAt(t: number) { const u = t * 0.006; return { x: 1460 + Math.sin(u) * 240, h: 128 + Math.sin(u * 2) * 22, face: (Math.cos(u) > 0 ? 1 : -1) as 1 | -1, scanning: Math.sin(u * 3) > 0.55 }; }

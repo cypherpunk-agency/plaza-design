@@ -21,7 +21,7 @@ Most artwork is Canvas 2D procedural drawing with existing caches, not a custom 
 | Lane | Exercises | What it answers | What it cannot establish |
 | --- | --- | --- | --- |
 | Live game/browser | Production-built game, native RAF, real intervals/timeouts, actual Canvas, DOM/SVG, input and storage | Player-visible cadence, stalls, interaction response, asynchronous work, layout/paint/raster/composite and lifecycle | Perfect determinism; RAF interval alone is not proof that a frame was presented |
-| Isolated native render | Prepared scene/model/presentation snapshots through `renderSceneFrame`, shipping context attributes and controlled frame inputs | CPU submission cost by render pass; effect/scene comparisons; cold/warm cache behavior | Full game cost, GPU completion time or input latency |
+| Isolated native render | Prepared scene/model/presentation snapshots through `renderWorldFrame`, shipping context attributes and controlled frame inputs | CPU submission cost by render pass; effect/scene comparisons; cold/warm cache behavior | Full game cost, GPU completion time or input latency |
 | Isolated simulation | Actual SceneModel/rules/network algorithms with controlled clock/scheduler/input stream and bounded workloads | Rule/event/queue scaling, repeatability, resulting state and timing | Real browser scheduling, DOM or rendering cost |
 
 Measure the editor separately when desired: full `native-preview.render` includes validation,

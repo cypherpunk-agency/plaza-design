@@ -18,6 +18,8 @@ export interface BindingKeyScope {actors:ReadonlySet<string>;instances:ReadonlyM
 export type BindingProvider=((ctx:BindingContext)=>Record<string,Value>)&{
  /** The keys the provider offers (patterns, see binding-keys.ts). */
  keys:BindingKeys;
+ /** Uses the game's pending city/metro services even when no physical mechanism needs them. */
+ world?:boolean;
  /** The presentation signals the provider reads (name and starting stamp); a scene's cues may target them. */
  signals?:Readonly<Record<string,number>>};
 /** Declares a provider with the keys it offers (and the signals it reads). */

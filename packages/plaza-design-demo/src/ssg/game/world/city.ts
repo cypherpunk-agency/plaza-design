@@ -153,7 +153,7 @@ export interface CitySource {
  version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;LOCKS:Record<string,{unlockedBy:'HARBOR_FLAG';destinations:string[];reason:string}>;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
  LINE:Station[];STATIONS:Record<Station,{name:string;scene:SceneId;up:SceneId;at?:string}>;
  TRANSPORT:{boarding:{scene:SceneId;entrance?:string};siding:{scene:SceneId;entrance?:string}};
- HARBOR_FLAG:string;SIDING_OUT:string[];DRIVER_HARBOR:string[];
+ HARBOR_FLAG:string;DRIVER_HARBOR:string[];
  STAND_IDS:Stand[];STANDS:Record<Stand,{name:string;scene:SceneId;at?:string}>;FARE:number;HOP:number;DRIVER_BROKE:string[];
  MAP_W:number;MAP_H:number;DISTRICT_MAP:Record<DistrictId,DistrictPlan>;PLACE_MAP:Partial<Record<PlaceId,[number,number]>>;
  STATION_MAP:Record<Station,[number,number]>;PAD_MAP:Record<Stand,[number,number]>;LOOP_MAP:[number,number][];
@@ -249,7 +249,6 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
 
 /** The taxi driver, asked for the harbor pier while it is shut. */
 /** What you say coming up from the old siding (P14): a service stair, then the pier by the harbor's metro stairs. */
- const SIDING_OUT = data.SIDING_OUT;
 
  const DRIVER_HARBOR = data.DRIVER_HARBOR;
 
@@ -400,8 +399,8 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
   ]);
   return access.ok?'':access.reason;
 }
- return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
+ return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
 }
 export type CityModel=ReturnType<typeof createCityModel>;
 const shippingCity=createCityModel(citySource as unknown as CitySource);
-export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,SIDING_OUT,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;
+export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;

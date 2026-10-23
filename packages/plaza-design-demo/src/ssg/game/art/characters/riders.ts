@@ -42,7 +42,7 @@ export const SEAT_H = 9;
 
 const PEOPLE = new Map<string, Character>();
 /** One stable kit person per kind, phase, pose, size and people style (each is baked once). */
-function rider(kind: RiderKind, phase: number, sit: boolean, ps: number): Character {
+export function riderCharacter(kind: RiderKind, phase: number, sit: boolean, ps: number): Character {
   const style = peopleStyle(), key = kind + '|' + phase + '|' + (sit ? 1 : 0) + '|' + ps + '|' + style;
   let p = PEOPLE.get(key);
   if (!p) {
@@ -68,7 +68,7 @@ function screenView(base: number, t: number): View {
  * people seen inside a train going past.
  */
 export function drawRider(x: CanvasRenderingContext2D, kind: RiderKind, cx: number, base: number, t: number, opt: { sit?: boolean; flip?: boolean; ps?: number; phase?: number } = {}) {
-  const ps = opt.ps ?? 3, p = rider(kind, opt.phase ?? 0, !!opt.sit, ps);
+  const ps = opt.ps ?? 3, p = riderCharacter(kind, opt.phase ?? 0, !!opt.sit, ps);
   drawDriven(x, screenView(base, t), p, { x: cx, facing: opt.flip ? -1 : 1 });
 }
 

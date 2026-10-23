@@ -3,6 +3,297 @@
   "scene": "train",
   "instances": [
     {
+      "id": "cab-frame",
+      "type": "vehicle.frame",
+      "props": {
+        "vehicle": {
+          "id": "line0",
+          "kind": "train",
+          "mover": "train.car",
+          "doors": {
+            "mover": "train.doors",
+            "open": 0.6
+          },
+          "cars": [
+            {
+              "id": "car3",
+              "width": 1200,
+              "doors": [
+                {
+                  "id": "west",
+                  "x": 380,
+                  "w": 104
+                },
+                {
+                  "id": "east",
+                  "x": 780,
+                  "w": 104
+                }
+              ],
+              "seats": [
+                {
+                  "id": "seat-rider0-0",
+                  "x": 95,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider0-1",
+                  "x": 145,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider1-1",
+                  "x": 275,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider2-0",
+                  "x": 485,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider2-1",
+                  "x": 535,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider3-0",
+                  "x": 615,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider3-1",
+                  "x": 665,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider4-1",
+                  "x": 935,
+                  "h": 27
+                },
+                {
+                  "id": "seat-rider5-1",
+                  "x": 1065,
+                  "h": 27
+                }
+              ]
+            }
+          ],
+          "route": {
+            "ring": true,
+            "legs": [
+              {
+                "zone": "metro",
+                "from": {
+                  "x": 700,
+                  "h": 0
+                },
+                "to": {
+                  "x": 2160,
+                  "h": 0
+                },
+                "length": 1460,
+                "facing": 1
+              },
+              {
+                "zone": "here",
+                "from": {
+                  "x": 1460,
+                  "h": 0
+                },
+                "to": {
+                  "x": 2850,
+                  "h": 0
+                },
+                "length": 1390,
+                "facing": 1
+              },
+              {
+                "zone": "galleriaStation",
+                "from": {
+                  "x": 0,
+                  "h": 0
+                },
+                "to": {
+                  "x": 150,
+                  "h": 0
+                },
+                "length": 150,
+                "facing": 1
+              },
+              {
+                "zone": "galleriaStation",
+                "from": {
+                  "x": 150,
+                  "h": 0
+                },
+                "to": {
+                  "x": 1200,
+                  "h": 0
+                },
+                "length": 1050,
+                "facing": 1
+              },
+              {
+                "zone": "here",
+                "from": {
+                  "x": 4050,
+                  "h": 0
+                },
+                "to": {
+                  "x": 5350,
+                  "h": 0
+                },
+                "length": 1300,
+                "facing": 1
+              },
+              {
+                "zone": "metro-siding",
+                "from": {
+                  "x": -700,
+                  "h": 0
+                },
+                "to": {
+                  "x": 1000,
+                  "h": 0
+                },
+                "length": 600,
+                "facing": 1
+              },
+              {
+                "zone": "harborStation",
+                "from": {
+                  "x": 0,
+                  "h": 0
+                },
+                "to": {
+                  "x": 150,
+                  "h": 0
+                },
+                "length": 50,
+                "facing": 1
+              },
+              {
+                "zone": "harborStation",
+                "from": {
+                  "x": 150,
+                  "h": 0
+                },
+                "to": {
+                  "x": 0,
+                  "h": 0
+                },
+                "length": 25,
+                "facing": 1
+              },
+              {
+                "zone": "metro-siding",
+                "from": {
+                  "x": 1000,
+                  "h": 0
+                },
+                "to": {
+                  "x": -700,
+                  "h": 0
+                },
+                "length": 300,
+                "facing": 1
+              },
+              {
+                "zone": "here",
+                "from": {
+                  "x": 5350,
+                  "h": 0
+                },
+                "to": {
+                  "x": 4050,
+                  "h": 0
+                },
+                "length": 650,
+                "facing": 1
+              },
+              {
+                "zone": "galleriaStation",
+                "from": {
+                  "x": 1200,
+                  "h": 0
+                },
+                "to": {
+                  "x": 0,
+                  "h": 0
+                },
+                "length": 600,
+                "facing": 1
+              },
+              {
+                "zone": "here",
+                "from": {
+                  "x": 2850,
+                  "h": 0
+                },
+                "to": {
+                  "x": 1460,
+                  "h": 0
+                },
+                "length": 695,
+                "facing": 1
+              },
+              {
+                "zone": "metro",
+                "from": {
+                  "x": 2160,
+                  "h": 0
+                },
+                "to": {
+                  "x": 700,
+                  "h": 0
+                },
+                "length": 730,
+                "facing": 1
+              }
+            ]
+          },
+          "berths": [
+            {
+              "id": "galleria",
+              "zone": "galleriaStation",
+              "x": 150,
+              "h": 0,
+              "floor": "platform-floor"
+            },
+            {
+              "id": "siding",
+              "zone": "metro-siding",
+              "x": -700,
+              "h": 0,
+              "floor": "floor-siding"
+            },
+            {
+              "id": "harbor",
+              "zone": "harborStation",
+              "x": 150,
+              "h": 0,
+              "floor": "platform-floor"
+            },
+            {
+              "id": "downtown",
+              "zone": "metro",
+              "x": 700,
+              "h": 0,
+              "floor": "floor-station"
+            }
+          ],
+          "presenceQuery": "line.present"
+        }
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -1,
+      "layer": "logic"
+    },
+    {
       "id": "scene",
       "type": "train.marker",
       "props": {
@@ -14,7 +305,11 @@
         "h": 0
       },
       "order": 0,
-      "layer": "backdrop"
+      "layer": "set",
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
+      }
     },
     {
       "id": "spawn",
@@ -25,7 +320,11 @@
         "h": 0
       },
       "order": 75,
-      "layer": "playfield"
+      "layer": "playfield",
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
+      }
     },
     {
       "id": "ceiling",
@@ -36,7 +335,11 @@
         "h": 166
       },
       "order": 1,
-      "layer": "backdrop"
+      "layer": "set",
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
+      }
     },
     {
       "id": "roof",
@@ -53,7 +356,11 @@
         "h": 0
       },
       "order": 2,
-      "layer": "backdrop"
+      "layer": "set",
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
+      }
     },
     {
       "id": "news",
@@ -67,7 +374,11 @@
         "h": 0
       },
       "order": 3,
-      "layer": "backdrop"
+      "layer": "set",
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
+      }
     },
     {
       "id": "fill",
@@ -78,9 +389,13 @@
         "h": 0
       },
       "order": 4,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -92,9 +407,13 @@
         "h": 0
       },
       "order": 5,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -106,9 +425,13 @@
         "h": 0
       },
       "order": 6,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -124,9 +447,13 @@
         "h": 0
       },
       "order": 7,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -142,9 +469,13 @@
         "h": 0
       },
       "order": 8,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -160,9 +491,13 @@
         "h": 0
       },
       "order": 9,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -178,9 +513,13 @@
         "h": 0
       },
       "order": 10,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -196,9 +535,13 @@
         "h": 0
       },
       "order": 11,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -214,9 +557,13 @@
         "h": 0
       },
       "order": 12,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -228,9 +575,13 @@
         "h": 0
       },
       "order": 13,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -242,9 +593,13 @@
         "h": 0
       },
       "order": 14,
-      "layer": "backdrop",
+      "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -259,6 +614,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -273,6 +632,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -287,6 +650,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -300,7 +667,12 @@
       "order": 3,
       "layer": "set",
       "bindings": {
-        "frame": "train.frame"
+        "width": "train.width",
+        "ceiling": "train.ceiling"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -318,7 +690,12 @@
       "order": 4,
       "layer": "set",
       "bindings": {
-        "frame": "train.frame"
+        "home": "train.home",
+        "news": "train.news"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -336,7 +713,12 @@
       "order": 5,
       "layer": "set",
       "bindings": {
-        "frame": "train.frame"
+        "home": "train.home",
+        "news": "train.news"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -354,7 +736,12 @@
       "order": 6,
       "layer": "set",
       "bindings": {
-        "frame": "train.frame"
+        "home": "train.home",
+        "news": "train.news"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -370,9 +757,6 @@
       "attach": {
         "instance": "ad1",
         "anchor": "origin"
-      },
-      "bindings": {
-        "frame": "train.frame"
       }
     },
     {
@@ -387,6 +771,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -401,6 +789,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -415,6 +807,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -429,6 +825,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -443,6 +843,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -476,9 +880,6 @@
       "attach": {
         "instance": "gangway",
         "anchor": "origin"
-      },
-      "bindings": {
-        "frame": "train.frame"
       }
     },
     {
@@ -514,7 +915,7 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "home": "train.home"
       }
     },
     {
@@ -529,6 +930,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -543,6 +948,10 @@
       "layer": "set",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -660,294 +1069,6 @@
       }
     },
     {
-      "id": "seat-rider0-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider0-0"
-      },
-      "placement": {
-        "x": 25,
-        "h": 0
-      },
-      "order": 6,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window0",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider0-0"
-      }
-    },
-    {
-      "id": "seat-rider0-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider0-1"
-      },
-      "placement": {
-        "x": 75,
-        "h": 0
-      },
-      "order": 7,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window0",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider0-1"
-      }
-    },
-    {
-      "id": "seat-rider1-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider1-0"
-      },
-      "placement": {
-        "x": 25,
-        "h": 0
-      },
-      "order": 8,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window1",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider1-0"
-      }
-    },
-    {
-      "id": "seat-rider1-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider1-1"
-      },
-      "placement": {
-        "x": 75,
-        "h": 0
-      },
-      "order": 9,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window1",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider1-1"
-      }
-    },
-    {
-      "id": "seat-rider2-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider2-0"
-      },
-      "placement": {
-        "x": 25,
-        "h": 0
-      },
-      "order": 10,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window2",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider2-0"
-      }
-    },
-    {
-      "id": "seat-rider2-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider2-1"
-      },
-      "placement": {
-        "x": 75,
-        "h": 0
-      },
-      "order": 11,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window2",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider2-1"
-      }
-    },
-    {
-      "id": "seat-rider3-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider3-0"
-      },
-      "placement": {
-        "x": 25,
-        "h": 0
-      },
-      "order": 12,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window3",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider3-0"
-      }
-    },
-    {
-      "id": "seat-rider3-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider3-1"
-      },
-      "placement": {
-        "x": 75,
-        "h": 0
-      },
-      "order": 13,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window3",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider3-1"
-      }
-    },
-    {
-      "id": "seat-rider4-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider4-0"
-      },
-      "placement": {
-        "x": 25,
-        "h": 0
-      },
-      "order": 14,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window4",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider4-0"
-      }
-    },
-    {
-      "id": "seat-rider4-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider4-1"
-      },
-      "placement": {
-        "x": 75,
-        "h": 0
-      },
-      "order": 15,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window4",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider4-1"
-      }
-    },
-    {
-      "id": "seat-rider5-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider5-0"
-      },
-      "placement": {
-        "x": 25,
-        "h": 0
-      },
-      "order": 16,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window5",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider5-0"
-      }
-    },
-    {
-      "id": "seat-rider5-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "seat-rider5-1"
-      },
-      "placement": {
-        "x": 75,
-        "h": 0
-      },
-      "order": 17,
-      "layer": "playfield",
-      "attach": {
-        "instance": "window5",
-        "anchor": "origin"
-      },
-      "bindings": {
-        "pose": "train.pose.seat-rider5-1"
-      }
-    },
-    {
-      "id": "standing-rider0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "standing-rider0"
-      },
-      "placement": {
-        "x": 336,
-        "h": 0
-      },
-      "order": 18,
-      "layer": "playfield",
-      "bindings": {
-        "pose": "train.pose.standing-rider0"
-      }
-    },
-    {
-      "id": "standing-rider1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "standing-rider1"
-      },
-      "placement": {
-        "x": 566,
-        "h": 0
-      },
-      "order": 19,
-      "layer": "playfield",
-      "bindings": {
-        "pose": "train.pose.standing-rider1"
-      }
-    },
-    {
-      "id": "standing-rider2",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "standing-rider2"
-      },
-      "placement": {
-        "x": 956,
-        "h": 0
-      },
-      "order": 20,
-      "layer": "playfield",
-      "bindings": {
-        "pose": "train.pose.standing-rider2"
-      }
-    },
-    {
       "id": "suit",
       "type": "actor.prepared",
       "props": {
@@ -961,6 +1082,10 @@
       "layer": "playfield",
       "bindings": {
         "pose": "train.pose.suit"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -977,6 +1102,10 @@
       "layer": "playfield",
       "bindings": {
         "pose": "train.pose.courier"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -993,6 +1122,10 @@
       "layer": "playfield",
       "bindings": {
         "pose": "train.pose.elder"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1009,6 +1142,10 @@
       "layer": "playfield",
       "bindings": {
         "pose": "train.pose.punk"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1136,7 +1273,11 @@
       "order": 31,
       "layer": "playfield",
       "bindings": {
-        "frame": "train.frame"
+        "width": "train.width"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1154,7 +1295,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1172,7 +1314,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1190,7 +1333,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1208,7 +1352,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1226,7 +1371,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1244,7 +1390,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1262,7 +1409,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1280,7 +1428,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1298,7 +1447,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1316,7 +1466,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1334,7 +1485,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1352,7 +1504,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1370,7 +1523,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1388,7 +1542,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1406,7 +1561,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1424,7 +1580,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1442,7 +1599,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1460,7 +1618,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1478,7 +1637,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1496,7 +1656,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1514,7 +1675,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1532,7 +1694,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1550,7 +1713,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1568,7 +1732,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1586,7 +1751,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1604,7 +1770,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1622,7 +1789,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1640,7 +1808,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1658,7 +1827,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1676,7 +1846,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1694,7 +1865,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1712,7 +1884,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1730,7 +1903,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1748,7 +1922,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1766,7 +1941,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1784,7 +1960,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "frame": "train.frame"
+        "running": "train.running",
+        "run": "train.run"
       }
     },
     {
@@ -1799,6 +1976,10 @@
       "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1813,6 +1994,10 @@
       "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1827,6 +2012,10 @@
       "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1841,6 +2030,10 @@
       "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1855,6 +2048,10 @@
       "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1869,6 +2066,10 @@
       "layer": "playfield",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1883,6 +2084,10 @@
       "layer": "foreground",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1897,6 +2102,10 @@
       "layer": "foreground",
       "bindings": {
         "frame": "train.frame"
+      },
+      "attach": {
+        "instance": "cab-frame",
+        "anchor": "origin"
       }
     },
     {
@@ -1916,6 +2125,246 @@
       "attach": {
         "instance": "brake",
         "anchor": "origin"
+      }
+    },
+    {
+      "id": "galleria-passengers",
+      "type": "character.flow",
+      "props": {
+        "clock": "scene",
+        "flow": {
+          "seed": 323,
+          "speed": 38,
+          "maxWait": 120,
+          "spawn": {
+            "kind": "interval",
+            "every": 8
+          },
+          "route": [
+            {
+              "kind": "walk",
+              "x": 760,
+              "h": 0
+            },
+            {
+              "kind": "board",
+              "x": 930,
+              "h": 0,
+              "vehicle": "cab-frame",
+              "slots": 5,
+              "spacing": 18,
+              "gap": 0.6
+            }
+          ]
+        },
+        "vehicle": {
+          "frame": "cab-frame",
+          "board": "galleria",
+          "alight": "downtown"
+        },
+        "exit": [
+          {
+            "kind": "leave",
+            "x": 300,
+            "h": 0
+          }
+        ],
+        "looks": [
+          {
+            "rider": "phone",
+            "phase": 5.026320301783265,
+            "ps": 3
+          },
+          {
+            "rider": "courier",
+            "phase": 2.640689300411523,
+            "ps": 3
+          },
+          {
+            "rider": "courier",
+            "phase": 7.004029492455418,
+            "ps": 3
+          },
+          {
+            "rider": "sleeper",
+            "phase": 6.511402606310014,
+            "ps": 3
+          },
+          {
+            "rider": "punk",
+            "phase": 5.854166666666667,
+            "ps": 3
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 113,
+      "layer": "playfield",
+      "bindings": {
+        "people": "flow.galleria-passengers.people"
+      }
+    },
+    {
+      "id": "downtown-passengers",
+      "type": "character.flow",
+      "props": {
+        "clock": "scene",
+        "flow": {
+          "seed": 323,
+          "speed": 38,
+          "maxWait": 120,
+          "spawn": {
+            "kind": "interval",
+            "every": 8
+          },
+          "route": [
+            {
+              "kind": "walk",
+              "x": 1310,
+              "h": 0
+            },
+            {
+              "kind": "board",
+              "x": 1480,
+              "h": 0,
+              "vehicle": "cab-frame",
+              "slots": 5,
+              "spacing": 18,
+              "gap": 0.6
+            }
+          ]
+        },
+        "vehicle": {
+          "frame": "cab-frame",
+          "board": "downtown",
+          "alight": "galleria"
+        },
+        "exit": [
+          {
+            "kind": "leave",
+            "x": 1100,
+            "h": 0
+          }
+        ],
+        "looks": [
+          {
+            "rider": "phone",
+            "phase": 5.026320301783265,
+            "ps": 3
+          },
+          {
+            "rider": "courier",
+            "phase": 2.640689300411523,
+            "ps": 3
+          },
+          {
+            "rider": "courier",
+            "phase": 7.004029492455418,
+            "ps": 3
+          },
+          {
+            "rider": "sleeper",
+            "phase": 6.511402606310014,
+            "ps": 3
+          },
+          {
+            "rider": "punk",
+            "phase": 5.854166666666667,
+            "ps": 3
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 114,
+      "layer": "playfield",
+      "bindings": {
+        "people": "flow.downtown-passengers.people"
+      }
+    },
+    {
+      "id": "harbor-passengers",
+      "type": "character.flow",
+      "props": {
+        "clock": "scene",
+        "flow": {
+          "seed": 321,
+          "speed": 38,
+          "maxWait": 120,
+          "spawn": {
+            "kind": "interval",
+            "every": 8
+          },
+          "route": [
+            {
+              "kind": "walk",
+              "x": 760,
+              "h": 0
+            },
+            {
+              "kind": "board",
+              "x": 930,
+              "h": 0,
+              "vehicle": "cab-frame",
+              "slots": 5,
+              "spacing": 18,
+              "gap": 0.6
+            }
+          ]
+        },
+        "vehicle": {
+          "frame": "cab-frame",
+          "board": "harbor",
+          "alight": "downtown"
+        },
+        "exit": [
+          {
+            "kind": "leave",
+            "x": 300,
+            "h": 0
+          }
+        ],
+        "looks": [
+          {
+            "rider": "phone",
+            "phase": 9.11574074074074,
+            "ps": 3
+          },
+          {
+            "rider": "elder",
+            "phase": 2.0593278463648836,
+            "ps": 3
+          },
+          {
+            "rider": "inspector",
+            "phase": 5.33213305898491,
+            "ps": 3
+          },
+          {
+            "rider": "inspector",
+            "phase": 2.51440329218107,
+            "ps": 3
+          },
+          {
+            "rider": "inspector",
+            "phase": 2.3715706447187928,
+            "ps": 3
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 115,
+      "layer": "playfield",
+      "bindings": {
+        "people": "flow.harbor-passengers.people"
       }
     }
   ]

@@ -97,7 +97,7 @@ export interface Link { from: string; to: string; verb: string; fixed?: boolean;
 export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolean }
 
 /** A device standing in the world, from its `layout.spot`: centre x, size, and how high its bottom sits (0: on the street). */
-export interface Spot { id: string; x: number; w: number; h: number; y: number }
+export interface Spot { id: string; x: number; w: number; h: number; y: number;floorH?:number }
 
 export interface SceneHooks {
   /** Optional read-only diagnostic events. Exceptions are isolated from engine execution. */
@@ -385,16 +385,21 @@ export class SceneModel {
    */
   spots(): Spot[] {
     const out: Spot[] = [];
+    const offsets=this.attachmentOffsets()?.devices;
     for (const d of this.devices.values()) {
       if (d.logic || d.node || !d.data.layout?.spot) continue;
       const {presence,...box}=d.data.layout.spot;
       if(presence!==undefined&&this.gameplayQuery?.(presence)!==true)continue;
-      const home: Spot = { id: d.id, ...box, y: box.y ?? 0 };
+      const offset=offsets?.[d.id];
+      const home: Spot = { id: d.id, ...box, x:box.x+(offset?.dx??0),y:(box.y??0)+(offset?.dh??0),...(offset?.floorH!==undefined?{floorH:offset.floorH}:{}) };
       const s = this.rules.place ? this.rules.place(this, home) : home;
       if (s) out.push(s);
     }
     return out;
   }
+
+  /** Read-only live manifest geometry, calculated from the existing Circuit movers. */
+  attachmentOffsets(){return this.rules.attachmentOffsets?.(this);}
 
   // ---------- doing things ----------
 

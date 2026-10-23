@@ -28,3 +28,16 @@ const context=canvas.context;context.save();context.globalAlpha=.25;context.glob
 preview.render(canvas as unknown as HTMLCanvasElement,request);assert.equal(canvas.resets,resets+1);assert.deepEqual(canvas.operations,baseline,'native full-frame commands/effective canvas state match a fresh frame despite contaminated context');
 preview.render(canvas as unknown as HTMLCanvasElement,{...request,environment:{...request.environment,cameraX:100,cameraH:100}});preview.render(canvas as unknown as HTMLCanvasElement,request);assert.deepEqual(canvas.operations,baseline,'camera probe history must not alter the returned native frame');assert.equal(JSON.stringify(libraryComposition),source);assert.equal(JSON.stringify({localStorage,sessionStorage}),stored);
 const result={status:'PASS',scope:'Actual native Library full-frame paint commands with effective canvas state, fresh versus contaminated context and camera-probe replay; raw browser pixel gate separately owned by primary',commands:baseline.length,canvasResets:canvas.resets,contamination:['alpha','composite','lineCap','lineJoin','lineWidth','font','shadow','smoothing','transform','clip','outstanding save'],sourceStoragePreserved:true};fs.mkdirSync(path.resolve('../../.game-test-output/evidence'),{recursive:true});fs.writeFileSync(path.resolve('../../.game-test-output/evidence/native-preview-context-history-contract.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));
+
+// A routed car is positioned in its source zone, including in frozen inspection.
+const trainComposition = art.validate(FOLDER_SOURCES.train.composition);
+const trainRequest = {...request, composition: trainComposition};
+const train = preview.render(canvas as unknown as HTMLCanvasElement, trainRequest);
+assert.equal(train.artwork!.environment.state['cab-frame'].x, 0, 'the initial Downtown berth projects into train-local coordinates');
+const graph = JSON.parse(fs.readFileSync(path.resolve('src/ssg/game/world/zone-graph.json'), 'utf8'));
+graph.seams.find((s:any) => s.id === 'metro-line0').dx += 30;
+const shifted = preview.render(canvas as unknown as HTMLCanvasElement, {...trainRequest, documents:new Map([['zone-graph',graph]])});
+assert.equal(shifted.artwork!.environment.state['cab-frame'].x, -30, 'pending seam geometry controls the inspected car');
+const hiddenTrain = preview.render(canvas as unknown as HTMLCanvasElement, {...trainRequest, environment:{...request.environment,flags:JSON.stringify({'prologue:started':true})}});
+assert.equal(hiddenTrain.artwork!.environment.visibility!['cab-frame'], false, 'inspection evaluates the real service-presence query');
+assert.equal(JSON.stringify({localStorage,sessionStorage}),stored);

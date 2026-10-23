@@ -33,7 +33,7 @@ viewers and world tools retain that common structure.
 
 ## Available authoring
 
-All 20 existing scenes have composition, ordinary content, device/controller sources and native
+All 19 current folder scenes have composition, ordinary content, device/controller sources and native
 Play. Ordinary actors, interactions, readables, rest points and exits can be created, removed and
 rebound. Existing physical calculations and drawing algorithms remain code primitives with typed
 inputs; the editor changes their declared parameters rather than editing arbitrary TypeScript.
@@ -53,6 +53,18 @@ commit a scene transition. A runtime sequence commits its handoff once on comple
 Environmental animation uses prepared time, weather and lighting, preserving deterministic seeds.
 
 Asset, character, vehicle and signage viewers show the registered library and supported states.
+
+`Add to scene` uses the artwork's declared placement contract, not its source-folder name.
+Reviewed Warehouse/Library/Market/Moth/Capsule/Laundromat and landmark pieces can be added independently;
+whole-frame paintings, parent-relative cable geometry and prepared actor/layout snapshots retain
+source context. A source role used by gameplay is still protected even when its drawing type is
+reusable. Use Open instance to edit a context piece together with its actual bindings.
+
+Sky traffic is `environment.sky-traffic`, with a typed fleet list. It belongs in distance and
+paints in the shared frame's sky phase, including isolated asset and world backdrop previews.
+Ships use their existing seeded default configuration; removing the source instance removes the
+fleet. There is no automatic game/editor fleet fallback. Camera sequences exclude a fleet unless
+its explicit `Also draw in camera sequences` field is enabled.
 The artwork gallery separates **Structure** (Object or Composition), **Usability** (Reusable anywhere
 or Requires source context), **Kind**, District and Source. All filter sections collapse independently.
 It opens on reusable artwork. Invisible markers, light/shadow sources, the player layer and the empty
@@ -168,7 +180,7 @@ campaign location.
 Run `pnpm test:game --list` from packages/plaza-design-demo. Select relevant names, for example
 `pnpm test:game conversation source-removal`. The default runs all current checks. Test output is
 `.game-test-output/` at repository root; old migration captures are unnecessary. Browser visual
-contracts cover all 20 scenes plus selected environment/hack states; see
+contracts cover the current scene set plus selected environment/hack states; see
 [the test guide](../../../../scripts/game-tests/README.md).
 
 The agent checks mechanics, permissions, persistence and disposal. User feedback should address
@@ -195,6 +207,14 @@ Open `authored.vehicle-lab` and select the `shuttle` frame. Its **Vehicle** tab 
 existing cars and doors, gangways, route points and berths; **Logic → Devices** edits
 the same frame/door movers and service timing. Pending edits reach native scene Play and
 Demo world. History, bundles and protected Save use the ordinary composition document.
+The `cab-panel` sign is bound to the shuttle device and attached to its frame. Moving the panel
+in Appearance moves the actual native interaction target too. Manifest geometry validates at
+compile time; live displacement is a pure projection of the existing mover through those same
+anchors. It does not rewrite authored positions or create another saved vehicle position.
+The same manifest projection supports attached uses, readables and rests. Vehicle-lab's
+`cab-speaker` and `route-map` are ordinary source interactions; move their artwork in Appearance
+and their native E targets follow. Runtime standing floors come from the existing car deck,
+independently of the height of the prompt/answer text. No extra position is saved.
 Seat benches have typed position/height controls and native sitting; their usable places follow the registered furniture anchors. Existing consists support one/two/three-car presets and Add/Remove car (up to eight). The source edit includes doors, benches, gangways and shell references. Route controls show segment lengths and support split/remove/extend; invalid discontinuities reject atomically. New scene → Preset creates a working shuttle or a shell-only curve/drop cart as ordinary source. Cross-zone route legs select the actual zone; berths name that zone’s floor. Prospective source validation rejects discontinuous routes.
 
 
@@ -204,3 +224,12 @@ vehicle doors and the same identities throughout. Painting only reads prepared p
 For a quick real commute, open Harbor Station → Play fixture **harbor-commute**; it starts at an
 open door after checkout. The fixture stores declared shared `shift.*` values in their actual
 owner block. It does not create a second copy under the scene.
+
+### Temporary artwork previews
+
+In Library → Artwork, select a reusable piece and keep **Default isolated piece** selected.
+Open **Preview settings** to try its registered Properties or Visual state (for example, a pulled
+brake or a printed wage slip). The controls are the same typed fields as the scene inspector and
+use the same art renderer. Invalid values keep the last valid preview. **Reset preview settings**
+restores defaults. These settings are temporary: Add artwork and saved scenes use their own data.
+Selecting an existing usage shows that scene's prepared state and hides these overrides.

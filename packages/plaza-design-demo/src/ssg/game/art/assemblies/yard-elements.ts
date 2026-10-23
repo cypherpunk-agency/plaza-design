@@ -68,3 +68,5 @@ for(const [id,label,roof,width,height,kind]of [['roof-vent','Roof vent',20,4,7,'
 }
 // Pictures consume snapshots. Authored controller/manifest references validate their geometry.
 for(const element of yardElements)element.bindingIdentity='presentation';
+// Screen-top architecture, coupled hook/parcel geometry and ambient washes retain context.
+for(const e of yardElements)if(['passage','shutter','air-conditioner','kitchen-window','broom','chair','spool-table','tray','crate','dumpster','dumpster-lamp','street-sign','yard-sign','fence','hatch','chute','camera'].includes(e.type.slice(5)))e.libraryUse='reusable';

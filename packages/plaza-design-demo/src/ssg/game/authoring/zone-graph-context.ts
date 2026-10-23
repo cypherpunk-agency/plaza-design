@@ -7,7 +7,7 @@ type Node = { id?: unknown; type?: unknown; children?: unknown };
 type Catalogue = { scenes?: { scene?: { id?: unknown; manifest?: { width?: unknown } }; composition?: { instances?: unknown } }[] };
 const levelPieces = (nodes: unknown, out: string[] = []): string[] => {
   for (const n of Array.isArray(nodes) ? nodes as Node[] : []) {
-    if (typeof n.id === 'string' && typeof n.type === 'string' && n.type.startsWith('level.')) out.push(n.id);
+    if (typeof n.id === 'string' && typeof n.type === 'string' && (n.type.startsWith('level.')||n.type==='vehicle.frame')) out.push(n.id);
     levelPieces(n.children, out);
   }
   return out;

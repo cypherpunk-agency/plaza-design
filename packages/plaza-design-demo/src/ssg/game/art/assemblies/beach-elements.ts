@@ -9,7 +9,7 @@ const num=(label:string,value=0):Field=>({kind:'number',label,default:value,min:
 const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
 const bool=(label:string,value=false):Field=>({kind:'boolean',label,default:value});
 const n=(p:Properties,k:string)=>Number(p[k]);
-export const beachVisualFields:Record<string,Field>={limeVisible:bool('Native LIME sprite',true),limeX:num('LIME source body X'),limeH:num('LIME source body height'),palette:num('Daylight palette'),horizon:num('Horizon height'),waterline:num('Waterline height'),rented:bool('Bed rented'),billingPaused:bool('Billing paused'),billed:num('Bill'),freeDrink:bool('Drink poured'),danger:bool('Danger flag'),lamps:bool('Pier lights'),gullShooed:num('Gull last shooed',-1e9),hover:str('Hovered device'),barVisible:bool('Bar in view',true),barWidth:num('Bar width'),towerVisible:bool('Tower in view',true),pierVisible:bool('Pier in view',true),boardwalkVisible:bool('Boardwalk in view',true),drinkX:num('Drink position'),drinkH:num('Drink height'),shore:num('Shore edge'),lampPositions:{kind:'json',label:'Reflection lamp positions',default:[],validate:v=>{if(!Array.isArray(v)||v.some(q=>typeof q!=='number'||!Number.isFinite(q)))throw new Error('Expected finite lamp positions');}}};
+export const beachVisualFields:Record<string,Field>={limeVisible:bool('Native LIME sprite',true),limeX:num('LIME source body X'),limeH:num('LIME source body height'),palette:num('Daylight palette'),horizon:num('Horizon height'),waterline:num('Waterline height'),rented:bool('Bed rented'),billingPaused:bool('Billing paused'),billed:num('Bill'),freeDrink:bool('Drink poured'),danger:bool('Danger flag'),lamps:bool('Pier lights'),gullShooed:num('Gull last shooed',-1e9),hover:str('Hovered device'),barVisible:bool('Bar in view',true),barWidth:num('Bar width'),towerVisible:bool('Tower in view',true),pierVisible:bool('Pier in view',true),boardwalkVisible:bool('Boardwalk in view',true),shore:num('Shore edge'),lampPositions:{kind:'json',label:'Reflection lamp positions',default:[],validate:v=>{if(!Array.isArray(v)||v.some(q=>typeof q!=='number'||!Number.isFinite(q)))throw new Error('Expected finite lamp positions');}}};
 const common=Object.keys(beachVisualFields);
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
 const origin={x:0,h:0,role:'origin' as const};
@@ -18,7 +18,9 @@ const blank:BeachLayout={stairs:0,board:0,boardwalk:0,kiosk:0,sunbeds:[],mine:0,
 const kernel=(s:Properties,L:Partial<BeachLayout>={},width=0)=>createBeachArtwork({HORIZON:n(s,'horizon'),WATERLINE:n(s,'waterline'),L:{...blank,...L},BEACH_W:width});
 const state=(s:Properties):BeachVisualState=>({rented:!!s.rented,billingPaused:!!s.billingPaused,billed:n(s,'billed'),freeDrink:!!s.freeDrink,danger:!!s.danger,lamps:!!s.lamps,gullShooed:n(s,'gullShooed')});
 const raised=(v:View,h:number):View=>h===0?v:{...v,gy:v.gy-h,y:q=>v.y(q+h)};
-const bar=(fn:(x:CanvasRenderingContext2D,w:number,p:number,t:number)=>void):Draw=>(x,v,_p,s,at)=>{if(s.barVisible)placed(x,v.sx(at.x),v.y(at.h),1,()=>fn(x,n(s,'barWidth'),n(s,'palette'),v.t));};
+const barFields={width:{...num('Width',226),min:40,max:4000}};
+const barWidth=(p:Properties,s:Properties)=>n(s,'barWidth')||n(p,'width');
+const bar=(fn:(x:CanvasRenderingContext2D,w:number,p:number,t:number)=>void):Draw=>(x,v,p,s,at)=>{if(s.barVisible)placed(x,v.sx(at.x),v.y(at.h),1,()=>fn(x,barWidth(p,s),n(s,'palette'),v.t));};
 const ordinary=(method:'kiosk'|'lime'|'crab'|'volleyball'|'castle'|'board'|'rod'|'boat'|'postGull'|'publicNotice'|'jukebox'|'tower'|'drone'|'pierController',field:keyof BeachLayout):Draw=>(x,v,_p,s,at)=>{
  if(['lime','jukebox'].includes(method)&&!s.barVisible||method==='drone'&&!s.towerVisible||method==='publicNotice'&&!s.boardwalkVisible||method==='pierController'&&!s.pierVisible)return;
  const k=kernel(s,{[field]:at.x-(method==='board'?12:0)}),V=raised(v,at.h),st=state(s),hover=String(s.hover)||null,p=n(s,'palette');
@@ -40,17 +42,17 @@ export const beachElements:Element[]=[
  element('public-notice','Registry beach notice',{},ordinary('publicNotice','board')),
  element('sunbed','Sunbed and parasol',{index:num('Bed number index'),color:{kind:'color',label:'Fabric',default:'#c83a2a'},rentable:bool('Rental bed')},(x,v,p,s,at)=>kernel(s).sunbed(x,raised(v,at.h),at.x,n(p,'index'),String(p.color),!!p.rentable,state(s),n(s,'palette'))),
  element('kiosk','Sunbed rental kiosk',{},ordinary('kiosk','kiosk')),
- element('bar-under','SALT stilts and warm light',{width:num('Width')},bar((x,w)=>saltUnder(x,w))),
- element('bar-back','SALT back shelves',{},bar((x,w)=>saltBack(x,w))),
+ element('bar-under','SALT stilts and warm light',barFields,bar((x,w)=>saltUnder(x,w)),['barVisible','barWidth','palette']),
+ element('bar-back','SALT back shelves',barFields,bar((x,w)=>saltBack(x,w)),['barVisible','barWidth','palette']),
  element('bar-photo','Moth photo behind the gin',{},(x,v,_p,s,at)=>{if(s.barVisible)kernel(s).barPhoto(x,raised(v,at.h),at.x);}),
  element('lime','LIME robot bartender',{},(x,v,p,s,at)=>{if(s.limeVisible)ordinary('lime','lime')(x,v,p,{...s,barVisible:true},{...at,x:n(s,'limeX'),h:n(s,'limeH')});}),
- element('bar-shell','SALT shack, ladder and neon',{},bar(saltShell)),
- element('bar-counter','SALT counter',{},bar((x,w)=>saltCounter(x,w))),
+ element('bar-shell','SALT shack, ladder and neon',barFields,bar(saltShell),['barVisible','barWidth','palette']),
+ element('bar-counter','SALT counter',barFields,bar((x,w)=>saltCounter(x,w)),['barVisible','barWidth','palette']),
  element('menu','SALT menu board',{},(x,v,_p,s,at)=>{if(s.barVisible)menuBoard(x,raised(v,at.h),{x:at.x,h:36,w:66,tall:22,mount:'hang',to:64,items:[['HOUSE','2T'],['WATER','2T']],phase:70});}),
  element('bar-stool','SALT stool',{},(x,v,_p,s,at)=>{if(s.barVisible)kernel(s).barStool(x,raised(v,at.h),at.x);}),
- element('bar-lights','SALT string lights',{},bar((x,w,_p,t)=>saltLights(x,w,t))),
+ element('bar-lights','SALT string lights',barFields,bar((x,w,_p,t)=>saltLights(x,w,t)),['barVisible','barWidth','palette']),
  element('jukebox','SALT jukebox',{},ordinary('jukebox','jukebox')),
- element('mixer','SALT drink mixer',{},(x,v,_p,s,at)=>{if(s.barVisible)kernel(s,{mixer:at.x}).mixer(x,raised(v,at.h),state(s),String(s.hover)||null,n(s,'drinkX'),n(s,'drinkH')-at.h);}),
+ element('mixer','SALT drink mixer',{},(x,v,_p,s,at)=>{if(s.barVisible)kernel(s,{mixer:at.x}).mixer(x,raised(v,at.h),state(s),String(s.hover)||null);}),
  element('crab','Crab on the sand',{},ordinary('crab','crab')),
  element('tower','Lifeguard tower and flag',{},ordinary('tower','tower')),
  element('drone','Registry rescue drone',{},ordinary('drone','drone')),
@@ -67,3 +69,14 @@ export const beachElements:Element[]=[
  element('foreground','Near sand, water and lamp reflections',{},(x,v,_p,s,at)=>kernel(s,{shore:n(s,'shore')}).foreground(x,raised(v,at.h),state(s),n(s,'palette'),s.lampPositions as number[])),
 ];
 applyBeachMetadata(beachElements);
+// Self-contained objects; scenery spans, bar-wide pieces and placed drink/actor snapshots
+// still need their explicit scene context. No live controller is read by these kernels.
+for(const e of beachElements)if(['buoy','sunbed','kiosk','crab','tower','drone','volleyball','castle','board','boat','rod','post-gull','public-notice','menu','bar-photo','bar-stool','pier-lamp','berth-sign','pier-controller'].includes(e.type.slice(6)))e.libraryUse='reusable';
+
+for(const e of beachElements)if(['bar-under','bar-back','bar-shell','bar-counter','bar-lights'].includes(e.type.slice(6)))e.libraryUse='reusable';
+
+beachElements.find(e=>e.type==='beach.mixer')!.libraryUse='reusable';
+beachElements.find(e=>e.type==='beach.jukebox')!.libraryUse='reusable';
+
+// Audited local fittings: optional scalar/pose inputs have standalone defaults.
+for(const e of beachElements)if(["stairs"].includes(e.type.slice(6)))e.libraryUse='reusable';

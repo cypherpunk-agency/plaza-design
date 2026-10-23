@@ -118,7 +118,7 @@
               "width": 24,
               "key": "uplink",
               "flag": "",
-              "refuse": "TURNSTILE · NO VALID CHIP. PRESENT UPLINK."
+              "refuse": "TURNSTILE \u00b7 NO VALID CHIP. PRESENT UPLINK."
             },
             "placement": {
               "x": 600,
@@ -520,7 +520,7 @@
             "type": "shift.sign",
             "props": {
               "text": "WAY OUT",
-              "sub": "QUAY · FERRY · PORT",
+              "sub": "QUAY \u00b7 FERRY \u00b7 PORT",
               "code": "",
               "height": 90,
               "mount": "post",
@@ -943,7 +943,8 @@
                   "car2-door2",
                   "car2-door3"
                 ],
-                "boardQuery": "commute.ready"
+                "boardQuery": "commute.ready",
+                "presenceQuery": "commute.present"
               }
             },
             "placement": {
@@ -966,7 +967,7 @@
               "cab": "left",
               "plate": "CAR 1",
               "inside": "#3b352e",
-              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%",
+              "ads": "REGISTRY PREMIUM \u00b7 FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 \u00b7 ON TIME 61%",
               "notice": "CAMERAS OPERATE IN THIS CAR",
               "camera": true
             },
@@ -1117,7 +1118,7 @@
               "cab": "right",
               "plate": "CAR 2",
               "inside": "#3b352e",
-              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%",
+              "ads": "REGISTRY PREMIUM \u00b7 FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 \u00b7 ON TIME 61%",
               "notice": "CAMERAS OPERATE IN THIS CAR",
               "camera": true
             },
@@ -1302,20 +1303,31 @@
             "bindings": {
               "people": "flow.passengers.people"
             }
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "harbor-station",
-        "name": "Harbor Station · LINE 0",
+        "name": "Harbor Station \u00b7 LINE 0",
         "intro": [
           "Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end."
         ],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 · E to talk",
+            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -1413,7 +1425,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -1537,7 +1549,8 @@
           "shift"
         ],
         "flags": [
-          "prologue:started"
+          "prologue:started",
+          "opening:home"
         ],
         "items": [],
         "events": [],
@@ -1571,19 +1584,45 @@
                 }
               }
             ]
+          },
+          "commute.present": {
+            "kind": "select",
+            "cases": [
+              {
+                "when": {
+                  "all": [
+                    {
+                      "flag": "prologue:started"
+                    },
+                    {
+                      "flag": "opening:home",
+                      "is": false
+                    }
+                  ]
+                },
+                "value": {
+                  "literal": true
+                }
+              },
+              {
+                "value": {
+                  "literal": false
+                }
+              }
+            ]
           }
         }
       },
       "devices": {
         "id": "harbor-station",
-        "name": "Harbor Station · LINE 0",
+        "name": "Harbor Station \u00b7 LINE 0",
         "tuning": {},
         "devices": [
           {
             "id": "lift",
-            "name": "LIFT · HARBOR STATION",
+            "name": "LIFT \u00b7 HARBOR STATION",
             "look": "A glass lift between the quay and the LINE 0 platform. It hums when it remembers to.",
-            "status": "two stops · quay and platform",
+            "status": "two stops \u00b7 quay and platform",
             "layout": {
               "spot": {
                 "x": 1150,
@@ -1832,7 +1871,7 @@
             "type": "shift.sign",
             "props": {
               "text": "HARBOR STATION",
-              "sub": "LINE 0 · PLATFORM ↑",
+              "sub": "LINE 0 \u00b7 PLATFORM \u2191",
               "code": "",
               "height": 112,
               "mount": "post",
@@ -2369,18 +2408,29 @@
             },
             "order": 11,
             "layer": "backdrop"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "harbor-quay",
-        "name": "Harbor · the quay",
+        "name": "Harbor \u00b7 the quay",
         "intro": [],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 · E to talk",
+            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -2478,7 +2528,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -2518,7 +2568,7 @@
             "name": "REGISTRY NOTICE",
             "label": "[E] READ NOTICE",
             "pages": [
-              "REGISTRY CHECKPOINT · HARBOR. Staff enter at the staff gate east of the stalls.",
+              "REGISTRY CHECKPOINT \u00b7 HARBOR. Staff enter at the staff gate east of the stalls.",
               "NIGHT TRANSPORT CREWS: COLLECT YOUR WORK TAG FROM THE BAY 3 SUPERVISOR. RETURN IT AT CHECKOUT."
             ]
           }
@@ -2784,7 +2834,7 @@
               "style": "gate",
               "side": "left",
               "width": 130,
-              "label": "STAFF ENTRANCE · NIGHT SHIFT"
+              "label": "STAFF ENTRANCE \u00b7 NIGHT SHIFT"
             },
             "placement": {
               "x": 240,
@@ -2797,7 +2847,7 @@
             "id": "station-way",
             "type": "sign.hanging",
             "props": {
-              "text": "← HARBOR STATION · LINE 0",
+              "text": "\u2190 HARBOR STATION \u00b7 LINE 0",
               "color": "255,217,165",
               "board": "#2a1a10",
               "drop": 12
@@ -2947,7 +2997,7 @@
                   }
                 ]
               },
-              "refuse": "TURNSTILE · SHIFT OPEN. Return your work tag at the reader to check out.",
+              "refuse": "TURNSTILE \u00b7 SHIFT OPEN. Return your work tag at the reader to check out.",
               "closes": true
             },
             "placement": {
@@ -3041,18 +3091,29 @@
             },
             "order": 280,
             "layer": "logic"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "harbor-checkout",
-        "name": "Harbor · staff checkout",
+        "name": "Harbor \u00b7 staff checkout",
         "intro": [],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 · E to talk",
+            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -3152,7 +3213,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -3197,7 +3258,7 @@
                   "is": true
                 },
                 "pages": [
-                  "TAG RETURNED · SHIFT CLOSED. Your statement is ready."
+                  "TAG RETURNED \u00b7 SHIFT CLOSED. Your statement is ready."
                 ]
               },
               {
@@ -3206,13 +3267,13 @@
                   "is": false
                 },
                 "pages": [
-                  "SHIFT OPEN · Loading trolley not parked."
+                  "SHIFT OPEN \u00b7 Loading trolley not parked."
                 ]
               },
               {
                 "command": "shift.checkout",
                 "pages": [
-                  "IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.",
+                  "IDENTITY VERIFIED \u00b7 TAG RETURNED \u00b7 SHIFT CLOSED.",
                   "Three tokens credited. Your wage statement is ready to read."
                 ],
                 "failure": [
@@ -3235,7 +3296,7 @@
                       "is": true
                     },
                     "pages": [
-                      "TAG RETURNED · SHIFT CLOSED. Your statement is ready."
+                      "TAG RETURNED \u00b7 SHIFT CLOSED. Your statement is ready."
                     ]
                   },
                   {
@@ -3244,13 +3305,13 @@
                       "is": false
                     },
                     "pages": [
-                      "SHIFT OPEN · Loading trolley not parked."
+                      "SHIFT OPEN \u00b7 Loading trolley not parked."
                     ]
                   },
                   {
                     "command": "shift.checkout",
                     "pages": [
-                      "IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.",
+                      "IDENTITY VERIFIED \u00b7 TAG RETURNED \u00b7 SHIFT CLOSED.",
                       "Three tokens credited. Your wage statement is ready to read."
                     ],
                     "failure": [
@@ -3269,7 +3330,7 @@
               {
                 "command": "shift.statement",
                 "pages": [
-                  "NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.",
+                  "NIGHT SHIFT \u00b7 GROSS 4 TOKENS \u00b7 EQUIPMENT ACCESS 1 TOKEN \u00b7 NET 3 TOKENS.",
                   "STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.",
                   "Shift complete. The morning train is next: back west along the quay and up to the platform."
                 ]
@@ -3567,7 +3628,7 @@
               "fascia": 12,
               "overhang": 14,
               "name": "RECEIVING",
-              "sub": "SHED 3 · WEST END",
+              "sub": "SHED 3 \u00b7 WEST END",
               "columns": [
                 10,
                 160,
@@ -3617,7 +3678,7 @@
               "top": 84,
               "shutter": 0.22,
               "stock": "cases",
-              "screen": "RCV 03 · OPEN",
+              "screen": "RCV 03 \u00b7 OPEN",
               "room": "#4a3f2f",
               "seed": 21
             },
@@ -3863,7 +3924,7 @@
               "gateWidth": 70,
               "gateOpen": 0,
               "gateLabel": "TERMINAL 2",
-              "notice": "STACKS/BONDED · NO ENTRY",
+              "notice": "STACKS/BONDED \u00b7 NO ENTRY",
               "header": "TERMINAL 2",
               "noticeEvery": 2,
               "lampEvery": 3,
@@ -4209,18 +4270,29 @@
               "instance": "mara",
               "anchor": "origin"
             }
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "harbor-yard",
-        "name": "Harbor · Terminal 2 yard",
+        "name": "Harbor \u00b7 Terminal 2 yard",
         "intro": [],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 · E to talk",
+            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -4323,7 +4395,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -4890,7 +4962,7 @@
               "waiting": {
                 "speaker": "MARA",
                 "pages": [
-                  "Blue parcel for me? It comes from dispatch, in the shed. Use “give Mara the blue parcel” when you have it.",
+                  "Blue parcel for me? It comes from dispatch, in the shed. Use \u201cgive Mara the blue parcel\u201d when you have it.",
                   "He makes every shift sound like a national emergency."
                 ]
               },
@@ -5000,7 +5072,7 @@
               "gateWidth": 60,
               "gateOpen": 0,
               "gateLabel": "PORT ROAD",
-              "notice": "STAFF ONLY/SHED 3 · BAY 3",
+              "notice": "STAFF ONLY/SHED 3 \u00b7 BAY 3",
               "header": "PORT AUTHORITY",
               "noticeEvery": 9,
               "lampEvery": 9,
@@ -5023,7 +5095,7 @@
               "fascia": 12,
               "overhang": 14,
               "name": "TRANSIT SHED 3",
-              "sub": "NIGHT TRANSPORT · BAY 3",
+              "sub": "NIGHT TRANSPORT \u00b7 BAY 3",
               "columns": [
                 14,
                 110,
@@ -5429,7 +5501,7 @@
             "id": "ticker",
             "type": "sign.ticker",
             "props": {
-              "text": "BAY 3 · SHIFT TARGET 100% · CURRENT 94% · PLEASE MAINTAIN PACE",
+              "text": "BAY 3 \u00b7 SHIFT TARGET 100% \u00b7 CURRENT 94% \u00b7 PLEASE MAINTAIN PACE",
               "color": "255,170,60",
               "width": 104,
               "height": 10,
@@ -5881,20 +5953,31 @@
               "instance": "boss",
               "anchor": "origin"
             }
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "harbor-shed",
-        "name": "Harbor · Transit Shed 3",
+        "name": "Harbor \u00b7 Transit Shed 3",
         "intro": [
           "Shed 3. Another night on transport. The supervisor is waiting in his booth."
         ],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 · E to talk",
+            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -5996,7 +6079,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -6058,7 +6141,7 @@
               {
                 "command": "shift.collect",
                 "pages": [
-                  "You pick up the blue parcel. RECEIVING · MARA.",
+                  "You pick up the blue parcel. RECEIVING \u00b7 MARA.",
                   "Carry it west, back across the yard to the receiving counter."
                 ],
                 "failure": [
@@ -6100,7 +6183,7 @@
                   "The supervisor has one last job."
                 ],
                 "failure": [
-                  "EMPTY CASE RETURNS · Bring a transport case from receiving."
+                  "EMPTY CASE RETURNS \u00b7 Bring a transport case from receiving."
                 ]
               }
             ],
@@ -6129,7 +6212,7 @@
                       "The supervisor has one last job."
                     ],
                     "failure": [
-                      "EMPTY CASE RETURNS · Bring a transport case from receiving."
+                      "EMPTY CASE RETURNS \u00b7 Bring a transport case from receiving."
                     ]
                   }
                 ]
@@ -6153,7 +6236,7 @@
               {
                 "command": "shift.fix-coffee",
                 "pages": [
-                  "OUT OF ORDER · NO WATER · VALVE CLOSED.",
+                  "OUT OF ORDER \u00b7 NO WATER \u00b7 VALVE CLOSED.",
                   "You open the isolation valve under the counter and press BREW. The machine coughs, then pours.",
                   "Someone has left a token by the jar with a note: FOR WHOEVER FIXES IT."
                 ]
@@ -7743,7 +7826,7 @@
             "type": "metro.cutaway-train",
             "props": {
               "cars": 2,
-              "destination": "LINE 0 · DOWNTOWN",
+              "destination": "LINE 0 \u00b7 DOWNTOWN",
               "open": 1,
               "light": 0.85,
               "cabs": true
@@ -7800,6 +7883,17 @@
             },
             "order": 80,
             "layer": "backdrop"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
@@ -7922,7 +8016,7 @@
                 },
                 {
                   "kind": "ticker",
-                  "text": "WATER RATION TODAY 40 L · CURFEW SECTOR 9 FROM 23:00 · LINE 0 RUNNING · ",
+                  "text": "WATER RATION TODAY 40 L \u00b7 CURFEW SECTOR 9 FROM 23:00 \u00b7 LINE 0 RUNNING \u00b7 ",
                   "col": "255,190,60",
                   "h": 306,
                   "at": 0.25344221536351164,
@@ -8023,7 +8117,7 @@
               "signs": [
                 {
                   "kind": "stack",
-                  "text": "PHARMACY · ID REQUIRED",
+                  "text": "PHARMACY \u00b7 ID REQUIRED",
                   "col": "60,230,140",
                   "h": 379,
                   "at": 0.7861668381344308,
@@ -8031,7 +8125,7 @@
                 },
                 {
                   "kind": "plate",
-                  "text": "PHARMACY · ID REQUIRED",
+                  "text": "PHARMACY \u00b7 ID REQUIRED",
                   "col": "60,230,140",
                   "h": 356,
                   "at": 0.5045138888888889,
@@ -8076,7 +8170,7 @@
               "signs": [
                 {
                   "kind": "billboard",
-                  "text": "SCORE 712 · APPROVED",
+                  "text": "SCORE 712 \u00b7 APPROVED",
                   "col": "170,130,255",
                   "h": 2955,
                   "at": 0.5296296296296297,
@@ -8268,7 +8362,7 @@
             "type": "metro.cutaway-train",
             "props": {
               "cars": 2,
-              "destination": "LINE 0 · DOWNTOWN",
+              "destination": "LINE 0 \u00b7 DOWNTOWN",
               "open": 1,
               "light": 0.85,
               "cabs": true
@@ -8372,6 +8466,17 @@
             },
             "order": 65,
             "layer": "set"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
@@ -8538,7 +8643,7 @@
               "signs": [
                 {
                   "kind": "blade",
-                  "text": "SLEEP 8H · 40C",
+                  "text": "SLEEP 8H \u00b7 40C",
                   "col": "255,42,68",
                   "h": 130,
                   "at": 0.9632201646090535,
@@ -8584,7 +8689,7 @@
                 },
                 {
                   "kind": "blade",
-                  "text": "PHARMACY · ID REQUIRED",
+                  "text": "PHARMACY \u00b7 ID REQUIRED",
                   "col": "60,230,140",
                   "h": 133,
                   "at": 0.7213820301783265,
@@ -8620,7 +8725,7 @@
               "signs": [
                 {
                   "kind": "ticker",
-                  "text": "LINE 0 · CANYON BRANCH · NEXT: DOWNTOWN · MIND THE GAP · ",
+                  "text": "LINE 0 \u00b7 CANYON BRANCH \u00b7 NEXT: DOWNTOWN \u00b7 MIND THE GAP \u00b7 ",
                   "col": "255,136,0",
                   "h": 640
                 },
@@ -9011,7 +9116,7 @@
             "type": "metro.cutaway-train",
             "props": {
               "cars": 2,
-              "destination": "LINE 0 · DOWNTOWN",
+              "destination": "LINE 0 \u00b7 DOWNTOWN",
               "open": 1,
               "light": 0.85,
               "cabs": true
@@ -9076,7 +9181,7 @@
               "width": 162,
               "entry": "west",
               "street": false,
-              "name": "R4 · INLAND",
+              "name": "R4 \u00b7 INLAND",
               "code": "",
               "foot": -12
             },
@@ -9118,6 +9223,17 @@
             },
             "order": 65,
             "layer": "set"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
@@ -9473,7 +9589,7 @@
             "type": "metro.cutaway-train",
             "props": {
               "cars": 2,
-              "destination": "LINE 0 · DOWNTOWN",
+              "destination": "LINE 0 \u00b7 DOWNTOWN",
               "open": 1,
               "light": 0.85,
               "cabs": true
@@ -9634,6 +9750,17 @@
             },
             "order": 152,
             "layer": "logic"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
@@ -9762,7 +9889,7 @@
             "type": "metro.cutaway-train",
             "props": {
               "cars": 2,
-              "destination": "LINE 0 · DOWNTOWN",
+              "destination": "LINE 0 \u00b7 DOWNTOWN",
               "open": 1,
               "light": 0.85,
               "cabs": true
@@ -9864,6 +9991,17 @@
             },
             "order": 60,
             "layer": "set"
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
@@ -10106,7 +10244,7 @@
               "doorHeight": 54,
               "cab": "left",
               "plate": "CAR 1",
-              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
+              "ads": "REGISTRY PREMIUM \u00b7 FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
             },
             "placement": {
               "x": 0,
@@ -10152,7 +10290,7 @@
               "doorHeight": 54,
               "cab": "right",
               "plate": "CAR 2",
-              "ads": "LINE 0 · ON TIME 61%|SPIRE RESIDENCES · BY INVITATION|REPORT UNREGISTERED PERSONS",
+              "ads": "LINE 0 \u00b7 ON TIME 61%|SPIRE RESIDENCES \u00b7 BY INVITATION|REPORT UNREGISTERED PERSONS",
               "notice": "NO SLEEPING ON SEATS"
             },
             "placement": {
@@ -10500,20 +10638,133 @@
             "bindings": {
               "people": "flow.passengers.people"
             }
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
+          },
+          {
+            "id": "cab-panel",
+            "type": "sign.plate",
+            "props": {
+              "text": "SHUTTLE",
+              "width": 50,
+              "height": 12,
+              "size": 7,
+              "color": "0,255,255",
+              "printed": true
+            },
+            "placement": {
+              "x": 24,
+              "h": 52
+            },
+            "attach": {
+              "instance": "shuttle",
+              "anchor": "origin"
+            },
+            "layer": "set",
+            "order": 61
+          },
+          {
+            "id": "cab-speaker",
+            "type": "sign.plate",
+            "props": {
+              "text": "ANNOUNCE",
+              "width": 64,
+              "height": 12,
+              "size": 7,
+              "color": "0,255,255",
+              "printed": true
+            },
+            "placement": {
+              "x": 120,
+              "h": 46
+            },
+            "attach": {
+              "instance": "shuttle",
+              "anchor": "origin"
+            },
+            "layer": "set",
+            "order": 62
+          },
+          {
+            "id": "route-map",
+            "type": "sign.plate",
+            "props": {
+              "text": "ROUTE",
+              "width": 50,
+              "height": 12,
+              "size": 7,
+              "color": "0,255,255",
+              "printed": true
+            },
+            "placement": {
+              "x": 420,
+              "h": 46
+            },
+            "attach": {
+              "instance": "shuttle",
+              "anchor": "origin"
+            },
+            "layer": "set",
+            "order": 62
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "vehicle-lab",
-        "name": "Vehicles · two-car shuttle",
+        "name": "Vehicles \u00b7 two-car shuttle",
         "intro": [],
-        "uses": [],
+        "uses": [
+          {
+            "id": "announcement",
+            "label": "[E] ANNOUNCE",
+            "name": "CAB SPEAKER",
+            "speakerKind": "device",
+            "routes": [
+              {
+                "pages": [
+                  "Keep clear of the doors. Please remain inside the vehicle while it is moving."
+                ]
+              }
+            ]
+          }
+        ],
         "manifest": {
           "version": 1,
           "width": 2500,
           "spawn": "spawn",
-          "uses": {}
+          "uses": {
+            "announcement": {
+              "instance": "cab-speaker",
+              "anchor": "origin",
+              "promptH": 24
+            }
+          },
+          "devices": {
+            "shuttle": {
+              "instance": "cab-panel",
+              "anchor": "origin",
+              "h": -6,
+              "widthProperty": "width",
+              "heightProperty": "height"
+            }
+          },
+          "readables": {
+            "route-map": {
+              "instance": "route-map",
+              "anchor": "origin",
+              "promptH": 24
+            }
+          }
         },
         "stage": {
           "sudoOnly": true
@@ -10524,7 +10775,16 @@
             "sky": true,
             "weather": false
           }
-        }
+        },
+        "readables": [
+          {
+            "id": "route-map",
+            "name": "SHUTTLE ROUTE",
+            "pages": [
+              "WEST PLATFORM \u2194 EAST PLATFORM. The same car carries its seats, door controls, speaker and route map."
+            ]
+          }
+        ]
       },
       "gameplay": {
         "version": 1,
@@ -10785,13 +11045,24 @@
               "instance": "service",
               "anchor": "origin"
             }
+          },
+          {
+            "id": "sky-traffic",
+            "type": "environment.sky-traffic",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -100,
+            "layer": "distance"
           }
         ]
       },
       "scene": {
         "version": 1,
         "id": "vehicle-routes",
-        "name": "Vehicles · curves and drops",
+        "name": "Vehicles \u00b7 curves and drops",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11004,7 +11275,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-1",
-        "name": "LINE 0 · Harbor approach",
+        "name": "LINE 0 \u00b7 Harbor approach",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11096,7 +11367,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-2",
-        "name": "LINE 0 · tunnel 2",
+        "name": "LINE 0 \u00b7 tunnel 2",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11188,7 +11459,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-3",
-        "name": "LINE 0 · tunnel 3",
+        "name": "LINE 0 \u00b7 tunnel 3",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11280,7 +11551,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-4",
-        "name": "LINE 0 · tunnel 4",
+        "name": "LINE 0 \u00b7 tunnel 4",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11303,6 +11574,189 @@
         "items": [],
         "commands": {},
         "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "metro-siding",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 120,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "metro.underground-platform",
+            "props": {
+              "width": 660,
+              "ceiling": 180,
+              "street": 208,
+              "name": "SERVICE SIDING",
+              "nameEvery": 420,
+              "tile": "#191d1c",
+              "band": "#24180e",
+              "edge": true,
+              "streetTop": false,
+              "ends": "left"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor-siding",
+            "type": "level.floor",
+            "props": {
+              "width": 660,
+              "label": "Service siding",
+              "indoor": true
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "service-stairs",
+            "type": "level.stairs",
+            "props": {
+              "run": 160,
+              "rise": 144,
+              "style": "concrete"
+            },
+            "placement": {
+              "x": 600,
+              "h": 0
+            },
+            "order": 10,
+            "layer": "backdrop"
+          },
+          {
+            "id": "floor-service",
+            "type": "level.floor",
+            "props": {
+              "width": 240,
+              "label": "Service door",
+              "indoor": true
+            },
+            "placement": {
+              "x": 760,
+              "h": 144
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "service-door",
+            "type": "civic.staff-door",
+            "props": {
+              "kind": "plain",
+              "width": 32,
+              "height": 52,
+              "plate": "",
+              "state": "closed",
+              "reader": false
+            },
+            "placement": {
+              "x": 860,
+              "h": 144
+            },
+            "order": 12,
+            "layer": "backdrop"
+          },
+          {
+            "id": "way-out",
+            "type": "sign.plate",
+            "props": {
+              "text": "HARBOR SERVICE ACCESS",
+              "width": 148,
+              "height": 18
+            },
+            "placement": {
+              "x": 860,
+              "h": 208
+            },
+            "order": 13,
+            "layer": "backdrop"
+          },
+          {
+            "id": "landing-slab",
+            "type": "level.slab",
+            "props": {
+              "width": 240,
+              "thickness": 14
+            },
+            "placement": {
+              "x": 760,
+              "h": 144
+            },
+            "order": 11,
+            "layer": "backdrop"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "metro-siding",
+        "name": "Service siding",
+        "intro": [
+          "A service stair. Two hundred steps, a door marked AUTHORISED PERSONNEL, not locked.",
+          "The harbor. Moth booked this stop two days ago. For me."
+        ],
+        "uses": [],
+        "exits": [
+          {
+            "id": "train",
+            "to": "train",
+            "at": "out",
+            "engine": true,
+            "label": ""
+          },
+          {
+            "id": "harbor",
+            "to": "harbor",
+            "at": "metro",
+            "label": "[E] SERVICE DOOR \u00b7 HARBOR",
+            "promptH": 196
+          }
+        ],
+        "manifest": {
+          "version": 1,
+          "width": 1000,
+          "spawn": "spawn",
+          "uses": {},
+          "exits": {
+            "train": "spawn",
+            "harbor": "service-door"
+          },
+          "compile": {
+            "groundExits": false,
+            "elevatedResponses": true
+          }
+        },
+        "introOnFoot": true
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "events": [],
+        "commands": {},
         "reactions": [],
         "conversations": {}
       }

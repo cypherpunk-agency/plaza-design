@@ -37,3 +37,6 @@ export const dockworkElements:Element[]=[marker,
 ];
 /** Used by external scene adapters when their local datum moves. */
 export const dockworkRaisedView=raised;
+
+// Independent bay fittings; moving trolley/clamp and task-only displays keep their snapshots.
+for(const e of dockworkElements)if(['distant-crane','distant-container','office','task-post','parcel','rack','bay','release','checkout','barrier'].includes(e.type.slice(9)))e.libraryUse='reusable';

@@ -212,6 +212,60 @@
       },
       "dx": -1380,
       "dh": 150
+    },
+    {
+      "id": "line0-siding",
+      "kind": "door",
+      "a": {
+        "zone": "train",
+        "piece": "cab-frame"
+      },
+      "b": {
+        "zone": "metro-siding",
+        "piece": "floor-siding"
+      },
+      "dx": 6050,
+      "dh": 0
+    },
+    {
+      "id": "line0-galleria",
+      "kind": "door",
+      "a": {
+        "zone": "train",
+        "piece": "cab-frame"
+      },
+      "b": {
+        "zone": "galleriaStation",
+        "piece": "platform-floor"
+      },
+      "dx": 2850,
+      "dh": 0
+    },
+    {
+      "id": "siding-harbor-platform",
+      "kind": "walk",
+      "a": {
+        "zone": "metro-siding"
+      },
+      "b": {
+        "zone": "harborStation"
+      },
+      "dx": 1000,
+      "dh": 0
+    },
+    {
+      "id": "metro-line0",
+      "kind": "door",
+      "a": {
+        "zone": "metro",
+        "piece": "floor-station"
+      },
+      "b": {
+        "zone": "train",
+        "piece": "cab-frame"
+      },
+      "dx": 700,
+      "dh": 0
     }
   ]
 }

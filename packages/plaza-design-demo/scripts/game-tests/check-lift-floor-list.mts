@@ -151,7 +151,7 @@ try {
       list: (...a: unknown[]) => (shim.list as any)(...a), listOpen: (id: string) => shim.listOpen(id), closeList: (id: string) => shim.closeList(id),
     };
     stand({
-      touch, level: L, p, movers: m, keys: new Set<string>(), bubble: null, showEnd: false, opening: null, cut: null, flight: null, hop: null, beat: null, sleep: null,
+      touch, joinedZones:[], hosts:new Map(), zoneTiers:new Map(), level: L, p, movers: m, keys: new Set<string>(), bubble: null, showEnd: false, opening: null, cut: null, flight: null, hop: null, beat: null, sleep: null,
       mapView: null, netView: null, transport: undefined, menu: {open: false}, term: {focused: false, isOpen: false}, hostOf: () => zh,
       save: {jump: true, flags: {}, keyring: [] as string[]}, hints: {done() {}}, def: {uses: [], exits: []}, platforms: [], story: 'free', here: 'fixture', arrowsKey: '',
       exitTargets: () => [], lifeTargets: () => [], sceneDefinition: () => ({}), gameplayStatePort: () => ({read: () => ({})}), persistSave() {}, companionPresent: false, liftIds: new Set<string>(),

@@ -1,7 +1,7 @@
 import {screenBounds}from './static-bounds';
 /** Independent QA machines, furnishing kits and architecture. Device state is a validated visual snapshot. */
 import { createSandboxArtwork,type ArtworkInputs,type SandboxLayout } from './sandbox';
-import { emptySandboxSnapshot,SandboxViewState,validateSandboxSnapshot,type SandboxSnapshot } from './sandbox-state';
+import { emptySandboxSnapshot,validateSandboxSnapshot,type SandboxSnapshot } from './sandbox-state';
 import type { Anchor,Bounds,Element,Field,Placement,Properties,Value } from '../core/composition';
 import type { View } from '../core/view';
 import { exitDoor,notice,onScreen,text } from '../core/primitives';
@@ -22,6 +22,8 @@ type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:SandboxSnapshot,at:R
 function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'sandbox.'+id,bindingIdentity:'presentation',version:1,label,category,coordinates:'world',fields,visualFields:sandboxVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,visual(s),at)};}
 const box=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 export const sandboxPieceDefinitions: {id:string;method:keyof Kernels;device?:string}[]=[
+  {id: "server-cables",method:"drawServerCables"},
+  {id:"spool-cable",method:"drawSpoolCable",device:"spool"},
   {
     "id": "header",
     "method": "drawHeader"
@@ -257,7 +259,7 @@ export const sandboxPieceDefinitions: {id:string;method:keyof Kernels;device?:st
     "method": "drawEndWall"
   }
 ];
-export const sandboxElements:Element[]=sandboxPieceDefinitions.map(piece=>element(piece.id,piece.id.split('-').join(' '),piece.device?'electronics':'props',piece.device?{width:num('Device width',30,1),height:num('Device height',40,1)}:{},p=>piece.device?{x:-n(p,'width')/2-70,h:n(p,'height')+80,w:n(p,'width')+140,tall:n(p,'height')+80}:box(300,170,-150),(x,v,p,s,at)=>{if(piece.id==='button-counter-conduit'&&(!s.spots.button||!s.spots.counter))return;let frame=s;if(piece.device)frame={...s,spots:{...s.spots,[piece.device]:{x:at.x,y:at.h,w:n(p,'width'),h:n(p,'height')}}};else if(piece.id==='button-counter-conduit'){if(!s.spots.button||!s.spots.counter)return;frame={...s,spots:Object.fromEntries(Object.entries(s.spots).map(([id,p])=>[id,{...p,x:p.x+at.x,y:p.y+at.h}]))};}const k=kernel(frame,{decorX:at.x});(k[piece.method] as (x:CanvasRenderingContext2D,v:View,m:SandboxViewState)=>void)(x,piece.device?v:raised(v,at.h),new SandboxViewState(frame));}));
+export const sandboxElements:Element[]=sandboxPieceDefinitions.map(piece=>element(piece.id,piece.id.split('-').join(' '),piece.device?'electronics':'props',piece.device?{width:num('Device width',30,1),height:num('Device height',40,1)}:{},p=>piece.device?{x:-n(p,'width')/2-70,h:n(p,'height')+80,w:n(p,'width')+140,tall:n(p,'height')+80}:box(300,170,-150),(x,v,p,s,at)=>{if(piece.id==='button-counter-conduit'&&(!s.spots.button||!s.spots.counter))return;let frame=s;if(piece.device)frame={...s,spots:{...s.spots,[piece.device]:{x:at.x,y:at.h,w:n(p,'width'),h:n(p,'height')}}};else if(piece.id==='button-counter-conduit'){if(!s.spots.button||!s.spots.counter)return;frame={...s,spots:Object.fromEntries(Object.entries(s.spots).map(([id,p])=>[id,{...p,x:p.x+at.x,y:p.y+at.h}]))};}const k=kernel(frame,{decorX:at.x});(k[piece.method] as (x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot)=>void)(x,piece.device?v:raised(v,at.h),frame);}));
 const roomFields={width:num('Width',3740,1),ceiling:num('Ceiling',170,1)};
 const windowFields={width:num('Width',260,1),height:num('Height',122,1)};
 function windowKernel(p:Properties,at:Required<Placement>,s:SandboxSnapshot){const SB=layout();SB.window={x0:at.x,x1:at.x+n(p,'width'),h0:at.h,h1:at.h+n(p,'height')};return kernel(s,{SB});}
@@ -275,9 +277,9 @@ element('door','QA exit door','architecture',{},()=>box(36,74,-18),(x,v,_p,_s,at
 element('plan','QA test plan notice','signage',{},()=>({x:-23,h:0,w:46,tall:30}),(x,v,_p,_s,at)=>notice(x,v.t,v.sx(at.x),v.y(at.h),46,30,['TEST','PLAN'])),
 element('ticker','QA scrolling information','signage',{width:num('Width',150,1),text:str('Text'),speed:num('Scroll speed',.4,0)},p=>box(n(p,'width'),10),(x,v,p,_s,at)=>ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,mount:'wall',text:String(p.text),col:ALARM,speed:n(p,'speed')})),
 element('camera','QA surveillance camera','electronics',{phase:num('Idle phase',3),direction:{kind:'select',label:'Direction',default:1,options:[-1,1]}},()=>box(28,16,-14),(x,v,p,_s,at)=>camera(x,v,{x:at.x,h:at.h,facing:n(p,'direction') as 1|-1,phase:n(p,'phase')})),
-element('window-back','QA window sky, skyline and weather','architecture',windowFields,p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>windowKernel(p,at,s).windowBack(x,v,new SandboxViewState(s))),
+element('window-back','QA window sky, skyline and weather','architecture',windowFields,p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>windowKernel(p,at,s).windowBack(x,v,s)),
 element('window-front','QA window frame and sill','architecture',windowFields,p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>windowKernel(p,at,s).windowFront(x,v)),
-element('clock','QA wall clock','electronics',{},()=>box(30,170,-15),(x,v,_p,s,at)=>{if(s.windowVisible)kernel(s,{decorX:at.x}).wallClock(x,raised(v,at.h),new SandboxViewState(s));}),
+element('clock','QA wall clock','electronics',{},()=>box(30,170,-15),(x,v,_p,s,at)=>{if(s.windowVisible)kernel(s,{decorX:at.x}).wallClock(x,raised(v,at.h),s);}),
 element('forecast','QA forecast ticker','signage',{width:num('Width',200,1)},p=>box(n(p,'width'),10),(x,v,p,s,at)=>{if(s.windowVisible)ticker(x,v,{x:at.x,h:at.h,w:n(p,'width'),tall:10,mount:'wall',text:s.forecast,col:'0,255,255',speed:.3});}),
 element('hover','QA device hover outline','interface-world',{},()=>box(0,0),(x,v,_p,s)=>{const p=s.hoverSpot;if(p){const l=v.sx(p.x-p.w/2),t=v.y(p.y+p.h);x.save();x.strokeStyle='rgba(255,61,242,.85)';x.shadowColor='rgba(255,61,242,.8)';x.shadowBlur=8;x.strokeRect(l-3.5,t-3.5,p.w+7,p.h+7);x.restore();}}),
 element('floor','QA concrete floor','surfaces',{width:num('Width',3740,1)},p=>box(n(p,'width'),0),(x,v,p,_s,at)=>{const w0=v.sx(at.x),w1=v.sx(at.x+n(p,'width')),gy=v.gy-at.h;x.fillStyle='#080606';x.fillRect(w0,gy,w1-w0,v.viewH-gy);x.fillStyle='rgba(255,136,0,.6)';x.fillRect(w0,gy,w1-w0,1);x.fillStyle='rgba(255,210,58,.22)';x.fillRect(w0,gy+4,w1-w0,1);}),
@@ -288,4 +290,26 @@ element('watchdog-route','QA watchdog floor route','surfaces',{},()=>({x:-120,h:
 );
 
 const sandboxFixed:Record<string,Bounds>={header:{x:-56,h:170,w:112,tall:36},reset:{x:-20,h:48,w:40,tall:48},radiator:{x:-22,h:26,w:44,tall:26},'tea-table':{x:-14,h:40,w:28,tall:40},'tea-stool':{x:-7,h:16,w:14,tall:16},'tea-plant':{x:-6,h:30,w:14,tall:30},'trace-meter':{x:-18,h:128,w:36,tall:84},'server-rack':{x:-24,h:104,w:48,tall:104},'chip-dispenser':{x:-30,h:92,w:60,tall:53},'room-notices':{x:-87,h:110,w:147,tall:40},'wait-bench':{x:-34,h:14,w:68,tall:14}};
+// A device supplies its own spot from the placement before invoking the shared kernel.
+// Cross-device wires, screen fills and source-station cards keep their context requirement.
+const independent=new Set([...sandboxPieceDefinitions.filter(p=>p.device&&!['button-counter-conduit','spool-cable'].includes(p.id)).map(p=>p.id),'reset','radiator','tea-table','tea-stool','tea-plant','server-rack','chip-dispenser','room-notices','wait-bench','tube','pillar','station-sign','workbench','door','plan','ticker','camera','window-back','window-front','bay-line','floor-number','wiring-hint','watchdog-route']);
+for(const e of sandboxElements)if(independent.has(e.type.slice(8)))e.libraryUse='reusable';
+for(const id of ['server-cables','spool-cable']){
+ const e=sandboxElements.find(e=>e.type==='sandbox.'+id)!;
+ e.bounds=(p,state,context)=>{
+  const s=visual(state),at=context?.placement??{x:0,h:0},points:{x:number;h:number}[]=[];
+  if(id==='server-cables'){
+   const j=s.spots.netjack,b=s.spots.bell;if(!j||!b)return{x:0,h:0,w:0,tall:0};
+   points.push({x:j.x+j.w/2,h:j.y+j.h-12+at.h},{x:at.x-24,h:j.y-14+at.h},{x:at.x-17,h:60+at.h},{x:at.x+17,h:80+at.h},{x:b.x-b.w/2,h:b.y+b.h-10+at.h});
+  }else{
+   const d=s.spots.audit;if(!d)return{x:0,h:0,w:0,tall:0};
+   points.push({x:d.x+d.w/2-8,h:d.y+d.h-6},{x:d.x+d.w/2+10,h:at.h-16},{x:at.x-Number(p.width)/2,h:at.h+Number(p.height)/2});
+  }
+  const left=Math.min(...points.map(q=>q.x))-1,right=Math.max(...points.map(q=>q.x))+1,top=Math.max(...points.map(q=>q.h))+1,bottom=Math.min(...points.map(q=>q.h))-1;
+  return{x:left-at.x,h:top-at.h,w:right-left,tall:top-bottom};
+ };
+}
 for(const e of sandboxElements){const id=e.type.slice(8),piece=sandboxPieceDefinitions.find(p=>p.id===id);if(piece?.device){e.bounds=p=>({x:-n(p,'width')/2,h:n(p,'height')+18,w:n(p,'width'),tall:n(p,'height')+18});e.anchors=p=>({origin,surface:{x:0,h:n(p,'height'),role:'surface'},control:{x:0,h:n(p,'height')/2,role:'handle'}});}if(sandboxFixed[id])e.bounds=()=>sandboxFixed[id];if(id==='tea-table')e.anchors=()=>({origin,top:{x:0,h:27,role:'surface'}});if(id==='tea-stool')e.anchors=()=>({origin,seat:{x:0,h:16,role:'surface'}});if(id==='tea-plant')e.anchors=()=>({origin});if(id==='wait-bench')e.anchors=()=>({origin,seat:{x:0,h:14,role:'surface'}});if(id==='end-wall')e.bounds=(_p,_s,c)=>c?screenBounds(c,{x:c.view.sx(c.placement.x),y:0,w:40,h:c.view.gy-c.placement.h},{x:0,h:306,w:40,tall:306}):{x:0,h:306,w:40,tall:306};}
+
+// Audited local fittings: optional scalar/pose inputs have standalone defaults.
+for(const e of sandboxElements)if(["trace-meter"].includes(e.type.slice(8)))e.libraryUse='reusable';

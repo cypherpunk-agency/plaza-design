@@ -59,7 +59,7 @@ window.addEventListener('message', async event => {
     if(districtContent&&!Object.prototype.hasOwnProperty.call(districtContent,f.scene))throw new Error('Demo entry outside district');
     if(manifest&&f.scene!=='shop')throw new Error('Invalid manifest pilot role');
     const scene=manifest?manifestDemoScene(validateManifestComposition(composition),{},{},validateManifestScene(sceneDocument,validateManifestGameplay(gameplay)),validateManifestGameplay(gameplay)):districtContent?.[f.scene as keyof ReturnType<typeof demoContent>]??registry?.[f.scene]??pendingScene(f.scene,composition,{gameplay,sceneDocument,devices:deviceSource});
-    if(f.spawn!==null){if(f.spawn>scene.width-12)throw new Error('Starting X is outside the scene');scene.spawn=f.spawn;}
+    if(f.spawn!==null&&f.spawn>scene.width-12)throw new Error('Starting X is outside the scene');
     if(f.weather!=='forecast')setOverride('city',f.weather);
     for(const font of fonts ?? []) { const face=new FontFace('IBM Plex Mono',font.bytes,{weight:String(font.weight)});await face.load();document.fonts.add(face); }
     await Promise.all([400,500,600,700].map(weight=>document.fonts.load(`${weight} 16px "IBM Plex Mono"`)));
@@ -72,7 +72,7 @@ window.addEventListener('message', async event => {
     const windowEl=document.querySelector<HTMLElement>('.demo-window')!;
     game=new Game({windowEl,header:windowEl.querySelector('header')!,footer:windowEl.querySelector('footer')!,inputHost:document.getElementById('input-host')!,onExit:()=>send('quit'),setNodes:()=>{},setScene:()=>{}},districtContent??{...registry,[f.scene]:scene},f.clock,botReactions===undefined?undefined:validateBotReactions(botReactions),citySource===undefined?undefined:createCityModel(citySource,registry?{scenes:registry}:undefined),metroSource===undefined?undefined:validateMetroSource(metroSource),freshStart?f.metro:undefined,{sequences,backdrops:backdropDocuments(sequenceValues),network:sequenceValues&&registry?validatePendingNetwork(sequenceValues,registry):undefined,companionGameplay:sequenceValues?.has('companion-gameplay')?validateCompanionGameplay(sequenceValues.get('companion-gameplay')):undefined,companion:sequenceValues?.has('companion')?validateCompanionSource(sequenceValues.get('companion')):undefined,critters:sequenceValues?.has('critter-reactions')?validateCritterReactions(sequenceValues.get('critter-reactions')):undefined,reviewStations:sequenceValues?.has('review-stations')?validateReviewStations(sequenceValues.get('review-stations')):undefined,zoneGraph:sequenceValues?.has('zone-graph')?validateZoneGraph(sequenceValues.get('zone-graph')):undefined,openingStory:sequenceValues?.has('opening-story')?pendingOpeningStory(sequenceValues,registry!):undefined});
     if(matchMedia('(pointer: coarse)').matches){document.documentElement.classList.add('touch');touchControls(windowEl);}
-    game.start(f.scene);
+    game.start(f.scene,false,f.spawn??undefined);
     send('running',game.inspect());
     setInterval(()=>send('state',game!.inspect()),250);
   } catch(error) { send('error',error instanceof Error?error.message:String(error)); }

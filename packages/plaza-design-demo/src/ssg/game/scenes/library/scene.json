@@ -223,7 +223,8 @@
       "band": "world",
       "target": "student",
       "height": "artwork",
-      "reaction": "student"
+      "reaction": "student",
+      "sitView": "side"
     },
     {
       "seed": 7103,
@@ -241,7 +242,8 @@
       "band": "world",
       "target": "kid",
       "height": "artwork",
-      "reaction": "kid"
+      "reaction": "kid",
+      "sitView": "side"
     },
     {
       "seed": 7104,

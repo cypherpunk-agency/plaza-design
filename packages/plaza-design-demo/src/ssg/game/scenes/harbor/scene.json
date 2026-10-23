@@ -296,7 +296,7 @@
       "id": "stacks",
       "to": "stacks",
       "at": "harbor",
-      "label": "[E] TERMINAL 2 \u00b7 STACKS"
+      "label": "[E] TERMINAL 2 · STACKS"
     },
     {
       "id": "beach",
@@ -319,15 +319,15 @@
       "id": "manifest",
       "name": "MANIFEST",
       "pages": [
-        "CONTAINER MANIFEST \u00b7 BERTH 4 \u00b7 NIGHT LOADING.",
-        "NRLU 404 0451 \u00b7 CONTENTS: NOT DECLARED \u00b7 ORIGIN: REDACTED \u00b7 DESTINATION: REDACTED \u00b7 INSURANCE: VOID."
+        "CONTAINER MANIFEST · BERTH 4 · NIGHT LOADING.",
+        "NRLU 404 0451 · CONTENTS: NOT DECLARED · ORIGIN: REDACTED · DESTINATION: REDACTED · INSURANCE: VOID."
       ]
     },
     {
       "id": "ferry",
       "name": "NIGHT FERRY",
       "pages": [
-        "NIGHT FERRY 7 \u00b7 DEPARTS WHEN FULL.",
+        "NIGHT FERRY 7 · DEPARTS WHEN FULL.",
         "TICKETS ARE NOT SOLD AT THIS PIER. FARES ARE BILLED TO YOUR REGISTRY ACCOUNT."
       ]
     }
@@ -1187,6 +1187,16 @@
       {
         "role": "caster"
       }
-    ]
+    ],
+    "values": {
+      "hutWidth": {
+        "role": "hut",
+        "get": "width"
+      },
+      "hutHeight": {
+        "role": "hut",
+        "get": "height"
+      }
+    }
   }
 }

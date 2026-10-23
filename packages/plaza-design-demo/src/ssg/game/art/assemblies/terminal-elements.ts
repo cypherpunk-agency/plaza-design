@@ -81,3 +81,6 @@ for(const e of terminalElements){e.bindingIdentity='presentation';const id=e.typ
  if(id==='near-ripples')e.bounds=(_p,_s,c)=>c?screenBounds(c,{x:0,y:c.view.gy+32-c.placement.h,w:c.view.viewW,h:36},{x:0,h:-32,w:640,tall:36}):{x:0,h:-32,w:640,tall:36};
  if(id==='gate-reflection')e.bounds=()=>({x:-10,h:-34,w:20,tall:22});
 }
+
+// These fittings and the local shuttle carrier do not read terminal geometry or actors.
+for(const e of terminalElements)if(['booth','lane','straddle','urn','board','camera','tea-note'].includes(e.type.slice(9)))e.libraryUse='reusable';

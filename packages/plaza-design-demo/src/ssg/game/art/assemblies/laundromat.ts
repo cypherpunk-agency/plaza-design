@@ -5,7 +5,7 @@ import { drawGrade } from "../atmosphere/lighting";
 import { box,C,GREEN,O,onScreen,PAPER,RED,rng,RUST,tell,text } from "../core/primitives";
 import { drawPane,windowShaft } from "../environment/sky";
 import { YELLOW } from "../signage/screens";
-export interface ArtworkInputs { L: { door: number; spawn: number; notice: number; soap: number; clock: number; washers: number[]; breaker: number; suds: number; table: { x0: number; x1: number; h: number; }; folder: number; bench: { x0: number; x1: number; h: number; }; gran: number; sleeper: number; window: { x0: number; x1: number; h0: number; h1: number; }; cat: number; socks: number; tubes: number[]; };
+export interface ArtworkInputs { L: { door: number; spawn: number; notice: number; soap: number; washers: number[]; breaker: number; suds: number; table: { x0: number; x1: number; h: number; }; folder: number; bench: { x0: number; x1: number; h: number; }; gran: number; sleeper: number; window: { x0: number; x1: number; h0: number; h1: number; }; cat: number; socks: number; tubes: number[]; };
 originX?: number; ceiling?: number; LAUNDROMAT_FACING: number; LAUNDROMAT_W: number }
 export function createLaundromatArtwork(inputs: ArtworkInputs) {
 const { L, LAUNDROMAT_FACING, LAUNDROMAT_W } = inputs;
@@ -232,24 +232,6 @@ function suds(x: CanvasRenderingContext2D, v: View, tripped: boolean, clear: boo
 }
 
 
-/** The schedule: a timer box counting down to the next slot, the opening hours on a plate over it. */
-function schedule(x: CanvasRenderingContext2D, v: View, next: { ms: number } | null, hover: boolean) {
-  const { sx, y, t } = v, s = sx(L.clock - 17), top = y(88);
-  if (!onScreen(v, s - 20, 74)) return;
-  box(x, s - 6, y(104), 46, 12, '#1a120b', 'rgba(' + O + ',.7)');
-  text(x, '06:00–02:00', s + 17, y(98), 'rgba(' + PAPER + ',.9)', 7, '600');
-  box(x, s, top, 34, 30, '#241a12', 'rgba(' + PAPER + ',.5)');
-  box(x, s + 3, top + 3, 28, 15, '#041416', 'rgba(' + C + ',.6)');
-  const secs = next ? String(Math.ceil(next.ms / 1000)).padStart(2, '0') : '--';
-  text(x, next ? 'SLOT ' + secs : 'STOPPED', s + 17, top + 10.5, next && next.ms < 3000 ? 'rgba(255,210,58,.95)' : 'rgba(' + C + ',.9)', 7, '600');
-  for (let k = 0; k < 3; k++) { x.fillStyle = 'rgba(' + PAPER + ',.35)'; x.fillRect(s + 6 + k * 9, top + 22, 5, 3); }
-  tell(x, t, s + 31, top + 27, 3);
-  // its cable runs down the wall and along the skirting toward the washers
-  x.fillStyle = 'rgba(' + RUST + ',.6)'; x.fillRect(s + 33, y(60), 1, 2); x.fillRect(s + 33, y(58), 1, 46); x.fillRect(s + 33, y(12), sx(L.washers[0] - 23) - (s + 33), 1);
-  if (hover) { x.save(); x.strokeStyle = 'rgba(255,61,242,.85)'; x.shadowColor = 'rgba(255,61,242,.8)'; x.shadowBlur = 8; x.strokeRect(s - 3.5, top - 3.5, 41, 37); x.restore(); }
-}
-
-
 /** The soap dispenser on the wall: sachets behind a window, a token slot. */
 function soap(x: CanvasRenderingContext2D, v: View) {
   const { sx, y, t } = v, s = sx(L.soap - 14);
@@ -336,5 +318,5 @@ function floor(x:CanvasRenderingContext2D,v:View){const {sx}=v,w0=sx(originX),w1
     x.fillStyle = 'rgba(235,245,255,.035)'; x.fillRect(tx, v.gy + 3 + r * 12, 16, 10);
   }
 }
-return { upstairs,frontWindowBack,frontWindowFront,dryer,conduits,washer,breaker,suds,schedule,soap,table,benchUnderWindow,sockBoard,room,clear,tube,floor };
+return { upstairs,frontWindowBack,frontWindowFront,dryer,conduits,washer,breaker,suds,soap,table,benchUnderWindow,sockBoard,room,clear,tube,floor };
 }

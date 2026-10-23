@@ -30,7 +30,7 @@ function kernel(L = layout(), width = 960, ceiling = 176, originX = 0, facing = 
 const raised = (v: View, h: number): View => h === 0 ? v : ({ ...v, gy: v.gy - h, y: value => v.y(value + h) });
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
 function element(name: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
-  return { type: 'library.' + name, version: 1, label, category, coordinates: 'world', fields, parts: ['backdrop'], bounds, anchors,
+  return { type: 'library.' + name, version: 1, label, category, coordinates: 'world', libraryUse:!['person','spawn-marker','shelves','room','floor'].includes(name)?'reusable':undefined, fields, parts: ['backdrop'], bounds, anchors,
     draw(ctx, view, props, state, _pass, at) { if (!at) throw new Error('Library element requires resolved placement'); draw(ctx, view, props, state, at); } };
 }
 const rectangle = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });

@@ -3056,6 +3056,17 @@
       },
       "order": 365.3,
       "layer": "set"
+    },
+    {
+      "id": "sky-traffic",
+      "type": "environment.sky-traffic",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -100,
+      "layer": "distance"
     }
   ]
 }

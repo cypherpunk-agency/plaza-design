@@ -40,10 +40,11 @@
     },
     {
       "id": "upstairs-room-0",
-      "type": "shop.upstairs-room-0",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 0
       },
       "placement": {
         "x": 0,
@@ -54,10 +55,11 @@
     },
     {
       "id": "upstairs-room-1",
-      "type": "shop.upstairs-room-1",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 1
       },
       "placement": {
         "x": 0,
@@ -68,10 +70,11 @@
     },
     {
       "id": "upstairs-room-2",
-      "type": "shop.upstairs-room-2",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 2
       },
       "placement": {
         "x": 0,
@@ -82,10 +85,11 @@
     },
     {
       "id": "upstairs-room-3",
-      "type": "shop.upstairs-room-3",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 3
       },
       "placement": {
         "x": 0,
@@ -96,10 +100,11 @@
     },
     {
       "id": "upstairs-room-4",
-      "type": "shop.upstairs-room-4",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 4
       },
       "placement": {
         "x": 0,
@@ -110,10 +115,11 @@
     },
     {
       "id": "upstairs-room-5",
-      "type": "shop.upstairs-room-5",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 5
       },
       "placement": {
         "x": 0,
@@ -124,10 +130,11 @@
     },
     {
       "id": "upstairs-room-6",
-      "type": "shop.upstairs-room-6",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 6
       },
       "placement": {
         "x": 0,
@@ -138,10 +145,11 @@
     },
     {
       "id": "upstairs-room-7",
-      "type": "shop.upstairs-room-7",
+      "type": "shop.upstairs-room",
       "props": {
         "width": 900,
-        "height": 76
+        "height": 76,
+        "variation": 7
       },
       "placement": {
         "x": 0,
@@ -174,8 +182,13 @@
     },
     {
       "id": "tube-0",
-      "type": "shop.tube-0",
-      "props": {},
+      "type": "furniture.strip-light",
+      "props": {
+        "length": 60,
+        "drop": 158,
+        "spread": 220,
+        "flicker": false
+      },
       "placement": {
         "x": 140,
         "h": 158
@@ -185,8 +198,13 @@
     },
     {
       "id": "tube-1",
-      "type": "shop.tube-1",
-      "props": {},
+      "type": "furniture.strip-light",
+      "props": {
+        "length": 60,
+        "drop": 158,
+        "spread": 220,
+        "flicker": true
+      },
       "placement": {
         "x": 400,
         "h": 158
@@ -196,8 +214,13 @@
     },
     {
       "id": "tube-2",
-      "type": "shop.tube-2",
-      "props": {},
+      "type": "furniture.strip-light",
+      "props": {
+        "length": 60,
+        "drop": 158,
+        "spread": 220,
+        "flicker": false
+      },
       "placement": {
         "x": 660,
         "h": 158
@@ -311,7 +334,7 @@
       "id": "ticker",
       "type": "shop.ticker",
       "props": {
-        "text": "ID REQUIRED FOR ALL PURCHASES   \u00ef\u00bf\u00bd   CASH TRANSACTIONS ARE LOGGED   \u00ef\u00bf\u00bd   SHOPLIFTING IS REPORTED TO THE REGISTRY   \u00ef\u00bf\u00bd   CURFEW 01:00"
+        "text": "ID REQUIRED FOR ALL PURCHASES   ï¿½   CASH TRANSACTIONS ARE LOGGED   ï¿½   SHOPLIFTING IS REPORTED TO THE REGISTRY   ï¿½   CURFEW 01:00"
       },
       "placement": {
         "x": 330,
@@ -322,7 +345,7 @@
     },
     {
       "id": "shelf-0",
-      "type": "shop.shelf-0",
+      "type": "furniture.shelf",
       "props": {
         "width": 92,
         "height": 112,
@@ -339,7 +362,7 @@
     },
     {
       "id": "shelf-1",
-      "type": "shop.shelf-1",
+      "type": "furniture.shelf",
       "props": {
         "width": 92,
         "height": 112,
@@ -356,7 +379,7 @@
     },
     {
       "id": "shelf-2",
-      "type": "shop.shelf-2",
+      "type": "furniture.shelf",
       "props": {
         "width": 92,
         "height": 112,

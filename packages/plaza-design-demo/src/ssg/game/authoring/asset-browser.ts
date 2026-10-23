@@ -1,8 +1,8 @@
 /** Read-only catalog projections. References point into source documents, never a second scene graph. */
 import { LAYER_ROLES, KIND_HINTS, layerRole } from './layer-roles';
-import { type ArtRegistry, type Composition, type Instance } from '../art/core/composition';
+import { type ArtRegistry, type Composition, type Instance, type Field, type Value, type Properties } from '../art/core/composition';
 import type { EditorDocument } from './app';
-import { SETS } from '../art/catalog';
+
 import { helperArtwork } from './asset-examples';
 
 export interface AssetUsage { document: string; scene: string; instance: string; parent?: string; path: string[]; node: Instance }
@@ -25,7 +25,7 @@ export const STRUCTURES: readonly { id: AssetStructure; label: string; hint: str
 ];
 export const USABILITY: readonly { id: AssetUsability; label: string; hint: string }[] = [
   { id: 'reusable', label: 'Reusable anywhere', hint: 'Add to any scene. Uses its own properties and shared lighting/time; no source-scene bindings required' },
-  { id: 'context', label: 'Requires source context', hint: 'Depends on source inputs or has not been extracted for independent placement. Inspect its existing usages; its gallery example does not make it placeable' },
+  { id: 'context', label: 'Requires source context', hint: 'Its supported contract uses source layout, prepared state or a whole scene frame. Inspect its existing usages; a gallery example does not establish independent placement' },
   { id: 'helper', label: 'Scene helper', hint: 'An invisible marker, light/shadow source, player layer or grouping tool; the preview is an editor diagram' },
 ];
 /** Namespaces of the shared kits (people, buildings, signs, vehicles, furniture, the station kit). */
@@ -72,7 +72,9 @@ export function filterAssets(entries: AssetEntry[], query = '', family = '') {
 export interface AssetBrowserOptions {
   registry: ArtRegistry; documents: EditorDocument[];
   openUsage(usage: AssetUsage): void;
-  preview(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, zoom: number): Promise<string | AssetPreviewReport> | string | AssetPreviewReport;
+  preview(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, zoom: number, overrides?:AssetPreviewOverrides): Promise<string | AssetPreviewReport> | string | AssetPreviewReport;
+  /** The same typed field controls as the scene inspector; preview changes never edit documents. */
+  fieldControl?(field:Field,value:Value,apply:(value:Value)=>void):HTMLElement;
   /** Picture tiles for the list; without it the list is plain names. */
   thumbnail?(entry: AssetEntry): HTMLCanvasElement;
   /** Adds the piece to the scene open in the editor (label names that scene). */
@@ -82,6 +84,7 @@ export interface AssetBrowserOptions {
   /** Saved settings of kit pieces: kits list first, each followed by its presets. */
   presets?: { of(kit: AssetEntry): AssetPreset[]; add(kit: AssetEntry, preset: AssetPreset): void };
 }
+export interface AssetPreviewOverrides {props?:Properties;state?:Properties}
 /** A kit preset as the browser lists it; `family` is the Kind it files under. */
 export interface AssetPreset { id: string; label: string; note?: string; family: string }
 export interface AssetBrowserSession { query?: string; family?: string; district?: string; origin?: AssetOrigin | ''; structure?: AssetStructure | ''; usability?: 'reusable' | 'context' | ''; section?: 'artwork' | 'helpers'; collapsedFilters?: Record<string, boolean>; selected?: string; preset?: string; usage?: string; zoom?: number }
@@ -104,8 +107,8 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   const districtsOf = (entry: AssetEntry) => new Set(entry.usages.flatMap(u => { const d = options.districts?.of(u.scene); return d ? [d] : []; }));
   const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Artwork filters');
   const inDistrict = (entry: AssetEntry, id: string) => id === '__none__' ? districtsOf(entry).size === 0 : districtsOf(entry).has(id);
-  const sets = el('details');
-  navigation.append(sets); host.classList.add('asset-browser-grid'); host.classList.add('with-districts'); host.append(bar); host.append(navigation, inspector);
+
+  host.classList.add('asset-browser-grid'); host.classList.add('with-districts'); host.append(bar); host.append(navigation, inspector);
   const cardKey = (entry: AssetEntry, preset?: AssetPreset) => preset ? `${entry.id}#${preset.id}` : entry.id;
   function inspect(entry: AssetEntry, preset?: AssetPreset) {
     if (session.selected !== entry.id) session.usage = undefined;
@@ -114,7 +117,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     if (preset) inspector.prepend(el('h3', `Preset: ${preset.label}`), el('p', `Saved settings of ${entry.label}${preset.note ? ': ' + preset.note : ''}. It places an ordinary kit piece; the preview below shows the kit's defaults.`));
     if (preset && options.useInScene && options.presets) { const add = button(`${options.useInScene.label} as ${preset.label}`, () => options.presets!.add(entry, preset)); add.className = 'primary'; inspector.append(add); }
     else if (options.useInScene && entry.usability === 'reusable') { const add = button(options.useInScene.label, () => options.useInScene!.run(entry)); add.className = 'primary'; inspector.append(add); }
-    else if (entry.usability === 'context') inspector.append(el('p', 'Inspect this artwork through Open instance below. Adding it independently is not supported yet.'));
+    else if (entry.usability === 'context') inspector.append(el('p', 'Open an existing instance to edit this piece with its source layout and state. Independent placement is outside its current supported contract.'));
     for (const card of list.children) (card as HTMLElement).setAttribute('aria-pressed', String((card as HTMLElement).dataset.asset === cardKey(entry, preset)));
     const definition = options.registry.get(entry.id), detail = el('pre');
     detail.style.whiteSpace = 'pre-wrap';
@@ -136,8 +139,29 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     const zoom = el('select'); zoom.setAttribute('aria-label', 'Isolated preview zoom');
     for (const scale of [.25, .5, 1, 2, 4, 8]) { const option = el('option', `${scale}× preview zoom`); option.value = String(scale); zoom.append(option); } zoom.value = String(session.zoom ?? 1);
     const snapshot = el('details'), resolved = el('pre'); resolved.style.whiteSpace = 'pre-wrap'; snapshot.append(el('summary', 'Resolved preview transforms, visibility and anchors'), resolved);
-    const render = async () => { const epoch = ++generation; status.textContent = 'Preparing preview…'; resolved.textContent = ''; session.usage = usageSelect.value === '' ? '' : reference(entry.usages[Number(usageSelect.value)]); session.zoom = Number(zoom.value); try { const result = await options.preview(canvas, entry, usageSelect.value === '' ? undefined : entry.usages[Number(usageSelect.value)], Number(zoom.value)); if (!disposed && epoch === generation) { status.textContent = typeof result === 'string' ? result : result.message; resolved.textContent = typeof result === 'string' ? 'No prepared snapshot for this support mode.' : JSON.stringify(result.snapshot, null, 2); } } catch (error) { if (!disposed && epoch === generation) status.textContent = `Preview unavailable: ${error instanceof Error ? error.message : String(error)}`; } };
+    let overrides:AssetPreviewOverrides={};
+    const controls=el('details');controls.className='logic-detail';controls.append(el('summary','Preview settings'));
+    const render = async () => { controls.hidden=usageSelect.value!==''; const epoch = ++generation; status.textContent = 'Preparing preview…'; resolved.textContent = ''; session.usage = usageSelect.value === '' ? '' : reference(entry.usages[Number(usageSelect.value)]); session.zoom = Number(zoom.value); try { const result = await options.preview(canvas, entry, usageSelect.value === '' ? undefined : entry.usages[Number(usageSelect.value)], Number(zoom.value),usageSelect.value===''?structuredClone(overrides):undefined); if (!disposed && epoch === generation) { status.textContent = typeof result === 'string' ? result : result.message; resolved.textContent = typeof result === 'string' ? 'No prepared snapshot for this support mode.' : JSON.stringify(result.snapshot, null, 2); } } catch (error) { if (!disposed && epoch === generation) status.textContent = `Preview unavailable: ${error instanceof Error ? error.message : String(error)}`; } };
+    const previewFields=()=>{
+      controls.replaceChildren(el('summary','Preview settings'),el('p','Temporary appearance only. Add artwork and saved scenes keep their own settings.'));
+      for(const [group,fields] of [['props',definition.fields],['state',definition.visualFields??{}]] as const){
+        if(!Object.keys(fields).length)continue;
+        const section=el('details'),advanced=el('details');section.append(el('summary',group==='props'?'Properties':'Visual state'));advanced.append(el('summary','Advanced inputs'));
+        for(const [key,field] of Object.entries(fields)){
+          const label=el('label',field.label+' '),value=Object.prototype.hasOwnProperty.call(overrides[group]??{},key)?overrides[group]![key]:field.default;
+          const input=options.fieldControl!(field,value,next=>{
+            try{const proposed={...overrides[group],[key]:next};if(group==='props')options.registry.properties(entry.id,proposed);else options.registry.visualProperties(entry.id,proposed);
+              overrides={...overrides,[group]:proposed};void render();
+            }catch(error){generation++;status.textContent='Preview unchanged: '+(error instanceof Error?error.message:String(error));}
+          });input.setAttribute('aria-label',`Preview ${group==='props'?'property':'state'} ${field.label}`);label.append(input);
+          (field.kind==='json'&&!field.editor?advanced:section).append(label);
+        }
+        if(advanced.children.length>1)section.append(advanced);controls.append(section);
+      }
+      controls.append(button('Reset preview settings',()=>{overrides={};previewFields();void render();}));
+    };
     usageSelect.onchange = zoom.onchange = () => { void render(); }; inspector.append(usageSelect, zoom, canvas, status);
+    if(options.fieldControl&&entry.usability==='reusable'){previewFields();inspector.append(controls);}
     const usages = el('div');
     for (const usage of entry.usages) {
       const row = el('details'), summary = el('summary', `${usage.document} / ${usage.path.join(' / ')}`), data = el('pre');
@@ -181,13 +205,12 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     const origin = session.origin ?? '', fromOrigin = (e: AssetEntry) => !origin || e.origin === origin;
     const located = filterAssets(base, search.value, '').filter(e => (!district || inDistrict(e, district)) && fromOrigin(e) && organized(e));
     const kindChip = (kind: string, name: string, title?: string) => chip(name, kind ? located.filter(e => e.family === kind).length : located.length, family === kind, () => { family = kind === family ? '' : kind; refresh(); }, title);
-    sections.push(section('Kind', family === '__embedded__' ? '' : family, [kindChip('', 'All'), ...kinds.map(kind => kindChip(kind, kind, KIND_HINTS[kind]))]));
+    sections.push(section('Kind', family, [kindChip('', 'All'), ...kinds.map(kind => kindChip(kind, kind, KIND_HINTS[kind]))]));
     const byPlace = filterAssets(base, search.value, family).filter(e => !district || inDistrict(e, district));
     const structureChip = (id: AssetStructure | '', name: string, title?: string) => chip(name, byPlace.filter(e => fromOrigin(e) && (!id || e.structure === id)).length, structure === id, () => { session.structure = id; refresh(); }, title);
     if (!helpers) sections.push(section('Structure', STRUCTURES.find(o => o.id === structure)?.label ?? '', [structureChip('', 'All'), ...STRUCTURES.map(o => structureChip(o.id, o.label, o.hint))]));
     const originChip = (id: AssetOrigin | '', name: string, title?: string) => chip(name, byPlace.filter(e => organized(e) && (!id || e.origin === id)).length, origin === id, () => { session.origin = id === origin ? '' : id; refresh(); }, title);
     sections.push(section('Source', ORIGINS.find(o => o.id === origin)?.label ?? '', [originChip('', 'All'), ...ORIGINS.map(o => originChip(o.id, o.label, o.hint))]));
-    if (!helpers && session.usability !== 'reusable') sections.push(section('Other', family === '__embedded__' ? 'Embedded components' : '', [chip('Embedded components', SETS.length, family === '__embedded__', () => { family = family === '__embedded__' ? '' : '__embedded__'; refresh(); }, 'Code-drawn component sets that are not registered artwork')]));
     bar.replaceChildren(...sections);
     const placed = (entry: AssetEntry) => (!district || inDistrict(entry, district)) && fromOrigin(entry) && organized(entry);
     const filtered = matching.filter(placed); list.replaceChildren();
@@ -218,12 +241,6 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     }
     for (const entry of filtered) if (!kitPool.includes(entry)) card(entry);
     count.textContent = `${filtered.length} / ${sectionEntries.length} ${helpers ? 'scene helpers' : 'artwork entries'}${presetCount ? ` · ${presetCount} presets` : ''}`;
-    const terms = search.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
-    const embedded = SETS.filter(set => !helpers && session.usability !== 'reusable' && (!family || family === '__embedded__') && terms.every(term => `${set.id} ${set.file} ${set.what}`.toLowerCase().includes(term)));
-    sets.hidden = helpers || session.usability === 'reusable';
-    sets.replaceChildren(el('summary', `Embedded library components (${embedded.length} / ${SETS.length})`));
-    for (const set of embedded) { const row = el('details'); row.append(el('summary', set.id), el('code', set.file), el('p', set.what), el('p', 'Embedded component; inspect a registered assembly or source usage. No independent registered preview.')); sets.append(row); }
-    if (family === '__embedded__') sets.open = true;
   }
   search.oninput = refresh; refresh();
   const selected = entries.find(entry => entry.id === session.selected);

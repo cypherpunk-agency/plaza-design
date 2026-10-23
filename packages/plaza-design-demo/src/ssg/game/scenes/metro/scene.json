@@ -65,9 +65,8 @@
     },
     {
       "id": "train",
-      "to": "",
-      "action": "board",
-      "label": "[E] BOARD",
+      "to": "train",
+      "label": "",
       "promptH": 84,
       "engine": true
     },
@@ -242,5 +241,6 @@
         }
       }
     }
-  }
+  },
+  "introOnFoot": true
 }

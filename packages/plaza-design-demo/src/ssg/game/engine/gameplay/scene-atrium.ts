@@ -2,7 +2,6 @@ import type {Resolved,Value} from '../../art/core/composition';
 import type {View} from '../../art/core/view';
 import type {MallVisual} from '../../art/assemblies/mall-state';
 import type {MallLayout} from '../../art/assemblies/mall-details';
-import {light} from '../../world/light';
 import {presentationActorSlots} from './scene-presentation';
 import type {SceneDocument} from './scene-document';
 /**
@@ -28,7 +27,7 @@ export function atriumFrame(view:View,roles:Readonly<Record<string,Resolved>>,ro
 }
 export function atriumSnapshot(view:View,roles:Readonly<Record<string,Resolved>>,rows:readonly Resolved[],source:SceneDocument,a:SceneAtrium):Value{
  const{layout,levels}=atriumFrame(view,roles,rows,source,a);
- return{layout,levels,light:structuredClone(light())} as MallVisual as unknown as Value;
+ return{layout,levels,light:structuredClone(view.lighting)} as MallVisual as unknown as Value;
 }
 /** Where an atrium actor stands this frame: the artwork's place moved to its storey, slab or escalator step (and whether the escalator hides it). */
 export function atriumPlace(frame:AtriumFrame,view:View,source:SceneDocument,id:string,at:{x:number;h:number}):{x:number;h:number;hidden:boolean}{

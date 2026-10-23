@@ -5,9 +5,10 @@ import type {SceneDocument} from './scene-document';
 import {compileLevel} from '../level';
 import {manifestGroups,targetInstance,type ManifestTarget,type ManifestGroup,type DeviceManifestTarget} from './manifest-contract';
 export interface BoundPoint {row:Resolved;x:number;h:number;promptH?:number;responseH?:number}
+/** The same registered anchor math for validated source and live moving attachments. */
+export function manifestAnchor(row:Resolved,target:ManifestTarget){const t=typeof target==='string'?{instance:target}:target,p=row.placement,a=t.anchor?row.element.anchors(row.props,row.state)[t.anchor]:{x:0,h:0};if(!a)throw new Error('Missing manifest anchor: '+t.instance+'/'+t.anchor);return{x:p.x+(a.x+(t.x??0))*p.scale*p.facing,h:p.h+(a.h+(t.h??0))*p.scale};}
 export function resolveManifestPoint(rows:readonly Resolved[],target:ManifestTarget,width:number,ground=false,transformed=false):BoundPoint{const row=rows.find(r=>r.instance.id===targetInstance(target));if(!row)throw new Error('Missing manifest artwork: '+targetInstance(target));const pRow=row,p=pRow.placement,t=typeof target==='string'?{instance:target}:target;
-  const a=t.anchor?row.element.anchors(row.props,row.state)[t.anchor]:{x:0,h:0};if(!a)throw new Error('Missing manifest anchor: '+t.instance+'/'+t.anchor);
-  const x=p.x+(a.x+(t.x??0))*p.scale*p.facing,h=p.h+(a.h+(t.h??0))*p.scale;
+  const {x,h}=manifestAnchor(row,target);
   if(p.parallax!==1||!transformed&&(p.scale!==1||p.facing!==1))throw new Error('Interactive bindings require unit scale, normal depth and facing');
   if(!Number.isFinite(x)||!Number.isFinite(h)||x<12||x>width-12||h<0||h>10000||ground&&h!==0)throw new Error('Manifest point outside scene bounds: '+t.instance);
   const promptH=t.promptH===undefined||t.promptAboveFloor&&h===0?undefined:h+t.promptH,responseH=t.responseH===undefined||t.responseAboveFloor&&h===0?undefined:h+t.responseH;

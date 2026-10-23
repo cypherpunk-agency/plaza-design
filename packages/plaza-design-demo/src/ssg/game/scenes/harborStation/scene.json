@@ -64,10 +64,10 @@
     },
     {
       "id": "train",
-      "to": "",
-      "action": "board",
-      "label": "[E] BOARD",
-      "promptH": 84
+      "to": "train",
+      "label": "",
+      "promptH": 84,
+      "engine": true
     }
   ],
   "manifest": {
@@ -111,7 +111,6 @@
     },
     "artwork": {
       "roof": "roof",
-      "stop": "platform-train",
       "water": "water"
     },
     "compile": {
@@ -136,86 +135,6 @@
     }
   ],
   "actors": [
-    {
-      "id": "waiting-0",
-      "instance": "waiting-0",
-      "band": "background",
-      "reaction": "actor.waiting-0",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "harbor",
-          "slot": 0,
-          "count": 5
-        }
-      }
-    },
-    {
-      "id": "waiting-1",
-      "instance": "waiting-1",
-      "band": "background",
-      "reaction": "actor.waiting-1",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "harbor",
-          "slot": 1,
-          "count": 5
-        }
-      }
-    },
-    {
-      "id": "waiting-2",
-      "instance": "waiting-2",
-      "band": "background",
-      "reaction": "actor.waiting-2",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "harbor",
-          "slot": 2,
-          "count": 5
-        }
-      }
-    },
-    {
-      "id": "waiting-3",
-      "instance": "waiting-3",
-      "band": "background",
-      "reaction": "actor.waiting-3",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "harbor",
-          "slot": 3,
-          "count": 5
-        }
-      }
-    },
-    {
-      "id": "waiting-4",
-      "instance": "waiting-4",
-      "band": "background",
-      "reaction": "actor.waiting-4",
-      "presentation": {
-        "kind": "rider",
-        "rider": "phone",
-        "controller": {
-          "kind": "platformQueue",
-          "station": "harbor",
-          "slot": 4,
-          "count": 5
-        }
-      }
-    },
     {
       "id": "regular",
       "instance": "regular",
@@ -243,5 +162,6 @@
     "mechanisms": [
       "transitPlatform"
     ]
-  }
+  },
+  "introOnFoot": true
 }

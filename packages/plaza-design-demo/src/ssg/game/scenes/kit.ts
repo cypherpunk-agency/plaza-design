@@ -53,7 +53,7 @@ export interface SceneExit {
    * door, `x` is only where you land stepping off), step 'out' of the train at
    * its stop, hail a 'taxi', look at the city 'map'.
    */
-  action?: 'board' | 'out' | 'taxi' | 'map';
+  action?: 'taxi' | 'map';
   /** Only there while this save flag is set. */
   requires?: string;
   /**
@@ -78,16 +78,18 @@ export interface SceneExit {
 }
 
 /** A bench, a bar stool or a bed: E there offers "wait until…" (clock.ts WAITS). */
-export interface SceneRest { id: string; x: number; kind: 'bench' | 'stool' | 'bed'; promptH?: number; h?: number }
+export interface SceneRest { id: string; x: number; kind: 'bench' | 'stool' | 'bed'; promptH?: number; h?: number;floorH?:number }
 
 /** Something to read (or a person who says a line) with E. */
-export interface SceneReadable { id: string; x: number; name: string; pages: string[]; label?: string; h?: number; promptH?: number }
+export interface SceneReadable { id: string; x: number; name: string; pages: string[]; label?: string; h?: number; promptH?: number;floorH?:number }
 
 /**
  * Something to DO in a place with E (buy, haggle, pay for a fortune): `use` runs when the player
  * presses E there and returns what is said (a bubble). It can spend tokens and set save flags.
  */
 export interface SceneUse {
+  /** Compiler-derived standing floor for an interaction attached to a moving car. Not authored or saved. */
+  floorH?:number;
   targetOrder?:'before-devices'|'after-devices';
   /** Optional prompt wording when the shared quote is nonzero. */
   pricedLabel?:string;
@@ -187,6 +189,7 @@ export interface SceneArtworkFrame {
   reflections?:[number,string][];
 }
 export interface SceneDef {
+  drawSkyArtwork?:(context:CanvasRenderingContext2D,view:View)=>void;
   peopleFlows?:readonly import('../engine/people').PeopleSource[];
   artworkFrame?:SceneArtworkFrame;
   /** Pure registered dockworker presentation, reading the current source's flag roles (and saved state: the save's gameplay values). */
@@ -268,6 +271,8 @@ export interface SceneDef {
   rests?: SceneRest[];
   /** What the player says on the first visit (save flag `scene:<id>`); a function when it depends on a touch screen. */
   intro?: string[] | ((touch: boolean) => string[]);
+  /** Defer arrival speech until the player is on foot in this scene. */
+  introOnFoot?: boolean;
   /** Arriving keeps the way the player faces (an open street); otherwise they face into the scene. */
   keepFace?: boolean;
   /** Ledges to stand on (Downtown's low roof). */
@@ -277,7 +282,6 @@ export interface SceneDef {
   /** The spawn's height (a level scene can start on an upper floor). */
   spawnH?: number;
   /** Track-world x of this station's stopped train nose. The timetable and door geometry share this marker. */
-  platformStop?: number;
   /** The companion's mode in this scene (engine/gameplay/companion.json; the field keeps its first name): 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */
   pixel?: 'home' | 'along';
   perch?: (m: SceneModel) => Perch;
@@ -323,5 +327,5 @@ export interface SceneDef {
    */
   drawBackdrop: (x: CanvasRenderingContext2D, v: View, e: EngineDraw) => void;
   /** Foreground in front of the player (near pillars, passers-by). */
-  drawFront?: (x: CanvasRenderingContext2D, v: View) => void;
+  drawFront?: (x: CanvasRenderingContext2D, v: View, e?: EngineDraw) => void;
 }

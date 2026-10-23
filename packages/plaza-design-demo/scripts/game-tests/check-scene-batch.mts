@@ -1,7 +1,7 @@
 /** All-scene content integration: current pending source, history, bundles and protected Save. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';import {build} from 'esbuild';
-import {NATIVE_SCENES} from '../../src/ssg/game/scenes';
+import {NATIVE_SCENES,SCENES} from '../../src/ssg/game/scenes';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {addManifestContent,removeManifestContent} from '../../src/ssg/game/engine/gameplay/manifest-content';
 import {targetInstance} from '../../src/ssg/game/engine/gameplay/manifest-contract';
@@ -15,9 +15,9 @@ import {playScenes,validatePlayFixtures,defaultPlayFixture} from '../../src/ssg/
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {gameSourceIdentity} from '../scene-system/source-identity.mts';
-const game=path.resolve('src/ssg/game'),ids=Object.keys(NATIVE_SCENES);assert.equal(ids.length,20);
+const game=path.resolve('src/ssg/game'),ids=Object.keys(NATIVE_SCENES);assert.equal(ids.length,19,'Current folder catalogue: retired one-room Harbor Shift is excluded');
 const docs=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'test',value:JSON.parse(fs.readFileSync(path.join(game,d.file),'utf8'))}));
-const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(NATIVE_SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
+const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const make=()=>{const model=new ComposerModel(art,context,(doc,documents)=>{if(doc.id===docs[0].id)validateSourceDocuments(new Map(documents.map(d=>[d.id,d.value])));});model.load(docs);return model;},model=make();
 const edits:any[]=[];
 for(const id of ids){

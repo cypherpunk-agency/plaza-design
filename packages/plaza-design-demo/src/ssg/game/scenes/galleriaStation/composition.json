@@ -34,15 +34,11 @@
         "role": "exit"
       },
       "placement": {
-        "x": 215,
+        "x": 365,
         "h": 0
       },
       "order": 1,
-      "layer": "backdrop",
-      "attach": {
-        "instance": "platform-train",
-        "anchor": "origin"
-      }
+      "layer": "backdrop"
     },
     {
       "id": "background",
@@ -353,20 +349,6 @@
       },
       "order": 15,
       "layer": "set"
-    },
-    {
-      "id": "platform-train",
-      "type": "station.train",
-      "props": {},
-      "placement": {
-        "x": 150,
-        "h": 0
-      },
-      "order": 16,
-      "layer": "set",
-      "bindings": {
-        "train": "station.train"
-      }
     },
     {
       "id": "track-edge",
@@ -707,86 +689,6 @@
       "layer": "set"
     },
     {
-      "id": "waiting-0",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-0"
-      },
-      "placement": {
-        "x": 170,
-        "h": 0
-      },
-      "order": 38,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-0"
-      }
-    },
-    {
-      "id": "waiting-1",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-1"
-      },
-      "placement": {
-        "x": 440,
-        "h": 0
-      },
-      "order": 39,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-1"
-      }
-    },
-    {
-      "id": "waiting-2",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-2"
-      },
-      "placement": {
-        "x": 760,
-        "h": 0
-      },
-      "order": 40,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-2"
-      }
-    },
-    {
-      "id": "waiting-3",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-3"
-      },
-      "placement": {
-        "x": 1000,
-        "h": 0
-      },
-      "order": 41,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-3"
-      }
-    },
-    {
-      "id": "waiting-4",
-      "type": "actor.prepared",
-      "props": {
-        "actor": "waiting-4"
-      },
-      "placement": {
-        "x": 1150,
-        "h": 0
-      },
-      "order": 42,
-      "layer": "set",
-      "bindings": {
-        "pose": "station.pose.waiting-4"
-      }
-    },
-    {
       "id": "street-exit",
       "type": "station.escalator",
       "props": {},
@@ -977,6 +879,21 @@
       "bindings": {
         "pose": "station.pose.regular"
       }
+    },
+    {
+      "id": "platform-floor",
+      "type": "level.floor",
+      "props": {
+        "width": 1200,
+        "label": "Galleria platform",
+        "indoor": true
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -1,
+      "layer": "logic"
     }
   ]
 }

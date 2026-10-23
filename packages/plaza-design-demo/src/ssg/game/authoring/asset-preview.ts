@@ -3,7 +3,7 @@ import { compositionAppearance, drawCompositionSlot, resolveComposition, type Ar
 import { frameView } from '../art/core/view';
 import { lightAt } from '../world/light';
 import type { PreviewRequest, EditorDocument, PreviewResult } from './app';
-import type { AssetEntry, AssetUsage } from './asset-browser';
+import type { AssetEntry, AssetUsage, AssetPreviewOverrides } from './asset-browser';
 import { previewBounds } from './native-preview';
 import type { AssetPreviewReport } from './asset-browser';
 import { centerNativePreview } from './native-camera';
@@ -70,7 +70,7 @@ function sequenceCutout(canvas: HTMLCanvasElement, render: (canvas: HTMLCanvasEl
 }
 
 export function createAssetPreview(registry: ArtRegistry, native: { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult }, sequence?: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult | null, options: { showcase?: boolean } = {}) {
-  return (canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>): string | AssetPreviewReport => {
+  return (canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>&AssetPreviewOverrides): string | AssetPreviewReport => {
     const ctx = canvas.getContext('2d'); if (!ctx) throw new Error('Canvas 2D is unavailable');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (options.showcase && helperArtwork(entry.id)) return drawHelperPreview(canvas, entry.id);
@@ -80,7 +80,6 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
       ctx.fillStyle = gradient; ctx.fillRect(canvas.width * .2, canvas.height * .3, canvas.width * .6, canvas.height * .4);
       return { message: 'Fade overlay shown over a light reference background so its darkening is visible.' };
     }
-    if (options.showcase && entry.id === 'metro.skyline-part') usage = entry.usages.find(u => u.node.props.part === 'far') ?? usage;
     // Unused registered pieces still get the same prepared scene inputs as their siblings.
     if (options.showcase && !usage && entry.preview === 'prepared-context' && !entry.id.startsWith('sequence.')) {
       const namespace = entry.id.split('.')[0], scene = namespace === 'station' ? 'galleriaStation' : namespace;
@@ -135,10 +134,10 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
       ({ composition, environment } = isolate(prepared.composition, prepared.environment, usage.instance));
     } else {
       if (entry.preview === 'prepared-context') return 'Requires a prepared scene/controller snapshot. Select an existing usage below.';
-      composition = { version: 1, scene: 'asset-preview', instances: [{ id: 'asset', type: entry.id, props: {}, placement: { x: 0, h: 0 }, order: 0, layer: registry.get(entry.id).parts.length ? 'backdrop' : 'logic' }] };
+      composition = { version: 1, scene: 'asset-preview', instances: [{ id: 'asset', type: entry.id, props: registry.properties(entry.id,settings.props??{}), placement: { x: 0, h: 0 }, order: 0, layer: registry.get(entry.id).parts.length ? 'backdrop' : 'logic' }] };
       const view = { ...frameView(settings.time * 60, lightAt(Number(settings.environment.day ?? 1), Number(settings.environment.minute ?? 580), 90, null)), viewW: width, viewH: height,
         gy: height / 2, y: (h: number) => height / 2 - h };
-      environment = { view, state: {}, reduced: settings.reduced, sequenceTime: settings.time };
+      environment = { view, state: {asset:registry.visualProperties(entry.id,settings.state??{})}, reduced: settings.reduced, sequenceTime: settings.time };
       const row = resolveComposition(registry, composition, environment)[0];
       const bounds = row.element.bounds(row.props, row.state, { view, placement: row.placement });
       if (bounds.w > 0 && bounds.tall > 0 && [bounds.x, bounds.h, bounds.w, bounds.tall].every(Number.isFinite)) {
@@ -151,8 +150,8 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
       }
     }
     ctx.save(); ctx.setTransform(renderScale * fit, 0, 0, renderScale * fit, 0, 0);
-    // All three slots now, in order; the isolated piece is not part of a game frame, so nothing is queued for one.
-    try { for (const slot of ['behind-player', 'over-player', 'foreground'] as const) drawCompositionSlot(ctx, registry, composition, environment, slot); }
+    // The same composition phases, isolated from a game frame; nothing is queued for a later frame.
+    try { drawCompositionSlot(ctx, registry, composition, environment, 'behind-player',undefined,'sky');for (const slot of ['behind-player', 'over-player', 'foreground'] as const) drawCompositionSlot(ctx, registry, composition, environment, slot); }
     finally { ctx.restore(); }
     const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let visible = false; for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) { visible = true; break; }
@@ -163,7 +162,7 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
         ...appearance.get(row.instance.id), parts: row.element.parts, layer: row.instance.layer, order: row.instance.order, anchors: row.element.anchors(row.props, row.state) })) };
     const message = !visible && usage ? `No visible pixels for this ${settings.time.toFixed(3)} s snapshot. This may be conditional artwork, a marker, a light collector, or outside the visible layers. Open instance for its scene context and supported state controls.`
       : entry.preview === 'structural' && !usage ? 'Structural assembly: no standalone pixels. Select a source usage to inspect its children.'
-      : !usage ? `Standalone artwork with default properties at ${settings.time.toFixed(3)} s, fitted to its bounds.`
+      : !usage ? `Standalone artwork with ${Object.keys(settings.props??{}).length||Object.keys(settings.state??{}).length?'temporary preview settings':'default properties'} at ${settings.time.toFixed(3)} s, fitted to its bounds.`
       : options.showcase ? 'Gallery display example: conditional artwork is shown, character window clips are removed, and the camera is centered. Source and gameplay state are unchanged.'
       : `Isolated registered layers at ${settings.time.toFixed(3)} s. Native camera centered on selection; scene grading/reflections are visible in Open instance.`;
     return { message, snapshot };

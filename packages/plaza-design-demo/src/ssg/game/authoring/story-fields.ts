@@ -91,7 +91,7 @@ export class StoryFields {
       form.select(parent,name+' handler',['say','react','gate','acknowledge'],kind,k=>this.set(path,defaultRule(k,this.deviceIds(scene)[0]??'')));
     }
     if(key==='ping'){
-      const targets=Object.keys(this.at(this.doc.value(),path.slice(0,-1)).targets??{}),exits=this.def(scene)?.exits??[],devices=this.deviceIds(scene),kinds=[...(exits.some(e=>e.action==='out')?['door']:[]),...(exits.length?['exit']:[]),...(devices.length?['device']:[]),...(targets.length?['target']:[])],kind=keys[0];
+      const targets=Object.keys(this.at(this.doc.value(),path.slice(0,-1)).targets??{}),exits=this.def(scene)?.exits??[],devices=this.deviceIds(scene),kinds=[...(this.def(scene)?.level?.vehicles?.some(v=>v.source.cars.some(c=>c.doors.length>0))?['door']:[]),...(exits.length?['exit']:[]),...(devices.length?['device']:[]),...(targets.length?['target']:[])],kind=keys[0];
       form.select(parent,name+' target kind',kinds.includes(kind)?kinds:[...kinds,kind],kind,k=>this.set(path,k==='door'?{door:true}:k==='exit'?{exit:exits[0].id}:k==='device'?{device:devices[0]}:{target:targets[0]}));
       if(kind==='door'){const p=document.createElement('p');p.textContent='The nearest train door';parent.append(p);return;}
     }

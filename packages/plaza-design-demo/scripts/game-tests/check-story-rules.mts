@@ -72,8 +72,8 @@ const story=openingStoryModel;
 
 // ---- attention
 {assert.equal(story.ATTENTION.after,1200);assert.equal(attentionDue(1300,100,1200),false);assert.equal(attentionDue(1301,100,1200),true);
- const def={exits:[{id:'a',action:'out',x:100},{id:'b',action:'out',x:900},{id:'c',x:500}]};
- assert.deepEqual(attentionAim({door:true},def,850,()=>undefined),{x:900},'the nearest train door');assert.deepEqual(attentionAim({door:true},def,150,()=>undefined),{x:100});
+ const def={exits:[{id:'c',x:500}]};
+ assert.deepEqual(attentionAim({door:true},def,850,()=>undefined,[100,900]),{x:900},'the nearest train door');assert.deepEqual(attentionAim({door:true},def,150,()=>undefined,[100,900]),{x:100});
  assert.deepEqual(attentionAim({exit:'c'},def,0,()=>undefined),{x:500});assert.equal(attentionAim({exit:'zzz'},def,0,()=>undefined),null);
  assert.deepEqual(attentionAim({device:'pc'},def,0,()=>undefined),{device:'pc'});
  assert.deepEqual(attentionAim({target:'bed'},def,0,id=>id==='bed'?64:undefined),{x:64});assert.equal(attentionAim({target:'bed'},def,0,()=>undefined),null);

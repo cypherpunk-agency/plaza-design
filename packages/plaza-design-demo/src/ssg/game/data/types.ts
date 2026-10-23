@@ -590,7 +590,7 @@ export interface Pt { x: number; y: number }
  * does not wipe them; so are clocks and the watchdog's place on its route.
  */
 /** A current mover checkpoint. Vehicle services retain a source path step, never executable saved steps. */
-export interface MoverSave {at:string;to?:string;pos?:number;path?:{name:string;step:number;elapsed:number;from:{x:number;h:number};lastTo?:string}}
+export interface MoverSave {at:string;to?:string;pos?:number;path?:{name:string;step:number;nested?:number[];elapsed:number;from:{x:number;h:number};lastTo?:string;halt?:string}}
 export interface SceneSave {
   /** Current short-lived passenger memory, with its expiry stamp. */
   people?:import('../engine/people').PeopleState;

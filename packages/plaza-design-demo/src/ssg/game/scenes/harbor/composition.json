@@ -212,16 +212,7 @@
         "h": 0
       },
       "order": 5,
-      "layer": "set",
-      "bindings": {
-        "layout": "harbor.layout",
-        "visual": "harbor.visual",
-        "fishPose": "harbor.fishPose",
-        "teaPose": "harbor.teaPose",
-        "loads": "harbor.loads",
-        "stackOrigins": "harbor.stackOrigins",
-        "forkliftOrigin": "harbor.forkliftOrigin"
-      }
+      "layer": "set"
     },
     {
       "id": "watchman",
@@ -259,13 +250,8 @@
         "anchor": "origin"
       },
       "bindings": {
-        "layout": "harbor.layout",
-        "visual": "harbor.visual",
-        "fishPose": "harbor.fishPose",
-        "teaPose": "harbor.teaPose",
-        "loads": "harbor.loads",
-        "stackOrigins": "harbor.stackOrigins",
-        "forkliftOrigin": "harbor.forkliftOrigin"
+        "hutWidth": "scene.hutWidth",
+        "hutHeight": "scene.hutHeight"
       }
     },
     {
@@ -2927,6 +2913,17 @@
         "pose": "harbor.actor.teaMan",
         "clip": "harbor.clip.teaMan"
       }
+    },
+    {
+      "id": "sky-traffic",
+      "type": "environment.sky-traffic",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -100,
+      "layer": "distance"
     }
   ]
 }

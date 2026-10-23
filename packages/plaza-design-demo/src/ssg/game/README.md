@@ -28,6 +28,12 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
 
 - `?play=library` (or another id in `scenes/index.ts`) opens a scene directly for inspection.
   Direct scene entry bypasses normal travel, so it is not evidence of story progression.
+- `?play=metro-siding` inspects P14's authored service ledge and stairs to the Harbor. The actual
+  train now carries the player on a shared vehicle floor into this zone; rewired open doors permit
+  continuous alighting onto the ledge. Galleria and old Harbor also use shared physical berths;
+  Downtown also has a shared berth. Station passengers now use shared model-owned flows, retaining
+  identity through boarding and alighting. Legacy transport deletion and full-route/preservation
+  acceptance remain ROADMAP C2 work.
 - `?sudo` opens developer mode with separate saves, unlocks, the LEVELS menu and time controls.
 - `?probe` adds the read-only `window.__game` handle (`probe()`: scene, story phase, flags, clock, dialogue, prompts, captions) to the ordinary game, with no unlocks. `scripts/opening-playthrough/` uses it.
 - `?play=sandbox&sudo` opens the engine's manual demonstration bay.
@@ -47,7 +53,8 @@ appear beside ◀ ▶ when ↑/↓ does something (tap to step on or pick a lift
 ## Harbor shift prototype (milestone 2)
 
 Open `http://127.0.0.1:4174/?play=harborShift` after the homepage build and local server above.
-This opens the five connected harbor zones at Harbor Station, before the shift. It is not yet the campaign opening. Walk with arrows/A/D, interact
+This opens the five connected harbor zones at Harbor Station, before the shift, using an isolated
+play profile. The normal campaign now reaches this same harbor after the title glide. Walk with arrows/A/D, interact
 with E, and use E/Enter to advance dialogue. Item handovers use the existing contextual popup.
 
 New tasks briefly show the pink GOAL text near the centre after dialogue closes. After two
