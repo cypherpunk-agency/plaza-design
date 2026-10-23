@@ -63,7 +63,7 @@ import { createNativePreview } from './native-preview';
 import { nativeSceneAdapters,authoredSceneAdapter } from './scene-adapters';
 import { PROPOSAL_SCENES, proposalAdapters, proposalLooksOnly, proposalScene } from './proposal-scenes';
 
-import { createSequencePreview } from './sequence-preview';
+import {createSequenceValidationContext,frameTimelineContext} from '../art/core/sequence-context';
 
 import { WEATHER_KINDS } from '../world/weather';
 
@@ -71,7 +71,7 @@ import { SCENES, isSceneId, sceneTitle } from '../scenes';
 
 import { snapshotWorld, validateWorldDocument } from '../world/document';
 
-import type { TimelineDocument } from '../art/core/timeline';
+import {sequenceProgram} from '../art/core/sequence';
 
 import { mountWorldPanel, type WorldPanelSession } from './world-panel';
 
@@ -143,7 +143,7 @@ async function start() {
 
   const initialEnvironment = { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' };
   const styleFrameSession: StyleFrameSession = {}, storyboardSession: StoryboardSession = {};
-  const native = createNativePreview({...backdropAdapters,...nativeSceneAdapters,...proposalAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>authoredSceneAdapter(id,request.documents)), sequences = createSequencePreview(art);
+  const native = createNativePreview({...backdropAdapters,...nativeSceneAdapters,...proposalAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>authoredSceneAdapter(id,request.documents));
 
   const mapSession: WorldPanelSession = {};
 
@@ -192,7 +192,7 @@ async function start() {
       const sceneDistrict = new Map((city?.PLACES ?? []).flatMap(p => p.scenes.map(scene => [scene, p.district] as const)));
       return { list: (city?.DISTRICTS ?? []).map(d => ({ id: d.id, name: d.name })), of: scene => sceneDistrict.get(scene) };
     },
-    assetPreview: createAssetPreview(art, native, (canvas, request) => sequences.render(canvas, request), { showcase: true }),
+    assetPreview: createAssetPreview(art, native, (canvas, request) => native.render(canvas, request), { showcase: true }),
 
     // Proposals borrow gameplay from their base; validators below never read proposal artwork.
     // Projected authored.* children are covered by their authored-scenes source owner.
@@ -287,7 +287,7 @@ async function start() {
 
         return mountSignageWorkbench(panel, { registry: art, documents: context.documents,
 
-          openUsage: usage => context.openInstance(usage.document, usage.instance), renderNative: native.render, renderSequence: sequences.render,
+          openUsage: usage => context.openInstance(usage.document, usage.instance), renderNative: native.render, renderSequence: native.render,
 
         });
 
@@ -297,7 +297,7 @@ async function start() {
 
     ],
 
-    preview: { render: (canvas, request) => { if (request.documents?.has('people')) applyPeople(request.documents.get('people')); return sequences.render(canvas, request) ?? native.render(canvas, request); } },
+    preview: { render: (canvas, request) => { if (request.documents?.has('people')) applyPeople(request.documents.get('people')); return native.render(canvas, request); } },
 
     inspector: (scene, instance, documents) => scene.startsWith('backdrop-') ? (instance?[]:[backdropInspector(scene)]) : inspectorSections(scene, instance, documents),
     // the scenes one seam away (world/zone-graph.json), which the Scene preview draws beside the open one
@@ -307,7 +307,7 @@ async function start() {
 
       const compositions = Object.fromEntries(documents.filter(doc => doc.kind === 'composition').map(doc => [doc.id, doc.value as Composition]));
 
-      const timelines = documents.filter(doc => doc.kind === 'timeline').flatMap(doc => (doc.value as TimelineDocument).sequences);
+      const timelines = sequenceProgram(compositions).sequences;
 
       const snapshot=new Map(documents.map(d=>[d.id,d.value])),registry=pendingRegistry(snapshot);
       const refs = Object.fromEntries(Object.entries(compositions).filter(([, doc]) => Object.prototype.hasOwnProperty.call(registry, doc.scene)).map(([id, doc]) => [doc.scene, id]));
@@ -319,7 +319,7 @@ async function start() {
 
     },
 
-    motionTracks: sequences.motionTracks,clips:sequences.clips, timelineContext: sequences.timelineContext,
+    motionTracks: createSequenceValidationContext(art,{}).motionTracks,clips:createSequenceValidationContext(art,{}).clips, timelineContext: frameTimelineContext,
 
     destinationsFor:documents=>pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))),
     destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
@@ -385,7 +385,7 @@ function inspectorSections(scene: string, instance: Instance | undefined, docume
   return [...flows,...vehicle,...barrier, ...logicSections(scene, instance, documents)];
 }
 function logicSections(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
-  if(scene==='sequence-opening')return instance?[]:[{id:'world-sequence',label:'World sequence',mount(host){const note=document.createElement('p');note.className='muted';note.textContent='Choose Timeline Â· sequence-opening-timeline in the Scene list to edit the camera, timing, rain and train arrival. Edit buildings, props and people in their coast or harbor scene; edit the shared sky and sea in backdrop-glide-coast.';host.replaceChildren(note);return()=>host.replaceChildren();}}];
+  if(scene==='sequence-opening'||scene==='sequence-title')return instance?[]:[{id:'world-sequence',label:'World sequence',mount(host){const note=document.createElement('p');note.className='muted';note.textContent='Edit timing and camera below. Select visible objects to edit their actual source without leaving the sequence.';host.replaceChildren(note);return()=>host.replaceChildren();}}];
   let entry: ReturnType<typeof gameplayScene> | undefined; try { entry = gameplayScene(scene, documents); } catch { entry = undefined; }
   const editable = !!entry && (!scene.startsWith('demo-') || scene === 'demo-manifest');
   const network = (context: WorkbenchContext) => () => pendingNetworkContext(new Map(context.documents.map(d => [d.id, d.value])));

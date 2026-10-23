@@ -14,7 +14,7 @@ import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/author
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {ComposerModel,type EditorDocument} from '../../src/ssg/game/authoring/app';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {barrierAccess,validateBarrierCondition} from '../../src/ssg/game/world/access';

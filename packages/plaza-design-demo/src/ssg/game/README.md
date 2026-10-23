@@ -32,8 +32,7 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
   train now carries the player on a shared vehicle floor into this zone; rewired open doors permit
   continuous alighting onto the ledge. Galleria and old Harbor also use shared physical berths;
   Downtown also has a shared berth. Station passengers now use shared model-owned flows, retaining
-  identity through boarding and alighting. Legacy transport deletion and full-route/preservation
-  acceptance remain ROADMAP C2 work.
+  identity through boarding and alighting. Transport consolidation and its final visual acceptance are complete; see ROADMAP C2.
 - `?sudo` opens developer mode with separate saves, unlocks, the LEVELS menu and time controls.
 - `?probe` adds the read-only `window.__game` handle (`probe()`: scene, story phase, flags, clock, dialogue, prompts, captions) to the ordinary game, with no unlocks. `scripts/opening-playthrough/` uses it.
 - `?play=sandbox&sudo` opens the engine's manual demonstration bay.
@@ -47,8 +46,15 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
 
 Arrow keys walk, E interacts, H opens hack vision, B the board, Enter the terminal, TAB/M the
 city map, N the net map once `scan.so` is owned, and Escape closes overlays or opens the menu.
+During the New Game intro glide, Escape skips directly to the playable Harbor start.
 Touch has on-screen controls and currently requires landscape orientation; in a level scene ▲ ▼
 appear beside ◀ ▶ when ↑/↓ does something (tap to step on or pick a lift floor, hold to climb).
+
+## Review the prologue
+
+Follow the [prologue experience review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) for live
+links, a fresh-save setup, six experience checkpoints and a feedback template. Review pacing,
+clarity and storytelling rather than repeating mechanical contract checks.
 
 ## Harbor shift prototype (milestone 2)
 

@@ -20,12 +20,12 @@ const store = new AuthoringStore({
   documents: [
     { id: 'scene-harbor', file: 'scenes/harbor/composition.json',
       kind: 'composition', validate: value => registry.validate(value) },
-    { id: 'sequence-demo', file: 'story/timelines/demo.json',
-      kind: 'timeline', validate: value => validateTimeline(value, context) },
+    { id: 'sequence-demo', file: 'story/demo.composition.json',
+      kind: 'composition', validate: value => validateSequence(registry.validate(value), context) },
   ],
   validateAll(documents) {
     // Build the context from the prospective compositions, then validate every
-    // referencing timeline/world document. Throw before any write on a bad link.
+    // referencing sequence/world document. Throw before any write on a bad link.
     validateProspectiveReferences(documents);
   },
 });
@@ -82,18 +82,22 @@ redo by undoing that result. No history pruning is automatic.
 `art/core/timeline.ts` supplies browser-compatible data contracts:
 
 ```ts
-const timeline = validateTimeline(json, {
-  registry, compositions: { harbor: harborComposition },
+const composition = registry.validate(json);
+const context = {
+  registry, compositions: { [composition.scene]: composition, harbor: harborComposition },
   destinations: { harbor: ['west', 'east'] },
   clips: { 'character.worker': ['idle', 'walk'] },
   motionTracks: registeredExactMotionKernels,
-});
+};
+validateSequence(composition, context);
+const timeline = sequenceProgram({ [composition.scene]: composition });
 const frame = evaluateTimeline(timeline, 'arrival', timeInSeconds, context,
   { reduced: reducedMotion });
 ```
 
-A version-1 document has multiple `sequences`. Each sequence contains stable
-`id`, positive `duration` in seconds, a composition reference, ordered
+A version-1 composition contains its contents and one `sequence` object.
+`sequenceProgram` derives the evaluator input; it is never a separate saved document.
+The sequence contains stable `id`, positive `duration` in seconds, ordered
 non-overlapping `shots`, `tracks`, `text`, `fades`, `beats`, and an optional
 validated `{scene,entrance}` handoff. All five arrays are explicit, even if empty.
 Shots have `{id,from,to,camera:{x,h,zoom}}`; text cards have
@@ -184,16 +188,17 @@ select fields that the real preview provider understands. They change only the
 editor's preview environment. Overlay drawing and weather/light handling remain
 provider-owned. No real Game instance or player-save access is created here.
 
-The document chooser includes compositions, timelines and read-only world
-documents. Hierarchy and catalog operations edit the current composition (or a
-timeline's referenced composition). Dragging commits one undoable command at
+The document chooser includes compositions (including sequences) and world documents.
+Hierarchy and catalog operations edit the current composition. In a world-referencing
+sequence, selecting a painted object edits its actual source scene or backdrop while
+retaining the sequence preview. Dragging commits one undoable command at
 pointer release. Inspector values are local to their parent/anchor. JSON fields
 require Apply and use the element schema's validator. Gameplay bindings and scene
 identity cannot be removed or changed through import; deleting bound items,
 dangling attachments or timeline targets fails without replacing valid data.
 Nested duplicates remain beside their original within the same parent.
 
-Timeline controls select or add multiple sequences, play/pause, scrub, frame-step
+The timeline edits the current composition's `sequence`: play/pause, scrub, frame-step
 and loop a range. Select an element to expose its transform/animatable-property
 targets, add a key at the playhead, then edit its typed value, time and easing.
 Clip targets appear for types with registered clips. Camera tracks need no

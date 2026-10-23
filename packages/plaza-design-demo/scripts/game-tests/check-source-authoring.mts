@@ -7,7 +7,7 @@ import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {folderSceneDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
 const libraryScene=(composition?:Composition,state={},options={},scene?:never)=>folderSceneDefinition('library',FOLDER_SOURCES.library,{composition,state,options,scene});
 import type { Composition } from '../../src/ssg/game/art';
-import type { TimelineDocument } from '../../src/ssg/game/art/core/timeline';
+import type {SequenceComposition} from '../../src/ssg/game/art/core/sequence';
 import { preserveBoundIdentity } from '../../src/ssg/game/authoring/bound-identity';
 
 const bound: Composition = { version: 1, scene: 'identity-check', instances: [{ id: 'parent', type: 'assembly.group', props: {}, placement: { x: 0, h: 0 }, layer: 'set', order: 0, children: [{ id: 'actor', type: 'library.card-reader', props: {}, bindings: { online: 'value.catalogConnected' }, placement: { x: 20, h: 0 }, layer: 'set', order: 1 }] }] };
@@ -39,8 +39,8 @@ assert.equal(x(store.read('library').value as Composition), baseX + 20, 'saved d
 assert.throws(() => store.save([{ id: 'library', revision: before.revision, value: composition }]), (error: unknown) => error instanceof StoreError && error.code === 'conflict');
 const invalid = structuredClone(composition); invalid.instances = invalid.instances.filter(n => n.id !== 'printer');
 assert.throws(() => store.save([{ id: 'library', revision: store.read('library').revision, value: invalid }]), /printer/);
-const timeline = store.read('sequence-cinematics'), badTimeline = structuredClone(timeline.value) as TimelineDocument;
-badTimeline.sequences[0].handoff = { scene: 'missing-scene' };
+const timeline = store.read('sequence-intro'), badTimeline = structuredClone(timeline.value) as SequenceComposition;
+badTimeline.sequence.handoff = { scene: 'missing-scene' };
 const accepted = store.read('library').revision;
 assert.throws(() => store.save([{ id: 'library', revision: accepted, value: before.value }, { id: timeline.id, revision: timeline.revision, value: badTimeline }]), /handoff/);
 assert.equal(store.read('library').revision, accepted, 'failed cross-document validation leaves every source unchanged');

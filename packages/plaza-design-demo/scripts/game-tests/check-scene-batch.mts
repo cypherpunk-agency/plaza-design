@@ -5,7 +5,7 @@ import {NATIVE_SCENES,SCENES} from '../../src/ssg/game/scenes';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {addManifestContent,removeManifestContent} from '../../src/ssg/game/engine/gameplay/manifest-content';
 import {targetInstance} from '../../src/ssg/game/engine/gameplay/manifest-contract';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {art} from '../../src/ssg/game/art';
 import {ComposerModel} from '../../src/ssg/game/authoring/app';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';

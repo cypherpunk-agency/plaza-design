@@ -8,7 +8,7 @@ const libraryScene=(composition?:Composition,state={},options={},scene?:any)=>fo
 const LIBRARY_SCENE=FOLDER_SOURCES.library.scene as any,validateLibraryScene=(scene:any)=>libraryScene(undefined,{},{},scene);
 import {ComposerModel} from '../../src/ssg/game/authoring/app';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';

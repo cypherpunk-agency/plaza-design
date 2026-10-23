@@ -9,7 +9,7 @@ import {pendingNetworkContext} from '../../src/ssg/game/authoring/pending-networ
 import {pendingScene} from '../../src/ssg/game/authoring/pending-scene';
 import {pendingFixtureVocabulary} from '../../src/ssg/game/authoring/pending-fixtures';
 import {defaultPlayFixture,fixtureSave} from '../../src/ssg/game/authoring/play-fixtures';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {newAuthoredScene,validateSceneCatalogue} from '../../src/ssg/game/engine/gameplay/scene-catalogue';

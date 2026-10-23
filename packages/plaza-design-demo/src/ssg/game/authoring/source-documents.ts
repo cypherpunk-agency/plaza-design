@@ -1,3 +1,4 @@
+import {validateSequence} from '../art/core/sequence';
 import {sequencePlacements} from '../world/zone-graph';
 import {withSharedState} from '../engine/gameplay/shared-state';
 import {BACKDROP_SOURCES,backdropDocumentId,validateBackdrop} from '../world/backdrops';
@@ -39,24 +40,24 @@ import {validateZoneGraph,worldProblems} from '../world/zone-graph';
 import {zoneInfo,zonePieces} from './zone-graph-context';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
 import { art, type Composition } from '../art';
-import { validateTimeline } from '../art/core/timeline';
 import { NATIVE_SCENES } from '../scenes';
 import {validateSceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import { nativeSceneAdapters } from './scene-adapters';
 import { PROPOSAL_SCENES, validateProposal } from './proposal-scenes';
-import { createSequenceValidationContext } from './sequence-preview';
+import { createSequenceValidationContext } from '../art/core/sequence-context';
 import type { DocumentDescriptor } from './server/store';
 import { preserveBoundIdentity } from './bound-identity';
 
 
 const scenes = Object.keys(nativeSceneAdapters);
 const sequenceFiles = {
+  'sequence-title': 'story/title/title.composition.json',
   'sequence-opening': 'story/title/composition.json',
   'sequence-intro': 'story/cutscenes/intro.composition.json',
   'sequence-act2': 'story/cutscenes/act2.composition.json',
   'sequence-taxi': 'story/cutscenes/taxi.composition.json',
 };
-const timelineFiles = { 'sequence-opening-timeline': 'story/title/timeline.json', 'sequence-cinematics': 'story/cutscenes/timeline.json' };
+
 const sceneComposition = (scene: string, value: unknown) => {
   const doc = nativeSceneAdapters[scene].validate(value);
   if (doc.scene !== scene) throw new Error(`Scene identity must remain ${scene}`);
@@ -100,10 +101,6 @@ export const sourceDocuments: DocumentDescriptor[] = [
   ...scenes.map(scene => ({ id: scene, file: `scenes/${scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art) })),
   ...Object.entries(BACKDROP_SOURCES).map(([id,source])=>({id:backdropDocumentId(id),file:source.file,kind:'composition' as const,validate:(value:unknown)=>validateBackdrop(value,id)})),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art), validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
-  ...Object.entries(timelineFiles).map(([id, file]) => ({ id, file, kind: 'timeline' as const, validate(value: unknown) {
-    if (!value || typeof value !== 'object' || (value as { version?: unknown }).version !== 1 || !Array.isArray((value as { sequences?: unknown }).sequences)) throw new Error('Invalid timeline document header');
-    return value;
-  } })),
   {id:'demo-manifest',file:'scenes/demo-manifest/composition.json',kind:'composition',validate:validateManifestComposition},
   ...PROPOSAL_SCENES.map(p => ({ id: p.id, file: p.file, kind: 'composition' as const, validate: (value: unknown) => validateProposal(p.id, value) })),
 ];
@@ -129,7 +126,7 @@ function validateAll(documents: ReadonlyMap<string, unknown>) {
   validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents));
   const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);
   const context = createSequenceValidationContext(art, compositions, pendingDestinations(documents));
-  for (const [id] of Object.entries(timelineFiles)) validateTimeline(documents.get(id), context);
+  for (const id of Object.keys(sequenceFiles)) validateSequence(compositions[id],context);
   createRuntimeSequenceDocuments(documents,context);
   for (const id of documents.keys()) if (!sourceDocuments.some(d => d.id === id)) throw new Error(`Unknown source document: ${id}`);
 }

@@ -17,7 +17,7 @@ export interface Sequence {
   id: string; duration: number; composition: string; shots: Shot[]; tracks: Track[];
   text: TextCard[]; fades: Fade[]; beats: Beat[]; handoff?: Handoff;
 }
-export interface TimelineDocument { version: 1; sequences: Sequence[] }
+export interface TimelineProgram { version: 1; sequences: Sequence[] }
 export interface MotionTrack {
   /** Existing exact motion formulas register here; documents contain only typed parameters. */
   validate(props: Properties): void;
@@ -71,7 +71,7 @@ function targetValidator(t: Target, all: Map<string, Instance>, ctx: TimelineCon
   if (!field.animatable) throw new Error(`Field is not animatable: ${node.type}.${t.property}`);
   return v => validField(field, v);
 }
-export function validateTimeline(input: unknown, ctx: TimelineContext): TimelineDocument {
+export function validateTimeline(input: unknown, ctx: TimelineContext): TimelineProgram {
   json(input);
   if (!obj(input) || input.version !== 1 || !Array.isArray(input.sequences)) throw new Error('Invalid timeline version/header');
   const seqIds = new Set<string>();
@@ -110,7 +110,7 @@ export function validateTimeline(input: unknown, ctx: TimelineContext): Timeline
     for (const beat of seq.beats) { id(beat); if (!num(beat.time) || beat.time < 0 || beat.time > seq.duration) throw new Error('Invalid beat'); }
     if (seq.handoff) { if (!obj(seq.handoff) || typeof seq.handoff.scene !== 'string' || !own(ctx.destinations ?? {}, seq.handoff.scene) || seq.handoff.entrance !== undefined && !ctx.destinations![seq.handoff.scene].includes(seq.handoff.entrance)) throw new Error('Invalid handoff destination'); }
   }
-  return structuredClone(input) as unknown as TimelineDocument;
+  return structuredClone(input) as unknown as TimelineProgram;
 }
 function sample(keys: Keyframe[], time: number): Value {
   if (time <= keys[0].time) return keys[0].value;
@@ -127,7 +127,7 @@ export interface TimelineFrame {
   text: TextCard[]; fades: { id: string; color: string; opacity: number }[]; beats: Beat[];
 }
 /** Input must have passed validateTimeline. Absolute seek never runs a controller or handoff. */
-export function evaluateTimeline(doc: TimelineDocument, sequenceId: string, time: number, ctx: TimelineContext, options: { reduced?: boolean } = {}): TimelineFrame {
+export function evaluateTimeline(doc: TimelineProgram, sequenceId: string, time: number, ctx: TimelineContext, options: { reduced?: boolean } = {}): TimelineFrame {
   if (!num(time)) throw new Error('Seek time must be finite');
   const seq = doc.sequences.find(s => s.id === sequenceId); if (!seq) throw new Error(`Unknown sequence: ${sequenceId}`);
   time = Math.max(0, Math.min(seq.duration, time)); const composition = structuredClone(ctx.compositions[seq.composition]), all = nodes(composition);

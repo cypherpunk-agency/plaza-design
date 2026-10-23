@@ -17,7 +17,7 @@ import {art} from '../../src/ssg/game/art';
 import {sourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {ComposerModel} from '../../src/ssg/game/authoring/app';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
 

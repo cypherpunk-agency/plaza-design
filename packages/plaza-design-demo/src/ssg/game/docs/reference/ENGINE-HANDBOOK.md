@@ -18,6 +18,13 @@ and paused painting at two sizes, scales 1/2/3 and both reduced-motion settings,
 resize and seek/resume. It cannot accept or replace
 stored scene images. Comparison surfaces use consistent readback rasterization.
 
+Sequences use the same composition model: contents and a `sequence` field for shots, tracks,
+cards, fades, beats and handoff. The temporal evaluation program is derived, never a second saved
+source. `runtime/prepare-frame.ts` prepares both world references and inline artwork for the sole
+`renderWorldFrame` renderer; no separate sequence adapters remain. In the editor, select scenery
+directly in the sequence preview to edit its source scene/backdrop without switching views.
+The inspector identifies that shared source. See [animated artwork](../../art/sequences/README.md).
+
 ## The execution model
 
 There is one runtime: the game loop (runtime/game.ts) and each scene's model (SceneModel). Every frame

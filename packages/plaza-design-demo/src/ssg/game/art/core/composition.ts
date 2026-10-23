@@ -52,7 +52,7 @@ export interface Instance {
   children?: Instance[];
   bindings?: Record<string, string>;
 }
-export interface Composition { version: 1; scene: string; instances: Instance[] }
+export interface Composition { version: 1; scene: string; instances: Instance[]; sequence?:import('./sequence').SequenceSettings }
 export interface Environment {
   view: View;
   /** Named runtime state, resolved by a scene adapter before rendering. */

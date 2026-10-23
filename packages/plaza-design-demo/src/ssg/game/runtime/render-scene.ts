@@ -1,3 +1,4 @@
+import {prepareFrame,type FrameSource} from './prepare-frame';
 import {perfBegin,perfEnd} from './diagnostics/performance';
 import{drawTimelineOverlay,type TimelineOverlay}from'../art/core/timeline-overlay';
 /** Shared native frame orchestration. Game and composer provide state, never duplicate artwork. */
@@ -14,7 +15,7 @@ import { muteWorld } from '../art/atmosphere/hack-vision';
 import { beginLayeredFrame, flushLayeredDocs, flushLayeredSlot, layeredDocs } from '../art/core/composition';
 import { lightAt } from '../world/light';
 import type { TimelineFrame } from '../art/core/timeline';
-import {art,drawCompositionSlot} from '../art';
+import {art,drawCompositionSlot,type Composition} from '../art';
 import {backdropDocuments,backdropTown,type BackdropDocument} from '../world/backdrops';
 
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
@@ -85,7 +86,11 @@ export function directorFromTimeline(frame: Pick<TimelineFrame, 'camera' | 'fade
 }
 
 /** One frame of the world: the zone the player is in (the scene) and the zones joined to it that are on screen. */
+export interface FrameInspection { scene?:SceneDef; composition?:Composition; view:View; model?:SceneHost['model']; scale:number; zoom:number }
 export interface WorldFrame {
+  evaluation?:TimelineFrame;
+  capture?:boolean;
+  inspection?:FrameInspection[];
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
   /** A camera zoom already folded into `scale` (the world drawn larger; `view` is in zoomed units): overlays in logical
    * viewport coordinates draw at `scale / zoom`. Default 1. */
@@ -110,7 +115,7 @@ export interface WorldFrame {
 }
 
 /** The one frame renderer, for a scene alone or with the zones joined to it (docs/design/SEAMLESS-WORLD.md §3). */
-export function renderWorldFrame(frame:WorldFrame){const span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);}finally{perfEnd(span);}}
+export function renderWorldFrame(input:WorldFrame|FrameSource){const frame=prepareFrame(input),span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);return frame;}finally{perfEnd(span);}}
 function renderMeasuredFrame(frame: WorldFrame) {
   let pass=perfBegin('render.prepare');
   beginLayeredFrame();
@@ -145,6 +150,7 @@ function renderMeasuredFrame(frame: WorldFrame) {
     const local=zone.view,view:View={...local,zoneWindow:undefined,cam:local.cam+ref.x,
       sx:(wx,p=1)=>local.sx(wx-ref.x*p,p),y:h=>local.y(h-(ref.h??0))};backdropFrames.push({doc,view});
   }
+  if(frame.capture)frame.inspection=[{scene:s,view:v,model:zh.model,scale:k,zoom},...joined.map(z=>({scene:z.scene,view:z.view,model:z.host.model,scale:k,zoom})),...backdropFrames.map(z=>({composition:z.doc,view:z.view,scale:k,zoom}))];
   if (amb.sky && passOn(d, 'sky')) { drawSky(x, v, L, { horizon: v.y(sharedSky ? sharedSky.horizon-(s.backdrop!.h??0) : s.horizon ?? 0),...(sharedSky?{style:sharedSky.style,town:backdropTown(sharedBackdrop,v.cam+(s.backdrop?.x??0)+v.viewW/2)}:{}) }); if (look) weatherSky(x, v, look); s.drawSkyArtwork?.(x, v);for(const {doc,view} of backdropFrames)drawCompositionSlot(x,art,doc,{view,reduced:frame.reduced,state:{}},'behind-player',undefined,'sky'); }
   if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
   if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);

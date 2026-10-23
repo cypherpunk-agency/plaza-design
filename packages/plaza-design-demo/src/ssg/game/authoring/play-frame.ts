@@ -6,7 +6,7 @@ import {validateCompanionGameplay} from '../engine/gameplay/companion-conversati
 import {validatePendingNetwork} from './pending-network';
 import {art,type Composition} from '../art';
 import {createRuntimeSequenceDocuments} from '../story/sequence-documents';
-import {createSequenceValidationContext} from './sequence-preview';
+import {createSequenceValidationContext} from '../art/core/sequence-context';
 import {pendingDestinations} from './pending-destinations';
 import {pendingRegistry} from './pending-registry';
 import {validateMetroSource} from '../world/transport/metro-source';
@@ -51,7 +51,7 @@ window.addEventListener('message', async event => {
     installPlayProfiles(pendingProfiles?validatePlayProfiles(pendingProfiles.value):SHIPPED_PROFILES,!!district||!!manifest);
     const sequenceValues=sourceDocuments?new Map<string,unknown>(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value])):undefined;
     if(sequenceValues?.has('state-owners'))useSharedState(sequenceValues.get('state-owners'));
-    const sequences=sequenceValues?createRuntimeSequenceDocuments(sequenceValues,createSequenceValidationContext(art,Object.fromEntries([...sequenceValues].filter(([id])=>['sequence-opening','sequence-intro','sequence-act2','sequence-taxi'].includes(id))) as Record<string,Composition>,pendingDestinations(sequenceValues))):undefined;
+    const sequences=sequenceValues?createRuntimeSequenceDocuments(sequenceValues,createSequenceValidationContext(art,Object.fromEntries([...sequenceValues].filter(([id])=>['sequence-title','sequence-opening','sequence-intro','sequence-act2','sequence-taxi'].includes(id))) as Record<string,Composition>,pendingDestinations(sequenceValues))):undefined;
     const registry=sourceDocuments?pendingRegistry(new Map(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value]))):undefined;
     const fixtureVocabulary=sequenceValues&&registry?pendingFixtureVocabulary(sequenceValues,registry):undefined;
     const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,Object.keys(registry??{}),fixtureVocabulary).fixtures[0];

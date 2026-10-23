@@ -4,7 +4,7 @@ import documents from's11-documents';
 import{art}from'../../src/ssg/game/art';
 import{createNativePreview}from'../../src/ssg/game/authoring/native-preview';
 import{nativeSceneAdapters}from'../../src/ssg/game/authoring/scene-adapters';
-import{createSequencePreview}from'../../src/ssg/game/authoring/sequence-preview';
+
 import{createAssetPreview}from'../../src/ssg/game/authoring/asset-preview';
 import{embeddedSignageInventory,renderEmbeddedSignage,mountSignageWorkbench,type SignageWorkbenchConfig,type EmbeddedSignageSettings}from'../../src/ssg/game/authoring/signage-workbench';
 import{prepareSignage,paintSignage,signageState}from'../../src/ssg/game/authoring/signage-kernels';
@@ -17,7 +17,7 @@ import{lineOpen,platformTrain}from'../../src/ssg/game/world/transport/line';impo
 import type{PreviewRequest}from'../../src/ssg/game/authoring/app';
 import type{Composition}from'../../src/ssg/game/art/core/composition';
 let contextDiagnostic:null|{reset:boolean;trace:unknown[]}=null;
-const nativeBase=createNativePreview(nativeSceneAdapters),sequence=createSequencePreview(art);
+const nativeBase=createNativePreview(nativeSceneAdapters),sequence=nativeBase;
 const contextSnapshot=(ctx:CanvasRenderingContext2D)=>({lineWidth:ctx.lineWidth,lineCap:ctx.lineCap,lineJoin:ctx.lineJoin,miterLimit:ctx.miterLimit,font:ctx.font,textAlign:ctx.textAlign,textBaseline:ctx.textBaseline,globalAlpha:ctx.globalAlpha,globalCompositeOperation:ctx.globalCompositeOperation,shadowColor:ctx.shadowColor,shadowBlur:ctx.shadowBlur,shadowOffsetX:ctx.shadowOffsetX,shadowOffsetY:ctx.shadowOffsetY,filter:ctx.filter,imageSmoothingEnabled:ctx.imageSmoothingEnabled,imageSmoothingQuality:ctx.imageSmoothingQuality,lineDash:ctx.getLineDash(),lineDashOffset:ctx.lineDashOffset,transform:Array.from(ctx.getTransform().toFloat64Array())});
 const native={render(c:HTMLCanvasElement,r:PreviewRequest){const ctx=c.getContext('2d')!,before=contextDiagnostic?contextSnapshot(ctx):null;if(contextDiagnostic?.reset)c.width=c.width;const result=nativeBase.render(c,r);contextDiagnostic?.trace.push({cameraX:r.environment.cameraX,cameraH:r.environment.cameraH,before,after:contextSnapshot(ctx)});return result;}};
 export async function diagnoseSignageContext(index:number,reset=false){const trace:unknown[]=[];contextDiagnostic={reset,trace};try{const{pixels,detail,...row}=await compareSignageCase(index,false,true);return{...row,detail,contextTrace:trace,reset};}finally{contextDiagnostic=null;}}

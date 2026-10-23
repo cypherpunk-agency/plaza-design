@@ -4,6 +4,24 @@ Single priority overview, consolidated 2026-10-23. Everything remains in design.
 This roadmap owns status and order; the [engine handbook](./docs/reference/ENGINE-HANDBOOK.md)
 owns implementation guidance. Design documents are working context, not competing roadmaps.
 
+## Current sequence unification work
+
+S1 is complete: each sequence composition owns its contents and temporal
+controls. The separate world/composition/editor sequence adapters and separately stored timeline
+documents are removed. Game and editor prepare the same frame and render through renderWorldFrame.
+The timeline is an editing interface for the composition's `sequence` field, not another document.
+
+Opening-glide objects can be selected, dragged and edited in their actual source scene/backdrop
+without leaving the sequence preview. Cinematic objects edit their own composition. The inspector
+identifies the source; edits also appear wherever that source is used in the game. Transient drags
+respect catalogue projections before pointer release; history is committed once on release.
+
+Acceptance checks passed: source-owned world/cinematic bounds and movement, real browser selection,
+field edit/undo and pointer drag, history/bundles/protected Save/fresh native reload (including timing),
+128/128 unchanged canonical paint samples across all five sequences, and 84/84 Canvas2D animation
+lifecycle comparisons. Opening skip/handoff, package TypeScript, focused checks and both builds pass.
+No old-format bridge or second renderer was added. C3 remains the next engineering closeout.
+
 ## Current status
 
 | Area | Status | What this means |
@@ -27,8 +45,9 @@ and physical calculations may remain code primitives; arbitrary algorithm editin
 
 ## Release and verification
 
-This release is authorized for main and production. Git push and deployment completion are
-reported separately in the release response; a local green build alone is not a live deployment.
+The prior C1/C2 release was published to main and production at `c14a9d9`. Publication of the
+sequence unification above is authorized for main and production. Confirm the resulting commit
+and workflow outcomes in the release response; a local green build is not a deployment.
 
 C1/C2 acceptance is complete, including Tommi's final approval of Train, Galleria Station,
 Harbor Station and Tower. Verification:
@@ -56,7 +75,7 @@ old-format codec, second runtime or fleet-management feature is added.
    geometry, Harbor stalls/ordinary fixtures, and any remaining train fittings against actual
    consumers. Extract independent objects; retain context only when it is intrinsic. Do not
    restart completed extractions or mistake every context entry for missing artwork.
-2. **Review M3's experience**, through frames/scenes: does the boss guide without rushing,
+2. **Review M3's experience**, using the [prologue review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) and frames/scenes: does the boss guide without rushing,
    does travel read as one journey, and does home give breathing room? Mechanical verification
    belongs to agents; Tommi's feedback concerns clarity, appeal, pacing and editor comfort.
 3. **Build M4**, then M5 and M6 using the progression table below. Introduce each mechanic through

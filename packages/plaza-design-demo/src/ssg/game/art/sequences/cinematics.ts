@@ -2,10 +2,10 @@ import type{Light}from'../../world/light';
 /**
  * The cinematic pieces (the intro skyline, the ACT II card, the taxi flight) as registered art elements, and their timeline
  * motion formulas. They are drawn like any other artwork, by drawComposition inside the one frame
- * (runtime/sequence-frame.ts → runtime/render-scene.ts renderWorldFrame); there is no cinematic frame renderer.
+ * (runtime/prepare-frame.ts → runtime/render-scene.ts renderWorldFrame); there is no cinematic frame renderer.
  */
 import { ArtRegistry, type Composition, type Element, type Properties } from '../core/composition';
-import type { TimelineContext, TimelineDocument } from '../core/timeline';
+import type { TimelineContext, TimelineProgram } from '../core/timeline';
 import type { CutView, View } from '../core/view';
 import { drawAct2Part, type Act2Part } from './act2';
 import { drawFlightPart, type FlightPart } from './taxi-picture';
@@ -35,7 +35,7 @@ function visual(sequence:string,part:string):Element['visualFields']{
   const env={time:{...visualFields.time,animatable:false},ambient:{...visualFields.ambient,animatable:false},reduced:visualFields.reduced,width:{kind:'number' as const,label:'Native viewport width',default:640,min:1},height:{kind:'number' as const,label:'Native viewport height',default:360,min:1}};
   return {...env,...(sequence==='intro'?{cameraX:{...visualFields.cameraX,animatable:false}}:{}),...(['screen-fade','fade','rain','ferry'].includes(part)?{amount:visualFields.amount}:{}),...(sequence==='act2'&&part==='titles'?{one:visualFields.one,found:visualFields.found,two:visualFields.two,subtitle:visualFields.subtitle}:{}),...(sequence==='taxi'&&part==='cab'?{x:visualFields.x,y:visualFields.y}:{}),...(sequence==='taxi'&&part==='destination'?{place:{kind:'string' as const,label:'Destination (the flight\'s stand)',default:''}}:{})};
 }
-/** A piece that fills the screen with black by its `amount`; the one frame draws it as a fade overlay (runtime/sequence-frame.ts). */
+/** A piece that fills the screen with black by its `amount`; the one frame draws it as a fade overlay (runtime/prepare-frame.ts). */
 export const isScreenFade = (type: string) => /^sequence\.(intro|act2)\.screen-fade$/.test(type);
 export function paintBlack(ctx: CanvasRenderingContext2D, W: number, H: number, opacity: number) { if (opacity > 0) { ctx.fillStyle = 'rgba(0,0,0,' + Math.min(1, opacity) + ')'; ctx.fillRect(0, 0, W, H); } }
 const num = (v: unknown, fallback = 0) => typeof v === 'number' ? v : fallback;
@@ -66,7 +66,7 @@ export const cinematicElements: Element[] = Object.entries(cinematicParts).flatM
   },
 })));
 export const cinematicRegistry = new ArtRegistry(); cinematicElements.forEach(element => cinematicRegistry.register(element));
-export interface CinematicDocuments { timeline: TimelineDocument; compositions: Record<string, Composition> }
+export interface CinematicDocuments { timeline: TimelineProgram; compositions: Record<string, Composition> }
 /** Motion-formula inputs: the flight's own progress (0 → 1) and the decorative clock, when the controller has them. */
 export interface CinematicMotion { ambient?: number; progress?: number; sequenceId?: string; registry?: ArtRegistry }
 export function cutView(W: number, H: number, reduced:boolean,lighting:Light):CutView { const size = Math.max(10, Math.min(18, Math.round(H / 26))); return {lighting,viewW: W, viewH: H, barTop: Math.round(Math.max(16, H * 0.09)), barBottom: Math.round(Math.max(size * 3.6, H * 0.16)), reduced }; }

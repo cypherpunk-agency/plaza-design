@@ -3,7 +3,7 @@ import {art} from '../../src/ssg/game/art';import {SCENES} from '../../src/ssg/g
 import {Game} from '../../src/ssg/game/runtime/game';import {newSave} from '../../src/ssg/game/runtime/save';
 import {mountSceneAuthoring} from '../../src/ssg/game/authoring/scene-authoring';import {ComposerModel} from '../../src/ssg/game/authoring/app';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 class Element{children:Element[]=[];attributes:Record<string,string>={};value='';disabled=false;textContent='';onchange?:()=>void;onclick?:()=>void;append(...nodes:Element[]){this.children.push(...nodes);}replaceChildren(...nodes:Element[]){this.children=[...nodes];}setAttribute(k:string,v:string){this.attributes[k]=v;}}
 const prior=globalThis.document;(globalThis as any).document={createElement:()=>new Element()};
 const root=path.resolve('src/ssg/game'),rows=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:JSON.parse(fs.readFileSync(path.join(root,d.file),'utf8'))}));

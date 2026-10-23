@@ -14,7 +14,7 @@ import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {SCENES} from '../../src/ssg/game/scenes';
 import path from 'node:path';
 import {ComposerModel} from '../../src/ssg/game/authoring/app';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {art} from '../../src/ssg/game/art';
 import {sourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {mountSceneAuthoring} from '../../src/ssg/game/authoring/scene-authoring';

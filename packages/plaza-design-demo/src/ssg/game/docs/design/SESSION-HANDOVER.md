@@ -1,12 +1,21 @@
 # Session handover, 2026-10-23
 
-**C1 and C2 complete locally, unpublished (2026-10-23).** Earlier local C3 changes are retained;
-C3 is not marked complete by this closeout. Tommi accepted the final Train, Galleria Station,
-Harbor Station and Tower captures. Those exact images are now references; fresh visual comparison
-passes 24/24. C1 animation raster checks pass 84/84 and native saved-source/reload cases pass 6/6.
-The conditional mover checkpoint bug is fixed; TypeScript, build and focused checks pass.
-Tommi subsequently authorized consolidation of the roadmap and publication to main and production.
-See the release response and remote branch state for the resulting commit/deployment status. ROADMAP.md owns current status.
+**Sequence unification complete; publication authorized (2026-10-23).** Title, Opening glide,
+Act I cinematic, Act II cinematic and Taxi flight are single composition documents containing
+`sequence` timing controls. Separate timeline sources and the three sequence adapters are removed.
+`runtime/prepare-frame.ts` prepares the normal frame; `renderWorldFrame` remains the sole renderer.
+Normal editor preview captures actual painted scopes for source-owned selection and drag geometry.
+Objects can be edited in the sequence preview; world objects edit their actual scene/backdrop,
+inline cinematic objects edit the sequence composition. Catalogue projections update during drag.
+
+Verified real browser click/inspector edit/undo/pointer drag; history/bundle/protected Save/fresh
+native reload of scenery and timing; 128/128 canonical paint samples unchanged and 84/84 actual
+Canvas2D lifecycle comparisons. Focused checks, package TypeScript and homepage/design builds pass.
+The source-inspector temporary rename check passed outside the Windows sandbox after sandbox EPERM.
+ROADMAP.md owns priorities. C3 remains incomplete; this work does not close its asset-portability audit.
+
+Prior C1/C2 work was published to main and production at `c14a9d9`, with successful deployments.
+The local prologue review guide and Escape-to-skip opening change are also present.
 
 The dated notes below describe intermediate states and are superseded by this completion note.
 

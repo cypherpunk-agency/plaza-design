@@ -87,8 +87,8 @@ paths; old `data/<scene>.json` files are now `scenes/<id>/devices.json`.
   shared frame (`runtime/render-scene.ts`) draws those after the actors and after the scene's own
   front. Downtown keeps its engine moments: city (distance and backdrop), the street surface and its
   reflections (engine street slot), devices (set) and people (playfield).
-  Timeline shots, tracks, cards, fades and handoffs: **JSON** in `story/title/timeline.json` and
-  `story/cutscenes/timeline.json`; trusted nonlinear motion evaluators remain **code**. The local
+  Timeline shots, tracks, cards, fades and handoffs: **JSON** in the `sequence` field of each composition under
+  `story/title/` and `story/cutscenes/`; trusted nonlinear motion evaluators remain **code**. The local
   save service validates the complete prospective allowlisted source set; it never writes rules,
   device data, player storage or world geography. This is implemented coverage, not a declaration
   that all scene-system acceptance gates have passed.
@@ -1096,19 +1096,19 @@ step or everyday action of their own, the chip reader and the till are the bench
 
 ## Cutscenes
 
-`game/data/cutscenes.json` maps each cutscene id to a title and a named timeline sequence:
+`game/data/cutscenes.json` maps each cutscene id to a title and a named sequence:
 
 ```json
 "intro": {
   "title": "ACCESS DENIED",          // shown in the window header while it plays
-  "timeline": "sequence-cinematics",
   "sequence": "intro"
 }
 ```
 
-`story/cutscenes/timeline.json` owns duration, shots, cards, tracks, fades, beats and handoff.
-The pictures use `intro.composition.json`, `act2.composition.json` and `taxi.composition.json`
-beside that timeline. `story/title/` has the opening composition and its separate timeline.
+`intro.composition.json`, `act2.composition.json` and `taxi.composition.json` under
+`story/cutscenes/` each own their picture and their `sequence` temporal controls: duration,
+shots, cards, tracks, fades, beats and handoff. `story/title/` similarly has separate title
+and glide compositions, each with its temporal controls. No timeline source is stored separately.
 Cards carry `from`/`to` times in seconds and optional placement; keep them to one or two short
 lines. The local animation composer previews and saves these same source documents.
 

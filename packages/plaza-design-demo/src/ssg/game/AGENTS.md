@@ -44,7 +44,8 @@ have been retired; do not recreate them or restart the completed consolidation.
   sequence (title glide, cutscenes, travel pictures) share runtime/render-scene.ts `renderWorldFrame`: there is
   one render path, configured (a sequence's camera, passes and overlays are settings of that frame), never a
   second frame renderer, projection or pass order (Tommi, 2026-10-22). The opening and cinematic frame
-  paths have been removed; use the frame director adapters, never recreate them. Painting/bounds/queries never advance gameplay or give rewards.
+  paths and separate sequence adapters have been removed. Use runtime/prepare-frame.ts to prepare the
+  common frame; sequence controls live with their composition, never in a second saved timeline document. Painting/bounds/queries never advance gameplay or give rewards.
   Preserve seeded variation, canvas state, geometry, draw order and animation cadence unless
   the user requests a visual change. Supply explicit View.lighting/View.illumination and prepared
   state; do not read or mutate a global lighting frame inside artwork.

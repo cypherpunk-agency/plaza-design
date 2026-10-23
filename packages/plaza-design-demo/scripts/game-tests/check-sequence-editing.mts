@@ -1,10 +1,10 @@
 /** Current sequence editing contracts: ordinary world artwork and the shared timeline/frame. */
 import assert from 'node:assert/strict';
 import {art,type Composition,type Instance,type Properties} from '../../src/ssg/game/art';
-import {evaluateTimeline,type TimelineDocument} from '../../src/ssg/game/art/core/timeline';
+import {evaluateTimeline,type TimelineProgram} from '../../src/ssg/game/art/core/timeline';
 import {renderOpeningDocument} from '../../src/ssg/game/story/title/render';
 import {openingDocuments} from '../../src/ssg/game/story/title/documents';
-import {renderSequenceFrame} from '../../src/ssg/game/runtime/sequence-frame';
+import {renderWorldFrame} from '../../src/ssg/game/runtime/render-scene';
 import {cinematicDocuments} from '../../src/ssg/game/story/cutscenes/documents';
 import {cinematicRegistry} from '../../src/ssg/game/art/sequences/cinematics';
 import {lightAt} from '../../src/ssg/game/world/light';
@@ -15,7 +15,7 @@ import authored from '../../src/ssg/game/scenes/authored.json';
 function recorder(){const commands:unknown[][]=[],stack:Record<string,unknown>[]=[];const values:Record<string,unknown>={globalAlpha:1,getTransform:()=>({a:1}),measureText:(s:string)=>({width:s.length*6})};const ctx=new Proxy(values,{get(t,k:string){if(k==='save')return()=>{stack.push({...t});commands.push(['save']);};if(k==='restore')return()=>{Object.assign(t,stack.pop());commands.push(['restore']);};if(k in t)return t[k];if(k.startsWith('create'))return()=>({addColorStop(){}});return(...args:unknown[])=>commands.push([k,...args]);},set(t,k:string,v){t[k]=v;commands.push(['set',k,v]);return true;}}) as unknown as CanvasRenderingContext2D;return{ctx,commands};}
 (globalThis as unknown as {document:unknown}).document={createElement:()=>({width:0,height:0,getContext:()=>recorder().ctx})};
 const lighting=lightAt(1,1075,243,null),view={W:1280,H:720,reduced:false,lighting};
-const timeline:TimelineDocument={version:1,sequences:[{id:'editable',duration:10,composition:'editable',shots:[{id:'one',from:0,to:10,camera:{x:0,h:0,zoom:1}}],tracks:[],text:[],fades:[],beats:[]}]};
+const timeline:TimelineProgram={version:1,sequences:[{id:'editable',duration:10,composition:'editable',shots:[{id:'one',from:0,to:10,camera:{x:0,h:0,zoom:1}}],tracks:[],text:[],fades:[],beats:[]}]};
 function world(scenes=SCENES,time=0){const r=recorder();renderOpeningDocument(r.ctx,view,openingDocuments,'glide',time,{scenes,ambientTime:7+time});return r.commands;}
 const draft=structuredClone(authored),beach=draft.scenes.find(s=>s.scene.id==='glide-beach')!,lounger=beach.composition.instances.find(n=>n.type==='props.lounger')!;
 lounger.placement={...lounger.placement,x:1400,h:-69};lounger.props={...lounger.props,color:'#123456'} as typeof lounger.props;
@@ -30,8 +30,8 @@ const changedBackground=recorder();renderOpeningDocument(changedBackground.ctx,v
 assert.ok(!art.catalog().some(e=>e.type.startsWith('sequence.opening.')),'No legacy opening artwork wrappers');
 function cinematic(id:'act2'|'taxi',instances:Instance[],time=1){
   const context=recorder(),composition:Composition={version:1,scene:'sequence-'+id,instances};
-  const custom:TimelineDocument={...timeline,sequences:[{...timeline.sequences[0],id,composition:'editable'}]};
-  renderSequenceFrame(context.ctx,{documents:{...cinematicDocuments,timeline:custom,compositions:{editable:composition}},sequenceId:id,composition,scale:2,width:640,height:360,reduced:false,lighting,time});return context.commands;
+  const custom:TimelineProgram={...timeline,sequences:[{...timeline.sequences[0],id,composition:'editable'}]};
+  renderWorldFrame({kind:'sequence',context:context.ctx,documents:{...cinematicDocuments,timeline:custom,compositions:{editable:composition}},sequenceId:id,composition,scale:2,width:640,height:360,reduced:false,lighting,time});return context.commands;
 }
 const piece=(id:string,type:string,props:Properties):Instance=>({id,type,version:1,placement:{x:0,h:0,scale:1,facing:1,parallax:1},props,order:0,layer:'set'});
 const ferries=cinematic('act2',[piece('ferry-a','sequence.act2.ferry',{paint:'#112233'}),piece('ferry-b','sequence.act2.ferry',{paint:'#334455'})]);

@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "scene": "sequence-title",
+  "instances": [
+    {
+      "id": "sky",
+      "type": "sequence.world-control",
+      "props": {
+        "origin": "glide-beach",
+        "zones": [
+          "glide-beach",
+          "glide-downtown-west",
+          "glide-downtown",
+          "glide-galleria",
+          "glide-spire-bay",
+          "harbor-station",
+          "harbor-quay"
+        ],
+        "width": 1280,
+        "height": 720,
+        "pixel": 3,
+        "ground": 0.82
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 0,
+      "layer": "logic"
+    },
+    {
+      "id": "service",
+      "type": "sequence.world-control",
+      "props": {
+        "origin": "glide-beach",
+        "zones": [
+          "glide-beach",
+          "glide-downtown-west",
+          "glide-downtown",
+          "glide-galleria",
+          "glide-spire-bay",
+          "harbor-station",
+          "harbor-quay"
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 1,
+      "layer": "logic"
+    }
+  ],
+  "sequence": {
+    "id": "title",
+    "duration": 7,
+    "shots": [
+      {
+        "id": "continuous",
+        "from": 0,
+        "to": 7,
+        "camera": {
+          "x": 980,
+          "h": 0,
+          "zoom": 1
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "id": "sun-clock",
+        "target": {
+          "kind": "state",
+          "instance": "sky",
+          "property": "clock"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 1060,
+            "ease": "smooth"
+          },
+          {
+            "time": 6.5,
+            "value": 1075
+          }
+        ]
+      }
+    ],
+    "text": [],
+    "fades": [
+      {
+        "id": "fade-in",
+        "from": 0,
+        "to": 2.2,
+        "color": "#000000",
+        "start": 1,
+        "end": 0
+      }
+    ],
+    "beats": [
+      {
+        "id": "FADE IN",
+        "time": 0
+      },
+      {
+        "id": "LATE AFTERNOON",
+        "time": 2.2
+      },
+      {
+        "id": "SETTLED",
+        "time": 6.5
+      }
+    ]
+  }
+}

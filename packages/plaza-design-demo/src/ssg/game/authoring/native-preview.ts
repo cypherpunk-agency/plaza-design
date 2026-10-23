@@ -1,3 +1,10 @@
+import {sequenceProgram} from '../art/core/sequence';
+import {createSequenceValidationContext,frameTimelineContext} from '../art/core/sequence-context';
+import {evaluateTimeline} from '../art/core/timeline';
+import {pendingRegistry} from './pending-registry';
+import {IntroSeekSession} from '../story/cutscenes/skyline-session';
+import {renderCutsceneDocument} from '../story/cutscenes';
+import type {WorldFrame} from '../runtime/render-scene';
 /** Local editor preview. Uses the shipping frame renderer with an isolated, non-persistent model. */
 import { drawLevelOverlay } from './level-overlay';
 import { restingLevelView } from '../engine/level';
@@ -81,6 +88,49 @@ function parentOf(rows: Resolved[], id: string): string | undefined {
 }
 /** No Game construction, controller stepping, player-save reads or player-save writes occur here. */
 export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>,bindWorld?:(definition:SceneDef,request:PreviewRequest)=>SceneDef,resolveAdapter?:(scene:string,request:PreviewRequest)=>NativeSceneAdapter|undefined) {
+  const seeks=new Map<string,IntroSeekSession>(),worlds=new WeakMap<object,ReturnType<typeof pendingRegistry>>();
+  const renderDirected=(canvas:HTMLCanvasElement,request:PreviewRequest):PreviewResult=>{
+    const composition=art.validate(request.composition),timeline=sequenceProgram({[composition.scene]:composition}),id=composition.sequence!.id;
+    const scale=number(request.environment.renderScale,1);if(scale<=0)throw Error('Render scale must be positive');
+    const W=canvas.width/scale,H=canvas.height/scale,lighting=request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null);
+    const context=frameTimelineContext(createSequenceValidationContext(art,{[composition.scene]:composition}),{time:request.time,reduced:request.reduced,sequenceId:id,environment:request.environment,viewport:{width:canvas.width,height:canvas.height},timeline});
+    const evaluated=request.frame??evaluateTimeline(timeline,id,request.time,context,{reduced:request.reduced});
+    canvas.width=canvas.width;const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas 2D unavailable');
+    let prepared:WorldFrame|undefined;
+    if(id==='intro'||id==='act2'){
+      const key=composition.scene+':'+W+':'+H+':'+request.reduced;let seek=seeks.get(key);if(!seek)seeks.set(key,seek=new IntroSeekSession());
+      prepared=renderCutsceneDocument(ctx,W,H,id,request.time,{composition,timeline,frame:evaluated,registry:art,sequenceId:id,reduced:request.reduced,lighting,scale,seek,capture:true,ambient:request.time*60});
+    }else{
+      let scenes=request.sourceVersion?worlds.get(request.sourceVersion):undefined;
+      if(!scenes&&request.documents){scenes=pendingRegistry(request.documents);if(request.sourceVersion)worlds.set(request.sourceVersion,scenes);}
+      const world=composition.instances.some(n=>n.type==='sequence.world-control');
+      if(world){ctx.setTransform(scale,0,0,scale,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);}
+      prepared=renderWorldFrame({kind:'sequence',context:ctx,documents:{compositions:{[composition.scene]:composition},timeline},composition,sequenceId:id,registry:art,frame:evaluated,scale,width:W,height:H,reduced:request.reduced,lighting,time:request.time,capture:true,ambient:request.time*60,destination:String(request.environment.destination??'DOWNTOWN'),world:{scenes,documents:request.documents,graph:request.documents?.has('zone-graph')?validateZoneGraph(request.documents.get('zone-graph')):undefined,ambientTime:number(request.environment.titleOffset,id==='glide'?7:0)+request.time}});
+    }
+    if(!prepared)throw Error('Missing prepared frame');
+    const selection=frameSelection(prepared,request);if(request.overlays)drawSelectionOverlay(ctx,selection,request.selectedId);return selection;
+  };
+  const frameSelection=(frame:WorldFrame,request:PreviewRequest):PreviewResult=>{
+    const bounds:PreviewResult['bounds']=[],sources:NonNullable<PreviewResult['sources']>={},deltas=new Map<string,(dx:number,dy:number)=>{x:number;h:number}>();
+    const documents=request.documents??new Map([[request.composition.scene,request.composition]]);
+    for(const scope of frame.inspection??[]){
+      const source=scope.composition??[...documents.values()].find((d:any)=>d?.version===1&&d?.scene===scope.scene?.id&&Array.isArray(d.instances)) as Composition|undefined;
+      if(!source)continue;
+      const owner=[...documents].find(([,value]:[string,unknown])=>(value as Composition)?.scene===source.scene&&Array.isArray((value as Composition)?.instances))?.[0]??source.scene;
+      const env=scope.scene?.visualEnvironment?.(scope.view,{m:scope.model!,hover:null,layer:'all'})??{view:scope.view,state:{},reduced:request.reduced};
+      const drawn=frame.evaluation?.composition.scene===source.scene?frame.evaluation.composition:source;
+      const rows=resolveComposition(art,drawn,env),local=previewBounds(rows,scope.view,{reduced:request.reduced},drawn);
+      for(const rect of local.bounds){
+        const key=JSON.stringify([owner,rect.id]),zoom=scope.zoom,k=scope.scale;
+        const x=((rect.x-scope.view.viewW/2)*zoom+scope.view.viewW/2)*k,y=((rect.y-scope.view.viewH/2)*zoom+scope.view.viewH/2)*k;
+        const width=rect.width*zoom*k,height=rect.height*zoom*k;
+        if(width<=0||height<=0||x+width<0||y+height<0||x>scope.view.viewW*k||y>scope.view.viewH*k)continue;
+        bounds.push({id:key,x,y,width,height});sources[key]={document:owner,instance:rect.id};
+        deltas.set(key,(dx,dy)=>local.deltaToLocal!(rect.id,dx/k/zoom,dy/k/zoom));
+      }
+    }
+    return{bounds,sources,deltaToLocal(id,dx,dy){const delta=deltas.get(id);if(!delta)throw Error('Missing selected source');return delta(dx,dy);}};
+  };
   /** Inspection never advances simulation: deadlines are reinitialised after replacing host time, so a clock/countdown
    * snapshot cannot depend on render duration or warmup. */
   const inspectionModel = (def: SceneDef, services: PlayerServices, request: PreviewRequest) => {
@@ -143,6 +193,12 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
   };
   const render = (canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult => {
       const adapter = adapters[request.composition.scene]??resolveAdapter?.(request.composition.scene,request);
+      if(request.composition.sequence && !adapter)return renderDirected(canvas,request);
+      if(request.composition.sequence && !request.frame){
+        const timeline=sequenceProgram({[request.composition.scene]:request.composition}),sequenceId=request.composition.sequence.id;
+        const context=frameTimelineContext(createSequenceValidationContext(art,{[request.composition.scene]:request.composition}),{time:request.time,reduced:request.reduced,sequenceId,environment:request.environment,viewport:{width:canvas.width,height:canvas.height},timeline});
+        request={...request,frame:evaluateTimeline(timeline,sequenceId,request.time,context,{reduced:request.reduced})};
+      }
       if (!adapter) throw new Error(`Native composition adapter is not available yet for ${request.composition.scene}`);
       const document = adapter.validate(request.frame?.composition ?? request.composition), state = request.frame?.state ?? {};
       const hidden = request.hidden?.length ? Object.fromEntries(request.hidden.map(id => [id, false])) : undefined;

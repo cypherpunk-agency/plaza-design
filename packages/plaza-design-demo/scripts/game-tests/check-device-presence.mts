@@ -2,7 +2,7 @@ import {Game} from '../../src/ssg/game/runtime/game';import {SceneHost} from '..
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {build} from 'esbuild';import {pathToFileURL} from 'node:url';
 import {art} from '../../src/ssg/game/art';import {SCENES} from '../../src/ssg/game/scenes';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';import {mountDeviceAuthoring} from '../../src/ssg/game/authoring/device-authoring';
+import {ComposerModel} from '../../src/ssg/game/authoring/app';import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';import {mountDeviceAuthoring} from '../../src/ssg/game/authoring/device-authoring';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {SceneModel} from '../../src/ssg/game/engine/model';import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';import {attachNativeGameplay} from '../../src/ssg/game/engine/gameplay/native-bindings';
 import {fixtureGameplayPort} from './model-gameplay-fixture.mts';import {DialogueElement,descendants} from './dialogue-authoring-fixture.mts';

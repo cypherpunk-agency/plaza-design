@@ -99,11 +99,12 @@ bindings. Painting and bounds evaluation must not advance simulation or presenta
 The car is `train.car`, doors are `train.doors`; platforms have no independent timetable or phase offset.
 Shared vehicle geometry owns boarding, alighting and passenger continuity. Departure-board artwork lives
 in `art/signage/line-departures.ts`; `art/vehicles/platform-train.ts` remains a stateless library drawing.
-`story/title/` and `story/cutscenes/` own animation scheduling, actor preparation, timeline documents
+`story/title/` and `story/cutscenes/` own animation scheduling, actor preparation, sequence compositions (contents plus temporal controls)
 and gameplay handoffs; their pictures use `art/sequences/`. Preview seeking uses independent sessions.
 
-The editor uses these same scene factories, native frame path and sequence dispatchers through
-`authoring/scene-adapters.ts`, `native-preview.ts` and `sequence-preview.ts`. The source allowlist is
+The editor uses these same scene factories, native frame path through
+`authoring/scene-adapters.ts` and `native-preview.ts`. Sequence frame preparation is shared in
+`runtime/prepare-frame.ts`; selection uses the views captured by the actual frame renderer. The source allowlist is
 `authoring/source-documents.ts`: composition, scene, gameplay, devices, world/network/transport,
-fixtures and timeline documents. Validated saves update those authored sources, including supported
+fixtures and sequence compositions. Validated saves update those authored sources, including supported
 world edits; they do not rewrite TypeScript or player saves. World uses the same source model.

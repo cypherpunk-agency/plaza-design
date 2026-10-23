@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import{art}from'../../src/ssg/game/art';
 import{createNativePreview}from'../../src/ssg/game/authoring/native-preview';
-import{evaluateTimeline,validateTimeline,type TimelineDocument}from'../../src/ssg/game/art/core/timeline';
+import{evaluateTimeline,validateTimeline,type TimelineProgram}from'../../src/ssg/game/art/core/timeline';
 import{drawTimelineOverlay}from'../../src/ssg/game/art/core/timeline-overlay';
 import type{Composition}from'../../src/ssg/game/art/core/composition';
 import type{PreviewRequest}from'../../src/ssg/game/authoring/app';
 const composition:Composition={version:1,scene:'native-overlay-fixture',instances:[]};
-const timeline:TimelineDocument={version:1,sequences:[{id:'authored-on-native-scene',duration:6,composition:'room',shots:[{id:'single',from:0,to:6,camera:{x:120,h:30,zoom:2}}],tracks:[],text:[{id:'caption',from:1,to:3,text:'OPEN THE GATE\nTHEN WAIT',x:24,h:-36}],fades:[{id:'fade',from:1,to:3,color:'#123456',start:0,end:1}],beats:[]}]};
+const timeline:TimelineProgram={version:1,sequences:[{id:'authored-on-native-scene',duration:6,composition:'room',shots:[{id:'single',from:0,to:6,camera:{x:120,h:30,zoom:2}}],tracks:[],text:[{id:'caption',from:1,to:3,text:'OPEN THE GATE\nTHEN WAIT',x:24,h:-36}],fades:[{id:'fade',from:1,to:3,color:'#123456',start:0,end:1}],beats:[]}]};
 const context={registry:art,compositions:{room:composition}};validateTimeline(timeline,context);
 function recorder(){const commands:unknown[][]=[],paints:any[]=[];let state:any={globalAlpha:1,globalCompositeOperation:'source-over',fillStyle:'#000',matrix:[1,0,0,1,0,0]},stack:any[]=[];const ctx=new Proxy({}, {get(_t,k:string){if(k in state)return state[k];if(k==='getTransform')return()=>({a:state.matrix[0]});if(k==='save')return()=>{stack.push({...state,matrix:[...state.matrix]});commands.push(['save']);};if(k==='restore')return()=>{state=stack.pop();commands.push(['restore']);};if(k==='setTransform')return(...args:number[])=>{state.matrix=args;commands.push([k,...args]);};if(k.startsWith('create'))return()=>({addColorStop(){}});return(...args:unknown[])=>{commands.push([k,...args]);if(['fillRect','fillText'].includes(k))paints.push({kind:k,args,alpha:state.globalAlpha,fill:state.fillStyle,matrix:[...state.matrix]});};},set(_t,k:string,value){state[k]=value;commands.push(['set',k,value]);return true;}})as unknown as CanvasRenderingContext2D;return{ctx,commands,paints,state:()=>({...state,matrix:[...state.matrix]})};}
 const preview=createNativePreview({'native-overlay-fixture':{validate:doc=>art.validate(doc),definition:()=>({id:'native-overlay-fixture',name:'Native overlay test',width:900,spawn:0,exits:[],drawBackdrop:(ctx,v)=>{ctx.fillStyle='#abcdef';ctx.fillRect(v.sx(25),v.y(0),8,8);}}),environment:(_doc,view)=>({view,state:{},reduced:false})}});
@@ -15,3 +15,10 @@ for(const reduced of[false,true]){const mid=render(2,reduced),world=mid.paints.f
 const staticRender=render(0,false,false),emptyFrame=recorder(),frame=evaluateTimeline(timeline,'authored-on-native-scene',0,context);frame.camera={x:0,h:0,zoom:1};preview.render({width:640,height:360,getContext:()=>emptyFrame.ctx}as unknown as HTMLCanvasElement,{composition,time:0,reduced:false,overlays:false,environment:{renderScale:2},frame});assert.deepEqual(emptyFrame.commands,staticRender.commands,'Static and empty overlays issue identical canvas operations');
 const isolated=recorder();isolated.ctx.globalAlpha=.25;isolated.ctx.fillStyle='#ffeedd';isolated.ctx.setTransform(7,0,0,7,9,11);const before=isolated.state();drawTimelineOverlay(isolated.ctx,{width:320,height:180,scale:2},evaluateTimeline(timeline,'authored-on-native-scene',2,context));assert.deepEqual(isolated.state(),before,'Overlay restores caller canvas state');
 console.log('Native timeline overlays passed through real preview/shared renderer: arbitrary sequence, midpoint/boundary fades, multiline cards, camera/scale, reduced motion, unchanged static commands and restored canvas state.');
+
+const {composition: _reference, ...settings}=timeline.sequences[0];
+composition.sequence=structuredClone(settings);
+for(const reduced of [false,true])for(const time of [0,2,3,4]){
+  assert.deepEqual(render(time,reduced,false).commands,render(time,reduced,true).commands,
+    'A normal scene with embedded sequence controls uses its native adapter and evaluates an omitted frame');
+}

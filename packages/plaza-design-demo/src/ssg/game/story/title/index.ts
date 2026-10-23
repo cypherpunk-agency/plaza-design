@@ -32,7 +32,7 @@ export class Opening {
   private titleTl: Timeline | null = null;
   private glideTl: Timeline | null = null;
 
-  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/zone-sequence-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'>={}) { this.t = reduced ? this.rise : 0; }
+  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/prepare-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'>={}) { this.t = reduced ? this.rise : 0; }
   private get titleSequence(){return this.documents.timeline.sequences.find(s=>s.id==='title')!;}
   private get glideSequence(){return this.documents.timeline.sequences.find(s=>s.id==='glide')!;}
   private get rise(){return this.titleSequence.duration;}
@@ -53,7 +53,14 @@ export class Opening {
   }
 
   get gliding() { return this.tau !== null; }
-  /** The glide's current beat (timeline.json), for diagnostics; null on the title. */
+  /** Explicit player skip: finish the active glide through its ordinary runtime handoff. */
+  skip() {
+    if (!this.gliding) return;
+    this.tau = this.glide;
+    this.t = this.t0 + this.glide;
+    this.done = true;
+  }
+  /** The glide's current beat (composition.sequence), for diagnostics; null on the title. */
   get beat() { if (this.tau === null) return null; let id = ''; for (const b of this.glideSequence.beats) if (b.time <= this.tau) id = b.id; return id; }
   /** Only the runtime controller commits this destination; drawing and seeking never do. */
   get handoff() { return this.glideSequence.handoff ? { ...this.glideSequence.handoff } : undefined; }

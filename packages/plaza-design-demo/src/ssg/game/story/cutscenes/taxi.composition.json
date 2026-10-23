@@ -80,5 +80,80 @@
       "order": 5,
       "layer": "backdrop"
     }
-  ]
+  ],
+  "sequence": {
+    "id": "taxi",
+    "duration": 3.3333333333333335,
+    "shots": [
+      {
+        "id": "continuous",
+        "from": 0,
+        "to": 3.3333333333333335,
+        "camera": {
+          "x": 0,
+          "h": 0,
+          "zoom": 1
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "id": "cab-x",
+        "target": {
+          "kind": "state",
+          "instance": "cab",
+          "property": "x"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "motion": {
+          "type": "taxi.cab-x",
+          "props": {}
+        }
+      },
+      {
+        "id": "cab-y",
+        "target": {
+          "kind": "state",
+          "instance": "cab",
+          "property": "y"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "motion": {
+          "type": "taxi.cab-y",
+          "props": {}
+        }
+      },
+      {
+        "id": "fade",
+        "target": {
+          "kind": "state",
+          "instance": "fade",
+          "property": "amount"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "motion": {
+          "type": "taxi.fade",
+          "props": {}
+        }
+      }
+    ],
+    "text": [],
+    "fades": [],
+    "beats": []
+  }
 }

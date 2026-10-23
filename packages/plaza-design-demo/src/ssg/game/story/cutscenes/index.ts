@@ -4,21 +4,22 @@ import{lightAt,type Light}from'../../world/light';
  * Cutscenes: the registry and the player.
  *
  * A cutscene is a timeline and a composition of registered pieces (cutscenes/*.json),
- * drawn as one frame of the world (runtime/sequence-frame.ts → renderWorldFrame),
+ * drawn as one frame of the world (runtime/prepare-frame.ts → renderWorldFrame),
  * plus data/cutscenes.json's title. The player adds what every cutscene shares: the
  * letterbox bars (a director overlay of that frame), the cards typed out in the
  * bottom bar and a small "any key to skip" hint.
  *
  * The game plays one with `game.playCutscene(id, then?)`; `?play=<id>` starts
  * the game with one (see index.ts). Adding a cutscene: an entry in
- * cutscenes.json and its sequence in timeline.json.
+ * cutscenes.json and its composition's sequence controls.
  */
 
 import data from "../../data/cutscenes.json";
 import type { CinematicDocuments } from '../../art/sequences/cinematics';
-import { renderSequenceFrame, type SequenceFrame } from '../../runtime/sequence-frame';
+import {renderWorldFrame} from '../../runtime/render-scene';
+import type {FrameSource} from '../../runtime/prepare-frame';
 import { cinematicDocuments } from './documents';
-import type { TimelineDocument } from '../../art/core/timeline';
+import type { TimelineProgram } from '../../art/core/timeline';
 import type { Composition } from '../../art/core/composition';
 import type { Timeline } from "../../ui/transport";
 import type { Cutscene, CutView } from './types';
@@ -36,7 +37,7 @@ export function createCutscenes(documents:CinematicDocuments=cinematicDocuments)
       ...(id==='intro'?{advance:(time:number)=>playback.advance(time)}:{}),
       ...(id==='intro'?{seek:(time:number)=>playback.seek(time)}:{}),
       ...(id==='intro'?{prepare:(ctx:CanvasRenderingContext2D,view:CutView,time:number)=>{playback.initialize(ctx,view,time,sequence.duration);}}:{}),
-      render:(ctx,view,time,scale,director)=>{renderSequenceFrame(ctx,{documents,sequenceId:id,scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:playback.prepare(ctx,view,time,sequence.duration)}:{})});}};
+      render:(ctx,view,time,scale,director)=>{renderWorldFrame({kind:'sequence',context:ctx,documents,sequenceId:id,scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:playback.prepare(ctx,view,time,sequence.duration)}:{})});}};
     return[id,scene];
   })) as Record<CutsceneId,Cutscene>;
   return registry;
@@ -178,12 +179,13 @@ export class CutscenePlay {
 }
 
 /** Composer and runtime use the same picture, letterbox, wrapping, typing and skip presentation. */
-export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options:Partial<Pick<SequenceFrame,'registry'|'frame'|'ambient'|'sequenceId'|'scale'>>&{documents?:CinematicDocuments;seek?:IntroSeekSession;reduced:boolean;lighting?:Light; touch?: boolean; timeline?: TimelineDocument; composition?: Composition }) {
+export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options:Partial<Pick<FrameSource,'registry'|'frame'|'ambient'|'sequenceId'|'scale'|'capture'>>&{documents?:CinematicDocuments;seek?:IntroSeekSession;reduced:boolean;lighting?:Light; touch?: boolean; timeline?: TimelineProgram; composition?: Composition }) {
   const timeline = options.timeline ?? cinematicDocuments.timeline, sequence = timeline.sequences.find(s => s.id === (options.sequenceId ?? id));
   if (!sequence) throw new Error(`Cutscene ${id}: missing timeline sequence`);
+  let prepared:ReturnType<typeof renderWorldFrame>|undefined;
   const scene: Cutscene = { id, title: data[id].title, duration: sequence.duration, next: sequence.handoff?.scene ?? '', ...(sequence.handoff?{handoff:{...sequence.handoff}}:{}), ownsFade: true,
     cards: sequence.text.map(card => ({ at: card.from, until: card.to, text: card.text, x: card.x, h: card.h })), beats: sequence.beats.map(beat => ({ at: beat.time, name: beat.id })),
-    render: (ctx, view, time, scale, director) => { renderSequenceFrame(ctx,{documents:options.documents??cinematicDocuments,sequenceId:options.sequenceId??id,timeline,...(options.composition?{composition:options.composition}:{}),...(options.registry?{registry:options.registry}:{}),...(options.frame?{frame:options.frame}:{}),...(options.ambient!==undefined?{ambient:options.ambient}:{}),scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:(options.seek??new IntroSeekSession()).prepare(ctx,view,time,sequence.duration)}:{})}); },
+    render: (ctx, view, time, scale, director) => { prepared=renderWorldFrame({kind:'sequence',context:ctx,capture:options.capture,documents:options.documents??cinematicDocuments,sequenceId:options.sequenceId??id,timeline,...(options.composition?{composition:options.composition}:{}),...(options.registry?{registry:options.registry}:{}),...(options.frame?{frame:options.frame}:{}),...(options.ambient!==undefined?{ambient:options.ambient}:{}),scale,width:view.viewW,height:view.viewH,reduced:view.reduced,lighting:view.lighting,time,director,cards:false,...(id==='intro'?{skyline:(options.seek??new IntroSeekSession()).prepare(ctx,view,time,sequence.duration)}:{})}); },
   };
-  const player = new CutscenePlay(scene, { reduced: options.reduced, touch: options.touch ?? false }); player.t = Math.max(0, Math.min(sequence.duration, seconds)); player.draw(x,W,H,options.lighting??lightAt(1,580,90,null),options.scale??x.getTransform().a);
+  const player = new CutscenePlay(scene, { reduced: options.reduced, touch: options.touch ?? false }); player.t = Math.max(0, Math.min(sequence.duration, seconds)); player.draw(x,W,H,options.lighting??lightAt(1,580,90,null),options.scale??x.getTransform().a);return prepared;
 }

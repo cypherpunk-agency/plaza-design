@@ -1,25 +1,30 @@
 # Animated artwork and authoring
 
-Current paths, 2026-10-23. [ROADMAP.md](../../ROADMAP.md) owns remaining work and priorities.
+Current paths, 2026-10-23. [ROADMAP.md](../../ROADMAP.md) owns priorities.
 
-The title and glide use ordinary authored zones and world backdrops. `story/title/render.ts`
-calls `runtime/zone-sequence-frame.ts`, which evaluates the timeline and configures
-`renderWorldFrame`. The former `opening/` artwork dispatcher, metadata and measurement wrappers
-are removed. Do not recreate them or the removed `nativeOpeningFrame` comparison path.
+A sequence is a composition with a `sequence` field containing its duration, shots,
+tracks, cards, fades, beats and optional handoff. The timeline is the editor for those
+fields, not a separate source document. `art/core/sequence.ts` derives the pure temporal
+evaluator's program from these compositions; there is no second saved representation.
 
-`cinematics.ts` registers intro, Act II and taxi artwork in the art library. Their source lives
-under `story/cutscenes/`; `runtime/sequence-frame.ts` evaluates its timeline and presents its
-composition as a one-zone frame through `renderWorldFrame`. These adapters supply camera, passes,
-state and overlays; they do not own another frame renderer. Piece thumbnails are isolated art
-previews, not another world render path.
+Title and glide reference ordinary authored zones and world backdrops. Intro, Act II
+and taxi place registered artwork directly in their compositions. Both use
+`runtime/render-scene.ts::renderWorldFrame`, with `runtime/prepare-frame.ts` preparing
+camera, scene references or inline contents, passes and overlays. The separate world
+sequence, composition sequence and editor sequence adapters are removed. Do not recreate
+another renderer, projection or pass order.
 
-JSON controls compositions, shots, tracks, cards, fades and handoffs. New drawing algorithms
-remain registered code primitives with typed inputs, bounds and anchors. A sequence/context
-piece is not automatically a reusable independent object; the library's usability label describes
-its supported placement contract.
+The normal editor preview captures the actual painted frame's scene scopes and views.
+Selection bounds and drag deltas use those views and the registered artwork geometry.
+Selecting scenery in Opening glide edits its owning scene/backdrop source while retaining
+the sequence view. Inline cinematic objects edit the sequence composition itself.
+Undo/redo, bundles and protected Save use the same ComposerModel and source store.
 
-The intro's existing `IntroPlaybackSession.advance` advances packets before painting. `Skyline.parts`
-paints prepared network commands without changing packet state. The isolated `IntroSeekSession`
-reconstructs deterministic state for editor inspection, including backward seeking, without touching
-live playback. Same-time paint and bounds must not advance authoritative animation; light comes
-from the explicit View. ROADMAP C1 records the remaining visual preservation closeout.
+New drawing algorithms remain registered code primitives with typed inputs, bounds and
+anchors. A context-dependent picture is not automatically an independent reusable object;
+the library's usability label describes its supported placement contract.
+
+`IntroPlaybackSession.advance` advances packets before painting. `Skyline.parts` paints
+prepared network commands without changing packet state. `IntroSeekSession` reconstructs
+isolated deterministic state for editor inspection, including backward seeking. Painting
+and bounds never advance authoritative animation; light comes from the explicit View.

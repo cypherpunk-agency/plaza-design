@@ -22,7 +22,7 @@ import {mechanismsRulesShape}from'../engine/gameplay/scene-mechanisms';
 
 import type{Composition,Instance}from'../art/core/composition';
 
-import type{TimelineDocument}from'../art/core/timeline';
+import {sequenceProgram} from '../art/core/sequence';
 
 import type{EditorDocument}from'./app';
 
@@ -75,7 +75,7 @@ export function buildEventInspection(options:EventInspectionOptions={}):EventIns
 
  const documentSources=new Map(sourceDocuments.map(d=>[d.id,d.file]));
 
- const docs=options.documents??[],compositions=docs.filter(d=>d.kind==='composition'),sequences=docs.filter(d=>d.kind==='timeline').flatMap(d=>(d.value as TimelineDocument).sequences.map((sequence,index)=>({sequence,index,document:d.id})));
+ const docs=options.documents??[],compositions=docs.filter(d=>d.kind==='composition'),sequences=compositions.flatMap(d=>sequenceProgram({[d.id]:d.value as Composition}).sequences.map(sequence=>({sequence,document:d.id})));
 
  const put=(id:string,scene:string,kind:string,label:string,src:EventSource,details:unknown={},status:InspectionStatus='declared',reason='Source declaration; no execution is implied.')=>{const existing=all.get(id);if(existing&&kind==='missing-reference')return existing;const captured=options.snapshots?.states?.[id];const node:EventNode={id,scene,kind,label,source:src,details:plain(details),status,reason};if(captured?.origin==='captured-runtime'&&captured.scene===scene&&status!=='missing'&&status!=='opaque'){node.status=captured.status;node.reason=captured.reason;}if(existing){Object.assign(existing,node);return existing;}nodes.push(node);all.set(id,node);return node;};
 
@@ -194,9 +194,9 @@ export function buildEventInspection(options:EventInspectionOptions={}):EventIns
 
  for(const doc of compositions){const composition=doc.value as Composition,scene=composition.scene,srcFile=documentSources.get(doc.id)??`provided-document:${doc.id}`;const flat:Instance[]=[];const walk=(rows:Instance[],parent?:string,path='/instances')=>rows.forEach((row,i)=>{const p=path+'/'+i,id=`instance:${doc.id}:${row.id}`;flat.push(row);put(id,scene,'instance',row.id,{file:srcFile,pointer:p},{type:row.type,placement:row.placement,layer:row.layer,bindings:row.bindings});all.get(id)!.instanceId=row.id;if(parent)edge(scene,'attachment',`instance:${doc.id}:${parent}`,id,'inherited parent transform',{file:srcFile,pointer:p});if(row.attach)edge(scene,'attachment',`instance:${doc.id}:${row.attach.instance}`,id,'anchor '+row.attach.anchor,{file:srcFile,pointer:p+'/attach'});walk(row.children??[],row.id,p+'/children');});walk(composition.instances);for(const n of nodes.filter(n=>n.scene===scene&&n.kind==='device')){const d=(n.details as {id:string}).id;const row=flat.find(r=>r.id===d||r.props.device===d);if(row)n.instanceId=row.id;}}
 
- for(const{sequence,index,document}of sequences){const id=`sequence:${document}:${sequence.id}`,src:EventSource={file:documentSources.get(document)??`provided-document:${document}`,pointer:'/sequences/'+index};put(id,'@sequences','sequence',sequence.id,src,sequence);if(sequence.handoff){const handoff=sequence.handoff,to=`scene:${handoff.scene}`;edge('@sequences','handoff',id,to,handoff.entrance?'entrance '+handoff.entrance:'spawn',src);if(handoff.entrance)edge('@sequences','handoff',id,`exit:${handoff.scene}:${handoff.entrance}`,'destination entrance',src);}}
+ for(const{sequence,document}of sequences){const id=`sequence:${document}:${sequence.id}`,src:EventSource={file:documentSources.get(document)??`provided-document:${document}`,pointer:'/sequence'};put(id,'@sequences','sequence',sequence.id,src,sequence);if(sequence.handoff){const handoff=sequence.handoff,to=`scene:${handoff.scene}`;edge('@sequences','handoff',id,to,handoff.entrance?'entrance '+handoff.entrance:'spawn',src);if(handoff.entrance)edge('@sequences','handoff',id,`exit:${handoff.scene}:${handoff.entrance}`,'destination entrance',src);}}
 
- if(!compositions.length)diagnostics.push('No composition documents supplied: spatial attachment inspection is unavailable.');if(!sequences.length)diagnostics.push('No timeline documents supplied: sequence handoff inspection is unavailable.');
+ if(!compositions.length)diagnostics.push('No composition documents supplied: spatial attachment inspection is unavailable.');if(!sequences.length)diagnostics.push('No sequence compositions supplied: sequence handoff inspection is unavailable.');
 
  for(const item of edges){const a=all.get(item.from)!,b=all.get(item.to)!;item.status=a.status==='missing'||b.status==='missing'?'missing':a.status==='blocked'||b.status==='blocked'?'blocked':a.status==='inactive'||b.status==='inactive'?'inactive':a.status==='opaque'||b.status==='opaque'?'opaque':'unbound';item.reason=item.status==='unbound'?'Declared relationship; runtime activation is not bound.':`${a.reason} ${b.reason}`;}
 

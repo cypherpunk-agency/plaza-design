@@ -11,7 +11,7 @@ import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/author
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {ComposerModel} from '../../src/ssg/game/authoring/app';
 import {art} from '../../src/ssg/game/art';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {pendingDestinations} from '../../src/ssg/game/authoring/pending-destinations';
 import {mountOpeningAuthoring} from '../../src/ssg/game/authoring/opening-authoring';
 import {mountSceneAuthoring} from '../../src/ssg/game/authoring/scene-authoring';

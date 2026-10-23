@@ -1,12 +1,10 @@
 {
   "intro": {
     "title": "ACCESS DENIED",
-    "timeline": "sequence-cinematics",
     "sequence": "intro"
   },
   "act2": {
-    "title": "ACCESS DENIED \u00c2\u00b7 ACT II",
-    "timeline": "sequence-cinematics",
+    "title": "ACCESS DENIED Â· ACT II",
     "sequence": "act2"
   }
 }

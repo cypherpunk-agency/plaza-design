@@ -20,11 +20,11 @@ function recording() {
 }
 const context = recording();
 const registry=art;
-const opening=validateTimeline(openingDocuments.timeline,{registry,compositions:{[openingDocuments.compositionId]:openingDocuments.composition},destinations:{train:[], 'harbor-station':[]}});
+const opening=validateTimeline(openingDocuments.timeline,{registry,compositions:openingDocuments.compositions,destinations:{train:[], 'harbor-station':[]}});
 const cinematic = validateTimeline(cinematicDocuments.timeline, cinematicTimelineContext(cutView(640,360,false,lighting), cinematicDocuments));
 assert.deepEqual(opening, JSON.parse(JSON.stringify(openingDocuments.timeline)));
 assert.deepEqual(cinematic, JSON.parse(JSON.stringify(cinematicDocuments.timeline)));
-assert.deepEqual(opening.sequences.map(s => s.id), ['title', 'rise', 'glide']);
+assert.deepEqual(opening.sequences.map(s => s.id), ['title', 'glide']);
 assert.deepEqual(cinematic.sequences.map(s => s.id), ['intro', 'act2', 'taxi']);
 assert.equal(opening.sequences.find(s => s.id === 'glide')!.handoff!.scene, 'harbor-station');
 assert.equal(opening.sequences.find(s=>s.id==='glide')!.fades.length,0,'the glide hands the actual platform into play without a black fade');
@@ -66,4 +66,4 @@ for (const reduced of [false, true]) {
   }
   const snapshot = a.snapshot(); a.advance(ca.ctx, initial.frame, 100, reduced); a.restore(snapshot); assert.deepEqual(a.snapshot(), snapshot);
 }
-console.log(`Sequence documents and replay checks passed: six sequences, ${registry.catalog().length} registered pieces, nested coast/town groups, source round-trip/handoffs, full 60fps packet replay, backward seek and snapshot/advance equivalence.`);
+console.log(`Sequence documents and replay checks passed: five sequences, ${registry.catalog().length} registered pieces, nested coast/town groups, source round-trip/handoffs, full 60fps packet replay, backward seek and snapshot/advance equivalence.`);

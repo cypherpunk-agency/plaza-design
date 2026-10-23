@@ -167,5 +167,132 @@
       "order": 14,
       "layer": "backdrop"
     }
-  ]
+  ],
+  "sequence": {
+    "id": "intro",
+    "duration": 26,
+    "shots": [
+      {
+        "id": "continuous",
+        "from": 0,
+        "to": 26,
+        "camera": {
+          "x": 0,
+          "h": 0,
+          "zoom": 1
+        }
+      }
+    ],
+    "tracks": [
+      {
+        "id": "camera-pan",
+        "target": {
+          "kind": "camera",
+          "property": "x"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "motion": {
+          "type": "intro.camera",
+          "props": {}
+        }
+      },
+      {
+        "id": "shower",
+        "target": {
+          "kind": "state",
+          "instance": "rain",
+          "property": "amount"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 0
+          }
+        ],
+        "motion": {
+          "type": "intro.rain",
+          "props": {}
+        }
+      },
+      {
+        "id": "screen-fade",
+        "target": {
+          "kind": "state",
+          "instance": "screen-fade",
+          "property": "amount"
+        },
+        "keys": [
+          {
+            "time": 0,
+            "value": 1
+          }
+        ],
+        "motion": {
+          "type": "intro.fade",
+          "props": {}
+        }
+      }
+    ],
+    "text": [
+      {
+        "id": "card-1",
+        "from": 2.5,
+        "to": 9,
+        "text": "The city never logs off. Neither does the rain.",
+        "x": 0,
+        "h": 0
+      },
+      {
+        "id": "card-2",
+        "from": 10,
+        "to": 16.5,
+        "text": "The Registry sees everyone. Every face, every door, every packet.",
+        "x": 0,
+        "h": 0
+      },
+      {
+        "id": "card-3",
+        "from": 17.5,
+        "to": 24.5,
+        "text": "Almost everyone. No record, no face, one deck: you're a ghost.",
+        "x": 0,
+        "h": 0
+      }
+    ],
+    "fades": [],
+    "beats": [
+      {
+        "id": "SKYLINE",
+        "time": 0
+      },
+      {
+        "id": "CARD 1",
+        "time": 2.5
+      },
+      {
+        "id": "CARD 2",
+        "time": 10
+      },
+      {
+        "id": "SHOWER",
+        "time": 13.5
+      },
+      {
+        "id": "CARD 3",
+        "time": 17.5
+      },
+      {
+        "id": "FADE OUT",
+        "time": 25.1
+      }
+    ],
+    "handoff": {
+      "scene": "capsule"
+    }
+  }
 }

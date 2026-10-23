@@ -1,6 +1,8 @@
 import composition from './composition.json';
-import timeline from './timeline.json';
+import title from './title.composition.json';
 import {art,type Composition} from '../../art';
-import type {TimelineDocument} from '../../art/core/timeline';
-export interface OpeningDocuments {timeline:TimelineDocument;compositionId:string;composition:Composition}
-export const openingDocuments:OpeningDocuments={compositionId:'sequence-opening',composition:art.validate(composition),timeline:timeline as TimelineDocument};
+import {sequenceProgram} from '../../art/core/sequence';
+import type {TimelineProgram} from '../../art/core/timeline';
+export interface OpeningDocuments {timeline:TimelineProgram;compositionId:string;composition:Composition;compositions:Record<string,Composition>}
+const compositions={'sequence-title':art.validate(title),'sequence-opening':art.validate(composition)};
+export const openingDocuments:OpeningDocuments={compositionId:'sequence-opening',composition:compositions['sequence-opening'],compositions,timeline:sequenceProgram(compositions)};

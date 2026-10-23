@@ -12,7 +12,7 @@ import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/author
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {ComposerModel,type EditorDocument} from '../../src/ssg/game/authoring/app';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
-import {createSequenceValidationContext} from '../../src/ssg/game/authoring/sequence-preview';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {createNativePreview} from '../../src/ssg/game/authoring/native-preview';
 import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';
 import {declaredScene} from '../../src/ssg/game/engine/gameplay/declared-scene';

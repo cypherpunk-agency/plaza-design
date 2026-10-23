@@ -197,8 +197,11 @@ Distance rows stay in the backdrop; walkable ground stays in the scene compositi
 artwork may overhang a zone, while distance/backdrop rows clip at its window.
 
 `sequence-opening` owns framing and timeline inputs, not duplicate scene artwork. Edit its camera,
-clock, rain and arrival-train tracks there; edit buildings, people and props in the corresponding
-`authored.glide-*` or harbor scene documents. Both sequence preview and private Play consume the
+clock, rain and arrival-train tracks there. Click buildings, people or props directly in the
+sequence preview to edit the corresponding `authored.glide-*`, harbor or backdrop source without
+leaving the sequence. The inspector names the source being edited; Open source scene is optional.
+The picker exposes Title, Opening glide, Act I cinematic, Act II cinematic and Taxi flight.
+Each is one composition with embedded `sequence` controls; the timeline below edits those fields. Both sequence preview and private Play consume the
 pending scene, graph and backdrop documents through the game's shared frame.
 
 ### Walkable vehicle pilot

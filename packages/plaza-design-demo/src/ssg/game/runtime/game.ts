@@ -623,8 +623,7 @@ export class Game {
   }
 
   /**
-   * The glide has gone into the tunnel: the handover (title/index.ts). A fresh save, then
-   * `startOpening()`: `opening:home`, the train home (car 3) on its run into Downtown.
+   * The glide finishes or is skipped: create the fresh run and commit its authored Harbor handoff.
    */
   private openingDone() {
     const destination = this.opening?.handoff;
@@ -821,9 +820,14 @@ export class Game {
   // ---------- input ----------
 
   private onKeyDown(e: KeyboardEvent) {
+    if (this.opening?.gliding && e.key === 'Escape') {
+      e.preventDefault();
+      if (!e.repeat) { this.opening.skip(); this.openingDone(); }
+      return;
+    }
     // sudo's time control takes its keys first (Space stays the title menu's while it is up)
     if ((this.opening || this.cut) && !this.term.focused && this.transport?.key(e, !!this.opening && this.menu.open)) return;
-    // the title takes the menu's keys; a key while the sun comes up skips to the menu; the glide cannot be skipped
+    // The title takes menu keys; a key during sunrise reveals the menu. Escape skips an active glide above.
     if (this.opening) {
       if (this.menu.open && !this.term.focused) this.menu.key(e);
       else { e.preventDefault(); if (!e.repeat && !['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) this.skipRise(); }
