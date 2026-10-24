@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {validateCompanionSource,type CompanionSource} from '../engine/gameplay/companion-source';
 import {COMPANION_LOOKS} from '../runtime/companion';
 /** Typed controls for engine/gameplay/companion.json: who follows the player, and how the game loop treats it. */

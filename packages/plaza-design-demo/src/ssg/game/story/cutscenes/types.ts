@@ -44,5 +44,5 @@ export interface Cutscene extends CutsceneData {
    * Draw the frame at `t` seconds through the one frame (runtime/render-scene.ts renderWorldFrame) at `scale`, adding
    * `director` (the player's letterbox and default fade) to the sequence's own direction.
    */
-  render: (x: CanvasRenderingContext2D, view: CutView, t: number, scale: number, director: import('../../runtime/render-scene').FrameDirector) => void;
+  render: (x: CanvasRenderingContext2D, view: CutView, t: number, scale: number, director: import('../../runtime/frame').FrameDirector) => void;
 }

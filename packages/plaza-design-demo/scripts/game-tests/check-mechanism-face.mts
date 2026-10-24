@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';import fs from 'node:fs';
 import {art} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {mountDeviceAuthoring} from '../../src/ssg/game/authoring/device-authoring';

@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {SEAM_KINDS,validateZoneGraph,worldProblems,type Seam,type SeamKind,type ZoneGraphSource,type ZoneInfo} from '../world/zone-graph';
 import {zoneInfo,zoneName,zonePieces} from './zone-graph-context';
 import {SCENES} from '../scenes';

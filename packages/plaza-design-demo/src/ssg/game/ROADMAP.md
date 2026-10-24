@@ -22,6 +22,72 @@ field edit/undo and pointer drag, history/bundles/protected Save/fresh native re
 lifecycle comparisons. Opening skip/handoff, package TypeScript, focused checks and both builds pass.
 No old-format bridge or second renderer was added. C3 remains the next engineering closeout.
 
+S2: visual keyframe authoring is implemented locally. The same editor now has a bottom time grid,
+expandable object/property rows, moving playhead, keyframe selection/retiming and typed right-side
+inspectors for keys, shots, cards, fades and beats. The dock resizes/collapses and supports temporal
+zoom. Space/comma/period/Left/Right control visible editor/viewer animation, with typing guards and
+Alt+arrows for artwork nudging. No renderer adapter or persisted source model was added.
+Verified actual browser key selection/drag/history, object and duration-bar selection, dock collapse,
+all four viewers, typing guards, and protected Save/fresh-native reload of a retimed camera key.
+Focused checks, package TypeScript and both builds pass; the native Play bundle is unchanged.
+The sequence outline now retains controls, all referenced scenes and shared backdrops on selection
+and deselection. Source-scoped identities connect preview hover/click to the correct row; browser
+verification covers the reported beach-person select/deselect case and retained expansion.
+
+Editor usability/performance follow-up is implemented locally: remembered collapsed outline groups,
+active-scene labels/borders, sequence viewport zoom/pan/Fit, time-grid wheel navigation, undoable
+Discard all changes, speed controls and render-rate/CPU-time readout. The drag path caches the
+validated registry and rebuilds only the affected scene during transient movement; commits retain
+full validation. A local browser CPU sample improved from 125–141 ms to 18–22 ms per drag update;
+this is a measured workload, not a cross-device FPS guarantee. Browser checks cover these controls,
+clean-source navigation, preference reload and discard/undo. No publication is implied.
+
+Independent camera inspection is implemented locally: Workspace owns editor navigation and shows
+the authored camera as a guide, including the opening's final playFit/height blend. Camera preview
+retains the exact finished player picture; Frame camera is explicit navigation. Object outlines
+remains in the viewport toolbar and remembers its state. The shared frame preparation accepts an
+optional inspection camera; no separate renderer or persisted sequence model was introduced.
+Player rendering matches 128/128 sampled canonical paints. Focused tests cover fixed scenery bounds
+while the shot moves/zooms, and browser checks cover mode switching, framing and preference reload.
+
+## Architecture cleanup (2026-10-24, local)
+
+The five unreferenced migration/alias modules and twelve unused helpers from the code review are
+removed. Source validation, condition/query evaluation, frame contracts, sky layout and character
+recipe metadata have acyclic runtime dependencies. Downtown device painters use an explicit table.
+The composer document model/contracts, field controls, temporal inspector and navigation math are
+separate from the application shell. Stateless prompt and HUD projections are extracted from Game;
+the existing state owners, loop, rendering, gameplay permissions and save path remain authoritative.
+Workspace sky layout uses authored camera dimensions/facing independently of editor pan/zoom.
+Verified locally: 24/24 current scene pixel references match; 84/84 native intro lifecycle comparisons
+pass; focused document/history/bundle/protected Save/native reload, gameplay/query/conversation, actor,
+keyframe, prompt/HUD and camera-relative sky checks pass. Real-browser camera/keyframe editing and
+undo/redo pass. Both builds and package TypeScript pass. No campaign redesign or new runtime was
+introduced. Publishing is separate.
+
+The combined Game/editor decomposition is also implemented locally. Game retains the frame loop,
+services and save ownership, with focused input, movement, camera, scene lifecycle, interaction,
+story/travel and presentation modules. Editor viewport listeners, source-aware selection, inspector
+lifecycle and pending-preview coalescing are separated from the shell; ComposerModel remains the
+only document/history owner. Game and editor share projection/canvas/bounds geometry and frame
+preparation. There are no additional render adapters, runtimes, saved models or historical codecs.
+
+Preservation checks: 24/24 approved scene rasters and 84/84 intro playback/seek rasters match.
+The real browser covers movement/release, jump/landing, menu locks, timeline transport, typed keys,
+drag/undo/redo and independent camera/workspace controls. Focused checks cover opening workflows,
+joined interactions/residency, lifecycle stop/start, current saves, source history/bundles/protected
+Save and fresh native reload. This is structural work; C3's portability audit and campaign experience
+review remain separate work. Current module ownership is documented in the handbook and authoring
+README; new features should extend those modules rather than growing the two shells again.
+
+Follow-up consolidation is implemented locally: asynchronous previews reject stale results/errors
+and crop measurements while continuous playback still progresses; outline/viewport/timeline selection
+uses one source-aware record; inspector mounts distinguish repeated local IDs across documents.
+Scene lifecycle now owns departure disposal and visibility as well as residency. Rendering, picking
+and host positioning consume immutable camera projections; temporary hack-camera mutation is removed.
+41 private forwarding methods and six internal-only exports were removed; player/scene-placement
+contracts are shared. Current tests exercise the extracted functions rather than removed Game aliases.
+
 ## Current status
 
 | Area | Status | What this means |

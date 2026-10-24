@@ -29,5 +29,7 @@ export { drawBore, drawTunnelPortal, drawViaduct, drawWallPortal, LINE0 } from "
 export { drawCanalGlimpse, drawGroundSection } from "./architecture/cutaway";
 export { frameView, placed } from "./core/view";
 export { puddles, weatherFront, weatherMid, weatherSky, type PuddleSpec, type WeatherLook } from "./atmosphere/weather";
-export { drawPane, drawSky, glass, moonDisc, seaCols, skyCols, skyPos, sunPath, windowShaft, type PaneOpts, type SkyOpts } from "./environment/sky";
+export { drawPane, drawSky, glass, moonDisc, seaCols, skyCols, sunPath, windowShaft, type PaneOpts } from "./environment/sky";
 export { addLight, castShadow, createLightingFrame, drawCasters, drawGrade, drawLights, drawShade, gradeOf, inShade, prepareShade, type LightingFrame, type ShadeFrame, type Caster, type SceneLight, type Shade, type ShadeSide } from "./atmosphere/lighting";
+
+export {skyPos,type SkyOpts} from "./environment/sky-layout";

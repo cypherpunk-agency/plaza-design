@@ -5,7 +5,7 @@ import {createCityPlan} from './cityplan';
 import type { Composition } from '../art/core/composition';
 import type { Sequence } from '../art/core/timeline';
 import { SCENES, type SceneDef, type SceneId } from '../scenes';
-import type {PlaceId} from './city';
+
 import { AVENUES, CANAL, CANAL_W, COAST, FENCE, ISLE, PARK, WEST } from './cityplan';
 
 export interface WorldSequenceReference { id: string; scene: string; entrance?: string }
@@ -127,4 +127,3 @@ export function validateWorldDocument(value: unknown, context: WorldDocumentCont
 }
 /** Pretty JSON for a cross-reference index; this does not replace the runtime city registries. */
 export const serializeWorldDocument = (value: unknown, context: WorldDocumentContext) => JSON.stringify(validateWorldDocument(value,context),null,2)+'\n';
-export const worldPlace = (document: WorldDocument, id: PlaceId) => structuredClone(document.map.places.find(p=>p.id===id)!);

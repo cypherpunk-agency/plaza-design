@@ -1,5 +1,5 @@
 /** Focus the actual renderer through measured camera response, including kernel-owned parallax. */
-import type { PreviewRequest, PreviewResult } from './app';
+import type {PreviewRequest,PreviewResult} from './contracts';
 export interface PreviewRectangle { x: number; y: number; width: number; height: number }
 /** Local authoring camera guardrails, not a change to world geography or runtime cameras. */
 export const NATIVE_FOCUS_LIMITS = Object.freeze({ camera: 100_000, step: 50_000, probe: 100, iterations: 2 });

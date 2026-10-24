@@ -4,7 +4,8 @@ import {currentObjective,type ObjectiveDefinition} from './objectives';
 import {resolveValues,validValue,validStateNumber,stateValue,setStateValue,cloneValues} from './state';
 import {applyPurchase,purchaseQuote} from './commerce';
 import type { Condition, GameplayDefinition, GameplayGrant, GameplayEvent, GameplayResult, GameplayState, Source, StatePort } from './types';
-import { matches, validateGameplay } from './validation';
+import {matches} from './queries';
+import {validateGameplay} from './validation';
 export function cloneState(state: GameplayState): GameplayState { return { ...(state.player?{player:{...state.player,controlled:Array.isArray(state.player.controlled)?[...state.player.controlled]:state.player.controlled,keyring:Array.isArray(state.player.keyring)?[...state.player.keyring]:state.player.keyring}}:{}),...(state.objective!==undefined?{objective:state.objective}:{}),...(state.world?{world:{...state.world}}:{}),flags:{...state.flags},items:{...state.items},tokens:state.tokens,...(state.values?{values:cloneValues(state.values)}:{}) }; }
 function freeze<T>(value:T):Readonly<T>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;}
 /** One command and its authored reactions either all commit or change nothing. No timers/storage/DOM. */

@@ -6,7 +6,7 @@ import {newSave} from '../../src/ssg/game/runtime/save';
 import {evaluateAccess,validateAccess} from '../../src/ssg/game/engine/gameplay/access';
 import {capabilityView,exitPermission,exitVisibility} from '../../src/ssg/game/world/access';
 import {compileSceneDocument,validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
-import {matches} from '../../src/ssg/game/engine/gameplay/validation';
+import {matches} from '../../src/ssg/game/engine/gameplay/queries';
 import {HARBOR_SHED,HARBOR_GAMEPLAY} from './harbor-source-fixture.mts';
 import {SCENES} from '../../src/ssg/game/scenes';
 const SHIFT_SCENE=validateSceneDocument(HARBOR_SHED.scene,HARBOR_GAMEPLAY,{manifest:true,actors:true}),SHIFT_USES=SCENES['harbor-shed'].uses!,shiftGoal=SCENES['harbor-shed'].objective!,shiftAttention=SCENES['harbor-shed'].attention!;

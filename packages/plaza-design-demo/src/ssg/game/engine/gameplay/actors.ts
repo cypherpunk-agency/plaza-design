@@ -1,4 +1,5 @@
-import {bindActorPresentation,validateActorPresentation,type ActorPresentation} from './actor-presentation';
+import {bindActorPresentation,type ActorPresentation} from '../../art/characters/presentation';
+import {validateActorPresentation} from './actor-presentation';
 import {validateActorArtwork} from './native-actor-bindings';
 import {bindActorReactionIdentity,bindActorAppearanceSeed} from './actor-identity';
 import type {SceneDocument} from './scene-document';

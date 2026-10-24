@@ -7,7 +7,7 @@
 import { FOV, type Light } from '../../world/light';
 import type { View } from '../core/view';
 import { ART, lerp, mixHex, R, smooth } from '../core/pixels';
-import { skyPos, type SkyOpts } from './sky';
+import {skyPos,type SkyOpts} from './sky-layout';
 
 const rngOf = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
 const STARS = (() => { const r = rngOf(11); return Array.from({ length: 60 }, () => [r(), r() * 0.45, 0.25 + r() * 0.5, r() * 6]); })();
@@ -21,7 +21,8 @@ const PAR = 0.02;
  * The sunset sun on screen (screen units of the view): x from its bearing to the view, as the city sky's; y from its
  * height in radii over the horizon (screen y); its radius from the view's height. The water reads it for the sun's path.
  */
-export function sunsetSun(v: View, l: Light, horizon: number) {
+export function sunsetSun(v: View, l: Light, horizon: number):{x:number;y:number;r:number} {
+  if(v.cameraFrame){const f=v.cameraFrame,p=sunsetSun(f.view,l,horizon-f.y);return{...p,x:p.x+f.x,y:p.y+f.y};}
   const r = R(v.viewH / ART * 0.15) * ART, p = skyPos(v, l.sun, l.sunRel, horizon);
   return { x: p.x + v.cam * PAR, y: horizon + r * sunDepth(l.sun.el), r };
 }

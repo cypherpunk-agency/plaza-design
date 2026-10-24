@@ -1,7 +1,7 @@
-import {streetSpriteKinds,type StreetSpritePresentation} from '../art/characters/street-sprite';
+import {streetSpriteKinds,type StreetSpritePresentation} from '../art/characters/presentation';
 import {DEPTH_BANDS,DEPTH_ORDER,depthOf,type DepthBand} from '../art/core/depth';
 import {KIT_ACTS,kitFamily} from '../runtime/characters';
-import {riderKinds,type RiderPresentation} from '../engine/gameplay/actor-presentation';
+import {riderKinds,type RiderPresentation} from '../art/characters/presentation';
 import type {Composition} from '../art';
 import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
 import {actorBindingController} from '../engine/gameplay/native-actor-bindings';

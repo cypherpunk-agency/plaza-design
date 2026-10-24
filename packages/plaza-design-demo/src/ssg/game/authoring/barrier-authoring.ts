@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {pendingNetworkContext} from './pending-network';
 import {gameplayScene} from './gameplay-scenes';
 import {barrierAccess,conditionNames} from '../world/access';

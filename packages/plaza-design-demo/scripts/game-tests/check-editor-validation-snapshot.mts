@@ -5,7 +5,7 @@ import { validationSnapshot } from '../../src/ssg/game/authoring/validation-snap
 import { pendingRegistry } from '../../src/ssg/game/authoring/pending-registry';
 import { pendingNetworkContext } from '../../src/ssg/game/authoring/pending-network';
 import { pendingScene } from '../../src/ssg/game/authoring/pending-scene';
-import { ComposerModel } from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import { art } from '../../src/ssg/game/art';
 const rows = sourceDocuments.map(d => ({ id: d.id, value: JSON.parse(fs.readFileSync('src/ssg/game/' + d.file, 'utf8')) }));
 const before = JSON.stringify(rows), snapshot = validationSnapshot(rows), network = pendingNetworkContext(snapshot);

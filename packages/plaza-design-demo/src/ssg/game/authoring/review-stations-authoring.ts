@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {validateReviewStations,type ReviewStationsDocument,type ReviewStationSource,type ReviewActionSource,type ReviewWhen} from '../demo/review-stations';
 /** Typed controls for demo/review-stations.json: the review navigator's bookmarks, buttons and remote-device example. */
 export function mountReviewStationsAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle {

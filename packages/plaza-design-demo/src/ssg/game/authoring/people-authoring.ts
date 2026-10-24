@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {PEOPLE_VOCABULARY,applyPeople,validatePeople,type PeopleDocument} from '../art/characters/people-source';
 import type {CrowdMix} from '../art/characters/crowds';
 /**

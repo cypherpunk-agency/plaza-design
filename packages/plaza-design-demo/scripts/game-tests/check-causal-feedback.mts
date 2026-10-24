@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 import {attachGameplayHandoffs} from '../../src/ssg/game/engine/gameplay/handoffs';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {Game} from '../../src/ssg/game/runtime/game';
@@ -27,7 +28,7 @@ function advance(ms:number){const end=clock+ms;while(clock<end){clock++;for(;;){
 const history:{line:Line;receipt:FeedbackReceipt}[]=[],host:any={active:false,echo:false,def:{id:'causal'},schem:{note(){}},vision:{note(){}},locate:()=>null,print(){},store:{feedbackCue:sound.feedback}};
 host.say=(SceneHost.prototype as any).say;
 function hooks(){return{feedbackScope:'causal',say:(line:Line,from?:string,receipt?:FeedbackReceipt)=>{history.push({line,receipt:receipt!});host.say(line,from,receipt);},changed(){},open(){}};}
-function attach(m:SceneModel,save:any,end:()=>void=()=>{}){const game:any=Object.create(Game.prototype);game.save=save;game.content={downtown:SCENES.downtown};game.hosts=new Map([['downtown',{model:m}]]);game.gameplaySessions=new Map();game.sceneDefinition=()=>SCENES.downtown;game.syncHud=()=>{};game.persistSave=()=>{};const session=game.gameplayFor('downtown',m);attachNativeGameplay(m,session);attachGameplayHandoffs(session,{schedule:(ms,run,canceled,detail)=>m.later(ms,run,detail,canceled),cutscene(){},presentation:end});return session;}
+function attach(m:SceneModel,save:any,end:()=>void=()=>{}){const game:any=runtimeFixture(Game);game.save=save;game.content={downtown:SCENES.downtown};game.scenes.hosts=new Map([['downtown',{model:m}]]);game.scenes.gameplaySessions=new Map();game.sceneDefinition=()=>SCENES.downtown;game.syncHud=()=>{};game.persistSave=()=>{};const session=game.gameplayFor('downtown',m);attachNativeGameplay(m,session);attachGameplayHandoffs(session,{schedule:(ms,run,canceled,detail)=>m.later(ms,run,detail,canceled),cutscene(){},presentation:end});return session;}
 try{
  sound.toggle();notes.length=0;
  const shared:Line=['','Same response.','ok'],data:SceneData={id:'causal',name:'Causal',state:{},tuning:{},cables:[],goals:[],texts:{},devices:[{id:'device',name:'DEVICE',look:'',nouns:[{id:'act',layer:'hardware',function:'act',verbs:['go'],on:{go:{do:[{effect:'burst'}]}}}]}]};

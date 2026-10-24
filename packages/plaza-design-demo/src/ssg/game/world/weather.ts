@@ -24,9 +24,8 @@
 import { city, DAY_MIN, hm } from './clock';
 import { DISTRICTS, PLACES, SCENE_PLACE, type DistrictId } from './city';
 
-export type WeatherKind = 'clear' | 'cloudy' | 'rain' | 'storm' | 'fog' | 'smog' | 'heat';
-export const WEATHER_KINDS: WeatherKind[] = ['clear', 'cloudy', 'rain', 'storm', 'fog', 'smog', 'heat'];
-export const isWeather = (s: string): s is WeatherKind => (WEATHER_KINDS as string[]).includes(s);
+import {WEATHER_KINDS,type WeatherKind} from './weather-kinds';
+export {WEATHER_KINDS,isWeather,type WeatherKind} from './weather-kinds';
 
 /** A district's climate, or the beach's own. */
 export type Climate = DistrictId | 'beach';
@@ -271,4 +270,3 @@ export function screenLine(c: Climate | null = here): string {
 }
 
 /** A word for the weather now, for lines that change with it ("rain", "fog"). */
-export const weatherName = (k: WeatherKind) => NAME[k];

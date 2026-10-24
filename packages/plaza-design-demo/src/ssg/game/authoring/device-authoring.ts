@@ -25,7 +25,7 @@ import {TypedForm} from './typed-form';
 import {renderMechanism,renderMechanismNouns,mechanismDeviceId} from './mechanism-authoring';
 import {mechanismFaces} from '../engine/gameplay/mechanism-face';
 import {MECHANISM_DEVICE_PREFIX} from '../engine/gameplay/mechanism-parts';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {deviceSourceIdentity,requiredDeviceNouns,deviceRules,protectedDevice} from './device-sources';
 import {pendingScene} from './pending-scene';
 import {nativeVocabulary} from '../engine/gameplay/native-bindings';

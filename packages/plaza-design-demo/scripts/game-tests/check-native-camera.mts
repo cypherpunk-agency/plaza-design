@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {centerNativePreview} from '../../src/ssg/game/authoring/native-camera';
-import type {PreviewRequest,PreviewResult} from '../../src/ssg/game/authoring/app';
+import type {PreviewRequest,PreviewResult} from '../../src/ssg/game/authoring/contracts';
 const canvas={width:960,height:540} as HTMLCanvasElement;
 let cases=0;
 for(const depth of [0,.1,.3,.7,1,1.4])for(const scale of [.5,1,4]){

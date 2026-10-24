@@ -25,6 +25,61 @@ source. `runtime/prepare-frame.ts` prepares both world references and inline art
 directly in the sequence preview to edit its source scene/backdrop without switching views.
 The inspector identifies that shared source. See [animated artwork](../../art/sequences/README.md).
 
+## Module ownership
+
+`runtime/frame.ts` holds frame contracts and `directorFromTimeline`; `prepare-frame.ts` prepares inputs and
+`render-scene.ts` paints them. `art/environment/sky-layout.ts` holds shared sky geometry; neither sky style
+imports the other for a positioning helper. Serializable character recipes/size metadata live in
+`art/characters/presentation.ts`, independently of their painters. Gameplay `queries.ts` evaluates the
+mutually recursive condition/query language; `validation.ts` and `native-validation.ts` validate source.
+Response graph validation is separate from its installed conversation behavior. These dependencies are
+acyclic at runtime; do not introduce a return import from a primitive to its caller.
+
+`runtime/game.ts` is the composition root: it creates services and state, serializes saves and
+orders the single frame loop. It calls focused functions through typed ports referencing the
+same live records and services. Ports are lazily cached bindings, not state copies or adapters. Cross-module calls bind directly
+to their owning functions; do not add a private Game forwarding method for each function. Stable
+DOM event handlers remain on Game so listener identity is preserved.
+
+| Runtime module | Responsibility |
+| --- | --- |
+| `state.ts` | Runtime-owned camera, input, scene residency/session caches, timing and presentation records; player remains the one `Game.p` object |
+| `input-routing.ts` | Keyboard/pointer priority and routing; input does not introduce a separate tick |
+| `movement.ts` | One frame of held-key movement, level/vehicle motion, seam crossing, bounds and gravity |
+| `camera.ts` | Follow, nudge, hack-vision pan/zoom and projection using current camera state |
+| `scene-lifecycle.ts` | Joined levels, residency, departure disposal, host visibility, seam rebasing and seen rooms; Game constructs hosts/services |
+| `interaction-routing.ts` | Everyday interactions, use/exit routing, barriers and story checkpoints; commands still execute in GameplaySession |
+| `story-transitions.ts` | Source-authored cues, cards, travel and clock policy |
+| `presentation-frame.ts` | Runtime frame settings, actors, prompts and HUD; world painting still calls renderWorldFrame |
+| `interaction-targets.ts`, `hud-data.ts` | Stateless prompt and inventory/control projections |
+
+The update stage retains this order: speech, travel, story, player/level movement, location sync,
+camera follow, companion, node/guidance updates. SceneModel ticking stays in the existing frame
+loop before that update. Keep side effects in their current stage; moving a function into a module
+does not authorize reordering it or giving it an independent clock.
+
+`art/core/geometry.ts` owns shared X projection, DOM-to-canvas conversion and artwork bounds.
+`camera.ts` derives an immutable camera projection for rendering, picking and host positioning;
+hack vision never temporarily changes the runtime camera to paint or inspect. `camera-space.ts`
+maps authored camera layout into workspace inspection. The editor camera is
+navigation state; the authored camera still controls the player picture. No editor-only sky,
+projection, frame order or gameplay evaluator is allowed.
+
+Editor contracts and prospective document/history state live in `authoring/contracts.ts` and
+`authoring/composer-model.ts`. `app.ts` mounts the shell and wires commands; viewport input,
+selection, inspector lifecycle, timeline and preview coalescing have separate modules. See
+[authoring boundaries](../../authoring/README.md#implementation-boundaries). Source edits always
+return through ComposerModel; preview state contains derived results and gesture state only. Editor selection has one record
+(document, instance, optional temporal selection); inspector identity includes the source document.
+Preview edits/navigation invalidate active asynchronous work immediately. Playback advances coalesce
+without invalidating each other, so slow rendering still publishes frames. Stale successes, crop
+measurements and errors cannot replace the current result; disposal prevents queued restarts.
+
+Focused constructor-free runtime fixtures use `scripts/game-tests/runtime-fixture.mts` with the
+current grouped records. Exercise extracted functions or Game's actual ports; do not recreate old
+private field aliases or stub a removed private method. Browser checks cover the actual constructor
+and input listeners, since a fixture alone cannot prove startup or frame ordering.
+
 ## The execution model
 
 There is one runtime: the game loop (runtime/game.ts) and each scene's model (SceneModel). Every frame

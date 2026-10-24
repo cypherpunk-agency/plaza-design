@@ -1,5 +1,5 @@
 import { TypedForm } from './typed-form';
-import type { WorkbenchContext, WorkbenchHandle } from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import { ABILITIES, ABILITY_LABELS, AVATARS, CLOCK_RULES, GUIDANCE_STYLES, ROUTES, WORLDS, type PlayProfile, type PlayProfiles } from '../runtime/play-profiles';
 import { PLAY_PROFILES_DOCUMENT, profileModuleIds, profileSceneIds } from './play-profile-source';
 

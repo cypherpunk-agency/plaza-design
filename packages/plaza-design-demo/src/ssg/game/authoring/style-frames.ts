@@ -5,7 +5,7 @@
  * with its proposal when there is one) without leaving the tab.
  * Read-only.
  */
-import type { EditorDocument, PreviewRequest, PreviewResult, WorkbenchContext } from './app';
+import type {EditorDocument,PreviewRequest,PreviewResult,WorkbenchContext} from './contracts';
 import type { Composition } from '../art/core/composition';
 import { crowdMix } from '../art/characters/crowds';
 import { PROPOSAL_SCENES } from './proposal-scenes';

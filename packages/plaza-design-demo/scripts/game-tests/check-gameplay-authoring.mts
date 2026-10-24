@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {art} from '../../src/ssg/game/art';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
@@ -35,7 +35,7 @@ function exercise(value:SceneCatalogue,signal:boolean,page='A revised delivery a
  const registry=pendingRegistry(new Map(documents.map(d=>[d.id,d.id===id?value:d.value])));
  const definitions=['harbor-shed','harbor-yard','harbor-checkout'].map(id=>registry[id].gameplay!);
  // The test laboratory joins current definitions; production keeps one session per zone.
- const definition=validateGameplay({version:1,sharedState:['shift'],flags:[],items:[...new Set(definitions.flatMap(d=>d.items))],events:[...new Set(definitions.flatMap(d=>d.events))],commands:Object.assign({},...definitions.map(d=>d.commands)),reactions:definitions.flatMap(d=>d.reactions),conversations:Object.assign({},...definitions.map(d=>d.conversations))});
+ const definition=validateGameplay({version:1,sharedState:['shift'],flags:[...new Set(definitions.flatMap(d=>d.flags))],items:[...new Set(definitions.flatMap(d=>d.items))],events:[...new Set(definitions.flatMap(d=>d.events))],commands:Object.assign({},...definitions.map(d=>d.commands)),reactions:definitions.flatMap(d=>d.reactions),conversations:Object.assign({},...definitions.map(d=>d.conversations))});
  const pilot=createDeliveryGameplayFixture(undefined,definition,'shift.deliver');
  try{
   const conversation=pilot.talk('supervisor-shift');assert.equal(conversation.frame().pages[0],page);conversation.close();

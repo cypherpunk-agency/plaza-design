@@ -1,3 +1,5 @@
+import * as StoryTransitions from '../../src/ssg/game/runtime/story-transitions';
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Focused controller checks without constructing Game or playing the campaign. */
 import assert from 'node:assert/strict';
 import { Game } from '../../src/ssg/game/runtime/game';
@@ -10,13 +12,13 @@ import { STANDS } from '../../src/ssg/game/world/city';
 
 function controller(destination?: { scene: string; entrance?: string }) {
   // Prototype-only adapter deliberately avoids canvas, DOM input and player-storage construction.
-  const game = Object.create(Game.prototype) as any;
+  const game = runtimeFixture(Game) as any;
   const arrivals: unknown[][] = [];
   const model = new SceneModel({ say() {}, open() {}, changed() {} }, emptyData('downtown', 'fixture'), NO_RULES);
-  game.opening = { handoff: destination };
+  game.presentation.opening = { handoff: destination };
   game.hints={sceneChanged(){}};game.content={};
-  game.endTitle = () => { game.opening = null; };
-  game.term = { close() {}, clear() {} }; game.hosts = new Map(); game.hostOf = () => ({ model }); game.syncHud = () => {};
+  game.endTitle = () => { game.presentation.opening = null; };
+  game.term = { close() {}, clear() {} }; game.scenes.hosts = new Map(); game.hostOf = () => ({ model }); game.syncHud = () => {};
   game.enter = (...args: unknown[]) => arrivals.push(args);
   game.openingDone();
   return { game, arrivals };
@@ -25,15 +27,15 @@ assert.deepEqual(controller().arrivals, [['harbor-station', true, undefined]], '
 const variant = controller({ scene: 'capsule', entrance: 'door' });
 assert.deepEqual(variant.arrivals, [['capsule', true, 'door']], 'authored destination is captured before the title controller closes');
 assert.equal(variant.game.save.flags['prologue:started'], true, 'prologue initialization remains owned by the game controller');
-const { game } = controller(); game.here = 'capsule'; game.mapView = null; game.netView = null;
+const { game } = controller(); game.scenes.here = 'capsule'; game.presentation.mapView = null; game.presentation.netView = null;
 game.save = newSave(); city.bind(game.save.clock);
 const minute = city.min, landings: unknown[][] = [];
 game.travel = (...args: unknown[]) => landings.push(args); game.flash = () => {};
-game.flight = { to: 'harbor', start: 17 }; game.clock = 17 + taxiSequenceDuration * 60 - .01;
-game.updateTravel(0); assert.equal(landings.length, 0);
-game.clock += .01; game.updateTravel(0);
+game.presentation.flight = { to: 'harbor', start: 17 }; game.timing.clock = 17 + taxiSequenceDuration * 60 - .01;
+StoryTransitions.updateTravel(game.storyTransitionsPort,0); assert.equal(landings.length, 0);
+game.timing.clock += .01; StoryTransitions.updateTravel(game.storyTransitionsPort,0);
 assert.deepEqual(landings, [[STANDS.harbor.scene, 'taxi']]);
 assert.equal(city.min - minute, TRAVEL.taxi, 'timeline duration does not change the city travel-time cost');
-game.updateTravel(0); assert.equal(landings.length, 1, 'completion commits travel once');
+StoryTransitions.updateTravel(game.storyTransitionsPort,0); assert.equal(landings.length, 1, 'completion commits travel once');
 assert.equal(taxiSequenceDuration * 60, 200, 'default document preserves the original taxi completion frame');
 console.log('Sequence runtime checks passed: default/authored opening destinations, preserved story initialization, document-driven taxi timing and one-shot travel.');

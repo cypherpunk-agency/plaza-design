@@ -1,6 +1,7 @@
 import type {GameplayReadContext} from './queries';
 import type {Condition,GameplayDefinition,GameplayState} from './types';
-import {matches,validateGameplay} from './validation';
+import {matches} from './queries';
+import {validateGameplay} from './validation';
 
 /** Requirements compose capabilities and common conditions; evaluation never mutates progress. */
 export interface AccessRequirement {when?:Condition;capability?:string;command?:string;reason:string;hidden?:boolean}

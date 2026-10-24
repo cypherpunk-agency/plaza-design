@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { ArtRegistry, type Composition } from '../../src/ssg/game/art/core/composition';
-import { ComposerModel, type EditorDocument } from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
+import {type EditorDocument} from '../../src/ssg/game/authoring/contracts';
 import type { TimelineProgram } from '../../src/ssg/game/art/core/timeline';
 
 const registry = new ArtRegistry().register({ type: 'test', version: 1, label: 'Test', category: 'test', fields: { size: { kind: 'number', label: 'Size', default: 1, min: 1, animatable: true } }, visualFields: { open: { kind: 'boolean', label: 'Open', default: false, animatable: true } }, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ top: { x: 0, h: 10, role: 'mount' } }), draw() {} });

@@ -31,6 +31,21 @@ and `--api-port` to choose others. Ctrl+C stops both. Restart after renderer or 
 The editor uses one shared frame: navigator, stage and inspector. Scene and animation screens,
 viewers and world tools retain that common structure.
 
+
+## Implementation boundaries
+
+- `contracts.ts` owns editor document, preview and extension contracts. Non-UI modules import these types directly.
+- `composer-model.ts` owns prospective document validation, grouped changes and undo/redo. There is one model; UI modules never maintain another copy of edited source.
+- `app.ts` mounts and coordinates the editor. `controls.ts` builds typed form fields; `temporal-inspector.ts` builds camera/keyframe controls using the existing command port; `timeline-view.ts` draws the editing grid.
+- `viewport-input.ts` owns pointer/wheel/viewport-key listeners and transient gestures. Its disposer removes listeners and cancels transient state; a drag still commits one ComposerModel history transaction on release.
+- `selection.ts` resolves hit bounds and the source document/instance identity. One selection record owns the source document, instance and optional timeline selection. Inspector identity and mount keys include the source document, including identical local IDs in different sources.
+- `inspector.ts` owns regular inspector tabs and mounted section disposal. `temporal-inspector.ts` owns typed sequence/keyframe controls; both call the existing command port.
+- `preview-integration.ts` serializes pending renders and coalesces overlapping requests on the existing editor frame loop. Its state contains derived paint results and workspace/crop measurements, not source or gameplay state. Edit/navigation requests invalidate in-flight results, measurements and errors immediately. Playback advances coalesce without starving accepted frames. Disposal prevents queued restarts. Native preview remains authoritative.
+- `art/core/geometry.ts` supplies the same projection and canvas/bounds math used by runtime input/cameras and native preview.
+- `viewport-navigation.ts` contains stateless pan/zoom calculations. Workspace navigation is local editor state, not authored camera data.
+- `runtime/frame.ts` defines common frame inputs and the pure timeline-to-director conversion. Preparation and painting import those contracts; neither imports the other for a conversion helper.
+- For screen-relative sky artwork, `View.cameraFrame` provides authored camera layout and its translation into the workspace. Editor zoom must magnify the picture, never change sun size, sky layout or the scene's facing. Parallax follows the game camera; editor pan only translates its result. Weather passes use that same camera layout. Ordinary game frames have no inspection camera.
+
 ## Available authoring
 
 All 19 current folder scenes have composition, ordinary content, device/controller sources and native
@@ -236,3 +251,73 @@ brake or a printed wage slip). The controls are the same typed fields as the sce
 use the same art renderer. Invalid values keep the last valid preview. **Reset preview settings**
 restores defaults. These settings are temporary: Add artwork and saved scenes use their own data.
 Selecting an existing usage shows that scene's prepared state and hides these overrides.
+
+## Visual keyframe timeline
+
+Sequences use the existing scene editor with a resizable, collapsible timeline docked below the
+preview. Expand object/property rows, scrub the ruler, select diamonds or drag them to retime keys
+with 60 fps snapping. A drag commits one ComposerModel command; duplicate-time keys reject without
+changing source. The right inspector edits the selected key's exact time, value and easing.
+Click an object's row to select its actual artwork; selecting tracked artwork in the preview
+highlights its rows. Camera and environment tracks select controls rather than a physical prop.
+Shots, text cards and fades have selectable duration bars; beats have markers. Their typed time
+and content controls appear in the same inspector. Timeline Settings retains advanced sequence
+source controls, duration, handoff and loop range. Zoom changes the temporal grid only.
+
+Animation shortcuts work throughout the scene editor and the visible character, vehicle,
+building and signage viewers: **Space** play/pause, **comma** previous frame, **period** next frame,
+**Left/Right** back/forward one second, **Shift+Left/Right** five seconds. Text fields, selects,
+editable content and open dialogs retain their own keys. **Alt+arrows** nudges artwork; Up/Down
+also retain vertical nudging when the scene canvas is focused. Private native Play owns its own
+inputs inside its isolated frame.
+
+The sequence outline includes a selectable **Camera**. Its inspector exposes game-camera X,
+height and zoom at the playhead, links to their tracks and the active shot; changing a value
+sets a keyframe through the same history/save path. The camera-frame label also selects it.
+These controls are separate from workspace navigation.
+
+Selecting a property row opens its typed value at the playhead (including Camera height / H).
+Set the value and choose **Add / update keyframe**; this creates a key or updates the existing
+one at that time, preserving its easing. Scrubbing refreshes the sampled value. The inspector's
+key list opens individual time, value and easing controls without editing JSON.
+Editing base appearance does not automatically insert a key. Use Add keyframe or Key at playhead.
+Striped procedural tracks use their registered motion formula; ordinary key values do not replace
+that formula. The timeline is UI over composition.sequence, not a new renderer or saved model.
+
+The sequence outline consistently lists its own controls, referenced scene compositions and shared
+backdrops. Selecting a person or prop expands and highlights its source row; deselecting clears
+selection without replacing the list. One filter searches all those sources. Outline identities
+include both document and instance, so repeated local names in different scenes remain distinct.
+
+Outline source/kind groups start collapsed. Their expansion choices are saved as local editor
+preferences; selecting an object reveals its source and kind. The active scene is labelled in the
+preview and outline, independently of the inspected object. Scene borders can be toggled.
+
+Sequence editing defaults to Workspace: its independent editor camera stays fixed while the
+authored camera frame animates through the world. Wheel zooms, Shift+wheel pans horizontally, and
+middle/right drag pans both axes. Zoom range is 5–800%; referenced world scenery outside the shot
+can be inspected directly. Fit restores the initial workspace view; Frame camera explicitly
+centres and fits the current shot. The Sequence view selector switches to Camera preview for the
+finished player picture, including camera movement, framing, fades and cards. Changing modes or
+workspace navigation never writes camera tracks or progression. The closing playFit/height blend
+changes only the authored camera guide in Workspace. Editing initial camera keys does not reset the
+workspace anchor. Timeline rows scroll vertically; Shift+wheel scrolls
+time horizontally; Ctrl/Cmd+wheel zooms time around the pointer. These controls do not dirty source.
+
+Playback offers 0.25×, 0.5×, 1×, 1.5×, 2× and 4× speed in the timeline and viewers. The preview
+readout shows completed editor renders per second and last CPU render-submission duration, not
+GPU/presented FPS. Paused previews are labelled as paused. It is hidden during private native Play.
+
+Discard all changes restores the last loaded/saved baseline across all source owners without a
+repository write. Undo can recover that discard as one transaction. Downloading edits does not
+change the baseline. Full grouped validation still runs for commits, Save and native reload.
+
+Transient dragging keeps the validated world registry cached by immutable source identity and
+rebuilds the affected scene only. Source projections remain coherent; pending edits are rendered
+using the same factory and frame renderer. Pointer moves coalesce onto the existing RAF loop.
+The focused source-selection check compares transient cached paint operations against full pending
+compilation before testing history, protected Save and fresh native reload.
+
+Object outlines stays beside Scene borders in the lower-right viewport toolbar. It draws the
+registered visible-object bounds, separately from the animated camera frame and scene boundaries.
+Its on/off state is remembered locally across reloads; it never changes source or game artwork.

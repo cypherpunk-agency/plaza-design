@@ -31,7 +31,7 @@ import {pendingRegistry} from './pending-registry';
 import {validateOpeningSource} from '../story/opening-source';
 import {renderScenePhase,renderSceneWash} from './scene-phases-authoring';
 import {renderNativeTarget,renderNativeTargetCollection} from './native-target-authoring';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import type {SceneDocument,InteractionRoute} from '../engine/gameplay/scene-document';
 
 interface Entry {key:string;group:string;label:string;detail?:string;prefix?:string|RegExp;render(host:HTMLElement):void}

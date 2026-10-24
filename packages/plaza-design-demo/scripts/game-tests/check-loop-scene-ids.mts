@@ -1,3 +1,5 @@
+import * as PresentationFrame from '../../src/ssg/game/runtime/presentation-frame';
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Scene ids out of the loop and the controllers: the jack cable for any open schematic, the per-person prompt height, controller rules by kind. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -13,7 +15,7 @@ import {validateSceneDocument,type SceneDocument} from '../../src/ssg/game/engin
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {SCENES} from '../../src/ssg/game/scenes';
 import path from 'node:path';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {art} from '../../src/ssg/game/art';
 import {sourceDocuments} from '../../src/ssg/game/authoring/source-documents';
@@ -24,14 +26,14 @@ import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 const frames:any[]=[];
 const real=AVATAR_PAINTERS[playProfile().player.avatar];AVATAR_PAINTERS[playProfile().player.avatar]=(f:any)=>{frames.push({jack:f.jack,face:f.p.face});};
 const scene:any={id:'somewhere',name:'Somewhere',width:400,spawn:10,exits:[]};
-const game:any=Object.create(Game.prototype);
-const host:any={viewing:'box',visionOn:false,model:{spots:()=>[{id:'box',x:120,y:0},{id:'other',x:300,y:0},{id:'high',x:100,y:60}]}};
-Object.assign(game,{save:newSave(),here:'somewhere',content:{somewhere:scene},sources:{},botReactions:BOT_REACTIONS,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map(),t:0,x:{},p:{x:100,y:0,face:1,onGround:true},hostOf:()=>host,view:()=>({})});
-game.drawCharacters();assert.equal(frames[0].jack?.id,'box','a scene that is not Downtown gets the cable');assert.equal(frames[0].face,1);
-game.p.x=200;game.drawCharacters();assert.equal(frames[1].jack,undefined,'too far from the machine');
-game.p.x=100;host.viewing=null;game.drawCharacters();assert.equal(frames[2].jack,undefined,'no schematic open');
-host.viewing='box';game.p.x=140;game.p.face=1;game.drawCharacters();assert.equal(frames[3].jack?.id,'box');
-game.p.x=130;host.model.spots=()=>[{id:'box',x:90,y:0}];game.drawCharacters();assert.equal(frames[4].face,-1,'the player turns to the machine');
+const game:any=runtimeFixture(Game);
+const host:any={viewing:'box',visionOn:false,model:{attachmentOffsets:()=>undefined,spots:()=>[{id:'box',x:120,y:0},{id:'other',x:300,y:0},{id:'high',x:100,y:60}]}};
+Object.assign(game,{save:newSave(),content:{somewhere:scene},sources:{},botReactions:BOT_REACTIONS,x:{},p:{x:100,y:0,face:1,onGround:true},hostOf:()=>host,view:()=>({}),scenes:Object.assign(game.scenes,{here:'somewhere',compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map()}),timing:Object.assign(game.timing,{t:0})});
+PresentationFrame.drawCharacters(game.presentationFramePort);assert.equal(frames[0].jack?.id,'box','a scene that is not Downtown gets the cable');assert.equal(frames[0].face,1);
+game.p.x=200;PresentationFrame.drawCharacters(game.presentationFramePort);assert.equal(frames[1].jack,undefined,'too far from the machine');
+game.p.x=100;host.viewing=null;PresentationFrame.drawCharacters(game.presentationFramePort);assert.equal(frames[2].jack,undefined,'no schematic open');
+host.viewing='box';game.p.x=140;game.p.face=1;PresentationFrame.drawCharacters(game.presentationFramePort);assert.equal(frames[3].jack?.id,'box');
+game.p.x=130;host.model.spots=()=>[{id:'box',x:90,y:0}];PresentationFrame.drawCharacters(game.presentationFramePort);assert.equal(frames[4].face,-1,'the player turns to the machine');
 AVATAR_PAINTERS[playProfile().player.avatar]=real;
 const gameSource=fs.readFileSync('src/ssg/game/runtime/game.ts','utf8');
 assert(!/here === 'downtown'|this\.downtown/.test(gameSource),'no Downtown id for the jack');

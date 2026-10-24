@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Devices, hacking targets and artwork share one moving attachment geometry; no paint tick or copied save state. */
 import assert from 'node:assert/strict';
 import authored from '../../src/ssg/game/scenes/authored.json';
@@ -39,7 +40,7 @@ entry.composition.instances.push({id:'lower-platform',type:'level.floor',props:{
 const scene=createSceneRegistry({},{version:1,scenes:[entry]})['vehicle-lab'],m=new SceneModel({say(){},open(){},changed(){}},scene.data!,typeof scene.rules==='function'?scene.rules({} as never):scene.rules,undefined,undefined,undefined,undefined,scene.gameplay);m.peopleLevel=scene.level;
 const p={x:224,y:0,vy:0,face:1,onGround:true,moving:false},lv:Level={source:scene.level!,state:levelArrive(scene.level!,p,0)};levelStep(lv,p,0,1,m);assert(levelInteract(lv,'vehicle:shuttle',p,m));
 for(let i=0;i<1100;i++){m.tick(1000/60,true);levelStep(lv,p,0,1,m);}assert(p.y< -10,'fixture actually descends with the player aboard');
-const targets=(Game.prototype as any).targets.call({def:scene,exitTargets:()=>[],lifeTargets:()=>[],zh:{model:m,targets:()=>SceneHost.prototype.targets.call({model:m,def:scene} as SceneHost)},save:{flags:{}},platforms:[],level:lv,p,movers:m,story:'',companionPresent:false}),target=targets.find((t:any)=>t.id==='shuttle');
+const targets=(Game.prototype as any).targets.call(runtimeFixture(Game,{def:scene,exitTargets:()=>[],lifeTargets:()=>[],zh:{model:m,targets:()=>SceneHost.prototype.targets.call({model:m,def:scene} as SceneHost)},save:{flags:{}},platforms:[],scenes:{level:lv},p,movers:m,story:'',companionPresent:false})),target=targets.find((t:any)=>t.id==='shuttle');
 assert(Math.abs(target.h-p.y)<1e-7,'the actual game offers a moving device on its live car floor, including below zero');
 assert.equal(art.validate(entry.composition).scene,'vehicle-lab');
 console.log('Moving device geometry PASS: real service, root/nested/child attachments, unchanged source, pure reads, mover reload, actual host targets and descending-car game prompts.');

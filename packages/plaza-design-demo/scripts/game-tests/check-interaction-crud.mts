@@ -5,7 +5,7 @@ import {newAuthoredScene,authoredDocumentId} from '../../src/ssg/game/engine/gam
 import {addManifestContent} from '../../src/ssg/game/engine/gameplay/manifest-content';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {mountSceneAuthoring} from '../../src/ssg/game/authoring/scene-authoring';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';

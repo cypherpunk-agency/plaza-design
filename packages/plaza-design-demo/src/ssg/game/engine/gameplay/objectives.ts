@@ -1,6 +1,6 @@
 import type {GameplayReadContext} from './queries';
 import type {Condition,GameplayState} from './types';
-import {matches} from './validation';
+import {matches} from './queries';
 
 /** Ordered authored stages: the first eligible row owns both wording and attention. */
 export interface ObjectiveDefinition {id:string;text:string;when?:Condition;target?:string;gentle?:boolean}

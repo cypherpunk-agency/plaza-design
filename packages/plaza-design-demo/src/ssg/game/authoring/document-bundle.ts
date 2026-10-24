@@ -1,5 +1,5 @@
 /** Portable pending edits. Pure envelope validation; the ComposerModel validates the complete prospective document set atomically. */
-import type { EditorDocument } from './app';
+import type {EditorDocument} from './contracts';
 export const DOCUMENT_BUNDLE_FORMAT = 'access-denied-editor-edits' as const;
 export const DOCUMENT_BUNDLE_VERSION = 1 as const;
 export const DOCUMENT_BUNDLE_MAX_BYTES = 2 * 1024 * 1024;

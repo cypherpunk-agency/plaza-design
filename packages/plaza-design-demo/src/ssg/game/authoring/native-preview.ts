@@ -1,10 +1,13 @@
+import {projectX,projectedBounds} from '../art/core/geometry';
+import {cutView} from '../art/sequences/cinematics';
+import {authoredSceneAdapter} from './scene-adapters';
 import {sequenceProgram} from '../art/core/sequence';
 import {createSequenceValidationContext,frameTimelineContext} from '../art/core/sequence-context';
 import {evaluateTimeline} from '../art/core/timeline';
 import {pendingRegistry} from './pending-registry';
 import {IntroSeekSession} from '../story/cutscenes/skyline-session';
 import {renderCutsceneDocument} from '../story/cutscenes';
-import type {WorldFrame} from '../runtime/render-scene';
+import type {WorldFrame} from '../runtime/frame';
 /** Local editor preview. Uses the shipping frame renderer with an isolated, non-persistent model. */
 import { drawLevelOverlay } from './level-overlay';
 import { restingLevelView } from '../engine/level';
@@ -16,7 +19,8 @@ import {readQuery} from '../engine/gameplay/queries';
 import {resolveValues} from '../engine/gameplay/state';
 import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
-import { renderWorldFrame, type ZoneFrame } from '../runtime/render-scene';
+import {renderWorldFrame} from '../runtime/render-scene';
+import {type ZoneFrame} from '../runtime/frame';
 import { joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zone-graph';
 import shippedGraph from '../world/zone-graph.json';
 import { authoredDocumentId } from '../engine/gameplay/scene-catalogue';
@@ -25,7 +29,7 @@ import { city } from '../world/clock';
 import {backdropDocuments} from '../world/backdrops';
 import { light, lightAt, setLight } from '../world/light';
 import { CLIMATE_IDS, isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
-import type { JoinedPreview, PreviewRequest, PreviewResult } from './app';
+import type {JoinedPreview,PreviewRequest,PreviewResult} from './contracts';
 import type { PlayerServices, PlayerState } from '../runtime/player';
 import { BASE_NODES } from '../runtime/save';
 import { drawSelectionOverlay } from './selection-overlay';
@@ -67,9 +71,7 @@ export function previewBounds(rows: Resolved[], view: View, options: NativeOptio
   return {
     bounds: visible.map(row => {
       const b = row.element.bounds(row.props, row.state, { view, placement: row.placement }), p = row.placement;
-      const x1 = view.sx(p.x + b.x * p.scale * p.facing, p.parallax), x2 = view.sx(p.x + (b.x + b.w) * p.scale * p.facing, p.parallax);
-      const y1 = view.y(p.h + b.h * p.scale), y2 = view.y(p.h + (b.h - b.tall) * p.scale);
-      return { id: row.instance.id, x: Math.min(x1, x2), y: Math.min(y1, y2), width: Math.abs(x2 - x1), height: Math.abs(y2 - y1) };
+      return {id:row.instance.id,...projectedBounds(view,p,b)};
     }),
     deltaToLocal(id, dx, dy) {
       const row = rows.find(row => row.instance.id === id); if (!row) throw new Error('Missing selected instance');
@@ -95,28 +97,36 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     const W=canvas.width/scale,H=canvas.height/scale,lighting=request.lighting??lightAt(Number(request.environment.day??1),Number(request.environment.minute??580),Number(request.environment.facing??90),null);
     const context=frameTimelineContext(createSequenceValidationContext(art,{[composition.scene]:composition}),{time:request.time,reduced:request.reduced,sequenceId:id,environment:request.environment,viewport:{width:canvas.width,height:canvas.height},timeline});
     const evaluated=request.frame??evaluateTimeline(timeline,id,request.time,context,{reduced:request.reduced});
+    const initialContext=request.workspace&&(request.workspace.anchorX===undefined||request.workspace.anchorH===undefined)?frameTimelineContext(createSequenceValidationContext(art,{[composition.scene]:composition}),{time:0,reduced:request.reduced,sequenceId:id,environment:request.environment,viewport:{width:canvas.width,height:canvas.height},timeline}):undefined;
+    const initial=initialContext?evaluateTimeline(timeline,id,0,initialContext,{reduced:request.reduced}):undefined,workspace=request.workspace?{...request.workspace,anchorX:request.workspace.anchorX??initial!.camera.x,anchorH:request.workspace.anchorH??initial!.camera.h}:undefined;
     canvas.width=canvas.width;const ctx=canvas.getContext('2d');if(!ctx)throw Error('Canvas 2D unavailable');
     let prepared:WorldFrame|undefined;
     if(id==='intro'||id==='act2'){
       const key=composition.scene+':'+W+':'+H+':'+request.reduced;let seek=seeks.get(key);if(!seek)seeks.set(key,seek=new IntroSeekSession());
-      prepared=renderCutsceneDocument(ctx,W,H,id,request.time,{composition,timeline,frame:evaluated,registry:art,sequenceId:id,reduced:request.reduced,lighting,scale,seek,capture:true,ambient:request.time*60});
+      if(workspace){prepared=renderWorldFrame({kind:'sequence',workspace,context:ctx,documents:{compositions:{[composition.scene]:composition},timeline},composition,sequenceId:id,registry:art,frame:evaluated,scale,width:W,height:H,reduced:request.reduced,lighting,time:request.time,capture:true,ambient:request.time*60,...(id==='intro'?{skyline:seek.prepare(ctx,cutView(W,H,request.reduced,lighting),request.time,composition.sequence!.duration)}:{})});}else prepared=renderCutsceneDocument(ctx,W,H,id,request.time,{composition,timeline,frame:evaluated,registry:art,sequenceId:id,reduced:request.reduced,lighting,scale,seek,capture:true,ambient:request.time*60});
     }else{
       let scenes=request.sourceVersion?worlds.get(request.sourceVersion):undefined;
       if(!scenes&&request.documents){scenes=pendingRegistry(request.documents);if(request.sourceVersion)worlds.set(request.sourceVersion,scenes);}
+      if(scenes&&request.transient){
+        const pending=request.transient.composition,local={...request,composition:pending},adapter=adapters[pending.scene]??resolveAdapter?.(pending.scene,local)??authoredSceneAdapter(pending.scene,request.documents);
+        if(adapter){const options={reduced:request.reduced},definition=adapter.pendingDefinition&&request.documents?adapter.pendingDefinition(pending,{},options,request.documents):adapter.definition(pending,{},options);scenes={...scenes,[pending.scene]:bindWorld?.(definition,local)??definition};}
+      }
       const world=composition.instances.some(n=>n.type==='sequence.world-control');
       if(world){ctx.setTransform(scale,0,0,scale,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);}
-      prepared=renderWorldFrame({kind:'sequence',context:ctx,documents:{compositions:{[composition.scene]:composition},timeline},composition,sequenceId:id,registry:art,frame:evaluated,scale,width:W,height:H,reduced:request.reduced,lighting,time:request.time,capture:true,ambient:request.time*60,destination:String(request.environment.destination??'DOWNTOWN'),world:{scenes,documents:request.documents,graph:request.documents?.has('zone-graph')?validateZoneGraph(request.documents.get('zone-graph')):undefined,ambientTime:number(request.environment.titleOffset,id==='glide'?7:0)+request.time}});
+      prepared=renderWorldFrame({kind:'sequence',workspace,context:ctx,documents:{compositions:{[composition.scene]:composition},timeline},composition,sequenceId:id,registry:art,frame:evaluated,scale,width:W,height:H,reduced:request.reduced,lighting,time:request.time,capture:true,ambient:request.time*60,destination:String(request.environment.destination??'DOWNTOWN'),world:{scenes,documents:request.documents,graph:request.documents?.has('zone-graph')?validateZoneGraph(request.documents.get('zone-graph')):undefined,ambientTime:number(request.environment.titleOffset,id==='glide'?7:0)+request.time}});
     }
     if(!prepared)throw Error('Missing prepared frame');
-    const selection=frameSelection(prepared,request);if(request.overlays)drawSelectionOverlay(ctx,selection,request.selectedId);return selection;
+    const selection=frameSelection(prepared,request);if(workspace)selection.workspaceAnchor={x:workspace.anchorX,h:workspace.anchorH};if(request.overlays)drawSelectionOverlay(ctx,selection,request.selectedId,request.objectOutlines);return selection;
   };
   const frameSelection=(frame:WorldFrame,request:PreviewRequest):PreviewResult=>{
+    const regions:NonNullable<PreviewResult['regions']>=[];
     const bounds:PreviewResult['bounds']=[],sources:NonNullable<PreviewResult['sources']>={},deltas=new Map<string,(dx:number,dy:number)=>{x:number;h:number}>();
     const documents=request.documents??new Map([[request.composition.scene,request.composition]]);
     for(const scope of frame.inspection??[]){
       const source=scope.composition??[...documents.values()].find((d:any)=>d?.version===1&&d?.scene===scope.scene?.id&&Array.isArray(d.instances)) as Composition|undefined;
       if(!source)continue;
       const owner=[...documents].find(([,value]:[string,unknown])=>(value as Composition)?.scene===source.scene&&Array.isArray((value as Composition)?.instances))?.[0]??source.scene;
+      if(scope.scene){const x=((scope.view.sx(0)-scope.view.viewW/2)*scope.zoom+scope.view.viewW/2)*scope.scale,width=(scope.view.sx(scope.scene.width)-scope.view.sx(0))*scope.zoom*scope.scale;regions.push({document:owner,scene:scope.scene.id,label:scope.scene.name,x,y:0,width,height:scope.view.viewH*scope.scale,active:scope.scene.id===(frame.cameraGuide?.scene??frame.sceneId)});}
       const env=scope.scene?.visualEnvironment?.(scope.view,{m:scope.model!,hover:null,layer:'all'})??{view:scope.view,state:{},reduced:request.reduced};
       const drawn=frame.evaluation?.composition.scene===source.scene?frame.evaluation.composition:source;
       const rows=resolveComposition(art,drawn,env),local=previewBounds(rows,scope.view,{reduced:request.reduced},drawn);
@@ -129,7 +139,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         deltas.set(key,(dx,dy)=>local.deltaToLocal!(rect.id,dx/k/zoom,dy/k/zoom));
       }
     }
-    return{bounds,sources,deltaToLocal(id,dx,dy){const delta=deltas.get(id);if(!delta)throw Error('Missing selected source');return delta(dx,dy);}};
+    return{bounds,sources,regions,camera:frame.cameraGuide,workspaceScale:frame.workspaceScale,activeScene:frame.cameraGuide?.scene??frame.sceneId,deltaToLocal(id,dx,dy){const delta=deltas.get(id);if(!delta)throw Error('Missing selected source');return delta(dx,dy);}};
   };
   /** Inspection never advances simulation: deadlines are reinitialised after replacing host time, so a clock/countdown
    * snapshot cannot depend on render duration or warmup. */
@@ -182,7 +192,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const def = bindWorld?.(original, { ...nearby, composition: document }) ?? original, model = inspectionModel(def, services, request);
       const cam = view.cam - at.dx, engine: EngineDraw = { m: model, hover: null, layer: 'all' };
       const zoneView: View = { ...frameView(request.time * 60), viewW: view.viewW, viewH: view.viewH, cam, gy: view.gy - at.dh,
-        sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom) / zoom, y: h => view.y(h + at.dh), flags: view.flags,
+        sx: (x, parallax = 1) => projectX(x,cam,parallax,zoom), y: h => view.y(h + at.dh), flags: view.flags,
         ...(def.level ? { level: restingLevelView(def.level, false) } : {}) };
       const outdoor = def.outdoor ?? !!(def.ambient?.weather || def.ambient?.sky);
       out.push({ view: zoneView, scene: def, sceneId: zone, host: { model, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
@@ -221,7 +231,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       // still snap to whole zoomed pixels (`sx`), so where things land on screen is exactly as before the transform.
       const k = renderScale * zoom, zw = width / zoom, zh = height / zoom, ground = (height - 54) / zoom;
       const view: View = { ...frameView(request.time * 60), viewW: zw, viewH: zh, cam, gy: ground,
-        sx: (x, parallax = 1) => Math.round((x - cam * parallax) * zoom) / zoom, y: h => ground - (h - cameraH),
+        sx: (x, parallax = 1) => projectX(x,cam,parallax,zoom), y: h => ground - (h - cameraH),
         flags: flags as Record<string, boolean>, ...(def.level ? { level: restingLevelView(def.level, settings.inside === true, typeof settings.roomsAt === 'string' && settings.roomsAt.trim() ? settings.roomsAt.trim() : undefined) } : {}) };
       const player: PlayerState = { handle: typeof settings.handle === 'string' ? settings.handle : '', tokens: number(settings.tokens, 0), jump: settings.jump === true, controlled: [], flags: flags as Record<string, boolean> };
       const forbidden = () => { throw new Error('Preview cannot perform gameplay effects'); };
@@ -264,7 +274,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / k, dy / k) };
       // the level overlay keeps its 1-unit lines and 7 px labels: drawn at renderScale over the view's zoomed positions
       if (request.overlays && def.level) drawLevelOverlay(context, def.level, { ...view, sx: (x, parallax) => view.sx(x, parallax) * zoom, y: h => view.y(h) * zoom }, renderScale);
-      if (request.overlays) drawSelectionOverlay(context, result, request.selectedId);
+      if (request.overlays) drawSelectionOverlay(context,result,request.selectedId,request.objectOutlines);
       if (around.length) {
         result.extent = { from: Math.min(0, ...around.map(z => z.dx)), to: Math.max(def.width, ...around.map(z => z.dx + z.width)) };
         if (showJoined) result.joined = joinedOverlay(context, around, def.width, view, k, canvas, !!request.overlays);

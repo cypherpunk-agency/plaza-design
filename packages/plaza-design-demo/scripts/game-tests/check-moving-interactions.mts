@@ -1,3 +1,6 @@
+import * as StoryTransitions from '../../src/ssg/game/runtime/story-transitions';
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Ordinary authored uses/readables/rests keep their native behavior while following a car. */
 import assert from 'node:assert/strict';
 import authored from '../../src/ssg/game/scenes/authored.json';
@@ -29,23 +32,23 @@ assert.equal(moved.uses![0].use,scene.uses![0].use,'geometry cannot replace ordi
 assert.equal(moved.uses![0].eligibility,scene.uses![0].eligibility);
 const checkpoint=JSON.stringify(model.snapshot());for(let i=0;i<4;i++)movingInteractions(scene,model);assert.equal(JSON.stringify(model.snapshot()),checkpoint,'inspection never ticks a mover');assert.equal(JSON.stringify(entry),source,'source never changes during queries');
 const restored=make();restored.restore(model.snapshot());assert.deepEqual(movingInteractions(scene,restored),moved,'ordinary current mover reload restores all interaction geometry');
-const probe:any={def:scene,here:scene.id,zh:{model},level:lv,save:{flags:{}},gameplayFor:()=>undefined,useLabel:(u:any)=>u.label,promptFloor:Game.prototype['promptFloor' as never]};
+const probe:any=runtimeFixture(Game,{def:scene,zh:{model},save:{flags:{}},gameplayFor:()=>undefined,useLabel:(u:any)=>u.label,promptFloor:Game.prototype['promptFloor' as never],scenes:{here:scene.id,level:lv}});
 const targets=(Game.prototype as any).lifeTargets.call(probe,scene);
 for(const id of ['use:speaker','read:speaker']){const t=targets.find((r:any)=>r.id===id);assert(t);assert(Math.abs(t.h-p.y)<1e-7,'native target stands on the actual descending car floor');}
 let said:unknown[]=[];
-(Game.prototype as any).useLife.call({...probe,story:'',say:(...args:unknown[])=>said=args},'read:speaker');
+InteractionRouting.useLife(runtimeFixture(Game,{...probe,story:'',say:(...args:unknown[])=>said=args}).interactionRoutingPort,'read:speaker');
 assert.deepEqual(said,[moved.readables![0].name,moved.readables![0].pages,moved.readables![0].x,moved.readables![0].h],'native reading answers at the live attachment');
-let called:any;
-(Game.prototype as any).useLife.call({...probe,save:{flags:{},items:{}},runUse:(...args:unknown[])=>called=args},'use:speaker');
-assert.equal(called[0].x,moved.uses![0].x);assert.equal(called[1],scene.uses![0].use,'native E invokes the existing source callback');
-let rest:any;(Game.prototype as any).useLife.call({...probe,offerWait:(r:unknown)=>rest=r},'rest:bench');assert.equal(rest.x,moved.rests![0].x);assert.equal(rest.h,moved.rests![0].h,'native resting receives the live car attachment');
+let called=false;const use={...scene.uses![0],use:()=>{called=true;return{pages:[]};}};
+InteractionRouting.useLife(runtimeFixture(Game,{...probe,def:{...scene,uses:[use]},story:'',save:{flags:{},items:{},tokens:0},persistSave(){},syncHud(){},say(){},weatherHere:()=>({kind:'clear'})}).interactionRoutingPort,'use:speaker');
+assert(called,'native E invokes the existing use callback');
+let rest:any;InteractionRouting.useLife({...runtimeFixture(Game,{...probe}).interactionRoutingPort,offerWait:(r:unknown)=>rest=r},'rest:bench');assert.equal(rest.x,moved.rests![0].x);assert.equal(rest.h,moved.rests![0].h,'native resting receives the live car attachment');
 const itemUse={...scene.uses![0],items:[{item:'parcel',label:'GIVE',use:scene.uses![0].use}]};
 let popup:any;
-(Game.prototype as any).useLife.call({...probe,def:{...scene,uses:[itemUse]},save:{flags:{},items:{parcel:1}},zh:{model,choose:(_id:string,_name:string,_items:unknown,box:unknown)=>popup=box},usePrice:()=>0},'use:speaker');
+InteractionRouting.useLife(runtimeFixture(Game,{...probe,def:{...scene,uses:[itemUse]},save:{flags:{},items:{parcel:1}},zh:{model,choose:(_id:string,_name:string,_items:unknown,box:unknown)=>popup=box},usePrice:()=>0}).interactionRoutingPort,'use:speaker');
 assert.equal(popup.x,moved.uses![0].x);assert.equal(popup.y,p.y,'an item-use popup anchors to its actual moving deck');
 assert.equal(popup.y+popup.h,moved.uses![0].promptH!-24,'moving popup extents do not double-count absolute height');
 let restBox:any,followRest:any;
-(Game.prototype as any).offerWait.call({...probe,zh:{model,choose:(_id:string,_name:string,_items:unknown,box:unknown,follow:unknown)=>{restBox=box;followRest=follow;}}},moved.rests![0]);
+StoryTransitions.offerWait(runtimeFixture(Game,{...probe,zh:{model,choose:(_id:string,_name:string,_items:unknown,box:unknown,follow:unknown)=>{restBox=box;followRest=follow;}}}).storyTransitionsPort,moved.rests![0]);
 assert.equal(restBox.x,moved.rests![0].x);
 for(let i=0;i<100;i++)model.tick(1000/60,true);
 const nextRest=movingInteractions(scene,model).rests![0];

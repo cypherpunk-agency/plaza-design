@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /**
  * In a lift car the floors are a list menu beside the car (engine/popup.ts placement 'list', opened through the scene
  * host's `list` from runtime/game.ts syncCarList), not a floating "[↑↓] FLOOR" prompt. The list only reflects and sets
@@ -143,19 +144,14 @@ try {
     const m = new SceneModel({say() {}, changed() {}, open() {}} as never, tower.data!, (tower.rules ?? {}) as never);
     const p: LevelPlayer = {x: lift.x, y: stops[0].h, vy: 0, face: 1, onGround: true, moving: false};
     const L: Level = {source: level, state: levelArrive(level, p, stops[0].h)};
-    const g: any = Object.create(Game.prototype);
+    const g: any = runtimeFixture(Game);
     const stand = (o: Record<string, unknown>) => { for (const [k, v] of Object.entries(o)) Object.defineProperty(g, k, {value: v, writable: true, configurable: true}); };
     const zh = {
       overlayOpen: false, acknowledgmentPending: false, hackable: false, visionOn: false, targets: () => [], model: {},
       get popupOpen() { return shim.popupOpen; }, popupKey: (e: KeyboardEvent) => shim.popupKey(e),
       list: (...a: unknown[]) => (shim.list as any)(...a), listOpen: (id: string) => shim.listOpen(id), closeList: (id: string) => shim.closeList(id),
     };
-    stand({
-      touch, joinedZones:[], hosts:new Map(), zoneTiers:new Map(), level: L, p, movers: m, keys: new Set<string>(), bubble: null, showEnd: false, opening: null, cut: null, flight: null, hop: null, beat: null, sleep: null,
-      mapView: null, netView: null, transport: undefined, menu: {open: false}, term: {focused: false, isOpen: false}, hostOf: () => zh,
-      save: {jump: true, flags: {}, keyring: [] as string[]}, hints: {done() {}}, def: {uses: [], exits: []}, platforms: [], story: 'free', here: 'fixture', arrowsKey: '',
-      exitTargets: () => [], lifeTargets: () => [], sceneDefinition: () => ({}), gameplayStatePort: () => ({read: () => ({})}), persistSave() {}, companionPresent: false, liftIds: new Set<string>(),
-    });
+    stand({touch,p,movers: m,transport: undefined,menu: {open: false},term: {focused: false, isOpen: false},hostOf: () => zh,save: {jump: true, flags: {}, keyring: [] as string[]},hints: {done() {}},def: {uses: [], exits: []},platforms: [],story: 'free',exitTargets: () => [],lifeTargets: () => [],sceneDefinition: () => ({}),gameplayStatePort: () => ({read: () => ({})}),persistSave() {},companionPresent: false,scenes:Object.assign(g.scenes,{joinedZones:[],hosts:new Map(),zoneTiers:new Map(),level: L,here: 'fixture'}),input:Object.assign(g.input,{keys: new Set<string>()}),presentation:Object.assign(g.presentation,{bubble: null,showEnd: false,opening: null,cut: null,flight: null,hop: null,beat: null,sleep: null,mapView: null,netView: null,arrowsKey: '',liftIds: new Set<string>()})});
     g.onKeyDown = g.onKeyDown.bind(g); g.onKeyUp = g.onKeyUp.bind(g);
     win.addEventListener('keydown', g.onKeyDown); win.addEventListener('keyup', g.onKeyUp);
     const key = (k: string) => { win.dispatchEvent(new FakeKeyboardEvent('keydown', {key: k})); win.dispatchEvent(new FakeKeyboardEvent('keyup', {key: k})); };

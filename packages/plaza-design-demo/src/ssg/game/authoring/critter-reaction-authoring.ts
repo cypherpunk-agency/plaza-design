@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {validateCritterReactions,type CritterReactionDocument} from '../engine/gameplay/critter-reactions';
 import {CRITTERS} from '../art/characters/appearance';
 /** Typed controls for engine/gameplay/critter-reactions.json: what a pet cat or a shooed pigeon answers. */

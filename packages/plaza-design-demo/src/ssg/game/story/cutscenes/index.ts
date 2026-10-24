@@ -45,7 +45,7 @@ export function createCutscenes(documents:CinematicDocuments=cinematicDocuments)
 export type CutsceneId='intro'|'act2';
 export const CUTSCENES=createCutscenes();
 export const isCutsceneId=(id:string):id is CutsceneId=>Object.prototype.hasOwnProperty.call(CUTSCENES,id);
-export const cutsceneById=(id:string):Cutscene|undefined=>isCutsceneId(id)?CUTSCENES[id]:undefined;
+
 
 /** Inputs in the first moments don't skip: the key that started the scene is still being pressed. */
 const GRACE = 0.8;

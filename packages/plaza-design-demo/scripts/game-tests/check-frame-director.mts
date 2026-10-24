@@ -1,6 +1,7 @@
 /** The frame director: a sequence's configuration of the one frame (runtime/render-scene.ts). Absent, play is unchanged. */
 import assert from 'node:assert/strict';
-import { renderWorldFrame, directorFromTimeline, type FrameDirector, type WorldFrame } from '../../src/ssg/game/runtime/render-scene';
+import {renderWorldFrame} from '../../src/ssg/game/runtime/render-scene';
+import {directorFromTimeline,type FrameDirector,type WorldFrame} from '../../src/ssg/game/runtime/frame';
 import { lightAt } from '../../src/ssg/game/world/light';
 import type { View } from '../../src/ssg/game/art/core/view';
 import type {BackdropDocument} from '../../src/ssg/game/world/backdrops';

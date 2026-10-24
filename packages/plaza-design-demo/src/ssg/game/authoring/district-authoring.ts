@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import type {CitySource,District} from '../world/city';
 import {validatePendingCity} from './pending-city';
 type DistrictId=District['id'];

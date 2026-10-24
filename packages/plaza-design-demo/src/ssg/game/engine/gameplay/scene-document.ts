@@ -10,11 +10,12 @@ import {validateManifest,type SceneManifest} from './manifest-contract';
 import {validateSceneStage,type SceneStage} from './scene-stage';
 import {currentObjective,objectiveAttention,type ObjectiveDefinition} from './objectives';
 import {evaluateAccess,validateAccess,type AccessRequirement} from './access';
-import {withSceneConversations,actorConversationId} from './scene-conversations';
+import {withSceneConversations} from './scene-conversations';
 import type {Condition,GameplayDefinition} from './types';
-import {matches,validateGameplay} from './validation';
+import {matches} from './queries';
+import {validateGameplay} from './validation';
 import {sourceGameplay} from './shared-state';
-import type {SceneDef,SceneUse,UseCtx,ItemId,SceneSaid} from '../../scenes/kit';
+import type {SceneUse,UseCtx,ItemId,SceneSaid} from '../../scenes/kit';
 import type {NativeTargetDocument} from './native-targets';
 import type {PresentationCue} from './presentation-signals';
 import {validateGameplayText,renderGameplayText} from './text-template';
@@ -115,16 +116,3 @@ export function compileSceneDocument(doc:SceneDocument,positions:Record<string,n
   return {uses,...(doc.objectives?{objectives:doc.objectives,objective,attention}:{}),...(doc.time?{minute,run}:{}),...(doc.timeDay?{day}:{})};
 }
 /** Authored text/routes bind to native geometry and actors; painting and actor order stay native. */
-export function applyScenePresentation(scene:SceneDef,doc:SceneDocument):SceneDef {
-  const merge=<T extends {id?:string}>(native:T[]|undefined,authored:{id:string}[]|undefined):T[]|undefined=>{
-    if(!authored)return native;
-    for(const row of authored)if(!native?.some(n=>n.id===row.id))throw new Error('Unknown scene binding: '+row.id);
-    return native?.map(row=>({...row,...authored.find(a=>a.id===row.id)}));
-  };
-  const people=merge(scene.people,doc.people);if(doc.people)for(const person of people??[])if(person.id&&doc.people.some(p=>p.id===person.id)){const source=doc.people.find(p=>p.id===person.id)!;person.conversation=source.conversation??actorConversationId(doc.id,person.id);if(source.conversation!==undefined){person.talk=[];delete person.lines;}}
-  return {...scene,...(scene.gameplay?{gameplay:withSceneConversations(scene.gameplay,doc)}:{}),name:doc.name,introOnFoot:doc.introOnFoot,intro:doc.introTouch?(touch:boolean)=>[...(touch?doc.introTouch!:doc.intro)]:doc.intro.length?[...doc.intro]:undefined,
-    ...(doc.exits?{exits:merge(scene.exits,doc.exits)!}:{}),
-    ...(doc.readables?{readables:merge(scene.readables,doc.readables)}:{}),
-    ...(doc.rests?{rests:merge(scene.rests,doc.rests)}:{}),
-    ...(doc.people?{people}:{})};
-}

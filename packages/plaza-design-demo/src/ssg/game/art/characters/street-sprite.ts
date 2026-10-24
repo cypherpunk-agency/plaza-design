@@ -2,10 +2,7 @@
 import {drawSprite,SPR} from '../core/sprites';
 import type {View} from '../core/view';
 import {drawDriven,type Character} from '../../runtime/characters';
-export const streetSpriteKinds=['fixer','hood','umbrella','hat'] as const;
-export interface StreetSpritePresentation {kind:'streetSprite';sprite:typeof streetSpriteKinds[number];flip?:boolean}
-/** Caption avoidance intentionally preserves the original street actor head markers. */
-export const streetSpriteHeadHeight=(recipe:StreetSpritePresentation)=>recipe.sprite==='fixer'?74:46;
+import {streetSpriteKinds,type StreetSpritePresentation} from './presentation';
 /**
  * Downtown's three street residents are character-kit people (a hood, an umbrella, a brimmed hat), so they
  * share the kit's poses, rim and shadows. The fixer stays his own sprite: he is a one-off with an identity.

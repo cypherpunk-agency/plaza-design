@@ -14,7 +14,7 @@ import{paintSignageNativeReference}from'./check-signage-workbench-reference';
 // @ts-ignore Exact RGBA PNG codec shared with the accepted scene evidence tooling.
 import{encodeRgbaPNG,decodeRgbaPNG}from'./png-codec.js';
 import{lineOpen,platformTrain}from'../../src/ssg/game/world/transport/line';import{city}from'../../src/ssg/game/world/clock';import{light}from'../../src/ssg/game/world/light';import{hereClimate,overrideOf,CLIMATE_IDS}from'../../src/ssg/game/world/weather';
-import type{PreviewRequest}from'../../src/ssg/game/authoring/app';
+import type {PreviewRequest} from '../../src/ssg/game/authoring/contracts';
 import type{Composition}from'../../src/ssg/game/art/core/composition';
 let contextDiagnostic:null|{reset:boolean;trace:unknown[]}=null;
 const nativeBase=createNativePreview(nativeSceneAdapters),sequence=nativeBase;

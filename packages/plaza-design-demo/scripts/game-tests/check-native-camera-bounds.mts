@@ -1,6 +1,6 @@
 import assert from'node:assert/strict';import fs from'node:fs';import path from'node:path';
 import{centerNativePreview,NATIVE_FOCUS_LIMITS}from'../../src/ssg/game/authoring/native-camera';
-import type{PreviewRequest}from'../../src/ssg/game/authoring/app';
+import type {PreviewRequest} from '../../src/ssg/game/authoring/contracts';
 const canvas={width:960,height:540} as HTMLCanvasElement,request:PreviewRequest={composition:{version:1,scene:'camera-guards',instances:[]},time:1,reduced:false,overlays:false,environment:{cameraX:30,cameraH:-12,renderScale:1}};
 let ordinary=0;for(const depth of [.1,.3,.7,1,1.4])for(const scale of [.5,1,4]){const focused=centerNativePreview((_c,r)=>({bounds:[{id:'piece',x:(2300-Number(r.environment.cameraX)*depth)*scale,y:(88+Number(r.environment.cameraH))*scale,width:40*scale,height:70*scale}]}),canvas,{...request,environment:{...request.environment,renderScale:scale}},r=>r.bounds[0]);assert.ok(Math.abs(Number(focused.request.environment.cameraX)-(2320-480/scale)/depth)<1e-7);assert.ok(Math.abs(Number(focused.request.environment.cameraH)-(270/scale-123))<1e-7);assert.deepEqual(focused.diagnostics,[]);ordinary++;}
 let invalidInputs=0;for(const[key,value]of [['cameraX',NaN],['cameraX',Infinity],['cameraH',-Infinity],['cameraH',NATIVE_FOCUS_LIMITS.camera+1]] as const){let calls=0;assert.throws(()=>centerNativePreview(()=>{calls++;return{bounds:[]};},canvas,{...request,environment:{...request.environment,[key]:value}},r=>r.bounds[0]));assert.equal(calls,0);invalidInputs++;}

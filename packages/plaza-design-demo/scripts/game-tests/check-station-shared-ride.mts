@@ -1,3 +1,5 @@
+import * as SceneLifecycle from '../../src/ssg/game/runtime/scene-lifecycle';
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Native stations observe TRAIN-0; boarding/alighting cannot restart or retime it. */
 import assert from 'node:assert/strict';
 import {SCENES} from '../../src/ssg/game/scenes';
@@ -27,11 +29,9 @@ assert.deepEqual(metro.rideView(model.movers),before,'station painting never adv
 
 // The ordinary Game host lifecycle retains that same owner while waiting on the platform.
 {
- const native=Object.create(Game.prototype) as any,shown:unknown[]=[],platform={show:(...args:unknown[])=>shown.push(['platform',...args])},train={show:(...args:unknown[])=>shown.push(['train',...args])};
- Object.defineProperties(native,{world:{value:city},here:{value:'galleriaStation'},zh:{value:platform},interactionHost:{value:platform},
-  hosts:{value:new Map([['galleriaStation',platform],['train',train]])},joinedZones:{value:[]},zoneTiers:{value:new Map()},
-  hostOf:{value:(id:string)=>{assert.equal(id,'train');return train;}},unload:{value:()=>assert.fail('waiting must not unload the observed train')}});
- native.showHost();
+ const native=runtimeFixture(Game) as any,shown:unknown[]=[],platform={show:(...args:unknown[])=>shown.push(['platform',...args])},train={show:(...args:unknown[])=>shown.push(['train',...args])};
+ (Object.defineProperties(native,{world:{value:city},zh:{value:platform},interactionHost:{value:platform},hostOf:{value:(id:string)=>{assert.equal(id,'train');return train;}},unload:{value:()=>assert.fail('waiting must not unload the observed train')}}),Object.defineProperties(native.scenes,{here:{value:'galleriaStation'},hosts:{value:new Map([['galleriaStation',platform],['train',train]])},joinedZones:{value:[]},zoneTiers:{value:new Map()}}));
+ SceneLifecycle.showHosts(native.sceneLifecyclePort);
  assert.deepEqual(shown,[['platform',true,true],['train',false,false]],'the existing hidden host keeps its normal Game tick');
 }
 

@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
@@ -17,7 +18,7 @@ function make(bits:number,definition=source.gameplay!){
  const model=new SceneModel({say(){},open(){},changed(){}},source.data!,typeof source.rules==='function'?source.rules({save:()=>save,persist(){},nodes:()=>42,granted(){},end(){}} as any):source.rules!);model.setPaused(true);
  let state:any={flags:{...save.flags},items:{},tokens:0,player:{handle:save.handle,jump:save.jump,controlled:save.controlled,keyring:[]}};
  const session=new GameplaySession(definition,fixtureGameplayPort(definition,{read:()=>state,write:v=>{state=v;}},()=>model));attachNativeGameplay(model,session);
- let saved=0,hud=0;const game:any=Object.create(Game.prototype);game.content={downtown:{...source,gameplay:definition}};game.sceneDefinition=(id:string)=>id==='downtown'?game.content.downtown:{gameplay:undefined};game.hostOf=()=>({model});game.gameplayFor=()=>session;game.persistSave=()=>saved++;game.syncHud=()=>hud++;
+ let saved=0,hud=0;const game:any=runtimeFixture(Game);game.content={downtown:{...source,gameplay:definition}};game.sceneDefinition=(id:string)=>id==='downtown'?game.content.downtown:{gameplay:undefined};game.hostOf=()=>({model});game.gameplayFor=()=>session;game.persistSave=()=>saved++;game.syncHud=()=>hud++;
  return{save,model,session,game,counts:()=>({saved,hud}),close:()=>{session.dispose();model.reset();model.setPaused(true);}};
 }
 for(let bits=0;bits<64;bits++){

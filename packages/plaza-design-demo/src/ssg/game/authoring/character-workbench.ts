@@ -21,7 +21,7 @@ import {M} from '../art/vehicles/vehicles';
 import {CROWD_MIXES,crowdMix,sampleCrowd,type CrowdMember} from '../art/characters/crowds';
 import {ARCHETYPES,ARCHETYPE_IDS,type ArchetypeId} from '../art/characters/archetypes';
 import {peopleStyle,seatedView} from '../art/characters/people-style';
-import type {WorkbenchHandle} from './app';
+import type {WorkbenchHandle} from './contracts';
 import {lookFrom} from '../art/characters/appearance';
 import {SEAT_H} from '../art/characters/riders';
 import cityData from '../world/city.json';

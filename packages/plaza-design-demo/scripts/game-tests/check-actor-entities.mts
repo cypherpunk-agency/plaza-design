@@ -7,7 +7,7 @@ import {art,type Composition,type Instance} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';

@@ -1,4 +1,5 @@
-import {drawStreetSprite,streetSpriteHeadHeight} from './street-sprite';
+import {drawStreetSprite} from './street-sprite';
+import {streetSpriteHeadHeight} from './presentation';
 import {validateActorPresentation} from '../../engine/gameplay/actor-presentation';
 import type {Element,Value} from '../core/composition';
 import type {PreparedActor,PreparedRider,PreparedStreetSprite} from '../../engine/gameplay/actor-frame';

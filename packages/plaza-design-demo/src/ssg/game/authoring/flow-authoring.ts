@@ -2,7 +2,7 @@ import {TypedForm} from './typed-form';
 import {vehicleNodes} from './vehicle-composition';
 import type {Composition} from '../art';
 import type {VehicleSource} from '../world/vehicles';
-import type {WorkbenchContext} from './app';
+import type {WorkbenchContext} from './contracts';
 import {KINDS} from '../art/characters/riders';
 /** The same flow source that native Play compiles; no editor-side movement evaluator. */
 export function mountFlowAuthoring(host:HTMLElement,context:WorkbenchContext,documentId:string,id:string){

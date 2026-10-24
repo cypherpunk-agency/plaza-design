@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';
 import {mountRules} from './rules-harness.mts';
 import {backdropInspector} from '../../src/ssg/game/authoring/backdrop-preview';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {sourceDocuments} from '../../src/ssg/game/authoring/source-documents';

@@ -7,7 +7,7 @@ import {sceneRuleContract} from '../../src/ssg/game/engine/scene-rule-contract';
 import {validateDeviceSource,applyDeviceSource,deviceSourceIdentity} from '../../src/ssg/game/authoring/device-sources';
 import {nativeVocabulary} from '../../src/ssg/game/engine/gameplay/native-bindings';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {mountDeviceAuthoring} from '../../src/ssg/game/authoring/device-authoring';

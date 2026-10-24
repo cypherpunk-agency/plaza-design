@@ -1,3 +1,5 @@
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Critter reactions (engine/gameplay/critter-reactions.json): what a cat to pet or a pigeon to shoo answers, as a document the loop reads. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -30,14 +32,14 @@ for(const [name,mutate] of Object.entries({
 
 // the game loop offers the prompt and says the reply from the document it is given
 const scene:any={id:'critter-test',name:'Critters',width:400,spawn:10,exits:[],people:[{look:'cat',x:10},{look:'pigeon',x:60},{look:'gull',x:110},{look:'cat',x:160,talk:[['Meow, said the talking cat.']]}]};
-const make=(sources:object)=>{const game:any=Object.create(Game.prototype),said:any[]=[];Object.assign(game,{save:newSave(),here:'critter-test',content:{'critter-test':scene},sources,botReactions:BOT_REACTIONS,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map(),t:0,petCount:0,say:(...a:any[])=>said.push(a),dialogueCompletion(){}});return{game,said};};
+const make=(sources:object)=>{const game:any=runtimeFixture(Game),said:any[]=[];Object.assign(game,{save:newSave(),content:{'critter-test':scene},sources,botReactions:BOT_REACTIONS,say:(...a:any[])=>said.push(a),dialogueCompletion(){},scenes:Object.assign(game.scenes,{here:'critter-test',compiledScenes:new Map(),hosts:new Map([['critter-test',{model:{attachmentOffsets:()=>undefined}}]]),gameplaySessions:new Map()}),timing:Object.assign(game.timing,{t:0}),presentation:Object.assign(game.presentation,{petCount:0})});return{game,said};};
 {const {game,said}=make({}),targets=game.lifeTargets(scene).filter((t:any)=>t.id.startsWith('pet:'));
  assert.deepEqual(targets.map((t:any)=>[t.id,t.label]),[['pet:0','[E] PET'],['pet:1','[E] SHOO']],'the gull has no reaction; the talking cat talks instead');
- for(let n=0;n<4;n++)game.useLife('pet:0');game.useLife('pet:1');
+ for(let n=0;n<4;n++)InteractionRouting.useLife(game.interactionRoutingPort,'pet:0');InteractionRouting.useLife(game.interactionRoutingPort,'pet:1');
  assert.deepEqual(said.map(a=>[a[0],a[1]]),[['CAT',cat[0]],['CAT',cat[1]],['CAT',cat[2]],['CAT',cat[0]],['PIGEON',pigeon[0]]],'one shared counter, as before (the fifth reply overall is the first pigeon one)');}
 {const custom=shipped() as CritterReactionDocument;custom.critters[0].prompt='[E] STROKE';custom.critters[0].name='MOGGY';custom.critters[0].talk=[['Purr.']];custom.critters.push({id:'gull',look:'gull',name:'GULL',prompt:'[E] WAVE',talk:[['Squawk.']]});
  const {game,said}=make({critters:validateCritterReactions(custom)}),targets=game.lifeTargets(scene).filter((t:any)=>t.id.startsWith('pet:'));
- assert.deepEqual(targets.map((t:any)=>[t.id,t.label]),[['pet:0','[E] STROKE'],['pet:1','[E] SHOO'],['pet:2','[E] WAVE']]);game.useLife('pet:0');game.useLife('pet:2');assert.deepEqual(said.map(a=>[a[0],a[1]]),[['MOGGY',['Purr.']],['GULL',['Squawk.']]]);}
+ assert.deepEqual(targets.map((t:any)=>[t.id,t.label]),[['pet:0','[E] STROKE'],['pet:1','[E] SHOO'],['pet:2','[E] WAVE']]);InteractionRouting.useLife(game.interactionRoutingPort,'pet:0');InteractionRouting.useLife(game.interactionRoutingPort,'pet:2');assert.deepEqual(said.map(a=>[a[0],a[1]]),[['MOGGY',['Purr.']],['GULL',['Squawk.']]]);}
 
 // editor controls
 const docs=new Map<string,unknown>([['critter-reactions',shipped()]]),ui=mountRules(mountCritterReactionAuthoring,docs),doc=()=>docs.get('critter-reactions') as CritterReactionDocument;

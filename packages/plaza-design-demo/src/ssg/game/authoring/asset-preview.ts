@@ -2,7 +2,7 @@
 import { compositionAppearance, drawCompositionSlot, resolveComposition, type ArtRegistry, type Composition, type Environment } from '../art/core/composition';
 import { frameView } from '../art/core/view';
 import { lightAt } from '../world/light';
-import type { PreviewRequest, EditorDocument, PreviewResult } from './app';
+import type {PreviewRequest,EditorDocument,PreviewResult} from './contracts';
 import type { AssetEntry, AssetUsage, AssetPreviewOverrides } from './asset-browser';
 import { previewBounds } from './native-preview';
 import type { AssetPreviewReport } from './asset-browser';

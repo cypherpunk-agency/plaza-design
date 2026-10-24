@@ -1,8 +1,10 @@
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
+import {runtimeFixture} from './runtime-fixture.mts';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';import {build} from 'esbuild';
 import {art} from '../../src/ssg/game/art';import {SCENES} from '../../src/ssg/game/scenes';
 import {Game} from '../../src/ssg/game/runtime/game';
 import {mountSceneAuthoring} from '../../src/ssg/game/authoring/scene-authoring';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {pendingNetworkContext} from '../../src/ssg/game/authoring/pending-network';
@@ -29,8 +31,8 @@ try{
  const authored=model.get('downtown-scene').value as any;assert.equal(authored.exits.find((e:any)=>e.id==='moth').needs.key,key);
  const before=JSON.stringify(authored);field.value='missing-key';field.onchange!();assert.equal(JSON.stringify(model.get('downtown-scene').value),before,'bad reference rejected atomically');
  const docs=values(model.list()),registry=pendingRegistry(docs),exit=registry.downtown.exits.find(e=>e.id==='moth')!;
- const g:any=Object.create(Game.prototype),reactions:any[]=[],travels:any[]=[];g.save={flags:{},keyring:[]};g.sources={openingStory:{openingState:()=> 'act1'}};g.here='downtown';Object.defineProperty(g,'def',{value:registry.downtown});g.hostOf=()=>({react:(...args:any[])=>reactions.push(args)});g.hasScene=(id:string)=>!!registry[id];g.travel=(...args:any[])=>travels.push(args);
- g.useExit(exit);assert.equal(reactions.length,1);assert.equal(travels.length,0);g.save.keyring=['moth.key'];g.useExit(exit);assert.equal(travels.length,0,'old shipping key does not bypass edited requirement');g.save.keyring=[key];g.useExit(exit);assert.equal(travels.length,1);assert.equal(travels[0][0],exit.to);
+ const g:any=runtimeFixture(Game),reactions:any[]=[],travels:any[]=[];g.save={flags:{},keyring:[]};g.sources={openingStory:{openingState:()=> 'act1'}};g.scenes.here='downtown';Object.defineProperty(g,'def',{value:registry.downtown});g.hostOf=()=>({react:(...args:any[])=>reactions.push(args)});g.hasScene=(id:string)=>!!registry[id];g.travel=(...args:any[])=>travels.push(args);
+ InteractionRouting.useExit(g.interactionRoutingPort,exit);assert.equal(reactions.length,1);assert.equal(travels.length,0);g.save.keyring=['moth.key'];InteractionRouting.useExit(g.interactionRoutingPort,exit);assert.equal(travels.length,0,'old shipping key does not bypass edited requirement');g.save.keyring=[key];InteractionRouting.useExit(g.interactionRoutingPort,exit);assert.equal(travels.length,1);assert.equal(travels[0][0],exit.to);
  const without=structuredClone(network);without.keyring=without.keyring.filter((k:any)=>k.id!==key);const priorEdits=JSON.stringify(model.edits());assert.throws(()=>model.edit('network','Remove referenced key',()=>without),/exit key reference/);assert.equal(JSON.stringify(model.edits()),priorEdits);
  const isolated={sceneDocument:authored,gameplay:docs.get('downtown-gameplay'),devices:docs.get('downtown-devices')};assert.throws(()=>pendingScene('downtown',docs.get('downtown'),isolated),/exit key reference/);assert.equal(pendingScene('downtown',docs.get('downtown'),isolated,pendingNetworkContext(docs)).exits.find(e=>e.id==='moth')!.needs!.key,key);
  const entry=newAuthoredScene('exit-key-review','Exit key review');addManifestContent(entry.scene,'exits','door','spawn');Object.assign(entry.scene.exits![0],{to:'downtown',at:'moth',needs:{key,name:'DOOR',pages:['Key required.'],h:52}});const native=Object.fromEntries(Object.entries(registry).map(([id,s])=>[id,{exits:s.exits}]));assert.throws(()=>validateSceneCatalogue({version:1,scenes:[entry]},native),/exit key reference/);assert.equal(validateSceneCatalogue({version:1,scenes:[entry]},native,pendingNetworkContext(docs)).scenes.length,1);

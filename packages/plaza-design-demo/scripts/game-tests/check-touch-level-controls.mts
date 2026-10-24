@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /**
  * Touch reaches every level action through the one touch bar (ui/touch-controls.ts), which presses the keys a
  * keyboard does into the game's own handlers (runtime/game.ts onKeyDown/onKeyUp): ▲ ▼ are ↑ and ↓. A tap at a
@@ -78,26 +79,19 @@ try {
   const still: MoverModel = {now: () => 0, movers: {stopPositions: () => undefined, position: () => undefined, moving: () => false, target: () => undefined, trip: () => undefined}, moveTo() {}};
   const reacts: string[] = [];
   function game(level: Level | null, p: LevelPlayer, movers: Movers = still) {
-    const g: any = Object.create(Game.prototype);
+    const g: any = runtimeFixture(Game);
     // own properties shadow the game's getters (zh, def, ...) with the stand-ins
     const stand = (o: Record<string, unknown>) => { for (const [k, v] of Object.entries(o)) Object.defineProperty(g, k, {value: v, writable: true, configurable: true}); };
-    stand({
-      touch: true, level, p, movers, keys: new Set<string>(), bubble: null, showEnd: false, opening: null, cut: null, flight: null, hop: null, beat: null, sleep: null,
-      mapView: null, netView: null, transport: undefined, menu: {open: false}, term: {focused: false, isOpen: false},
-      hostOf: () => zh,
-    });
+    stand({touch: true,p,movers,transport: undefined,menu: {open: false},term: {focused: false, isOpen: false},hostOf: () => zh,scenes:Object.assign(g.scenes,{level}),input:Object.assign(g.input,{keys: new Set<string>()}),presentation:Object.assign(g.presentation,{bubble: null,showEnd: false,opening: null,cut: null,flight: null,hop: null,beat: null,sleep: null,mapView: null,netView: null})});
     const zh = {overlayOpen: false, acknowledgmentPending: false, popupOpen: false, hackable: false, visionOn: false, targets: () => [], model: {}, react: (id: string, line: string[]) => reacts.push(id + ' ' + line[1])};
-    stand({
-      save: {jump: true, flags: {}, keyring: [] as string[]}, hints: {done() {}}, def: {uses: [], exits: []}, platforms: [], story: 'free', here: 'fixture', arrowsKey: '',
-      exitTargets: () => [], lifeTargets: () => [], sceneDefinition: () => ({}), gameplayStatePort: () => ({read: () => ({})}), persistSave() {}, companionPresent: false,
-    });
+    stand({save: {jump: true, flags: {}, keyring: [] as string[]},hints: {done() {}},def: {uses: [], exits: []},platforms: [],story: 'free',exitTargets: () => [],lifeTargets: () => [],sceneDefinition: () => ({}),gameplayStatePort: () => ({read: () => ({})}),persistSave() {},companionPresent: false,scenes:Object.assign(g.scenes,{here: 'fixture'}),presentation:Object.assign(g.presentation,{arrowsKey: ''})});
     g.onKeyDown = g.onKeyDown.bind(g); g.onKeyUp = g.onKeyUp.bind(g);
     win.addEventListener('keydown', g.onKeyDown); win.addEventListener('keyup', g.onKeyUp);
     /** One frame the way the game's update runs the level: ↑/↓ held climb; then the page's ▲ ▼ classes. */
     const frame = (n = 1, walk = 0) => {
       for (let i = 0; i < n; i++) {
         if (level) {
-          const climb = (g.keys.has('ArrowUp') ? 1 : 0) - (g.keys.has('ArrowDown') ? 1 : 0);
+          const climb = (g.input.keys.has('ArrowUp') ? 1 : 0) - (g.input.keys.has('ArrowDown') ? 1 : 0);
           if (movers !== still) { (movers as SceneModel).player = {x: p.x, h: p.y}; (movers as SceneModel).tick(1000 / 60, true); }
           if (!levelStep(level, p, walk, 1, movers, climb) && walk) { const [a, b] = levelBounds(level, 2000, p.x); p.x = Math.max(a, Math.min(b, p.x + walk * 1.3)); }
         }
@@ -129,7 +123,7 @@ try {
     assert.ok(html.contains('level-scene') && shown('up') && !shown('down'), 'at the flight\'s foot ▲ shows, ▼ does not');
     tap(up);
     assert.ok(levelRiding(L) && !levelClimbing(L), 'tap ▲: on the flight');
-    assert.ok(!g.keys.has('ArrowUp') && p.vy === 0, 'one press, nothing held, no jump');
+    assert.ok(!g.input.keys.has('ArrowUp') && p.vy === 0, 'one press, nothing held, no jump');
     frame();
     assert.ok(shown('up') && shown('down'), 'a straight flight is walked with ◀ ▶ or with ▲ ▼ held: both show');
     frame(200, 1);
@@ -144,20 +138,20 @@ try {
     const p = player(300), L: Level = {source: src, state: levelArrive(src, p, 0)}, {g, frame, dispose} = game(L, p);
     frame(); assert.ok(shown('up'), '▲ at the ladder\'s foot');
     press(up);
-    assert.ok(levelClimbing(L) && g.keys.has('ArrowUp'), 'press ▲: on the ladder, ↑ held');
+    assert.ok(levelClimbing(L) && g.input.keys.has('ArrowUp'), 'press ▲: on the ladder, ↑ held');
     frame(20); const mid = p.y;
     assert.ok(mid > 0 && mid < 60, 'holding ▲ climbs (h ' + mid + ')');
     assert.ok(shown('up') && shown('down'), 'climbing, ▲ and ▼ both show');
-    release(up); assert.ok(!g.keys.has('ArrowUp'), 'let go: ↑ is released');
+    release(up); assert.ok(!g.input.keys.has('ArrowUp'), 'let go: ↑ is released');
     frame(20); assert.equal(p.y, mid, 'let go: you hang on the rungs');
     press(down); frame(5); assert.ok(p.y < mid, 'holding ▼ climbs down');
     win.dispatchEvent(new Event('blur'));
-    assert.ok(!g.keys.has('ArrowDown') && !down.classList.contains('down'), 'the page losing focus lets go of a held ▼');
+    assert.ok(!g.input.keys.has('ArrowDown') && !down.classList.contains('down'), 'the page losing focus lets go of a held ▼');
     const after = p.y; frame(10); assert.equal(p.y, after, 'nothing sticks');
     press(up); frame(200); release(up);
     assert.ok(!levelRiding(L) && levelFloor(L).id === 'deck', 'held to the top: out on the deck');
-    press(down); assert.ok(levelClimbing(L) && g.keys.has('ArrowDown'), 'from the top, ▼ gets back on the ladder');
-    down.fire('pointercancel'); assert.ok(!g.keys.has('ArrowDown'), 'a cancelled touch lets go too');
+    press(down); assert.ok(levelClimbing(L) && g.input.keys.has('ArrowDown'), 'from the top, ▼ gets back on the ladder');
+    down.fire('pointercancel'); assert.ok(!g.input.keys.has('ArrowDown'), 'a cancelled touch lets go too');
     dispose();
   }
   // ACT is E: it reaches the barrier, which refuses, then lets the player through with the key
@@ -201,7 +195,7 @@ try {
     assert.ok(!html.contains('level-scene') && !html.contains('level-up') && !html.contains('level-down'), 'outside a level, ▲ ▼ are not drawn');
     tap(jmp); assert.ok(p.vy > 0, 'JMP jumps');
     p.vy = 0; p.onGround = true; tap(up); assert.ok(p.vy > 0, '↑ (▲) jumps where there is no level action, as the key does');
-    assert.ok(!g.keys.has(' ') && !g.keys.has('ArrowUp'), 'released, nothing held');
+    assert.ok(!g.input.keys.has(' ') && !g.input.keys.has('ArrowUp'), 'released, nothing held');
     dispose();
   }
   assert.ok(levelArrows({source: src, state: levelArrive(src, player(200), 0)}, player(200)).up === false, 'away from everything ↑ has no level action');

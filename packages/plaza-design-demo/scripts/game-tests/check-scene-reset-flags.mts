@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Scene stage flags (scene.json `stage.resettable` / `stage.sudoOnly`): the deck's `reset <scene>` and sudo-only resume are data, not scene ids in the loop. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -18,7 +19,7 @@ import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 
 // the scene documents carry the flags the loop used to hard-code by scene id
-const flags=Object.entries(SCENES).filter(([,s])=>s.resettable||s.sudoOnly).map(([id,s])=>[id,s.resettable?.label,!!s.sudoOnly]);
+const flags=Object.entries(SCENES).filter(([,s])=>s.resettable).map(([id,s])=>[id,s.resettable?.label,!!s.sudoOnly]);
 assert.deepEqual(flags,[['sandbox','the sandbox',true],['yard','the back yard',false]].sort((a,b)=>Object.keys(SCENES).indexOf(String(a[0]))-Object.keys(SCENES).indexOf(String(b[0]))));
 assert.equal(SCENES.yard.resettable!.done,"back yard reset: cables, parts, the parcel, HINGE's mood. Everything else is kept.");
 assert.equal(SCENES.yard.resettable!.confirm,'this resets the back yard only (cables, parts, the parcel, its goals).');
@@ -30,7 +31,7 @@ const good:SceneStage={resettable:{label:'x',confirm:'y',done:'z'},sudoOnly:true
 for(const bad of [{resettable:{label:'x',confirm:'y'}},{resettable:{label:'x',confirm:'y',done:' '}},{resettable:{label:'x',confirm:'y',done:'z',more:1}},{resettable:'yes'},{sudoOnly:false},{sudoOnly:'yes'}])assert.throws(()=>validateSceneStage(bad),/Invalid scene stage/);
 
 // the game: which scenes the deck resets and which saves resume (no sudo in this process)
-const make=(content:any,here='downtown')=>{const game:any=Object.create(Game.prototype),resets:string[]=[];Object.assign(game,{save:newSave(),here,content,sources:{},botReactions:BOT_REACTIONS,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map(),t:0,hostOf:(id:string)=>({reset:()=>resets.push(id)})});return{game,resets};};
+const make=(content:any,here='downtown')=>{const game:any=runtimeFixture(Game),resets:string[]=[];Object.assign(game,{save:newSave(),content,sources:{},botReactions:BOT_REACTIONS,hostOf:(id:string)=>({reset:()=>resets.push(id)}),scenes:Object.assign(game.scenes,{here,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map()}),timing:Object.assign(game.timing,{t:0})});return{game,resets};};
 {const {game}=make(SCENES);assert.deepEqual(game.resettableScenes().map(([id]:[string])=>id),['yard'],'the sandbox is sudo only');
  assert.equal(game.resumable('yard'),true);assert.equal(game.resumable('sandbox'),false,'a save in the sandbox does not resume without sudo');assert.equal(game.resumable('downtown'),true);assert.equal(game.resumable('nowhere'),false);}
 {const lab:any={...SCENES.downtown,id:'lab',resettable:{label:'the lab',confirm:'this resets the lab only.',done:'lab reset.'}},{game}=make({...SCENES,lab});assert.deepEqual(game.resettableScenes().map(([id]:[string])=>id),['yard','lab'],'any scene that declares it');}

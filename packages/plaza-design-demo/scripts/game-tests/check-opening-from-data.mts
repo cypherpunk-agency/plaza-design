@@ -1,3 +1,6 @@
+import * as StoryTransitions from '../../src/ssg/game/runtime/story-transitions';
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
+import {runtimeFixture} from './runtime-fixture.mts';
 /**
  * The opening plays from story data alone. The game loop (runtime/game.ts) holds no opening controller: it applies story-rules.ts
  * primitives to source data (opening.json, the scenes' `phases`). This check
@@ -30,12 +33,12 @@ const root=path.resolve('src/ssg/game'),read=(f:string)=>fs.readFileSync(path.jo
  assert(!fs.existsSync(path.join(root,'story/contacts.ts'))||!/export const CONTACTS: Contact\[\] = \[/.test(read('story/contacts.ts')),'contacts are a document, not a TypeScript list');}
 
 // ---- the loop holds no opening controller
-{const game=read('runtime/game.ts');
+{const game=read('runtime/game.ts')+read('runtime/story-transitions.ts')+read('runtime/interaction-routing.ts');
  for(const token of ['OPENING_TIME','OPENING_GOAL','OPENING_INTRO','OPENING_LINES','OPENING_EVERYDAY','OPENING_EXITS','OPENING_TARGETS','OPENING_PINGS','CONTROLLER','HOME_RUN','homeRun','TURNSTILE','mothWrites','morningFlat','wakeUp','rideHome','sleepNow','pick(this.openingStory','isBefore','DECK_BEFORE','IDLE_PING','WAKE_LINES','UPLINK_LINES','MOTH_MESSAGE','capsuleController','CONCIERGE','concierge','turnstile'])assert(!game.includes(token),'runtime/game.ts must not contain '+token);
  assert(!/this\.story\s*===\s*'/.test(game)&&!/st\s*===\s*'/.test(game),'the loop never compares a story phase name');
  assert(!/this\.morning\b/.test(game),'the morning is counters the source names');
- assert.equal((game.match(/this\.sleep\s*=\s*\{/g)??[]).length,1,'one place starts a card transition (the sleep and a wait are the same card)');
- assert.equal((game.match(/this\.beat\s*=\s*\{/g)??[]).length,1,'one place starts a checkpoint gate');
+ assert.equal((game.match(/port\.presentation\.sleep\s*=\s*\{/g)??[]).length,1,'one place starts a card transition (the sleep and a wait are the same card)');
+ assert.equal((game.match(/port\.presentation\.beat\s*=\s*\{/g)??[]).length,1,'one place starts a checkpoint gate');
  for(const word of ['setTimeout','setInterval'])assert(!new RegExp('\\b'+word+'\\(').test(read('story/story-rules.ts')),'story-rules.ts schedules nothing');
  assert(!/class\s+\w+/.test(read('story/story-rules.ts'))&&!/class\s+\w+/.test(read('story/story-shapes.ts')),'story primitives are functions, not controller classes');}
 
@@ -50,38 +53,35 @@ const root=path.resolve('src/ssg/game'),read=(f:string)=>fs.readFileSync(path.jo
  source.GOAL_HINTS=[];source.CLOCK={release:{phase:'rested',scene:'home'}};source.OPENING_LEVELS=[];
  const model=createOpeningModel(source);
  const calls:string[]=[],printed:string[]=[],travels:any[]=[],resets:string[]=[],entered:string[]=[];
- const g:any=Object.create(Game.prototype);
- Object.assign(g,{sources:{openingStory:model},save:newSave(),here:'yard',clock:0,counters:{},bubble:null,beat:null,sleep:null,touch:false,keys:new Set(['ArrowRight']),p:{x:50,y:0,vy:0,onGround:true,face:1},
-  term:{print:(t:string)=>printed.push(t)},persistSave(){},syncHud(){},hasScene:()=>true,travel:(...a:any[])=>{travels.push(a);g.here=a[0];},
-  runOpeningWorkflow:(m:string)=>{calls.push(m);g.save.flags[flagOf(m)]=true;return true;},
-  enter:(id:string)=>{entered.push(id);g.here=id;},hostOf:(id:string)=>({reset:()=>resets.push(id)}),sceneDefinition:()=>({spawn:42}),companionBody:{place(){}}});
+ const g:any=runtimeFixture(Game);
+ Object.assign(g,{sources:{openingStory:model},save:newSave(),touch:false,p:{x:50,y:0,vy:0,onGround:true,face:1},term:{print:(t:string)=>printed.push(t)},persistSave(){},syncHud(){},hasScene:()=>true,travel:(...a:any[])=>{travels.push(a);g.scenes.here=a[0];},runOpeningWorkflow:(m:string)=>{calls.push(m);g.save.flags[flagOf(m)]=true;return true;},enter:(id:string)=>{entered.push(id);g.scenes.here=id;},hostOf:(id:string)=>({reset:()=>resets.push(id)}),sceneDefinition:()=>({spawn:42}),companionBody:{place(){}},scenes:Object.assign(g.scenes,{here:'yard'}),timing:Object.assign(g.timing,{clock:0}),presentation:Object.assign(g.presentation,{counters:{},bubble:null,beat:null,sleep:null}),input:Object.assign(g.input,{keys:new Set(['ArrowRight'])})});
  Object.defineProperty(g,'zh',{value:{popupOpen:false,viewing:null,closeAll(){},model:{}},configurable:true});
  Object.defineProperty(g,'def',{get:()=>({phases:{},perch:undefined}),configurable:true});
  const gate={gate:{verifying:'CLOCK OUT: checking',ok:'CLOCK OUT: ok.',verifyFrames:30,okFrames:10,dotEvery:10,begin:[{sound:'blip'}],then:[{sound:'granted'},{milestone:'clockout'}]}};
  assert.equal(g.story,'shift');
  // the gate: the player is held, the beat is timed in frames, then the milestone runs and the way opens
- assert.equal(g.storyExit(gate,120,{to:'train'},undefined,'exit:gate'),true);assert.equal(g.keys.size,0,'a checkpoint stops the player');assert.equal(g.beat.start,0);
- for(let f=1;f<=39;f++){g.clock=f;g.updateStory();assert(g.beat,'still verifying at frame '+f);assert.equal(travels.length,0);}
- g.clock=40;g.updateStory();assert.equal(g.beat,null);assert.deepEqual(calls,['clockout']);assert.deepEqual(travels,[['train',undefined]]);assert.equal(g.story,'commute');
+ assert.equal(InteractionRouting.storyExit(g.interactionRoutingPort,gate,120,{to:'train'},undefined,'exit:gate'),true);assert.equal(g.input.keys.size,0,'a checkpoint stops the player');assert.equal(g.presentation.beat.start,0);
+ for(let f=1;f<=39;f++){g.timing.clock=f;StoryTransitions.updateStory(g.storyTransitionsPort);assert(g.presentation.beat,'still verifying at frame '+f);assert.equal(travels.length,0);}
+ g.timing.clock=40;StoryTransitions.updateStory(g.storyTransitionsPort);assert.equal(g.presentation.beat,null);assert.deepEqual(calls,['clockout']);assert.deepEqual(travels,[['train',undefined]]);assert.equal(g.story,'commute');
  // the trigger: stamped the first frame it is watched, fires after the elapsed frames, once, and speaks in chain
- assert.equal(g.here,'train');assert.equal(g.counters['ride.at'],40,'stamped the frame the player arrives and the trigger starts watching');assert.deepEqual(calls,['clockout']);
- g.clock=50;g.updateStory();assert.equal(g.counters['ride.at'],40,'the stamp is kept');
- g.clock=140;g.updateStory();assert.deepEqual(calls,['clockout'],'exactly the elapsed frames is not more');
- g.clock=141;g.updateStory();assert.deepEqual(calls,['clockout','arrive']);assert.equal(g.counters['ride.done'],1);assert(printed.includes('> arrived'),'the deck line');assert.equal(printed.at(-1),'TRAIN: Last stop.');assert.equal(g.bubble.name,'TRAIN');assert.deepEqual(g.bubble.pages,['Last stop.']);
- assert.equal(typeof g.bubble.then,'function');g.bubble.then();assert.equal(g.bubble.name,'YOU');assert.deepEqual(g.bubble.pages,['Finally.']);g.bubble=null;
- g.clock=142;g.updateStory();assert.deepEqual(calls,['clockout','arrive'],'fires once');assert.equal(g.story,'rested');
+ assert.equal(g.scenes.here,'train');assert.equal(g.presentation.counters['ride.at'],40,'stamped the frame the player arrives and the trigger starts watching');assert.deepEqual(calls,['clockout']);
+ g.timing.clock=50;StoryTransitions.updateStory(g.storyTransitionsPort);assert.equal(g.presentation.counters['ride.at'],40,'the stamp is kept');
+ g.timing.clock=140;StoryTransitions.updateStory(g.storyTransitionsPort);assert.deepEqual(calls,['clockout'],'exactly the elapsed frames is not more');
+ g.timing.clock=141;StoryTransitions.updateStory(g.storyTransitionsPort);assert.deepEqual(calls,['clockout','arrive']);assert.equal(g.presentation.counters['ride.done'],1);assert(printed.includes('> arrived'),'the deck line');assert.equal(printed.at(-1),'TRAIN: Last stop.');assert.equal(g.presentation.bubble.name,'TRAIN');assert.deepEqual(g.presentation.bubble.pages,['Last stop.']);
+ assert.equal(typeof g.presentation.bubble.then,'function');g.presentation.bubble.then();assert.equal(g.presentation.bubble.name,'YOU');assert.deepEqual(g.presentation.bubble.pages,['Finally.']);g.presentation.bubble=null;
+ g.timing.clock=142;StoryTransitions.updateStory(g.storyTransitionsPort);assert.deepEqual(calls,['clockout','arrive'],'fires once');assert.equal(g.story,'rested');
  // the touch variant of a say is chosen when the loop speaks it
- g.touch=true;g.sayChain([{speaker:'YOU',pages:['Desktop.'],touchPages:['Touch.'],height:1}]);assert.deepEqual(g.bubble.pages,['Touch.']);g.touch=false;g.bubble=null;
+ g.touch=true;StoryTransitions.sayChain(g.storyTransitionsPort,[{speaker:'YOU',pages:['Desktop.'],touchPages:['Touch.'],height:1}]);assert.deepEqual(g.presentation.bubble.pages,['Touch.']);g.touch=false;g.presentation.bubble=null;
  // the card: dark, the middle runs its cues once, light again runs the end; a counter reset clears the group
- g.counters={'night.x':3,'keep':1};g.clock=200;g.startCard(model.CARDS.rest,true);assert.equal(g.sleep.start,200);
- for(let f=201;f<=204;f++){g.clock=f;g.updateStory();}assert.deepEqual(calls,['clockout','arrive'],'the middle has not come');
- g.clock=219;g.updateStory();assert.deepEqual(calls,['clockout','arrive'],'one frame before the middle');g.clock=220;g.updateStory();assert.deepEqual(calls,['clockout','arrive','slept'],'at the middle of the card');assert.deepEqual(entered,['home'],'the player is brought to the scene');assert.deepEqual(resets,['home']);assert.deepEqual(g.p,{x:42,y:0,vy:0,onGround:true,face:-1});assert.deepEqual(g.counters,{'keep':1,'night.at':220});assert.equal(g.story,'ending');
- g.clock=221;g.updateStory();assert.deepEqual(resets,['home'],'the middle runs once');assert.equal(g.bubble,null);
- g.clock=240;g.updateStory();assert.equal(g.sleep,null);assert.deepEqual(g.bubble.pages,['Another day.']);
+ g.presentation.counters={'night.x':3,'keep':1};g.timing.clock=200;StoryTransitions.startCard(g.storyTransitionsPort,model.CARDS.rest,true);assert.equal(g.presentation.sleep.start,200);
+ for(let f=201;f<=204;f++){g.timing.clock=f;StoryTransitions.updateStory(g.storyTransitionsPort);}assert.deepEqual(calls,['clockout','arrive'],'the middle has not come');
+ g.timing.clock=219;StoryTransitions.updateStory(g.storyTransitionsPort);assert.deepEqual(calls,['clockout','arrive'],'one frame before the middle');g.timing.clock=220;StoryTransitions.updateStory(g.storyTransitionsPort);assert.deepEqual(calls,['clockout','arrive','slept'],'at the middle of the card');assert.deepEqual(entered,['home'],'the player is brought to the scene');assert.deepEqual(resets,['home']);assert.deepEqual(g.p,{x:42,y:0,vy:0,onGround:true,face:-1});assert.deepEqual(g.presentation.counters,{'keep':1,'night.at':220});assert.equal(g.story,'ending');
+ g.timing.clock=221;StoryTransitions.updateStory(g.storyTransitionsPort);assert.deepEqual(resets,['home'],'the middle runs once');assert.equal(g.presentation.bubble,null);
+ g.timing.clock=240;StoryTransitions.updateStory(g.storyTransitionsPort);assert.equal(g.presentation.sleep,null);assert.deepEqual(g.presentation.bubble.pages,['Another day.']);
  // a stage cue for another scene enters it first
- g.runCues([{stage:{scene:'yard'}}]);assert.deepEqual(entered,['home','yard']);
+ StoryTransitions.runCues(g.storyTransitionsPort,[{stage:{scene:'yard'}}]);assert.deepEqual(entered,['home','yard']);
  // a refused milestone ends the list and nothing after it speaks
- g.runOpeningWorkflow=()=>false;g.bubble=null;assert.equal(g.runCues([{milestone:'clockout'},{say:{speaker:'A',pages:['no'],height:1}}]),false);assert.equal(g.bubble,null);}
+ g.runOpeningWorkflow=()=>false;g.presentation.bubble=null;assert.equal(StoryTransitions.runCues(g.storyTransitionsPort,[{milestone:'clockout'},{say:{speaker:'A',pages:['no'],height:1}}]),false);assert.equal(g.presentation.bubble,null);}
 
 // ---- the source set rejects names a scene or the story does not have, atomically
 {const docs=()=>new Map(sourceDocuments.map(d=>[d.id,structuredClone(json(d.file))]));

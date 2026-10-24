@@ -24,7 +24,7 @@ import type{Composition,Instance}from'../art/core/composition';
 
 import {sequenceProgram} from '../art/core/sequence';
 
-import type{EditorDocument}from'./app';
+import type {EditorDocument} from './contracts';
 
 
 

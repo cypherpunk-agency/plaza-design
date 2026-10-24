@@ -1,7 +1,7 @@
 import type {SceneData} from '../../data/types';
 import type {Condition,GameplayDefinition,GameplayState,StateValue} from './types';
 import {stateValue} from './state';
-import {matches} from './validation';
+import {inWindow} from '../../world/clock';
 import {formatNativeText} from '../text';
 
 /** Scalar reads are immutable expressions, never another state declaration or save block. */
@@ -113,3 +113,23 @@ export function lineReferenceQuery(d:Pick<GameplayDefinition,'queries'>,id:strin
 /** Type lookup never initializes a foreign block or permits writing it. */
 export const stateReadType=(d:GameplayDefinition,id:string)=>d.state?.[id]?.type??d.stateReads?.[id];
 export const stateReadIds=(d:GameplayDefinition)=>[...Object.keys(d.state??{}),...Object.keys(d.stateReads??{})];
+
+export function matches(condition: Condition | undefined, state: Readonly<GameplayState>,context?:GameplayReadContext): boolean {
+  // Missing live-world context is unknown: negating it must not grant permission.
+  const evaluate=(condition:Condition|undefined):boolean|undefined=>{
+    if(!condition)return true;
+    if('compare'in condition){const c=condition.compare,left=scalarRead(c.left,state,context),right=scalarRead(c.right,state,context);if(left===undefined||right===undefined)return undefined;if(c.op==='eq')return left===right;if(c.op==='ne')return left!==right;if(typeof left!=='number'||typeof right!=='number')return undefined;return c.op==='lt'?left<right:c.op==='lte'?left<=right:c.op==='gt'?left>right:left>=right;}
+    if('player'in condition){if(!state.player)return undefined;const p=condition.player;if(!('field'in p)&&!Array.isArray(state.player[p.collection]))return undefined;return'field'in p?state.player[p.field]===p.is:p.contains===undefined?state.player[p.collection].length>0:(()=>{const member=typeof p.contains==='string'?p.contains:scalarRead(p.contains!,state,context);return typeof member==='string'?state.player![p.collection].includes(member):undefined;})();}
+    if('objective'in condition)return state.objective===undefined?undefined:state.objective===condition.objective;
+    if('time'in condition)return state.world?inWindow(condition.time,state.world.day,state.world.minute):undefined;
+    if('weather'in condition)return state.world?condition.weather.includes(state.world.weather):undefined;
+    if('state'in condition)return stateValue(state.values,condition.state)===condition.is;
+    if('flag'in condition)return !!state.flags[condition.flag]===(condition.is??true);
+    if('item'in condition)return (state.items[condition.item]??0)>=condition.atLeast;
+    if('tokensAtLeast'in condition)return state.tokens>=condition.tokensAtLeast;
+    if('all'in condition){const values=condition.all.map(evaluate);return values.includes(false)?false:values.includes(undefined)?undefined:true;}
+    if('any'in condition){const values=condition.any.map(evaluate);return values.includes(true)?true:values.includes(undefined)?undefined:false;}
+    const value=evaluate(condition.not);return value===undefined?undefined:!value;
+  };
+  return evaluate(condition)===true;
+}

@@ -4,7 +4,7 @@
  * card shows the scene on the Scene stage beside the panel and opens the beat's fields below its act.
  * Every change is one undoable edit of the storyboard document and is written by Save to source.
  */
-import type { EditorDocument, PreviewRequest, PreviewResult, WorkbenchContext, WorkbenchHandle } from './app';
+import type {EditorDocument,PreviewRequest,PreviewResult,WorkbenchContext,WorkbenchHandle} from './contracts';
 import type { Composition } from '../art/core/composition';
 import { PROPOSAL_SCENES } from './proposal-scenes';
 import { STYLE_FRAMES } from './style-frames';

@@ -1,5 +1,5 @@
 import {emptyDeviceSource} from '../engine/empty-data';
-import type {EditorDocument} from './app';
+import type {EditorDocument} from './contracts';
 import type {DocumentProjection} from './document-projection';
 import {authoredDocumentId,type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 export const SCENE_CATALOGUE_ID='authored-scenes';

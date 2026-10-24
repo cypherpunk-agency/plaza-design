@@ -1,7 +1,7 @@
 import { createFrame } from './frame';
 /** Viewing shell: typed kernels and existing source compositions share their native renderers. */
 import type {ArtRegistry,Composition}from'../art/core/composition';
-import type {EditorDocument,PreviewRequest,PreviewResult}from'./app';
+import type {EditorDocument,PreviewRequest,PreviewResult} from './contracts';
 import{assetInventory,type AssetEntry,type AssetUsage}from'./asset-browser';
 import{createAssetPreview}from'./asset-preview';
 import{centerNativePreview}from'./native-camera';

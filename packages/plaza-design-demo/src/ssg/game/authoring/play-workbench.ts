@@ -11,7 +11,7 @@ import {validateMetroSource} from '../world/transport/metro-source';
 import {validateMetroStart} from '../world/transport/metro-start';
 import {nativeGameplayScene} from './native-gameplay-scenes';
 import demoCoverage from '../demo/coverage.json';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import type {PrivateStorageSnapshot} from '../runtime/storage';
 import {TypedForm} from './typed-form';
 import {validatePlayFixtures,fixtureFlags,fixtureModules,fixturePrograms,fixtureKeys,playScenes,defaultPlayFixture,type PlayScene,type PlayFixture} from './play-fixtures';

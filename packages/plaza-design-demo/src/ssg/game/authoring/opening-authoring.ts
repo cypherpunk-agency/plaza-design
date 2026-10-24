@@ -4,7 +4,7 @@ import {validateGameplay} from '../engine/gameplay/validation';
 import {validatePendingNetwork} from './pending-network';
 import {registryLabels} from '../engine/gameplay/rewards';
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {validateOpeningSource} from '../story/opening-source';
 import {validateContacts} from '../story/contacts';
 import {validateEndCard} from '../story/end-card';

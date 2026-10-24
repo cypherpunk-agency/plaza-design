@@ -4,7 +4,7 @@ import fs from 'node:fs';import path from 'node:path';
 import authored from '../../src/ssg/game/scenes/authored.json';
 import {art,resolveComposition,type Composition,type Value} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {createSceneRegistry,type SceneCatalogue} from '../../src/ssg/game/engine/gameplay/scene-catalogue';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';

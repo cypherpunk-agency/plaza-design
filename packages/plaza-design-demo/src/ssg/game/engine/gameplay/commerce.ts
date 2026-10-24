@@ -1,7 +1,7 @@
 import type {GameplayReadContext} from './queries';
 import {stateValue,setStateValue} from './state';
 import type {GameplayDefinition,GameplayState} from './types';
-import {matches} from './validation';
+import {matches} from './queries';
 /** Quote and charge share one base; intentional divergence is explicit and diagnosable. */
 export function purchaseQuote(def:GameplayDefinition,id:string,state:GameplayState,context?:GameplayReadContext){
  const p=def.purchases?.[id];if(!p)throw new Error('Unknown purchase '+id);

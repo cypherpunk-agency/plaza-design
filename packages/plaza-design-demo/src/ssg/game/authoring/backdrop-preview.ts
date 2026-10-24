@@ -1,7 +1,7 @@
 /** Backdrop documents use the same composer, placements, bounds and world frame as scene artwork. */
 import {BACKDROP_SOURCES,backdropDocumentId,validateBackdrop} from '../world/backdrops';
 import type {NativeSceneAdapter} from './native-preview';
-import type {InspectorSection} from './app';
+import type {InspectorSection} from './contracts';
 import {TypedForm} from './typed-form';
 import type {BackdropDocument} from '../world/backdrops';
 export function backdropInspector(id:string):InspectorSection{return{id:'sky',label:'Sky',mount(host,context){const form=new TypedForm(error=>{throw error;});

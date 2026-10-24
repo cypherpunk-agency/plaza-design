@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /** A world-level state owner (world/state-owners.json, `shift.*`) used by two scenes' gameplay: one declaration, one Save.gameplay block. */
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
@@ -52,7 +53,7 @@ assert.deepEqual(Object.keys(save.gameplay!).filter(k=>k.startsWith('shift')),['
 a.dispose();d.dispose();
 // Save round-trip through the real Game serialization: save lifetime kept, session lifetime dropped.
 const previous=globalThis.localStorage,memory=new Map<string,string>();(globalThis as any).localStorage={getItem:(k:string)=>memory.get(k)??null,setItem:(k:string,v:string)=>memory.set(k,v),removeItem:(k:string)=>memory.delete(k)};
-try{const game:any=Object.create(Game.prototype);game.save=save;game.content=registry;game.hosts=new Map();game.sceneDefinition=(id:string)=>registry[id]??{};game.persistSave();const loaded=loadSave();
+try{const game:any=runtimeFixture(Game);game.save=save;game.content=registry;game.scenes.hosts=new Map();game.sceneDefinition=(id:string)=>registry[id]??{};game.persistSave();const loaded=loadSave();
  assert.deepEqual(loaded.gameplay!.shift,save.gameplay!.shift,'reloaded shift block');assert.deepEqual(loaded.gameplay!.shift,{...defaults,tagReceived:true,radio:true,parcelDelivered:true,checkedOut:true});
  let again:GameplayState={flags:{},items:{},tokens:0,values:loaded.gameplay};const s=withSharedState(owners,()=>new GameplaySession(D,{read:()=>again,write:n=>{again=n;}}));assert.equal(s.state().values!.shift.caseReturned,false,'unwritten key resolves to its default after reload');assert.deepEqual(s.dispatch('deck.checkout','interaction'),{ok:false,reason:'conditions'},'reloaded progress still guards the deck');s.dispose();
 }finally{globalThis.localStorage=previous;}

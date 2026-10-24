@@ -54,7 +54,8 @@ import { mountPlayWorkbench } from './play-workbench';
 
 import { art, type Composition } from '../art';
 
-import { mountComposer, type ComposerConfig, type EditorDocument, type InspectorSection, type WorkbenchContext, type WorkbenchHandle } from './app';
+import {mountComposer} from './app';
+import {type ComposerConfig,type EditorDocument,type InspectorSection,type WorkbenchContext,type WorkbenchHandle} from './contracts';
 import type { Instance } from '../art/core/composition';
 import type { SceneDocument } from '../engine/gameplay/scene-document';
 

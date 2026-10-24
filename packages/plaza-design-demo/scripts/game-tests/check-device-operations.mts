@@ -15,7 +15,7 @@ import {WORKSHOP_GAMEPLAY,workshopScene,validateWorkshopGameplay} from '../../sr
 import {demoContent} from '../../src/ssg/game/demo';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {buildEventInspection} from '../../src/ssg/game/authoring/event-inspector-model';

@@ -1,7 +1,8 @@
 import type {NetData} from '../data';
 import {ownsScanner} from '../engine/net';
 import {nativeAccess} from '../engine/gameplay/access';
-import {matches,validateGameplay} from '../engine/gameplay/validation';
+import {matches} from '../engine/gameplay/queries';
+import {validateGameplay} from '../engine/gameplay/validation';
 import type {Condition,GameplayDefinition,GameplayState} from '../engine/gameplay/types';
 import {activeSharedState} from '../engine/gameplay/shared-state';
 import {resolveValues} from '../engine/gameplay/state';

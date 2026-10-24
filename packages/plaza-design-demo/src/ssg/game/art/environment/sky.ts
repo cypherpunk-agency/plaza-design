@@ -1,3 +1,5 @@
+import {inCameraSpace} from '../core/camera-space';
+import {skyPos,type SkyOpts} from './sky-layout';
 /**
  * Set piece (ART-GUIDE §12, TIME.md "Light"): the sky of the moment, from the city clock (light.ts).
  * Register: sets/index.ts (`sky`).
@@ -19,7 +21,7 @@
  * Draws on a scene `View` (screen units of the view). Cheap: a few gradients a frame.
  */
 
-import { FOV, lerp, rel, smooth, windowLit, type Body, type Light } from "../../world/light";
+import {FOV,lerp,rel,smooth,windowLit,type Light} from "../../world/light";
 import type { View } from "../core/view";
 import { drawSunsetSky } from "./sunset-sky";
 
@@ -73,39 +75,17 @@ export function seaCols(l: Light): string[] {
 // ---------- where things are ----------
 
 /** How far the sky drifts with the camera (it is at infinity; a touch of drift keeps it alive). */
-const PAR = 0.02;
 
-/** A body's screen position: x from its azimuth relative to the view, y from its height over `horizon` (screen y). */
-export function skyPos(v: View, b: Body, relDeg: number, horizon: number, top = 0) {
-  const span = Math.max(40, horizon - top);
-  return { x: v.viewW / 2 + (relDeg / FOV) * (v.viewW / 2) - v.cam * PAR, y: horizon - b.el * span * 0.86, in: Math.abs(relDeg) < FOV + 12 };
-}
 
 // ---------- the sky ----------
 
-export interface SkyOpts {
-  /** The horizon's screen y (the sky is drawn above it; the sun sets behind it). */
-  horizon: number;
-  /** Where the sky's top is (screen y; default 0). */
-  top?: number;
-  /** Stars (default true). */
-  stars?: boolean;
-  /** Fill below the horizon with the horizon's colour down to here (screen y; default: the view's bottom). */
-  fillTo?: number;
-  /**
-   * `sunset`: the coast's sky (the title glide's, Tommi's reviewed look): a sunset gradient mixed from the light
-   * (night, the golden hour, day), a big slatted sun sinking into the sea with its glow, twinkling stars, thin
-   * clouds. Opt-in (scene `skyStyle`); the default is the city sky below.
-   */
-  style?: 'city' | 'sunset';
-  /** Sunset style: how much of the sky is the city's (0 the open coast .. 1 over Downtown: redder, hazier, fewer stars). */
-  town?: number;
-}
+
 
 const STARS = Array.from({ length: 90 }, (_, i) => [hash(i) * 2400, hash(i + 0.37), 0.3 + hash(i + 0.71) * 0.7]);
 
 /** The whole sky over a scene (the light's facing): gradient, glow, stars, moon, sun. */
 export function drawSky(x: CanvasRenderingContext2D, v: View, l: Light, o: SkyOpts) {
+  if(v.cameraFrame){const f=v.cameraFrame;inCameraSpace(x,v,view=>drawSky(x,view,l,{...o,horizon:o.horizon-f.y,...(o.top===undefined?{}:{top:o.top-f.y}),...(o.fillTo===undefined?{}:{fillTo:o.fillTo-f.y})}));return;}
   if (o.style === 'sunset') { drawSunsetSky(x, v, l, o); return; }
   const hz = Math.round(o.horizon), top = o.top ?? 0, [a, b, c] = skyCols(l);
   const g = x.createLinearGradient(0, top, 0, hz);

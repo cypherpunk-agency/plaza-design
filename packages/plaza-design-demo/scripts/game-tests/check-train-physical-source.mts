@@ -1,3 +1,5 @@
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
+import {runtimeFixture} from './runtime-fixture.mts';
 /** P14 uses the shipping train composition's shared vehicle and the shipping siding level. */
 import assert from 'node:assert/strict';
 import composition from '../../src/ssg/game/scenes/train/composition.json';
@@ -54,14 +56,11 @@ for(const paid of [false,true])for(const rewire of [false,true]){
  for(const actor of ['suit','courier','elder','punk'])assert.equal((env.bindings!['train.pose.'+actor] as any).character.x,rows.find(r=>r.instance.id===actor)!.placement.x,'prepared regular follows its moving source placement');
  const checkpoint=saveVehicle(lv,p,'train')!;assert.equal(checkpoint.x,780);
  assert(restoreVehicle(lv,p,()=>model,checkpoint));assert.equal(p.x,SIDING+780);
- const game=Object.create(Game.prototype) as any,spoken:unknown[]=[];
- Object.defineProperties(game,{here:{value:'metro-siding'},def:{value:SCENES['metro-siding']},level:{value:lv},p:{value:p},movers:{value:()=>model},
-  save:{value:{flags:{}}},bubble:{value:null,writable:true},hints:{value:{done(){}}},interactionHost:{value:{acknowledgmentPending:false}},
-  nearest:{value:()=>levelHints(lv,p,()=>model).some(h=>h.id===id)?{kind:'level',id}:undefined},passBarrier:{value:()=>false},persistSave:{value:()=>{}},
-  say:{value:(speaker:string,pages:string[])=>spoken.push({speaker,pages})}});
+ const game=runtimeFixture(Game) as any,spoken:unknown[]=[];
+ (Object.defineProperties(game,{def:{value:SCENES['metro-siding']},p:{value:p},movers:{value:()=>model},save:{value:{flags:{}}},hints:{value:{done(){}}},interactionHost:{value:{acknowledgmentPending:false}},nearest:{value:()=>levelHints(lv,p,()=>model).some(h=>h.id===id)?{kind:'level',id}:undefined},passBarrier:{value:()=>false},persistSave:{value:()=>{}},say:{value:(speaker:string,pages:string[])=>spoken.push({speaker,pages})}}),Object.defineProperties(game.scenes,{here:{value:'metro-siding'},level:{value:lv}}),Object.defineProperties(game.presentation,{bubble:{value:null,writable:true}}));
  game.introduceScene();assert.deepEqual(spoken,[],'passing through aboard does not consume the siding response');
  assert.equal(game.save.flags['scene:metro-siding'],undefined);
- game.interact();assert.equal(!lv.state.vehicle,rewire,'actual native E cannot bypass closed safety doors');
+ InteractionRouting.interact(game.interactionRoutingPort);assert.equal(!lv.state.vehicle,rewire,'actual native E cannot bypass closed safety doors');
  assert.equal(spoken.length,rewire?1:0,'only legitimate alighting speaks the response');
  if(rewire){assert.deepEqual(spoken,[{speaker:'YOU',pages:SCENES['metro-siding'].intro}]);game.introduceScene();assert.equal(spoken.length,1,'the original two pages fire once');}
  if(rewire){assert.equal(lv.state.floor,'metro-siding/floor-siding');assert.equal(lv.state.vehicle,undefined);assert.equal(p.x,SIDING+780,'stepping onto the ledge does not teleport');assert.equal(root.flags['harbor:open'],true);}

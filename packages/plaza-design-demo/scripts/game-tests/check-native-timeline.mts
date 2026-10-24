@@ -4,7 +4,7 @@ import{createNativePreview}from'../../src/ssg/game/authoring/native-preview';
 import{evaluateTimeline,validateTimeline,type TimelineProgram}from'../../src/ssg/game/art/core/timeline';
 import{drawTimelineOverlay}from'../../src/ssg/game/art/core/timeline-overlay';
 import type{Composition}from'../../src/ssg/game/art/core/composition';
-import type{PreviewRequest}from'../../src/ssg/game/authoring/app';
+import type {PreviewRequest} from '../../src/ssg/game/authoring/contracts';
 const composition:Composition={version:1,scene:'native-overlay-fixture',instances:[]};
 const timeline:TimelineProgram={version:1,sequences:[{id:'authored-on-native-scene',duration:6,composition:'room',shots:[{id:'single',from:0,to:6,camera:{x:120,h:30,zoom:2}}],tracks:[],text:[{id:'caption',from:1,to:3,text:'OPEN THE GATE\nTHEN WAIT',x:24,h:-36}],fades:[{id:'fade',from:1,to:3,color:'#123456',start:0,end:1}],beats:[]}]};
 const context={registry:art,compositions:{room:composition}};validateTimeline(timeline,context);

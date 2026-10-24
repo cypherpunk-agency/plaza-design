@@ -57,6 +57,7 @@ export const downtownElements:Element[]=[
  element('metro-stairs','Metro street stairs','architecture',{mask},()=>box(100,110,-50),(x,v,_p,_s,at)=>drawMetroStairs(x,raised(v,at.h),at.x)),
  element('taxi-pad','Sky taxi street stand','vehicles',{mask},()=>box(120,130,-60),(x,v,_p,_s,at)=>drawTaxiPad(x,raised(v,at.h),at.x)),
 ];
+const devicePainters={sign:devices.drawDeviceSign,box:devices.drawDeviceBox,till:devices.drawDeviceTill,relay:devices.drawDeviceRelay,gate:devices.drawDeviceGate,fence:devices.drawDeviceFence,scan:devices.drawDeviceScan,cam3:devices.drawDeviceCam3,billboard:devices.drawDeviceBillboard,dlv9:devices.drawDeviceDlv9,map:devices.drawDeviceMap,hover:devices.drawDeviceHover};
 const empty:devices.DowntownDeviceState={controlled:false,gateHeld:false,lock:'shut',scanned:false,feed:'ads',dlvAt:'home',trace:0,signTestMs:3000,signSince:1e9,visible:true,hoverSpot:null};
 export function validateDowntownDeviceSnapshot(value:Value):void {
  const s=value as unknown as devices.DowntownDeviceState;
@@ -66,8 +67,8 @@ export function validateDowntownDeviceSnapshot(value:Value):void {
  if(s.hoverSpot&&Object.keys(s.hoverSpot).some(k=>!['x','y','w','h'].includes(k)))throw new Error('Unknown Downtown hover spot field');
  if(s.hoverSpot&&(!['x','y','w','h'].every(k=>Number.isFinite(s.hoverSpot![k as keyof typeof s.hoverSpot]))))throw new Error('Invalid Downtown hover spot');
 }
-for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billboard','dlv9','map','hover']) {
- const name='drawDevice'+id[0].toUpperCase()+id.slice(1),draw=devices[name as keyof typeof devices] as (x:CanvasRenderingContext2D,v:View,wx:number,state:devices.DowntownDeviceState)=>void;
+for(const id of ['sign','box','till','relay','gate','fence','scan','cam3','billboard','dlv9','map','hover'] as const) {
+ const draw=devicePainters[id];
  downtownElements.push({...element('device-'+id,'Downtown '+id,'electronics',id==='hover'?{}:{spotY:num('Spot bottom'),spotWidth:num('Spot width',30,1),spotHeight:num('Spot height',40,1),...(id==='sign'?{mask}:{})},(p,s,c)=>{
   if(id==='hover'){
    const spot=(s.snapshot as unknown as devices.DowntownDeviceState|undefined)?.hoverSpot;

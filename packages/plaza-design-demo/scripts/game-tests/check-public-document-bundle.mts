@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createDocumentBundle, readDocumentBundle, DOCUMENT_BUNDLE_MAX_BYTES } from '../../src/ssg/game/authoring/document-bundle';
-import type { EditorDocument } from '../../src/ssg/game/authoring/app';
+import type {EditorDocument} from '../../src/ssg/game/authoring/contracts';
 const documents: EditorDocument[] = [
   { id: 'room', kind: 'composition', revision: 'source-A', value: { version: 1, scene: 'room', instances: [] } },
   { id: 'film', kind: 'composition', revision: 'source-B', value: { version: 1, scene: 'film', instances: [] } },

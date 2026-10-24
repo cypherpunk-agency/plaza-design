@@ -1,5 +1,5 @@
-import {streetSpriteHeadHeight} from '../art/characters/street-sprite';
-import {actorPresentation} from '../engine/gameplay/actor-presentation';
+import {streetSpriteHeadHeight} from '../art/characters/presentation';
+import {actorPresentation} from '../art/characters/presentation';
 import {actorAppearanceSeed} from '../engine/gameplay/actor-identity';
 import botSource from '../engine/gameplay/bot-reactions.json';
 import {ConversationSession} from '../engine/gameplay/conversation';

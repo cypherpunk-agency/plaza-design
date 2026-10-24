@@ -56,6 +56,17 @@ have been retired; do not recreate them or restart the completed consolidation.
 - Pending companion documents validate as one prospective graph. The same pending source drives
   native Game Play; never maintain a simpler editor-only evaluator. Add typed authoring together
   with a shared feature, a compact demo example and the real scene change.
+- Keep runtime/game.ts as the composition root and single frame owner. Input, movement, camera,
+  scene lifecycle, interactions, story/travel and presentation live in the focused runtime modules
+  listed in the handbook. Bind directly to those functions instead of adding private forwarding
+  methods. Scene lifecycle owns both residency and departure/visibility decisions. Camera projection
+  is derived without temporarily mutating camera state. Their typed ports refer to the existing owned records in runtime/state.ts;
+  do not add another state copy, loop or scheduler. Preserve frame-stage order when extracting code.
+  Editor input/selection/inspector/preview modules route edits through ComposerModel and dispose
+  their listeners and mounted controls. Shared projection/bounds belong in art/core/geometry.ts.
+- Import editor types from authoring/contracts.ts and pending-document/history operations from
+  authoring/composer-model.ts. Keep frame contracts in runtime/frame.ts and pure gameplay reads
+  in engine/gameplay/queries.ts; avoid circular imports between validators, execution and painting.
 - Use ComposerModel history, document-bundle validation and the protected source store. Invalid
   grouped edits must reject atomically. Public editor downloads cannot write repository files.
   Keep the local source service/credentials off public bundles. Private Play keeps opaque-origin

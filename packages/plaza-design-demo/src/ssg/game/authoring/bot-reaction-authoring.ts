@@ -1,5 +1,5 @@
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {validateBotReactions,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
 import {withSceneConversations,actorConversationId} from '../engine/gameplay/scene-conversations';
 import {GameplaySession} from '../engine/gameplay/session';

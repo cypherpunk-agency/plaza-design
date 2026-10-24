@@ -1,272 +1,49 @@
-import {sequenceProgram,validateSequence} from '../art/core/sequence';
+import {hitTestArtwork,sourceSelection,createSelection} from './selection';
+import {createPreviewState,createPreviewRenderer} from './preview-integration';
+import {createInspector} from './inspector';
+import {createViewportState,mountViewportInput} from './viewport-input';
+import {canvasPoint} from '../art/core/geometry';
+import {zoomWorkspace} from './viewport-navigation';
+import {element,button,select,label,createFieldControls} from './controls';
+import {renderTimelineInspector} from './temporal-inspector';
+import {outlineDocuments} from './outline-documents';
+import {animationShortcut} from './animation-shortcuts';
+import {mountTimelineGrid,moveKey,type TimelineSelection,type TimelineViewState} from './timeline-view';
+import {sequenceProgram} from '../art/core/sequence';
 import {perfMeasure,perfBegin,perfEnd} from '../runtime/diagnostics/performance';
 import {mountPerformancePanel} from '../runtime/diagnostics/performance-panel';
-import {mutableActorArtwork} from '../engine/gameplay/native-actor-bindings';
-import type {DocumentProjection} from './document-projection';
+
 /** Local static/animated composition editor. Drawing belongs to the injected game preview. */
-import { ArtRegistry, type Composition, type Instance, type Field, type Value, type Point, type Properties } from '../art/core/composition';
-import { evaluateTimeline, type TimelineContext, type TimelineProgram, type TimelineFrame, type Sequence, type Target, type Keyframe } from '../art/core/timeline';
+import {type Composition,type Instance,type Field,type Value,type Properties} from '../art/core/composition';
+import {evaluateTimeline,type TimelineProgram,type TimelineFrame,type Sequence,type Target,type Keyframe} from '../art/core/timeline';
 import { composerStyles } from './styles';
 import { createFrame, frameStyles, sectionNavigator } from './frame';
-import { preserveBoundIdentity } from './bound-identity';
-import type { Light } from '../world/light';
-import type { Climate, Weather } from '../world/weather';
-import { mountAssetBrowser, type AssetBrowserSession, type AssetEntry, type AssetPreset, type AssetUsage, type AssetPreviewReport, type AssetPreviewOverrides } from './asset-browser';
+
+import {mountAssetBrowser,type AssetBrowserSession,type AssetEntry,type AssetPreset} from './asset-browser';
 import { createThumbnails } from './asset-thumbnails';
 import { PRESETS_DOCUMENT, presetId, presetProps, presetsFor, type KitPreset, type KitPresets } from './kit-presets';
-import type { Environment } from '../art/core/composition';
+
 import { createDocumentBundle, readDocumentBundle } from './document-bundle';
 import { KIND_HINTS, LAYER_ROLES, layerRole } from './layer-roles';
 import { chipStyles } from './kind-chips';
-import { LAYER_HINTS, LAYER_LABELS, VISUAL_LAYERS, frontOrder, isPlayerRow, layerRows, restack } from './layer-stack';
+import {LAYER_HINTS,LAYER_LABELS,VISUAL_LAYERS,isPlayerRow,layerRows} from './layer-stack';
 import type { Layer } from '../art/core/composition';
 
-export interface EditorDocument { id: string; kind: 'composition' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; revision: string; value: unknown }
-export interface PreviewRequest { sourceVersion?:object; documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineProgram; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
-/** A scene joined to the previewed one by a seam, drawn beside it read-only: where it is on the canvas (canvas pixels) and on which side. */
-export interface JoinedPreview { zone: string; label: string; x: number; y: number; width: number; height: number; side: 'left' | 'right' | 'above' | 'below' }
-export interface PreviewResult { sources?:Record<string,{document:string;instance:string}>; bounds: { id: string; x: number; y: number; width: number; height: number }[]; /** Joined scenes drawn beside this one, and the camera-x range (scene units) that holds the scene and them. */ joined?: JoinedPreview[]; extent?: { from: number; to: number }; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: Composition; environment: Environment } }
-/** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
-export interface WorldState { id: string; name: string; environment: Record<string, string | number | boolean> }
-export interface WorldStates {
-  list(scene: string, documents: EditorDocument[]): WorldState[];
-  /** '' means preview only: the toolbar changes nothing saved. */
-  selected(scene: string, documents: EditorDocument[]): string;
-  select(scene: string, id: string): void;
-  /** The document change that stores `key` in the state, or undefined when states do not store that key. */
-  edit(scene: string, id: string, key: string, value: string | number | boolean, documents: EditorDocument[]): { id: string; value: unknown } | undefined;
-}
-/** `quick` controls sit in the Scene toolbar; `choices` render as a segmented row of named presets. The rest live under More. */
-export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[]; /** A single key that toggles a boolean control in the Scene view. */ shortcut?: string }
-/** One inspector tab beside Appearance: the logic, device or wiring that belongs to the selection (or to the scene when nothing is selected). */
-export interface InspectorSection { id: string; label: string; title?: string; /** Listed first and opened first whenever the selection changes (a barrier's Access). */ primary?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
-export interface WorkbenchContext {
-  documents: EditorDocument[]; openScene(scene: string, compare?: string): void; openInstance(document: string, instance: string): void;
-  /** The scene chosen in the header; scene-mode workbenches follow it instead of keeping their own picker. */
-  scene?: string;
-  /** Set when the panel was opened by an action that asks it to start (the Scene toolbar's Play). */
-  autostart?: boolean;
-  authoring?: { get(id: string): EditorDocument; edit(id: string, label: string, value: unknown): void; editDocuments?(changes:{id:string;value:unknown}[],label:string):void; undo(): void; redo(): void; save(): Promise<void>; reload(): Promise<void>; dirty(id: string): boolean };
-}
-export type WorkbenchHandle = (() => void) & { refresh?(): void };
-export interface ComposerConfig {
-  registry: ArtRegistry; api?: { url: string; token: string }; documents?: EditorDocument[]; viewport?: { width: number; height: number };
-  preview: { render(canvas: HTMLCanvasElement, request: PreviewRequest): PreviewResult | Promise<PreviewResult> };
-  destinations?: TimelineContext['destinations']; motionTracks?: TimelineContext['motionTracks']; clips?: TimelineContext['clips'];
-  timelineContext?(base: TimelineContext, preview: { time: number; reduced: boolean; sequenceId: string; environment: Record<string, string | number | boolean>; viewport: { width: number; height: number }; timeline?: TimelineProgram }): TimelineContext;
-  projections?:readonly DocumentProjection[];
-  destinationsFor?(documents:EditorDocument[]):TimelineContext['destinations'];
-  validateDocument?(document: EditorDocument, documents: EditorDocument[]): void;
-  /** Complete immutable inputs read by validateDocument. Unchanged inputs may reuse its successful result. Composition and timeline validation always run. */
-  validationInputs?(documents: readonly EditorDocument[]): readonly unknown[];
-  initialEnvironment?: Record<string, string | number | boolean>; environmentControls?: EnvironmentControl[];
-  worldPanel?(host: HTMLElement, openScene: (scene: string) => void, documents: EditorDocument[], scene?: string): void | (() => void);
-  /** Districts and which one each scene is in, for the artwork library's filter bar. */
-  /** Named world states (time, weather, flags) a scene is previewed under and Play starts from. */
-  worldStates?: WorldStates;
-  /** Compositions the stage can show beside a scene (a proposal and its base). Same request, same camera. */
-  compareWith?(scene: string, documents: EditorDocument[]): { id: string; label: string }[];
-  assetDistricts?(documents: EditorDocument[]): { list: { id: string; name: string }[]; of(scene: string): string | undefined };
-  assetPreview?(canvas: HTMLCanvasElement, entry: AssetEntry, usage: AssetUsage | undefined, documents: EditorDocument[], settings: Pick<PreviewRequest, 'time' | 'reduced' | 'environment'>&AssetPreviewOverrides): string | AssetPreviewReport | Promise<string | AssetPreviewReport>;
-  /** Display name for a composition's scene id in the scene picker and empty states. */
-  sceneLabel?(scene: string): string;
-  /** Source documents that belong to a scene beyond its composition, for unsaved-change markers. */
-  sceneDocuments?(scene: string,documents:readonly EditorDocument[]): string[];
-  /** The scene picker's structure: districts, their places, each place's scenes. Scenes left out are listed under "Other scenes". */
-  sceneTree?(documents: readonly EditorDocument[]): { label: string; places: { label: string; scenes: string[] }[] }[];
-  workbenches?: WorkbenchConfig[];
-  /** The Scene view's New scene dialog: the places a scene can belong to, why creation is blocked ('' when it is not), and creation as one undoable edit. */
-  newScene?: { places(api: NonNullable<WorkbenchContext['authoring']>): { places: string[]; initial: string }; blocked(api: NonNullable<WorkbenchContext['authoring']>): string; create(api: NonNullable<WorkbenchContext['authoring']>, id: string, name: string, place: string, preset?:string): void; presets?:{value:string;label:string}[] };
-  /** Tabs for the Scene inspector. Called for the open scene with the selected instance, or none for the scene itself. */
-  inspector?(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[];
-  /** Scenes joined to this one with no cut (one seam away). The Scene toolbar then offers Show joined scenes and Fit joined; the preview draws them. */
-  joinedScenes?(scene: string, documents: readonly EditorDocument[]): { zone: string; label: string }[];
-}
-/**
- * `area: 'scene'` panels are modes of the selected scene (Logic, Play; `wiring` panels sit under Logic)
- * and receive it through `showScene` before mounting; `supports` decides whether the scene has
- * anything to show. `library` panels are artwork viewers, `world` panels edit what is shared between
- * scenes (city, travel, opening, networks, shared dialogue), and `labs` panels are developer test beds.
- */
-export interface WorkbenchConfig {
-  id: string; title: string; label?: string; documentDependent?: boolean; documentIds?: string[]; primaryDocumentId?: string; authoring?: boolean;
-  area?: 'scene' | 'library' | 'world' | 'labs';
-  /** Shown beside the Scene stage (in place of the outline) instead of replacing it, so the panel can use the stage. */
-  beside?: boolean;
-  /** `sections`: a long form is shown in the editor frame, its top-level sections listed on the left, one at a time. */
-  layout?: 'sections';
-  mode?: 'logic' | 'wiring' | 'play'; supports?(scene: string,documents:readonly EditorDocument[]): boolean; showScene?(scene: string,documents:readonly EditorDocument[]): void; unsupported?: string;
-  mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle;
-}
-interface Snapshot { id: string; value: unknown }
-interface Command { label: string; before: Snapshot[]; after: Snapshot[] }
+import {ComposerModel} from './composer-model';
+import type {EditorDocument,PreviewRequest,EnvironmentControl,WorkbenchContext,WorkbenchHandle,ComposerConfig,WorkbenchConfig} from './contracts';
 const copy = <T>(value: T): T => structuredClone(value);
 /** The outline's mark for a level barrier (a padlock), so barriers and their Access rules are easy to find. */
 const BARRIER_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
 const equal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const flatten = (doc: Composition) => { const list: { node: Instance; depth: number }[] = []; const visit = (nodes: Instance[], depth: number) => nodes.forEach(node => { list.push({ node, depth }); visit(node.children ?? [], depth + 1); }); visit(doc.instances, 0); return list; };
 const message = (e: unknown) => e instanceof Error ? e.message : String(e);
-/** Pure editing history; saved revisions are metadata and are deliberately outside undo history. */
-export class ComposerModel {
-  private documents = new Map<string, EditorDocument>();
-  private saved = new Map<string, unknown>();
-  /** Opaque immutable-snapshot identity for derived preview caches; edits/history replace it. */
-  get sourceVersion():object{return this.documents;}
-  private past: Command[] = [];
-  private future: Command[] = [];
-  private validatedInputs?: readonly unknown[];
-  constructor(readonly registry: ArtRegistry, readonly context: Omit<TimelineContext, 'registry' | 'compositions'> = {}, readonly validateDocument?: ComposerConfig['validateDocument'],readonly projections:readonly DocumentProjection[]=[],readonly destinationsFor?:ComposerConfig['destinationsFor'],readonly validationInputs?:ComposerConfig['validationInputs']) {}
-  load(documents: EditorDocument[]) {
-    const next = new Map<string, EditorDocument>();
-    for (const doc of documents) { if (next.has(doc.id)) throw new Error('Duplicate document id'); next.set(doc.id, copy(doc)); }
-    this.validate(next); this.documents = next; this.saved = new Map([...next].map(([id, d]) => [id, copy(d.value)])); this.past = []; this.future = [];
-  }
-  private expanded(documents:ReadonlyMap<string,EditorDocument>){
-    const result=new Map(documents);for(const projection of this.projections){const source=documents.get(projection.sourceId);if(!source)throw new Error('Missing projection source: '+projection.sourceId);
-      for(const child of projection.children(source)){if(result.has(child.id))throw new Error('Duplicate projected document ID: '+child.id);result.set(child.id,child);}
-    }return result;
-  }
-  private projected(id:string,documents:ReadonlyMap<string,EditorDocument>=this.documents){
-    for(const projection of this.projections){const source=documents.get(projection.sourceId);if(source&&projection.children(source).some(d=>d.id===id))return projection;}
-  }
-  list() { return perfMeasure('editor.documents', () => [...this.expanded(this.documents).values()].map(copy)); }
-  get(id: string) { const doc = this.expanded(this.documents).get(id); if (!doc) throw new Error(`Unknown document: ${id}`); return copy(doc); }
-  /** A transient drag uses the same source projection as a committed edit, without history or mutation. */
-  previewDocuments(id:string,value:unknown):ReadonlyMap<string,unknown>{
-    const projection=this.projected(id),owner=projection?.sourceId??id,source=this.documents.get(owner);
-    if(!source)throw new Error('Unknown preview source: '+id);
-    const next=new Map(this.documents);next.set(owner,{...source,value:projection?projection.replace(source.value,id,value):copy(value)});
-    return new Map([...this.expanded(next)].map(([key,doc])=>[key,copy(doc.value)]));
-  }
-
-  timelineContext(documents = this.documents): TimelineContext {
-    const compositions: Record<string, Composition> = {};
-    for (const doc of this.expanded(documents).values()) if (doc.kind === 'composition') compositions[doc.id] = doc.value as Composition;
-    return { ...this.context, ...(this.destinationsFor?{destinations:this.destinationsFor([...this.expanded(documents).values()])}:{}), registry: this.registry, compositions };
-  }
-  private validate(documents: Map<string, EditorDocument>) { return perfMeasure('editor.validate', () => this.validateAll(documents)); }
-  private validateAll(documents: Map<string, EditorDocument>) {
-    for (const doc of this.expanded(documents).values()) if (doc.kind === 'composition') this.registry.validate(doc.value);
-    const ctx = this.timelineContext(documents);
-    for (const doc of this.expanded(documents).values()) if(doc.kind==='composition'&&(doc.value as Composition).sequence)validateSequence(doc.value as Composition,ctx);
-    const all = [...this.expanded(documents).values()], inputs = this.validationInputs?.(all);
-    const unchanged = inputs && this.validatedInputs && inputs.length === this.validatedInputs.length && inputs.every((value, i) => value === this.validatedInputs![i]);
-    for (const doc of unchanged ? [] : all) {
-      if ((['gameplay','scene','fixtures','conversations','city','transport','devices','people','presets','profiles','rules','storyboard'].includes(doc.kind)) && !this.validateDocument) throw new Error('Behavior/gameplay/scene/fixture documents require their registered validator');
-      this.validateDocument?.(doc, all);
-    }
-    if (inputs) this.validatedInputs = inputs;
-  }
-  edit(id: string, label: string, operation: (value: unknown) => unknown) {
-    const projection=this.projected(id);if(projection){const value=operation(this.get(id).value);this.checkCompositionEdit(this.get(id),value);this.edit(projection.sourceId,label,source=>projection.replace(source,id,value));return;}
-    const doc = this.get(id); if (doc.kind === 'world') throw new Error('World structure is read-only in this composer');
-    const value = operation(copy(doc.value)); if (equal(value, doc.value)) return;
-    if (doc.kind === 'composition') {
-      const before = doc.value as Composition, after = this.registry.validate(value);
-      if (after.scene !== before.scene) throw new Error('Scene identity cannot be changed by the local composer');
-      preserveBoundIdentity(before, after,this.registry);
-    }
-    const next = new Map(this.documents); next.set(id, { ...doc, value }); this.validate(next);
-    this.documents = next; this.past.push({ label, before: [{ id, value: doc.value }], after: [{ id, value: copy(value) }] });
-    if (this.past.length > 100) this.past.shift(); this.future = [];
-  }
-  private checkCompositionEdit(doc:EditorDocument,value:unknown){
-    if(doc.kind==='composition'){const composition=this.registry.validate(value);if(composition.scene!==(doc.value as Composition).scene)throw new Error('Scene identity cannot be changed');preserveBoundIdentity(doc.value as Composition,composition,this.registry);}
-  }
-  /** Downloaded edits enter one validated history transaction; projected edits update their source owner. */
-  importDocuments(changes: { id: string; value: unknown }[],label='Import downloaded edits') {
-    const next=new Map(this.documents),ids=new Set<string>(),roots=new Set<string>();
-    for(const item of changes){if(ids.has(item.id))throw new Error('Duplicate imported document');ids.add(item.id);
-      const doc=this.get(item.id);if(doc.kind==='world')throw new Error('World structure is read-only');const value=copy(item.value);this.checkCompositionEdit(doc,value);
-      const projection=this.projected(item.id),rootId=projection?.sourceId??item.id;
-      if((projection&&ids.has(rootId))||(!projection&&changes.some(c=>this.projected(c.id)?.sourceId===item.id)))throw new Error('Import must use source owners or projected children, not both');
-      const root=next.get(rootId)!;next.set(rootId,{...root,value:projection?projection.replace(copy(root.value),item.id,value):value});roots.add(rootId);
-    }
-    const before:Snapshot[]=[],after:Snapshot[]=[];for(const id of roots){if(equal(next.get(id)!.value,this.documents.get(id)!.value))continue;before.push({id,value:copy(this.documents.get(id)!.value)});after.push({id,value:copy(next.get(id)!.value)});}
-    if(!before.length)return;this.validate(next);this.documents=next;this.past.push({label,before,after});if(this.past.length>100)this.past.shift();this.future=[];
-  }
-  private restore(snapshots: Snapshot[]) { const next = new Map(this.documents); for (const item of snapshots) next.set(item.id, { ...this.get(item.id), value: copy(item.value) }); this.validate(next); this.documents = next; }
-  undo() { const command = this.past[this.past.length - 1]; if (!command) return; this.restore(command.before); this.past.pop(); this.future.push(command); }
-  redo() { const command = this.future[this.future.length - 1]; if (!command) return; this.restore(command.after); this.future.pop(); this.past.push(command); }
-  get canUndo() { return !!this.past.length; } get canRedo() { return !!this.future.length; }
-  get undoLabel() { return this.past[this.past.length - 1]?.label ?? ''; }
-  dirty(id?:string){if(!id)return [...this.documents].some(([key,d])=>!equal(d.value,this.saved.get(key)));
-    const saved=new Map([...this.documents].map(([key,d])=>[key,{...d,value:this.saved.get(key)}]));return !equal(this.expanded(this.documents).get(id)?.value,this.expanded(saved).get(id)?.value);
-  }
-  edits() { return [...this.documents.values()].filter(d => d.kind !== 'world' && this.dirty(d.id)).map(d => ({ id: d.id, revision: d.revision, value: copy(d.value) })); }
-  confirmSaved(documents: EditorDocument[]) { for (const saved of documents) { const current = this.documents.get(saved.id); if (!current) throw new Error('Save returned an unknown document'); current.revision = saved.revision; this.saved.set(saved.id, copy(saved.value)); } }
-  updateInstance(id: string, instanceId: string, label: string, edit: (node: Instance) => void) {
-    this.edit(id, label, value => { const doc = value as Composition, node = flatten(doc).find(x => x.node.id === instanceId)?.node; if (!node) throw new Error('Selected instance no longer exists'); edit(node); return doc; });
-  }
-  add(id: string, type: string, placement: Instance['placement'] = { x: 0, h: 0 }, settings?: Properties) {
-    let instanceId = '';
-    this.edit(id, 'Add artwork', value => { const doc = value as Composition; instanceId = this.insert(doc, type, placement, settings); return doc; }); return instanceId;
-  }
-  /** The composition as it would be after `add`, without touching history (used to measure placement). */
-  draftAdd(id: string, type: string, settings?: Properties) { const doc = copy(this.get(id).value as Composition), instanceId = this.insert(doc, type, { x: 0, h: 0 }, settings); return { composition: this.registry.validate(doc), instanceId }; }
-  /** `settings`: a kit preset's settings over the element's defaults. */
-  private insert(doc: Composition, type: string, placement: Instance['placement'], settings: Properties = {}) {
-    const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
-    for (const [key, field] of Object.entries(element.fields)) props[key] = copy(settings[key] ?? field.default) as Value;
-    const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
-    const layer: Layer = element.framePhase==='sky'?'distance':element.parts.length || element.role === 'group' ? 'set' : 'logic', order = frontOrder(doc, layer);
-    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, layer }); return instanceId;
-  }
-  /** Layered compositions: move artwork to a back-to-front position in a layer. */
-  restack(id: string, instanceId: string, layer: Layer, index: number) {
-    this.edit(id, 'Move in layer stack', value => { const doc = value as Composition; restack(doc, instanceId, layer, index); return doc; });
-  }
-  private unique(doc: Composition, prefix: string) { const ids = new Set(flatten(doc).map(x => x.node.id)); let i = 1; while (ids.has(`${prefix}-${i}`)) i++; return `${prefix}-${i}`; }
-  duplicate(id: string, instanceId: string) {
-    let created = '';
-    this.edit(id, 'Duplicate artwork', value => {
-      const doc = value as Composition, source = flatten(doc).find(x => x.node.id === instanceId)?.node; if (!source) throw new Error('Missing instance');
-      const duplicate = copy(source), ids = new Map<string, string>();
-      const walk = (node: Instance) => { if (Object.keys(node.bindings ?? {}).length&&this.registry.get(node.type).bindingIdentity!=='presentation') throw new Error('Gameplay-bound artwork cannot be duplicated; add a decorative catalog element instead'); const old = node.id; node.id = this.unique(doc, old + '-copy'); ids.set(old, node.id); node.children?.forEach(walk); };
-      walk(duplicate); const attach = (node: Instance) => { if (node.attach && ids.has(node.attach.instance)) node.attach.instance = ids.get(node.attach.instance)!; node.children?.forEach(attach); }; attach(duplicate);
-      const siblings = (nodes: Instance[]): Instance[] | undefined => nodes.includes(source) ? nodes : nodes.map(n => siblings(n.children ?? [])).find(Boolean);
-      duplicate.placement.x += 12; duplicate.order += 1; siblings(doc.instances)!.push(duplicate); created = duplicate.id; return doc;
-    }); return created;
-  }
-  /**
-   * What deleting an instance takes with it: its children and, with `cascade`, everything attached to anything removed
-   * (and their children), in document order. Gameplay-bound artwork refuses with the reason.
-   */
-  removal(id: string, instanceId: string, cascade = false): string[] {
-    const doc = this.get(id).value as Composition, rows = flatten(doc), source = rows.find(x => x.node.id === instanceId)?.node; if (!source) throw new Error('Missing instance');
-    const removed = new Set<string>();
-    const visit = (node: Instance) => {
-      if (removed.has(node.id)) return;
-      if (Object.keys(node.bindings ?? {}).length&&!mutableActorArtwork(doc.scene,node)&&this.registry.get(node.type).bindingIdentity!=='presentation') throw new Error(`${node.id} is used by gameplay; resolve its bindings in Logic before deleting${node.id === instanceId ? '' : ` ${instanceId}`}`);
-      removed.add(node.id); node.children?.forEach(visit);
-    };
-    visit(source);
-    for (let grew = true; grew;) { grew = false; for (const { node } of rows) if (!removed.has(node.id) && node.attach && removed.has(node.attach.instance)) {
-      if (!cascade) throw new Error(`${node.id} is attached here; detach it first`);
-      visit(node); grew = true;
-    } }
-    return rows.map(row => row.node.id).filter(nodeId => removed.has(nodeId));
-  }
-  /** Runs edits and rolls them back: the reason they would be refused, or '' when they would apply. */
-  trial(change: () => void): string {
-    const documents = this.documents, past = [...this.past], future = [...this.future];
-    try { change(); return ''; } catch (error) { return message(error); } finally { this.documents = documents; this.past = past; this.future = future; }
-  }
-  remove(id: string, instanceId: string, cascade = false) {
-    const removed = new Set(this.removal(id, instanceId, cascade));
-    this.edit(id, removed.size > 1 ? `Delete artwork and ${removed.size - 1} attached` : 'Delete artwork', value => {
-      const doc = value as Composition;
-      const filter = (nodes: Instance[]): Instance[] => nodes.filter(node => !removed.has(node.id)).map(node => { if (node.children) node.children = filter(node.children); return node; }); doc.instances = filter(doc.instances); return doc;
-    });
-  }
-}
-
-const element = <K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
-const button = (text: string, action: () => void, title?: string) => { const node = element('button', '', text); node.type = 'button'; node.onclick = action; if (title) node.title = title; return node; };
-const select = (values: { value: string; label: string }[], value: string, onChange: (v: string) => void) => { const node = element('select'); for (const item of values) { const option = element('option', '', item.label); option.value = item.value; node.append(option); } node.value = value; node.onchange = () => onChange(node.value); return node; };
-const label = (text: string, control: HTMLElement) => { const node = element('label'); node.append(element('span', '', text), control); return node; };
 
 export function mountComposer(host: HTMLElement, config: ComposerConfig) {
+  const painting=createPreviewState();
+
+  const viewport=createViewportState();
+
+  const {numberInput,fieldInput}=createFieldControls((text,error)=>notice(text,error));
   const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks }, config.validateDocument, config.projections,config.destinationsFor,config.validationInputs);
   let viewDocuments: EditorDocument[] | undefined;
   const documentsForView = () => viewDocuments ?? model.list();
@@ -314,26 +91,31 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** The outline's eyes: objects hidden in the editor preview, per composition document. View state only. */
   const hiddenByDocument = new Map<string, Set<string>>();
   const hiddenIn = (id: string | undefined) => { if (!id) return new Set<string>(); let set = hiddenByDocument.get(id); if (!set) hiddenByDocument.set(id, set = new Set()); return set; };
-  let moreOpen = false, inspectorTab = 'appearance', inspectedId = '', animating = false, ambientLabel: HTMLElement | undefined;
-  let inspectorMount: { key: string; host: HTMLElement; handle?: WorkbenchHandle } | undefined;
+  let moreOpen = false, animating = false, ambientLabel: HTMLElement | undefined;
+  const inspector=createInspector();
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
   for (const [panel, text] of [['layers', 'Outline'], ['properties', 'Inspector']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
-  stage.append(canvas, compareCanvas); stageWrap.append(stage, playHost, joinedLayer, hoverBox, viewportTools, picker, previewError); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
+  stage.append(canvas, compareCanvas); const renderStatus=element('output','render-status');renderStatus.setAttribute('aria-label','Preview render rate');stageWrap.append(stage,playHost,joinedLayer,hoverBox,viewportTools,picker,previewError,renderStatus); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
   // An editor link: `#characters` opens a panel; `#scene=downtown-next&compare=downtown&panel=characters` also opens a scene.
   const linkQuery = location.hash.includes('=') ? new URLSearchParams(location.hash.slice(1)) : undefined;
   const linkedPanel = linkQuery ? linkQuery.get('panel') ?? '' : decodeURIComponent(location.hash.slice(1)); let linked = false;
-  let compareId = '', currentId = '', selectedDocumentId = '', selectedId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
-  let preview: PreviewResult | undefined, previewGeneration = 0, previewPending = false, renderAgain = false;
+  let compareId = '', currentId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
+
   /** Editor-only framing: renderScale zoom, native camera pan and a crop to the artwork's height. Never saved. */
-  let viewZoom = compact.matches ? 2 : 1, crop = true, cropHeight = 0, cropFor = '', hoverId = '';
-  let panning: { x: number; y: number; camera: number; scroll: number; moved: boolean; target?: string } | undefined;
-  const touches = new Map<number, { x: number; y: number }>(); let pinch: { distance: number; zoom: number } | undefined;
-  let dragging: { before: Composition; pending: Composition; x: number; y: number; id: string; delta: PreviewResult['deltaToLocal']; armed: boolean; clientX: number; clientY: number } | undefined;
-  let scrub: HTMLInputElement | undefined, timeLabel: HTMLElement | undefined;
+  const sequenceNav={zoom:1,x:0,y:0};let cameraPreview=false,showObjectOutlines=false,showSceneBounds=true,renderWindow=performance.now(),renderFps=0,statusUpdatedAt=0;
+  try{showObjectOutlines=localStorage.getItem('access-denied.editor.object-outlines')==='true';}catch{/* optional preview preference */}
+  let viewZoom = compact.matches ? 2 : 1,crop = true;
+
+
+
+  let timeLabel: HTMLElement | undefined, transportPlay:HTMLButtonElement|undefined, timelineGrid:ReturnType<typeof mountTimelineGrid>|undefined;
+  const editorSelection=createSelection();
+  const timelineView:TimelineViewState={zoom:1,collapsed:new Set(),scrollX:0,scrollY:0};let timelineCollapsed=false,timelineHeight=300;let playbackSpeed=1,dragPreviewDirty=false;
+  const speedControl=()=>select([.25,.5,1,1.5,2,4].map(value=>({value:String(value),label:value+'×'})),String(playbackSpeed),value=>playbackSpeed=Number(value));
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
   let cleanupWorld: void | (() => void);
   let cleanupAssets: void | (() => void); const assetSession: AssetBrowserSession = {};
@@ -416,7 +198,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   const sceneName = (scene:string)=>{const names:Record<string,string>={'sequence-title':'Title','sequence-opening':'Opening glide','sequence-intro':'Act I cinematic','sequence-act2':'Act II cinematic','sequence-taxi':'Taxi flight'};if(names[scene])return names[scene];const doc=documentsForView().find(d=>d.id.startsWith('authored.')&&d.kind==='scene'&&(d.value as {id?:string}).id===scene);return doc?(doc.value as {name:string}).name:config.sceneLabel?.(scene)??scene;};
   const sceneId = () => { const doc = compositionDocument(); return doc ? (doc.value as Composition).scene : ''; };
-  const openInstance = (document: string, instance: string) => { currentId = document; selectedDocumentId=''; selectedId = instance; playing = false; syncSequence(); showLayout(); showPanel('properties'); refresh(); };
+  const openInstance = (document: string, instance: string) => { currentId = document; editorSelection.document=''; editorSelection.instance = instance; playing = false; syncSequence(); showLayout(); showPanel('properties'); refresh(); };
   function emptyState(item: WorkbenchConfig, scene: string) {
     const box = element('div', 'empty-state'); box.append(element('h2', '', item.title.split(' · ')[0]), element('p', '', item.unsupported ?? `${scene ? sceneName(scene) : 'This document'} has nothing to edit here yet.`));
     const others = documentsForView().filter(doc => doc.kind === 'composition' && item.supports!((doc.value as Composition).scene,documentsForView()));
@@ -471,9 +253,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const sequence = () => currentTimeline()?.sequences.find(s => s.id === sequenceId);
   const evaluationContext = () => { const base = model.timelineContext(); return config.timelineContext?.(base, { time, reduced, sequenceId, environment: { ...environment }, viewport: { width: canvas.width, height: canvas.height }, timeline: currentTimeline() }) ?? base; };
   const viewCompositionDocument = () => { const doc = current(); return doc?.kind === 'composition'?doc:undefined; };
-  const compositionDocument = () => selectedDocumentId ? model.get(selectedDocumentId) : viewCompositionDocument();
-  const selected = () => { const doc = compositionDocument(); return doc ? flatten(doc.value as Composition).find(x => x.node.id === selectedId)?.node : undefined; };
-  const editInstance = (name: string, action: (node: Instance) => void) => run(() => { const doc = compositionDocument(); if (!doc || !selectedId) return; model.updateInstance(doc.id, selectedId, name, action); });
+  const compositionDocument = () => editorSelection.document ? model.get(editorSelection.document) : viewCompositionDocument();
+  const selected = () => { const doc = compositionDocument(); return doc ? flatten(doc.value as Composition).find(x => x.node.id === editorSelection.instance)?.node : undefined; };
+  const editInstance = (name: string, action: (node: Instance) => void) => run(() => { const doc = compositionDocument(); if (!doc || !editorSelection.instance) return; model.updateInstance(doc.id, editorSelection.instance, name, action); });
   const editTimeline = (name: string, action: (doc: TimelineProgram) => void) => { playing = false; run(() => model.edit(currentId, name, value => { const composition=value as Composition,program=sequenceProgram({[currentId]:composition});action(program);const {composition:reference,...sequence}=program.sequences[0];composition.sequence=sequence;return composition; })); };
   async function api(path: string, body?: unknown) {
     if (!config.api) throw new Error('This browser editor has no repository write service. Download edits instead.');
@@ -490,7 +272,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     try {
       const documents = config.api ? await api('/documents') as EditorDocument[] : copy(config.documents ?? []); model.load(documents); thumbnailDocuments = undefined; thumbnails?.invalidate();
       if (!documents.some(d => d.id === currentId)) currentId = documents.find(d => d.kind === 'composition')?.id ?? documents[0]?.id ?? '';
-      selectedId = ''; selectedDocumentId=''; syncSequence(); refresh(); openLinkedScene(); openLinkedPanel(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
+      editorSelection.instance = ''; editorSelection.document=''; syncSequence(); refresh(); openLinkedScene(); openLinkedPanel(); notice(documents.length ? config.api ? 'Source documents loaded. Edits stay local until Save.' : '' : 'No authoring documents are available.');
     } catch (e) { notice(`Could not load authoring documents: ${message(e)}`, true); }
   }
   async function save() {
@@ -509,7 +291,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     finally { saving = false; refresh(); }
   }
   function syncSequence() { const doc = currentTimeline(); if (!doc?.sequences.some(s => s.id === sequenceId)) sequenceId = doc?.sequences[0]?.id ?? ''; const seq = sequence(); time = Math.min(time, seq?.duration ?? time); loopFrom = 0; loopTo = seq?.duration ?? 0; }
-  function openDocument(id: string) { return perfMeasure('editor.scene-switch', () => { if (id !== currentId) { compareId = ''; stopPlay(); } currentId = id; selectedDocumentId=''; selectedId = ''; playing = false; time = 0; syncSequence(); refresh(); }); }
+  function openDocument(id: string) { return perfMeasure('editor.scene-switch', () => { if(id!==currentId){compareId='';stopPlay();painting.workspaceAnchor=undefined;sequenceNav.x=0;sequenceNav.y=0;sequenceNav.zoom=1;} currentId = id; editorSelection.document=''; editorSelection.instance = ''; editorSelection.timeline=undefined;animating=false;playing = false; time = 0; syncSequence(); refresh(); }); }
   function openScene(scene: string, compare?: string) { const doc = documentsForView().find(d => d.kind === 'composition' && (d.value as Composition).scene === scene); if (doc) { if (!root.dataset.stagePanel) showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Scene ${scene} has no editable composition in this session.`, true); }
   function refreshHeader() {
     const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand, tools);
@@ -543,7 +325,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ New scene', openNewScene, blocked || 'Create a scene and open it here'); add.className = 'new-scene'; add.disabled = !!blocked; sceneContext.append(add); }
     const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(actions);
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
-    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; actions.append(status, dirty, undo, redo, saveButton, menu);
+    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; const discard=button('Discard all changes',()=>{stopPlay();playing=false;animating=false;editorSelection.timeline=undefined;editorSelection.instance='';editorSelection.document='';run(()=>model.discard());},'Restore the last loaded or saved snapshot; Undo can recover discarded edits');discard.disabled=saving||!model.dirty();actions.append(status,dirty,undo,redo,saveButton,discard,menu);
     menuItems.append(button(config.api ? 'Reload source' : 'Reset edits', () => { if (!model.dirty() || window.confirm('Discard unsaved edits and reload the source snapshot? Download or export first to keep them.')) void load(); }));
     const bundleFile = element('input'); bundleFile.type = 'file'; bundleFile.accept = 'application/json,.json'; bundleFile.hidden = true; bundleFile.setAttribute('aria-label', 'Import downloaded edits');
     bundleFile.onchange = async () => { const file = bundleFile.files?.[0]; if (!file) return; try { if (file.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const changes = readDocumentBundle(JSON.parse(await file.text()), documentsForView()); run(() => { model.importDocuments(changes); syncSequence(); }); } catch (error) { notice(`Import failed: ${message(error)}`, true); } finally { bundleFile.value = ''; } };
@@ -563,9 +345,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     }
     if (composition) {
       const add = button('＋ Add artwork', () => openPicker(), 'Add a piece of artwork where you are looking (A)'); add.className = 'primary'; cluster('Artwork').append(add);
-      const animation = cluster('Scene animation'), toggle = button(animating ? '❚❚ Pause' : '▶ Animate', () => { animating = !animating; refreshOptions(); }, animating ? 'Pause the scene’s ambient animation (Space)' : 'Run the scene’s ambient animation, such as people, lights and signs, without playing the game (Space)');
-      toggle.setAttribute('aria-pressed', String(animating)); ambientLabel = element('span', 'time', `${time.toFixed(1)} s`);
-      animation.append(toggle, ambientLabel, button('⟲', () => { time = 0; refreshOptions(); void draw(); }, 'Back to the first frame'));
+      const animation = cluster('Scene animation'), toggle = button((sequence()?playing:animating) ? '❚❚ Pause' : '▶ Animate', toggleAnimation, (sequence()?playing:animating) ? 'Pause the scene’s ambient animation (Space)' : 'Run the scene’s ambient animation, such as people, lights and signs, without playing the game (Space)');
+      toggle.setAttribute('aria-pressed', String(sequence()?playing:animating)); ambientLabel = element('span', 'time', `${time.toFixed(1)} s`);
+      animation.append(toggle,ambientLabel,...(!currentTimeline()?[speedControl()]:[]), button('⟲', () => seekTime(0), 'Back to the first frame'));
     }
     const controls: EnvironmentControl[] = config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }];
     const quick = controls.filter(control => control.quick);
@@ -577,6 +359,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       pick.setAttribute('aria-label', 'Starting state'); cluster('Starting state').append(pick);
     }
     if (quick.length) { const preview = cluster('Preview as'); preview.append(element('span', 'toolbar-label', states.length ? '' : 'Preview')); for (const control of quick) preview.append(environmentControl(control, true)); }
+    if(currentTimeline()){const mode=select([{value:'workspace',label:'Workspace'},{value:'camera',label:'Camera preview'}],cameraPreview?'camera':'workspace',value=>{cameraPreview=value==='camera';refreshViewportTools();refreshOptions();void draw();});mode.setAttribute('aria-label','Sequence view');cluster('Sequence view').append(mode);}
     if (composition) {
       const grid = select([{ value: '0', label: 'Grid off' }, ...[1, 2, 4, 8, 16].map(n => ({ value: String(n), label: `Grid ${n} px` }))], String(snap), value => { snap = Number(value); });
       grid.title = 'Dragging and arrow keys snap to this grid'; grid.setAttribute('aria-label', 'Grid'); cluster('Grid').append(grid);
@@ -642,18 +425,42 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     cleanupAssets = mountArtwork(assetPanel, scene, entry => { showLayout(); void addAtView(entry.id); }, (kit, settings) => { showLayout(); void addAtView(kit.id, settings); });
   }
   function refreshMap() { cleanupWorld?.(); cleanupWorld = undefined; mapPanel.replaceChildren(); if (config.worldPanel && mapHost.open) cleanupWorld = config.worldPanel(mapPanel, openScene, documentsForView(), sceneId()); }
-  let outlineVersion = '', updateOutlineSelection = () => {};
+  const readFolds=(key:string)=>{try{return new Map<string,boolean>(JSON.parse(localStorage.getItem('access-denied.editor.'+key)??'[]'));}catch{return new Map<string,boolean>();}};
+  const outlineSceneOwners=new Map<string,string>();const outlineSourceOpen=readFolds('source-folds');for(const [key,value]of readFolds('kind-folds'))roleOpen.set(key,value);
+  const saveFolds=()=>{try{localStorage.setItem('access-denied.editor.source-folds',JSON.stringify([...outlineSourceOpen]));localStorage.setItem('access-denied.editor.kind-folds',JSON.stringify([...roleOpen]));}catch{/* optional editor preferences */}};
+  let outlineVersion='',outlineSnapshot:object|undefined,outlineView='',updateOutlineSelection=()=>{};
   function refreshLeft() {
-    workbenches.forEach(item => refreshWorkbench(item, true)); refreshLibrary(); refreshMap();
-    const source = compositionDocument(), docs = documentsForView();
-    // Position, size and facing do not change outline rows; parallax is shown in Order mode.
-    const version = JSON.stringify([source?.id, source?.value], (key, value) => key === 'placement' ? { ...value, x: undefined, h: undefined, scale: undefined, facing: undefined } : value) + JSON.stringify((config.sceneDocuments?.(sceneId(), docs) ?? []).map(id => docs.find(d => d.id === id)));
-    if (version === outlineVersion) { updateOutlineSelection(); return; }
-    outlineVersion = version; updateOutlineSelection = () => {};
-    left.replaceChildren();
-    left.append(element('h2', '', 'Outline'));
-    const doc = compositionDocument();
-    if (doc) {
+    workbenches.forEach(item=>refreshWorkbench(item,true));refreshLibrary();refreshMap();
+    if(outlineSnapshot===model.sourceVersion&&outlineView===currentId){updateOutlineSelection();return;}
+    outlineSnapshot=model.sourceVersion;outlineView=currentId;
+    const docs=documentsForView(),sources=outlineDocuments(viewCompositionDocument(),docs);outlineSceneOwners.clear();for(const source of sources)outlineSceneOwners.set((source.value as Composition).scene,source.id);
+    const version=JSON.stringify(sources,(key,value)=>key==='sequence'?!!value:key==='placement'?{...value,x:undefined,h:undefined,scale:undefined,facing:undefined}:value)+JSON.stringify(sources.flatMap(source=>(config.sceneDocuments?.((source.value as Composition).scene,docs)??[]).map(id=>docs.find(d=>d.id===id))));
+    if(version===outlineVersion){updateOutlineSelection();return;}
+    outlineVersion=version;left.replaceChildren();left.append(element('h2','','Outline'));
+    const updates:(()=>void)[]=[],filters:(()=>void)[]=[];
+    if(!sources.length)left.append(element('p','muted','Open a scene to inspect its artwork.'));
+    const assembled=!!currentTimeline();
+    if(assembled){
+      const camera=button('Camera',()=>selectTimeline({kind:'camera'}),'Inspect the authored game camera');camera.setAttribute('aria-label','Camera in outline');
+      left.append(camera);updates.push(()=>camera.setAttribute('aria-pressed',String(cameraSelected())));
+      left.append(element('p','outline-context','The sequence and its referenced scenes. Selection does not change this list.'));
+      const tools=element('div','layer-tools'),search=element('input'),sort=element('div','segmented');search.type='search';search.placeholder='Filter all sources';search.value=layerQuery;search.setAttribute('aria-label','Filter the outline');search.oninput=()=>{layerQuery=search.value;filters.forEach(render=>render());};
+      for(const mode of ['kind','order']as const){const pick=button(mode==='kind'?'Kind':'Order',()=>{layerSort=mode;for(const child of sort.children)child.setAttribute('aria-pressed',String((child as HTMLElement).dataset.mode===mode));filters.forEach(render=>render());});pick.dataset.mode=mode;pick.setAttribute('aria-pressed',String(layerSort===mode));sort.append(pick);}tools.append(search,sort);left.append(tools);
+    }
+    for(const source of sources){
+      if(!assembled){updates.push(renderOutlineDocument(source,left,true).selection);continue;}
+      const group=element('details','outline-source'),composition=source.value as Composition;
+      group.dataset.document=source.id;group.open=outlineSourceOpen.get(source.id)??false;
+      const summary=element('summary','',source.id===currentId?(sources.length>1?'Sequence controls':sceneName(composition.scene)):source.id.startsWith('backdrop-')?'Shared backdrop · '+source.id.slice(9):sceneName(composition.scene));summary.title=source.id;
+      const container=element('div');group.append(summary,container);left.append(group);
+      group.ontoggle=()=>{if(!layerQuery.trim()){outlineSourceOpen.set(source.id,group.open);saveFolds();}};
+      const handle=renderOutlineDocument(source,container,false);filters.push(()=>{handle.filter();if(layerQuery.trim())group.open=true;else group.open=outlineSourceOpen.get(source.id)??false;});
+      updates.push(()=>{if(compositionDocument()?.id===source.id&&editorSelection.instance){group.open=true;outlineSourceOpen.set(source.id,true);}handle.selection();});
+    }
+    updateOutlineSelection=()=>updates.forEach(update=>update());updateOutlineSelection();
+  }
+  function renderOutlineDocument(doc:EditorDocument,container:HTMLElement,showTools:boolean):{selection:()=>void;filter:()=>void}{
+
       const composition = doc.value as Composition, rows = flatten(composition), parents = new Map<string, string>();
       const visit = (nodes: Instance[], parent?: string) => nodes.forEach(node => { if (parent) parents.set(node.id, parent); visit(node.children ?? [], node.id); }); visit(composition.instances);
       const within = (id: string, ancestor: string) => { for (let at = parents.get(id); at; at = parents.get(at)) if (at === ancestor) return true; return false; };
@@ -662,7 +469,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const docs = documentsForView(), looks = new Map<string, unknown>();
       for (const id of config.sceneDocuments?.(composition.scene, docs) ?? []) { const actors = (docs.find(d => d.id === id)?.value as { actors?: { id: string; instance?: string; look?: unknown }[] } | undefined)?.actors; for (const a of Array.isArray(actors) ? actors : []) looks.set(a.instance ?? a.id, a.look); }
       const kind = (node: Instance) => layerRole(node.type, art(node).label, art(node).category, looks.get(node.id));
-      const matches = (node: Instance) => { const query = layerQuery.trim().toLowerCase(); return !query || `${node.id} ${node.type} ${art(node).label}`.toLowerCase().includes(query); };
+      const matches = (node: Instance) => { const query = layerQuery.trim().toLowerCase(); return compositionDocument()?.id===doc.id&&node.id===editorSelection.instance||!query || `${node.id} ${node.type} ${art(node).label}`.toLowerCase().includes(query); };
       const layerTools = element('div', 'layer-tools'), search = element('input'), order = element('div', 'segmented'), listHost = element('div');
       search.type = 'search'; search.placeholder = 'Filter'; search.value = layerQuery; search.setAttribute('aria-label', 'Filter the outline'); search.oninput = () => { layerQuery = search.value; renderLayers(); };
       order.setAttribute('role', 'group'); order.setAttribute('aria-label', 'Arrange the outline');
@@ -670,7 +477,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const toggle = button(text, () => { layerSort = mode; for (const other of order.children) other.setAttribute('aria-pressed', String((other as HTMLElement).dataset.mode === mode)); renderLayers(); }, title);
         toggle.dataset.mode = mode; toggle.setAttribute('aria-pressed', String(mode === layerSort)); order.append(toggle);
       }
-      layerTools.append(search, order); left.append(layerTools, listHost);
+      layerTools.append(search,order);if(showTools)container.append(layerTools);container.append(listHost);
       const hidden = hiddenIn(doc.id), allIds = rows.map(r => r.node.id);
       /** Click hides or shows; Alt-click shows only these (Alt-click again shows everything). */
       const eye = (ids: () => string[], label: string) => {
@@ -687,17 +494,18 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       };
       // Hovering a row outlines the artwork in the preview, the same box the preview shows on hover.
       const item = (node: Instance, depth: number) => {
-        const li = element('li'), pick = button('', () => { revealed = node.id; select_(node.id === selectedId ? '' : node.id); }, `${art(node).label} · ${node.type} · ${LAYER_LABELS[node.layer]}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
-        pick.onmouseenter = pick.onfocus = () => { hoverId = node.id; placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (hoverId === node.id) { hoverId = ''; placeHover(); } };
+        const key=JSON.stringify([doc.id,node.id]),active=()=>compositionDocument()?.id===doc.id&&node.id===editorSelection.instance;
+        const li = element('li'), pick = button('', () => { if(active())select_('');else{editorSelection.timeline=undefined;editorSelection.document=doc.id;editorSelection.instance=node.id;timelineView.collapsed.delete(node.id);refreshRight();updateOutlineSelection();refreshTimeline();void draw();} }, `${art(node).label} · ${node.type} · ${LAYER_LABELS[node.layer]}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
+        pick.onmouseenter = pick.onfocus = () => { viewport.hoverId=painting.result?.sources?.[key]?key:doc.id===currentId?node.id:key;placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (viewport.hoverId === key||viewport.hoverId===node.id) { viewport.hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
         if (node.type === 'level.barrier') { const mark = element('span', 'layer-badge'); mark.innerHTML = BARRIER_ICON; mark.title = 'Barrier: select it to edit who may pass (Access)'; pick.append(mark); }
-        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.dataset.instance = node.id; pick.setAttribute('aria-pressed', String(node.id === selectedId));
+        pick.append(element('span', 'layer-name', node.id), element('span', 'layer-kind', (parallax !== 1 && layerSort === 'order' ? `×${parallax} · ` : '') + kind(node))); pick.style.paddingLeft = `${10 + depth * 14}px`; pick.dataset.instance=node.id;pick.dataset.document=doc.id;pick.setAttribute('aria-pressed',String(active()));
         if (hidden.has(node.id)) li.classList.add('is-hidden');
         li.append(pick, eye(() => [node.id], node.id)); return li;
       };
       /** A new selection (often picked in the preview) unfolds the section that holds it, so the row can be scrolled to. */
       const reveal = () => {
-        if (!selectedId || selectedId === revealed) return false; const node = rows.find(row => row.node.id === selectedId)?.node; if (!node) return false; revealed = selectedId;
+        if(compositionDocument()?.id!==doc.id||!editorSelection.instance||JSON.stringify([doc.id,editorSelection.instance])===revealed)return false; const node = rows.find(row => row.node.id === editorSelection.instance)?.node; if (!node) return false; revealed=JSON.stringify([doc.id,editorSelection.instance]);
         let top = node; for (let at = parents.get(node.id); at; at = parents.get(at)) top = rows.find(row => row.node.id === at)?.node ?? top;
         const layer = node.layer ?? top.layer;
         if (layerSort === 'kind') roleOpen.set(kind(top), true); else if (layer === 'logic') roleOpen.set('logic-layer', true); else if (layer) roleOpen.set('stack:' + layer, true);
@@ -715,7 +523,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
             list.append(item(top.node, 0)); count++; for (const row of nested) if (matches(row.node) || matches(top.node)) list.append(item(row.node, row.depth - top.depth));
           }
           if (!count) continue; shown += count;
-          const group = element('details', 'layer-group'); group.open = layerQuery.trim() ? true : roleOpen.get(role) ?? true; group.ontoggle = () => { if (!layerQuery.trim()) roleOpen.set(role, group.open); };
+          const group = element('details', 'layer-group'); group.open = layerQuery.trim() ? true : roleOpen.get(role) ?? false; group.ontoggle = () => { if (!layerQuery.trim()) roleOpen.set(role,group.open);saveFolds(); };
           const summary = element('summary', '', `${role} · ${count}`); summary.title = KIND_HINTS[role]; group.append(summary, list); listHost.append(group);
         }
         if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no artwork yet. Use ＋ Add artwork in the toolbar.'));
@@ -742,12 +550,12 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           return li;
         };
         const section = (layer: Layer, body: (list: HTMLElement) => number) => {
-          const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy'), key = 'stack:' + layer, open = !!layerQuery.trim() || (roleOpen.get(key) ?? true);
-          const fold = button(open ? '▾' : '▸', () => { roleOpen.set(key, !open); renderLayers(); }, `${open ? 'Collapse' : 'Expand'} the ${LAYER_LABELS[layer]} layer`); fold.className = 'fold'; fold.setAttribute('aria-expanded', String(open)); list.hidden = !open;
+          const box = element('section', 'stack-layer'), head = element('div', 'stack-head'), list = element('ul', 'hierarchy'), key = 'stack:' + layer, open = !!layerQuery.trim() || (roleOpen.get(key) ?? false);
+          const fold = button(open ? '▾' : '▸', () => { roleOpen.set(key,!open);saveFolds();renderLayers(); }, `${open ? 'Collapse' : 'Expand'} the ${LAYER_LABELS[layer]} layer`); fold.className = 'fold'; fold.setAttribute('aria-expanded', String(open)); list.hidden = !open;
           const count = body(list); shown += count;
           const ids = () => layerRows(composition, layer).map(n => n.id);
           head.append(fold, element('span', 'stack-name', LAYER_LABELS[layer]), element('span', 'muted', String(ids().length)), ...(ids().length ? [eye(ids, `the ${LAYER_LABELS[layer]} layer`)] : [element('span', 'eye-space')])); head.title = LAYER_HINTS[layer];
-          head.ondblclick = event => { if ((event.target as HTMLElement).closest('button')) return; roleOpen.set(key, !open); renderLayers(); };
+          head.ondblclick = event => { if ((event.target as HTMLElement).closest('button')) return; roleOpen.set(key,!open);saveFolds();renderLayers(); };
           drop(head, () => accepts(layer) ? { layer, index: layerRows(composition, layer).filter(n => n.id !== dragged).length } : undefined);
           box.append(head, list); stack.append(box);
         };
@@ -755,92 +563,35 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         for (const layer of [...VISUAL_LAYERS].reverse()) {
           section(layer, target => list(target, layerRows(composition, layer)));
         }
-        const logic = element('details', 'layer-group logic-group'); logic.open = roleOpen.get('logic-layer') ?? true; logic.ontoggle = () => roleOpen.set('logic-layer', logic.open);
+        const logic = element('details', 'layer-group logic-group'); logic.open = roleOpen.get('logic-layer') ?? false; logic.ontoggle=()=>{roleOpen.set('logic-layer',logic.open);saveFolds();};
         const logicList = element('ul', 'hierarchy'); shown += list(logicList, layerRows(composition, 'logic'));
         const logicIds = () => layerRows(composition, 'logic').map(n => n.id), summary = element('summary', '', `${LAYER_LABELS.logic} · ${logicIds().length}`);
         if (logicIds().length) summary.append(eye(logicIds, 'the Logic layer'));
         logic.append(summary, logicList); logic.title = LAYER_HINTS.logic;
         listHost.append(stack, logic); return shown;
       }
-      updateOutlineSelection = () => {
+      const updateSelection = () => {
         const fresh = reveal(); let selectedRow: HTMLElement | undefined;
-        left.querySelectorAll<HTMLElement>('[data-instance]').forEach(row => { const active = row.dataset.instance === selectedId; row.setAttribute('aria-pressed', String(active)); if (active) selectedRow = row; });
+        container.querySelectorAll<HTMLElement>('[data-instance]').forEach(row => { const active=row.dataset.document===compositionDocument()?.id&&row.dataset.instance===editorSelection.instance; row.setAttribute('aria-pressed', String(active)); if (active) selectedRow = row; });
+        if(fresh&&!selectedRow){renderLayers();return;}
         if (fresh && selectedRow && (selectedRow.closest('details:not([open])') || selectedRow.closest('[hidden]'))) { renderLayers(); return; }
         if (fresh) selectedRow?.scrollIntoView({ block: 'center' });
       };
       renderLayers();
-    } else left.append(element('p', 'muted', 'Open a scene, or a timeline that refers to one.'));
+
+      return{selection:updateSelection,filter:renderLayers};
   }
-  function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value); if (!Number.isFinite(number) || min !== undefined && number < min) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
-  /** Structured JSON fields with an inspector editor: rows of small fields, or a set of checkboxes. */
-  function structuredInput(editor: NonNullable<Field["editor"]>, value: Value, apply: (v: Value) => void): HTMLElement {
-    const wrap = element('div', 'structured-field'), auto = value === 'auto';
-    if (editor.kind === 'colour') {
-      const box = element('input'), pick = element('input'), own = typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value); box.type = 'checkbox'; box.checked = !own; pick.type = 'color'; pick.value = own ? value as string : '#808080'; pick.disabled = !own;
-      box.onchange = () => apply(box.checked ? '' : pick.value); pick.onchange = () => apply(pick.value); wrap.append(label(editor.empty, box), pick); return wrap;
-    }
-    if (editor.auto) { const box = element('input'); box.type = 'checkbox'; box.checked = auto; box.onchange = () => apply(box.checked ? 'auto' : editor.kind === 'set' ? [] : []); wrap.append(label(editor.auto, box)); }
-    if (auto) return wrap;
-    if (editor.kind === 'set') {
-      const chosen = new Set(Array.isArray(value) ? value.map(String) : []);
-      for (const option of editor.options) { const box = element('input'); box.type = 'checkbox'; box.checked = chosen.has(option); box.onchange = () => apply(editor.options.filter(o => o === option ? box.checked : chosen.has(o))); wrap.append(label(option, box)); }
-      return wrap;
-    }
-    const rows = (Array.isArray(value) ? value : []) as Properties[];
-    rows.forEach((row, i) => {
-      const line = element('div', 'structured-row');
-      for (const [key, sub] of Object.entries(editor.item)) line.append(label(sub.label + (sub.unit ? ` (${sub.unit})` : ''), fieldInput(sub, row[key] ?? sub.default, v => apply(rows.map((r, j) => j === i ? { ...r, [key]: v } : r)))));
-      line.append(button('Remove', () => apply(rows.filter((_, j) => j !== i)), 'Remove this row'));
-      wrap.append(line);
-    });
-    wrap.append(button(editor.addLabel ?? 'Add', () => apply([...rows, editor.next?.(rows) ?? Object.fromEntries(Object.entries(editor.item).map(([k, f]) => [k, copy(f.default) as Value]))])));
-    return wrap;
-  }
-  function fieldInput(field: Field, value: Value, apply: (v: Value) => void): HTMLElement {
-    const kind = field.kind as string;
-    if (field.editor) return structuredInput(field.editor, value, apply);
-    if (kind === 'select') return select((field.options ?? []).map(v => ({ value: String(v), label: String(v) })), String(value), v => { const actual = field.options?.find(x => String(x) === v); if (actual !== undefined) apply(actual); });
-    if (kind === 'number') { const input = numberInput(value as number, apply, field.min, String(field.step ?? 'any')); if (field.max !== undefined) input.max = String(field.max); return input; }
-    if (kind === 'boolean') { const input = element('input'); input.type = 'checkbox'; input.checked = value as boolean; input.onchange = () => apply(input.checked); return input; }
-    if (kind === 'color') { const input = element('input'); input.type = 'color'; input.value = /^#[0-9a-f]{6}$/i.test(String(value)) ? String(value) : '#808080'; input.onchange = () => apply(input.value); return input; }
-    if (kind === 'json') { const wrap = element('div'), input = element('textarea'); input.value = JSON.stringify(value, null, 2); input.setAttribute('aria-label', field.label); wrap.append(input, button('Apply JSON field', () => { try { apply(JSON.parse(input.value) as Value); } catch (e) { notice(message(e), true); } })); return wrap; }
-    const input = element('input'); input.type = 'text'; input.value = String(value); input.onchange = () => apply(input.value); return input;
-  }
-  const disposeInspector = () => { inspectorMount?.handle?.(); inspectorMount = undefined; };
+  const disposeInspector=inspector.dispose;
   /** Sections read the live documents, so a section's own refresh always sees the latest edit. */
   const liveContext = (scene: string): WorkbenchContext => ({ get documents() { return documentsForView(); }, scene, openScene, openInstance, authoring: authoringApi() });
   function refreshRight() {
     const node = selected(), scene = sceneId(), doc = compositionDocument(); right.replaceChildren();
-    if (!doc) { disposeInspector(); right.append(element('h2', '', 'Inspector'), element('p', 'muted', 'Open a scene to inspect it.')); return; }
-    const head = element('div', 'inspector-head');
-    if (node) {
-      const art = config.registry.get(node.type), actions = element('div', 'row');
-      head.append(element('h2', '', node.id), element('p', 'muted', `${art.label} · ${node.type}`));
-      actions.append(button('Duplicate', () => run(() => { selectedId = model.duplicate(doc.id, selectedId); })), button('Delete', () => deleteSelected(), 'Delete this artwork (Delete)'), button('Deselect', () => select_(''), 'Back to the scene’s own settings (Esc)'));
-      head.append(actions);
-    } else head.append(element('h2', '', sceneName(scene) || 'Scene'), element('p', 'muted', 'Nothing selected, so these are the scene’s own settings. Click artwork in the preview or the outline to inspect it.'));
-    if(selectedDocumentId&&selectedDocumentId!==currentId)head.append(element('p','muted','Editing '+sceneName(scene)+'; these changes also appear in the game.'),button('Open source scene',()=>openDocument(selectedDocumentId)));
-    right.append(head);
-    let sections: InspectorSection[] = [];
-    try { sections = scene && config.inspector ? config.inspector(scene, node, documentsForView()) : []; } catch (e) { right.append(element('p', 'error', `Inspector unavailable: ${message(e)}`)); }
-    // a primary section (a barrier's Access) comes first and opens first each time the selection changes
-    const primary = sections.find(section => section.primary);
-    if ((node?.id ?? '') !== inspectedId) { inspectedId = node?.id ?? ''; if (primary) inspectorTab = primary.id; }
-    const tabs = [...(primary ? [primary] : []), ...(node ? [{ id: 'appearance', label: 'Appearance', title: 'Position, look and attachment' }] : []), ...sections.filter(section => section !== primary)];
-    if (!tabs.length) { disposeInspector(); right.append(element('p', 'muted', 'This scene has no editable logic yet.')); return; }
-    if (!tabs.some(tab => tab.id === inspectorTab)) inspectorTab = tabs[0].id;
-    if (tabs.length > 1) {
-      const strip = element('div', 'inspector-tabs'); strip.setAttribute('role', 'tablist'); strip.setAttribute('aria-label', 'Inspector sections');
-      for (const tab of tabs) { const pick = button(tab.label, () => { inspectorTab = tab.id; refreshRight(); }, tab.title); pick.setAttribute('role', 'tab'); pick.setAttribute('aria-selected', String(tab.id === inspectorTab)); strip.append(pick); }
-      right.append(strip);
-    }
-    const body = element('div', 'inspector-body'); body.setAttribute('role', 'tabpanel'); right.append(body);
-    if (inspectorTab === 'appearance' && node) { disposeInspector(); renderAppearance(body, node); return; }
-    const section = sections.find(item => item.id === inspectorTab)!, key = `${scene}|${node?.id ?? ''}|${section.id}|${section.title ?? section.label}`;
-    if (inspectorMount?.key === key && inspectorMount.handle?.refresh) { body.append(inspectorMount.host); inspectorMount.handle.refresh(); return; }
-    disposeInspector(); const host = element('div', 'inspector-mount'); body.append(host); inspectorMount = { key, host };
-    try { inspectorMount.handle = section.mount(host, liveContext(scene)); } catch (e) { host.replaceChildren(element('p', 'error', `Unavailable: ${message(e)}`)); }
+    if(renderTimelineInspector(right,{selection:editorSelection.timeline,sequence:sequence(),time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,selectTimeline,seekTime,notice,setSelection:value=>{editorSelection.timeline=value;},close:()=>{editorSelection.timeline=undefined;refreshRight();refreshTimeline();},getFrame:()=>evaluateTimeline(currentTimeline()!,sequenceId,time,evaluationContext(),{reduced})})){disposeInspector();return;}
+    inspector.render(right,{node,scene,doc,sceneName:sceneName(scene),sharedSource:!!editorSelection.document&&editorSelection.document!==currentId,registry:config.registry,
+      duplicate:()=>run(()=>{editorSelection.instance=model.duplicate(doc!.id,editorSelection.instance);}),remove:deleteSelected,deselect:()=>select_(''),openSource:()=>openDocument(editorSelection.document),refresh:refreshRight,
+      sections:()=>scene&&config.inspector?config.inspector(scene,node,documentsForView()):[],context:()=>liveContext(scene),appearance:renderAppearance});
   }
+
   /** Save this kit piece's settings as a named preset, or update, rename and delete this kit's presets. */
   function renderPresets(host: HTMLElement, node: Instance) {
     const doc = presetsDoc()!, mine = presetsFor(doc, node.type), settings = presetProps(config.registry, node.type, config.registry.properties(node.type, node.props));
@@ -912,47 +663,56 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       if (box && result.deltaToLocal) { const rect = canvas.getBoundingClientRect(), view = stage.getBoundingClientRect(), centre = ((Math.max(rect.left, view.left) + Math.min(rect.right, view.right)) / 2 - rect.left) * canvas.width / Math.max(1, rect.width); x = result.deltaToLocal(draft.instanceId, centre - (box.x + box.width / 2), 0).x; }
     } catch { x = 0; }
     x = snap ? Math.round(x / snap) * snap : Math.round(x);
-    let added = false; run(() => { selectedId = model.add(doc.id, type, { x, h: 0 }, settings); inspectorTab = 'appearance'; added = true; });
+    let added = false; run(() => { editorSelection.instance = model.add(doc.id, type, { x, h: 0 }, settings); inspector.appearance(); added = true; });
     if (added) { if (compact.matches) showPanel('properties'); notice(`Added ${config.registry.get(type).label}. Drag it into place or set its position in the inspector.`); }
   } finally { perfEnd(token); }
   }
   function editArray<T>(container: HTMLElement, title: string, value: T, apply: (v: T) => void, help?: string) {
     const details = element('details'); details.append(element('summary', '', title)); if (help) details.append(element('p', 'muted', help)); const input = element('textarea'); input.value = JSON.stringify(value, null, 2); input.setAttribute('aria-label', title + ' JSON'); details.append(input, button('Apply ' + title.toLowerCase(), () => { try { apply(JSON.parse(input.value) as T); } catch (e) { notice(`Invalid ${title.toLowerCase()}: ${message(e)}`, true); } })); container.append(details);
   }
-  function refreshTimeline() {
-    timelineHost.replaceChildren(); scrub = undefined; timeLabel = undefined;
-    if (!currentTimeline()) { timelineHost.hidden = true; return; } timelineHost.hidden = false;
-    const seq = sequence(); const row = element('div', 'row');
-    row.append(element('strong', '', 'Timeline'));
-    timelineHost.append(row); if (!seq) { timelineHost.append(element('p', 'muted', 'Add a sequence to begin timeline authoring.')); return; }
-    const transport = element('div', 'row'); transport.append(button(playing ? 'Pause' : 'Play', () => { playing = !playing; if (playing && time >= seq.duration) time = loop ? loopFrom : 0; refreshTimeline(); }), button('−1 frame', () => { playing = false; time = Math.max(0, time - 1 / 60); refreshTimeline(); void draw(); }), button('+1 frame', () => { playing = false; time = Math.min(seq.duration, time + 1 / 60); refreshTimeline(); void draw(); }));
-    scrub = element('input'); scrub.type = 'range'; scrub.min = '0'; scrub.max = String(seq.duration); scrub.step = String(1 / 60); scrub.value = String(time); scrub.setAttribute('aria-label', 'Sequence time'); scrub.oninput = () => { playing = false; time = Number(scrub!.value); updateTime(); void draw(); }; transport.append(scrub); timeLabel = element('span', 'time'); transport.append(timeLabel); timelineHost.append(transport); updateTime();
-    const controls = element('div', 'row'); controls.append(label('Duration', numberInput(seq.duration, v => editTimeline('Change duration', d => { d.sequences.find(s => s.id === sequenceId)!.duration = v; }), 1 / 60)));
-
-    const loopInput = element('input'); loopInput.type = 'checkbox'; loopInput.checked = loop; loopInput.onchange = () => loop = loopInput.checked; controls.append(label('Loop range', loopInput), label('From', numberInput(loopFrom, v => { if (v >= loopTo) { notice('Loop start must precede loop end.', true); return; } loopFrom = v; }, 0)), label('To', numberInput(loopTo || seq.duration, v => { if (v <= loopFrom || v > seq.duration) { notice('Loop end must follow its start and remain within the sequence.', true); return; } loopTo = v; }, 0))); timelineHost.append(controls);
-    const grid = element('div', 'timeline-grid'), trackPanel = element('div'), dataPanel = element('div'); grid.append(trackPanel, dataPanel); timelineHost.append(grid);
-    trackPanel.append(element('h3', '', 'Tracks and keyframes'));
-    const trackSelect = select([{ value: '', label: 'Choose a target…' }, ...thisTargets()], '', value => { if (!value) return; try { const target = JSON.parse(value) as Target; addKey(target); } catch (e) { notice(message(e), true); } }); trackSelect.setAttribute('aria-label', 'Add keyframe target'); trackPanel.append(trackSelect);
-    for (const track of seq.tracks) {
-      const details = element('details'); details.append(element('summary', '', `${track.id} · ${track.keys.length} keys`)); const targetText = track.target.kind === 'camera' ? `camera.${track.target.property}` : `${track.target.instance}.${track.target.kind}.${track.target.property}`; details.append(element('p', 'muted', targetText));
-      details.append(button('Key at playhead', () => addKey(track.target)), button('Remove track', () => editTimeline('Delete track', d => { const s = d.sequences.find(x => x.id === sequenceId)!; s.tracks = s.tracks.filter(t => t.id !== track.id); })));
-      details.append(label('Reduced motion', select([{ value: 'normal', label: 'Keep motion' }, { value: 'freeze', label: 'Freeze at start' }], track.reduced ?? 'normal', value => editTimeline('Change reduced motion', d => { d.sequences.find(s => s.id === sequenceId)!.tracks.find(t => t.id === track.id)!.reduced = value as 'normal' | 'freeze'; }))));
-      for (let index = 0; index < track.keys.length; index++) {
-        const key = track.keys[index], keyRow = element('div', 'row');
-        const change = (operation: (key: Keyframe) => void) => editTimeline('Edit keyframe', d => { const keys = d.sequences.find(s => s.id === sequenceId)!.tracks.find(t => t.id === track.id)!.keys; operation(keys[index]); keys.sort((a, b) => a.time - b.time); });
-        keyRow.append(button(`${key.time.toFixed(3)}s`, () => { time = key.time; playing = false; updateTime(); void draw(); }), button('Delete', () => editTimeline('Delete key', d => { const seq = d.sequences.find(s => s.id === sequenceId)!, item = seq.tracks.find(t => t.id === track.id)!; if (item.keys.length === 1) seq.tracks = seq.tracks.filter(t => t.id !== item.id); else item.keys.splice(index, 1); })));
-        details.append(keyRow, label('Key time', numberInput(key.time, value => change(k => k.time = value), 0)));
-        const target = track.target; let field: Field;
-        if (target.kind === 'property' || target.kind === 'state') { const node = flatten(viewCompositionDocument()!.value as Composition).find(n => n.node.id === target.instance)!.node, entry = config.registry.get(node.type); field = (target.kind === 'property' ? entry.fields : entry.visualFields!)[target.property]; }
-        else if (target.kind === 'clip') { const node = flatten(viewCompositionDocument()!.value as Composition).find(n => n.node.id === target.instance)!.node; field = { kind: 'select', label: 'Clip', default: '', options: [...(config.clips?.[node.type] ?? [])] }; }
-        else if (target.kind === 'instance' && target.property === 'visible') field = { kind: 'boolean', label: 'Visible', default: true };
-        else if (target.kind === 'instance' && target.property === 'facing') field = { kind: 'select', label: 'Facing', default: 1, options: [-1, 1] };
-        else field = { kind: 'number', label: 'Value', default: 0, ...(target.property === 'zoom' || target.property === 'scale' ? { min: 0.0001 } : target.property === 'opacity' ? { min: 0, max: 1 } : {}) };
-        details.append(label(field.label, fieldInput(field, key.value, value => change(k => k.value = value))), label('Easing', select(['linear', 'hold', 'smooth', 'in', 'out'].map(v => ({ value: v, label: v })), key.ease ?? 'linear', value => change(k => k.ease = value as Keyframe['ease']))));
-      }
-      editArray(details, 'Keyframes', track.keys, keys => editTimeline('Edit keyframes', d => { d.sequences.find(s => s.id === sequenceId)!.tracks.find(t => t.id === track.id)!.keys = keys; }), 'Keys: {time,value,ease}. Easing belongs to the outgoing segment. Discrete values use hold.');
-      trackPanel.append(details);
+  function seekTime(seconds:number){const wasPlaying=playing||animating;playing=false;animating=false;time=Math.max(0,Math.min(sequence()?.duration??Infinity,seconds));updateTime();if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='camera')refreshRight();if(wasPlaying)refreshOptions();void draw();}
+  function toggleAnimation(){
+    if(sequence()){animating=false;playing=!playing;if(playing&&time>=sequence()!.duration)time=loop?loopFrom:0;refreshTimeline();}
+    else{playing=false;animating=!animating;}
+    refreshOptions();if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='camera')refreshRight();
+  }
+  function selectTimeline(selection:TimelineSelection|undefined,target?:Target){
+    editorSelection.timeline=selection;playing=false;animating=false;
+    if(selection?.kind==='camera'){editorSelection.document='';editorSelection.instance='';timelineView.collapsed.delete('Camera');}
+    if(target){editorSelection.document='';editorSelection.instance=target.kind==='camera'?'':target.instance;}
+    if((selection?.kind==='key'||selection?.kind==='track')&&target)timelineView.collapsed.delete(target.kind==='camera'?'Camera':target.instance);
+    if(compact.matches)showPanel('properties');refreshLeft();refreshRight();refreshTimeline();void draw();
+  }
+  function keyField(target:Target):Field{
+    if(target.kind==='property'||target.kind==='state'||target.kind==='clip'){
+      const node=flatten(viewCompositionDocument()!.value as Composition).find(n=>n.node.id===target.instance)!.node,entry=config.registry.get(node.type);
+      if(target.kind==='clip')return{kind:'select',label:'Clip',default:'',options:[...(config.clips?.[node.type]??[])]};
+      return(target.kind==='property'?entry.fields:entry.visualFields!)[target.property];
     }
+    if(target.kind==='instance'&&target.property==='visible')return{kind:'boolean',label:'Visible',default:true};
+    if(target.kind==='instance'&&target.property==='facing')return{kind:'select',label:'Facing',default:1,options:[-1,1]};
+    return{kind:'number',label:target.kind==='camera'?(target.property==='h'?'Camera height (H)':target.property==='x'?'Camera X':'Camera zoom'):'Value',default:0,...(target.property==='zoom'||target.property==='scale'?{min:.0001}:target.property==='opacity'?{min:0,max:1}:{})};
+  }
+  function cameraSelected():boolean{
+    if(editorSelection.timeline?.kind==='camera')return true;
+    if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='key')return sequence()?.tracks.find(t=>t.id===(editorSelection.timeline as {track:string}).track)?.target.kind==='camera';
+    return false;
+  }
+  function refreshTimeline() {
+    timelineGrid?.dispose();timelineGrid=undefined;timelineHost.replaceChildren();timeLabel=undefined;transportPlay=undefined;
+    const seq=sequence();if(!seq){timelineHost.hidden=true;return;}timelineHost.hidden=false;timelineHost.classList.toggle('collapsed',timelineCollapsed);timelineHost.style.height=timelineCollapsed?'42px':timelineHeight+'px';
+    const resize=element('div','timeline-resize');resize.tabIndex=0;resize.setAttribute('role','separator');resize.setAttribute('aria-label','Resize timeline');resize.setAttribute('aria-orientation','horizontal');
+    let drag:{y:number;height:number}|undefined;resize.onpointerdown=e=>{drag={y:e.clientY,height:timelineHost.clientHeight};resize.setPointerCapture(e.pointerId);};resize.onpointermove=e=>{if(!drag)return;timelineHeight=Math.max(150,Math.min(center.clientHeight-200,drag.height+drag.y-e.clientY));timelineHost.style.height=timelineHeight+'px';};resize.onpointerup=e=>{drag=undefined;if(resize.hasPointerCapture(e.pointerId))resize.releasePointerCapture(e.pointerId);};resize.onkeydown=e=>{if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();timelineHeight=Math.max(150,timelineHeight+(e.key==='ArrowUp'?30:-30));timelineHost.style.height=timelineHeight+'px';}};
+    timelineHost.append(resize);
+    const transport=element('div','timeline-transport');transportPlay=button(playing?'Pause':'Play',toggleAnimation,'Space: play / pause');transport.append(button(timelineCollapsed?'▸ Timeline':'▾ Timeline',()=>{timelineCollapsed=!timelineCollapsed;refreshTimeline();}),transportPlay,button('−1 frame',()=>seekTime((Math.round(time*60)-1)/60),'Comma: previous frame'),button('+1 frame',()=>seekTime((Math.round(time*60)+1)/60),'Period: next frame'));
+    timeLabel=element('span','time');transport.append(timeLabel);timelineHost.append(transport);updateTime();if(timelineCollapsed)return;
+    const zoom=numberInput(timelineView.zoom,value=>{timelineView.zoom=Math.max(1,Math.min(16,value));refreshTimeline();},1);const speed=speedControl();speed.setAttribute('aria-label','Playback speed');transport.append(speed);zoom.max='16';zoom.setAttribute('aria-label','Timeline zoom');transport.append(label('Zoom',zoom));
+    const settings=element('details','timeline-settings'),dataPanel=element('div');settings.append(element('summary','','Settings'),dataPanel);transport.append(settings);
+    dataPanel.append(label('Duration',numberInput(seq.duration,value=>editTimeline('Change duration',d=>d.sequences[0].duration=value),1/60)));
+    const loopInput=element('input');loopInput.type='checkbox';loopInput.checked=loop;loopInput.onchange=()=>loop=loopInput.checked;
+    dataPanel.append(label('Loop range',loopInput),label('From',numberInput(loopFrom,v=>{if(v>=(loopTo||seq.duration)){notice('Loop start must precede loop end.',true);return;}loopFrom=v;},0)),label('To',numberInput(loopTo||seq.duration,v=>{if(v<=loopFrom||v>seq.duration){notice('Loop end must follow its start and remain within the sequence.',true);return;}loopTo=v;},0)));
+    const trackSelect=select([{value:'',label:'Add keyframe…'},...thisTargets()],'',value=>{if(value)addKey(JSON.parse(value) as Target);});trackSelect.setAttribute('aria-label','Add keyframe target');transport.append(trackSelect);
+    timelineGrid=mountTimelineGrid(timelineHost,{sequence:seq,state:timelineView,time,onZoom:value=>zoom.value=String(Math.round(value*100)/100),selected:editorSelection.timeline,instance:compositionDocument()?.id===viewCompositionDocument()?.id?editorSelection.instance:undefined,label:id=>{const node=flatten(viewCompositionDocument()!.value as Composition).find(n=>n.node.id===id)?.node;return node?id+' · '+config.registry.get(node.type).label:id;},select:selectTimeline,seek:seekTime,moveKey:(track,index,seconds)=>{editTimeline('Move keyframe',d=>{editorSelection.timeline={kind:'key',track,index:moveKey(d.sequences[0],track,index,seconds)};});refreshTimeline();refreshRight();}});
     const apply = <K extends keyof Sequence>(key: K, value: Sequence[K]) => editTimeline(`Edit ${key}`, d => { d.sequences.find(s => s.id === sequenceId)![key] = value; });
     editArray(dataPanel, 'Shots', seq.shots, value => apply('shots', value), 'Ordered {id,from,to,camera:{x,h,zoom}}. Times are seconds. Shots must not overlap.');
     editArray(dataPanel, 'Text cards', seq.text, value => apply('text', value), '{id,from,to,text,x,h}. Cards are rendered by the shared preview provider.');
@@ -969,97 +729,73 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const node = selected(); if (node && (!currentTimeline()||compositionDocument()?.id===viewCompositionDocument()?.id)) { for (const property of ['x', 'h', 'scale', 'facing', 'parallax', 'visible', 'opacity'] as const) add({ kind: 'instance', instance: node.id, property }, `${node.id} · ${property}`); const entry = config.registry.get(node.type); for (const [property, field] of Object.entries(entry.fields)) if (field.animatable) add({ kind: 'property', instance: node.id, property }, `${node.id} · ${field.label}`); for (const [property, field] of Object.entries(entry.visualFields ?? {})) { if (field.animatable) add({ kind: 'state', instance: node.id, property }, `${node.id} state · ${field.label}`); if (config.clips?.[node.type]?.length) add({ kind: 'clip', instance: node.id, property }, `${node.id} clip · ${field.label}`); } }
     return result;
   }
-  function addKey(target: Target) {
-    editTimeline('Add keyframe', doc => {
-      const seq = doc.sequences.find(s => s.id === sequenceId)!; const frame = evaluateTimeline(doc, sequenceId, time, evaluationContext(), { reduced });
+  function keyValue(frame:TimelineFrame,target:Target):{value:Value;discrete:boolean}{
       const node = target.kind === 'camera' ? undefined : flatten(frame.composition).find(n => n.node.id === target.instance)?.node;
       let value: Value, discrete = false;
       if (target.kind === 'camera') value = frame.camera[target.property];
       else if (target.kind === 'instance') { value = target.property === 'visible' ? frame.visibility[target.instance] ?? true : target.property === 'opacity' ? frame.opacity[target.instance] ?? 1 : node!.placement[target.property] ?? 1; discrete = ['visible', 'facing'].includes(target.property); }
       else if (target.kind === 'property' || target.kind === 'state') { const entry = config.registry.get(node!.type), field = (target.kind === 'property' ? entry.fields : entry.visualFields!)[target.property]; value = target.kind === 'property' ? node!.props[target.property] ?? field.default : frame.state[target.instance]?.[target.property] ?? field.default; discrete = field.kind !== 'number'; }
       else { value = frame.clips[target.instance]?.[target.property] ?? config.clips?.[node!.type]?.[0] ?? ''; discrete = true; }
+    return{value,discrete};
+  }
+  function addKey(target: Target, explicitValue?:Value) {
+    editTimeline('Add / update keyframe', doc => {
+      const seq = doc.sequences.find(s => s.id === sequenceId)!; const frame = evaluateTimeline(doc, sequenceId, time, evaluationContext(), { reduced });
+      const sampled=keyValue(frame,target),value=explicitValue===undefined?sampled.value:explicitValue,discrete=sampled.discrete;
       const key: Keyframe = { time: Math.round(time * 60000) / 60000, value, ease: discrete ? 'hold' : 'linear' };
       let track = seq.tracks.find(t => equal(t.target, target)); if (!track) { let i = 1; while (seq.tracks.some(t => t.id === `track-${i}`)) i++; track = { id: `track-${i}`, target, keys: [] }; seq.tracks.push(track); }
-      const existing = track.keys.findIndex(k => Math.abs(k.time - key.time) < 1 / 120000); if (existing >= 0) track.keys[existing] = key; else track.keys.push(key); track.keys.sort((a, b) => a.time - b.time);
+      const existing = track.keys.findIndex(k => Math.abs(k.time - key.time) < 1 / 120000); if (existing >= 0) track.keys[existing] = {...key,ease:track.keys[existing].ease??key.ease}; else track.keys.push(key); track.keys.sort((a, b) => a.time - b.time);
     });
   }
-  function updateTime() { if (scrub) scrub.value = String(time); if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
+  function updateTime() { timelineGrid?.update(time);if(transportPlay){transportPlay.textContent=playing?'Pause':'Play';transportPlay.setAttribute('aria-pressed',String(playing));}if(ambientLabel)ambientLabel.textContent=`${time.toFixed(3)} s`; if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
   function previewRequest(composition: Composition, overlay: boolean, scale: number, frame?: TimelineFrame): PreviewRequest {
-    const timeline = currentTimeline(),documents=dragging&&selectedDocumentId?model.previewDocuments(selectedDocumentId,dragging.pending):new Map(documentsForView().map(d=>[d.id,d.value]));
-    return { sourceVersion:dragging?undefined:model.sourceVersion,documents, composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced, overlays: overlay, selectedId:Object.entries(preview?.sources??{}).find(([,source])=>source.document===compositionDocument()?.id&&source.instance===selectedId)?.[0]??selectedId, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
+    const timeline = currentTimeline(),documents=viewport.dragging&&editorSelection.document?model.previewDocuments(editorSelection.document,viewport.dragging.pending):new Map(documentsForView().map(d=>[d.id,d.value]));
+    return {workspace:timeline&&!cameraPreview?{x:sequenceNav.x,h:sequenceNav.y,zoom:sequenceNav.zoom,...(painting.workspaceAnchor?.document===currentId?{anchorX:painting.workspaceAnchor.x,anchorH:painting.workspaceAnchor.h}:{})}:undefined,sourceVersion:model.sourceVersion,transient:viewport.dragging?{document:compositionDocument()!.id,composition:viewport.dragging.pending}:undefined,documents, composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced,overlays:overlay,objectOutlines:overlay&&showObjectOutlines,selectedId:Object.entries(painting.result?.sources??{}).find(([,source])=>source.document===compositionDocument()?.id&&source.instance===editorSelection.instance)?.[0]??editorSelection.instance, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment, ...(zoomable() ? { renderScale: scale } : {}) } };
   }
-  async function draw() {
-    if (disposed) return; if (previewPending) { renderAgain = true; return; } const doc = viewCompositionDocument(); if (!doc) { preview = undefined; previewError.textContent = current()?.kind === 'world' ? 'World structure is read-only. Open a scene from the world panel to preview it.' : 'No composition selected.'; previewError.hidden = false; canvas.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height); return; }
-    previewPending = true; const generation = ++previewGeneration; syncWorldState();
-    try {
-      const timeline=currentTimeline(),base=(!selectedDocumentId||selectedDocumentId===doc.id?dragging?.pending:undefined)??doc.value as Composition,context=evaluationContext();
-      const frame=timeline&&sequence()?evaluateTimeline(timeline,sequenceId,time,{...context,compositions:{...context.compositions,[doc.id]:base}},{reduced}):undefined;
-      const composition=frame?.composition??base;
-      const request = (overlay: boolean, scale: number) => previewRequest(composition, overlay, scale, frame);
-      if (zoomable() && crop && cropFor !== currentId) {
-        // Measure once per document at the full frame; the floor stays anchored to the bottom edge.
-        sizeCanvas(baseWidth, baseHeight); const measured = await config.preview.render(canvas, request(false, 1));
-        const visible = measured.bounds.filter(b => b.x + b.width > 0 && b.x < baseWidth && b.height > 0),top=Math.min(baseHeight,...visible.map(b=>b.y));
-        cropHeight = visible.length?Math.max(Math.min(baseHeight, 200), Math.min(baseHeight, Math.ceil(baseHeight - Math.max(0, top) + 12))):baseHeight; cropFor = currentId;
-      }
-      sizeCanvas(baseWidth, zoomable() ? Math.round((crop && cropHeight ? cropHeight : baseHeight) * viewZoom) : baseHeight);
-      const result = await config.preview.render(canvas, request(overlays, viewZoom));
-      if (!disposed && generation === previewGeneration) { preview = result; previewError.hidden = true; placeHover(); placeJoined(); }
-      // Compare: the other version through the same renderer and request, only the composition differs.
-      const other = comparing() ? documentsForView().find(d => d.id === compareId) : undefined;
-      stage.classList.toggle('comparing', !!other); compareCanvas.hidden = !other;
-      if (other && !disposed && generation === previewGeneration) {
-        if (compareCanvas.width !== canvas.width || compareCanvas.height !== canvas.height) { compareCanvas.width = canvas.width; compareCanvas.height = canvas.height; }
-        for (const key of ['--ratio', '--fit-ratio']) compareCanvas.style.setProperty(key, canvas.style.getPropertyValue(key));
-        await config.preview.render(compareCanvas, { ...request(false, viewZoom), composition: copy(other.value as Composition), selectedId: undefined });
-      }
-    } catch (e) { preview = undefined; previewError.textContent = `Preview unavailable: ${message(e)}`; previewError.hidden = false; }
-    finally { previewPending = false; if (renderAgain) { renderAgain = false; void draw(); } }
-  }
-  function refresh() { return withViewDocuments(() => { if (disposed) return; if(currentId&&!documentsForView().some(d=>d.id===currentId)){currentId=documentsForView().find(d=>d.kind==='composition')?.id??'';selectedId='';selectedDocumentId='';stopPlay();} const timeline = currentTimeline(); if (timeline && !timeline.sequences.some(s => s.id === sequenceId)) sequenceId = timeline.sequences[0]?.id ?? ''; const seq = sequence(); if (seq) { time = Math.max(0, Math.min(time, seq.duration)); loopTo = Math.min(loopTo || seq.duration, seq.duration); if (loopFrom >= loopTo) loopFrom = 0; } perfMeasure('editor.header', refreshHeader); perfMeasure('editor.options', refreshOptions); refreshViewportTools(); perfMeasure('editor.outline', refreshLeft); playHandle?.refresh?.(); perfMeasure('editor.inspector', refreshRight); perfMeasure('editor.timeline', refreshTimeline); void draw(); }); }
+    const previewRenderer=createPreviewRenderer({get reduced(){return reduced;},get disposed(){return disposed;},get painting(){return painting;},get viewCompositionDocument(){return viewCompositionDocument;},get previewError(){return previewError;},get current(){return current;},get canvas(){return canvas;},get syncWorldState(){return syncWorldState;},get currentTimeline(){return currentTimeline;},get selectedDocumentId(){return editorSelection.document;},get viewport(){return viewport;},get evaluationContext(){return evaluationContext;},get sequence(){return sequence;},get sequenceId(){return sequenceId;},get time(){return time;},get previewRequest(){return previewRequest;},get zoomable(){return zoomable;},get crop(){return crop;},get currentId(){return currentId;},get sizeCanvas(){return sizeCanvas;},get baseWidth(){return baseWidth;},get baseHeight(){return baseHeight;},get config(){return config;},get viewZoom(){return viewZoom;},get overlays(){return overlays;},get updateRenderStatus(){return updateRenderStatus;},get placeHover(){return placeHover;},get placeJoined(){return placeJoined;},get comparing(){return comparing;},get documentsForView(){return documentsForView;},get compareId(){return compareId;},get stage(){return stage;},get compareCanvas(){return compareCanvas;}});
+  function draw(advance=false){return previewRenderer.draw(advance);}
+  function refresh() { return withViewDocuments(() => { if (disposed) return; if(currentId&&!documentsForView().some(d=>d.id===currentId)){currentId=documentsForView().find(d=>d.kind==='composition')?.id??'';editorSelection.instance='';editorSelection.document='';stopPlay();} const timeline = currentTimeline(); if (timeline && !timeline.sequences.some(s => s.id === sequenceId)) sequenceId = timeline.sequences[0]?.id ?? ''; const seq = sequence(); if (seq) { time = Math.max(0, Math.min(time, seq.duration)); loopTo = Math.min(loopTo || seq.duration, seq.duration); if (loopFrom >= loopTo) loopFrom = 0; } perfMeasure('editor.header', refreshHeader); perfMeasure('editor.options', refreshOptions); refreshViewportTools(); perfMeasure('editor.outline', refreshLeft); playHandle?.refresh?.(); perfMeasure('editor.inspector', refreshRight); perfMeasure('editor.timeline', refreshTimeline); void draw(); }); }
   /** The chosen saved world state, if any; its values override the preview environment on every draw. */
   function syncWorldState() { const state = worldState(); if (state) Object.assign(environment, state.environment); }
   function worldState() { const scene = sceneId(); if (!config.worldStates || !scene || current()?.kind !== 'composition') return undefined; const id = config.worldStates.selected(scene, documentsForView()); return id ? config.worldStates.list(scene, documentsForView()).find(state => state.id === id) : undefined; }
   function compareOptions() { const doc = compositionDocument(); return doc && config.compareWith ? config.compareWith((doc.value as Composition).scene, documentsForView()) : []; }
   function comparing() { return !!compareId && zoomable() && compareOptions().some(o => o.id === compareId); }
   function zoomable() { return current()?.kind === 'composition' && !currentTimeline(); }
-  function sizeCanvas(width: number, height: number) { if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; } canvas.style.setProperty('--ratio', String(width / height)); canvas.style.setProperty('--fit-ratio', String(width / (zoomable() && crop && cropHeight ? cropHeight : baseHeight))); }
-  const coordinates = (event: { clientX: number; clientY: number }) => { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; };
+  function sizeCanvas(width: number, height: number) { if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; } canvas.style.setProperty('--ratio', String(width / height)); canvas.style.setProperty('--fit-ratio', String(width / (zoomable() && crop && painting.cropHeight ? painting.cropHeight : baseHeight))); }
+  const coordinates = (event: { clientX: number; clientY: number }) => { return canvasPoint(event,canvas.getBoundingClientRect(),canvas.width,canvas.height); };
   /** Small artwork gets a minimum target; the smallest box under the pointer wins over the room behind it. */
-  function hitTest(point: { x: number; y: number }) {
-    const rect = canvas.getBoundingClientRect(), min = 16 * canvas.width / Math.max(1, rect.width);
-    const grow = (b: PreviewResult['bounds'][number]) => { const w = Math.max(b.width, min), h = Math.max(b.height, min); return { ...b, x: b.x - (w - b.width) / 2, y: b.y - (h - b.height) / 2, width: w, height: h, area: b.width * b.height }; };
-    // Smallest box first; on a tie the frontmost wins (bounds arrive in draw order, back to front).
-    return (preview?.bounds ?? []).map((b, index) => ({ ...grow(b), index })).filter(b => point.x >= b.x && point.x <= b.x + b.width && point.y >= b.y && point.y <= b.y + b.height).sort((a, b) => a.area - b.area || b.index - a.index)[0];
-  }
+  const hitTest=(point:{x:number;y:number})=>hitTestArtwork(painting.result,point,16*canvas.width/Math.max(1,canvas.getBoundingClientRect().width));
   function placeHover() {
-    const hovered=preview?.sources?.[hoverId],isSelected=hovered?hovered.document===compositionDocument()?.id&&hovered.instance===selectedId:hoverId===selectedId;
-    const box = hoverId && !isSelected ? preview?.bounds.find(b => b.id === hoverId) : undefined; hoverBox.hidden = !box; if (!box) return;
+    const hovered=painting.result?.sources?.[viewport.hoverId],isSelected=hovered?hovered.document===compositionDocument()?.id&&hovered.instance===editorSelection.instance:viewport.hoverId===editorSelection.instance;
+    const box = viewport.hoverId && !isSelected ? painting.result?.bounds.find(b => b.id === viewport.hoverId) : undefined; hoverBox.hidden = !box; if (!box) return;
     // The overlay lives outside the scrolling stage so it can never add scrollbars; the frame clips it.
-    const frame = stageWrap.getBoundingClientRect(), at = canvas.getBoundingClientRect(), scale = at.width / canvas.width, source=preview?.sources?.[box.id],document=source?model.get(source.document):compositionDocument(),node=document&&flatten(document.value as Composition).find(x=>x.node.id===(source?.instance??box.id))?.node;
+    const frame = stageWrap.getBoundingClientRect(), at = canvas.getBoundingClientRect(), scale = at.width / canvas.width, source=painting.result?.sources?.[box.id],document=source?model.get(source.document):compositionDocument(),node=document&&flatten(document.value as Composition).find(x=>x.node.id===(source?.instance??box.id))?.node;
     const left = at.left - frame.left + box.x * scale, top = at.top - frame.top + box.y * scale;
     Object.assign(hoverBox.style, { left: `${left}px`, top: `${top}px`, width: `${box.width * scale}px`, height: `${box.height * scale}px` });
     hoverBox.dataset.label = node ? `${node.id} · ${config.registry.get(node.type).label}` : box.id;
     hoverBox.toggleAttribute('data-below', top < 22); hoverBox.toggleAttribute('data-right', left > frame.width * .6);
   }
+  function updateRenderStatus(){renderStatus.hidden=!playHost.hidden;if(renderStatus.hidden)return;const now=performance.now();if(now-statusUpdatedAt<250)return;statusUpdatedAt=now;if(now-renderWindow>=500){renderFps=painting.renderCount*1000/(now-renderWindow);painting.renderCount=0;renderWindow=now;}const scene=painting.result?.camera??painting.result?.regions?.find(region=>region.active);renderStatus.textContent=(scene?'Scene: '+scene.label+' · ':'')+(!(playing||animating||viewport.dragging?.armed)?'Paused':renderFps.toFixed(0)+' render fps')+' · '+painting.lastPaintMs.toFixed(1)+' ms';renderStatus.title='Completed editor renders per second and CPU render submission time; not GPU/display FPS';}
+  const navigable=()=>current()?.kind==='composition';
   function zoomTo(next: number, anchor?: { clientX: number; clientY: number }) {
+    if(currentTimeline()){if(cameraPreview)return;const rect=canvas.getBoundingClientRect(),point=anchor??{clientX:rect.left+rect.width/2,clientY:rect.top+rect.height/2};Object.assign(sequenceNav,zoomWorkspace(sequenceNav,next,{x:point.clientX-rect.left-rect.width/2,y:point.clientY-rect.top-rect.height/2},canvas.width/rect.width/(painting.result?.workspaceScale??1)));refreshViewportTools();void draw();return;}
     if (!zoomable()) return; const previous = viewZoom; viewZoom = Math.round(Math.min(8, Math.max(.25, next)) * 100) / 100; if (viewZoom === previous) return;
     const rect = canvas.getBoundingClientRect(), stageRect = stage.getBoundingClientRect(), at = anchor ?? { clientX: Math.max(rect.left, stageRect.left) + Math.min(rect.width, stageRect.width) / 2, clientY: Math.max(rect.top, stageRect.top) + Math.min(rect.height, stageRect.height) / 2 };
     const ax = (at.clientX - rect.left) * canvas.width / rect.width, fromBottom = rect.bottom - at.clientY;
     environment.cameraX = Math.round((Number(environment.cameraX ?? 0) + ax / previous - ax / viewZoom) * 100) / 100;
-    sizeCanvas(baseWidth, Math.round((crop && cropHeight ? cropHeight : baseHeight) * viewZoom));
+    sizeCanvas(baseWidth, Math.round((crop && painting.cropHeight ? painting.cropHeight : baseHeight) * viewZoom));
     const after = canvas.getBoundingClientRect(); stage.scrollTop += after.bottom - (at.clientY + fromBottom * viewZoom / previous);
     refreshViewportTools(); refreshOptions(); void draw();
   }
   /** Frames the scene and the scenes joined to it (the preview's extent), zooming out as far as needed. */
   function fitJoined() {
-    const extent = preview?.extent; if (!extent || !zoomable()) return; environment.showJoined = true;
+    const extent = painting.result?.extent; if (!extent || !zoomable()) return; environment.showJoined = true;
     const span = Math.max(1, extent.to - extent.from); viewZoom = Math.round(Math.min(1, Math.max(.25, baseWidth / (span * 1.04))) * 100) / 100;
     environment.cameraX = Math.round(extent.from - (baseWidth / viewZoom - span) / 2); stage.scrollTop = 0; refreshViewportTools(); refreshOptions(); void draw();
   }
   /** A tag over each joined scene in the preview: its name, which side it joins on, and a button that opens it. */
   function placeJoined() {
-    joinedLayer.replaceChildren(); const list = preview?.joined ?? []; if (!list.length || !playHost.hidden || comparing()) return;
+    joinedLayer.replaceChildren();if(currentTimeline()){const rect=canvas.getBoundingClientRect(),frame=stageWrap.getBoundingClientRect(),scale=rect.width/canvas.width;if(painting.result?.camera){const camera=painting.result.camera,box=element('div','sequence-camera-guide');const pick=button('Camera · '+camera.label,()=>selectTimeline({kind:'camera'}),'Select the game camera');pick.setAttribute('aria-label','Select game camera');pick.style.pointerEvents='auto';pick.setAttribute('aria-pressed',String(cameraSelected()));box.append(pick);Object.assign(box.style,{left:(rect.left-frame.left+camera.x*scale)+'px',top:(rect.top-frame.top+camera.y*scale)+'px',width:camera.width*scale+'px',height:camera.height*scale+'px'});joinedLayer.append(box);}for(const group of left.querySelectorAll('.outline-source.active-scene'))group.classList.remove('active-scene');for(const region of painting.result?.regions??[]){left.querySelector<HTMLElement>(`.outline-source[data-document="${region.document}"]`)?.classList.toggle('active-scene',region.active);if(!showSceneBounds)continue;const box=element('div','scene-boundary'+(region.active?' active':''),region.label);Object.assign(box.style,{left:(rect.left-frame.left+region.x*scale)+'px',top:(rect.top-frame.top+region.y*scale)+'px',width:region.width*scale+'px',height:region.height*scale+'px'});joinedLayer.append(box);}const cameraOwner=painting.result?.camera&&outlineSceneOwners.get(painting.result.camera.scene);if(cameraOwner)left.querySelector<HTMLElement>(`.outline-source[data-document="${cameraOwner}"]`)?.classList.add('active-scene');updateRenderStatus();return;}const list = painting.result?.joined ?? []; if (!list.length || !playHost.hidden || comparing()) return;
     const frame = stageWrap.getBoundingClientRect(), at = canvas.getBoundingClientRect(), scale = at.width / canvas.width, arrow = { left: '←', right: '→', above: '↑', below: '↓' } as const;
     for (const j of list) {
       const left = Math.max(at.left, frame.left, at.left + j.x * scale), right = Math.min(at.right, frame.right, at.left + (j.x + j.width) * scale); if (right - left < 60) continue;
@@ -1068,12 +804,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       tag.setAttribute('aria-label', `${j.label}, joined scene`); Object.assign(tag.style, { left: `${left - frame.left + 6}px`, top: `${top - frame.top}px`, maxWidth: `${Math.max(60, right - left - 12)}px` }); joinedLayer.append(tag);
     }
   }
-  function fit() { viewZoom = 1; environment.cameraX = 0; cropFor = ''; stage.scrollTop = 0; refreshViewportTools(); refreshOptions(); void draw(); }
+  function fit() {if(currentTimeline()){sequenceNav.zoom=1;sequenceNav.x=0;sequenceNav.y=0;refreshViewportTools();void draw();return;}viewZoom = 1; environment.cameraX = 0; painting.cropFor = ''; stage.scrollTop = 0; refreshViewportTools(); refreshOptions(); void draw(); }
   function refreshViewportTools() {
-    viewportTools.hidden = !zoomable(); if (!zoomable()) return;
+    const objectBounds=button('Object outlines',()=>{showObjectOutlines=!showObjectOutlines;try{localStorage.setItem('access-denied.editor.object-outlines',String(showObjectOutlines));}catch{/* optional preview preference */}refreshViewportTools();void draw();},'Show bounds of all visible objects; selection handles remain visible');objectBounds.setAttribute('aria-pressed',String(showObjectOutlines));
+    viewportTools.hidden=!navigable();if(!navigable())return;if(currentTimeline()){const boundaries=button('Scene borders',()=>{showSceneBounds=!showSceneBounds;placeJoined();refreshViewportTools();});boundaries.setAttribute('aria-pressed',String(showSceneBounds));if(cameraPreview){viewportTools.replaceChildren(button('Workspace',()=>{cameraPreview=false;refreshViewportTools();refreshOptions();void draw();}),boundaries,objectBounds);return;}viewportTools.replaceChildren(button('−',()=>zoomTo(sequenceNav.zoom/1.25)),button(Math.round(sequenceNav.zoom*100)+'%',()=>fit()),button('+',()=>zoomTo(sequenceNav.zoom*1.25)),button('Fit',fit),button('Frame camera',()=>{if(painting.result?.camera){const focus=painting.result.camera.focus;sequenceNav.x=focus.x;sequenceNav.y=focus.h;sequenceNav.zoom=focus.zoom;refreshViewportTools();void draw();}}),boundaries,objectBounds);return;}
     const level = button(`${Math.round(viewZoom * 100)}%`, () => zoomTo(1), 'Actual size (0)'); level.className = 'zoom-level';
-    const cropToggle = button('Crop', () => { crop = !crop; cropFor = ''; refreshViewportTools(); void draw(); }, 'Crop the preview to the artwork height'); cropToggle.setAttribute('aria-pressed', String(crop));
-    viewportTools.replaceChildren(button('−', () => zoomTo(viewZoom / 1.25), 'Zoom out (−)'), level, button('+', () => zoomTo(viewZoom * 1.25), 'Zoom in (+)'), button('Fit', fit, 'Fit the scene (F)'), cropToggle);
+    const cropToggle = button('Crop', () => { crop = !crop; painting.cropFor = ''; refreshViewportTools(); void draw(); }, 'Crop the preview to the artwork height'); cropToggle.setAttribute('aria-pressed', String(crop));
+    viewportTools.replaceChildren(button('−', () => zoomTo(viewZoom / 1.25), 'Zoom out (−)'), level, button('+', () => zoomTo(viewZoom * 1.25), 'Zoom in (+)'), button('Fit', fit, 'Fit the scene (F)'),cropToggle,objectBounds);
   }
   /** A small dialog beside the scene picker: name, ID (follows the name until edited) and place, then the scene opens. */
   function openNewScene() {
@@ -1103,9 +840,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   /** Deletes the selection. When attached artwork would go with it, a dialog lists it and asks first. */
   function deleteSelected() {
-    const doc = compositionDocument(), id = selectedId; if (!doc || !id) return;
+    const doc = compositionDocument(), id = editorSelection.instance; if (!doc || !id) return;
     let ids: string[]; try { ids = model.removal(doc.id, id, true); } catch (error) { notice(message(error), true); return; }
-    const remove = () => run(() => { model.remove(doc.id, id, true); if (selectedId === id) selectedId = ''; });
+    const remove = () => run(() => { model.remove(doc.id, id, true); if (editorSelection.instance === id) editorSelection.instance = ''; });
     if (ids.length === 1) { remove(); return; }
     // Attached pieces first (what the user may not expect to lose), then the piece's own parts.
     const nodes = flatten(doc.value as Composition).map(row => row.node), own = new Set<string>(), collect = (node: Instance) => { own.add(node.id); node.children?.forEach(collect); }; collect(nodes.find(node => node.id === id)!);
@@ -1121,91 +858,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     dialog.append(actions);
     dialog.onclose = () => { dialog.remove(); canvas.focus({ preventScroll: true }); }; root.append(dialog); dialog.showModal(); cancel.focus();
   }
-  const select_ = (id: string) => perfMeasure('editor.selection', () => withViewDocuments(() => { const source=preview?.sources?.[id];if(source){selectedDocumentId=source.document;selectedId=source.instance;}else{selectedId=id;if(!id)selectedDocumentId='';} hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); updateOutlineSelection(); if (currentTimeline()) {refreshLeft();refreshTimeline();} void draw(); }));
+  const select_ = (id: string) => perfMeasure('editor.selection', () => withViewDocuments(() => { editorSelection.timeline=undefined;if(!id)revealed='';const resolved=sourceSelection(painting.result,id,viewCompositionDocument()?.id??currentId);editorSelection.document=resolved.document;editorSelection.instance=resolved.instance;if(painting.result?.sources?.[id])timelineView.collapsed.delete(editorSelection.instance); viewport.hoverId = ''; if (compact.matches && id) showPanel('properties'); refreshRight(); updateOutlineSelection(); if (currentTimeline()) {refreshLeft();refreshTimeline();} void draw(); }));
   /**
    * Stage input: a left press on artwork selects it at once and drags it after a 3 px move; a left press on empty
    * space (the picture, the dark area around it or the comparison) deselects. Middle and right drag pan (right also
    * covers a pen's barrel button); one finger pans on empty space and two fingers pinch-zoom.
    */
-  const panButton = (event: PointerEvent) => event.button === 1 || event.button === 2;
-  const startPan = (event: PointerEvent, surface: HTMLElement, target: string | undefined) => {
-    event.preventDefault(); if (!zoomable()) return;
-    panning = { x: event.clientX, y: event.clientY, camera: Number(environment.cameraX ?? 0), scroll: stage.scrollTop, moved: false, target }; surface.setPointerCapture(event.pointerId); canvas.dataset.panning = ''; if (surface === stage) stage.dataset.panning = '';
-  };
-  /** A press on empty space: touch pans (a tap deselects on release), a mouse or pen click deselects straight away. */
-  const pressEmpty = (event: PointerEvent, surface: HTMLElement) => {
-    if (event.pointerType === 'touch') { startPan(event, surface, ''); if (!zoomable() && selectedId) select_(''); return; }
-    event.preventDefault(); if (selectedId) select_('');
-  };
-  stage.addEventListener('contextmenu', event => event.preventDefault());
-  stage.addEventListener('pointerdown', event => {
-    if (event.target !== stage) return; closePicker();
-    if (panButton(event)) startPan(event, stage, undefined); else if (event.button === 0) pressEmpty(event, stage);
-  });
-  stage.addEventListener('pointermove', event => { if (panning && event.target === stage) canvas.onpointermove?.call(canvas, event); });
-  stage.addEventListener('pointerup', event => { if (!stage.hasPointerCapture(event.pointerId)) return; stage.releasePointerCapture(event.pointerId); delete stage.dataset.panning; canvas.onpointerup?.call(canvas, event); });
-  stage.addEventListener('pointercancel', event => { if (stage.hasPointerCapture(event.pointerId)) { delete stage.dataset.panning; canvas.onpointercancel?.call(canvas, event); } });
-  canvas.onpointerdown = event => {
-    closePicker();
-    if (event.pointerType === 'touch') { touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { distance: Math.hypot(a.x - b.x, a.y - b.y), zoom: viewZoom }; dragging = undefined; panning = undefined; return; } }
-    if (panButton(event)) { startPan(event, canvas, undefined); return; }
-    if (event.button !== 0) return;
-    const point = coordinates(event), hit = hitTest(point);
-    if (!hit) { pressEmpty(event, canvas); return; }
-    event.preventDefault(); canvas.focus({ preventScroll: true });
-    if (hit.id !== selectedId || preview?.sources?.[hit.id]) select_(hit.id);
-    const doc = compositionDocument(); if (!doc || !preview?.deltaToLocal) return;
-    const deltaToLocal=preview.deltaToLocal;
-    dragging = { before: copy(doc.value as Composition), pending: copy(doc.value as Composition), x: point.x, y: point.y, id: selectedId, delta: (_id,dx,dy)=>deltaToLocal(hit.id,dx,dy), armed: false, clientX: event.clientX, clientY: event.clientY }; canvas.setPointerCapture(event.pointerId);
-  };
-  canvas.onpointermove = event => {
-    if (touches.has(event.pointerId)) { touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (pinch && touches.size === 2) { const [a, b] = [...touches.values()]; zoomTo(pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, pinch.distance), { clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 }); return; } }
-    if (panning) { const rect = canvas.getBoundingClientRect(), dx = event.clientX - panning.x, dy = event.clientY - panning.y; if (Math.abs(dx) + Math.abs(dy) > 3) panning.moved = true; environment.cameraX = Math.round(panning.camera - dx * canvas.width / rect.width / viewZoom); stage.scrollTop = panning.scroll - dy; void draw(); return; }
-    if (!dragging) { if (event.pointerType === 'mouse') { const hit = hitTest(coordinates(event)); canvas.dataset.hover = hit ? 'artwork' : 'empty'; if ((hit?.id ?? '') !== hoverId) { hoverId = hit?.id ?? ''; placeHover(); } } return; }
-    if (!dragging.armed) { if (Math.hypot(event.clientX - dragging.clientX, event.clientY - dragging.clientY) < 3) return; dragging.armed = true; canvas.dataset.dragging = ''; }
-    try { const point = coordinates(event), delta = dragging.delta!(dragging.id, point.x - dragging.x, point.y - dragging.y), source = flatten(dragging.before).find(x => x.node.id === dragging!.id)?.node; if(!source)throw Error('Missing drag source '+dragging.id+' in '+dragging.before.scene);const next = copy(dragging.before), target = flatten(next).find(x => x.node.id === dragging!.id)!.node; target.placement.x = snap ? Math.round((source.placement.x + delta.x) / snap) * snap : source.placement.x + delta.x; target.placement.h = snap ? Math.round((source.placement.h + delta.h) / snap) * snap : source.placement.h + delta.h; dragging.pending = config.registry.validate(next); void draw(); } catch (e) { notice(message(e), true); }
-  };
-  canvas.onpointerup = event => {
-    touches.delete(event.pointerId); if (touches.size < 2) pinch = undefined;
-    if (panning) { const { moved, target } = panning; panning = undefined; delete canvas.dataset.panning; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!moved && target !== undefined) select_(target); else refreshOptions(); return; }
-    if (!dragging) return; const pending = dragging.pending, unchanged = !dragging.armed || equal(pending, dragging.before); dragging = undefined; delete canvas.dataset.dragging; if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId); if (!unchanged) run(() => model.edit(compositionDocument()!.id, 'Drag artwork', () => pending));
-  };
-  canvas.onpointercancel = event => { touches.delete(event.pointerId); pinch = undefined; panning = undefined; delete canvas.dataset.panning; dragging = undefined; delete canvas.dataset.dragging; void draw(); };
-  stage.addEventListener('scroll', () => { placeHover(); placeJoined(); }, { passive: true });
-  // a joined scene is read-only here: double-clicking it opens it
-  canvas.ondblclick = event => { const point = coordinates(event); if (hitTest(point)) return; const j = preview?.joined?.find(j => point.x >= j.x && point.x <= j.x + j.width && point.y >= j.y && point.y <= j.y + j.height); if (j) openScene(j.zone); };
-  canvas.onpointerleave = () => { if (hoverId) { hoverId = ''; placeHover(); } };
-  // The comparison picture shares the camera and never selects: a left press is empty space, middle/right drag pans both.
-  compareCanvas.onpointerdown = event => {
-    closePicker(); if (panButton(event)) startPan(event, compareCanvas, undefined); else if (event.button === 0) pressEmpty(event, compareCanvas);
-  };
-  compareCanvas.onpointermove = event => canvas.onpointermove?.call(canvas, event);
-  compareCanvas.onpointerup = event => { if (compareCanvas.hasPointerCapture(event.pointerId)) compareCanvas.releasePointerCapture(event.pointerId); canvas.onpointerup?.call(canvas, event); };
-  compareCanvas.onpointercancel = event => canvas.onpointercancel?.call(canvas, event);
-  /** Maps a point on the comparison picture to the same spot on the main one (both show the same view). */
-  const onMain = (event: WheelEvent) => { if (event.target !== compareCanvas) return event; const from = compareCanvas.getBoundingClientRect(), to = canvas.getBoundingClientRect(); return { clientX: to.left + (event.clientX - from.left) * to.width / from.width, clientY: to.top + (event.clientY - from.top) * to.height / from.height }; };
-  const onWheel = (event: WheelEvent) => {
-    if (!zoomable()) return;
-    if (event.ctrlKey || event.metaKey) { event.preventDefault(); zoomTo(viewZoom * Math.exp(-event.deltaY * .002), onMain(event)); }
-    else if (event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) { event.preventDefault(); environment.cameraX = Math.round(Number(environment.cameraX ?? 0) + (event.deltaX || event.deltaY) / viewZoom); void draw(); }
-  };
-  // One listener on the stage covers both pictures and the empty area around them.
-  stage.addEventListener('wheel', onWheel, { passive: false });
-  canvas.onkeydown = event => {
-    if (event.ctrlKey || event.metaKey || event.altKey) return; const key = event.key;
-    if (key === 'Escape' && selectedId) { event.preventDefault(); select_(''); }
-    else if (key.toLowerCase() === 'a' && current()?.kind === 'composition') { event.preventDefault(); openPicker(); }
-    else if(key===' '&&currentTimeline()){event.preventDefault();playing=!playing;if(playing&&time>=sequence()!.duration)time=loop?loopFrom:0;refreshTimeline();}
-    else if (key === ' ' && current()?.kind === 'composition') { event.preventDefault(); animating = !animating; refreshOptions(); }
-    else if (zoomable() && (key === '+' || key === '=')) { event.preventDefault(); zoomTo(viewZoom * 1.25); }
-    else if (zoomable() && (key === '-' || key === '_')) { event.preventDefault(); zoomTo(viewZoom / 1.25); }
-    else if (zoomable() && key === '0') { event.preventDefault(); zoomTo(1); }
-    else if (zoomable() && key.toLowerCase() === 'f') { event.preventDefault(); fit(); }
-    else if (selectedId && key.startsWith('Arrow') && current()?.kind === 'composition') {
-      event.preventDefault(); const step = event.shiftKey ? 10 : snap || 1, dx = key === 'ArrowLeft' ? -step : key === 'ArrowRight' ? step : 0, dh = key === 'ArrowUp' ? step : key === 'ArrowDown' ? -step : 0;
-      editInstance('Nudge artwork', n => { n.placement.x += dx; n.placement.h += dh; }); canvas.focus();
-    }
-  };
+  const disposeViewportInput=mountViewportInput({get navigable(){return navigable;},get viewport(){return viewport;},get currentTimeline(){return currentTimeline;},get sequenceNav(){return sequenceNav;},get environment(){return environment;},get stage(){return stage;},get canvas(){return canvas;},get selectedId(){return editorSelection.instance;},get select_(){return select_;},get closePicker(){return closePicker;},get viewZoom(){return viewZoom;},get coordinates(){return coordinates;},get hitTest(){return hitTest;},get preview(){return painting.result;},get compositionDocument(){return compositionDocument;},get zoomTo(){return zoomTo;},get cameraPreview(){return cameraPreview;},get draw(){return draw;},get placeHover(){return placeHover;},get snap(){return snap;},get config(){return config;},get dragPreviewDirty(){return dragPreviewDirty;},set dragPreviewDirty(value){dragPreviewDirty=value;},get notice(){return notice;},get refreshOptions(){return refreshOptions;},get run(){return run;},get model(){return model;},get placeJoined(){return placeJoined;},get openScene(){return openScene;},get compareCanvas(){return compareCanvas;},get editInstance(){return editInstance;},get current(){return current;},get openPicker(){return openPicker;},get fit(){return fit;}});
   const unload = (event: BeforeUnloadEvent) => { if (model.dirty()) { event.preventDefault(); event.returnValue = ''; } };
   const keyboard = (event: KeyboardEvent) => {
     if (!(event.ctrlKey || event.metaKey) || !root.contains(document.activeElement)) return;
@@ -1216,17 +875,18 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   };
   /** Single keys in the Scene view (Delete, H for hack vision…), unless the user is typing in a field or a dialog is open. */
   const shortcuts = (event: KeyboardEvent) => {
-    if (event.ctrlKey || event.metaKey || event.altKey || event.repeat || group !== 'layout' || !root.isConnected) return;
+    if(group==='layout'&&playHost.hidden&&root.isConnected&&current()?.kind==='composition'){const action=animationShortcut(event);if(action){event.preventDefault();if(action==='toggle')toggleAnimation();else seekTime('frames'in action?(Math.round(time*60)+action.frames)/60:time+action.seconds);return;}}
+    if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.repeat || group !== 'layout' || !root.isConnected) return;
     const target = event.target as HTMLElement; if (target.closest('input, textarea, select, dialog, [contenteditable=""], [contenteditable="true"]')) return;
-    if ((event.key === 'Delete' || event.key === 'Backspace') && selectedId && current()?.kind === 'composition' && playHost.hidden) { event.preventDefault(); deleteSelected(); return; }
+    if ((event.key === 'Delete' || event.key === 'Backspace') && editorSelection.instance && current()?.kind === 'composition' && playHost.hidden) { event.preventDefault(); deleteSelected(); return; }
     const control = (config.environmentControls ?? []).find(c => c.kind === 'boolean' && c.shortcut?.toLowerCase() === event.key.toLowerCase()); if (!control) return;
     event.preventDefault(); environment[control.key] = !environment[control.key]; refreshOptions(); void draw();
   };
   const closeMenu = (event: Event) => { const menu = header.querySelector<HTMLDetailsElement>('details.menu'); if (menu?.open && (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button'))) menu.open = false; };
   window.addEventListener('beforeunload', unload); root.addEventListener('keydown', keyboard); document.addEventListener('keydown', shortcuts); document.addEventListener('click', closeMenu);
   let previous = performance.now(), frameId = 0;
-  const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous = now; const seq = sequence(); if (animating && group === 'layout' && current()?.kind === 'composition') { time += delta; if (ambientLabel) ambientLabel.textContent = `${time.toFixed(1)} s`; void draw(); } if (playing && seq) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); } } updateTime(); void draw(); } frameId = requestAnimationFrame(tick); };
+  const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous=now;updateRenderStatus();if(dragPreviewDirty){dragPreviewDirty=false;void draw();}const seq=sequence(); if (animating && !seq && group === 'layout' && current()?.kind === 'composition') { time += delta*playbackSpeed; updateTime();void draw(true); } if (playing && seq && group==='layout' && playHost.hidden) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta*playbackSpeed; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='camera')refreshRight(); } } updateTime(); void draw(playing); } frameId = requestAnimationFrame(tick); };
   frameId = requestAnimationFrame(tick); void load();
-  const disposePerformance = mountPerformancePanel(root, () => ({ editor: true, scene: sceneId(), selected: selectedId, zoom: viewZoom, comparison: compareId }), location.hash.includes('profile-editor'));
-  return { model, openScene, reload: load, save, dispose() { disposed = true; disposePerformance(); playHandle?.(); playHandle = undefined; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('keydown', shortcuts); document.removeEventListener('click', closeMenu); root.remove(); } };
+  const disposePerformance = mountPerformancePanel(root, () => ({ editor: true, scene: sceneId(), selected: editorSelection.instance, zoom: viewZoom, comparison: compareId }), location.hash.includes('profile-editor'));
+  return { model, openScene, reload: load, save, dispose() { disposed = true;disposeViewportInput();timelineGrid?.dispose(); disposePerformance(); playHandle?.(); playHandle = undefined; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload); root.removeEventListener('keydown', keyboard); document.removeEventListener('keydown', shortcuts); document.removeEventListener('click', closeMenu); root.remove(); } };
 }

@@ -1,8 +1,8 @@
 import {removePresentationActor,duplicatePresentationActor} from './scene-presentation';
-import type {StreetSpritePresentation} from '../../art/characters/street-sprite';
+import type {StreetSpritePresentation} from '../../art/characters/presentation';
 import {removeManifestContent} from './manifest-content';
 import {targetInstance} from './manifest-contract';
-import type {RiderPresentation} from './actor-presentation';
+import type {RiderPresentation} from '../../art/characters/presentation';
 import {PLAYER_ROW,type Composition,type Instance} from '../../art/core/composition';
 import type {SceneDocument} from './scene-document';
 import type {Character} from '../../runtime/characters';

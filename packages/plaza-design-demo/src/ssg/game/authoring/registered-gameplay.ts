@@ -6,7 +6,7 @@ import {nativeGameplayScenes,nativeGameplayScene} from './native-gameplay-scenes
 import {gameplayScenes,gameplayScene} from './gameplay-scenes';
 import {mountGameplayAuthoring} from './gameplay-authoring';
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 /** Every scene edits its shared source and tests it in the real native Play session. */
 export function mountRegisteredGameplay(host:HTMLElement,context:WorkbenchContext,selection:{scene?:string;fixed?:boolean}={},publicEditor=false):WorkbenchHandle {
  const api=context.authoring!,form=new TypedForm(e=>{error.textContent=String(e);}),error=document.createElement('p');error.setAttribute('role','alert');

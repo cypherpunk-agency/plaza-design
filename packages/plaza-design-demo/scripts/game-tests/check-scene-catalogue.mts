@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 import {createPendingCity} from '../../src/ssg/game/authoring/pending-city';
 import {snapshotWorld,validateWorldDocument} from '../../src/ssg/game/world/document';
 import type {CitySource} from '../../src/ssg/game/world/city';
@@ -10,7 +11,7 @@ import {SCENES,NATIVE_SCENES} from '../../src/ssg/game/scenes';
 import {createSceneRegistry,newAuthoredScene,validateSceneCatalogue,authoredDocumentId} from '../../src/ssg/game/engine/gameplay/scene-catalogue';
 import {addManifestContent} from '../../src/ssg/game/engine/gameplay/manifest-content';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
@@ -29,7 +30,7 @@ const id=authoredDocumentId('new-room-a','composition');assert.equal(m.get(id).k
 m.updateInstance(id,'spawn','Move spawn',n=>{n.placement.x=244;});assert.equal((m.get('authored-scenes').value as any).scenes[first].composition.instances[0].placement.x,244);
 m.undo();assert.equal((m.get(id).value as any).instances[0].placement.x,120);m.redo();assert.equal((m.get(id).value as any).instances[0].placement.x,244);
 const current=m.get('authored-scenes').value;const registry=createSceneRegistry(NATIVE_SCENES,current);assert.equal(Object.keys(registry).length,Object.keys(NATIVE_SCENES).length+2+first);assert.equal(Object.keys(SCENES).length,Object.keys(NATIVE_SCENES).length+first);assert.equal(registry['new-room-a'].spawn,244);assert.equal(registry['new-room-b'].exits[0].to,'new-room-a');
-const game=Object.create(Game.prototype) as any;game.content=registry;game.compiledScenes=new Map();game.botReactions={version:1,voices:[]};assert.equal(game.hasScene('new-room-a'),true);assert.equal(game.hasScene('missing'),false);assert.equal(game.sceneDefinition('new-room-a').spawn,244);assert.throws(()=>game.sceneDefinition('missing'),/Unknown scene/);
+const game=runtimeFixture(Game) as any;game.content=registry;game.scenes.compiledScenes=new Map();game.botReactions={version:1,voices:[]};assert.equal(game.hasScene('new-room-a'),true);assert.equal(game.hasScene('missing'),false);assert.equal(game.sceneDefinition('new-room-a').spawn,244);assert.throws(()=>game.sceneDefinition('missing'),/Unknown scene/);
 const recv=model();recv.importDocuments(readDocumentBundle(createDocumentBundle(m.edits(),m.list()),recv.list()));assert.deepEqual(recv.get('authored-scenes').value,current);assert.equal(recv.get(id).id,id);
 const sceneId=authoredDocumentId('new-room-a','scene'),scene=structuredClone(m.get(sceneId).value) as any;scene.name='Edited logical document';m.importDocuments([{id:sceneId,value:scene},{id:authoredDocumentId('new-room-b','scene'),value:{...b.scene,name:'Second room'}}]);assert.equal(m.edits().length,2);m.undo();assert.equal((m.get(sceneId).value as any).name,'New room A');m.redo();assert.equal((m.get(sceneId).value as any).name,'Edited logical document');
 const before=m.edits();for(const bad of [{...catalogue,scenes:[...shipped,a]}, {...catalogue,scenes:[...shipped,a,a]}, {...catalogue,scenes:[...shipped,{...a,scene:{...a.scene,id:'downtown'}}]}]){assert.throws(()=>m.edit('authored-scenes','Invalid',()=>bad));assert.deepEqual(m.edits(),before);}

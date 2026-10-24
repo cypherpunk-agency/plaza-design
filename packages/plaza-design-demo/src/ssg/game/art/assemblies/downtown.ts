@@ -1,6 +1,7 @@
 /** Downtown artwork extracted verbatim. Assembly decomposition follows after parity verification. */
 import type { View } from '../core/view';
-import { drawStreetSprite, streetSpriteKinds } from "../characters/street-sprite";
+import {drawStreetSprite} from '../characters/street-sprite';
+import {streetSpriteKinds} from '../characters/presentation';
 import { windowLit } from "../../world/light";
 import { bay, cornice, fascia, framedWindow, ledgeEdge, storeyBands, type BayKind } from "../buildings/parts";
 import { addLight } from "../atmosphere/lighting";

@@ -1,4 +1,4 @@
-import {TypedForm} from './typed-form';import type {WorkbenchContext,WorkbenchHandle} from './app';import {SCENES} from '../scenes';import type {NetData,SceneData,AccessRule,DeviceData} from '../data/types';import {addNativeBlock,nativeBlockKinds,type NativeBlockKind} from './native-blocks';
+import {TypedForm} from './typed-form';import type {WorkbenchContext,WorkbenchHandle} from './contracts';import {SCENES} from '../scenes';import type {NetData,SceneData,AccessRule,DeviceData} from '../data/types';import {addNativeBlock,nativeBlockKinds,type NativeBlockKind} from './native-blocks';
 export const networkDocumentId='network';
 /** Native schema controls. All writes use the editor's atomic validation/history/save boundary. */
 export function mountNetworkAuthoring(host:HTMLElement,context:WorkbenchContext,scenes:()=>readonly SceneData[]=()=>Object.values(SCENES).flatMap(s=>s.data?[s.data]:[])):WorkbenchHandle{

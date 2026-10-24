@@ -5,7 +5,7 @@ import{SourceReader,SourceReadError,readSourceRequest}from'../../src/ssg/game/au
 import{extractSourcePointer}from'../../src/ssg/game/authoring/source-viewer';
 import{buildEventInspection}from'../../src/ssg/game/authoring/event-inspector-model';
 import{sourceDocuments}from'../../src/ssg/game/authoring/source-documents';
-import type{EditorDocument}from'../../src/ssg/game/authoring/app';
+import type {EditorDocument} from '../../src/ssg/game/authoring/contracts';
 const tmp=fs.mkdtempSync(path.join(os.tmpdir(),'plaza-source-')),game=path.join(tmp,'game'),outside=path.join(tmp,'outside');fs.mkdirSync(game);fs.mkdirSync(outside);fs.writeFileSync(path.join(game,'allowed.ts'),'<script>alert("literal only")</script>');fs.writeFileSync(path.join(game,'doc.json'),'{"a/b":{"~name":false}}');fs.writeFileSync(path.join(game,'unknown.ts'),'secret');fs.writeFileSync(path.join(outside,'escape.ts'),'outside');
 const failure=(fn:()=>unknown,status:number)=>assert.throws(fn,e=>e instanceof SourceReadError&&e.status===status);
 try{const reader=new SourceReader(game,['allowed.ts','doc.json']);assert.equal(reader.read('allowed.ts').text,'<script>alert("literal only")</script>');assert.equal(extractSourcePointer(reader.read('doc.json').text,'/a~1b/~0name'),false);assert.throws(()=>extractSourcePointer('{}','/__proto__'));assert.throws(()=>extractSourcePointer('{}','/~9'));

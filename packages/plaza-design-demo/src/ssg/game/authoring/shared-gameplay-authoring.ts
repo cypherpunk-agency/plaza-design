@@ -1,6 +1,6 @@
 import {mountGameplayAuthoring} from './gameplay-authoring';
 import type {GameplayDefinition} from '../engine/gameplay/types';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 /** Shared graph libraries use the same typed command/conversation editor as scene gameplay. */
 export function mountSharedGameplay(host:HTMLElement,context:WorkbenchContext,id:string,validate:(value:unknown)=>GameplayDefinition,publicEditor=false):WorkbenchHandle{
  const api=context.authoring!;

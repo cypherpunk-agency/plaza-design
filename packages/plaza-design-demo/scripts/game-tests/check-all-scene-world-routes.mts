@@ -1,3 +1,5 @@
+import {runtimeFixture} from './runtime-fixture.mts';
+import {useExit} from '../../src/ssg/game/runtime/interaction-routing';
 import {gameSourceIdentity} from '../scene-system/source-identity.mts';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
@@ -12,8 +14,8 @@ const base=new Map(sourceDocuments.map(d=>[d.id,JSON.parse(fs.readFileSync(path.
 const contexts=new WeakMap<object,{registry:ReturnType<typeof pendingRegistry>;world:ReturnType<typeof createPendingCity>;openingStory:ReturnType<typeof pendingOpeningStory>}>();
 function runtime(documents:ReadonlyMap<string,unknown>){let value=contexts.get(documents);if(!value){const registry=pendingRegistry(documents);value={registry,world:createPendingCity(documents.get('city-source'),documents),openingStory:pendingOpeningStory(documents,registry)};contexts.set(documents,value);}return value;}
 function dispatch(scene:string,exit:any,documents=base){
- const{registry,world,openingStory}=runtime(documents),calls:any[]=[],g:any={here:scene,def:registry[scene],story:'free',t:0,openingStory,world,save:{flags:{},keyring:exit.needs?[exit.needs.key]:[]},hasScene:(id:string)=>!!registry[id],persistSave:()=>calls.push(['persist']),travel:(...v:any[])=>calls.push(['travel',...v]),hailTaxi:()=>calls.push(['taxi']),showMap:()=>calls.push(['map']),zh:{react:(...v:any[])=>calls.push(['refused',...v])}};
- (Game.prototype as any).useExit.call(g,exit);return{calls,flags:g.save.flags,world};
+ const{registry,world,openingStory}=runtime(documents),calls:any[]=[],g:any=runtimeFixture(Game,{def:registry[scene],story:'free',openingStory,world,save:{flags:{},keyring:exit.needs?[exit.needs.key]:[]},hasScene:(id:string)=>!!registry[id],persistSave:()=>calls.push(['persist']),travel:(...v:any[])=>calls.push(['travel',...v]),hailTaxi:()=>calls.push(['taxi']),showMap:()=>calls.push(['map']),zh:{react:(...v:any[])=>calls.push(['refused',...v])},scenes:{here:scene},timing:{t:0}});
+ useExit(g.interactionRoutingPort,exit);return{calls,flags:g.save.flags,world};
 }
 let defaults=0,edited=0,scenes=0;const rows:any[]=[];
 for(const owner of gameplayScenes.filter(s=>s.id in SCENES)){

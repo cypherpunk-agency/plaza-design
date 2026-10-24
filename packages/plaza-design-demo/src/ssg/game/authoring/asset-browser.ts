@@ -1,7 +1,7 @@
 /** Read-only catalog projections. References point into source documents, never a second scene graph. */
 import { LAYER_ROLES, KIND_HINTS, layerRole } from './layer-roles';
 import { type ArtRegistry, type Composition, type Instance, type Field, type Value, type Properties } from '../art/core/composition';
-import type { EditorDocument } from './app';
+import type {EditorDocument} from './contracts';
 
 import { helperArtwork } from './asset-examples';
 

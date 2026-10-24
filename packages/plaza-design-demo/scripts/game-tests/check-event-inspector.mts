@@ -10,7 +10,7 @@ import{NET,LOGIC}from'../../src/ssg/game/data';
 const cloneBehavior = <T>(value:T):T => structuredClone(value);
 function behaviorNoun(data:import('../../src/ssg/game/data').SceneData,key:string){const [device,noun]=key.split('.');return data.devices.find(d=>d.id===device)!.nouns.find(n=>n.id===noun)!;}
 import{SceneModel}from'../../src/ssg/game/engine/model';
-import type{EditorDocument}from'../../src/ssg/game/authoring/app';
+import type {EditorDocument} from '../../src/ssg/game/authoring/contracts';
 import type{DeviceData}from'../../src/ssg/game/data/types';
 const root=fileURLToPath(new URL('../../src/ssg/game/',import.meta.url));
 const documents:EditorDocument[]=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'read-only-test',value:JSON.parse(readFileSync(join(root,d.file),'utf8'))}));

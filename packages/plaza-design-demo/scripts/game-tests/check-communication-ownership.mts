@@ -1,3 +1,5 @@
+import {runtimeFixture} from './runtime-fixture.mts';
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
 import {openingStoryModel} from '../../src/ssg/game/story/opening';
 import assert from 'node:assert/strict';
 import {Hints} from '../../src/ssg/game/ui/hints';
@@ -27,15 +29,15 @@ try{
  const history:any[]=[],status:any[]=[],host:any={active:false,echo:false,def:{id:'test'},print:(...a:any[])=>history.push(a),schem:{note(){}},vision:{note(){}},locate:()=>null,store:{notice:(...a:any[])=>status.push(a),feedbackCue:sound.feedback}};
  host.say=(SceneHost.prototype as any).say;host.react=SceneHost.prototype.react;
  host.model={attachmentOffsets:()=>undefined};
- const owner:any={openingStory:openingStoryModel,def:{},save:{flags:{},items:{}},gameplayFor:()=>undefined,here:'test',zh:host};const use:any={id:'locked',eligibility:()=>({ok:false,reason:'NO ACCESS'})};
- (Game.prototype as any).runUse.call(owner,use,()=>[]);
+ const owner:any=runtimeFixture(Game,{scenes:{here:'test'},openingStory:openingStoryModel,def:{},save:{flags:{},items:{}},gameplayFor:()=>undefined,zh:host});const use:any={id:'locked',eligibility:()=>({ok:false,reason:'NO ACCESS'})};
+ InteractionRouting.runUse(owner.interactionRoutingPort,use,()=>[]);
  assert.equal(notes,1,'actual runUse owns one immediate denial');assert.equal(timers.size,1);assert.equal(history.length,1);assert.equal(status.length,1);assert.equal(history[0][3],status[0][2]);
  const receipt=history[0][3];host.react('use:locked',['','NO ACCESS','err'],receipt);sound.feedback(receipt);assert.equal(notes,1);assert.equal(history.length,1);assert.equal(status.length,1);
- (Game.prototype as any).runUse.call(owner,use,()=>[]);assert.equal(notes,2,'second equal-text action remains distinct');assert.equal(history.length,2);assert.notEqual(history[0][3].id,history[1][3].id);
+ InteractionRouting.runUse(owner.interactionRoutingPort,use,()=>[]);assert.equal(notes,2,'second equal-text action remains distinct');assert.equal(history.length,2);assert.notEqual(history[0][3].id,history[1][3].id);
  sound.cancelFeedback('test');assert.equal(timers.size,0);sound.feedback(mintFeedback('other','device','success'));assert.equal(timers.size,3);sound.cancelFeedback('test');assert.equal(timers.size,3);sound.cancelFeedback();assert.equal(timers.size,0);
  sound.granted();assert.equal(timers.size,3);
  const noop=()=>{};(globalThis as any).document.documentElement={classList:{remove:noop}};(globalThis as any).window={removeEventListener:noop};(globalThis as any).cancelAnimationFrame=noop;
- (Game.prototype as any).stop.call({cancelStoryTransitions:(Game.prototype as any).cancelStoryTransitions,hints:h,gameplaySessions:new Map(),hosts:new Map(),keys:new Set(),syncEnginePause:noop,persistSave:noop,endTitle:noop,menu:{hide:noop},endCutscene:noop,term:{close:noop},canvas:{},save:{}});
+ (Game.prototype as any).stop.call(runtimeFixture(Game,{cancelStoryTransitions:(Game.prototype as any).cancelStoryTransitions,hints:h,gameplaySessions:new Map(),hosts:new Map(),keys:new Set(),syncEnginePause:noop,persistSave:noop,endTitle:noop,menu:{hide:noop},endCutscene:noop,term:{close:noop},canvas:{},save:{}}));
  assert.equal(timers.size,0,'actual Game.stop cancels delayed feedback before teardown');
  sound.granted();assert.equal(timers.size,3);sound.toggle();assert.equal(timers.size,0);const before=nextTimer;sound.granted();sound.denied();assert.equal(nextTimer,before,'muted calls allocate no callback');
  console.log('Communication ownership PASS: actual Schematic noun/wire and Game.runUse/SceneHost calls; saved shared lessons, defer/no HUD echo, receipt replay versus equal-text distinct actions, scoped chime cancellation and no muted timers.');

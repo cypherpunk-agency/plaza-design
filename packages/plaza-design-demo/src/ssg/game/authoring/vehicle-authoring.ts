@@ -2,7 +2,7 @@
 import {TypedForm} from './typed-form';
 import {art,type Composition,type Instance} from '../art';
 import {validateVehicle,type VehicleSource} from '../world/vehicles';
-import type {WorkbenchContext} from './app';
+import type {WorkbenchContext} from './contracts';
 import {appendVehicleCar,removeVehicleCar,setVehicleCars,splitVehicleLeg} from './vehicle-composition';
 import {legLength,routeLength} from '../world/vehicles';
 const flat=(ns:Instance[]):Instance[]=>ns.flatMap(n=>[n,...flat(n.children??[])]);

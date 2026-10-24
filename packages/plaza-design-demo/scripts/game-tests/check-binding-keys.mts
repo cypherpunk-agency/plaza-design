@@ -13,7 +13,7 @@ import {newSave} from '../../src/ssg/game/runtime/save';
 import {referenceView} from './reference-view';
 import {sourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
 import type {Composition,Instance} from '../../src/ssg/game/art/core/composition';

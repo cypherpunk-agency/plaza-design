@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {art} from '../../src/ssg/game/art';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {pendingDestinations} from '../../src/ssg/game/authoring/pending-destinations';

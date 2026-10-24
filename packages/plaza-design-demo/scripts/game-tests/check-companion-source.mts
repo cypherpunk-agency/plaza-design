@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /** The companion document (engine/gameplay/companion.json): the game loop reads it; the editor edits it; the source store saves it. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -46,7 +47,7 @@ assert.equal(companionHere({pixel:'along'},{pixel:true,'cat:follow':true},homeOn
 assert.equal(companionFlag({},homeOnly),'cat:follow');assert.equal(companionFlag({companion:{unlockFlag:'own'}},homeOnly),'own');
 
 // the game loop reads the document it is given (private Play passes the pending one)
-const make=(sources:object,here:string,flags:Record<string,boolean>)=>{const game:any=Object.create(Game.prototype),save=newSave();Object.assign(save.flags,flags);Object.assign(game,{save,here,content:SCENES,sources,botReactions:BOT_REACTIONS,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map(),t:0});return game;};
+const make=(sources:object,here:string,flags:Record<string,boolean>)=>{const game:any=runtimeFixture(Game),save=newSave();Object.assign(save.flags,flags);Object.assign(game,{save,content:SCENES,sources,botReactions:BOT_REACTIONS,scenes:Object.assign(game.scenes,{here,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map()}),timing:Object.assign(game.timing,{t:0})});return game;};
 assert.equal(make({},'downtown',{}).companionPresent,false);
 assert.equal(make({},'downtown',{pixel:true}).companionPresent,true);
 assert.equal(make({},'capsule',{}).companionPresent,true,'home scenes show it without the flag');

@@ -1,6 +1,7 @@
 import baseline from './opening.json';
 import type {LevelSource} from '../engine/level';
-import {matches,validateGameplay} from '../engine/gameplay/validation';
+import {matches} from '../engine/gameplay/queries';
+import {validateGameplay} from '../engine/gameplay/validation';
 import {validateGameplayRewards} from '../engine/gameplay/rewards';
 import type {Condition,GameplayDefinition} from '../engine/gameplay/types';
 import type {Handoff} from '../art/core/timeline';

@@ -4,7 +4,7 @@ import {defaultPlayFixture,type PlayFixtures,type PlayScene} from './play-fixtur
 import {NATIVE_SCENES} from '../scenes';
 import {newAuthoredScene,validateSceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {newVehicleScene,type VehiclePreset} from './vehicle-service';
 type Authoring=NonNullable<WorkbenchContext['authoring']>;
 const readCatalogue=(api:Authoring)=>validateSceneCatalogue(api.get('authored-scenes').value,NATIVE_SCENES);

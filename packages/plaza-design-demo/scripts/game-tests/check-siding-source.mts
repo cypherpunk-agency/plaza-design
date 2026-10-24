@@ -9,7 +9,7 @@ import {createLineSystem} from '../../src/ssg/game/world/transport/line';
 import {levelArrive,levelUp,levelStep,levelFloor,type Level} from '../../src/ssg/game/engine/level';
 import {art} from '../../src/ssg/game/art';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
-import {ComposerModel} from '../../src/ssg/game/authoring/app';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';

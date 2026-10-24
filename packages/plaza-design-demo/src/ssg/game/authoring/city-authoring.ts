@@ -3,7 +3,7 @@ import {pendingRegistry} from './pending-registry';
 import {sharedWorldFlags,renameWorldFlagDocuments} from './world-flag-references';
 import {SCENES} from '../scenes';
 import {TypedForm} from './typed-form';
-import type {WorkbenchContext,WorkbenchHandle} from './app';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import type {CitySource} from '../world/city';
 import {validatePendingCity} from './pending-city';
 import {validateMetroSource,type MetroSource} from '../world/transport/metro-source';

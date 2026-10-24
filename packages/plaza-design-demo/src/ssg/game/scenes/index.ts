@@ -24,6 +24,6 @@ export const SCENES=createSceneRegistry(NATIVE_SCENES,authored);
 export type SceneId = keyof typeof NATIVE_SCENES | (string & {readonly __sceneId:unique symbol});
 
 export const isSceneId = (id: string): id is SceneId => Object.prototype.hasOwnProperty.call(SCENES, id);
-export const sceneById = (id: string): SceneDef | undefined => (isSceneId(id) ? SCENES[id] : undefined);
+
 /** A scene's name in capitals, as the HUD, the menu and the slots show it: BACK YARD, CAPSULE 7B. */
 export const sceneTitle = (s: SceneDef) => s.name.replace(/^the /i, '').toUpperCase();

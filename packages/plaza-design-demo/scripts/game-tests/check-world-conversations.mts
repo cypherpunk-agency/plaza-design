@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import {matches,validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
+import {matches} from '../../src/ssg/game/engine/gameplay/queries';
+import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
 import {validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import {withSceneConversations} from '../../src/ssg/game/engine/gameplay/scene-conversations';
 import {GameplaySession,cloneState} from '../../src/ssg/game/engine/gameplay/session';

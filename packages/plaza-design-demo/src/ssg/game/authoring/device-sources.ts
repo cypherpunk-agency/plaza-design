@@ -1,4 +1,4 @@
-import {stateRequirement} from '../data/state-requirements';
+
 import {projectSceneState} from '../engine/gameplay/scene-state';
 import {validateCompanionModelBindings} from '../engine/gameplay/scene-companion';
 import type {EngineNetworkContext} from '../engine/network-context';
@@ -13,9 +13,9 @@ import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
 import {projectDeviceBindings} from '../engine/gameplay/device-bindings';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
 import type {Composition} from '../art/core/composition';
-export const nativeDeviceSceneIds=Object.values(NATIVE_SCENES).filter(scene=>scene.data?.devices.length).map(scene=>scene.id);
+
 export const deviceSceneIds=Object.keys(NATIVE_SCENES);
-export const deviceSourceFile=(scene:string)=>deviceSourceIdentity(scene).file;
+
 export const deviceDocumentId=(scene:string)=>deviceSourceIdentity(scene).devices;
 export {deviceSourceIdentity} from './device-document-ids';
 export const deviceRules=sceneRuleContract;
@@ -33,4 +33,3 @@ export function applyDeviceSource(id:string,scene:SceneDef,composition:Compositi
 
 export function requiredDeviceNouns(scene:string,device:string){return SCENES[scene]?deviceRules(SCENES[scene]).needs?.devices?.find(r=>r.id===device)?.nouns?.map(n=>n.id)??[]:[];}
 export function protectedDevice(scene:string,id:string){return SCENES[scene]?!!deviceRules(SCENES[scene]).needs?.devices?.some(r=>r.id===id):false;}
-export function protectedDeviceState(scene:string,id:string){return SCENES[scene]?!!deviceRules(SCENES[scene]).needs?.state?.some(role=>stateRequirement(role).key===id):false;}

@@ -1,3 +1,4 @@
+import {runtimeFixture} from './runtime-fixture.mts';
 /** Review stations (demo/review-stations.json): the review navigator's bookmarks, buttons and remote example come from a document, not from the loop. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -15,10 +16,10 @@ import {BOT_REACTIONS} from '../../src/ssg/game/engine/gameplay/bot-conversation
 
 const rows=(content:any)=>reviewStations(content).map(s=>[s.scene,s.id,s.label,s.x]);
 // the game's own scenes: the stations the old hard-coded rules produced, in the same order
-assert.deepEqual(rows(SCENES),[['shop','shop-counter','Shop counter',730],['library','catalog','Library catalog',74],['market','talk-cook','NOODLE COOK',150],['market','talk-fish','FISHMONGER',1062],['market','talk-repair','REPAIRS',1352],['market','talk-sleeper','FIRMWARE VENDOR',1806],['market','fortune','Market fortune',1208],['laundromat','laundry','Laundry counter',124],['beach','meter','Beach meter',236],['beach','mixer','Beach mixer',626],['vehicle-lab','vehicles','Vehicles',224],['vehicle-routes','vehicle-routes','Curves & drops',224]]);
+assert.deepEqual(rows(SCENES),[['shop','shop-counter','Shop counter',730],['library','catalog','Library catalog',74],['market','talk-cook','NOODLE COOK',150],['market','talk-fish','FISHMONGER',1062],['market','talk-repair','REPAIRS',1352],['market','talk-sleeper','FIRMWARE VENDOR',1806],['market','fortune','Market fortune',1208],['laundromat','laundry','Laundry counter',124],['beach','meter','Beach meter',236],['beach','mixer','Beach mixer',626],['vehicle-lab','vehicles','Vehicles',SCENES['vehicle-lab'].uses![0].x],['vehicle-routes','vehicle-routes','Curves & drops',224]]);
 // the Test District: purchases, conversations, devices, wiring first
 const demo=demoContent() as any;
-assert.deepEqual(rows(demo),[['shop','purchases','Purchases',730],['library','dialogue','Conversations',440],['sandbox','devices','Devices',540],['sandbox','wiring','Wiring & chains',550],['vehicle-lab','vehicles','Vehicles',224],['vehicle-routes','vehicle-routes','Curves & drops',224]]);
+assert.deepEqual(rows(demo),[['shop','purchases','Purchases',730],['library','dialogue','Conversations',440],['sandbox','devices','Devices',540],['sandbox','wiring','Wiring & chains',550],['vehicle-lab','vehicles','Vehicles',SCENES['vehicle-lab'].uses![0].x],['vehicle-routes','vehicle-routes','Curves & drops',224]]);
 const stations=reviewStations(demo),actions=(id:string,list=stations,content=demo)=>reviewActions(content[id],id,list).map(a=>a.id);
 assert.deepEqual(actions('shop'),['buy','pricing','guidance']);assert.deepEqual(actions('library'),['librarian','shelfe']);assert.deepEqual(actions('sandbox'),['permissions']);
 assert.deepEqual(actions('library',reviewStations(SCENES),SCENES),['catalog'],'the catalog button follows the scene\'s own conversation');assert.deepEqual(actions('market',reviewStations(SCENES),SCENES),[]);
@@ -39,7 +40,7 @@ for(const [name,mutate] of Object.entries({
 })){const bad=shipped();mutate(bad);assert.throws(()=>validateReviewStations(bad),undefined,name);}
 
 // the loop reads the document it is given
-const make=(sources:object,content:any,here:string)=>{const game:any=Object.create(Game.prototype);Object.assign(game,{save:newSave(),here,content,sources,botReactions:BOT_REACTIONS,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map(),t:0});return game;};
+const make=(sources:object,content:any,here:string)=>{const game:any=runtimeFixture(Game);Object.assign(game,{save:newSave(),content,sources,botReactions:BOT_REACTIONS,scenes:Object.assign(game.scenes,{here,compiledScenes:new Map(),hosts:new Map(),gameplaySessions:new Map()}),timing:Object.assign(game.timing,{t:0})});return game;};
 {const game=make({},demo,'shop'),calls:any[]=[];game.reviewNav={refresh:(...a:any[])=>calls.push(a)};game.refreshReview();assert.deepEqual(calls,[['shop',['buy','pricing','guidance']]]);
  assert.equal(make({reviewStations:custom},demo,'shop').reviewDoc,custom);assert.equal(make({},demo,'shop').reviewDoc,REVIEW_STATIONS);
  const ran:string[]=[];Object.assign(game,{reviewUse:(id:string)=>ran.push('use:'+id),reviewTalk:(id:string)=>ran.push('talk:'+id),reviewActor:(id:string)=>ran.push('actor:'+id)});

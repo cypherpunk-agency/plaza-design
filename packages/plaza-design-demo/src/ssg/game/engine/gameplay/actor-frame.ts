@@ -1,5 +1,5 @@
-import type {StreetSpritePresentation} from '../../art/characters/street-sprite';
-import {actorPresentation,type RiderPresentation} from './actor-presentation';
+import type {StreetSpritePresentation} from '../../art/characters/presentation';
+import {actorPresentation,type RiderPresentation} from '../../art/characters/presentation';
 import {prepareCharacter,isHere,type Character,type PreparedCharacter} from '../../runtime/characters';
 import type {View} from '../../art/core/view';
 export interface PreparedRider {kind:'rider';visible:boolean;character:{x:number;h?:number};rider:{kind:RiderPresentation['rider'];sit:boolean;flip:boolean;phase:number;offset:number;ps:number};dim?:number}

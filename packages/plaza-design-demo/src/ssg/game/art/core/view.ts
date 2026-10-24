@@ -15,6 +15,8 @@ export interface View {
   /** Height above the ground to screen y. */
   y: (h: number) => number;
   t: number;
+  /** Authored game-camera layout, translated into the independently navigated editor view. */
+  cameraFrame?: {view:View;x:number;y:number};
   viewW: number;
   viewH: number;
   cam: number;
