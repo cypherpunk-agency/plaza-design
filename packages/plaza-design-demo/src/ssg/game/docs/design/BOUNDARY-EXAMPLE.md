@@ -1,8 +1,8 @@
 # Compact chunk-boundary example
 
-B1 of [the consolidated roadmap](../../ROADMAP.md). Built on the existing Game, SceneModel,
+B1–B6 of [the consolidated roadmap](../../ROADMAP.md). Built on the existing Game, SceneModel,
 Circuit movers, registered character/vehicle artwork and renderWorldFrame. No new renderer,
-adapter, runtime or scene-specific controller. The normal campaign scenes/artwork are unchanged.
+adapter, runtime or scene-specific controller. The Harbor commute also uses these contracts; its passengers continue up the Metro stairs.
 
 ## Open
 
@@ -36,9 +36,11 @@ both chunks on an ordinary Circuit mover and two route legs. The west-owned CROS
 straddles the boundary. The east-owned foreground post should cover moving artwork only where
 it actually overlaps it. Floors line up; labels identify each chunk. There are no puzzles/rewards.
 
-This is intentionally current-engine content. The walker remains registered flow artwork, and
-the cart still has its existing source-scene owner. It does not establish independent mobile
-lifetime after the spawn chunk unloads. That is B2, followed by bounds/order and editor contracts.
+The walker is executed by the existing SceneModel people system; the vehicle uses its actual
+Circuit mover. Their source model/session can outlive source scenery/UI. Registered mobile artwork
+and its attached pieces stay in the common layer stack; switching the active chunk changes neither
+identity nor draw order. Static overhangs remain resident for actual visible bounds. Only explicit
+clips cut objects; joined background layers retain their chunk coverage and shared backdrops paint once.
 
 ## Quick review
 
@@ -49,10 +51,13 @@ lifetime after the spawn chunk unloads. That is B2, followed by bounds/order and
    artwork vanishing at a chunk edge. Report the object and direction if something looks wrong.
 4. In the editor select **overhang**, change **X position**, then Undo/Redo. Select east's
    **foreground-post** to move the occluder. Play the pending scene to inspect the actual result.
-   Edit route/timing through the existing Vehicle/Devices controls; no replacement preview exists.
+   Appearance → Visibility at chunk boundaries adds a numeric clip rectangle (orange selected outline).
+   Select crossing-walker → Appearance → People to edit spawn, speed, waypoint chunks and Leave sink.
+   Vehicle/Devices still own route geometry and mover timing. Private Play shows Live mobile locations
+   from the actual models, including the current chunk and whether source scenery is hosted.
 
 Feedback should concern readability, useful test layout and visible defects. Mechanical checks
-belong to agents. B2–B6 acceptance is in the roadmap; this example alone cannot close those steps.
+belong to agents. B2–B6 acceptance also uses the real Harbor commute, source persistence and approved scene images.
 
 ## Source and verification
 
@@ -61,8 +66,15 @@ belong to agents. B2–B6 acceptance is in the roadmap; this example alone canno
 - `demo/coverage.json`: catalogue membership in Test District; review-stations holds the shortcut.
 - `authoring/play-fixtures.json`: boundary start with fixed daytime and no campaign progress.
 
-Focused checks verify source/graph validation, one actual mover-owned cart crossing and returning,
-continuous route position, prospective registry and pending Test District scene identity. Existing
-review-station checks cover navigation and protected source persistence. Real-browser checks cover
-native player crossing/return without exceptions, source selection, typed sign movement, Undo/Redo
-and private native Play crossing. Package TypeScript and both builds pass.
+Focused checks: `boundary-example` verifies actual walker/cart continuity, current checkpoints,
+shared layer order/foreground slot, explicit clips and clipped selection, overhang residency,
+pending graph rejection, history, bundle round-trip, protected scratch Save/undo and fresh native
+compilation. `zone-unload` verifies the real host releases listeners/nodes while the exact model
+and session survive detach/reattach, then dispose when irrelevant. `seamless-commute` verifies the
+rider across four tunnels, source UI eviction, carried position/reload, alighting and passengers
+climbing the Metro stairs into Downtown. `one-render-path` prohibits alternative frame renderers.
+
+Isolated browser checks exercise player crossing/return, Test District navigation, typed clip and
+people-route controls, pending native Play and actual detached Metro core pause/resume. Approved
+scene pixels and opening seek/pause/resize comparisons cover visual preservation; expectations
+are not regenerated for this work. The live links show the published release; local links use the running checkout preview.

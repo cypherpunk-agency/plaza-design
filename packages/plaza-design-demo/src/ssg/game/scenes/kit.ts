@@ -229,7 +229,10 @@ export interface SceneDef {
   /** Scene actor artwork in its authored order, before companion/player drawing. */
   drawActors?:(ctx:CanvasRenderingContext2D,view:View)=>void;
   /** Read-only visibility of set/playfield rows overhanging a joined zone's logical window. */
-  artworkVisible?:(view:View,model:SceneModel)=>boolean;
+  artworkVisible?:(view:View,model?:SceneModel)=>boolean;
+  /** Registered source, shared by bounds and mobile membership; not a second saved model. */
+  artwork?:import('../art/core/composition').Composition;
+  mobileExtent?:{from:number;to:number};
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];
   /**

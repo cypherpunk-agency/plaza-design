@@ -43,7 +43,7 @@ export function paintAirVehicle(ctx: CanvasRenderingContext2D, raw: Properties, 
 }
 
 export const airVehicleElement: Element = {
-  type: 'vehicle.air', libraryUse: 'reusable', version: 1, label: 'Air vehicle', category: 'vehicles', parts: ['backdrop'], fields,
+  type: 'vehicle.air',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Air vehicle', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset, lift } = placeAir(props, context?.view.t ?? 0);
     return bandBounds(props, AIR_EXTENT[kindOf(props)], offset, lift, context);

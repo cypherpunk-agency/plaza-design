@@ -164,6 +164,23 @@ try {
   // the active zone is never unloaded, even with no camera near it (residency always holds it)
   game.camera.cam = -100000; frame(3); assert.equal(game.scenes.hosts.get('tower'), again, 'the active zone stays');
 
+  // A travelling source unloads its real UI but transfers the exact model/session to Game.
+  standIn('metro',476);SceneLifecycle.showHosts(game.sceneLifecyclePort);
+  const retained=game.scenes.mobiles.get('harbor-station');assert(retained,'distant travelling source has no mounted host');
+  assert(!game.scenes.hosts.has('harbor-station'));
+  const nativeModel=retained.model,nativeSession=retained.gameplay,initialTime=nativeModel.now();
+  nativeModel.tick(100,true);assert(nativeModel.now()>initialTime,'retained native core still ticks');
+  const remounted=game.hostOf('harbor-station');
+  assert.equal(remounted.model,nativeModel,'rehosting transfers the exact existing model');
+  assert.equal(remounted.gameplay,nativeSession,'rehosting transfers the exact existing session');
+  assert(!game.scenes.mobiles.has('harbor-station'),'there is only one owner of that model');
+  SceneLifecycle.showHosts(game.sceneLifecyclePort);assert(remounted.isDisposed,'distant source UI can detach again');
+  assert.equal(game.scenes.mobiles.get('harbor-station').model,nativeModel);
+  // A cut outside this component finally persists/disposes irrelevant mobile cores.
+  standIn('tower',0);SceneLifecycle.showHosts(game.sceneLifecyclePort);
+  assert(!game.scenes.mobiles.has('harbor-station'));
+  const disposedTime=nativeModel.now();nativeModel.tick(100,true);assert.equal(nativeModel.now(),disposedTime);
+
   // disposal is idempotent and leaves nothing of its own behind
   tower.dispose(); labD.dispose();
   for (const id of [...game.scenes.hosts.keys()]) if (id !== unjoined) SceneLifecycle.unload(game.sceneLifecyclePort,id);

@@ -1,5 +1,5 @@
 /** Standalone authored actors reuse the game's existing seeded appearance and animation kernels. */
-import {drawCharacter,characterHeight,KIT_ACTS,type Character,type Act} from '../../runtime/characters';
+import {drawCharacter,characterHeight,characterX,KIT_ACTS,type Character,type Act} from '../../runtime/characters';
 import {BODY_KINDS,HAIR_KINDS,GARB_KINDS,EXTRA_KINDS,FACIAL_KINDS} from './parts';
 import type {BotLook,Face} from './appearance';
 import {BOT,CRITTERS} from './appearance';
@@ -41,7 +41,7 @@ export function residentCharacter(props:Properties,point:Point):Character{
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
 export const residentElement:Element={
- type:'character.resident',version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world', libraryUse: 'reusable',parts:['people'],
+ type:'character.resident',mobility:p=>Number(p.range)!==0,version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world', libraryUse: 'reusable',parts:['people'],
  fields:{
   kind:{kind:'select',label:'Body kind',options:residentKinds,default:'human'},
   archetype:{kind:'select',label:'Named look',options:['',...ARCHETYPE_IDS],default:'',showIf:human},
@@ -67,7 +67,7 @@ export const residentElement:Element={
   variant:sel('Robot variant',['seeded','0','1','2'],isBot),face:sel('Robot face',['seeded',...FACES],isBot),
   paint:colour('Robot paint',isBot),trim:colour('Robot trim',isBot),screen:colour('Robot screen',isBot),
  },
- bounds:props=>({x:-32,h:characterHeight(residentCharacter(props,{x:0,h:0})),w:64,tall:characterHeight(residentCharacter(props,{x:0,h:0}))}),
+ bounds:(props,_state,context)=>{const body=residentCharacter(props,{x:0,h:0}),height=characterHeight(body);return{x:characterX(body,context?.view.t??0)-32,h:height,w:64,tall:height};},
  anchors:()=>({origin:{x:0,h:0,role:'origin'}}),
  draw:(ctx,view,props,_state,_pass,placement)=>drawCharacter(ctx,view,residentCharacter(props,placement)),
 };

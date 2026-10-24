@@ -1,3 +1,5 @@
+import {levelVehicleFrames} from '../engine/level-vehicles';
+import {frameView} from '../art/core/view';
 import type {PlayerState} from './state';
 import type {ZoneGraphSource} from '../world/zone-graph';
 
@@ -5,7 +7,7 @@ import {stepLevelVehicles,saveVehicle} from '../engine/level-vehicles';
 
 import {SceneHost} from "../engine/index";
 
-import {SCENES,type SceneDef,type SceneId} from "../scenes/index";
+import {type SceneDef,type SceneId} from "../scenes/index";
 
 import { Hints } from "../ui/hints";
 
@@ -45,9 +47,25 @@ export interface SceneLifecyclePort{
   introduceScene: () => void;
   levelW: number;
 }
+/** Relevant mobile sources are selected by route/flow extent, independently of host residency. */
+function mobileOwnersAt(port:SceneLifecyclePort,id:SceneId,cam:number){
+ const placed=placeFrom(port.zoneGraph,id,Infinity),owners:SceneId[]=[];
+ for(const[owner,at]of placed){
+      if(!port.hasScene(owner))continue;const scene=port.sceneDefinition(owner);
+      if(scene.sudoOnly&&!sudoOn()&&!EDITOR_PLAY)continue;
+      if(!scene.mobileExtent)continue;
+      const flowExtents=(scene.peopleFlows??[]).flatMap(f=>[...f.flow.route,...f.exit].flatMap(w=>{const p=placed.get(w.zone);return p?[p.dx+w.x]:[];}));
+      const extents=[...(scene.mobileExtent?[at.dx+scene.mobileExtent.from,at.dx+scene.mobileExtent.to]:[]),...flowExtents,...(scene.level?.vehicles??[]).filter(v=>!v.lift).flatMap(v=>v.source.route.legs.flatMap(l=>{const p=placed.get(l.zone==='here'?owner:l.zone);return p?[p.dx+l.from.x,p.dx+l.to.x]:[];}))];
+      // Flow/character extents include their complete authored path; vehicle services use the route envelope.
+      const near=extents.length?Math.max(...extents)>cam-port.camera.viewW&&Math.min(...extents)<cam+port.camera.viewW*2:at.dx+scene.width>cam-port.camera.viewW&&at.dx<cam+port.camera.viewW*2;
+      if(near)owners.push(owner);
+ }
+ return owners;
+}
+
 export function joinLevel(port:SceneLifecyclePort,id: SceneId,cam = port.camera.cam):LevelSource | undefined {
     const s = port.sceneDefinition(id);
-    port.scenes.joinedZones = []; port.scenes.zoneTiers = new Map();
+    port.scenes.joinedZones = []; port.scenes.zoneTiers = new Map();port.scenes.mobileOwners=new Set();
     if (!s.level || !zoneJoined(port.zoneGraph, id)) return s.level;
     // the zones around this one that are resident for this camera (world/zone-graph.ts `residency`): visible or near
     const r = residencyAt(port,id, cam), parts = [];
@@ -59,9 +77,16 @@ export function joinLevel(port:SceneLifecyclePort,id: SceneId,cam = port.camera.
       // a visible zone is hosted now (it is drawn); a near one is compiled by `followResidency`, one per frame
       if (z !== id) { port.scenes.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); if (zr.tier === 'visible') port.hostOf(z); }
     }
+    const owners=new Set<SceneId>();
+    for(const owner of mobileOwnersAt(port,id,cam)){
+      owners.add(owner);if(!port.scenes.hosts.has(owner)&&!port.scenes.mobiles.has(owner))port.hostOf(owner);
+    }
+    port.scenes.mobileOwners=owners;
     const level=mergeLevels(parts);
+    for(const owner of owners)if(!parts.some(p=>p.zone===owner))for(const v of port.sceneDefinition(owner).level?.vehicles??[])if(!v.lift)(level.vehicles??=[]).push({...v,id:owner+'/'+v.id,zone:owner});
+
     level.vehicleZones=Object.fromEntries([...placeFrom(port.zoneGraph,id,Infinity)].map(([z,p])=>[z,{x:p.dx,h:p.dh}]));
-    for(const part of parts){const host=port.scenes.hosts.get(part.zone as SceneId);if(host&&part.source.vehicles?.length)host.model.peopleLevel={...part.source,vehicleZones:Object.fromEntries([...placeFrom(port.zoneGraph,part.zone,Infinity)].map(([z,p])=>[z,{x:p.dx,h:p.dh}]))};}
+    for(const owner of owners){const model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model,source=port.sceneDefinition(owner).level;if(model&&source){const offsets=placeFrom(port.zoneGraph,owner,Infinity);model.peopleLevel={...source,vehicleZones:Object.fromEntries([...offsets].map(([z,p])=>[z,{x:p.dx,h:p.dh}])),zones:Object.fromEntries([...offsets].filter(([z])=>port.hasScene(z)).map(([z,p])=>[z,{x:p.dx,h:p.dh,w:port.sceneDefinition(z as SceneId).width}]))};}}
     return level;
   }
 
@@ -70,14 +95,16 @@ function residencyAt(port:SceneLifecyclePort,id: SceneId,cam: number) {
     for (const seam of port.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (port.hasScene(z) && (!port.sceneDefinition(z).sudoOnly || sudoOn() || EDITOR_PLAY)) zones[z] = { width: port.sceneDefinition(z).width };
     const hosted = [...port.scenes.hosts].filter(([z]) => zones[z]), held = hosted.filter(([, h]) => h.overlayOpen || h.popupOpen || h.visionOn || h.acknowledgmentPending);
     const r=residency(port.zoneGraph, { active: id, camera: { x: cam, w: port.camera.viewW }, viewW: port.camera.viewW, zones, hosted: hosted.map(([z]) => z), held: held.map(([z]) => z) });
-    // Keep the existing Circuit owner while one of its route zones is active or on screen.
+    // A source chunk is resident only for its scenery, never to keep a mobile alive.
     const placed=placeFrom(port.zoneGraph,id,Infinity);
-    const visible=new Set([...r.zones].filter(([,z])=>z.tier==='active'||z.tier==='visible').map(([id])=>id));
-    for(const [owner,scene] of Object.entries({...SCENES,...port.content})){
-      if(!scene?.level?.vehicles?.some(v=>!v.lift&&v.source.route.legs.some(l=>visible.has(l.zone))&&v.source.route.legs.some(l=>l.zone!==owner&&l.zone!=='here')))continue;
-      const at=placed.get(owner);if(!at)continue;
-      r.zones.set(owner,{tier:owner===id?'active':'visible',at,gap:0,reason:'active vehicle service'});
-      r.evict=r.evict.filter(z=>z!==owner);if(!port.scenes.hosts.has(owner as SceneId)&&!r.load.includes(owner))r.load.push(owner);
+    for(const[owner,at]of placed){
+      if(owner===id||!port.hasScene(owner))continue;
+      const scene=port.sceneDefinition(owner),model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model;
+      const view={...frameView(0),artworkScope:'static' as const,viewW:port.camera.viewW,viewH:port.camera.viewH,cam:cam-at.dx,gy:port.camera.gy-at.dh,y:(h:number)=>port.camera.gy-at.dh-h,sx:(x:number,p=1)=>x-(cam-at.dx)*p};
+      if(scene.artworkVisible?.(view,model)){
+        r.zones.set(owner,{tier:'visible',at,gap:0,reason:'visible artwork bounds'});
+        r.evict=r.evict.filter(z=>z!==owner);if(!port.scenes.hosts.has(owner)&&!r.load.includes(owner))r.load.push(owner);
+      }
     }
     return r;
   }
@@ -91,18 +118,23 @@ export function followResidency(port:SceneLifecyclePort) {
     // never drop the zone the player stands in (mid-flight a ride can be in the neighbour's floors)
     if (!want.includes(port.scenes.here)) return;
     const floor = port.scenes.level.state.vehicle?levelZone(port.scenes.level):levelFloor(port.scenes.level).zone; if (floor && !want.includes(floor)) return;
-    const source = want.join() === have.join() ? undefined : joinLevel(port,port.scenes.here);
+    const owners=mobileOwnersAt(port,port.scenes.here,port.camera.cam);
+    const sameMobiles=owners.length===port.scenes.mobileOwners.size&&owners.every(id=>port.scenes.mobileOwners.has(id));
+    const source = want.join() === have.join()&&sameMobiles ? undefined : joinLevel(port,port.scenes.here);
     if (source?.zones) {port.scenes.level = levelRejoin({ source, state: port.scenes.level.state }, source, seenRooms(port,source, port.scenes.here) ?? [], savedForLevel(source, port.scenes.here, port.save.barriers));if(port.scenes.level.state.vehicle)stepLevelVehicles(port.scenes.level,port.p,port.movers);}
     // out of the level now: zones past the eviction distance unload; one zone coming into reach is compiled per frame
     for (const z of r.evict) if (z !== port.scenes.here) unload(port,z as SceneId);
     const next = r.load.find(z => !port.scenes.hosts.has(z as SceneId) && port.hasScene(z)); if (next) port.hostOf(next as SceneId);
     showHosts(port);
+
   }
 
 export function unload(port:SceneLifecyclePort,id: SceneId) {
     const host = port.scenes.hosts.get(id); if (!host) return;
-    host.dispose(); port.scenes.hosts.delete(id);
-    if (port.scenes.gameplaySessions.get(id) === host.gameplay) port.scenes.gameplaySessions.delete(id);
+    const retained=port.scenes.mobileOwners.has(id);
+    if(retained)port.scenes.mobiles.set(id,{model:host.model,gameplay:host.gameplay});
+    host.model.player=null;host.dispose(retained); port.scenes.hosts.delete(id);
+    if (!retained&&port.scenes.gameplaySessions.get(id) === host.gameplay) port.scenes.gameplaySessions.delete(id);
   }
 
 export function seenRooms(port:SceneLifecyclePort,source: LevelSource,id: SceneId):string[] | undefined {
@@ -166,7 +198,17 @@ export function showHosts(port:SceneLifecyclePort){
  const here=port.zh,input=port.interactionHost,railOwner=port.platformOwner;
  if(railOwner)port.hostOf(railOwner);
  for(const[id,host]of port.scenes.hosts){
-  if(host!==here&&id!==railOwner&&!port.scenes.joinedZones.some(z=>z.id===id)){unload(port,id);continue;}
+  if(host!==here&&host!==input&&id!==railOwner&&!port.scenes.joinedZones.some(z=>z.id===id)){unload(port,id);continue;}
   host.show(host===input,host===input||host===here||port.scenes.zoneTiers.get(id)==='visible');
  }
+    for(const[id,core]of port.scenes.mobiles)if(!port.scenes.mobileOwners.has(id)){
+      const {state,...checkpoint}=core.model.snapshot();port.save.scenes[id]={...checkpoint,...(port.save.scenes[id]?.board?{board:port.save.scenes[id]!.board}:{})};
+      core.gameplay?.dispose();core.model.dispose();port.scenes.mobiles.delete(id);port.scenes.gameplaySessions.delete(id);
+    }
 }
+
+/** Read-only diagnostics from the actual mobile models; current zone is derived, never another owner. */
+export function inspectMobiles(port:SceneLifecyclePort){return [...port.scenes.mobileOwners].flatMap(owner=>{
+ const model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model;if(!model)return [];
+ return [{source:owner,hosted:port.scenes.hosts.has(owner),time:model.now(),vehicles:model.peopleLevel?levelVehicleFrames(model.peopleLevel,model).map(f=>({id:owner+'/'+f.vehicle.id,zone:f.pose.zone==='here'?owner:f.pose.zone,x:f.pose.x,h:f.pose.h})):[],people:Object.entries(model.people.pictures).flatMap(([flow,people])=>people.map(p=>({flow,...p})))}];
+});}

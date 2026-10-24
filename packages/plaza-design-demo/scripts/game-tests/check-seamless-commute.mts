@@ -59,20 +59,35 @@ assert.equal(crossing.scenes.level.state.vehicle,undefined,'an on-foot seam does
 const bad=structuredClone(graph);bad.seams.find(s=>s.id==='line-metro')!.dh+=10;assert.throws(()=>validateWorldVehicles(SCENES,bad),/leg/,'a discontinuous pending route is rejected');
 // Exercise the real Game residency methods: the distant Circuit owner is hosted and drawn at Metro.
 const game:any=runtimeFixture(Game);Object.assign(game,{content:SCENES,sources:{zoneGraph:graph},save:{rooms:{},barriers:{}},scenes:Object.assign(game.scenes,{compiledScenes:new Map(Object.entries(SCENES)),here:'metro',hosts:new Map(),gameplaySessions:new Map()}),camera:Object.assign(game.camera,{cam:476,viewW:640})});
-game.hostOf=(id:string)=>{let host=game.scenes.hosts.get(id);if(!host){const s=SCENES[id],m=new SceneModel({say(){},open(){},changed(){}},s.data!,undefined,undefined,undefined,undefined,undefined,s.gameplay);m.peopleSources=s.peopleFlows??[];m.peopleLevel=s.level;host={model:m,dispose(){m.setPaused(true);},show(_on:boolean,visible:boolean){this.visible=visible;}};game.scenes.hosts.set(id,host);}return host;};
+game.hostOf=(id:string)=>{let host=game.scenes.hosts.get(id);if(!host){const s=SCENES[id],m=new SceneModel({say(){},open(){},changed(){}},s.data!,undefined,undefined,undefined,undefined,undefined,s.gameplay);m.peopleSources=s.peopleFlows??[];m.peopleLevel=s.level;host={model:m,dispose(retain=false){if(!retain)m.setPaused(true);},show(_on:boolean,visible:boolean){this.visible=visible;}};game.scenes.hosts.set(id,host);}return host;};
 const joinedGame=SceneLifecycle.joinLevel(game.sceneLifecyclePort,'metro');SceneLifecycle.showHosts(game.sceneLifecyclePort);
-assert(game.scenes.hosts.get(owner).visible,'the distant vehicle owner stays live and drawable');
-const service=game.scenes.hosts.get(owner).model as SceneModel;service.moveTo('service','frame','east');service.moveTo('service','doors','open');
+assert(!game.scenes.hosts.has(owner),'distant source scenery does not stay hosted for a travelling train');
+assert(game.scenes.mobiles.has(owner),'the actual mobile Circuit survives without its source host');
+const service=game.scenes.mobiles.get(owner).model as SceneModel;
+const modelOf=(z:string|undefined)=>game.scenes.mobiles.get(z??'metro')?.model??game.hostOf(z??'metro').model;service.moveTo('service','frame','east');service.moveTo('service','doors','open');
 service.gameplayQuery=()=>true;
-const q={x:764,y:0,vy:0,face:1,onGround:true,moving:false},native:Level={source:joinedGame,state:levelArrive(joinedGame,q,0)};levelStep(native,q,0,1,z=>game.hostOf(z??'metro').model);
-assert(levelHints(native,q,z=>game.hostOf(z??'metro').model).some(h=>h.label==='[E] STEP ABOARD'));
-const view={...frameView(0),cam:476-joinedGame.zones[owner].x,level:splitLevelView(levelView(native,z=>game.hostOf(z??'metro').model,q),owner)},env=scene.visualEnvironment!(view,{m:service,hover:null,layer:'all'});
+const q={x:764,y:0,vy:0,face:1,onGround:true,moving:false},native:Level={source:joinedGame,state:levelArrive(joinedGame,q,0)};levelStep(native,q,0,1,modelOf);
+assert(levelHints(native,q,modelOf).some(h=>h.label==='[E] STEP ABOARD'));
+const view={...frameView(0),cam:476-joinedGame.vehicleZones[owner].x,level:splitLevelView(levelView(native,modelOf,q),owner)},env=scene.visualEnvironment!(view,{m:service,hover:null,layer:'all'});
 const car=resolveComposition(art,catalogue.scenes.find(e=>e.scene.id===owner)!.composition as never,env).find(r=>r.instance.id==='car1')!;
-assert.equal(car.placement.x+joinedGame.zones[owner].x,700,'the owner artwork reaches the destination platform at the physical position');
-assert(levelInteract(native,'vehicle:'+owner+'/service',q,z=>game.hostOf(z??'metro').model));
-Object.assign(game,{p:q,movers:(z:string|undefined)=>game.hostOf(z??'metro').model,scenes:Object.assign(game.scenes,{level:native})});
+assert.equal(car.placement.x+joinedGame.vehicleZones[owner].x,700,'the owner artwork reaches the destination platform at the physical position');
+assert(levelInteract(native,'vehicle:'+owner+'/service',q,modelOf));
+Object.assign(game,{p:q,movers:modelOf,scenes:Object.assign(game.scenes,{level:native})});
 const expectedFloor=native.state.floor,expectedPosition={x:q.x,y:q.y};
 game.scenes.level.source.zones={...game.scenes.level.source.zones};delete game.scenes.level.source.zones.downtown;
 SceneLifecycle.followResidency(game.sceneLifecyclePort);
 assert.equal(levelFloor(game.scenes.level).id,expectedFloor,'residency changes rebuild the occupied moving floor in the same frame');assert.deepEqual({x:q.x,y:q.y},expectedPosition,'residency changes cannot clamp or displace the rider');
+// The same alighted passengers climb the authored stairs and continue onto Downtown;
+// their sink is beyond the street, rather than at the platform/chunk boundary.
+model.peopleLevel={...model.peopleLevel!,zones:Object.fromEntries([...placeFrom(graph,owner,Infinity)].map(([id,p])=>[id,{x:p.dx,h:p.dh,w:SCENES[id].width}]))};
+let streetPassenger=false,stairPassenger=false;const passengerLooks=new Map<string,string>();
+for(let i=0;i<4800&&!streetPassenger;i++){
+ model.tick(1000/60,true);
+ for(const person of model.people.pictures.passengers??[]){
+  if(passengerLooks.has(person.key))assert.equal(person.look,passengerLooks.get(person.key));else passengerLooks.set(person.key,person.look);
+  stairPassenger||=person.h>model.peopleLevel!.zones!.metro.h&&person.h<model.peopleLevel!.zones!.downtown.h;
+  streetPassenger||=person.zone==='downtown'&&person.h===model.peopleLevel!.zones!.downtown.h;
+ }
+}
+assert(stairPassenger&&streetPassenger,'native alighted people traverse the real staircase and cross onto the street');
 console.log('Seamless commute PASS: actual movers, boarding, all tunnel zones, floating origin, exact carry, alighting, live people, stairs to Downtown and route rejection.');

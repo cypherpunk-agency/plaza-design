@@ -1,3 +1,5 @@
+import {artworkClip} from '../art/core/composition';
+import {mobileInstances} from '../art/core/mobility';
 import {projectX,projectedBounds} from '../art/core/geometry';
 import {cutView} from '../art/sequences/cinematics';
 import {authoredSceneAdapter} from './scene-adapters';
@@ -67,11 +69,13 @@ function object(input: string | number | boolean | undefined, name: string): Rec
 /** Bounds are expressed in native view pixels. World and local kernels use the same document geometry. */
 export function previewBounds(rows: Resolved[], view: View, options: NativeOptions, document?: Composition): PreviewResult {
   const appearance = document ? compositionAppearance(document, options) : undefined;
+  const mobiles=document&&(view.sharedLayers||view.artworkScope)?mobileInstances(document,art):undefined;
   const visible = rows.filter(row => appearance ? appearance.get(row.instance.id)!.visible && appearance.get(row.instance.id)!.opacity !== 0 : options.visibility?.[row.instance.id] !== false && options.opacity?.[row.instance.id] !== 0);
   return {
     bounds: visible.map(row => {
       const b = row.element.bounds(row.props, row.state, { view, placement: row.placement }), p = row.placement;
-      return {id:row.instance.id,...projectedBounds(view,p,b)};
+      const clip=artworkClip(row.instance,mobiles?{...view,artworkScope:mobiles.has(row.instance.id)?'mobile':'static'}:view);
+      return {id:row.instance.id,...projectedBounds(view,p,b),...(clip?{clip}:{})};
     }),
     deltaToLocal(id, dx, dy) {
       const row = rows.find(row => row.instance.id === id); if (!row) throw new Error('Missing selected instance');
@@ -135,7 +139,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         const x=((rect.x-scope.view.viewW/2)*zoom+scope.view.viewW/2)*k,y=((rect.y-scope.view.viewH/2)*zoom+scope.view.viewH/2)*k;
         const width=rect.width*zoom*k,height=rect.height*zoom*k;
         if(width<=0||height<=0||x+width<0||y+height<0||x>scope.view.viewW*k||y>scope.view.viewH*k)continue;
-        bounds.push({id:key,x,y,width,height});sources[key]={document:owner,instance:rect.id};
+        bounds.push({id:key,x,y,width,height,...(rect.clip?{clip:{x:((rect.clip.x-scope.view.viewW/2)*zoom+scope.view.viewW/2)*k,y:((rect.clip.y-scope.view.viewH/2)*zoom+scope.view.viewH/2)*k,width:rect.clip.width*zoom*k,height:rect.clip.height*zoom*k}}:{})});sources[key]={document:owner,instance:rect.id};
         deltas.set(key,(dx,dy)=>local.deltaToLocal!(rect.id,dx/k/zoom,dy/k/zoom));
       }
     }
@@ -191,7 +195,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const original = adapter.pendingDefinition ? adapter.pendingDefinition(document, {}, options, documents) : adapter.definition(document, {}, options);
       const def = bindWorld?.(original, { ...nearby, composition: document }) ?? original, model = inspectionModel(def, services, request);
       const cam = view.cam - at.dx, engine: EngineDraw = { m: model, hover: null, layer: 'all' };
-      const zoneView: View = { ...frameView(request.time * 60), viewW: view.viewW, viewH: view.viewH, cam, gy: view.gy - at.dh,
+      const zoneView: View = { ...frameView(request.time * 60),worldZones:Object.fromEntries([...placeFrom(graph,zone,Infinity)].map(([id,p])=>[id,{x:p.dx,h:p.dh}])), viewW: view.viewW, viewH: view.viewH, cam, gy: view.gy - at.dh,
         sx: (x, parallax = 1) => projectX(x,cam,parallax,zoom), y: h => view.y(h + at.dh), flags: view.flags,
         ...(def.level ? { level: restingLevelView(def.level, false) } : {}) };
       const outdoor = def.outdoor ?? !!(def.ambient?.weather || def.ambient?.sky);
@@ -251,6 +255,8 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const context = canvas.getContext('2d'); if (!context) throw new Error('Canvas 2D is unavailable');
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       // joined scenes are drawn unless the composer's Show joined scenes is switched off
+      view.zoneWindow={left:view.sx(0),right:view.sx(def.width)};
+      view.worldZones=Object.fromEntries([...placeFrom(validateZoneGraph(request.documents?.get('zone-graph')??shippedGraph),def.id,Infinity)].map(([id,p])=>[id,{x:p.dx,h:p.dh}]));
       const showJoined = settings.showJoined !== false, around = placed(request, request.composition.scene);
       const joined = showJoined && around.length ? neighbours(request, request.composition.scene, view, zoom, services, weather) : [];
       const backdrops=new Map(backdropDocuments(request.documents));
@@ -269,8 +275,8 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
       const env = { ...options, ...preparedEnvironment };
-      const bounds = previewBounds(resolveComposition(art, document, env), view, options, document);
-      const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * k, y: b.y * k, width: b.width * k, height: b.height * k })),
+      const bounds = previewBounds(resolveComposition(art, document, env), {...view,sharedLayers:joined.length>0}, options, document);
+      const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * k, y: b.y * k, width: b.width * k, height: b.height * k,...(b.clip?{clip:{x:b.clip.x*k,y:b.clip.y*k,width:b.clip.width*k,height:b.clip.height*k}}:{}) })),
         deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / k, dy / k) };
       // the level overlay keeps its 1-unit lines and 7 px labels: drawn at renderScale over the view's zoomed positions
       if (request.overlays && def.level) drawLevelOverlay(context, def.level, { ...view, sx: (x, parallax) => view.sx(x, parallax) * zoom, y: h => view.y(h) * zoom }, renderScale);

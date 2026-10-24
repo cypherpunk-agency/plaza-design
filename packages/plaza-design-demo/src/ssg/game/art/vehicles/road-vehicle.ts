@@ -51,7 +51,7 @@ function paintVehicle(ctx: CanvasRenderingContext2D, kind: RoadKind, props: Prop
 }
 
 export const roadVehicleElement: Element = {
-  type: 'vehicle.road', libraryUse: 'reusable', version: 1, label: 'Road vehicle', category: 'vehicles', parts: ['backdrop'], fields,
+  type: 'vehicle.road',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Road vehicle', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);
     return bandBounds(props, roadExtent(kindOf(props)), offset, 0, context);

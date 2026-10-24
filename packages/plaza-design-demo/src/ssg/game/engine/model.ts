@@ -360,9 +360,11 @@ export class SceneModel {
 
   /** Hold scene clocks and pending signals/actions together. Lockouts still expire on wall time. */
   setPaused(on: boolean) { this.time.pause(on); }
+  /** UI residency can change without replacing the existing mobile Circuit or its clock. */
+  setHooks(hooks:SceneHooks){this.hooks=hooks;}
 
   /**
-   * The zone is unloaded (its host is disposed): what is in flight (delayed signals, deadlines, handoffs) is dropped,
+   * The model is no longer relevant (not merely its UI unloaded): what is in flight (delayed signals, deadlines, handoffs) is dropped,
    * as on a page reload, and nothing scheduled before now runs later. Persistent state stays in the save.
    */
   dispose() { this.epoch++; this.time.clear(); this.time.pause(true); }

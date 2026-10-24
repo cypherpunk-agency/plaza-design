@@ -1,3 +1,4 @@
+import {clippingControls,peopleControls} from './mobile-controls';
 import {hitTestArtwork,sourceSelection,createSelection} from './selection';
 import {createPreviewState,createPreviewRenderer} from './preview-integration';
 import {createInspector} from './inspector';
@@ -623,11 +624,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const pick = select(choices.map(v => ({ value: v, label: LAYER_LABELS[v] })), node.layer, v => run(() => model.restack(composed.id, node.id, v as Layer, layerRows(composed.value as Composition, v as Layer).length)));
     if (choices.length < 2) (pick as HTMLSelectElement).disabled = true; pick.title = LAYER_HINTS[node.layer];
     position.append(label('Layer', pick));
+    if(drawn)clippingControls(part('Visibility at chunk boundaries',false),node,editInstance,numberInput);
+    if(node.type==='character.flow')peopleControls(part('People · spawn, route and sink',true),node,documentsForView().filter(d=>d.kind==='composition'&&!(d.value as Composition).sequence).map(d=>(d.value as Composition).scene),editInstance,numberInput);
     const siblings = layerRows(composed.value as Composition, node.layer), at = siblings.findIndex(n => n.id === node.id), stepper = element('div', 'row');
     const forward = button('Bring forward', () => run(() => model.restack(composed.id, node.id, node.layer, at + 1)), 'Draw in front of the next item in this layer'), backward = button('Send backward', () => run(() => model.restack(composed.id, node.id, node.layer!, at - 1)), 'Draw behind the previous item in this layer');
     forward.disabled = at >= siblings.length - 1; backward.disabled = at <= 0; stepper.append(backward, forward); position.append(stepper);
     const fields = Object.entries(art.fields);
-    if (fields.length) { const look = part('Look', true); const shown = config.registry.properties(node.type, node.props); for (const [key, field] of fields) { if (field.showIf && !field.showIf(shown)) continue; const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
+    if (fields.length) { const look = part('Look', true); const shown = config.registry.properties(node.type, node.props); for (const [key, field] of fields) { if(node.type==='character.flow'&&(key==='flow'||key==='exit'))continue; if (field.showIf && !field.showIf(shown)) continue; const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
     if (art.libraryUse === 'reusable' && presetsDoc()) renderPresets(part('Preset', false), node);
     const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);
     const candidates = flatten(composition).map(x => x.node).filter(n => n.id !== node.id);

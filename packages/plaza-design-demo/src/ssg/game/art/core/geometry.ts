@@ -1,5 +1,11 @@
 /** Shared projection arithmetic. View supplies the authoritative camera; callers own lifecycle. */
 import type {View} from './view';
+/** Replay an object's drawing in its captured source coordinate space. */
+export function withCanvasTransform(ctx:CanvasRenderingContext2D,transform:Pick<DOMMatrix,'a'|'b'|'c'|'d'|'e'|'f'>,draw:()=>void){
+ ctx.save();
+ try{ctx.setTransform(transform.a,transform.b,transform.c,transform.d,transform.e,transform.f);draw();}
+ finally{ctx.restore();}
+}
 export function projectX(x:number,camera:number,parallax=1,pixelScale=1){return Math.round((x-camera*parallax)*pixelScale)/pixelScale;}
 export function canvasPoint(point:{clientX:number;clientY:number},rect:{left:number;top:number;width:number;height:number},width:number,height:number){return{x:(point.clientX-rect.left)*width/rect.width,y:(point.clientY-rect.top)*height/rect.height};}
 export function projectedBounds(view:View,p:{x:number;h:number;scale:number;facing:number;parallax:number},b:{x:number;h:number;w:number;tall:number}){

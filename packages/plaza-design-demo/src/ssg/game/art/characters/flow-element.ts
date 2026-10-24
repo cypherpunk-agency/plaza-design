@@ -1,3 +1,4 @@
+import {frameView} from '../core/view';
 import type {FlowPicture} from '../../engine/people';
 /**
  * CHARACTER KIT: a people flow as placeable artwork (world/people-flow.ts, SEAMLESS-WORLD §5). The flow's model says
@@ -29,12 +30,14 @@ function validFlow(v: Value) {
 }
 
 const sources = new WeakMap<object, FlowSource>(), looksOf = new WeakMap<object, Character[]>(), worlds = new WeakMap<object, FlowWorld>();
-function source(p: Properties): FlowSource {
-  const key = p.flow as object; let s = sources.get(key); if (s) return s;
-  const f = p.flow as unknown as { seed: number; speed?: number; spawn: FlowSource['spawn']; route: { kind: string; x: number; h?: number }[]; maxWait?: number };
+function source(p: Properties,view:import('../core/view').View,at:{x:number;h:number}): FlowSource {
+  const key = p.flow as object; let s = sources.get(key); if(!s){
+  const f = p.flow as unknown as { seed: number; speed?: number; spawn: FlowSource['spawn']; route: { kind: string; x: number; h?: number;zone?:string }[]; maxWait?: number };
   s = { id: 'flow', clock: 'scene', seed: f.seed, ...(f.speed ? { speed: f.speed } : {}), ...(f.maxWait ? { maxWait: f.maxWait } : {}), spawn: f.spawn,
-    looks: (p.looks as unknown[]).map((_, i) => String(i)), route: f.route.map(w => ({ ...w, zone: ZONE })) as unknown as FlowSource['route'] };
-  sources.set(key, s); return s;
+    looks: (p.looks as unknown[]).map((_, i) => String(i)), route: f.route.map(w => ({ ...w, zone: w.zone??ZONE })) as unknown as FlowSource['route'] };
+  sources.set(key, s);}
+  if(!s.route.some(w=>w.zone!==ZONE))return s;
+  return{...s,route:s.route.map(w=>{if(w.zone===ZONE)return w;const z=view.worldZones?.[w.zone];return{...w,zone:ZONE,x:w.x+(z?.x??0)-at.x,h:(w.h??0)+(z?.h??0)-at.h};})};
 }
 function looks(p: Properties): Character[] {
   const key = p.looks as object; let l = looksOf.get(key); if (l) return l;
@@ -50,7 +53,7 @@ function world(p: Properties): FlowWorld {
 }
 
 export const flowElement: Element = {
-  type: 'character.flow', version: 1, label: 'People flow: walkers, queues, riders boarding (character kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['people'],
+  type: 'character.flow',mobility:()=>true, version: 1, label: 'People flow: walkers, queues, riders boarding (character kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['people'],
   fields: {
     flow: { kind: 'json', label: 'Flow (seed, speed, spawn, route)', default: { seed: 1, speed: 21, spawn: { kind: 'interval', every: 7 }, route: [{ kind: 'walk', x: 0, h: 0 }, { kind: 'leave', x: 300, h: 0 }] }, validate: validFlow },
     looks: { kind: 'json', label: 'Looks (resident fields, or rider/phase/ps)', default: [{ seed: 1 }], validate: v => { if (!Array.isArray(v) || !v.length || v.length > 24 || !v.every(object)) throw new Error('Looks: expected a list of resident looks');for(const look of v as Record<string,Value>[])if(look.rider!==undefined&&(!KINDS.includes(look.rider as RiderKind)||look.phase!==undefined&&(typeof look.phase!=='number'||!Number.isFinite(look.phase)||look.phase<0)||look.ps!==undefined&&(typeof look.ps!=='number'||!Number.isFinite(look.ps)||look.ps<1||look.ps>6)))throw Error('Invalid flow rider look'); } },
@@ -61,13 +64,13 @@ export const flowElement: Element = {
     lift: { kind: 'number', label: 'Riders stand this much higher on the moving step', default: 6, min: 0, max: 60 },
   },
   visualFields: { people:{kind:'json',label:'Prepared live passengers',default:null,validate:v=>{if(v!==null&&(!Array.isArray(v)||v.length>128||!v.every(p=>object(p)&&typeof p.x==='number'&&typeof p.h==='number')))throw Error('Invalid prepared people');}}, sequenceTime: { kind: 'number', label: 'Sequence seconds', default: -1, animatable: true } },
-  bounds: (p,state) => { const r = [...(p.flow as unknown as { route: { x: number;h?:number }[] }).route,...(p.exit as unknown as {x:number;h?:number}[]),...((state.people as unknown as FlowPicture[]|null)??[])], a = Math.min(...r.map(w => w.x)), b = Math.max(...r.map(w => w.x)),lo=Math.min(...r.map(w=>w.h??0)),hi=Math.max(...r.map(w=>w.h??0)); return { x: a - 20, h: hi+160, w: b - a + 40, tall: hi-lo+220 }; },
+  bounds: (p,state,context) => { const r = [...source(p,context?.view??frameView(0),context?.placement??{x:0,h:0}).route,...(p.exit as unknown as {x:number;h?:number}[]),...((state.people as unknown as FlowPicture[]|null)??[])], a = Math.min(...r.map(w => w.x)), b = Math.max(...r.map(w => w.x)),lo=Math.min(...r.map(w=>w.h??0)),hi=Math.max(...r.map(w=>w.h??0)); return { x: a - 20, h: hi+160, w: b - a + 40, tall: hi-lo+220 }; },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(x, v, p, state, _pass, at) {
     const t = p.clock === 'sequence' ? (Number(state.sequenceTime)>=0?Number(state.sequenceTime):v.sequence?.time??-1) : v.t / 60;
     if (!(t >= 0)) return;
     const live=state.people as unknown as FlowPicture[]|null;
-    const flow = source(p), body = looks(p), f = v.t, ride = n(p, 'ride');
+    const flow = source(p,v,at), body = looks(p), f = v.t, ride = n(p, 'ride');
     for (const person of live??flowPeople(flow, world(p), t)) {
       if ('state'in person && person.state !== 'here') continue;
       const riding = 'step'in person && person.step === ride, moving = person.act === 'walk' && !riding;

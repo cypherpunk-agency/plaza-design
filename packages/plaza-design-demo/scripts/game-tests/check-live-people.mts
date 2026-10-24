@@ -14,7 +14,7 @@ for(let i=0;i<3600;i++){
 }
 assert(queued&&aboard&&alighted&&left,JSON.stringify({queued,aboard,alighted,left}));
 const saved=m.snapshot();assert(saved.people);assert.equal(restorePeople(saved.people,0,saved.people.wall+1000).time,m.people.time,'short-lived memory keeps current passengers');
-assert.equal(Object.keys(restorePeople(saved.people,0,saved.people.wall+61000).riders).length,0,'expired memory starts fresh');
+assert.deepEqual(restorePeople(saved.people,0,saved.people.wall+61000).riders,saved.people.riders,'chunk absence cannot replace the current passengers');
 const restored=create();restored.restore(saved);assert.equal(Object.keys(restored.people.riders).length,Object.keys(m.people.riders).length);
 for(const key of ['shuttle.frame','shuttle.doors'])assert.equal(restored.movers.position(key),m.movers.position(key),'vehicle service checkpoints keep the exact current mover position');
 for(let i=0;i<60;i++){m.tick(1000/60,true);restored.tick(1000/60,true);}assert(Math.abs(m.movers.position('shuttle.frame')!-restored.movers.position('shuttle.frame')!)<1e-7,'a restored service follows the same remaining source path');

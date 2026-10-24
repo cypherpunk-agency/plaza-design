@@ -4,7 +4,7 @@ import type {PreviewResult} from './contracts';
 export function hitTestArtwork(preview:PreviewResult|undefined,point:{x:number;y:number},min:number){
     const grow = (b: PreviewResult['bounds'][number]) => { const w = Math.max(b.width, min), h = Math.max(b.height, min); return { ...b, x: b.x - (w - b.width) / 2, y: b.y - (h - b.height) / 2, width: w, height: h, area: b.width * b.height }; };
     // Smallest box first; on a tie the frontmost wins (bounds arrive in draw order, back to front).
-    return (preview?.bounds ?? []).map((b, index) => ({ ...grow(b), index })).filter(b => point.x >= b.x && point.x <= b.x + b.width && point.y >= b.y && point.y <= b.y + b.height).sort((a, b) => a.area - b.area || b.index - a.index)[0];
+    return (preview?.bounds ?? []).map((b, index) => ({ ...grow(b), index })).filter(b => (!b.clip||point.x>=b.clip.x&&point.x<=b.clip.x+b.clip.width&&point.y>=b.clip.y&&point.y<=b.clip.y+b.clip.height)&&point.x >= b.x && point.x <= b.x + b.width && point.y >= b.y && point.y <= b.y + b.height).sort((a, b) => a.area - b.area || b.index - a.index)[0];
   }
 
 export function sourceSelection(preview:PreviewResult|undefined,id:string,displayDocument:string){

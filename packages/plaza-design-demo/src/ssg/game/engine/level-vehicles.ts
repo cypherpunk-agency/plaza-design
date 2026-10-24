@@ -149,7 +149,7 @@ export function levelVehicleInteract(lv:Level,id:string,p:LevelPlayer):boolean{
 }
 export function levelVehicleVisuals(source:LevelSource,m:Movers){return Object.fromEntries(levelVehicleFrames(source,m).filter(f=>f.vehicle.kind!=='lift').map(f=>{
  const v=(source.vehicleBase??source).vehicles!.find(v=>v.id===f.vehicle.id)!;
- const host=v.zone?source.zones?.[v.zone]:undefined,x=f.part.dx-(host?.x??0)-v.x,h=f.part.dh-(host?.h??0)-v.h;
+ const host=v.zone?(source.zones?.[v.zone]??source.vehicleZones?.[v.zone]):undefined,x=f.part.dx-(host?.x??0)-v.x,h=f.part.dh-(host?.h??0)-v.h;
  return[v.id,{x,h,open:f.doors}];
 }));}
 /** The same query hides the frame and all attached artwork; hidden vehicles have no floors or prompts. */

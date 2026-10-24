@@ -1,3 +1,4 @@
+import {validateWorldPeople} from '../engine/people';
 import type {ScenePlacement} from './state';
 import {projectX,type CameraProjection} from '../art/core/geometry';
 import * as InteractionRouting from './interaction-routing';
@@ -88,7 +89,7 @@ import { can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import {levelArrive,levelArrows,levelDown,levelFloor,levelHints,levelIndoor,levelInteract,levelRiding,levelUp,nearestPrompt,levelLiftList,levelPick,savedForLevel,type Movers} from "../engine/level";
 import zoneGraphSource from "../world/zone-graph.json";
-import {validateZoneGraph} from "../world/zone-graph";
+import {validateZoneGraph,placeFrom} from "../world/zone-graph";
 const SHIPPED_ZONE_GRAPH = validateZoneGraph(zoneGraphSource);
 
 export class Game {
@@ -212,7 +213,7 @@ export class Game {
     get story(){return game.story;},
     libraryGoal:(...args)=>game.libraryGoal(...args),
     get shiftGuidance(){return game.shiftGuidance;},
-    get endCard(){return game.endCard;}
+    get endCard(){return game.endCard;},get zoneGraph(){return game.zoneGraph;}
 };})();}
 
   private movementPortValue?:MovementPort;
@@ -412,7 +413,7 @@ export class Game {
   /** Serialization works on settled copies; live common blocks keep their identity and in-flight values. */
   private prepareSave(save:Save):Save{
     const values=cloneValues(save.gameplay),scenes={...save.scenes};
-    for(const[id,host]of this.scenes.hosts){const {state,...engine}=host.model.snapshot();Object.assign(values[id]??={},state);scenes[id]={...engine,...(scenes[id]?.board?{board:scenes[id]!.board}:{})};}
+    for(const[id,host]of [...this.scenes.hosts,...this.scenes.mobiles]){const {state,...engine}=host.model.snapshot();Object.assign(values[id]??={},state);scenes[id]={...engine,...(scenes[id]?.board?{board:scenes[id]!.board}:{})};}
     for(const id of new Set([...Object.keys(this.content),...Object.keys(SCENES)]))for(const[key,d]of Object.entries(this.sceneDefinition(id as SceneId).gameplay?.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
     for(const[key,d]of Object.entries(this.openingStory.GAMEPLAY.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
     return {...save,gameplay:values,scenes,vehicle:saveVehicle(this.scenes.level,this.p,this.scenes.here)};
@@ -422,10 +423,11 @@ export class Game {
   private companionBody = new Companion();
 
   constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
+    validateWorldPeople(Object.fromEntries(Object.entries({...SCENES,...content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),this.zoneGraph);
     validateWorldVehicles(Object.fromEntries(Object.entries({...SCENES,...content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),this.zoneGraph);
     // sudo (developer) mode: browser checks read the player and the level, and place the player, through window.__game
     const game = this;
-    if (SUDO || PROBE) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.scenes.level; }, get here() { return game.scenes.here; }, prompt: () => game.nearest(), probe: () => game.probeFrame(), ...(SUDO ? { place: (x: number) => { game.p.x = x; } } : {}) };
+    if (SUDO || PROBE) (globalThis as { __game?: unknown }).__game = { get player() { return game.p; }, get level() { return game.scenes.level; }, get here() { return game.scenes.here; }, prompt: () => game.nearest(), inspect:()=>game.inspect(), probe: () => game.probeFrame(), ...(SUDO ? { place: (x: number) => { game.p.x = x; } } : {}) };
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'game-canvas';
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: Downtown');
@@ -552,7 +554,8 @@ export class Game {
       controlled: () => this.save.controlled,
       load: () => this.save.scenes[id],
       store: (z) => { this.save.scenes[id] = z; this.persistSave(); },
-    }, def, rules,this.networkContext);
+    }, def, rules,this.networkContext,this.scenes.mobiles.get(id));
+    this.scenes.mobiles.delete(id);
     // the companion is the game's, not the scene's: lines about it stand over it, and popups keep clear of it
     zh.where = (from) => {
       if(from===this.companionDoc.speaker&&this.companionPresent)return {x:this.companionBody.x,h:this.companionBody.h};
@@ -606,12 +609,12 @@ export class Game {
     const ride=this.scenes.level?.state.vehicle;
     const vehicle=ride&&(this.scenes.level!.source.vehicleBase??this.scenes.level!.source).vehicles?.find(v=>v.id===ride.id);
     const owner=vehicle&&!vehicle.lift?vehicle.zone:undefined;
-    if(owner&&owner!==this.scenes.here){const host=this.scenes.hosts.get(owner as SceneId);if(host)return host;}
+    if(owner&&owner!==this.scenes.here){const host=this.hostOf(owner as SceneId);if(host)return host;}
     return here;
   }
   /** Scene hosts keep local coordinates even when their vehicle is in another zone. */
   private hostPlacement(host: SceneHost) {
-    return host===this.zh?{id:this.scenes.here,dx:0,dh:0}:this.scenes.joinedZones.find(z=>this.scenes.hosts.get(z.id)===host);
+    return host===this.zh?{id:this.scenes.here,dx:0,dh:0}:this.scenes.joinedZones.find(z=>this.scenes.hosts.get(z.id)===host)??(()=>{const at=placeFrom(this.zoneGraph,this.scenes.here,Infinity).get(host.id);return at?{id:host.id as SceneId,...at}:undefined;})();
   }
   /** The one player, expressed in each resident model's local coordinates for its native zones. */
   private syncPlayerLocations() {
@@ -641,7 +644,7 @@ export class Game {
     return !this.timing.running || !!this.presentation.opening || !!this.menu?.open || !!this.presentation.cut || !!this.presentation.mapView || !!this.presentation.netView;
   }
 
-  private syncEnginePause() { this.scenes.hosts.forEach((h) => h.setPaused(this.enginesPaused)); }
+  private syncEnginePause() { this.scenes.hosts.forEach((h) => h.setPaused(this.enginesPaused));this.scenes.mobiles.forEach(c=>c.model.setPaused(this.enginesPaused)); }
 
   // ---------- lifecycle ----------
 
@@ -792,6 +795,8 @@ export class Game {
     this.save.gameplay={};
     this.scenes.hosts.forEach((h,id)=>{this.save.gameplay![id]=h.model.state;});
     this.scenes.hosts.forEach((h) => h.reset());
+    for(const[id,core]of this.scenes.mobiles){core.gameplay?.dispose();core.model.dispose();this.scenes.gameplaySessions.delete(id);}
+    this.scenes.mobiles.clear();this.scenes.mobileOwners.clear();
     this.persistSave();
     this.syncHud();
     this.timing.started = true;
@@ -812,7 +817,7 @@ export class Game {
   /** Detached diagnostics for editor inspection; no mutable runtime references. */
   inspect() {
     const shared=this.gameplayFor(this.scenes.here);
-    return structuredClone({scene:this.scenes.here, player:{x:this.p.x,y:this.p.y}, save:this.save,
+    return structuredClone({scene:this.scenes.here,mobiles:SceneLifecycle.inspectMobiles(this.sceneLifecyclePort), player:{x:this.p.x,y:this.p.y}, save:this.save,
       level:EDITOR_PLAY&&this.scenes.level?{floor:this.scenes.level.state.floor,vehicle:this.scenes.level.state.vehicle,frames:this.scenes.level.source.vehicleFrames?.map(f=>({id:f.vehicle.id,x:f.part.dx,h:f.part.dh,zone:f.pose.zone,berth:f.berth?.id,doors:f.doors,boarding:f.boarding})),prompt:this.nearest()}:undefined,
       actors:EDITOR_PLAY?(this.def.people??[]).map((p,index)=>({index,id:p.id,seed:p.seed,look:p.look,x:p.x,h:p.h,act:p.act,range:p.range,speed:p.speed,facing:p.facing,when:p.when,visible:isHere(p),follow:p.follow?(this.def.people??[]).indexOf(p.follow):undefined,gap:p.gap})):undefined,
       engine:EDITOR_PLAY?this.zh.model.inspect():undefined,
@@ -907,7 +912,8 @@ export class Game {
     this.syncEnginePause();
     // the one tick: every scene's model moves on by this frame's time (a paused engine holds still)
     const sceneMs = this.timing.last ? Math.min(250, Math.max(0, now - this.timing.last)) : 0;
-    this.scenes.hosts.forEach((h) => h.tick(sceneMs));
+    this.scenes.hosts.forEach((h,id) => h.tick(sceneMs,this.scenes.mobileOwners.has(id)));
+    if(!this.enginesPaused)this.scenes.mobiles.forEach(c=>c.model.tick(sceneMs,true));
     if(this.timing.last)perfSample('raf.gap',now-this.timing.last);
     const readableBefore=this.hints.notices.time;
     this.hints.notices.frame(now,this.communicationCovered);
@@ -1029,15 +1035,15 @@ export class Game {
    * (`Save.barriers`, by scene). `granted`: a phase rule's beat is over. False: the prompt is not a barrier's.
    */
   /** Each lift reads its own zone's movers. */
-  private readonly movers: Movers = (zone) => zone && zone !== this.scenes.here && this.hasScene(zone) ? this.hostOf(zone).model : this.zh.model;
+  private readonly movers: Movers = (zone) => zone && zone !== this.scenes.here && this.hasScene(zone) ? (this.scenes.mobiles.get(zone)?.model??this.hostOf(zone).model) : this.zh.model;
   private get spanW() { const [lo, hi] = SceneLifecycle.worldSpan(this.sceneLifecyclePort); return hi - lo; }
   /** A joined zone in this frame: its own view (the camera moved by where it lies), scene, host and light. */
   private zoneFrame(z: ScenePlacement,camera:CameraProjection=this.camera): ZoneFrame {
-    const host = this.hostOf(z.id), scene = this.sceneDefinition(z.id), cam = camera.cam - z.dx, gy = camera.gy - z.dh;
+    const scene=this.sceneDefinition(z.id),core=this.scenes.mobiles.get(z.id),ui=this.scenes.hosts.get(z.id),host=ui??(core?{model:core.model,visionOn:false}:this.hostOf(z.id)),cam=camera.cam-z.dx,gy=camera.gy-z.dh;
     const view: SceneView = { ...frameView(0), t: this.timing.t, viewW: camera.viewW, viewH: camera.viewH, cam, gy, sx: (wx, p = 1) => projectX(wx,cam,p), y: (h) => gy - h, flags: this.save.flags, values: this.save.gameplay, level: this.scenes.level ? SceneLifecycle.levelViewOf(this.sceneLifecyclePort,z.id) : undefined };
     const station=this.world.stationAt(z.id);if(station)view.transit={station,...this.metro.stationFrame(station,this.ride)};
     const outdoor = scene.outdoor ?? !!(scene.ambient?.weather || scene.ambient?.sky);
-    return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: prepared => host.preparePresentation(prepared, 'all'),weather:()=>this.weatherOf(z.id),
+    return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: prepared => {if(ui)ui.preparePresentation(prepared,'all');else scene.preparePresentation?.(prepared,{m:host.model,hover:null,layer:'all'});},weather:()=>this.weatherOf(z.id),
       lighting: W => { const L = lightAt(city.day, city.min, scene.facing ?? 180, W ?? this.weatherOf(z.id), outdoor); setLight(L); return L; } };
   }
   /** The scene's name, for the HUD and the canvas label. */

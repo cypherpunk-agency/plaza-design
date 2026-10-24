@@ -17,7 +17,7 @@ type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
  */
 export interface ZoneFrame {
   view: View; scene: SceneDef; sceneId: string;
-  host: Pick<SceneHost, 'draw' | 'model'> & Partial<Pick<SceneHost,'visionOn'>>;
+  host: Pick<SceneHost, 'model'> & Partial<Pick<SceneHost,'draw'|'visionOn'>>;
   lighting: (weather: Weather | null) => Light;
   preparePresentation?: (view:View) => void;
   weather?: () => Weather;
@@ -103,6 +103,8 @@ export interface WorldFrame {
   timeline?:TimelineOverlay;
   /** Zones joined to this one by seams, on screen this frame. None: a scene drawn alone, exactly as ever. */
   joined?: readonly ZoneFrame[];
+  /** Travelling artwork whose source scenery need not be resident. */
+  mobiles?: readonly ZoneFrame[];
   /** A sequence's configuration of this frame (camera, passes, overlays, clock, scale). None: play. */
   director?: FrameDirector;
   backdrops?: ReadonlyMap<string,BackdropDocument>;

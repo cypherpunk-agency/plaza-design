@@ -321,3 +321,12 @@ compilation before testing history, protected Save and fresh native reload.
 Object outlines stays beside Scene borders in the lower-right viewport toolbar. It draws the
 registered visible-object bounds, separately from the animated camera frame and scene boundaries.
 Its on/off state is remembered locally across reloads; it never changes source or game artwork.
+
+Chunk boundaries and travelling artwork use the same native frame. Appearance → Visibility at
+chunk boundaries offers default/no clip/source chunk/rectangle, with numeric rectangle fields and
+an orange selected-clip overlay. Foreground artwork acts as a visible occluder across chunks.
+Appearance → People offers numeric spawn timing/speed and typed waypoint actions, chunk coordinates
+and explicit Leave sinks. Unqualified waypoints are relative to the flow placement; named chunk
+coordinates are local to that chunk. Private Play's Live mobile locations table reads the actual
+SceneModels and reports source, current chunk and whether source scenery is hosted. Sources may
+unload while their existing mobile models continue; no editor-only simulation is used.

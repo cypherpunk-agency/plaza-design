@@ -1,3 +1,4 @@
+import {validateWorldPeople} from '../engine/people';
 import {withSharedState} from '../engine/gameplay/shared-state';
 import {validateCompanionConversations,validateCompanionGameplay,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
@@ -21,6 +22,7 @@ function registryFor(documents:ReadonlyMap<string,unknown>){
   return[id,pendingScene(id,documents.get(id),{sceneDocument:documents.get(entry.prefix+'-scene'),gameplay:documents.get(entry.gameplayId),devices:deviceSceneIds.includes(id)?documents.get(deviceDocumentId(id)):undefined},network)];
  }));
  const registry=createSceneRegistry(native,documents.get('authored-scenes')??{version:1,scenes:[]},network);
+ validateWorldPeople(registry,validateZoneGraph(documents.get('zone-graph')??shippedGraph));
  validateWorldVehicles(registry,validateZoneGraph(documents.get('zone-graph')??shippedGraph));
  const companion=documents.has('companion-gameplay')?validateCompanionGameplay(documents.get('companion-gameplay')):COMPANION_GAMEPLAY;
  for(const scene of Object.values(registry))validateCompanionConversations(scene,companion);

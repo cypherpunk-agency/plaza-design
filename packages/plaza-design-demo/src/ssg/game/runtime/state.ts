@@ -59,6 +59,8 @@ export const createScenesState=()=>({
     hosts: new Map<SceneId, SceneHost>(),
     gameplaySessions: new Map<SceneId, GameplaySession>(),
     compiledScenes: new Map<SceneId,SceneDef>(),
+    mobileOwners: new Set<SceneId>(),
+    mobiles: new Map<SceneId,{model:import('../engine/model').SceneModel;gameplay?:GameplaySession}>(),
     joinedZones: ([]) as ScenePlacement[],
     zoneTiers: new Map<string, ResidencyTier>()
 });

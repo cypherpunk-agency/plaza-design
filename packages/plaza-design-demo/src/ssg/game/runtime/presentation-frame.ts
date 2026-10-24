@@ -1,3 +1,4 @@
+import {placeFrom} from '../world/zone-graph';
 import type {PlayerState,ScenePlacement} from './state';
 import {projection} from './camera';
 import type {CameraProjection} from '../art/core/geometry';
@@ -75,6 +76,7 @@ export interface PresentationFramePort{
   libraryGoal: () => string | null;
   shiftGuidance: ShiftGuidance | undefined;
   endCard: EndCardSource;
+  zoneGraph:import('../world/zone-graph').ZoneGraphSource;
 }
 export function drawWorld(port:PresentationFramePort) {
     const camera=projection(port.camera),v = port.view(camera);
@@ -82,6 +84,7 @@ export function drawWorld(port:PresentationFramePort) {
       host: port.zh, reduced: port.reduced, clock: port.timing.clock,backdrops:port.sources.backdrops,
       weather: () => port.weatherHere(), lighting: W => port.lightHere(W),
       preparePresentation: prepared => port.zh.preparePresentation(prepared, port.zh.visionOn && port.def.layers ? 'devices' : 'all'),
+      mobiles:[...port.scenes.mobileOwners].filter(id=>id!==port.scenes.here&&!port.scenes.joinedZones.some(z=>z.id===id&&port.scenes.zoneTiers.get(id)==='visible')).flatMap(id=>{const at=placeFrom(port.zoneGraph,port.scenes.here,Infinity).get(id);return at?[port.zoneFrame({id,...at},camera)]:[];}),
       roomWash: () => drawLight(port,v), actors: () => drawCharacters(port,v),
       prompts: () => drawPrompt(port,v), bubbles: () => drawBubble(port,v),
       ...(port.scenes.joinedZones?.length ? { joined: port.scenes.joinedZones.filter(z => port.scenes.zoneTiers?.get(z.id) === 'visible').map(z => port.zoneFrame(z,camera)) } : {}),

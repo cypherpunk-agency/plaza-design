@@ -1277,8 +1277,25 @@
                   "h": 0
                 },
                 {
+                  "kind": "walk",
+                  "x": 250,
+                  "h": 0
+                },
+                {
+                  "kind": "walk",
+                  "x": 60,
+                  "h": 150
+                },
+                {
+                  "kind": "walk",
+                  "zone": "downtown",
+                  "x": 1440,
+                  "h": 0
+                },
+                {
                   "kind": "leave",
-                  "x": 580,
+                  "zone": "downtown",
+                  "x": -160,
                   "h": 0
                 }
               ],
@@ -11923,8 +11940,9 @@
                   },
                   {
                     "kind": "leave",
-                    "x": 290,
-                    "h": 0
+                    "x": 150,
+                    "h": 0,
+                    "zone": "boundary-east"
                   }
                 ]
               },

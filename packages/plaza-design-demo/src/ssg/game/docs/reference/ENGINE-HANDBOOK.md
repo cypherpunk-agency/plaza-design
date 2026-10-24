@@ -368,13 +368,14 @@ Limits today:
 - Neighbours are seen, not used: prompts, E and hack vision belong to the active zone.
 - A neighbour's layered over-player and foreground pieces are flushed with the active zone's, outside its clip.
 - Weather is the active zone's climate (set on `enter`, not on `crossInto`); neighbours share it.
-- Residency (world/zone-graph.ts `residency`) decides each frame which joined zones are hosted. `followResidency`
-  hosts a visible zone at once and a near one at most one per frame, and unloads a zone past the eviction distance
-  (3 view widths): `SceneHost.dispose()` persists, then removes its nodes, window listeners, resize observers, save
-  timer, acknowledgment and popup, and disposes the session bound to its model; the model's delayed actions are dropped,
-  as on a page reload. The Game drops the cached session and the host, so `hostOf` rebuilds the zone from the save,
-  as Continue does. The active zone is never unloaded, and a zone with a panel, popup, hack vision or acknowledgment
-  open is held. Check with `pnpm test:game zone-unload residency`.
+- Residency (`world/zone-graph.ts`) controls chunk scenery and UI. `followResidency` also retains
+  a source when its actual static artwork bounds intersect the view, even beyond the logical edge.
+  Relevant mobile routes retain their existing SceneModel/Circuit and GameplaySession independently
+  of that UI. `SceneHost.dispose(true)` removes panels, listeners and feedback, replacing UI hooks;
+  Game ticks the retained core in its ordinary loop and reattaches that same model/session when needed.
+  Static-only or irrelevant sources persist their current checkpoint and dispose normally. There is
+  no second mobile scheduler or saved scalar owner. The active and interaction hosts remain available.
+  Check with `pnpm test:game boundary-example seamless-commute zone-unload residency`.
 - Only joined zones (named in the zone graph) unload. A scene with no seams is still kept hosted after you leave it,
   as before; whether those unload too is a separate decision (Tommi). While the player is in an unjoined scene, joined
   hosts are not evaluated, so they stay until the player is back in a joined zone.
@@ -655,8 +656,8 @@ registered frame and door artwork through the shared renderer. Paint and queries
 The Vehicle inspector edits this source and its attached artwork atomically. It shares normal
 ComposerModel history, bundle validation, protected Save and pending native Play. Use the
 existing Devices inspector for mover paths and timing. Physical floors remain unrotated. Cross-zone services use route legs and seam placements; their
-existing Circuit owner stays resident while a route zone is active. Geometry placements do not
-require every intervening scene host to remain loaded. New scene presets create complete ordinary
+existing Circuit core stays live while its route is relevant; its source scenery and UI may unload.
+Geometry placements do not require every intervening scene host to remain loaded. New scene presets create complete ordinary
 service source. Do not add a vehicle loop or a second renderer.
 
 Joined hosts retain local manifest coordinates. `Game.followHost` maps each visible host through
@@ -727,3 +728,33 @@ Scene-owned clock declarations take precedence while present; otherwise story ph
 clock. The prologue persona supplies its ordinary person appearance through the existing avatar
 painter. The Harbor morning commute is gated by a shared gameplay query on the vehicle, while
 alighting stays available. Add no scene-name condition to the runtime for these rules.
+
+## Recipe: mobile artwork and chunk boundaries
+
+Every composition uses the shared Distance → Backdrop → Set → Playfield → Foreground → Logic layers.
+For joined frames, registered artwork is sorted across sources by layer, authored order, source ID
+and instance ID within the existing player-relative slots. A mobile keeps its authored layer when
+crossing. Foreground artwork occludes across sources; it does not need a second collision model.
+Shared backdrop documents paint once. Hack vision uses the same ordering, followed by its wash.
+
+Logical scene width defines space, floors and seams; it is not an implicit artwork lifetime.
+`Instance.clip` is absent (joined static backgrounds clip to their chunk; isolated rooms and other
+objects remain uncut), `none`, `chunk`, or `{x,h,w,tall}` in source coordinates. Bounds, rendering and
+editor hit testing use this same explicit clip. Attachments inherit mobile membership from their
+registered root. Kernels declare `Element.mobility(props)`; never classify mobiles in Game by a
+scene/type name switch. Frame queues hold paint commands only and clear every frame.
+
+`character.flow` routes use walk/wait/leave for walkers, or the existing queue/board service flow.
+The final Leave is the authored sink. Unqualified coordinates are relative to the flow placement;
+explicit `zone` coordinates are local to that connected chunk. Passenger exit routes can name
+several chunks. Pending validation rejects missing/disconnected destinations. SceneModel owns live
+walking/riding pictures and boarding memory; drawing is pure. Source IDs remain stable; current
+chunk is derived from position and route, never a new state owner. Current checkpoints preserve
+passengers and mover progress without historical save conversion.
+
+Use the compact boundary example for controls and overlap; use the Harbor commute for source UI
+unload, carried player position, alighting and Metro stairs. In editor Appearance, Visibility at
+chunk boundaries edits clips; People edits seed, spawn, route and sink numerically. Live mobile
+locations in private Play reports actual models. Edit Circuit paths through Devices and route/car
+geometry through Vehicles. All edits use ComposerModel, grouped pending validation, bundles and the
+protected source store. No special boundary renderer or preview evaluator is allowed.

@@ -194,8 +194,8 @@ export class SceneHost {
   /** While a typed command runs (`typed`), the deck already shows it: don't print the shell line again. */
   private echo = true;
 
-  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind, from?:string,receipt?:FeedbackReceipt) => void, private store: SceneStore | undefined, readonly def: SceneDef, rules: SceneRules = NO_RULES, network:EngineNetworkContext = defaultNetworkContext) {
-    this.model = new SceneModel({
+  constructor(host: HTMLElement, private print: (text: string, kind?: LineKind, from?:string,receipt?:FeedbackReceipt) => void, private store: SceneStore | undefined, readonly def: SceneDef, rules: SceneRules = NO_RULES, network:EngineNetworkContext = defaultNetworkContext, retained?:{model:SceneModel;gameplay?:GameplaySession}) {
+    const hooks:import('./model').SceneHooks={
       say: (l, from,receipt) => this.say(l, from,receipt),
       feedbackScope:def.id,
       cue: store?.cue ? (cue) => { if (this.visible) store.cue!(cue); } : undefined,
@@ -214,10 +214,12 @@ export class SceneHost {
       programs: store?.programs,
       program: store?.program,
       controlled: store?.controlled,
-    }, def.data ?? emptyData(def.id, def.name), rules,undefined,network.net,network.keyring,store?.state?.(),def.gameplay);
-    this.model.peopleSources=def.peopleFlows??[];this.model.peopleLevel=def.level;
-    const shared=store?.gameplay?.(this.model);if(shared){attachNativeGameplay(this.model,shared);this.gameplay=shared;}
-    if(shared?.definition.handoffs?.length)attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>this.model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id),...(store?.presentation?{presentation:operation=>store.presentation!(operation)}:{})});
+    };
+    this.model=retained?.model??new SceneModel(hooks,def.data??emptyData(def.id,def.name),rules,undefined,network.net,network.keyring,store?.state?.(),def.gameplay);
+    this.model.setHooks(hooks);
+    this.model.peopleSources=def.peopleFlows??[];if(!retained)this.model.peopleLevel=def.level;
+    const shared=retained?.gameplay??store?.gameplay?.(this.model);if(shared){if(!retained?.gameplay)attachNativeGameplay(this.model,shared);this.gameplay=shared;}
+    if(!retained&&shared?.definition.handoffs?.length){const model=this.model;attachGameplayHandoffs(shared,{schedule:(ms,run,canceled,detail)=>model.later(ms,run,detail,canceled),cutscene:id=>store?.cutscene?.(id),...(store?.presentation?{presentation:operation=>store.presentation!(operation)}:{})});}
     const known = new Set<string>();
     this.schem = new Schematic(host, this.model, (l) => this.say(l), { known, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen });
     this.vision = new Schematic(host, this.model, (l) => this.say(l), { known, vision: true, hints:store?.hints, hintBusy:()=>!!store?.hintBusy?.()||!!this.popup?.isOpen||!!this.panels?.isOpen||this.schem.isOpen });
@@ -260,7 +262,7 @@ export class SceneHost {
     host.appendChild(this.btns);
     this.vision.bar = this.btns;
     const saved = store?.load();
-    if (saved) this.restore(saved);
+    if (saved&&!retained) this.restore(saved);
     this.saved = JSON.stringify({...this.snapshot(),state:this.model.state});
     this.sync();
     this.lastHeat = this.heat();
@@ -272,14 +274,12 @@ export class SceneHost {
   private disposed = false;
   get isDisposed() { return this.disposed; }
 
-  /**
-   * The zone is unloaded (SEAMLESS-WORLD.md §3 "Unloaded zones are reloaded"): the save is written, then everything
-   * this host owns goes: its popup, panels, schematics and captions (their nodes and window listeners), its HACK/BOARD
-   * strip, a pending acknowledgment, the save timer, the session bound to its model and the model's delayed actions
-   * (dropped, as on a page reload). The save is all that is left; hosting the scene again rebuilds it from there, as
-   * Continue does. Idempotent.
+  /** Dispose the chunk UI and listeners. Game may retain the actual model/session for
+   * relevant travelling people or vehicles; rehosting reattaches that same core. Otherwise
+   * delayed actions and sessions are disposed after the current checkpoint is persisted.
+   * No state is copied into a second simulation. Idempotent.
    */
-  dispose() {
+  dispose(retainModel=false) {
     if (this.disposed) return;
     this.persist();
     this.disposed = true;
@@ -287,8 +287,14 @@ export class SceneHost {
     this.closeAll();
     clearTimeout(this.saveTimer);
     window.removeEventListener('pagehide', this.onPageHide);
-    this.gameplay?.dispose();
-    this.model.dispose();
+    if(retainModel){
+      // Leave the actual Circuit and session with Game; no callback keeps this disposed UI alive.
+      const store=this.store,print=this.print;
+      this.model.setHooks({feedbackScope:this.id,say:(line,from,receipt)=>print(line[1],line[2]==='err'?'err':'out',from,receipt),open(){},changed(){},
+        modules:store?()=>store.modules():undefined,keyring:store?()=>store.keyring():undefined,
+        grant:store?.grant,tokens:store?.tokens,carry:store?.carry,flag:store?.flag,drop:store?.drop,
+        give:store?key=>store.give(key):undefined,sudo:store?.sudo?()=>true:undefined,programs:store?.programs,program:store?.program,controlled:store?.controlled});
+    }else{this.gameplay?.dispose();this.model.dispose();}
     this.popup.dispose(); this.panels.dispose(); this.schem.dispose(); this.vision.dispose(); this.fx.dispose();
     this.btns.remove();
     this.active = false; this.project = null; this.seen.clear();
@@ -530,11 +536,11 @@ export class SceneHost {
    * Trace fills while you look into a logged device and drains when you leave; watchdogs walk, clocks
    * beat, movers move, zones notice and delayed signals arrive on this one tick.
    */
-  tick(ms: number) {
+  tick(ms: number,mobile=false) {
     if (this.paused || this.disposed) return;
     const perf=perfBegin('host.tick',this.id);try{
     this.model.viewing = new Set(this.schem.viewing ? [this.schem.viewing] : []);
-    if (this.model.tick(ms, this.visible)) { this.schem.meters(); this.vision.meters(); }
+    if (this.model.tick(ms, this.visible||mobile)) { this.schem.meters(); this.vision.meters(); }
     this.panels.step(ms);
     // trace and lockouts are saved: write them as they move (at most every HEAT_SAVE_MS), so a reload is no way out
     const h = this.heat(), now = this.model.now();

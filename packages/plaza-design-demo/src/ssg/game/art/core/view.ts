@@ -24,6 +24,12 @@ export interface View {
   reduced?:boolean;
   /** Joined-zone window. Only ground/background rows clip here; set/playfield artwork can overhang a seam. */
   zoneWindow?: {left:number;right:number};
+  /** The shared frame separates travelling artwork from chunk-local scenery. */
+  artworkScope?: 'static'|'mobile';
+  /** All joined artwork uses the existing frame's common layer slots. */
+  sharedLayers?:boolean;
+  /** Connected chunk coordinates relative to this source; shared by route drawing and bounds. */
+  worldZones?:Readonly<Record<string,{x:number;h:number;w?:number}>>;
   /** Evaluated timeline inputs prepared by the shared frame director; painting never advances them. */
   sequence?: {time:number;state:Readonly<Record<string,import('./composition').Properties>>};
   /** Screen y of the ground; the strip below it (about 54 units) is the near floor. */
