@@ -11,7 +11,10 @@
     "library": "Conversations",
     "shop": "Purchases and optional guidance",
     "sandbox": "Devices and wiring",
-    "vehicle-lab": "Walkable two-car shuttle"
+    "vehicle-lab": "Walkable two-car shuttle",
+    "vehicle-routes": "Vehicle curves and drops",
+    "boundary-west": "Chunk boundary · west",
+    "boundary-east": "Chunk boundary · east"
   },
   "features": [
     {

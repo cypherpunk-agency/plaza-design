@@ -292,6 +292,24 @@
           "harbor": false
         }
       }
+    },
+    {
+      "id": "boundary-start",
+      "name": "Boundary example · beside the seam",
+      "scene": "boundary-west",
+      "flags": {},
+      "items": {},
+      "tokens": 0,
+      "modules": [],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 600,
+      "seed": 73,
+      "weather": "clear",
+      "clock": "fixed",
+      "spawn": 270
     }
   ]
 }

@@ -11760,6 +11760,441 @@
         "reactions": [],
         "conversations": {}
       }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "boundary-west",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 270,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "level.floor",
+            "props": {
+              "width": 320,
+              "label": "Boundary walkway"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "surface",
+            "type": "level.slab",
+            "props": {
+              "width": 320,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 2,
+            "layer": "backdrop"
+          },
+          {
+            "id": "label",
+            "type": "sign.plate",
+            "props": {
+              "text": "WEST CHUNK",
+              "color": "0,255,255",
+              "size": 10
+            },
+            "placement": {
+              "x": 160,
+              "h": 200
+            },
+            "order": 3,
+            "layer": "set"
+          },
+          {
+            "id": "service",
+            "type": "vehicle.frame",
+            "props": {
+              "vehicle": {
+                "id": "service",
+                "kind": "cart",
+                "mover": "service.frame",
+                "doors": {
+                  "mover": "service.doors",
+                  "open": 0.9
+                },
+                "cars": [
+                  {
+                    "id": "cart",
+                    "width": 90,
+                    "doors": [],
+                    "seats": [],
+                    "shellOnly": true
+                  }
+                ],
+                "gap": 20,
+                "gangways": true,
+                "route": {
+                  "legs": [
+                    {
+                      "zone": "boundary-west",
+                      "from": {
+                        "x": 170,
+                        "h": 0
+                      },
+                      "to": {
+                        "x": 320,
+                        "h": 0
+                      },
+                      "length": 150,
+                      "facing": 1
+                    },
+                    {
+                      "zone": "boundary-east",
+                      "from": {
+                        "x": 0,
+                        "h": 0
+                      },
+                      "to": {
+                        "x": 150,
+                        "h": 0
+                      },
+                      "length": 150,
+                      "facing": 1
+                    }
+                  ]
+                },
+                "berths": [],
+                "shell": []
+              }
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 3,
+            "layer": "logic"
+          },
+          {
+            "id": "cart",
+            "type": "vehicle.road",
+            "props": {
+              "kind": "van",
+              "speed": 0
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 4,
+            "layer": "set",
+            "attach": {
+              "instance": "service",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "crossing-walker",
+            "type": "character.flow",
+            "props": {
+              "flow": {
+                "seed": 73,
+                "speed": 45,
+                "spawn": {
+                  "kind": "interval",
+                  "every": 7,
+                  "jitter": 0,
+                  "start": 0
+                },
+                "route": [
+                  {
+                    "kind": "walk",
+                    "x": 0,
+                    "h": 0
+                  },
+                  {
+                    "kind": "leave",
+                    "x": 290,
+                    "h": 0
+                  }
+                ]
+              },
+              "looks": [
+                {
+                  "seed": 73
+                }
+              ],
+              "clock": "frame"
+            },
+            "placement": {
+              "x": 180,
+              "h": 0
+            },
+            "order": 8,
+            "layer": "playfield"
+          },
+          {
+            "id": "overhang",
+            "type": "sign.plate",
+            "props": {
+              "text": "CROSSING \u00b7 WEST SOURCE",
+              "color": "255,180,60",
+              "size": 10
+            },
+            "placement": {
+              "x": 310,
+              "h": 150
+            },
+            "order": 7,
+            "layer": "set"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "boundary-west",
+        "name": "Boundary example \u00b7 west",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 320,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": true,
+          "ambient": {
+            "sky": true,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      },
+      "devices": {
+        "id": "boundary-west",
+        "name": "Boundary cart",
+        "tuning": {},
+        "devices": [
+          {
+            "id": "service",
+            "name": "SERVICE",
+            "look": "Vehicle service",
+            "status": "automatic",
+            "layout": {
+              "spot": {
+                "x": 80,
+                "y": 0,
+                "w": 24,
+                "h": 40
+              },
+              "board": {
+                "x": 0.5,
+                "y": 0.5
+              }
+            },
+            "nouns": [
+              {
+                "id": "frame",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "x",
+                  "wired": false,
+                  "stops": {
+                    "west": 0,
+                    "east": 300
+                  },
+                  "start": "west",
+                  "auto": "service",
+                  "paths": {
+                    "service": [
+                      {
+                        "ms": 1000
+                      },
+                      {
+                        "to": "east",
+                        "ms": 5000,
+                        "ease": "linear"
+                      },
+                      {
+                        "ms": 1000
+                      },
+                      {
+                        "to": "west",
+                        "ms": 5000,
+                        "ease": "linear"
+                      },
+                      {
+                        "run": "service"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "id": "doors",
+                "layer": "hardware",
+                "function": "act",
+                "events": [
+                  "started",
+                  "arrived"
+                ],
+                "mover": {
+                  "axis": "x",
+                  "wired": false,
+                  "stops": {
+                    "closed": 0,
+                    "open": 1
+                  },
+                  "start": "open",
+                  "paths": {
+                    "close": [
+                      {
+                        "to": "closed",
+                        "ms": 600
+                      }
+                    ],
+                    "open": [
+                      {
+                        "to": "open",
+                        "ms": 700
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "cables": [],
+        "dialogue": {},
+        "goals": [],
+        "texts": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "boundary-east",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 50,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "level.floor",
+            "props": {
+              "width": 320,
+              "label": "Boundary walkway"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "surface",
+            "type": "level.slab",
+            "props": {
+              "width": 320,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 2,
+            "layer": "backdrop"
+          },
+          {
+            "id": "label",
+            "type": "sign.plate",
+            "props": {
+              "text": "EAST CHUNK",
+              "color": "0,255,255",
+              "size": 10
+            },
+            "placement": {
+              "x": 160,
+              "h": 200
+            },
+            "order": 3,
+            "layer": "set"
+          },
+          {
+            "id": "foreground-post",
+            "type": "station.canopy-post",
+            "props": {},
+            "placement": {
+              "x": 40,
+              "h": 150
+            },
+            "order": 10,
+            "layer": "foreground"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "boundary-east",
+        "name": "Boundary example \u00b7 east",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 320,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": true,
+          "ambient": {
+            "sky": true,
+            "weather": false
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "commands": {},
+        "events": [],
+        "reactions": [],
+        "conversations": {}
+      }
     }
   ]
 }

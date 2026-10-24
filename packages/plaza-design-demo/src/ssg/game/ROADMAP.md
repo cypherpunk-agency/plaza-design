@@ -20,7 +20,7 @@ Acceptance checks passed: source-owned world/cinematic bounds and movement, real
 field edit/undo and pointer drag, history/bundles/protected Save/fresh native reload (including timing),
 128/128 unchanged canonical paint samples across all five sequences, and 84/84 Canvas2D animation
 lifecycle comparisons. Opening skip/handoff, package TypeScript, focused checks and both builds pass.
-No old-format bridge or second renderer was added. C3 remains the next engineering closeout.
+No old-format bridge or second renderer was added. Continuous world across chunks is the next bounded engineering package; C3 follows it.
 
 S2: visual keyframe authoring is implemented locally. The same editor now has a bottom time grid,
 expandable object/property rows, moving playhead, keyframe selection/retiming and typed right-side
@@ -90,13 +90,17 @@ contracts are shared. Current tests exercise the extracted functions rather than
 
 ## Current status
 
+The pre-boundary baseline `9f486f2` was verified on main before this work. B1 is implemented
+and verified; this release includes the compact example and roadmap update.
+
 | Area | Status | What this means |
 | --- | --- | --- |
 | Shared gameplay and editor foundation | Implemented | One Game loop, SceneModel, GameplaySession, ConversationSession and canonical state ownership. Folder and catalogue scenes use shared source, pending-document validation, typed editing and private native Play. |
 | One render path | Complete | Game, editor, title, cutscenes and taxi use renderWorldFrame; the former opening renderer and artwork wrappers are removed. |
 | C1: animation lifecycle and light | Complete | Playback owns animation advancement; seeking reconstructs in isolation; painting/bounds are read-only. Explicit View lighting replaces presentation reads of global light; unused citySkyline is removed. |
 | C2: transport consolidation | Complete | Regular train, P14 siding, Downtown, Galleria and Harbor use shared vehicles, movers, floors, seats and passenger flows. Old boarding cuts, platform clocks and replacement crowds are removed. |
-| C3: independent artwork placement | Partially implemented; next engineering closeout | Many scene fittings now have independent properties and placement. Remaining context-dependent families still need the bounded audit below. A registered preview alone does not prove portability. |
+| C3: independent artwork placement | Partially implemented; follows boundary package | Many scene fittings now have independent properties and placement. Remaining context-dependent families still need the bounded audit below. A registered preview alone does not prove portability. |
+| Continuous world across chunks | B1 complete; B2–B6 pending | Compact native boundary example is ready. Mobile lifetime, visual bounds, shared ordering and prologue application remain the next engineering work. |
 | C4: guidance and current checks | Current for this release | Agent entry point, handbook and focused checks describe the shared engine. Keep them current with each change; this is not a separate historical migration project. |
 | M1: progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route are documented; comprehension is reviewed in the game. |
 | M2: Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion run in the connected harbor. |
@@ -137,20 +141,50 @@ old-format codec, second runtime or fleet-management feature is added.
 
 ## Next work, in order
 
-1. **Finish C3 in bounded asset families.** Audit remaining Mall fronts/escalators and parent
+1. **Continuous world across chunks.** Start with the compact native boundary example below,
+   then consolidate mobile ownership, visibility/bounds and shared ordering before applying it
+   to the opening/prologue. Chunk boundaries are authoring/loading boundaries, not automatic
+   clipping planes or the lifetime of a person or vehicle.
+2. **Finish C3 in bounded asset families.** Audit remaining Mall fronts/escalators and parent
    geometry, Harbor stalls/ordinary fixtures, and any remaining train fittings against actual
    consumers. Extract independent objects; retain context only when it is intrinsic. Do not
    restart completed extractions or mistake every context entry for missing artwork.
-2. **Review M3's experience**, using the [prologue review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) and frames/scenes: does the boss guide without rushing,
+3. **Review M3's experience**, using the [prologue review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) and frames/scenes: does the boss guide without rushing,
    does travel read as one journey, and does home give breathing room? Mechanical verification
    belongs to agents; Tommi's feedback concerns clarity, appeal, pacing and editor comfort.
-3. **Build M4**, then M5 and M6 using the progression table below. Introduce each mechanic through
+4. **Build M4**, then M5 and M6 using the progression table below. Introduce each mechanic through
    an actual gameplay need, shared source, typed authoring, a compact demo and a real scene.
    Keep Test District examples immediately reachable and free of unrelated clutter.
-4. **Continue Downtown sets in parallel.** Their artwork/layout can evolve before gameplay is
+5. **Continue Downtown sets in parallel.** Their artwork/layout can evolve before gameplay is
    attached. The precinct's required versus optional role remains undecided.
-5. **Prototype later embodiment/remote mechanics when needed.** Before M7 settle body location,
+6. **Prototype later embodiment/remote mechanics when needed.** Before M7 settle body location,
    transfer versus copy and Kessel's fate. Prove remote rules before building full Act III.
+
+## Continuous world across chunks: bounded delivery
+
+Accepted direction, 2026-10-24. Extend the existing people/crowd and vehicle systems, Game loop,
+SceneModel, source catalogue and renderer. No new renderer, adapter, simulation, scheduler or
+parallel live-state owner. A mobile has a stable identity and current world position; its current
+chunk follows that position. Its authored spawn chunk does not own its lifetime. Fixtures/devices
+remain chunk-local. Ambient people may leave at explicit off-screen sinks; this does not require
+simulating an entire city or adding fleet management.
+
+| Step | Deliverable and completion condition | Status |
+| --- | --- | --- |
+| B1. Compact native example | Two adjacent chunks; one crossing walker, one routed vehicle, one overhanging prop and a foreground occluder. Direct Test District jump and ordinary editable catalogue sources/private native Play. Verify real source compilation, seam crossing and current behavior without a separate preview. | Complete; [review guide](./docs/design/BOUNDARY-EXAMPLE.md) |
+| B2. Mobile ownership | Existing people/vehicle systems own live identity, progress and attachments independently of the spawn chunk. Cross and return without reset, duplication or disappearance, including when the origin leaves the loaded view. Authored spawn/sink rules remain explicit. | Pending |
+| B3. Visibility and bounds | Logical chunk bounds differ from visual bounds and explicit clips. Overhanging artwork remains visible while its actual bounds intersect the frame. Foreground occlusion is deliberate; a seam never clips a person by itself. | Pending |
+| B4. Shared layers/background | Cross-chunk mobiles and static pieces share correct depth/order; background continuity survives view movement. Preserve interiors and existing approved art. | Pending |
+| B5. Editor contracts | Existing editor exposes logical bounds versus explicit clip/occluder geometry and mobile spawn/routes/sinks/current location. Pending sources, typed editing, undo/redo, bundles, protected Save and native Play agree. No second evaluator or renderer. | Pending |
+| B6. Real-scene application and cleanup | Apply verified contracts to opening/prologue; remove replaced scene-local lifetime/clipping workarounds. Verify travel, pause/seek, re-entry and visible boundary behavior. | Pending |
+
+The example is a small diagnostic scene, not proof that B2–B6 are already solved. Its walker uses
+registered character-flow artwork; its cart uses actual Circuit mover time and the vehicle route
+compiler. It deliberately keeps current ownership so later fixes can be assessed against a real
+case. Campaign/story redesign, new chapters, city-wide simulation and artwork changes unrelated
+to boundary defects are excluded. Stop the current task after B1 and a review guide; do not quietly
+expand it into the full package. Preserve the current game look and behavior outside deliberate
+boundary corrections. Mechanics are agent-verified; user review concerns readability and comfort.
 
 ## C3 completion conditions
 

@@ -164,6 +164,16 @@
         "fallback": "spawn"
       },
       "prompt": "Watch the unmanned cart arc upward and descend. Its route and timing are editable in Vehicle and Devices."
+    },
+    {
+      "id": "boundary",
+      "label": "Chunk boundary",
+      "scene": "boundary-west",
+      "at": {
+        "firstUse": true,
+        "fallback": "spawn"
+      },
+      "prompt": "Watch the walker and cart cross below the overhanging sign. Walk through the seam and back; the post should hide them only while they pass behind it. This example exposes the current boundary behavior."
     }
   ],
   "actions": [

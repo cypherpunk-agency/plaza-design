@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {SCENES} from '../../src/ssg/game/scenes';
+import {SceneModel} from '../../src/ssg/game/engine/model';
+import {mergeLevels} from '../../src/ssg/game/engine/level';
+import {levelVehicleFrames,validateWorldVehicles} from '../../src/ssg/game/engine/level-vehicles';
+import graph from '../../src/ssg/game/world/zone-graph.json';
+import {validateZoneGraph} from '../../src/ssg/game/world/zone-graph';
+import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
+import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
+import {demoContent} from '../../src/ssg/game/demo';
+const west=SCENES['boundary-west'],east=SCENES['boundary-east'];
+assert.equal(west.width,320);assert.equal(east.width,320);
+assert(!west.sudoOnly&&!east.sudoOnly,'both chunks are available in ordinary Test District Play');
+validateWorldVehicles(SCENES,validateZoneGraph(graph));
+const model=new SceneModel({say(){},open(){},changed(){}},west.data!,undefined,undefined,undefined,undefined,undefined,west.gameplay);
+const joined=mergeLevels([{zone:'boundary-west',source:west.level!,dx:0,dh:0,width:320},{zone:'boundary-east',source:east.level!,dx:320,dh:0,width:320}]);
+let crossed=false,returned=false,previous=170,max=170;
+for(let i=0;i<780;i++){
+ model.tick(1000/60,true);
+ const frames=levelVehicleFrames(joined,()=>model);assert.equal(frames.length,1,'one live cart, including at the seam');
+ const f=frames[0],x=f.part.dx;assert.equal(f.vehicle.id,'boundary-west/service');assert(Math.abs(x-previous)<2.1,'joined route has no seam jump');
+ if(f.pose.zone==='boundary-east')crossed=true;if(crossed&&f.pose.zone==='boundary-west'&&x<200)returned=true;
+ max=Math.max(max,x);previous=x;
+}
+assert(crossed&&returned&&max>=469,'actual Circuit mover crosses to east and returns');
+const docs=new Map(sourceDocuments.map(d=>[d.id,d.validate(JSON.parse(fs.readFileSync('src/ssg/game/'+d.file,'utf8')))]));
+validateSourceDocuments(docs);
+const source=structuredClone(docs.get('authored-scenes')) as any;
+const edited=source.scenes.find((s:any)=>s.scene.id==='boundary-west');
+edited.composition.instances.find((i:any)=>i.id==='overhang').placement.x=330;
+docs.set('authored-scenes',source);const registry=pendingRegistry(docs);
+assert.equal(demoContent({catalogue:registry})['boundary-west'],registry['boundary-west'],'private district Play uses pending catalogue sources');
+assert.notEqual(registry['boundary-west'],SCENES['boundary-west'],'pending edits compile a fresh native scene');
+console.log('Boundary example PASS: native catalogue/graph, one continuous real-mover cart crossing/return, prospective sources and pending Test District identity.');

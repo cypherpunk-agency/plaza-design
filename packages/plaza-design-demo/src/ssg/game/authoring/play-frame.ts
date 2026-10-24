@@ -55,7 +55,7 @@ window.addEventListener('message', async event => {
     const registry=sourceDocuments?pendingRegistry(new Map(sourceDocuments.map((d:{id:string;value:unknown})=>[d.id,d.value]))):undefined;
     const fixtureVocabulary=sequenceValues&&registry?pendingFixtureVocabulary(sequenceValues,registry):undefined;
     const f=validatePlayFixtures({version:1,fixtures:[fixture]},true,Object.keys(registry??{}),fixtureVocabulary).fixtures[0];
-    const districtContent=district?demoContent({...district,vehicle:registry?.['vehicle-lab'],routes:registry?.['vehicle-routes']}):undefined;
+    const districtContent=district?demoContent({...district,catalogue:registry}):undefined;
     if(districtContent&&!Object.prototype.hasOwnProperty.call(districtContent,f.scene))throw new Error('Demo entry outside district');
     if(manifest&&f.scene!=='shop')throw new Error('Invalid manifest pilot role');
     const scene=manifest?manifestDemoScene(validateManifestComposition(composition),{},{},validateManifestScene(sceneDocument,validateManifestGameplay(gameplay)),validateManifestGameplay(gameplay)):districtContent?.[f.scene as keyof ReturnType<typeof demoContent>]??registry?.[f.scene]??pendingScene(f.scene,composition,{gameplay,sceneDocument,devices:deviceSource});

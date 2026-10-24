@@ -272,7 +272,9 @@
       "entrance": "vehicle-lab",
       "scenes": [
         "vehicle-lab",
-        "vehicle-routes"
+        "vehicle-routes",
+        "boundary-west",
+        "boundary-east"
       ]
     }
   ],
