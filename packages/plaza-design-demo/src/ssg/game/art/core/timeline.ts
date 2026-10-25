@@ -13,9 +13,14 @@ export interface TextCard { id: string; from: number; to: number; text: string; 
 export interface Fade { id: string; from: number; to: number; color: string; start: number; end: number }
 export interface Beat { id: string; time: number }
 export interface Handoff { scene: string; entrance?: string }
+export interface SequenceCommand {id:string;scene:string;command:string}
+export interface SequenceCommandMarker extends SequenceCommand {time:number;skip:'run'|'omit'}
 export interface Sequence {
   id: string; duration: number; composition: string; shots: Shot[]; tracks: Track[];
   text: TextCard[]; fades: Fade[]; beats: Beat[]; handoff?: Handoff;
+  commands?:SequenceCommandMarker[];
+  onComplete?:SequenceCommand[];
+  onCancel?:SequenceCommand[];
 }
 export interface TimelineProgram { version: 1; sequences: Sequence[] }
 export interface MotionTrack {
@@ -26,6 +31,8 @@ export interface MotionTrack {
 export interface TimelineContext {
   registry: ArtRegistry; compositions: Readonly<Record<string, Composition>>;
   destinations?: Readonly<Record<string, readonly string[]>>;
+  /** Present during linked source validation; pure timeline inspection can validate shape alone. */
+  commandTargets?:Readonly<Record<string,readonly string[]>>;
   motionTracks?: Readonly<Record<string, MotionTrack>>;
   clips?: Readonly<Record<string, readonly string[]>>;
 }
@@ -108,6 +115,13 @@ export function validateTimeline(input: unknown, ctx: TimelineContext): Timeline
     for (const card of seq.text) { id(card); span(card); if (typeof card.text !== 'string' || !num(card.x) || !num(card.h)) throw new Error('Invalid text card'); }
     for (const fade of seq.fades) { id(fade); span(fade); if (!/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(fade.color) || !num(fade.start) || !num(fade.end) || Math.min(fade.start, fade.end) < 0 || Math.max(fade.start, fade.end) > 1) throw new Error('Invalid fade'); }
     for (const beat of seq.beats) { id(beat); if (!num(beat.time) || beat.time < 0 || beat.time > seq.duration) throw new Error('Invalid beat'); }
+    for(const kind of ['commands','onComplete','onCancel'] as const){const rows=seq[kind];if(rows===undefined)continue;if(!Array.isArray(rows)||rows.length>64)throw Error('Sequence command list exceeds its bound');let previous=-1;
+      for(const row of rows){if(!obj(row)||Object.keys(row).some(k=>!(kind==='commands'?['id','scene','command','time','skip']:['id','scene','command']).includes(k)))throw Error('Invalid sequence command fields');id(row as unknown as SequenceCommand);
+        if(typeof row.scene!=='string'||!row.scene||typeof row.command!=='string'||!row.command)throw Error('Sequence command requires scene and command');
+        if(ctx.commandTargets&&!ctx.commandTargets[row.scene]?.includes(row.command))throw Error('Sequence command must reference a declared system command: '+row.scene+'/'+row.command);
+        if(kind==='commands'){if(!num(row.time)||row.time<0||row.time>seq.duration||row.time<previous||!['run','omit'].includes(String(row.skip)))throw Error('Invalid sequence command time/order/skip policy');previous=row.time;}
+      }
+    }
     if (seq.handoff) { if (!obj(seq.handoff) || typeof seq.handoff.scene !== 'string' || !own(ctx.destinations ?? {}, seq.handoff.scene) || seq.handoff.entrance !== undefined && !ctx.destinations![seq.handoff.scene].includes(seq.handoff.entrance)) throw new Error('Invalid handoff destination'); }
   }
   return structuredClone(input) as unknown as TimelineProgram;

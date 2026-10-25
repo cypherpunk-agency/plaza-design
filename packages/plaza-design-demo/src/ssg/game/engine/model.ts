@@ -196,6 +196,10 @@ export class SceneModel {
   state: Record<string, Value> = {};
   /** Numbers effects keep while things are in flight (a slide's start). Not saved; cleared by reset. */
   scratch: Record<string, number> = {};
+  /** Completed once-only trigger IDs; observations remain transient and rebase on restore. */
+  triggerHistory=new Set<string>();
+  triggerStatus:Record<string,{count:number;time:number;result:string}>={};
+  gameplayInspect?:()=>unknown;
   links: Link[] = [];
   /** Cables currently carrying a signal, for the glow. */
   live = new Set<Link>();
@@ -227,7 +231,7 @@ export class SceneModel {
   private inspecting=false;
   private recent:Readonly<SceneTrace>[]=[];
   enableInspection(){this.inspecting=true;}
-  inspect(){return structuredClone({state:this.state,goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.behaviour==='clock').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,layer:n.layer,function:n.function,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
+  inspect(){return structuredClone({movers:[...this.devices.values()].flatMap(d=>d.data.nouns.filter(n=>n.mover).map(n=>{const key=d.id+'.'+n.id;return{key,point:this.movers.place(key),position:this.movers.position(key),path:this.movers.lastRun(key)};})),zones:this.zones.inspect(),gameplay:this.gameplayInspect?.(),state:{...this.state},goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.behaviour==='clock').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,layer:n.layer,function:n.function,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
 
   /** Scene time: held while paused. A focused check can swap it. */
   now: () => number = () => this.time.now();
@@ -329,6 +333,8 @@ export class SceneModel {
     for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
+    this.triggerHistory.clear();
+    this.triggerStatus={};
     this.derivedSeen.clear();
     for(const key of Object.keys(this.state))delete this.state[key];
     Object.assign(this.state,this.data.state);
@@ -467,6 +473,9 @@ export class SceneModel {
   nativeEligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
     const n=this.noun(dev+'.'+noun);if(!n)return{ok:false,reason:'unknown-noun'};
     if(!n.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
+    return this.nativeAvailability(dev,n,bySignal);
+  }
+  private nativeAvailability(dev:string,n:NonNullable<ReturnType<SceneModel['noun']>>,bySignal=false):import('./gameplay/types').Eligibility{
     if(n.behaviour!=='watch'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
     if(!bySignal&&this.lockLeft(dev))return{ok:false,reason:'lockout'};
     if(!bySignal&&n.sector&&this.sealed(dev,n.sector))return{ok:false,reason:'sealed'};
@@ -1115,6 +1124,11 @@ export class SceneModel {
   private traceDomainMeta(dev:string){return{exists:this.devices.has(dev),span:Math.max(0,...this.logsOf(dev).map(n=>n.log!.lockMs??LOG_LOCK_MS))||LOG_LOCK_MS,wallNow:this.wall()};}
   private domainEndpoints(from:string,to:string,verb:string){const i=from.lastIndexOf(':'),n=this.noun(from.slice(0,i));return{event:i>0&&!!n?.events?.includes(from.slice(i+1)),verb:!!this.noun(to)?.verbs.includes(verb)};}
   private notifyDomain(notice:DomainNotice){
+    if(notice.kind==='mover'){
+      // Physical start signals execute on the existing scene clock, after the transaction releases.
+      // A native milestone can then invoke a system command without reentrant dispatch.
+      this.later(0,()=>{const noun=this.nounData(notice.device,notice.noun);if(noun?.mover)this.setOff(noun,notice.device);});return;
+    }
     this.later(notice.span+50,()=>this.changed());
     this.sayLine(this.line('trace.kick',{device:this.devices.get(notice.device)!.name,sec:secs(notice.span)}),notice.device);
     this.hooks.kick?.(notice.device);
@@ -1122,14 +1136,16 @@ export class SceneModel {
   /** One temporary draft for a synchronous shared command transaction, never another saved owner. */
   beginDomainTransaction():GameplayDomainTransaction{
     let draft=this.captureDomainState(),notices:DomainNotice[]=[];
+    const motions:{device:string;noun:string;path:string}[]=[];
     return{
       context:()=>({cables:draft.links}),
       reduce:(action,delta)=>{
+        if('mover'in action){const move=action.mover,n=this.noun(move.device+'.'+move.noun),data=this.nounData(move.device,move.noun);if(!n||!data?.mover?.paths?.[move.path])return{ok:false,reason:'resources'};const allowed=this.nativeAvailability(move.device,n);if(!allowed.ok)return allowed;motions.push(move);notices.push({kind:'mover',device:move.device,noun:move.noun});return{ok:true};}
         const result='wire'in action?action.wire.op==='connect'?reduceWireConnect(draft,action.wire.from,action.wire.to,action.wire.verb,this.domainEndpoints(action.wire.from,action.wire.to,action.wire.verb)):(()=>{const link=draft.links.find(l=>l.from===action.wire.from&&l.to===action.wire.to);return link?reduceWireCut(draft,link):{ok:false as const,reason:'resources' as const};})():reduceTraceAdd(draft,action.trace.device,delta!,this.traceDomainMeta(action.trace.device));
         if(!result.ok)return{ok:false,reason:result.reason};draft=result.state;notices.push(...result.notices);return{ok:true};
       },
       authorizeRoute:c=>{const native=this.nativeEligibility(c.dev,c.noun,c.verb,c.bySignal);if(!native.ok)return native;return !c.bySignal&&(draft.locks.get(c.dev)??0)>this.wall()?{ok:false,reason:'lockout'}:{ok:true};},
-      commit:()=>this.applyDomainState(draft),takeNotices:()=>{const out=notices;notices=[];return out;},notify:n=>this.withCue(()=>this.notifyDomain(n),true),refresh:()=>this.changed(),
+      commit:()=>{this.applyDomainState(draft);for(const m of motions)this.movers.runPath(m.device+'.'+m.noun,m.path);},takeNotices:()=>{const out=notices;notices=[];return out;},notify:n=>this.withCue(()=>this.notifyDomain(n),true),refresh:()=>this.changed(),
     };
   }
 
@@ -1275,6 +1291,7 @@ export class SceneModel {
       return { id: d.id, kind, ...(own ? { state: { ...own } } : {}), ...(at ? { at: { x: at.x, h: at.h } } : {}) };
     });
     const z: SceneSnapshot = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
+    if(this.triggerHistory.size)z.triggers=[...this.triggerHistory];
     const local = devs.filter((d) => !d.logic && this.local.has(d.id)).map((d) => [d.id, { ...this.local.get(d.id)! }]);
     if (local.length) z.local = Object.fromEntries(local);
     if (this.opened.size) z.open = [...this.opened];
@@ -1309,6 +1326,7 @@ export class SceneModel {
     let restored={...this.data.state};for(const[k,v]of Object.entries(s.state??{}))if(k in this.data.state)restored[k]=v;
     if(this.checkpointProgram)restored=this.checkpointProgram.settle(restored);
     this.init();
+    for(const id of Array.isArray(s.triggers)?s.triggers:[])if(typeof id==='string'&&id.length<=128)this.triggerHistory.add(id);
     Object.assign(this.state,restored);
     const goalIds = new Set(this.data.goals.map((g) => g.id));
     (s.goals ?? []).forEach((g) => { if (goalIds.has(g)) this.goals.add(g); });

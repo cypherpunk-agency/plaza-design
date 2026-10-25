@@ -41,6 +41,7 @@ export function validateNativeBindings(d:GameplayDefinition,data:SceneData,deriv
  for(const command of Object.values(d.commands))for(const action of command.actions){
   if('wire'in action){const w=action.wire,at=w.from.lastIndexOf(':'),event=vocab.find(n=>n.key===w.from.slice(0,at));if(!event?.events.includes(w.from.slice(at+1))||!vocab.some(n=>n.key===w.to))fail('wire action endpoint');if(w.op==='connect'&&!vocab.find(n=>n.key===w.to)?.verbs.includes(w.verb))fail('wire action verb');}
   if('trace'in action&&![...data.devices,...data.nodes??[]].some(dev=>dev.id===action.trace.device))fail('trace action device');
+  if('mover'in action){const move=action.mover,n=[...data.devices,...data.nodes??[]].find(d=>d.id===move.device)?.nouns.find(n=>n.id===move.noun);if(!n?.mover?.paths?.[move.path])fail('mover action requires an existing named path');}
  }
  for(const device of [...data.devices,...data.nodes??[]])if(device.targetQuery!==undefined&&!Object.prototype.hasOwnProperty.call(d.queries??{},device.targetQuery))fail('interaction target query '+device.targetQuery);
  for(const device of data.devices){const ref=device.layout?.spot?.presence;if(ref!==undefined&&!Object.prototype.hasOwnProperty.call(d.queries??{},ref))fail('world presence query '+ref);}
@@ -60,12 +61,15 @@ export function projectNativeDeviceData(data:SceneData,d:GameplayDefinition):Sce
 export function nativeDeviceData(data:SceneData,d:GameplayDefinition,derived:readonly string[]=[],physical:readonly string[]=[],nativeReads:Readonly<Record<string,NativeReadType>>={},mechanisms:readonly MechanismDevice[]=[]):SceneData {const projected=projectSceneState(data,d);validateNativeBindings(d,projected,derived,physical,nativeReads,mechanisms);return projectNativeDeviceData(projected,d);}
 /** Read-only observations and native goal effects; scalar values have one common owner. */
 export function nativeGameplayPort(d:GameplayDefinition,port:StatePort,model:()=>SceneModel):StatePort{return{
+ prepareWorld:port.prepareWorld,
  read(){const s=port.read(),m=model();return {...s,flags:{...s.flags,...Object.fromEntries(Object.entries(d.native?.reads??{}).map(([flag,key])=>[flag,!!m.value(key)]))}};},
  write(s,events=[]){const m=model(),flags={...s.flags};for(const flag of Object.keys(d.native?.reads??{}))delete flags[flag];port.write({...s,flags},events);for(const[flag,goal]of Object.entries(d.native?.goals??{}))if(events.some(e=>e.id===flag))m.goals.add(goal);}
 };}
 export function nativeRoute(d:GameplayDefinition,c:Pick<Ctx,'dev'|'noun'|'verb'>){return d.native?.verbs.find(r=>r.device===c.dev&&r.noun===c.noun&&r.verb===c.verb);}
 /** Invoked after native watchdog/lock/seal checks. No legacy steps execute for a bound verb. */
 export function attachNativeGameplay(model:SceneModel,session:GameplaySession){
+ const inspect=()=>({triggers:Object.entries(session.definition.native?.triggers??{}).map(([id,row])=>({id,condition:row.when,command:row.command,phase:row.phase??'afterNative',mode:row.once?'once':row.edge??'level',active:session.matches(row.when),completed:!!row.once&&model.triggerHistory.has(id),activationCount:model.triggerStatus[id]?.count??(row.once&&model.triggerHistory.has(id)?1:0),last:model.triggerStatus[id]}))});
+ model.gameplayInspect=inspect;session.onDispose(()=>{if(model.gameplayInspect===inspect)model.gameplayInspect=undefined;});
  model.installGameplaySource(session.definition as GameplayDefinition);
  validateNativeBindings(session.definition as GameplayDefinition,model.data,Object.keys(model.rules.derived??{}),model.rules.inputs,model.rules.derivedTypes,model.rules.mechanisms);
  attachResponseConversations(model,session);

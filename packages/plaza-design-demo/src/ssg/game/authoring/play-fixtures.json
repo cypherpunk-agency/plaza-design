@@ -310,6 +310,42 @@
       "weather": "clear",
       "clock": "fixed",
       "spawn": 270
+    },
+    {
+      "id": "boundary-door-start",
+      "name": "Original display",
+      "scene": "boundary-door",
+      "flags": {},
+      "items": {},
+      "tokens": 0,
+      "modules": [],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 600,
+      "seed": 73,
+      "weather": "clear",
+      "clock": "fixed",
+      "spawn": 40
+    },
+    {
+      "id": "boundary-door-blue-start",
+      "name": "Blue display",
+      "scene": "boundary-door-blue",
+      "flags": {},
+      "items": {},
+      "tokens": 0,
+      "modules": [],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 600,
+      "seed": 73,
+      "weather": "clear",
+      "clock": "fixed",
+      "spawn": 40
     }
   ]
 }

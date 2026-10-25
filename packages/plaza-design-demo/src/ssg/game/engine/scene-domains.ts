@@ -1,8 +1,8 @@
 import type {Link,Ctx} from './model';
 import type {ScalarRead} from './gameplay/queries';
 import type {Eligibility} from './gameplay/types';
-export type DomainAction={wire:{op:'connect';from:string;to:string;verb:string}|{op:'cut';from:string;to:string}}|{trace:{device:string;add:number|ScalarRead}};
-export type DomainNotice={kind:'kick';device:string;span:number};
+export type DomainAction={wire:{op:'connect';from:string;to:string;verb:string}|{op:'cut';from:string;to:string}}|{trace:{device:string;add:number|ScalarRead}}|{mover:{device:string;noun:string;path:string}};
+export type DomainNotice={kind:'kick';device:string;span:number}|{kind:'mover';device:string;noun:string};
 export interface GameplayDomainTransaction{reduce(action:DomainAction,traceDelta?:number):Eligibility;context():{cables:readonly Link[]};authorizeRoute(context:Ctx):Eligibility;commit():void;takeNotices():DomainNotice[];notify(notice:DomainNotice):void;refresh():void;}
 /** A temporary reducer value; these fields remain owned and serialized by SceneModel. */
 export interface SceneDomains{links:Link[];live:Set<Link>;cuts:Set<string>;trace:Map<string,number>;locks:Map<string,number>;spans:Map<string,number>;viewing:Set<string>;touched:Map<string,number>;}

@@ -266,18 +266,6 @@
       },
       "dx": 700,
       "dh": 0
-    },
-    {
-      "id": "boundary-walk",
-      "kind": "walk",
-      "a": {
-        "zone": "boundary-west"
-      },
-      "b": {
-        "zone": "boundary-east"
-      },
-      "dx": 320,
-      "dh": 0
     }
   ]
 }

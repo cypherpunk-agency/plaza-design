@@ -188,7 +188,7 @@
     },
     {
       "id": "harbor-works",
-      "name": "HARBOR \u00b7 STATION TO SHED 3",
+      "name": "HARBOR · STATION TO SHED 3",
       "district": "harbor",
       "entrance": "harbor-station",
       "scenes": [
@@ -243,7 +243,7 @@
     },
     {
       "id": "tower",
-      "name": "LEVEL LAB \u00b7 TOWER",
+      "name": "LEVEL LAB · TOWER",
       "district": null,
       "entrance": "tower",
       "scenes": [
@@ -274,7 +274,9 @@
         "vehicle-lab",
         "vehicle-routes",
         "boundary-west",
-        "boundary-east"
+        "boundary-east",
+        "boundary-door",
+        "boundary-door-blue"
       ]
     }
   ],
@@ -311,7 +313,7 @@
       "destinations": [
         "harbor"
       ],
-      "reason": "HARBOR CLOSED \u00b7 LINE 0 DOES NOT STOP"
+      "reason": "HARBOR CLOSED · LINE 0 DOES NOT STOP"
     }
   },
   "DRIVER_HARBOR": [
@@ -367,7 +369,7 @@
         392,
         126
       ],
-      "note": "WORKING CLASS \u00b7 MIXED \u00b7 RAIN"
+      "note": "WORKING CLASS · MIXED · RAIN"
     },
     "oldq": {
       "centre": [
@@ -387,7 +389,7 @@
         318,
         374
       ],
-      "note": "OLD TOWN \u00b7 THE CANAL \u00b7 THE WEST BEACH"
+      "note": "OLD TOWN · THE CANAL · THE WEST BEACH"
     },
     "market": {
       "centre": [
@@ -407,7 +409,7 @@
         234,
         176
       ],
-      "note": "LOW INCOME \u00b7 PACKED \u00b7 LOW TECH"
+      "note": "LOW INCOME · PACKED · LOW TECH"
     },
     "galleria": {
       "centre": [
@@ -427,7 +429,7 @@
         560,
         40
       ],
-      "note": "MIDDLE CLASS AND UP \u00b7 RETAIL"
+      "note": "MIDDLE CLASS AND UP · RETAIL"
     },
     "harbor": {
       "centre": [
@@ -447,7 +449,7 @@
         612,
         206
       ],
-      "note": "INDUSTRY \u00b7 THE PORT \u00b7 WATER"
+      "note": "INDUSTRY · THE PORT · WATER"
     },
     "spire": {
       "centre": null,
@@ -464,7 +466,7 @@
         770,
         160
       ],
-      "note": "RESTRICTED \u00b7 HIGH TECH \u00b7 FEW PEOPLE"
+      "note": "RESTRICTED · HIGH TECH · FEW PEOPLE"
     },
     "undercity": {
       "centre": null,
@@ -481,7 +483,7 @@
         440,
         352
       ],
-      "note": "CANALS \u00b7 SEWERS \u00b7 UNREGISTERED"
+      "note": "CANALS · SEWERS · UNREGISTERED"
     },
     "fringe": {
       "centre": [
@@ -501,7 +503,7 @@
         92,
         306
       ],
-      "note": "AUTOMATED \u00b7 NO RESIDENTS"
+      "note": "AUTOMATED · NO RESIDENTS"
     },
     "skyport": {
       "centre": [
@@ -521,7 +523,7 @@
         54,
         10
       ],
-      "note": "RESTRICTED \u00b7 LAUNCHES \u00b7 FENCED"
+      "note": "RESTRICTED · LAUNCHES · FENCED"
     }
   },
   "PLACE_MAP": {
@@ -659,7 +661,7 @@
   "LINES_PLANNED": [
     {
       "id": "line1",
-      "name": "LINE 1 \u00b7 CANAL LINE",
+      "name": "LINE 1 · CANAL LINE",
       "short": "L1",
       "col": "0,200,200",
       "width": 2.4,

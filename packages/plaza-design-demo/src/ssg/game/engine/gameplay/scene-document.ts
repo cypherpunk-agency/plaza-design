@@ -105,7 +105,7 @@ export function compileSceneDocument(doc:SceneDocument,positions:Record<string,n
   const execute=(routes:InteractionRoute[],c:UseCtx,cycle?:string,cycleState?:string,access:AccessRequirement[]=[]):SceneSaid=>{
     const permission=evaluateAccess(access,{state:c.gameplay?.state()??{flags:c.flags,items:{},tokens:0},reads:c.gameplay?.queryContext(),eligibility:id=>c.gameplay?.eligibility(id,'interaction')??{ok:false}});if(!permission.ok)return [permission.reason];
     if(!c.gameplay)throw new Error('Scene requires its gameplay session');
-    const step=cycleState?stateValue(c.gameplay.state().values,cycleState):0;
+    const step=cycleState?stateValue(c.gameplay.state().values,cycleState,c.gameplay.definition):0;
     if(cycle&&!cycleState||typeof step!=='number'||!Number.isSafeInteger(step)||step<0)throw Error('Interaction rotation requires non-negative integer state: '+cycleState);
     const r=cycle?routes[step%routes.length]:routes.find(r=>c.gameplay!.matches(r.when))!;
     if(r.conversation)return talk(c,r.conversation,doc.objectives?objective(c.flags,c.gameplay.state()):'');

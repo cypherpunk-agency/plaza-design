@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {SCENES} from '../../src/ssg/game/scenes';
+import {SceneModel} from '../../src/ssg/game/engine/model';
+import {emptyData,NO_RULES} from '../../src/ssg/game/engine/host';
+import {newSave} from '../../src/ssg/game/runtime/save';
+import {createScenesState,createCameraState} from '../../src/ssg/game/runtime/state';
+import {compileGameWorld} from '../../src/ssg/game/world/compiled-world';
+import {followResidency,refreshWorldMembership} from '../../src/ssg/game/runtime/scene-lifecycle';
+const scenes=createScenesState(),camera=createCameraState(),save=newSave();
+scenes.here='capsule';scenes.directedOrigin='glide-beach';scenes.directedZones=new Set(['glide-beach','glide-downtown-west']);
+Object.assign(camera,{cam:980,viewW:1280,viewH:720,gy:590,camH:0});
+const port:any={scenes,camera,save,zoneGraph:compileGameWorld(SCENES),p:{x:150,y:0},content:{},ambientTime:0,hasScene:(id:string)=>id in SCENES,sceneDefinition:(id:keyof typeof SCENES)=>SCENES[id],
+ hostOf(id:keyof typeof SCENES){let host=scenes.hosts.get(id);if(!host){const model=new SceneModel({say(){},open(){},changed(){}},SCENES[id].data??emptyData(id,id),NO_RULES);host={id,model,show(){},dispose(retain:boolean){if(!retain)model.dispose();},persist(){}} as any;scenes.hosts.set(id,host!);}return host;}};
+Object.defineProperty(port,'zh',{get:()=>port.hostOf('capsule')});Object.defineProperty(port,'interactionHost',{get:()=>port.zh});
+const playerHost=port.zh,playerModel=playerHost.model,playerState=structuredClone(playerModel.state);
+followResidency(port);
+assert.equal(port.zh,playerHost);assert(scenes.hosts.has('glide-beach'));assert.equal(scenes.here,'capsule');assert.equal(scenes.level,null,'a remote camera must not merge unrelated physical floors');
+assert.deepEqual(playerModel.state,playerState);assert.equal(playerModel.now(),0,'residency cannot advance clocks');
+scenes.directedOrigin=undefined;scenes.directedZones.clear();refreshWorldMembership(port);
+assert.equal(port.zh.model,playerModel);assert(!scenes.hosts.has('glide-beach'),'release disposes camera-only residency');
+for(const host of scenes.hosts.values())host.model.dispose();for(const core of scenes.mobiles.values())core.model.dispose();
+console.log('Directed residency: disconnected saved interior retained, coast hosted independently, no floor merge/clock/state mutation, release disposal PASS');

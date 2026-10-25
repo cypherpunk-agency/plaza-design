@@ -33,8 +33,8 @@ assert.equal(cinematic.sequences.find(s => s.id === 'act2')!.handoff!.scene, 'st
 const frame = evaluateTimeline(cinematic, 'act2', 8, cinematicTimelineContext(cutView(640,360,false,lighting), cinematicDocuments));
 assert.equal(frame.text.length, 1); assert.equal(frame.state.titles.two, 1); assert.ok((frame.state.ferry.amount as number) > 0);
 for (const composition of [openingDocuments.composition, ...Object.values(cinematicDocuments.compositions)]) {
-  assert.ok(composition.instances.length >= 2); assert.deepEqual(registry.validate(JSON.parse(JSON.stringify(composition))), composition);
-  const edited = structuredClone(composition) as Composition; edited.instances[1].placement.x = 17; assert.equal(registry.validate(edited).instances[1].placement.x, 17);
+  assert.ok(composition.instances.length >= 1); assert.deepEqual(registry.validate(JSON.parse(JSON.stringify(composition))), composition);
+  const edited = structuredClone(composition) as Composition; edited.instances[0].placement.x = 17; assert.equal(registry.validate(edited).instances[0].placement.x, 17);
 }
 
 const view = cutView(640,360,false,lighting);

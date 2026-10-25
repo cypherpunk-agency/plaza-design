@@ -59,6 +59,7 @@ const PAPER = '255,233,208', ORANGE = '255,136,0';
 export class CutscenePlay {
   t = 0;
   done = false;
+  skipped=false;
   private wrapped: { size: number; maxW: number; lines: string[][]; widths: number[] } | null = null;
 
   constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean }) {scene.advance?.(0);}
@@ -93,6 +94,7 @@ export class CutscenePlay {
   /** Any key or tap: jump to the fade out. Returns false while the grace period lasts. */
   skip() {
     if (this.t < GRACE || this.done) return false;
+    this.skipped=true;
     this.t = Math.max(this.t, this.scene.duration - FADE_OUT * 0.6);
     return true;
   }

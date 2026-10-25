@@ -5,7 +5,7 @@ import type {Light} from '../world/light';
 import type {Climate,Weather} from '../world/weather';
 import type {DocumentProjection} from './document-projection';
 import type {AssetEntry,AssetUsage,AssetPreviewOverrides,AssetPreviewReport} from './asset-browser';
-export interface EditorDocument { id: string; kind: 'composition' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; revision: string; value: unknown }
+export interface EditorDocument { id: string; kind: 'composition' | 'world-composition' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; revision: string; value: unknown }
 export interface PreviewRequest { workspace?:{x:number;h:number;zoom:number;anchorX?:number;anchorH?:number}; transient?:{document:string;composition:Composition}; sourceVersion?:object; documents?:ReadonlyMap<string,unknown>; composition: Composition; frame?: TimelineFrame; timeline?: TimelineProgram; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; objectOutlines?:boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 /** A scene joined to the previewed one by a seam, drawn beside it read-only: where it is on the canvas (canvas pixels) and on which side. */
 export interface JoinedPreview { zone: string; label: string; x: number; y: number; width: number; height: number; side: 'left' | 'right' | 'above' | 'below' }
@@ -40,6 +40,7 @@ export interface ComposerConfig {
   timelineContext?(base: TimelineContext, preview: { time: number; reduced: boolean; sequenceId: string; environment: Record<string, string | number | boolean>; viewport: { width: number; height: number }; timeline?: TimelineProgram }): TimelineContext;
   projections?:readonly DocumentProjection[];
   destinationsFor?(documents:EditorDocument[]):TimelineContext['destinations'];
+  commandTargetsFor?(documents:EditorDocument[]):NonNullable<TimelineContext['commandTargets']>;
   validateDocument?(document: EditorDocument, documents: EditorDocument[]): void;
   /** Complete immutable inputs read by validateDocument. Unchanged inputs may reuse its successful result. Composition and timeline validation always run. */
   validationInputs?(documents: readonly EditorDocument[]): readonly unknown[];

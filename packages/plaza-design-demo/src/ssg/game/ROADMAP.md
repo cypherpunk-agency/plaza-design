@@ -4,6 +4,33 @@ Single priority overview, consolidated 2026-10-25. Everything remains in design.
 This roadmap owns status and order; the [engine handbook](./docs/reference/ENGINE-HANDBOOK.md)
 owns implementation guidance. Design documents are working context, not competing roadmaps.
 
+## World-first runtime and opening
+
+The finite technical goal and acceptance evidence are in [WORLD-FIRST-RUNTIME.md](./docs/design/WORLD-FIRST-RUNTIME.md).
+[Terminology](./docs/reference/TERMINOLOGY.md), [composition contract](./docs/design/WORLD-COMPOSITION-CONTRACT.md)
+and the [42-entry inventory](./docs/design/WORLD-CONTENT-INVENTORY.md) use the agreed world/state model.
+
+| Phase | Current result | Remaining work |
+| --- | --- | --- |
+| W1 Shared model | Complete: world composition, chunks/groups, Place, sequence/timeline, triggers/commands, one world state and bindings. | None. No variant/state-owner/entity-reference authoring subsystem. |
+| W2 Composition/residency | Implemented and exercised: atomic chunk/group mount/unmount, internal deferral, applied/pending persistence, explicit bindings, camera/player references, typed editor/history/bundle/Save/private Play. | None in this technical goal. |
+| W3 Triggers/locations | Implemented: existing zones/conditions/events/commands, once receipts, restore baselines and actual runtime inspection. Loading or camera movement is not player arrival. | None in this technical goal. |
+| W4 World direction/editor | Implemented: source-discovered live sequences, composition-driven scope, typed command markers/completion/cancel lists, authored skip policy, actual movers and isolated scrub. | None in this technical goal. |
+| W5 Opening | Technical lifecycle implemented: launch coast, pause current view, New Game initializes before direction, physical train and uninterrupted Harbor release; natural and Escape browser runs pass. | Designer/user chooses the final districts, landmarks, spacing, route and pacing. Existing geography is a placeholder. |
+| W6 Cutscene review/cleanup | Complete review: retain intro, act2 and taxi as intentional standalone contents on the common renderer. Replaced opening reset, visual train overrides and implicit paint-time inspection models removed. | None in this technical goal. |
+
+No new runtime, renderer, adapter, scheduler, variant system, automatic rollback/state migration,
+historic-save compatibility or player-facing engine blocker UI. Current state keys are accessed,
+not copied between chunk presentations. Authoring/source and runtime membership remain distinct.
+
+Review the compact existing boundary example: unlock at x35, switch presentation at x115,
+look across the boundary at x195. The camera moves; the player stays put; the cart/walker continue.
+Detailed checks, editor workflow and local review links are in the technical goal document.
+
+Status: **decision-independent goal complete: all 14 technical acceptance gates verified**. Publication
+is separate. The next product decision is opening design with the designer; existing completed
+engineering tracks below remain complete and are not restarted by this work.
+
 ## Completed goal: simplify and consolidate the existing engine (2026-10-25, local)
 
 This bounded goal applied `$simplify-and-consolidate` to the six reviewed areas and completed
@@ -202,6 +229,10 @@ old-format codec, second runtime or fleet-management feature is added.
 
 ## Next work, in order
 
+The world/runtime technical goal above is complete. Next, choose the opening design with the
+designer, then author its route/choreography on these systems. The campaign order below remains
+the experience roadmap; it is not a competing engine migration.
+
 1. **Review M3's experience**, using the [prologue review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) and frames/scenes: does the boss guide without rushing,
    does travel read as one journey, and does home give breathing room? Mechanical verification
    belongs to agents; Tommi's feedback concerns clarity, appeal, pacing and editor comfort.
@@ -328,7 +359,7 @@ requires a product decision. Current-format saves are supported; historic compat
 
 ## Plan ownership and references
 
-- This file owns completed G1–G7 and C1–C4 status, M1–M9 priorities and next-work order.
+- This file owns completed G1–G7 and C1–C4 status, current W1–W6, M1–M9 priorities and next-work order.
 - [Seamless world](./docs/design/SEAMLESS-WORLD.md) owns zones/seams/vehicle implementation detail;
   its steps are not a second milestone roadmap. A zone is authored/saved/loaded independently;
   seams join zones continuously and exits join them with a cut.

@@ -50,6 +50,7 @@ export class Zones {
 
   isArmed(key: string) { return this.zones.get(key)?.armed ?? false; }
   inside(key: string) { return this.zones.get(key)?.inside === true; }
+  inspect(){return [...this.zones.values()].map(z=>({key:z.key,from:z.from,to:z.to,axis:z.data.axis??'x',within:z.data.within,watch:z.data.watch,building:z.data.building,armed:z.armed,inside:z.inside}));}
 
   /** The crossings since the last tick. A disarmed zone keeps track but raises nothing. */
   tick(locate: Locate): Crossing[] {

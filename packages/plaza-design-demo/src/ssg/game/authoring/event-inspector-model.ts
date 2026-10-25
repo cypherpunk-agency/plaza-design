@@ -1,3 +1,5 @@
+import {validateGameplay} from '../engine/gameplay/validation';
+import {authoredDocumentId} from '../engine/gameplay/scene-catalogue';
 import {FOLDER_SOURCES} from '../scenes/folder-scenes';
 import {stateAddress} from '../engine/gameplay/state';
 import authoredCatalogue from '../scenes/authored.json';
@@ -77,15 +79,27 @@ export function buildEventInspection(options:EventInspectionOptions={}):EventIns
 
  const docs=options.documents??[],compositions=docs.filter(d=>d.kind==='composition'),sequences=compositions.flatMap(d=>sequenceProgram({[d.id]:d.value as Composition}).sequences.map(sequence=>({sequence,document:d.id})));
 
- const put=(id:string,scene:string,kind:string,label:string,src:EventSource,details:unknown={},status:InspectionStatus='declared',reason='Source declaration; no execution is implied.')=>{const existing=all.get(id);if(existing&&kind==='missing-reference')return existing;const captured=options.snapshots?.states?.[id];const node:EventNode={id,scene,kind,label,source:src,details:plain(details),status,reason};if(captured?.origin==='captured-runtime'&&captured.scene===scene&&status!=='missing'&&status!=='opaque'){node.status=captured.status;node.reason=captured.reason;}if(existing){Object.assign(existing,node);return existing;}nodes.push(node);all.set(id,node);return node;};
+ const put=(id:string,scene:string,kind:string,label:string,src:EventSource,details:unknown={},status:InspectionStatus='declared',reason='Source declaration; no execution is implied.')=>{const existing=all.get(id);if(existing&&kind==='missing-reference')return existing;const captured=options.snapshots?.states?.[id];const node:EventNode={id,scene,kind,label,source:gameplaySource(scene,src),details:plain(details),status,reason};if(captured?.origin==='captured-runtime'&&captured.scene===scene&&status!=='missing'&&status!=='opaque'){node.status=captured.status;node.reason=captured.reason;}if(existing){Object.assign(existing,node);return existing;}nodes.push(node);all.set(id,node);return node;};
 
  const requireRef=(id:string,scene:string,src:EventSource)=>all.get(id)??put(id,scene,'missing-reference',id,src,{},'missing','Referenced source definition does not exist in the frozen registries.');
 
- const edge=(scene:string,kind:ConnectionKind,from:string,to:string,label:string,src:EventSource)=>{const a=requireRef(from,scene,src),b=requireRef(to,scene,src),status:InspectionStatus=a.status==='missing'||b.status==='missing'?'missing':a.status==='blocked'||b.status==='blocked'?'blocked':a.status==='inactive'||b.status==='inactive'?'inactive':a.status==='opaque'||b.status==='opaque'?'opaque':'unbound';edges.push({id:`edge:${scene}:${kind}:${src.file}:${src.pointer??src.symbol??''}:${from}>${to}:${label}`,scene,kind,from,to,label,source:src,status,reason:status==='unbound'?'Declared relationship; runtime activation is not bound.':`${a.reason} ${b.reason}`});};
+ const edge=(scene:string,kind:ConnectionKind,from:string,to:string,label:string,src:EventSource)=>{const a=requireRef(from,scene,src),b=requireRef(to,scene,src),status:InspectionStatus=a.status==='missing'||b.status==='missing'?'missing':a.status==='blocked'||b.status==='blocked'?'blocked':a.status==='inactive'||b.status==='inactive'?'inactive':a.status==='opaque'||b.status==='opaque'?'opaque':'unbound';edges.push({id:`edge:${scene}:${kind}:${src.file}:${src.pointer??src.symbol??''}:${from}>${to}:${label}`,scene,kind,from,to,label,source:gameplaySource(scene,src),status,reason:status==='unbound'?'Declared relationship; runtime activation is not bound.':`${a.reason} ${b.reason}`});};
 
  const condition=(scene:string,parent:string,value:unknown,src:EventSource,device?:string,noun?:string)=>{if(value===undefined)return;const expression=typeof value==='string'?value:JSON.stringify(value),id=`condition:${scene}:${src.pointer??parent}`,captured=options.snapshots?.conditions?.[id];const trusted=captured?.origin==='captured-runtime'&&captured.scene===scene&&captured.device===device&&captured.noun===noun&&captured.expression===expression;put(id,scene,'condition',expression,src,{expression,device,noun},trusted?(captured.result?'active':'blocked'):'unbound',trusted?`Captured runtime condition is ${captured.result}; ordered case selection is still separate.`:'No exact matching captured runtime evaluation; expression is not executed.');edge(scene,'conditional',parent,id,src.pointer?.endsWith('/when')?'time window':'condition',src);};
 
- const nativeDocs=new Map<string,{definition:GameplayDefinition;file:string}>();for(const[id,def]of Object.entries(SCENES))if(def.gameplay?.native||def.gameplay?.checkpoint?.length){const descriptor=sourceDocuments.find(d=>d.id===id+'-gameplay')!,draft=docs.find(d=>d.id===descriptor.id);let definition=def.gameplay;try{if(draft)definition=descriptor.validate(draft.value) as GameplayDefinition;}catch{diagnostics.push('Rejected native gameplay draft for '+id+'; showing registered bindings.');}nativeDocs.set(id,{definition,file:descriptor.file});}
+ const nativeDocs=new Map<string,{definition:GameplayDefinition;file:string}>();
+ for(const[id,def]of Object.entries(SCENES))if(def.gameplay){
+  const descriptor=sourceDocuments.find(d=>d.id===id+'-gameplay'),index=AUTHORED.get(id);
+  const catalogue=docs.find(d=>d.id==='authored-scenes')?.value as typeof authoredCatalogue|undefined;
+  const draft=descriptor?docs.find(d=>d.id===descriptor.id)?.value:docs.find(d=>d.id===authoredDocumentId(id,'gameplay'))?.value??catalogue?.scenes.find(s=>s.scene.id===id)?.gameplay;
+  let definition=def.gameplay;try{if(draft)definition=descriptor?descriptor.validate(draft) as GameplayDefinition:validateGameplay(draft);}catch{diagnostics.push('Rejected gameplay draft for '+id+'; showing registered bindings.');}
+  if(descriptor)nativeDocs.set(id,{definition,file:descriptor.file});else if(index!==undefined)nativeDocs.set(id,{definition,file:'scenes/authored.json'});
+ }
+ // Catalogue gameplay has the same inspection path as folder gameplay; only its source pointer differs.
+ const gameplaySource=(scene:string,src:EventSource):EventSource=>{
+  if(src.pointer?.startsWith('/state/')){const key=src.pointer.slice(7).replace(/~1/g,'/').replace(/~0/g,'~');if(nativeDocs.get(scene)?.definition.sharedState?.includes(stateAddress(key)[0]))return{file:'world/state-owners.json',pointer:src.pointer};}
+  return src.file==='scenes/authored.json'&&src.pointer&&!src.pointer.startsWith('/scenes/')&&AUTHORED.has(scene)?{...src,pointer:'/scenes/'+AUTHORED.get(scene)+'/gameplay'+src.pointer}:src;
+ };
  const sceneData=new Map<string,SceneData>();
  for(const[id,def]of Object.entries(SCENES)){put('scene:'+id,id,'scene',def.name,code(id,'SceneDef'),{width:def.width,spawn:def.spawn});if(!def.data)continue;
   const definition=nativeDocs.get(id)?.definition??def.gameplay,seed={...def,gameplay:definition};let data=def.data;

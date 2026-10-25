@@ -5,8 +5,8 @@ import {drawComposition,resolveComposition,compositionAppearance,type ArtRegistr
 import {evaluateTimeline,type TimelineFrame,type TimelineProgram} from '../art/core/timeline';
 import {frameView,type View} from '../art/core/view';
 import {cinematicRegistry,cinematicTimelineContext,cutView,isScreenFade,type CinematicDocuments} from '../art/sequences/cinematics';
-import {SceneModel} from '../engine/model';
-import {emptyData,NO_RULES,type EngineDraw} from '../engine/host';
+import type {SceneModel} from '../engine/model';
+import type {EngineDraw} from '../engine/host';
 import {SCENES} from '../scenes';
 import type {SceneDef} from '../scenes/kit';
 import {backdropDocuments,type BackdropDocument} from '../world/backdrops';
@@ -14,8 +14,10 @@ import type {Weather} from '../world/weather';
 import {lightAt,type Light} from '../world/light';
 import {directorFromTimeline,type WorldFrame,type FrameDirector,type FramePass,type ZoneFrame,type WorkspaceCamera,type CameraGuide} from './frame';
 import type {OpeningDocuments} from '../story/title/documents';
-import graphSource from '../world/zone-graph.json';
-import {placementCoordinates,sequencePlacements,validateZoneGraph,type ZoneGraphSource} from '../world/zone-graph';
+import {compileGameWorld,worldCompositionContext} from '../world/compiled-world';
+import {compileWorldComposition,type WorldCompositions} from '../world/compositions';
+import worldCompositionSource from '../world/compositions.json';
+import {placementCoordinates,sequencePlacements,type ZoneGraphSource} from '../world/zone-graph';
 export const SEQUENCE_PASSES: Record<FramePass, false> = { sky: false, weather: false, casters: false, actors: false, shade: false, grade: false, lights: false, prompts: false, bubbles: false, vision: false };
 
 export interface FrameSource {
@@ -44,31 +46,48 @@ const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, 
 const own = (v: object, k: string) => Object.prototype.hasOwnProperty.call(v, k);
 
 
-const worldGraph=validateZoneGraph(graphSource);
-const inspectionModels=new WeakMap<SceneDef,SceneModel>();
-function modelFor(scene:SceneDef){let model=inspectionModels.get(scene);if(!model){const forbidden=()=>{throw new Error('World sequence painting cannot execute gameplay');};model=new SceneModel({say:forbidden,open:forbidden,changed(){}},scene.data??emptyData(scene.id,scene.name),NO_RULES,undefined,undefined,undefined,undefined,scene.gameplay);inspectionModels.set(scene,model);}return model;}
+
 export interface ZoneSequenceOptions {
   width:number;height:number;reduced:boolean;lighting:Light;ambientTime:number;
-  playGround?:number;workspace?:WorkspaceCamera;
+  playGround?:number;workspace?:WorkspaceCamera;flags?:Readonly<Record<string,boolean>>;
+  compositions?:WorldCompositions;
+  /** Pure lookup of resident models, or explicit isolated editor reconstruction. Painting creates none. */
+  model?:(id:string)=>SceneModel|undefined;
   frame?:TimelineFrame;scenes?:Readonly<Record<string,SceneDef>>;documents?:ReadonlyMap<string,unknown>;graph?:ZoneGraphSource;backdrops?:ReadonlyMap<string,BackdropDocument>;
 }
-function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocuments,id:string,time:number,options:ZoneSequenceOptions):WorldFrame{
+/** Pure directed-camera layout, also used by the normal lifecycle before painting. */
+export function sequenceWorldLayout(documents:OpeningDocuments,id:string,time:number,options:ZoneSequenceOptions,nativeScale:number){
   const frame=options.frame??evaluateTimeline(documents.timeline,id,time,{registry:art,compositions:{...documents.compositions,[documents.timeline.sequences.find(s=>s.id===id)?.composition??documents.compositionId]:documents.composition}},{reduced:options.reduced});
   const settings=frame.composition.instances.find(n=>n.type==='sequence.world-control');
   if(!settings)throw Error('World sequence requires sequence.world-control settings');
-  const props=art.properties(settings.type,settings.props),origin=String(props.origin),zones=props.zones as string[];
-  const scenes=options.scenes??SCENES,nativeScale=Math.abs(context.getTransform().a)||1,pixel=Number(props.pixel);
-  const placed=sequencePlacements(options.graph??worldGraph,origin,zones,scenes);
-  const blend=Math.max(0,Math.min(1,Number(frame.state.sky?.playFit??0))),fit0=Math.max(1,Math.round(Math.min(options.height/Number(props.height),options.width/Number(props.width))*pixel*nativeScale))/nativeScale/pixel;
+  const props=art.properties(settings.type,settings.props),origin=String(props.origin);
+  const scenes=options.scenes??SCENES,pixel=Number(props.pixel);
+  const zones=sequenceWorldZones(props,scenes,options.compositions);
+  const placed=sequencePlacements(options.graph??compileGameWorld(scenes),origin,zones,scenes);
+  const state=frame.state[settings.id]??{},blend=Math.max(0,Math.min(1,Number(state.playFit??0))),fit0=Math.max(1,Math.round(Math.min(options.height/Number(props.height),options.width/Number(props.width))*pixel*nativeScale))/nativeScale/pixel;
   let fit=fit0+(1-fit0)*blend,width=options.width/fit,height=options.height/fit;
   const ground0=Math.round(height/pixel*Number(props.ground))*pixel;let gy=ground0+((options.playGround??height-54)-ground0)*blend;
   const handoff=documents.timeline.sequences.find(s=>s.id===id)?.handoff,landing=handoff&&scenes[handoff.scene],at=handoff&&placed.get(handoff.scene);
-  const cam0=frame.camera.x+(Number(props.width)-width)/2,target=landing&&at?at.dx+landing.spawn-width*.45:cam0,authoredCam=cam0+(target-cam0)*blend,minute=Number(frame.state.sky?.clock??1075);
+  const cam0=frame.camera.x+(Number(props.width)-width)/2,target=landing&&at?at.dx+landing.spawn-width*.45:cam0,authoredCam=cam0+(target-cam0)*blend,minute=Number(state.clock??1075);
+  const authoredCentre=authoredCam+width/2;
+  const cameraScene=zones.map(id=>({scene:scenes[id],at:placed.get(id)!})).find(row=>authoredCentre>=row.at.dx&&authoredCentre<row.at.dx+row.scene.width)?.scene??scenes[zones.at(-1)!];
+  return{frame,props,state,origin,zones,scenes,pixel,placed,fit0,fit,width,height,gy,authoredCam,minute,cameraScene};
+}
+/** Sequence scope follows current composition membership, not a second copy of group members. */
+export function sequenceWorldZones(props:Properties,scenes:Readonly<Record<string,SceneDef>>,compositions:WorldCompositions=worldCompositionSource as WorldCompositions){
+ if(props.worldComposition&&(props.zones as string[]).length)throw Error('World sequence scope uses a composition or explicit zones, not both');
+ return props.worldComposition?compileWorldComposition(compositions,String(props.worldComposition),worldCompositionContext(scenes)).chunks.map(c=>c.chunk):props.zones as string[];
+}
+function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocuments,id:string,time:number,options:ZoneSequenceOptions):WorldFrame{
+  const nativeScale=Math.abs(context.getTransform().a)||1;
+  const layout=sequenceWorldLayout(documents,id,time,options,nativeScale);
+  const {frame,props,zones,scenes,pixel,placed,fit0,authoredCam,minute,cameraScene}=layout;
+  let {fit,width,height,gy}=layout;
   const cameraZoom=frame.camera.zoom,authoredWidth=width/cameraZoom,authoredHeight=height/cameraZoom,authoredLeft=authoredCam+(width-authoredWidth)/2,authoredTop=gy+frame.camera.h-(height-authoredHeight)/2;
   const authoredLayout={width,height,ground:gy};
   let cam=authoredCam,guide:CameraGuide|undefined;
-  const authoredCentre=authoredCam+width/2;
-  const cameraScene=zones.map(id=>({scene:scenes[id],at:placed.get(id)!})).find(row=>authoredCentre>=row.at.dx&&authoredCentre<row.at.dx+row.scene.width)?.scene??scenes[zones.at(-1)!];
+
+
   if(options.workspace){
     const workspace=options.workspace,baseHeight=options.height/fit0,baseGround=Math.round(baseHeight/pixel*Number(props.ground))*pixel,baseCentreH=baseGround-baseHeight/2,baseCentreX=workspace.anchorX+Number(props.width)/2;
     fit=fit0*workspace.zoom;width=options.width/fit;height=options.height/fit;
@@ -78,19 +97,20 @@ function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocument
   const centre=cam+width/2;
   const placements=zones.map(id=>{const scene=scenes[id],at=placed.get(id);if(!scene||!at)throw Error('World sequence zone is missing or unjoined: '+id);return{scene,x:at.dx,h:at.dh};});
   const active=(options.workspace?placements.find(z=>z.scene===cameraScene):placements.find(z=>centre>=z.x&&centre<z.x+z.scene.width))??placements.at(-1)!;
-  const intensity=Number(frame.state.sky?.rain??0),weather:Weather={kind:intensity?'rain':'clear',from:'clear',mix:intensity,cloud:intensity*.8,rain:intensity,storm:0,fog:0,smog:0,heat:0,wet:intensity,wind:intensity*.3};
+  const intensity=Number(layout.state.rain??0),weather:Weather={kind:intensity?'rain':'clear',from:'clear',mix:intensity,cloud:intensity*.8,rain:intensity,storm:0,fog:0,smog:0,heat:0,wet:intensity,wind:intensity*.3};
   const lighting=lightAt(1,minute,cameraScene.facing??270,null,true);
   const viewOf=(x:number,h=0):View=>{
     const base={...frameView(options.ambientTime*60,lighting),worldZones:placementCoordinates(placed,{dx:x,dh:h},scenes),viewW:width,viewH:height,gy,
-      ...sourceProjection({cam,gy},{dx:x,dh:h},1,options.workspace?authoredCam:cam,true),flags:{}};
+      ...sourceProjection({cam,gy},{dx:x,dh:h},1,options.workspace?authoredCam:cam,true),flags:options.flags??{}};
     if(!options.workspace)return base;
     const ground=authoredLayout.ground+frame.camera.h;
     const cameraView:View={...base,viewW:authoredLayout.width,viewH:authoredLayout.height,gy:ground,
       ...sourceProjection({cam:authoredCam,gy:ground},{dx:x,dh:h},1,authoredCam,true)};
     return{...base,cameraFrame:{view:cameraView,x:authoredCam-cam,y:gy-ground}};
   };
-  const hostOf=(scene:SceneDef)=>{const model=modelFor(scene),engine:EngineDraw={m:model,hover:null,layer:'all'};return{visionOn:false,model,draw:(ctx:CanvasRenderingContext2D,v:View)=>scene.drawBackdrop(ctx,v,engine)};};
-  const joined:ZoneFrame[]=placements.filter(z=>z!==active&&(z.x+z.scene.width>cam&&z.x<cam+width||z.scene.artworkVisible?.(viewOf(z.x,z.h),modelFor(z.scene)))).map(z=>({scene:z.scene,sceneId:z.scene.id,view:viewOf(z.x,z.h),host:hostOf(z.scene),lighting:()=>lighting,weather:()=>weather}));
+  const modelAt=(scene:SceneDef)=>options.model?.(scene.id);
+  const hostOf=(scene:SceneDef)=>{const model=modelAt(scene);if(!model)throw Error('Directed frame is missing a resident model: '+scene.id);const engine:EngineDraw={m:model,hover:null,layer:'all'};return{visionOn:false,model,draw:(ctx:CanvasRenderingContext2D,v:View)=>scene.drawBackdrop(ctx,v,engine)};};
+  const joined:ZoneFrame[]=placements.filter(z=>z!==active&&(z.x+z.scene.width>cam&&z.x<cam+width||z.scene.artworkVisible?.(viewOf(z.x,z.h),modelAt(z.scene)))).map(z=>({scene:z.scene,sceneId:z.scene.id,view:viewOf(z.x,z.h),host:hostOf(z.scene),lighting:()=>lighting,weather:()=>weather}));
   // World camera height follows the game's height-up coordinates. The director's
   // picture offset has the opposite sign; it is not another world-space height.
   const localFrame={...frame,camera:{...frame.camera,x:cam-active.x,h:options.workspace?0:-frame.camera.h,zoom:options.workspace?1:frame.camera.zoom}};

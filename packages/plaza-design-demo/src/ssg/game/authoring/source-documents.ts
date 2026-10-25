@@ -1,3 +1,7 @@
+import {sequenceCommandTargets,worldSequenceSources,validateSequenceHandoffs} from '../runtime/sequence-commands';
+import {sequenceWorldZones} from '../runtime/prepare-frame';
+import {compileGameWorld,worldCompositionContext} from '../world/compiled-world';
+import {validateWorldCompositions,validateWorldEditReferences} from '../world/compositions';
 import {validateSequence} from '../art/core/sequence';
 import {sequencePlacements} from '../world/zone-graph';
 import {withSharedState} from '../engine/gameplay/shared-state';
@@ -70,6 +74,7 @@ const validatePendingSceneContent=(registration:(typeof gameplayScenes)[number],
  return registration.validateScene(value,gameplay,{phase:'assembled',data:scene.data!,network});
 };
 export const sourceDocuments: DocumentDescriptor[] = [
+  {id:'world-compositions',file:'world/compositions.json',kind:'world-composition',validate:validateWorldCompositions,validateContext:(value,documents)=>compileGameWorld(pendingRegistry(new Map([...documents,['world-compositions',value]])),new Map([...documents,['world-compositions',value]]))},
   {id:'companion-gameplay',file:'engine/gameplay/companion-gameplay.json',kind:'gameplay',validate:validateCompanionGameplay},
   // world-level state owners (shift.*): declared once, used by scenes through gameplay sharedState
   {id:'state-owners',file:'world/state-owners.json',kind:'gameplay',validate:validateSharedState},
@@ -121,11 +126,16 @@ function validateAll(documents: ReadonlyMap<string, unknown>) {
   for(const s of gameplayScenes)validatePendingSceneContent(s,documents.get(s.prefix+'-scene'),documents);
   const scenes=pendingRegistry(documents);
   for(const scene of Object.values(scenes)){const ref=scene.backdrop;if(ref&&!documents.has(backdropDocumentId(ref.id)))throw new Error('Unknown backdrop '+ref.id+' in '+scene.id);}
-  for(const seam of validateZoneGraph(documents.get('zone-graph')).seams){const a=scenes[seam.a.zone]?.backdrop,b=scenes[seam.b.zone]?.backdrop;if(a&&b&&a.id===b.id&&(Math.abs(b.x-a.x-seam.dx)>0.001||Math.abs((b.h??0)-(a.h??0)-seam.dh)>0.001))throw new Error('Backdrop origins disagree across seam '+seam.id);}
-  for(const composition of Object.values(compositions))for(const row of composition.instances)if(row.type==='sequence.world-control'){const props=art.properties(row.type,row.props);sequencePlacements(validateZoneGraph(documents.get('zone-graph')),String(props.origin),props.zones as string[],scenes);}
+  for(const seam of compileGameWorld(scenes,documents).seams){const a=scenes[seam.a.zone]?.backdrop,b=scenes[seam.b.zone]?.backdrop;if(a&&b&&a.id===b.id&&(Math.abs(b.x-a.x-seam.dx)>0.001||Math.abs((b.h??0)-(a.h??0)-seam.dh)>0.001))throw new Error('Backdrop origins disagree across seam '+seam.id);}
+  const checkScope=(composition:Composition)=>{for(const row of composition.instances)if(row.type==='sequence.world-control'){const props=art.properties(row.type,row.props);sequencePlacements(compileGameWorld(scenes,documents),String(props.origin),sequenceWorldZones(props,scenes,validateWorldCompositions(documents.get('world-compositions'))),scenes);}};
+  for(const composition of Object.values(compositions))checkScope(composition);
   validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents));
-  const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);
-  const context = createSequenceValidationContext(art, compositions, pendingDestinations(documents));
+  const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);validateWorldEditReferences(validateWorldCompositions(documents.get('world-compositions')),definitions.flatMap(d=>Object.values(d.commands).flatMap(c=>c.actions.flatMap(a=>'world'in a?[a.world]:[]))),worldCompositionContext(scenes));
+  const directed=worldSequenceSources(scenes),knownSequences=new Set(['intro','act2',...Object.keys(directed)]);
+  validateSequenceHandoffs(definitions,knownSequences);
+  for(const {composition}of Object.values(directed)){if(Object.values(compositions).some(c=>c!==composition&&c.sequence?.id===composition.sequence!.id))throw Error('Duplicate sequence '+composition.sequence!.id);compositions[composition.scene]=composition;}
+  const context = {...createSequenceValidationContext(art, compositions, pendingDestinations(documents)),commandTargets:sequenceCommandTargets(scenes)};
+  for(const {composition}of Object.values(directed)){checkScope(composition);validateSequence(composition,context);}
   for (const id of Object.keys(sequenceFiles)) validateSequence(compositions[id],context);
   createRuntimeSequenceDocuments(documents,context);
   for (const id of documents.keys()) if (!sourceDocuments.some(d => d.id === id)) throw new Error(`Unknown source document: ${id}`);

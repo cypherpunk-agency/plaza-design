@@ -1,3 +1,5 @@
+import {renderWorldDirectionAuthoring} from './world-direction-authoring';
+import {renderSequenceCommandsAuthoring} from './sequence-commands-authoring';
 import {clippingControls,peopleControls} from './mobile-controls';
 import {hitTestArtwork,sourceSelection,createSelection} from './selection';
 import {createPreviewState,createPreviewRenderer} from './preview-integration';
@@ -46,6 +48,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
 
   const {numberInput,fieldInput}=createFieldControls((text,error)=>notice(text,error));
   const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks }, config.validateDocument, config.projections,config.destinationsFor,config.validationInputs);
+  let commandTargetsVersion:object|undefined,commandTargetsCache:NonNullable<import('../art/core/timeline').TimelineContext['commandTargets']>={};
+  const commandTargets=()=>{if(commandTargetsVersion!==model.sourceVersion){commandTargetsCache=config.commandTargetsFor?.(model.list())??{};commandTargetsVersion=model.sourceVersion;}return commandTargetsCache;};
   let viewDocuments: EditorDocument[] | undefined;
   const documentsForView = () => viewDocuments ?? model.list();
   const withViewDocuments = <T,>(work: () => T): T => {
@@ -587,7 +591,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const liveContext = (scene: string): WorkbenchContext => ({ get documents() { return documentsForView(); }, scene, openScene, openInstance, authoring: authoringApi() });
   function refreshRight() {
     const node = selected(), scene = sceneId(), doc = compositionDocument(); right.replaceChildren();
-    if(renderTimelineInspector(right,{selection:editorSelection.timeline,sequence:sequence(),time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,selectTimeline,seekTime,notice,setSelection:value=>{editorSelection.timeline=value;},close:()=>{editorSelection.timeline=undefined;refreshRight();refreshTimeline();},getFrame:()=>evaluateTimeline(currentTimeline()!,sequenceId,time,evaluationContext(),{reduced})})){disposeInspector();return;}
+    if(renderTimelineInspector(right,{selection:editorSelection.timeline,sequence:sequence(),commandTargets:commandTargets(),time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,selectTimeline,seekTime,notice,setSelection:value=>{editorSelection.timeline=value;},close:()=>{editorSelection.timeline=undefined;refreshRight();refreshTimeline();},getFrame:()=>evaluateTimeline(currentTimeline()!,sequenceId,time,evaluationContext(),{reduced})})){disposeInspector();return;}
     inspector.render(right,{node,scene,doc,sceneName:sceneName(scene),sharedSource:!!editorSelection.document&&editorSelection.document!==currentId,registry:config.registry,
       duplicate:()=>run(()=>{editorSelection.instance=model.duplicate(doc!.id,editorSelection.instance);}),remove:deleteSelected,deselect:()=>select_(''),openSource:()=>openDocument(editorSelection.document),refresh:refreshRight,
       resolved:()=>{const preview=painting.result,key=Object.keys(preview?.resolved??{}).find(k=>k===node?.id&&!preview?.sources?.[k]||preview?.sources?.[k]?.document===doc?.id&&preview?.sources?.[k]?.instance===node?.id);const data=key?preview?.resolved?.[key]:undefined;return data&&node?{...data,authored:node.placement}:undefined;},
@@ -630,7 +634,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const siblings = layerRows(composed.value as Composition, node.layer), at = siblings.findIndex(n => n.id === node.id), stepper = element('div', 'row');
     const forward = button('Bring forward', () => run(() => model.restack(composed.id, node.id, node.layer, at + 1)), 'Draw in front of the next item in this layer'), backward = button('Send backward', () => run(() => model.restack(composed.id, node.id, node.layer!, at - 1)), 'Draw behind the previous item in this layer');
     forward.disabled = at >= siblings.length - 1; backward.disabled = at <= 0; stepper.append(backward, forward); position.append(stepper);
-    const fields = Object.entries(art.fields);
+    if(node.type==='sequence.world-control')renderWorldDirectionAuthoring(part('World direction',true),node,documentsForView(),editInstance,e=>notice(String(e),true));
+    const fields = Object.entries(art.fields).filter(([key])=>node.type!=='sequence.world-control'||!['origin','zones','worldComposition'].includes(key));
     if (fields.length) { const look = part('Look', true); const shown = config.registry.properties(node.type, node.props); for (const [key, field] of fields) { if(node.type==='character.flow'&&(key==='flow'||key==='exit'))continue; if (field.showIf && !field.showIf(shown)) continue; const value = node.props[key] ?? field.default; const control = fieldInput(field, value, v => editInstance(`Change ${field.label}`, n => n.props[key] = v)); look.append(label(field.label + (field.unit ? ` (${field.unit})` : ''), control)); } }
     if (art.libraryUse === 'reusable' && presetsDoc()) renderPresets(part('Preset', false), node);
     const composition = compositionDocument()!.value as Composition, anchorDetails = part('Attachment and anchors', !!node.attach);
@@ -721,6 +726,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     editArray(dataPanel, 'Shots', seq.shots, value => apply('shots', value), 'Ordered {id,from,to,camera:{x,h,zoom}}. Times are seconds. Shots must not overlap.');
     editArray(dataPanel, 'Text cards', seq.text, value => apply('text', value), '{id,from,to,text,x,h}. Cards are rendered by the shared preview provider.');
     editArray(dataPanel, 'Fades', seq.fades, value => apply('fades', value), '{id,from,to,color,start,end}. Opacity stays within 0–1.');
+    renderSequenceCommandsAuthoring(dataPanel,seq,commandTargets(),(label,change)=>editTimeline(label,d=>change(d.sequences.find(s=>s.id===sequenceId)!)),e=>notice(e instanceof Error?e.message:String(e),true));
     editArray(dataPanel, 'Named beats', seq.beats, value => apply('beats', value), '{id,time}. Previewing these never dispatches gameplay events.');
     const handoff = element('details'); handoff.append(element('summary', '', 'Handoff destination')); const destinations = Object.keys(model.timelineContext().destinations ?? {}); handoff.append(label('Scene', select([{ value: '', label: 'No handoff' }, ...destinations.map(v => ({ value: v, label: v }))], seq.handoff?.scene ?? '', v => apply('handoff', v ? { scene: v } : undefined))));
     if (seq.handoff) handoff.append(label('Entrance', select([{ value: '', label: 'Default entrance' }, ...(model.timelineContext().destinations?.[seq.handoff.scene] ?? []).map(v => ({ value: v, label: v }))], seq.handoff.entrance ?? '', v => apply('handoff', { scene: seq.handoff!.scene, ...(v ? { entrance: v } : {}) })))); handoff.append(element('p', 'muted', 'Preview never travels or changes player progress.')); dataPanel.append(handoff);

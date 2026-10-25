@@ -14,7 +14,9 @@ export type SeamKind = typeof SEAM_KINDS[number];
 export interface SeamEnd { zone: string; piece?: string }
 /** `b`'s origin sits at (`dx`, `dh`) in `a`'s units: `dh` < 0 is below (an underground station under its street). */
 export interface Seam { id: string; kind: SeamKind; a: SeamEnd; b: SeamEnd; dx: number; dh: number }
-export interface ZoneGraphSource { version: 1; seams: Seam[] }
+/** Derived placement links arrange chunks without creating a physical crossing. Authored graph JSON remains seams only. */
+export interface PlacementLink {a:string;b:string;dx:number;dh:number}
+export interface ZoneGraphSource { version: 1; seams: Seam[]; placements?:PlacementLink[] }
 /** Where a zone sits relative to the active one, and how many seams away it is. */
 export interface ZonePlacement { dx: number; dh: number; hops: number }
 /** What the graph needs to know about each zone: its width, and (for residency across floors) its height. */
@@ -53,6 +55,8 @@ export function seamsOf(graph: ZoneGraphSource, zone: string): { seam: Seam; oth
   return graph.seams.flatMap(seam => seam.a.zone === zone ? [{ seam, other: seam.b.zone, dx: seam.dx, dh: seam.dh }]
     : seam.b.zone === zone ? [{ seam, other: seam.a.zone, dx: 0 - seam.dx, dh: 0 - seam.dh }] : []);
 }
+/** Geometry traversal also follows composition layout links; crossing still uses only seamsOf. */
+function neighbours(graph:ZoneGraphSource,zone:string):{seam?:Seam;other:string;dx:number;dh:number}[]{return [...seamsOf(graph,zone),...(graph.placements??[]).flatMap(p=>p.a===zone?[{other:p.b,dx:p.dx,dh:p.dh}]:p.b===zone?[{other:p.a,dx:-p.dx,dh:-p.dh}]:[])];}
 
 /**
  * The zones around `active`, each placed relative to it by walking seams outward (shortest path first), up to
@@ -65,7 +69,7 @@ export function placeFrom(graph: ZoneGraphSource, active: string, hops = 1, with
   while (queue.length) {
     const at = queue.shift()!, here = out.get(at)!;
     if (here.hops >= hops) continue;
-    for (const s of seamsOf(graph, at)) {
+    for (const s of neighbours(graph, at)) {
       if (out.has(s.other) || refused.has(s.other)) continue;
       const there = { dx: here.dx + s.dx, dh: here.dh + s.dh, hops: here.hops + 1 };
       if (within && !within(s.other, there)) { refused.add(s.other); continue; }
@@ -146,16 +150,26 @@ export function residency(graph: ZoneGraphSource, input: ResidencyInput): Reside
   const D = RESIDENCY_DEFAULTS, budget = input.budget ?? D.budget, margin = input.margin ?? D.margin, { active, camera, zones: info } = input;
   const prefetch = (input.prefetch ?? D.prefetch) * input.viewW, evict = (input.evict ?? D.evict) * input.viewW;
   const hosted = new Set(input.hosted), held = new Set(input.held ?? []);
-  const placed = placeFrom(graph, active, Infinity, (z, at) => !!info[z] && Math.hypot(...gapOf(camera, at, info[z])) <= evict);
+  // Walk geometry independently of camera distance: a remote directing camera must not lose
+  // its destination merely because intermediate chunks are outside the residency radius.
+  const placed = placeFrom(graph, active, Infinity);
   const zones = new Map<string, ZoneResidency>();
   for (const [z, at] of placed) {
     if (!info[z]) continue;
     const [gx, gy] = gapOf(camera, at, info[z]), d = Math.hypot(gx, gy), r = (tier: ResidencyTier, reason: string) => zones.set(z, { tier, at, gap: d, reason });
+    // Complete geometry discovery does not enlarge the hosted/placed residency contract.
+    // A remote camera can find visible content through absent intermediate chunks; unrelated
+    // far chunks keep the existing departure behavior and carry no resident placement.
+    if(z!==active&&d>evict){
+      if(held.has(z))zones.set(z,{tier:'near',gap:Infinity,reason:'held: a panel is open'});
+      else if(hosted.has(z))zones.set(z,{tier:'unloaded',gap:Infinity,reason:'unloaded: past the eviction distance'});
+      continue;
+    }
     if (z === active) r('active', 'the player is here');
     else if (gx <= margin && gy <= margin) r('visible', `visible: ${Math.round(d)} from camera`);
     else if (d <= prefetch) r('near', `near: ${Math.round(d)} from camera <= prefetch ${Math.round(prefetch)}`);
     else if (held.has(z)) r('near', 'held: a panel is open');
-    else if (hosted.has(z)) r('near', `kept: ${Math.round(d)} from camera <= eviction ${Math.round(evict)}`);
+    else if (hosted.has(z) && d <= evict) r('near', `kept: ${Math.round(d)} from camera <= eviction ${Math.round(evict)}`);
     else r('unloaded', `unloaded: ${Math.round(d)} from camera > prefetch ${Math.round(prefetch)}`);
   }
   for (const z of [...hosted, ...held]) if (!zones.has(z))
@@ -168,7 +182,7 @@ export function residency(graph: ZoneGraphSource, input: ResidencyInput): Reside
 }
 
 /** Is a zone joined to anything? A zone with no seams is a world of one zone: it runs exactly as a scene always has. */
-export const joined = (graph: ZoneGraphSource, zone: string) => graph.seams.some(s => s.a.zone === zone || s.b.zone === zone);
+export const joined = (graph: ZoneGraphSource, zone: string) => neighbours(graph,zone).length>0;
 
 /**
  * What is wrong with the graph against the zones that exist (and, where given, each zone's level pieces):
@@ -188,15 +202,15 @@ export function worldProblems(graph: ZoneGraphSource, zones: Readonly<Record<str
   }
   // every loop must close: placing from one zone of each joined group, all paths to a zone agree within a unit
   const done = new Set<string>();
-  for (const zone of new Set(graph.seams.flatMap(s => [s.a.zone, s.b.zone]))) {
+  for (const zone of new Set([...graph.seams.flatMap(s => [s.a.zone, s.b.zone]),...(graph.placements??[]).flatMap(p=>[p.a,p.b])])) {
     if (done.has(zone)) continue;
     const at = new Map<string, { dx: number; dh: number }>([[zone, { dx: 0, dh: 0 }]]), queue = [zone]; done.add(zone);
     while (queue.length) {
       const z = queue.shift()!, p = at.get(z)!;
-      for (const s of seamsOf(graph, z)) {
+      for (const s of neighbours(graph, z)) {
         const want = { dx: p.dx + s.dx, dh: p.dh + s.dh }, had = at.get(s.other);
         if (!had) { at.set(s.other, want); queue.push(s.other); done.add(s.other); }
-        else if (Math.abs(had.dx - want.dx) > 1 || Math.abs(had.dh - want.dh) > 1) { const msg = `${s.seam.id}: the seams around ${zone} place ${s.other} in two places`; if (!out.includes(msg)) out.push(msg); }
+        else if (Math.abs(had.dx - want.dx) > 1 || Math.abs(had.dh - want.dh) > 1) { const msg = `${s.seam?.id??'layout'}: the seams around ${zone} place ${s.other} in two places`; if (!out.includes(msg)) out.push(msg); }
       }
     }
   }

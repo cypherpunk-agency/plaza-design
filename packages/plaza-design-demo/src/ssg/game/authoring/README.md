@@ -4,6 +4,18 @@ Public editor: **https://cypherpunk.agency/editor/**. The same editor is package
 Public edits remain in the browser; download a bundle before closing. Importing a bundle is one
 undoable operation. Public editing does not change the published game or write repository files.
 
+World → Compositions edits named chunk groups and placed membership through the same source,
+history, bundle and protected Save as scenes. Runtime mount/unmount actions live in shared
+system commands; inspect pending/applied state in private Play. A state declaration's optional
+**State binding** is a world key: empty uses its qualified declaration ID; an explicit key lets
+alternate presentations access the same value. No values are copied.
+
+Select a world sequence's settings object in the outline. **World direction** chooses a world
+composition or explicit zones and an origin chunk. Composition mode follows current membership,
+without another member list. The bottom timeline edits keyframes and typed command markers,
+skip policy and completion/cancellation lists. Event handoffs can select the sequence. Scrub uses
+isolated state; private Play runs the full engine. See the [compact example and acceptance](../docs/design/WORLD-FIRST-RUNTIME.md).
+
 ## Local workflow
 
 From repository root:

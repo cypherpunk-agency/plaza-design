@@ -1,3 +1,5 @@
+import {sequenceInspection} from '../../src/ssg/game/authoring/sequence-inspection';
+import {SCENES} from '../../src/ssg/game/scenes';
 import {measureArtwork} from '../../src/ssg/game/art/core/measure';
 import {prepareFrame} from '../../src/ssg/game/runtime/prepare-frame';
 import {renderWorldFrame} from '../../src/ssg/game/runtime/render-scene';
@@ -26,6 +28,8 @@ const root=path.resolve('src/ssg/game');
 const documents=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'test',value:JSON.parse(fs.readFileSync(path.join(root,d.file),'utf8'))}));
 const make=()=>{const model=new ComposerModel(art,createSequenceValidationContext(art,{}),()=>{},[sceneCatalogueProjection]);model.load(documents);return model;};
 const model=make(),preview=createNativePreview(nativeSceneAdapters);
+let isolated:ReturnType<typeof sequenceInspection>|undefined;
+const worldSample=(time:number)=>{isolated?.dispose();isolated=sequenceInspection(SCENES,openingDocuments.timeline.sequences.find(s=>s.id==='glide')!,openingDocuments.composition.instances.find(n=>n.type==='sequence.world-control')!.props.zones as string[]);return isolated.sample(time);};
 function canvas(){let tracker!:CanvasRenderingContext2D;measureArtwork(ctx=>{tracker=ctx;});const transforms=new Set(['getTransform','save','restore','translate','scale','rotate','transform','setTransform','resetTransform']);const calls:unknown[]=[],values:Record<string,unknown>={globalAlpha:1,measureText:(s:string)=>({width:s.length*6})};const context=new Proxy(values,{get(o,key:string){if(transforms.has(key))return(...args:unknown[])=>{if(key!=='getTransform')calls.push([key,...args]);return (tracker as any)[key](...args);};if(key in o)return o[key];if(key==='getImageData'||key==='createImageData')return()=>({data:new Uint8ClampedArray(4)});if(key.startsWith('create'))return()=>({addColorStop(){}});return(...args:unknown[])=>calls.push([key,...args]);},set(o,key:string,value){o[key]=value;calls.push(['set',key,value]);return true;}});return{width:1280,height:720,getContext:()=>context,calls};}
 Object.assign(globalThis,{document:{createElement:canvas}});
 // The final shot must land on the elevated platform at the same screen height
@@ -34,13 +38,15 @@ for(const scale of [1,2,3]){
  const surface=canvas(),ctx=surface.getContext() as unknown as CanvasRenderingContext2D;
  ctx.setTransform(scale,0,0,scale,0,0);
  const ground=720/scale-54;
- const shot=renderWorldFrame({kind:'sequence',context:ctx,capture:true,documents:openingDocuments,sequenceId:'glide',time:68,scale,width:1280/scale,height:720/scale,reduced:false,lighting:lightAt(1,1140,90,null),world:{playGround:ground}});
+ const shot=renderWorldFrame({kind:'sequence',context:ctx,capture:true,documents:openingDocuments,sequenceId:'glide',time:68,scale,width:1280/scale,height:720/scale,reduced:false,lighting:lightAt(1,1140,90,null),world:{playGround:ground,...worldSample(68)}});
  const platform=shot.inspection!.find(scope=>scope.scene.id==='harbor-station')!;
  assert(Math.abs(platform.view.y(0)-ground)<.001,'closing shot and playable platform share their ground line at scale '+scale);
  assert(Math.abs(platform.view.sx(200)-platform.view.viewW*.45)<1,'closing shot focuses the actual player spawn');
 }
 function inspect(m=model,time=0,pending?:ReadonlyMap<string,unknown>,transient?:{document:string;composition:Composition}){const target=canvas(),documents=pending??new Map(m.list().map(d=>[d.id,d.value]));const composition=m.get('sequence-opening').value as Composition;const result=preview.render(target as unknown as HTMLCanvasElement,{composition,documents,transient,sourceVersion:pending&&!transient?undefined:m.sourceVersion,time,reduced:false,overlays:false,environment:{}});return{...result,calls:target.calls};}
 const outline=outlineDocuments(model.get('sequence-opening'),model.list()),membership=outline.map(doc=>doc.id);
+const boundaryOutline=outlineDocuments(model.get('authored.boundary-west'),model.list()).map(d=>d.id);
+assert(boundaryOutline.includes('authored.boundary-door')&&boundaryOutline.includes('authored.boundary-door-blue'),'composition outline includes current and explicitly commanded alternative sources');
 assert(membership.includes('authored.glide-beach')&&membership.includes('backdrop-glide-coast'),'assembled outline contains referenced scene and backdrop sources before selection');
 for(const time of [0,18,55,68]){const frame=inspect(model,time);for(const source of Object.values(frame.sources??{}))assert(membership.includes(source.document),'every selectable painted source has an outline owner: '+source.document);}
 const before=inspect();assert(before.bounds.length>5,'ordinary world objects have selectable bounds');
@@ -100,7 +106,7 @@ const opening=createRuntimeSequenceDocuments(values,context).opening,skyLight=li
 const liveContext=frameTimelineContext(context,{time:0,reduced:false,sequenceId:'glide',environment:{},viewport:{width:960,height:540},timeline:opening.timeline});
 const skyFrame=evaluateTimeline(opening.timeline,'glide',0,liveContext,{reduced:false});
 function skyAt(zoom:number,x=0,h=0){
- const surface=canvas(),prepared=prepareFrame({kind:'sequence',context:surface.getContext() as unknown as CanvasRenderingContext2D,documents:opening,sequenceId:'glide',frame:skyFrame,composition:skyFrame.composition,time:0,width:960,height:540,scale:1,reduced:false,lighting:skyLight,workspace:{anchorX:skyFrame.camera.x,anchorH:skyFrame.camera.h,x,h,zoom}});
+ const surface=canvas(),prepared=prepareFrame({kind:'sequence',context:surface.getContext() as unknown as CanvasRenderingContext2D,documents:opening,sequenceId:'glide',world:worldSample(0),frame:skyFrame,composition:skyFrame.composition,time:0,width:960,height:540,scale:1,reduced:false,lighting:skyLight,workspace:{anchorX:skyFrame.camera.x,anchorH:skyFrame.camera.h,x,h,zoom}});
  const view=prepared.view,sun=sunsetSun(view,skyLight,view.y(prepared.scene.horizon??0));
  return{sun,parallax:view.sx(1200,.2)+view.cam,x:sun.x+view.cam,h:view.y(0)-sun.y,layout:view.cameraFrame!.view,scale:prepared.workspaceScale!};
 }

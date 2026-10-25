@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {attachGameplayHandoffs} from '../../src/ssg/game/engine/gameplay/handoffs';
 import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
+import {validateSequenceHandoffs} from '../../src/ssg/game/runtime/sequence-commands';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {SceneTime} from '../../src/ssg/game/engine/time';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
@@ -22,6 +23,7 @@ try{
  attachGameplayHandoffs(nativeSession,{schedule:(ms,run,canceled,detail)=>model.later(ms,run,detail,canceled),cutscene:()=>{}});
  for(let i=0;i<100;i++){nativeState={flags:{},items:{},tokens:0};assert(nativeSession.dispatch('finish','conversation').ok);if(i%2)model.restore(model.snapshot());else model.reset();model.setPaused(true);advance(2000);assert.equal(nativeState.values!.test.departed,false);}
  nativeSession.dispose();model.reset();model.setPaused(true);assert.equal(pending(),0);
- for(const mutate of [(d:any)=>{d.handoffs[0].cutscene='absent';},(d:any)=>{d.handoffs[0].after[0].command='finish';},(d:any)=>{d.handoffs[0].after[0].ms=0;},(d:any)=>{d.handoffs.push(d.handoffs[0]);},(d:any)=>{d.handoffs[0].after=[];}]){const bad=structuredClone(def);mutate(bad);assert.throws(()=>validateGameplay(bad));}
+ const missing=structuredClone(def);missing.handoffs![0].cutscene='absent';assert.throws(()=>validateSequenceHandoffs([validateGameplay(missing)],new Set(['intro','act2'])));
+ for(const mutate of [(d:any)=>{d.handoffs[0].after[0].command='finish';},(d:any)=>{d.handoffs[0].after[0].ms=0;},(d:any)=>{d.handoffs.push(d.handoffs[0]);},(d:any)=>{d.handoffs[0].after=[];}]){const bad=structuredClone(def);mutate(bad);assert.throws(()=>validateGameplay(bad));}
  console.log('Shared handoffs PASS: real SceneTime 1499/1500ms boundary, pause/resume, read-only eligibility, failed commit isolation, repeat guard, 100 clock-clear/reuse cycles, disposal cancellation and strict event/command/cinematic/delay references.');
 }finally{Object.defineProperty(globalThis,'performance',{configurable:true,value:original.performance});globalThis.setTimeout=original.setTimeout;globalThis.clearTimeout=original.clearTimeout;}

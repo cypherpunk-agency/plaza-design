@@ -23,6 +23,7 @@ import type {CameraState,ScenesState,PresentationState} from './state';
 /** SceneLifecycle functions use runtime-owned data; they never start a loop or own a save. */
 export interface SceneLifecyclePort{
   camera: CameraState;
+  ambientTime?:number;
   sceneDefinition: (id: SceneId) => SceneDef;
   scenes: ScenesState;
   zoneGraph: ZoneGraphSource;
@@ -52,7 +53,7 @@ function mobileOwnersAt(port:SceneLifecyclePort,id:SceneId,cam:number){
  const placed=placeFrom(port.zoneGraph,id,Infinity),owners:SceneId[]=[];
  for(const owner of placed.keys()){
       if(!port.hasScene(owner))continue;const scene=port.sceneDefinition(owner);
-      if(scene.sudoOnly&&!sudoOn()&&!EDITOR_PLAY)continue;
+      if(scene.sudoOnly&&!sudoOn()&&!EDITOR_PLAY&&!port.scenes.directedZones.has(owner))continue;
       if(!scene.mobileExtent)continue;
       const range=mobileRouteExtent(owner,scene,placed);
       // Residency policy is intentionally wider than the scenery viewport.
@@ -70,8 +71,8 @@ export function joinLevel(port:SceneLifecyclePort,id: SceneId,cam = port.camera.
     const r = residencyAt(port,id, cam), parts = [];
     for (const [z, zr] of r.zones) {
       if (zr.tier === 'unloaded' || !zr.at || !port.hasScene(z)) continue;
-      const d = port.sceneDefinition(z); if (!d.level) continue;
-      parts.push({ zone: z, source: d.level, dx: zr.at.dx, dh: zr.at.dh, width: d.width });
+      const d = port.sceneDefinition(z);
+      if(d.level)parts.push({ zone: z, source: d.level, dx: zr.at.dx, dh: zr.at.dh, width: d.width });
       port.scenes.zoneTiers.set(z, zr.tier);
       // a visible zone is hosted now (it is drawn); a near one is compiled by `followResidency`, one per frame
       if (z !== id) { port.scenes.joinedZones.push({ id: z, dx: zr.at.dx, dh: zr.at.dh }); if (zr.tier === 'visible') port.hostOf(z); }
@@ -91,7 +92,7 @@ export function joinLevel(port:SceneLifecyclePort,id: SceneId,cam = port.camera.
 
 function residencyAt(port:SceneLifecyclePort,id: SceneId,cam: number) {
     const zones: Record<string, { width: number }> = {};
-    for (const seam of port.zoneGraph.seams) for (const z of [seam.a.zone, seam.b.zone]) if (port.hasScene(z) && (!port.sceneDefinition(z).sudoOnly || sudoOn() || EDITOR_PLAY)) zones[z] = { width: port.sceneDefinition(z).width };
+    for (const z of new Set([id,...port.zoneGraph.seams.flatMap(s=>[s.a.zone,s.b.zone]),...(port.zoneGraph.placements??[]).flatMap(p=>[p.a,p.b])])) if (port.hasScene(z) && (!port.sceneDefinition(z).sudoOnly || sudoOn() || EDITOR_PLAY || port.scenes.directedZones.has(z))) zones[z] = { width: port.sceneDefinition(z).width };
     const hosted = [...port.scenes.hosts].filter(([z]) => zones[z]), held = hosted.filter(([, h]) => h.overlayOpen || h.popupOpen || h.visionOn || h.acknowledgmentPending);
     const r=residency(port.zoneGraph, { active: id, camera: { x: cam, w: port.camera.viewW }, viewW: port.camera.viewW, zones, hosted: hosted.map(([z]) => z), held: held.map(([z]) => z) });
     // A source chunk is resident only for its scenery, never to keep a mobile alive.
@@ -99,7 +100,8 @@ function residencyAt(port:SceneLifecyclePort,id: SceneId,cam: number) {
     for(const[owner,at]of placed){
       if(owner===id||!port.hasScene(owner))continue;
       const scene=port.sceneDefinition(owner),model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model;
-      const view={...frameView(0),artworkScope:'static' as const,viewW:port.camera.viewW,viewH:port.camera.viewH,cam:cam-at.dx,gy:port.camera.gy-at.dh,y:(h:number)=>port.camera.gy-at.dh-h,sx:(x:number,p=1)=>x-(cam-at.dx)*p};
+      if(scene.sudoOnly&&!sudoOn()&&!EDITOR_PLAY&&!port.scenes.directedZones.has(owner))continue;
+      const view={...frameView(port.ambientTime??0),flags:port.save.flags,artworkScope:'static' as const,viewW:port.camera.viewW,viewH:port.camera.viewH,cam:cam-at.dx,gy:port.camera.gy-at.dh,y:(h:number)=>port.camera.gy-at.dh-h,sx:(x:number,p=1)=>x-(cam-at.dx)*p};
       if(scene.artworkVisible?.(view,model)){
         r.zones.set(owner,{tier:'visible',at,gap:0,reason:'visible artwork bounds'});
         r.evict=r.evict.filter(z=>z!==owner);if(!port.scenes.hosts.has(owner)&&!r.load.includes(owner))r.load.push(owner);
@@ -109,6 +111,21 @@ function residencyAt(port:SceneLifecyclePort,id: SceneId,cam: number) {
   }
 
 export function followResidency(port:SceneLifecyclePort) {
+    const origin=port.scenes.directedOrigin;
+    if(origin&&port.hasScene(origin)&&!placeFrom(port.zoneGraph,port.scenes.here,Infinity).has(origin)){
+      // Disconnected interiors and a directing camera have independent references. Camera
+      // residency never merges those unrelated floors or rebases the stationary player.
+      const r=residencyAt(port,origin,port.camera.cam);
+      port.scenes.zoneTiers=new Map([...r.zones].map(([id,row])=>[id,row.tier==='active'?'visible':row.tier]));
+      port.scenes.zoneTiers.set(port.scenes.here,'active');
+      const owners=new Set([...mobileOwnersAt(port,origin,port.camera.cam),...mobileOwnersAt(port,port.scenes.here,port.p.x-port.camera.viewW*.45)]);
+      port.scenes.mobileOwners=owners;
+      for(const [id,row]of r.zones)if(row.tier==='visible'||row.tier==='active')port.hostOf(id as SceneId);
+      const next=r.load.find(id=>!port.scenes.hosts.has(id as SceneId)&&port.hasScene(id));if(next)port.hostOf(next as SceneId);
+      for(const owner of owners){const model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model??port.hostOf(owner).model,source=port.sceneDefinition(owner).level;if(source)model.peopleLevel={...source,vehicleZones:placementCoordinates(placeFrom(port.zoneGraph,owner,Infinity))};}
+      for(const id of r.evict)if(id!==port.scenes.here)unload(port,id as SceneId);
+      showHosts(port);return;
+    }
     if (!port.scenes.level?.source.zones) return;
     const r = residencyAt(port,port.scenes.here, port.camera.cam);
     const want = [...r.zones].filter(([z, zr]) => zr.tier !== 'unloaded' && zr.at && port.hasScene(z) && port.sceneDefinition(z).level).map(([z]) => z).sort();
@@ -119,7 +136,9 @@ export function followResidency(port:SceneLifecyclePort) {
     const floor = port.scenes.level.state.vehicle?levelZone(port.scenes.level):levelFloor(port.scenes.level).zone; if (floor && !want.includes(floor)) return;
     const owners=mobileOwnersAt(port,port.scenes.here,port.camera.cam);
     const sameMobiles=owners.length===port.scenes.mobileOwners.size&&owners.every(id=>port.scenes.mobileOwners.has(id));
-    const source = want.join() === have.join()&&sameMobiles ? undefined : joinLevel(port,port.scenes.here);
+    const visual=[...r.zones].filter(([z,zr])=>z!==port.scenes.here&&zr.tier!=='unloaded'&&zr.at&&port.hasScene(z)).map(([z])=>z).sort();
+    const sameVisuals=visual.join()===port.scenes.joinedZones.map(z=>z.id).sort().join();
+    const source = want.join() === have.join()&&sameMobiles&&sameVisuals ? undefined : joinLevel(port,port.scenes.here);
     if (source?.zones) {port.scenes.level = levelRejoin({ source, state: port.scenes.level.state }, source, seenRooms(port,source, port.scenes.here) ?? [], savedForLevel(source, port.scenes.here, port.save.barriers));if(port.scenes.level.state.vehicle)stepLevelVehicles(port.scenes.level,port.p,port.movers);}
     // out of the level now: zones past the eviction distance unload; one zone coming into reach is compiled per frame
     for (const z of r.evict) if (z !== port.scenes.here) unload(port,z as SceneId);
@@ -197,13 +216,34 @@ export function showHosts(port:SceneLifecyclePort){
  const here=port.zh,input=port.interactionHost,railOwner=port.platformOwner;
  if(railOwner)port.hostOf(railOwner);
  for(const[id,host]of port.scenes.hosts){
-  if(host!==here&&host!==input&&id!==railOwner&&!port.scenes.joinedZones.some(z=>z.id===id)){unload(port,id);continue;}
+  if(host!==here&&host!==input&&id!==railOwner&&!port.scenes.joinedZones.some(z=>z.id===id)&&!(port.scenes.directedOrigin&&port.scenes.directedZones.has(id)&&port.scenes.zoneTiers.has(id)&&port.scenes.zoneTiers.get(id)!=='unloaded')){unload(port,id);continue;}
   host.show(host===input,host===input||host===here||port.scenes.zoneTiers.get(id)==='visible');
  }
     for(const[id,core]of port.scenes.mobiles)if(!port.scenes.mobileOwners.has(id)){
       const {state,...checkpoint}=core.model.snapshot();port.save.scenes[id]={...checkpoint,...(port.save.scenes[id]?.board?{board:port.save.scenes[id]!.board}:{})};
       core.gameplay?.dispose();core.model.dispose();port.scenes.mobiles.delete(id);port.scenes.gameplaySessions.delete(id);
     }
+}
+
+/** Rebuild shared geometry after a coherent membership commit, retaining the existing player state. */
+export function refreshWorldMembership(port:SceneLifecyclePort){
+ const previous=port.scenes.level,source=joinLevel(port,port.scenes.here);
+ if(previous&&source)port.scenes.level=levelRejoin(previous,source,seenRooms(port,source,port.scenes.here)??[],savedForLevel(source,port.scenes.here,port.save.barriers));
+ showHosts(port);
+}
+
+/** Internal disposal dependencies. Being loaded is deliberately insufficient to block unmounting. */
+export function compositionDependencies(port:SceneLifecyclePort){
+ const dependencies:{chunk:string;reason:string}[]=[{chunk:port.scenes.here,reason:'player'}];
+ const floor=port.scenes.level&&levelFloor(port.scenes.level).zone;if(floor)dependencies.push({chunk:floor,reason:'occupied floor'});
+ for(const[chunk,tier]of port.scenes.zoneTiers)if(tier==='visible')dependencies.push({chunk,reason:'camera'});
+ for(const[chunk,host]of port.scenes.hosts)if(host.overlayOpen||host.popupOpen||host.visionOn||host.acknowledgmentPending)dependencies.push({chunk,reason:'interaction'});
+ for(const owner of port.scenes.mobileOwners){
+  const source=port.sceneDefinition(owner);dependencies.push({chunk:owner,reason:'live mobile source'});
+  for(const vehicle of source.level?.vehicles??[])for(const leg of vehicle.source.route.legs)dependencies.push({chunk:leg.zone==='here'?owner:leg.zone,reason:'live vehicle route'});
+  for(const flow of source.peopleFlows??[])for(const point of [...flow.flow.route,...flow.exit])dependencies.push({chunk:point.zone,reason:'live pedestrian route'});
+ }
+ return dependencies;
 }
 
 /** Read-only diagnostics from the actual mobile models; current zone is derived, never another owner. */

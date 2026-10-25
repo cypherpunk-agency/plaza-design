@@ -10,6 +10,12 @@ import { playProfile, saveKey } from './play-profile';
 // ---------- save state ----------
 
 export interface Save {
+  /** Current world-composition membership; no copied chunk content or instance state. */
+  worldMembership?:import('../world/compositions').WorldMembership;
+  /** One validated pending composition batch. Commands do not replay when a saved batch resumes. */
+  worldEdit?:import('../world/compositions').CompositionEdit[];
+  /** Receipts for the current authored direction activation, never an instruction to replay on load. */
+  sequenceActions?:import('./sequence-commands').SequenceCommandRun;
   /** Current place aboard a physical service; restored after its scene model. */
   vehicle?:import('../engine/level-vehicles').VehicleSave;
   /** Common scalar owner blocks shared by gameplay commands and scene models. */

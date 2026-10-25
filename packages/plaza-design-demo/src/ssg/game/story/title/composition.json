@@ -27,28 +27,6 @@
       },
       "order": 0,
       "layer": "logic"
-    },
-    {
-      "id": "service",
-      "type": "sequence.world-control",
-      "props": {
-        "origin": "glide-beach",
-        "zones": [
-          "glide-beach",
-          "glide-downtown-west",
-          "glide-downtown",
-          "glide-galleria",
-          "glide-spire-bay",
-          "harbor-station",
-          "harbor-quay"
-        ]
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 1,
-      "layer": "logic"
     }
   ],
   "sequence": {
@@ -115,35 +93,6 @@
         ]
       },
       {
-        "id": "train-arrives",
-        "target": {
-          "kind": "state",
-          "instance": "service",
-          "property": "x"
-        },
-        "keys": [
-          {
-            "time": 0,
-            "value": -6520,
-            "ease": "hold"
-          },
-          {
-            "time": 43.5,
-            "value": -5500,
-            "ease": "linear"
-          },
-          {
-            "time": 56.5,
-            "value": -1240,
-            "ease": "out"
-          },
-          {
-            "time": 64.5,
-            "value": 20
-          }
-        ]
-      },
-      {
         "id": "city-rain",
         "target": {
           "kind": "state",
@@ -174,30 +123,6 @@
           {
             "time": 51,
             "value": 0
-          }
-        ]
-      },
-      {
-        "id": "arrival-doors",
-        "target": {
-          "kind": "state",
-          "instance": "service",
-          "property": "open"
-        },
-        "keys": [
-          {
-            "time": 0,
-            "value": 0,
-            "ease": "hold"
-          },
-          {
-            "time": 64.5,
-            "value": 0,
-            "ease": "smooth"
-          },
-          {
-            "time": 65.5,
-            "value": 1
           }
         ]
       },
@@ -328,6 +253,36 @@
     ],
     "handoff": {
       "scene": "harbor-station"
-    }
+    },
+    "commands": [
+      {
+        "id": "hold-service",
+        "time": 0,
+        "scene": "harbor-station",
+        "command": "intro.hold",
+        "skip": "omit"
+      },
+      {
+        "id": "arrive-service",
+        "time": 43.5,
+        "scene": "harbor-station",
+        "command": "intro.arrive",
+        "skip": "omit"
+      }
+    ],
+    "onComplete": [
+      {
+        "id": "release-service",
+        "scene": "harbor-station",
+        "command": "intro.release"
+      }
+    ],
+    "onCancel": [
+      {
+        "id": "cancel-service",
+        "scene": "harbor-station",
+        "command": "intro.release"
+      }
+    ]
   }
 }

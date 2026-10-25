@@ -592,6 +592,8 @@ export interface Pt { x: number; y: number }
 /** A current mover checkpoint. Vehicle services retain a source path step, never executable saved steps. */
 export interface MoverSave {at:string;to?:string;pos?:number;path?:{name:string;step:number;nested?:number[];elapsed:number;from:{x:number;h:number};lastTo?:string;halt?:string}}
 export interface SceneSave {
+  /** Once-only condition activations, not an observation to replay when a checkpoint loads. */
+  triggers?:string[];
   /** Current short-lived passenger memory, with its expiry stamp. */
   people?:import('../engine/people').PeopleState;
   /** Goal ids reached. */

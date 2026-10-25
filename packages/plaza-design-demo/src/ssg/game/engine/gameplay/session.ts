@@ -29,7 +29,7 @@ export class GameplaySession {
   private cleanup=new Set<()=>void>();
   private listeners=new Set<(event:Readonly<GameplayEvent>)=>void>();
   private history:Readonly<GameplayEvent>[]=[];
-  constructor(definition:unknown,private port:StatePort,private afterCommit:()=>void=()=>{},private objectives:readonly ObjectiveDefinition[]=[],vocabulary?:{keyring?:ReadonlySet<string>;controlled?:ReadonlySet<string>}){this.definition=freeze(validateGameplay(definition));if(vocabulary?.keyring)this.keyringKnown=id=>vocabulary.keyring!.has(id);if(vocabulary?.controlled)this.controlledKnown=id=>vocabulary.controlled!.has(id);const session=Object.entries(this.definition.state??{}).filter(([,d])=>d.lifetime==='session');if(session.length){const initial=cloneState(this.port.read());initial.values??={};for(const[id,d]of session)setStateValue(initial.values,id,d.default);this.port.write(initial);}}
+  constructor(definition:unknown,private port:StatePort,private afterCommit:()=>void=()=>{},private objectives:readonly ObjectiveDefinition[]=[],vocabulary?:{keyring?:ReadonlySet<string>;controlled?:ReadonlySet<string>}){this.definition=freeze(validateGameplay(definition));if(vocabulary?.keyring)this.keyringKnown=id=>vocabulary.keyring!.has(id);if(vocabulary?.controlled)this.controlledKnown=id=>vocabulary.controlled!.has(id);const session=Object.entries(this.definition.state??{}).filter(([,d])=>d.lifetime==='session');if(session.length){const initial=cloneState(this.port.read());initial.values??={};for(const[id,d]of session)setStateValue(initial.values,id,d.default,this.definition);this.port.write(initial);}}
   private refreshObjective(state:GameplayState){if(this.objectives.length){delete state.objective;const next=currentObjective(this.objectives,state,this.queryContext());if(next)state.objective=next.id;}return state;}
   state(){const state=cloneState(this.port.read());if(this.definition.state)state.values=resolveValues(this.definition,state);return this.refreshObjective(state);}
   quote(id:string){return purchaseQuote(this.definition,id,this.state(),this.queryContext());}
@@ -49,6 +49,7 @@ export class GameplaySession {
       this.transactionContext={...this.readContext?.(),definition:this.definition};
       const draft=this.state(),events:GameplayEvent[]=[],notifications:({event:GameplayEvent}|{grant:GameplayGrant}|{domain:DomainNotice})[]=[],queue:{id:string;source:Source;cause?:string}[]=ids.map(id=>({id,source}));
       let commands=0,actions=0,continued=false,domain:GameplayDomainTransaction|undefined;
+      const worldEdits:import('../../world/compositions').CompositionEdit[]=[];
       for(let i=0;i<queue.length||(continuation&&!continued);i++){
         if(i===queue.length){this.refreshObjective(draft);continued=true;let next:string[];try{next=continuation!(cloneState(draft));}catch{return{ok:false,reason:'budget'};}if(next.length>64)return{ok:false,reason:'budget'};queue.push(...next.map(id=>({id,source})));if(i===queue.length)break;}
         if(++commands>64)return{ok:false,reason:'budget'};
@@ -62,7 +63,7 @@ export class GameplaySession {
         for(const action of command.actions){
           this.refreshObjective(draft);
           if(++actions>512)return{ok:false,reason:'budget'};
-          if('wire'in action||'trace'in action){
+          if('wire'in action||'trace'in action||'mover'in action){
             if(!domain){if(!this.domain)return{ok:false,reason:'resources'};domain=this.domain();}
             const delta='trace'in action?(typeof action.trace.add==='number'?action.trace.add:scalarRead(action.trace.add,draft,this.queryContext())):undefined;
             if('trace'in action&&(typeof delta!=='number'||!Number.isFinite(delta)))return{ok:false,reason:'resources'};
@@ -74,7 +75,8 @@ export class GameplaySession {
             else if('ability'in grant){if(typeof player.jump!=='boolean')return{ok:false,reason:'resources'};if(!player.jump){draft.player={...player,jump:true};notifications.push({grant:{kind:'ability',id:'jump',...origin}});}}
             else{const id=typeof grant.controlled==='string'?grant.controlled:scalarRead(grant.controlled,draft,this.queryContext());if(typeof id!=='string'||!Array.isArray(player.controlled)||!this.controlledKnown?.(id))return{ok:false,reason:'resources'};if(!player.controlled.includes(id)){draft.player={...player,controlled:[...player.controlled,id]};notifications.push({grant:{kind:'controlled',id,...origin}});}}
           }
-          else if('state'in action){const d=this.definition.state![action.state],current=stateValue(draft.values,action.state),raw='set'in action?action.set:action.add,value=raw!==null&&typeof raw==='object'?scalarRead(raw,draft,this.queryContext()):raw;if('add'in action&&(typeof current!=='number'||!validStateNumber(d,value)))return{ok:false,reason:'resources'};const next='set'in action?value:(current as number)+(value as number);if(!validValue(d,next))return{ok:false,reason:'resources'};setStateValue(draft.values!,action.state,next);}
+          else if('world'in action)worldEdits.push(action.world);
+          else if('state'in action){const d=this.definition.state![action.state],current=stateValue(draft.values,action.state,this.definition),raw='set'in action?action.set:action.add,value=raw!==null&&typeof raw==='object'?scalarRead(raw,draft,this.queryContext()):raw;if('add'in action&&(typeof current!=='number'||!validStateNumber(d,value)))return{ok:false,reason:'resources'};const next='set'in action?value:(current as number)+(value as number);if(!validValue(d,next))return{ok:false,reason:'resources'};setStateValue(draft.values!,action.state,next,this.definition);}
           else if('purchase'in action){if(!applyPurchase(this.definition,action.purchase,draft,this.queryContext()))return{ok:false,reason:'resources'};}
           else if('flag'in action)draft.flags[action.flag]=action.value;
           else if('item'in action){const amount=typeof action.add==='object'?scalarRead(action.add,draft,this.queryContext()):action.add;if(typeof amount!=='number'||!Number.isSafeInteger(amount)||Math.abs(amount)>1_000_000)return{ok:false,reason:'resources'};const n=(draft.items[action.item]??0)+amount;if(!Number.isSafeInteger(n)||n<0||n>1_000_000)return{ok:false,reason:'resources'};if(n)draft.items[action.item]=n;else delete draft.items[action.item];}
@@ -84,13 +86,16 @@ export class GameplaySession {
         for(const event of emitted)for(const reaction of this.definition.reactions)if(reaction.event===event){if(queue.length>=256)return{ok:false,reason:'budget'};queue.push({id:reaction.command,source:'system',cause:event});}
       }
       this.refreshObjective(draft);
-      for(const[id,d]of Object.entries(this.definition.state??{}))if(!validValue(d,stateValue(draft.values,id)))return{ok:false,reason:'resources'};
+      for(const[id,d]of Object.entries(this.definition.state??{}))if(!validValue(d,stateValue(draft.values,id,this.definition)))return{ok:false,reason:'resources'};
+      let world:ReturnType<NonNullable<StatePort['prepareWorld']>>|undefined;
+      if(worldEdits.length){if(!this.port.prepareWorld)return{ok:false,reason:'resources'};try{world=this.port.prepareWorld(worldEdits);}catch{return{ok:false,reason:'resources'};}}
       if(preview)return{ok:true,events:Object.freeze(events.map(event=>freeze(event)))};
       if(commands===0)return{ok:true,events:Object.freeze([])};
       const persisted=cloneState(draft);
       try{this.port.write(persisted,events);}catch{return{ok:false,reason:'commit'};}
       // Prepared canonical assignments contain no callbacks or failure points.
       domain?.commit();
+      world?.commit();
       const published=events.map(event=>freeze(event));
       if(!this.disposed){this.history.push(...published);this.history=this.history.slice(-128);}
       // Notifications see committed state. Diagnostic failures and reentrant dispatch cannot affect it.

@@ -118,7 +118,7 @@
               "width": 24,
               "key": "uplink",
               "flag": "",
-              "refuse": "TURNSTILE \u00b7 NO VALID CHIP. PRESENT UPLINK."
+              "refuse": "TURNSTILE · NO VALID CHIP. PRESENT UPLINK."
             },
             "placement": {
               "x": 600,
@@ -520,7 +520,7 @@
             "type": "shift.sign",
             "props": {
               "text": "WAY OUT",
-              "sub": "QUAY \u00b7 FERRY \u00b7 PORT",
+              "sub": "QUAY · FERRY · PORT",
               "code": "",
               "height": 90,
               "mount": "post",
@@ -980,7 +980,7 @@
               "cab": "left",
               "plate": "CAR 1",
               "inside": "#3b352e",
-              "ads": "REGISTRY PREMIUM \u00b7 FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 \u00b7 ON TIME 61%",
+              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%",
               "notice": "CAMERAS OPERATE IN THIS CAR",
               "camera": true
             },
@@ -1131,7 +1131,7 @@
               "cab": "right",
               "plate": "CAR 2",
               "inside": "#3b352e",
-              "ads": "REGISTRY PREMIUM \u00b7 FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 \u00b7 ON TIME 61%",
+              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|LINE 0 · ON TIME 61%",
               "notice": "CAMERAS OPERATE IN THIS CAR",
               "camera": true
             },
@@ -1443,14 +1443,14 @@
       "scene": {
         "version": 1,
         "id": "harbor-station",
-        "name": "Harbor Station \u00b7 LINE 0",
+        "name": "Harbor Station · LINE 0",
         "intro": [
           "Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end."
         ],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
+            "text": "Walk east to the supervisor in Shed 3 · E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -1548,7 +1548,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -1677,7 +1677,64 @@
         ],
         "items": [],
         "events": [],
-        "commands": {},
+        "commands": {
+          "intro.hold": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "mover": {
+                  "device": "service",
+                  "noun": "frame",
+                  "path": "intro-hold"
+                }
+              },
+              {
+                "mover": {
+                  "device": "service",
+                  "noun": "doors",
+                  "path": "instant-close"
+                }
+              }
+            ]
+          },
+          "intro.arrive": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "mover": {
+                  "device": "service",
+                  "noun": "frame",
+                  "path": "intro-arrive"
+                }
+              }
+            ]
+          },
+          "intro.release": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "mover": {
+                  "device": "service",
+                  "noun": "frame",
+                  "path": "intro-release"
+                }
+              },
+              {
+                "mover": {
+                  "device": "service",
+                  "noun": "doors",
+                  "path": "instant-open"
+                }
+              }
+            ]
+          }
+        },
         "reactions": [],
         "conversations": {},
         "queries": {
@@ -1738,14 +1795,14 @@
       },
       "devices": {
         "id": "harbor-station",
-        "name": "Harbor Station \u00b7 LINE 0",
+        "name": "Harbor Station · LINE 0",
         "tuning": {},
         "devices": [
           {
             "id": "lift",
-            "name": "LIFT \u00b7 HARBOR STATION",
+            "name": "LIFT · HARBOR STATION",
             "look": "A glass lift between the quay and the LINE 0 platform. It hums when it remembers to.",
-            "status": "two stops \u00b7 quay and platform",
+            "status": "two stops · quay and platform",
             "layout": {
               "spot": {
                 "x": 1150,
@@ -1810,7 +1867,8 @@
                   "wired": false,
                   "stops": {
                     "west": 0,
-                    "east": 7880
+                    "east": 7880,
+                    "intro": 6520
                   },
                   "start": "west",
                   "auto": "service",
@@ -1851,6 +1909,59 @@
                       {
                         "run": "service"
                       }
+                    ],
+                    "intro-hold": [
+                      {
+                        "from": "intro"
+                      },
+                      {
+                        "ms": 1000
+                      },
+                      {
+                        "run": "intro-hold"
+                      }
+                    ],
+                    "intro-arrive": [
+                      {
+                        "from": "intro"
+                      },
+                      {
+                        "to": "west",
+                        "ms": 21000,
+                        "ease": "smooth"
+                      },
+                      {
+                        "ms": 1,
+                        "drives": "doors:instant-open"
+                      },
+                      {
+                        "ms": 1000
+                      },
+                      {
+                        "run": "intro-docked"
+                      }
+                    ],
+                    "intro-docked": [
+                      {
+                        "from": "west"
+                      },
+                      {
+                        "ms": 1000
+                      },
+                      {
+                        "run": "intro-docked"
+                      }
+                    ],
+                    "intro-release": [
+                      {
+                        "from": "west"
+                      },
+                      {
+                        "ms": 0
+                      },
+                      {
+                        "run": "service"
+                      }
                     ]
                   }
                 }
@@ -1882,6 +1993,22 @@
                       {
                         "to": "open",
                         "ms": 700
+                      }
+                    ],
+                    "instant-open": [
+                      {
+                        "from": "open"
+                      },
+                      {
+                        "ms": 0
+                      }
+                    ],
+                    "instant-close": [
+                      {
+                        "from": "closed"
+                      },
+                      {
+                        "ms": 0
                       }
                     ]
                   }
@@ -1994,7 +2121,7 @@
             "type": "shift.sign",
             "props": {
               "text": "HARBOR STATION",
-              "sub": "LINE 0 \u00b7 PLATFORM \u2191",
+              "sub": "LINE 0 · PLATFORM ↑",
               "code": "",
               "height": 112,
               "mount": "post",
@@ -2548,12 +2675,12 @@
       "scene": {
         "version": 1,
         "id": "harbor-quay",
-        "name": "Harbor \u00b7 the quay",
+        "name": "Harbor · the quay",
         "intro": [],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
+            "text": "Walk east to the supervisor in Shed 3 · E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -2651,7 +2778,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -2691,7 +2818,7 @@
             "name": "REGISTRY NOTICE",
             "label": "[E] READ NOTICE",
             "pages": [
-              "REGISTRY CHECKPOINT \u00b7 HARBOR. Staff enter at the staff gate east of the stalls.",
+              "REGISTRY CHECKPOINT · HARBOR. Staff enter at the staff gate east of the stalls.",
               "NIGHT TRANSPORT CREWS: COLLECT YOUR WORK TAG FROM THE BAY 3 SUPERVISOR. RETURN IT AT CHECKOUT."
             ]
           }
@@ -2957,7 +3084,7 @@
               "style": "gate",
               "side": "left",
               "width": 130,
-              "label": "STAFF ENTRANCE \u00b7 NIGHT SHIFT"
+              "label": "STAFF ENTRANCE · NIGHT SHIFT"
             },
             "placement": {
               "x": 240,
@@ -2970,7 +3097,7 @@
             "id": "station-way",
             "type": "sign.hanging",
             "props": {
-              "text": "\u2190 HARBOR STATION \u00b7 LINE 0",
+              "text": "← HARBOR STATION · LINE 0",
               "color": "255,217,165",
               "board": "#2a1a10",
               "drop": 12
@@ -3120,7 +3247,7 @@
                   }
                 ]
               },
-              "refuse": "TURNSTILE \u00b7 SHIFT OPEN. Return your work tag at the reader to check out.",
+              "refuse": "TURNSTILE · SHIFT OPEN. Return your work tag at the reader to check out.",
               "closes": true
             },
             "placement": {
@@ -3231,12 +3358,12 @@
       "scene": {
         "version": 1,
         "id": "harbor-checkout",
-        "name": "Harbor \u00b7 staff checkout",
+        "name": "Harbor · staff checkout",
         "intro": [],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
+            "text": "Walk east to the supervisor in Shed 3 · E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -3336,7 +3463,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -3381,7 +3508,7 @@
                   "is": true
                 },
                 "pages": [
-                  "TAG RETURNED \u00b7 SHIFT CLOSED. Your statement is ready."
+                  "TAG RETURNED · SHIFT CLOSED. Your statement is ready."
                 ]
               },
               {
@@ -3390,13 +3517,13 @@
                   "is": false
                 },
                 "pages": [
-                  "SHIFT OPEN \u00b7 Loading trolley not parked."
+                  "SHIFT OPEN · Loading trolley not parked."
                 ]
               },
               {
                 "command": "shift.checkout",
                 "pages": [
-                  "IDENTITY VERIFIED \u00b7 TAG RETURNED \u00b7 SHIFT CLOSED.",
+                  "IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.",
                   "Three tokens credited. Your wage statement is ready to read."
                 ],
                 "failure": [
@@ -3419,7 +3546,7 @@
                       "is": true
                     },
                     "pages": [
-                      "TAG RETURNED \u00b7 SHIFT CLOSED. Your statement is ready."
+                      "TAG RETURNED · SHIFT CLOSED. Your statement is ready."
                     ]
                   },
                   {
@@ -3428,13 +3555,13 @@
                       "is": false
                     },
                     "pages": [
-                      "SHIFT OPEN \u00b7 Loading trolley not parked."
+                      "SHIFT OPEN · Loading trolley not parked."
                     ]
                   },
                   {
                     "command": "shift.checkout",
                     "pages": [
-                      "IDENTITY VERIFIED \u00b7 TAG RETURNED \u00b7 SHIFT CLOSED.",
+                      "IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.",
                       "Three tokens credited. Your wage statement is ready to read."
                     ],
                     "failure": [
@@ -3453,7 +3580,7 @@
               {
                 "command": "shift.statement",
                 "pages": [
-                  "NIGHT SHIFT \u00b7 GROSS 4 TOKENS \u00b7 EQUIPMENT ACCESS 1 TOKEN \u00b7 NET 3 TOKENS.",
+                  "NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.",
                   "STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.",
                   "Shift complete. The morning train is next: back west along the quay and up to the platform."
                 ]
@@ -3751,7 +3878,7 @@
               "fascia": 12,
               "overhang": 14,
               "name": "RECEIVING",
-              "sub": "SHED 3 \u00b7 WEST END",
+              "sub": "SHED 3 · WEST END",
               "columns": [
                 10,
                 160,
@@ -3801,7 +3928,7 @@
               "top": 84,
               "shutter": 0.22,
               "stock": "cases",
-              "screen": "RCV 03 \u00b7 OPEN",
+              "screen": "RCV 03 · OPEN",
               "room": "#4a3f2f",
               "seed": 21
             },
@@ -4047,7 +4174,7 @@
               "gateWidth": 70,
               "gateOpen": 0,
               "gateLabel": "TERMINAL 2",
-              "notice": "STACKS/BONDED \u00b7 NO ENTRY",
+              "notice": "STACKS/BONDED · NO ENTRY",
               "header": "TERMINAL 2",
               "noticeEvery": 2,
               "lampEvery": 3,
@@ -4410,12 +4537,12 @@
       "scene": {
         "version": 1,
         "id": "harbor-yard",
-        "name": "Harbor \u00b7 Terminal 2 yard",
+        "name": "Harbor · Terminal 2 yard",
         "intro": [],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
+            "text": "Walk east to the supervisor in Shed 3 · E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -4518,7 +4645,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -5085,7 +5212,7 @@
               "waiting": {
                 "speaker": "MARA",
                 "pages": [
-                  "Blue parcel for me? It comes from dispatch, in the shed. Use \u201cgive Mara the blue parcel\u201d when you have it.",
+                  "Blue parcel for me? It comes from dispatch, in the shed. Use “give Mara the blue parcel” when you have it.",
                   "He makes every shift sound like a national emergency."
                 ]
               },
@@ -5195,7 +5322,7 @@
               "gateWidth": 60,
               "gateOpen": 0,
               "gateLabel": "PORT ROAD",
-              "notice": "STAFF ONLY/SHED 3 \u00b7 BAY 3",
+              "notice": "STAFF ONLY/SHED 3 · BAY 3",
               "header": "PORT AUTHORITY",
               "noticeEvery": 9,
               "lampEvery": 9,
@@ -5218,7 +5345,7 @@
               "fascia": 12,
               "overhang": 14,
               "name": "TRANSIT SHED 3",
-              "sub": "NIGHT TRANSPORT \u00b7 BAY 3",
+              "sub": "NIGHT TRANSPORT · BAY 3",
               "columns": [
                 14,
                 110,
@@ -5624,7 +5751,7 @@
             "id": "ticker",
             "type": "sign.ticker",
             "props": {
-              "text": "BAY 3 \u00b7 SHIFT TARGET 100% \u00b7 CURRENT 94% \u00b7 PLEASE MAINTAIN PACE",
+              "text": "BAY 3 · SHIFT TARGET 100% · CURRENT 94% · PLEASE MAINTAIN PACE",
               "color": "255,170,60",
               "width": 104,
               "height": 10,
@@ -6093,14 +6220,14 @@
       "scene": {
         "version": 1,
         "id": "harbor-shed",
-        "name": "Harbor \u00b7 Transit Shed 3",
+        "name": "Harbor · Transit Shed 3",
         "intro": [
           "Shed 3. Another night on transport. The supervisor is waiting in his booth."
         ],
         "objectives": [
           {
             "id": "step-1",
-            "text": "Walk east to the supervisor in Shed 3 \u00b7 E to talk",
+            "text": "Walk east to the supervisor in Shed 3 · E to talk",
             "when": {
               "state": "shift.tagReceived",
               "is": false
@@ -6202,7 +6329,7 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE \u00b7 Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
           }
         ],
         "time": [
@@ -6264,7 +6391,7 @@
               {
                 "command": "shift.collect",
                 "pages": [
-                  "You pick up the blue parcel. RECEIVING \u00b7 MARA.",
+                  "You pick up the blue parcel. RECEIVING · MARA.",
                   "Carry it west, back across the yard to the receiving counter."
                 ],
                 "failure": [
@@ -6306,7 +6433,7 @@
                   "The supervisor has one last job."
                 ],
                 "failure": [
-                  "EMPTY CASE RETURNS \u00b7 Bring a transport case from receiving."
+                  "EMPTY CASE RETURNS · Bring a transport case from receiving."
                 ]
               }
             ],
@@ -6335,7 +6462,7 @@
                       "The supervisor has one last job."
                     ],
                     "failure": [
-                      "EMPTY CASE RETURNS \u00b7 Bring a transport case from receiving."
+                      "EMPTY CASE RETURNS · Bring a transport case from receiving."
                     ]
                   }
                 ]
@@ -6359,7 +6486,7 @@
               {
                 "command": "shift.fix-coffee",
                 "pages": [
-                  "OUT OF ORDER \u00b7 NO WATER \u00b7 VALVE CLOSED.",
+                  "OUT OF ORDER · NO WATER · VALVE CLOSED.",
                   "You open the isolation valve under the counter and press BREW. The machine coughs, then pours.",
                   "Someone has left a token by the jar with a note: FOR WHOEVER FIXES IT."
                 ]
@@ -8169,7 +8296,7 @@
                 },
                 {
                   "kind": "ticker",
-                  "text": "WATER RATION TODAY 40 L \u00b7 CURFEW SECTOR 9 FROM 23:00 \u00b7 LINE 0 RUNNING \u00b7 ",
+                  "text": "WATER RATION TODAY 40 L · CURFEW SECTOR 9 FROM 23:00 · LINE 0 RUNNING · ",
                   "col": "255,190,60",
                   "h": 306,
                   "at": 0.25344221536351164,
@@ -8270,7 +8397,7 @@
               "signs": [
                 {
                   "kind": "stack",
-                  "text": "PHARMACY \u00b7 ID REQUIRED",
+                  "text": "PHARMACY · ID REQUIRED",
                   "col": "60,230,140",
                   "h": 379,
                   "at": 0.7861668381344308,
@@ -8278,7 +8405,7 @@
                 },
                 {
                   "kind": "plate",
-                  "text": "PHARMACY \u00b7 ID REQUIRED",
+                  "text": "PHARMACY · ID REQUIRED",
                   "col": "60,230,140",
                   "h": 356,
                   "at": 0.5045138888888889,
@@ -8323,7 +8450,7 @@
               "signs": [
                 {
                   "kind": "billboard",
-                  "text": "SCORE 712 \u00b7 APPROVED",
+                  "text": "SCORE 712 · APPROVED",
                   "col": "170,130,255",
                   "h": 2955,
                   "at": 0.5296296296296297,
@@ -8888,7 +9015,7 @@
               "signs": [
                 {
                   "kind": "blade",
-                  "text": "SLEEP 8H \u00b7 40C",
+                  "text": "SLEEP 8H · 40C",
                   "col": "255,42,68",
                   "h": 130,
                   "at": 0.9632201646090535,
@@ -8934,7 +9061,7 @@
                 },
                 {
                   "kind": "blade",
-                  "text": "PHARMACY \u00b7 ID REQUIRED",
+                  "text": "PHARMACY · ID REQUIRED",
                   "col": "60,230,140",
                   "h": 133,
                   "at": 0.7213820301783265,
@@ -8970,7 +9097,7 @@
               "signs": [
                 {
                   "kind": "ticker",
-                  "text": "LINE 0 \u00b7 CANYON BRANCH \u00b7 NEXT: DOWNTOWN \u00b7 MIND THE GAP \u00b7 ",
+                  "text": "LINE 0 · CANYON BRANCH · NEXT: DOWNTOWN · MIND THE GAP · ",
                   "col": "255,136,0",
                   "h": 640
                 },
@@ -9456,7 +9583,7 @@
               "width": 162,
               "entry": "west",
               "street": false,
-              "name": "R4 \u00b7 INLAND",
+              "name": "R4 · INLAND",
               "code": "",
               "foot": -12
             },
@@ -10641,7 +10768,7 @@
               "doorHeight": 54,
               "cab": "left",
               "plate": "CAR 1",
-              "ads": "REGISTRY PREMIUM \u00b7 FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
+              "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
             },
             "placement": {
               "x": 0,
@@ -10687,7 +10814,7 @@
               "doorHeight": 54,
               "cab": "right",
               "plate": "CAR 2",
-              "ads": "LINE 0 \u00b7 ON TIME 61%|SPIRE RESIDENCES \u00b7 BY INVITATION|REPORT UNREGISTERED PERSONS",
+              "ads": "LINE 0 · ON TIME 61%|SPIRE RESIDENCES · BY INVITATION|REPORT UNREGISTERED PERSONS",
               "notice": "NO SLEEPING ON SEATS"
             },
             "placement": {
@@ -11118,7 +11245,7 @@
       "scene": {
         "version": 1,
         "id": "vehicle-lab",
-        "name": "Vehicles \u00b7 two-car shuttle",
+        "name": "Vehicles · two-car shuttle",
         "intro": [],
         "uses": [
           {
@@ -11178,7 +11305,7 @@
             "id": "route-map",
             "name": "SHUTTLE ROUTE",
             "pages": [
-              "WEST PLATFORM \u2194 EAST PLATFORM. The same car carries its seats, door controls, speaker and route map."
+              "WEST PLATFORM ↔ EAST PLATFORM. The same car carries its seats, door controls, speaker and route map."
             ]
           }
         ]
@@ -11459,7 +11586,7 @@
       "scene": {
         "version": 1,
         "id": "vehicle-routes",
-        "name": "Vehicles \u00b7 curves and drops",
+        "name": "Vehicles · curves and drops",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11672,7 +11799,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-1",
-        "name": "LINE 0 \u00b7 Harbor approach",
+        "name": "LINE 0 · Harbor approach",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11764,7 +11891,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-2",
-        "name": "LINE 0 \u00b7 tunnel 2",
+        "name": "LINE 0 · tunnel 2",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11856,7 +11983,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-3",
-        "name": "LINE 0 \u00b7 tunnel 3",
+        "name": "LINE 0 · tunnel 3",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -11948,7 +12075,7 @@
       "scene": {
         "version": 1,
         "id": "line-harbor-4",
-        "name": "LINE 0 \u00b7 tunnel 4",
+        "name": "LINE 0 · tunnel 4",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -12128,7 +12255,7 @@
             "id": "harbor",
             "to": "harbor",
             "at": "metro",
-            "label": "[E] SERVICE DOOR \u00b7 HARBOR",
+            "label": "[E] SERVICE DOOR · HARBOR",
             "promptH": 196
           }
         ],
@@ -12344,7 +12471,7 @@
             "id": "overhang",
             "type": "sign.plate",
             "props": {
-              "text": "CROSSING \u00b7 WEST SOURCE",
+              "text": "CROSSING · WEST SOURCE",
               "color": "255,180,60",
               "size": 10
             },
@@ -12354,20 +12481,216 @@
             },
             "order": 7,
             "layer": "set"
+          },
+          {
+            "id": "use-unlock",
+            "type": "dockwork.marker",
+            "props": {
+              "role": "use"
+            },
+            "placement": {
+              "x": 35,
+              "h": 0
+            },
+            "order": 20,
+            "layer": "set"
+          },
+          {
+            "id": "use-appearance",
+            "type": "dockwork.marker",
+            "props": {
+              "role": "use"
+            },
+            "placement": {
+              "x": 115,
+              "h": 0
+            },
+            "order": 20,
+            "layer": "set"
+          },
+          {
+            "id": "controls-label",
+            "type": "sign.plate",
+            "props": {
+              "text": "UNLOCK  /  SWITCH",
+              "size": 8,
+              "color": "0,255,255"
+            },
+            "placement": {
+              "x": 90,
+              "h": 110
+            },
+            "order": 20,
+            "layer": "set"
+          },
+          {
+            "id": "sky",
+            "type": "sequence.world-control",
+            "props": {
+              "origin": "boundary-west",
+              "zones": [],
+              "width": 640,
+              "height": 300,
+              "pixel": 1,
+              "ground": 0.82,
+              "worldComposition": "boundary-example"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "logic"
+          },
+          {
+            "id": "use-view",
+            "type": "dockwork.marker",
+            "props": {
+              "role": "use"
+            },
+            "placement": {
+              "x": 195,
+              "h": 0
+            },
+            "order": 20,
+            "layer": "set"
           }
-        ]
+        ],
+        "sequence": {
+          "id": "boundary-pan",
+          "duration": 8,
+          "shots": [
+            {
+              "id": "continuous",
+              "from": 0,
+              "to": 8,
+              "camera": {
+                "x": 0,
+                "h": 0,
+                "zoom": 1
+              }
+            }
+          ],
+          "tracks": [
+            {
+              "id": "look-across",
+              "target": {
+                "kind": "camera",
+                "property": "x"
+              },
+              "keys": [
+                {
+                  "time": 0,
+                  "value": 0,
+                  "ease": "smooth"
+                },
+                {
+                  "time": 4,
+                  "value": 750,
+                  "ease": "smooth"
+                },
+                {
+                  "time": 8,
+                  "value": 0
+                }
+              ]
+            }
+          ],
+          "text": [],
+          "fades": [],
+          "beats": [
+            {
+              "id": "across",
+              "time": 4
+            }
+          ],
+          "onComplete": [
+            {
+              "id": "pan-finished",
+              "scene": "boundary-west",
+              "command": "mark-pan"
+            }
+          ],
+          "onCancel": [
+            {
+              "id": "pan-canceled",
+              "scene": "boundary-west",
+              "command": "mark-pan"
+            }
+          ]
+        }
       },
       "scene": {
         "version": 1,
         "id": "boundary-west",
-        "name": "Boundary example \u00b7 west",
+        "name": "Boundary example · west",
         "intro": [],
-        "uses": [],
+        "uses": [
+          {
+            "id": "unlock",
+            "name": "SHARED DOOR",
+            "label": "[E] UNLOCK SHARED DOOR",
+            "speakerKind": "system",
+            "routes": [
+              {
+                "command": "unlock",
+                "pages": [
+                  "Door unlocked. Its state remains the same when the display changes."
+                ]
+              }
+            ]
+          },
+          {
+            "id": "appearance",
+            "name": "DISPLAY",
+            "label": "[E] SWITCH DISPLAY",
+            "speakerKind": "system",
+            "routes": [
+              {
+                "when": {
+                  "flag": "demo:boundary-blue"
+                },
+                "command": "request-original",
+                "pages": [
+                  "Original display requested."
+                ]
+              },
+              {
+                "command": "request-blue",
+                "pages": [
+                  "Blue display requested."
+                ]
+              }
+            ]
+          },
+          {
+            "id": "view",
+            "name": "CAMERA",
+            "label": "[E] LOOK ACROSS BOUNDARY",
+            "speakerKind": "system",
+            "routes": [
+              {
+                "command": "request-view",
+                "pages": []
+              }
+            ]
+          }
+        ],
         "manifest": {
           "version": 1,
           "width": 320,
           "spawn": "spawn",
-          "uses": {}
+          "uses": {
+            "unlock": {
+              "instance": "use-unlock"
+            },
+            "appearance": {
+              "instance": "use-appearance"
+            },
+            "view": {
+              "instance": "use-view"
+            }
+          }
         },
         "environment": {
           "outdoor": true,
@@ -12379,12 +12702,187 @@
       },
       "gameplay": {
         "version": 1,
-        "flags": [],
+        "flags": [
+          "demo:boundary-blue",
+          "demo:boundary-arrival",
+          "demo:boundary-pan"
+        ],
         "items": [],
-        "commands": {},
-        "events": [],
-        "reactions": [],
-        "conversations": {}
+        "commands": {
+          "unlock": {
+            "sources": [
+              "interaction"
+            ],
+            "actions": [
+              {
+                "state": "boundary-west.doorOpen",
+                "set": true
+              }
+            ]
+          },
+          "request-blue": {
+            "sources": [
+              "interaction"
+            ],
+            "actions": [
+              {
+                "emit": "remodel.blue"
+              }
+            ]
+          },
+          "request-original": {
+            "sources": [
+              "interaction"
+            ],
+            "actions": [
+              {
+                "emit": "remodel.original"
+              }
+            ]
+          },
+          "mount-blue": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "world": {
+                  "composition": "boundary-example",
+                  "remove": [
+                    "display"
+                  ],
+                  "add": [
+                    {
+                      "id": "display",
+                      "group": "boundary-display-blue",
+                      "placement": {
+                        "x": 960,
+                        "h": 0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "flag": "demo:boundary-blue",
+                "value": true
+              }
+            ]
+          },
+          "mount-original": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "world": {
+                  "composition": "boundary-example",
+                  "remove": [
+                    "display"
+                  ],
+                  "add": [
+                    {
+                      "id": "display",
+                      "group": "boundary-display-original",
+                      "placement": {
+                        "x": 960,
+                        "h": 0
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "flag": "demo:boundary-blue",
+                "value": false
+              }
+            ]
+          },
+          "mark-arrival": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "flag": "demo:boundary-arrival",
+                "value": true
+              }
+            ]
+          },
+          "request-view": {
+            "sources": [
+              "interaction"
+            ],
+            "actions": [
+              {
+                "emit": "camera.look"
+              }
+            ]
+          },
+          "mark-pan": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "flag": "demo:boundary-pan",
+                "value": true
+              }
+            ]
+          }
+        },
+        "events": [
+          "remodel.blue",
+          "remodel.original",
+          "camera.look"
+        ],
+        "reactions": [
+          {
+            "event": "remodel.blue",
+            "command": "mount-blue"
+          },
+          {
+            "event": "remodel.original",
+            "command": "mount-original"
+          }
+        ],
+        "conversations": {},
+        "state": {
+          "boundary-west.doorOpen": {
+            "owner": "boundary-west",
+            "lifetime": "save",
+            "type": "boolean",
+            "default": false,
+            "binding": "boundary-door.open"
+          },
+          "boundary-west.inside": {
+            "owner": "boundary-west",
+            "lifetime": "session",
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "native": {
+          "verbs": [],
+          "events": {},
+          "goals": {},
+          "triggers": {
+            "arrival": {
+              "when": {
+                "state": "boundary-west.inside",
+                "is": true
+              },
+              "command": "mark-arrival",
+              "once": true
+            }
+          }
+        },
+        "handoffs": [
+          {
+            "event": "camera.look",
+            "cutscene": "boundary-pan"
+          }
+        ]
       },
       "devices": {
         "id": "boundary-west",
@@ -12482,6 +12980,25 @@
                     ]
                   }
                 }
+              },
+              {
+                "id": "arrival",
+                "layer": "hardware",
+                "function": "sense",
+                "events": [
+                  "enters",
+                  "leaves"
+                ],
+                "zone": {
+                  "from": 220,
+                  "to": 280,
+                  "within": [
+                    0,
+                    80
+                  ],
+                  "watch": "player",
+                  "set": "inside"
+                }
               }
             ]
           }
@@ -12567,7 +13084,7 @@
       "scene": {
         "version": 1,
         "id": "boundary-east",
-        "name": "Boundary example \u00b7 east",
+        "name": "Boundary example · east",
         "intro": [],
         "uses": [],
         "manifest": {
@@ -12592,6 +13109,256 @@
         "events": [],
         "reactions": [],
         "conversations": {}
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "boundary-door",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 40,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "level.floor",
+            "props": {
+              "width": 320
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "surface",
+            "type": "level.slab",
+            "props": {
+              "width": 320,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 2,
+            "layer": "backdrop"
+          },
+          {
+            "id": "reader",
+            "type": "shift.reader",
+            "props": {
+              "before": "LOCKED",
+              "after": "OPEN",
+              "shelter": false,
+              "turnstile": false
+            },
+            "placement": {
+              "x": 80,
+              "h": 0
+            },
+            "order": 20,
+            "layer": "set",
+            "bindings": {
+              "checked": "scene.doorOpen"
+            }
+          },
+          {
+            "id": "label",
+            "type": "sign.plate",
+            "props": {
+              "text": "ORIGINAL DISPLAY",
+              "size": 8,
+              "color": "255,217,165"
+            },
+            "placement": {
+              "x": 80,
+              "h": 150
+            },
+            "order": 20,
+            "layer": "set"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "boundary-door",
+        "name": "Boundary example · original display",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 320,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": true,
+          "ambient": {
+            "sky": true,
+            "weather": false
+          }
+        },
+        "stage": {
+          "values": {
+            "doorOpen": {
+              "state": "boundary-door.open"
+            }
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "events": [],
+        "commands": {},
+        "reactions": [],
+        "conversations": {},
+        "state": {
+          "boundary-door.open": {
+            "owner": "boundary-door",
+            "lifetime": "save",
+            "type": "boolean",
+            "default": false,
+            "binding": "boundary-door.open"
+          }
+        }
+      }
+    },
+    {
+      "composition": {
+        "version": 1,
+        "scene": "boundary-door-blue",
+        "instances": [
+          {
+            "id": "spawn",
+            "type": "scene.player",
+            "props": {},
+            "placement": {
+              "x": 40,
+              "h": 0
+            },
+            "order": 0,
+            "layer": "playfield"
+          },
+          {
+            "id": "platform",
+            "type": "level.floor",
+            "props": {
+              "width": 320
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 1,
+            "layer": "logic"
+          },
+          {
+            "id": "surface",
+            "type": "level.slab",
+            "props": {
+              "width": 320,
+              "thickness": 18
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 2,
+            "layer": "backdrop"
+          },
+          {
+            "id": "reader",
+            "type": "shift.reader",
+            "props": {
+              "before": "LOCKED",
+              "after": "OPEN",
+              "shelter": false,
+              "turnstile": false
+            },
+            "placement": {
+              "x": 80,
+              "h": 0
+            },
+            "order": 20,
+            "layer": "set",
+            "bindings": {
+              "checked": "scene.doorOpen"
+            }
+          },
+          {
+            "id": "label",
+            "type": "sign.plate",
+            "props": {
+              "text": "BLUE DISPLAY",
+              "size": 8,
+              "color": "0,255,255"
+            },
+            "placement": {
+              "x": 80,
+              "h": 150
+            },
+            "order": 20,
+            "layer": "set"
+          }
+        ]
+      },
+      "scene": {
+        "version": 1,
+        "id": "boundary-door-blue",
+        "name": "Boundary example · blue display",
+        "intro": [],
+        "uses": [],
+        "manifest": {
+          "version": 1,
+          "width": 320,
+          "spawn": "spawn",
+          "uses": {}
+        },
+        "environment": {
+          "outdoor": true,
+          "ambient": {
+            "sky": true,
+            "weather": false
+          }
+        },
+        "stage": {
+          "values": {
+            "doorOpen": {
+              "state": "boundary-door-blue.open"
+            }
+          }
+        }
+      },
+      "gameplay": {
+        "version": 1,
+        "flags": [],
+        "items": [],
+        "events": [],
+        "commands": {},
+        "reactions": [],
+        "conversations": {},
+        "state": {
+          "boundary-door-blue.open": {
+            "owner": "boundary-door-blue",
+            "lifetime": "save",
+            "type": "boolean",
+            "default": false,
+            "binding": "boundary-door.open"
+          }
+        }
       }
     }
   ]

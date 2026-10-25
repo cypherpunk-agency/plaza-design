@@ -20,7 +20,7 @@ export type QueryDefinition=
  | {kind:'label';key:string;vars?:Record<string,ScalarRead>}
  | {kind:'duration';value:ScalarRead;unit:'seconds';round:'nearest'};
 export interface GameplayReadContext {
- definition:Pick<GameplayDefinition,'queries'>;
+ definition:Pick<GameplayDefinition,'queries'|'state'>;
  sceneTime?:number;
  cameraCrates?:readonly {id:string}[];
  cables?:readonly {from:string;to:string;verb:string}[];
@@ -34,7 +34,7 @@ export interface GameplayReadContext {
 const own=(o:object,key:string)=>Object.prototype.hasOwnProperty.call(o,key);
 export function scalarRead(read:ScalarRead,state:Readonly<GameplayState>,context?:GameplayReadContext):StateValue|undefined{
  if('literal'in read)return read.literal;
- if('state'in read)return stateValue(state.values,read.state);
+ if('state'in read)return stateValue(state.values,read.state,context?.definition);
  return readQuery(read.query,state,context);
 }
 /** Every read sees its supplied transaction draft; there is deliberately no memoized result. */
@@ -123,7 +123,7 @@ export function matches(condition: Condition | undefined, state: Readonly<Gamepl
     if('objective'in condition)return state.objective===undefined?undefined:state.objective===condition.objective;
     if('time'in condition)return state.world?inWindow(condition.time,state.world.day,state.world.minute):undefined;
     if('weather'in condition)return state.world?condition.weather.includes(state.world.weather):undefined;
-    if('state'in condition)return stateValue(state.values,condition.state)===condition.is;
+    if('state'in condition)return stateValue(state.values,condition.state,context?.definition)===condition.is;
     if('flag'in condition)return !!state.flags[condition.flag]===(condition.is??true);
     if('item'in condition)return (state.items[condition.item]??0)>=condition.atLeast;
     if('tokensAtLeast'in condition)return state.tokens>=condition.tokensAtLeast;

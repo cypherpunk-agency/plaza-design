@@ -1,3 +1,7 @@
+import {sequenceCommandTargets} from '../runtime/sequence-commands';
+import {mountWorldCompositionAuthoring} from './world-composition-authoring';
+import {compileGameWorld} from '../world/compiled-world';
+import {validateWorldCompositions} from '../world/compositions';
 import {mountFlowAuthoring} from './flow-authoring';
 import {mountVehicleAuthoring} from './vehicle-authoring';
 import {backdropAdapters,backdropInspector} from './backdrop-preview';
@@ -212,6 +216,7 @@ async function start() {
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
       if(document.kind==='storyboard'){if(document.id!=='storyboard')throw new Error('Unsupported storyboard document');validateStoryboard(document.value,new Set(documents.filter(d=>d.kind==='composition').map(d=>(d.value as import('../art').Composition).scene)));}
+      if(document.id==='world-compositions'){validateWorldCompositions(document.value);return;}
       if(document.id==='zone-graph'){validateZoneGraph(document.value);return;} // its seams against the zones: listed in World â€º Zones, enforced on Save
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroLocks(validateMetroSource(document.value),(validationSnapshot(documents).get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}
       if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
@@ -240,6 +245,7 @@ async function start() {
       {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
       {id:'companion',area:'world',layout:'sections',label:'Companion',title:'The companion: look, unlock flag, follow modes, speaker and greeting',authoring:true,documentDependent:true,documentIds:['companion','companion-gameplay'],primaryDocumentId:'companion',mount:mountCompanionSourceAuthoring},
       {id:'critter-reactions',area:'world',label:'Critter dialogue',title:'Cat and pigeon reactions',authoring:true,documentDependent:true,documentIds:['critter-reactions'],primaryDocumentId:'critter-reactions',mount:mountCritterReactionAuthoring},
+      {id:'world-compositions',area:'world',label:'Compositions',title:'World compositions and chunk groups',authoring:true,documentDependent:true,primaryDocumentId:'world-compositions',mount:mountWorldCompositionAuthoring},
       {id:'zone-graph',area:'world',label:'Zones',title:'Zones and seams: which scenes join with no cut, and where each lies from the other',authoring:true,documentDependent:true,primaryDocumentId:'zone-graph',mount:mountZoneGraphAuthoring},
       {id:'review-stations',area:'world',layout:'sections',label:'Review stations',title:'Review navigator: bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
       {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions Â· shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
@@ -302,7 +308,7 @@ async function start() {
 
     inspector: (scene, instance, documents) => scene.startsWith('backdrop-') ? (instance?[]:[backdropInspector(scene)]) : inspectorSections(scene, instance, documents),
     // the scenes one seam away (world/zone-graph.json), which the Scene preview draws beside the open one
-    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = validateZoneGraph(source); } catch { return []; } const values = new Map(documents.map(d => [d.id, d.value])); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
+    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = compileGameWorld(pendingRegistry(new Map(documents.map(d=>[d.id,d.value]))),new Map(documents.map(d=>[d.id,d.value]))); } catch { return []; } const values = new Map(documents.map(d => [d.id, d.value])); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
 
     worldPanel(panel, openScene, documents, scene) {
 
@@ -322,6 +328,7 @@ async function start() {
 
     motionTracks: createSequenceValidationContext(art,{}).motionTracks,clips:createSequenceValidationContext(art,{}).clips, timelineContext: frameTimelineContext,
 
+    commandTargetsFor:documents=>sequenceCommandTargets(pendingRegistry(validationSnapshot(documents))),
     destinationsFor:documents=>pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))),
     destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
 

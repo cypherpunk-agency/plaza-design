@@ -3,18 +3,31 @@ import type {Field,Value} from '../art/core/composition';
 import type {TimelineFrame,TimelineProgram,Sequence,Target,Keyframe} from '../art/core/timeline';
 import type {TimelineSelection} from './timeline-view';
 import {element,button,label,select,type createFieldControls} from './controls';
+import {TypedForm} from './typed-form';
+import {renderSequenceCommandFields} from './sequence-commands-authoring';
 const equal=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 interface TemporalInspectorPort {
  selection?:TimelineSelection;sequence?:Sequence;time:number;playing:boolean;
  fieldInput:ReturnType<typeof createFieldControls>['fieldInput'];numberInput:ReturnType<typeof createFieldControls>['numberInput'];
  keyField(target:Target):Field;keyValue(frame:TimelineFrame,target:Target):{value:Value;discrete:boolean};
  getFrame():TimelineFrame;editTimeline(label:string,edit:(program:TimelineProgram)=>void):void;
+  commandTargets?:import('../art/core/timeline').TimelineContext['commandTargets'];
  addKey(target:Target,value?:Value):void;selectTimeline(selection:TimelineSelection|undefined,target?:Target):void;
  seekTime(time:number):void;notice(message:string,error?:boolean):void;setSelection(selection:TimelineSelection|undefined):void;close():void;
 }
 export function renderTimelineInspector(host:HTMLElement,port:TemporalInspectorPort):boolean{
     const {selection,sequence:seq,time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,selectTimeline,seekTime,notice,setSelection,close,getFrame}=port;
     if(!selection||!seq)return false;
+    if(selection.kind==='command'){
+      const marker=seq.commands?.find(c=>c.id===selection.id);if(!marker){setSelection(undefined);return false;}
+      const form=new TypedForm(e=>notice(e instanceof Error?e.message:String(e),true));
+      const change=(fn:(c:typeof marker)=>void)=>editTimeline('Edit sequence command',d=>{const s=d.sequences[0];fn(s.commands!.find(c=>c.id===marker.id)!);s.commands!.sort((a,b)=>a.time-b.time);});
+      host.append(element('h2','','Command marker'),element('p','muted',marker.id));
+      form.decimal(host,'Command time',marker.time,time=>change(c=>c!.time=time),0,seq.duration);
+      renderSequenceCommandFields(host,marker,port.commandTargets??{},form,value=>change(c=>Object.assign(c!,value)));
+      form.select(host,'When skipped',['run','omit'],marker.skip,value=>change(c=>c!.skip=value as 'run'|'omit'));
+      form.button(host,'Delete command marker',()=>{setSelection(undefined);editTimeline('Delete command marker',d=>d.sequences[0].commands=d.sequences[0].commands!.filter(c=>c.id!==marker.id));});return true;
+    }
     if(selection.kind==='camera'){
       const frame=getFrame();
       host.append(element('h2','','Camera'),element('p','muted','Game camera at '+time.toFixed(3)+' s. Changing a value adds or updates its keyframe at the playhead. Workspace pan and zoom are separate editor controls.'));

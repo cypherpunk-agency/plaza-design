@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "groups": {
+    "boundary-street": {
+      "name": "Boundary street",
+      "members": [
+        {
+          "id": "west",
+          "chunk": "boundary-west",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "east",
+          "chunk": "boundary-east",
+          "placement": {
+            "x": 320,
+            "h": 0
+          }
+        }
+      ],
+      "connections": [
+        {
+          "id": "walk",
+          "kind": "walk",
+          "a": {
+            "member": "west",
+            "instance": "platform",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "east",
+            "instance": "platform",
+            "anchor": "origin"
+          }
+        }
+      ],
+      "exports": {
+        "west": {
+          "member": "west",
+          "instance": "platform",
+          "anchor": "origin"
+        },
+        "east": {
+          "member": "east",
+          "instance": "platform",
+          "anchor": "end"
+        }
+      }
+    },
+    "boundary-display-original": {
+      "name": "boundary-display-original",
+      "members": [
+        {
+          "id": "display",
+          "chunk": "boundary-door",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        }
+      ],
+      "connections": [],
+      "exports": {}
+    },
+    "boundary-display-blue": {
+      "name": "boundary-display-blue",
+      "members": [
+        {
+          "id": "display",
+          "chunk": "boundary-door-blue",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        }
+      ],
+      "connections": [],
+      "exports": {}
+    }
+  },
+  "compositions": {
+    "boundary-example": {
+      "name": "Boundary example",
+      "members": [
+        {
+          "id": "street",
+          "group": "boundary-street",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "display",
+          "group": "boundary-display-original",
+          "placement": {
+            "x": 960,
+            "h": 0
+          }
+        }
+      ],
+      "connections": []
+    }
+  }
+}

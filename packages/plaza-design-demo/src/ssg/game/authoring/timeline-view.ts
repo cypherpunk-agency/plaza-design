@@ -1,6 +1,6 @@
 /** Temporal editing UI only. The existing preview renders every requested time. */
 import type {Sequence,Target} from '../art/core/timeline';
-export type TimelineSelection={kind:'camera'}|{kind:'track';track:string}|{kind:'key';track:string;index:number}|{kind:'shot'|'text'|'fade'|'beat';id:string};
+export type TimelineSelection={kind:'camera'}|{kind:'track';track:string}|{kind:'key';track:string;index:number}|{kind:'shot'|'text'|'fade'|'beat'|'command';id:string};
 export interface TimelineViewState {zoom:number;collapsed:Set<string>;scrollX:number;scrollY:number}
 export function frameTime(seconds:number,duration:number){return Math.max(0,Math.min(duration,Math.round(seconds*60)/60));}
 export function moveKey(sequence:Sequence,trackId:string,index:number,seconds:number):number {
@@ -51,6 +51,7 @@ export function mountTimelineGrid(host:HTMLElement,options:{sequence:Sequence;st
     for(const item of items){const lane=addRow(el('span','',title+' · '+item.id),'keyframe-spans');const bar=el('button','keyframe-span '+kind,item.id);bar.type='button';bar.style.left=position(item.from);bar.style.width=(item.to-item.from)/seq.duration*100+'%';bar.title=`${item.id}: ${item.from}–${item.to} s`;bar.setAttribute('aria-label',title+' '+bar.title);bar.setAttribute('aria-pressed',String(options.selected?.kind===kind&&options.selected.id===item.id));bar.onclick=()=>{options.select({kind,id:item.id});options.seek(item.from);};lane.append(bar);}
   }
   const beatLane=addRow(el('span','','Beats'),'keyframe-beats');for(const beat of seq.beats)keyButton(beat.time,beat.id+' at '+beat.time+' s',{kind:'beat',id:beat.id},beatLane);
+  if(seq.commands?.length){const lane=addRow(el('span','','Commands'),'keyframe-commands');for(const command of seq.commands)keyButton(command.time,command.scene+' / '+command.command+' at '+command.time+' s',{kind:'command',id:command.id},lane);}
   const playhead=el('div','keyframe-playhead');playhead.setAttribute('aria-hidden','true');body.append(playhead);
   let time=options.time;
   const update=(seconds:number)=>{time=seconds;playhead.style.left=(190+(body.clientWidth-190)*Math.min(1,time/seq.duration))+'px';ruler.setAttribute('aria-valuenow',String(time));ruler.setAttribute('aria-valuetext',time.toFixed(3)+' seconds');};

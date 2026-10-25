@@ -3,14 +3,15 @@ import type {SceneModel} from '../model';
 import type {GameplaySession} from './session';
 /** Ordered conditions on existing scene tick/persistence phases; shared commands own all writes. */
 export type NativeWorkflowPhase='beforeNative'|'afterNative';
-export interface NativeLiveCondition {when:Condition;command:string;edge?:'rising';phase?:NativeWorkflowPhase|'onPersist'}
+export interface NativeLiveCondition {when:Condition;command:string;edge?:'rising';once?:true;phase?:NativeWorkflowPhase|'onPersist'}
 export function validateNativeLiveConditionsShape(definition:GameplayDefinition,condition:(value:unknown)=>void){
  const rows=definition.native?.triggers;if(rows===undefined)return;
  const fail=(message:string):never=>{throw Error('Invalid native live condition: '+message);};
  if(!rows||typeof rows!=='object'||Array.isArray(rows)||Object.getPrototypeOf(rows)!==Object.prototype||Object.keys(rows).length>64)fail('bounded plain binding map');
  for(const[id,row]of Object.entries(rows)){
   if(!/^[-a-zA-Z0-9_.]{1,128}$/.test(id)||['__proto__','constructor','prototype'].includes(id))fail('binding name');
-  if(!row||typeof row!=='object'||Array.isArray(row)||Object.getPrototypeOf(row)!==Object.prototype||Object.keys(row).some(k=>!['when','command','edge','phase'].includes(k))||!Object.prototype.hasOwnProperty.call(row,'when')||!Object.prototype.hasOwnProperty.call(row,'command'))fail('condition/command fields');
+  if(!row||typeof row!=='object'||Array.isArray(row)||Object.getPrototypeOf(row)!==Object.prototype||Object.keys(row).some(k=>!['when','command','edge','once','phase'].includes(k))||!Object.prototype.hasOwnProperty.call(row,'when')||!Object.prototype.hasOwnProperty.call(row,'command'))fail('condition/command fields');
+  if(row.once!==undefined&&row.once!==true)fail('once must be true when supplied');
   if(row.phase!==undefined&&!['beforeNative','afterNative','onPersist'].includes(row.phase))fail('phase');
   if(row.edge!==undefined&&row.edge!=='rising')fail('edge mode');if(row.edge&&Object.values(definition.native?.intervals??{}).some(interval=>interval.elapsed===edgeKey(id)))fail('edge observation scratch collision');
   condition(row.when);const command=definition.commands[row.command];if(!command||command.sources.length!==1||command.sources[0]!=='system')fail('command must be system-only');
@@ -21,5 +22,17 @@ const edgePrefix='native.edge.';const edgeKey=(id:string)=>edgePrefix+id;
 export function clearNativeLiveConditions(model:SceneModel){for(const key of Object.keys(model.scratch))if(key.startsWith(edgePrefix))delete model.scratch[key];}
 /** Evaluate the requested existing phase, in authored order, against each committed result. */
 export function nativeLiveConditionsTick(model:SceneModel,session:GameplaySession,cause:(run:()=>void)=>void,phase:NativeWorkflowPhase|'onPersist'='afterNative'){
- for(const[id,row]of Object.entries(session.definition.native?.triggers??{})){if((row.phase??'afterNative')!==phase)continue;const active=session.matches(row.when);if(row.edge==='rising'){const key=edgeKey(id),previous=model.scratch[key];model.scratch[key]=active?1:0;if(previous===undefined||previous!==0||!active)continue;}else if(!active)continue;cause(()=>{if(session.dispatch(row.command,'system').ok)model.changed();});}
+ for(const[id,row]of Object.entries(session.definition.native?.triggers??{})){
+  if((row.phase??'afterNative')!==phase)continue;
+  const active=session.matches(row.when);
+  if(row.edge==='rising'||row.once){const key=edgeKey(id),previous=model.scratch[key];model.scratch[key]=active?1:0;if(previous===undefined||previous!==0||!active)continue;}else if(!active)continue;
+  if(row.once&&model.triggerHistory.has(id))continue;
+  cause(()=>{
+   // Include the receipt in the same persistence observation as the command's committed result.
+   // An ineligible/failed command consumes no activation; a restored true condition is only a baseline.
+   if(row.once)model.triggerHistory.add(id);
+   let ok=false;try{const result=session.dispatch(row.command,'system');ok=result.ok;model.triggerStatus[id]={count:(model.triggerStatus[id]?.count??0)+(ok?1:0),time:model.now(),result:result.ok?'ok':result.reason};}finally{if(!ok&&row.once)model.triggerHistory.delete(id);}
+   if(ok)model.changed();
+  });
+ }
 }

@@ -27,12 +27,13 @@ export class Opening {
   /** Seconds into the glide; null while the title waits for a choice. */
   tau: number | null = null;
   done = false;
+  skipped=false;
   /** The title's time when the glide started. */
   private t0 = 0;
   private titleTl: Timeline | null = null;
   private glideTl: Timeline | null = null;
 
-  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/prepare-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'>={}) { this.t = reduced ? this.rise : 0; }
+  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/prepare-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'|'model'|'flags'|'compositions'>={}) { this.t = reduced ? this.rise : 0; }
   private get titleSequence(){return this.documents.timeline.sequences.find(s=>s.id==='title')!;}
   private get glideSequence(){return this.documents.timeline.sequences.find(s=>s.id==='glide')!;}
   private get rise(){return this.titleSequence.duration;}
@@ -56,6 +57,7 @@ export class Opening {
   /** Explicit player skip: finish the active glide through its ordinary runtime handoff. */
   skip() {
     if (!this.gliding) return;
+    this.skipped=true;
     this.tau = this.glide;
     this.t = this.t0 + this.glide;
     this.done = true;
@@ -93,7 +95,7 @@ export class Opening {
   /** Draw a frame into a context already scaled to world units. */
   draw(x: CanvasRenderingContext2D, W: number, H: number,playGround?:number,lighting:Light=lightAt(1,580,90,null)) {
     x.save();
-    renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ...this.world,ambientTime: this.t,playGround });
-    x.restore();
+    const frame=renderOpeningDocument(x, { W, H, reduced: this.reduced,lighting }, this.documents, this.tau === null ? 'title' : 'glide', this.tau ?? this.t, { ...this.world,ambientTime: this.t,playGround });
+    x.restore();return frame;
   }
 }

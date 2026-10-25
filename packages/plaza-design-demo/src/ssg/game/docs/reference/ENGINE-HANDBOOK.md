@@ -165,20 +165,52 @@ compiler produces the same ConversationSession graphs. Supply explicit graph IDs
 Use entry commands for effects and onEnterFailure for refused entry. Repeated frame inspection
 must stay pure and rewards must be idempotent. A choice uses the same command engine as a device.
 
-Declare scalars with owner, type, default and lifetime. Save-lifetime values persist across browser
-sessions; session/interaction values deliberately do not. State IDs split at the final dot into
-owner/local key. Queries are derived reads, never another stored copy. Do not add a parallel cursor
+Declare scalars with a qualified key, type, default and lifetime. Save-lifetime values persist across browser
+sessions; session/interaction values deliberately do not. The qualified ID is the automatic address;
+optional `binding` supplies an explicit world key. Native fields access it through sceneStateView,
+without serializing aliases. Existing declaration metadata `owner` identifies the key prefix; it
+does not grant a chunk ownership of values or moving instances. Queries are derived reads, never another stored copy. Do not add a parallel cursor
 map, synchronize two scalar stores, reset shop rotation on reload or restore missing optional
 source fields from a compiled original. No historic save-format migration is required.
-State that belongs to no single scene (the harbor night shift across its zones) is declared once in
-[world/state-owners.json](../../world/state-owners.json); a scene's gameplay lists the owner in
-`sharedState` and then reads and writes its keys like its own. Never copy those declarations into a
+Cross-chunk vocabulary (the harbor night shift) is declared once in
+[world/state-owners.json](../../world/state-owners.json); gameplay lists the key prefix in
+`sharedState` to access those declarations. This is access to one world state, not ownership. Never copy declarations into a
 scene, and use `stateReads` only to look at another scene's own state. Interaction availability (`when`), the scene
 clock's `time`/`timeDay` rules and scene values (`{state}`) read saved state too. Check: `shared-state-owner harbor-zones`.
 
 Examples: [Library dialogue source](../../scenes/library/scene.json),
 [shared conversation compiler](../../engine/gameplay/scene-conversations.ts),
-[common state owner](../../engine/gameplay/state.ts).
+[world-state key access](../../engine/gameplay/state.ts).
+
+## Recipe: world membership and direction
+
+Declare chunk groups and world compositions in `world/compositions.json`; registered source
+anchors and connections compile through `world/compiled-world.ts` into the existing spatial graph.
+Do not also author those chunks' offsets in raw zone-graph seams. A system command's `world`
+action contains `{composition, remove, add}`. Related edits prepare atomically. Save keeps applied
+membership and one pending batch; scene lifecycle waits for real dependencies to clear, not for
+an already-loaded chunk to magically unload first. No automatic state copy, rollback or player
+blocker prompt. Use explicit state bindings when alternative chunks must access the same facts.
+
+A composition can carry sequence controls plus `sequence.world-control`. Select a world
+composition for scope, or an explicit connected zone list. World-composition scope follows applied
+membership; the outline includes authored alternatives. Event handoffs select its sequence ID
+(the existing source field is `cutscene`; the typed UI says Sequence). CutscenePlay owns elapsed
+time, the ordinary Game loop ticks resident models, and `renderWorldFrame` paints them. The camera
+may have a different origin/component from the player. Do not merge disconnected physical floors.
+
+Commands at timeline markers are discrete system operations, with `run`/`omit` policy on skip.
+Completion/cancellation lists use the same commands and receipts. Use `{mover:{device,noun,path}}`
+for authored physical motion; native locks/sectors/watchdogs still apply. Do not keyframe a visual
+train position independently of its physical mover. Editor scrub reconstructs explicit isolated
+samples with the same reducer and movers, without trigger/storage hooks; pure painting only reads
+them. Native private Play exercises full simulation. The opening initializes New Game before
+playback and releases its existing models/camera; it must never reset/re-enter at completion.
+
+Examples/checks: [boundary source](../../scenes/authored.json), `world-compositions`,
+`world-edit-commands`, `state-bindings`, `trigger-history`, `world-direction-authoring`,
+`directed-residency`, `directed-mover`, `sequence-inspection`, `sequence-source-selection`.
+The [finite goal](../design/WORLD-FIRST-RUNTIME.md) records current verification and pending design.
 
 ## Recipe: a timed or specialized mechanic
 

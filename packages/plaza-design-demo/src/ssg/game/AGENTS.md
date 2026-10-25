@@ -26,8 +26,12 @@ have been retired; do not recreate them or restart the completed consolidation.
 - Use GameplaySession for commands/conditions/atomic reactions and ConversationSession for
   character chatter, choices and device dialogue. Name native talk graphs explicitly. Native
   DialogueData is inspection metadata, not permission to add another dialogue runner.
-- Save.gameplay[owner][localKey] is the single scalar owner. SceneModel references the same live
-  block; scene checkpoints keep engine metadata, not another scalar copy. Declare defaults,
+- One world state stores scalar values in Save.gameplay[keyPrefix][localKey]. A declaration's
+  qualified ID is its default address; optional `binding` names an explicit saved world-state key.
+  Native fields access that value through sceneStateView; never serialize alias copies.
+  Alternate chunk presentations can access the same keys. State-owner/entity-reference/copy-mode
+  selectors and automatic state migration are not authoring concepts. Scene checkpoints keep
+  engine metadata and once-trigger receipts, not another scalar copy. Declare defaults,
   types and save/session/interaction lifetimes. Saved shop rotation and dialogue progress do
   not reset just because the browser session ends. Queries and eligibility must be pure.
 - The user excluded historic save compatibility. Do not invent old-format codecs, scalar alias
@@ -56,6 +60,18 @@ have been retired; do not recreate them or restart the completed consolidation.
 - Pending companion documents validate as one prospective graph. The same pending source drives
   native Game Play; never maintain a simpler editor-only evaluator. Add typed authoring together
   with a shared feature, a compact demo example and the real scene change.
+- World composition membership is separate from residency. Use world/compositions.ts and
+  world/compiled-world.ts; do not duplicate placement in raw seams and a composition. Commands
+  stage a coherent edit; lifecycle defers unsafe disposal internally. Loading alone is not a
+  blocker. Keep player and directing-camera references independent, including disconnected
+  interiors. Camera residency must not merge unrelated floors or trigger player discovery.
+- Sequences keep controls with their composition. World direction uses sequence.world-control,
+  normal Game/SceneModel ticks and named mover-path system actions. Events request source-discovered
+  sequences through existing handoffs. Markers carry skip policy; completion/cancellation use
+  system commands and persisted receipts. Painting consumes prepared models and never constructs
+  an implicit inspection world. Editor scrub reconstructs isolated state/movers without native
+  trigger/storage/reward hooks; full simulation is private Play. Do not reinstate the opening's
+  end reset, handoff refit or visual train-position/door substitutes.
 - Keep runtime/game.ts as the composition root and single frame owner. Input, movement, camera,
   scene lifecycle, interactions, story/travel and presentation live in the focused runtime modules
   listed in the handbook. Bind directly to those functions instead of adding private forwarding

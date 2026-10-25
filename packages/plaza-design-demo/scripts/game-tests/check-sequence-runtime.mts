@@ -10,23 +10,20 @@ import { city, TRAVEL } from '../../src/ssg/game/world/clock';
 import { taxiSequenceDuration } from '../../src/ssg/game/story/cutscenes/taxi';
 import { STANDS } from '../../src/ssg/game/world/city';
 
-function controller(destination?: { scene: string; entrance?: string }) {
-  // Prototype-only adapter deliberately avoids canvas, DOM input and player-storage construction.
-  const game = runtimeFixture(Game) as any;
-  const arrivals: unknown[][] = [];
-  const model = new SceneModel({ say() {}, open() {}, changed() {} }, emptyData('downtown', 'fixture'), NO_RULES);
-  game.presentation.opening = { handoff: destination };
-  game.hints={sceneChanged(){}};game.content={};
-  game.endTitle = () => { game.presentation.opening = null; };
-  game.term = { close() {}, clear() {} }; game.scenes.hosts = new Map(); game.hostOf = () => ({ model }); game.syncHud = () => {};
-  game.enter = (...args: unknown[]) => arrivals.push(args);
-  game.openingDone();
-  return { game, arrivals };
+function controller(destination={scene:'harbor-station'} as {scene:string;entrance?:string}) {
+  const save=newSave();save.flags['prologue:started']=true;
+  const game=runtimeFixture(Game,{save,scenes:{here:destination.scene}}) as any,arrivals:unknown[][]=[];
+  const model=new SceneModel({say(){},open(){},changed(){}},emptyData('fixture','fixture'),NO_RULES);model.now=()=>1234;
+  game.presentation.opening={handoff:destination,gliding:true,skipped:false,timeline:{time:()=>68}};
+  game.endTitle=()=>{game.presentation.opening=null;};game.sequenceActions=()=>true;
+  game.directOpeningWorld=()=>{game.camera.cam=50;};game.enter=(...args:unknown[])=>arrivals.push(args);
+  game.markSeen=()=>{};game.introduceScene=()=>{};game.greet=()=>{};game.syncEnginePause=()=>{};game.syncHud=()=>{};game.persistSave=()=>{};
+  Object.defineProperty(game,'spanW',{value:640});Object.defineProperty(game,'sceneLifecyclePort',{value:{scenes:game.scenes,camera:game.camera,sceneDefinition:()=>({}),save,zh:undefined,interactionHost:undefined}});
+  game.openingDone();assert.equal(game.save,save,'completion retains the already initialized world state');assert.equal(game.camera.cam,50,'completion retains the final directed camera');assert.equal(model.now(),1234);model.dispose();return{game,arrivals};
 }
-assert.deepEqual(controller().arrivals, [['harbor-station', true, undefined]], 'opening hands off to the real Harbor platform');
-const variant = controller({ scene: 'capsule', entrance: 'door' });
-assert.deepEqual(variant.arrivals, [['capsule', true, 'door']], 'authored destination is captured before the title controller closes');
-assert.equal(variant.game.save.flags['prologue:started'], true, 'prologue initialization remains owned by the game controller');
+assert.deepEqual(controller().arrivals,[],'completion never re-enters/reset the live Harbor platform');
+const variant=controller({scene:'capsule',entrance:'door'});assert.equal(variant.game.scenes.here,'capsule');assert.deepEqual(variant.arrivals,[],'the destination was established before direction began');
+assert(variant.game.save.flags['prologue:started']);
 const { game } = controller(); game.scenes.here = 'capsule'; game.presentation.mapView = null; game.presentation.netView = null;
 game.save = newSave(); city.bind(game.save.clock);
 const minute = city.min, landings: unknown[][] = [];
@@ -38,4 +35,4 @@ assert.deepEqual(landings, [[STANDS.harbor.scene, 'taxi']]);
 assert.equal(city.min - minute, TRAVEL.taxi, 'timeline duration does not change the city travel-time cost');
 StoryTransitions.updateTravel(game.storyTransitionsPort,0); assert.equal(landings.length, 1, 'completion commits travel once');
 assert.equal(taxiSequenceDuration * 60, 200, 'default document preserves the original taxi completion frame');
-console.log('Sequence runtime checks passed: default/authored opening destinations, preserved story initialization, document-driven taxi timing and one-shot travel.');
+console.log('Sequence runtime checks passed: uninterrupted preinitialized opening state/camera, no duplicate entry, document-driven taxi timing and one-shot travel.');

@@ -1,3 +1,4 @@
+import {canonicalPaint} from './canonical-paint.mts';
 /**
  * World › Zones (authoring/zone-graph-authoring.ts): the panel's typed controls edit world/zone-graph.json through the
  * actual ComposerModel (history, bundle), an invalid seam is rejected atomically, seam problems are listed inline and
@@ -117,11 +118,15 @@ const shipped=values([...initial,...authoredDocuments(initial.find(d=>d.id==='au
 const preview=createNativePreview(nativeSceneAdapters,undefined,id=>{const e=catalogue.scenes.find(s=>s.scene.id===id);return e&&{validate:v=>art.validate(v),definition:(c,_s,o)=>declaredScene(e.scene,c,e.gameplay,o,e.devices)};});
 const draw=(documents:Map<string,unknown>,cameraX:number)=>{const canvas=new Canvas();preview.render(canvas as unknown as HTMLCanvasElement,{documents,composition:shipped.get('tower') as Composition,time:0,reduced:true,overlays:false,environment:{day:1,minute:720,seed:3,cameraX,cameraH:0,zoom:1,flags:'{}',state:'{}',weather:'clear'}});return canvas.ops;};
 const annexWindow=(ops:unknown[][])=>ops.some(o=>o[0]==='rect'&&o[1]===400&&o[2]===0&&o[3]===800&&o[4]===540);
-const alone=new Map([...shipped,['zone-graph',{version:1,seams:[]}]]);
+const unrelated=(shipped.get('zone-graph') as ZoneGraphSource).seams.filter(s=>!s.a.zone.startsWith('tower')&&!s.b.zone.startsWith('tower'));
+const alone=new Map([...shipped,['zone-graph',{version:1,seams:unrelated}]]);
 assert(annexWindow(draw(shipped,1200)),'the annex (at dx 1600) is drawn in its window, 400 px in from the left at camera 1200');
 assert(!annexWindow(draw(alone,1200)),'a scene with no seams is drawn alone');
-assert.deepEqual(draw(shipped,0),draw(alone,0),'a neighbour off screen changes nothing');
-const moved=new Map(shipped);moved.set('zone-graph',{version:1,seams:[{...pending.seams[0],dx:1500}]});
+const effective=(ops:unknown[][])=>canonicalPaint(ops).map(p=>{const style=p.at(-1) as any,c=style.clip;
+ // Every canvas already clips at 0..960/0..540. A larger identical axis-aligned window is redundant.
+ if(c?.length===1&&c[0][0]==='rect'){const [,x,y,w,h,m]=c[0];if(m[1]===0&&m[2]===0&&m[0]>0&&m[3]>0&&x*m[0]+m[4]<=0&&y*m[3]+m[5]<=0&&(x+w)*m[0]+m[4]>=960&&(y+h)*m[3]+m[5]>=540){const next={...style};next.clip=undefined;return [...p.slice(0,-1),next];}}return p;});
+assert.deepEqual(effective(draw(shipped,0)),effective(draw(alone,0)),'an off-screen neighbour changes no effective paint within the canvas viewport');
+const moved=new Map(shipped);moved.set('zone-graph',{version:1,seams:[...unrelated,{...pending.seams[0],dx:1500}]});
 assert(draw(moved,1200).some(o=>o[0]==='rect'&&o[1]===300&&o[3]===800),'the pending (unsaved) seam places the neighbour');
 // the composer's read-only look: a tag per joined scene (name, side, canvas rect), the extent Fit joined frames, dimming
 // with overlays, and Show joined scenes off draws the scene alone

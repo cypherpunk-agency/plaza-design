@@ -10,7 +10,7 @@ export type GameplayPresentation='end';
 export type Source = 'interaction' | 'conversation' | 'signal' | 'system';
 export type StateValue=boolean|number|string|null;
 export type StateValues=Record<string,Record<string,StateValue>>;
-export interface StateDeclaration {owner:string;lifetime:'save'|'session'|'interaction';type:'boolean'|'number'|'enum'|'string';maxLength?:number;nullable?:boolean;integer?:boolean;default:StateValue;min?:number;max?:number;options?:string[]}
+export interface StateDeclaration {/** Optional canonical world-state address. Missing uses the stable declaration ID. */binding?:string;owner:string;lifetime:'save'|'session'|'interaction';type:'boolean'|'number'|'enum'|'string';maxLength?:number;nullable?:boolean;integer?:boolean;default:StateValue;min?:number;max?:number;options?:string[]}
 export interface PurchaseDefinition {service?:true;basePrice:number;when?:Condition;goods?:{item:string;quantity:number}[];rotation?:{state:string;items:string[]};stock?:string;modifiers?:{id:string;when?:Condition;amount:number;scope:'both'|'quote'|'charge'}[]}
 export interface GameplayPlayerContext {readonly handle:string;readonly jump:boolean;readonly controlled:readonly string[];readonly keyring:readonly string[]}
 export type PlayerCondition={field:'handle';is:string}|{field:'jump';is:boolean}|{collection:'controlled'|'keyring';contains?:string|ScalarRead};
@@ -28,6 +28,7 @@ export type Condition =
   | { all: Condition[] } | { any: Condition[] } | { not: Condition };
 export type GameplayAction =
   | DomainAction
+  | {world:import('../../world/compositions').CompositionEdit}
   | {grant:{keyring:string}|{ability:'jump'}|{controlled:string|ScalarRead}}
   | {state:string;set:StateValue|ScalarRead}
   | {state:string;add:number|ScalarRead}
@@ -105,4 +106,7 @@ export type GameplayResult =
   | { ok: false; reason: 'fixed' | 'unknown-event' | 'unknown-command' | 'forbidden' | 'conditions' | 'resources' | 'budget' | 'busy' | 'disposed' | 'commit' | 'lockout' | 'sealed' | 'watchdog' | 'unknown-noun' | 'unknown-verb' };
 export type Eligibility={ok:true}|Extract<GameplayResult,{ok:false}>;
 /** write must replace the state atomically. Notifications/persistence belong in afterCommit. */
-export interface StatePort { read(): GameplayState; write(state: GameplayState,events?:readonly GameplayEvent[]): void }
+export interface StatePort { read(): GameplayState; write(state: GameplayState,events?:readonly GameplayEvent[]): void;
+ /** Prospective world edits have no effects until the surrounding command commits. */
+ prepareWorld?:(edits:readonly import('../../world/compositions').CompositionEdit[])=>{commit():void};
+}

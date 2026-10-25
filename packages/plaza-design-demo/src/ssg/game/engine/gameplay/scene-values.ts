@@ -146,7 +146,7 @@ function evaluate(v:ValueExpr,env:ValueEnv):Value|undefined|typeof SKIP{
  if('rows' in v&&'get' in v){const g=v.get;return(env.rows??[]).filter(r=>r.instance.type===v.rows).map(r=>g==='x'?r.placement.x:r.placement.h);}
  if('flag' in v)return presentationFlag(env.presentation,env.flags,v.flag);
  if('use' in v){const use=env.uses?.find(u=>u.id===v.use);return use?!use.available||use.available(env.flags,gameplayState(env)):SKIP;}
- if('state' in v)return stateValue(gameplayState(env).values,v.state)??null;
+ if('state' in v)return stateValue(gameplayState(env).values,v.state,env.gameplay)??null;
  if('not' in v)return !ev(v.not);
  if('all' in v)return v.all.every(c=>!!ev(c));
  if('any' in v)return v.any.some(c=>!!ev(c));

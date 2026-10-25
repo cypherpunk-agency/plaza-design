@@ -34,6 +34,8 @@ export interface CutsceneData {
 
 export interface Cutscene extends CutsceneData {
   id: string;
+  /** Direction of resident world models keeps the normal engine tick running. */
+  liveWorld?:boolean;
   /** JSON compositions own their exact transition envelope; custom pictures retain the default. */
   ownsFade?: boolean;
   /** Existing cutscene player owns animation advancement; painting only reads prepared pictures. */

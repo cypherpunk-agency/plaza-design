@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {advanceSequenceCommands,type SequenceCommandRun} from '../../src/ssg/game/runtime/sequence-commands';
+import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
+import {openingDocuments} from '../../src/ssg/game/story/title/documents';
+import {validateTimeline,evaluateTimeline,type Sequence} from '../../src/ssg/game/art/core/timeline';
+import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
+import {art} from '../../src/ssg/game/art';
+const base=openingDocuments.timeline.sequences.find(s=>s.id==='glide')!,sequence:Sequence={...structuredClone(base),commands:[{id:'first-command',scene:'boundary-west',command:'first',time:0,skip:'run'},{id:'transient-command',scene:'boundary-west',command:'transient',time:2,skip:'omit'},{id:'required-command',scene:'boundary-west',command:'required',time:8,skip:'run'}],onComplete:[{id:'finish-command',scene:'boundary-west',command:'finish'}],onCancel:[{id:'cancel-command',scene:'boundary-west',command:'cancel'}]};
+const definition={version:1,flags:['allowed','canceled'],items:[],events:[],commands:{first:{sources:['system'],actions:[{tokens:1}]},transient:{sources:['system'],actions:[{tokens:100}]},required:{sources:['system'],when:{flag:'allowed'},actions:[{tokens:2}]},finish:{sources:['system'],actions:[{tokens:4}]},cancel:{sources:['system'],actions:[{flag:'canceled',value:true}]}},reactions:[],conversations:{}};
+let state:any={flags:{allowed:true},items:{},tokens:0},run:SequenceCommandRun={sequence:'glide',receipts:[]},committedReceipts:string[][]=[];
+const session=new GameplaySession(definition,{read:()=>state,write:s=>state=s},()=>committedReceipts.push([...run.receipts]));
+const dispatch=(c:{command:string})=>session.dispatch(c.command,'system').ok;
+assert(advanceSequenceCommands(sequence,0,run,dispatch));assert.equal(state.tokens,1);assert.deepEqual(committedReceipts[0],['first-command'],'receipt is included in command persistence');
+assert(advanceSequenceCommands(sequence,1,run,dispatch,'skip'));assert.equal(state.tokens,7,'skip applies remaining required actions and completion, omitting transient action');
+const saved=JSON.stringify({state,run});({state,run}=JSON.parse(saved));assert(advanceSequenceCommands(sequence,sequence.duration,run,dispatch,'skip'));assert.equal(state.tokens,7,'saved receipts prevent duplicate actions');assert(advanceSequenceCommands(sequence,0,run,dispatch));assert.equal(state.tokens,7,'backward seek cannot replay a committed marker');
+run={sequence:'glide',receipts:[]};state={flags:{allowed:false},items:{},tokens:0};assert(!advanceSequenceCommands(sequence,8,run,dispatch));assert(!run.receipts.includes('required-command'));assert.equal(run.failure?.command,'required');state.flags.allowed=true;assert(advanceSequenceCommands(sequence,8,run,dispatch));assert.equal(state.tokens,103,'retry only runs the refused action');
+run={sequence:'glide',receipts:[]};state={flags:{},items:{},tokens:0};assert(advanceSequenceCommands(sequence,0,run,dispatch,'cancel'));assert(state.flags.canceled);assert.equal(state.tokens,0,'cancel does not simulate remaining markers or completion');assert(advanceSequenceCommands(sequence,0,run,dispatch,'cancel'));assert.equal(run.receipts.length,1);
+const context={...createSequenceValidationContext(art,openingDocuments.compositions),commandTargets:{'boundary-west':Object.keys(definition.commands)}};
+const program={version:1 as const,sequences:[sequence]};validateTimeline(program,context);
+const before=JSON.stringify(run);for(const t of[0,10,sequence.duration,2])evaluateTimeline(program,'glide',t,context);assert.equal(JSON.stringify(run),before,'pure sampling cannot execute commands');
+for(const change of[(s:Sequence)=>s.commands![0].command='missing',(s:Sequence)=>(s.commands![0] as any).skip='guess',(s:Sequence)=>s.onComplete![0].id=s.commands![0].id]){const bad=structuredClone(sequence);change(bad);assert.throws(()=>validateTimeline({version:1,sequences:[bad]},context));}
+session.dispose();console.log('Sequence commands: linked validation, ordered real commands, atomic receipts, skip, refusal/retry, cancel, save/reload and pure scrub PASS');

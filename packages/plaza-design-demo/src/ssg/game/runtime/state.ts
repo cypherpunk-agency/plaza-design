@@ -63,6 +63,7 @@ export const createScenesState=()=>({
     mobiles: new Map<SceneId,{model:import('../engine/model').SceneModel;gameplay?:GameplaySession}>(),
     joinedZones: ([]) as ScenePlacement[],
     zoneTiers: new Map<string, ResidencyTier>()
+      ,directedZones: new Set<string>(),directedOrigin:undefined as string|undefined
 });
 export type ScenesState=ReturnType<typeof createScenesState>;
 
