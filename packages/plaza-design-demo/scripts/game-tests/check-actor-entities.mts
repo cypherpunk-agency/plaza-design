@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {art,type Composition,type Instance} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
-import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
+import {sceneSourceDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
@@ -101,7 +101,7 @@ const originals=Object.fromEntries(model.edits().map(({id})=>[id,fs.readFileSync
 const initialRevisions=new Map(store.list().map(d=>[d.id,d.revision]));
 const saved=store.save(model.edits().map(e=>({...e,revision:initialRevisions.get(e.id)!})));
 const persisted=new Map(store.list().map(d=>[d.id,d.value]));
-const reloaded=folderSceneDefinition('warehouse',FOLDER_SOURCES.warehouse,{composition:persisted.get('warehouse') as Composition,scene:persisted.get('warehouse-scene') as SceneDocument});
+const reloaded=sceneSourceDefinition('warehouse',FOLDER_SOURCES.warehouse,{composition:persisted.get('warehouse') as Composition,scene:persisted.get('warehouse-scene') as SceneDocument});
 assert.deepEqual(reloaded.people,native().people);
 assert.equal(actorAppearanceSeed(reloaded.people!.find(a=>actorReactionIdentity(a)==='slot-3')!),3923);
 const savedRegistry=pendingRegistry(persisted);

@@ -1,6 +1,6 @@
-import {artworkClip} from '../art/core/composition';
+import {prepareArtwork,inspectArtwork} from '../art/core/presentation';
 import {mobileInstances} from '../art/core/mobility';
-import {projectX,projectedBounds} from '../art/core/geometry';
+import {sourceProjection,projectX,dragProjection,dragFromCanvas,transformRect} from '../art/core/geometry';
 import {cutView} from '../art/sequences/cinematics';
 import {authoredSceneAdapter} from './scene-adapters';
 import {sequenceProgram} from '../art/core/sequence';
@@ -13,7 +13,7 @@ import type {WorldFrame} from '../runtime/frame';
 /** Local editor preview. Uses the shipping frame renderer with an isolated, non-persistent model. */
 import { drawLevelOverlay } from './level-overlay';
 import { restingLevelView } from '../engine/level';
-import { art, compositionAppearance, resolveComposition, type Composition, type Environment, type Resolved } from '../art';
+import { art, compositionAppearance, type Composition, type Environment, type Resolved } from '../art';
 import type { View } from '../art/core/view';
 import { frameView } from '../art/core/view';
 import { SceneModel } from '../engine/model';
@@ -23,13 +23,13 @@ import { emptyData, NO_RULES, type EngineDraw } from '../engine/host';
 import type { SceneDef } from '../scenes/kit';
 import {renderWorldFrame} from '../runtime/render-scene';
 import {type ZoneFrame} from '../runtime/frame';
-import { joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zone-graph';
+import {placementCoordinates, joined as zoneJoined, placeFrom, validateZoneGraph } from '../world/zone-graph';
 import shippedGraph from '../world/zone-graph.json';
 import { authoredDocumentId } from '../engine/gameplay/scene-catalogue';
 import { zoneInfo, zoneName } from './zone-graph-context';
 import { city } from '../world/clock';
 import {backdropDocuments} from '../world/backdrops';
-import { light, lightAt, setLight } from '../world/light';
+import { lightAt } from '../world/light';
 import { CLIMATE_IDS, isWeather, sceneClimate, weatherNow, withSceneWeather, type Weather } from '../world/weather';
 import type {JoinedPreview,PreviewRequest,PreviewResult} from './contracts';
 import type { PlayerServices, PlayerState } from '../runtime/player';
@@ -67,36 +67,49 @@ function object(input: string | number | boolean | undefined, name: string): Rec
   return parsed as Record<string, unknown>;
 }
 /** Bounds are expressed in native view pixels. World and local kernels use the same document geometry. */
-export function previewBounds(rows: Resolved[], view: View, options: NativeOptions & Pick<Environment,'mobileArtwork'>, document?: Composition): PreviewResult {
-  const appearance = document ? compositionAppearance(document, options) : undefined;
-  const mobiles=document&&(view.sharedLayers||view.artworkScope)?(options.mobileArtwork??mobileInstances(document,art)):undefined;
-  const visible = rows.filter(row => appearance ? appearance.get(row.instance.id)!.visible && appearance.get(row.instance.id)!.opacity !== 0 : options.visibility?.[row.instance.id] !== false && options.opacity?.[row.instance.id] !== 0);
+export function previewBounds(rows: Resolved[], view: View, options: NativeOptions & Pick<Environment,'mobileArtwork'>, document: Composition): PreviewResult {
+  const appearance=compositionAppearance(document,options);
+  const mobiles=(view.sharedLayers||view.artworkScope)?(options.mobileArtwork??mobileInstances(document,art)):undefined;
   return {
-    bounds: visible.flatMap(row => {
-      const b = row.element.bounds(row.props, row.state, { view, placement: row.placement }), p = row.placement;
-      if(row.element.parts.length&&(b.w<=0||b.tall<=0))return [];
-      const sourceClip=artworkClip(row.instance,mobiles?{...view,artworkScope:mobiles.has(row.instance.id)?'mobile':'static'}:view);
-      const mask=row.element.pickClip?.(row.props,row.state,{view,placement:p}),nativeClip=mask?projectedBounds(view,p,mask):undefined;
-      let clip=sourceClip??nativeClip;
-      if(sourceClip&&nativeClip){const x=Math.max(sourceClip.x,nativeClip.x),y=Math.max(sourceClip.y,nativeClip.y);clip={x,y,width:Math.max(0,Math.min(sourceClip.x+sourceClip.width,nativeClip.x+nativeClip.width)-x),height:Math.max(0,Math.min(sourceClip.y+sourceClip.height,nativeClip.y+nativeClip.height)-y)};}
-      if(clip&&(clip.width<=0||clip.height<=0))return [];
-      return [{id:row.instance.id,...projectedBounds(view,p,b),...(clip?{clip}:{})}];
+    bounds: rows.flatMap(row => {
+      const prepared=prepareArtwork(row,document,{...options,view,state:{}},appearance.get(row.instance.id)!,mobiles?.has(row.instance.id)??false);
+      return prepared.pickable?[{id:row.instance.id,...prepared.bounds,...(prepared.clip?{clip:prepared.clip}:{})}]:[];
     }),
     deltaToLocal(id, dx, dy) {
-      const row = rows.find(row => row.instance.id === id); if (!row) throw new Error('Missing selected instance');
-      const parentId = row.instance.attach?.instance ?? parentOf(rows, id);
-      const parent = parentId ? rows.find(row => row.instance.id === parentId) : undefined;
-      const parentScale = parent?.placement.scale ?? 1, parentFacing = parent?.placement.facing ?? 1;
-      const unitX = (view.sx(row.placement.x + 1000, row.placement.parallax) - view.sx(row.placement.x, row.placement.parallax)) / 1000;
-      const unitH = (view.y(row.placement.h + 1000) - view.y(row.placement.h)) / 1000;
-      if (!unitX || !unitH) throw new Error('Preview transform is not invertible');
-      return { x: dx / unitX / parentScale / parentFacing, h: dy / unitH / parentScale };
+      const row=rows.find(r=>r.instance.id===id);if(!row)throw Error('Missing selected instance');
+      const parent=rows.find(r=>r.instance.id===row.instance.attach?.instance||r.instance.children?.some(c=>c.id===id));
+      return dragFromCanvas(dragProjection(view,row.placement,parent?.placement),{a:1,b:0,c:0,d:1,e:0,f:0},dx,dy);
     },
   };
 }
-function parentOf(rows: Resolved[], id: string): string | undefined {
-  return rows.find(row => row.instance.children?.some(child => child.id === id))?.instance.id;
-}
+export function frameSelection(frame:WorldFrame,request:PreviewRequest,namespaced=true):PreviewResult{
+    const regions:NonNullable<PreviewResult['regions']>=[];
+    const resolved:NonNullable<PreviewResult['resolved']>={},bounds:PreviewResult['bounds']=[],sources:NonNullable<PreviewResult['sources']>={},deltas=new Map<string,(dx:number,dy:number)=>{x:number;h:number}>();
+    const documents=request.documents??new Map([[request.composition.scene,request.composition]]),owners=new Map<string,string>();
+    for(const [id,value]of documents){const doc=value as Composition;if(doc&&typeof doc.scene==='string'&&Array.isArray(doc.instances))owners.set(doc.scene,id);}
+    for(const scope of frame.inspection??[]){
+      if(!scope.scene||!namespaced&&scope.scene.id!==request.composition.scene)continue;
+      const box=transformRect({x:scope.view.sx(0),y:0,width:scope.view.sx(scope.scene.width)-scope.view.sx(0),height:scope.view.viewH},scope.transform);
+      regions.push({document:owners.get(scope.scene.id)??scope.scene.id,scene:scope.scene.id,label:scope.scene.name,x:box.x,y:0,width:box.width,height:scope.viewport.height,active:scope.scene.id===(frame.cameraGuide?.scene??frame.sceneId)});
+    }
+    // The renderer captures each object after shared sorting, using its actual canvas transform.
+    // Near parts can submit twice; their final position in paint order owns the hit target.
+    const captured=new Map<string,{record:NonNullable<WorldFrame['artwork']>[number];owner:string}>();
+    for(const record of [...(frame.helpers??[]),...(frame.artwork??[])]){
+      if(!namespaced&&record.document.scene!==request.composition.scene)continue;
+      const owner=owners.get(record.document.scene)??record.document.scene;
+      const key=namespaced?JSON.stringify([owner,record.row.instance.id]):record.row.instance.id;
+      captured.set(key,{record,owner});
+    }
+    for(const [key,{record,owner}]of [...captured].sort((a,b)=>a[1].record.paintOrder-b[1].record.paintOrder)){
+      resolved[key]=inspectArtwork(record);sources[key]={document:owner,instance:record.row.instance.id};
+      if(!record.pickable)continue;
+      const b=record.bounds;if(b.width<=0||b.height<=0)continue;
+      bounds.push({id:key,...b,...(record.clip?{clip:record.clip}:{})});
+      deltas.set(key,(dx,dy)=>dragFromCanvas(record.drag,record.canvasTransform,dx,dy));
+    }
+    return{bounds,sources,resolved,regions,camera:frame.cameraGuide,workspaceScale:frame.workspaceScale,activeScene:frame.cameraGuide?.scene??frame.sceneId,deltaToLocal(id,dx,dy){const delta=deltas.get(id);if(!delta)throw Error('Missing selected source');return delta(dx,dy);}};
+  }
 /** No Game construction, controller stepping, player-save reads or player-save writes occur here. */
 export function createNativePreview(adapters: Readonly<Record<string, NativeSceneAdapter>>,bindWorld?:(definition:SceneDef,request:PreviewRequest)=>SceneDef,resolveAdapter?:(scene:string,request:PreviewRequest)=>NativeSceneAdapter|undefined) {
   const seeks=new Map<string,IntroSeekSession>(),worlds=new WeakMap<object,ReturnType<typeof pendingRegistry>>();
@@ -127,29 +140,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     if(!prepared)throw Error('Missing prepared frame');
     const selection=frameSelection(prepared,request);if(workspace)selection.workspaceAnchor={x:workspace.anchorX,h:workspace.anchorH};if(request.overlays)drawSelectionOverlay(ctx,selection,request.selectedId,request.objectOutlines);return selection;
   };
-  const frameSelection=(frame:WorldFrame,request:PreviewRequest):PreviewResult=>{
-    const regions:NonNullable<PreviewResult['regions']>=[];
-    const bounds:PreviewResult['bounds']=[],sources:NonNullable<PreviewResult['sources']>={},deltas=new Map<string,(dx:number,dy:number)=>{x:number;h:number}>();
-    const documents=request.documents??new Map([[request.composition.scene,request.composition]]);
-    for(const scope of frame.inspection??[]){
-      const source=scope.composition??[...documents.values()].find((d:any)=>d?.version===1&&d?.scene===scope.scene?.id&&Array.isArray(d.instances)) as Composition|undefined;
-      if(!source)continue;
-      const owner=[...documents].find(([,value]:[string,unknown])=>(value as Composition)?.scene===source.scene&&Array.isArray((value as Composition)?.instances))?.[0]??source.scene;
-      if(scope.scene){const x=((scope.view.sx(0)-scope.view.viewW/2)*scope.zoom+scope.view.viewW/2)*scope.scale,width=(scope.view.sx(scope.scene.width)-scope.view.sx(0))*scope.zoom*scope.scale;regions.push({document:owner,scene:scope.scene.id,label:scope.scene.name,x,y:0,width,height:scope.view.viewH*scope.scale,active:scope.scene.id===(frame.cameraGuide?.scene??frame.sceneId)});}
-      const env=scope.scene?.visualEnvironment?.(scope.view,{m:scope.model!,hover:null,layer:'all'})??{view:scope.view,state:{},reduced:request.reduced};
-      const drawn=frame.evaluation?.composition.scene===source.scene?frame.evaluation.composition:source;
-      const rows=resolveComposition(art,drawn,env),local=previewBounds(rows,scope.view,env,drawn);
-      for(const rect of local.bounds){
-        const key=JSON.stringify([owner,rect.id]),zoom=scope.zoom,k=scope.scale;
-        const x=((rect.x-scope.view.viewW/2)*zoom+scope.view.viewW/2)*k,y=((rect.y-scope.view.viewH/2)*zoom+scope.view.viewH/2)*k;
-        const width=rect.width*zoom*k,height=rect.height*zoom*k;
-        if(width<=0||height<=0||x+width<0||y+height<0||x>scope.view.viewW*k||y>scope.view.viewH*k)continue;
-        bounds.push({id:key,x,y,width,height,...(rect.clip?{clip:{x:((rect.clip.x-scope.view.viewW/2)*zoom+scope.view.viewW/2)*k,y:((rect.clip.y-scope.view.viewH/2)*zoom+scope.view.viewH/2)*k,width:rect.clip.width*zoom*k,height:rect.clip.height*zoom*k}}:{})});sources[key]={document:owner,instance:rect.id};
-        deltas.set(key,(dx,dy)=>local.deltaToLocal!(rect.id,dx/k/zoom,dy/k/zoom));
-      }
-    }
-    return{bounds,sources,regions,camera:frame.cameraGuide,workspaceScale:frame.workspaceScale,activeScene:frame.cameraGuide?.scene??frame.sceneId,deltaToLocal(id,dx,dy){const delta=deltas.get(id);if(!delta)throw Error('Missing selected source');return delta(dx,dy);}};
-  };
+
   /** Inspection never advances simulation: deadlines are reinitialised after replacing host time, so a clock/countdown
    * snapshot cannot depend on render duration or warmup. */
   const inspectionModel = (def: SceneDef, services: PlayerServices, request: PreviewRequest) => {
@@ -161,7 +152,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     model.reset();
     if (def.level) {
       const graph = validateZoneGraph(request.documents?.get('zone-graph') ?? shippedGraph);
-      model.peopleLevel = { ...def.level, vehicleZones: Object.fromEntries([...placeFrom(graph, def.id, Infinity)].map(([id, p]) => [id, { x: p.dx, h: p.dh }])) };
+      model.peopleLevel = { ...def.level, vehicleZones: placementCoordinates(placeFrom(graph,def.id,Infinity)) };
     }
     const player = services.save();
       // Inspection uses the shipping read evaluator over its isolated state. It never installs
@@ -199,14 +190,14 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const document = adapter.validate(value), options: NativeOptions = { reduced: request.reduced, sequenceTime: request.time };
       const original = adapter.pendingDefinition ? adapter.pendingDefinition(document, {}, options, documents) : adapter.definition(document, {}, options);
       const def = bindWorld?.(original, { ...nearby, composition: document }) ?? original, model = inspectionModel(def, services, request);
-      const cam = view.cam - at.dx, engine: EngineDraw = { m: model, hover: null, layer: 'all' };
-      const zoneView: View = { ...frameView(request.time * 60),worldZones:Object.fromEntries([...placeFrom(graph,zone,Infinity)].map(([id,p])=>[id,{x:p.dx,h:p.dh}])), viewW: view.viewW, viewH: view.viewH, cam, gy: view.gy - at.dh,
-        sx: (x, parallax = 1) => projectX(x,cam,parallax,zoom), y: h => view.y(h + at.dh), flags: view.flags,
+      const engine: EngineDraw = { m: model, hover: null, layer: 'all' };
+      const zoneView: View = { ...frameView(request.time * 60),worldZones:placementCoordinates(placeFrom(graph,zone,Infinity)), viewW: view.viewW, viewH: view.viewH, gy: view.gy - at.dh,
+        ...sourceProjection({cam:view.cam,gy:view.y(0)},at,zoom), flags: view.flags,
         ...(def.level ? { level: restingLevelView(def.level, false) } : {}) };
       const outdoor = def.outdoor ?? !!(def.ambient?.weather || def.ambient?.sky);
       out.push({ view: zoneView, scene: def, sceneId: zone, host: { model, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         preparePresentation: prepared => def.preparePresentation?.(prepared, engine),
-        lighting: W => { const L = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor); setLight(L); return L; } });
+        lighting: W => { const L = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor); return L; } });
     }
     return out;
   };
@@ -261,12 +252,12 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const weather = () => request.weather ?? weatherNow(sceneClimate(def.id));
       // joined scenes are drawn unless the composer's Show joined scenes is switched off
       view.zoneWindow={left:view.sx(0),right:view.sx(def.width)};
-      view.worldZones=Object.fromEntries([...placeFrom(validateZoneGraph(request.documents?.get('zone-graph')??shippedGraph),def.id,Infinity)].map(([id,p])=>[id,{x:p.dx,h:p.dh}]));
+      view.worldZones=placementCoordinates(placeFrom(validateZoneGraph(request.documents?.get('zone-graph')??shippedGraph),def.id,Infinity));
       const showJoined = settings.showJoined !== false, around = placed(request, request.composition.scene);
       const joined = showJoined && around.length ? neighbours(request, request.composition.scene, view, zoom, services, weather) : [];
       const backdrops=new Map(backdropDocuments(request.documents));
       if(document.scene.startsWith('backdrop-'))backdrops.set(document.scene.slice(9),document);
-      renderWorldFrame({ context, scale: k, zoom, view, scene: def, sceneId: def.id, backdrops, ...(joined.length ? { joined } : {}),
+      const prepared=renderWorldFrame({capture:true, context, scale: k, zoom, view, scene: def, sceneId: def.id, backdrops, ...(joined.length ? { joined } : {}),
         host: { model, visionOn: vision, draw: (ctx, v, layer = 'all') => def.drawBackdrop(ctx, v, { ...engine, layer }) },
         actors: request.player ? (ctx, v) => { const row = playerRow(document.instances); if (row && !request.hidden?.includes(row.id)) drawPlayer(ctx, v, SPR.stand, { x: row.placement.x, y: row.placement.h, face: row.placement.facing ?? 1 }, undefined, vision ? null : row.placement.h); } : undefined,
         reduced: request.reduced, clock: request.time * 60, weather,timeline:request.frame,
@@ -274,15 +265,13 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
         lighting(W: Weather | null) {
           const ambient = def.ambient ?? {}, outdoor = def.outdoor ?? !!(ambient.weather || ambient.sky);
           const light = request.lighting ?? lightAt(city.day, city.min, def.facing ?? 180, W ?? weather(), outdoor);
-          setLight(light); return light;
+          return light;
         },
       });
       const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
       const env = { ...options, ...preparedEnvironment };
-      const bounds = previewBounds(resolveComposition(art, document, env), {...view,sharedLayers:joined.length>0}, env, document);
-      const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * k, y: b.y * k, width: b.width * k, height: b.height * k,...(b.clip?{clip:{x:b.clip.x*k,y:b.clip.y*k,width:b.clip.width*k,height:b.clip.height*k}}:{}) })),
-        deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / k, dy / k) };
+      const result:PreviewResult={...frameSelection(prepared,{...request,composition:document},false),artwork:{composition:document,environment:env}};
       // the level overlay keeps its 1-unit lines and 7 px labels: drawn at renderScale over the view's zoomed positions
       if (request.overlays && def.level) drawLevelOverlay(context, def.level, { ...view, sx: (x, parallax) => view.sx(x, parallax) * zoom, y: h => view.y(h) * zoom }, renderScale);
       if (request.overlays) drawSelectionOverlay(context,result,request.selectedId,request.objectOutlines);
@@ -297,9 +286,10 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
     if (kind !== undefined && kind !== 'forecast' && (typeof kind !== 'string' || !isWeather(kind))) throw new Error('Unknown preview weather');
     if (request.weather !== undefined) validatePreviewWeather(request.weather);
     if (request.climate !== undefined && request.climate !== null && !CLIMATE_IDS.includes(request.climate)) throw new Error('Invalid preview reporting climate');
-    const beforeLight = light(), snapshot = request.weather ? Object.freeze({ ...request.weather }) : undefined;
-    try { return city.withSnapshot({ day: number(request.environment.day, 1), min: number(request.environment.minute, 580), seed: number(request.environment.seed, 3) }, () => withSceneWeather(adapters[request.composition.scene]?.climateScene ?? request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, { ...request, weather: snapshot }), request.climate)); }
-    finally { setLight(beforeLight); }
+    const snapshot = request.weather ? Object.freeze({ ...request.weather }) : undefined;
+    // Character.when and public screenLine/forecast still read the existing city/weather APIs.
+    // Scope only those inputs synchronously; lighting is passed explicitly through each View.
+    return city.withSnapshot({ day: number(request.environment.day, 1), min: number(request.environment.minute, 580), seed: number(request.environment.seed, 3) }, () => withSceneWeather(adapters[request.composition.scene]?.climateScene ?? request.composition.scene, typeof kind === 'string' && isWeather(kind) ? kind : null, () => render(canvas, { ...request, weather: snapshot }), request.climate));
   } };
 }
 /**

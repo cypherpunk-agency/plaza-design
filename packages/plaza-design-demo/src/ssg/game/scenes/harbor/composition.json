@@ -1234,13 +1234,7 @@
       "order": 41,
       "layer": "set",
       "bindings": {
-        "layout": "harbor.layout",
-        "visual": "harbor.visual",
-        "fishPose": "harbor.fishPose",
-        "teaPose": "harbor.teaPose",
-        "loads": "harbor.loads",
-        "stackOrigins": "harbor.stackOrigins",
-        "forkliftOrigin": "harbor.forkliftOrigin"
+        "vendorPose": "harbor.fishPose"
       }
     },
     {
@@ -1273,13 +1267,7 @@
       "order": 42,
       "layer": "set",
       "bindings": {
-        "layout": "harbor.layout",
-        "visual": "harbor.visual",
-        "fishPose": "harbor.fishPose",
-        "teaPose": "harbor.teaPose",
-        "loads": "harbor.loads",
-        "stackOrigins": "harbor.stackOrigins",
-        "forkliftOrigin": "harbor.forkliftOrigin"
+        "vendorPose": "harbor.teaPose"
       }
     },
     {

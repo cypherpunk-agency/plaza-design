@@ -1,6 +1,5 @@
 import coverage from './coverage.json';
 import authored from '../scenes/authored.json';
-import {declaredScene} from '../engine/gameplay/declared-scene';
 import type {AuthoredScene} from '../engine/gameplay/scene-catalogue';
 import type {SceneDef} from '../scenes/kit';
 import {plainReviewScene,reviewVisibility} from './review-room';
@@ -14,7 +13,7 @@ import {validateSceneDocument} from '../engine/gameplay/scene-document';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {Composition} from '../art/core/composition';
 import {emptyDeviceSource} from '../engine/empty-data';
-import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
+import {sceneSourceDefinition} from '../engine/gameplay/folder-scene';
 import {FOLDER_SOURCES} from '../scenes/folder-scenes';
 import {art as shopArt} from '../art';
 const shopComposition=shopArt.validate(FOLDER_SOURCES.shop.composition),libraryComposition=shopArt.validate(FOLDER_SOURCES.library.composition);
@@ -24,20 +23,20 @@ export function validateDemoScene(value:unknown,gameplay:GameplayDefinition=DEMO
 export const DEMO_COUNTER=validateDemoScene(counterSource),DEMO_DESK=validateDemoScene(deskSource);
 export function demoCounterScene(composition:Composition=shopComposition,state={},options={},scene=DEMO_COUNTER,gameplay=DEMO_GAMEPLAY){
  const d=validateDemoScene(scene,gameplay);if(d.id!=='shop')throw new Error('Counter identity');
- const base=folderSceneDefinition('shop',FOLDER_SOURCES.shop,{composition,state,options:{...options,visibility:reviewVisibility(composition,['counter','till'])},scene:d,gameplay:validateDemoGameplay(gameplay)});
+ const base=sceneSourceDefinition('shop',FOLDER_SOURCES.shop,{composition,state,options:{...options,visibility:reviewVisibility(composition,['counter','till'])},scene:d,gameplay:validateDemoGameplay(gameplay)});
  return {...plainReviewScene(base,[],['buy']),name:'Purchases',spawn:base.uses![0].x-20,attention:(flags:Readonly<Record<string,boolean>>)=>flags['demo.mission']?base.attention?.(flags)??null:null,objective:(flags:Readonly<Record<string,boolean>>)=>flags['demo.mission']?base.objective?.(flags)??'':''};
 }
 export function demoDeskScene(composition:Composition=libraryComposition,state={},options={},scene=DEMO_DESK,gameplay=DEMO_GAMEPLAY){
  composition=structuredClone(composition);for(const[id,x]of [['shelfe',320],['librarian',440],['armchair-4',590]] as const)composition.instances.find(i=>i.id===id)!.placement.x=x;
  const d=validateDemoScene(scene,gameplay);if(d.id!=='library')throw new Error('Desk identity');
- const base=folderSceneDefinition('library',FOLDER_SOURCES.library,{composition,state,options:{...options,visibility:reviewVisibility(composition,['shelfe','librarian'])},scene:d,gameplay:validateDemoGameplay(gameplay),devices:emptyDeviceSource('library',d.name)});
+ const base=sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition,state,options:{...options,visibility:reviewVisibility(composition,['shelfe','librarian'])},scene:d,gameplay:validateDemoGameplay(gameplay),devices:emptyDeviceSource('library',d.name)});
  return {...plainReviewScene(base,['shelfe','librarian'],['chair']),name:'Conversations',spawn:420,data:undefined,rules:undefined,uses:[]};
 }
 export function demoContent(values:{gameplay?:unknown;counter?:unknown;desk?:unknown;shop?:Composition;library?:Composition;sandbox?:Composition;workshop?:unknown;vehicle?:SceneDef;routes?:SceneDef;catalogue?:Readonly<Record<string,SceneDef>>}={}){
  const game=validateDemoGameplay(values.gameplay??DEMO_GAMEPLAY);
  // Coverage declares district membership; catalogue scenes keep their ordinary source factories.
  const catalogue:Record<string,SceneDef>={};
- for(const source of authored.scenes as unknown as AuthoredScene[]){const id=source.scene.id;if(Object.prototype.hasOwnProperty.call(coverage.areas,id))catalogue[id]=values.catalogue?.[id]??declaredScene(source.scene,source.composition,validateGameplay(source.gameplay),{},source.devices);}
+ for(const source of authored.scenes as unknown as AuthoredScene[]){const id=source.scene.id;if(Object.prototype.hasOwnProperty.call(coverage.areas,id))catalogue[id]=values.catalogue?.[id]??sceneSourceDefinition(id,source);}
  if(values.vehicle)catalogue['vehicle-lab']=values.vehicle;
  if(values.routes)catalogue['vehicle-routes']=values.routes;
  return {...catalogue,sandbox:workshopScene(values.sandbox??sandboxComposition,values.workshop===undefined?WORKSHOP_GAMEPLAY:values.workshop as import('../engine/gameplay/types').GameplayDefinition),shop:demoCounterScene(values.shop,{}, {},validateDemoScene(values.counter??DEMO_COUNTER,game),game),library:demoDeskScene(values.library,{}, {},validateDemoScene(values.desk??DEMO_DESK,game),game)};

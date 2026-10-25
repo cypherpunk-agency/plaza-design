@@ -1,5 +1,5 @@
-import {projectedBounds} from '../../art/core/geometry';
-import {artworkClip} from '../../art/core/composition';
+import {prepareArtwork,intersectRects} from '../../art/core/presentation';
+import {compositionAppearance} from '../../art/core/composition';
 import {mobileInstances} from '../../art/core/mobility';
 import {compilePeople} from '../people';
 import {movingManifestGeometry} from './moving-manifest-geometry';
@@ -53,9 +53,9 @@ const resetPermitted=(doc:SceneDocument)=>(doc.stage?.mechanisms??[]).some(name=
 export const declaredSceneOptions=(value:unknown,context:NativeTargetValidationContext={phase:'structural'},composition?:unknown)=>({manifest:true,actors:Array.isArray((value as {actors?:unknown})?.actors),
  ...(()=>{const targets=composition?Object.keys(providerSignals(art.validate(composition),(value as SceneDocument).stage?.values)):[];return targets.length?{presentationTargets:targets}:{};})(),
  nativeTargets:(doc:SceneDocument,gameplay:GameplayDefinition)=>nativeTargetValidator(context.phase==='assembled'?context.data:{id:doc.id} as SceneData,{effects:{}},doc.stage?.targetAnchors??[],{reset:resetPermitted(doc)})(doc,gameplay,context)});
-export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition){
+export function validateDeclaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,sharedState?:unknown){
  const withActors=Array.isArray((scene as {actors?:unknown}).actors);
- const doc=art.validate(composition),signals=providerSignals(doc,scene.stage?.values),d=validateSceneDocument(scene,gameplay,declaredSceneOptions(scene,undefined,doc));
+ const doc=art.validate(composition),signals=providerSignals(doc,scene.stage?.values),d=validateSceneDocument(scene,gameplay,{...declaredSceneOptions(scene,undefined,doc),sharedState});
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
  // transport exits (`action`) are the runtime's; engine exits are opened by engine targets (stage.targetAnchors)
  if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)&&e.sets!==DEFAULT_COMPANION_FLAG&&e.sets!==d.companion?.unlockFlag))throw new Error('Exit sets an undeclared gameplay flag');
@@ -82,8 +82,8 @@ export function validateDeclaredDestinations(scene:SceneDocument,destinations:Re
 /** The same factory handles every instance; source contains no executable scripts or renderer selection. */
 type RulesOf=NonNullable<SceneDef['rules']>;
 const combine=(a:RulesOf,b:RulesOf):RulesOf=>player=>mergeRules([typeof a==='function'?a(player):a,typeof b==='function'?b(player):b]);
-export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>={},devices?:SceneDeviceSource,world?:{city:CityModel;metro:LineSystem}):SceneDef{
- const validated=validateDeclaredScene(scene,composition,gameplay),d=validated.scene,rows=validated.rows,shared=new Map<string,unknown>();
+export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:GameplayDefinition,options:Partial<Environment>&{sharedState?:unknown}={},devices?:SceneDeviceSource,world?:{city:CityModel;metro:LineSystem}):SceneDef{
+ const validated=validateDeclaredScene(scene,composition,gameplay,options.sharedState),d=validated.scene,rows=validated.rows,shared=new Map<string,unknown>();
  const compiled=compileManifestDocument(d,rows,(_c,id)=>({name:d.name,pages:[],conversation:id}),d.manifest!.compile??{elevatedResponses:true}),roles=compiled.geometry.artwork;
  // a mechanism's rules widen what the device document may read and emit (derived values, physical milestones)
  const mechanisms=(d.stage?.mechanisms??[]).map(name=>SCENE_MECHANISMS[name]),contract=mechanismsRulesShape(d.stage?.mechanisms);
@@ -121,20 +121,25 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
   const pieces=live?levelVisualState(live):{},near=level&&live?levelNear(level,live,occluders):{},vehicles=level?.vehicles?.length&&engine?levelVehicleVisuals(engine.m.peopleLevel??level,engine.m):{},state:Record<string,import('../../art').Properties>={...(options.state??{}),...vehicles,...pieces};
   for(const[id,v]of Object.entries(near))state[id]={...(state[id]??{}),...v};
   for(const source of engine?.m.peopleSources??[]){const people=engine!.m.people.pictures[source.id];if(people)state[source.id]={...(state[source.id]??{}),people:people as unknown as import('../../art').Value};}
-  return {...options,view,mobileArtwork:mobiles,state:{...state,...view.sequence?.state},visibility:{...options.visibility,...(level&&engine?levelVehicleVisibility(level,engine.m):{})},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
+  const {sharedState:_declarations,...appearance}=options;
+  return {...appearance,view,mobileArtwork:mobiles,state:{...state,...view.sequence?.state},visibility:{...options.visibility,...(level&&engine?levelVehicleVisibility(level,engine.m):{})},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
    bindings:bindingValues(validated.composition,{view,rows:(()=>{if(!level?.vehicles?.length||!d.actors?.length)return rows;const moved=new Map(resolveComposition(art,validated.composition,{view,state,bindings:bindingDefaults(validated.composition),reduced:false},d.actors.map(a=>a.instance)).map(r=>[r.instance.id,r]));return rows.map(r=>moved.get(r.instance.id)??r);})(),roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:view.reduced??options.reduced??false};};
- const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);for(const pass of ['backdrop','devices','people'] as const)drawComposition(ctx,art,validated.composition,env,pass);}else drawComposition(ctx,art,validated.composition,env,'foreground');};
- const staticArtwork=rows.filter(r=>!mobiles.has(r.instance.id));
- const artworkVisible:NonNullable<SceneDef['artworkVisible']>=(view,model)=>(view.artworkScope==='static'?staticArtwork:resolveComposition(art,validated.composition,environment(view,model?{m:model,hover:null,layer:'all'}:undefined))).some(r=>{
-  if(!r.element.parts.length||r.instance.layer==='logic'||view.artworkScope==='static'&&mobiles.has(r.instance.id)||!mobiles.has(r.instance.id)&&['distance','backdrop'].includes(r.instance.layer)&&r.instance.clip!=='none'&&typeof r.instance.clip!=='object')return false;
-  const p=r.placement,b=r.element.bounds(r.props,r.state,{view,placement:p}),box=projectedBounds(view,p,b),clip=artworkClip(r.instance,{...view,zoneWindow:{left:view.sx(0),right:view.sx(validated.width)}});
-  return Math.max(0,box.x,clip?.x??-Infinity)<Math.min(view.viewW,box.x+box.width,clip?clip.x+clip.width:Infinity)&&Math.max(0,box.y,clip?.y??-Infinity)<Math.min(view.viewH,box.y+box.height,clip?clip.y+clip.height:Infinity);
- });
+ const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);drawComposition(ctx,art,validated.composition,env,'backdrop');}else drawComposition(ctx,art,validated.composition,env,'foreground');};
+ const artworkVisible:NonNullable<SceneDef['artworkVisible']>=(view,model)=>{
+  const queryView={...view,zoneWindow:{left:view.sx(0),right:view.sx(validated.width)}};
+  const env=environment(queryView,model?{m:model,hover:null,layer:'all'}:undefined),appearance=compositionAppearance(validated.composition,env);
+  return resolveComposition(art,validated.composition,env).some(r=>{
+   if(!r.element.parts.length||r.instance.layer==='logic'||view.artworkScope==='static'&&mobiles.has(r.instance.id)||!mobiles.has(r.instance.id)&&['distance','backdrop'].includes(r.instance.layer)&&r.instance.clip!=='none'&&typeof r.instance.clip!=='object')return false;
+   const a=prepareArtwork(r,validated.composition,env,appearance.get(r.instance.id)!,mobiles.has(r.instance.id));
+   const box=a.clip?intersectRects(a.bounds,a.clip):a.bounds;
+   return a.visible&&box.x<view.viewW&&box.x+box.width>0&&box.y<view.viewH&&box.y+box.height>0;
+  });
+ };
  const exits=level?compiled.content.exits.map(e=>({...e,arriveH:heightOf(manifest.exits?.[e.id])})):compiled.content.exits;
  const travelling=rows.filter(r=>mobiles.has(r.instance.id));
  const extent=travelling.flatMap(r=>{const x=r.placement.x,range=Number(r.props.range??r.props.lane??0)*r.placement.scale,b=(r.element.travelBounds??r.element.bounds)(r.props,r.state,{view:frameView(0),placement:r.placement}),left=b.x*r.placement.scale*r.placement.facing,right=(b.x+b.w)*r.placement.scale*r.placement.facing;const positions=[left,right];if(typeof r.props.range==='number'||typeof r.props.lane==='number')positions.push(0,range);return[x+Math.min(...positions)-40,x+Math.max(...positions)+40];});
  for(const a of d.actors??[]){if(!movingActors.has(a.instance))continue;let body=validated.actors[a.id],gap=0;while(body.follow){gap+=body.gap??18;body=body.follow;}const range=body.range,ends=Array.isArray(range)?range:[body.x,body.x+Number(range??0)],depth=validated.actors[a.id].parallax??1;extent.push((Math.min(...ends)-gap-64)/Math.max(.05,depth),(Math.max(...ends)+gap+64)/Math.max(.05,depth));}
- const base:SceneDef={...(extent.length?{mobileExtent:{from:Math.min(...extent),to:Math.max(...extent)}}:{}),artwork:validated.composition,peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,introOnFoot:d.introOnFoot,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ const base:SceneDef={...(extent.length?{mobileExtent:{from:Math.min(...extent),to:Math.max(...extent)}}:{}),artwork:validated.composition,peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,introOnFoot:d.introOnFoot,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d,options.sharedState),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View,engine?:EngineDraw)=>draw(ctx,v,engine,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  // each mechanism may return picture-side state (`presentation`); the scene prepares, saves and restores them together, beside its presentation signals

@@ -1,3 +1,4 @@
+import {sceneSourceDefinition} from './folder-scene';
 import {validateStateReadReferences} from './state-reads';
 import {projectSceneState,type SceneDeviceSource} from './scene-state';
 import {emptyDeviceSource} from '../empty-data';
@@ -11,7 +12,7 @@ import type {SceneDef} from '../../scenes/kit';
 import type {GameplayDefinition} from './types';
 import type {SceneDocument} from './scene-document';
 import {validateGameplay} from './validation';
-import {declaredScene,validateDeclaredScene,validateDeclaredDestinations} from './declared-scene';
+import {validateDeclaredScene,validateDeclaredDestinations} from './declared-scene';
 export interface AuthoredScene {composition:Composition;scene:SceneDocument;gameplay:GameplayDefinition;devices?:SceneDeviceSource}
 export interface SceneCatalogue {version:1;scenes:AuthoredScene[]}
 export const authoredDocumentId=(scene:string,part:'composition'|'scene'|'gameplay'|'devices')=>'authored.'+scene+(part==='composition'?'':'-'+part);
@@ -34,7 +35,7 @@ export function validateSceneCatalogue(value:unknown,native:Readonly<Record<stri
 /** Builds an independent runtime registry; editor sessions never mutate shipping globals. */
 export function createSceneRegistry(native:Readonly<Record<string,SceneDef>>,source:unknown,network?:EngineNetworkContext):Record<string,SceneDef>{
  const catalogue=validateSceneCatalogue(source,native,network),registry={...native};
- for(const entry of catalogue.scenes)registry[entry.scene.id]=declaredScene(entry.scene,entry.composition,entry.gameplay,{},entry.devices);
+ for(const entry of catalogue.scenes)registry[entry.scene.id]=sceneSourceDefinition(entry.scene.id,entry,{network});
  for(const scene of Object.values(registry))for(const exit of scene.exits){if(!exit.to&&exit.action)continue;const destination=registry[exit.to];if(!destination||exit.at&&!destination.exits.some(e=>e.id===exit.at))throw new Error('Unknown scene exit destination/arrival: '+scene.id+'/'+exit.id+' -> '+exit.to+(exit.at?'/'+exit.at:''));}
  validateStateReadReferences(Object.values(registry).flatMap(scene=>scene.gameplay?[scene.gameplay]:[]));
  return registry;

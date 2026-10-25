@@ -6,8 +6,8 @@ import {frameView} from '../../src/ssg/game/art/core/view';
 import {drawCompositionSlot, resolveComposition, slotHasContent, type Composition, type Instance, type LayerSlot} from '../../src/ssg/game/art/core/composition';
 import {layerRows, restack} from '../../src/ssg/game/authoring/layer-stack';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
-import {folderSceneDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
-const libraryComposition=art.validate(FOLDER_SOURCES.library.composition),libraryScene=(composition?:Composition)=>folderSceneDefinition('library',FOLDER_SOURCES.library,{composition});
+import {sceneSourceDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
+const libraryComposition=art.validate(FOLDER_SOURCES.library.composition),libraryScene=(composition?:Composition)=>sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition});
 
 function recorder(){const commands:unknown[][]=[];let gradient=0;const values:Record<string,unknown>={globalAlpha:1,lineWidth:1,font:'',getTransform:()=>({a:1,b:0,c:0,d:1,e:0,f:0}),measureText:(text:string)=>({width:text.length*6}),getImageData:(_x:number,_y:number,w:number,h:number)=>({data:new Uint8ClampedArray(w*h*4),width:w,height:h})};const ctx=new Proxy(values,{get(t,k:string){if(k in t)return t[k];if(k==='createLinearGradient'||k==='createRadialGradient'||k==='createPattern')return(...args:unknown[])=>{const id=++gradient;commands.push([k,...args,id]);return{id,addColorStop:(...a:unknown[])=>commands.push(['stop',id,...a]),setTransform:()=>{}};};return(...args:unknown[])=>{commands.push([k,...args]);};},set(t,k:string,value){t[k]=value;commands.push(['set',k,value]);return true;}});return{ctx:ctx as unknown as CanvasRenderingContext2D,commands};}
 (globalThis as any).document={createElement:()=>{const rec=recorder();return{width:0,height:0,getContext:()=>rec.ctx,style:{}};},fonts:{load:async()=>[],ready:Promise.resolve()}};
@@ -102,4 +102,50 @@ console.log('Scene layers PASS: validation, layer-then-order sorting, slots, res
  assert(traces[0].some(s=>s.startsWith('train.wall')),'fixture exercises Train artwork');
  assert.deepEqual(traces[1],traces[0],'shared and isolated frames preserve authored equal-order layering');m.dispose();
  console.log('Shared layering PASS: Downtown people and Train authored tie order.');
+}
+
+// Picking and read-only inspection consume the actual shared paint records, including canvas projection.
+{
+ const {renderWorldFrame}=await import('../../src/ssg/game/runtime/render-scene');
+ const {frameSelection}=await import('../../src/ssg/game/authoring/native-preview');
+ const {hitTestArtwork}=await import('../../src/ssg/game/authoring/selection');
+ const {measureArtwork}=await import('../../src/ssg/game/art/core/measure');
+ const {SceneModel}=await import('../../src/ssg/game/engine/model');
+ const {emptyData}=await import('../../src/ssg/game/engine/empty-data');
+ const {drawComposition,beginLayeredFrame,flushLayeredSlot,endLayeredFrame}=await import('../../src/ssg/game/art/core/composition');
+ const docs=['front-source','back-source'].map((scene,i)=>art.validate({version:1,scene,instances:[{id:scene,type:'level.slab',layer:i?'set':'foreground',order:0,props:{width:100,thickness:10},placement:{x:100,h:0}}]}));
+ docs[0]=art.validate({...docs[0],instances:[...docs[0].instances,{id:'parent',type:'assembly.group',props:{},layer:'set',order:0,placement:{x:200,h:30,scale:2,facing:-1},children:[{id:'helper',type:'library.spawn-marker',props:{},layer:'logic',order:0,placement:{x:10,h:0}}]}]});
+ const v={...frameView(0),viewW:640,viewH:360,gy:306,sx:(x:number)=>x,y:(h:number)=>306-h};
+ const zones=docs.map(doc=>{const m=new SceneModel({say(){},open(){},changed(){}},emptyData(doc.scene,doc.scene));const scene={id:doc.scene,name:doc.scene,width:640,spawn:0,ambient:{},artwork:doc,visualEnvironment:(view:typeof v)=>({view,reduced:false,state:{}}),drawBackdrop:(ctx:CanvasRenderingContext2D,view:typeof v)=>drawComposition(ctx,art,doc,{view,state:{},reduced:false},'backdrop')};return {scene,sceneId:scene.id,view:v,host:{model:m,visionOn:false,draw:scene.drawBackdrop},lighting:()=>v.lighting};});
+ let frame!:ReturnType<typeof renderWorldFrame>;
+ measureArtwork(context=>{frame=renderWorldFrame({...zones[0],context,scale:2,reduced:false,clock:0,weather:()=>null,capture:true,joined:[zones[1]]});});
+ for(const zone of zones)zone.scene.visualEnvironment=()=>{throw Error('Inspection must not resolve sources again');};
+ const selection=frameSelection(frame,{composition:docs[0],documents:new Map(docs.map(d=>[d.scene,d])),time:0,reduced:false,overlays:false,environment:{}});
+ const hit=hitTestArtwork(selection,{x:300,y:620},0)!;
+ assert.equal(selection.sources![hit.id].document,'front-source','foreground beats covered equal-area artwork across sources');
+ const info=selection.resolved![hit.id];assert.equal(info.layer,'foreground');assert.equal(info.bounds.x,200);assert.equal(info.bounds.width,200);assert.equal(info.clipSource,'None');assert(info.visible);
+ assert.equal(selection.deltaToLocal!(hit.id,20,-10).x,10,'drag uses actual canvas transform');
+ const helper=selection.bounds.find(b=>selection.sources![b.id].instance==='helper')!;assert.equal(helper.width,32);assert.deepEqual(selection.deltaToLocal!(helper.id,20,-10),{x:-5,h:2.5},'helpers use captured mirrored parent scale and actual canvas transform');
+ // Source and current positions stay separate; captured data is never authoring or save state.
+ assert.equal(info.authored.x,100);assert.equal(info.placement.x,100);
+ assert.deepEqual(frame.artwork!.map(a=>a.document.scene),['back-source','front-source']);
+ beginLayeredFrame();flushLayeredSlot('behind-player');assert.throws(()=>measureArtwork(ctx=>drawCompositionSlot(ctx,art,docs[1],{view:{...v,sharedLayers:true},state:{},reduced:false},'behind-player')),/after slot flush/);endLayeredFrame();
+ for(const z of zones)z.host.model.dispose();
+ console.log('Prepared artwork PASS: actual cross-source paint order, projected inspection, shared picking, drag projection and late-submission guard.');
+}
+
+// Slot collection freezes prepared facts now, and an explicit foreground draw replaces its queued command.
+{
+ const {beginLayeredFrame,endLayeredFrame,flushLayeredSlot,queueLayeredSlots,drawComposition}=await import('../../src/ssg/game/art/core/composition');
+ const e=art.get('level.slab'),bounds=e.bounds,draw=e.draw;let paints=0;
+ const d=art.validate({version:1,scene:'prepared-flush',instances:[{id:'slab',type:'level.slab',layer:'foreground',order:0,props:{width:40,thickness:10},placement:{x:0,h:0}}]});
+ const environment={view:frameView(0),state:{},reduced:false};
+ try{
+  e.draw=(...args)=>{paints++;return draw(...args);};
+  beginLayeredFrame();queueLayeredSlots(recorder().ctx,art,d,environment);
+  e.bounds=()=>{throw Error('Flush must not prepare geometry');};flushLayeredSlot('foreground');assert.equal(paints,1);
+  endLayeredFrame();e.bounds=bounds;paints=0;beginLayeredFrame();const ctx=recorder().ctx;
+  queueLayeredSlots(ctx,art,d,environment);drawComposition(ctx,art,d,environment,'foreground');flushLayeredSlot('foreground');assert.equal(paints,1,'explicit drawing replaces the queued version');
+ }finally{endLayeredFrame();e.bounds=bounds;e.draw=draw;}
+ console.log('Collector cleanup PASS: no source resolution during flush and no duplicated foreground paint.');
 }

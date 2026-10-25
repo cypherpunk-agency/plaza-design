@@ -5,7 +5,6 @@ import type {SceneHost} from '../engine/host';
 import type {Weather} from '../world/weather';
 import type {Light} from '../world/light';
 import type {TimelineFrame} from '../art/core/timeline';
-import type {Composition} from '../art/core/composition';
 import type {TimelineOverlay} from '../art/core/timeline-overlay';
 import type {BackdropDocument} from '../world/backdrops';
 export interface WorkspaceCamera {anchorX:number;anchorH:number;x:number;h:number;zoom:number}
@@ -78,13 +77,16 @@ export function directorFromTimeline(frame: Pick<TimelineFrame, 'camera' | 'fade
 }
 
 /** One frame of the world: the zone the player is in (the scene) and the zones joined to it that are on screen. */
-export interface FrameInspection { scene?:SceneDef; composition?:Composition; view:View; model?:SceneHost['model']; scale:number; zoom:number }
+export interface FrameInspection { scene:SceneDef; view:View; transform:import('../art/core/geometry').CanvasTransform;viewport:{width:number;height:number} }
 export interface WorldFrame {
   /** Editor-only inspection metadata; gameplay supplies no workspace camera. */
   cameraGuide?:CameraGuide;workspaceScale?:number;
   evaluation?:TimelineFrame;
   capture?:boolean;
   inspection?:FrameInspection[];
+  /** Actual prepared artwork in paint order, captured only for inspection. */
+  artwork?:import('../art/core/presentation').CapturedArtwork[];
+  helpers?:import('../art/core/presentation').CapturedArtwork[];
   context: CanvasRenderingContext2D; scale: number; view: View; scene: SceneDef; sceneId: string;
   /** A camera zoom already folded into `scale` (the world drawn larger; `view` is in zoomed units): overlays in logical
    * viewport coordinates draw at `scale / zoom`. Default 1. */

@@ -3,7 +3,8 @@ import type { View } from './view';
 import type { Light } from "../../world/light";
 import type { Weather } from "../../world/weather";
 import {mobileInstances} from './mobility';
-import {withCanvasTransform} from './geometry';
+import {withCanvasTransform,transformRect,copyTransform} from './geometry';
+import {prepareArtwork,type CapturedArtwork,type ArtworkPresentation} from './presentation';
 
 export type Value = null | boolean | number | string | Value[] | { [key: string]: Value };
 export type Properties = Record<string, Value>;
@@ -56,12 +57,7 @@ export interface Instance {
   /** Joined background layers default to the chunk window; isolated rooms and objects remain uncut. */
   clip?: 'none'|'chunk'|Bounds;
 }
-/** Clip coordinates belong to the source chunk, independently of an object's transform. */
-export function artworkClip(instance:Instance,view:View):{x:number;y:number;width:number;height:number}|undefined{
- const policy=instance.clip??(view.artworkScope==='static'&&['distance','backdrop'].includes(instance.layer)?'chunk':'none');
- if(typeof policy==='object')return{x:view.sx(policy.x),y:view.y(policy.h),width:view.sx(policy.x+policy.w)-view.sx(policy.x),height:view.y(policy.h-policy.tall)-view.y(policy.h)};
- const window=policy==='chunk'&&view.zoneWindow;return window?{x:window.left,y:0,width:window.right-window.left,height:view.viewH}:undefined;
-}
+export {artworkClip} from './geometry';
 export interface Composition { version: 1; scene: string; instances: Instance[]; sequence?:import('./sequence').SequenceSettings }
 export interface Environment {
   view: View;
@@ -111,11 +107,13 @@ export interface Element {
   parts: Pass[];
   /** Non-drawing elements that still belong in a visual layer: named groups and the player row. */
   role?: 'group' | 'player';
+  /** One reason a piece is not drawn or picked this frame; absent means eligible. */
+  hiddenReason?:(props:Properties,state:Properties,context:BoundsContext)=>string|undefined;
   bounds(props: Properties, state: Properties, context?: BoundsContext): Bounds;
   /** Entire source-camera travel envelope relative to placement (including depth), for lifetime; bounds is the live hit rectangle. */
   travelBounds?: Element['bounds'];
-  /** Native drawing mask, expressed as local bounds, also limiting enlarged editor hit areas. */
-  pickClip?:(props:Properties,state:Properties,context:BoundsContext)=>Bounds|undefined;
+  /** Native mask, applied once by the common painter and also limiting editor hit areas. */
+  mask?:(props:Properties,state:Properties,context:BoundsContext)=>Bounds|undefined;
   anchors(props: Properties, state: Properties): Record<string, Anchor>;
   draw(ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, pass: Pass, placement: Readonly<Required<Placement>>): void;
   /**
@@ -297,54 +295,71 @@ export function compositionAppearance(doc: Composition, env: Pick<Environment, '
  * `backdrop` draws everything behind the player and queues the rows over the player and the foreground for the
  * shared frame to draw at their own moments (see beginLayeredFrame / flushLayeredSlot); `foreground` draws the
  * foreground layer now. The engine's own passes (devices, people) have no composition rows. */
-export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, pass: Pass) {
+export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, pass: 'backdrop'|'foreground') {
   if (pass === 'backdrop') { drawCompositionSlot(ctx, registry, doc, env, 'behind-player'); queueLayeredSlots(ctx, registry, doc, env); }
-  else if (pass === 'foreground') { pending.foreground.delete(slotKey(doc,env)); drawCompositionSlot(ctx, registry, doc, env, 'foreground'); }
+  else if (pass === 'foreground') { drawCompositionSlot(ctx, registry, doc, env, 'foreground'); }
+}
+/** Immutable, frame-local source snapshot. Reused across its slots; never saved or stepped. */
+interface PresentationSnapshot {registry:ArtRegistry;environment:Environment;rows:Resolved[];appearance:ReturnType<typeof compositionAppearance>;facts:Map<Instance,ArtworkPresentation>}
+let collectingFrame=false;
+let presentationSnapshots=new WeakMap<Environment,Map<Composition,PresentationSnapshot>>();
+function presentationSnapshot(registry:ArtRegistry,doc:Composition,env:Environment){
+ let sources=presentationSnapshots.get(env);if(!sources){sources=new Map();presentationSnapshots.set(env,sources);}
+ const found=collectingFrame?sources.get(doc):undefined;if(found?.registry===registry)return found;
+ const environment={...env,mobileArtwork:env.mobileArtwork??mobileInstances(doc,registry)},rows=resolveComposition(registry,doc,environment),appearance=compositionAppearance(doc,environment);
+ const parents=new Map(rows.flatMap(r=>(r.instance.children??[]).map(child=>[child.id,r.placement] as const))),byId=new Map(rows.map(r=>[r.instance.id,r]));
+ const facts=new Map(rows.map(row=>[row.instance,prepareArtwork(row,doc,environment,appearance.get(row.instance.id)!,environment.mobileArtwork.has(row.instance.id),row.instance.attach?byId.get(row.instance.attach.instance)?.placement:parents.get(row.instance.id))]));
+ const snapshot={registry,environment,rows,appearance,facts};if(collectingFrame){sources.set(doc,snapshot);presentationSnapshots.set(environment,new Map([[doc,snapshot]]));}return snapshot;
 }
 /** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground.
  * `only` limits the slot to some layers, for scenes that draw layers into different engine moments. */
-export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean),phase:'world'|'sky'='world') {
-  const mobile=env.view.artworkScope?(env.mobileArtwork??mobileInstances(doc,registry)):undefined;
+export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean),phase:'world'|'sky'='world',defer=false) {
+  const snapshot=presentationSnapshot(registry,doc,env);env=snapshot.environment;
+  const mobile=env.view.artworkScope?env.mobileArtwork:undefined;
   const filter = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer),keep=(r:Resolved)=>(r.element.framePhase??'world')===phase&&filter(r)&&(!mobile||(env.view.artworkScope==='mobile')===mobile.has(r.instance.id));
-  const rows = resolveComposition(registry, doc, env), found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
+  const rows = snapshot.rows, found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
   const inSlot = (r: Resolved, index: number, s: LayerSlot) => s === 'foreground' ? r.instance.layer === 'foreground'
     : r.instance.layer === 'playfield' ? (s === 'behind-player') === (index < player)
     : s === 'behind-player' && r.instance.layer !== 'foreground' && r.instance.layer !== 'logic';
-  const painting=phase==='sky'&&env.view.sharedLayers?{...env,view:{...env.view,sharedLayers:false}}:env;
+  if(phase==='world'&&slot==='behind-player'&&captureHelper)for(const fact of snapshot.facts.values())if(!fact.row.element.parts.length)captureHelper(captureRecord(ctx,fact,slot,-1));
+  const painting=phase==='sky'&&env.view.sharedLayers?presentationSnapshot(registry,doc,{...env,view:{...env.view,sharedLayers:false}}):snapshot;
   // over the player, first the near parts of the pieces behind them that they are passing (Element.drawNear), then the rows in front
-  if (slot === 'over-player') paintSlot(ctx, doc, painting, slot, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && nearPart(r) && inSlot(r, index, 'behind-player')), r => r.element.parts[0], true);
-  paintSlot(ctx, doc, painting, slot, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && inSlot(r, index, slot)), r => r.element.parts[0]);
+  if (slot === 'over-player') paintSlot(ctx, doc, painting, slot, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && nearPart(r) && inSlot(r, index, 'behind-player')), r => r.element.parts[0], true,defer);
+  paintSlot(ctx, doc, painting, slot, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && inSlot(r, index, slot)), r => r.element.parts[0],false,defer);
 }
-/** Rows over the player and the foreground, waiting for their moment in the current frame (keyed by document, latest wins). */
-const scopedKeys=new WeakMap<Composition,Partial<Record<'static'|'mobile',object>>>();
-function slotKey(doc:Composition,env:Environment):object{const scope=env.view.artworkScope;if(!scope)return doc;let keys=scopedKeys.get(doc);if(!keys){keys={};scopedKeys.set(doc,keys);}return keys[scope]??= {};}
-const pending = { 'over-player': new Map<object, () => void>(), foreground: new Map<object, () => void>() };
-export function queueLayeredSlots(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment) {
-  for (const slot of ['over-player', 'foreground'] as const)
-    if (slotHasContent(doc, slot) || slot === 'over-player' && nearState(env)) pending[slot].set(slotKey(doc,env), () => drawCompositionSlot(ctx, registry, doc, env, slot)); else pending[slot].delete(slotKey(doc,env));
+/** Collect prepared commands now; flushing never resolves a document or adds another queue. */
+export function queueLayeredSlots(ctx:CanvasRenderingContext2D,registry:ArtRegistry,doc:Composition,env:Environment){
+ for(const slot of ['over-player','foreground'] as const){
+  for(const [id,command]of commands[slot])if(command.doc===doc&&command.scope===env.view.artworkScope)commands[slot].delete(id);
+  drawCompositionSlot(ctx,registry,doc,env,slot,undefined,'world',true);
+ }
 }
-/** Drawing commands live only for this frame; they carry no simulation or saved state. */
 const authoredOrder=new WeakMap<Composition,Map<Instance,number>>();
 function sourceOrder(doc:Composition,instance:Instance){
- let indices=authoredOrder.get(doc);
- if(!indices){indices=new Map(flat(doc.instances).map((n,i)=>[n,i]));authoredOrder.set(doc,indices);}
- return indices.get(instance)!;
+ let indices=authoredOrder.get(doc);if(!indices){indices=new Map(flat(doc.instances).map((n,i)=>[n,i]));authoredOrder.set(doc,indices);}return indices.get(instance)!;
 }
-const ordered:Record<LayerSlot,Map<Instance,{doc:Composition;draw:()=>void}>>={'behind-player':new Map(),'over-player':new Map(),foreground:new Map()};
-function paintSlot(ctx:CanvasRenderingContext2D,doc:Composition,env:Environment,slot:LayerSlot,rows:Resolved[],passOf:(r:Resolved)=>Pass,near=false){
- if(!env.view.sharedLayers){paint(ctx,doc,env,rows,passOf,near);return;}
- const transform=ctx.getTransform(),appearance=compositionAppearance(doc,env);
- for(const row of rows)ordered[slot].set(row.instance,{doc,draw:()=>withCanvasTransform(ctx,transform,()=>paint(ctx,doc,env,[row],passOf,near,appearance))});
+interface PaintCommand {doc:Composition;scope:View['artworkScope'];shared:boolean;draw:()=>void}
+const commands:Record<LayerSlot,Map<Instance,PaintCommand>>={'behind-player':new Map(),'over-player':new Map(),foreground:new Map()};
+function paintSlot(ctx:CanvasRenderingContext2D,doc:Composition,snapshot:PresentationSnapshot,slot:LayerSlot,rows:Resolved[],passOf:(r:Resolved)=>Pass,near=false,defer=false){
+ if(rows.length&&(closedSlots.has(slot)||flushingSlot===slot))throw new Error('Artwork submitted after slot flush or during painting: '+doc.scene+'/'+slot);
+ const env=snapshot.environment,facts=rows.map(r=>snapshot.facts.get(r.instance)!);
+ if(!env.view.sharedLayers&&!defer){for(const r of rows)commands[slot].delete(r.instance);paint(ctx,env,facts,passOf,near,slot);return;}
+ const transform=copyTransform(ctx.getTransform());
+ for(const fact of facts)commands[slot].set(fact.row.instance,{doc,scope:env.view.artworkScope,shared:!!env.view.sharedLayers,draw:()=>withCanvasTransform(ctx,transform,()=>paint(ctx,env,[fact],passOf,near,slot))});
 }
-export function beginLayeredFrame(){pending['over-player'].clear();pending.foreground.clear();for(const rows of Object.values(ordered))rows.clear();}
+let captureArtwork:((a:CapturedArtwork)=>void)|undefined,captureHelper:typeof captureArtwork;
+let paintOrdinal=0,flushingSlot:LayerSlot|undefined;
+const closedSlots=new Set<LayerSlot>();
+function captureRecord(ctx:CanvasRenderingContext2D,prepared:ArtworkPresentation,slot:LayerSlot,paintOrder:number):CapturedArtwork{
+ const matrix=copyTransform(ctx.getTransform());return {...prepared,bounds:transformRect(prepared.bounds,matrix),clip:prepared.clip?transformRect(prepared.clip,matrix):undefined,slot,canvasTransform:matrix,paintOrder};
+}
+export function endLayeredFrame(){captureArtwork=undefined;captureHelper=undefined;flushingSlot=undefined;closedSlots.clear();collectingFrame=false;presentationSnapshots=new WeakMap();for(const rows of Object.values(commands))rows.clear();}
+export function beginLayeredFrame(capture?:typeof captureArtwork,helpers?:typeof captureHelper){endLayeredFrame();captureArtwork=capture;captureHelper=helpers;collectingFrame=true;paintOrdinal=0;}
 export function flushLayeredSlot(slot:LayerSlot){
- if(slot!=='behind-player'){const draws=[...pending[slot].values()];pending[slot].clear();for(const draw of draws)draw();}
- const rows=[...ordered[slot]];ordered[slot].clear();
- rows.sort(([a,x],[b,y])=>LAYERS.indexOf(a.layer)-LAYERS.indexOf(b.layer)||a.order-b.order||x.doc.scene.localeCompare(y.doc.scene)||(x.doc===y.doc?sourceOrder(x.doc,a)-sourceOrder(y.doc,b):0));
- for(const[,row]of rows)row.draw();
+ const rows=[...commands[slot]];commands[slot].clear();
+ if(rows.some(([,c])=>c.shared))rows.sort(([a,x],[b,y])=>LAYERS.indexOf(a.layer)-LAYERS.indexOf(b.layer)||a.order-b.order||x.doc.scene.localeCompare(y.doc.scene)||(x.doc===y.doc?sourceOrder(x.doc,a)-sourceOrder(y.doc,b):0));
+ flushingSlot=slot;try{for(const[,row]of rows)row.draw();}finally{flushingSlot=undefined;closedSlots.add(slot);}
 }
-/** Does the environment set any piece's `near` (its near part waits for the over-player slot)? */
-const nearState = (env: Environment) => Object.values(env.state).some(s => Number(s.near ?? 0) > 0);
 /** Cheap check from the document alone, so scenes can skip preparing an environment for an empty slot. */
 export function slotHasContent(doc: Readonly<Composition>, slot: LayerSlot): boolean {
   const nodes = flat(doc.instances);
@@ -354,13 +369,13 @@ export function slotHasContent(doc: Readonly<Composition>, slot: LayerSlot): boo
   const at = nodes.indexOf(player), after = (n: Instance) => n.order > player.order || n.order === player.order && nodes.indexOf(n) > at;
   return nodes.some(n => n.layer === 'playfield' && n !== player && (slot === 'over-player') === after(n));
 }
-function paint(ctx: CanvasRenderingContext2D, doc: Composition, env: Environment, rows: Resolved[], passOf: (r: Resolved) => Pass, near = false, appearance = compositionAppearance(doc, env)) {
-  for (const r of rows) {
-    const { visible, opacity } = appearance.get(r.instance.id)!;
-    if (!visible) continue;
-    if (opacity === 0) continue;
+function paint(ctx:CanvasRenderingContext2D,env:Environment,rows:ArtworkPresentation[],passOf:(r:Resolved)=>Pass,near:boolean,slot:LayerSlot){
+  for(const prepared of rows){
+    const r=prepared.row,opacity=prepared.opacity;
+    captureArtwork?.(captureRecord(ctx,prepared,slot,paintOrdinal++));
+    if(!prepared.visible)continue;
     const pass = passOf(r), p = r.placement, v = env.view;
-    const clip=artworkClip(r.instance,v);
+    const clip=prepared.clip;
     if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(clip.x,clip.y,clip.width,clip.height); ctx.clip(); }
     try {
     if (r.element.coordinates === 'world') {

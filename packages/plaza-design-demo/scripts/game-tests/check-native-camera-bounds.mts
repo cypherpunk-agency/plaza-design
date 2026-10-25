@@ -1,3 +1,4 @@
+import {prepareArtwork} from '../../src/ssg/game/art/core/presentation';
 import assert from'node:assert/strict';import fs from'node:fs';import path from'node:path';
 import{centerNativePreview,NATIVE_FOCUS_LIMITS}from'../../src/ssg/game/authoring/native-camera';
 import type {PreviewRequest} from '../../src/ssg/game/authoring/contracts';
@@ -29,7 +30,7 @@ for(const [id,scene] of Object.entries(SCENES)){
    if(!['character.prepared','actor.prepared'].includes(row.instance.type))continue;
    const pose=row.state.pose as any;if(!pose?.visible)continue;
    const worldX=pose.frame?.x??(pose.character.x+(pose.rider?.offset??0)),drawnX=view.sx(worldX,pose.character.parallax??1);
-   const box=projectedBounds(view,row.placement,row.element.bounds(row.props,row.state,{view,placement:row.placement}));
+   const box=prepareArtwork(row,scene.artwork!,env,{visible:true,opacity:1},env.mobileArtwork?.has(row.instance.id)).bounds;
    const clip=row.state.clip as number[]|null;
    if(!clip)assert(drawnX>=box.x&&drawnX<=box.x+box.width,id+'/'+row.instance.id+' bounds must follow the drawn pose');
    else if(box.width>0&&box.height>0){assert(box.x>=Math.min(clip[0],clip[0]+clip[2])-1e-6&&box.x+box.width<=Math.max(clip[0],clip[0]+clip[2])+1e-6);assert(box.y>=Math.min(clip[1],clip[1]+clip[3])-1e-6&&box.y+box.height<=Math.max(clip[1],clip[1]+clip[3])+1e-6);}
@@ -51,7 +52,7 @@ for(const id of ['harbor-yard','harbor-shed','harbor-quay','shop','laundromat'])
  for(const t of [0,600,1700])for(const cam of [0,400,1200]){
   const view={...frameView(t),viewW:1280,viewH:720,cam,gy:591,sx:(x:number,p=1)=>x-cam*p,y:(h:number)=>591-h},env=scene.visualEnvironment!(view,{m:model,hover:null,layer:'all'});
   for(const row of resolveComposition(art,scene.artwork!,env)){
-   const box=projectedBounds(view,row.placement,row.element.bounds(row.props,row.state,{view,placement:row.placement}));
+   const box=prepareArtwork(row,scene.artwork!,env,{visible:true,opacity:1},env.mobileArtwork?.has(row.instance.id)).bounds;
    if(row.instance.type==='character.resident'){
     const body=residentCharacter(row.props,row.placement),anchor=view.sx(row.placement.x,row.placement.parallax),drawn=anchor+(view.sx(characterX(body,t),body.parallax??1)-anchor)*row.placement.scale*row.placement.facing;
     assert(drawn>=box.x-1e-6&&drawn<=box.x+box.width+1e-6,id+'/'+row.instance.id+' resident depth and mirroring');residents++;
@@ -100,3 +101,12 @@ for(const[id,s]of Object.entries(SCENES)){if(!s.artwork||!s.visualEnvironment)co
 assert.deepEqual(bad,[],'native level placements contain registered artwork');assert(tested>=59);console.log('Native level bounds PASS:',tested,'placements');
 
 }
+// Native station actors that do not draw must not keep an invisible hit target.
+let hiddenActors=0;
+for(const id of ['galleriaStation','harborStation','metro']){
+ const scene=SCENES[id],m=new SceneModel({say(){},open(){},changed(){}},scene.data!,undefined,undefined,undefined,undefined,undefined,scene.gameplay);
+ for(const time of [0,600]){const v={...frameView(time),viewW:1280,viewH:720,cam:0,gy:591,sx:(x:number)=>x,y:(h:number)=>591-h},env=scene.visualEnvironment!(v,{m,hover:null,layer:'all'});
+  for(const row of resolveComposition(art,scene.artwork!,env)){if(row.instance.type==='actor.prepared'&&(row.state.pose as any)?.visible===false){assert.equal(previewBounds([row],v,env,scene.artwork).bounds.length,0);hiddenActors++;}}
+ }m.dispose();
+}
+assert.equal(hiddenActors,6);console.log('Hidden native actors PASS:',hiddenActors,'station/time samples.');

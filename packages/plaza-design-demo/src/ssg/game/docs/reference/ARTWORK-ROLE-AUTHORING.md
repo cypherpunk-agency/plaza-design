@@ -50,31 +50,33 @@ Focused checks include `shared-device-geometry`, `artwork-role`, `scene-presenta
 `scene-batch` and `all-scene-layers` (use `pnpm test:game --list` for current selector names).
 Checks must exercise pending source, invalid edits, history/bundles and protected Save as applicable.
 
-## C3 dependency audit: retained context and remaining extraction
+## C3 dependency audit: exact supported and retained contracts
 
-These are dependency findings, not additional library categories. The current library keeps the
-existing Reusable anywhere / Requires source context / Scene helpers choices.
+These findings describe dependencies, not new library categories. The library keeps Reusable
+anywhere / Requires source context / Scene helpers. No whole-scene snapshot is a certificate of reuse.
 
-| Family | Why some entries still require context | Remaining work |
-| --- | --- | --- |
-| Prepared characters | `actor.prepared`, `character.prepared`, `library.person`, train riders, platform passengers and the native LIME sprite consume an actor-owned pose and position. | Retain that explicit contract. Place ordinary people/animals/robots with `character.resident`; do not create a second actor clock in artwork. |
-| Sequence parts | The intro network/skyline, fades, titles and taxi/act pictures consume their prepared sequence frame or viewport. | Retain sequence ownership and the shared frame director. Do not label an isolated screenshot as a portable object. |
-| Scene envelopes | Whole-room fills, floors, sky/water bands, street surfaces and cutaway envelopes intentionally span the source frame. | Keep the supported scene/frame contract explicit; independent furniture belongs in its own row. |
-| Connected machinery | Harbor cranes/forklifts and Terminal loads/gantries/watchdogs consume actual movers, cargo and shared source geometry. | Preserve physical ownership. Continue reviewing ordinary fixtures and actor-bearing stalls inside those assemblies for extraction. |
-| Connected wiring | QA cable rows, the laundry conduits and Moth/Capsule desk cables use other authored endpoints. | Retain explicit endpoint references; separate a device body when that connection prevents independent placement. Preserve hover drawing order during any split. |
-| Parent geometry | Window cutouts, wall trim, roof fittings, reflections and some Mall fronts/escalators use parent dimensions or source layout. | Review which dimensions can become own properties or scalar bindings. Remaining candidates include Mall fronts/escalators, Harbor stalls and ordinary train fittings. |
+| Audited candidates | Result and owner |
+| --- | --- |
+| `mall.shop-front`, `mall.shop-interior`, `mall.shop-stock`, `mall.escalator-back`, `mall.escalator-front`, `mall.metro-door`, `mall.food-sign`, `mall.pillar` | Independent own ceiling/fascia/rise dimensions where needed; shop stock uses only its own style and width. Native source binds scalar room dimensions; no atrium snapshot input. Painting, bounds and landing/sign anchors use those same dimensions. |
+| `harbor.fishStall`, `harbor.teaStall` | Own placement/width plus optional `vendorPose`. Native Harbor binds its prepared vendors; an unbound stall is usable without an actor or pier layout. Actor schedules remain with the actor compiler. |
+| Harbor ordinary fixtures | `denInside`, `denTable`, `denDoors`, `denLamp`, `metroDoor`, `noticePost`, `podium`, `manifest`, `callBox`, `crates`, `bollard`, `rod`, `fishingBox`, `berthSign`, `taxi`, `ferryNotice`, `rails`, `beacon`, `portCamera`, `drawTerminalGate`, `hutBack`, `hutFront` already cancel source geometry/use own dimensions. The hut layers link width/height explicitly. |
+| Train ordinary fittings | `drawCam`, `drawPole`, `windowFrame`, `staffDoor`, `seatBack`, `seatFront`, `ceilingLight`, `advert`, `adTell`, `carPlate`, `registryScreen`, `handrail`, `strap`, and the emergency brake use shared independent kernels. Optional native frame/scalar bindings supply dimensions, motion or news; default placement works without a car controller. |
+| QA `sandbox.server-cables`, `sandbox.button-counter-conduit`, `sandbox.spool-cable` | Retain endpoint context: their entire drawing is a connection between actual device spots, not an embedded device body. The server rack, button/counter and spool bodies are already separate independently placed rows. |
+| `laundromat.conduits` | Retain explicit breaker/washer endpoints. This row contains only conduits; breaker and washers are already independent bodies. `laundromat.schedule` has optional scalar cable inputs and draws no cable by default. |
+| `moth.rig-shelf`, `moth.monitor` | Independent shelf/router body with optional desk cables; independent monitor with own stand height. Native source opts into linked desk cable/support geometry explicitly. |
+| `moth.desk-signal` | Retain source context: only the workstation tell/hover bracket, located from the actual desk surface, with no embedded body to extract. The desk is already an independent row. |
+| `capsule.plug` | Independent plug body; optional cable explicitly enabled by native source, with router/desk endpoints from scalar bindings. The router and desk are separate bodies. |
+| Mall far-shell/shops/rails, gallery-back/front, ground-wall, floor, foreground-pillar | Retain room/storey context where they draw adaptive multi-storey or viewport-spanning architecture. Local fronts/interiors/stock, doorway/sign/pillars and escalators are the independently supported pieces above; shop/fountain/pillar reflections have their existing own dimensions. |
+| Harbor cranes, arch machinery, forklift and connected cargo | Retain actual mover/cargo/source geometry. Their owner is SceneModel and the registered physical mechanism; do not introduce an artwork simulation. |
+| Prepared characters, sequence parts and scene envelopes | Retain their explicit prepared-pose, sequence-frame or viewport contract. Use `character.resident` for independently authored people/animals/robots; never start an actor clock in artwork. |
 
-Audited local station signs/lamps/posts, Market stalls/booths/tickers, the QA trace meter, beach
-stairs and the two Mall reflection patches do not require a source scene. Their registered
-defaults are sufficient; native source bindings remain optional presentation inputs. Station
-selection bounds now include their actual rods, mounting heights and spans down to the floor.
-The remaining contexts are not all certified intrinsic: C3 remains open until those extraction
-candidates and visual preservation have been resolved.
+`check-independent-fittings.mts` exercises the 13 newly independent registered types, source
+scalar dimensions, shared projection, add/move/duplicate/property editing, undo/redo, bundle,
+protected Save and fresh native reload. Existing train-fitting, train-scalar-fitting, Harbor hut,
+wash-schedule, QA-fitting and artwork-role checks cover the already independent families. Approved
+current visuals are checked separately without accepting regenerated snapshots.
 
-Harbor hut rear/front are independently placeable layers with width/height properties. Their
-native front follows rear dimensions through explicit `scene.hutWidth` / `scene.hutHeight`
-bindings; neither consumes the Harbor snapshot. Draw and selection anchors use the same dimensions.
-
-The laundry schedule has no cable by default. Its explicit `cableConnected` / `cableTo` inputs
-draw an optional connection on the same wall; native scene values bind its endpoint to washer 1.
-The original body → cable → hover paint order is retained. The kernel does not read room geometry.
+Optional linked dimensions/endpoints remain presentation inputs, not saved state or hidden
+fallback IDs. Native source opts in where the existing game uses a connection. Independent bodies
+have visible unbound defaults; connection-only rows require actual endpoints. Preserve body → cable
+→ tell/hover order when changing their shared kernels.

@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {FOLDER_SOURCES as FOLDER} from '../../src/ssg/game/scenes/folder-scenes';
-import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
+import {sceneSourceDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {renderSceneStage} from '../../src/ssg/game/authoring/scene-stage-authoring';
 import {TypedForm} from '../../src/ssg/game/authoring/typed-form';
 import {SceneModel} from '../../src/ssg/game/engine/model';
@@ -34,7 +34,7 @@ type Id=keyof typeof FOLDER_SOURCES;
 
 /** The scene built from a document, and the binding values it gives one frame. */
 function bindings(id:Id,scene:SceneDocument,flags:Record<string,boolean>={},values:Record<string,Record<string,boolean>>={}):Record<string,unknown>{
- const def:SceneDef=folderSceneDefinition(id,{...FOLDER_SOURCES[id],scene} as never);
+ const def:SceneDef=sceneSourceDefinition(id,{...FOLDER_SOURCES[id],scene} as never);
  const rules=typeof def.rules==='function'?def.rules(player as never):def.rules??{effects:{}};
  const m=new SceneModel({say(){},changed(){},open(){}} as never,def.data??emptyData(def.id,def.name),rules as never,undefined,undefined,undefined,undefined,def.gameplay);m.setPaused(true);
  const view=referenceView({sx:(wx:number,p=1)=>Math.round(wx-p*100),y:(h:number)=>300-h,t:4321,cam:100,gy:300,viewW:960,viewH:390,flags,values});
@@ -87,7 +87,7 @@ function session(id:Id){
  field.value='shift.parcelCollected';field.onchange!();
  assert.equal(view({parcelCollected:true,caseCollected:false})['scene.casePresent'],true);
  assert.equal(view({parcelDelivered:true,caseCollected:false})['scene.casePresent'],false,'pending state rebinding changes the picture');
- const def=folderSceneDefinition('harbor-yard',FOLDER_SOURCES['harbor-yard'] as never);
+ const def=sceneSourceDefinition('harbor-yard',FOLDER_SOURCES['harbor-yard'] as never);
  assert.equal(def.dockworkerCarry!({}, {shift:{parcelCollected:true}}),'parcel');
  assert.equal(def.dockworkerCarry!({}, {shift:{caseCollected:true,parcelDelivered:true}}),'case');
  assert.equal(def.dockworkerCarry!({}, {shift:{}}),null);

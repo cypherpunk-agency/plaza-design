@@ -288,7 +288,7 @@ function drawPc(x: CanvasRenderingContext2D, v: DrawView, state: CapsuleVisualSt
   glow(x, state.hover, 'pc', pcx - 16, y(d.h + 30), 32, 30);
 }
 
-function drawPlug(x: CanvasRenderingContext2D, v: DrawView, state: CapsuleVisualState) {
+function drawPlug(x: CanvasRenderingContext2D, v: DrawView, state: CapsuleVisualState, cable=true) {
   const { sx, y, t } = v;
   const d = L.desk;
   const { plugOn } = state;
@@ -297,8 +297,8 @@ function drawPlug(x: CanvasRenderingContext2D, v: DrawView, state: CapsuleVisual
   box(x, plx - 6, y(22), 12, 16, '#141210', 'rgba(' + PAPER + ',.5)');
   box(x, plx - 4, y(18), 8, 9, '#202024', 'rgba(' + C + ',.6)');
   x.fillStyle = plugOn ? 'rgba(' + GREEN + ',.95)' : 'rgba(' + RED + ',.8)'; x.fillRect(plx - 1, y(16), 2, 2);
-  x.strokeStyle = 'rgba(' + PAPER + ',.35)'; x.beginPath(); x.moveTo(plx + 0.5, y(9)); x.quadraticCurveTo(plx + 20, y(2), sx(L.router) - 6, y(8));
-  x.lineTo(sx(d.x1) - 4, y(d.h - 2)); x.stroke();
+  if(cable){x.strokeStyle = 'rgba(' + PAPER + ',.35)'; x.beginPath(); x.moveTo(plx + 0.5, y(9)); x.quadraticCurveTo(plx + 20, y(2), sx(L.router) - 6, y(8));
+  x.lineTo(sx(d.x1) - 4, y(d.h - 2)); x.stroke();}
   tell(x, t, plx + 9, y(20), 5);
   glow(x, state.hover, 'plug', plx - 6, y(22), 12, 16);
 }

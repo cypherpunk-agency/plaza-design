@@ -15,7 +15,7 @@ import { art } from '../art';
 import { withFrontMasks } from '../art/buildings/masks';
 import { PLAYER_ROW, type Composition, type Instance } from '../art/core/composition';
 import { SCENE_BASE } from '../art/assemblies/scene-base';
-import { folderSceneDefinition } from '../engine/gameplay/folder-scene';
+import { sceneSourceDefinition } from '../engine/gameplay/folder-scene';
 import { emptyDeviceSource } from '../engine/empty-data';
 import type { SceneDocument } from '../engine/gameplay/scene-document';
 import type { GameplayDefinition } from '../engine/gameplay/types';
@@ -127,7 +127,7 @@ function adapter(p: ProposalScene): NativeSceneAdapter {
   const look = (doc: Composition, state: DefinitionArgs[1], options: DefinitionArgs[2], documents?: ReadonlyMap<string, unknown>) => {
     const source = FOLDER_BY_ID[p.base]; if (!source) throw new Error(`Base ${p.base} is not a folder scene, so ${p.id} cannot take only its look`);
     const baseScene = (documents?.get((FOLDER_DIRS[p.base] ?? p.base) + '-scene') ?? source.scene) as SceneDocument;
-    return folderSceneDefinition(p.base, source, { composition: asBase(doc), state: withFrontMasks(art, doc, state), options, scene: lookScene(baseScene, doc), gameplay: EMPTY_GAMEPLAY, devices: emptyDeviceSource(p.base, baseScene.name) });
+    return sceneSourceDefinition(p.base, source, { composition: asBase(doc), state: withFrontMasks(art, doc, state), options, scene: lookScene(baseScene, doc), gameplay: EMPTY_GAMEPLAY, devices: emptyDeviceSource(p.base, baseScene.name) });
   };
   return {
     climateScene: p.base,

@@ -75,6 +75,19 @@ export function placeFrom(graph: ZoneGraphSource, active: string, hops = 1, with
   return out;
 }
 
+/** Connected coordinates for movers and artwork, relative to a source's origin.
+ * Traversal/residency policy stays with the caller; this only projects placed coordinates. */
+export function placementCoordinates(placed:ReadonlyMap<string,ZonePlacement>,origin={dx:0,dh:0},info?:Readonly<Record<string,ZoneInfo>>){
+ return Object.fromEntries([...placed].map(([id,p])=>[id,{x:p.dx-origin.dx,h:p.dh-origin.dh,...(info?.[id]?{w:info[id].width}:{})}]));
+}
+/** A source's full authored mobile envelope in the currently placed world's coordinates. */
+export function mobileRouteExtent(owner:string,scene:Pick<import('../scenes/kit').SceneDef,'width'|'mobileExtent'|'peopleFlows'|'level'>,placed:ReadonlyMap<string,ZonePlacement>){
+ const at=placed.get(owner);if(!at)throw Error('Mobile source must be placed: '+owner);
+ const flows=(scene.peopleFlows??[]).flatMap(f=>[...f.flow.route,...f.exit].flatMap(w=>{const p=placed.get(w.zone);return p?[p.dx+w.x]:[];}));
+ const vehicles=(scene.level?.vehicles??[]).filter(v=>!v.lift).flatMap(v=>v.source.route.legs.flatMap(l=>{const p=placed.get(l.zone==='here'?owner:l.zone);return p?[p.dx+l.from.x,p.dx+l.to.x]:[];}));
+ const points=[...(scene.mobileExtent?[at.dx+scene.mobileExtent.from,at.dx+scene.mobileExtent.to]:[]),...flows,...vehicles];
+ return points.length?{from:Math.min(...points),to:Math.max(...points)}:{from:at.dx,to:at.dx+scene.width};
+}
 /** A timeline's camera uses the ordinary graph, with a source-owned origin and zone list. */
 export function sequencePlacements(graph:ZoneGraphSource,origin:string,zones:readonly string[],info:Readonly<Record<string,ZoneInfo>>):Map<string,ZonePlacement>{
   if(!zones.includes(origin))throw Error('World sequence origin must be in its zone list');

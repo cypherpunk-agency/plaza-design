@@ -11,6 +11,7 @@ export const createPreviewState=()=>({result:undefined as PreviewResult|undefine
 export type PreviewState=ReturnType<typeof createPreviewState>;
 
 interface PreviewPort{
+ presented?:()=>void;
  reduced:boolean;
  disposed:boolean;
  painting:PreviewState;
@@ -66,7 +67,7 @@ export function createPreviewRenderer(port:PreviewPort){
       }
       port.sizeCanvas(port.baseWidth, port.zoomable() ? Math.round((port.crop && port.painting.cropHeight ? port.painting.cropHeight : port.baseHeight) * port.viewZoom) : port.baseHeight);
       const renderStarted=performance.now();const result=await port.config.preview.render(port.canvas,request(port.overlays,port.viewZoom));if(!current())return;port.painting.lastPaintMs=performance.now()-renderStarted;port.painting.renderCount++;port.updateRenderStatus();
-      if (current()) { port.painting.result=result;port.painting.resultDocument=documentId;if(result.workspaceAnchor&&port.painting.workspaceAnchor?.document!==port.currentId)port.painting.workspaceAnchor={document:port.currentId,...result.workspaceAnchor};port.previewError.hidden=true;port.placeHover();port.placeJoined(); }
+      if (current()) { port.painting.result=result;port.painting.resultDocument=documentId;if(result.workspaceAnchor&&port.painting.workspaceAnchor?.document!==port.currentId)port.painting.workspaceAnchor={document:port.currentId,...result.workspaceAnchor};port.previewError.hidden=true;port.placeHover();port.placeJoined();port.presented?.(); }
       // Compare: the other version through the same renderer and request, only the composition differs.
       const other = port.comparing() ? port.documentsForView().find(d => d.id === port.compareId) : undefined;
       port.stage.classList.toggle('comparing', !!other); port.compareCanvas.hidden = !other;
@@ -75,7 +76,7 @@ export function createPreviewRenderer(port:PreviewPort){
         for (const key of ['--ratio', '--fit-ratio']) port.compareCanvas.style.setProperty(key, port.canvas.style.getPropertyValue(key));
         await port.config.preview.render(port.compareCanvas, { ...request(false, port.viewZoom), composition: copy(other.value as Composition), selectedId: undefined });
       }
-    } catch (e) { if(!current())return;port.painting.result = undefined; port.previewError.textContent = `Preview unavailable: ${message(e)}`; port.previewError.hidden = false; }
+    } catch (e) { if(!current())return;port.painting.result = undefined; port.presented?.(); port.previewError.textContent = `Preview unavailable: ${message(e)}`; port.previewError.hidden = false; }
     finally { port.painting.previewPending = false; if (port.painting.renderAgain&&!port.disposed) { port.painting.renderAgain = false; void draw(true); } }
   };
  return{draw};

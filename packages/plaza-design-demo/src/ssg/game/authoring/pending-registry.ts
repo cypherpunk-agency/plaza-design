@@ -4,9 +4,8 @@ import {validateCompanionConversations,validateCompanionGameplay,COMPANION_GAMEP
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {NATIVE_SCENES} from '../scenes';
 import {createSceneRegistry} from '../engine/gameplay/scene-catalogue';
-import {gameplayScenes} from './gameplay-scenes';
 import {pendingScene} from './pending-scene';
-import {deviceSceneIds,deviceDocumentId} from './device-sources';
+import {deviceSourceIdentity} from './device-document-ids';
 import {isValidationSnapshot} from './validation-snapshot';
 import type {SceneDef} from '../scenes';
 import {validateWorldVehicles} from '../engine/level-vehicles';
@@ -18,12 +17,11 @@ export function pendingRegistry(documents:ReadonlyMap<string,unknown>){return wi
 function registryFor(documents:ReadonlyMap<string,unknown>){
  const cached=isValidationSnapshot(documents)?validatedRegistries.get(documents):undefined;if(cached)return cached;
  const network=pendingNetworkContext(documents);
- const native=Object.fromEntries(Object.keys(NATIVE_SCENES).map(id=>{const entry=gameplayScenes.find(s=>s.id===id)!;
-  return[id,pendingScene(id,documents.get(id),{sceneDocument:documents.get(entry.prefix+'-scene'),gameplay:documents.get(entry.gameplayId),devices:deviceSceneIds.includes(id)?documents.get(deviceDocumentId(id)):undefined},network)];
+ const native=Object.fromEntries(Object.keys(NATIVE_SCENES).map(id=>{const source=deviceSourceIdentity(id);
+  return[id,pendingScene(id,documents.get(source.composition),{sceneDocument:documents.get(source.scene),gameplay:documents.get(source.gameplay),devices:documents.get(source.devices),sharedState:documents.get('state-owners')},network)];
  }));
  const registry=createSceneRegistry(native,documents.get('authored-scenes')??{version:1,scenes:[]},network);
- validateWorldPeople(registry,validateZoneGraph(documents.get('zone-graph')??shippedGraph));
- validateWorldVehicles(registry,validateZoneGraph(documents.get('zone-graph')??shippedGraph));
+ const graph=validateZoneGraph(documents.get('zone-graph')??shippedGraph);validateWorldPeople(registry,graph);validateWorldVehicles(registry,graph);
  const companion=documents.has('companion-gameplay')?validateCompanionGameplay(documents.get('companion-gameplay')):COMPANION_GAMEPLAY;
  for(const scene of Object.values(registry))validateCompanionConversations(scene,companion);
  validatePendingNetwork(documents,registry);if(isValidationSnapshot(documents))validatedRegistries.set(documents,registry);return registry;

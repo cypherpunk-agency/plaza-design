@@ -305,7 +305,8 @@
       "id": "rig-shelf",
       "type": "moth.rig-shelf",
       "props": {
-        "width": 76
+        "width": 76,
+        "cableConnected": true
       },
       "placement": {
         "x": 0,
@@ -318,12 +319,6 @@
         "anchor": "origin"
       },
       "bindings": {
-        "hover": "scene.hover",
-        "playing": "scene.playing",
-        "nextMs": "scene.nextMs",
-        "fed": "scene.fed",
-        "wet": "scene.wet",
-        "fresh": "scene.fresh",
         "deskHeight": "scene.deskHeight"
       }
     },
@@ -356,7 +351,8 @@
       "props": {
         "width": 18,
         "height": 14,
-        "kind": "log"
+        "kind": "log",
+        "surfaceConnected": true
       },
       "placement": {
         "x": 16,
@@ -369,12 +365,6 @@
         "anchor": "top"
       },
       "bindings": {
-        "hover": "scene.hover",
-        "playing": "scene.playing",
-        "nextMs": "scene.nextMs",
-        "fed": "scene.fed",
-        "wet": "scene.wet",
-        "fresh": "scene.fresh",
         "deskHeight": "scene.deskHeight"
       }
     },
@@ -384,7 +374,8 @@
       "props": {
         "width": 24,
         "height": 18,
-        "kind": "lock"
+        "kind": "lock",
+        "surfaceConnected": true
       },
       "placement": {
         "x": 38,
@@ -397,12 +388,6 @@
         "anchor": "top"
       },
       "bindings": {
-        "hover": "scene.hover",
-        "playing": "scene.playing",
-        "nextMs": "scene.nextMs",
-        "fed": "scene.fed",
-        "wet": "scene.wet",
-        "fresh": "scene.fresh",
         "deskHeight": "scene.deskHeight"
       }
     },
@@ -412,7 +397,8 @@
       "props": {
         "width": 18,
         "height": 14,
-        "kind": "log"
+        "kind": "log",
+        "surfaceConnected": true
       },
       "placement": {
         "x": 60,
@@ -425,12 +411,6 @@
         "anchor": "top"
       },
       "bindings": {
-        "hover": "scene.hover",
-        "playing": "scene.playing",
-        "nextMs": "scene.nextMs",
-        "fed": "scene.fed",
-        "wet": "scene.wet",
-        "fresh": "scene.fresh",
         "deskHeight": "scene.deskHeight"
       }
     },

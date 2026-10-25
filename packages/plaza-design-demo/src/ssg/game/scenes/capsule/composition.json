@@ -391,7 +391,9 @@
     {
       "id": "plug",
       "type": "capsule.plug",
-      "props": {},
+      "props": {
+        "cableConnected": true
+      },
       "placement": {
         "x": 396,
         "h": 0
@@ -401,18 +403,9 @@
       "bindings": {
         "hover": "scene.hover",
         "plugOn": "scene.plugOn",
-        "up": "scene.up",
-        "sun": "scene.sun",
-        "open": "scene.open",
-        "hot": "scene.hot",
-        "temp": "scene.temp",
-        "steam": "scene.steam",
-        "pixelAt": "scene.pixelAt",
         "routerX": "scene.routerX",
         "deskRight": "scene.deskRight",
-        "deskHeight": "scene.deskHeight",
-        "sunFrom": "scene.sunFrom",
-        "sunTo": "scene.sunTo"
+        "deskHeight": "scene.deskHeight"
       }
     },
     {

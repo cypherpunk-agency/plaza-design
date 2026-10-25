@@ -325,7 +325,7 @@ function drawRigGlow(x: CanvasRenderingContext2D, v: DrawView, _state: MothVisua
   x.fillStyle = sg; x.fillRect(dc - 90, y(120), 180, 120);
 }
 
-function drawRigShelf(x: CanvasRenderingContext2D, v: DrawView, _state: MothVisualState) {
+function drawRigShelf(x: CanvasRenderingContext2D, v: DrawView, _state: MothVisualState, cables=true) {
   const { sx, y, t } = v;
   const d = L.desk;
   const dl = sx(d.x0);
@@ -335,7 +335,7 @@ function drawRigShelf(x: CanvasRenderingContext2D, v: DrawView, _state: MothVisu
   box(x, dl + 12, y(86), 18, 6, '#1a1c22', 'rgba(' + PAPER + ',.5)');
   for (let i = 0; i < 3; i++) { x.fillStyle = (Math.floor(t / 7) + i * 2) % 5 < 3 ? 'rgba(' + C + ',.9)' : 'rgba(' + C + ',.25)'; x.fillRect(dl + 15 + i * 4, y(84), 2, 1); }
   x.strokeStyle = 'rgba(' + PAPER + ',.25)';
-  for (const [ox, sag] of [[16, 10], [24, 18], [50, 8]]) { x.beginPath(); x.moveTo(dl + ox, y(80)); x.quadraticCurveTo(dl + ox + 6, y(80 - sag * 2), dl + ox + 2, y(d.h + 2)); x.stroke(); }
+  if(cables)for (const [ox, sag] of [[16, 10], [24, 18], [50, 8]]) { x.beginPath(); x.moveTo(dl + ox, y(80)); x.quadraticCurveTo(dl + ox + 6, y(80 - sag * 2), dl + ox + 2, y(d.h + 2)); x.stroke(); }
   // a little box of tape rolls on the shelf
   box(x, dl + 46, y(86), 12, 6, '#2a1a10', 'rgba(' + O + ',.5)');
 }

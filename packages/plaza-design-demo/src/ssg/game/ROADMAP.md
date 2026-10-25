@@ -1,8 +1,50 @@
 # ACCESS DENIED: roadmap
 
-Single priority overview, consolidated 2026-10-24. Everything remains in design.
+Single priority overview, consolidated 2026-10-25. Everything remains in design.
 This roadmap owns status and order; the [engine handbook](./docs/reference/ENGINE-HANDBOOK.md)
 owns implementation guidance. Design documents are working context, not competing roadmaps.
+
+## Completed goal: simplify and consolidate the existing engine (2026-10-25, local)
+
+This bounded goal applied `$simplify-and-consolidate` to the six reviewed areas and completed
+the named C3 dependency audit. All seven gates are verified locally. Existing S/B/C1/C2 work
+remains complete; this work does not restart their migrations. Publication is separate.
+
+| Gate | Bounded deliverable | Completion conditions | Status |
+| --- | --- | --- | --- |
+| G1 Scene sources | One resolved scene bundle/identity contract for folder, catalogue and demo sources | Ordinary preview, validation and private Play use common assembly; duplicate factory lookup/signature branches removed; source identities and pending source roundtrips preserved | Complete |
+| G2 Interactions | Shared resolved uses/exits and their presentation | Prompts, popups and execution read common moving positions, prices and labels; execution rechecks permission/eligibility; cross-owner interactions, purchases and moving popup anchors pass | Complete |
+| G3 World geometry | Shared connected placements, route envelopes and source views | Runtime residency, sequence preparation and editor preview use the common pure spatial calculations; loading policies remain explicit; native boundary continuity and workspace alignment pass | Complete |
+| G4 Context | Explicit compilation and preview inputs at reviewed boundaries | Scene assembly consumes its shared-state/network context explicitly; preview supplies time/weather/light inputs without replacing unrelated global state; retained runtime owners and necessary scoped dependencies are named and verified for isolation | Complete |
+| G5 Capabilities | One native-target capability vocabulary and limits | Target forms and validation share operations, placement/reset capabilities and collection limits; valid edits roundtrip; invalid operations and unauthorized resets still reject | Complete |
+| G6 C3 artwork | Resolve Mall fronts/escalators, Harbor stalls/ordinary fixtures, ordinary train fittings, and QA/Laundry/Moth/Capsule endpoint-connected bodies | Inventory exact registered candidates; each is extracted to properties/anchors/bindings or verified as intrinsically contextual with its owner named; independently supported pieces pass add/move/duplicate/property-state editing, history/bundle/protected Save/native reload; approved visuals preserved | Complete |
+| G7 Closure | Remove obsolete in-scope code and document final ownership | All gates above pass; replacement references/dead paths and stale guidance removed; package TypeScript/homepage build, focused workflow checks, 24 approved images and 84 intro consistency cases pass; final report names retained exceptions | Complete |
+
+Preserve: existing appearance, seeded variation, animation cadence, story/gameplay, permissions,
+current save behavior, model-owned simulation, pausing and physical ownership. Game, SceneModel,
+GameplaySession, ComposerModel and renderWorldFrame remain the owners. No second renderer,
+adapter hierarchy, scheduler, compatibility save bridge, universal schema framework, new campaign
+content, campaign playthrough, broad performance project or CI expansion. Publication is separate.
+
+Verification uses current contracts and approved visuals; expectations cannot be regenerated to
+hide differences. Read-only inspection is insufficient for authoring completion: exercise pending
+source, history/bundles/protected Save and native reload where the gate changes those workflows.
+Stop when G1-G7 are verified; record unrelated opportunities without expanding the goal. If a real
+product choice blocks a gate, ask with a concrete example while continuing independent gates.
+
+Verified results: package TypeScript and homepage build pass; focused source/interaction,
+capability, shared-state, scene-layer/bounds and authoring workflows pass. The 13 independent
+fittings pass add/move/duplicate/property and bound visual-input editing, atomic invalid-edit
+refusal, history/bundle, protected Save and fresh native source reload. Browser checks confirm
+typed inspector edits/undo and private native Play crossing. All 24 approved images are exact;
+all 84 intro native/editor lifecycle comparisons pass. No expected images were replaced.
+
+Retained by design: protected demo identities; actual actor/machinery owners; connection-only
+wiring; adaptive storey/viewport scenery; synchronous clock/weather scopes for existing schedule
+and public-screen readers; editor-wide shared-declaration scopes for protected demo/form
+validators. The main source compiler takes declarations/network explicitly, preview lighting is
+explicit, and the [handbook](./docs/reference/ENGINE-HANDBOOK.md) names these boundaries. There
+is no renderer, adapter hierarchy, scheduler, save-format bridge or copied scalar owner added.
 
 ## Current sequence unification work
 
@@ -20,7 +62,7 @@ Acceptance checks passed: source-owned world/cinematic bounds and movement, real
 field edit/undo and pointer drag, history/bundles/protected Save/fresh native reload (including timing),
 128/128 unchanged canonical paint samples across all five sequences, and 84/84 Canvas2D animation
 lifecycle comparisons. Opening skip/handoff, package TypeScript, focused checks and both builds pass.
-No old-format bridge or second renderer was added. The continuous-world package B1–B6 is complete; the remaining C3 asset families are next.
+No old-format bridge or second renderer was added. The continuous-world package B1–B6 is complete; the bounded C3 audit is included in the consolidation goal above.
 
 S2: visual keyframe authoring is implemented locally. The same editor now has a bottom time grid,
 expandable object/property rows, moving playhead, keyframe selection/retiming and typed right-side
@@ -49,6 +91,28 @@ remains in the viewport toolbar and remembers its state. The shared frame prepar
 optional inspection camera; no separate renderer or persisted sequence model was introduced.
 Player rendering matches 128/128 sampled canonical paints. Focused tests cover fixed scenery bounds
 while the shot moves/zooms, and browser checks cover mode switching, framing and preference reload.
+
+## Shared artwork preparation and inspection (2026-10-25, local)
+
+Implemented: painting, picking and scene visibility share resolved visibility, clipping, projection
+and mobile membership. The existing renderer captures actual submitted artwork and final paint order
+for both ordinary and sequence previews. Hidden station actors no longer have hit targets; joined
+sources pick equal-area overlaps in paint order. Shared slots reject late submissions. Level bounds
+use named edges, and current selection bounds remain distinct from travel envelopes.
+
+The inspector's live **Resolved rendering** disclosure shows authored/resolved placement, effective
+clipping, visibility reasons, opacity, depth, paint order, source ownership and resolved scalar
+properties. Edits stay in Appearance and timeline controls. Verified: 15 focused checks, unchanged
+24/24 current scene rasters, 84/84 intro lifecycle comparisons, real-browser edits/undo/resolved
+updates and native boundary Play. Package TypeScript and homepage build pass. No new renderer,
+adapter, runtime or save format was introduced. These changes are local, not yet published.
+
+Follow-up cleanup is implemented locally: no-op composition passes removed; character window masks
+centralized; helper bounds, region borders and drag transforms captured by the native frame;
+inspection no longer re-resolves visual sources. One prepared-command collection replaces the
+pending source callbacks plus ordered queue. Explicit foreground draws replace queued commands,
+and gallery previews dispose the same collector. Focused checks cover masked hit areas,
+mirrored-parent helper dragging, source-free inspection and resolution-free, duplicate-free flushes.
 
 ## Architecture cleanup (2026-10-24, local)
 
@@ -90,17 +154,14 @@ contracts are shared. Current tests exercise the extracted functions rather than
 
 ## Current status
 
-The pre-boundary baseline `9f486f2` was verified on main before this work. B1 is implemented
-and verified; this release includes the compact example and roadmap update.
-
 | Area | Status | What this means |
 | --- | --- | --- |
 | Shared gameplay and editor foundation | Implemented | One Game loop, SceneModel, GameplaySession, ConversationSession and canonical state ownership. Folder and catalogue scenes use shared source, pending-document validation, typed editing and private native Play. |
 | One render path | Complete | Game, editor, title, cutscenes and taxi use renderWorldFrame; the former opening renderer and artwork wrappers are removed. |
 | C1: animation lifecycle and light | Complete | Playback owns animation advancement; seeking reconstructs in isolation; painting/bounds are read-only. Explicit View lighting replaces presentation reads of global light; unused citySkyline is removed. |
 | C2: transport consolidation | Complete | Regular train, P14 siding, Downtown, Galleria and Harbor use shared vehicles, movers, floors, seats and passenger flows. Old boarding cuts, platform clocks and replacement crowds are removed. |
-| C3: independent artwork placement | Partially implemented; follows boundary package | Many scene fittings now have independent properties and placement. Remaining context-dependent families still need the bounded audit below. A registered preview alone does not prove portability. |
-| Continuous world across chunks | Core delivered; content audit fixes open | Shared contracts work; procedural flocks, prepared actors and sky coordinates still need correction. See the audit below. |
+| C3: independent artwork placement | Complete for the named audit | 13 further types have independent inputs; existing ordinary fixtures/fittings are verified. Connection-only rows, prepared actors, adaptive scenery and physical machinery retain explicit context. See G6 and the exact artwork inventory. |
+| Continuous world across chunks | Complete | B1–B6 and the boundary-artwork follow-up below are verified: mobile lifetime, clipping, prepared bounds, shared layers and sky coordinates use the real engine. |
 | C4: guidance and current checks | Current for this release | Agent entry point, handbook and focused checks describe the shared engine. Keep them current with each change; this is not a separate historical migration project. |
 | M1: progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route are documented; comprehension is reviewed in the game. |
 | M2: Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion run in the connected harbor. |
@@ -141,19 +202,15 @@ old-format codec, second runtime or fleet-management feature is added.
 
 ## Next work, in order
 
-1. **Finish C3 in bounded asset families.** Audit remaining Mall fronts/escalators and parent
-   geometry, Harbor stalls/ordinary fixtures, and any remaining train fittings against actual
-   consumers. Extract independent objects; retain context only when it is intrinsic. Do not
-   restart completed extractions or mistake every context entry for missing artwork.
-2. **Review M3's experience**, using the [prologue review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) and frames/scenes: does the boss guide without rushing,
+1. **Review M3's experience**, using the [prologue review guide](./docs/design/PROLOGUE-REVIEW-GUIDE.md) and frames/scenes: does the boss guide without rushing,
    does travel read as one journey, and does home give breathing room? Mechanical verification
    belongs to agents; Tommi's feedback concerns clarity, appeal, pacing and editor comfort.
-3. **Build M4**, then M5 and M6 using the progression table below. Introduce each mechanic through
+2. **Build M4**, then M5 and M6 using the progression table below. Introduce each mechanic through
    an actual gameplay need, shared source, typed authoring, a compact demo and a real scene.
    Keep Test District examples immediately reachable and free of unrelated clutter.
-4. **Continue Downtown sets in parallel.** Their artwork/layout can evolve before gameplay is
+3. **Continue Downtown sets in parallel.** Their artwork/layout can evolve before gameplay is
    attached. The precinct's required versus optional role remains undecided.
-5. **Prototype later embodiment/remote mechanics when needed.** Before M7 settle body location,
+4. **Prototype later embodiment/remote mechanics when needed.** Before M7 settle body location,
    transfer versus copy and Kessel's fate. Prove remote rules before building full Act III.
 
 ## Continuous world across chunks: bounded delivery
@@ -224,31 +281,22 @@ Validation: 13 focused checks, package TypeScript and homepage build pass; 24/24
 images remain exact, and 84/84 native/editor opening lifecycle comparisons pass. No expected
 images were replaced. Publication targets are main and production; deployment is verified separately after push.
 
-## C3 completion conditions
+## C3 supported contracts
 
-Detailed dependency findings live in [artwork authoring](./docs/reference/ARTWORK-ROLE-AUTHORING.md).
-The Library retains Reusable anywhere / Requires source context / Scene helpers; no new taxonomy.
+The completed bounded C3 inventory is owned by G6 above; detailed type-by-type results live in
+[artwork authoring](./docs/reference/ARTWORK-ROLE-AUTHORING.md). The Library retains Reusable
+anywhere / Requires source context / Scene helpers. No new taxonomy or second engine is introduced.
 
-Already implemented: independent fittings across the reviewed scene families; source-controlled
-sky traffic; property-based shelves/lights/rooms; standalone brake and train fittings; scalar
-bar/hut dimensions; explicit optional cable endpoints; temporary typed Library property/state
-controls; removal of the copied embedded listing and snapshot-wrapper classes.
+This batch makes 13 additional registered types independently placeable: eight Mall local fittings,
+two Harbor stalls, Moth's monitor/router shelf and Capsule's plug. Their native sources bind only
+required dimensions, optional prepared vendors, supports or cable endpoints. The existing ordinary
+Train, Harbor, QA and Laundry bodies are audited alongside them. Connection-only wires, prepared
+actors, adaptive storey/frame scenery and actual physical machinery retain named owners.
 
-For each remaining family:
-
-- Inspect actual dependencies and decide independent piece versus explicit required context.
-- Use registered artwork with explicit properties, anchors, bounds, state inputs and normal
-  composition placements; share drawing kernels and the shipping renderer.
-- Prove add/move/duplicate/property/state editing in another supported scene, invalid-edit refusal,
-  undo/redo, bundles, protected Save, native source reload and pending native Play as applicable.
-- Preserve approved drawing order, seeded appearance, animation cadence and selection geometry;
-  remove replaced registrations/wrappers only after checking consumers.
-- Keep prepared actors, sequence frames, connected machinery and endpoint-based wiring with
-  their actual owners. Their context does not justify a second simulation or copied state.
-
-Stop C3 when all named remaining candidates are resolved and the supported contracts are verified.
-Do not claim every asset independently portable, or complete engine/asset consolidation, before then.
-The completed C1/C2 goal does not certify C3.
+Verified completion includes real add/move/duplicate/property/visual-input editing, invalid-edit refusal,
+undo/redo, bundle export, protected Save and native reload, plus approved visual preservation.
+That certifies these supported contracts, not universal portability of every registered artwork.
+Do not restart completed extractions because an intentionally contextual primitive remains.
 
 ## Build sequence
 
@@ -280,7 +328,7 @@ requires a product decision. Current-format saves are supported; historic compat
 
 ## Plan ownership and references
 
-- This file owns C1–C4 status, M1–M9 priorities and next-work order.
+- This file owns completed G1–G7 and C1–C4 status, M1–M9 priorities and next-work order.
 - [Seamless world](./docs/design/SEAMLESS-WORLD.md) owns zones/seams/vehicle implementation detail;
   its steps are not a second milestone roadmap. A zone is authored/saved/loaded independently;
   seams join zones continuously and exits join them with a cut.

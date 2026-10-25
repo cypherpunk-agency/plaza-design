@@ -330,3 +330,22 @@ and explicit Leave sinks. Unqualified waypoints are relative to the flow placeme
 coordinates are local to that chunk. Private Play's Live mobile locations table reads the actual
 SceneModels and reports source, current chunk and whether source scenery is hosted. Sources may
 unload while their existing mobile models continue; no editor-only simulation is used.
+
+
+Selected artwork has a **Resolved rendering** disclosure in the inspector. It reports the native
+frame's visibility reason, authored/resolved placement, opacity, depth, layer and paint order,
+clipping, screen bounds and travelling ownership. These values are read-only and follow playback
+and edits. Use Appearance for base values and the existing timeline controls for keyframe overrides.
+
+
+Native scene assembly uses `sceneSourceDefinition` for folder and catalogue bundles. Resolve
+companion IDs through `deviceSourceIdentity`; private Play registrations take a named
+`SceneBuildRequest`, never a positional-signature cast. Pending network/shared declarations must
+reach the same compiler. The protected Test District scenarios retain their identity/permission
+checks. No editor-only gameplay evaluator or extra scene factory is required for a new catalogue scene.
+
+Mall local fittings expose their own dimensions; native bindings optionally link room dimensions.
+Harbor stalls accept their own width and an optional prepared vendor. Moth monitor supports and
+rig-shelf cables, and Capsule plug cables, are explicit options. Add unbound bodies in another
+scene through the ordinary library, then attach/bind only the context that scene actually provides.
+The exact supported/retained contracts are in `docs/reference/ARTWORK-ROLE-AUTHORING.md`.

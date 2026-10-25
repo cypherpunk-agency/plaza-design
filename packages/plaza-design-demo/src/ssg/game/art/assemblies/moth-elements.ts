@@ -20,7 +20,7 @@ function kernel(L = layout(), extra: Partial<Omit<ArtworkInputs, 'L'>> = {}) {
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
 function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
   // Room-frame paintings and desk-relative cable/signal pieces retain their source context.
-  return { type: 'moth.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', libraryUse:!['marker','neighbors','shell','rig-shelf','monitor','desk-signal'].includes(id)?'reusable':undefined, fields, visualFields: mothVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x,v,p,s,_pass,at) => draw(x,v,p,s,at) };
+  return { type: 'moth.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', libraryUse:!['marker','neighbors','shell','desk-signal'].includes(id)?'reusable':undefined, fields, visualFields: mothVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x,v,p,s,_pass,at) => draw(x,v,p,s,at) };
 }
 const visual = (state: Properties) => state as unknown as MothVisualState;
 const box = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });
@@ -42,9 +42,9 @@ export const mothElements: Element[] = [
   element('guitar','Wall guitar','props',{},()=>({x:-10,h:102,w:20,tall:56}),(x,v,_p,s,at)=>{const L=layout();L.guitar=at.x;kernel(L).drawGuitar(x,raised(v,at.h),visual(s));}),
   element('record-player','Record player and crate','electronics',{},()=>({x:-15,h:66,w:30,tall:66}),(x,v,_p,s,at)=>{const L=layout();L.turntable=at.x;kernel(L).drawRecord(x,raised(v,at.h),visual(s));}),
   element('rig-glow','Rig screen light wash','atmosphere',width,()=>({x:-52,h:120,w:180,tall:120}),(x,v,p,s,at)=>kernel(deskAt(at.x,n(p,'width'),0)).drawRigGlow(x,raised(v,at.h),visual(s))),
-  element('rig-shelf','Rig router shelf and cables','electronics',width,p=>box(n(p,'width'),86),(x,v,p,s,at)=>kernel(deskAt(at.x,n(p,'width'),n(s,'deskHeight')-at.h)).drawRigShelf(x,raised(v,at.h),visual(s))),
+  element('rig-shelf','Rig router shelf and optional cables','electronics',{...width,cableConnected:bool('Draw linked desk cables')},p=>box(n(p,'width'),86),(x,v,p,s,at)=>kernel(deskAt(at.x,n(p,'width'),p.cableConnected?n(s,'deskHeight')-at.h:0)).drawRigShelf(x,raised(v,at.h),visual(s),p.cableConnected===true)),
   element('desk','Moth workstation desk','furniture',{...width,height:num('Height',28,8)},p=>box(n(p,'width'),n(p,'height')),(x,v,p,s,at)=>kernel(deskAt(at.x,n(p,'width'),n(p,'height'))).drawDesk(x,raised(v,at.h),visual(s)),p=>({origin,top:{x:0,h:n(p,'height'),role:'surface'}})),
-  element('monitor','Moth workstation monitor','electronics',{width:num('Width',18,8),height:num('Height',14,5),kind:{kind:'select',label:'Display',default:'log',options:['log','lock']}},p=>box(n(p,'width'),n(p,'height'),-n(p,'width')/2),(x,v,p,s,at)=>kernel(deskAt(0,0,n(s,'deskHeight'))).drawScreens(x,v,visual(s),v.sx(at.x),n(p,'width'),n(p,'height'),at.h,p.kind as 'lock'|'log')),
+  element('monitor','Moth workstation monitor','electronics',{width:num('Width',18,8),height:num('Height',14,5),standHeight:num('Stand height',8,0),surfaceConnected:bool('Stand on linked desk'),kind:{kind:'select',label:'Display',default:'log',options:['log','lock']}},p=>box(n(p,'width'),n(p,'height'),-n(p,'width')/2),(x,v,p,s,at)=>kernel(deskAt(0,0,p.surfaceConnected?n(s,'deskHeight'):at.h-n(p,'standHeight'))).drawScreens(x,v,visual(s),v.sx(at.x),n(p,'width'),n(p,'height'),at.h,p.kind as 'lock'|'log')),
   element('webcams','Taped webcams','electronics',width,()=>({x:-4,h:27,w:40,tall:6}),(x,v,p,s,at)=>kernel(deskAt(at.x-n(p,'width')/2,n(p,'width'),0)).drawWebcams(x,raised(v,at.h),visual(s))),
   element('desk-items','Keyboard, mug and takeaway boxes','props',width,p=>box(n(p,'width'),12),(x,v,p,s,at)=>kernel(deskAt(at.x,n(p,'width'),0)).drawDeskItems(x,raised(v,at.h),visual(s))),
   element('chair','Pushed-back desk chair','furniture',{},()=>({x:-8,h:34,w:18,tall:34}),(x,v,_p,s,at)=>kernel(undefined,{chairX:at.x}).drawChair(x,raised(v,at.h),visual(s))),
@@ -56,3 +56,8 @@ export const mothElements: Element[] = [
   element('takeaway','Discarded takeaway boxes','props',{},()=>({x:-22,h:11,w:24,tall:11}),(x,v,_p,s,at)=>{const L=layout();L.sofa.x0=at.x;kernel(L).drawTakeaway(x,raised(v,at.h),visual(s));}),
   element('flyer','Karaoke flyer','signage',{},()=>({x:-22,h:1,w:44,tall:24}),(x,v,_p,s,at)=>kernel(undefined,{flyerX:at.x}).drawFlyer(x,raised(v,at.h-84),visual(s))),
 ];
+
+const monitor=mothElements.find(e=>e.type==='moth.monitor')!;
+monitor.bounds=(p,s,c)=>{const stand=p.surfaceConnected?Math.max(0,(c?.placement.h??0)-n(s,'deskHeight')):n(p,'standHeight');return{x:-n(p,'width')/2,h:n(p,'height'),w:n(p,'width'),tall:n(p,'height')+stand};};
+
+for(const e of mothElements)if(['moth.monitor','moth.rig-shelf'].includes(e.type))e.visualFields={deskHeight:mothVisualFields.deskHeight};

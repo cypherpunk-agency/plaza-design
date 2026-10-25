@@ -1,3 +1,4 @@
+import {beginLayeredFrame,endLayeredFrame,flushLayeredSlot} from '../art/core/composition';
 /** Viewing only. Native paint kernels consume explicit, disposable presentation inputs. */
 import { VEHICLE_FAMILIES,type VehicleFamily } from './catalogues/vehicles';
 import { WorkbenchPlayback,mountWorkbenchPlayback } from './workbench-playback';
@@ -81,8 +82,9 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
   const visual:TrainVisualState={ride:{at:0,to:1,phase:state.doors>0?'dwell':'running',timer:0,dwell:330,pos:0,d:0,span:3000,frames:780,v:0,open:state.doors,doors:false,halt:null,haltFor:0,decel:.032,say:'DOWNTOWN'},lineOpen:{downtown:true,galleria:true,harbor:true},between:state.doors===0,atSiding:false,due:0,next:'galleria',open:state.doors>.6,run:0,lighting,home:false};
   const {sc,composition:trainComposition}=trainScenery(FOLDER_SOURCES.train.composition,FOLDER_SOURCES.train.scene as never);
   const f=prepareTrainFrame(sc,view,null,visual);if(!state.passengers)for(const rider of Object.values(f.riders))rider.on=false;
-  const visibility=state.passengers?undefined:Object.fromEntries(sc.rows.filter(row=>Object.prototype.hasOwnProperty.call(f.riders,String(row.props.actor))).map(row=>[row.instance.id,false]));
-  job('drawTrainComposition',f,x=>{drawTrainFrame(x,view,f,'backdrop',trainComposition,sc,{visibility});drawTrainFrame(x,view,f,'foreground',trainComposition,sc,{visibility});});
+  // The gallery paints prepared riders, not live station boarding flows (which need a SceneModel vehicle).
+  const visibility={...Object.fromEntries(sc.rows.filter(row=>row.instance.type==='character.flow').map(row=>[row.instance.id,false])),...(state.passengers?{}:Object.fromEntries(sc.rows.filter(row=>Object.prototype.hasOwnProperty.call(f.riders,String(row.props.actor))).map(row=>[row.instance.id,false])))};
+  job('drawTrainComposition',f,x=>{drawTrainFrame(x,view,f,'backdrop',trainComposition,sc,{visibility});flushLayeredSlot('over-player');drawTrainFrame(x,view,f,'foreground',trainComposition,sc,{visibility});});
  }else if(state.id.startsWith('harbor.')){
   const L=harborLayout(FOLDER_SOURCES.harbor.composition,FOLDER_SOURCES.harbor.scene as never),inputs:ArtworkInputs={L,visual:{cranes:[],forklift:{x:70,dir:1},bribed:false,weatherLine:''},fishPose:nil,teaPose:nil,loads:[]},k=createHarborPierArtwork(inputs);
   if(kind==='lamp')job('drawLampBoat',{view},x=>k.drawLampBoat(x,view));
@@ -101,7 +103,7 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
 }
 /** Canonical workbench framing; all artwork below is dispatched to shipping kernels. */
 export function paintVehiclePreview(ctx:CanvasRenderingContext2D,p:PreparedVehiclePreview){
- ctx.save();try{
+ beginLayeredFrame();ctx.save();try{
   ctx.clearRect(0,0,p.width,p.height);ctx.fillStyle='#0c0a12';ctx.fillRect(0,0,p.width,p.height);
   const scale=Math.min(p.width/p.family.width,p.family.height!==260?p.height*.65/p.family.height:p.height/260)*p.state.zoom;
   ctx.translate(p.width/2,p.height*.72+p.state.panY);ctx.scale(scale,scale);
@@ -109,8 +111,8 @@ export function paintVehiclePreview(ctx:CanvasRenderingContext2D,p:PreparedVehic
   if(local){ctx.translate(p.offset-p.state.camera,0);if(p.state.id==='train.metro')ctx.translate(-266,0);
    if(p.state.id.startsWith('ground.')){const len=SIZE[p.state.id.split('.')[1] as keyof typeof SIZE]??120,px=len/2+30-p.offset;drawPlayer(ctx,{...p.view,sx:x=>x,y:h=>-h,cam:0,gy:0},SPR.stand,{x:px,y:0,face:-1},undefined,0);}}
   else{ctx.translate(-p.family.width/2,-210);if(p.state.id==='canal.boat')ctx.translate(0,210);}
-  for(const job of p.jobs)job.paint(ctx);
- }finally{ctx.restore();}}
+  for(const job of p.jobs)job.paint(ctx);flushLayeredSlot('over-player');flushLayeredSlot('foreground');
+ }finally{endLayeredFrame();ctx.restore();}}
 
 /** The kit's classes, each a lineup of its placeable kinds (Library › Artwork: Road vehicle, Air vehicle, Boat, Train). */
 export type VehicleClass='ground'|'air'|'water'|'rail';

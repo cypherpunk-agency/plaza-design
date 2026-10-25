@@ -14,26 +14,26 @@ import {bindingDefaults} from './binding-sources';
 import {mechanismsRulesShape} from './scene-mechanisms';
 import type {SceneDef} from '../../scenes/kit';
 /**
- * A folder scene: `scenes/<id>/` holds only JSON (composition, scene, gameplay, devices) and the
- * shared declared path (declared-scene.ts) builds it. No TypeScript of its own; what a scene needs
- * beyond the shared features is a registered mechanism its data names. scenes/folder-scenes.ts
- * lists them; the editor treats them like any scene with a folder.
+ * Compile a scene source bundle (folder, catalogue or a demo) through the declared path.
+ * Inputs are composition, scene, gameplay and devices, with explicit pending network/shared declarations.
+ * Physical primitives remain registered mechanisms named by source. The module also measures
+ * source compositions; it owns no simulation, save values or preview state.
  */
-export interface FolderSceneSource {composition:unknown;scene:unknown;gameplay:unknown;devices?:unknown}
+export interface SceneSource {composition:unknown;scene:unknown;gameplay:unknown;devices?:unknown}
 /** What the editor may swap in: a pending composition, scene, gameplay or devices document, and preview state. */
-export interface FolderSceneOverrides {composition?:Composition;state?:Environment['state'];options?:Partial<Environment>;scene?:SceneDocument;gameplay?:GameplayDefinition;devices?:unknown;network?:EngineNetworkContext;
+export interface SceneSourceOverrides {composition?:Composition;state?:Environment['state'];options?:Partial<Environment>;scene?:SceneDocument;gameplay?:GameplayDefinition;devices?:unknown;network?:EngineNetworkContext;sharedState?:unknown;
  /** `deferred`: pending editor devices are checked later against the pending network (pending-scene.ts applies them); only their shape is taken here. */
  deviceCheck?:'full'|'deferred'}
-export function folderSceneDefinition(id:string,source:FolderSceneSource,over:FolderSceneOverrides={}):SceneDef{
- const gameplay=validateGameplay(over.gameplay??source.gameplay),scene=(over.scene??source.scene) as SceneDocument;
- if(scene.id!==id)throw new Error('Folder scene identity must remain '+id);
+export function sceneSourceDefinition(id:string,source:SceneSource,over:SceneSourceOverrides={}):SceneDef{
+ const gameplay=validateGameplay(over.gameplay??source.gameplay,over.sharedState),scene=(over.scene??source.scene) as SceneDocument;
+ if(scene.id!==id)throw new Error('Scene source identity must remain '+id);
  const raw=over.devices??source.devices??emptyDeviceSource(id,scene.name);
  // devices that open a conversation (`open: talk`) read it from the scene's gameplay graphs
  const dialogue=opensTalk(raw)?nativeDeviceDialogues(gameplay,raw as SceneData):undefined;
  // a named mechanism's rules are part of the contract the device document is checked against
  const shape=mechanismsRulesShape(scene.stage?.mechanisms),checked=over.deviceCheck==='deferred'?structuredClone(raw) as SceneData:validateDeviceDocument(id,raw,{gameplay,network:over.network??defaultNetworkContext,...(dialogue?{dialogue}:{}),...(shape?{rules:shape}:{})});
  const devices=(dialogue?{...checked,dialogue:{...checked.dialogue,...dialogue}}:checked) as SceneDeviceSource;
- return declaredScene(scene,over.composition??source.composition,gameplay,{...(over.options??{}),...(over.state?{state:over.state}:{})},devices);
+ return declaredScene(scene,over.composition??source.composition,gameplay,{...(over.options??{}),...(over.state?{state:over.state}:{}),sharedState:over.sharedState},devices);
 }
 const opensTalk=(v:unknown):boolean=>!!v&&typeof v==='object'&&(Array.isArray(v)?v.some(opensTalk):(v as Record<string,unknown>).open==='talk'||Object.values(v).some(opensTalk));
 /** A composition's artwork as placed (bindings at their defaults): what geometry checks and editors measure. */

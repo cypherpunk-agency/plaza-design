@@ -1,3 +1,4 @@
+import {resolveUse,useAccess} from '../../src/ssg/game/runtime/interaction-targets';
 import * as StoryTransitions from '../../src/ssg/game/runtime/story-transitions';
 import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
 import {runtimeFixture} from './runtime-fixture.mts';
@@ -55,3 +56,11 @@ const nextRest=movingInteractions(scene,model).rests![0];
 assert.notEqual(followRest().x,restBox.x,'native rest menu follows later Circuit motion');
 assert.equal(followRest().x,nextRest.x);assert.equal(followRest().y,nextRest.floorH);
 console.log('Moving interactions PASS: grouped anchors, native E prompts/reading/use, descending floors, pure source/state and current mover reload.');
+
+const unavailable={...scene.uses![0],available:()=>false,eligibility:()=>{throw Error('Unavailable target cannot query authorization');},price:()=>{throw Error('Hidden target cannot query a menu price');}};
+assert.equal(resolveUse(unavailable,{},0).visible,false);assert.equal(useAccess(unavailable,{}).available,false);
+
+// A retained target cannot bypass current exit visibility when the player invokes it later.
+let departures=0;const flags:Record<string,boolean>={},exit={id:'review-exit',x:100,to:'vehicle-lab',label:'LEAVE',requires:'reviewPermit'};
+const exitPort=runtimeFixture(Game,{...probe,def:{...scene,exits:[exit]},save:{flags,keyring:[],tokens:0},story:'',hasScene:()=>true,travel:()=>departures++}).interactionRoutingPort;
+InteractionRouting.useExit(exitPort,exit);assert.equal(departures,0);flags.reviewPermit=true;InteractionRouting.useExit(exitPort,exit);assert.equal(departures,1);

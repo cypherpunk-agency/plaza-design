@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';import fs from 'node:fs';import path fro
 import {art,type Composition} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
-import {folderSceneDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
-const libraryScene=(composition?:Composition,state={},options={},scene?:any)=>folderSceneDefinition('library',FOLDER_SOURCES.library,{composition,state,options,scene});
+import {sceneSourceDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
+const libraryScene=(composition?:Composition,state={},options={},scene?:any)=>sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition,state,options,scene});
 const LIBRARY_SCENE=FOLDER_SOURCES.library.scene as any,validateLibraryScene=(scene:any)=>libraryScene(undefined,{},{},scene);
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';

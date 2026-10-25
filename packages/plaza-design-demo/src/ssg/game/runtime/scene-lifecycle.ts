@@ -17,7 +17,7 @@ import {sudoOn} from "./play-profile";
 import {type Save} from "./save";
 import {levelFloor,levelSeen,levelView,mergeLevels,levelRejoin,seenByZone,splitLevelView,levelZone,savedForLevel,type LevelSource,type Movers} from "../engine/level";
 
-import {joined as zoneJoined,residency,seamsOf,placeFrom} from "../world/zone-graph";
+import {mobileRouteExtent,placementCoordinates,joined as zoneJoined,residency,seamsOf,placeFrom} from "../world/zone-graph";
 import type {CameraState,ScenesState,PresentationState} from './state';
 
 /** SceneLifecycle functions use runtime-owned data; they never start a loop or own a save. */
@@ -50,14 +50,13 @@ export interface SceneLifecyclePort{
 /** Relevant mobile sources are selected by route/flow extent, independently of host residency. */
 function mobileOwnersAt(port:SceneLifecyclePort,id:SceneId,cam:number){
  const placed=placeFrom(port.zoneGraph,id,Infinity),owners:SceneId[]=[];
- for(const[owner,at]of placed){
+ for(const owner of placed.keys()){
       if(!port.hasScene(owner))continue;const scene=port.sceneDefinition(owner);
       if(scene.sudoOnly&&!sudoOn()&&!EDITOR_PLAY)continue;
       if(!scene.mobileExtent)continue;
-      const flowExtents=(scene.peopleFlows??[]).flatMap(f=>[...f.flow.route,...f.exit].flatMap(w=>{const p=placed.get(w.zone);return p?[p.dx+w.x]:[];}));
-      const extents=[...(scene.mobileExtent?[at.dx+scene.mobileExtent.from,at.dx+scene.mobileExtent.to]:[]),...flowExtents,...(scene.level?.vehicles??[]).filter(v=>!v.lift).flatMap(v=>v.source.route.legs.flatMap(l=>{const p=placed.get(l.zone==='here'?owner:l.zone);return p?[p.dx+l.from.x,p.dx+l.to.x]:[];}))];
-      // Flow/character extents include their complete authored path; vehicle services use the route envelope.
-      const near=extents.length?Math.max(...extents)>cam-port.camera.viewW&&Math.min(...extents)<cam+port.camera.viewW*2:at.dx+scene.width>cam-port.camera.viewW&&at.dx<cam+port.camera.viewW*2;
+      const range=mobileRouteExtent(owner,scene,placed);
+      // Residency policy is intentionally wider than the scenery viewport.
+      const near=range.to>cam-port.camera.viewW&&range.from<cam+port.camera.viewW*2;
       if(near)owners.push(owner);
  }
  return owners;
@@ -85,8 +84,8 @@ export function joinLevel(port:SceneLifecyclePort,id: SceneId,cam = port.camera.
     const level=mergeLevels(parts);
     for(const owner of owners)if(!parts.some(p=>p.zone===owner))for(const v of port.sceneDefinition(owner).level?.vehicles??[])if(!v.lift)(level.vehicles??=[]).push({...v,id:owner+'/'+v.id,zone:owner});
 
-    level.vehicleZones=Object.fromEntries([...placeFrom(port.zoneGraph,id,Infinity)].map(([z,p])=>[z,{x:p.dx,h:p.dh}]));
-    for(const owner of owners){const model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model,source=port.sceneDefinition(owner).level;if(model&&source){const offsets=placeFrom(port.zoneGraph,owner,Infinity);model.peopleLevel={...source,vehicleZones:Object.fromEntries([...offsets].map(([z,p])=>[z,{x:p.dx,h:p.dh}])),zones:Object.fromEntries([...offsets].filter(([z])=>port.hasScene(z)).map(([z,p])=>[z,{x:p.dx,h:p.dh,w:port.sceneDefinition(z as SceneId).width}]))};}}
+    level.vehicleZones=placementCoordinates(placeFrom(port.zoneGraph,id,Infinity));
+    for(const owner of owners){const model=port.scenes.hosts.get(owner)?.model??port.scenes.mobiles.get(owner)?.model,source=port.sceneDefinition(owner).level;if(model&&source){const offsets=placeFrom(port.zoneGraph,owner,Infinity);model.peopleLevel={...source,vehicleZones:placementCoordinates(offsets),zones:Object.fromEntries([...offsets].filter(([z])=>port.hasScene(z)).map(([z,p])=>[z,{x:p.dx,h:p.dh,w:port.sceneDefinition(z as SceneId).width}]))};}}
     return level;
   }
 

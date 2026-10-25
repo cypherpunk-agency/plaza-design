@@ -2,7 +2,7 @@ import type {PlayerState} from './state';
 import type {CRITTER_REACTIONS} from '../engine/gameplay/critter-reactions';
 import type {openingStoryModel} from '../story/opening';
 
-import {type InteractionTarget as Target} from './interaction-targets';
+import {resolveExit,resolveUse,useAccess,useBox,type InteractionTarget as Target} from './interaction-targets';
 
 import {movingInteractions} from '../engine/gameplay/moving-interactions';
 
@@ -11,7 +11,7 @@ import {type SceneModel} from '../engine/model';
 import {critterReaction,critterReply} from '../engine/gameplay/critter-reactions';
 import {botConversationId} from '../engine/gameplay/bot-conversations';
 
-import {exitPermission,barrierAccess} from '../world/access';
+import {barrierAccess} from '../world/access';
 
 import {ConversationSession} from '../engine/gameplay/conversation';
 
@@ -21,7 +21,7 @@ import { MAX_EVERYDAY } from "../engine/host";
 import {SceneHost} from "../engine/index";
 import type { PopupItem } from "../engine/popup";
 
-import {priceTag,type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type UseCtx} from "../scenes/index";
+import {type SceneDef,type SceneExit,type SceneId,type SceneRest,type SceneSaid,type SceneUse,type UseCtx} from "../scenes/index";
 
 import {barrierPhaseRule,type CardSpec,type Cue} from "../story/story-rules";
 
@@ -67,7 +67,6 @@ export interface InteractionRoutingPort{
   critters: typeof CRITTER_REACTIONS;
   timing: TimingState;
   save: Save;
-  usePrice: (u: SceneUse, owner?: SceneId) => number;
   flash: (text: string) => void;
   weatherHere: () => Weather;
   syncHud: () => void;
@@ -150,19 +149,18 @@ export function useLife(port:InteractionRoutingPort,target: string,owner = port.
       return;
     }
     if (kind === 'use') {
-      const u = s.uses!.find((z) => z.id === id)!;
+      const u=s.uses?.find(z=>z.id===id);if(!u)return;
+      const resolved=resolveUse(u,port.save.flags,port.save.tokens,port.gameplayFor(owner));if(!resolved.visible)return;
       // something you carry that it takes: a popup, those first ("give the tea"), then the use itself
       const own = (u.items ?? []).filter((x) => (port.save.items[x.item] ?? 0) > 0);
       if (!own.length) { runUse(port,u, u.use, owner); return; }
-      const price = port.usePrice(u,owner), base = u.act ?? u.label.replace(/^\[E\]\s*/, '').toLowerCase();
       const items: PopupItem[] = [
         ...own.map((x) => ({ label: x.label, own: true, run: () => runUse(port,u, x.use, owner) })),
-        { label: base + (price ? ' · ' + priceTag(price, port.save.tokens).toLowerCase() : ''), run: () => runUse(port,u, u.use, owner) },
+        { label: resolved.actionLabel, run: () => runUse(port,u, u.use, owner) },
       ].slice(0, MAX_EVERYDAY);
-      const box = (row: SceneUse) => ({ x: row.x, y: row.floorH??0, w: 40, h: Math.max(16, (row.promptH ?? 70) - (row.floorH??0) - 24) });
-      host.choose('use:' + u.id, u.name, items, box(u), () => {
+      host.choose('use:' + u.id, u.name, items, resolved.box, () => {
         const row = movingInteractions(owner === port.scenes.here ? port.def : port.sceneDefinition(owner),host.model).uses?.find(row => row.id === u.id);
-        return row ? box(row) : null;
+        return row ? useBox(row) : null;
       });
       sound.open();
       return;
@@ -181,7 +179,8 @@ export function runUse(port:InteractionRoutingPort,u: SceneUse,fn: (c: UseCtx) =
     const opening=scene.phases?.[port.story]?.lines?.[u.id];
     if(opening){port.say(opening.name??'YOU',opening.pages,x,h);return;}
     const gameplay=port.gameplayFor(owner),tokensBefore=save.tokens;
-    const permission=u.eligibility?.(save.flags,gameplay);if(permission&&!permission.ok){host.react('use:'+u.id,['',permission.reason,'err']);return;}
+    const resolved=useAccess(u,save.flags,gameplay);if(!resolved.available)return;
+    const permission=resolved.permission;if(permission&&!permission.ok){host.react('use:'+u.id,['',permission.reason,'err']);return;}
     const out = fn({
       gameplay,
       tokens: save.tokens,
@@ -209,11 +208,13 @@ export function runUse(port:InteractionRoutingPort,u: SceneUse,fn: (c: UseCtx) =
   }
 
 export function useExit(port:InteractionRoutingPort,e: SceneExit) {
+    e=movingInteractions(port.def,port.zh.model).exits.find(row=>row.id===e.id)??e;
     // the story: some ways out do something else in this phase (a checkpoint, an acknowledgment, "bed first")
     const rule = port.def.phases?.[port.story]?.exits?.[e.id];
     if (rule && storyExit(port,rule, e.x, { to: e.to, at: e.at }, e.checkpoint,'exit:'+e.id)) return;
     // a door that reads key chips (Moth's building): only the right one opens it
-    if (e.needs && !exitPermission(e,port.save.keyring).ok) { port.zh.react('exit:'+e.id,['',e.needs.pages.join('\n'),'err']); return; }
+    const resolved=resolveExit(e,{flags:port.save.flags,tokens:port.save.tokens,keys:port.save.keyring});if(!resolved.visibility.ok)return;
+    if (e.needs && resolved.permission&&!resolved.permission.ok) { port.zh.react('exit:'+e.id,['',e.needs.pages.join('\n'),'err']); return; }
     if (e.action === 'taxi') { port.hailTaxi(); return; }
     if (e.action === 'map') { port.showMap(); sound.open(); return; }
     if (!port.hasScene(e.to)) return;

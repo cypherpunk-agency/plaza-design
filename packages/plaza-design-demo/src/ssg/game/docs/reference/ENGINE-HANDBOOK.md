@@ -759,11 +759,12 @@ cameras differ; do not reconstruct projection from `view.cam`.
 
 Character bounds use the placed body and authoritative View projection, including its depth;
 never reconstruct a separate editor camera correction. Native window masks intersect bounds;
-Element.pickClip also exposes the mask to picking so minimum click-target sizes cannot escape
+Element.mask declares the native mask once for common painting and picking so minimum click-target sizes cannot escape
 it. Zero-area drawable bounds have no hit target; non-drawing scene helpers keep their existing
-selection behavior. Both ordinary and sequence previews pass the complete prepared environment
-(including mobileArtwork, visibility and opacity) to previewBounds; primitive-only mobility is
-only a fallback when no compiled scene environment exists.
+selection behavior. Ordinary and sequence selection consume captured prepared records, including
+compiled mobility, visibility, opacity and parent drag transforms. The standalone gallery bounds
+helper uses its complete source environment; primitive-only mobility is a fallback only when no
+compiled scene environment exists.
 Flocks use actual bird rectangles and retain their explicit wrapping policy. Source lifetime is
 compiled from the full envelope, never a sample of a moving object's initial position.
 
@@ -797,3 +798,83 @@ pavement people, with separate far/near rows so lane order holds across chunk bo
 traffic stays behind buildings and uses its explicit street-mouth/portal masks. Continue the
 corridor through its destination chunk and put its sink beyond the visible road. The opening's
 six chunks, including Harbor Station, are checked by `pnpm test:game title-traffic`.
+
+
+### Prepared artwork and resolved inspection
+
+`art/core/presentation.ts` owns pure per-object presentation facts: inherited visibility and
+opacity, primitive `hiddenReason`, projected bounds, effective source/native clipping and
+source-derived mobility. Painting and `previewBounds` use this same calculation; scene visibility
+queries use it too. Use `boundsFromEdges({left,right,bottom,top})` for height-up geometry. A bounds
+rectangle can be conservative and must never be used to suppress painting on its own.
+
+The existing composition painter prepares immutable source snapshots once per environment and
+registry during a native frame, reusing them across its slots. `renderWorldFrame({capture:true})`
+records those same facts with the actual canvas transform and final paint ordinal. Selection
+consumes the captured records rather than recomputing visual rows from source-list order. Both
+ordinary and sequence previews use `frameSelection`; non-drawing authoring helpers retain their
+source geometry. Captures are opt-in, frame-local inspection data, never simulation or saved state.
+The shared slot collector rejects artwork submitted after that slot has been flushed.
+
+The editor's **Resolved rendering** disclosure shows these read-only native facts alongside
+Appearance's authored values. It updates after preview completion, including seeking, dragging,
+undo and redo, without rebuilding the inspector or stealing input focus. Edit authored placement
+in Appearance, timeline overrides in their existing keyframe controls, and follow the source scene
+link for shared content. Resolved placement includes attachment and timeline transforms; a
+multi-actor composition's placement is its anchor, while its Screen bounds describe its geometry.
+Current hit bounds and source-camera travel envelopes remain separate contracts.
+
+
+The artwork collector has one command map per slot. `queueLayeredSlots` prepares commands at
+collection time; flush only paints them. Explicit foreground drawing replaces its queued version.
+There is no pending source-callback queue or no-op devices/people composition pass. Late or
+reentrant submissions into a flushing slot reject explicitly. Gallery previews own the same
+begin/flush/end lifecycle and use prepared passengers instead of live station boarding flows.
+
+Captures include parent drag projections and non-drawing helpers. `frameSelection` consumes these
+records without calling a scene environment provider or resolving its composition again. Scene
+borders, helper geometry and artwork use captured canvas matrices, with the common inverse for
+dragging. Frame inspection regions no longer retain scene models or duplicate composition state.
+The standalone gallery bounds helper requires its source document and uses the same presentation
+calculation. Character kernels declare `Element.mask` rather than clipping or intersecting their
+own bounds; common preparation retains cropped native-mask hit areas and minimum-target limits.
+
+
+### Consolidated source, interaction and spatial decisions
+
+`sceneSourceDefinition` in `engine/gameplay/folder-scene.ts` compiles the same source bundle
+for shipping folders, catalogue scenes, ordinary demo examples and editor preview. It accepts
+explicit pending network and shared declarations; it does not own gameplay values. The protected
+manifest/counter/desk/workshop demos retain their scenario-specific identity restrictions, but
+private Play dispatches all of them through a named `SceneBuildRequest`. Do not reconstruct
+positional factory signatures or add another native-scene lookup fallback. `deviceSourceIdentity`
+owns companion-document IDs for native folders and catalogue projections.
+
+`resolveUse` in `runtime/interaction-targets.ts` projects a live use's price, eligibility, prompt,
+menu text and anchor box. Both E prompts and item menus consume it; callbacks resolve moving
+geometry again and recheck availability/permission at execution through `useAccess`; execution
+does not format menu prices. `resolveExit` shares visibility/key reads between exit prompts and
+execution, using live moving geometry. Never retain eligibility as an
+authorization token. `movingInteractions` remains the source of attachment geometry; the owning
+GameplaySession remains the source of prices and actions, including across chunk boundaries.
+
+`placementCoordinates` projects connected graph placements relative to a source; `mobileRouteExtent`
+projects complete people/vehicle paths. `sourceProjection` in `art/core/geometry.ts` supplies native,
+editor and sequence source-local camera arithmetic, including independent editor/authored cameras.
+Callers explicitly choose pixel/height snapping and residency policy. One-hop joined previews,
+sequence zone lists and runtime prefetch/eviction have different purposes; sharing coordinates
+must not collapse those policies.
+
+`NATIVE_TARGET_LIMITS` and `nativeTargetOperations` belong to the existing native target contract.
+Typed controls use them rather than copying list limits or reset/exit choices. Structural checks
+and assembled device/network validation remain separate phases, and typed forms cannot grant
+reset permission or expand privileged command invocation sources.
+
+Preview lighting is explicit; native preview never replaces the global lighting frame. Two
+synchronous contexts remain necessary: the city snapshot feeds `Character.when` and existing
+clock/public-screen readers, and scene weather feeds `screenLine`/forecast reporting. Both restore
+on return or error; frozen preview clocks never advance an existing SceneModel. The scene compiler passes shared declarations through condition and chatter compilation explicitly.
+Editor-wide declaration validation retains its synchronous scope for remaining protected demo/form
+validators that read the realm's vocabulary. This stores declarations, not saved values. The scene compiler
+accepts explicit declarations/network; private Play installs declarations only in its disposable realm.
+Do not introduce another clock, weather owner, scalar copy or async ambient context.

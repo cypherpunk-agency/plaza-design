@@ -22,7 +22,7 @@ function kernel(L: ArtworkInputs['L'], width = 520, x = 0, facing = 90, door = 0
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
 function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
   // Plug cables and the window's floor patch use other source instances' positions.
-  return { type: 'capsule.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', libraryUse:!['marker','neighbors','shell','plug','window'].includes(id)?'reusable':undefined, fields, visualFields: capsuleVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x, v, p, s, _pass, at) => draw(x, v, p, s, at) };
+  return { type: 'capsule.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', libraryUse:!['marker','neighbors','shell','window'].includes(id)?'reusable':undefined, fields, visualFields: capsuleVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x, v, p, s, _pass, at) => draw(x, v, p, s, at) };
 }
 const visual = (state: Properties) => state as unknown as CapsuleVisualState;
 const box = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });
@@ -54,10 +54,15 @@ export const capsuleElements: Element[] = [
     (x, v, _p, s, at) => { const L = layout(); L.pc = at.x; kernel(L).drawStool(x, raised(v, at.h), visual(s)); }, () => ({ origin, seat: { x: 0, h: 18, role: 'surface' } })),
   element('pc', 'Home PC and keyboard', 'electronics', {}, () => ({ x: -16, h: 30, w: 42, tall: 30 }),
     (x, v, _p, s, at) => { const L = layout(); L.pc = at.x; kernel(L).drawPc(x, raised(v, at.h), visual(s)); }),
-  element('plug', 'Smart plug and router cable', 'electronics', {}, () => ({ x: -6, h: 22, w: 60, tall: 22 }),
-    (x, v, _p, s, at) => { const L = layout(); L.plug = at.x; L.router = n(s, 'routerX'); L.desk = { x0: 0, x1: n(s, 'deskRight'), h: n(s, 'deskHeight') }; kernel(L).drawPlug(x, raised(v, at.h), visual(s)); }),
+  element('plug', 'Smart plug and optional router cable', 'electronics', {cableConnected:boolean('Draw linked router cable')}, () => ({ x: -6, h: 22, w: 60, tall: 22 }),
+    (x, v, p, s, at) => { const L = layout(); L.plug = at.x; L.router = n(s, 'routerX'); L.desk = { x0: 0, x1: n(s, 'deskRight'), h: n(s, 'deskHeight') }; kernel(L).drawPlug(x, raised(v, at.h), visual(s),p.cableConnected===true); }),
   element('router', 'Warm capsule router', 'electronics', {}, () => ({ x: -11, h: 32, w: 22, tall: 32 }),
     (x, v, _p, s, at) => { const L = layout(); L.router = at.x; kernel(L).drawRouter(x, raised(v, at.h), visual(s)); }, () => ({ origin, top: { x: 0, h: 8, role: 'surface' } })),
   element('bed', 'Capsule bed', 'furniture', { width: num('Width', 50, 16) }, p => box(n(p, 'width'), 26),
     (x, v, p, s, at) => { const L = layout(); L.bed = { x0: at.x, x1: at.x + n(p, 'width') }; kernel(L).drawBed(x, raised(v, at.h), visual(s)); }, () => ({ origin, mattress: { x: 20, h: 22, role: 'surface' } })),
 ];
+
+const plug=capsuleElements.find(e=>e.type==='capsule.plug')!;
+plug.bounds=(p,s,c)=>{const at=c?.placement.x??0,points=p.cableConnected?[-6,14,n(s,'routerX')-6-at,n(s,'deskRight')-4-at]:[-6,14],left=Math.min(...points),right=Math.max(...points),top=p.cableConnected?Math.max(22,n(s,'deskHeight')-2):22;return{x:left,h:top,w:right-left,tall:top};};
+
+plug.visualFields=Object.fromEntries(['hover','plugOn','routerX','deskRight','deskHeight'].map(key=>[key,capsuleVisualFields[key]]));

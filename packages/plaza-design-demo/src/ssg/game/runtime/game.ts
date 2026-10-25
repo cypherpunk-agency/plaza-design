@@ -1,3 +1,4 @@
+import {sourceProjection} from '../art/core/geometry';
 import {validateWorldPeople} from '../engine/people';
 import type {ScenePlacement} from './state';
 import {projectX,type CameraProjection} from '../art/core/geometry';
@@ -12,7 +13,7 @@ import {NET_OPENED,NUDGE_HOLD,NUDGE_MARGIN,NUDGE_GAP,MIN_VIEW_W,MAX_VIEW_H} from
 import type {GameHost} from './contracts';
 import {createCameraState,createInputState,createScenesState,createTimingState,createPresentationState} from './state';
 import {controlGroups,ownedSummary} from './hud-data';
-import {exitTargets,lifeTargets,promptFloor,usePrice,type InteractionTarget as Target} from './interaction-targets';
+import {exitTargets,lifeTargets,promptFloor,type InteractionTarget as Target} from './interaction-targets';
 
 import {runCommunicationReview,type CommunicationReview} from '../demo/communication-review';
 import {movingInteractions} from '../engine/gameplay/moving-interactions';
@@ -56,7 +57,7 @@ import { CITY,NO_RULES,SceneHost } from "../engine/index";
 
 import { sceneShell } from "../engine/shell";
 
-import {isSceneId,ITEMS,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneId,type SceneUse,type SceneView} from "../scenes/index";
+import {isSceneId,ITEMS,SCENES,sceneTitle,type ItemId,type SceneDef,type SceneId,type SceneView} from "../scenes/index";
 import { contactsModel,type ContactsModel } from "../story/contacts";
 import {END_CARD,type EndCardSource} from "../story/end-card";
 import {arrivalFor,attentionDue,goalHint} from "../story/story-rules";
@@ -126,7 +127,6 @@ export class Game {
     get critters(){return game.critters;},
     get timing(){return game.timing;},
     get save(){return game.save;},
-    usePrice:(...args)=>game.usePrice(...args),
     flash:(...args)=>game.flash(...args),
     weatherHere:(...args)=>game.weatherHere(...args),
     syncHud:(...args)=>game.syncHud(...args),
@@ -1039,8 +1039,8 @@ export class Game {
   private get spanW() { const [lo, hi] = SceneLifecycle.worldSpan(this.sceneLifecyclePort); return hi - lo; }
   /** A joined zone in this frame: its own view (the camera moved by where it lies), scene, host and light. */
   private zoneFrame(z: ScenePlacement,camera:CameraProjection=this.camera): ZoneFrame {
-    const scene=this.sceneDefinition(z.id),core=this.scenes.mobiles.get(z.id),ui=this.scenes.hosts.get(z.id),host=ui??(core?{model:core.model,visionOn:false}:this.hostOf(z.id)),cam=camera.cam-z.dx,gy=camera.gy-z.dh;
-    const view: SceneView = { ...frameView(0), t: this.timing.t, viewW: camera.viewW, viewH: camera.viewH, cam, gy, sx: (wx, p = 1) => projectX(wx,cam,p), y: (h) => gy - h, flags: this.save.flags, values: this.save.gameplay, level: this.scenes.level ? SceneLifecycle.levelViewOf(this.sceneLifecyclePort,z.id) : undefined };
+    const scene=this.sceneDefinition(z.id),core=this.scenes.mobiles.get(z.id),ui=this.scenes.hosts.get(z.id),host=ui??(core?{model:core.model,visionOn:false}:this.hostOf(z.id)),gy=camera.gy-z.dh;
+    const view: SceneView = { ...frameView(0), t: this.timing.t, viewW: camera.viewW, viewH: camera.viewH, gy, ...sourceProjection(camera,z), flags: this.save.flags, values: this.save.gameplay, level: this.scenes.level ? SceneLifecycle.levelViewOf(this.sceneLifecyclePort,z.id) : undefined };
     const station=this.world.stationAt(z.id);if(station)view.transit={station,...this.metro.stationFrame(station,this.ride)};
     const outdoor = scene.outdoor ?? !!(scene.ambient?.weather || scene.ambient?.sky);
     return { view, scene, sceneId: z.id, host, ...(z.dh < 0 ? { below: true } : {}), preparePresentation: prepared => {if(ui)ui.preparePresentation(prepared,'all');else scene.preparePresentation?.(prepared,{m:host.model,hover:null,layer:'all'});},weather:()=>this.weatherOf(z.id),
@@ -1691,7 +1691,6 @@ export class Game {
   private promptFloor(s:SceneDef,x:number,h:number|undefined) { return promptFloor(s,x,h,s.id===this.scenes.here&&this.scenes.level?this.scenes.level.source.floors:s.level?.floors); }  private lifeTargets(s:SceneDef,host=this.zh,owner=this.scenes.here):Target[] { return lifeTargets(s,{model:host.model,flags:this.save.flags,tokens:this.save.tokens,session:this.gameplayFor(owner),floor:(x,h)=>this.promptFloor(s,x,h),rests:city.pinned===null,time:this.timing.t,critters:this.critters,bots:this.botReactions}); }
 
   /** What a use costs now (0: nothing to pay this time). */
-  private usePrice(u:SceneUse,owner=this.scenes.here) { return usePrice(u,this.save.flags,this.gameplayFor(owner)); }
 
   /** Use an authored scene exit, taxi or map. Physical vehicle transfers belong to the level. */
 

@@ -1,4 +1,4 @@
-import type {FolderSceneSource} from '../engine/gameplay/folder-scene';
+import type {SceneSource} from '../engine/gameplay/folder-scene';
 import downtownComposition from './downtown/composition.json';
 import downtownScene from './downtown/scene.json';
 import downtownGameplay from './downtown/gameplay.json';
@@ -100,8 +100,8 @@ export const FOLDER_SOURCES={
  beach:{composition:beachComposition,scene:beachScene,gameplay:beachGameplay,devices:beachDevices},
  metro:{composition:metroComposition,scene:metroScene,gameplay:metroGameplay,devices:metroDevices},
  train:{composition:trainComposition,scene:trainScene,gameplay:trainGameplay,devices:trainDevices},
-} satisfies Record<string,FolderSceneSource>;
+} satisfies Record<string,SceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */
 export const FOLDER_DIRS:Readonly<Record<string,string>>={};
 /** The same sources by any scene id (undefined for scenes that still have code). */
-export const FOLDER_BY_ID:Readonly<Record<string,FolderSceneSource>>=FOLDER_SOURCES;
+export const FOLDER_BY_ID:Readonly<Record<string,SceneSource>>=FOLDER_SOURCES;

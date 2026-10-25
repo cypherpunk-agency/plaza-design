@@ -1,3 +1,4 @@
+import {boundsFromEdges} from '../core/geometry';
 /**
  * LEVEL KIT: what makes a scene more than one street line. Floors are walkable lines at a height;
  * stairs and escalators join two floors; a lift carries the player between the floors its shaft
@@ -221,14 +222,14 @@ export const stairsElement: Element = {
   bounds: p => {
     const r=Number(p.run), h=Number(p.rise), shape=STAIR_STYLES[String(p.style)]?.draw??'flight';
     // Bounds.h is the top, not the foot. Include rails above and stringers below either end.
-    if(shape==='rungs')return {x:-10,h:Math.max(0,h)+34,w:20,tall:Math.abs(h)+34};
+    if(shape==='rungs')return boundsFromEdges({left:-10,right:10,bottom:Math.min(0,h),top:Math.max(0,h)+34});
     if(shape==='spiral'){
       const radius=Math.max(12,Math.abs(r)/2||14)+2;
-      return {x:-radius,h:Math.max(0,h)+34,w:radius*2,tall:Math.abs(h)+38};
+      return boundsFromEdges({left:-radius,right:radius,bottom:Math.min(0,h)-4,top:Math.max(0,h)+34});
     }
     const left=Math.min(0,r)-(shape==='switchback'&&r<0?14:4);
     const right=Math.max(0,r)+(shape==='switchback'&&r>=0?14:4);
-    return {x:left,h:Math.max(0,h)+32,w:right-left,tall:Math.abs(h)+42};
+    return boundsFromEdges({left,right,bottom:Math.min(0,h)-10,top:Math.max(0,h)+32});
   },
   anchors: p => { const d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight'; return { ...origin(), top: { x: d === 'flight' || d === 'ladder' ? Number(p.run) : 0, h: Number(p.rise), role: 'mount' } }; },
   draw: (x, v, p, s) => drawStairs(x, v, p, nearRail(p, s) ? 'back' : 'whole'),
@@ -256,7 +257,7 @@ export const escalatorElement: Element = {
     reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
     style: { kind: 'select', label: 'Style', options: ['standard', 'glass'], default: 'standard' },
   },
-  bounds: p => { const r = Number(p.run), h = Number(p.rise); return { x: Math.min(0, r) - 14, h: Math.max(0, h) + 32, w: Math.abs(r) + 28, tall: Math.abs(h) + 46 }; },
+  bounds: p => { const r = Number(p.run), h = Number(p.rise); return boundsFromEdges({left:Math.min(0,r)-14,right:Math.max(0,r)+14,bottom:Math.min(0,h)-14,top:Math.max(0,h)+32}); },
   anchors: p => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
   draw: (x, v, p) => {
     const run = Number(p.run), rise = Number(p.rise), dir = Math.sign(run) || 1, up = p.direction !== 'down', glass = p.style === 'glass';
@@ -289,7 +290,7 @@ export const elevatorElement: Element = {
     doorMs: num('Doors open in', 280, 40, 3000, 10, 'ms'),
     style: { kind: 'select', label: 'Style (broken: out of order, never called)', options: [...LIFT_STYLES], default: 'goods' } },
   visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
-  bounds: p => ({ x: -Number(p.width) / 2 - 4, h: Number(p.height) + 54, w: Number(p.width) + 8, tall: Number(p.height) + 58 }),
+  bounds: p => boundsFromEdges({left:-Number(p.width)/2-4,right:Number(p.width)/2+4,bottom:-4,top:Number(p.height)+54}),
   anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),
   draw: (x, v, p, s) => {
     const w = Number(p.width), hw = w / 2, top = Number(p.height) + 52, car = Math.max(0, Math.min(Number(p.height), Number(s.car ?? 0))), open = Math.max(0, Math.min(1, Number(s.doors ?? 0)));

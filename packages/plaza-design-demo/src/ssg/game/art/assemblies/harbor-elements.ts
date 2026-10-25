@@ -21,11 +21,16 @@ const pose=json('Prepared stall vendor',nil,validatePreparedCharacter);
 export const harborVisualFields:Record<string,Field>={forkliftOrigin:num('Forklift origin'),archVisible:{kind:'boolean',label:'Arch in view',default:true},bondedVisible:{kind:'boolean',label:'Bonded yard in view',default:true},stackOrigins:json('Stack culling origins',[],v=>{if(!Array.isArray(v)||v.some(q=>typeof q!=='number'||!Number.isFinite(q)))throw new Error('stackOrigins: expected finite positions');}),layout:json('Resolved source geometry',blank as unknown as Value,v=>shape(v,blank,'layout')),visual:json('Crane, forklift, gate and weather snapshot',visual as unknown as Value,v=>shape(v,visual,'visual')),fishPose:pose,teaPose:pose,loads:json('Crane loads',[],v=>{if(!Array.isArray(v))throw new Error('loads: expected array');for(const q of v){shape(q,{w:0,p:0,seed:0},'loads[]');validateTree(q);}})};
 const origin={x:0,h:0,role:'origin' as const};
 type Method=keyof ReturnType<typeof createHarborPierArtwork>;
-function root(method:Method,L:HarborLayout,p:Properties):{x:number;h:number}{const ci=Number(p.index);if(method.startsWith('crane'))return{x:L.cranes[ci].x+(method==='craneLoad'?-64:0),h:method==='craneLoad'?-58:0};const names:Partial<Record<Method,keyof HarborLayout>>={noticePost:'notice',metroDoor:'metro',podium:'podium',manifest:'manifest',callBox:'callBox',denInside:'den',denTable:'den',denDoors:'den',denLamp:'den',drawTerminalGate:'terminal',berthSign:'berth',taxi:'taxi',ferryNotice:'ferry',rails:'rails',beacon:'beacon'};if(method.startsWith('arch'))return{x:L.arch.x0,h:0};const key=names[method];if(key)return{x:Number(L[key]),h:0};if(method.startsWith('hut'))return{x:L.hut.x,h:0};if(['bondedContainers','ghostMark','bondedFence'].includes(method))return{x:L.fence.x0,h:0};if(method==='fishStall')return{x:L.fish.x,h:0};if(method==='teaStall')return{x:L.drinks.x,h:0};return{x:0,h:0};}
+function root(method:Method,L:HarborLayout,p:Properties):{x:number;h:number}{const ci=Number(p.index);if(method.startsWith('crane'))return{x:L.cranes[ci].x+(method==='craneLoad'?-64:0),h:method==='craneLoad'?-58:0};const names:Partial<Record<Method,keyof HarborLayout>>={noticePost:'notice',metroDoor:'metro',podium:'podium',manifest:'manifest',callBox:'callBox',denInside:'den',denTable:'den',denDoors:'den',denLamp:'den',drawTerminalGate:'terminal',berthSign:'berth',taxi:'taxi',ferryNotice:'ferry',rails:'rails',beacon:'beacon'};if(method.startsWith('arch'))return{x:L.arch.x0,h:0};const key=names[method];if(key)return{x:Number(L[key]),h:0};if(method.startsWith('hut'))return{x:L.hut.x,h:0};if(['bondedContainers','ghostMark','bondedFence'].includes(method))return{x:L.fence.x0,h:0};return{x:0,h:0};}
 function element(type:string,label:string,method?:Method):Element{
- const hut=method==='hutBack'||method==='hutFront';
- return{type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:hut?harborHutFields:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){
+ const hut=method==='hutBack'||method==='hutFront',stall=method==='fishStall'||method==='teaStall';
+ return{type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:hut?harborHutFields:stall?{vendorPose:pose}:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){
  if(!method)return;
+ if(method==='fishStall'||method==='teaStall'){
+  const L={...blank,fish:{x:at.x,w:Number(p.width)},drinks:{x:at.x,w:Number(p.width)}};
+  const raised=at.h?{...v,gy:v.gy-at.h,y:(h:number)=>v.y(h+at.h)}:v;
+  createHarborPierArtwork({L,visual,fishPose:s.vendorPose as unknown as PreparedCharacter,teaPose:s.vendorPose as unknown as PreparedCharacter,loads:[]})[method](ctx,raised);return;
+ }
  if(method==='hutBack'||method==='hutFront'){
   const size=harborHutSize(p,s),L={...blank,hut:{x:at.x,...size}},raised=at.h?{...v,gy:v.gy-at.h,y:(h:number)=>v.y(h+at.h)}:v;
   createHarborPierArtwork({L,visual,fishPose:nil as unknown as PreparedCharacter,teaPose:nil as unknown as PreparedCharacter,loads:[]})[method](ctx,raised);return;
@@ -40,8 +45,8 @@ export const harborElements:Element[]=[...methods.map(m=>element(m,m.replace(/([
 ];
 applyHarborMetadata(harborElements,(method,L,p)=>root(method as Method,L,p));
 // Each of these fittings cancels its source datum before applying its own placement.
-// Crane geometry, actor-bearing stalls and culling-dependent container rows remain contextual.
-for(const e of harborElements)if(['denInside','denTable','denDoors','denLamp','metroDoor','noticePost','podium','manifest','callBox','crates','bollard','rod','fishingBox','berthSign','taxi','ferryNotice','rails','beacon','portCamera','drawTerminalGate','hutBack','hutFront'].includes(e.type.slice(7)))e.libraryUse='reusable';
+// Crane geometry and culling-dependent container rows remain contextual; stalls accept optional prepared poses.
+for(const e of harborElements)if(['denInside','denTable','denDoors','denLamp','metroDoor','noticePost','podium','manifest','callBox','crates','bollard','rod','fishingBox','berthSign','taxi','ferryNotice','rails','beacon','portCamera','drawTerminalGate','hutBack','hutFront','fishStall','teaStall'].includes(e.type.slice(7)))e.libraryUse='reusable';
 
 // These source actors travel; machinery fixed to its rail remains part of the set.
 const harborTravel={

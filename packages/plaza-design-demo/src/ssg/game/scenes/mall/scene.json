@@ -80,7 +80,7 @@
     {
       "id": "pawn",
       "name": "PAWNBROKER",
-      "label": "[E] PAWN \u00b7 SELL A MEMORY",
+      "label": "[E] PAWN · SELL A MEMORY",
       "routes": [
         {
           "when": {
@@ -484,7 +484,7 @@
       "id": "kiosk",
       "name": "DIRECTORY",
       "pages": [
-        "GALLERIA \u00b7 GROUND FLOOR: IMPLANTS \u00b7 PAWN \u00b7 DECK REPAIR \u00b7 FLORIST \u00b7 KEYS \u00b7 FOOD COURT.",
+        "GALLERIA · GROUND FLOOR: IMPLANTS · PAWN · DECK REPAIR · FLORIST · KEYS · FOOD COURT.",
         "EXITS: METRO (WEST). SKY TAXI (ROOF). SERVICE CORRIDOR (EAST, STAFF ONLY)."
       ]
     },
@@ -500,7 +500,7 @@
       "id": "escalator",
       "name": "ESCALATOR B",
       "pages": [
-        "ESCALATOR B \u00b7 UP ONLY.",
+        "ESCALATOR B · UP ONLY.",
         "DOWN SERVICE SUSPENDED PENDING REVIEW. USE STAIRS C."
       ]
     }
@@ -516,7 +516,7 @@
       "id": "taxi",
       "to": "",
       "action": "taxi",
-      "label": "[E] ROOF PAD \u00b7 HAIL TAXI"
+      "label": "[E] ROOF PAD · HAIL TAXI"
     },
     {
       "id": "market",
@@ -1774,6 +1774,18 @@
     "values": {
       "snapshot": {
         "atrium": true
+      },
+      "shopCeiling": {
+        "role": "room",
+        "get": "prop:ceil"
+      },
+      "shopFascia": {
+        "role": "room",
+        "get": "prop:fascia"
+      },
+      "escalatorRise": {
+        "role": "room",
+        "get": "prop:slab"
       }
     },
     "atrium": {

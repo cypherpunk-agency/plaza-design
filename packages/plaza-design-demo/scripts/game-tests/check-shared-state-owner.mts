@@ -1,3 +1,4 @@
+import {sceneSourceDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {runtimeFixture} from './runtime-fixture.mts';
 /** A world-level state owner (world/state-owners.json, `shift.*`) used by two scenes' gameplay: one declaration, one Save.gameplay block. */
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
@@ -40,6 +41,10 @@ for(const[name,run]of rejects)assert.throws(run,(e:any)=>{if(process.env.SHOW)co
 assert.throws(()=>validateGameplay(annex),/unknown reference shift.radio/);assert(withSharedState(owners,()=>validateGameplay(annex)).state!['shift.radio']);
 // Compiled vs source: compiled carries the declarations, source keeps only the reference.
 const compiled=withSharedState(owners,()=>validateGameplay(annex));assert.deepEqual(Object.keys(compiled.state!).sort(),Object.keys(owners.state).sort());assert.deepEqual(sourceGameplay(compiled),JSON.parse(JSON.stringify(annex)));assert.deepEqual(withSharedState(owners,()=>validateGameplay(compiled)),compiled,'compiled form revalidates (idempotent)');
+// Explicit compilation must not depend on whichever declaration scope another editor has installed.
+const isolatedEntry=catalogue(annex,deck).scenes.find((s:any)=>s.scene.id==='tower-annex');
+const isolated=withSharedState({version:1,state:{}},()=>sceneSourceDefinition('tower-annex',isolatedEntry,{sharedState:owners}));
+assert(isolated.gameplay!.state!['shift.radio'],'explicit source declarations reach nested condition/chatter compilation');
 // Two scenes, one owner block in the common root.
 const registry=pendingRegistry(pending()),A=registry['tower-annex'].gameplay!,D=registry['tower-deck'].gameplay!;
 const save=newSave();let state:GameplayState={flags:save.flags,items:save.items,tokens:save.tokens,values:save.gameplay??={}};

@@ -1,3 +1,4 @@
+import {copyTransform} from '../art/core/geometry';
 import {inCameraSpace} from '../art/core/camera-space';
 import {prepareFrame,type FrameSource} from './prepare-frame';
 import {perfBegin,perfEnd} from './diagnostics/performance';
@@ -13,7 +14,7 @@ import { drawSky } from '../art/environment/sky';
 import { puddles, weatherFront, weatherMid, weatherSky } from '../art/atmosphere/weather';
 import { createLightingFrame, drawCasters, drawGrade, drawLights, drawShade } from '../art/atmosphere/lighting';
 import { muteWorld } from '../art/atmosphere/hack-vision';
-import { beginLayeredFrame, flushLayeredSlot } from '../art/core/composition';
+import { beginLayeredFrame, endLayeredFrame, flushLayeredSlot } from '../art/core/composition';
 import { lightAt } from '../world/light';
 
 import {art,drawCompositionSlot} from '../art';
@@ -21,10 +22,11 @@ import {backdropDocuments,backdropTown,type BackdropDocument} from '../world/bac
 
 import {passOn,type WorldFrame,type FrameDirector,type ZoneFrame} from './frame';
 /** The one frame renderer, for a scene alone or with the zones joined to it (docs/design/SEAMLESS-WORLD.md §3). */
-export function renderWorldFrame(input:WorldFrame|FrameSource){const frame=prepareFrame(input),span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);return frame;}finally{perfEnd(span);}}
+export function renderWorldFrame(input:WorldFrame|FrameSource){const frame=prepareFrame(input),span=perfBegin('render.total',frame.sceneId);try{renderMeasuredFrame(frame);return frame;}finally{endLayeredFrame();perfEnd(span);}}
 function renderMeasuredFrame(frame: WorldFrame) {
   let pass=perfBegin('render.prepare');
-  beginLayeredFrame();
+  frame.artwork=frame.capture?[]:undefined;frame.helpers=frame.capture?[]:undefined;
+  beginLayeredFrame(frame.artwork?row=>frame.artwork!.push(row):undefined,frame.helpers?row=>frame.helpers!.push(row):undefined);
   const d = frame.director, x = frame.context, k = d?.scale ?? frame.scale, s = frame.scene, zh = frame.host, amb = s.ambient ?? {};
   x.setTransform(k, 0, 0, k, 0, 0);
   const v = { ...(d?.camera ? directedView(frame.view, d.camera) : frame.view), zoneWindow: undefined as View['zoneWindow'],reduced:frame.reduced };
@@ -67,7 +69,7 @@ function renderMeasuredFrame(frame: WorldFrame) {
     const offset=(v:View):View=>({...v,zoneWindow:undefined,artworkScope:undefined,sharedLayers:false,cam:v.cam+ref.x,sx:(wx,p=1)=>v.sx(wx-ref.x*p,p),y:h=>v.y(h-(ref.h??0))});
     const view=offset(local);if(local.cameraFrame)view.cameraFrame={...local.cameraFrame,view:offset(local.cameraFrame.view)};backdropFrames.push({doc,view});
   }
-  if(frame.capture)frame.inspection=[{scene:s,view:v,model:zh.model,scale:k,zoom},...joined.map(z=>({scene:z.scene,view:z.view,model:z.host.model,scale:k,zoom})),...travelling.map(z=>({scene:z.scene,view:z.view,model:z.host.model,scale:k,zoom})),...backdropFrames.map(z=>({composition:z.doc,view:z.view,scale:k,zoom}))];
+  if(frame.capture){const transform=copyTransform(x.getTransform()),viewport={width:v.viewW*k,height:v.viewH*k};frame.inspection=[{scene:s,view:v},...joined.map(z=>({scene:z.scene,view:z.view})),...travelling.map(z=>({scene:z.scene,view:z.view}))].map(scope=>({...scope,transform,viewport}));}
   if (amb.sky && passOn(d, 'sky')) { drawSky(x, v, L, { horizon: v.y(sharedSky ? sharedSky.horizon-(s.backdrop!.h??0) : s.horizon ?? 0),...(sharedSky?{style:sharedSky.style,town:backdropTown(sharedBackdrop,(v.cameraFrame?.view.cam??v.cam)+(s.backdrop?.x??0)+(v.cameraFrame?.view.viewW??v.viewW)/2)}:{}) }); if (look) atmosphere(x,v,(camera,weather)=>weatherSky(x,camera,weather)); inCameraSpace(x,v,view=>s.drawSkyArtwork?.(x,{...view,skyCam:view.cam+(s.backdrop?.x??0)}));for(const {doc,view} of backdropFrames)inCameraSpace(x,view,camera=>drawCompositionSlot(x,art,doc,{view:camera,reduced:frame.reduced,state:{}},'behind-player',undefined,'sky')); }
   if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
   if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);

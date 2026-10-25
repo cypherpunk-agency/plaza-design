@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {BINDING_PROVIDERS} from '../../src/ssg/game/engine/gameplay/binding-providers';
 import {bindingKeyProblem,bindingKeyScope,offeredNames} from '../../src/ssg/game/engine/gameplay/binding-keys';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
-import {folderSceneDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
+import {sceneSourceDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
 import {unofferedBindings,knownBindingSource} from '../../src/ssg/game/engine/gameplay/binding-sources';
 import {art} from '../../src/ssg/game/art';
 import {SceneModel} from '../../src/ssg/game/engine/model';
@@ -37,7 +37,7 @@ const player=new Proxy({save:()=>newSave()} as Record<string,unknown>,{get(o,k){
 let scenes=0;
 for(const id of Object.keys(FOLDER_SOURCES)){
  current.scene=id;
- const src=FOLDER_SOURCES[id as keyof typeof FOLDER_SOURCES],scene:SceneDef=folderSceneDefinition(id,src);
+ const src=FOLDER_SOURCES[id as keyof typeof FOLDER_SOURCES],scene:SceneDef=sceneSourceDefinition(id,src);
  const rules=typeof scene.rules==='function'?scene.rules(player as never):scene.rules??{effects:{}},m=new SceneModel({say(){},changed(){},open(){}} as never,scene.data??emptyData(scene.id,scene.name),rules as never,undefined,undefined,undefined,undefined,scene.gameplay);m.setPaused(true);
  // every binding the composition uses is offered (also the builder's job; asserted here by name)
  const doc=art.validate(src.composition) as Composition;
@@ -60,7 +60,7 @@ const rebind=(composition:Composition,match:Match,source:string)=>{
 };
 const refused=(id:keyof typeof FOLDER_SOURCES,match:Match,source:string,reason:RegExp)=>{
  const composition=structuredClone(FOLDER_SOURCES[id].composition) as unknown as Composition,node=rebind(composition,match,source);
- assert.throws(()=>folderSceneDefinition(id,{...FOLDER_SOURCES[id],composition}),(e:Error)=>e.message.includes('Binding not offered')&&e.message.includes('"'+node.id+'"')&&e.message.includes('"'+source+'"')&&reason.test(e.message),`${id}: ${source} is refused with a clear message`);
+ assert.throws(()=>sceneSourceDefinition(id,{...FOLDER_SOURCES[id],composition}),(e:Error)=>e.message.includes('Binding not offered')&&e.message.includes('"'+node.id+'"')&&e.message.includes('"'+source+'"')&&reason.test(e.message),`${id}: ${source} is refused with a clear message`);
 };
 // downtown: a front/window/trim name that is not one, and a misspelt key
 refused('downtown',bound('downtown.front.'),'downtown.front.nope.metrics',/no downtown\.front artwork instance "nope"/);

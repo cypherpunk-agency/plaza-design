@@ -12,24 +12,19 @@ export const preparedCharacterElement: Element = {
   type:'character.prepared',version:1,label:'Person, robot or animal',category:'characters',coordinates:'world',parts:['backdrop'],
   fields:{actor:{kind:'string',label:'Actor id',default:''}},
   visualFields:{pose:{kind:'json',label:'Prepared pose',default:{visible:false,character:{x:0}},validate:validatePreparedCharacter},clip:{kind:'json',label:'Containing window clip',default:null,validate:value=>{if(value!==null&&(!Array.isArray(value)||value.length!==4||value.some(n=>typeof n!=='number'||!Number.isFinite(n))))throw new Error('Invalid actor clipping rectangle');}}},
+  hiddenReason:(_p,s)=>(s.pose as unknown as PreparedCharacter).visible?undefined:'Actor pose is hidden',
   bounds:(_p,state,c)=>{
     const pose=state.pose as unknown as PreparedCharacter;
     if(!pose?.visible)return{x:0,h:0,w:0,tall:0};
     const h=pose.height-(pose.character.h??0),fallback={x:pose.frame.x-(c?.placement.x??pose.character.x)-24,h,w:48,tall:h};
     if(!c)return fallback;
     const rect={x:c.view.sx(pose.frame.x,pose.character.parallax??1)-24,y:c.view.y(pose.height),w:48,h};
-    const clip=state.clip as number[]|null;
-    if(clip){
-      const left=Math.max(rect.x,Math.min(clip[0],clip[0]+clip[2])),top=Math.max(rect.y,Math.min(clip[1],clip[1]+clip[3]));
-      const right=Math.min(rect.x+rect.w,Math.max(clip[0],clip[0]+clip[2])),bottom=Math.min(rect.y+rect.h,Math.max(clip[1],clip[1]+clip[3]));
-      Object.assign(rect,{x:left,y:top,w:Math.max(0,right-left),h:Math.max(0,bottom-top)});
-    }
     return screenBounds(c,rect,fallback);
   },
-  pickClip:(_p,state,c)=>{
+  mask:(_p,state,c)=>{
     const clip=state.clip as number[]|null;if(!clip)return;
     return screenBounds(c,{x:Math.min(clip[0],clip[0]+clip[2]),y:Math.min(clip[1],clip[1]+clip[3]),w:Math.abs(clip[2]),h:Math.abs(clip[3])},{x:0,h:0,w:0,tall:0});
   },
   anchors:()=>({origin:{x:0,h:0,role:'origin'}}),
-  draw(ctx,view,_props,state){const p=state.pose as unknown as PreparedCharacter;if(!p.visible)return;const clip=state.clip as number[]|null;if(clip){ctx.save();ctx.beginPath();ctx.rect(clip[0],clip[1],clip[2],clip[3]);ctx.clip();}try{drawCharacterFrame(ctx,view,p.character,p.ready,p.pixelSize,p.frame,p.height);}finally{if(clip)ctx.restore();}},
+  draw(ctx,view,_props,state){const p=state.pose as unknown as PreparedCharacter;if(p.visible)drawCharacterFrame(ctx,view,p.character,p.ready,p.pixelSize,p.frame,p.height);},
 };

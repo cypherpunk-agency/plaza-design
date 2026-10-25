@@ -7,7 +7,7 @@ import data from '../scenes/sandbox/devices.json';
 import type {SceneData} from '../data/types';
 import {validateNativeContract} from '../engine/gameplay/native-contract';
 import {nativeDeviceData} from '../engine/gameplay/native-bindings';
-import {folderSceneDefinition} from '../engine/gameplay/folder-scene';
+import {sceneSourceDefinition} from '../engine/gameplay/folder-scene';
 import {FOLDER_SOURCES} from '../scenes/folder-scenes';
 import {art} from '../art';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
@@ -25,6 +25,6 @@ export function workshopScene(composition=sandboxComposition,gameplay=WORKSHOP_G
  sceneDocument.manifest!.devices=Object.fromEntries(Object.entries(sceneDocument.manifest!.devices??{}).filter(([id])=>REVIEW_DEVICE_IDS.includes(id)));
  // the area has no dispenser and no reset console: their uses and engine targets need commands of the full bay's gameplay
  sceneDocument.uses=[];sceneDocument.manifest!.uses={};delete sceneDocument.nativeTargets;delete sceneDocument.manifest!.artwork;sceneDocument.stage={mechanisms:['devicePulse'],values:sceneDocument.stage!.values};
- const shared=validateWorkshopGameplay(gameplay),base=folderSceneDefinition('sandbox',FOLDER_SOURCES.sandbox,{composition,options:{visibility:reviewVisibility(composition,REVIEW_DEVICE_IDS)},scene:sceneDocument,gameplay:shared,devices:WORKSHOP_DATA,deviceCheck:'deferred'});
+ const shared=validateWorkshopGameplay(gameplay),base=sceneSourceDefinition('sandbox',FOLDER_SOURCES.sandbox,{composition,options:{visibility:reviewVisibility(composition,REVIEW_DEVICE_IDS)},scene:sceneDocument,gameplay:shared,devices:WORKSHOP_DATA,deviceCheck:'deferred'});
  return{...plainReviewScene(base),name:'Devices & wiring',spawn:220,gameplay:shared,data:nativeDeviceData(base.data!,shared),rules:{effects:{'sbx.pulse':PULSE_EFFECTS['sbx.pulse']}},uses:[]};
 }

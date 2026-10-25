@@ -1,3 +1,4 @@
+import {sourceProjection} from '../art/core/geometry';
 /** Prepare ordinary and temporally directed scene inputs for the single frame renderer. */
 import {art} from '../art';
 import {drawComposition,resolveComposition,compositionAppearance,type ArtRegistry,type Composition,type Environment,type Instance,type Properties} from '../art/core/composition';
@@ -14,7 +15,7 @@ import {lightAt,type Light} from '../world/light';
 import {directorFromTimeline,type WorldFrame,type FrameDirector,type FramePass,type ZoneFrame,type WorkspaceCamera,type CameraGuide} from './frame';
 import type {OpeningDocuments} from '../story/title/documents';
 import graphSource from '../world/zone-graph.json';
-import {sequencePlacements,validateZoneGraph,type ZoneGraphSource} from '../world/zone-graph';
+import {placementCoordinates,sequencePlacements,validateZoneGraph,type ZoneGraphSource} from '../world/zone-graph';
 export const SEQUENCE_PASSES: Record<FramePass, false> = { sky: false, weather: false, casters: false, actors: false, shade: false, grade: false, lights: false, prompts: false, bubbles: false, vision: false };
 
 export interface FrameSource {
@@ -80,12 +81,12 @@ function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocument
   const intensity=Number(frame.state.sky?.rain??0),weather:Weather={kind:intensity?'rain':'clear',from:'clear',mix:intensity,cloud:intensity*.8,rain:intensity,storm:0,fog:0,smog:0,heat:0,wet:intensity,wind:intensity*.3};
   const lighting=lightAt(1,minute,cameraScene.facing??270,null,true);
   const viewOf=(x:number,h=0):View=>{
-    const base={...frameView(options.ambientTime*60,lighting),worldZones:Object.fromEntries([...placed].map(([id,p])=>[id,{x:p.dx-x,h:p.dh-h,w:scenes[id]?.width}])),viewW:width,viewH:height,cam:cam-x,gy,
-      sx:(wx:number,p=1)=>Math.round(options.workspace?wx-(authoredCam-x)*p+authoredCam-cam:wx-(cam-x)*p),y:(height:number)=>Math.round(gy-height-h),flags:{}};
+    const base={...frameView(options.ambientTime*60,lighting),worldZones:placementCoordinates(placed,{dx:x,dh:h},scenes),viewW:width,viewH:height,gy,
+      ...sourceProjection({cam,gy},{dx:x,dh:h},1,options.workspace?authoredCam:cam,true),flags:{}};
     if(!options.workspace)return base;
     const ground=authoredLayout.ground-frame.camera.h;
-    const cameraView:View={...base,viewW:authoredLayout.width,viewH:authoredLayout.height,cam:authoredCam-x,gy:ground,
-      sx:(wx,p=1)=>Math.round(wx-(authoredCam-x)*p),y:height=>Math.round(ground-height-h)};
+    const cameraView:View={...base,viewW:authoredLayout.width,viewH:authoredLayout.height,gy:ground,
+      ...sourceProjection({cam:authoredCam,gy:ground},{dx:x,dh:h},1,authoredCam,true)};
     return{...base,cameraFrame:{view:cameraView,x:authoredCam-cam,y:gy-ground}};
   };
   const hostOf=(scene:SceneDef)=>{const model=modelFor(scene),engine:EngineDraw={m:model,hover:null,layer:'all'};return{visionOn:false,model,draw:(ctx:CanvasRenderingContext2D,v:View)=>scene.drawBackdrop(ctx,v,engine)};};

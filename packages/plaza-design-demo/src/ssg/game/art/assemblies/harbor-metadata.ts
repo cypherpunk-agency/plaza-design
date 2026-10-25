@@ -21,8 +21,8 @@ const rect=(v:View,wx:number,h:number,w:number,tall:number,dx=0,par=1):Rect=>({x
 const at=(dx:number,h:number,w:number,tall=h):Geometry=>a=>rect(a.v,a.x,a.h+h,w,tall,dx);
 const origin:Anchor={x:0,h:0,role:'origin'};
 function stallBounds(a:Inputs,tea:boolean):Rect{
- const spec=tea?a.L.drinks:a.L.fish,seed=tea?34:31,shape=stallBox({x:spec.x,w:spec.w,seed}),signWidth=(tea?10:4)*8*.64+12,fullWidth=Math.max(spec.w+16,signWidth),r=rect(a.v,spec.x,shape.awning+22,fullWidth,shape.awning+22,(spec.w-fullWidth)/2);
- const pose=a.s[tea?'teaPose':'fishPose'] as unknown as PreparedCharacter|undefined;
+ const spec={x:a.x,w:Number(a.p.width)},seed=tea?34:31,shape=stallBox({x:spec.x,w:spec.w,seed}),signWidth=(tea?10:4)*8*.64+12,fullWidth=Math.max(spec.w+16,signWidth),r=rect(a.v,spec.x,a.h+shape.awning+22,fullWidth,shape.awning+22,(spec.w-fullWidth)/2);
+ const pose=a.s.vendorPose as unknown as PreparedCharacter|undefined;
  if(!pose?.visible)return r;
  return union([r,{x:a.v.sx(pose.frame.x)-24,y:a.v.y(pose.height),w:48,h:Math.max(1,a.v.y(pose.character.h??0)-a.v.y(pose.height))}]);
 }
@@ -70,10 +70,10 @@ export function applyHarborMetadata(elements:Element[],root:(method:string,L:Har
   const shape=shapes[id];if(!shape)throw new Error('Missing harbor metadata: '+id);
   e.bounds=(p,s,c)=>{
    const v=c?.view??fallbackView(),a=c?.placement??{x:0,h:0,scale:1,facing:1,parallax:1},L=s.layout as unknown as HarborLayout,vis=s.visual as unknown as HarborVisual;
-   let base=id==='container'?{x:a.x,h:a.h}:root(id,L,p);
+   let base=['container','fishStall','teaStall'].includes(id)?{x:a.x,h:a.h}:root(id,L,p);
    const positions:Record<string,[number,number]>={drawLampBoat:[1650,56],drawFerry:[0,34],drawPatrol:[0,46],crates:[1112,0],fishingBox:[2112,0],portCamera:[156,136],droneGull:[1460,128],forkliftBody:[n(s,'forkliftOrigin'),0],forkliftRoof:[n(s,'forkliftOrigin'),0]};
    if(positions[id])base={x:positions[id][0],h:positions[id][1]};
-   const dx=a.x-base.x,dh=a.h-base.h,shift=!['bollard','frontBollard','rod','container'].includes(id),V=shift?{...v,sx:(x:number,par=1)=>v.sx(x+dx,par),y:(h:number)=>v.y(h+dh),gy:v.gy-dh}:v;
+   const dx=a.x-base.x,dh=a.h-base.h,shift=!['bollard','frontBollard','rod','container','fishStall','teaStall'].includes(id),V=shift?{...v,sx:(x:number,par=1)=>v.sx(x+dx,par),y:(h:number)=>v.y(h+dh),gy:v.gy-dh}:v;
    const r=shape({p,s,v:V,L,vis,x:shift?base.x:a.x,h:shift?base.h:a.h}),fallback:Bounds={x:r.x-v.sx(a.x),h:v.y(a.h)-r.y,w:Math.max(0,r.w),tall:Math.max(0,r.h)};
    return screenBounds(c,{...r,w:Math.max(0,r.w),h:Math.max(0,r.h)},fallback);
   };
@@ -81,7 +81,7 @@ export function applyHarborMetadata(elements:Element[],root:(method:string,L:Har
  const anchors:Record<string,Record<string,Anchor>>={denTable:{table:{x:65,h:20,role:'surface'}},denInside:{floor:{x:64,h:0,role:'surface'},shelf:{x:106,h:CH-12,role:'surface'}},denDoors:{door:{x:0,h:0,role:'entrance'}},denLamp:{lamp:{x:150,h:82,role:'mount'}},metroDoor:{door:{x:0,h:0,role:'entrance'}},drawTerminalGate:{door:{x:0,h:0,role:'entrance'}},callBox:{screen:{x:0,h:43,role:'surface'}},podium:{screen:{x:0,h:37,role:'surface'}},noticePost:{notice:{x:0,h:57,role:'surface'}},manifest:{notice:{x:0,h:33,role:'surface'}},berthSign:{sign:{x:0,h:96,role:'mount'}},beacon:{lamp:{x:0,h:113,role:'mount'}},bollard:{rope:{x:0,h:12,role:'mount'}},rails:{rail:{x:38,h:24,role:'surface'}},taxi:{pad:{x:8,h:5,role:'surface'},call:{x:-31,h:47,role:'handle'}},forkliftRoof:{roof:{x:0,h:56,role:'surface'}}};
  for(const[id,points]of Object.entries(anchors))get(id).anchors=()=>({origin,...points});
  get('container').anchors=p=>({origin,top:{x:n(p,'width')/2,h:n(p,'height'),role:'surface'},left:{x:0,h:0,role:'origin'},right:{x:n(p,'width'),h:0,role:'origin'}});
- for(const id of ['fishStall','teaStall'])get(id).anchors=(_p,s)=>{const L=s.layout as unknown as HarborLayout|undefined,tea=id==='teaStall',w=(tea?L?.drinks.w:L?.fish.w)??0,shape=stallBox({x:0,w,seed:tea?34:31});return{origin,counter:{x:w/2,h:shape.counter,role:'surface'},awning:{x:w/2,h:shape.awning,role:'mount'}};};
+ for(const id of ['fishStall','teaStall'])get(id).anchors=(p)=>{const tea=id==='teaStall',w=Number(p.width),shape=stallBox({x:0,w,seed:tea?34:31});return{origin,counter:{x:w/2,h:shape.counter,role:'surface'},awning:{x:w/2,h:shape.awning,role:'mount'}};};
  for(const id of ['hutBack','hutFront'])get(id).anchors=(p,s)=>{const{w,h}=harborHutSize(p,s);return{origin,window:{x:54,h:48,role:'surface'},roof:{x:w/2,h:h+4,role:'surface'}};};
  for(const id of ['craneFrame','craneCabBack','craneCabFront','craneCables','craneLoad','craneLight'])get(id).anchors=(p,s):Record<string,Anchor>=>{
   const L=s.layout as unknown as HarborLayout|undefined,vis=s.visual as unknown as HarborVisual|undefined,ci=n(p,'index'),base=L?.cranes[ci]?.x??0,c=vis?.cranes[ci],dx=(c?.twx??base)-base;
