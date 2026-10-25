@@ -1331,6 +1331,99 @@
             },
             "order": -100,
             "layer": "distance"
+          },
+          {
+            "id": "traffic-road",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -6990,
+              "windowTo": -4800,
+              "lanes": [
+                {
+                  "lane": "far",
+                  "dir": 1,
+                  "v": 1.05,
+                  "gap": 176,
+                  "seed": 29
+                }
+              ]
+            },
+            "placement": {
+              "x": 6990,
+              "h": -160
+            },
+            "order": 140,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-road-near",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -6990,
+              "windowTo": -4800,
+              "lanes": [
+                {
+                  "lane": "near",
+                  "dir": -1,
+                  "v": 1.25,
+                  "gap": 176,
+                  "seed": 11
+                }
+              ]
+            },
+            "placement": {
+              "x": 6990,
+              "h": -160
+            },
+            "order": 141,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-street",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "street",
+              "windowFrom": -6990,
+              "windowTo": -4800
+            },
+            "placement": {
+              "x": 6990,
+              "h": -160
+            },
+            "order": 80,
+            "layer": "backdrop"
           }
         ]
       },
@@ -7839,23 +7932,6 @@
             "layer": "playfield"
           },
           {
-            "id": "arrival-train",
-            "type": "metro.cutaway-train",
-            "props": {
-              "cars": 2,
-              "destination": "LINE 0 \u00b7 DOWNTOWN",
-              "open": 1,
-              "light": 0.85,
-              "cabs": true
-            },
-            "placement": {
-              "x": 13310,
-              "h": 160
-            },
-            "order": 90,
-            "layer": "backdrop"
-          },
-          {
             "id": "traffic-road",
             "type": "street.traffic",
             "props": {
@@ -7867,16 +7943,61 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "road"
+              "pass": "road",
+              "windowFrom": -20280,
+              "windowTo": -15780,
+              "lanes": [
+                {
+                  "lane": "far",
+                  "dir": 1,
+                  "v": 1.05,
+                  "gap": 176,
+                  "seed": 29
+                }
+              ]
             },
             "placement": {
               "x": 20280,
               "h": 0
             },
-            "order": 95,
-            "layer": "backdrop"
+            "order": 140,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-road-near",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -20280,
+              "windowTo": -15780,
+              "lanes": [
+                {
+                  "lane": "near",
+                  "dir": -1,
+                  "v": 1.25,
+                  "gap": 176,
+                  "seed": 11
+                }
+              ]
+            },
+            "placement": {
+              "x": 20280,
+              "h": 0
+            },
+            "order": 141,
+            "layer": "playfield"
           },
           {
             "id": "traffic-street",
@@ -7890,9 +8011,11 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "street"
+              "pass": "street",
+              "windowFrom": -20280,
+              "windowTo": -15780
             },
             "placement": {
               "x": 20280,
@@ -8375,23 +8498,6 @@
             "layer": "playfield"
           },
           {
-            "id": "arrival-train",
-            "type": "metro.cutaway-train",
-            "props": {
-              "cars": 2,
-              "destination": "LINE 0 \u00b7 DOWNTOWN",
-              "open": 1,
-              "light": 0.85,
-              "cabs": true
-            },
-            "placement": {
-              "x": 8810,
-              "h": 160
-            },
-            "order": 90,
-            "layer": "backdrop"
-          },
-          {
             "id": "traffic-road",
             "type": "street.traffic",
             "props": {
@@ -8403,16 +8509,61 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "road"
+              "pass": "road",
+              "windowFrom": -15780,
+              "windowTo": -12390,
+              "lanes": [
+                {
+                  "lane": "far",
+                  "dir": 1,
+                  "v": 1.05,
+                  "gap": 176,
+                  "seed": 29
+                }
+              ]
             },
             "placement": {
               "x": 15780,
               "h": 0
             },
-            "order": 95,
-            "layer": "backdrop"
+            "order": 140,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-road-near",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -15780,
+              "windowTo": -12390,
+              "lanes": [
+                {
+                  "lane": "near",
+                  "dir": -1,
+                  "v": 1.25,
+                  "gap": 176,
+                  "seed": 11
+                }
+              ]
+            },
+            "placement": {
+              "x": 15780,
+              "h": 0
+            },
+            "order": 141,
+            "layer": "playfield"
           },
           {
             "id": "traffic-street",
@@ -8426,9 +8577,11 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "street"
+              "pass": "street",
+              "windowFrom": -15780,
+              "windowTo": -12390
             },
             "placement": {
               "x": 15780,
@@ -8475,13 +8628,14 @@
               "from": 0,
               "to": 3390,
               "origin": 0,
-              "curve": false
+              "curve": false,
+              "part": "structure"
             },
             "placement": {
               "x": 0,
               "h": 0
             },
-            "order": 65,
+            "order": 62,
             "layer": "set"
           },
           {
@@ -8494,6 +8648,67 @@
             },
             "order": -100,
             "layer": "distance"
+          },
+          {
+            "id": "ring-traffic-far",
+            "type": "vehicle.ring-traffic",
+            "props": {
+              "from": 0,
+              "to": 3390,
+              "origin": 0,
+              "lane": "far"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 63,
+            "layer": "set",
+            "attach": {
+              "instance": "ring",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "ring-traffic-near",
+            "type": "vehicle.ring-traffic",
+            "props": {
+              "from": 0,
+              "to": 3390,
+              "origin": 0,
+              "lane": "near"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 64,
+            "layer": "set",
+            "attach": {
+              "instance": "ring",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "ring-front",
+            "type": "architecture.ring",
+            "props": {
+              "from": 0,
+              "to": 3390,
+              "origin": 0,
+              "curve": false,
+              "part": "front"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 65,
+            "layer": "set",
+            "attach": {
+              "instance": "ring",
+              "anchor": "origin"
+            }
           }
         ]
       },
@@ -9129,23 +9344,6 @@
             "layer": "playfield"
           },
           {
-            "id": "arrival-train",
-            "type": "metro.cutaway-train",
-            "props": {
-              "cars": 2,
-              "destination": "LINE 0 \u00b7 DOWNTOWN",
-              "open": 1,
-              "light": 0.85,
-              "cabs": true
-            },
-            "placement": {
-              "x": 5420,
-              "h": 160
-            },
-            "order": 90,
-            "layer": "backdrop"
-          },
-          {
             "id": "traffic-road",
             "type": "street.traffic",
             "props": {
@@ -9157,16 +9355,61 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "road"
+              "pass": "road",
+              "windowFrom": -12390,
+              "windowTo": -9450,
+              "lanes": [
+                {
+                  "lane": "far",
+                  "dir": 1,
+                  "v": 1.05,
+                  "gap": 176,
+                  "seed": 29
+                }
+              ]
             },
             "placement": {
               "x": 12390,
               "h": 0
             },
-            "order": 95,
-            "layer": "backdrop"
+            "order": 140,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-road-near",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -12390,
+              "windowTo": -9450,
+              "lanes": [
+                {
+                  "lane": "near",
+                  "dir": -1,
+                  "v": 1.25,
+                  "gap": 176,
+                  "seed": 11
+                }
+              ]
+            },
+            "placement": {
+              "x": 12390,
+              "h": 0
+            },
+            "order": 141,
+            "layer": "playfield"
           },
           {
             "id": "traffic-street",
@@ -9180,9 +9423,11 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "street"
+              "pass": "street",
+              "windowFrom": -12390,
+              "windowTo": -9450
             },
             "placement": {
               "x": 12390,
@@ -9232,13 +9477,14 @@
               "from": 0,
               "to": 2850,
               "origin": -3390,
-              "curve": true
+              "curve": true,
+              "part": "structure"
             },
             "placement": {
               "x": 0,
               "h": 0
             },
-            "order": 65,
+            "order": 62,
             "layer": "set"
           },
           {
@@ -9251,6 +9497,67 @@
             },
             "order": -100,
             "layer": "distance"
+          },
+          {
+            "id": "ring-traffic-far",
+            "type": "vehicle.ring-traffic",
+            "props": {
+              "from": 0,
+              "to": 2850,
+              "origin": -3390,
+              "lane": "far"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 63,
+            "layer": "set",
+            "attach": {
+              "instance": "ring",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "ring-traffic-near",
+            "type": "vehicle.ring-traffic",
+            "props": {
+              "from": 0,
+              "to": 2850,
+              "origin": -3390,
+              "lane": "near"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 64,
+            "layer": "set",
+            "attach": {
+              "instance": "ring",
+              "anchor": "origin"
+            }
+          },
+          {
+            "id": "ring-front",
+            "type": "architecture.ring",
+            "props": {
+              "from": 0,
+              "to": 2850,
+              "origin": -3390,
+              "curve": true,
+              "part": "front"
+            },
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": 65,
+            "layer": "set",
+            "attach": {
+              "instance": "ring",
+              "anchor": "origin"
+            }
           }
         ]
       },
@@ -9602,23 +9909,6 @@
             "layer": "playfield"
           },
           {
-            "id": "arrival-train",
-            "type": "metro.cutaway-train",
-            "props": {
-              "cars": 2,
-              "destination": "LINE 0 \u00b7 DOWNTOWN",
-              "open": 1,
-              "light": 0.85,
-              "cabs": true
-            },
-            "placement": {
-              "x": 2480,
-              "h": 160
-            },
-            "order": 90,
-            "layer": "backdrop"
-          },
-          {
             "id": "traffic-road",
             "type": "street.traffic",
             "props": {
@@ -9630,16 +9920,61 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "road"
+              "pass": "road",
+              "windowFrom": -9450,
+              "windowTo": -8370,
+              "lanes": [
+                {
+                  "lane": "far",
+                  "dir": 1,
+                  "v": 1.05,
+                  "gap": 176,
+                  "seed": 29
+                }
+              ]
             },
             "placement": {
               "x": 9450,
               "h": 0
             },
-            "order": 95,
-            "layer": "backdrop"
+            "order": 140,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-road-near",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -9450,
+              "windowTo": -8370,
+              "lanes": [
+                {
+                  "lane": "near",
+                  "dir": -1,
+                  "v": 1.25,
+                  "gap": 176,
+                  "seed": 11
+                }
+              ]
+            },
+            "placement": {
+              "x": 9450,
+              "h": 0
+            },
+            "order": 141,
+            "layer": "playfield"
           },
           {
             "id": "traffic-street",
@@ -9653,9 +9988,11 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "street"
+              "pass": "street",
+              "windowFrom": -9450,
+              "windowTo": -8370
             },
             "placement": {
               "x": 9450,
@@ -9902,23 +10239,6 @@
             "layer": "playfield"
           },
           {
-            "id": "arrival-train",
-            "type": "metro.cutaway-train",
-            "props": {
-              "cars": 2,
-              "destination": "LINE 0 \u00b7 DOWNTOWN",
-              "open": 1,
-              "light": 0.85,
-              "cabs": true
-            },
-            "placement": {
-              "x": 1400,
-              "h": 160
-            },
-            "order": 90,
-            "layer": "backdrop"
-          },
-          {
             "id": "traffic-road",
             "type": "street.traffic",
             "props": {
@@ -9930,16 +10250,61 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "road"
+              "pass": "road",
+              "windowFrom": -8370,
+              "windowTo": -6990,
+              "lanes": [
+                {
+                  "lane": "far",
+                  "dir": 1,
+                  "v": 1.05,
+                  "gap": 176,
+                  "seed": 29
+                }
+              ]
             },
             "placement": {
               "x": 8370,
               "h": 0
             },
-            "order": 95,
-            "layer": "backdrop"
+            "order": 140,
+            "layer": "playfield"
+          },
+          {
+            "id": "traffic-road-near",
+            "type": "street.traffic",
+            "props": {
+              "mouths": [
+                -10260,
+                -11340,
+                -12390,
+                -13440,
+                -14400
+              ],
+              "gate": -6810,
+              "quay": -4800,
+              "portal": -15780,
+              "pass": "road",
+              "windowFrom": -8370,
+              "windowTo": -6990,
+              "lanes": [
+                {
+                  "lane": "near",
+                  "dir": -1,
+                  "v": 1.25,
+                  "gap": 176,
+                  "seed": 11
+                }
+              ]
+            },
+            "placement": {
+              "x": 8370,
+              "h": 0
+            },
+            "order": 141,
+            "layer": "playfield"
           },
           {
             "id": "traffic-street",
@@ -9953,9 +10318,11 @@
                 -14400
               ],
               "gate": -6810,
-              "quay": -6720,
+              "quay": -4800,
               "portal": -15780,
-              "pass": "street"
+              "pass": "street",
+              "windowFrom": -8370,
+              "windowTo": -6990
             },
             "placement": {
               "x": 8370,

@@ -42,3 +42,18 @@ applyHarborMetadata(harborElements,(method,L,p)=>root(method as Method,L,p));
 // Each of these fittings cancels its source datum before applying its own placement.
 // Crane geometry, actor-bearing stalls and culling-dependent container rows remain contextual.
 for(const e of harborElements)if(['denInside','denTable','denDoors','denLamp','metroDoor','noticePost','podium','manifest','callBox','crates','bollard','rod','fishingBox','berthSign','taxi','ferryNotice','rails','beacon','portCamera','drawTerminalGate','hutBack','hutFront'].includes(e.type.slice(7)))e.libraryUse='reusable';
+
+// These source actors travel; machinery fixed to its rail remains part of the set.
+const harborTravel={
+ drawFerry:{x:-500,h:90,w:2800,tall:100,depth:.45},
+ drawPatrol:{x:-640,h:100,w:3880,tall:110,depth:.5},
+ flyingGulls:{x:-220,h:300,w:2840,tall:300,depth:.7},
+ droneGull:{x:-80,h:40,w:160,tall:80,depth:.95},
+ forkliftBody:{x:-240,h:65,w:480,tall:65,depth:1},
+ forkliftRoof:{x:-240,h:65,w:480,tall:65,depth:1},
+};
+for(const e of harborElements){
+ const travel=harborTravel[e.type.slice(7) as keyof typeof harborTravel];if(!travel)continue;
+ e.mobility=()=>true;
+ e.travelBounds=(_p,_s,c)=>{const origin=c?.placement.x??0;return{x:(origin+travel.x)/travel.depth-origin,h:travel.h,w:travel.w/travel.depth,tall:travel.tall};};
+}

@@ -65,6 +65,8 @@ export function artworkClip(instance:Instance,view:View):{x:number;y:number;widt
 export interface Composition { version: 1; scene: string; instances: Instance[]; sequence?:import('./sequence').SequenceSettings }
 export interface Environment {
   view: View;
+  /** Source-derived travelling actors, combined with registered primitive mobility. */
+  mobileArtwork?: ReadonlySet<string>;
   /** Named runtime state, resolved by a scene adapter before rendering. */
   state: Readonly<Record<string, Properties>>;
   /** Scene adapters resolve these named, typed sources; documents store only their stable names. */
@@ -110,6 +112,8 @@ export interface Element {
   /** Non-drawing elements that still belong in a visual layer: named groups and the player row. */
   role?: 'group' | 'player';
   bounds(props: Properties, state: Properties, context?: BoundsContext): Bounds;
+  /** Entire source-camera travel envelope relative to placement (including depth), for lifetime; bounds is the live hit rectangle. */
+  travelBounds?: Element['bounds'];
   anchors(props: Properties, state: Properties): Record<string, Anchor>;
   draw(ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, pass: Pass, placement: Readonly<Required<Placement>>): void;
   /**
@@ -298,7 +302,7 @@ export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegi
 /** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground.
  * `only` limits the slot to some layers, for scenes that draw layers into different engine moments. */
 export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean),phase:'world'|'sky'='world') {
-  const mobile=env.view.artworkScope?mobileInstances(doc,registry):undefined;
+  const mobile=env.view.artworkScope?(env.mobileArtwork??mobileInstances(doc,registry)):undefined;
   const filter = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer),keep=(r:Resolved)=>(r.element.framePhase??'world')===phase&&filter(r)&&(!mobile||(env.view.artworkScope==='mobile')===mobile.has(r.instance.id));
   const rows = resolveComposition(registry, doc, env), found = rows.findIndex(r => r.element.role === 'player'), player = found < 0 ? rows.length : found;
   const inSlot = (r: Resolved, index: number, s: LayerSlot) => s === 'foreground' ? r.instance.layer === 'foreground'

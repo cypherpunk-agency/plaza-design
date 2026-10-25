@@ -6,6 +6,7 @@
  */
 import { drawDriven, type Character } from '../../runtime/characters';
 import type { View } from '../core/view';
+import {screenBounds} from '../assemblies/static-bounds';
 import type { Element, Properties } from '../core/composition';
 
 /** One bird: start x along the flock's span, altitude, drift (units per frame), parallax, phase; `ps` 1 or 2. */
@@ -112,6 +113,7 @@ export function flockOptions(p: Properties): FlockOptions {
 }
 const n = (label: string, d: number, min?: number, max?: number, step?: number) => ({ kind: 'number' as const, label, default: d, ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}), ...(step !== undefined ? { step } : {}) });
 export const flockElement: Element = {
+  mobility:()=>true,
   type: 'character.flock', version: 1, label: 'Flock of gulls (kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     appearance: {kind:'select',label:'Bird drawing',options:['kit','white silhouette','grey silhouette'],default:'kit'},
@@ -124,7 +126,14 @@ export const flockElement: Element = {
     span: n('Span', 2400, 100, 20000, 10), margin: n('Starts before x', 200, 0, 5000, 10),
     ps: n('Pixel size', 1, 1, 3, 1), big: n('Share one size bigger', 0, 0, 1, 0.05),
   },
-  bounds: p => { const o = flockOptions(p); return { x: -(o.margin ?? 200), h: (o.high ?? 120) + 16, w: o.span ?? 2400, tall: (o.high ?? 120) - (o.low ?? 0) + 24 }; },
+  bounds:(p,_s,c)=>{
+    const o=flockOptions(p),fallback={x:-(o.margin??200)-20,h:(o.high??120)+20,w:(o.span??2400)+40,tall:(o.high??120)-(o.low??0)+40};
+    if(!c)return fallback;
+    const birds=flockRects(c.view,o,c.placement.x,c.placement.h);if(!birds.length)return{x:0,h:0,w:0,tall:0};
+    const x=Math.min(...birds.map(b=>b.x)),y=Math.min(...birds.map(b=>b.y));
+    return screenBounds(c,{x,y,w:Math.max(...birds.map(b=>b.x+b.w))-x,h:Math.max(...birds.map(b=>b.y+b.h))-y},fallback);
+  },
+  travelBounds:(p,_s,c)=>{const o=flockOptions(p),depth=Math.max(.05,Math.min(...(o.parallax??[.7,1]))),left=-(o.margin??200)-20,right=(o.span??2400)-(o.margin??200)+20;const origin=c?.placement.x??0;return{x:(origin+left)/depth-origin,h:(o.high??120)+20,w:(right-left)/depth,tall:(o.high??120)-(o.low??0)+40};},
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw: (ctx, view, props, _state, _pass, at) => drawFlock(ctx, view, flockOptions(props), at.x, at.h),
 };

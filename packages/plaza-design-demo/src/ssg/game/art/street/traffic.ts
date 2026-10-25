@@ -128,7 +128,7 @@ function drawVehicle(P: Pixels, p: Properties, h0: number, v: TrafficVehicle) {
 }
 
 export const trafficElement: Element = {
-  type: 'street.traffic', version: 1, label: 'Road traffic between side streets, a truck gate and a portal (street kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'street.traffic', mobility:()=>true, version: 1, label: 'Road traffic between side streets, a truck gate and a portal (street kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     mouths: { kind: 'json', label: 'Side streets, east to west (units east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || v.length > 20 || !v.every(fin)) throw new Error('Side streets: expected numbers'); } },
     gate: num('Truck gate (units east of the piece; trucks come and go there)', 0), quay: num('Trucks run on to (units east of the piece)', 2000), portal: num('The street’s west portal (units east of the piece)', -6000),
@@ -137,7 +137,13 @@ export const trafficElement: Element = {
     pass: { kind: 'select', label: 'Draws', options: ['road', 'street'], default: 'road' }, windowFrom: num('Only vehicles from (units east of the piece)', -1e7), windowTo: num('to', 1e7),
     lights: { kind: 'boolean', label: 'Headlights on', default: true }, route: { kind: 'string', label: 'Bus route', default: '7' },
   },
-  bounds: () => ({ x: -1000, h: 0, w: 2000, tall: 120 }),
+  bounds: p => {
+    // The ownership window selects whole vehicles by their centre; it never clips their body.
+    // Include their overhang so the native world retains this source across a chunk edge.
+    const ends=[...(p.mouths as number[]),n(p,'gate'),n(p,'quay'),n(p,'portal')];
+    const from=Math.max(Math.min(...ends),n(p,'windowFrom')),to=Math.min(Math.max(...ends),n(p,'windowTo')),pad=SIZE.truck;
+    return{x:from-pad,h:160,w:Math.max(0,to-from)+2*pad,tall:320};
+  },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, v, p, _s, _pass, at) {
     inPixels(ctx, v, at, P => {

@@ -100,7 +100,7 @@ and verified; this release includes the compact example and roadmap update.
 | C1: animation lifecycle and light | Complete | Playback owns animation advancement; seeking reconstructs in isolation; painting/bounds are read-only. Explicit View lighting replaces presentation reads of global light; unused citySkyline is removed. |
 | C2: transport consolidation | Complete | Regular train, P14 siding, Downtown, Galleria and Harbor use shared vehicles, movers, floors, seats and passenger flows. Old boarding cuts, platform clocks and replacement crowds are removed. |
 | C3: independent artwork placement | Partially implemented; follows boundary package | Many scene fittings now have independent properties and placement. Remaining context-dependent families still need the bounded audit below. A registered preview alone does not prove portability. |
-| Continuous world across chunks | B1–B6 complete | Shared mobile lifetime, bounds/clips, cross-chunk ordering, typed editor controls and opening/commute application verified. |
+| Continuous world across chunks | Core delivered; content audit fixes open | Shared contracts work; procedural flocks, prepared actors and sky coordinates still need correction. See the audit below. |
 | C4: guidance and current checks | Current for this release | Agent entry point, handbook and focused checks describe the shared engine. Keep them current with each change; this is not a separate historical migration project. |
 | M1: progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route are documented; comprehension is reviewed in the game. |
 | M2: Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion run in the connected harbor. |
@@ -168,11 +168,11 @@ simulating an entire city or adding fleet management.
 | Step | Deliverable and completion condition | Status |
 | --- | --- | --- |
 | B1. Compact native example | Two adjacent chunks; one crossing walker, one routed vehicle, one overhanging prop and a foreground occluder. Direct Test District jump and ordinary editable catalogue sources/private native Play. Verify real source compilation, seam crossing and current behavior without a separate preview. | Complete; [review guide](./docs/design/BOUNDARY-EXAMPLE.md) |
-| B2. Mobile ownership | Existing people/vehicle systems own live identity, progress and attachments independently of the spawn chunk. Cross and return without reset, duplication or disappearance, including when the origin leaves the loaded view. Authored spawn/sink rules remain explicit. | Complete |
-| B3. Visibility and bounds | Logical chunk bounds differ from visual bounds and explicit clips. Overhanging artwork remains visible while its actual bounds intersect the frame. Foreground occlusion is deliberate; a seam never clips a person by itself. | Complete |
-| B4. Shared layers/background | Cross-chunk mobiles and static pieces share correct depth/order; background continuity survives view movement. Preserve interiors and existing approved art. | Complete |
+| B2. Mobile ownership | Existing people/vehicle systems own live identity, progress and attachments independently of the spawn chunk. Cross and return without reset, duplication or disappearance, including when the origin leaves the loaded view. Authored spawn/sink rules remain explicit. | Complete; audited moving-artwork follow-up fixed |
+| B3. Visibility and bounds | Logical chunk bounds differ from visual bounds and explicit clips. Overhanging artwork remains visible while its actual bounds intersect the frame. Foreground occlusion is deliberate; a seam never clips a person by itself. | Complete; flock clipping and live prepared bounds fixed |
+| B4. Shared layers/background | Cross-chunk mobiles and static pieces share correct depth/order; background continuity survives view movement. Preserve interiors and existing approved art. | Complete; stable sky coordinates and independent Ring lanes verified |
 | B5. Editor contracts | Existing editor exposes logical bounds versus explicit clip/occluder geometry and mobile spawn/routes/sinks/current location. Pending sources, typed editing, undo/redo, bundles, protected Save and native Play agree. No second evaluator or renderer. | Complete |
-| B6. Real-scene application and cleanup | Apply verified contracts to opening/prologue; remove replaced scene-local lifetime/clipping workarounds. Verify travel, pause/seek, re-entry and visible boundary behavior. | Complete |
+| B6. Real-scene application and cleanup | Apply verified contracts to opening/prologue; remove replaced scene-local lifetime/clipping workarounds. Verify travel, pause/seek, re-entry and visible boundary behavior. | Complete; prologue flocks fixed and five redundant train copies removed |
 
 Acceptance verified on 2026-10-24 against the current sources: 16 focused checks pass, including
 exact real-model/session detach/reattach and cleanup, current checkpoints, cross/return, actual
@@ -187,12 +187,42 @@ browser checks cover player cross/return, direct Test District navigation and un
 pause/resume. Package TypeScript and both builds pass. The build retains its existing large-chunk
 advisory. The [boundary review guide](./docs/design/BOUNDARY-EXAMPLE.md) links the relevant examples.
 
+Traffic follow-up from visual review: the opening's procedural road strips were missed by the
+mobile classification and remained clipped background rows. They now use mobile route/window
+bounds, disjoint whole-vehicle ownership windows, separate far/near Playfield rows and a corridor
+through Harbor Station to an off-screen sink. Turning traffic retains explicit mouth/portal
+occlusion. `title-traffic` samples all six chunks for unique vehicle ownership and exact poses.
+Native Opening frames at Downtown, Galleria and Harbor were inspected before/after this correction.
+
 The implementation retains the existing Game loop, SceneModel/Circuit, GameplaySession and
 renderWorldFrame. Replaced vehicle-origin scenery pinning, fixed opening visibility margin and
 obsolete per-document layer-flush helpers are removed. Stable source identity does not imply
 scenery residency. Current-format checkpoints remain validated; no historic save adapter was added.
 Campaign/story redesign, new chapters, city-wide simulation and unrelated artwork changes are
-excluded. B2–B6 were authorized together on 2026-10-24. Release branches are main and production; production publication is explicitly authorized. Mechanics are agent-verified; user review concerns readability and comfort.
+excluded. B2–B6 were authorized together on 2026-10-24. The B2–B6 release is on main and production; the boundary artwork follow-up is included in the 2026-10-25 release. Mechanics are agent-verified; user review concerns readability and comfort.
+
+### Boundary artwork follow-up (2026-10-25)
+
+All six audited constructions are corrected. This closes the bounded follow-up; it does
+not create new seams for the original Harbor, Stacks or Beach, which remain unjoined scenes.
+
+| Construction | Resolution | Verification |
+| --- | --- | --- |
+| Prologue gull flocks | Registered mobile sources, live bird bounds and full parallax travel envelopes. Chunk edges do not mask birds; explicit wrapping remains intentional. | Quay/Yard mobile classification and no implicit clip; shared native renderer/editor checks. |
+| Prepared roaming actors | Selection bounds follow the actual native pose, including depth and rider offsets. Movement/following membership and full travel extents derive from scene.actors, with attachment closure. Static window occupants retain their masks. | 1,325 pose/camera samples, including 602 mobile samples, pass; the original 98 out-of-bounds actors now yield zero failures. |
+| Playable sky ships | The sky pass uses the shared backdrop's world camera, independently of the active chunk. | Native Station/Quay seam gives camera 14,190 on both sides at the same world position. |
+| Ring highway traffic | Road structure, independent far/near traffic and front barriers are ordered across sources. Vehicle-centre ownership never clips bodies. Lamps have one span owner. Traffic/front fittings attach to the road origin; real portals remain occluders. The embedded composition traffic option is removed. | 25 native camera/time comparisons match one continuous road exactly; previously two samples differed by 583/585 vehicle-area pixels. Focused ownership checks find no missing or duplicated vehicle. |
+| Old arrival-train artwork | Removed five redundant opening train placements. The live service remains the existing vehicle frame; static library/proposal trains remain available. | Nine native Opening captures are pixel-identical before/after removal at 19, 26, 35, 44, 50, 55, 60, 62.7 and 64.5 seconds. |
+| Legacy port motion | Harbor ferry, patrol, forklift parts, flocks and drone gull, Stacks' straddle and Beach flocks use registered mobility and explicit full travel envelopes. Fixed cranes/architecture keep their current ownership. | Registered metadata and source compilation checks pass. No new city connections or simulation are introduced. |
+
+The street-truck correction above is included. The existing Game/SceneModel lifecycle and sole
+renderWorldFrame path remain authoritative. Windows, interiors, portal masks and physical part
+occlusion are preserved. The stale signage isolation fixture now reads current trainVisualState
+rather than importing the removed platformTrain function.
+
+Validation: 13 focused checks, package TypeScript and homepage build pass; 24/24 approved scene
+images remain exact, and 84/84 native/editor opening lifecycle comparisons pass. No expected
+images were replaced. Publication targets are main and production; deployment is verified separately after push.
 
 ## C3 completion conditions
 

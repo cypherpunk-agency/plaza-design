@@ -741,8 +741,24 @@ Logical scene width defines space, floors and seams; it is not an implicit artwo
 `Instance.clip` is absent (joined static backgrounds clip to their chunk; isolated rooms and other
 objects remain uncut), `none`, `chunk`, or `{x,h,w,tall}` in source coordinates. Bounds, rendering and
 editor hit testing use this same explicit clip. Attachments inherit mobile membership from their
-registered root. Kernels declare `Element.mobility(props)`; never classify mobiles in Game by a
-scene/type name switch. Frame queues hold paint commands only and clear every frame.
+registered root. Kernels declare `Element.mobility(props)`; scene.actors movement/following
+adds source-derived roots via Environment.mobileArtwork. Membership is compiled once, including
+attachments; do not repeat actor motion in artwork properties or classify mobiles in Game with a
+scene/type switch. Frame queues hold paint commands only and clear every frame.
+
+`bounds` describes the live drawn pose for visibility and picking. `travelBounds`, when needed,
+describes the complete source-camera travel envelope relative to placement, including parallax,
+for lifecycle retention; otherwise ordinary registered bounds/range/lane metadata is used.
+Prepared actors derive their boxes from native pose coordinates, not their authored starting X.
+Flocks use actual bird rectangles and retain their explicit wrapping policy. Source lifetime is
+compiled from the full envelope, never a sample of a moving object's initial position.
+
+The Ring composition uses static structure/front rows plus two `vehicle.ring-traffic` lanes.
+Lane ownership selects whole vehicles by centre; columns precede every lane, and barriers follow
+every lane across chunks. The front and lane fittings attach to the structure's origin. Physical
+building portals still occlude traffic. Do not embed chunk-clipped traffic back into the road.
+The sky pass supplies View.skyCam from the local camera plus shared backdrop origin; local cam/sx
+remain consistent. Sky traffic uses skyCam, so changing the active chunk preserves its world lane. Ordinary isolated scenes retain local coordinates.
 
 `character.flow` routes use walk/wait/leave for walkers, or the existing queue/board service flow.
 The final Leave is the authored sink. Unqualified coordinates are relative to the flow placement;
@@ -758,3 +774,12 @@ chunk boundaries edits clips; People edits seed, spawn, route and sink numerical
 locations in private Play reports actual models. Edit Circuit paths through Devices and route/car
 geometry through Vehicles. All edits use ComposerModel, grouped pending validation, bundles and the
 protected source store. No special boundary renderer or preview evaluator is allowed.
+
+Procedural traffic groups also declare mobility: `street.traffic` uses registered route/window
+bounds, not a fixed box at its distant anchor. Adjacent chunks select whole vehicles by centre
+with non-overlapping `windowFrom`/`windowTo`; these are ownership windows, never Canvas clips.
+Keep corridor coordinates, lane seeds and clocks aligned. Road traffic belongs in Playfield after
+pavement people, with separate far/near rows so lane order holds across chunk boundaries. Turning
+traffic stays behind buildings and uses its explicit street-mouth/portal masks. Continue the
+corridor through its destination chunk and put its sink beyond the visible road. The opening's
+six chunks, including Harbor Station, are checked by `pnpm test:game title-traffic`.

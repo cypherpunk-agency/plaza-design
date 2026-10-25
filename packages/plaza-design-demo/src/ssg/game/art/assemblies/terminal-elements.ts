@@ -84,3 +84,7 @@ for(const e of terminalElements){e.bindingIdentity='presentation';const id=e.typ
 
 // These fittings and the local shuttle carrier do not read terminal geometry or actors.
 for(const e of terminalElements)if(['booth','lane','straddle','urn','board','camera','tea-note'].includes(e.type.slice(9)))e.libraryUse='reusable';
+
+const straddle=terminalElements.find(e=>e.type==='terminal.straddle')!;
+straddle.mobility=()=>true;
+straddle.travelBounds=(_p,_s,c)=>{const x=c?.placement.x??0,depth=DEPTH_BANDS.back.parallax;return{x:(x-STRADDLE_LANE.length-60)/depth-x,h:108,w:(STRADDLE_LANE.length+120)/depth,tall:108};};

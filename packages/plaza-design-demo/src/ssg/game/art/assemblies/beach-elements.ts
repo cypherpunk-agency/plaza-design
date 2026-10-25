@@ -80,3 +80,7 @@ beachElements.find(e=>e.type==='beach.jukebox')!.libraryUse='reusable';
 
 // Audited local fittings: optional scalar/pose inputs have standalone defaults.
 for(const e of beachElements)if(["stairs"].includes(e.type.slice(6)))e.libraryUse='reusable';
+
+const gulls=beachElements.find(e=>e.type==='beach.gulls')!;
+gulls.mobility=()=>true;
+gulls.travelBounds=()=>({x:-120,h:230,w:1740,tall:120});

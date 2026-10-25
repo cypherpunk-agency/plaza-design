@@ -27,7 +27,7 @@ export function drawSkyShips(x: CanvasRenderingContext2D, v: View, ships: readon
   const span = v.viewW + 260;
   ships.forEach((s, i) => {
     const sc = s.ps / SPRITE_PX, dir = s.flip ? -1 : 1, bottom = s.y + 10;
-    const px = laneAt({ mode: 'loop', dir, speed: s.speed, length: span, start: s.offset - v.cam * s.depth }, v.t).offset - 130;
+    const px = laneAt({ mode: 'loop', dir, speed: s.speed, length: span, start: s.offset - (v.skyCam??v.cam) * s.depth }, v.t).offset - 130;
     // the sprite's frame is centred, so its underside lands where the old sprite stood
     x.save(); x.translate(Math.round(px), bottom - spriteShipRows(s.kind) * s.ps / 2); x.scale(sc, sc);
     drawAircraft(x, s.kind, { t: v.t, face: dir as 1 | -1, scale: sc, phase: i * 13 });

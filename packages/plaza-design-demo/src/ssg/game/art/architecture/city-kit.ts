@@ -137,10 +137,10 @@ export const skylineRowsElement: Element = {
 // ---------- THE RING ----------
 
 export const ringElement: Element = {
-  type: 'architecture.ring', version: 1, label: 'THE RING overhead: columns, deck, lamps, traffic (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'architecture.ring', version: 1, label: 'THE RING overhead: columns, deck and lamps (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     from: num('From (units east of the piece)', 0), to: num('To', 3000), origin: num('Column grid origin (units east of the piece)', 0),
-    traffic: bool('Traffic', true), trafficFrom: num('Traffic from (its west end: a portal)', -1e6), trafficTo: num('Traffic to (its east end)', 1e6),
+    part:{kind:'select',label:'Road structure',options:['all','structure','front'],default:'all'},
     gantries: jsonList('Sign gantries (units east of the piece)', [], v => { if (!Array.isArray(v) || !v.every(fin)) throw new Error('Gantries: expected numbers'); }),
     lamps: bool('Lamps on', true), fill: color('Concrete at night', '#18121a'), lit: color('Concrete in the sun', '#241a24'), base: num('Columns stand on (over the ground line)', SHORE.back, -400, 400),
     curve: bool('East end curves away inland', false),
@@ -154,15 +154,10 @@ export const ringElement: Element = {
     if (b > a) {
       x.save(); x.translate(o0, base);
       try {
-        drawRing(x, a, b, { t: v.t, fill: mixHex(String(p.fill), String(p.lit), warm * 0.4), gantries: (p.gantries as number[]).map(g => g - n(p, 'origin')), lamps: p.lamps !== false }, p.traffic === false ? undefined : () => {
-          const ta = Math.max(a, n(p, 'trafficFrom') - n(p, 'origin')), tb = Math.min(b, n(p, 'trafficTo') - n(p, 'origin'));
-          x.save(); x.beginPath(); x.rect(ta, -2000, Math.max(0, tb - ta), 2000); x.clip();
-          ringTraffic(x, a, b, v.t, false, true);
-          x.restore();
-        });
+        drawRing(x, a, b, { t: v.t, fill: mixHex(String(p.fill), String(p.lit), warm * 0.4), gantries: (p.gantries as number[]).map(g => g - n(p, 'origin')), lamps: p.lamps !== false,part:p.part as 'all'|'structure'|'front',ownership:{from:n(p,'from')-n(p,'origin'),to:n(p,'to')-n(p,'origin')} });
       } finally { x.restore(); }
     }
-    if (p.curve === true) inPixels(x, v, { ...at, x: at.x + n(p, 'to') }, P => {
+    if (p.curve === true&&p.part!=='structure') inPixels(x, v, { ...at, x: at.x + n(p, 'to') }, P => {
       // the deck curving away inland, smaller and hazier
       const e = P.ax, back = P.y(at.h + n(p, 'base'));
       if (e < -40 || e > P.W + 200) return;
@@ -173,6 +168,15 @@ export const ringElement: Element = {
       }
     });
   },
+};
+
+
+/** Independent lanes use whole-vehicle ownership; road barriers and real portals remain scenery. */
+export const ringTrafficElement:Element={
+ type:'vehicle.ring-traffic',version:1,label:'Ring traffic lane',category:'vehicles',coordinates:'world',libraryUse:'reusable',mobility:()=>true,parts:['backdrop'],
+ fields:{...Object.fromEntries(['from','to','origin','base'].map(k=>[k,ringElement.fields[k]])),lane:{kind:'select',label:'Lane',default:'far',options:['far','near']}},
+ bounds:p=>({x:n(p,'from')-500,h:RING.rail+160,w:n(p,'to')-n(p,'from')+1000,tall:RING.rail+160}),anchors:origin,
+ draw(ctx,v,p,_s,_pass,at){const grid=n(p,'origin'),x=v.sx(at.x+grid,at.parallax),a=Math.max(-x-500,n(p,'from')-grid-500),b=Math.min(v.viewW-x+500,n(p,'to')-grid+500);if(b<=a)return;ctx.save();ctx.translate(x,v.y(at.h+n(p,'base')));try{ringTraffic(ctx,a,b,v.t,false,true,{from:n(p,'from')-grid,to:n(p,'to')-grid,lane:p.lane as 'far'|'near'});}finally{ctx.restore();}},
 };
 
 // ---------- a block the roads run through ----------
@@ -328,5 +332,5 @@ function taxiPad(P: Pixels, p: Properties, back: number, sx: number) {
   placed(x, R(sx + dx), R(top - 6 + dy), S, () => drawCraft(x, 'taxi', { t: P.f, face: 1, still: P.still, scale: S }));
 }
 
-export const cityKitElements: Element[] = [towerElement, skylineRowsElement, ringElement, throughBlockElement, sideStreetElement, galleriaElement];
+export const cityKitElements: Element[] = [towerElement, skylineRowsElement, ringElement, ringTrafficElement, throughBlockElement, sideStreetElement, galleriaElement];
 export type { View };

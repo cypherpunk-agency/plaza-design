@@ -10,3 +10,30 @@ for(const b of malformed){let calls=0;const result=centerNativePreview(()=>{call
 let illConditioned=0;for(const depth of [0,.00001,.00011,1e-3]){let calls=0;const before=JSON.stringify(request),result=centerNativePreview((_c,r)=>{calls++;const x=Number(r.environment.cameraX),h=Number(r.environment.cameraH);assert.ok(Number.isFinite(x)&&Number.isFinite(h));assert.ok(Math.abs(x)<=NATIVE_FOCUS_LIMITS.camera&&Math.abs(h)<=NATIVE_FOCUS_LIMITS.camera);return{bounds:[{id:'far',x:1e9-x*depth,y:200+h,width:40,height:70}]};},canvas,request,r=>r.bounds[0]);assert.ok(calls<=7);assert.ok(result.diagnostics.length);assert.equal(JSON.stringify(request),before);illConditioned++;}
 let boundaryCalls=0;const nearBoundary=centerNativePreview((_c,r)=>{boundaryCalls++;const x=Number(r.environment.cameraX),h=Number(r.environment.cameraH);assert.ok(Math.abs(x)<=NATIVE_FOCUS_LIMITS.camera&&Math.abs(h)<=NATIVE_FOCUS_LIMITS.camera);return{bounds:[{id:'limit',x:1e8-x,y:200+h,width:40,height:70}]};},canvas,{...request,environment:{cameraX:100000,cameraH:0}},r=>r.bounds[0],{x:100000,h:0});assert.ok(boundaryCalls<=8);assert.equal(nearBoundary.request.environment.cameraX,100000);assert.ok(nearBoundary.diagnostics.some(d=>d.includes('bounded')));
 const report={status:'PASS',ordinaryClosedFormCases:ordinary,unchangedOrdinaryCameras:true,invalidInputsRejectedBeforeRender:invalidInputs,malformedBoundsStoppedBeforeProbes:badBounds,illConditionedCases:illConditioned,boundaryPanCase:true,finiteBoundedCalls:true,limits:NATIVE_FOCUS_LIMITS};fs.mkdirSync(path.resolve('../../.game-test-output/evidence'),{recursive:true});fs.writeFileSync(path.resolve('../../.game-test-output/evidence/S11-native-camera-guardrails.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));
+
+// Moving actors must be picked where the native pose is painted, including parallax.
+const {SCENES}=await import('../../src/ssg/game/scenes');
+const {art,resolveComposition}=await import('../../src/ssg/game/art');
+const {SceneModel}=await import('../../src/ssg/game/engine/model');
+const {emptyData}=await import('../../src/ssg/game/engine/empty-data');
+const {frameView}=await import('../../src/ssg/game/art/core/view');
+const {projectedBounds}=await import('../../src/ssg/game/art/core/geometry');
+let actorSamples=0,mobileActors=0;
+for(const [id,scene] of Object.entries(SCENES)){
+ if(!scene.artwork||!scene.visualEnvironment)continue;
+ const model=new SceneModel({say(){},open(){},changed(){}},scene.data??emptyData(id,id),undefined,undefined,undefined,undefined,undefined,scene.gameplay);
+ for(const t of [0,600,1700])for(const cam of [0,400]){
+  const view={...frameView(t),viewW:1280,viewH:720,cam,gy:591,sx:(x:number,p=1)=>x-cam*p,y:(h:number)=>591-h};
+  const env=scene.visualEnvironment(view,{m:model,hover:null,layer:'all'});
+  for(const row of resolveComposition(art,scene.artwork,env)){
+   if(!['character.prepared','actor.prepared'].includes(row.instance.type))continue;
+   const pose=row.state.pose as any;if(!pose?.visible)continue;
+   const worldX=pose.frame?.x??(pose.character.x+(pose.rider?.offset??0)),drawnX=view.sx(worldX,pose.character.parallax??1);
+   const box=projectedBounds(view,row.placement,row.element.bounds(row.props,row.state,{view,placement:row.placement}));
+   assert(drawnX>=box.x&&drawnX<=box.x+box.width,id+'/'+row.instance.id+' bounds must follow the drawn pose');actorSamples++;
+   if(env.mobileArtwork?.has(row.instance.id)){mobileActors++;assert(scene.mobileExtent,'moving actors need a source lifetime envelope');}
+  }
+ }
+}
+assert(actorSamples>500&&mobileActors>100,'exercise current native scene actors');
+console.log('Native actor bounds PASS:',actorSamples,'posed/parallax samples;',mobileActors,'mobile actor samples.');

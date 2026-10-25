@@ -20,6 +20,8 @@ export interface View {
   viewW: number;
   viewH: number;
   cam: number;
+  /** Stable shared-backdrop camera for screen-space sky lanes; sx retains source-local coordinates. */
+  skyCam?:number;
   /** Explicit animation preference shared by play, sequences and editor artwork. */
   reduced?:boolean;
   /** Joined-zone window. Only ground/background rows clip here; set/playfield artwork can overhang a seam. */

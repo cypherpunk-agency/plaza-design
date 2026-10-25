@@ -22,6 +22,8 @@ export const RING = { under: 285, road: 334, barrier: 352, rail: 376, span: 900,
 
 export interface RingLook {
   t: number;
+  part?:'all'|'structure'|'front';
+  ownership?:{from:number;to:number};
   still?: boolean;
   /** The concrete's fill. */
   fill?: string;
@@ -35,7 +37,7 @@ export interface RingLook {
 export function drawRing(x: CanvasRenderingContext2D, a: number, b: number, o: RingLook, traffic?: () => void) {
   const y = (h: number) => -h, fill = o.fill ?? '#1e161c', R = RING;
   // the columns and their cap beams (behind the deck's face)
-  for (let k = Math.floor(a / R.span) * R.span; k <= b + R.span; k += R.span) {
+  if(o.part!=='front')for (let k = Math.floor(a / R.span) * R.span; k <= b + R.span; k += R.span) {
     if (k < a - R.col * 2 || k > b + R.col * 2) continue;
     x.fillStyle = fill; x.fillRect(k - R.col / 2, y(R.under), R.col, R.under);
     x.fillStyle = 'rgba(255,150,90,.12)'; x.fillRect(k - R.col / 2, y(R.under), 3, R.under);
@@ -45,6 +47,7 @@ export function drawRing(x: CanvasRenderingContext2D, a: number, b: number, o: R
     text(x, 'R4-' + Math.abs(Math.round(k / R.span)), k, y(R.under - 80), 'rgba(255,217,165,.35)', 14, '600');
     x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(k - R.col / 2, y(40), R.col, 40);
   }
+  if(o.part==='structure')return;
   // the traffic behind the barrier
   if (traffic) traffic();
   // the girder's face, the joints, the light strip under the deck
@@ -63,6 +66,7 @@ export function drawRing(x: CanvasRenderingContext2D, a: number, b: number, o: R
   for (let k = Math.ceil(a / 30) * 30; k < b; k += 30) x.fillRect(k, y(R.rail), 2, R.rail - R.barrier);
   // lamps on posts, leaning over the road
   for (let k = Math.floor(a / R.lamp) * R.lamp + R.lamp / 3; k < b + 40; k += R.lamp) {
+    if(o.ownership&&(k<o.ownership.from||k>=o.ownership.to))continue;
     x.fillStyle = '#16101a'; x.fillRect(k, y(R.rail + 150), 4, 150); x.fillRect(k - 40, y(R.rail + 150), 44, 4);
     if (on) {
       x.fillStyle = 'rgba(255,214,150,.95)'; x.fillRect(k - 38, y(R.rail + 146), 18, 3);
@@ -89,9 +93,11 @@ const LOADS: Crate[] = [{ w: 320, p: 2, seed: 171 }, { w: 320, p: 5, seed: 172 }
  * over the near one), vehicles on slots that slide along at their lane's speed; which slots are full
  * and what drives in them is seeded. `f` is the clock in frames.
  */
-export function ringTraffic(x: CanvasRenderingContext2D, a: number, b: number, f: number, still: boolean, lights: boolean) {
+export function ringTraffic(x: CanvasRenderingContext2D, a: number, b: number, f: number, still: boolean, lights: boolean, ownership?:{from:number;to:number;lane:'far'|'near'}) {
   for (const [dir, v, lift, gap] of [[-1, 4.2, 18, 560], [1, 3.6, 0, 600]] as const) {
-    for (const { k, x: fx } of laneSlots(a, b, still ? 0 : f * v * dir, gap, 1)) {
+    if(ownership&&(ownership.lane==='far')!==(lift===18))continue;
+    for (const { k, x: fx } of laneSlots(ownership?a-500:a, ownership?b+500:b, still ? 0 : f * v * dir, gap, 1)) {
+      if(ownership&&(fx<ownership.from||fx>=ownership.to))continue;
       const h = ((k * 2654435761) >>> 0) % 1000 / 1000;
       if (h < 0.3) continue;
       x.save(); x.translate(fx, -RING.road - lift);
