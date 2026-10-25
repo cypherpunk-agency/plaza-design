@@ -114,6 +114,8 @@ export interface Element {
   bounds(props: Properties, state: Properties, context?: BoundsContext): Bounds;
   /** Entire source-camera travel envelope relative to placement (including depth), for lifetime; bounds is the live hit rectangle. */
   travelBounds?: Element['bounds'];
+  /** Native drawing mask, expressed as local bounds, also limiting enlarged editor hit areas. */
+  pickClip?:(props:Properties,state:Properties,context:BoundsContext)=>Bounds|undefined;
   anchors(props: Properties, state: Properties): Record<string, Anchor>;
   draw(ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, pass: Pass, placement: Readonly<Required<Placement>>): void;
   /**

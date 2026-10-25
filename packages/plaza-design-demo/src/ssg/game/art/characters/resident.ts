@@ -1,3 +1,4 @@
+import {screenBounds} from '../assemblies/static-bounds';
 /** Standalone authored actors reuse the game's existing seeded appearance and animation kernels. */
 import {drawCharacter,characterHeight,characterX,KIT_ACTS,type Character,type Act} from '../../runtime/characters';
 import {BODY_KINDS,HAIR_KINDS,GARB_KINDS,EXTRA_KINDS,FACIAL_KINDS} from './parts';
@@ -67,7 +68,11 @@ export const residentElement:Element={
   variant:sel('Robot variant',['seeded','0','1','2'],isBot),face:sel('Robot face',['seeded',...FACES],isBot),
   paint:colour('Robot paint',isBot),trim:colour('Robot trim',isBot),screen:colour('Robot screen',isBot),
  },
- bounds:(props,_state,context)=>{const body=residentCharacter(props,{x:0,h:0}),height=characterHeight(body);return{x:characterX(body,context?.view.t??0)-32,h:height,w:64,tall:height};},
+ bounds:(props,_state,context)=>{
+  const at=context?.placement??{x:0,h:0},body=residentCharacter(props,at),height=characterHeight(body),x=characterX(body,context?.view.t??0);
+  const fallback={x:x-at.x-32,h:height-at.h,w:64,tall:height-at.h};
+  return context?screenBounds(context,{x:context.view.sx(x,body.parallax??1)-32,y:context.view.y(height),w:64,h:height-at.h},fallback):fallback;
+ },
  anchors:()=>({origin:{x:0,h:0,role:'origin'}}),
  draw:(ctx,view,props,_state,_pass,placement)=>drawCharacter(ctx,view,residentCharacter(props,placement)),
 };

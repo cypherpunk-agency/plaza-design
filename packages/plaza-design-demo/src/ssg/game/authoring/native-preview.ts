@@ -67,15 +67,20 @@ function object(input: string | number | boolean | undefined, name: string): Rec
   return parsed as Record<string, unknown>;
 }
 /** Bounds are expressed in native view pixels. World and local kernels use the same document geometry. */
-export function previewBounds(rows: Resolved[], view: View, options: NativeOptions, document?: Composition): PreviewResult {
+export function previewBounds(rows: Resolved[], view: View, options: NativeOptions & Pick<Environment,'mobileArtwork'>, document?: Composition): PreviewResult {
   const appearance = document ? compositionAppearance(document, options) : undefined;
-  const mobiles=document&&(view.sharedLayers||view.artworkScope)?mobileInstances(document,art):undefined;
+  const mobiles=document&&(view.sharedLayers||view.artworkScope)?(options.mobileArtwork??mobileInstances(document,art)):undefined;
   const visible = rows.filter(row => appearance ? appearance.get(row.instance.id)!.visible && appearance.get(row.instance.id)!.opacity !== 0 : options.visibility?.[row.instance.id] !== false && options.opacity?.[row.instance.id] !== 0);
   return {
-    bounds: visible.map(row => {
+    bounds: visible.flatMap(row => {
       const b = row.element.bounds(row.props, row.state, { view, placement: row.placement }), p = row.placement;
-      const clip=artworkClip(row.instance,mobiles?{...view,artworkScope:mobiles.has(row.instance.id)?'mobile':'static'}:view);
-      return {id:row.instance.id,...projectedBounds(view,p,b),...(clip?{clip}:{})};
+      if(row.element.parts.length&&(b.w<=0||b.tall<=0))return [];
+      const sourceClip=artworkClip(row.instance,mobiles?{...view,artworkScope:mobiles.has(row.instance.id)?'mobile':'static'}:view);
+      const mask=row.element.pickClip?.(row.props,row.state,{view,placement:p}),nativeClip=mask?projectedBounds(view,p,mask):undefined;
+      let clip=sourceClip??nativeClip;
+      if(sourceClip&&nativeClip){const x=Math.max(sourceClip.x,nativeClip.x),y=Math.max(sourceClip.y,nativeClip.y);clip={x,y,width:Math.max(0,Math.min(sourceClip.x+sourceClip.width,nativeClip.x+nativeClip.width)-x),height:Math.max(0,Math.min(sourceClip.y+sourceClip.height,nativeClip.y+nativeClip.height)-y)};}
+      if(clip&&(clip.width<=0||clip.height<=0))return [];
+      return [{id:row.instance.id,...projectedBounds(view,p,b),...(clip?{clip}:{})}];
     }),
     deltaToLocal(id, dx, dy) {
       const row = rows.find(row => row.instance.id === id); if (!row) throw new Error('Missing selected instance');
@@ -133,7 +138,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       if(scope.scene){const x=((scope.view.sx(0)-scope.view.viewW/2)*scope.zoom+scope.view.viewW/2)*scope.scale,width=(scope.view.sx(scope.scene.width)-scope.view.sx(0))*scope.zoom*scope.scale;regions.push({document:owner,scene:scope.scene.id,label:scope.scene.name,x,y:0,width,height:scope.view.viewH*scope.scale,active:scope.scene.id===(frame.cameraGuide?.scene??frame.sceneId)});}
       const env=scope.scene?.visualEnvironment?.(scope.view,{m:scope.model!,hover:null,layer:'all'})??{view:scope.view,state:{},reduced:request.reduced};
       const drawn=frame.evaluation?.composition.scene===source.scene?frame.evaluation.composition:source;
-      const rows=resolveComposition(art,drawn,env),local=previewBounds(rows,scope.view,{reduced:request.reduced},drawn);
+      const rows=resolveComposition(art,drawn,env),local=previewBounds(rows,scope.view,env,drawn);
       for(const rect of local.bounds){
         const key=JSON.stringify([owner,rect.id]),zoom=scope.zoom,k=scope.scale;
         const x=((rect.x-scope.view.viewW/2)*zoom+scope.view.viewW/2)*k,y=((rect.y-scope.view.viewH/2)*zoom+scope.view.viewH/2)*k;
@@ -275,7 +280,7 @@ export function createNativePreview(adapters: Readonly<Record<string, NativeScen
       const preparedEnvironment = def.visualEnvironment?.(view, engine) ?? adapter.environment?.(document, view, engine);
       if (!preparedEnvironment) throw new Error(`Missing prepared visual environment for ${def.id}`);
       const env = { ...options, ...preparedEnvironment };
-      const bounds = previewBounds(resolveComposition(art, document, env), {...view,sharedLayers:joined.length>0}, options, document);
+      const bounds = previewBounds(resolveComposition(art, document, env), {...view,sharedLayers:joined.length>0}, env, document);
       const result: PreviewResult = { artwork: { composition: document, environment: env }, bounds: bounds.bounds.map(b => ({ id: b.id, x: b.x * k, y: b.y * k, width: b.width * k, height: b.height * k,...(b.clip?{clip:{x:b.clip.x*k,y:b.clip.y*k,width:b.clip.width*k,height:b.clip.height*k}}:{}) })),
         deltaToLocal: (id, dx, dy) => bounds.deltaToLocal!(id, dx / k, dy / k) };
       // the level overlay keeps its 1-unit lines and 7 px labels: drawn at renderScale over the view's zoomed positions

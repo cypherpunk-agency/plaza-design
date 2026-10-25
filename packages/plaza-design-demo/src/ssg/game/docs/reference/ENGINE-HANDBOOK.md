@@ -750,6 +750,13 @@ scene/type switch. Frame queues hold paint commands only and clear every frame.
 describes the complete source-camera travel envelope relative to placement, including parallax,
 for lifecycle retention; otherwise ordinary registered bounds/range/lane metadata is used.
 Prepared actors derive their boxes from native pose coordinates, not their authored starting X.
+Character bounds use the placed body and authoritative View projection, including its depth;
+never reconstruct a separate editor camera correction. Native window masks intersect bounds;
+Element.pickClip also exposes the mask to picking so minimum click-target sizes cannot escape
+it. Zero-area drawable bounds have no hit target; non-drawing scene helpers keep their existing
+selection behavior. Both ordinary and sequence previews pass the complete prepared environment
+(including mobileArtwork, visibility and opacity) to previewBounds; primitive-only mobility is
+only a fallback when no compiled scene environment exists.
 Flocks use actual bird rectangles and retain their explicit wrapping policy. Source lifetime is
 compiled from the full envelope, never a sample of a moving object's initial position.
 

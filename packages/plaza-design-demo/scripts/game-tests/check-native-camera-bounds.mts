@@ -30,10 +30,43 @@ for(const [id,scene] of Object.entries(SCENES)){
    const pose=row.state.pose as any;if(!pose?.visible)continue;
    const worldX=pose.frame?.x??(pose.character.x+(pose.rider?.offset??0)),drawnX=view.sx(worldX,pose.character.parallax??1);
    const box=projectedBounds(view,row.placement,row.element.bounds(row.props,row.state,{view,placement:row.placement}));
-   assert(drawnX>=box.x&&drawnX<=box.x+box.width,id+'/'+row.instance.id+' bounds must follow the drawn pose');actorSamples++;
+   const clip=row.state.clip as number[]|null;
+   if(!clip)assert(drawnX>=box.x&&drawnX<=box.x+box.width,id+'/'+row.instance.id+' bounds must follow the drawn pose');
+   else if(box.width>0&&box.height>0){assert(box.x>=Math.min(clip[0],clip[0]+clip[2])-1e-6&&box.x+box.width<=Math.max(clip[0],clip[0]+clip[2])+1e-6);assert(box.y>=Math.min(clip[1],clip[1]+clip[3])-1e-6&&box.y+box.height<=Math.max(clip[1],clip[1]+clip[3])+1e-6);}
+   actorSamples++;
    if(env.mobileArtwork?.has(row.instance.id)){mobileActors++;assert(scene.mobileExtent,'moving actors need a source lifetime envelope');}
   }
  }
 }
 assert(actorSamples>500&&mobileActors>100,'exercise current native scene actors');
 console.log('Native actor bounds PASS:',actorSamples,'posed/parallax samples;',mobileActors,'mobile actor samples.');
+
+const {previewBounds}=await import('../../src/ssg/game/authoring/native-preview');
+const {hitTestArtwork}=await import('../../src/ssg/game/authoring/selection');
+const {residentCharacter}=await import('../../src/ssg/game/art/characters/resident');
+const {characterX}=await import('../../src/ssg/game/runtime/characters');
+let residents=0,masked=0,fullyMasked=0;
+for(const id of ['harbor-yard','harbor-shed','harbor-quay','shop','laundromat']){
+ const scene=SCENES[id],model=new SceneModel({say(){},open(){},changed(){}},scene.data??emptyData(id,id),undefined,undefined,undefined,undefined,undefined,scene.gameplay);
+ for(const t of [0,600,1700])for(const cam of [0,400,1200]){
+  const view={...frameView(t),viewW:1280,viewH:720,cam,gy:591,sx:(x:number,p=1)=>x-cam*p,y:(h:number)=>591-h},env=scene.visualEnvironment!(view,{m:model,hover:null,layer:'all'});
+  for(const row of resolveComposition(art,scene.artwork!,env)){
+   const box=projectedBounds(view,row.placement,row.element.bounds(row.props,row.state,{view,placement:row.placement}));
+   if(row.instance.type==='character.resident'){
+    const body=residentCharacter(row.props,row.placement),anchor=view.sx(row.placement.x,row.placement.parallax),drawn=anchor+(view.sx(characterX(body,t),body.parallax??1)-anchor)*row.placement.scale*row.placement.facing;
+    assert(drawn>=box.x-1e-6&&drawn<=box.x+box.width+1e-6,id+'/'+row.instance.id+' resident depth and mirroring');residents++;
+   }
+   if(row.instance.type!=='character.prepared'||!row.state.clip)continue;
+   masked++;const preview=previewBounds([row],view,env,scene.artwork),clip=row.state.clip as number[],left=Math.min(clip[0],clip[0]+clip[2]),top=Math.min(clip[1],clip[1]+clip[3]),right=Math.max(clip[0],clip[0]+clip[2]),bottom=Math.max(clip[1],clip[1]+clip[3]);
+   if(box.width<=0||box.height<=0){assert.equal(preview.bounds.length,0,'fully masked actors have no hit target');fullyMasked++;}
+   else{assert.equal(preview.bounds.length,1);const b=preview.bounds[0];for(const point of [{x:left-1,y:b.y+b.height/2},{x:right+1,y:b.y+b.height/2},{x:b.x+b.width/2,y:top-1},{x:b.x+b.width/2,y:bottom+1}])assert.equal(hitTestArtwork(preview,point,100),undefined,'minimum target size must respect native mask');assert.equal(hitTestArtwork(preview,{x:b.x+b.width/2,y:b.y+b.height/2},0)?.id,row.instance.id);}
+  }
+ }
+}
+assert(residents>40&&masked>20&&fullyMasked>0);
+// Source-derived membership must survive a valid pending edit to a background layer.
+const warehouse=SCENES.warehouse,doc=structuredClone(warehouse.artwork!),mech=doc.instances.find(n=>n.id==='mech')!;mech.layer='backdrop';const valid=art.validate(doc),model=new SceneModel({say(){},open(){},changed(){}},warehouse.data!,undefined,undefined,undefined,undefined,undefined,warehouse.gameplay);
+const view={...frameView(600),sharedLayers:true,viewW:1280,viewH:720,cam:0,gy:591,sx:(x:number)=>x,y:(h:number)=>591-h,zoneWindow:{left:0,right:warehouse.width}},env=warehouse.visualEnvironment!(view,{m:model,hover:null,layer:'all'}),rows=resolveComposition(art,valid,env);
+assert(env.mobileArtwork?.has('mech'));assert.equal(previewBounds(rows,view,env,valid).bounds.find(b=>b.id==='mech')!.clip,undefined,'compiled actor mobility prevents an editor-only chunk clip');
+assert.equal(previewBounds(rows,view,{...env,mobileArtwork:undefined},valid).bounds.find(b=>b.id==='mech')!.clip?.width,warehouse.width,'fixture exercises the lost-membership failure');
+console.log('Picking fixes PASS:',residents,'resident samples,',masked,'masked samples,',fullyMasked,'fully masked, and pending mobile layer edit.');
