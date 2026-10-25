@@ -12,6 +12,7 @@ function plan(t:number,cam:number){let out:TrafficVehicle[]=[];const view={...fr
 let seen=0;
 for(const cam of [5800,8800,12000]){let previous=new Map<string,TrafficVehicle>();for(let frame=0;frame<=600;frame++){
  const rows=plan(frame,cam);assert.equal(new Set(rows.map(r=>r.id)).size,rows.length,'one identity per traffic slot');
+ assert(rows.every(v=>v.mouth===null&&v.pass==='road'),'side-facing city traffic remains on horizontal through routes');
  assert.deepEqual(plan(frame,cam),rows,'seeking the same time has no side effects');
  for(let i=0;i<rows.length;i++){const v=rows[i];seen++;assert.ok([v.sx,v.y,v.s,v.total].every(Number.isFinite));assert.ok(v.s>0&&v.s<v.total);if(i)assert.ok(v.y>=rows[i-1].y,'far lane/turns paint before near vehicles');const last=previous.get(v.id);if(last)assert.ok(Math.hypot(v.sx-last.sx,v.y-last.y)<4,'route motion is continuous: '+v.id);}
  previous=new Map(rows.map(v=>[v.id,v]));

@@ -1,5 +1,7 @@
 import {measureArtwork} from '../../src/ssg/game/art/core/measure';
 import {prepareFrame} from '../../src/ssg/game/runtime/prepare-frame';
+import {renderWorldFrame} from '../../src/ssg/game/runtime/render-scene';
+import {openingDocuments} from '../../src/ssg/game/story/title/documents';
 import {sunsetSun} from '../../src/ssg/game/art/environment/sunset-sky';
 import {lightAt} from '../../src/ssg/game/world/light';
 import {frameTimelineContext} from '../../src/ssg/game/art/core/sequence-context';
@@ -26,6 +28,17 @@ const make=()=>{const model=new ComposerModel(art,createSequenceValidationContex
 const model=make(),preview=createNativePreview(nativeSceneAdapters);
 function canvas(){let tracker!:CanvasRenderingContext2D;measureArtwork(ctx=>{tracker=ctx;});const transforms=new Set(['getTransform','save','restore','translate','scale','rotate','transform','setTransform','resetTransform']);const calls:unknown[]=[],values:Record<string,unknown>={globalAlpha:1,measureText:(s:string)=>({width:s.length*6})};const context=new Proxy(values,{get(o,key:string){if(transforms.has(key))return(...args:unknown[])=>{if(key!=='getTransform')calls.push([key,...args]);return (tracker as any)[key](...args);};if(key in o)return o[key];if(key==='getImageData'||key==='createImageData')return()=>({data:new Uint8ClampedArray(4)});if(key.startsWith('create'))return()=>({addColorStop(){}});return(...args:unknown[])=>calls.push([key,...args]);},set(o,key:string,value){o[key]=value;calls.push(['set',key,value]);return true;}});return{width:1280,height:720,getContext:()=>context,calls};}
 Object.assign(globalThis,{document:{createElement:canvas}});
+// The final shot must land on the elevated platform at the same screen height
+// as native gameplay, at every integer render scale (not below it in the sand).
+for(const scale of [1,2,3]){
+ const surface=canvas(),ctx=surface.getContext() as unknown as CanvasRenderingContext2D;
+ ctx.setTransform(scale,0,0,scale,0,0);
+ const ground=720/scale-54;
+ const shot=renderWorldFrame({kind:'sequence',context:ctx,capture:true,documents:openingDocuments,sequenceId:'glide',time:68,scale,width:1280/scale,height:720/scale,reduced:false,lighting:lightAt(1,1140,90,null),world:{playGround:ground}});
+ const platform=shot.inspection!.find(scope=>scope.scene.id==='harbor-station')!;
+ assert(Math.abs(platform.view.y(0)-ground)<.001,'closing shot and playable platform share their ground line at scale '+scale);
+ assert(Math.abs(platform.view.sx(200)-platform.view.viewW*.45)<1,'closing shot focuses the actual player spawn');
+}
 function inspect(m=model,time=0,pending?:ReadonlyMap<string,unknown>,transient?:{document:string;composition:Composition}){const target=canvas(),documents=pending??new Map(m.list().map(d=>[d.id,d.value]));const composition=m.get('sequence-opening').value as Composition;const result=preview.render(target as unknown as HTMLCanvasElement,{composition,documents,transient,sourceVersion:pending&&!transient?undefined:m.sourceVersion,time,reduced:false,overlays:false,environment:{}});return{...result,calls:target.calls};}
 const outline=outlineDocuments(model.get('sequence-opening'),model.list()),membership=outline.map(doc=>doc.id);
 assert(membership.includes('authored.glide-beach')&&membership.includes('backdrop-glide-coast'),'assembled outline contains referenced scene and backdrop sources before selection');

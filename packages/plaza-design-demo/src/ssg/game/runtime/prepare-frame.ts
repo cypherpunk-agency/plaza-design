@@ -64,7 +64,7 @@ function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocument
   const ground0=Math.round(height/pixel*Number(props.ground))*pixel;let gy=ground0+((options.playGround??height-54)-ground0)*blend;
   const handoff=documents.timeline.sequences.find(s=>s.id===id)?.handoff,landing=handoff&&scenes[handoff.scene],at=handoff&&placed.get(handoff.scene);
   const cam0=frame.camera.x+(Number(props.width)-width)/2,target=landing&&at?at.dx+landing.spawn-width*.45:cam0,authoredCam=cam0+(target-cam0)*blend,minute=Number(frame.state.sky?.clock??1075);
-  const cameraZoom=frame.camera.zoom,authoredWidth=width/cameraZoom,authoredHeight=height/cameraZoom,authoredLeft=authoredCam+(width-authoredWidth)/2,authoredTop=gy-frame.camera.h-(height-authoredHeight)/2;
+  const cameraZoom=frame.camera.zoom,authoredWidth=width/cameraZoom,authoredHeight=height/cameraZoom,authoredLeft=authoredCam+(width-authoredWidth)/2,authoredTop=gy+frame.camera.h-(height-authoredHeight)/2;
   const authoredLayout={width,height,ground:gy};
   let cam=authoredCam,guide:CameraGuide|undefined;
   const authoredCentre=authoredCam+width/2;
@@ -84,14 +84,16 @@ function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocument
     const base={...frameView(options.ambientTime*60,lighting),worldZones:placementCoordinates(placed,{dx:x,dh:h},scenes),viewW:width,viewH:height,gy,
       ...sourceProjection({cam,gy},{dx:x,dh:h},1,options.workspace?authoredCam:cam,true),flags:{}};
     if(!options.workspace)return base;
-    const ground=authoredLayout.ground-frame.camera.h;
+    const ground=authoredLayout.ground+frame.camera.h;
     const cameraView:View={...base,viewW:authoredLayout.width,viewH:authoredLayout.height,gy:ground,
       ...sourceProjection({cam:authoredCam,gy:ground},{dx:x,dh:h},1,authoredCam,true)};
     return{...base,cameraFrame:{view:cameraView,x:authoredCam-cam,y:gy-ground}};
   };
   const hostOf=(scene:SceneDef)=>{const model=modelFor(scene),engine:EngineDraw={m:model,hover:null,layer:'all'};return{visionOn:false,model,draw:(ctx:CanvasRenderingContext2D,v:View)=>scene.drawBackdrop(ctx,v,engine)};};
   const joined:ZoneFrame[]=placements.filter(z=>z!==active&&(z.x+z.scene.width>cam&&z.x<cam+width||z.scene.artworkVisible?.(viewOf(z.x,z.h),modelFor(z.scene)))).map(z=>({scene:z.scene,sceneId:z.scene.id,view:viewOf(z.x,z.h),host:hostOf(z.scene),lighting:()=>lighting,weather:()=>weather}));
-  const localFrame={...frame,camera:{...frame.camera,x:cam-active.x,h:options.workspace?0:frame.camera.h,zoom:options.workspace?1:frame.camera.zoom}};
+  // World camera height follows the game's height-up coordinates. The director's
+  // picture offset has the opposite sign; it is not another world-space height.
+  const localFrame={...frame,camera:{...frame.camera,x:cam-active.x,h:options.workspace?0:-frame.camera.h,zoom:options.workspace?1:frame.camera.zoom}};
   const director=directorFromTimeline(localFrame,{scale:nativeScale*fit,clock:{minute,day:1},sequence:{time,state:frame.state},passes:{casters:false,actors:false,shade:false,grade:false,lights:false,prompts:false,bubbles:false,vision:false},overlays:{
     fades:frame.fades,cards:frame.text.map(card=>({text:card.text,opacity:1,x:card.x,y:-card.h})),
   }});

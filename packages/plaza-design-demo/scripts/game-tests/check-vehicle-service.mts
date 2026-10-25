@@ -19,3 +19,18 @@ for(const preset of ['shuttle','cart'] as const){
 
 }
 console.log('Vehicle services PASS: new shuttle has complete native boarding; shell-only cart follows its curved/drop route on actual Circuit time.');
+
+// The real harbor service remains horizontal until its full consist clears the station.
+import {SCENES} from '../../src/ssg/game/scenes';
+import graph from '../../src/ssg/game/world/zone-graph.json';
+import {placeFrom} from '../../src/ssg/game/world/zone-graph';
+import {routeAt,routeLength,consistLength} from '../../src/ssg/game/world/vehicles';
+const service=SCENES['harbor-station'].level!.vehicles!.find(v=>v.source.id==='service')!.source;
+const routePlaces=placeFrom(graph,'harbor-station',Infinity);
+for(const distance of [0,20,400,800,1120]){
+ const pose=routeAt(service.route,distance),at=routePlaces.get(pose.zone)!;
+ assert.equal(pose.h+at.dh,0,'train stays level while its carriages are visible beside the platform');
+ if(distance===1120)assert(pose.x+at.dx+consistLength(service)<0,'whole train clears the platform before descending');
+}
+assert.equal(routeLength(service.route),7880,'concealed descent preserves service timing and destinations');
+console.log('Harbor departure PASS: level platform clearance and unchanged route timing.');

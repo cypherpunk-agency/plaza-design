@@ -7,7 +7,8 @@
  *   where it goes. Each lane is a conveyor of slots moving at the lane's speed, one truck long and a gap, so
  *   nothing overlaps; each slot has a seeded origin and destination: the truck gate (trucks only), one of the side
  *   streets, or the street's portal at its west end.
- * - A side street's cars come along a back street behind the towers, turn down the side street and out of its
+ * - By default traffic stays on the road, travelling between the portal and quay.
+ *   Optional side-street routes come along a back street behind the towers, turn down the side street and out of its
  *   mouth onto the road, edge first (the mouth and the building line clip them); leaving, the same way back.
  * - Draw order is depth: the far lane first, the near lane last, a turning car at its own depth.
  * - `pass`: `street` draws the cars still behind the pavement in a side street (place it after the side streets,
@@ -101,7 +102,10 @@ export function trafficPlan(P: Pixels, p: Properties, h0: number): TrafficVehicl
     const ly = ln.lane === 'far' ? far : near, u = (-ln.dir) as 1 | -1, off = f * ln.v * u, hb = ly - (back - 4);
     for (let k = Math.floor((Xe - off) / ln.gap); k <= Math.ceil((Xw - off) / ln.gap); k++) {
       const ends = endsOf(st, k, ln.seed); if (!ends) continue;
-      const [from, to] = u > 0 ? [ends.near, ends.far] : [ends.far, ends.near];
+      // Side-facing artwork cannot convincingly turn toward the viewer. Keep
+      // those bends outside the visible corridor unless explicitly authored.
+      const near = p.sideStreets === true ? ends.near : -1, farEnd = p.sideStreets === true ? ends.far : st.mouths.length;
+      const [from, to] = u > 0 ? [near, farEnd] : [farEnd, near];
       const gate = ends.near < 0, kind: CarKind | 'truck' = gate ? 'truck' : KINDS[Math.floor(h01(k + ln.seed * 3) * 8)];
       const half = R(SIZE[kind] * S / 2), r = trafficRoute(st, from, to, u, hb, half);
       const X = k * ln.gap + off, s = r.entry + u * (X - r.laneX);
@@ -130,6 +134,7 @@ function drawVehicle(P: Pixels, p: Properties, h0: number, v: TrafficVehicle) {
 export const trafficElement: Element = {
   type: 'street.traffic', mobility:()=>true, version: 1, label: 'Road traffic between side streets, a truck gate and a portal (street kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
+    sideStreets: { kind: 'boolean', label: 'Use visible side-street turns', default: false },
     mouths: { kind: 'json', label: 'Side streets, east to west (units east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || v.length > 20 || !v.every(fin)) throw new Error('Side streets: expected numbers'); } },
     gate: num('Truck gate (units east of the piece; trucks come and go there)', 0), quay: num('Trucks run on to (units east of the piece)', 2000), portal: num('The street’s west portal (units east of the piece)', -6000),
     lanes: { kind: 'json', label: 'Lanes, far first (lane far/near, dir 1 east, v pixels a frame, gap, seed)', default: DEFAULT_LANES as never, validate: v => { if (!Array.isArray(v) || v.length > 4 || !v.every(l => !!l && typeof l === 'object' && ['far', 'near'].includes((l as unknown as Lane).lane) && [1, -1].includes((l as unknown as Lane).dir) && fin((l as unknown as Lane).v) && (l as unknown as Lane).gap > 20 && fin((l as unknown as Lane).seed))) throw new Error('Lanes: expected { lane, dir, v, gap, seed } rows'); } },
