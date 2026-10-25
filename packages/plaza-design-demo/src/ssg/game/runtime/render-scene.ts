@@ -93,6 +93,13 @@ function renderMeasuredFrame(frame: WorldFrame) {
   const mobileFrames=split?[{scene:s,view:v,host:zh},...joined,...travelling]:[];
   const mobileView=(z:Pick<ZoneFrame,'view'|'scene'>):View=>({...z.view,artworkScope:'mobile',zoneWindow:{left:z.view.sx(0),right:z.view.sx(z.scene.width)}});
   for(const z of mobileFrames){if(!z.scene.artwork)continue;drawZoneHost(x,mobileView(z),z);}
+  // Scene actors contribute composition commands before the shared behind-player flush.
+  // Collect both scopes: a person's mobility is independent of the scene's static art.
+  if(ordered && passOn(d,'actors')){
+    for(const draw of deferred.actors)draw();
+    s.drawActors?.(x,v);
+    for(const z of mobileFrames)z.scene.drawActors?.(x,mobileView(z));
+  }
   if(ordered){flushLayeredSlot('behind-player');mid();if(casters)drawCasters(x,v,s.casters);for(const draw of deferred.mid)draw();
     if(vision){
       if(look)atmosphere(x,v,(camera,weather)=>weatherFront(x,camera,{...weather,still:true}));
@@ -101,11 +108,11 @@ function renderMeasuredFrame(frame: WorldFrame) {
     }
     for(const draw of deferred.vision)draw();
   }
-  for(const draw of deferred.actors)draw();
+  if(!ordered)for(const draw of deferred.actors)draw();
   perfEnd(pass);pass=perfBegin('render.actors');
   if (passOn(d, 'actors')) {
     frame.roomWash?.(x, v);
-    s.drawActors?.(x, v);
+    if(!ordered)s.drawActors?.(x, v);
     frame.actors?.(x, v);
   }
   flushLayeredSlot('over-player');

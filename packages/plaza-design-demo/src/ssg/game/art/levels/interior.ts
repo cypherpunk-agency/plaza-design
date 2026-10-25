@@ -44,7 +44,7 @@ export const roomElement: Element = {
   // from the level while playing: how open the room is, and how much the player is in it (0: remembered from before,
   // drawn darkened); 1 for both is the default for a room nobody set
   visualFields: { open: num('Open', 1, 0, 1, 0.01), here: num('Player in it', 1, 0, 1, 0.01) },
-  bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ceiling: { x: 0, h: Number(p.height), role: 'mount' }, middle: { x: Number(p.width) / 2, h: 0, role: 'mount' } }),
   draw: (x, v, p, s) => {
     drawRoom(x, v, p);
@@ -111,7 +111,7 @@ function drawShut(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<strin
 export const slabElement: Element = {
   type: 'level.slab', version: 1, label: 'Floor slab (cut)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { width: num('Width', 240, 10, 4000, 1, 'units'), thickness: num('Thickness', 10, 2, 60, 1, 'units') },
-  bounds: p => ({ x: 0, h: -Number(p.thickness), w: Number(p.width), tall: Number(p.thickness) }),
+  bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.thickness) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
   draw: (x, v, p) => {
     const w = Number(p.width), t = Number(p.thickness);
@@ -127,7 +127,7 @@ export const slabElement: Element = {
 export const sectionWallElement: Element = {
   type: 'level.section-wall', version: 1, label: 'Section wall (cut)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { height: num('Height', 300, 10, 4000, 1, 'units'), thickness: num('Thickness', 8, 2, 40, 1, 'units') },
-  bounds: p => ({ x: 0, h: 0, w: Number(p.thickness), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.thickness), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: 0, h: Number(p.height), role: 'mount' } }),
   draw: (x, v, p) => { const t = Number(p.thickness), h = Number(p.height); rect(x, v, 0, 0, t, h, '#34363c'); rect(x, v, 0, 0, 1, h, 'rgba(255,190,120,.35)'); },
 };
@@ -136,7 +136,7 @@ export const sectionWallElement: Element = {
 export const groundSectionElement: Element = {
   type: 'level.ground-section', version: 1, label: 'Ground in section (below the street)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { width: num('Width', 600, 10, 10000, 1, 'units'), depth: num('Depth', 260, 10, 2000, 1, 'units'), seed: num('Seed', 3, 0, 1000000) },
-  bounds: p => ({ x: 0, h: -Number(p.depth), w: Number(p.width), tall: Number(p.depth) }),
+  bounds: p => ({ x: 0, h: 2, w: Number(p.width) + 5, tall: Number(p.depth) + 2 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw: (x, v, p) => {
     const w = Number(p.width), d = Number(p.depth), r = rng(Number(p.seed) * 13 + 1);

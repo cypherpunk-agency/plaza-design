@@ -324,6 +324,12 @@ export function queueLayeredSlots(ctx: CanvasRenderingContext2D, registry: ArtRe
     if (slotHasContent(doc, slot) || slot === 'over-player' && nearState(env)) pending[slot].set(slotKey(doc,env), () => drawCompositionSlot(ctx, registry, doc, env, slot)); else pending[slot].delete(slotKey(doc,env));
 }
 /** Drawing commands live only for this frame; they carry no simulation or saved state. */
+const authoredOrder=new WeakMap<Composition,Map<Instance,number>>();
+function sourceOrder(doc:Composition,instance:Instance){
+ let indices=authoredOrder.get(doc);
+ if(!indices){indices=new Map(flat(doc.instances).map((n,i)=>[n,i]));authoredOrder.set(doc,indices);}
+ return indices.get(instance)!;
+}
 const ordered:Record<LayerSlot,Map<Instance,{doc:Composition;draw:()=>void}>>={'behind-player':new Map(),'over-player':new Map(),foreground:new Map()};
 function paintSlot(ctx:CanvasRenderingContext2D,doc:Composition,env:Environment,slot:LayerSlot,rows:Resolved[],passOf:(r:Resolved)=>Pass,near=false){
  if(!env.view.sharedLayers){paint(ctx,doc,env,rows,passOf,near);return;}
@@ -334,7 +340,7 @@ export function beginLayeredFrame(){pending['over-player'].clear();pending.foreg
 export function flushLayeredSlot(slot:LayerSlot){
  if(slot!=='behind-player'){const draws=[...pending[slot].values()];pending[slot].clear();for(const draw of draws)draw();}
  const rows=[...ordered[slot]];ordered[slot].clear();
- rows.sort(([a,x],[b,y])=>LAYERS.indexOf(a.layer)-LAYERS.indexOf(b.layer)||a.order-b.order||x.doc.scene.localeCompare(y.doc.scene)||a.id.localeCompare(b.id));
+ rows.sort(([a,x],[b,y])=>LAYERS.indexOf(a.layer)-LAYERS.indexOf(b.layer)||a.order-b.order||x.doc.scene.localeCompare(y.doc.scene)||(x.doc===y.doc?sourceOrder(x.doc,a)-sourceOrder(y.doc,b):0));
  for(const[,row]of rows)row.draw();
 }
 /** Does the environment set any piece's `near` (its near part waits for the over-player slot)? */

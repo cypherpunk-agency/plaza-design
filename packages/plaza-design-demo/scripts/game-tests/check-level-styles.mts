@@ -93,3 +93,15 @@ console.log('Level styles PASS: ladders climbed with ↑/↓, switchback landing
   for (const style of ENTRANCE_STYLES) for (const sign of ['CLOSED', 'PULL', 'none']) entranceElement.draw(canvas, view, {width: 28, height: 46, style, sign}, {} as never);
   console.log('Level entrances PASS: the street door seen from inside shows with its building, in every style.');
 }
+
+import {art,resolveComposition,drawCompositionSlot} from '../../src/ssg/game/art';
+import {frameView} from '../../src/ssg/game/art/core/view';
+import {measureArtwork} from '../../src/ssg/game/art/core/measure';
+import {projectedBounds} from '../../src/ssg/game/art/core/geometry';
+
+const boundsView={...frameView(600),viewW:10000,viewH:10000,cam:0,gy:5000,sx:(x:number)=>x,y:(h:number)=>5000-h};let count=0;const bad=[];
+function check(type:string,props:any,state:any={}){const doc=art.validate({version:1,scene:'bounds-check',instances:[{id:'piece',type,layer:'set',order:0,placement:{x:1000,h:0},props}]}),env={view:boundsView,reduced:false,state:{piece:state}},r=resolveComposition(art,doc,env)[0],b=projectedBounds(boundsView,r.placement,r.element.bounds(r.props,r.state,{view:boundsView,placement:r.placement})),a=measureArtwork(ctx=>{for(const slot of ['behind-player','over-player','foreground'] as const)drawCompositionSlot(ctx,art,doc,env,slot)});count++;if(a.x<b.x-1||a.y<b.y-1||a.x+a.width>b.x+b.width+1||a.y+a.height>b.y+b.height+1)bad.push({type,props,state,b,a});}
+for(const style of Object.keys(STAIR_STYLES))for(const run of [-120,0,120])for(const rise of [-80,0,80])check('level.stairs',{style,run,rise});
+for(const style of ['standard','glass'])for(const run of [-120,0,120])for(const rise of [-80,0,80])check('level.escalator',{style,run,rise});
+for(const style of LIFT_STYLES)for(const car of [0,80])check('level.elevator',{style,height:80,width:34},{car,doors:1});
+assert.deepEqual(bad,[],'bounds contain drawing operations in either direction');console.log('Level bounds PASS:',count,'style/path/state samples');

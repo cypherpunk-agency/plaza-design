@@ -105,7 +105,13 @@ export const bandOf = (props: Properties): DepthSpec => DEPTH_BANDS[isDepthBand(
 /** Selection bounds for a vehicle `offset` along its lane, `lift` units up, shifted so the box sits on the band's parallax. */
 export function bandBounds(props: Properties, e: Extent, offset: number, lift: number, context?: BoundsContext) {
   const band = bandOf(props), p = context?.placement, s = band.scale;
-  const shift = p && context ? context.view.cam * (p.parallax - band.parallax) / (p.scale * p.facing) : 0;
+  // Workspace and authored cameras can differ; sx owns their complete projection.
+  let shift = 0;
+  if(p && context){
+    const {sx}=context.view, at=p.x+offset*p.scale*p.facing;
+    const unit=(sx(at+1,p.parallax)-sx(at,p.parallax))*p.scale*p.facing;
+    if(unit)shift=(sx(at,band.parallax)-sx(at,p.parallax))/unit;
+  }
   return { x: offset + shift + e.x0 * s, h: lift + e.top * s, w: (e.x1 - e.x0) * s, tall: (e.top + e.bottom) * s };
 }
 /** The props as stored, with each field's default filled in (callers such as the workbench pass partial props). */

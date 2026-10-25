@@ -733,7 +733,9 @@ alighting stays available. Add no scene-name condition to the runtime for these 
 
 Every composition uses the shared Distance → Backdrop → Set → Playfield → Foreground → Logic layers.
 For joined frames, registered artwork is sorted across sources by layer, authored order, source ID
-and instance ID within the existing player-relative slots. A mobile keeps its authored layer when
+and source-document ordinal within the existing player-relative slots. Equal-order pieces keep
+their authored order within each source, matching isolated rendering. Scene actors contribute
+static and mobile commands before the shared behind-player slot is flushed. A mobile keeps its authored layer when
 crossing. Foreground artwork occludes across sources; it does not need a second collision model.
 Shared backdrop documents paint once. Hack vision uses the same ordering, followed by its wash.
 
@@ -750,6 +752,11 @@ scene/type switch. Frame queues hold paint commands only and clear every frame.
 describes the complete source-camera travel envelope relative to placement, including parallax,
 for lifecycle retention; otherwise ordinary registered bounds/range/lane metadata is used.
 Prepared actors derive their boxes from native pose coordinates, not their authored starting X.
+Bounds use height-up coordinates: `h` is the top and `h - tall` is the bottom, including
+handrails, stringers and landing overhangs. Hidden sequence artwork has no selection bounds.
+Vehicle depth corrections come from `View.sx`, including when the workspace and authored
+cameras differ; do not reconstruct projection from `view.cam`.
+
 Character bounds use the placed body and authoritative View projection, including its depth;
 never reconstruct a separate editor camera correction. Native window masks intersect bounds;
 Element.pickClip also exposes the mask to picking so minimum click-target sizes cannot escape

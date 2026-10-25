@@ -70,3 +70,33 @@ const view={...frameView(600),sharedLayers:true,viewW:1280,viewH:720,cam:0,gy:59
 assert(env.mobileArtwork?.has('mech'));assert.equal(previewBounds(rows,view,env,valid).bounds.find(b=>b.id==='mech')!.clip,undefined,'compiled actor mobility prevents an editor-only chunk clip');
 assert.equal(previewBounds(rows,view,{...env,mobileArtwork:undefined},valid).bounds.find(b=>b.id==='mech')!.clip?.width,warehouse.width,'fixture exercises the lost-membership failure');
 console.log('Picking fixes PASS:',residents,'resident samples,',masked,'masked samples,',fullyMasked,'fully masked, and pending mobile layer edit.');
+
+
+// Workspace navigation must move artwork and its picking box together at every depth.
+const {drawCompositionSlot}=await import('../../src/ssg/game/art');
+const {measureArtwork}=await import('../../src/ssg/game/art/core/measure');
+// Offscreen dimming uses the same registered kernels; a measuring canvas needs no DOM pixels.
+(globalThis as any).document={createElement:()=>{let ctx!:CanvasRenderingContext2D;measureArtwork(c=>{ctx=c;});return {width:0,height:0,getContext:()=>ctx};}};
+let vehicleCases=0;
+for(const type of ['vehicle.road','vehicle.air','vehicle.rail','vehicle.boat'])for(const depth of ['far','back','play','near'])for(const facing of [-1,1])for(const scale of [.5,2]){
+ const doc=art.validate({version:1,scene:'camera-bounds',instances:[{id:'vehicle',type,props:{depth,motion:'parked'},placement:{x:1000,h:0,facing,scale},layer:'set',order:0}]});
+ const samples=[150,600].map(cam=>{
+  const view={...frameView(600),viewW:1600,viewH:720,cam,gy:500,sx:(x:number,p=1)=>x-100*p+100-cam,y:(h:number)=>500-h},env={view,state:{},reduced:false},r=resolveComposition(art,doc,env)[0];
+  return {box:projectedBounds(view,r.placement,r.element.bounds(r.props,r.state,{view,placement:r.placement})),painted:measureArtwork(ctx=>drawCompositionSlot(ctx,art,doc,env,'behind-player'))};
+ });
+ assert(Math.abs((samples[1].box.x-samples[0].box.x)-(samples[1].painted.x-samples[0].painted.x))<1e-6,type+' workspace bounds follow native projection');vehicleCases++;
+}
+const skyScene=SCENES['harbor-station'],skyView={...frameView(600),sequence:{time:10,state:{}},viewW:1280,viewH:720,cam:0,gy:591,sx:(x:number)=>x,y:(h:number)=>591-h},skyEnv=skyScene.visualEnvironment!(skyView),sky=resolveComposition(art,skyScene.artwork!,skyEnv).find(r=>r.instance.type==='environment.sky-traffic')!;
+assert.equal(sky.props.inSequences,false);
+assert.deepEqual(previewBounds([sky],skyView,skyEnv,skyScene.artwork).bounds,[],'sequence-hidden sky traffic is not selectable');
+const visibleSky={...sky,props:{...sky.props,inSequences:true}};
+assert.equal(previewBounds([visibleSky],skyView,skyEnv,skyScene.artwork).bounds.length,1,'explicitly enabled sequence traffic remains selectable');
+console.log('Vehicle workspace and sky visibility PASS:',vehicleCases,'depth/scale/facing cases.');
+
+{
+const bad:any[]=[],count:Record<string,number>={};let tested=0;
+for(const[id,s]of Object.entries(SCENES)){if(!s.artwork||!s.visualEnvironment)continue;const m=new SceneModel({say(){},open(){},changed(){}},s.data??emptyData(id,id),undefined,undefined,undefined,undefined,undefined,s.gameplay),view={...frameView(0),viewW:30000,viewH:6000,cam:0,gy:3000,sx:(x:number)=>x,y:(h:number)=>3000-h},env=s.visualEnvironment(view,{m,hover:null,layer:'all'});for(const r of resolveComposition(art,s.artwork,env)){if(!r.instance.type.startsWith('level.')||!r.element.parts.length)continue;tested++;const b=projectedBounds(view,r.placement,r.element.bounds(r.props,r.state,{view,placement:r.placement}));const painted=measureArtwork(ctx=>{for(const slot of ['behind-player','over-player','foreground'] as const)drawCompositionSlot(ctx,art,s.artwork!,env,slot,n=>n.instance.id===r.instance.id);});if(!painted.width&&!painted.height)continue;if(painted.x<b.x-2||painted.y<b.y-2||painted.x+painted.width>b.x+b.width+2||painted.y+painted.height>b.y+b.height+2){bad.push({scene:id,id:r.instance.id,type:r.instance.type,bounds:b,painted});count[r.instance.type]=(count[r.instance.type]??0)+1;}}
+ m.dispose();}
+assert.deepEqual(bad,[],'native level placements contain registered artwork');assert(tested>=59);console.log('Native level bounds PASS:',tested,'placements');
+
+}

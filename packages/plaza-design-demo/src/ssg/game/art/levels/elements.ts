@@ -16,7 +16,7 @@ const num = (label: string, value: number, min: number, max: number, step = 1, u
 const text = (label: string, value = ''): Field => ({ kind: 'string', label, default: value });
 const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
 
-/** Concrete, steel and the warm rim light every set piece carries (ART-GUIDE §3: nothing floats, edges read). */
+/** Concrete, steel and the warm rim light every set piece carries (ART-GUIDE Ã‚Â§3: nothing floats, edges read). */
 const C = { dark: '#16171b', mid: '#2a2c33', face: '#3b3e47', edge: '#5d616c', rim: 'rgba(255,190,120,.35)', rail: '#8a8f99', glass: 'rgba(120,170,190,.18)', lamp: '#ffd68a', go: '#7cff9a', stop: '#ff6a4a' };
 const rect = (x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: number, tall: number, fill: string) => {
   const a = v.sx(wx), b = v.sx(wx + w), top = v.y(h + tall), bottom = v.y(h);
@@ -36,7 +36,7 @@ export const floorElement: Element = {
   draw() {},
 };
 
-/** Where the street meets a door-only building floor at the same height: ↑ steps in, ↓ steps out. Walk-in floors need none. */
+/** Where the street meets a door-only building floor at the same height: Ã¢â€ â€˜ steps in, Ã¢â€ â€œ steps out. Walk-in floors need none. */
 export const doorElement: Element = {
   type: 'level.door', version: 1, label: 'Way into a building', category: 'scene', parts: [], libraryUse: 'reusable',
   fields: { building: text('Building'), width: num('Width', 24, 8, 200, 1, 'units') },
@@ -62,7 +62,7 @@ export const entranceElement: Element = {
     width: num('Width', 28, 14, 120, 1, 'units'), height: num('Height', 46, 30, 120, 1, 'units'),
     sign: { kind: 'select', label: 'Shop sign (read from inside)', options: ['CLOSED', 'PULL', 'none'], default: 'CLOSED' },
   },
-  bounds: p => ({ x: -Number(p.width) / 2 - 3, h: 0, w: Number(p.width) + 6, tall: Number(p.height) + 4 }),
+  bounds: p => ({ x: -Number(p.width) / 2 - 3, h: Number(p.height) + 4, w: Number(p.width) + 6, tall: Number(p.height) + 4 }),
   anchors: origin,
   draw: (x, v, p) => {
     const w = Number(p.width), t = Number(p.height), hw = w / 2, style = String(p.style ?? 'glass');
@@ -213,12 +213,23 @@ export const stairsElement: Element = {
   fields: {
     run: num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units'),
     speed: num('Climbing speed (units per frame)', 1, 0.1, 4, 0.05), reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
-    style: { kind: 'select', label: 'Style (spiral, rungs and switchback: run is the width; climbed with ↑/↓)', options: Object.keys(STAIR_STYLES), default: 'concrete' },
+    style: { kind: 'select', label: 'Style (spiral, rungs and switchback: run is the width; climbed with Ã¢â€ â€˜/Ã¢â€ â€œ)', options: Object.keys(STAIR_STYLES), default: 'concrete' },
     rail: { kind: 'select', label: 'Handrail', options: ['auto', ...Object.keys(RAILS)], default: 'auto' },
     railInFront: { kind: 'boolean', label: 'Handrail in front of the player on the stair', default: true },
   },
   visualFields: { near: num('The player is on or beside it (level)', 0, 0, 1, 1) },
-  bounds: p => { const r = Number(p.run), h = Number(p.rise), d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight'; return d === 'rungs' || d === 'spiral' ? { x: -Math.max(12, Math.abs(r) / 2 + 2), h: Math.min(0, h) - 4, w: Math.max(24, Math.abs(r) + 4), tall: Math.abs(h) + 40 } : { x: Math.min(0, r), h: Math.min(0, h) - 10, w: Math.max(8, Math.abs(r) + (d === 'switchback' ? 16 : 0)), tall: Math.abs(h) + 42 }; },
+  bounds: p => {
+    const r=Number(p.run), h=Number(p.rise), shape=STAIR_STYLES[String(p.style)]?.draw??'flight';
+    // Bounds.h is the top, not the foot. Include rails above and stringers below either end.
+    if(shape==='rungs')return {x:-10,h:Math.max(0,h)+34,w:20,tall:Math.abs(h)+34};
+    if(shape==='spiral'){
+      const radius=Math.max(12,Math.abs(r)/2||14)+2;
+      return {x:-radius,h:Math.max(0,h)+34,w:radius*2,tall:Math.abs(h)+38};
+    }
+    const left=Math.min(0,r)-(shape==='switchback'&&r<0?14:4);
+    const right=Math.max(0,r)+(shape==='switchback'&&r>=0?14:4);
+    return {x:left,h:Math.max(0,h)+32,w:right-left,tall:Math.abs(h)+42};
+  },
   anchors: p => { const d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight'; return { ...origin(), top: { x: d === 'flight' || d === 'ladder' ? Number(p.run) : 0, h: Number(p.rise), role: 'mount' } }; },
   draw: (x, v, p, s) => drawStairs(x, v, p, nearRail(p, s) ? 'back' : 'whole'),
   drawNear: (x, v, p, s) => { if (nearRail(p, s)) drawStairs(x, v, p, 'near'); },
@@ -245,7 +256,7 @@ export const escalatorElement: Element = {
     reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
     style: { kind: 'select', label: 'Style', options: ['standard', 'glass'], default: 'standard' },
   },
-  bounds: p => { const r = Number(p.run), h = Number(p.rise); return { x: Math.min(0, r) - 14, h: Math.min(0, h) - 14, w: Math.abs(r) + 28, tall: Math.abs(h) + 50 }; },
+  bounds: p => { const r = Number(p.run), h = Number(p.rise); return { x: Math.min(0, r) - 14, h: Math.max(0, h) + 32, w: Math.abs(r) + 28, tall: Math.abs(h) + 46 }; },
   anchors: p => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
   draw: (x, v, p) => {
     const run = Number(p.run), rise = Number(p.rise), dir = Math.sign(run) || 1, up = p.direction !== 'down', glass = p.style === 'glass';
@@ -278,7 +289,7 @@ export const elevatorElement: Element = {
     doorMs: num('Doors open in', 280, 40, 3000, 10, 'ms'),
     style: { kind: 'select', label: 'Style (broken: out of order, never called)', options: [...LIFT_STYLES], default: 'goods' } },
   visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
-  bounds: p => ({ x: -Number(p.width) / 2 - 4, h: -4, w: Number(p.width) + 8, tall: Number(p.height) + 58 }),
+  bounds: p => ({ x: -Number(p.width) / 2 - 4, h: Number(p.height) + 54, w: Number(p.width) + 8, tall: Number(p.height) + 58 }),
   anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),
   draw: (x, v, p, s) => {
     const w = Number(p.width), hw = w / 2, top = Number(p.height) + 52, car = Math.max(0, Math.min(Number(p.height), Number(s.car ?? 0))), open = Math.max(0, Math.min(1, Number(s.doors ?? 0)));
@@ -355,7 +366,7 @@ export const liftButtonElement: Element = {
   type: 'level.lift-button', version: 1, label: 'Lift call button', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { lift: text('Lift (its instance id)') },
   visualFields: { lit: num('Lit (called here)', 0, 0, 1, 1) },
-  bounds: () => ({ x: -4, h: 20, w: 8, tall: 14 }),
+  bounds: () => ({ x: -5, h: 35, w: 10, tall: 15 }),
   anchors: origin,
   draw: (x, v, _p, s) => {
     const lit = Number(s.lit ?? 0) > 0.5;
@@ -391,7 +402,7 @@ export const barrierElement: Element = {
     closes: { kind: 'boolean', label: 'Shuts again behind the player (asks its rule each time)', default: false },
   },
   visualFields: { open: num('Open', 0, 0, 1, 0.01), near: num('Near cabinet over the player', 0, 0, 1, 1) },
-  bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 0, w: Number(p.width) + 20, tall: 58 }),
+  bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 58, w: Number(p.width) + 20, tall: 58 }),
   anchors: origin,
   draw: (x, v, p, s) => {
     const w = Number(p.width), hw = w / 2, open = Math.max(0, Math.min(1, Number(s.open ?? 0))), style = String(p.style ?? 'turnstile'), lamp = open > 0.5 ? C.go : C.stop;
