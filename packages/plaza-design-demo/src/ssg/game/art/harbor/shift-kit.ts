@@ -27,7 +27,7 @@
  * `piece()` (buildings/types.ts); state-driven pieces read their presentation state (visual fields)
  * and never change it. Lamps join the light layer only in the play band (parallax 1) or when asked.
  */
-import type { Anchor, Element, Field, Placement, Properties, Value } from '../core/composition';
+import type { Anchor, AssetDefinition, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { addLight, type SceneLight } from '../atmosphere/lighting';
 import { container, PAL } from '../props/containers';
@@ -108,7 +108,7 @@ function kit(o: {
   /** Lamps of a piece placed further back join the light layer too. */
   farLights?: boolean;
   paint: (x: CanvasRenderingContext2D, p: Properties, c: ShiftPaint) => void;
-}): Element {
+}): AssetDefinition {
   return {
     type: 'shift.' + o.type, version: 1, label: o.label, category: 'harbor shift', coordinates: 'world', parts: ['backdrop'],
     ...(o.visual ? { visualFields: o.visual, bindingIdentity: 'presentation' as const } : { libraryUse: 'reusable' as const }),
@@ -132,7 +132,7 @@ function kit(o: {
 
 /** A full-width backdrop drawn in screen space (sky band, floor): `paint` gets the view directly. */
 function band(o: { type: string; label: string; fields: Record<string, Field>; tall: (p: Properties) => number;
-  paint: (x: CanvasRenderingContext2D, v: View, p: Properties, at: Readonly<Required<Placement>>) => void }): Element {
+  paint: (x: CanvasRenderingContext2D, v: View, p: Properties, at: Readonly<Required<Placement>>) => void }): AssetDefinition {
   return {
     type: 'shift.' + o.type, version: 1, label: o.label, category: 'harbor shift', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable', fields: o.fields,
     bounds: p => ({ x: 0, h: o.tall(defaults(o.fields, p)), w: 1200, tall: o.tall(defaults(o.fields, p)) + 40 }),
@@ -1064,7 +1064,7 @@ const floor = band({
   },
 });
 
-export const shiftKitElements: Element[] = [farShore, ship, crane, quay, stackBlock, reeferRack, mast, fogBank, shed, booth, counter, hatch, rack, parcel, caseEl, trolley, release, clampEl, reader, printer, board, sign, lockers, trolleyPark, bay, end, floor];
+export const shiftKitElements: AssetDefinition[] = [farShore, ship, crane, quay, stackBlock, reeferRack, mast, fogBank, shed, booth, counter, hatch, rack, parcel, caseEl, trolley, release, clampEl, reader, printer, board, sign, lockers, trolleyPark, bay, end, floor];
 
 // Local state (printed, released, complete) does not require a source-scene controller.
 for(const e of shiftKitElements)if(['parcel','release','reader','printer','board'].includes(e.type.slice(6)))e.libraryUse='reusable';

@@ -2,15 +2,15 @@ import {mountResolvedInspector} from './resolved-inspector';
 import type {ArtworkInspection} from '../art/core/presentation';
 import {selectionKey} from './selection';
 /** Inspector DOM lifecycle. Commands and documents remain owned by the composer model. */
-import type {ArtRegistry,Instance} from '../art/core/composition';
+import type {ArtRegistry,AssetInstance} from '../art/core/composition';
 import type {EditorDocument,InspectorSection,WorkbenchContext,WorkbenchHandle} from './contracts';
 import {element,button} from './controls';
 const message=(e:unknown)=>e instanceof Error?e.message:String(e);
 interface InspectorOptions {
- node?:Instance;scene:string;doc?:EditorDocument;sceneName:string;sharedSource:boolean;registry:ArtRegistry;
+ node?:AssetInstance;scene:string;doc?:EditorDocument;sceneName:string;sharedSource:boolean;registry:ArtRegistry;
  duplicate():void;remove():void;deselect():void;openSource():void;refresh():void;
  resolved?():ArtworkInspection|undefined;
- sections():InspectorSection[];context():WorkbenchContext;appearance(host:HTMLElement,node:Instance):void;
+ sections():InspectorSection[];context():WorkbenchContext;appearance(host:HTMLElement,node:AssetInstance):void;
 }
 export function createInspector(){
  const resolvedState={open:false};
@@ -53,5 +53,5 @@ export function createInspector(){
     dispose(); const host = element('div', 'inspector-mount'); body.append(host); inspectorMount = { key, host };
     try { inspectorMount.handle = section.mount(host, options.context()); } catch (e) { host.replaceChildren(element('p', 'error', `Unavailable: ${message(e)}`)); }
  };
- return{render,dispose,updateResolved:()=>updateResolved(),appearance(){inspectorTab='appearance';}};
+ return{render,dispose,selectSection(id:string){inspectorTab=id;},updateResolved:()=>updateResolved(),appearance(){inspectorTab='appearance';}};
 }

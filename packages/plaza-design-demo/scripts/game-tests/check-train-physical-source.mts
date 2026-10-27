@@ -3,7 +3,7 @@ import {runtimeFixture} from './runtime-fixture.mts';
 /** P14 uses the shipping train composition's shared vehicle and the shipping siding level. */
 import assert from 'node:assert/strict';
 import composition from '../../src/ssg/game/scenes/train/composition.json';
-import graph from '../../src/ssg/game/world/zone-graph.json';
+import {compileGameWorld} from '../../src/ssg/game/world/compiled-world';
 import {SCENES} from '../../src/ssg/game/scenes';
 import * as city from '../../src/ssg/game/world/city';
 import {SceneModel} from '../../src/ssg/game/engine/model';
@@ -22,7 +22,7 @@ import {frameView} from '../../src/ssg/game/art/core/view';
 import {readQuery} from '../../src/ssg/game/engine/gameplay/queries';
 import {fixtureSceneRules} from './model-gameplay-fixture.mts';
 import {routeAt,routeParamAt} from '../../src/ssg/game/world/vehicles';
-const scene=SCENES.train,places=placeFrom(graph as any,'train',Infinity),sidingOffset=places.get('metro-siding')!.dx,source=mergeLevels([...places].map(([zone,at])=>({zone,source:SCENES[zone].level!,dx:at.dx,dh:at.dh,width:SCENES[zone].width}))),vehicleZones=Object.fromEntries([...places].map(([id,p])=>[id,{x:p.dx,h:p.dh}]));
+const graph=compileGameWorld(SCENES),scene=SCENES.train,places=placeFrom(graph as any,'train',Infinity),sidingOffset=places.get('metro-siding')!.dx,source=mergeLevels([...places].map(([zone,at])=>({zone,source:SCENES[zone].level!,dx:at.dx,dh:at.dh,width:SCENES[zone].width}))),vehicleZones=Object.fromEntries([...places].map(([id,p])=>[id,{x:p.dx,h:p.dh}]));
 assert.equal(scene.level!.floors.length,0,'no stationary copy of the car floor');
 assert.equal(scene.level!.vehicles!.length,1);validateWorldVehicles(SCENES,graph as any);
 const vehicle=scene.level!.vehicles![0];
@@ -67,12 +67,12 @@ for(const paid of [false,true])for(const rewire of [false,true]){
  session.dispose();
 }
 // Story presence uses the same pure query for physical floors and every attached drawing.
-for(const flags of [{},{'prologue:started':true},{'prologue:started':true,'opening:home':true}]){
+for(const flags of [{},{'prologue:started':true},{'prologue:started':true,'opening:home':true},{'prologue:started':true,'opening:home':true,'opening:street':true},{'prologue:started':true,'opening:home':true,'opening:street':true,'opening:flat':true}]){
  for(const id of ['train','harbor-station']){
   const scene=SCENES[id].bindWorld?.({city,metro:createLineSystem()})??SCENES[id];
   const m=new SceneModel({say(){},open(){},changed(){}},scene.data!,fixtureSceneRules(scene));
   m.gameplayQuery=id=>readQuery(id,{flags,items:{},tokens:0},{definition:scene.gameplay!});
-  const present=id==='train'?(!flags['prologue:started']||!!flags['opening:home']):(!!flags['prologue:started']&&!flags['opening:home']);
+  const present=id==='train'?(!flags['prologue:started']||!!flags['opening:flat']):(!!flags['prologue:started']&&!flags['opening:flat']);
   assert.equal(levelVehicleFrames(scene.level!,m).filter(f=>f.vehicle.kind!=='lift').length,present?1:0,'absent service has no floors or physical doors');
   const view=frameView(0),env=scene.visualEnvironment!(view,{m,hover:null,layer:'all'});
   const frame=id==='train'?'cab-frame':'service';assert.equal(env.visibility![frame],present,'artwork inherits the same physical presence');

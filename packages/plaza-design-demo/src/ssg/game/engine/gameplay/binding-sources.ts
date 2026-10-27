@@ -1,4 +1,4 @@
-import type {Resolved,Value,Composition,Instance} from '../../art/core/composition';
+import type {Resolved,Value,ChunkDocument,AssetInstance} from '../../art/core/composition';
 import type {View} from '../../art/core/view';
 import {art} from '../../art';
 import {prepareCharacter,type Character,type PreparedCharacter} from '../../runtime/characters';
@@ -52,19 +52,19 @@ const POSE=/^actor\.([-a-zA-Z0-9_.]+)\.pose$/,CLIP=/^actor\.([-a-zA-Z0-9_.]+)\.c
 const BUILT_IN=[POSE,CLIP,HOVER,VALUE,SPANS,HELD];
 const providerOf=(name:string)=>{const dot=name.indexOf('.');return dot>0&&Object.prototype.hasOwnProperty.call(BINDING_PROVIDERS,name.slice(0,dot))?name.slice(0,dot):undefined;};
 export const knownBindingSource=(name:string)=>name==='world.light'||BUILT_IN.some(r=>r.test(name))||!!providerOf(name);
-const flatten=(nodes:readonly Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
+const flatten=(nodes:readonly AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** Every binding name the composition uses, with its artwork field's default. */
-export function bindingDefaults(doc:Composition):Record<string,Value>{const out:Record<string,Value>={};for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))out[source]=art.get(node.type).visualFields![field].default;return out;}
+export function bindingDefaults(doc:ChunkDocument):Record<string,Value>{const out:Record<string,Value>={};for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{}))out[source]=art.get(node.type).visualFields![field].default;return out;}
 /** Presentation dependencies do not depend on the presence of an unrelated native mechanism. */
-export function worldBindings(doc:Composition):boolean{return Object.keys(bindingDefaults(doc)).some(name=>{const provider=providerOf(name);return provider?BINDING_PROVIDERS[provider].world===true:false;});}
+export function worldBindings(doc:ChunkDocument):boolean{return Object.keys(bindingDefaults(doc)).some(name=>{const provider=providerOf(name);return provider?BINDING_PROVIDERS[provider].world===true:false;});}
 /** The presentation signals (name and starting stamp) the composition's providers and the scene's values offer: the targets a scene's cues may name. */
-export function providerSignals(doc:Composition,values?:Parameters<typeof valueSignals>[0]):Record<string,number>{const out:Record<string,number>={};for(const name of Object.keys(bindingDefaults(doc))){const p=providerOf(name);if(p)Object.assign(out,BINDING_PROVIDERS[p].signals);}return{...out,...valueSignals(values)};}
+export function providerSignals(doc:ChunkDocument,values?:Parameters<typeof valueSignals>[0]):Record<string,number>{const out:Record<string,number>={};for(const name of Object.keys(bindingDefaults(doc))){const p=providerOf(name);if(p)Object.assign(out,BINDING_PROVIDERS[p].signals);}return{...out,...valueSignals(values)};}
 /**
  * Composition bindings a registered provider does not offer, each as a message naming the instance, its field and the binding.
  * A provider's `keys` (binding-keys.ts) say what it offers; a hole names something of this scene (an actor, an artwork instance,
  * a value of the stage), which must exist. A `held.<instance>` names artwork of the composition.
  */
-export function unofferedBindings(doc:Composition,scene:Parameters<typeof bindingKeyScope>[1],scope:BindingKeyScope=bindingKeyScope(doc.instances,scene)):string[]{
+export function unofferedBindings(doc:ChunkDocument,scene:Parameters<typeof bindingKeyScope>[1],scope:BindingKeyScope=bindingKeyScope(doc.instances,scene)):string[]{
  const out:string[]=[];
  for(const node of flatten(doc.instances))for(const[field,source]of Object.entries(node.bindings??{})){
   const held=HELD.exec(source);
@@ -75,10 +75,10 @@ export function unofferedBindings(doc:Composition,scene:Parameters<typeof bindin
  }
  return out;
 }
-export function unknownBindingSources(doc:Composition):string[]{return [...new Set(flatten(doc.instances).flatMap(n=>Object.values(n.bindings??{})))].filter(s=>!knownBindingSource(s));}
+export function unknownBindingSources(doc:ChunkDocument):string[]{return [...new Set(flatten(doc.instances).flatMap(n=>Object.values(n.bindings??{})))].filter(s=>!knownBindingSource(s));}
 const roleList=(source:SceneDocument,role:string):readonly string[]=>{const ref=(source.presentation?.actors as Record<string,unknown>|undefined)?.[role];return Array.isArray(ref)?ref as string[]:typeof ref==='string'?[ref]:[];};
 /** This frame's values for every binding the composition uses. */
-export function bindingValues(doc:Composition,ctx:BindingContext,rules:StageActorRules|undefined):Record<string,Value>{
+export function bindingValues(doc:ChunkDocument,ctx:BindingContext,rules:StageActorRules|undefined):Record<string,Value>{
  const out=bindingDefaults(doc),{view,rows,roles}=ctx,used=new Set(Object.keys(out)),memo=ctx.memo??new Map<string,unknown>();
  if(used.has('world.light'))out['world.light']=view.lighting as unknown as Value;
  const wanted=new Map<string,Set<string>>();

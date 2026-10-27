@@ -4,7 +4,10 @@ import { gameStorage } from './storage';
 import type { SceneSave } from '../data/types';
 import { type ClockSave, newClock, fixClock } from "../world/clock";
 import { START_MODULES } from '../data/index';
-import { playProfile, saveKey } from './play-profile';
+import { saveKey,startCheckpoint } from './play-profile';
+import {fixtureSave,fixtureStateMetadata,fixtureFlags,fixturePrograms,fixtureKeys,type PlayFixtureVocabulary} from '../world/checkpoints';
+import {SCENES} from '../scenes';
+import type {SceneDef} from '../scenes/kit';
 
 
 // ---------- save state ----------
@@ -56,20 +59,26 @@ export interface Save {
 }
 
 
-/** A fresh player save; the title/glide hands it to the train-home opening. */
+/** A fresh run resolves its starting values from the selected configuration checkpoint. */
 
-export function newSave(): Save {
-  const { seed } = playProfile();
-  return { ...(seed.scene ? { scene: seed.scene } : {}), handle: seed.handle, tokens: seed.tokens, jump: false, modules: [...START_MODULES, ...seed.modules], keyring: [], items: {}, controlled: [], programs: [], nets: [], flags: Object.fromEntries(seed.flags.map(f => [f, true])), scenes: {}, clock: newClock() };
+export interface SaveStartContext {scenes?:Readonly<Record<string,SceneDef>>;vocabulary?:PlayFixtureVocabulary}
+export function newSave(context:SaveStartContext={}): Save {
+  const scenes=context.scenes??SCENES,vocabulary=context.vocabulary??{flags:new Set(fixtureFlags),programs:new Set(fixturePrograms),keyring:new Set(fixtureKeys),states:fixtureStateMetadata(scenes)};
+  const save=fixtureSave(startCheckpoint(),Object.keys(scenes),vocabulary);
+  save.clock.seed=newClock().seed;
+  // The game records a resume location when it actually enters a chunk, not when a starting
+  // template is constructed. No visited/discovery receipt is manufactured here.
+  delete save.scene;
+  return save;
 }
 
 
 /** A stored save, with anything missing filled in from a new game. */
-export function loadSave(): Save {
+export function loadSave(context:SaveStartContext={}): Save {
   try {
     const raw = gameStorage.getItem(saveKey());
     if (raw) {
-      const s: Save = { ...newSave(), ...JSON.parse(raw) };
+      const s: Save = { ...newSave(context), ...JSON.parse(raw) };
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
       if (!s.scenes || typeof s.scenes !== 'object') s.scenes = {};
       if (!Array.isArray(s.keyring)) s.keyring = [];
@@ -81,11 +90,10 @@ export function loadSave(): Save {
       const safe=(k:string)=>!['__proto__','constructor','prototype'].includes(k);
       s.gameplay=Object.fromEntries(Object.entries(s.gameplay).filter(([owner,block])=>safe(owner)&&block&&typeof block==='object'&&!Array.isArray(block)).map(([owner,block])=>[owner,Object.fromEntries(Object.entries(block).filter(([k,v])=>safe(k)&&(v===null||typeof v==='boolean'||typeof v==='string'&&v.length<=2000||typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<=Number.MAX_SAFE_INTEGER)))]));
       s.clock = fixClock(JSON.parse(raw).clock);
-      for(const m of playProfile().seed.modules)if(!s.modules.includes(m))s.modules.push(m);
       return s;
     }
   } catch { /* private window or blocked storage: start fresh */ }
-  return newSave();
+  return newSave(context);
 }
 
 

@@ -1,6 +1,6 @@
 /** The drink formerly embedded in the beach mixer, as an ordinary placeable object. */
-import type {Element} from '../core/composition';
-export const drinkElement:Element={type:'props.drink',version:1,label:'Drink with garnish',category:'props',coordinates:'world',libraryUse:'reusable',parts:['backdrop'],
+import type {AssetDefinition} from '../core/composition';
+export const drinkElement:AssetDefinition={type:'props.drink',version:1,label:'Drink with garnish',category:'props',coordinates:'world',libraryUse:'reusable',parts:['backdrop'],
  fields:{width:{kind:'number',label:'Glass width',default:5,min:2,max:100,step:1},height:{kind:'number',label:'Glass height',default:6,min:2,max:100,step:1}},
  visualFields:{present:{kind:'boolean',label:'Drink present',default:true},visible:{kind:'boolean',label:'Visible',default:true}},
  bounds:p=>({x:-2,h:Number(p.height)+1,w:Math.max(6,Number(p.width)),tall:Number(p.height)+1}),

@@ -6,7 +6,7 @@
  * Read-only.
  */
 import type {EditorDocument,PreviewRequest,PreviewResult,WorkbenchContext} from './contracts';
-import type { Composition } from '../art/core/composition';
+import type { ChunkDocument } from '../art/core/composition';
 import { crowdMix } from '../art/characters/crowds';
 import { PROPOSAL_SCENES } from './proposal-scenes';
 
@@ -63,7 +63,7 @@ export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, r
     return session.views![frame.district] ??= { scene: frame.scene && scenes.includes(frame.scene) ? frame.scene : scenes[0], cameraX: frame.cameraX ?? 0, minute: frame.minute, weather: frame.weather };
   }
   function draw(canvas: HTMLCanvasElement, status: HTMLElement, scene: string, v: { cameraX: number; minute: number; weather: string }) {
-    const composition = docs.get(scene)?.value as Composition | undefined; if (!composition) return;
+    const composition = docs.get(scene)?.value as ChunkDocument | undefined; if (!composition) return;
     try { render(canvas, { documents: new Map(context.documents.map(d => [d.id, d.value])), composition: structuredClone(composition), time: 0, reduced: true, overlays: false,
       environment: { ...environment, cameraX: v.cameraX, minute: v.minute, weather: v.weather, renderScale: canvas.width / 640 } }); status.textContent = ''; }
     catch (error) { status.textContent = `Preview unavailable: ${error instanceof Error ? error.message : String(error)}`; }

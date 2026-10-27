@@ -14,7 +14,7 @@
  * Every piece is drawn in its own frame (origin at its foot on the left, `y(h) = -h`), every visual
  * choice is a field, unset choices come from the seed. The world's text stays deadpan.
  */
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import { rng, text as paintText } from '../core/primitives';
 import { windowLit } from '../../world/light';
 import { neonPlate } from '../signage/kit';
@@ -601,4 +601,4 @@ export const marketFootbridgeElement = piece({
   },
 });
 
-export const marketApproach: Element[] = [marketHallFrontElement, forecourtStallElement, marketCratesElement, marketLorryElement, marketHoseElement, marketFootbridgeElement];
+export const marketApproach: AssetDefinition[] = [marketHallFrontElement, forecourtStallElement, marketCratesElement, marketLorryElement, marketHoseElement, marketFootbridgeElement];

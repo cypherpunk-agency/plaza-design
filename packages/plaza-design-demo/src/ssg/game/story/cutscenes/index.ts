@@ -20,7 +20,7 @@ import {renderWorldFrame} from '../../runtime/render-scene';
 import type {FrameSource} from '../../runtime/prepare-frame';
 import { cinematicDocuments } from './documents';
 import type { TimelineProgram } from '../../art/core/timeline';
-import type { Composition } from '../../art/core/composition';
+import type { ChunkDocument } from '../../art/core/composition';
 import type { Timeline } from "../../ui/transport";
 import type { Cutscene, CutView } from './types';
 
@@ -62,7 +62,7 @@ export class CutscenePlay {
   skipped=false;
   private wrapped: { size: number; maxW: number; lines: string[][]; widths: number[] } | null = null;
 
-  constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean }) {scene.advance?.(0);}
+  constructor(readonly scene: Cutscene, private opts: { reduced: boolean; touch: boolean; startAt?:number }) {this.t=opts.startAt??0;if(opts.startAt!==undefined)scene.seek?.(this.t);scene.advance?.(this.t);}
 
   /** Initialize viewport-dependent art inputs before the first animation tick. No animation advances. */
   prepare(x:CanvasRenderingContext2D,W:number,H:number,lighting:Light){const size=Math.max(10,Math.min(18,Math.round(H/26)));this.scene.prepare?.(x,{lighting,viewW:W,viewH:H,barTop:Math.round(Math.max(16,H*.09)),barBottom:Math.round(Math.max(size*3.6,H*.16)),reduced:this.opts.reduced},this.t);}
@@ -181,7 +181,7 @@ export class CutscenePlay {
 }
 
 /** Composer and runtime use the same picture, letterbox, wrapping, typing and skip presentation. */
-export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options:Partial<Pick<FrameSource,'registry'|'frame'|'ambient'|'sequenceId'|'scale'|'capture'>>&{documents?:CinematicDocuments;seek?:IntroSeekSession;reduced:boolean;lighting?:Light; touch?: boolean; timeline?: TimelineProgram; composition?: Composition }) {
+export function renderCutsceneDocument(x: CanvasRenderingContext2D, W: number, H: number, id: 'intro' | 'act2', seconds: number, options:Partial<Pick<FrameSource,'registry'|'frame'|'ambient'|'sequenceId'|'scale'|'capture'>>&{documents?:CinematicDocuments;seek?:IntroSeekSession;reduced:boolean;lighting?:Light; touch?: boolean; timeline?: TimelineProgram; composition?: ChunkDocument }) {
   const timeline = options.timeline ?? cinematicDocuments.timeline, sequence = timeline.sequences.find(s => s.id === (options.sequenceId ?? id));
   if (!sequence) throw new Error(`Cutscene ${id}: missing timeline sequence`);
   let prepared:ReturnType<typeof renderWorldFrame>|undefined;

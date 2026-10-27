@@ -1,11 +1,189 @@
-# Scene and animation composer
+# World and animation composer
+
+For the current feedback queue, direct local links and task instructions, use
+[Pending user review](../docs/design/USER-REVIEW-GUIDE.md). It distinguishes user experience
+decisions from mechanics already verified and known work that is not ready for acceptance.
+
+The header browser opens **Compositions** (named chunk arrangements) or individual chunk sources.
+For example, `/editor/#composition=boundary-example` opens all members of the Boundary example
+in one workspace. The outline shows each source; **Focus** frames a member without leaving that
+workspace. Source edits still use ComposerModel history and the protected source Save/bundle path.
+Composition membership is an authoring fact, separately from the loading status reported by Play.
+Hover and click share one hit target. A highlighted object's selectable rectangle, including gaps
+inside a people-flow group or an editor handle, selects that source. Masks and clipping still limit
+the target; smaller targets take priority, with paint order breaking equal-size ties. The native
+pixel query is only a fallback for paint outside conservative rectangles. Proposal/style frames
+retain their own authoring source when borrowing native scene behavior.
+Artwork drags check world connections before updating the preview. A connected floor or other
+anchor stays in place when moving it would separate endpoints; edit the connection first.
+Procedural motion also blocks direct dragging. A rejected drop immediately restores the committed view.
+
+Numeric values throughout the editor support horizontal scrubbing: drag right to increase or left
+to decrease, Shift for 10× increments, Alt for 0.1× increments. Click without dragging to type an
+exact value; Enter applies it. Escape cancels an active drag. Whole-number fields stay whole and
+field ranges are enforced. Artwork drags use the existing transient preview with composition/schema checks during movement;
+full prospective game validation runs once on release and rejects the entire edit atomically if
+needed. Other numeric source edits retain their registered validation. Scrubbing pauses editor
+animation at the playhead and creates one Undo command on release. Numeric fields inside an
+Apply/Cancel form still change only that draft; use Apply to change source. Touch keeps native
+numeric entry and scrolling. Spinner buttons are hidden; keyboard number entry remains available.
+
+Character dialogue lives in named gameplay conversation graphs. Select the character and use
+**Behaviour → Edit conversation definition**, or **Library → Conversations** to browse definitions
+and their source-scoped usages. Character name/prompt and conversation binding remain contextual;
+pages, choices, conditional entries and progress commands use the common graph controls. Newly
+created actors save their graph alongside their source/artwork in one history operation. Disabling
+a character's conversation leaves the definition intact; re-enabling retains its edits and state key.
+Interaction outcomes that name a conversation also offer **Edit conversation definition**. For
+Harbor's supervisor, select **use-boss → Behaviour** for the interaction, or **boss → Behaviour**
+for its separately authored actor. Catalogue chunks use the same prospective source assembler,
+with their actual composition, devices and shared declarations.
+Duplicating an actor-specific conversation creates a graph for the copy with independent saved
+progress; a deliberately shared conversation reference stays shared. Named graph references are
+the only persisted dialogue format for people and the only talkability marker used by the game.
+Native character chatter uses a world bubble; choices/text input use the normal conversation panel.
+For a robot using a default voice, Behaviour exposes **Shared robot voice**: its name, prompt and
+conversation reference. **Edit robot conversation definition** opens **Robot conversations** in
+the same library. **Show usages** lists its shared voice binding and actual consuming chunks.
+Each robot keeps independent saved progress. State/command/query IDs under the reusable graph's
+ID are specialized into that actor's stable namespace; explicit world-state bindings stay canonical.
+Unprefixed dependencies remain shared, and conflicting declarations reject before publication.
+Animals use the same contextual binding controls and **Animal conversations** library. An animal
+without a shared interaction offers **Enable shared animal interaction**, creating its ordinary
+graph and binding together. Removing that interaction retains the reusable graph. Shipped cat and
+pigeon replies share `critter.visits`, declared with session lifetime: it survives movement between
+chunks during a run, resets with the run, and is omitted from saved files. Speaker names edit the
+graph itself; there is no second reply list or speaker-name source in the metadata.
+
+Select a chunk, open **Companion**, then expand **Shared companion definition** for its global
+appearance, follow tuning and default interaction. Changes there affect every chunk inheriting
+those defaults. The chunk controls its mode and resting places. Following uses a normal condition:
+by default, the `pixel` flag. **Override shared follow availability** enables a local condition;
+choosing Always explicitly permits following there. Home residence is independent of following.
+Local and shared pet references offer **Edit … definition** links to the same conversation library.
+
+Select a door or other native target asset and open **Behaviour** for its prompt, visibility and
+outcomes. The link comes from the engine's compiled layout anchor, including mechanism-derived
+anchors. Select the chunk's **Logic → Interactions & story → Triggers** to bind conditions to
+ordinary system commands. New rules start false and use rising activation; give the trigger an
+ID, select a command and author its condition. Device sensors/zones remain on the selected device.
+Save restoration establishes the trigger baseline rather than replaying it.
+
+**Developer tools** holds **Test configurations**, **Review shortcuts**, private test beds and
+experimental labs. These configure testing and storage isolation; they do not mount world chunks.
+
+**World data → Game settings** groups Launch, Player, Guidance & time, Contacts and Ending.
+These edit the default campaign configuration and the original story/contacts/ending sources.
+Player exposes abilities, body/name and person-kit appearance. Launch selects a **Starting
+checkpoint**; **Edit starting checkpoint** opens its **Starting state** inspector. That is the
+single home for starting handle, inventory, flags, scalar values and entry placement. The same
+form is used in private Play. Checkpoint entrances/X apply once on fresh arrival; Continue uses
+current progress. Fixed/running/story time is a runtime policy, not an editor-only override.
+A checkpoint referenced by a run configuration cannot be deleted until the reference is rebound.
+New Game also consumes the checkpoint's environment, metro starting state and optional sequence
+and time. A start without direction enters play immediately. The shipped Full game and Harbor
+checkpoints explicitly reference `glide` at 0 seconds. Source-based reconstruction and private
+Play share `world/checkpoint-state.ts` and `runtime/sequence-state.ts`; receipts prevent commands
+before the starting playhead from repeating. Continue keeps the current save.
+Inside private Play, **Run configuration** chooses campaign capabilities/body/guidance independently
+of the selected checkpoint. The default follows the existing frame policy; choose Full game when
+reviewing edits to Game settings. Test District offers only its own world configuration. Switching
+configuration stops the old isolated run; Play creates a new realm from pending sources.
+Test run overrides remain in Developer tools; the default campaign is not offered again in that picker.
+**Library → Story logic** edits global system-command milestones, phase policies, cards and
+story triggers. Triggers use the same typed conditions as commands: compare registered story
+observations (phase, chunk, viewed device, bubble/popup, elapsed timestamp) or declared values.
+An optional watch condition starts a presentation timestamp once. Cues handle presentation and
+invoke ordinary system-command milestones; attempts and readiness are ordinary session state.
+To change a chunk's goals, arrival, exits, barriers or room light in a phase,
+select that chunk and use **Story phases**. There is no separate global chunk-phase picker.
+
+**World data → World variables** browses authored scalar declarations across chunk sources and
+shared libraries. Filter by declaration, storage key or source, then select a variable. Its type,
+default, lifetime, bounds and optional storage binding use the same schema controls as gameplay.
+**New world variable** creates a shared declaration; chunks access its prefix through their
+ordinary state-declaration controls. Usages list typed conditions/actions/templates and explicit
+checkpoint overrides, with Open context buttons where available. Equal local IDs in different
+sources remain distinct. A default or checkpoint value is not a readout of the live campaign save.
+
+**World data → City map** uses the game's map renderer with a source inspector beside it. Click a
+place or use its picker. **Place** edits its name, physical arrival, district membership, map point
+and discovery rule; **Districts** edits district geography; **Travel** edits fares, stations, taxi
+routes, locks and references to physical entry rules. **Map layout & discovery** contains broader
+topology and place creation/merge controls. These replace the separate Districts and City & travel
+screens. Station routes are drafts until Apply; Discard changes no source. Drafts and expanded
+sections survive switching map inspector sections. **Preview conditions** is separate from saved
+source: simulating discovery, carried keys or flags there never changes the campaign save.
+
+Select a chunk or group under **Chunks and groups**, or click its viewport border label. The
+inspector edits its X/Y membership placement, shared group definition, exported endpoints and
+connections. Drag a border label to move; Shift-drag moves connected members together. A rejected
+move explains the connection constraint and changes no source/history; the last valid preview stays visible.
+Moving the origin chunk or its group keeps the editor view and unrelated chunks stationary. Chunk borders can be hidden.
+
+**Mount chunk / group** opens a source picker in the right inspector before changing anything. Apply creates one validated edit;
+Cancel creates none. Sources already mounted elsewhere are excluded because a live chunk has one
+placement. **New composition** can mount a first chunk or reusable group in the same operation.
+**Unmount** retains the source and explicitly confirms affected connections; exported group
+endpoints must be reassigned first. An empty composition remains navigable and offers mounting
+instead of displaying an unmounted source as though it were still present. **New chunk** creates
+source; **More → Remove chunk source** deliberately deletes an authored source and its default
+checkpoints, separately from unmounting it. References must remain valid.
+
+Connections open in the right inspector from their viewport label or member controls. Their two
+chunks are highlighted; From/To anchors, traversal and optional alignment remain beside the world.
+Group endpoints, new compositions/chunks, mounting and removal confirmations use the same inspector
+with Apply/Cancel. Cancel and invalid Apply change no source/history; invalid drafts stay visible.
+A blocked placement has a persistent wrapping warning above the inspector, with Select connection,
+Select containing group where applicable, Shift-drag guidance and expandable technical details.
+The header only summarizes the error; it does not carry the full explanation.
+
+**Sequence context** is optional within a composition. Choose **No sequence · base editing** to
+hide the timeline and edit base content, or choose a linked sequence for its bottom timeline.
+Links, checkpoints, reload and the sequence chooser establish the same explicit, paused direction
+context. Switching to base editing also exits camera preview and executes no completion/cancellation
+command; pan/zoom
+remain editor preferences. Standalone sequences still open directly. `ChunkDocument` is the visual
+source type, `AssetInstance` its placed content and `AssetDefinition` its registered definition;
+stored `kind: composition`, `scene` and `instances` fields retain their source identities.
+
+Checkpoints extend `world/checkpoints.json`; there is no second starting-state source. Choose one from
+the workspace's checkpoint selector. In Play's existing starting-state form, configure its player
+chunk/X, world flags, inventory, scalar inputs, clock/weather, optional composition membership and
+optional sequence/time. Membership overrides belong to that checkpoint, not the source arrangement.
+`checkpointSeed` is the shared lowering to current world state. `sequenceInspection` reconstructs
+earlier sequence commands and real mover paths without native triggers/storage/reward observers;
+private Play restores those inputs and receipts through the existing playback controllers.
+Explicit scalar bindings write their canonical world-state key, never a local alias copy.
+
+Library › Storyboard retains story/status/teaching notes and can link a composition, checkpoint and
+sequence. A beat with a checkpoint is a playable starting situation; other beats remain planning or
+editor navigation. Branches only navigate. Gameplay transition links reference existing compiled
+commands/triggers and identify their source chunk; Logic edits the real rule. Storyboard never runs
+conditions or commands. Broken references reject together with other pending source edits.
+
+Reload restores the last composition or chunk and its workspace view in this browser: zoom/pan, playhead and
+sequence, timeline layout/scroll/folds, selection, preview settings and outline mode. Each workspace
+remembers its own view; explicit composition/checkpoint/chunk links take precedence. Playback resumes paused. These
+preferences do not save source edits or game progress. The outline defaults to Order, and both
+the layer name and its arrow toggle the layer's contents.
+
+Chunk badges live in the left outline. Click one to inspect its status in the right inspector.
+Editing previews say **Prepared for editing**, which is not a claim about gameplay residency.
+The viewport's **Chunk status** toggle adds that annotation beside **Chunk borders**; the camera
+label identifies the authored camera, not a loaded chunk. During native Scene Play, the outline
+shows actual hosted/retained models, lifecycle reasons and mobile entities with their current
+chunk. Stop restores the editing outline. These diagnostics consume Game's detached inspection;
+they never load chunks or run a second residency calculation in the editor.
 
 Public editor: **https://cypherpunk.agency/editor/**. The same editor is packaged locally.
 Public edits remain in the browser; download a bundle before closing. Importing a bundle is one
 undoable operation. Public editing does not change the published game or write repository files.
 
-World → Compositions edits named chunk groups and placed membership through the same source,
-history, bundle and protected Save as scenes. Runtime mount/unmount actions live in shared
+Composition/member editing uses the same source, history, bundle and protected Save as assets;
+there are no separate Compositions, Zones or Scenes screens. External chunk connections are
+available from the selected chunk inspector's **Connections** section. Draft traversal/endpoints
+and offsets together, then Apply; constraints reject atomically. Runtime mount/unmount actions live in shared
 system commands; inspect pending/applied state in private Play. A state declaration's optional
 **State binding** is a world key: empty uses its qualified declaration ID; an explicit key lets
 alternate presentations access the same value. No values are copied.
@@ -15,6 +193,38 @@ composition or explicit zones and an origin chunk. Composition mode follows curr
 without another member list. The bottom timeline edits keyframes and typed command markers,
 skip policy and completion/cancellation lists. Event handoffs can select the sequence. Scrub uses
 isolated state; private Play runs the full engine. See the [compact example and acceptance](../docs/design/WORLD-FIRST-RUNTIME.md).
+
+Inspector animation uses inline diamonds and previous/next key arrows. A muted hollow diamond
+means no animation; a colored hollow diamond means an animated property between keys; a filled
+diamond means a key at the playhead. Click to add/remove a key. Animated value edits add/update
+that playhead's key; unanimated artwork fields edit their base value. Camera and transient visual
+state values create keys. Procedural tracks show their formula and disable direct value/key edits.
+Targets in referenced chunks/backdrops can also be keyed: the target stores its source scene ID,
+so equal object IDs in different chunks remain distinct. These keys belong to the directing sequence;
+they do not rewrite the shared source's base values. Dragging keyed X/Y updates the current keys
+in one undoable edit. Numeric fields retain validation without spinner arrows. Position labels are
+X and Y; positive Y is upward, using the engine's existing height convention.
+
+Standalone artwork's scalar fields are animatable by default (including color and discrete choices).
+Explicit `animatable:false`, structured lists and source/configuration fields remain fixed unless
+explicitly opted in. The registry exposes this same eligibility to the evaluator, inspector and grid.
+Outside a sequence, muted disabled diamonds explain that a sequence is required to author keys.
+
+Visible artwork is click-picked by replaying captured paint commands with the same primitive painter
+on a one-pixel probe. No separate drawing implementation is involved. This respects native masks,
+visibility, camera transforms and paint order, including grouped items beyond conservative bounds.
+Hover outlines still use inexpensive bounds. Neighboring visible chunks remain selectable through
+source-qualified IDs. The camera frame edges and label select Camera. Skies (sun, moon, clouds)
+are ordinary `environment.sky` groups in scene/backdrop sources; they paint once in the shared sky
+pass. Backdrop sky settings are no longer duplicated in a separate metadata form.
+
+Performance: validators and editor reads share immutable inspection snapshots. Mutable get/list
+reads remain detached. Unchanged source subtrees retain identity, while edits/history/save replace
+versions and invalidate derived data. Graph and native key metadata cache only identical immutable
+inputs; all prospective validation still runs. Drag motion previews skip full document validation and
+commit one fully validated transaction on release. Transient movement does not reconstruct the
+sequence's isolated simulation on every pointer move. Use `?perf` for local CPU recordings.
+
 
 ## Local workflow
 
@@ -46,13 +256,15 @@ viewers and world tools retain that common structure.
 
 ## Implementation boundaries
 
+- Read `authoring.snapshot()` for an immutable current document view when deriving shared inspector data. Reuse `validationSnapshot` and the prospective registry; do not deep-copy every document or reassemble an already-validated scene for each field/section. Source edits still use the normal validated command/history operations.
+
 - `contracts.ts` owns editor document, preview and extension contracts. Non-UI modules import these types directly.
 - `composer-model.ts` owns prospective document validation, grouped changes and undo/redo. There is one model; UI modules never maintain another copy of edited source.
 - `app.ts` mounts and coordinates the editor. `controls.ts` builds typed form fields; `temporal-inspector.ts` builds camera/keyframe controls using the existing command port; `timeline-view.ts` draws the editing grid.
 - `viewport-input.ts` owns pointer/wheel/viewport-key listeners and transient gestures. Its disposer removes listeners and cancels transient state; a drag still commits one ComposerModel history transaction on release.
 - `selection.ts` resolves hit bounds and the source document/instance identity. One selection record owns the source document, instance and optional timeline selection. Inspector identity and mount keys include the source document, including identical local IDs in different sources.
 - `inspector.ts` owns regular inspector tabs and mounted section disposal. `temporal-inspector.ts` owns typed sequence/keyframe controls; both call the existing command port.
-- `preview-integration.ts` serializes pending renders and coalesces overlapping requests on the existing editor frame loop. Its state contains derived paint results and workspace/crop measurements, not source or gameplay state. Edit/navigation requests invalidate in-flight results, measurements and errors immediately. Playback advances coalesce without starving accepted frames. Disposal prevents queued restarts. Native preview remains authoritative.
+- `preview-integration.ts` serializes pending renders and coalesces overlapping requests on the existing editor frame loop. Its state contains derived paint results and workspace measurements, not source or gameplay state. Edit/navigation requests invalidate in-flight results, measurements and errors immediately. Playback advances coalesce without starving accepted frames. Disposal prevents queued restarts. Native preview remains authoritative.
 - `art/core/geometry.ts` supplies the same projection and canvas/bounds math used by runtime input/cameras and native preview.
 - `viewport-navigation.ts` contains stateless pan/zoom calculations. Workspace navigation is local editor state, not authored camera data.
 - `runtime/frame.ts` defines common frame inputs and the pure timeline-to-director conversion. Preparation and painting import those contracts; neither imports the other for a conversion helper.
@@ -92,7 +304,7 @@ paints in the shared frame's sky phase, including isolated asset and world backd
 Ships use their existing seeded default configuration; removing the source instance removes the
 fleet. There is no automatic game/editor fleet fallback. Camera sequences exclude a fleet unless
 its explicit `Also draw in camera sequences` field is enabled.
-The artwork gallery separates **Structure** (Object or Composition), **Usability** (Reusable anywhere
+The asset gallery separates **Structure** (Object or Assembly), **Usability** (Reusable anywhere
 or Requires source context), **Kind**, District and Source. All filter sections collapse independently.
 It opens on reusable artwork. Invisible markers, light/shadow sources, the player layer and the empty
 grouping tool live in the separate **Scene helpers** section. Cutscene origin belongs under Source,
@@ -146,25 +358,26 @@ only settings: what it places is an ordinary kit piece.
 On the Scene stage a left press on artwork selects it and drags it once the pointer moves; a left press
 on empty space deselects. Middle or right drag pans (right also covers a pen's barrel button), one
 finger pans on touch and two fingers zoom. Delete or Backspace deletes the selection; when attached
-artwork would go with it, a dialog lists it first, and gameplay-bound pieces refuse with the reason.
-**＋ New scene** beside the scene picker creates a scene the same way as World › Scenes. Play on a
-scene without a starting state adds the default one and starts. World › Districts creates, renames,
-places and removes districts.
+artwork would go with it, the inspector lists it for confirmation first, and gameplay-bound pieces refuse with the reason.
+**＋ New chunk** in the workspace browser creates a source chunk. Choose a checkpoint for its
+starting situation; Play consumes pending edits in an isolated frame. **World data → City map**
+edits district geography, places, discovery and travel alongside the native map preview.
 
-**World › Zones** (`zone-graph-authoring.ts`) edits `world/zone-graph.json`, the seams that join scenes
-with no cut (docs/design/SEAMLESS-WORLD.md §2, §6.1). The left list shows each seam as From → To with a kind icon
-(walk, stairs, door) and a tick or a problem count; the card on the right edits the selected one: kind, the From and
-To scenes by name (with *open* links), the stair or door piece on each side (stairs and doors only), and where the To
-scene starts (x, height, in the From scene's units). **Align to edge** puts a walk seam's To scene against the From
-scene's edge. A diagram draws both scenes at their offsets with the seam marked. Each edit is one history step and is
-checked for its shape. Problems against the zones (`worldProblems`: unknown scene or piece, an edge that does not meet,
-a loop that disagrees) appear in plain words beside the field they concern, and protected Save refuses them.
+**Chunk inspector → Connections** (`chunk-connections.ts`) edits the existing
+`world/zone-graph.json` links to other arrangements. The selected chunk lists its connections;
+Add/Edit opens a complete draft with From/To chunks, traversal, crossing pieces and X/Y offsets.
+Align To at left/right edge sets a walk placement. Apply validates the pending native world;
+a conflicting loop, missing piece or invalid crossing leaves source and history unchanged.
+Internal composition connections use `world-workspace-controls.ts` with registered asset anchors
+and group exports. Both compilation and editor alignment call `worldEndpointPosition`; the editor
+never reconstructs endpoint placement with a second formula.
 
-In the Scene view, a scene joined by seams shows its neighbours one seam away, drawn live from their pending
-sources by the shared frame renderer. **Show joined scenes** in the toolbar (on by default) turns them on or off;
-**Fit joined** zooms out to frame the scene with them. Each neighbour is dimmed and tagged ("Tower annex · joined →")
-because it is read-only here; the tag's **Go to …** button, or a double-click on it, opens that scene. Private Play
-uses the pending graph.
+In a standalone chunk workspace, **Show neighbours** reveals connected chunks from their pending
+sources through the shared renderer; **Fit visible chunks** frames their actual prepared regions.
+Named compositions show their mounted members. Neighbour assets are selectable and editable through
+source-qualified identities in the same workspace. **Focus** frames a member; **Open source scene**
+in the inspector explicitly leaves the composition to open the standalone source. There is no second
+read-only neighbour mode or automatic double-click cutover. Private Play uses the pending graph.
 
 A selected **barrier** (`level.barrier`, marked with a padlock in the outline) opens its **Access** tab first
 (`barrier-authoring.ts`): the rule as a sentence in large type ("Opens when you carry UPLINK.SO · Refuses with: …"),
@@ -279,7 +492,7 @@ source controls, duration, handoff and loop range. Zoom changes the temporal gri
 Animation shortcuts work throughout the scene editor and the visible character, vehicle,
 building and signage viewers: **Space** play/pause, **comma** previous frame, **period** next frame,
 **Left/Right** back/forward one second, **Shift+Left/Right** five seconds. Text fields, selects,
-editable content and open dialogs retain their own keys. **Alt+arrows** nudges artwork; Up/Down
+editable fields retain their own keys. **Alt+arrows** nudges artwork; Up/Down
 also retain vertical nudging when the scene canvas is focused. Private native Play owns its own
 inputs inside its isolated frame.
 
@@ -361,3 +574,47 @@ Harbor stalls accept their own width and an optional prepared vendor. Moth monit
 rig-shelf cables, and Capsule plug cables, are explicit options. Add unbound bodies in another
 scene through the ordinary library, then attach/bind only the context that scene actually provides.
 The exact supported/retained contracts are in `docs/reference/ARTWORK-ROLE-AUTHORING.md`.
+
+## Opening review and membership changes
+
+The current `harbor-world` composition references the original ten chunk sources. `opening-coast`,
+`harbor-arrival` and `harbor-work` are reusable chunk groups, not separate runtimes. The source
+arrangement contains all three. Named endpoints may add an X/Y landing offset to a floor anchor;
+this describes the actual stair landing without moving either chunk. External rail seams remain
+in the ordinary zone graph; placement inside a composition has only one source of truth.
+
+Open these links under your running editor origin (locally, currently `http://127.0.0.1:64422`):
+
+| Checkpoint | Editor path | What to inspect |
+| --- | --- | --- |
+| Launch coast | `/editor/#checkpoint=review-launch` | Title sequence, directed coast and launch camera. Private Play shows the actual launch menu. |
+| City glide | `/editor/#checkpoint=review-glide` | Glide at second 19; scrub the existing bottom timeline, select a source asset, edit base values or its keys. |
+| Harbor arrival | `/editor/#checkpoint=review-arrival` | Final frame at second 68; private Play executes the authored completion and releases the real train. |
+| First task | `/editor/#checkpoint=review-first-task` | Player beside the supervisor, without walking through the harbor. Use E to advance the arrival line and talk. |
+| Regular world | `/editor/#checkpoint=review-world` | Completed shift, morning platform; arrival/work mounted, coast absent. |
+
+Library → Storyboard links these starting points to the original prologue beats. Links with
+`&panel=storyboard` keep the storyboard beside the stage. The URL also carries the selected sequence
+and playhead. Editor reload restores paused, preserving the workspace framing. Checkpoint selection
+frames its player chunk; Focus changes framing without leaving the composition. Stop private Play
+returns to the same editing context. Opening another checkpoint disposes the old private session.
+
+The real opening's `intro.hold` command unmounts work during direction; `intro.release` mounts work
+before `intro.retire-coast` requests coast removal. Completion and Escape share these commands and
+saved receipts. Independent commands may reconcile safe pure additions before a later retirement;
+a single atomic edit is never split. Retirement uses existing lifecycle dependencies and may remain
+pending while the coast is visible or supplies live movers. Harbor is retained, not rebuilt.
+Launch/resume milestones in the opening source mount the launch coast and restore regular membership
+when continuing a run. Ordinary pause menus stay above the current scene.
+
+Use **ensure mounted/unmounted** only for explicitly idempotent lifecycle commands. It tolerates an
+already absent member or an identical already mounted member; it rejects a conflicting member and
+never silently replaces it. Checkpoints with a sequence whose origin is unmounted reject before Play.
+Final opening geography, landmarks and pacing remain a designer decision; these review checkpoints
+exercise the current content rather than fixing those choices.
+
+The verified prologue/editor tasks and exact review steps are listed in
+[Prologue and authoring acceptance](../docs/design/PROLOGUE-AUTHORING-ACCEPTANCE.md).
+The Harbor shuttle remains after checkout and through the commute; the ordinary line takes over
+once the player enters home (`opening:flat`), away from the platform camera. Phase arrival speech
+and goals apply on seamless crossings as well as ordinary entrances.

@@ -1,7 +1,7 @@
 /** Editable reading-room elements. Geometry comes from composition instances; rules stay in the scene. */
 import type { PreparedCharacter } from '../../runtime/characters';
 import { drawCharacterFrame } from '../characters/appearance';
-import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
+import type { Anchor, Bounds, AssetDefinition, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { exitDoor, notice } from '../core/primitives';
 import { camera, taped, ticker } from '../signage/screens';
@@ -29,15 +29,15 @@ function kernel(L = layout(), width = 960, ceiling = 176, originX = 0, facing = 
 }
 const raised = (v: View, h: number): View => h === 0 ? v : ({ ...v, gy: v.gy - h, y: value => v.y(value + h) });
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
-function element(name: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
+function element(name: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): AssetDefinition {
   return { type: 'library.' + name, version: 1, label, category, coordinates: 'world', libraryUse:!['person','spawn-marker','shelves','room','floor'].includes(name)?'reusable':undefined, fields, parts: ['backdrop'], bounds, anchors,
     draw(ctx, view, props, state, _pass, at) { if (!at) throw new Error('Library element requires resolved placement'); draw(ctx, view, props, state, at); } };
 }
 const rectangle = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });
 const hoverFields = { hover: bool('Pointer over device') };
-const hover = (e: Element): Element => ({ ...e, bindingIdentity:'presentation', visualFields: hoverFields });
+const hover = (e: AssetDefinition): AssetDefinition => ({ ...e, bindingIdentity:'presentation', visualFields: hoverFields });
 const windowSpans = (state: Properties): [number, number][] => (state.windows ?? []) as [number, number][];
-export const libraryElements: Element[] = [
+export const libraryElements: AssetDefinition[] = [
   { ...element('spawn-marker', 'Library entrance position', 'markers', {}, () => ({ x: -4, h: 8, w: 8, tall: 8 }), () => {}), parts: [] },
   element('room', 'Reading room envelope', 'architecture', { width: number('Width', 960, 1), ceiling: number('Ceiling', 176, 1), wallBand: number('Left wall band', 380, 0) }, p => rectangle(n(p, 'width'), n(p, 'ceiling')),
     (x, v, p, _s, at) => { const L = layout(); L.shelves.x0 = at.x + n(p, 'wallBand'); kernel(L, n(p, 'width'), n(p, 'ceiling'), at.x).roomShell(x, raised(v, at.h)); }),
@@ -86,7 +86,7 @@ export const libraryElements: Element[] = [
 ];
 
 /** Bound people use a controller-produced pose snapshot; this element owns no schedule or dialogue. */
-export const libraryPersonElement: Element = { ...element('person', 'Reading-room resident', 'characters', { actor: string('Actor id', '') }, () => ({ x: -24, h: 64, w: 48, tall: 64 }),
+export const libraryPersonElement: AssetDefinition = { ...element('person', 'Reading-room resident', 'characters', { actor: string('Actor id', '') }, () => ({ x: -24, h: 64, w: 48, tall: 64 }),
   (x, v, _p, state) => { const prepared = state.pose as unknown as PreparedCharacter; if (prepared.visible) drawCharacterFrame(x, v, prepared.character, prepared.ready, prepared.pixelSize, prepared.frame, prepared.height); }),
   visualFields: { pose: { kind: 'json', label: 'Prepared actor pose', default: { visible: false, character: { x: 0 } }, validate: value => {
     const p = value as unknown as PreparedCharacter;

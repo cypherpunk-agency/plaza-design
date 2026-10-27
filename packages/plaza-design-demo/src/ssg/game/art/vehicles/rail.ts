@@ -7,7 +7,7 @@
  * board. `drawPlatformTrain` is the stations' train from the transport simulation's snapshot
  * (`PlatformTrainVisual`). Placeable as `vehicle.rail`. The inside of car 3 stays the `train` scene.
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { onScreen } from '../core/primitives';
 import { crowd } from '../characters/riders';
@@ -77,7 +77,7 @@ export function drawPlatformTrain(x: CanvasRenderingContext2D, v: View, state: P
 
 // ---------- the placeable train ----------
 
-const fields: Element['fields'] = {
+const fields: AssetDefinition['fields'] = {
   car: { kind: 'select', label: 'Car', options: [...RAIL_CARS], default: 'platform' },
   cars: { kind: 'number', label: 'Cars', default: 3, min: 1, max: 8, step: 1 },
   ...laneFields({ speed: 6, lane: 4000 }),
@@ -101,7 +101,7 @@ export function paintRailVehicle(ctx: CanvasRenderingContext2D, raw: Properties,
   }));
 }
 
-export const railVehicleElement: Element = {
+export const railVehicleElement: AssetDefinition = {
   type: 'vehicle.rail',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Train', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);

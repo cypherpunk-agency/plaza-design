@@ -16,7 +16,7 @@
  * origin at its foot on the left, heights up (`y = -h`). `size` scales a piece inside its own frame
  * (use it, not the placement's scale, for a far copy).
  */
-import type { Element, Field } from '../core/composition';
+import type { AssetDefinition, Field } from '../core/composition';
 import { windowLit } from '../../world/light';
 import { mono, paperSign } from '../core/primitives';
 import { neonPlate } from '../signage/kit';
@@ -482,4 +482,4 @@ function drawVehicle(x: CanvasRenderingContext2D, cx: number, base: number, o: V
   }
 }
 
-export const skyportElements: Element[] = [hangarElement, fenceElement, launchPadElement];
+export const skyportElements: AssetDefinition[] = [hangarElement, fenceElement, launchPadElement];

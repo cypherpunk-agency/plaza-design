@@ -1,13 +1,13 @@
 import {TypedForm} from './typed-form';
 import {vehicleNodes} from './vehicle-composition';
-import type {Composition} from '../art';
+import type {ChunkDocument} from '../art';
 import type {VehicleSource} from '../world/vehicles';
 import type {WorkbenchContext} from './contracts';
 import {KINDS} from '../art/characters/riders';
 /** The same flow source that native Play compiles; no editor-side movement evaluator. */
 export function mountFlowAuthoring(host:HTMLElement,context:WorkbenchContext,documentId:string,id:string){
  const api=context.authoring!,error=document.createElement('p');error.setAttribute('role','alert');const form=new TypedForm(e=>error.textContent=String(e));
- const read=()=>api.get(documentId).value as Composition;
+ const read=()=>api.get(documentId).value as ChunkDocument;
  const edit=(label:string,change:(props:any)=>void)=>{const doc=structuredClone(read());change(vehicleNodes(doc.instances).find(n=>n.id===id)!.props);api.edit(documentId,label,doc);render();};
  function render(){host.replaceChildren(error);error.textContent='';const doc=read(),p=vehicleNodes(doc.instances).find(n=>n.id===id)!.props as any,flow=p.flow,ref=p.vehicle;
   if(!ref?.frame){const note=document.createElement('p');note.textContent='This is an ambient visual flow. Its source fields remain under Appearance.';host.append(note);return;}

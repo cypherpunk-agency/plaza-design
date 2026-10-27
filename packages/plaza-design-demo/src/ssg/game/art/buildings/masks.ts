@@ -5,17 +5,17 @@
  * that rectangle. The result is per-front visual state (`masks`) a scene adapter merges into the
  * environment state; the geometry is static, so it is computed once per document.
  */
-import { resolveComposition, type ArtRegistry, type Composition, type Instance, type Properties, type Value } from '../core/composition';
+import { resolveComposition, type ArtRegistry, type ChunkDocument, type AssetInstance, type Properties, type Value } from '../core/composition';
 import { frameView } from '../core/view';
 
 const FRONT = 'building.front';
-const cache = new WeakMap<Composition, Record<string, Properties>>();
+const cache = new WeakMap<ChunkDocument, Record<string, Properties>>();
 const isMask = (v: unknown): v is number[] => Array.isArray(v) && v.length === 4 && v.every(n => typeof n === 'number' && Number.isFinite(n));
 
-export function frontMasks(registry: ArtRegistry, doc: Composition): Record<string, Properties> {
+export function frontMasks(registry: ArtRegistry, doc: ChunkDocument): Record<string, Properties> {
   const had = cache.get(doc); if (had) return had;
-  const nodes = new Map<string, Instance>(), parents = new Map<string, string>(), bindings: Record<string, Value> = {};
-  const visit = (list: Instance[], parent?: string) => list.forEach(n => { nodes.set(n.id, n); if (parent) parents.set(n.id, parent); visit(n.children ?? [], n.id); });
+  const nodes = new Map<string, AssetInstance>(), parents = new Map<string, string>(), bindings: Record<string, Value> = {};
+  const visit = (list: AssetInstance[], parent?: string) => list.forEach(n => { nodes.set(n.id, n); if (parent) parents.set(n.id, parent); visit(n.children ?? [], n.id); });
   visit(doc.instances);
   const out: Record<string, Properties> = {};
   if ([...nodes.values()].some(n => n.type === FRONT)) {
@@ -35,7 +35,7 @@ export function frontMasks(registry: ArtRegistry, doc: Composition): Record<stri
 }
 
 /** Merge front masks under any state a caller already supplies for the same instances. */
-export function withFrontMasks(registry: ArtRegistry, doc: Composition, state: Readonly<Record<string, Properties>> = {}): Record<string, Properties> {
+export function withFrontMasks(registry: ArtRegistry, doc: ChunkDocument, state: Readonly<Record<string, Properties>> = {}): Record<string, Properties> {
   const masks = frontMasks(registry, doc), merged: Record<string, Properties> = { ...state };
   for (const [id, s] of Object.entries(masks)) merged[id] = { ...s, ...(state[id] ?? {}) };
   return merged;

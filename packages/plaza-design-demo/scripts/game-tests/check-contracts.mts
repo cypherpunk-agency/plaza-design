@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { art, ArtRegistry, compositionAppearance, drawComposition, resolveComposition, type Composition, type Environment } from "../../src/ssg/game/art/index";
+import { art, ArtRegistry, compositionAppearance, drawComposition, resolveComposition, type ChunkDocument, type Environment } from "../../src/ssg/game/art/index";
 
-const doc: Composition = { version: 1, scene: 'contract-fixture', instances: [
+const doc: ChunkDocument = { version: 1, scene: 'contract-fixture', instances: [
   { id: 'pair', type: 'assembly.group', props: {}, placement: { x: 100, h: 20, scale: 2, facing: -1 }, layer: 'backdrop', order: 0, children: [
     { id: 'seat', type: 'furniture.stool', props: { seed: 2 }, placement: { x: 10, h: 0 }, layer: 'backdrop', order: 1 },
   ] },
@@ -13,7 +13,7 @@ assert.deepEqual(validated, doc);
 const resolved = resolveComposition(art, validated, env);
 assert.deepEqual(resolved.find(x => x.instance.id === 'attached')!.placement, { x: 74, h: 42, scale: 2, facing: -1, parallax: 1 });
 assert.equal(resolved.find(x => x.instance.id === 'attached')!.props.seed, 1);
-function rejected(change: (d: Composition) => void, pattern: RegExp) {
+function rejected(change: (d: ChunkDocument) => void, pattern: RegExp) {
   const bad = structuredClone(doc); change(bad); assert.throws(() => art.validate(bad), pattern);
   assert.deepEqual(validated, doc, 'failed validation cannot mutate accepted document');
 }
@@ -39,7 +39,7 @@ const registry = new ArtRegistry().register({
   draw(_ctx, view, _props, state, _pass, placement) { calls.push({ nativeView: view === env.view, state: structuredClone(state), x: placement.x }); },
 });
 const calls: { nativeView: boolean; state: unknown; x: number }[] = [];
-const world: Composition = { version: 1, scene: 'world-test', instances: [{ id: 'world', type: 'contract.world', props: { positions: [1, 2] }, placement: { x: 25, h: 0 }, order: 0, layer: 'backdrop', bindings: { brightness: 'lamp.level' } }] };
+const world: ChunkDocument = { version: 1, scene: 'world-test', instances: [{ id: 'world', type: 'contract.world', props: { positions: [1, 2] }, placement: { x: 25, h: 0 }, order: 0, layer: 'backdrop', bindings: { brightness: 'lamp.level' } }] };
 registry.validate(world);
 assert.throws(() => resolveComposition(registry, world, env), /unresolved visual binding/);
 assert.throws(() => resolveComposition(registry, world, { ...env, bindings: { 'lamp.level': 'bright' } }), /invalid number/);

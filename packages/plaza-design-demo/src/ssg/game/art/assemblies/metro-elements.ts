@@ -1,5 +1,5 @@
 /** Elevated-platform pieces. Transport and skyline evolution arrive as explicit snapshots. */
-import type { Element,Field,Properties } from '../core/composition';
+import type { AssetDefinition,Field,Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { createDowntownPlatformArtwork,type MetroLayout } from './downtown-platform';
 import { notice } from '../core/primitives';
@@ -10,8 +10,8 @@ const raised=(v:View,h:number):View=>h===0?v:{...v,gy:v.gy-h,y:q=>v.y(q+h)};
 const blank:MetroLayout={width:0,spawn:0,canopy:{under:0,fascia:0,truss:0},deck:0,horizon:0,signs:[],cityMap:0,pillars:[],lamps:[],board:0,benches:[],pierStep:1,boardAt:0,screen:0,waiting:[]};
 const kernels=(p:Properties,s:Properties)=>createDowntownPlatformArtwork({L:{...blank,width:Number(p.width??s.width??0),deck:Number(p.deck??0),canopy:{under:Number(p.under??s.roof??0),fascia:Number(p.fascia??0),truss:Number(p.truss??0)}}});
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:{x:number;h:number})=>void;
-function E(type:string,label:string,fields:Record<string,Field>,draw:Draw,visualFields:Record<string,Field>={}):Element{return{type:'metro.'+type,version:1,label,category:'elevated metro',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds:p=>({x:-Number(p.width??120)/2,h:Number(p.height??180),w:Number(p.width??120),tall:Number(p.height??180)}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){draw(ctx,raised(v,at.h),p,s,at);}};}
-export const metroElements:Element[]=[
+function E(type:string,label:string,fields:Record<string,Field>,draw:Draw,visualFields:Record<string,Field>={}):AssetDefinition{return{type:'metro.'+type,version:1,label,category:'elevated metro',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds:p=>({x:-Number(p.width??120)/2,h:Number(p.height??180),w:Number(p.width??120),tall:Number(p.height??180)}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){draw(ctx,raised(v,at.h),p,s,at);}};}
+export const metroElements:AssetDefinition[]=[
  E('marker','Metro gameplay marker',{role:{kind:'string',label:'Role',default:''},width:num('Width'),height:num('Height')},()=>{}),
  E('city-wash','City daylight wash',{roofOnly:{kind:'boolean',label:'Above canopy only',default:false}},(ctx,v,p,s)=>{ctx.fillStyle='rgba(2,1,0,'+(p.roofOnly?.3*(1-.7*n(s,'daylight')):.55*(1-.75*n(s,'daylight'))).toFixed(3)+')';ctx.fillRect(0,0,v.viewW,p.roofOnly?Math.max(0,v.y(n(s,'truss'))):v.viewH);},{daylight:num('Daylight'),truss:num('Truss height')}),
  E('far-rail','Viaduct far rail',{deck:num('Deck height')},(ctx,v,p,s)=>kernels(p,s).drawFarRail(ctx,v)),

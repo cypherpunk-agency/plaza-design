@@ -3,6 +3,20 @@
   "scene": "harborStation",
   "instances": [
     {
+      "id": "world-sky",
+      "type": "environment.sky",
+      "props": {
+        "horizon": 62
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -10000,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
       "id": "scene",
       "type": "station.marker",
       "props": {

@@ -4,7 +4,7 @@ import {snapshotWorld,validateWorldDocument} from '../../src/ssg/game/world/docu
 import type {CitySource} from '../../src/ssg/game/world/city';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {validatePendingFixtures} from '../../src/ssg/game/authoring/pending-fixtures';
-import {defaultPlayFixture,type PlayFixtures,type PlayScene} from '../../src/ssg/game/authoring/play-fixtures';
+import {defaultPlayFixture,type PlayFixtures,type PlayScene} from '../../src/ssg/game/world/checkpoints';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
 import {art} from '../../src/ssg/game/art';
 import {SCENES,NATIVE_SCENES} from '../../src/ssg/game/scenes';

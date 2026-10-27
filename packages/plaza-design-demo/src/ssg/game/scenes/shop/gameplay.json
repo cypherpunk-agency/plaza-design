@@ -66,10 +66,195 @@
           "value": true
         }
       ]
+    },
+    "talk.shop.keeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.keeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.keeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.keeper.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.shop.keeper.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.keeper.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.shop.browser.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.browser.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.browser.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.browser.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.android.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.android.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.android.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.android.cursor",
+          "set": 1
+        }
+      ]
     }
   },
   "reactions": [],
-  "conversations": {},
+  "conversations": {
+    "talk.shop.keeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.shop.keeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.shop.keeper.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SHOPKEEPER",
+          "pages": [
+            "We're open.",
+            "We're always open. The sticker says 24/7. I wanted 24/7/365.25. The printer said no."
+          ],
+          "onEnter": "talk.shop.keeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SHOPKEEPER",
+          "pages": [
+            "The camera? The Registry insists. It films the till.",
+            "The till has nothing to hide. The till has nothing at all, most nights."
+          ],
+          "onEnter": "talk.shop.keeper.advance-1"
+        },
+        "visit-2": {
+          "speaker": "SHOPKEEPER",
+          "pages": [
+            "Buy something or keep the cat company. The cat charges less."
+          ],
+          "onEnter": "talk.shop.keeper.advance-2"
+        }
+      }
+    },
+    "talk.shop.browser": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.shop.browser.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "They moved the cheap noodles to the top shelf.",
+            "Top shelf is for people with legs.so. I have the free legs."
+          ],
+          "onEnter": "talk.shop.browser.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "I come in to read the labels. It is warmer than the library and the library closed."
+          ],
+          "onEnter": "talk.shop.browser.advance-1"
+        }
+      }
+    },
+    "talk.shop.android": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.shop.android.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "Batteries. Two packs. Do not make it weird."
+          ],
+          "onEnter": "talk.shop.android.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "People ask what I do for fun. I queue. I am very good at it. I have never once been served first."
+          ],
+          "onEnter": "talk.shop.android.advance-1"
+        }
+      }
+    }
+  },
   "state": {
     "shop.rotation": {
       "owner": "shop",
@@ -78,6 +263,30 @@
       "default": 0,
       "min": 0,
       "max": 3
+    },
+    "talk.shop.keeper.cursor": {
+      "owner": "talk.shop.keeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.shop.browser.cursor": {
+      "owner": "talk.shop.browser",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.shop.android.cursor": {
+      "owner": "talk.shop.android",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
     }
   },
   "purchases": {

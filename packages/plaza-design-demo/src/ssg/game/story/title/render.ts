@@ -5,8 +5,8 @@ import type {ZoneSequenceOptions} from '../../runtime/prepare-frame';
 import type {OpeningDocuments} from './documents';
 import type {Light} from '../../world/light';
 import type {TimelineProgram,TimelineFrame} from '../../art/core/timeline';
-import type {Composition} from '../../art';
-export interface OpeningRenderOptions extends Partial<ZoneSequenceOptions>{capture?:boolean;composition?:Composition;timeline?:TimelineProgram;frame?:TimelineFrame}
+import type {ChunkDocument} from '../../art';
+export interface OpeningRenderOptions extends Partial<ZoneSequenceOptions>{capture?:boolean;composition?:ChunkDocument;timeline?:TimelineProgram;frame?:TimelineFrame}
 export function renderOpeningDocument(ctx:CanvasRenderingContext2D,view:{W:number;H:number;reduced:boolean;lighting:Light},documents:OpeningDocuments,id:string,seconds:number,options:OpeningRenderOptions={}){
  const timeline=options.timeline??documents.timeline,sequence=timeline.sequences.find(s=>s.id===id)!;
  const composition=options.composition??documents.compositions[sequence.composition];

@@ -7,7 +7,7 @@
  * World units at the player's scale, the origin at the foot. A palm is drawn in the coast kit's pixels (its
  * height and lean in pixels, as palm.ts measures them).
  */
-import type { Element, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Field, Properties } from '../core/composition';
 import { inPixels, R, ART } from '../core/pixels';
 import { drawPalm } from '../environment/palm';
 import { sunsetSun } from '../environment/sunset-sky';
@@ -26,7 +26,7 @@ function own(x: CanvasRenderingContext2D, sx: number, y: number, viewW: number, 
   x.save(); x.translate(sx, y); try { draw(); } finally { x.restore(); }
 }
 
-export const palmElement: Element = {
+export const palmElement: AssetDefinition = {
   type: 'environment.palm', version: 1, label: 'Palm silhouette, rim on the sun’s side (beach kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { height: num('Trunk height (pixels)', 100, 10, 1000), lean: num('Lean (pixels, + east)', 10, -400, 400), seed: num('Seed', 1, 0, 1e6), fill: { kind: 'color', label: 'Silhouette', default: '#0b0410' } },
   bounds: p => ({ x: -n(p, 'height') * 1.6, h: n(p, 'height') * 3.6, w: n(p, 'height') * 3.2, tall: n(p, 'height') * 3.6 }),
@@ -42,26 +42,26 @@ export const palmElement: Element = {
   },
 };
 
-export const djBoothElement: Element = {
+export const djBoothElement: AssetDefinition = {
   type: 'props.dj-booth', version: 1, label: 'DJ bot’s booth on the sand (beach kit)', category: 'props', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { beat: num('Beat (frames)', 16, 2, 240) },
   bounds: () => ({ x: -60, h: 120, w: 120, tall: 120 }), anchors: origin,
   draw(x, v, p, _s, _pass, at) { own(x, v.sx(at.x, at.parallax), v.y(at.h), v.viewW, 120, () => drawDjBooth(x, { t: v.t, beat: n(p, 'beat') })); },
 };
-export const bonfireElement: Element = {
+export const bonfireElement: AssetDefinition = {
   type: 'props.bonfire', version: 1, label: 'Bonfire: logs, flames, sparks, its light on the sand (beach kit)', category: 'props', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { size: num('Size', 1, 0.2, 4, 0.05) },
   bounds: p => ({ x: -60 * n(p, 'size'), h: 120 * n(p, 'size'), w: 120 * n(p, 'size'), tall: 120 * n(p, 'size') }), anchors: origin,
   draw(x, v, p, _s, _pass, at) { own(x, v.sx(at.x, at.parallax), v.y(at.h), v.viewW, 180, () => drawBonfire(x, { t: v.t, size: n(p, 'size') })); },
 };
-export const loungerElement: Element = {
+export const loungerElement: AssetDefinition = {
   type: 'props.lounger', version: 1, label: 'Sun lounger and parasol (beach kit)', category: 'props', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { color: { kind: 'color', label: 'Canopy', default: '#c83a2a' }, wear: num('Paint in the light (0 gold .. 1 dusk)', 0.1, 0, 1, 0.05), parasol: { kind: 'boolean', label: 'Parasol', default: true }, flip: { kind: 'boolean', label: 'Flipped', default: false } },
   bounds: () => ({ x: -34, h: 62, w: 50, tall: 62 }), anchors: origin,
   draw(x, v, p, _s, _pass, at) { own(x, v.sx(at.x, at.parallax), v.y(at.h), v.viewW, 60, () => drawLounger(x, { col: String(p.color), p: n(p, 'wear'), flip: p.flip === true, parasol: p.parasol !== false })); },
 };
 
-export const saltElement: Element = {
+export const saltElement: AssetDefinition = {
   type: 'beach.salt', version: 1, label: 'SALT, the beach bar: stilts, shelves, LIME, shack, counter, stools, lights (beach kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Bar width', 226, 40, 2000), wear: num('Weathering', 0.05, 0, 1, 0.01), lime: { kind: 'boolean', label: 'LIME behind the counter', default: true },
@@ -85,4 +85,4 @@ export const saltElement: Element = {
   },
 };
 
-export const beachKitElements: Element[] = [palmElement, djBoothElement, bonfireElement, loungerElement, saltElement];
+export const beachKitElements: AssetDefinition[] = [palmElement, djBoothElement, bonfireElement, loungerElement, saltElement];

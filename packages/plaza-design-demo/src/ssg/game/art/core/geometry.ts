@@ -1,5 +1,5 @@
 /** Shared projection arithmetic. View supplies the authoritative camera; callers own lifecycle. */
-import type {Instance} from './composition';
+import type {AssetInstance} from './composition';
 import type {View} from './view';
 /** Replay an object's drawing in its captured source coordinate space. */
 export function withCanvasTransform(ctx:CanvasRenderingContext2D,transform:Pick<DOMMatrix,'a'|'b'|'c'|'d'|'e'|'f'>,draw:()=>void){
@@ -42,7 +42,7 @@ export function boundsFromEdges({left,right,bottom,top}:{left:number;right:numbe
 }
 
 /** Clip coordinates belong to the source chunk, independently of an object's transform. */
-export function artworkClip(instance:Instance,view:View):{x:number;y:number;width:number;height:number}|undefined{
+export function artworkClip(instance:AssetInstance,view:View):{x:number;y:number;width:number;height:number}|undefined{
  const policy=instance.clip??(view.artworkScope==='static'&&['distance','backdrop'].includes(instance.layer)?'chunk':'none');
  if(typeof policy==='object')return{x:view.sx(policy.x),y:view.y(policy.h),width:view.sx(policy.x+policy.w)-view.sx(policy.x),height:view.y(policy.h-policy.tall)-view.y(policy.h)};
  const window=policy==='chunk'&&view.zoneWindow;return window?{x:window.left,y:0,width:window.right-window.left,height:view.viewH}:undefined;

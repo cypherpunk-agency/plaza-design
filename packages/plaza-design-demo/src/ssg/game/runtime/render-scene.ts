@@ -18,7 +18,7 @@ import { beginLayeredFrame, endLayeredFrame, flushLayeredSlot } from '../art/cor
 import { lightAt } from '../world/light';
 
 import {art,drawCompositionSlot} from '../art';
-import {backdropDocuments,backdropTown,type BackdropDocument} from '../world/backdrops';
+import {backdropDocuments,type BackdropDocument} from '../world/backdrops';
 
 import {passOn,type WorldFrame,type FrameDirector,type ZoneFrame} from './frame';
 /** The one frame renderer, for a scene alone or with the zones joined to it (docs/design/SEAMLESS-WORLD.md §3). */
@@ -60,7 +60,7 @@ function renderMeasuredFrame(frame: WorldFrame) {
   const rain = W?.wet ?? 0;
   const casters = !vision && passOn(d, 'casters'), shade = !vision && passOn(d, 'shade');
   perfEnd(pass);pass=perfBegin('render.world');
-  const backdrops = frame.backdrops ?? backdropDocuments(), sharedBackdrop=s.backdrop?backdrops.get(s.backdrop.id):undefined, sharedSky=sharedBackdrop?.sky;
+  const backdrops = frame.backdrops ?? backdropDocuments();
   const seenBackdrops = new Set<string>(),backdropFrames:{doc:BackdropDocument;view:View}[]=[];
   for(const zone of [{scene:s,view:v},...joined]){
     const ref=zone.scene.backdrop;if(!ref||seenBackdrops.has(ref.id))continue;
@@ -70,7 +70,16 @@ function renderMeasuredFrame(frame: WorldFrame) {
     const view=offset(local);if(local.cameraFrame)view.cameraFrame={...local.cameraFrame,view:offset(local.cameraFrame.view)};backdropFrames.push({doc,view});
   }
   if(frame.capture){const transform=copyTransform(x.getTransform()),viewport={width:v.viewW*k,height:v.viewH*k};frame.inspection=[{scene:s,view:v},...joined.map(z=>({scene:z.scene,view:z.view})),...travelling.map(z=>({scene:z.scene,view:z.view}))].map(scope=>({...scope,transform,viewport}));}
-  if (amb.sky && passOn(d, 'sky')) { drawSky(x, v, L, { horizon: v.y(sharedSky ? sharedSky.horizon-(s.backdrop!.h??0) : s.horizon ?? 0),...(sharedSky?{style:sharedSky.style,town:backdropTown(sharedBackdrop,(v.cameraFrame?.view.cam??v.cam)+(s.backdrop?.x??0)+(v.cameraFrame?.view.viewW??v.viewW)/2)}:{}) }); if (look) atmosphere(x,v,(camera,weather)=>weatherSky(x,camera,weather)); inCameraSpace(x,v,view=>s.drawSkyArtwork?.(x,{...view,skyCam:view.cam+(s.backdrop?.x??0)}));for(const {doc,view} of backdropFrames)inCameraSpace(x,view,camera=>drawCompositionSlot(x,art,doc,{view:camera,reduced:frame.reduced,state:{}},'behind-player',undefined,'sky')); }
+  if (amb.sky && passOn(d, 'sky')) {
+    const backdropSky=backdropFrames.find(({doc})=>doc.instances.some(n=>n.type==='environment.sky'));
+    const sourceSky=s.artwork?.instances.some(n=>n.type==='environment.sky');
+    if(backdropSky)inCameraSpace(x,backdropSky.view,camera=>drawCompositionSlot(x,art,backdropSky.doc,{view:camera,reduced:frame.reduced,state:{}},'behind-player',r=>r.element.type==='environment.sky','sky'));
+    else if(sourceSky){const env=s.visualEnvironment?.(v,{m:zh.model,hover:null,layer:'all'})??{view:v,reduced:frame.reduced,state:{}};drawCompositionSlot(x,art,s.artwork!,env,'behind-player',r=>r.element.type==='environment.sky','sky');}
+    else drawSky(x,v,L,{horizon:v.y(s.horizon??0)});
+    if (look) atmosphere(x,v,(camera,weather)=>weatherSky(x,camera,weather));
+    inCameraSpace(x,v,view=>s.drawSkyArtwork?.(x,{...view,skyCam:view.cam+(s.backdrop?.x??0)}));
+    for(const {doc,view} of backdropFrames)inCameraSpace(x,view,camera=>drawCompositionSlot(x,art,doc,{view:camera,reduced:frame.reduced,state:{}},'behind-player',r=>r.element.type!=='environment.sky','sky'));
+  }
   if (amb.city) (s.artworkFrame?.city??frame.city)?.(x, v);
   if (amb.street) (s.artworkFrame?.street??frame.street)?.(x, v, rain, !!amb.city);
   // An independent backdrop paints once through world coordinates, never clipped to a zone's window.

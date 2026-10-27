@@ -45,3 +45,21 @@ assert.equal(r.zones.get('boundary-west')?.tier,'active');assert.equal(r.zones.g
 const docs=new Map(sourceDocuments.map(d=>[d.id,d.validate(JSON.parse(fs.readFileSync('src/ssg/game/'+d.file,'utf8')))]));
 validateSourceDocuments(docs);assert.equal(compileGameWorld(pendingRegistry(docs),docs).seams.find(s=>s.a.zone==='boundary-west')?.dx,320);
 console.log('World compositions: authored anchors, single/group edits, prospective rejection, one graph authority and remote camera residency PASS');
+
+// The opening is arranged by one composition; external rail seams remain ordinary connections.
+const coast=compileWorldComposition(validateWorldCompositions(source),'harbor-world',context);
+assert.deepEqual(coast.chunks.map(c=>[c.chunk,c.x,c.h]),[
+ ['harbor-station',0,0],['harbor-quay',900,-160],['glide-beach',-13290,-160],['glide-downtown-west',-8790,-160],['glide-downtown',-5400,-160],['glide-galleria',-2460,-160],['glide-spire-bay',-1380,-160],['harbor-checkout',2500,-160],['harbor-yard',3140,-160],['harbor-shed',4420,-160],
+]);
+const connected=compileGameWorld(SCENES);assert.equal(placeFrom(connected,'harbor-station',Infinity).get('line-harbor-1')?.dx,-1600,'external rail connection survives composition compilation');
+const missingLanding=structuredClone(source);delete (missingLanding.groups['harbor-arrival'].connections[0].b as any).offset;
+assert.throws(()=>compileWorldComposition(validateWorldCompositions(missingLanding),'harbor-world',context),'stair landing offset is required for the authored geometry');
+const ensure={composition:key,remove:['already-gone'],add:[],ensure:true as const};
+assert.deepEqual(editWorldComposition(world,ensure,context),world,'explicit ensure makes repeated unmount harmless');
+const member=world.compositions[key].members[0];assert.deepEqual(editWorldComposition(world,{composition:key,remove:[],add:[structuredClone(member)],ensure:true},context),world,'identical mount is idempotent');
+assert.throws(()=>editWorldComposition(world,{composition:key,remove:[],add:[{...member,placement:{x:100,h:0}}],ensure:true},context),'ensure never replaces a conflicting live member');
+
+const station=SCENES['harbor-station'],movedFloor=structuredClone(station.artwork!);
+const findFloor=(nodes:any[]):any=>nodes.find(n=>n.id==='floor-platform')??nodes.flatMap(n=>n.children??[]).map(n=>findFloor([n])).find(Boolean);
+const platform=findFloor(movedFloor.instances);assert(platform,'The real arrival platform floor is present');platform.placement.h+=10;
+assert.throws(()=>compileGameWorld({...SCENES,'harbor-station':{...station,artwork:movedFloor}}),/anchors do not meet/,'The same world compiler rejects a disconnected floor before previewing a drag');

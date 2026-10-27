@@ -723,6 +723,127 @@
           "set": "on"
         }
       ]
+    },
+    "talk.laundromat.blue.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.blue.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.laundromat.blue.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.blue.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.laundromat.blue.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.blue.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.laundromat.folder.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.folder.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.laundromat.folder.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.folder.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.laundromat.folder.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.folder.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.laundromat.gran.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.gran.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.laundromat.gran.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.gran.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.laundromat.gran.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.gran.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.laundromat.sleeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.laundromat.sleeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.laundromat.sleeper.cursor",
+          "set": 1
+        }
+      ]
     }
   },
   "reactions": [],
@@ -736,7 +857,7 @@
       ],
       "nodes": {
         "start": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "SUDS here. Four machines, one breaker, no complaints accepted. How can SUDS help?"
           ],
@@ -778,7 +899,7 @@
           ]
         },
         "start-variant-0": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Washer 3 is free again. SUDS has already let it. To a sock. Long-term."
           ],
@@ -796,7 +917,7 @@
           ]
         },
         "start-variant-1": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "SUDS here. The breaker tripped again. It does that. It is the only thing in here that finishes. How can SUDS help?"
           ],
@@ -824,7 +945,7 @@
           ]
         },
         "open": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Washer 3 has one cycle left, prepaid. SUDS does not open doors on wet laundry. SUDS has standards."
           ],
@@ -842,7 +963,7 @@
           ]
         },
         "prepaid": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Prepaid cycles are not on the schedule. They start when a machine finishes. Nothing has finished since Tuesday. Three start at every slot, the breaker trips, everybody starts over."
           ],
@@ -860,7 +981,7 @@
           ]
         },
         "never": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Correct. SUDS has asked for a second circuit. SUDS was sent a form. SUDS filled in the form. The form is also waiting for a slot."
           ],
@@ -873,7 +994,7 @@
           ]
         },
         "cancel": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Cancelling a stranger's wash is a crime in fourteen districts and a sin in all of them."
           ],
@@ -891,7 +1012,7 @@
           ]
         },
         "later": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Later is not cancelling. Later is scheduling. SUDS loves scheduling. The schedule is the box by the door. SUDS does not touch its wiring. SUDS cannot see anyone touching its wiring. Hypothetically."
           ],
@@ -904,7 +1025,7 @@
           ]
         },
         "breaker": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "One circuit, four washers. The breaker allows two at once. The schedule starts three. They were installed by two contractors who never met. SUDS has met both. SUDS sides with the breaker."
           ],
@@ -922,7 +1043,7 @@
           ]
         },
         "rule4": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "When it trips, every machine stops. Lost cycle, wet laundry, nobody goes home. And nobody's laundry leaves until everybody's laundry is clean. House rule 4. Solidarity. Also the fire code."
           ],
@@ -935,7 +1056,7 @@
           ]
         },
         "jacket": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "One jacket, prepaid nine cycles, owner not on site for three days. SUDS does not ask questions. SUDS asks for detergent."
           ],
@@ -953,7 +1074,7 @@
           ]
         },
         "friend": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Then your friend washes very thoroughly. Nine cycles. Either a stain or a secret. SUDS does not judge. SUDS rinses."
           ],
@@ -966,7 +1087,7 @@
           ]
         },
         "manners": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Politeness noted and logged. The breaker remains unmoved. It has no ears. Only amps."
           ],
@@ -979,7 +1100,7 @@
           ]
         },
         "rules": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Start on the schedule. Two at a time. Never cancel. Doors open when the queue is clear. Four rules. SUDS wrote none of them and loves all of them."
           ],
@@ -992,7 +1113,7 @@
           ]
         },
         "bye": {
-          "speaker": "SUDS \u00b7 laundromat daemon",
+          "speaker": "SUDS · laundromat daemon",
           "pages": [
             "Separate your colours."
           ]
@@ -1007,6 +1128,178 @@
         "miss": "SUDS files that under 'delicates'.",
         "retry": "Again. Slower. Like a spin cycle.",
         "retryNext": "start"
+      }
+    },
+    "talk.laundromat.blue": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.laundromat.blue.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.laundromat.blue.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "WAITING",
+          "pages": [
+            "Washer 1 is mine. Six shirts. All of them.",
+            "This is my seventh. It is not a shirt. It is a towel with ambition."
+          ],
+          "onEnter": "talk.laundromat.blue.advance-0"
+        },
+        "visit-1": {
+          "speaker": "WAITING",
+          "pages": [
+            "Every slot the lights dip, three machines start, the breaker gives up and we all start over.",
+            "I have watched it eleven times. It is the most reliable thing in my life."
+          ],
+          "onEnter": "talk.laundromat.blue.advance-1"
+        },
+        "visit-2": {
+          "speaker": "WAITING",
+          "pages": [
+            "If you sort that breaker out, mine are the blue ones. Not that I am asking. I am asking."
+          ],
+          "onEnter": "talk.laundromat.blue.advance-2"
+        }
+      }
+    },
+    "talk.laundromat.folder": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.laundromat.folder.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.laundromat.folder.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "FOLD-O",
+          "pages": [
+            "I fold. Forty-one thousand shirts so far. Nobody has ever folded me.",
+            "I do not mind. I would not fit in a drawer."
+          ],
+          "onEnter": "talk.laundromat.folder.advance-0"
+        },
+        "visit-1": {
+          "speaker": "FOLD-O",
+          "pages": [
+            "Nothing has come out of a washer since Tuesday. I have refolded this towel two hundred times.",
+            "It is the best-folded towel in the district. Possibly the city."
+          ],
+          "onEnter": "talk.laundromat.folder.advance-1"
+        },
+        "visit-2": {
+          "speaker": "FOLD-O",
+          "pages": [
+            "Socks I do not fold. Socks I pair. Most days I fail.",
+            "The board by the window is my failures. I pinned them up. It helps."
+          ],
+          "onEnter": "talk.laundromat.folder.advance-2"
+        }
+      }
+    },
+    "talk.laundromat.gran": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.laundromat.gran.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.laundromat.gran.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "Washer 2 is mine. Since Tuesday.",
+            "At my age you stop waiting for things to finish. You just visit them."
+          ],
+          "onEnter": "talk.laundromat.gran.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REGULAR",
+          "pages": [
+            "The jacket in 3? A young person brought it in. Paid nine cycles, said nobody searches a wash, and ran.",
+            "I said nobody searches me either, dear. Nobody listened to that either."
+          ],
+          "onEnter": "talk.laundromat.gran.advance-1"
+        },
+        "visit-2": {
+          "speaker": "REGULAR",
+          "pages": [
+            "SUDS starts the paid one when a machine finishes. That is the whole trouble. Nothing in here finishes.",
+            "Except me, eventually. Do not look like that, it is a joke. Mostly."
+          ],
+          "onEnter": "talk.laundromat.gran.advance-2"
+        }
+      }
+    },
+    "talk.laundromat.sleeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.laundromat.sleeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "NIGHT SHIFT",
+          "pages": [
+            "Zzz...",
+            "...if four finishes, wake me. If four does not finish, also do not wake me."
+          ],
+          "onEnter": "talk.laundromat.sleeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "NIGHT SHIFT",
+          "pages": [
+            "...I work nights. I wash days. I sleep in between. Here.",
+            "...nobody verifies a bench..."
+          ],
+          "onEnter": "talk.laundromat.sleeper.advance-1"
+        }
       }
     }
   },
@@ -1042,7 +1335,7 @@
           {
             "command": "laundromat.washer1.no-power",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer1}: no power. breaker tripped.",
               "err"
             ],
@@ -1055,7 +1348,7 @@
           {
             "command": "laundromat.washer1.already",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer1}: already washing.",
               "dim"
             ],
@@ -1091,7 +1384,7 @@
           {
             "command": "laundromat.washer1.begin",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer1}: cycle started. {query:laundromat.cycleSeconds} s.",
               "dim"
             ],
@@ -1158,7 +1451,7 @@
           {
             "command": "laundromat.washer2.no-power",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer2}: no power. breaker tripped.",
               "err"
             ],
@@ -1171,7 +1464,7 @@
           {
             "command": "laundromat.washer2.already",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer2}: already washing.",
               "dim"
             ],
@@ -1207,7 +1500,7 @@
           {
             "command": "laundromat.washer2.begin",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer2}: cycle started. {query:laundromat.cycleSeconds} s.",
               "dim"
             ],
@@ -1274,7 +1567,7 @@
           {
             "command": "laundromat.washer3.no-power",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer3}: no power. breaker tripped.",
               "err"
             ],
@@ -1287,7 +1580,7 @@
           {
             "command": "laundromat.washer3.already",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer3}: already washing.",
               "dim"
             ],
@@ -1323,7 +1616,7 @@
           {
             "command": "laundromat.washer3.begin",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer3}: cycle started. {query:laundromat.cycleSeconds} s.",
               "dim"
             ],
@@ -1390,7 +1683,7 @@
           {
             "command": "laundromat.washer4.no-power",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer4}: no power. breaker tripped.",
               "err"
             ],
@@ -1403,7 +1696,7 @@
           {
             "command": "laundromat.washer4.already",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer4}: already washing.",
               "dim"
             ],
@@ -1439,7 +1732,7 @@
           {
             "command": "laundromat.washer4.begin",
             "say": [
-              "signal \u2192 drum --start",
+              "signal → drum --start",
               "{query:laundromat.name.washer4}: cycle started. {query:laundromat.cycleSeconds} s.",
               "dim"
             ],
@@ -1964,6 +2257,38 @@
       "lifetime": "save",
       "type": "boolean",
       "default": false
+    },
+    "talk.laundromat.blue.cursor": {
+      "owner": "talk.laundromat.blue",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.laundromat.folder.cursor": {
+      "owner": "talk.laundromat.folder",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.laundromat.gran.cursor": {
+      "owner": "talk.laundromat.gran",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.laundromat.sleeper.cursor": {
+      "owner": "talk.laundromat.sleeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
     }
   },
   "queries": {

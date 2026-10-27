@@ -45,20 +45,22 @@ export type FieldEditor =
   /** An optional colour: "" (shown as a checkbox labelled `empty`) or a #rrggbb colour. */
   | { kind: 'colour'; empty: string };
 export interface Placement extends Point { scale?: number; facing?: 1 | -1; parallax?: number }
-export interface Instance {
+export interface AssetInstance {
   id: string; type: string; props: Properties; placement: Placement;
   /** Draw order within the layer: a hidden sort key behind the editor's layer stack. */
   order: number;
   /** Where the instance draws (LAYERS). */
   layer: Layer;
   attach?: { instance: string; anchor: string };
-  children?: Instance[];
+  children?: AssetInstance[];
   bindings?: Record<string, string>;
   /** Joined background layers default to the chunk window; isolated rooms and objects remain uncut. */
   clip?: 'none'|'chunk'|Bounds;
 }
 export {artworkClip} from './geometry';
-export interface Composition { version: 1; scene: string; instances: Instance[]; sequence?:import('./sequence').SequenceSettings }
+/** Chunk-local visual source. Composition (world/compositions.ts) arranges chunks, not these assets.
+ * The persisted scene/instances fields retain source identity; no wrapper document is required. */
+export interface ChunkDocument { version: 1; scene: string; instances: AssetInstance[]; sequence?:import('./sequence').SequenceSettings }
 export interface Environment {
   view: View;
   /** Source-derived travelling actors, combined with registered primitive mobility. */
@@ -86,7 +88,7 @@ export interface AnimationClip {
   loop: boolean;
   sample(seconds: number, props: Readonly<Properties>, state: Readonly<Properties>, channel: string): Value;
 }
-export interface Element {
+export interface AssetDefinition {
   type: string; version: 1; label: string; category: string;
   /** Registered artwork in the shared frame's sky pass; ordinary composition rows use world. */
   framePhase?:'sky';
@@ -97,7 +99,7 @@ export interface Element {
   /** Presentation bindings carry no instance-owned simulation state. Native validators still protect required artwork. */
   bindingIdentity?: 'fixed' | 'presentation';
   /** Finite registered presentation inputs offered by the inspector; no expressions or scripts. */
-  bindingChoices?: (composition:Readonly<Composition>)=>Readonly<Record<string,readonly string[]>>;
+  bindingChoices?: (composition:Readonly<ChunkDocument>)=>Readonly<Record<string,readonly string[]>>;
   validateVisual?: (state: Properties) => void;
   /** World kernels use explicit placement and retain the native viewport and canvas state. */
   coordinates?: 'local' | 'world';
@@ -111,7 +113,7 @@ export interface Element {
   hiddenReason?:(props:Properties,state:Properties,context:BoundsContext)=>string|undefined;
   bounds(props: Properties, state: Properties, context?: BoundsContext): Bounds;
   /** Entire source-camera travel envelope relative to placement (including depth), for lifetime; bounds is the live hit rectangle. */
-  travelBounds?: Element['bounds'];
+  travelBounds?: AssetDefinition['bounds'];
   /** Native mask, applied once by the common painter and also limiting editor hit areas. */
   mask?:(props:Properties,state:Properties,context:BoundsContext)=>Bounds|undefined;
   anchors(props: Properties, state: Properties): Record<string, Anchor>;
@@ -127,7 +129,7 @@ export interface Element {
 /** Is a resolved piece passing in front of the player this frame (its near part drawn over them)? */
 export const nearPart = (r: Resolved) => !!r.element.drawNear && Number(r.state.near ?? 0) > 0;
 
-const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
+const flat = (nodes: readonly AssetInstance[]): AssetInstance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
 /** A composition is layered when its instances carry `layer`; validation rejects mixtures. */
 const finite = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -144,11 +146,14 @@ function serializable(value: unknown, path = 'composition', stack = new Set<obje
   stack.delete(value!);
 }
 export class ArtRegistry {
-  private elements = new Map<string, Element>();
-  register(element: Element) {
+  private elements = new Map<string, AssetDefinition>();
+  register(element: AssetDefinition) {
     if (this.elements.has(element.type)) throw new Error(`Duplicate artwork type: ${element.type}`);
     for (const field of Object.values({ ...element.fields, ...element.visualFields })) if (field.kind === 'json' && !field.validate) throw new Error(`${element.type}: structured JSON fields require validation`);
     for (const [name, clip] of Object.entries(element.animationClips ?? {})) if (!name || !finite(clip.duration) || clip.duration <= 0 || typeof clip.loop !== 'boolean' || typeof clip.sample !== 'function') throw new Error(`${element.type}.${name}: invalid animation clip`);
+    // Scalar inputs on standalone artwork are presentation properties. Explicit opt-outs
+    // and structured/configuration fields remain non-animatable.
+    if(element.libraryUse==='reusable'&&element.parts.length)element={...element,fields:Object.fromEntries(Object.entries(element.fields).map(([key,field])=>[key,{...field,animatable:field.animatable??(field.kind!=='json'&&!field.editor)}]))};
     this.elements.set(element.type, element); return this;
   }
   get(type: string) { const e = this.elements.get(type); if (!e) throw new Error(`Unknown artwork type: ${type}`); return e; }
@@ -176,10 +181,10 @@ export class ArtRegistry {
     }
     return result;
   }
-  validate(input: unknown): Composition {
+  validate(input: unknown): ChunkDocument {
     serializable(input);
     if (!object(input) || input.version !== 1 || typeof input.scene !== 'string' || !Array.isArray(input.instances)) throw new Error('Invalid composition header/version');
-    const all = new Map<string, Instance>(), parents = new Map<string, string>();
+    const all = new Map<string, AssetInstance>(), parents = new Map<string, string>();
     const visit = (nodes: unknown[], parent?: string) => {
       for (const raw of nodes) {
         if (!object(raw) || typeof raw.id !== 'string' || !raw.id || all.has(raw.id)) throw new Error('Missing or duplicate instance id');
@@ -192,7 +197,7 @@ export class ArtRegistry {
         if (!LAYERS.includes(raw.layer as Layer)) throw new Error(`${raw.id}: ${raw.layer === undefined ? 'missing layer' : `unknown layer ${String(raw.layer)}`} (${LAYERS.join(', ')})`);
         if (raw.bindings !== undefined && (!object(raw.bindings) || Object.values(raw.bindings).some(v => typeof v !== 'string'))) throw new Error(`${raw.id}: invalid bindings`);
         for (const key of Object.keys(raw.bindings ?? {})) if (!owns(this.get(raw.type).visualFields ?? {}, key)) throw new Error(`${raw.id}.${key}: unknown visual binding`);
-        const node = raw as unknown as Instance; all.set(node.id, node); if (parent) parents.set(node.id, parent);
+        const node = raw as unknown as AssetInstance; all.set(node.id, node); if (parent) parents.set(node.id, parent);
         if (node.attach && (!object(node.attach) || typeof node.attach.instance !== 'string' || typeof node.attach.anchor !== 'string')) throw new Error(`${raw.id}: invalid attachment`);
         if (node.children !== undefined) { if (!Array.isArray(node.children)) throw new Error(`${raw.id}: invalid children`); visit(node.children, node.id); }
       }
@@ -227,15 +232,15 @@ export class ArtRegistry {
       visiting.delete(id); done.add(id);
     };
     for (const id of all.keys()) check(id);
-    return structuredClone(input) as unknown as Composition;
+    return structuredClone(input) as unknown as ChunkDocument;
   }
 }
 
-export interface Resolved { instance: Instance; placement: Required<Placement>; props: Properties; state: Properties; element: Element }
+export interface Resolved { instance: AssetInstance; placement: Required<Placement>; props: Properties; state: Properties; element: AssetDefinition }
 /** An optional selection resolves only those rows and their attachment ancestors. */
-export function resolveComposition(registry: ArtRegistry, doc: Composition, env: Environment, selection?:readonly string[]): Resolved[] {
-  const all = new Map<string, Instance>(), parents = new Map<string, string>();
-  const collect = (nodes: Instance[], parent?: string) => nodes.forEach(n => { all.set(n.id, n); if (parent) parents.set(n.id, parent); collect(n.children ?? [], n.id); });
+export function resolveComposition(registry: ArtRegistry, doc: ChunkDocument, env: Environment, selection?:readonly string[]): Resolved[] {
+  const all = new Map<string, AssetInstance>(), parents = new Map<string, string>();
+  const collect = (nodes: AssetInstance[], parent?: string) => nodes.forEach(n => { all.set(n.id, n); if (parent) parents.set(n.id, parent); collect(n.children ?? [], n.id); });
   collect(doc.instances);
   const resolved = new Map<string, Resolved>();
   const resolve = (id: string): Resolved => {
@@ -268,14 +273,14 @@ export function resolveComposition(registry: ArtRegistry, doc: Composition, env:
     }
     const r = { instance: n, placement, props, state, element: e }; resolved.set(id, r); return r;
   };
-  const rank = (n: Instance) => n.layer === undefined ? 0 : LAYERS.indexOf(n.layer);
+  const rank = (n: AssetInstance) => n.layer === undefined ? 0 : LAYERS.indexOf(n.layer);
   return [...(selection??all.keys())].map(resolve).sort((a, b) => rank(a.instance) - rank(b.instance) || a.instance.order - b.instance.order);
 }
 
 /** Group/attachment appearance follows the same parent relation as placement. */
-export function compositionAppearance(doc: Composition, env: Pick<Environment, 'visibility' | 'opacity'>) {
-  const nodes = new Map<string, Instance>(), parents = new Map<string, string>();
-  const collect = (items: Instance[], parent?: string) => items.forEach(node => { nodes.set(node.id, node); if (parent) parents.set(node.id, parent); collect(node.children ?? [], node.id); });
+export function compositionAppearance(doc: ChunkDocument, env: Pick<Environment, 'visibility' | 'opacity'>) {
+  const nodes = new Map<string, AssetInstance>(), parents = new Map<string, string>();
+  const collect = (items: AssetInstance[], parent?: string) => items.forEach(node => { nodes.set(node.id, node); if (parent) parents.set(node.id, parent); collect(node.children ?? [], node.id); });
   collect(doc.instances);
   const result = new Map<string, { visible: boolean; opacity: number }>(), visiting = new Set<string>();
   const resolve = (id: string): { visible: boolean; opacity: number } => {
@@ -295,15 +300,15 @@ export function compositionAppearance(doc: Composition, env: Pick<Environment, '
  * `backdrop` draws everything behind the player and queues the rows over the player and the foreground for the
  * shared frame to draw at their own moments (see beginLayeredFrame / flushLayeredSlot); `foreground` draws the
  * foreground layer now. The engine's own passes (devices, people) have no composition rows. */
-export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, pass: 'backdrop'|'foreground') {
+export function drawComposition(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: ChunkDocument, env: Environment, pass: 'backdrop'|'foreground') {
   if (pass === 'backdrop') { drawCompositionSlot(ctx, registry, doc, env, 'behind-player'); queueLayeredSlots(ctx, registry, doc, env); }
   else if (pass === 'foreground') { drawCompositionSlot(ctx, registry, doc, env, 'foreground'); }
 }
 /** Immutable, frame-local source snapshot. Reused across its slots; never saved or stepped. */
-interface PresentationSnapshot {registry:ArtRegistry;environment:Environment;rows:Resolved[];appearance:ReturnType<typeof compositionAppearance>;facts:Map<Instance,ArtworkPresentation>}
+interface PresentationSnapshot {registry:ArtRegistry;environment:Environment;rows:Resolved[];appearance:ReturnType<typeof compositionAppearance>;facts:Map<AssetInstance,ArtworkPresentation>}
 let collectingFrame=false;
-let presentationSnapshots=new WeakMap<Environment,Map<Composition,PresentationSnapshot>>();
-function presentationSnapshot(registry:ArtRegistry,doc:Composition,env:Environment){
+let presentationSnapshots=new WeakMap<Environment,Map<ChunkDocument,PresentationSnapshot>>();
+function presentationSnapshot(registry:ArtRegistry,doc:ChunkDocument,env:Environment){
  let sources=presentationSnapshots.get(env);if(!sources){sources=new Map();presentationSnapshots.set(env,sources);}
  const found=collectingFrame?sources.get(doc):undefined;if(found?.registry===registry)return found;
  const environment={...env,mobileArtwork:env.mobileArtwork??mobileInstances(doc,registry)},rows=resolveComposition(registry,doc,environment),appearance=compositionAppearance(doc,environment);
@@ -313,7 +318,8 @@ function presentationSnapshot(registry:ArtRegistry,doc:Composition,env:Environme
 }
 /** Layered scenes: distance, backdrop, set and the playfield up to the player row; then the rest of the playfield; then the foreground.
  * `only` limits the slot to some layers, for scenes that draw layers into different engine moments. */
-export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: Composition, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean),phase:'world'|'sky'='world',defer=false) {
+export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: ArtRegistry, doc: ChunkDocument, env: Environment, slot: LayerSlot, only?: readonly Layer[] | ((row: Resolved) => boolean),phase:'world'|'sky'='world',defer=false) {
+  const directed=env.view.sequence?.artwork?.[doc.scene];if(directed){doc=directed.composition;const state={...env.state};for(const[id,values]of Object.entries(directed.state))state[id]={...state[id],...values};const clips={...env.clips};for(const[id,values]of Object.entries(directed.clips))clips[id]={...clips[id],...values};env={...env,state,visibility:{...env.visibility,...directed.visibility},opacity:{...env.opacity,...directed.opacity},clips};}
   const snapshot=presentationSnapshot(registry,doc,env);env=snapshot.environment;
   const mobile=env.view.artworkScope?env.mobileArtwork:undefined;
   const filter = typeof only === 'function' ? only : (r: Resolved) => !only || only.includes(r.instance.layer),keep=(r:Resolved)=>(r.element.framePhase??'world')===phase&&filter(r)&&(!mobile||(env.view.artworkScope==='mobile')===mobile.has(r.instance.id));
@@ -328,19 +334,19 @@ export function drawCompositionSlot(ctx: CanvasRenderingContext2D, registry: Art
   paintSlot(ctx, doc, painting, slot, rows.filter((r, index) => r.element.parts.length === 1 && keep(r) && inSlot(r, index, slot)), r => r.element.parts[0],false,defer);
 }
 /** Collect prepared commands now; flushing never resolves a document or adds another queue. */
-export function queueLayeredSlots(ctx:CanvasRenderingContext2D,registry:ArtRegistry,doc:Composition,env:Environment){
+export function queueLayeredSlots(ctx:CanvasRenderingContext2D,registry:ArtRegistry,doc:ChunkDocument,env:Environment){
  for(const slot of ['over-player','foreground'] as const){
   for(const [id,command]of commands[slot])if(command.doc===doc&&command.scope===env.view.artworkScope)commands[slot].delete(id);
   drawCompositionSlot(ctx,registry,doc,env,slot,undefined,'world',true);
  }
 }
-const authoredOrder=new WeakMap<Composition,Map<Instance,number>>();
-function sourceOrder(doc:Composition,instance:Instance){
+const authoredOrder=new WeakMap<ChunkDocument,Map<AssetInstance,number>>();
+function sourceOrder(doc:ChunkDocument,instance:AssetInstance){
  let indices=authoredOrder.get(doc);if(!indices){indices=new Map(flat(doc.instances).map((n,i)=>[n,i]));authoredOrder.set(doc,indices);}return indices.get(instance)!;
 }
-interface PaintCommand {doc:Composition;scope:View['artworkScope'];shared:boolean;draw:()=>void}
-const commands:Record<LayerSlot,Map<Instance,PaintCommand>>={'behind-player':new Map(),'over-player':new Map(),foreground:new Map()};
-function paintSlot(ctx:CanvasRenderingContext2D,doc:Composition,snapshot:PresentationSnapshot,slot:LayerSlot,rows:Resolved[],passOf:(r:Resolved)=>Pass,near=false,defer=false){
+interface PaintCommand {doc:ChunkDocument;scope:View['artworkScope'];shared:boolean;draw:()=>void}
+const commands:Record<LayerSlot,Map<AssetInstance,PaintCommand>>={'behind-player':new Map(),'over-player':new Map(),foreground:new Map()};
+function paintSlot(ctx:CanvasRenderingContext2D,doc:ChunkDocument,snapshot:PresentationSnapshot,slot:LayerSlot,rows:Resolved[],passOf:(r:Resolved)=>Pass,near=false,defer=false){
  if(rows.length&&(closedSlots.has(slot)||flushingSlot===slot))throw new Error('Artwork submitted after slot flush or during painting: '+doc.scene+'/'+slot);
  const env=snapshot.environment,facts=rows.map(r=>snapshot.facts.get(r.instance)!);
  if(!env.view.sharedLayers&&!defer){for(const r of rows)commands[slot].delete(r.instance);paint(ctx,env,facts,passOf,near,slot);return;}
@@ -361,18 +367,18 @@ export function flushLayeredSlot(slot:LayerSlot){
  flushingSlot=slot;try{for(const[,row]of rows)row.draw();}finally{flushingSlot=undefined;closedSlots.add(slot);}
 }
 /** Cheap check from the document alone, so scenes can skip preparing an environment for an empty slot. */
-export function slotHasContent(doc: Readonly<Composition>, slot: LayerSlot): boolean {
+export function slotHasContent(doc: Readonly<ChunkDocument>, slot: LayerSlot): boolean {
   const nodes = flat(doc.instances);
   if (slot === 'foreground') return nodes.some(n => n.layer === 'foreground');
   const player = nodes.find(n => n.layer === 'playfield' && n.type === PLAYER_ROW);
   if (!player) return slot === 'behind-player';
-  const at = nodes.indexOf(player), after = (n: Instance) => n.order > player.order || n.order === player.order && nodes.indexOf(n) > at;
+  const at = nodes.indexOf(player), after = (n: AssetInstance) => n.order > player.order || n.order === player.order && nodes.indexOf(n) > at;
   return nodes.some(n => n.layer === 'playfield' && n !== player && (slot === 'over-player') === after(n));
 }
-function paint(ctx:CanvasRenderingContext2D,env:Environment,rows:ArtworkPresentation[],passOf:(r:Resolved)=>Pass,near:boolean,slot:LayerSlot){
+function paint(ctx:CanvasRenderingContext2D,env:Environment,rows:ArtworkPresentation[],passOf:(r:Resolved)=>Pass,near:boolean,slot:LayerSlot,capture=true){
   for(const prepared of rows){
     const r=prepared.row,opacity=prepared.opacity;
-    captureArtwork?.(captureRecord(ctx,prepared,slot,paintOrdinal++));
+    if(capture&&captureArtwork){const record=captureRecord(ctx,prepared,slot,paintOrdinal++);record.repaint=target=>paint(target,env,[prepared],passOf,near,slot,false);captureArtwork(record);}
     if(!prepared.visible)continue;
     const pass = passOf(r), p = r.placement, v = env.view;
     const clip=prepared.clip;

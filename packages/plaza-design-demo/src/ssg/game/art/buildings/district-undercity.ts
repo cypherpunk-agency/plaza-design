@@ -18,7 +18,7 @@
  * Drawn in the piece's own frame like the other district types (types.ts): origin at the foot on the
  * left, heights up (`y = -h`); a piece that reaches below its floor (lining, water) draws at negative h.
  */
-import type { Element } from '../core/composition';
+import type { AssetDefinition } from '../core/composition';
 import { mono, rng } from '../core/primitives';
 import { bool, colour, hash, isHex, num, piece, rgba, rgbOf, select, text, y, type Paint } from './types';
 
@@ -924,4 +924,4 @@ export const pontoonElement = piece({
   },
 });
 
-export const undercityElements: Element[] = [rockElement, tunnelElement, canalElement, shaftElement, ladderElement, vaultElement, metroEntranceElement, lotElement, dataHallElement, catwalkElement, pontoonElement];
+export const undercityElements: AssetDefinition[] = [rockElement, tunnelElement, canalElement, shaftElement, ladderElement, vaultElement, metroEntranceElement, lotElement, dataHallElement, catwalkElement, pontoonElement];

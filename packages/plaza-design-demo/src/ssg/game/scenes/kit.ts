@@ -231,7 +231,7 @@ export interface SceneDef {
   /** Read-only visibility of set/playfield rows overhanging a joined zone's logical window. */
   artworkVisible?:(view:View,model?:SceneModel)=>boolean;
   /** Registered source, shared by bounds and mobile membership; not a second saved model. */
-  artwork?:import('../art/core/composition').Composition;
+  artwork?:import('../art/core/composition').ChunkDocument;
   mobileExtent?:{from:number;to:number};
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';
 import {Element} from './rules-harness.mts';
-import {art,type Composition} from '../../src/ssg/game/art';
+import {art,type ChunkDocument} from '../../src/ssg/game/art';
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
@@ -20,13 +20,18 @@ for(const descriptor of sourceDocuments){const to=path.join(root,descriptor.file
 const store=new AuthoringStore({root,documents:sourceDocuments,validateAll:validateSourceDocuments}),initial=store.list();
 const make=()=>{const m=new ComposerModel(art,createSequenceValidationContext(art,{}),()=>{},[sceneCatalogueProjection]);m.load(initial);return m;};
 const model=make(),host=new Element();let error='';
-const render=()=>{host.replaceChildren();const doc=model.get('sequence-opening').value as Composition,node=doc.instances.find(n=>n.type==='sequence.world-control')!;
- renderWorldDirectionAuthoring(host as any,node,model.list(),(label,change)=>{model.edit('sequence-opening',label,value=>{change((value as Composition).instances.find(n=>n.id===node.id)!);return value;});render();},e=>error=String(e));};
+// Detach the authored review starts before deliberately repointing their sequence to another world.
+// Real prospective validation must reject leaving those links pointed at an incompatible origin.
+model.importDocuments([{id:'play-fixtures',value:{...model.get('play-fixtures').value as any,fixtures:(model.get('play-fixtures').value as any).fixtures.map((f:any)=>{const next=structuredClone(f);if(next.sequence?.id==='glide')delete next.sequence;return next;})}},{id:'storyboard',value:{...model.get('storyboard').value as any,acts:(model.get('storyboard').value as any).acts.map((a:any)=>({...a,beats:a.beats.map((b:any)=>{const next=structuredClone(b);if(next.sequence==='glide')delete next.sequence;return next;})}))}}],'Detach review direction links');
+const originalScope=(model.get('sequence-opening').value as ChunkDocument).instances[0].props.worldComposition;
+
+const render=()=>{host.replaceChildren();const doc=model.get('sequence-opening').value as ChunkDocument,node=doc.instances.find(n=>n.type==='sequence.world-control')!;
+ renderWorldDirectionAuthoring(host as any,node,model.list(),(label,change)=>{model.edit('sequence-opening',label,value=>{change((value as ChunkDocument).instances.find(n=>n.id===node.id)!);return value;});render();},e=>error=String(e));};
 const all=(e:Element):Element[]=>[e,...e.children.flatMap(all)];render();
 const field=all(host).find(e=>e.attributes['aria-label']==='World composition')!;assert(field);field.value='boundary-example';field.onchange!();assert.equal(error,'');
-const after=model.get('sequence-opening').value as Composition,props=after.instances.find(n=>n.type==='sequence.world-control')!.props;
+const after=model.get('sequence-opening').value as ChunkDocument,props=after.instances.find(n=>n.type==='sequence.world-control')!.props;
 assert.equal(props.origin,'boundary-west');assert.deepEqual(props.zones,[]);assert.equal(props.worldComposition,'boundary-example');
-model.undo();assert.equal((model.get('sequence-opening').value as Composition).instances[0].props.worldComposition,undefined);model.redo();
+model.undo();assert.equal((model.get('sequence-opening').value as ChunkDocument).instances[0].props.worldComposition,originalScope);model.redo();
 const gameplayId='authored.boundary-west-gameplay';
 model.edit(gameplayId,'Declare review value',value=>{const d=value as GameplayDefinition;d.state!['boundary-west.review']={owner:'boundary-west',type:'boolean',lifetime:'save',default:false};return d;});
 host.replaceChildren();const form=new TypedForm(e=>error=String(e));

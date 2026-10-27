@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {validateWorldCompositions,compileWorldComposition,worldChunkPlacements} from '../../src/ssg/game/world/compositions';
+import {worldMemberRows,addressForChunk,worldMemberAt,moveWorldMember,unmountWorldMember,mountWorldMember} from '../../src/ssg/game/authoring/world-members';
+import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
+import {ArtRegistry} from '../../src/ssg/game/art/core/composition';
+import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
+
+const source=validateWorldCompositions({version:1,groups:{street:{name:'Street',members:[{id:'west',chunk:'west',placement:{x:0,h:0}},{id:'east',chunk:'east',placement:{x:320,h:0}}],connections:[{id:'walk',kind:'walk',a:{member:'west',instance:'floor',anchor:'end'},b:{member:'east',instance:'floor',anchor:'origin'}}],exports:{west:{member:'west',instance:'floor',anchor:'origin'}}}},compositions:{world:{name:'World',members:[{id:'street',group:'street',placement:{x:0,h:0}},{id:'interior',chunk:'inside',placement:{x:100,h:40}}],connections:[]}}});
+const context={chunks:{west:{width:320},east:{width:320},inside:{width:200},extra:{width:100}},anchor:(_chunk:string,_instance:string,anchor:string)=>({x:anchor==='end'?320:0,h:0})};
+const rows=worldMemberRows(source,'world');assert.equal(rows.length,2);assert.equal(rows[0].children.length,2);
+const east=addressForChunk(source,'world','east')!,inside=addressForChunk(source,'world','inside')!;
+assert.deepEqual(east,{composition:'world',member:'street',child:'east'});assert.equal(worldMemberAt(source,east).group,'street');
+assert.equal(addressForChunk(source,'world','absent'),undefined);
+const shiftedGroup=moveWorldMember(source,{composition:'world',member:'street'},{x:80,h:30});
+assert.deepEqual(worldChunkPlacements(shiftedGroup,'world').map(({chunk,x,h})=>({chunk,x,h})),[{chunk:'west',x:80,h:30},{chunk:'east',x:400,h:30},{chunk:'inside',x:100,h:40}],'Group placement moves its children without moving an independent chunk');
+const before=JSON.stringify(source),moved=moveWorldMember(source,inside,{x:160,h:90});assert.equal(JSON.stringify(source),before,'Operation drafts never mutate source');
+assert.deepEqual(worldMemberAt(moved,inside).member.placement,{x:160,h:90});compileWorldComposition(moved,'world',context);
+assert.throws(()=>compileWorldComposition(moveWorldMember(source,east,{x:350,h:0}),'world',context),/anchors do not meet/,'Constrained move cannot silently detach a walk seam');
+const linked=moveWorldMember(source,east,{x:350,h:20},true);assert.deepEqual(worldMemberAt(linked,{...east,child:'west'}).member.placement,{x:30,h:20});compileWorldComposition(linked,'world',context);
+assert.throws(()=>unmountWorldMember(source,east),/Confirm disconnecting/);assert.throws(()=>unmountWorldMember(source,{...east,child:'west'},true),/supplies group endpoints/);
+const removed=unmountWorldMember(source,east,true);assert.equal(removed.groups.street.connections.length,0);assert.equal(removed.groups.street.members.length,1);
+assert.equal(source.groups.street.members.length,2,'Unmount leaves source definitions intact');
+const mounted=mountWorldMember(source,'world',{chunk:'extra'},{x:900,h:0});assert.equal(mounted.address.member,'extra');compileWorldComposition(mounted.source,'world',context);
+const duplicate=mountWorldMember(mounted.source,'world',{chunk:'extra'},{x:1000,h:0});assert.equal(duplicate.address.member,'extra-2');assert.throws(()=>compileWorldComposition(duplicate.source,'world',context),/ambiguous repeated/);
+assert.throws(()=>moveWorldMember(source,inside,{x:Infinity,h:0}),/finite/);
+
+const docs=[{id:'world-compositions',kind:'world-composition' as const,revision:'test',value:source}];
+const model=new ComposerModel(new ArtRegistry(),{},doc=>compileWorldComposition(validateWorldCompositions(doc.value),'world',context));model.load(docs);
+assert.throws(()=>model.edit('world-compositions','Invalid move',()=>moveWorldMember(source,east,{x:400,h:0})),/anchors do not meet/);assert(!model.canUndo);assert.deepEqual(model.get('world-compositions').value,source);
+model.edit('world-compositions','Move interior',()=>moved);assert(model.canUndo);model.undo();assert.deepEqual(model.get('world-compositions').value,source);model.redo();assert.deepEqual(model.get('world-compositions').value,moved);
+const bundle=createDocumentBundle(model.edits(),model.list()),restored=new ComposerModel(new ArtRegistry(),{},doc=>compileWorldComposition(validateWorldCompositions(doc.value),'world',context));restored.load(docs);restored.importDocuments(readDocumentBundle(bundle,restored.list()));assert.deepEqual(restored.get('world-compositions').value,moved);
+console.log('World member editing: chunk/group addresses, constrained and linked movement, explicit disconnect, source retention, atomic rejection, history and bundles PASS');

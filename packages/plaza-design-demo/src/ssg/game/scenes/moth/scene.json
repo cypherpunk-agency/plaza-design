@@ -84,7 +84,6 @@
   "environment": {},
   "companion": {
     "mode": "along",
-    "unlockFlag": "pixel",
     "pet": {
       "prompt": "[E] PET PIXEL",
       "conversations": {

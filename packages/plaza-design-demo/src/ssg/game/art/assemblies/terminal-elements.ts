@@ -2,7 +2,7 @@ import {screenBounds}from './static-bounds';
 import type {Bounds}from '../core/composition';
 /** Individually authored terminal architecture, cargo and equipment. */
 import { lightAt } from '../../world/light';
-import type { Element,Field,Value } from '../core/composition';
+import type { AssetDefinition,Field,Value } from '../core/composition';
 import { onScreen } from '../core/primitives';
 import { paperSign } from '../signage/kit';
 import { container } from '../props/containers';
@@ -15,7 +15,7 @@ export const emptyTerminalVisual:TerminalVisual={width:1760,horizon:76,layer:'al
 export const terminalVisualFields:Record<string,Field>={snapshot:{kind:'json',label:'Terminal visual snapshot',default:emptyTerminalVisual as unknown as Value,validate:validateTerminalVisual}};
 const raised=(v:import('../core/view').View,h:number)=>h===0?v:({...v,gy:v.gy-h,y:(value:number)=>v.y(value+h)});
 const cache=new Map<string,{inputs:ArtworkInputs;art:ReturnType<typeof createContainerTerminalArtwork>}>();
-export const terminalElements:Element[]=[
+export const terminalElements:AssetDefinition[]=[
 {type:'terminal.marker',version:1,label:'Terminal gameplay marker',category:'markers',fields:{role:{kind:'string',label:'Role',default:''},width:n('Width',1760),horizon:n('Horizon',76),tiers:n('Tiers',2)},parts:[],bounds:()=>({x:-4,h:4,w:8,tall:8}),anchors:()=>({origin:{x:0,h:0,role:'origin'}}),draw:()=>{}},
 {type:'terminal.far-band',version:1,label:'far-band',category:'Terminal',coordinates:'world',fields:{width:n('Width',1760),height:n('Height',150)},visualFields:terminalVisualFields,parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin:{x:0,h:0,role:'origin'}}),draw:(x,v,p,state,_pass,at)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual;if(s.layer==='devices')return;const config={L:s.layout,STACKS_W:s.width,STACKS_HZ:s.horizon,x:at.x,width:Number(p.width??0),part:p.part as 'far'|'near'|undefined,open:!!p.open};const key=JSON.stringify(config);let had=cache.get(key);if(!had){const inputs={...config,visual:s};had={inputs,art:createContainerTerminalArtwork(inputs)};if(cache.size>2048)cache.clear();cache.set(key,had);}had.inputs.visual=s;had.art.far_band(x,raised(v,at.h));}},
 {type:'terminal.sky-glow',version:1,label:'sky-glow',category:'Terminal',coordinates:'world',fields:{width:n('Width',128),height:n('Height',150)},visualFields:terminalVisualFields,parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin:{x:0,h:0,role:'origin'}}),draw:(x,v,p,state,_pass,at)=>{const s=(state.snapshot??emptyTerminalVisual) as unknown as TerminalVisual;if(s.layer==='devices')return;const config={L:s.layout,STACKS_W:s.width,STACKS_HZ:s.horizon,x:at.x,width:Number(p.width??0),part:p.part as 'far'|'near'|undefined,open:!!p.open};const key=JSON.stringify(config);let had=cache.get(key);if(!had){const inputs={...config,visual:s};had={inputs,art:createContainerTerminalArtwork(inputs)};if(cache.size>2048)cache.clear();cache.set(key,had);}had.inputs.visual=s;had.art.sky_glow(x,raised(v,at.h));}},

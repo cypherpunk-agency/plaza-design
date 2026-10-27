@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {runtimeFixture} from './runtime-fixture.mts';
+import {Game} from '../../src/ssg/game/runtime/game';
+import {SCENES} from '../../src/ssg/game/scenes';
+import {newSave} from '../../src/ssg/game/runtime/save';
+const save=newSave();Object.assign(save.flags,{'prologue:started':true,'opening:home':true,'opening:street':true});
+const spoken:any[]=[],game=runtimeFixture(Game,{save,scenes:{here:'downtown',level:{state:{}}},openingStory:{openingState:()=> 'home'},sceneDefinition:(id:string)=>SCENES[id],zh:{model:{data:{goals:[]}}},gameplayFor:()=>undefined,libraryGoal:()=>null,p:{x:1440,y:0},persistSave(){},say:(...args:any[])=>spoken.push(args),touch:false});
+assert.equal(game.goalText(),SCENES.downtown.phases!.home.goal,'The active story goal takes precedence over the base Act I objective');
+game.introduceScene();assert.deepEqual(spoken[0][1],SCENES.downtown.phases!.home.intro!.pages,'Seam arrival consumes the same phase introduction as a door arrival');assert(save.flags['scene:downtown']);assert(save.flags['opening:said:home:downtown']);game.introduceScene();assert.equal(spoken.length,1,'Repeated arrival cannot repeat phase narration');
+game.scenes.here='metro';game.scenes.level.state.vehicle={id:'service'};game.introduceScene();assert.equal(spoken.length,1,'Riding into a platform defers its phase speech until stepping off');delete game.scenes.level.state.vehicle;game.introduceScene();assert.deepEqual(spoken[1][1],SCENES.metro.phases!.home.intro!.pages);game.introduceScene();assert.equal(spoken.length,2);
+console.log('Prologue arrival PASS: active goal precedence, shared phase narration, once receipts and occupied-vehicle deferral');

@@ -7,6 +7,23 @@
       "arc": "An ordinary night shift at the harbor, the train home and a quiet morning in Capsule 7B: the life about to be deleted.",
       "beats": [
         {
+          "id": "launch",
+          "title": "Launch coast",
+          "place": "City coast",
+          "district": "harbor",
+          "scene": "sequence-opening",
+          "status": "exists",
+          "happens": "Launch view over the same engine world; the menu pauses gameplay.",
+          "teaches": "Ambient priming only",
+          "note": "Review checkpoint; final opening geography and pacing remain a design decision.",
+          "composition": "harbor-world",
+          "checkpoint": "review-launch",
+          "sequence": "title",
+          "branches": [
+            "p0"
+          ]
+        },
+        {
           "id": "p0",
           "title": "Glide to the harbor",
           "place": "Harbor at sundown",
@@ -15,7 +32,52 @@
           "status": "exists",
           "happens": "See the city, settle beside the workplace at sundown.",
           "teaches": "Ambient priming only",
-          "note": "Cinematic, then a clear handover; no faction or name lesson."
+          "note": "Cinematic, then a clear handover; no faction or name lesson.",
+          "composition": "harbor-world",
+          "checkpoint": "review-glide",
+          "sequence": "glide",
+          "branches": [
+            "p0-arrival",
+            "p1"
+          ],
+          "transitions": [
+            {
+              "scene": "harbor-station",
+              "kind": "command",
+              "id": "intro.hold"
+            },
+            {
+              "scene": "harbor-station",
+              "kind": "command",
+              "id": "intro.arrive"
+            },
+            {
+              "scene": "harbor-station",
+              "kind": "command",
+              "id": "intro.release"
+            },
+            {
+              "scene": "harbor-station",
+              "kind": "command",
+              "id": "intro.retire-coast"
+            }
+          ]
+        },
+        {
+          "id": "p0-arrival",
+          "title": "Harbor arrival",
+          "place": "Harbor platform",
+          "district": "harbor",
+          "scene": "harbor-station",
+          "status": "exists",
+          "happens": "Finish direction beside the train, then take control of the same Harbor player.",
+          "note": "Work membership mounts before the coast retires; retirement waits internally for safe disposal.",
+          "composition": "harbor-world",
+          "checkpoint": "review-arrival",
+          "sequence": "glide",
+          "branches": [
+            "p1"
+          ]
         },
         {
           "id": "p1",
@@ -26,7 +88,12 @@
           "status": "exists",
           "happens": "Walk to the supervisor; establish the hierarchy.",
           "teaches": "Movement",
-          "note": "One visible destination cue."
+          "note": "One visible destination cue.",
+          "composition": "harbor-world",
+          "checkpoint": "review-first-task",
+          "branches": [
+            "p2"
+          ]
         },
         {
           "id": "p2",
@@ -92,7 +159,9 @@
           "status": "exists",
           "happens": "Walk to the homeward train and board it.",
           "teaches": "Guided travel",
-          "note": "P7 in the plan, split by scene. Homebound boarding only."
+          "note": "P7 in the plan, split by scene. Homebound boarding only.",
+          "composition": "harbor-world",
+          "checkpoint": "review-world"
         },
         {
           "id": "p7-train",

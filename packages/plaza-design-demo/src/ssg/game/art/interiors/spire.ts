@@ -21,7 +21,7 @@
  * Everything is drawn in the piece's own frame: origin at its foot on the left, heights up (`y = -h`).
  * Black stone, gold seams, cold white light; nothing worn; almost no signage (ART-GUIDE).
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { addLight } from '../atmosphere/lighting';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, rgba, hash, y, type Paint } from '../buildings/types';
@@ -336,7 +336,7 @@ function framed(x: CanvasRenderingContext2D, v: View, at: { x: number; h: number
   try { paint({ t: v.t, lighting: v.lighting, view: v, ...(light ? { light } : {}) }); } finally { x.restore(); }
 }
 
-export const cloudSeaElement: Element = {
+export const cloudSeaElement: AssetDefinition = {
   type: 'deck.cloud-sea', version: 1, label: 'Sea of cloud, towers poking through (Spire deck, distance)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Width', 4000, 200, 40000, 10, 'units'), parallax: num('Parallax (0: fixed, 1: with the deck)', 0.2, 0, 1, 0.01),
@@ -493,7 +493,7 @@ export const platformElement = piece({
 /** The craft a pad can take (a hauler's slung box does not fit a pad). */
 const PAD_CRAFT = ['shuttle', 'escort', 'medevac', 'taxi'] as const;
 
-export const landingPadElement: Element = {
+export const landingPadElement: AssetDefinition = {
   type: 'deck.landing-pad', version: 1, label: 'Landing pad and its craft (deck: a visit on a long cycle, or parked for good)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Pad length', 420, 120, 2000, 1, 'units'), mode: select('Craft', ['visiting', 'parked', 'none'], 'visiting'), craft: select('Kind of craft', PAD_CRAFT, 'shuttle'),
@@ -636,5 +636,5 @@ export const glassFrontElement = piece({
   },
 });
 
-export const spireInteriors: Element[] = [atriumElement, slowScreenElement, receptionElement, idGatesElement, benchesElement, mezzanineElement, liftBankElement,
+export const spireInteriors: AssetDefinition[] = [atriumElement, slowScreenElement, receptionElement, idGatesElement, benchesElement, mezzanineElement, liftBankElement,
   cloudSeaElement, spireWallElement, platformElement, landingPadElement, loungeElement, glassFrontElement];

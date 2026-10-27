@@ -150,7 +150,7 @@ export interface TravelState {
 
 /** Authored world values; scene exits remain owned by their scene documents. */
 export interface CitySource {
- version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;LOCKS:Record<string,{unlockedBy:'HARBOR_FLAG';destinations:string[];reason:string}>;DISTRICTS:District[];PLACES:Place[];START_SCENE:SceneId;
+ version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;LOCKS:Record<string,{unlockedBy:'HARBOR_FLAG';destinations:string[];reason:string}>;DISTRICTS:District[];PLACES:Place[];
  LINE:Station[];STATIONS:Record<Station,{name:string;scene:SceneId;up:SceneId;at?:string}>;
  TRANSPORT:{boarding:{scene:SceneId;entrance?:string};siding:{scene:SceneId;entrance?:string}};
  HARBOR_FLAG:string;DRIVER_HARBOR:string[];
@@ -204,7 +204,6 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
  * hands over to it (cutscenes.json `next`), and a save that has never been
  * Downtown starts there too.
  */
- const START_SCENE = data.START_SCENE;
 
 
  const seenFlag = (id: SceneId) => 'seen:' + id;
@@ -399,8 +398,8 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
   ]);
   return access.ok?'':access.reason;
 }
- return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
+ return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
 }
 export type CityModel=ReturnType<typeof createCityModel>;
 const shippingCity=createCityModel(citySource as unknown as CitySource);
-export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,START_SCENE,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;
+export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;

@@ -3,6 +3,7 @@ import type {TypedForm} from './typed-form';
 /** Structured command controls; source IDs stay ordinary references validated with the pending bundle. */
 export function renderWorldEditAuthoring(host:HTMLElement,prefix:string,value:CompositionEdit,form:TypedForm,change:(value:CompositionEdit)=>void){
  form.text(host,prefix+' composition',value.composition,composition=>change({...value,composition}));
+ form.check(host,prefix+' ensure mounted/unmounted',!!value.ensure,on=>{const {ensure,...strict}=value;change(on?{...strict,ensure:true}:strict);});
  for(const[id,index]of value.remove.map((id,i)=>[id,i] as const)){
   form.text(host,prefix+' unmount '+(index+1),id,id=>change({...value,remove:value.remove.map((v,i)=>i===index?id:v)}));
   form.button(host,'Remove unmount '+(index+1),()=>change({...value,remove:value.remove.filter((_,i)=>i!==index)}));

@@ -164,89 +164,32 @@
     {
       "id": "regular",
       "name": "REGULAR",
-      "talk": [
-        [
-          "Twenty years I have eaten here.",
-          "The recipe changed forty times. The price only ever changed one way."
-        ],
-        [
-          "Do not take that stool. It reports to the Registry.",
-          "...I am joking. The stool is freelance."
-        ]
-      ]
+      "conversation": "talk.market.regular"
     },
     {
       "id": "kid",
       "name": "KID",
-      "talk": [
-        [
-          "I am not stealing. I am testing their security.",
-          "Report: there is none."
-        ],
-        [
-          "You did not see anything. I saw you, though. Two tokens and I forget your face.",
-          "The cameras charge more."
-        ]
-      ]
+      "conversation": "talk.market.kid"
     },
     {
       "id": "queue",
       "name": "IN THE QUEUE",
-      "talk": [
-        [
-          "The queue is sorted by credit score.",
-          "I was first when I got here. That was two hours ago."
-        ],
-        [
-          "Someone with a 900 just walked in and got served before he was hungry."
-        ]
-      ]
+      "conversation": "talk.market.queue"
     },
     {
       "id": "busker",
       "name": "BUSKER",
-      "talk": [
-        [
-          "This one is called Rain On Tin. I wrote it on tin. In the rain.",
-          "Tips are optional. Eye contact is mandatory."
-        ],
-        [
-          "I used to play the mall. Then the mall got a playlist.",
-          "The playlist does not take requests either, but it does not pretend to."
-        ],
-        [
-          "Still here? That makes you my audience. Congratulations. There is no prize."
-        ]
-      ]
+      "conversation": "talk.market.busker"
     },
     {
       "id": "marshal",
       "name": "QUEUE MARSHAL",
-      "talk": [
-        [
-          "Wait for green. Green is coming.",
-          "Green has been coming since I was installed."
-        ],
-        [
-          "Your score is not my business. It is my whole job, but it is not my business."
-        ]
-      ]
+      "conversation": "talk.market.marshal"
     },
     {
       "id": "oldunit",
       "name": "OLD UNIT",
-      "talk": [
-        [
-          "...hello. Do you have a spare servo? A bolt? Half a bolt?",
-          "I sorted parcels for nineteen years. Then they sorted me."
-        ],
-        [
-          "The new model does my job and sings. I did not know the job needed singing."
-        ],
-        [
-          "Do not worry about me. My warranty ran out. My optimism did not. That one is a bug."
-        ]
-      ]
+      "conversation": "talk.market.oldunit"
     }
   ],
   "readables": [

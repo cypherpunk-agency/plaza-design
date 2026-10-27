@@ -36,7 +36,7 @@ assert.deepEqual(readDocumentBundle(createDocumentBundle([], documents), documen
 console.log('Public edit bundles: detached composition/sequence roundtrip, local revision omission, exact envelope/entry keys, existing ids/kinds, world/duplicate/unsafe JSON/UTF8 size rejection, immutable source baseline PASS');
 
 // The actual ComposerModel imports related documents as one command and retains source revisions.
-const { ComposerModel } = await import('../../src/ssg/game/authoring/app');
+const { ComposerModel } = await import('../../src/ssg/game/authoring/composer-model');
 const { ArtRegistry } = await import('../../src/ssg/game/art/core/composition');
 const registry = new ArtRegistry().register({ type: 'public-test', version: 1, label: 'Test', category: 'Test', fields: {}, parts: ['backdrop'], bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }), draw() {} });
 const model = new ComposerModel(registry, {}, doc => { if (doc.kind === 'devices') assert.equal((doc.value as { retained: boolean }).retained, true, 'Protected behavior changed'); });

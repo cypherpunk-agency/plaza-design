@@ -6,7 +6,8 @@
     "capsule:goal.router",
     "capsule:goal.concierge",
     "capsule:observed.conciergeConnected",
-    "capsule:goal.pixel"
+    "capsule:goal.pixel",
+    "pixel"
   ],
   "items": [],
   "events": [

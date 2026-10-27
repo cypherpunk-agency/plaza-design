@@ -3,7 +3,8 @@
  * profile instead of branching on a mode. A profile declares where play starts, which abilities exist, who the
  * player is, how the clock and guidance behave and which storage keys the run owns. Which profile is active is
  * chosen from the URL or the editor's Play frame (`select`); the story still decides when an ability the profile
- * grants is locked (the opening's hack lock). Edited in the editor under World › Play profiles.
+ * grants is locked (the opening's hack lock). Default campaign settings live in Game settings;
+ * selected test configurations and their storage isolation live in Developer tools.
  */
 import type { Look } from './characters';
 import { BODY_KINDS, EXTRA_KINDS, FACIAL_KINDS, GARB_KINDS, HAIR_KINDS } from '../art/characters/parts';
@@ -19,8 +20,8 @@ export type AvatarId = (typeof AVATARS)[number];
 /** The shared character kit's person the player is drawn as (avatar 'person'): a seed and a look (art/characters/parts.ts, archetypes.ts). */
 export interface PlayerCharacter { seed: number; look: PlayerLook }
 export type PlayerLook = Pick<Look, 'archetype' | 'body' | 'hair' | 'garb' | 'facial' | 'extras' | 'skin' | 'hairCol' | 'top' | 'bottom' | 'acc'>;
-const LOOK_PARTS: Record<string, readonly string[]> = { body: BODY_KINDS, hair: HAIR_KINDS, garb: GARB_KINDS, facial: FACIAL_KINDS, archetype: ARCHETYPE_IDS };
-const LOOK_COLOURS = ['skin', 'hairCol', 'top', 'bottom', 'acc'] as const;
+export const LOOK_PARTS: Record<string, readonly string[]> = { body: BODY_KINDS, hair: HAIR_KINDS, garb: GARB_KINDS, facial: FACIAL_KINDS, archetype: ARCHETYPE_IDS };
+export const LOOK_COLOURS = ['skin', 'hairCol', 'top', 'bottom', 'acc'] as const;
 export const ROUTES = ['world', 'start', 'content'] as const;
 export const WORLDS = ['campaign', 'testDistrict'] as const;
 export const GUIDANCE_STYLES = ['none', 'shift'] as const;
@@ -34,10 +35,6 @@ export interface PlayProfile {
   /** The scene the game rests in before anything is entered, and where an unknown scene id lands. */
   home: string;
   start: {
-    /** The scene a fresh run begins in, when the profile has one (otherwise the story decides). */
-    scene?: string;
-    /** The exit a fresh run arrives at. */
-    entrance?: string;
     /** The title screen comes first when no scene is named. */
     title: boolean;
     /** `?play=<scene>` may name the starting scene. */
@@ -53,8 +50,8 @@ export interface PlayProfile {
   /** opening: the opening story pins the clock; scene: the scene's own story day and minute do. */
   clock: { rule: (typeof CLOCK_RULES)[number] };
   chrome: { pageClass?: string; /** No city clock, player name or scene title line in the HUD, and no status badges on the page. */ minimalHud: boolean };
-  /** What a new save holds. */
-  seed: { scene?: string; handle: string; tokens: number; modules: string[]; flags: string[] };
+  /** One reference to the authoritative starting situation. */
+  checkpoint: string;
 }
 export interface PlayProfiles { version: 1; profiles: PlayProfile[] }
 
@@ -85,11 +82,9 @@ export function characterOf(v: unknown, what: string): PlayerCharacter {
 }
 
 export interface PlayProfileContext {
+  checkpoints?: readonly {id:string}[];
   /** Scene ids the profile may name; absent: not checked here (the editor checks them against the pending world). */
   scenes?: readonly string[];
-  /** Exit ids per scene for `start.entrance`. */
-  exits?: (scene: string) => readonly string[] | undefined;
-  modules?: readonly string[];
 }
 
 export function validatePlayProfiles(value: unknown, context: PlayProfileContext = {}): PlayProfiles {
@@ -103,14 +98,14 @@ export function validatePlayProfiles(value: unknown, context: PlayProfileContext
   const scene = (v: unknown, what: string) => { const s = sceneIdOf(v, what); if (context.scenes && !context.scenes.includes(s)) fail(`${what}: no scene called ${s}`); return s; };
   const profiles = rows.map((raw, i) => {
     const p = plain(raw, 'profile ' + (i + 1));
-    exact(p, ['id', 'label', 'select', 'home', 'start', 'routes', 'world', 'namespace', 'abilities', 'player', 'guidance', 'clock', 'chrome', 'seed'], ['id', 'label', 'home', 'start', 'routes', 'world', 'namespace', 'abilities', 'player', 'guidance', 'clock', 'chrome', 'seed'], 'profile ' + (i + 1));
+    exact(p, ['id', 'label', 'select', 'home', 'start', 'routes', 'world', 'namespace', 'abilities', 'player', 'guidance', 'clock', 'chrome', 'checkpoint'], ['id', 'label', 'home', 'start', 'routes', 'world', 'namespace', 'abilities', 'player', 'guidance', 'clock', 'chrome', 'checkpoint'], 'profile ' + (i + 1));
     const id = idOf(p.id, 'profile id');
     if (ids.has(id)) fail(`two profiles are called ${id}`); ids.add(id);
     const at = `profile ${id}`;
     const out: PlayProfile = {
       id, label: text(p.label, at + ' name'), home: scene(p.home, at + ' home scene'),
       start: undefined as never, routes: oneOf(p.routes, ROUTES, at + ' routes'), world: oneOf(p.world, WORLDS, at + ' world'),
-      namespace: undefined as never, abilities: undefined as never, player: undefined as never, guidance: undefined as never, clock: undefined as never, chrome: undefined as never, seed: undefined as never,
+      namespace: undefined as never, abilities: undefined as never, player: undefined as never, guidance: undefined as never, clock: undefined as never, chrome: undefined as never, checkpoint: undefined as never,
     };
     if (p.select === undefined) { defaults++; } else {
       const s = plain(p.select, at + ' selection');
@@ -133,16 +128,8 @@ export function validatePlayProfiles(value: unknown, context: PlayProfileContext
       if (!sel.url && !sel.editorFrame && !sel.editorRestricted) fail(`${at}: a selection must name a URL, an editor frame or the Test District lab`);
       out.select = sel;
     }
-    const st = plain(p.start, at + ' start'); exact(st, ['scene', 'entrance', 'title', 'urlScene'], ['title', 'urlScene'], at + ' start');
+    const st = plain(p.start, at + ' start'); exact(st, ['title', 'urlScene'], ['title', 'urlScene'], at + ' start');
     out.start = { title: bool(st.title, at + ' title screen'), urlScene: bool(st.urlScene, at + ' URL scene') };
-    if (st.scene !== undefined) out.start.scene = scene(st.scene, at + ' start scene');
-    if (st.entrance !== undefined) {
-      if (!out.start.scene) fail(`${at}: an entrance needs a start scene`);
-      const entrance = idOf(st.entrance, at + ' entrance'), exits = context.exits?.(out.start.scene as string);
-      if (exits && !exits.includes(entrance)) fail(`${at}: ${out.start.scene} has no exit called ${entrance}`);
-      out.start.entrance = entrance;
-    }
-    if (out.routes === 'start' && !out.start.scene) fail(`${at}: routes "start" needs a start scene`);
     const ns = plain(p.namespace, at + ' storage'); exact(ns, ['save', 'sudoSave', 'resume', 'slots', 'sudoSlots'], ['save', 'resume', 'slots'], at + ' storage');
     out.namespace = { save: keyOf(ns.save, at + ' save key'), resume: keyOf(ns.resume, at + ' resume key'), slots: slotsOf(ns.slots, at + ' slot prefix') };
     own(out.namespace.save, at + ' save'); own(out.namespace.resume, at + ' resume');
@@ -163,14 +150,9 @@ export function validatePlayProfiles(value: unknown, context: PlayProfileContext
     const ch = plain(p.chrome, at + ' chrome'); exact(ch, ['pageClass', 'minimalHud'], ['minimalHud'], at + ' chrome');
     out.chrome = { minimalHud: bool(ch.minimalHud, at + ' minimal HUD') };
     if (ch.pageClass !== undefined) { if (typeof ch.pageClass !== 'string' || !/^[a-z][a-z0-9-]{0,39}$/.test(ch.pageClass)) fail(`${at}: page class must be lower-case letters, digits and dashes`); out.chrome.pageClass = ch.pageClass as string; }
-    const sd = plain(p.seed, at + ' new save'); exact(sd, ['scene', 'handle', 'tokens', 'modules', 'flags'], ['handle', 'tokens', 'modules', 'flags'], at + ' new save');
-    if (typeof sd.handle !== 'string' || sd.handle.length > 24) fail(`${at}: handle must be text (24 characters at most)`);
-    if (!Number.isInteger(sd.tokens) || (sd.tokens as number) < 0 || (sd.tokens as number) > 9999) fail(`${at}: tokens must be a whole number from 0 to 9999`);
-    const modules = list(sd.modules, at + ' modules', 32).map(m => { if (typeof m !== 'string' || !/^[a-z][a-z0-9.-]{0,40}$/.test(m)) fail(`${at}: module ids are lower-case words`); if (context.modules && !context.modules.includes(m as string)) fail(`${at}: no module called ${String(m)}`); return m as string; });
-    const flags = list(sd.flags, at + ' flags', 64).map(f => { if (typeof f !== 'string' || !/^[A-Za-z][A-Za-z0-9:._-]{0,63}$/.test(f)) fail(`${at}: flag ids are words`); return f as string; });
-    if (new Set(modules).size !== modules.length || new Set(flags).size !== flags.length) fail(`${at}: a module or flag is listed twice`);
-    out.seed = { handle: sd.handle as string, tokens: sd.tokens as number, modules, flags };
-    if (sd.scene !== undefined) out.seed.scene = scene(sd.scene, at + ' new save scene');
+    const checkpoint=text(p.checkpoint,at+' checkpoint',64);
+    if(context.checkpoints&&!context.checkpoints.some(f=>f.id===checkpoint))fail(at+': unknown checkpoint '+checkpoint);
+    out.checkpoint=checkpoint;
     return out;
   });
   if (!profiles.length) fail('there must be at least one profile');

@@ -2,12 +2,12 @@ import {cinematicTimelineContext,cutView} from '../sequences/cinematics';
 import {lightAt} from '../../world/light';
 import {cinematicDocuments} from '../../story/cutscenes/documents';
 const finite=(value:unknown,fallback:number)=>typeof value==='number'&&Number.isFinite(value)?value:fallback;
-import type {ArtRegistry,Composition,Properties} from './composition';
+import type {ArtRegistry,ChunkDocument,Properties} from './composition';
 import type {MotionTrack,TimelineContext} from './timeline';
 import {SCENES} from '../../scenes';
 const motionNames = ['intro.camera', 'intro.rain', 'intro.fade', 'act2.fade', 'act2.ferry', 'act2.title-one', 'act2.title-found', 'act2.title-two', 'act2.title-subtitle', 'taxi.cab-x', 'taxi.cab-y', 'taxi.fade'];
 /** No DOM, fake canvas or evaluation during source validation. Runtime context supplies real view inputs. */
-export function createSequenceValidationContext(registry: ArtRegistry, compositions: Record<string, Composition>, destinations: TimelineContext['destinations'] = {}): TimelineContext {
+export function createSequenceValidationContext(registry: ArtRegistry, compositions: Record<string, ChunkDocument>, destinations: TimelineContext['destinations'] = {}): TimelineContext {
   const motionTracks: Record<string, MotionTrack> = {};
   for (const name of motionNames) motionTracks[name] = { validate(props: Properties) { if (Object.keys(props).length) throw new Error(`${name}: this exact motion formula takes no parameters`); }, evaluate() { throw new Error(`${name}: use the live sequence environment to evaluate motion`); } };
   const clips=Object.fromEntries(registry.catalog().filter(element=>Object.keys(element.animationClips??{}).length>0).map(element=>[element.type,Object.keys(element.animationClips!)]));

@@ -16,7 +16,7 @@
  * World units at the player's scale; the through-block, the side street and the Galleria's plinth are drawn in the
  * coast kit's pixels (art/core/pixels.ts). Heights over the ground line (the street's back line is `SHORE.back`).
  */
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { inPixels, SHORE, R, hash, mixHex, warmth, ART, type Pixels } from '../core/pixels';
 import { sign, text } from '../core/primitives';
@@ -59,7 +59,7 @@ export function towerOf(p: Properties): Tower {
 const towerCache = new WeakMap<object, Tower>();
 const towerFor = (p: Properties) => { let t = towerCache.get(p); if (!t) { t = towerOf(p); towerCache.set(p, t); } return t; };
 
-export const towerElement: Element = {
+export const towerElement: AssetDefinition = {
   type: 'architecture.tower', version: 1, label: 'Downtown tower: skin, setbacks, crown, roof gear, signs (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Width', 600, 20, 4000, 1, 'units'), height: num('Height', 1500, 20, 20000, 1, 'units'), seed: num('Seed', 1, 0, 1e9),
@@ -103,7 +103,7 @@ function rowTowers(row: Row): RowTower[] {
   }
   rowCache.set(key, towers); return towers;
 }
-export const skylineRowsElement: Element = {
+export const skylineRowsElement: AssetDefinition = {
   type: 'architecture.skyline-rows', version: 1, label: 'Skyline rows behind the street, far to near (city kit, distance)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     rows: jsonList('Rows, far to near (parallax, x: its east start, seed, length west, haze)', [{ parallax: 0.14, x: 0, seed: 300, length: 6000, haze: 0.75 }], v => { if (!Array.isArray(v) || v.length > 8 || !v.every(r => !!r && typeof r === 'object' && ['parallax', 'x', 'seed', 'length', 'haze'].every(k => fin((r as Record<string, unknown>)[k])))) throw new Error('Rows: expected { parallax, x, seed, length, haze } rows'); }),
@@ -136,7 +136,7 @@ export const skylineRowsElement: Element = {
 
 // ---------- THE RING ----------
 
-export const ringElement: Element = {
+export const ringElement: AssetDefinition = {
   type: 'architecture.ring', version: 1, label: 'THE RING overhead: columns, deck and lamps (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     from: num('From (units east of the piece)', 0), to: num('To', 3000), origin: num('Column grid origin (units east of the piece)', 0),
@@ -172,7 +172,7 @@ export const ringElement: Element = {
 
 
 /** Independent lanes use whole-vehicle ownership; road barriers and real portals remain scenery. */
-export const ringTrafficElement:Element={
+export const ringTrafficElement:AssetDefinition={
  type:'vehicle.ring-traffic',version:1,label:'Ring traffic lane',category:'vehicles',coordinates:'world',libraryUse:'reusable',mobility:()=>true,parts:['backdrop'],
  fields:{...Object.fromEntries(['from','to','origin','base'].map(k=>[k,ringElement.fields[k]])),lane:{kind:'select',label:'Lane',default:'far',options:['far','near']}},
  bounds:p=>({x:n(p,'from')-500,h:RING.rail+160,w:n(p,'to')-n(p,'from')+1000,tall:RING.rail+160}),anchors:origin,
@@ -186,7 +186,7 @@ export const ringTrafficElement:Element={
  * line and windows each storey over the Ring, THE RING's portal (and the street's, `street`) with the jamb on the
  * side the traffic comes in from (`entry`); drawn over the Ring so what drives in vanishes into the portal's dark.
  */
-export const throughBlockElement: Element = {
+export const throughBlockElement: AssetDefinition = {
   type: 'architecture.through-block', version: 1, label: 'Block the Ring runs through: portals, storeys, plates (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Width', 240, 30, 4000, 3, 'units'), entry: { kind: 'select', label: 'Traffic comes in from', options: ['east', 'west'], default: 'east' }, street: bool('The street runs through it too', true),
@@ -244,7 +244,7 @@ export const throughBlockElement: Element = {
 
 // ---------- a side street ----------
 
-export const sideStreetElement: Element = {
+export const sideStreetElement: AssetDefinition = {
   type: 'street.side-street', version: 1, label: 'Side street’s mouth: the lit lane going back, a corner lamp (city kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { seed: num('Seed (which windows are lit)', 3420, 0, 1e9) },
   bounds: () => ({ x: -78, h: 1200, w: 156, tall: 1200 }),
@@ -270,7 +270,7 @@ const ADS = ['VERIFIED CUSTOMERS ONLY', 'SCORE 600+ · FREE PARKING', 'IDENTITY 
  * the entrance and its ID gate, the GALLERIA neon, an ad screen, the terrace with its rail, planters, the glazed
  * dome on top (galleria-dome.ts); the public taxi pad `pad` units west of it, a sky taxi landing, waiting and leaving.
  */
-export const galleriaElement: Element = {
+export const galleriaElement: AssetDefinition = {
   type: 'building.galleria', version: 1, label: 'The Galleria: plinth, windows, ID gate, terrace, taxi pad, glazed dome (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Width', 690, 120, 6000, 3, 'units'), name: str('Neon name', 'GALLERIA'), advert: str('Ad screen (empty: the Registry’s rotation)', ''),
@@ -332,5 +332,5 @@ function taxiPad(P: Pixels, p: Properties, back: number, sx: number) {
   placed(x, R(sx + dx), R(top - 6 + dy), S, () => drawCraft(x, 'taxi', { t: P.f, face: 1, still: P.still, scale: S }));
 }
 
-export const cityKitElements: Element[] = [towerElement, skylineRowsElement, ringElement, ringTrafficElement, throughBlockElement, sideStreetElement, galleriaElement];
+export const cityKitElements: AssetDefinition[] = [towerElement, skylineRowsElement, ringElement, ringTrafficElement, throughBlockElement, sideStreetElement, galleriaElement];
 export type { View };

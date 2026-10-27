@@ -1,6 +1,6 @@
 /** Authored framing and visual inputs for a camera travelling through ordinary world zones. No drawing or simulation. */
-import type {Element} from '../core/composition';
-export const worldControlElement:Element={
+import type {AssetDefinition} from '../core/composition';
+export const worldControlElement:AssetDefinition={
   type:'sequence.world-control',version:1,label:'World sequence settings',category:'sequences',parts:[],
   fields:{
     origin:{kind:'string',label:'Origin zone',default:''},

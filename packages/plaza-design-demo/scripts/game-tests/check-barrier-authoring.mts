@@ -20,7 +20,7 @@ import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catal
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {barrierAccess,validateBarrierCondition} from '../../src/ssg/game/world/access';
 import {barrierPhaseRule,barrierRuleOpens,gateFrame,type ExitRule} from '../../src/ssg/game/story/story-rules';
-import {art,type Composition} from '../../src/ssg/game/art';
+import {art,type ChunkDocument} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
 
 const evidence=path.resolve('../../.game-test-output/barrier-authoring');fs.mkdirSync(evidence,{recursive:true});const root=fs.mkdtempSync(path.join(evidence,'run-'));
@@ -43,7 +43,7 @@ const has=(name:string)=>rows().some(e=>e.attributes['aria-label']===name);
 const change=(name:string,value:string|boolean)=>{const e=field(name);if(typeof value==='boolean')e.checked=value;else e.value=value;e.onchange!();};
 // Test the rule's toggles are buttons: switch one to the wanted state
 const toggle=(label:string,on:boolean)=>{const e=rows().find(e=>e.textContent===label&&e.onclick);assert(e,'toggle '+label);if((e.attributes['aria-pressed']==='true')!==on)e.onclick!();assert.equal(rows().find(e=>e.textContent===label)!.attributes['aria-pressed'],String(on));};
-const props=()=>((model.get(DOC).value as Composition).instances.find(n=>n.id===ID)!.props);
+const props=()=>((model.get(DOC).value as ChunkDocument).instances.find(n=>n.id===ID)!.props);
 const tried=()=>field('Test result').textContent,warnings=()=>field('Barrier warnings').children.map(c=>c.textContent);
 const REFUSE='TURNSTILE · NO VALID CHIP. PRESENT UPLINK.';
 
@@ -81,7 +81,7 @@ assert.doesNotThrow(()=>validateBarrierCondition(props().when));
 change('Only while type','flag');change('Only while flag','opening:uplink');
 // an invalid condition is refused atomically by the composition's own validation
 {const before=structuredClone(model.get(DOC).value),label=model.undoLabel;
- const bad=structuredClone(before) as Composition;bad.instances.find(n=>n.id===ID)!.props.when=[1,2] as never;
+ const bad=structuredClone(before) as ChunkDocument;bad.instances.find(n=>n.id===ID)!.props.when=[1,2] as never;
  assert.throws(()=>api.edit(DOC,'probe',bad));assert.deepEqual(model.get(DOC).value,before);assert.equal(model.undoLabel,label);}
 assert.throws(()=>validateBarrierCondition({state:'x',is:true}),/barrier condition/);
 assert.throws(()=>validateBarrierCondition({all:[]}),/empty condition/);

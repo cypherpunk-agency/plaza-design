@@ -2,7 +2,7 @@ import * as defaultCity from './city';
 import type {CityModel} from './city';
 import {createCityPlan} from './cityplan';
 /** Read-only JSON index of the shipping world. Geometry and rules continue to belong to city.ts. */
-import type { Composition } from '../art/core/composition';
+import type { ChunkDocument } from '../art/core/composition';
 import type { Sequence } from '../art/core/timeline';
 import { SCENES, type SceneDef, type SceneId } from '../scenes';
 
@@ -13,7 +13,7 @@ export interface WorldDocumentContext {
   world?:CityModel;
   scenes?:Readonly<Record<string,SceneDef>>;
   /** Real validated composition documents, keyed by their authoring document id. */
-  compositions: Readonly<Record<string, Composition>>;
+  compositions: Readonly<Record<string, ChunkDocument>>;
   /** Registered sequence destinations. No placeholder paths or invented destinations. */
   sequences?: readonly Pick<Sequence, 'id' | 'handoff'>[];
 }

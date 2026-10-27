@@ -1673,7 +1673,8 @@
         ],
         "flags": [
           "prologue:started",
-          "opening:home"
+          "opening:home",
+          "opening:flat"
         ],
         "items": [],
         "events": [],
@@ -1695,6 +1696,25 @@
                   "device": "service",
                   "noun": "doors",
                   "path": "instant-close"
+                }
+              },
+              {
+                "world": {
+                  "composition": "harbor-world",
+                  "remove": [
+                    "work"
+                  ],
+                  "add": [
+                    {
+                      "id": "coast",
+                      "group": "opening-coast",
+                      "placement": {
+                        "x": -13290,
+                        "h": -160
+                      }
+                    }
+                  ],
+                  "ensure": true
                 }
               }
             ]
@@ -1730,6 +1750,40 @@
                   "device": "service",
                   "noun": "doors",
                   "path": "instant-open"
+                }
+              },
+              {
+                "world": {
+                  "composition": "harbor-world",
+                  "remove": [],
+                  "add": [
+                    {
+                      "id": "work",
+                      "group": "harbor-work",
+                      "placement": {
+                        "x": 2500,
+                        "h": -160
+                      }
+                    }
+                  ],
+                  "ensure": true
+                }
+              }
+            ]
+          },
+          "intro.retire-coast": {
+            "sources": [
+              "system"
+            ],
+            "actions": [
+              {
+                "world": {
+                  "composition": "harbor-world",
+                  "remove": [
+                    "coast"
+                  ],
+                  "add": [],
+                  "ensure": true
                 }
               }
             ]
@@ -1775,7 +1829,7 @@
                       "flag": "prologue:started"
                     },
                     {
-                      "flag": "opening:home",
+                      "flag": "opening:flat",
                       "is": false
                     }
                   ]
@@ -10575,6 +10629,18 @@
         "scene": "vehicle-lab",
         "instances": [
           {
+            "id": "world-sky",
+            "type": "environment.sky",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -10000,
+            "layer": "distance",
+            "clip": "none"
+          },
+          {
             "id": "shuttle",
             "type": "vehicle.frame",
             "props": {
@@ -11445,6 +11511,18 @@
         "scene": "vehicle-routes",
         "instances": [
           {
+            "id": "world-sky",
+            "type": "environment.sky",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -10000,
+            "layer": "distance",
+            "clip": "none"
+          },
+          {
             "id": "spawn",
             "type": "scene.player",
             "props": {},
@@ -12291,6 +12369,18 @@
         "scene": "boundary-west",
         "instances": [
           {
+            "id": "world-sky",
+            "type": "environment.sky",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -10000,
+            "layer": "distance",
+            "clip": "none"
+          },
+          {
             "id": "spawn",
             "type": "scene.player",
             "props": {},
@@ -13015,6 +13105,18 @@
         "scene": "boundary-east",
         "instances": [
           {
+            "id": "world-sky",
+            "type": "environment.sky",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -10000,
+            "layer": "distance",
+            "clip": "none"
+          },
+          {
             "id": "spawn",
             "type": "scene.player",
             "props": {},
@@ -13116,6 +13218,18 @@
         "version": 1,
         "scene": "boundary-door",
         "instances": [
+          {
+            "id": "world-sky",
+            "type": "environment.sky",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -10000,
+            "layer": "distance",
+            "clip": "none"
+          },
           {
             "id": "spawn",
             "type": "scene.player",
@@ -13241,6 +13355,18 @@
         "version": 1,
         "scene": "boundary-door-blue",
         "instances": [
+          {
+            "id": "world-sky",
+            "type": "environment.sky",
+            "props": {},
+            "placement": {
+              "x": 0,
+              "h": 0
+            },
+            "order": -10000,
+            "layer": "distance",
+            "clip": "none"
+          },
           {
             "id": "spawn",
             "type": "scene.player",

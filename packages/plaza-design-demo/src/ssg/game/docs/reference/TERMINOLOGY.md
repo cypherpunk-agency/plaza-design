@@ -10,13 +10,15 @@ identifiers change only in their scoped implementation work. ROADMAP.md owns wor
 | Term | Meaning | Example |
 | --- | --- | --- |
 | World | The game's spatial content, live entities and authoritative state. Chunk loading is an implementation detail within it. | The city in its current story state, including the player and train. |
-| Composition | Authored contents and their placement/relationships. Use a qualifier when the contents matter; it is not a separate simulation. | An artwork composition arranges artwork; a world composition arranges placed chunks and chunk groups. |
+| Composition | A named arrangement of one or more chunks and chunk groups. The editor opens this arrangement in its world workspace; it is not another simulation. | The opening coast, a connected district, or a standalone interior accessed as a single-chunk composition. |
 | Chunk | A technical unit of spatial content authored, stored and loaded separately. Its edge does not inherently imply an arrival or story event. | One section of the quay. |
 | Chunk group | A named collection of chunks with defined relative placement, addressed together by composition operations. It does not imply a narrative location or an indivisible loading unit. | The chunks that form the station building and its surroundings. |
 | Place | A meaningful named location used by the game, map and story, independently of chunk boundaries. | Harbor Station, potentially spanning several chunks. |
 | District | A larger geographical/story grouping of places. | Downtown. |
 | Entity | A live game object with stable identity and authoritative state. It can move between chunks while retaining that identity. | A person, a train, an interactive device. |
-| Artwork | A visual definition or placed visual piece. Artwork can depict an entity or be decorative; drawing alone does not imply gameplay state. | A building facade, a sign, the drawing of a train carriage. |
+| Asset definition | A registered visual building block with typed properties and drawing, bounds and inspection behavior. It can depict an entity or be decorative. | A building facade, sign or train carriage definition. |
+| Asset instance | One placed use of an asset definition, identified within its chunk source. Drawing alone does not imply gameplay state. | A particular sign attached to a building. |
+| Chunk asset document | A chunk's placed asset instances and optional sequence controls, represented by `ChunkDocument`. This is source content, not a composition of chunks. | Harbor's visual source. |
 
 An editor **object** is a convenient generic selection label, not another ownership category:
 the selected thing may be artwork, an entity, a group, a camera or a trigger region. The inspector
@@ -29,9 +31,9 @@ same keys. Authors/agents configure copied content's bindings; no special copy-m
 "State owner" is not an authoring concept. "Entity" remains shorthand for a live game object or
 spawned instance, not another ownership layer or a mandatory reference field.
 
-**World composition** replaces the earlier synonym "arrangement" in new user-facing design.
+**Composition** replaces the earlier synonym "arrangement" in new user-facing design.
 It is the named layout being used, not a second World instance or renderer. A standalone cutscene
-may author separate contents; whether those contents need world chunks or only artwork depends
+may author separate contents; whether those contents need world chunks or only assets depends
 on the cutscene. Do not force a card, schematic or illustration into physical geography.
 
 Local chunk coordinates, source IDs and floating-origin arithmetic remain valid implementation
@@ -44,6 +46,8 @@ of nested containers. This glossary does not settle which districts or chunks th
 | --- | --- | --- |
 | Sequence | Authored direction over time: camera/art tracks and discrete actions, using the existing engine. It may direct the live world or standalone contents. | The opening camera glide. |
 | Timeline | The time-based editing/inspection view of a sequence. It is not another saved sequence model. | The bottom time grid with tracks, playhead and action markers. |
+| Checkpoint | An authored, isolated preview starting situation. It extends a Play fixture and is not captured campaign history or reverse gameplay scrubbing. | Start at Harbor arrival with an explicitly configured state. |
+| Storyboard beat | A navigation/planning entry linking a composition, checkpoint or sequence, alongside story and teaching notes. Actual transitions remain authored gameplay commands and triggers. | Open the first night-shift task for editing or private Play. |
 | Keyframe | A property's authored value at a particular sequence time. | Camera height at second 12. |
 | Cutscene | A use of a sequence for cinematic presentation, potentially with restricted player control. It does not specify a separate renderer or require the live gameplay world. | A standalone story interlude. |
 | Event | A discrete occurrence that can be observed. | Doors opened; a command completed. |
@@ -83,12 +87,13 @@ editor/private Play, never the player UI. Shared state/entity identity continues
 | ZoneGraph / zone-graph.json | Connected placements/residency for technical chunks. | Chunk connections/placement graph. Keep identifiers until their actual consumers are deliberately migrated. |
 | Circuit zone / zone noun | A spatial sensor watching the player or a mover. | Spatial sensor or trigger region as appropriate; not a world chunk. |
 | level / level.floor / LevelSource | Physical floors, links, vehicles and related geometry/physics. | Physical level geometry; not automatically a district, place, chunk or narrative act. |
-| Composition.scene | Existing source/document identity field. | Source identity, not proof that the contents constitute a place or cutscene. |
+| ChunkDocument.scene | Existing source/document identity field, retained in source JSON. | Chunk source identity, not proof that the contents constitute a place or cutscene. |
 
 **Scene** is currently overloaded. Do not introduce a new architectural "Scene" above chunks,
 or rename standalone sequences to scenes. Prefer the explicit terms above. Existing file/type
-names remain until a scoped implementation replaces their responsibility; a terminology pass
-does not authorize a repository-wide rename. Narrative "scene" in ordinary prose is acceptable
+names remain until a scoped implementation replaces their responsibility. The E1 contract pass
+renames the old asset types to `ChunkDocument`, `AssetDefinition` and `AssetInstance`, without
+changing stored IDs, JSON shapes or drawing. Narrative "scene" in ordinary prose is acceptable
 when it clearly means a story moment rather than an engine container.
 
 ## Concrete example

@@ -1,6 +1,6 @@
 import {WorkbenchPlayback} from '../../src/ssg/game/authoring/workbench-playback';
 import assert from 'node:assert/strict';
-import {ArtRegistry,type Composition} from '../../src/ssg/game/art/core/composition';
+import {ArtRegistry,type ChunkDocument} from '../../src/ssg/game/art/core/composition';
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sequenceProgram} from '../../src/ssg/game/art/core/sequence';
 import {evaluateTimeline} from '../../src/ssg/game/art/core/timeline';
@@ -8,10 +8,10 @@ import {moveKey,frameTime} from '../../src/ssg/game/authoring/timeline-view';
 import {animationShortcut} from '../../src/ssg/game/authoring/animation-shortcuts';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 
-const art=new ArtRegistry(),composition:Composition={version:1,scene:'keyframe-test',instances:[],sequence:{id:'arrival',duration:4,shots:[],text:[],fades:[],beats:[],tracks:[{id:'camera',target:{kind:'camera',property:'x'},keys:[{time:0,value:0},{time:1,value:10},{time:3,value:30}]}]}};
+const art=new ArtRegistry(),composition:ChunkDocument={version:1,scene:'keyframe-test',instances:[],sequence:{id:'arrival',duration:4,shots:[],text:[],fades:[],beats:[],tracks:[{id:'camera',target:{kind:'camera',property:'x'},keys:[{time:0,value:0},{time:1,value:10},{time:3,value:30}]}]}};
 const model=new ComposerModel(art);model.load([{id:composition.scene,kind:'composition',revision:'source',value:composition}]);
-const move=(index:number,time:number)=>model.edit(composition.scene,'Move keyframe',value=>{const c=value as Composition,program=sequenceProgram({[c.scene]:c});moveKey(program.sequences[0],'camera',index,time);c.sequence!.tracks=program.sequences[0].tracks;return c;});
-move(1,3.51);const moved=model.get(composition.scene).value as Composition;
+const move=(index:number,time:number)=>model.edit(composition.scene,'Move keyframe',value=>{const c=value as ChunkDocument,program=sequenceProgram({[c.scene]:c});moveKey(program.sequences[0],'camera',index,time);c.sequence!.tracks=program.sequences[0].tracks;return c;});
+move(1,3.51);const moved=model.get(composition.scene).value as ChunkDocument;
 assert.deepEqual(moved.sequence!.tracks[0].keys.map(k=>k.time),[0,3,3.5166666666666666]);
 assert.equal(evaluateTimeline(sequenceProgram({[moved.scene]:moved}),'arrival',3.5166666666666666,{registry:art,compositions:{[moved.scene]:moved}}).camera.x,10,'retiming affects native temporal evaluation');
 const snapshot=model.list();assert.throws(()=>move(2,3),'same-time collision rejects');assert.deepEqual(model.list(),snapshot,'rejected move retains source');

@@ -1,3 +1,5 @@
+import {matches} from '../../src/ssg/game/engine/gameplay/queries';
+import {readStoryObservation,type StoryObservations} from '../../src/ssg/game/story/observations';
 /**
  * The story's generic primitives (story/story-rules.ts, story-shapes.ts): pure rules and the shapes that feed them. The checks run the
  * rules against the SHIPPED data (opening.json, the scenes' `phases` and `wash`, contacts.json, end-card.json), so the opening is
@@ -6,7 +8,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {applyCounter,arrivalFor,attentionAim,attentionDue,cardFrame,clockPin,gateFrame,goalHint,triggerFires,triggerStarts,washTone,type Trigger} from '../../src/ssg/game/story/story-rules';
+import {clearStoryStamps,arrivalFor,attentionAim,attentionDue,cardFrame,clockPin,gateFrame,goalHint,washTone,type Trigger} from '../../src/ssg/game/story/story-rules';
 import {validateCue,validateCues,validateExitRule,validateScenePhases,validateWash,validatePhase} from '../../src/ssg/game/story/story-shapes';
 import {openingStoryModel} from '../../src/ssg/game/story/opening-source';
 import {createContactsModel,validateContacts} from '../../src/ssg/game/story/contacts';
@@ -36,29 +38,27 @@ const story=openingStoryModel;
  assert.equal(cardFrame(card,160).showing,true,'the card is still up on its last frame');f=cardFrame(card,161);assert.equal(f.stage,'in');assert.equal(f.showing,false);assert.equal(cardFrame(card,185).dark,.5);
  assert.equal(cardFrame(card,209).done,false);assert.equal(cardFrame(card,210).done,true);
  // the wait card has no cues of its own: the loop builds {advance} for it
- assert.deepEqual(card.mid!.map(c=>Object.keys(c)[0]),['milestone','stage','counter','counter']);assert.deepEqual(card.end!.map(c=>Object.keys(c)[0]),['counter','say']);}
+ assert.deepEqual(card.mid!.map(c=>Object.keys(c)[0]),['milestone','stage','milestone','clearStamps','stamp']);assert.deepEqual(card.end!.map(c=>Object.keys(c)[0]),['stamp','say']);}
 
-// ---- counters and triggers
+// ---- shared conditions over actual presentation observations and ordinary session state
 {const morning=story.TRIGGERS.find(t=>t.id==='morning')!,jack=story.TRIGGERS.find(t=>t.id==='jack')!;
- const at={phase:'deleted',scene:'capsule',clock:5000,counters:{} as Record<string,number>,bubble:false,popup:false,viewing:null as string|null};
- assert.deepEqual(triggerStarts(story.TRIGGERS,'deleted','capsule',{}),['morning.at'],'the morning starts counting the first frame it is watched');
- assert.deepEqual(triggerStarts(story.TRIGGERS,'deleted','capsule',{'morning.at':10}),[]);assert.deepEqual(triggerStarts(story.TRIGGERS,'flat','capsule',{}),[]);assert.deepEqual(triggerStarts(story.TRIGGERS,'deleted','downtown',{}),[]);
- assert.equal(triggerFires(morning,at),false,'nothing has happened yet');
- const tried={...at,counters:{'morning.at':4900,'morning.tries':1}};assert.equal(triggerFires(morning,tried),false,'one failed try is not enough');
- const twice={...at,counters:{'morning.at':4900,'morning.tries':2}};assert.equal(triggerFires(morning,twice),true,'two failed tries');
- assert.equal(triggerFires(morning,{...twice,bubble:true}),false,'waits for the talk to end');assert.equal(triggerFires(morning,{...twice,popup:true}),false,'waits for the popup to close');
- assert.equal(triggerFires(morning,{...twice,counters:{...twice.counters,'morning.last':4950}}),false,'waits out the quiet after the last try');
- assert.equal(triggerFires(morning,{...twice,counters:{...twice.counters,'morning.last':4899}}),true,'strictly more than the quiet frames');assert.equal(triggerFires(morning,{...twice,counters:{...twice.counters,'morning.last':4900}}),false);
- assert.equal(triggerFires(morning,{...at,counters:{'morning.due':1}}),true,'mail read');
- assert.equal(triggerFires(morning,{...at,clock:1500,counters:{'morning.at':0}}),false);assert.equal(triggerFires(morning,{...at,clock:1501,counters:{'morning.at':0}}),true,'waiting long enough');
- assert.equal(triggerFires(morning,{...twice,counters:{...twice.counters,'morning.sent':1}}),false,'fires once');
- assert.equal(triggerFires(morning,{...twice,phase:'uplinked'}),false);assert.equal(triggerFires(morning,{...twice,scene:'downtown'}),false);
- assert.equal(triggerFires(jack,{...at,phase:'uplinked'}),false,'jacking in needs the schematic open');assert.equal(triggerFires(jack,{...at,phase:'uplinked',viewing:'router'}),false);assert.equal(triggerFires(jack,{...at,phase:'uplinked',viewing:'pc'}),true);
- // a trigger with no tests fires whenever the rest holds
- const plain:Trigger={id:'x',phase:'p',scene:'s',do:[]};assert.equal(triggerFires(plain,{...at,phase:'p',scene:'s'}),true);
- // counters
- const c:Record<string,number>={};applyCounter(c,{id:'a.n'},7);applyCounter(c,{id:'a.n',add:2},7);assert.equal(c['a.n'],3);applyCounter(c,{id:'a.at',stamp:true},42);assert.equal(c['a.at'],42);applyCounter(c,{id:'b.n'},7);
- applyCounter(c,{prefix:'a',reset:true},7);assert.deepEqual(c,{'b.n':1},'a prefix reset clears the group and nothing else');}
+ const at:StoryObservations={phase:'deleted',scene:'capsule',clock:5000,stamps:{},bubble:false,popup:false,viewing:null};
+ const state=(tries=0,due=false)=>({flags:{},items:{},tokens:0,values:{story:{morningTries:tries,morningDue:due}}});
+ const test=(t:Trigger,c:StoryObservations,tries=0,due=false)=>matches(t.when,state(tries,due),{definition:story.GAMEPLAY,nativeRead:key=>readStoryObservation(key,c)});
+ assert(matches(morning.watch,state(),{definition:story.GAMEPLAY,nativeRead:key=>readStoryObservation(key,at)}));
+ assert.equal(test(morning,at),false,'nothing has happened yet');
+ const watching={...at,stamps:{'morning.at':4900}};
+ assert.equal(test(morning,watching,1),false,'one failed try is not enough');assert.equal(test(morning,watching,2),true,'two failed tries');
+ for(const blocker of [{bubble:true},{popup:true}])assert.equal(test(morning,{...watching,...blocker},2),false,'waits for presentation to close');
+ assert.equal(test(morning,{...watching,stamps:{...watching.stamps,'morning.last':4950}},2),false);
+ assert.equal(test(morning,{...watching,stamps:{...watching.stamps,'morning.last':4900}},2),false,'exact quiet boundary');
+ assert.equal(test(morning,{...watching,stamps:{...watching.stamps,'morning.last':4899}},2),true,'strictly more than quiet frames');
+ assert.equal(test(morning,at,0,true),true,'mail read');
+ assert.equal(test(morning,{...at,clock:1500,stamps:{'morning.at':0}}),false);assert.equal(test(morning,{...at,clock:1501,stamps:{'morning.at':0}}),true);
+ assert.equal(test(morning,{...watching,phase:'uplinked'},2),false,'committed phase change prevents repeat');assert.equal(test(morning,{...watching,scene:'downtown'},2),false);
+ assert.equal(test(jack,{...at,phase:'uplinked'}),false);assert.equal(test(jack,{...at,phase:'uplinked',viewing:'router'}),false);assert.equal(test(jack,{...at,phase:'uplinked',viewing:'pc'}),true);
+ const stamps={'a.at':42,'a.last':9,'b.at':7};clearStoryStamps(stamps,'a');assert.deepEqual(stamps,{'b.at':7});
+}
 
 // ---- the clock pin: what the story holds the clock at, and what it lets go to
 {assert.deepEqual(clockPin({pinned:true,minute:341,wasPinned:false,releaseMinute:582}),{kind:'hold',minute:341});
@@ -108,10 +108,10 @@ const story=openingStoryModel;
 
 // ---- shapes: what a source may say
 {const bad=(f:()=>void,m:RegExp)=>assert.throws(f,m);
- validateCue({milestone:'flat'},'c');validateCue({sound:'granted'},'c');validateCue({advance:30},'c');validateCue({stage:{scene:'capsule',reset:true,face:-1}},'c');validateCue({counter:{id:'a.b',stamp:true}},'c');validateCue({counter:{prefix:'a',reset:true}},'c');
- bad(()=>validateCue({milestone:'x',sound:'granted'},'c'),/exactly one cue kind/);bad(()=>validateCue({teleport:1},'c'),/unknown cue kind/);bad(()=>validateCue({sound:'boom'},'c'),/registered sound/);bad(()=>validateCue({stage:{scene:'x',face:0}},'c'),/face/);bad(()=>validateCue({counter:{id:'a',stamp:true,add:1}},'c'),/stamp or add/);bad(()=>validateCue({say:{speaker:'A',pages:[],height:1}},'c'),/page/);
+ validateCue({milestone:'flat'},'c');validateCue({sound:'granted'},'c');validateCue({advance:30},'c');validateCue({stage:{scene:'capsule',reset:true,face:-1}},'c');validateCue({stamp:'a.b'},'c');validateCue({clearStamps:'a'},'c');
+ bad(()=>validateCue({milestone:'x',sound:'granted'},'c'),/exactly one cue kind/);bad(()=>validateCue({teleport:1},'c'),/unknown cue kind/);bad(()=>validateCue({sound:'boom'},'c'),/registered sound/);bad(()=>validateCue({stage:{scene:'x',face:0}},'c'),/face/);bad(()=>validateCue({counter:{id:'a',stamp:true,add:1}},'c'),/unknown cue kind/);bad(()=>validateCue({say:{speaker:'A',pages:[],height:1}},'c'),/page/);
  bad(()=>validateCues(new Array(30).fill({sound:'blip'}),'c'),/bounded array/);
- validateExitRule({say:{name:'A',pages:['x']}},'e');validateExitRule({react:'dev',line:['','x','err'],cues:[{counter:{id:'a.b'}}]},'e');
+ validateExitRule({say:{name:'A',pages:['x']}},'e');validateExitRule({react:'dev',line:['','x','err'],cues:[{stamp:'a.b'}]},'e');
  bad(()=>validateExitRule({say:{name:'A',pages:['x']},react:'d',line:['','x']},'e'),/one registered exit handler/);bad(()=>validateExitRule({gate:{verifying:'a',ok:'b',verifyFrames:1,okFrames:1,dotEvery:1}},'e'),/unknown or missing/);bad(()=>validateExitRule({gate:{verifying:'a',ok:'b',verifyFrames:0,okFrames:1,dotEvery:1,then:[]}},'e'),/bounded finite/);
  validateExitRule({acknowledge:{speaker:'A',pages:['x'],height:10,then:[{milestone:'m'}]}},'e');
  validatePhase({time:'06:00',goal:'g',ping:{door:true},ride:{mover:'train.car',path:'home'}},'p');bad(()=>validatePhase({time:'6:00'},'p'),/HH:MM/);bad(()=>validatePhase({ping:{door:true,exit:'x'}},'p'),/one registered ping/);bad(()=>validatePhase({unknown:1},'p'),/unknown or missing/);bad(()=>validatePhase({ride:{mover:'train',path:'home'}},'p'),/device.noun/);

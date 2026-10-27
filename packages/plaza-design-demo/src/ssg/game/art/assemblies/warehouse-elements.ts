@@ -1,5 +1,5 @@
 /** Warehouse kits retain their original native paint operations and explicit placements. */
-import type { Bounds, Element, Field, Placement, Properties } from '../core/composition';
+import type { Bounds, AssetDefinition, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { box, O, sign, text } from '../core/primitives';
 import { camera, taped, ticker } from '../signage/screens';
@@ -11,12 +11,12 @@ const n=(p:Properties,key:string)=>Number(p[key]);
 const origin={x:0,h:0,role:'origin' as const};
 type Paint=(x:CanvasRenderingContext2D,v:View,p:Properties,at:Required<Placement>)=>void;
 const rectangle=(w:number,h:number,x=0,bottom=0):Bounds=>({x,h,w,tall:h-bottom});
-function item(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,paint?:Paint):Element {
+function item(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,paint?:Paint):AssetDefinition {
   return {type:'warehouse.'+type,version:1,label,category,coordinates:'world',libraryUse:!['marker','light','caster','city','floor'].includes(type)?'reusable':undefined,fields,parts:['backdrop'],bounds,anchors:p=>({origin,topLeft:{x:0,h:n(p,'height')||0,role:'surface'},seat:{x:0,h:n(p,'height')||0,role:'surface'},shadow:{x:n(p,'width')/2||0,h:46,role:'mount'}}),
     draw(x,v,p,_state,_pass,at){if(paint){paint(x,v,p,at);return;}const local:View={...v,sx:(wx,depth=at.parallax)=>v.sx(wx+at.x,depth),y:h=>v.y(h+at.h),gy:v.gy-at.h};drawWarehousePiece(type,x,local,p);}};
 }
 const silent:Paint=()=>{};
-export const warehouseElements:Element[]=[
+export const warehouseElements:AssetDefinition[]=[
   item('marker','Warehouse gameplay marker','markers',{role:str('Role'),width:num('Scene width'),facing:num('Facing degrees',270)},()=>rectangle(14,24,-7),silent),
   item('city','Distant city behind the stacks','environment',{},()=>rectangle(1200,110)),
   item('crane','Distant STS crane silhouette','machinery',{},()=>rectangle(360,220)),

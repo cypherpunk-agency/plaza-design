@@ -10,13 +10,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {art} from '../../src/ssg/game/art';
-import {resolveComposition, type Composition} from '../../src/ssg/game/art/core/composition';
+import {resolveComposition, type ChunkDocument} from '../../src/ssg/game/art/core/composition';
 import {compileLevel, mergeLevels, type MoverModel} from '../../src/ssg/game/engine/level';
 import {consistCarLayout} from '../../src/ssg/game/art/transit/metro-kit';
 import {alightAt, boardAt, carOffsets, consistLength, consistLevel, routeAt, routeParamAt, validateVehicle, vehicleDoorsAt, vehicleFrame, vehicleSeatsAt} from '../../src/ssg/game/world/vehicles';
 
 const dir = 'src/ssg/game/art/proposals/';
-const doc = art.validate(JSON.parse(fs.readFileSync(dir + 'train-two-car.composition.json', 'utf8'))) as Composition;
+const doc = art.validate(JSON.parse(fs.readFileSync(dir + 'train-two-car.composition.json', 'utf8'))) as ChunkDocument;
 const v = validateVehicle(JSON.parse(fs.readFileSync(dir + 'train-two-car.vehicle.json', 'utf8')));
 const rows = resolveComposition(art, doc, {view: {t: 0} as never, state: {}, reduced: true});
 const close = (a: number, b: number, msg: string, d = 0.5) => assert.ok(Math.abs(a - b) <= d, `${msg}: ${a} ≠ ${b}`);

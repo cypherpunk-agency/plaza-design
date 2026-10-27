@@ -1,16 +1,16 @@
+import type {Condition} from '../engine/gameplay/types';
 /**
  * The story's generic primitives. There is no story runtime: these are source types and PURE functions that the one game loop
  * (runtime/game.ts `stepLoop`) and the scene model call. Nothing here keeps state, schedules, listens or advances time; the loop
- * owns the few numbers they read (its frame clock, the counters it keeps, the player's stillness) and applies what they return.
+ * owns the few numbers they read (its frame clock, presentation timestamps and the player's stillness) and applies what they return.
  *
  *  - a timed checkpoint gate (`GateRule`, `gateFrame`): an exit that says "verifying" for a beat, then "ok", then lets you through;
  *  - an acknowledgment exit (`AckRule`): a device speaks, the player continues, then the milestone runs;
  *  - a card transition (`CardSpec`, `cardFrame`): fade out, a card with two clock readings, fade in; shared by the sleep and
  *    "wait until ...";
  *  - cues (`Cue`): the finite list of things a gate, an acknowledgment, a card or a trigger makes happen (a milestone command, speech,
- *    deck lines, a sound, a restaged scene, a counter, the clock jumping ahead);
- *  - counters and triggers (`Trigger`, `triggerFires`): a workflow that fires when named counters, elapsed frames and the scene's
- *    quiet say so (the morning's message, jacking in);
+ *    deck lines, a sound, a restaged scene, a timestamp, the clock jumping ahead);
+ *  - conditions and triggers (`Trigger`): a workflow that fires when shared gameplay predicates over state and live presentation observations hold (the morning's message, jacking in);
  *  - the clock pin rule (`clockPin`): what the story holds the city clock at, and what it lets go to;
  *  - the attention rule (`attentionDue`, `attentionAim`): standing still a while points at the next goal;
  *  - the stage light cue (`washTone`): the flat's warm and cold wash;
@@ -33,7 +33,7 @@ export type Cue=
  |{print:{lines:string[];prefix?:string;tone?:Tone}}
  |{sound:Sound}
  |{stage:{scene:string;reset?:true;face?:-1|1}}
- |{counter:{id:string;add?:number;stamp?:true}|{prefix:string;reset:true}}
+ |{stamp:string}|{clearStamps:string}
  |{advance:number};
 export interface GateRule {verifying:string;ok:string;verifyFrames:number;okFrames:number;dotEvery:number;begin?:Cue[];then:Cue[]}
 export interface AckRule {speaker:string;pages:string[];height:number;begin?:Cue[];then:Cue[]}
@@ -54,19 +54,11 @@ export interface ScenePhase {
 }
 export interface WashRule {phase?:string;flag?:string;unlessState?:string;tone:'warm'|'cold'}
 export interface CardSpec {out:number;card:number;in:number;from:string;to:string;label:string;mid?:Cue[];end?:Cue[]}
-export type CounterTest={counter:string;atLeast:number}|{elapsed:string;frames:number};
+/** The existing story tick evaluates ordinary gameplay predicates; cues retain presentation work. */
 export interface Trigger {
- id:string;phase:string;scene:string;
- /** A device whose schematic must be open (jacking in). */
- viewing?:string;
- /** Stamped with the frame clock the first frame the trigger is watching, so `elapsed` has a start. */
- start?:string;
- /** A counter at 1 or more: it has fired. */
- once?:string;
- quiet?:{bubble:true;popup:true;since:string;frames:number};
- /** Any one of these fires it; none: it fires whenever the rest holds. */
- when?:CounterTest[];
- do:Cue[];
+ id:string;when:Condition;do:Cue[];
+ /** Optional presentation timestamp, first stamped while its ordinary watch condition holds. */
+ start?:string;watch?:Condition;
 }
 export interface GoalHint {program:string;exceptScene:string;afterScene:string;afterGoal:string;line:string}
 export interface Persona {name:string;calmWeather:boolean;character?:import('../runtime/play-profiles').PlayerCharacter;deck:{files:Record<string,string>;whoami:string}}
@@ -100,26 +92,9 @@ export function arrivalFor(rows:readonly ArrivalRow[]|undefined,at:{flags:Readon
  return{set:row.set??[],speaker:row.speaker,height:row.height,pages};
 }
 
-// ---------- counters and triggers ----------
-
-export interface TriggerContext {phase:string;scene:string;clock:number;counters:Readonly<Record<string,number>>;bubble:boolean;popup:boolean;viewing:string|null}
-/** Does this trigger fire now? Pure: the loop stamps `start` and runs `do`. */
-export function triggerFires(t:Trigger,c:TriggerContext):boolean{
- if(c.phase!==t.phase||c.scene!==t.scene)return false;
- if(t.viewing!==undefined&&c.viewing!==t.viewing)return false;
- if(t.once!==undefined&&(c.counters[t.once]??0)>=1)return false;
- if(t.quiet){if(c.bubble||c.popup)return false;const last=c.counters[t.quiet.since];if(last!==undefined&&!(c.clock-last>t.quiet.frames))return false;}
- if(!t.when)return true;
- return t.when.some(test=>'counter'in test?(c.counters[test.counter]??0)>=test.atLeast:c.counters[test.elapsed]!==undefined&&c.clock-c.counters[test.elapsed]>test.frames);
-}
-/** The triggers that need a start stamp this frame: watching (phase and scene hold), start counter not yet set. */
-export function triggerStarts(triggers:readonly Trigger[],phase:string,scene:string,counters:Readonly<Record<string,number>>):string[]{
- return triggers.filter(t=>t.start!==undefined&&t.phase===phase&&t.scene===scene&&counters[t.start]===undefined).map(t=>t.start!);
-}
-/** Apply a counter cue to a counter record (the loop's own); returns the new record's change. `now` is the frame clock. */
-export function applyCounter(counters:Record<string,number>,op:Extract<Cue,{counter:unknown}>['counter'],now:number){
- if('prefix'in op){for(const k of Object.keys(counters))if(k===op.prefix||k.startsWith(op.prefix+'.'))delete counters[k];return;}
- counters[op.id]=op.stamp?now:(counters[op.id]??0)+(op.add??1);
+/** Clear presentation timestamps in one named group without touching gameplay state. */
+export function clearStoryStamps(stamps:Record<string,number>,prefix:string){
+ for(const key of Object.keys(stamps))if(key===prefix||key.startsWith(prefix+'.'))delete stamps[key];
 }
 
 // ---------- the clock pin ----------

@@ -1,5 +1,5 @@
 /** The editor's layer stack for layered compositions: rows per layer and restacking. */
-import { LAYERS, PLAYER_ROW, type Composition, type Instance, type Layer } from '../art/core/composition';
+import { LAYERS, PLAYER_ROW, type ChunkDocument, type AssetInstance, type Layer } from '../art/core/composition';
 
 export const VISUAL_LAYERS = LAYERS.filter(layer => layer !== 'logic');
 export const LAYER_LABELS: Record<Layer, string> = {
@@ -13,17 +13,17 @@ export const LAYER_HINTS: Record<Layer, string> = {
   foreground: 'Anything that covers the player: near crowds, posts, pillars; usually fast parallax',
   logic: 'Never drawn: spawn points, exits, markers',
 };
-const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
-export const isPlayerRow = (node: Instance) => node.type === PLAYER_ROW;
+const flat = (nodes: readonly AssetInstance[]): AssetInstance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
+export const isPlayerRow = (node: AssetInstance) => node.type === PLAYER_ROW;
 
 /** Rows of one layer, back to front, in the same order the renderer sorts them. */
-export function layerRows(doc: Readonly<Composition>, layer: Layer): Instance[] {
+export function layerRows(doc: Readonly<ChunkDocument>, layer: Layer): AssetInstance[] {
   const nodes = flat(doc.instances);
   return nodes.filter(n => n.layer === layer).sort((a, b) => a.order - b.order || nodes.indexOf(a) - nodes.indexOf(b));
 }
 
 /** Move a node into `layer` at back-to-front position `index`, renumbering that layer's (and the old layer's) order keys. */
-export function restack(doc: Composition, id: string, layer: Layer, index: number) {
+export function restack(doc: ChunkDocument, id: string, layer: Layer, index: number) {
   const node = flat(doc.instances).find(n => n.id === id);
   if (!node) throw new Error(`Missing instance ${id}`);
   if (isPlayerRow(node) && layer !== 'playfield') throw new Error('The player row stays in the playfield');
@@ -36,6 +36,6 @@ export function restack(doc: Composition, id: string, layer: Layer, index: numbe
 }
 
 /** Next order key at the front of a layer. */
-export function frontOrder(doc: Readonly<Composition>, layer: Layer) {
+export function frontOrder(doc: Readonly<ChunkDocument>, layer: Layer) {
   const rows = layerRows(doc, layer); return rows.length ? rows[rows.length - 1].order + 1 : 0;
 }

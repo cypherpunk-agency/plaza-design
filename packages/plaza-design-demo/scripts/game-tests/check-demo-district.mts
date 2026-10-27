@@ -4,15 +4,22 @@ import {build} from 'esbuild';import vm from 'node:vm';
 import {demoContent,DEMO_GAMEPLAY,DEMO_COUNTER,DEMO_DESK,validateDemoScene} from '../../src/ssg/game/demo';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
 import {ConversationSession} from '../../src/ssg/game/engine/gameplay/conversation';
+import {useLife} from '../../src/ssg/game/runtime/interaction-routing';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 const content=demoContent();assert.equal(content.library.exits.length+content.shop.exits.length+content.sandbox.exits.length,0);assert.equal(content.library.data,undefined);
-for(const scene of Object.values(content)){assert.equal(scene.readables?.length??0,0);assert.equal(scene.rests?.length??0,0);assert.equal(scene.platforms?.length??0,0);assert.equal((scene.intro??[]).length,0);}
+for(const scene of [content.library,content.shop,content.sandbox]){assert.equal(scene.readables?.length??0,0);assert.equal(scene.rests?.length??0,0);assert.equal(scene.platforms?.length??0,0);assert.equal((scene.intro??[]).length,0);}
 assert.deepEqual(content.library.people?.map(p=>p.id),['shelfe','librarian']);
 assert.deepEqual(content.sandbox.data?.devices.map(d=>d.id).sort(),['button','counter','fan','hatch','lamp','plate','sensor']);
 assert.equal(content.shop.people?.length??0,0);
 assert.throws(()=>projectDeviceBindings({manifest:{devices:{absent:'absent'}}} as any,[],content.sandbox.data!,1040),/no world device/,'review subset must not weaken missing-device validation');
 let state:GameplayState={flags:{},items:{},tokens:8};const port={read:()=>state,write:(v:GameplayState)=>{state=v;}};
 let session=new GameplaySession(content.library.gameplay!,port),conversation=new ConversationSession(session,'demo.desk');
+assert.deepEqual(content.library.uses?.map(u=>u.id),['chair']);
+assert.equal(content.library.uses![0].x,590,'The desk stays beside the two conversation actors');
+let presented:ConversationSession|undefined;
+useLife({scenes:{here:'library'},def:content.library,zh:{model:{attachmentOffsets:()=>undefined},presentConversation:(value:ConversationSession)=>presented=value},save:state,gameplayFor:()=>session,timing:{t:0},weatherHere:()=>({kind:'clear'}),persistSave(){},syncHud(){}} as any,'use:chair');
+assert(presented,'The physical desk interaction reaches the regular conversation panel');
+assert.equal(presented.frame().speaker,'TEST DESK');presented.close();
 assert(conversation.choose('discount').ok);assert(conversation.choose('back').ok);assert(conversation.choose('fee').ok);assert(conversation.choose('back').ok);
 assert.equal(session.quote('demo.goods').quote,1);assert.equal(session.quote('demo.goods').charge,3);assert(conversation.choose('buy').ok);assert.equal(state.tokens,5);assert.equal(state.items.blue,1);assert.equal(state.values!.demo.rotation,1);
 state=JSON.parse(JSON.stringify(state));session.dispose();session=new GameplaySession(content.shop.gameplay!,port);assert.equal(session.state().values!.demo.rotation,1);assert(content.shop.uses![0].use({gameplay:session,flags:state.flags} as any));assert.equal(state.items.crisps,1);assert.equal(state.tokens,2);

@@ -1,8 +1,9 @@
+import type {GameplayDefinition} from '../engine/gameplay/types';
 import {streetSpriteKinds,type StreetSpritePresentation} from '../art/characters/presentation';
 import {DEPTH_BANDS,DEPTH_ORDER,depthOf,type DepthBand} from '../art/core/depth';
 import {KIT_ACTS,kitFamily} from '../runtime/characters';
 import {riderKinds,type RiderPresentation} from '../art/characters/presentation';
-import type {Composition} from '../art';
+import type {ChunkDocument} from '../art';
 import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
 import {actorBindingController} from '../engine/gameplay/native-actor-bindings';
 import {actorRemovalImpact,duplicateSceneActor,removeSceneActor,setActorDialogue,bindSceneActor} from '../engine/gameplay/actor-content';
@@ -11,8 +12,12 @@ import type {Look,BotLook} from '../runtime/characters';
 import {DISTRICT_PALETTES} from '../art/characters/people-style';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
 import {TypedForm} from './typed-form';
+import {renderCharacterConversation} from './character-conversation-controls';
+import type {WorkbenchContext} from './contracts';
+import type {Character} from '../runtime/characters';
 /** Body controls write the same scene source consumed by native Game and preview. */
-export function renderActor(form:TypedForm,host:HTMLElement,source:SceneDocument,index:number,edit:(label:string,fn:(d:SceneDocument)=>void)=>void,refresh:()=>void,entities?:{composition:Composition;transaction:(label:string,fn:(s:SceneDocument,c:Composition)=>void)=>void}){
+export function renderActor(form:TypedForm,host:HTMLElement,source:SceneDocument,index:number,edit:(label:string,fn:(d:SceneDocument)=>void)=>void,refresh:()=>void,entities?:{composition:ChunkDocument;transaction:(label:string,fn:(s:SceneDocument,c:ChunkDocument,g:GameplayDefinition)=>void)=>void},shared?:{context:WorkbenchContext;character?:Character}){
+ if(shared?.character)renderCharacterConversation(form,host,shared.context,shared.character);
  const a=source.actors![index],change=(label:string,fn:(a:ActorDefinition)=>void)=>edit(label,d=>fn(d.actors![index]));
  const note=document.createElement('p');note.className='muted';note.textContent='Artwork: '+a.instance+'; '+a.band+(a.target?'; interaction target: '+a.target:'')+'. Position and drawing order are edited in Layout. Interaction priority follows this actor list. Original IDs retain existing save bindings. Reaction identity: '+(a.reaction??'actor.'+a.id)+'.';host.append(note);
  form.button(host,'Actor earlier',()=>{edit('Move actor earlier',d=>moveSceneActor(d,a.id,-1));refresh();},index===0);form.button(host,'Actor later',()=>{edit('Move actor later',d=>moveSceneActor(d,a.id,1));refresh();},index===source.actors!.length-1);
@@ -20,10 +25,10 @@ export function renderActor(form:TypedForm,host:HTMLElement,source:SceneDocument
  if(a.reaction!==undefined)form.text(host,'Actor reaction identity',a.reaction,reaction=>change('Edit actor reaction identity',b=>{b.reaction=reaction;}));
  if(entities){const rows=manifestCompositionRows(entities.composition),row=rows.find(r=>r.instance.id===a.instance)!,controller=actorBindingController(source.id)!;
   let newId=a.id+'-copy';for(let n=1;source.actors!.some(a=>a.id===newId);n++)newId=a.id+'-copy-'+n;
-  form.text(host,'Duplicate actor ID',newId,value=>{newId=value;});form.button(host,'Duplicate actor',()=>{entities.transaction('Duplicate actor',(s,c)=>duplicateSceneActor(s,c,a.id,newId));refresh();},source.actors!.length>=128);
+  form.text(host,'Duplicate actor ID',newId,value=>{newId=value;});form.button(host,'Duplicate actor',()=>{entities.transaction('Duplicate actor',(s,c,g)=>duplicateSceneActor(s,c,a.id,newId,g));refresh();},source.actors!.length>=128);
   const impact=actorRemovalImpact(source,entities.composition,a.id),removal=document.createElement('p');removal.className='muted';removal.textContent=[impact.content.length?'Also removes: '+impact.content.map(r=>r.group+'/'+r.id).join(', ')+'.':'',impact.attachments.length?'Keeps attached artwork in place: '+impact.attachments.join(', ')+'.':'',impact.followers.length?'Clear followers first: '+impact.followers.join(', ')+'.':'',impact.structural.length?'Rebind first: '+impact.structural.join(', ')+'.':''].filter(Boolean).join(' ');if(removal.textContent)host.append(removal);
   form.button(host,'Remove actor',()=>{entities.transaction('Remove actor',(s,c)=>removeSceneActor(s,c,a.id));refresh();},!!(impact.followers.length||impact.structural.length));
-  const hasDialogue=!!source.people?.some(p=>p.id===a.target);form.check(host,'Actor has conversation',hasDialogue,on=>{entities.transaction('Set actor conversation',s=>setActorDialogue(s,a.id,on));refresh();});
+  const hasDialogue=!!source.people?.some(p=>p.id===a.target);form.check(host,'Actor has conversation',hasDialogue,on=>{entities.transaction('Set actor conversation',(s,_c,g)=>setActorDialogue(s,a.id,on,g));refresh();});
   const placement=form.section(host,'Actor placement binding'),parent=row.instance.attach?.instance??'',targets=rows.filter(r=>r.instance.id!==a.instance&&r.instance.type!==controller.element).map(r=>r.instance.id),owner=rows.find(r=>r.instance.id===parent),anchors=owner?Object.keys(owner.element.anchors(owner.props,owner.state)):[];
   form.select(placement,'Actor placement parent',['',...targets],parent,value=>{const owner=rows.find(r=>r.instance.id===value),anchors=owner?Object.keys(owner.element.anchors(owner.props,owner.state)):[];entities.transaction('Bind actor placement',(s,c)=>bindSceneActor(s,c,a.id,value,anchors.includes('origin')?'origin':anchors[0]??'origin'));refresh();});
   if(parent)form.select(placement,'Actor placement anchor',anchors,row.instance.attach!.anchor,value=>{entities.transaction('Bind actor anchor',(s,c)=>bindSceneActor(s,c,a.id,parent,value,row.instance.placement.x,row.instance.placement.h));refresh();});

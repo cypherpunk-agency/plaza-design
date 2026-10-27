@@ -40,7 +40,7 @@ assert.equal(metroStartingState('at-station','downtown',city,METRO_SOURCE).lineO
 assert.equal(metroStartingState('at-station','downtown',city,{...structuredClone(METRO_SOURCE),locked:{}}).lineOpen.harbor,true);
 // platform pictures: the harbor platform is closed until the lock opens
 const view=(flags:Record<string,boolean>)=>({t:0,flags}) as never;
-assert.equal(platformFrame('harborStation',0,view({}),createLineSystem(),city)['transit.closed'],true);assert.equal(platformFrame('harborStation',0,view({[flag]:true}),createLineSystem(),city)['transit.closed'],false);assert.equal(platformFrame('metro',0,view({}),createLineSystem(),city)['transit.closed'],false);
+assert.equal(platformFrame(city.STATIONS.harbor.scene,view({}),createLineSystem(),city)['transit.closed'],true);assert.equal(platformFrame(city.STATIONS.harbor.scene,view({[flag]:true}),createLineSystem(),city)['transit.closed'],false);assert.equal(platformFrame(city.STATIONS.downtown.scene,view({}),createLineSystem(),city)['transit.closed'],false);
 
 // validation
 const shipped=()=>structuredClone(cityJson) as any;
@@ -70,7 +70,7 @@ const pending=createPendingCity(store.read('city-source').value,docs());assert.e
 store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));assert.equal(citySaved(),originalCity);assert.equal(metroSaved(),originalMetro);
 
 // editor controls: the lock's refusal and destinations, new locks, and each station's lock
-const all=new Map<string,unknown>(store.list().map(d=>[d.id,structuredClone(d.value)])),ui=mountRules(mountCityAuthoring,all),cityDoc=()=>all.get('city-source') as any,metroDoc=()=>all.get('metro-source') as MetroSource;
+const all=new Map<string,unknown>(store.list().map(d=>[d.id,structuredClone(d.value)])),ui=mountRules((host,context)=>mountCityAuthoring(host,context,{section:'travel'}),all),cityDoc=()=>all.get('city-source') as any,metroDoc=()=>all.get('metro-source') as MetroSource;
 ui.change('Lock harbor-lock refusal','HARBOR SHUT');assert.equal(cityDoc().LOCKS['harbor-lock'].reason,'HARBOR SHUT');
 ui.change('Lock harbor-lock holds galleria',true);assert.deepEqual(cityDoc().LOCKS['harbor-lock'].destinations.sort(),['galleria','harbor']);ui.change('Lock harbor-lock holds galleria',false);assert.deepEqual(cityDoc().LOCKS['harbor-lock'].destinations,['harbor']);
 const kept=structuredClone(cityDoc());ui.change('Lock harbor-lock holds harbor',false);assert.deepEqual(cityDoc(),kept,'a lock keeps at least one destination');

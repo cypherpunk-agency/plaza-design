@@ -7,8 +7,8 @@ import {activeSharedState} from '../engine/gameplay/shared-state';
 import {barrierRuleOpens,type ExitRule,type ScenePhase} from '../story/story-rules';
 import type {LevelBarrier} from '../engine/level';
 import type {Condition,GameplayDefinition,GameplayState} from '../engine/gameplay/types';
-import type {Composition} from '../art';
-import type {Instance} from '../art/core/composition';
+import type {ChunkDocument} from '../art';
+import type {AssetInstance} from '../art/core/composition';
 import {SCENES} from '../scenes';
 
 /**
@@ -85,7 +85,7 @@ const isGameplay=(v:unknown):v is GameplayDefinition=>!!v&&typeof v==='object'&&
 /**
  * Declared flags and items: every gameplay definition in the pending documents (scene, story and catalogue ones, at any
  * depth) and the registered scenes' own. Set flags: a gameplay `{flag, value: true}` action, an exit's `sets`, an
- * `unlockFlag`, an arrival row's `set`, an opening level's `flags`. Code may set others, so a flag missing here is a warning.
+ * an arrival row's `set`, an opening level's `flags`. Code may set others, so a flag missing here is a warning.
  */
 export function barrierVocabulary(documents:ReadonlyMap<string,unknown>):BarrierVocabulary{
  const flags=new Set<string>(),items=new Set<string>(),setFlags=new Set<string>(),seen=new Set<unknown>();
@@ -95,7 +95,7 @@ export function barrierVocabulary(documents:ReadonlyMap<string,unknown>):Barrier
   const r=v as Record<string,unknown>;
   if(isGameplay(r)){r.flags.forEach(f=>flags.add(f));r.items.forEach(i=>items.add(i));}
   if(typeof r.flag==='string'&&r.value===true)setFlags.add(r.flag);
-  for(const k of['sets','unlockFlag'])if(typeof r[k]==='string')setFlags.add(r[k] as string);
+  if(typeof r.sets==='string')setFlags.add(r.sets);
   for(const[k,c]of Object.entries(r))if(k!=='flags'||!isGameplay(r))walk(c,k,depth+1);
  };
  for(const v of documents.values())walk(v);
@@ -120,7 +120,7 @@ export function barrierProblems(rule:BarrierRule,v:BarrierVocabulary):string[]{
 }
 
 /** Find an instance by id in a composition (at any depth). */
-function findInstance(nodes:readonly Instance[],id:string):Instance|undefined{for(const n of nodes){if(n.id===id)return n;const c=n.children&&findInstance(n.children,id);if(c)return c;}return undefined;}
+function findInstance(nodes:readonly AssetInstance[],id:string):AssetInstance|undefined{for(const n of nodes){if(n.id===id)return n;const c=n.children&&findInstance(n.children,id);if(c)return c;}return undefined;}
 /** The scene's story phases from its pending scene document (none: the scene has no scene document). */
 function scenePhases(documents:readonly {id:string;value:unknown}[],scene:string):Readonly<Record<string,ScenePhase>>{
  try{const id=gameplayScene(scene,documents).prefix+'-scene';return ((documents.find(d=>d.id===id)?.value as {phases?:Record<string,ScenePhase>}|undefined)?.phases)??{};}catch{return {};}
@@ -133,9 +133,9 @@ export function mountBarrierAuthoring(host:HTMLElement,context:WorkbenchContext,
  // Test the rule: a disposable fixture kept across refreshes (never a source edit)
  const fixture={keys:new Set<string>(),flags:new Set<string>(),items:new Set<string>(),phase:''};
  const live=()=>context.documents.map(d=>({id:d.id,value:api.get(d.id).value}));
- const read=()=>{const c=api.get(options.document).value as Composition;return findInstance(c.instances,options.instance);};
+ const read=()=>{const c=api.get(options.document).value as ChunkDocument;return findInstance(c.instances,options.instance);};
  function editProps(label:string,change:(props:Record<string,unknown>)=>void){
-  const value=structuredClone(api.get(options.document).value) as Composition,node=findInstance(value.instances,options.instance);
+  const value=structuredClone(api.get(options.document).value) as ChunkDocument,node=findInstance(value.instances,options.instance);
   if(!node)throw new Error('The barrier '+options.instance+' is no longer in '+options.document);
   change(node.props as Record<string,unknown>);api.edit(options.document,label,value);error.textContent='';
  }

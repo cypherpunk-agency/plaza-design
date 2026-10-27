@@ -12,7 +12,7 @@ import type {FlowPicture} from '../../engine/people';
  * one vehicle a `board` step waits for (its doors, in world units east of the piece, open from `open` seconds).
  * Route points are world units east of the piece and heights over the ground line.
  */
-import type { Element, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Properties, Value } from '../core/composition';
 import { drawCharacterFrame } from './appearance';
 import { prepareCharacter, type Character } from '../../runtime/characters';
 import { residentCharacter } from './resident';
@@ -52,7 +52,7 @@ function world(p: Properties): FlowWorld {
   worlds.set(key, w); return w;
 }
 
-export const flowElement: Element = {
+export const flowElement: AssetDefinition = {
   type: 'character.flow',mobility:()=>true, version: 1, label: 'People flow: walkers, queues, riders boarding (character kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['people'],
   fields: {
     flow: { kind: 'json', label: 'Flow (seed, speed, spawn, route)', default: { seed: 1, speed: 21, spawn: { kind: 'interval', every: 7 }, route: [{ kind: 'walk', x: 0, h: 0 }, { kind: 'leave', x: 300, h: 0 }] }, validate: validFlow },

@@ -1,5 +1,5 @@
 import {resolveArtworkRoles} from './artwork-roles';
-import {art,resolveComposition,type Composition,type Resolved} from '../../art';
+import {art,resolveComposition,type ChunkDocument,type Resolved} from '../../art';
 import {frameView} from '../../art/core/view';
 import type {SceneDocument} from './scene-document';
 import {compileLevel} from '../level';
@@ -45,8 +45,8 @@ export function manifestGeometry(scene:SceneDocument,rows:readonly Resolved[],gr
 /** A level floor (engine/level.ts compileLevel) under this point, within the level's own 2-unit tolerance. */
 export function onLevelFloor(rows:readonly Resolved[],x:number,h:number){return!!compileLevel(rows)?.floors.some(f=>Math.abs(f.h-h)<=2&&x>=f.x-0.5&&x<=f.x+f.w+0.5);}
 /** Geometry-only preview: registered visual defaults resolve bindings without stepping controllers. */
-export function manifestCompositionRows(composition:Composition){
+export function manifestCompositionRows(composition:ChunkDocument){
  const bindings:Record<string,import('../../art').Value>={};
- const visit=(nodes:Composition['instances'])=>{for(const node of nodes){for(const[field,source]of Object.entries(node.bindings??{})){const definition=art.get(node.type).visualFields?.[field];if(!definition)throw new Error('Unknown manifest visual field: '+node.id+'/'+field);bindings[source]=definition.default;}visit(node.children??[]);}};
+ const visit=(nodes:ChunkDocument['instances'])=>{for(const node of nodes){for(const[field,source]of Object.entries(node.bindings??{})){const definition=art.get(node.type).visualFields?.[field];if(!definition)throw new Error('Unknown manifest visual field: '+node.id+'/'+field);bindings[source]=definition.default;}visit(node.children??[]);}};
  visit(composition.instances);return resolveComposition(art,composition,{view:frameView(0),state:{},bindings,reduced:false});
 }

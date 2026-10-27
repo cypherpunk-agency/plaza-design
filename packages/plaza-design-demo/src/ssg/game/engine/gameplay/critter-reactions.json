@@ -4,33 +4,14 @@
     {
       "id": "cat",
       "look": "cat",
-      "name": "CAT",
       "prompt": "[E] PET",
-      "talk": [
-        [
-          "The cat allows it. Then it decides it did not, and leaves."
-        ],
-        [
-          "The cat purrs, which is a lot of commitment from a street cat."
-        ],
-        [
-          "The cat sniffs your hand, finds no fish, and looks betrayed."
-        ]
-      ]
+      "conversation": "critter.cat"
     },
     {
       "id": "pigeon",
       "look": "pigeon",
-      "name": "PIGEON",
       "prompt": "[E] SHOO",
-      "talk": [
-        [
-          "The pigeon takes one step to the side. Exactly one."
-        ],
-        [
-          "The pigeon flaps, lands a metre away, and looks at you like you started it."
-        ]
-      ]
+      "conversation": "critter.pigeon"
     }
   ]
 }

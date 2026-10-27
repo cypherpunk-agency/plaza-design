@@ -14,9 +14,11 @@ const id='backdrop-glide-coast',descriptor=sourceDocuments.find(d=>d.id===id)!,d
 const store=new AuthoringStore({root,documents:[descriptor]}),initial=store.list(),model=new ComposerModel(art,{},d=>validateBackdrop(d.value,'glide-coast'));model.load(initial);
 const api={get:(id:string)=>model.get(id),edit:(id:string,label:string,value:unknown)=>model.edit(id,label,()=>value)};
 const section=backdropInspector(id),ui=mountRules(section.mount,new Map(initial.map(d=>[d.id,d.value])),{authoring:api});
-ui.change('World sky horizon','192');assert.equal((model.get(id).value as BackdropDocument).sky!.horizon,192);model.undo();assert.equal((model.get(id).value as BackdropDocument).sky!.horizon,189);model.redo();
-ui.change('Region 1 town','0.5');assert.equal((model.get(id).value as BackdropDocument).sky!.regions![0].town,.5);
-const before=model.list();assert.throws(()=>ui.change('Region 1 from','999999'),/regions/);assert.deepEqual(model.list(),before,'invalid typed edit rejects atomically');
+ui.change('Backdrop world width','21000');assert.equal((model.get(id).value as BackdropDocument).width,21000);model.undo();
+const sky=()=> (model.get(id).value as BackdropDocument).instances.find(n=>n.type==='environment.sky')!;
+model.updateInstance(id,'world-sky','Edit horizon',n=>n.props.horizon=192);assert.equal(sky().props.horizon,192);model.undo();assert.equal(sky().props.horizon,189);model.redo();
+model.updateInstance(id,'world-sky','Edit region',n=>(n.props.regions as any)[0].town=.5);assert.equal((sky().props.regions as any)[0].town,.5);
+const before=model.list();assert.throws(()=>model.updateInstance(id,'world-sky','Invalid region',n=>(n.props.regions as any)[0].from=999999),/regions/);assert.deepEqual(model.list(),before,'invalid edit rejects atomically');
 const receiver=new ComposerModel(art,{},d=>validateBackdrop(d.value,'glide-coast'));receiver.load(initial);receiver.importDocuments(readDocumentBundle(JSON.stringify(createDocumentBundle(model.edits(),model.list())),receiver.list()));assert.deepEqual(receiver.get(id).value,model.get(id).value);
 store.save(receiver.edits());assert.deepEqual(store.read(id).value,model.get(id).value,'protected Save and reload preserve the pending backdrop');
 const bg=validateBackdrop(BACKDROP_SOURCES['glide-coast'].composition,'glide-coast');assert.equal(backdropTown(bg,3000),0);assert.equal(backdropTown(bg,8000),1);assert.equal(backdropTown(bg,13000),0);

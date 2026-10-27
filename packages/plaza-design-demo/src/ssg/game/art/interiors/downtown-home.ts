@@ -14,7 +14,7 @@
  * field, light comes from the city clock (`o.lighting`) and the light layer (`o.light`). Walkable lines,
  * doors, flights and lifts are the level kit's (art/levels). Notices are dry; the people are the jokes.
  */
-import type { Element, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Properties, Value } from '../core/composition';
 import { rng, text as paintText } from '../core/primitives';
 import { windowLit } from '../../world/light';
 import { neonPlate } from '../signage/kit';
@@ -1280,7 +1280,7 @@ export const leftBehindElement = piece({
   },
 });
 
-export const downtownHomeInteriors: Element[] = [dtRoomElement, conciergeElement, mailboxesElement, noticeBoardElement, fireExitElement, serviceLatchElement,
+export const downtownHomeInteriors: AssetDefinition[] = [dtRoomElement, conciergeElement, mailboxesElement, noticeBoardElement, fireExitElement, serviceLatchElement,
   microFlatElement, flatDoorElement, bikeElement, skylightElement, courtyardElement, areawayElement, parcelElement, servicePlantElement,
   noodleKitchenElement, docChairElement, partsFridgeElement, privacyScreenElement, cotElement, stockShelvesElement,
   drySacksElement, cableRunElement, diagnosticElement, jarShelfElement, labRoomElement, surgicalGantryElement, neuralRackElement, transferCradleElement, robotFrameElement, floorFogElement,

@@ -14,7 +14,7 @@
  * is painted on the hull (each kind has its own; '' paints none) and reads the right way when mirrored.
  * Placeable as `vehicle.boat`.
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { box, GREEN, O, PAPER, RED } from '../core/primitives';
 import { bandBounds, bandOf, bobAt, bodyText, laneAt, laneFields, laneOf, paintBanded, withDefaults, type Extent } from './kit';
@@ -113,7 +113,7 @@ function nav(x: CanvasRenderingContext2D, bow: number, stern: number, y: number)
   x.fillStyle = 'rgba(' + RED + ',.9)'; x.fillRect(stern, y, 2, 2);
 }
 
-const fields: Element['fields'] = {
+const fields: AssetDefinition['fields'] = {
   kind: { kind: 'select', label: 'Boat', options: [...BOAT_KINDS], default: 'ferry' },
   paint: { kind: 'string', label: 'Hull paint (#rrggbb; empty: the kind’s own)', default: '' },
   named: { kind: 'boolean', label: 'Name on the hull', default: true },
@@ -140,7 +140,7 @@ export function paintBoatVehicle(ctx: CanvasRenderingContext2D, raw: Properties,
   }));
 }
 
-export const boatVehicleElement: Element = {
+export const boatVehicleElement: AssetDefinition = {
   type: 'vehicle.boat',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Boat', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);

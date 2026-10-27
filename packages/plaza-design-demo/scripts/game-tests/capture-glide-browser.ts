@@ -2,7 +2,7 @@
 import { Opening } from '../../src/ssg/game/story/title';
 import {openingDocuments} from '../../src/ssg/game/story/title/documents';
 import {SCENES} from '../../src/ssg/game/scenes';
-import {sequenceInspection} from '../../src/ssg/game/authoring/sequence-inspection';
+import {sequenceInspection} from '../../src/ssg/game/runtime/sequence-state';
 
 interface Shot { id: string; tau: number | null; width: number; height: number; k: number }
 declare global { interface Window { glideShots: (shots: Shot[]) => Promise<{ id: string; png: string; ms: number }[]> } }

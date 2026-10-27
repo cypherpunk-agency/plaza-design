@@ -1,7 +1,7 @@
 /**
  * Structural validation of the story's shapes (story-rules.ts): cues, gates, acknowledgments, chips, targets, pings, intros,
  * arrival rows, wash rules and a scene's `phases`. Shared by the opening source (opening.json) and the scene document (scene.json).
- * Whether the names they carry exist in a scene (exits, devices, nouns, readables, states) or in the story (milestones, counters,
+ * Whether the names they carry exist in a scene (exits, devices, nouns, readables, states) or in the story (milestones, presentation timestamps,
  * cards, phases) is checked where that is known: opening-source.ts, with the pending scene registry.
  */
 import type {Cue,ExitRule,ScenePhase,WashRule} from './story-rules';
@@ -30,16 +30,16 @@ export function validateCue(v:unknown,at:string){
  else if(k==='print'){const p=fields(r.print,at+'/print',['lines','prefix','tone'],['lines']);list(p.lines,at+'/lines',32).forEach((l,i)=>text(l,at+'/lines/'+i));if(!p.lines.length)fail(at,'at least one line required');if(p.prefix!==undefined)text(p.prefix,at+'/prefix',true);if(p.tone!==undefined&&!['ok','out','err','dim'].includes(p.tone))fail(at,'tone required');}
  else if(k==='sound'){if(!SOUNDS.includes(r.sound))fail(at,'registered sound required');}
  else if(k==='stage'){const p=fields(r.stage,at+'/stage',['scene','reset','face'],['scene']);id(p.scene,at+'/scene');if(p.reset!==undefined&&p.reset!==true)fail(at,'reset must be true');if(p.face!==undefined&&p.face!==-1&&p.face!==1)fail(at,'face must be -1 or 1');}
- else if(k==='counter'){const c=object(r.counter,at+'/counter');if('prefix'in c){fields(c,at+'/counter',['prefix','reset']);id(c.prefix,at+'/prefix');if(c.reset!==true)fail(at,'reset must be true');}else{fields(c,at+'/counter',['id','add','stamp'],['id']);id(c.id,at+'/id');if(c.add!==undefined)num(c.add,at+'/add',-1000,1000);if(c.stamp!==undefined&&c.stamp!==true)fail(at,'stamp must be true');if(c.stamp&&c.add!==undefined)fail(at,'stamp or add, not both');}}
+ else if(k==='stamp'||k==='clearStamps')id(r[k],at+'/'+k);
  else if(k==='advance')num(r.advance,at+'/advance',0,1440);
  else fail(at,'unknown cue kind');
 }
 export function validateCues(v:unknown,at:string,max=24){for(const[i,c]of list(v,at,max).entries())validateCue(c,at+'/'+i);}
-/** Every counter, milestone and scene a cue names, for the opening source's reference checks. */
+/** Every milestone and scene a cue names, for the opening source's reference checks. */
 export function cueRefs(cues:readonly Cue[]){
- const milestones:string[]=[],counters:string[]=[],prefixes:string[]=[],scenes:string[]=[];
- for(const c of cues){if('milestone'in c)milestones.push(c.milestone);else if('counter'in c){if('prefix'in c.counter)prefixes.push(c.counter.prefix);else counters.push(c.counter.id);}else if('stage'in c)scenes.push(c.stage.scene);}
- return{milestones,counters,prefixes,scenes};
+ const milestones:string[]=[],scenes:string[]=[];
+ for(const c of cues){if('milestone'in c)milestones.push(c.milestone);else if('stage'in c)scenes.push(c.stage.scene);}
+ return{milestones,scenes};
 }
 
 const optionalCues=(r:Record<string,any>,key:string,at:string)=>{if(r[key]!==undefined)validateCues(r[key],at+'/'+key);};

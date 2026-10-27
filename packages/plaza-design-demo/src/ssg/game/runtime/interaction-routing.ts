@@ -8,7 +8,7 @@ import {movingInteractions} from '../engine/gameplay/moving-interactions';
 
 import {type SceneModel} from '../engine/model';
 
-import {critterReaction,critterReply} from '../engine/gameplay/critter-reactions';
+import {critterReaction} from '../engine/gameplay/critter-reactions';
 import {botConversationId} from '../engine/gameplay/bot-conversations';
 
 import {barrierAccess} from '../world/access';
@@ -33,7 +33,7 @@ import {city} from "../world/clock";
 
 import {type Weather} from "../world/weather";
 import { sound } from './audio';
-import {characterHeight,characterX,talkTo} from './characters';
+import {characterHeight,characterX} from './characters';
 import {Companion} from './companion';
 
 import {type Save} from "./save";
@@ -57,6 +57,7 @@ export interface InteractionRoutingPort{
   story: string;
   zh: SceneHost;
   gameplayFor: (id: SceneId, providedModel?: SceneModel) => GameplaySession | undefined;
+  globalGameplay:()=>GameplaySession;
   companionBody: Companion;
   say: (name: string, pages: string[], x: number, h: number) => void;
   dialogueCompletion: (cue: import('../engine/gameplay/conversation').ConversationFrame["completion"]) => void;
@@ -107,8 +108,15 @@ export function interact(port:InteractionRoutingPort) {
       if (rule && storyExit(port,rule, target.x, null, undefined, target.id)) return;
     }
     if (target.kind === 'device') { const out = port.zh.use(target.id), e = out ? port.def.exits.find((z) => z.id === out) : undefined; if (e) useExit(port,e); return; }
-    if (target.kind === 'companion') { const pet=port.def.companion?.pet;if(!pet)return;const conversation=new ConversationSession(port.gameplayFor(port.scenes.here)!,port.companionBody.pet(pet)),frame=conversation.frame();sound.blip();if(frame.choices?.length){port.zh.presentConversation(conversation);}else{conversation.close();port.say(frame.speaker,frame.pages,port.companionBody.x,port.companionBody.h+14);port.dialogueCompletion(frame.completion);}return; }
+    if (target.kind === 'companion') { const pet=port.def.companion?.pet;if(!pet)return;sound.blip();presentCharacterConversation(port,new ConversationSession(port.gameplayFor(port.scenes.here)!,port.companionBody.pet(pet)),port.companionBody.x,port.companionBody.h+14);return; }
   }
+
+/** Character graphs share one presentation decision: chatter stays in the world;
+ * choices and text input retain their live session in the normal conversation panel. */
+function presentCharacterConversation(port:InteractionRoutingPort,conversation:ConversationSession,x:number,h:number){
+ const frame=conversation.frame();if(frame.choices?.length||frame.acceptsText){port.zh.presentConversation(conversation);return;}
+ conversation.close();port.say(frame.speaker,frame.pages,x,h);port.dialogueCompletion(frame.completion);
+}
 
 export function useLife(port:InteractionRoutingPort,target: string,owner = port.scenes.here) {
     const placement = owner === port.scenes.here ? {dx:0,dh:0} : port.scenes.joinedZones.find(z => z.id === owner);
@@ -127,25 +135,22 @@ export function useLife(port:InteractionRoutingPort,target: string,owner = port.
       return;
     }
     if (kind === 'pet') {
-      const p = s.people![Number(id)], critter = critterReaction(p, port.critters), n = port.presentation.petCount++;
+      const p = s.people![Number(id)], critter = critterReaction(p, port.critters);
       if (!critter) return;
       sound.blip();
-      port.say(critter.name, critterReply(critter, n), characterX(p, port.timing.t), characterHeight(p) + 4);
+      presentCharacterConversation(port,new ConversationSession(port.globalGameplay(),critter.conversation),characterX(p,port.timing.t),characterHeight(p)+4);
       return;
     }
     if (kind === 'bot') {
       const index=Number(id),p=s.people![index],conversation=new ConversationSession(port.gameplayFor(port.scenes.here)!,botConversationId(port.scenes.here,p,index));
-      const frame=conversation.frame(),said={name:frame.speaker,pages:frame.pages};conversation.close();
       sound.blip();
-      port.say(said.name, said.pages, characterX(p, port.timing.t), characterHeight(p) + 4);
-      port.dialogueCompletion(frame.completion);
+      presentCharacterConversation(port,conversation,characterX(p, port.timing.t),characterHeight(p)+4);
       return;
     }
     if (kind === 'talk') {
-      const p = s.people!.find((z) => z.id === id)!, said = talkTo(p,port.gameplayFor(port.scenes.here));
+      const p = s.people!.find((z) => z.id === id)!,conversation=new ConversationSession(port.gameplayFor(port.scenes.here)!,p.conversation!);
       port.persistSave();
-      port.say(said.name, said.pages, characterX(p, port.timing.t), characterHeight(p) - 10);
-      port.dialogueCompletion(said.completion);
+      presentCharacterConversation(port,conversation,characterX(p,port.timing.t),characterHeight(p)-10);
       return;
     }
     if (kind === 'use') {

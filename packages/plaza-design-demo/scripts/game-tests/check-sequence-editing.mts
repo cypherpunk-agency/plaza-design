@@ -1,7 +1,7 @@
-import {sequenceInspection} from '../../src/ssg/game/authoring/sequence-inspection';
+import {sequenceInspection} from '../../src/ssg/game/runtime/sequence-state';
 /** Current sequence editing contracts: ordinary world artwork and the shared timeline/frame. */
 import assert from 'node:assert/strict';
-import {art,type Composition,type Instance,type Properties} from '../../src/ssg/game/art';
+import {art,type ChunkDocument,type AssetInstance,type Properties} from '../../src/ssg/game/art';
 import {evaluateTimeline,type TimelineProgram} from '../../src/ssg/game/art/core/timeline';
 import {renderOpeningDocument} from '../../src/ssg/game/story/title/render';
 import {openingDocuments} from '../../src/ssg/game/story/title/documents';
@@ -31,12 +31,12 @@ const moved=recorder();renderOpeningDocument(moved.ctx,view,openingDocuments,'gl
 const background=structuredClone(BACKDROP_SOURCES['glide-coast'].composition);background.instances.find(n=>n.id==='spire')!.placement.x+=300;
 const changedBackground=recorder();renderOpeningDocument(changedBackground.ctx,view,openingDocuments,'glide',55,{...sample(SCENES,55),ambientTime:62,documents:new Map([['backdrop-glide-coast',background]])});assert.notEqual(JSON.stringify(changedBackground.commands),JSON.stringify(world(SCENES,55)),'Pending backdrop artwork reaches the sequence, not just its scene preview');
 assert.ok(!art.catalog().some(e=>e.type.startsWith('sequence.opening.')),'No legacy opening artwork wrappers');
-function cinematic(id:'act2'|'taxi',instances:Instance[],time=1){
-  const context=recorder(),composition:Composition={version:1,scene:'sequence-'+id,instances};
+function cinematic(id:'act2'|'taxi',instances:AssetInstance[],time=1){
+  const context=recorder(),composition:ChunkDocument={version:1,scene:'sequence-'+id,instances};
   const custom:TimelineProgram={...timeline,sequences:[{...timeline.sequences[0],id,composition:'editable'}]};
   renderWorldFrame({kind:'sequence',context:context.ctx,documents:{...cinematicDocuments,timeline:custom,compositions:{editable:composition}},sequenceId:id,composition,scale:2,width:640,height:360,reduced:false,lighting,time});return context.commands;
 }
-const piece=(id:string,type:string,props:Properties):Instance=>({id,type,version:1,placement:{x:0,h:0,scale:1,facing:1,parallax:1},props,order:0,layer:'set'});
+const piece=(id:string,type:string,props:Properties):AssetInstance=>({id,type,version:1,placement:{x:0,h:0,scale:1,facing:1,parallax:1},props,order:0,layer:'set'});
 const ferries=cinematic('act2',[piece('ferry-a','sequence.act2.ferry',{paint:'#112233'}),piece('ferry-b','sequence.act2.ferry',{paint:'#334455'})]);
 for(const color of ['#112233','#334455'])assert.ok(ferries.some(c=>c[0]==='set'&&c[2]===color),'Independent ferry paint '+color);
 const towers=cinematic('taxi',[piece('towers','sequence.taxi.towers',{fill:'#223344'})]);assert.ok(towers.some(c=>c[0]==='set'&&c[2]==='#223344'),'Taxi tower fill');

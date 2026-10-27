@@ -17,7 +17,7 @@
  *
  * Positions are world units east of the piece; the vehicles are the kit's (vehicles.ts) at the player's scale.
  */
-import type { Element, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Field, Properties } from '../core/composition';
 import { inPixels, SHORE, R, ART, type Pixels } from '../core/pixels';
 import { drawCar, drawTruck, SIZE, type CarKind } from '../vehicles/vehicles';
 import { BOX40, type Crate } from '../props/containers';
@@ -131,7 +131,7 @@ function drawVehicle(P: Pixels, p: Properties, h0: number, v: TrafficVehicle) {
   x.restore();
 }
 
-export const trafficElement: Element = {
+export const trafficElement: AssetDefinition = {
   type: 'street.traffic', mobility:()=>true, version: 1, label: 'Road traffic between side streets, a truck gate and a portal (street kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     sideStreets: { kind: 'boolean', label: 'Use visible side-street turns', default: false },

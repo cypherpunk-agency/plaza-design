@@ -1,5 +1,6 @@
 /** Regression: full native editor frames must not inherit prior canvas/probe paint state. */
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
+import {sourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {createNativePreview} from '../../src/ssg/game/authoring/native-preview';import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';import {art} from '../../src/ssg/game/art';const libraryComposition=art.validate(FOLDER_SOURCES.library.composition);
 class Canvas {
  private w=960; height=540;resets=0;operations:unknown[]=[];
@@ -36,7 +37,11 @@ const train = preview.render(canvas as unknown as HTMLCanvasElement, trainReques
 assert.equal(train.artwork!.environment.state['cab-frame'].x, 0, 'the initial Downtown berth projects into train-local coordinates');
 const graph = JSON.parse(fs.readFileSync(path.resolve('src/ssg/game/world/zone-graph.json'), 'utf8'));
 graph.seams.find((s:any) => s.id === 'metro-line0').dx += 30;
-const shifted = preview.render(canvas as unknown as HTMLCanvasElement, {...trainRequest, documents:new Map([['zone-graph',graph]])});
+const pendingDocuments=new Map(sourceDocuments.map(d=>[d.id,JSON.parse(fs.readFileSync(path.join('src/ssg/game',d.file),'utf8'))]));pendingDocuments.set('zone-graph',graph);
+// Moving the seam also moves the connecting route endpoint: the pending world must stay valid.
+const trainId=sourceDocuments.find(d=>d.file==='scenes/train/composition.json')!.id,shiftedTrain=pendingDocuments.get(trainId);
+for(const leg of shiftedTrain.instances[0].props.vehicle.route.legs)if(leg.zone==='here')for(const point of [leg.from,leg.to])if(point.x===1460)point.x-=30;
+const shifted = preview.render(canvas as unknown as HTMLCanvasElement, {...trainRequest,composition:shiftedTrain,documents:pendingDocuments});
 assert.equal(shifted.artwork!.environment.state['cab-frame'].x, -30, 'pending seam geometry controls the inspected car');
 const hiddenTrain = preview.render(canvas as unknown as HTMLCanvasElement, {...trainRequest, environment:{...request.environment,flags:JSON.stringify({'prologue:started':true})}});
 assert.equal(hiddenTrain.artwork!.environment.visibility!['cab-frame'], false, 'inspection evaluates the real service-presence query');

@@ -13,7 +13,7 @@
  *
  * World units at the player's scale; heights over the ground line (the line stands on the street's back line).
  */
-import type { Element, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Field, Properties } from '../core/composition';
 import { inPixels, SHORE, R, ART } from '../core/pixels';
 import { drawTunnelPortal, drawViaduct, drawWallPortal, LINE0 } from '../architecture/line0';
 import { drawMetroCar, METRO } from '../vehicles/train-car';
@@ -29,7 +29,7 @@ const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
 /** The rail's height over the line's base at local x: the deck, down the ramp (`rampTop` east, `rampFoot` west) to 0, and on down under the street west of the foot. */
 const railH = (x: number, top: number, foot: number) => x >= top ? LINE0.deck : x <= foot ? 0 : LINE0.deck * (x - foot) / (top - foot);
 
-export const viaductElement: Element = {
+export const viaductElement: AssetDefinition = {
   type: 'transit.viaduct', version: 1, label: 'LINE 0 viaduct, its columns and a ramp down (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     from: num('From (units east of the piece)', 0), to: num('To', 3000), origin: num('Column pitch origin (units east of the piece)', 0),
@@ -50,7 +50,7 @@ export const viaductElement: Element = {
   },
 };
 
-export const wallPortalElement: Element = {
+export const wallPortalElement: AssetDefinition = {
   type: 'transit.wall-portal', version: 1, label: 'LINE 0 portal in a tower’s wall (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { width: num('Width', 360, 60, 2000, 1, 'units') },
   bounds: p => ({ x: 0, h: LINE0.deck + 210, w: n(p, 'width'), tall: 210 }),
@@ -62,7 +62,7 @@ export const wallPortalElement: Element = {
   },
 };
 
-export const tunnelPortalElement: Element = {
+export const tunnelPortalElement: AssetDefinition = {
   type: 'transit.tunnel-portal', version: 1, label: 'LINE 0 tunnel headwall (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {},
   bounds: () => ({ x: -150, h: 280, w: 190, tall: 340 }),
@@ -75,7 +75,7 @@ export const tunnelPortalElement: Element = {
 };
 
 /** A raised platform on the viaduct from the anchor `length` east: slab and edge line, canopy on two posts, stairs down off its east end, the plate and the departure board. */
-export const platformElement: Element = {
+export const platformElement: AssetDefinition = {
   type: 'transit.platform', version: 1, label: 'Raised LINE 0 platform: canopy, stairs, plate, departure board (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { length: num('Length', 222, 60, 4000, 3, 'units'), plate: str('Station plate', '0 · GALLERIA'), next: str('Board: next train to', 'DOWNTOWN'), when: str('Board: when', '2 MIN') },
   bounds: p => ({ x: 0, h: LINE0.deck + 180, w: n(p, 'length') + 90, tall: LINE0.deck + 180 }),
@@ -106,7 +106,7 @@ export const runDoors = (nose: number, cars: number, direction: 1 | -1) => Array
  * LINE 0's cars on the deck where the nose is (visual `nose`, units east of the piece; none: hidden), running east
  * (`direction` 1) or west. Hidden west of `from` (inside the portal it came out of). The line's deck height over its base.
  */
-export const line0RunElement: Element = {
+export const line0RunElement: AssetDefinition = {
   type: 'vehicle.line0-run', version: 1, label: 'LINE 0 train on the viaduct, where its nose is (LINE 0 kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     cars: num('Cars', 2, 1, 4), direction: { kind: 'select', label: 'Running', options: [1, -1], default: 1 }, destination: str('Destination', 'HARBOR'), plate: str('Plate on the last car', 'CAR 2'),
@@ -137,4 +137,4 @@ export const line0RunElement: Element = {
   },
 };
 
-export const line0KitElements: Element[] = [viaductElement, wallPortalElement, tunnelPortalElement, platformElement, line0RunElement];
+export const line0KitElements: AssetDefinition[] = [viaductElement, wallPortalElement, tunnelPortalElement, platformElement, line0RunElement];

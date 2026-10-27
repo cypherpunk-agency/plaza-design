@@ -1,5 +1,5 @@
 /** Physical bounds for port machinery and furniture, using the same explicit visual snapshots. */
-import type {Anchor,Bounds,Element,Properties} from '../core/composition';
+import type {Anchor,Bounds,AssetDefinition,Properties} from '../core/composition';
 import {frameView,type View} from '../core/view';
 import {GANTRIES} from '../machinery/crane';
 import {CH,type Crate} from '../props/containers';
@@ -26,7 +26,7 @@ function stallBounds(a:Inputs,tea:boolean):Rect{
  if(!pose?.visible)return r;
  return union([r,{x:a.v.sx(pose.frame.x)-24,y:a.v.y(pose.height),w:48,h:Math.max(1,a.v.y(pose.character.h??0)-a.v.y(pose.height))}]);
 }
-export function applyHarborMetadata(elements:Element[],root:(method:string,L:HarborLayout,p:Properties)=>{x:number;h:number}):void{
+export function applyHarborMetadata(elements:AssetDefinition[],root:(method:string,L:HarborLayout,p:Properties)=>{x:number;h:number}):void{
  const get=(id:string)=>elements.find(e=>e.type==='harbor.'+id)!;
  const shapes:Record<string,Geometry>={
   drawLampBoat:a=>{const v=a.v,bob=Math.round(Math.sin(v.t*.03));return{x:v.sx(1650,.3)-22,y:v.y(56)-24+bob,w:44,h:25};},

@@ -81,39 +81,17 @@
     {
       "id": "keeper",
       "name": "SHOPKEEPER",
-      "talk": [
-        [
-          "The quote and charge share a base price. The Test Desk can change the rules."
-        ],
-        [
-          "I remember you. My stock remembers your purchases, too."
-        ]
-      ]
+      "conversation": "talk.shop.keeper"
     },
     {
       "id": "browser",
       "name": "CUSTOMER",
-      "talk": [
-        [
-          "They moved the cheap noodles to the top shelf.",
-          "Top shelf is for people with legs.so. I have the free legs."
-        ],
-        [
-          "I come in to read the labels. It is warmer than the library and the library closed."
-        ]
-      ]
+      "conversation": "talk.shop.browser"
     },
     {
       "id": "android",
       "name": "CUSTOMER",
-      "talk": [
-        [
-          "Batteries. Two packs. Do not make it weird."
-        ],
-        [
-          "People ask what I do for fun. I queue. I am very good at it. I have never once been served first."
-        ]
-      ]
+      "conversation": "talk.shop.android"
     }
   ],
   "exits": [

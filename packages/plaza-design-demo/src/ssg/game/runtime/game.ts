@@ -1,4 +1,8 @@
-import {advanceSequenceCommands,worldSequenceSources,validateSequenceHandoffs} from './sequence-commands';
+import {checkpointSequenceState} from '../world/checkpoint-state';
+import {readStoryObservation} from '../story/observations';
+import {matches} from '../engine/gameplay/queries';
+import {mergeGameplayLibrary} from '../engine/gameplay/libraries';
+import {advanceSequenceCommands,authoredSequenceSources,validateSequenceHandoffs} from './sequence-commands';
 import {renderWorldFrame} from './render-scene';
 import {art} from '../art';
 import type {OpeningDocuments} from '../story/title/documents';
@@ -23,6 +27,7 @@ import {stepPlayer,type MovementPort} from './movement';
 import * as Camera from './camera';
 import * as InputRouting from './input-routing';
 import * as SceneLifecycle from './scene-lifecycle';
+import {runtimeChunkStatuses} from './chunk-status';
 import {NET_OPENED,NUDGE_HOLD,NUDGE_MARGIN,NUDGE_GAP,MIN_VIEW_W,MAX_VIEW_H} from './tuning';
 import type {GameHost} from './contracts';
 import {createCameraState,createInputState,createScenesState,createTimingState,createPresentationState} from './state';
@@ -37,14 +42,14 @@ import {registryLabels} from '../engine/gameplay/rewards';
 import {cloneValues,mergeValues,resolveValues,deleteStateValue} from '../engine/gameplay/state';
 import {type SceneModel} from '../engine/model';
 import {withCompanionConversations,COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
-import {COMPANION_SOURCE,companionFlag,companionHere} from '../engine/gameplay/companion-source';
+import {COMPANION_SOURCE,companionCondition,companionHere} from '../engine/gameplay/companion-source';
 import type {GameRuntimeSources} from './game-sources';
 import {runtimeSequenceDocuments} from '../story/sequence-documents';
 import {defaultNetworkContext} from '../engine/network-context';
 import {mintFeedback,type FeedbackReceipt} from '../engine/feedback-receipt';
 import type {MetroStart} from '../world/transport/metro-start';
 import {METRO_SOURCE,type MetroSource} from '../world/transport/metro-source';
-import {CRITTER_REACTIONS} from '../engine/gameplay/critter-reactions';
+import {CRITTER_REACTIONS,CRITTER_GAMEPLAY} from '../engine/gameplay/critter-reactions';
 import {BOT_REACTIONS,withBotConversations,type BotReactionDocument} from '../engine/gameplay/bot-conversations';
 import {perfBegin,perfEnd,perfSample,performanceRecording} from './diagnostics/performance';
 import {mountPerformancePanel} from './diagnostics/performance-panel';
@@ -64,7 +69,6 @@ import { GameplaySession } from '../engine/gameplay/session';
  * runtime modules; ordinary scene behavior remains in authored gameplay source. */
 
 import { drawFlight,taxiDurationFor } from '../story/cutscenes/taxi';
-import type { Handoff } from '../art/core/timeline';
 import { type MachineData,type NetworkData } from "../data/index";
 
 import { CITY,NO_RULES,SceneHost } from "../engine/index";
@@ -95,19 +99,19 @@ import { light,lightAt,setLight,type Light } from "../world/light";
 import { frameView } from '../art/core/view';
 import {createLineSystem,type LineSystem} from '../world/transport/line';
 import {boardRide} from '../engine/gameplay/mechanisms/line-ride';
-import { reportLines,sceneClimate,setHereClimate,weatherNow,type Weather } from "../world/weather";
+import { reportLines,sceneClimate,setHereClimate,setOverride,weatherNow,type Weather } from "../world/weather";
 import { sound } from './audio';
 import {characterHeight,characterX,isHere,setSpeaker} from './characters';
 import {Companion} from './companion';
 import { EDITOR_PLAY, PROBE } from "./mode";
-import { can,playProfile,saveKey,sudoOn } from "./play-profile";
+import {startCheckpoint, can,playProfile,saveKey,sudoOn } from "./play-profile";
 import { loadSave,newSave,nodeCount,ownedModules,storeSave,who,type Save } from "./save";
 import {levelArrive,levelArrows,levelDown,levelFloor,levelHints,levelIndoor,levelInteract,levelRiding,levelUp,nearestPrompt,levelLiftList,levelPick,savedForLevel,type Movers} from "../engine/level";
 import {placeFrom} from "../world/zone-graph";
 
 
 export class Game {
-  private save: Save = sudoOn() ? unlockAll(loadSave()) : loadSave();
+  private save: Save;
   private readonly camera=createCameraState();
   private readonly input=createInputState();
   private readonly scenes=createScenesState();
@@ -130,6 +134,7 @@ export class Game {
     get story(){return game.story;},
     get zh(){return game.zh;},
     gameplayFor:(...args)=>game.gameplayFor(...args),
+    globalGameplay:()=>game.globalGameplay(),
     get companionBody(){return game.companionBody;},
     say:(...args)=>game.say(...args),
     dialogueCompletion:(...args)=>game.dialogueCompletion(...args),
@@ -175,7 +180,8 @@ export class Game {
     get story(){return game.story;},
     get openingStory(){return game.openingStory;},
     get input(){return game.input;},
-    get editorClock(){return game.editorClock;},
+    get clockMode(){return game.clockMode;},
+    globalGameplay:()=>game.globalGameplay(),
     get save(){return game.save;},
     gameplayFor:(...args)=>game.gameplayFor(...args),
     get stampEl(){return game.stampEl;},
@@ -408,15 +414,15 @@ export class Game {
   private get networkContext(){return this.sources?.network??defaultNetworkContext;}
   private cutsceneRegistry?:ReturnType<typeof createCutscenes>;
   private get nativeCutscenes(){return this.cutsceneRegistry??=createCutscenes(this.sequenceDocuments.cinematics);}
-  private worldSequenceRegistry?:ReturnType<typeof worldSequenceSources>;
-  private get worldSequences(){if(!this.worldSequenceRegistry){const scenes={...SCENES,...this.content},sequences=worldSequenceSources(scenes);validateSequenceHandoffs(Object.values(scenes).flatMap(s=>s.gameplay?[s.gameplay]:[]),new Set(['intro','act2',...Object.keys(sequences)]));this.worldSequenceRegistry=sequences;}return this.worldSequenceRegistry;}
+  private worldSequenceRegistry?:ReturnType<typeof authoredSequenceSources>;
+  private get worldSequences(){if(!this.worldSequenceRegistry){const scenes={...SCENES,...this.content},sequences=authoredSequenceSources(scenes);validateSequenceHandoffs(Object.values(scenes).flatMap(s=>s.gameplay?[s.gameplay]:[]),new Set(['intro','act2',...Object.keys(sequences)]));this.worldSequenceRegistry=sequences;}return this.worldSequenceRegistry;}
   private metroInstance?:LineSystem;
   private get metro(){return this.metroInstance??=createLineSystem(this.world,this.metroSource);}
   private get world():CityModel{return this.cityModel??defaultCity;}
   private cityMapInstance?:ReturnType<typeof createCityMap>;
   private get worldMap(){return this.cityMapInstance??=createCityMap(this.world);}
   private hasScene(id:string):id is SceneId{return Object.prototype.hasOwnProperty.call(this.content,id)||isSceneId(id);}
-  private sceneDefinition(id:SceneId):SceneDef {let scene=this.scenes.compiledScenes.get(id);if(!scene){const source=this.content[id]??SCENES[id];if(!source)throw new Error('Unknown scene '+id);scene=withCompanionConversations(withBotConversations(source.bindWorld?.({city:this.world,metro:this.metro})??source,this.botReactions),this.sources?.companionGameplay??COMPANION_GAMEPLAY);this.scenes.compiledScenes.set(id,scene);}return scene;}
+  private sceneDefinition(id:SceneId):SceneDef {let scene=this.scenes.compiledScenes.get(id);if(!scene){const source=this.content[id]??SCENES[id];if(!source)throw new Error('Unknown scene '+id);scene=withCompanionConversations(withBotConversations(source.bindWorld?.({city:this.world,metro:this.metro})??source,this.botReactions,this.sources?.botGameplay),this.sources?.companionGameplay??COMPANION_GAMEPLAY);this.scenes.compiledScenes.set(id,scene);}return scene;}
   /** One common state port for scene commands and source-authored global story workflows. */
   private gameplayStatePort(id?:SceneId):import('../engine/gameplay/types').StatePort {
     return {
@@ -425,17 +431,20 @@ export class Game {
         write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;if(state.player){this.save.keyring=[...state.player.keyring];this.save.controlled=[...state.player.controlled];this.save.jump=state.player.jump;}mergeValues(this.save.gameplay??={},state.values??{});},
       };
   }
-  private openingGameplaySession?:GameplaySession;
-  /** The cinematic primitive reports a milestone; shared commands own flags and rewards. */
-  private runOpeningWorkflow(role:import('../story/opening-source').OpeningWorkflow):boolean {
-    let session=this.openingGameplaySession;
+  private globalGameplaySession?:GameplaySession;
+  private get globalGameplayDefinition(){return mergeGameplayLibrary(this.openingStory.GAMEPLAY,this.sources?.critterGameplay??CRITTER_GAMEPLAY,'Shared critter gameplay');}
+  private globalGameplay():GameplaySession {
+    let session=this.globalGameplaySession;
     if(!session){
-      session=new GameplaySession(this.openingStory.GAMEPLAY,this.gameplayStatePort(),undefined,[],{keyring:new Set(this.networkContext.keyring.keys()),controlled:new Set(registryLabels(this.networkContext.net))});
-      this.openingGameplaySession=session;
+      session=new GameplaySession(this.globalGameplayDefinition,this.gameplayStatePort(),undefined,[],{keyring:new Set(this.networkContext.keyring.keys()),controlled:new Set(registryLabels(this.networkContext.net))});
+      session.readContext=()=>({nativeRead:key=>readStoryObservation(key,{phase:this.story,scene:this.scenes.here,viewing:this.zh.viewing??null,bubble:!!this.presentation.bubble,popup:this.zh.popupOpen,clock:this.timing.clock,stamps:this.presentation.stamps})});
+      this.globalGameplaySession=session;
       if(session.definition.handoffs?.length)attachGameplayHandoffs(session,{schedule:(ms,run,canceled,detail)=>this.hostOf(this.scenes.here).model.later(ms,()=>{run();this.persistSave();this.syncHud();},detail,canceled),cutscene:id=>{this.presentation.pendingCut=id;},presentation:operation=>{if(operation==='end')this.presentation.showEnd=true;}});
     }
-    return session.dispatch(this.openingStory.WORKFLOWS[role],'system').ok;
+    return session;
   }
+  /** The cinematic primitive reports a milestone; shared commands own flags and rewards. */
+  private runOpeningWorkflow(role:import('../story/opening-source').OpeningWorkflow):boolean {return this.globalGameplay().dispatch(this.openingStory.WORKFLOWS[role],'system').ok;}
   private gameplayFor(id:SceneId,providedModel?:SceneModel):GameplaySession|undefined {
     const definition=this.sceneDefinition(id).gameplay;
     if(!definition)return undefined;
@@ -458,14 +467,16 @@ export class Game {
     const values=cloneValues(save.gameplay),scenes={...save.scenes};
     for(const[id,host]of [...this.scenes.hosts,...this.scenes.mobiles]){const {state,...engine}=host.model.snapshot();for(const[key,value]of Object.entries(state))setStateValue(values,id+'.'+key,value,this.sceneDefinition(id).gameplay);scenes[id]={...engine,...(scenes[id]?.board?{board:scenes[id]!.board}:{})};}
     for(const id of new Set([...Object.keys(this.content),...Object.keys(SCENES)]))for(const[key,d]of Object.entries(this.sceneDefinition(id as SceneId).gameplay?.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
-    for(const[key,d]of Object.entries(this.openingStory.GAMEPLAY.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
+    for(const[key,d]of Object.entries(this.globalGameplayDefinition.state??{}))if(d.lifetime!=='save')deleteStateValue(values,key);
     return {...save,gameplay:values,scenes,vehicle:saveVehicle(this.scenes.level,this.p,this.scenes.here)};
   }
   private persistSave(){storeSave(this.save,save=>this.prepareSave(save));}
   /** The companion body (engine/gameplay/companion.json): at home where a scene says so, at your heels once its flag is set. */
   private companionBody = new Companion();
 
-  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private editorClock:'story'|'fixed'|'running'='story',private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
+  constructor(private host: GameHost, private content: Partial<Record<SceneId, SceneDef>> = {}, private clockMode:'story'|'fixed'|'running'=startCheckpoint().clock,private botReactions:BotReactionDocument=BOT_REACTIONS,private cityModel:CityModel=defaultCity,private metroSource:MetroSource=METRO_SOURCE,metroStart?:MetroStart,private sources:GameRuntimeSources={}) {
+    const loaded=loadSave({scenes:Object.fromEntries(Object.entries({...SCENES,...content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),vocabulary:sources.checkpointVocabulary});this.save=sudoOn()?unlockAll(loaded):loaded;
+    if(!EDITOR_PLAY){const weather=startCheckpoint().weather;setOverride('city',weather==='forecast'?null:weather);}
     validateWorldPeople(Object.fromEntries(Object.entries({...SCENES,...content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),this.zoneGraph);
     validateWorldVehicles(Object.fromEntries(Object.entries({...SCENES,...content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),this.zoneGraph);
     // sudo (developer) mode: browser checks read the player and the level, and place the player, through window.__game
@@ -695,7 +706,7 @@ export class Game {
    * Start the game. `title`: launching it (the Konami code, `?play` or `?sudo` without a scene):
    * the title screen first (title/). A scene, a cutscene or a LOAD GAME reload goes straight there.
    */
-  start(scene?: SceneId | CutsceneId, title = false, spawn?:number) {
+  start(scene?: SceneId | CutsceneId, title = false, spawn?:number, entrance?:string) {
     this.canvas.hidden = false;
     this.canvas.tabIndex = 0;
     this.onResize();
@@ -712,8 +723,13 @@ export class Game {
     if (title) { this.showTitle(); return; }
     const first = !this.timing.started;
     this.timing.started = true;
-    this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first);
-    // A private Play's source-local spawn is an arrival input, not a mutation of a bound SceneDef.
+    this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first,entrance,spawn);
+    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content,this.reviewDoc);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,actions:this.reviewDoc.actions,hint:this.reviewDoc.hint,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),run:a=>this.reviewRun(a)});this.refreshReview();}
+  }
+
+  /** Starting placement uses the entered chunk's actual floor or occupied vehicle. It is never
+   * reapplied on Continue; both authored New Game and private Play use this arrival operation. */
+  private placeStartingPlayer(spawn:number|undefined){
     if(spawn!==undefined){
       if(!Number.isFinite(spawn)||spawn<12||spawn>this.def.width-12)throw Error('Starting X is outside the scene');
       const vehicle=saveVehicle(this.scenes.level,this.p,this.scenes.here);
@@ -721,36 +737,35 @@ export class Game {
       else{this.p.x=spawn;if(this.scenes.level)this.scenes.level.state=levelArrive(this.scenes.level.source,this.p,this.def.spawnH??0,SceneLifecycle.seenRooms(this.sceneLifecyclePort,this.scenes.level.source,this.scenes.here),savedForLevel(this.scenes.level.source,this.scenes.here,this.save.barriers));}
       this.camera.cam=Camera.camFollow(this.cameraPort,this.p.x);this.camera.camH=this.p.y;this.camera.gy=this.camera.gyBase+Math.round(this.camera.camH);
     }
-    if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content,this.reviewDoc);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,actions:this.reviewDoc.actions,hint:this.reviewDoc.hint,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),run:a=>this.reviewRun(a)});this.refreshReview();}
   }
 
   /**
    * Into the save (the title's CONTINUE, or a start in a scene). A save in the middle of the
-   * saved scene takes precedence; older saves fall back to opening.ts or Downtown/the first scene.
+   * saved scene takes precedence; an unstarted run follows the authored story destination.
    */
-  private continueGame(scene: SceneId | undefined, first: boolean) {
+  private continueGame(scene: SceneId | undefined, first: boolean,entrance?:string,spawn?:number) {
+    const freshArrival=first&&!this.save.scene;
     const vehicle=first&&(!scene||scene===this.save.scene)?this.save.vehicle:undefined;delete this.save.vehicle;
+    const leavingLaunch=!!this.presentation.opening&&!this.presentation.opening.gliding;
     this.endTitle();
+    if(leavingLaunch&&this.openingStory.WORKFLOWS.resume&&!this.runOpeningWorkflow('resume'))throw Error('Launch resume workflow refused');
     // Continue an interrupted new-game direction through its authored skip completion, not by
     // replaying timeline frames or treating loading as a fresh trigger activation.
     const interrupted=this.save.sequenceActions&&!this.save.sequenceActions.finished?this.save.sequenceActions.sequence:undefined;
     const pendingDirection=interrupted?(this.worldSequences[interrupted]?.sequence??this.sequenceDocuments.opening.timeline.sequences.find(s=>s.id===interrupted&&s.id!=='title')):undefined;
     if(pendingDirection&&!this.sequenceActions(pendingDirection.duration,'skip'))throw Error('Interrupted sequence completion refused: '+pendingDirection.id);
     const pendingOpening=pendingDirection&&this.sequenceDocuments.opening.timeline.sequences.some(s=>s.id===pendingDirection.id);
-    const { routes, start } = playProfile();
+    if(freshArrival&&!scene){this.startNewRun();return;}
+    const { routes } = playProfile(),start=startCheckpoint();
     if(routes==='content')scene=(scene&&this.content[scene]?scene:this.save.scene&&this.content[this.save.scene as SceneId]?this.save.scene as SceneId:start.scene as SceneId);
     this.timing.started = true;
-    const resume = !scene && first ? this.openingStory.openingResumeDestination(this.save.flags) : null;let resumeEntrance:string|undefined;
+    const resume = !scene && first ? this.openingStory.openingResumeDestination(this.save.flags) : null;let resumeEntrance:string|undefined=entrance;
     if(pendingDirection&&!pendingOpening&&pendingDirection.handoff){scene=pendingDirection.handoff.scene as SceneId;resumeEntrance=pendingDirection.handoff.entrance;}
     if (!scene && first && this.save.scene && this.resumable(this.save.scene)) scene = this.save.scene as SceneId;
     else if (resume && this.hasScene(resume.scene)) {scene=resume.scene;resumeEntrance=resume.entrance;}
-    else if (!scene && first && !this.save.flags.arrived && !this.save.flags[this.world.seenFlag(this.openingStory.START.settled as SceneId)]) {
-      // a save that never got going: the opening, on the train home (no glide: that is NEW GAME's)
-      if (!this.save.flags[this.world.seenFlag(this.world.START_SCENE)]) { this.startOpening(); return; }
-      scene = this.world.START_SCENE;
-    }
-    if (first && scene && scene === start.scene && !resumeEntrance) resumeEntrance = start.entrance;
+    if (first && !this.save.scene && scene && scene === start.scene && !resumeEntrance) resumeEntrance = start.entrance;
     if (scene && (this.scenes.here !== scene||resumeEntrance)) this.enter(scene, true,resumeEntrance);
+    this.placeStartingPlayer(spawn??(freshArrival&&this.scenes.here===start.scene?start.spawn??undefined:undefined));
     if(vehicle&&this.scenes.level&&restoreVehicle(this.scenes.level,this.p,this.movers,vehicle)){this.camera.cam=Camera.camFollow(this.cameraPort,this.p.x);this.camera.camH=this.p.y;this.camera.gy=this.camera.gyBase+Math.round(this.camera.camH);}
     SceneLifecycle.showHosts(this.sceneLifecyclePort);
     this.markSeen(this.scenes.here);
@@ -780,13 +795,14 @@ export class Game {
    * (`stepOpening`; reduced motion: settled, menu up at once). `gliding`: straight into the glide
    * from the settled shot (NEW GAME from the pause menu).
    */
-  private showTitle(gliding = false) {
+  private showTitle(gliding = false,launchWorkflow=true) {
     this.endCutscene(false);
     if(!this.scenes.level){const saved=this.save.scene;this.enter(saved&&this.resumable(saved)?saved as SceneId:this.scenes.here,true,undefined,false);}
     this.presentation.bubble = null;
     this.input.keys.clear();
     this.scenes.hosts.forEach((h) => {h.cancelAcknowledgment?.('dismissed');h.closeAll();});
     this.term.close();
+    if(launchWorkflow&&this.openingStory.WORKFLOWS.launch){if(!this.runOpeningWorkflow('launch'))throw Error('Launch composition workflow refused');this.reconcileWorldEdits();}
     const game=this;
     this.presentation.opening = new Opening(this.reduced,this.sequenceDocuments.opening,{scenes:{...SCENES,...this.content},get graph(){return game.zoneGraph;},get compositions(){void game.zoneGraph;return game.appliedWorldSource;},backdrops:this.sources.backdrops,model:id=>game.scenes.hosts.get(id as SceneId)?.model??game.scenes.mobiles.get(id as SceneId)?.model,get flags(){return game.save.flags;}});
     this.syncEnginePause();
@@ -819,7 +835,12 @@ export class Game {
   private beginSequenceActions(id:string){const sequence=this.sequenceSource(id);if(sequence&&[sequence.commands,sequence.onComplete,sequence.onCancel].some(rows=>rows?.length))this.save.sequenceActions={sequence:id,receipts:[]};else delete this.save.sequenceActions;}
   private sequenceActions(time:number,mode:Parameters<typeof advanceSequenceCommands>[4]='play'){
     const run=this.save.sequenceActions;if(!run)return true;const sequence=this.sequenceSource(run.sequence);if(!sequence)throw Error('Unknown active sequence '+run.sequence);
-    const ok=advanceSequenceCommands(sequence,time,run,command=>this.gameplayFor(command.scene as SceneId)?.dispatch(command.command,'system').ok??false,mode);if(ok&&['complete','skip','cancel'].includes(mode)){run.finished=true;this.persistSave();}return ok;
+    const ok=advanceSequenceCommands(sequence,time,run,command=>{
+      // A previous command's pure additions are already safe and can be made available before
+      // a later, independently deferred retirement. Never split one atomic edit batch.
+      if(this.preparedWorldEdit){void this.zoneGraph;if(!changedWorldChunks(this.appliedWorldSource!,this.preparedWorldEdit.result.source,this.worldCompositionContext).size)this.reconcileWorldEdits();}
+      return this.gameplayFor(command.scene as SceneId)?.dispatch(command.command,'system').ok??false;
+    },mode);if(ok&&['complete','skip','cancel'].includes(mode)){run.finished=true;this.persistSave();}return ok;
   }
 
   private directOpeningWorld(){
@@ -859,34 +880,45 @@ export class Game {
   }
 
   /**
-   * The glide finishes or is skipped: create the fresh run and commit its authored Harbor handoff.
+   * Prepare the fresh run and its authored Harbor player before the first glide frame.
    */
   private initializeNewRun(){
-    this.cancelStoryTransitions();this.openingGameplaySession?.dispose();this.openingGameplaySession=undefined;
+    this.cancelStoryTransitions();this.globalGameplaySession?.dispose();this.globalGameplaySession=undefined;
     this.scenes.hosts.forEach(h=>h.dispose());this.scenes.hosts.clear();
     for(const core of this.scenes.mobiles.values()){core.gameplay?.dispose();core.model.dispose();}
     this.scenes.gameplaySessions.forEach(s=>s.dispose());this.scenes.gameplaySessions.clear();this.scenes.mobiles.clear();this.scenes.mobileOwners.clear();this.scenes.compiledScenes.clear();this.scenes.joinedZones=[];this.scenes.zoneTiers.clear();this.scenes.level=null;
-    this.save=sudoOn()?unlockAll(newSave()):newSave();city.bind(this.save.clock);
+    const fresh=newSave({scenes:Object.fromEntries(Object.entries({...SCENES,...this.content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])),vocabulary:this.sources.checkpointVocabulary});this.save=sudoOn()?unlockAll(fresh):fresh;city.bind(this.save.clock);
     this.compiledWorld=undefined;this.appliedWorldSource=undefined;this.preparedWorldEdit=undefined;
     this.camera.viewW=this.canvas.width/this.camera.k;this.camera.viewH=this.canvas.height/this.camera.k;
-    this.term.clear();this.presentation.bubble=null;this.presentation.showEnd=false;this.presentation.counters={};this.hints.sceneChanged();sound.cancelFeedback();
-    if(!this.runOpeningWorkflow('home'))throw Error('New Game opening initialization refused');
-    const destination=this.presentation.opening?.handoff??this.openingStory.START.start;
-    this.enter(destination.scene as SceneId,true,destination.entrance,false);
-    this.onResize();this.timing.started=true;this.persistSave();
+    this.term.clear();this.presentation.bubble=null;this.presentation.showEnd=false;this.presentation.stamps={};this.hints.sceneChanged();sound.cancelFeedback();
+    if(playProfile().routes==='world'&&!this.runOpeningWorkflow('home'))throw Error('New Game opening initialization refused');
+    const start=startCheckpoint();this.clockMode=start.clock;setOverride('city',start.weather==='forecast'?null:start.weather);
+    let direction:{id:string;time:number;receipts:string[]}|undefined;
+    if(start.sequence){
+      const sequence=this.sequenceSource(start.sequence.id);
+      const composition=sequence&&(this.worldSequences[sequence.id]?.composition??this.sequenceDocuments.opening.compositions?.[sequence.composition]??this.sequenceDocuments.cinematics.compositions[sequence.composition]);
+      if(!sequence||!composition)throw Error('Missing starting checkpoint sequence '+start.sequence.id);
+      const result=checkpointSequenceState(this.save,start,sequence,composition,new Map<string,unknown>([['world-compositions',this.worldCompositions],['zone-graph',this.worldBaseGraph]]),Object.fromEntries(Object.entries({...SCENES,...this.content}).filter((entry):entry is [string,SceneDef]=>!!entry[1])));
+      this.save=result.save;city.bind(this.save.clock);direction=result.sequence;
+    }
+    if(start.metro)StoryTransitions.startMetro(this.storyTransitionsPort,start.metro);
+    this.enter(start.scene as SceneId,true,start.entrance,false);this.placeStartingPlayer(start.spawn??undefined);
+    this.onResize();this.timing.started=true;this.persistSave();return direction;
   }
   /** Complete direction over the existing run: no save/model replacement or camera refit. */
   private openingDone() {
     if(!this.presentation.opening?.gliding)return;
     if(!this.sequenceActions(this.presentation.opening.timeline.time(),this.presentation.opening.skipped?'skip':'complete'))return;
     this.directOpeningWorld();this.endTitle(true);SceneLifecycle.refreshWorldMembership(this.sceneLifecyclePort);this.camera.fitW=this.spanW;
-    this.markSeen(this.scenes.here);this.introduceScene();this.greet();
-    this.syncEnginePause();this.syncHud();this.persistSave();
+    this.releaseNewRun();
   }
+
+  /** Release the initialized world, whether it began with direction or directly in play. */
+  private releaseNewRun(){this.markSeen(this.scenes.here);this.introduceScene();this.greet();this.syncEnginePause();this.syncHud();this.persistSave();}
 
   /** First time in Downtown: the player says where they are (and, once, how its machines open now). */
   private greet() {
-    const arrival = arrivalFor(this.def.phases?.[this.story]?.arrival, { flags: this.save.flags, touch: this.touch, rain: this.weatherHere().rain, companion: this.save.flags[this.companionDoc.unlockFlag] ? this.companionDoc.greeting : null });
+    const arrival = arrivalFor(this.def.phases?.[this.story]?.arrival, { flags: this.save.flags, touch: this.touch, rain: this.weatherHere().rain, companion: matches(this.companionDoc.when,this.gameplayStatePort().read(),{definition:this.sources?.companionGameplay??COMPANION_GAMEPLAY}) ? this.companionDoc.greeting : null });
     if (!arrival) return;
     for (const flag of arrival.set) this.save.flags[flag] = true;
     this.say(arrival.speaker, arrival.pages, this.p.x, arrival.height);
@@ -896,13 +928,13 @@ export class Game {
 
   /** Detached diagnostics for editor inspection; no mutable runtime references. */
   inspect() {
-    const shared=this.gameplayFor(this.scenes.here);
-    return structuredClone({scene:this.scenes.here,residency:EDITOR_PLAY||PROBE?{camera:{x:this.camera.cam,h:this.camera.camH,width:this.camera.viewW,height:this.camera.viewH,scale:this.camera.k},models:[...this.scenes.hosts].map(([id,host])=>({id,tier:this.scenes.zoneTiers.get(id),time:host.model.now()})),retained:[...this.scenes.mobiles.keys()]}:undefined,worldComposition:EDITOR_PLAY?{pending:this.save.worldEdit,membership:this.save.worldMembership,blockers:this.preparedWorldEdit?worldEditBlockers(this.preparedWorldEdit.changed??changedWorldChunks(this.appliedWorldSource!,this.preparedWorldEdit.result.source,this.worldCompositionContext),SceneLifecycle.compositionDependencies(this.sceneLifecyclePort)):[]}:undefined,mobiles:SceneLifecycle.inspectMobiles(this.sceneLifecyclePort), player:{x:this.p.x,y:this.p.y}, save:this.save,
+    const shared=this.gameplayFor(this.scenes.here),mobiles=SceneLifecycle.inspectMobiles(this.sceneLifecyclePort);
+    return structuredClone({scene:this.scenes.here,residency:EDITOR_PLAY||PROBE?{chunks:runtimeChunkStatuses(this.scenes,id=>this.sceneDefinition(id as SceneId).name,mobiles),camera:{x:this.camera.cam,h:this.camera.camH,width:this.camera.viewW,height:this.camera.viewH,scale:this.camera.k},models:[...this.scenes.hosts].map(([id,host])=>({id,tier:this.scenes.zoneTiers.get(id),time:host.model.now()})),retained:[...this.scenes.mobiles.keys()]}:undefined,worldComposition:EDITOR_PLAY?{pending:this.save.worldEdit,membership:this.save.worldMembership,blockers:this.preparedWorldEdit?worldEditBlockers(this.preparedWorldEdit.changed??changedWorldChunks(this.appliedWorldSource!,this.preparedWorldEdit.result.source,this.worldCompositionContext),SceneLifecycle.compositionDependencies(this.sceneLifecyclePort)):[]}:undefined,mobiles, player:{x:this.p.x,y:this.p.y}, save:this.save,
       level:(EDITOR_PLAY||PROBE)&&this.scenes.level?{floor:this.scenes.level.state.floor,vehicle:this.scenes.level.state.vehicle,frames:this.scenes.level.source.vehicleFrames?.map(f=>({id:f.vehicle.id,x:f.part.dx,h:f.part.dh,zone:f.pose.zone,berth:f.berth?.id,doors:f.doors,boarding:f.boarding})),prompt:this.nearest()}:undefined,
       actors:EDITOR_PLAY?(this.def.people??[]).map((p,index)=>({index,id:p.id,seed:p.seed,look:p.look,x:p.x,h:p.h,act:p.act,range:p.range,speed:p.speed,facing:p.facing,when:p.when,visible:isHere(p),follow:p.follow?(this.def.people??[]).indexOf(p.follow):undefined,gap:p.gap})):undefined,
       engine:EDITOR_PLAY||PROBE?this.zh.model.inspect():undefined,
       gameplay:shared?{state:shared.state(),purchases:Object.fromEntries(Object.keys(shared.definition.purchases??{}).map(id=>[id,shared.quote(id)]))}:null,conversation:this.zh.conversationFrame,
-      environment:{weather:this.weatherHere().kind,clock:this.editorClock},
+      environment:{weather:this.weatherHere().kind,clock:this.clockMode},
       capabilities:capabilityView(this.save,!this.hackLocked(),this.networkContext.net),access:{exits:this.def.exits.map(e=>({id:e.id,visibility:exitVisibility(e,this.save.flags),permission:exitPermission(e,this.save.keyring)})),interactions:this.def.uses?.map(u=>({id:u.id,result:u.eligibility?.(this.save.flags,shared)??{ok:true}}))},
       objective:this.def.objective?.(this.save.flags,this.gameplayFor(this.scenes.here)?.state()), paused:this.enginesPaused,
       dialogue:this.presentation.bubble?{speaker:this.presentation.bubble.name,pages:this.presentation.bubble.pages,page:this.presentation.bubble.page}:null, popup:this.zh.popupOpen,
@@ -917,7 +949,7 @@ export class Game {
     this.timing.running = false;
     // Closing returns to the homepage; cached hosts and source sessions resume together.
     // Their scene clocks pause below. Private Play destroys the entire owning frame.
-    this.openingGameplaySession?.dispose();this.openingGameplaySession=undefined;
+    this.globalGameplaySession?.dispose();this.globalGameplaySession=undefined;
     this.shiftGuidance?.hide();
     this.syncEnginePause();
     this.endTitle();
@@ -973,7 +1005,7 @@ export class Game {
     this.camera.viewH = this.canvas.height / this.camera.k;
     // On phones the ground sits above the touch buttons, so the floor and what stands on it stay in view.
     const pad = document.getElementById('touch');
-    const padTop = this.touch && pad ? Math.max(0, this.canvas.getBoundingClientRect().bottom - pad.getBoundingClientRect().top) : 0;
+    const padTop = this.touch && pad && shown(pad) ? Math.max(0, this.canvas.getBoundingClientRect().bottom - pad.getBoundingClientRect().top) : 0;
     this.camera.gyBase = Math.round(this.camera.viewH - Math.max(54, (padTop * dpr) / this.camera.k + 8));
     this.camera.gy = this.camera.gyBase + Math.round(this.camera.camH);
   }
@@ -1093,8 +1125,8 @@ export class Game {
   }
 
   /**
-   * NEW GAME (the title's, or confirmed in the pause menu): the opening's glide. Nothing is reset
-   * until it hands over (`openingDone`): leave mid-glide and the old run is still there. Slots are untouched.
+   * Confirmed world-mode New Game initializes the run before direction starts. Completion releases
+   * the same live Harbor models. Private editor Play instead resets its isolated checkpoint realm.
    */
   private newGame() {
     if (EDITOR_PLAY || playProfile().routes !== 'world') {
@@ -1104,8 +1136,7 @@ export class Game {
     }
     if (!this.presentation.opening) { this.showTitle(true); return; }
     if(this.presentation.opening.gliding)return;
-    this.initializeNewRun();this.beginSequenceActions('glide');this.presentation.opening.go();this.syncEnginePause();
-    this.canvas.setAttribute('aria-label', 'ACCESS DENIED: the coast at sunrise, from the sea west to Downtown and LINE 0');
+    this.startNewRun();
   }
 
   private notify(text:string,tone:import('../ui/communication').MessageTone='info'){this.hints.notify(text,tone);this.term.print(text,tone==='error'?'err':tone==='success'?'ok':'out',false);}
@@ -1138,7 +1169,7 @@ export class Game {
    * The companion comes along where it follows you, or is at home; the first visit has the player say a few words.
    */
   private enter(id: SceneId, quiet = false, at?: string, announce=true) {
-    const { routes, start, label } = playProfile();
+    const { routes, label } = playProfile(),start=startCheckpoint();
     if(routes==='content'&&!this.content[id]){this.flash(`This route is outside the ${label}.`);return;}
     if (routes === 'start') id = start.scene as SceneId;
     const s: SceneDef = this.sceneDefinition(id);
@@ -1165,21 +1196,16 @@ export class Game {
     // the companion: at home (coming in behind you through the door, or already asleep there), at your heels where it follows you
     if (s.perch) {
       const home = s.perch(this.zh.model);
-      if (at && this.save.flags[companionFlag(s, this.companionDoc)]) this.companionBody.place(x - 14, 0, 'walk', 1);
+      if (at && this.gameplayFor(id)?.matches(companionCondition(s,this.companionDoc))) this.companionBody.place(x - 14, 0, 'walk', 1);
       else this.companionBody.place(home.x, home.h, home.rest);
     } else if (this.companionPresent) this.companionBody.place(x - this.p.face * 20, 0, 'sit', this.p.face);
     // the opening: the train home runs into Downtown; arriving, the player says the opening's words instead
     if(!announce)return;
     this.markSeen(id);
-    const st = this.story, phase = s.phases?.[st], said = phase?.intro;
+    const phase = s.phases?.[this.story];
     if (phase?.ride) StoryTransitions.runRide(this.storyTransitionsPort,id, phase.ride);
     this.hints.sceneChanged();sound.cancelFeedback();
-    const flag = 'scene:' + id;
-    if (said) {
-      const once = 'opening:said:' + st + ':' + id;
-      if (said.consume) this.save.flags[flag] = true;
-      if (!this.save.flags[once]) { this.save.flags[once] = true; this.persistSave(); this.say(said.speaker,this.touch?said.touchPages??said.pages:said.pages,this.p.x,said.height); }
-    } else this.introduceScene();
+    this.introduceScene();
     this.greet();
   }
 
@@ -1187,7 +1213,14 @@ export class Game {
   private introduceScene() {
     const scene=this.def;
     if(scene.introOnFoot&&this.scenes.level?.state.vehicle)return;
-    const flag='scene:'+this.scenes.here,intro=typeof scene.intro==='function'?scene.intro(this.touch):scene.intro;
+    const flag='scene:'+this.scenes.here,said=scene.phases?.[this.story]?.intro;
+    if(said){
+      const once='opening:said:'+this.story+':'+this.scenes.here;
+      if(said.consume)this.save.flags[flag]=true;
+      if(!this.save.flags[once]){this.save.flags[once]=true;this.persistSave();this.say(said.speaker,this.touch?said.touchPages??said.pages:said.pages,this.p.x,said.height);}
+      return;
+    }
+    const intro=typeof scene.intro==='function'?scene.intro(this.touch):scene.intro;
     if(!intro?.length||this.save.flags[flag])return;
     this.save.flags[flag]=true;this.persistSave();this.say('YOU',intro,this.p.x,46);
   }
@@ -1386,7 +1419,7 @@ export class Game {
   }
 
   /** The companion is drawn at home (`companion.mode: home`), and where it follows you (`along`) once its flag is set (companion-source.ts). */
-  private get companionPresent() { return companionHere(this.def, this.save.flags, this.companionDoc); }
+  private get companionPresent() { const gameplay=this.scenes.gameplaySessions.get(this.scenes.here);return companionHere(this.def,gameplay?.state()??this.gameplayStatePort().read(),this.companionDoc,gameplay?.queryContext()??{definition:this.def.gameplay??this.sources?.companionGameplay??COMPANION_GAMEPLAY}); }
 
   // ---------- drawing ----------
 
@@ -1556,7 +1589,7 @@ export class Game {
   /** The current goal as the HUD shows it (the scene's, the opening's, the library's, or the data's next). */
   private goalText(): string | null {
     const zh = this.zh.model.data.goals.length ? this.zh : null;
-    return this.def.objective?.(this.save.flags,this.gameplayFor(this.scenes.here)?.state()) ?? this.def.phases?.[this.story]?.goal ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
+    return this.def.phases?.[this.story]?.goal ?? this.def.objective?.(this.save.flags,this.gameplayFor(this.scenes.here)?.state()) ?? this.libraryGoal() ?? (zh ? zh.objective() : null);
   }
 
   /** What the deck's JOBS, CARRY, CONTROLS (and TERM on touch) tabs read (ui/menu.ts). */
@@ -1636,18 +1669,16 @@ export class Game {
    * the card (timings, the two clock readings, the label, and the cues that run in the dark `mid`, once: `woke`, and once it is light again `end`).
    */
 
-  /** The story's counters (story-rules.ts `applyCounter`): plain numbers named by the source (the morning's failed tries, when it last happened). The loop's own, cleared with the story's transitions. */
+  /** Presentation timestamps use the existing pausable story clock and clear with transitions. Counts and progression live in ordinary gameplay state. */
 
   /** Scratch callbacks belong to this run; disposal never acknowledges or completes them. */
-  private cancelStoryTransitions(){this.scenes.hosts?.forEach(h=>h.cancelAcknowledgment?.('dismissed'));this.presentation.bubble=null;this.presentation.beat=null;this.presentation.sleep=null;this.presentation.pendingCut=null;this.presentation.counters={};}
+  private cancelStoryTransitions(){this.scenes.hosts?.forEach(h=>h.cancelAcknowledgment?.('dismissed'));this.presentation.bubble=null;this.presentation.beat=null;this.presentation.sleep=null;this.presentation.pendingCut=null;this.presentation.stamps={};}
 
-  /** NEW GAME (until the glide lands) and a first launch: the opening, on the train home. */
-  private startOpening(destination?: Handoff) {
-    this.cancelStoryTransitions();
-    this.presentation.counters = {};
-    if(!this.runOpeningWorkflow('home'))return;
-    this.persistSave();
-    const target=destination??this.openingStory.START.start;this.handTo(target.scene,target.entrance);
+  /** A run configuration references one complete authored starting situation. */
+  private startNewRun(){
+    const direction=this.initializeNewRun();
+    if(direction)this.startCheckpointDirection(direction);
+    else{this.endTitle(true);SceneLifecycle.refreshWorldMembership(this.sceneLifecyclePort);this.releaseNewRun();}
   }
 
   /** Sudo's LEVELS: the opening from one of its points (opening.json `OPENING_LEVELS`), its scenes started over. */
@@ -1656,9 +1687,9 @@ export class Game {
     for(const f of this.openingStory.OPENING_FLAGS)delete this.save.flags[f];
     level.flags.forEach((f) => { this.save.flags[f] = true; });
     for (const scene of level.reset ?? []) this.hostOf(scene as SceneId).reset();
-    this.presentation.counters = {};
+    this.presentation.stamps = {};
     this.persistSave();
-    const to = this.openingStory.openingResumeDestination(this.save.flags) ?? this.openingStory.START.fallback;
+    const start=startCheckpoint(),to=this.openingStory.openingResumeDestination(this.save.flags)??{scene:start.scene,entrance:start.entrance};
     this.handTo(to.scene,to.entrance);
     if (level.end) StoryTransitions.runCues(this.storyTransitionsPort,this.openingStory.CARDS[level.end].end ?? []);
   }
@@ -1695,13 +1726,15 @@ export class Game {
    * use after-handoff so their postlude follows travel, retaining a same-scene native interlude.
    * For a menu's NEW GAME or a story beat: `game.playCutscene('intro', () => …)`.
    */
-  playCutscene(id: CutsceneId | string, then?: () => void,continuation:'replace'|'after-handoff'='replace') {
-    const source=this.worldSequences[id];
+  playCutscene(id: CutsceneId | string, then?: () => void,continuation:'replace'|'after-handoff'='replace',initial?:{time:number;receipts:readonly string[]}) {
+    const authoredSequence=this.sequenceDocuments.cinematics.timeline.sequences.find(s=>s.id===id),standalone=authoredSequence&&this.sequenceDocuments.cinematics.compositions[authoredSequence.composition];
+    const source=this.worldSequences[id]??(!isCutsceneId(id)&&standalone?{composition:standalone,sequence:authoredSequence!}:undefined);
     let scene:Cutscene|undefined=isCutsceneId(id)?this.nativeCutscenes[id]:undefined;
     if(source){
       const {composition,sequence}=source,documents:OpeningDocuments={compositionId:composition.scene,composition,compositions:{[composition.scene]:composition},timeline:{version:1,sequences:[sequence]}};
-      scene={id,title:id,duration:sequence.duration,next:sequence.handoff?.scene??'',handoff:sequence.handoff,ownsFade:true,liveWorld:true,cards:sequence.text.map(c=>({at:c.from,until:c.to,text:c.text,x:c.x,h:c.h})),beats:sequence.beats.map(b=>({at:b.time,name:b.id})),
-        advance:time=>this.directWorld(documents,id,time,this.timing.t/60,false),
+      const liveWorld=composition.instances.some(n=>n.type==='sequence.world-control');
+      scene={id,title:id,duration:sequence.duration,next:sequence.handoff?.scene??'',handoff:sequence.handoff,ownsFade:true,liveWorld,cards:sequence.text.map(c=>({at:c.from,until:c.to,text:c.text,x:c.x,h:c.h})),beats:sequence.beats.map(b=>({at:b.time,name:b.id})),
+        ...(liveWorld?{advance:(time:number)=>this.directWorld(documents,id,time,this.timing.t/60,false)}:{}),
         render:(context,view,time,scale,director)=>{renderWorldFrame({kind:'sequence',context,documents,sequenceId:id,registry:art,scale,width:view.viewW,height:view.viewH,reduced:this.reduced,lighting:view.lighting,time,director,cards:false,world:{scenes:{...SCENES,...this.content},graph:this.zoneGraph,compositions:this.appliedWorldSource,ambientTime:this.timing.t/60,flags:this.save.flags,model:id=>this.scenes.hosts.get(id as SceneId)?.model??this.scenes.mobiles.get(id as SceneId)?.model,backdrops:this.sources.backdrops}});}};
     }
     const handoff=()=>{if(!scene)return;const destination=scene.handoff??{scene:scene.next};
@@ -1717,14 +1750,33 @@ export class Game {
     this.scenes.hosts.forEach((h) => h.closeAll());
     this.term.close();
     this.beginSequenceActions(scene.id);
-    this.presentation.cut = new CutscenePlay(scene, { reduced: this.reduced, touch: this.touch });
-    this.sequenceActions(0);
+    if(initial&&this.save.sequenceActions)this.save.sequenceActions.receipts=[...initial.receipts];
+    this.presentation.cut = new CutscenePlay(scene, { reduced: this.reduced, touch: this.touch,startAt:initial?.time });
+    this.sequenceActions(initial?.time??0);
     this.presentation.cut.prepare(this.x,this.camera.viewW,this.camera.viewH,light());
     this.syncEnginePause();
     this.presentation.cutThen = after;
     document.documentElement.classList.add('cutscene');
     this.canvas.setAttribute('aria-label', 'ACCESS DENIED: ' + scene.cards.map((c) => c.text).join(' '));
     this.host.setScene(scene.title);
+  }
+
+  /** Start an already reconstructed situation through the normal playback owners.
+   * Loading it is not New Game and never invokes preceding sequence commands a second time. */
+  startCheckpointDirection(start:{id:string;time:number;receipts:readonly string[]}){
+    const sequence=this.sequenceSource(start.id),allowed=new Set((sequence?.commands??[]).filter(c=>c.time<=start.time).map(c=>c.id));
+    if(!sequence||!Number.isFinite(start.time)||start.time<0||start.time>sequence.duration||new Set(start.receipts).size!==start.receipts.length||start.receipts.some(id=>!allowed.has(id)))throw Error('Invalid preview sequence start');
+    if(this.sequenceDocuments.opening.timeline.sequences.some(s=>s.id===start.id)){
+      // New Game continues the launch shot's ambient clock. A reconstructed private start
+      // creates that presentation only when none exists; neither path reruns launch commands.
+      if(!this.presentation.opening||start.id!=='glide')this.showTitle(false,false);
+      const opening=this.presentation.opening!;
+      if(start.id==='glide'){opening.go();this.menu.hide();}
+      opening.timeline.seek(start.time);this.beginSequenceActions(start.id);
+      if(this.save.sequenceActions)this.save.sequenceActions.receipts=[...start.receipts];
+      this.directOpeningWorld();this.syncEnginePause();return;
+    }
+    this.playCutscene(start.id,undefined,'replace',start);
   }
 
   private stepCutscene(dt: number) {

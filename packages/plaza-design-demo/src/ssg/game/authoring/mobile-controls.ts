@@ -1,15 +1,15 @@
 /** Typed source controls. All mutations return through the caller's ComposerModel edit. */
-import type {Instance,Properties} from '../art/core/composition';
+import type {AssetInstance,Properties} from '../art/core/composition';
 import {element,label,select,button} from './controls';
-type Edit=(name:string,change:(node:Instance)=>void)=>void;
+type Edit=(name:string,change:(node:AssetInstance)=>void)=>void;
 type NumberInput=(value:number,apply:(n:number)=>void,min?:number,step?:string)=>HTMLInputElement;
-export function clippingControls(host:HTMLElement,node:Instance,edit:Edit,number:NumberInput){
+export function clippingControls(host:HTMLElement,node:AssetInstance,edit:Edit,number:NumberInput){
  const mode=node.clip===undefined?'default':typeof node.clip==='object'?'rectangle':node.clip;
  host.append(label('Artwork clipping',select([{value:'default',label:'Layer default (joined backgrounds: chunk; objects: none)'},{value:'none',label:'No clip · may cross chunk boundary'},{value:'chunk',label:'Clip to source chunk'},{value:'rectangle',label:'Explicit clip rectangle'}],mode,value=>edit('Change artwork clipping',n=>{if(value==='default')delete n.clip;else n.clip=value==='rectangle'?{x:n.placement.x,h:n.placement.h+100,w:100,tall:100}:value as 'none'|'chunk';}))));
  if(typeof node.clip==='object')for(const[key,title]of [['x','Clip left'],['h','Clip top height'],['w','Clip width'],['tall','Clip height']] as const)host.append(label(title,number(node.clip[key],value=>edit('Change '+title,n=>{if(typeof n.clip==='object')n.clip[key]=value;}),key==='w'||key==='tall' ? .01 : undefined)));
  host.append(element('p','muted',node.layer==='foreground'?'Foreground artwork occludes people and vehicles across chunks. Its visible shape, not the chunk border, hides them.':'Chunk borders describe authored space. Set Foreground for artwork that should cover crossing people or vehicles.'));
 }
-export function peopleControls(host:HTMLElement,node:Instance,zones:readonly string[],edit:Edit,number:NumberInput){
+export function peopleControls(host:HTMLElement,node:AssetInstance,zones:readonly string[],edit:Edit,number:NumberInput){
  const flow=node.props.flow as Properties,spawn=flow.spawn as Properties;
  const change=(name:string,run:(flow:Properties)=>void)=>edit(name,n=>run(n.props.flow as Properties));
  for(const[key,title,value,min]of [['seed','Person seed',flow.seed,0],['speed','Walking speed',flow.speed??21,1],['maxWait','Maximum wait (seconds)',flow.maxWait??120,1]] as const)host.append(label(title,number(Number(value),value=>change('Change '+title,f=>f[key]=value),min)));

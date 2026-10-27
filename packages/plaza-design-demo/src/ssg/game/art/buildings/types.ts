@@ -15,7 +15,7 @@
  * heights up (`y = -h`). Unset choices come from the seed; same props, same building.
  */
 import { addLight, type SceneLight } from '../atmosphere/lighting';
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { rng } from '../core/primitives';
 import { windowLit, type Light } from '../../world/light';
@@ -62,10 +62,10 @@ export interface Paint {
  * `paint`), and a camera zoom is a canvas transform too (runtime/render-scene.ts `scale`), so a piece never
  * scales itself; its cull box is the placement's scale times its size, in the view's own units.
  */
-export function piece(o: Omit<Element, 'draw' | 'coordinates' | 'version' | 'parts'> & { size: (p: Properties) => { w: number; tall: number }; paint: (x: CanvasRenderingContext2D, p: Properties, o: Paint) => void;
+export function piece(o: Omit<AssetDefinition, 'draw' | 'coordinates' | 'version' | 'parts'> & { size: (p: Properties) => { w: number; tall: number }; paint: (x: CanvasRenderingContext2D, p: Properties, o: Paint) => void;
   reach?: (p: Properties) => number;
   /** A building that can stand for sale, empty or under construction (state.ts): its props while vacant, and its size for the state's layer. */
-  state?: { vacant: (p: Properties) => Properties; box: (p: Properties) => { w: number; h: number; g: number; seed: number } } }): Element {
+  state?: { vacant: (p: Properties) => Properties; box: (p: Properties) => { w: number; h: number; g: number; seed: number } } }): AssetDefinition {
   const { size, paint: own, state, reach, ...rest } = o;
   const paint = state ? (x: CanvasRenderingContext2D, p: Properties, q: Paint) => {
     const out = vacant(p); own(x, out ? state.vacant(p) : p, q);
@@ -522,7 +522,7 @@ export const churchElement = piece({
   },
 });
 
-export const districtBuildingElements: Element[] = [stackElement, shophouseElement, pavilionElement, spireFootElement, marketHallElement, churchElement];
+export const districtBuildingElements: AssetDefinition[] = [stackElement, shophouseElement, pavilionElement, spireFootElement, marketHallElement, churchElement];
 
 // ---------------------------------------------------------------- distance rows by district
 

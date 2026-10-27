@@ -9,8 +9,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {SCENES} from '../../src/ssg/game/scenes/index';
+import {compileGameWorld} from '../../src/ssg/game/world/compiled-world';
+import checkpoints from '../../src/ssg/game/world/checkpoints.json';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
-import {placeFrom, validateZoneGraph, worldProblems} from '../../src/ssg/game/world/zone-graph';
+import {placeFrom, worldProblems} from '../../src/ssg/game/world/zone-graph';
 import {levelArrive, levelBounds, levelDown, levelFloor, levelHints, levelInteract, levelOpened, levelPass, levelRejoin, levelStep, levelZone, mergeLevels, type Level, type LevelPlayer, type LevelSource, type MoverModel} from '../../src/ssg/game/engine/level';
 import {barrierAccess} from '../../src/ssg/game/world/access';
 import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';
@@ -19,12 +21,12 @@ import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 import {validateCitySource} from '../../src/ssg/game/world/city-source';
 
 const S = SCENES as Record<string, SceneDef>, ZONES = ['harbor-station', 'harbor-quay', 'harbor-checkout', 'harbor-yard', 'harbor-shed'];
-const graph = validateZoneGraph(JSON.parse(fs.readFileSync('src/ssg/game/world/zone-graph.json', 'utf8')));
+const graph = compileGameWorld(SCENES);
 
 // 1 · the five zones validate and join
 for (const z of ZONES) assert.ok(S[z]?.level, z + ' is a scene with a level');
 const zones = Object.fromEntries(Object.keys(S).map(k => [k, {width: S[k].width}]));
-const pieces = Object.fromEntries(Object.keys(S).filter(k => S[k].level).map(k => [k, [...S[k].level!.floors, ...S[k].level!.links, ...S[k].level!.lifts].map(p => p.id)]));
+const pieces = Object.fromEntries(Object.keys(S).filter(k => S[k].level).map(k => [k, [...S[k].level!.floors, ...S[k].level!.links, ...S[k].level!.lifts,...(S[k].level!.vehicles??[])].map(p => p.id)]));
 assert.deepEqual(worldProblems(graph, zones, pieces), [], 'worldProblems is clean');
 assert.deepEqual(ZONES.map(z => S[z].width), [1440, 1600, 640, 1280, 1280], 'zone widths from HARBOR-ZONES.md');
 const fromQuay = placeFrom(graph, 'harbor-quay', 4);
@@ -124,7 +126,7 @@ for (const s of [shed, yard, checkout]) s.dispose();
 
 // 4 · the profile launches the connected harbor; no duplicate prototype scene survives.
 assert.equal(S.harborShift, undefined, 'the replaced scene is absent');
-const profiles = JSON.parse(fs.readFileSync('src/ssg/game/runtime/play-profiles.json', 'utf8')).profiles as {id: string; start: {scene?: string}}[];
-assert.equal(profiles.find(p => p.id === 'harborShift')!.start.scene, 'harbor-station'); assert.equal(profiles.find(p => p.id === 'harborZones')!.start.scene, 'harbor-station');
+const profiles = JSON.parse(fs.readFileSync('src/ssg/game/runtime/play-profiles.json', 'utf8')).profiles as {id: string; checkpoint:string}[];
+for(const id of ['harborShift','harborZones'])assert.equal(checkpoints.fixtures.find(f=>f.id===profiles.find(p=>p.id===id)!.checkpoint)!.scene,'harbor-station','Harbor profiles launch their declared checkpoint');
 console.log('Harbor zones PASS: five zones validate and join (worldProblems clean); one merged level walks platform → lift/stair → quay → checkout turnstile (in at dusk, shut behind, refused mid-shift, open at dawn) → yard → shed staff room; the shift runs on one shared shift.* block across shed, yard and checkout; harborShift launches the connected harbor.');
 process.exit(0);

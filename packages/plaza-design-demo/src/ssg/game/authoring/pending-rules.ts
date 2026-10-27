@@ -11,7 +11,7 @@ import type {GameplayDefinition} from '../engine/gameplay/types';
  */
 /** The companion's default pet conversations must exist in the (pending) shared companion library. */
 export function validatePendingCompanion(value:unknown,documents:ReadonlyMap<string,unknown>):CompanionSource{
- const d=validateCompanionSource(value),library=(documents.get('companion-gameplay') as GameplayDefinition|undefined)??COMPANION_GAMEPLAY,c=d.pet.conversations;
+ const library=(documents.get('companion-gameplay') as GameplayDefinition|undefined)??COMPANION_GAMEPLAY,d=validateCompanionSource(value,library),c=d.pet.conversations;
  for(const id of [...c.sleep,c.sun,c.moving,...c.idle])if(!Object.prototype.hasOwnProperty.call(library.conversations,id))throw new Error('Invalid companion: pet conversation '+id+' is not in the shared companion library');
  return d;
 }

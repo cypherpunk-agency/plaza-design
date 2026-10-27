@@ -1,9 +1,9 @@
 import {streetSpriteKinds,riderKinds,type ActorPresentation,type StreetSpritePresentation,type RiderPresentation} from '../../art/characters/presentation';
 
 import {actorBindingController,actorPoseSource} from './native-actor-bindings';
-import type {Instance} from '../../art/core/composition';
+import type {AssetInstance} from '../../art/core/composition';
 /** Existing Character presenters retained for the migrated interior scenes. */
-export function validateActorPresentationNode(scene:string,node:Instance){const c=actorBindingController(scene);if(!c||node.type!==c.element)return false;if(typeof node.props.actor!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(node.props.actor)||node.bindings?.pose!==actorPoseSource(scene,node.props.actor)||Object.keys(node.bindings).some(k=>k!=='pose'))throw new Error(node.id+': invalid actor presentation binding');return true;}
+export function validateActorPresentationNode(scene:string,node:AssetInstance){const c=actorBindingController(scene);if(!c||node.type!==c.element)return false;if(typeof node.props.actor!=='string'||!/^[-a-zA-Z0-9_.]{1,96}$/.test(node.props.actor)||node.bindings?.pose!==actorPoseSource(scene,node.props.actor)||Object.keys(node.bindings).some(k=>k!=='pose'))throw new Error(node.id+': invalid actor presentation binding');return true;}
 
 export function validateActorPresentation(value:unknown):asserts value is ActorPresentation{
  const fail=():never=>{throw new Error('Invalid rider presentation');},object=(v:unknown):Record<string,unknown>=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.getPrototypeOf(v)!==Object.prototype)fail();return v as Record<string,unknown>;},p=object(value);

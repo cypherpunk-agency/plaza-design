@@ -1,12 +1,12 @@
 import type {Sequence,SequenceCommand} from '../art/core/timeline';
-import type {Composition} from '../art/core/composition';
+import type {ChunkDocument} from '../art/core/composition';
 export function validateSequenceHandoffs(definitions:readonly import('../engine/gameplay/types').GameplayDefinition[],ids:ReadonlySet<string>){
  for(const definition of definitions)for(const handoff of definition.handoffs??[])if(handoff.cutscene&&!ids.has(handoff.cutscene))throw Error('Unknown playable sequence '+handoff.cutscene);
 }
-/** Ordinary chunk artwork can carry world direction. This is source discovery, not playback. */
-export function worldSequenceSources(scenes:Readonly<Record<string,{artwork?:Composition}>>){
- const out:Record<string,{composition:Composition;sequence:Sequence}>={};
- for(const scene of Object.values(scenes)){const composition=scene.artwork;if(!composition?.sequence||!composition.instances.some(n=>n.type==='sequence.world-control'))continue;
+/** Ordinary chunk artwork can carry direction, including standalone contents. Source discovery, not playback. */
+export function authoredSequenceSources(scenes:Readonly<Record<string,{artwork?:ChunkDocument}>>){
+ const out:Record<string,{composition:ChunkDocument;sequence:Sequence}>={};
+ for(const scene of Object.values(scenes)){const composition=scene.artwork;if(!composition?.sequence)continue;
   const id=composition.sequence.id;if(Object.prototype.hasOwnProperty.call(out,id))throw Error('Duplicate world sequence '+id);
   out[id]={composition,sequence:{...composition.sequence,composition:composition.scene}};
  }return out;

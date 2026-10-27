@@ -64,8 +64,9 @@ Light follows the clock continuously, not in phases.
 - People, robots and animals have **schedules** (data): the market is busiest at night, the
   laundromat has a morning crowd, dockers work shifts, cats come out at night, gulls by day,
   the fixer's stall opens at 18:00.
-- **Lines by time and weather:** a person's lines can carry `when` and `weather`; the fallback is
-  the plain line. Writing these is most of the work, and most of the life.
+- **Lines by time and weather:** ordinary conversation entry conditions select time/weather
+  responses before their fallback node. Variant nodes can omit progress commands, keeping the
+  ordinary saved visit unchanged. There is no separate character line-list format.
 
 ## Weather
 

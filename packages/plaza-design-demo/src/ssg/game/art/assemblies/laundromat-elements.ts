@@ -1,7 +1,7 @@
 /** Laundromat catalogue. Each furnishing/device and each clipped resident is editable separately. */
 import { createLaundromatArtwork, type ArtworkInputs } from './laundromat';
 import {drawWashSchedule} from '../electronics/wash-schedule';
-import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
+import type { Anchor, Bounds, AssetDefinition, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { box, exitDoor, notice } from '../core/primitives';
 import { adScreen,camera,taped,ticker } from '../signage/screens';
@@ -18,12 +18,12 @@ function layout():ArtworkInputs['L']{return{door:0,spawn:0,notice:0,soap:0,washe
 const cache=new Map<string,ReturnType<typeof createLaundromatArtwork>>();
 function kernel(L=layout(),width=880,originX=0,ceiling=150,facing=180){const key=JSON.stringify([L,width,originX,ceiling,facing]);let k=cache.get(key);if(!k){k=createLaundromatArtwork({L,LAUNDROMAT_W:width,LAUNDROMAT_FACING:facing,originX,ceiling});if(cache.size>=2048)cache.clear();cache.set(key,k);}return k;}
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'laundromat.'+id,version:1,label,category,coordinates:'world',libraryUse:!['marker','background','room','floor','conduits','puddle','schedule'].includes(id)?'reusable':undefined,bindingIdentity:'presentation',fields,visualFields:laundromatVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,s,at)};}
+function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):AssetDefinition{return{type:'laundromat.'+id,version:1,label,category,coordinates:'world',libraryUse:!['marker','background','room','floor','conduits','puddle','schedule'].includes(id)?'reusable':undefined,bindingIdentity:'presentation',fields,visualFields:laundromatVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,s,at)};}
 const rectangle=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 const roomFields={width:num('Width',880,1),ceiling:num('Ceiling',150,1)};
 const windowFields={width:num('Width',192,1),height:num('Height',84,1),facing:num('Compass facing',180,0)};
 function windowKernel(p:Properties,at:Required<Placement>){const L=layout();L.window={x0:at.x,x1:at.x+n(p,'width'),h0:at.h,h1:at.h+n(p,'height')};return kernel(L,undefined,undefined,undefined,n(p,'facing'));}
-export const laundromatElements:Element[]=[
+export const laundromatElements:AssetDefinition[]=[
 {...element('marker','Laundromat gameplay marker','markers',{role:str('Role')},()=>rectangle(8,8,-4),()=>{}),parts:[],visualFields:{}},
 element('background','Laundromat upstairs','architecture',roomFields,p=>rectangle(n(p,'width'),n(p,'ceiling')),(x,v,p,_s,at)=>{const k=kernel(undefined,n(p,'width'),at.x,n(p,'ceiling'));k.clear(x,v);k.upstairs(x,raised(v,at.h),v.sx(at.x),v.sx(at.x+n(p,'width')));}),
 element('room','Tiled shop walls and ceiling','architecture',roomFields,p=>rectangle(n(p,'width'),n(p,'ceiling')),(x,v,p,_s,at)=>kernel(undefined,n(p,'width'),at.x,n(p,'ceiling')).room(x,raised(v,at.h))),

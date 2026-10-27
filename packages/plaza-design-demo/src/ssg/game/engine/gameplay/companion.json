@@ -4,7 +4,6 @@
   "name": "Pixel",
   "look": "pixel",
   "speaker": "pixel",
-  "unlockFlag": "pixel",
   "modes": [
     "home",
     "along"
@@ -32,5 +31,8 @@
         "companion.pet.idle.3"
       ]
     }
+  },
+  "when": {
+    "flag": "pixel"
   }
 }

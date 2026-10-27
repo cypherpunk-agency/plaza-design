@@ -15,7 +15,7 @@ import {streetCamera} from './mechanisms/street-camera';
 import {streetLayers} from './mechanisms/street-layers';
 import type {EngineDraw} from '../host';
 import type {View} from '../../art/core/view';
-import type {Value,Composition,Environment} from '../../art/core/composition';
+import type {Value,ChunkDocument,Environment} from '../../art/core/composition';
 import type {SceneData} from '../../data/types';
 import {thermal} from './mechanisms/thermal';
 
@@ -37,7 +37,7 @@ import type {LineSystem} from '../../world/transport/line';
  * keeps its state under its own name (or a key it exports) and, if that state is the picture's,
  * returns a `presentation` from `apply` so the scene prepares, saves and restores it.
  */
-export interface SceneMechanismContext {composition:Composition;environment(view:View,engine?:EngineDraw):Environment;scene:SceneDocument;gameplay:GameplayDefinition;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;width:number;content:SceneDef;actors:Readonly<Record<string,Character>>;world?:{city:CityModel;metro:LineSystem};shared:Map<string,unknown>}
+export interface SceneMechanismContext {composition:ChunkDocument;environment(view:View,engine?:EngineDraw):Environment;scene:SceneDocument;gameplay:GameplayDefinition;rows:readonly Resolved[];roles:Readonly<Record<string,Resolved>>;width:number;content:SceneDef;actors:Readonly<Record<string,Character>>;world?:{city:CityModel;metro:LineSystem};shared:Map<string,unknown>}
 /**
  * How a mechanism's picture-side state (a hook easing toward its target, a skyline simulation, a
  * prepared car frame) joins the scene. `prepare` runs once per all/devices pass, in mechanism order,

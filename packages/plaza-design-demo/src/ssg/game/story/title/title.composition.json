@@ -7,19 +7,12 @@
       "type": "sequence.world-control",
       "props": {
         "origin": "glide-beach",
-        "zones": [
-          "glide-beach",
-          "glide-downtown-west",
-          "glide-downtown",
-          "glide-galleria",
-          "glide-spire-bay",
-          "harbor-station",
-          "harbor-quay"
-        ],
+        "zones": [],
         "width": 1280,
         "height": 720,
         "pixel": 3,
-        "ground": 0.82
+        "ground": 0.82,
+        "worldComposition": "harbor-world"
       },
       "placement": {
         "x": 0,
@@ -33,15 +26,8 @@
       "type": "sequence.world-control",
       "props": {
         "origin": "glide-beach",
-        "zones": [
-          "glide-beach",
-          "glide-downtown-west",
-          "glide-downtown",
-          "glide-galleria",
-          "glide-spire-bay",
-          "harbor-station",
-          "harbor-quay"
-        ]
+        "zones": [],
+        "worldComposition": "harbor-world"
       },
       "placement": {
         "x": 0,

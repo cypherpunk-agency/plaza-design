@@ -64,7 +64,7 @@ belong to agents. B2–B6 acceptance also uses the real Harbor commute, source p
 - `scenes/authored.json`: ordinary composition/scene/gameplay/device entries for the two chunks.
 - `world/zone-graph.json`: one normal walk seam; `world/city.json`: developer-place membership.
 - `demo/coverage.json`: catalogue membership in Test District; review-stations holds the shortcut.
-- `authoring/play-fixtures.json`: boundary start with fixed daytime and no campaign progress.
+- `world/checkpoints.json`: boundary start with fixed daytime and no campaign progress.
 
 Focused checks: `boundary-example` verifies actual walker/cart continuity, current checkpoints,
 shared layer order/foreground slot, explicit clips and clipped selection, overhang residency,

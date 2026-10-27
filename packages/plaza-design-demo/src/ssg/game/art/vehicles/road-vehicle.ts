@@ -10,7 +10,7 @@
  * car or cab puffs exhaust. Port machines (straddle carrier, reach stacker, forklift) carry a box or a
  * pallet (`cargo`) at a lift/reach `pose`. Liveries: fleet stripe, number, QR plate, decal, autonomy cues.
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { BOX40, type Crate } from '../props/containers';
 import { bandBounds, bandOf, laneAt, laneFields, laneOf, liveryFields, liveryOf, paintBanded, withDefaults, type Extent } from './kit';
@@ -27,7 +27,7 @@ export const roadExtent = (kind: RoadKind): Extent => { const [a, b] = REACH[kin
 const kindOf = (props: Properties): RoadKind => (KINDS as readonly string[]).includes(String(props.kind)) ? props.kind as RoadKind : 'sedan';
 const LOAD: Crate = { ...BOX40, p: 2, seed: 71, code: 'PLZU 610 0041' };
 
-const fields: Element['fields'] = {
+const fields: AssetDefinition['fields'] = {
   kind: { kind: 'select', label: 'Vehicle', options: [...KINDS], default: 'sedan' },
   paint: { kind: 'color', label: 'Paint (cars, buses, trucks)', default: '#3f5f7a' },
   ...laneFields({ speed: 2, lane: 1400 }),
@@ -50,7 +50,7 @@ function paintVehicle(ctx: CanvasRenderingContext2D, kind: RoadKind, props: Prop
     ...(!moving && Number(props.door) > 0 ? { door: Number(props.door) } : {}), ...(moving ? { exhaust: true } : {}) });
 }
 
-export const roadVehicleElement: Element = {
+export const roadVehicleElement: AssetDefinition = {
   type: 'vehicle.road',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Road vehicle', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);

@@ -1,37 +1,50 @@
 import type {CityModel} from '../world/city';
-/** Local read-only world navigation. Selection opens source compositions without entering the game. */
+/** City geography and travel editing around the existing native map preview. */
 import { createWorldMapPreview, type WorldPlaceInspection, type WorldMapPreviewState } from './world-map';
 import type { WorldDocument } from '../world/document';
 import type { SceneId } from '../scenes';
 import { createFrame } from './frame';
+import {mountCityAuthoring,type CityAuthoringSession} from './city-authoring';
+import {mountDistrictAuthoring} from './district-authoring';
+import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 
-export interface WorldPanelSession { place?: WorldPlaceInspection['place']['id']; preview?: Partial<WorldMapPreviewState> }
-export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void, session: WorldPanelSession = {}, scene?: string,world?:CityModel): () => void {
+const MODES=['Place','Districts','Travel','Map layout & discovery']as const;
+export interface WorldPanelSession { scene?:string;mode?:typeof MODES[number];editing?:CityAuthoringSession;place?: WorldPlaceInspection['place']['id']; preview?: Partial<WorldMapPreviewState> }
+export function mountWorldPanel(host: HTMLElement, document: WorldDocument, openScene: (id: string) => void,context:WorkbenchContext, session: WorldPanelSession = {}, scene?: string,world?:CityModel): () => void {
+  if(!context.authoring)throw Error('City map requires the editor source API');
   // The editor's current scene decides which place is inspected; the picker remains for browsing.
-  const home = scene ? document.map.places.find(p => (p.scenes as readonly string[]).includes(scene)) : undefined; if (home) session.place = home.id;
+  const home = scene ? document.map.places.find(p => (p.scenes as readonly string[]).includes(scene)) : undefined; if (home&&session.scene!==scene) session.place = home.id;session.scene=scene;
+  if(!document.map.places.some(p=>p.id===session.place))session.place=home?.id??document.map.places[0]?.id;
   const node = <K extends keyof HTMLElementTagNameMap>(tag: K, text?: string) => {
     const result = window.document.createElement(tag); if (text !== undefined) result.textContent = text; return result;
   };
-  const canvas = node('canvas'); canvas.width = 640; canvas.height = 360; canvas.tabIndex = 0; canvas.setAttribute('aria-label', 'Read-only city map');
-  const details = node('div'), controls = node('div');
+  const canvas = node('canvas'); canvas.width = 640; canvas.height = 360; canvas.tabIndex = 0; canvas.setAttribute('aria-label', 'City map');
+  const details = node('div'), controls = node('div'),authoring=node('section'),mode=node('select'),place=node('select');let editor:WorkbenchHandle|undefined;
+  session.editing??={expanded:new Map()};session.mode??='Place';
+  function editSelection(){editor?.();editor=undefined;authoring.replaceChildren();
+    editor=session.mode==='Districts'?mountDistrictAuthoring(authoring,context,session.editing!.expanded):mountCityAuthoring(authoring,context,{section:session.mode==='Place'?'place':session.mode==='Travel'?'travel':'map',place:session.place,session:session.editing});
+  }
+  mode.setAttribute('aria-label','Map editing section');for(const title of MODES){const option=node('option',title);option.value=title;mode.append(option);}mode.value=session.mode;
+  mode.onchange=()=>{session.mode=mode.value as typeof session.mode;editSelection();};
   const inspect = (selection: WorldPlaceInspection) => {
     session.place = selection.place.id;
+    place.value=selection.place.id;
     details.replaceChildren(node('strong', selection.place.name), node('p', selection.district?.name ?? 'Transit'));
     if (selection.blocked) details.append(node('p', `Travel rule: ${selection.blocked}`));
     for (const scene of selection.scenes) {
       const button = node('button', `Open ${scene.id}`); button.type = 'button'; button.onclick = () => preview.openScene(scene.id); details.append(button);
     }
-    const transport = node('pre', JSON.stringify(selection.transport, null, 2)); transport.style.whiteSpace = 'pre-wrap';
-    const metadata = node('details'); metadata.append(node('summary', 'Transport connections'), transport); details.append(metadata);
+    const transport=node('ul');for(const station of selection.transport.stations)transport.append(node('li',`${station.name} · platform ${station.scene} · surface ${station.up}`));for(const taxi of selection.transport.taxi)transport.append(node('li',`Taxi ${taxi.id} · ${taxi.scene}`));
+    const metadata = node('details'); metadata.append(node('summary', 'Transport connections'), transport); details.append(metadata);editSelection();
   };
   const preview = createWorldMapPreview({world, canvas, document, preview: session.preview, onSelection: inspect, onOpenScene: scene => openScene(scene),
     drawBackground(context, width, height) { context.fillStyle = '#030201'; context.fillRect(0, 0, width, height); },
   });
   const label = (text: string, input: HTMLElement) => { const wrap = node('label', text + ' '); wrap.append(input); controls.append(wrap); };
-  const place = node('select'); place.setAttribute('aria-label', 'Inspect place');
+  place.setAttribute('aria-label', 'Inspect place');
   for (const entry of document.map.places) { const option = node('option', entry.name); option.value = entry.id; place.append(option); }
   if (session.place) place.value = session.place;
-  place.onchange = () => { preview.selectPlace(place.value as WorldDocument['map']['places'][number]['id']); preview.draw(); }; label('Place', place);
+  place.onchange = () => { preview.selectPlace(place.value as WorldDocument['map']['places'][number]['id']); preview.draw(); };const placeLabel=node('label','Place ');placeLabel.append(place);
   const layer = node('select'); layer.setAttribute('aria-label', 'Map layer');
   for (const id of ['street', 'metro', 'above', 'below'] as const) { const option = node('option', id); option.value = id; layer.append(option); }
   layer.value = preview.getPreview().layer;
@@ -50,8 +63,9 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
   }
   const time = node('input'); time.type = 'number'; time.min = '0'; time.step = '1'; time.value = String(preview.getPreview().time); time.style.width = '65px';
   time.onchange = () => { const value = Number(time.value); if (Number.isFinite(value) && value >= 0) preview.setPreview({ time: value }); }; label('Map frame', time);
-  const status = node('p', 'Geography, transport and access rules are read-only. Opening a place switches the editor to its scene.');
-  const layout = createFrame(host, { stage: [canvas], inspector: [status, controls, details] }, 'City map');
+  const status = node('p', 'Select a place on the map, then edit it here. Districts, travel routes and map layout use the same pending sources and Undo/Save as the world editor. Preview discovery and access controls below do not change the game.');
+  const previewSettings=node('details');previewSettings.append(node('summary','Preview conditions'),controls);
+  const layout = createFrame(host, { stage: [canvas], inspector: [status,mode,placeLabel,details,authoring,previewSettings] }, 'City map');
   /** The map fills the stage at 16:9 and is backed at the device pixel ratio, so it stays sharp at any size. */
   const fit = () => {
     const box = layout.stage, style = getComputedStyle(box), room = (side: 'Left' | 'Right' | 'Top' | 'Bottom') => parseFloat(style[`padding${side}`]) || 0;
@@ -67,5 +81,5 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
   preview.selectPlace(session.place ?? document.map.places[0].id);
   let active = true, frame = 0;
   const draw = () => { if (!active) return; preview.draw(); frame = requestAnimationFrame(draw); }; draw();
-  return () => { resize.disconnect(); session.preview = preview.getPreview(); active = false; cancelAnimationFrame(frame); canvas.onpointermove = canvas.onpointerdown = canvas.onkeydown = null; };
+  return () => { editor?.();editor=undefined;mode.onchange=null;resize.disconnect(); session.preview = preview.getPreview(); active = false; cancelAnimationFrame(frame); canvas.onpointermove = canvas.onpointerdown = canvas.onkeydown = null; };
 }

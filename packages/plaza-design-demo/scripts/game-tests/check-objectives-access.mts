@@ -1,10 +1,11 @@
-import {PLACES,placeBlocked,seenPlace,placeOf,transportPermission} from '../../src/ssg/game/world/city';
+import {PLACES,placeBlocked,seenPlace,placeOf,transportPermission,ACCESS,accessPolicy} from '../../src/ssg/game/world/city';
 import assert from 'node:assert/strict';
 import downtownDocument from '../../src/ssg/game/scenes/downtown/scene.json';
 import {currentObjective} from '../../src/ssg/game/engine/gameplay/objectives';
 import {newSave} from '../../src/ssg/game/runtime/save';
 import {evaluateAccess,validateAccess} from '../../src/ssg/game/engine/gameplay/access';
-import {capabilityView,exitPermission,exitVisibility} from '../../src/ssg/game/world/access';
+import {capabilityView,exitPermission,exitVisibility,sceneExitAccess} from '../../src/ssg/game/world/access';
+import {resolveExit} from '../../src/ssg/game/runtime/interaction-targets';
 import {compileSceneDocument,validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
 import {matches} from '../../src/ssg/game/engine/gameplay/queries';
 import {HARBOR_SHED,HARBOR_GAMEPLAY} from './harbor-source-fixture.mts';
@@ -34,6 +35,15 @@ for(const p of PLACES)for(const scene of ['downtown','harbor'] as const)for(let 
  assert.equal(placeBlocked(p,st as any),old);
 }
 let state:GameplayState={flags:{},items:{},tokens:8};const before=structuredClone(state);
+// Admission through the real physical-exit resolver and the map's authored policy stays aligned
+// when the underlying exit rule changes. Discovery and current-place refusals are separate.
+for(const [id,policy]of Object.entries(ACCESS)){
+ const source=SCENES[policy.exit.scene].exits.find(e=>e.id===policy.exit.id);assert(source);
+ const exit={...source,requires:'review.entry',needs:{key:'review-key',name:'Door',pages:['Need key'],h:40}};
+ for(const flag of [false,true])for(const key of [false,true]){const flags={'review.entry':flag},keys=key?['review-key']:[],walk=resolveExit(exit,{flags,tokens:0,keys}),map=accessPolicy(id,{exitAccess:(scene,exitId)=>{assert.equal(scene,policy.exit.scene);assert.equal(exitId,policy.exit.id);return sceneExitAccess(exit,flags,keys);}}as any),expected=flag&&key;
+  assert.equal(walk.visibility.ok&&walk.permission!.ok,expected);assert.equal(map.ok,expected);
+ }
+}
 assert.deepEqual(evaluateAccess([{when:{flag:'ready'},reason:'Need permission'}],{state}),{ok:false,reason:'Need permission',index:0,hidden:false});assert.deepEqual(state,before);
 assert.equal(exitVisibility({requires:'door'},state.flags).ok,false);assert.equal(exitPermission({needs:{key:'chip',name:'Door',pages:['Need chip'],h:40}},['chip']).ok,true);assert.equal(transportPermission('harbor',false).ok,false);assert.equal(transportPermission('harbor',true).ok,true);assert.equal(transportPermission('downtown',false).ok,true);
 const save=newSave();save.jump=true;save.programs=['scan.so'];save.keyring=['chip'];const caps=capabilityView(save,false,{scanProgram:'scan.so'});assert.equal(caps.jump,true);assert.equal(caps.network,false);caps.jump=false;assert.equal(save.jump,true);

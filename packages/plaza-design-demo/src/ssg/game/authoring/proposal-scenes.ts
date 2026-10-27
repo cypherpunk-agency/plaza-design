@@ -13,7 +13,7 @@
  */
 import { art } from '../art';
 import { withFrontMasks } from '../art/buildings/masks';
-import { PLAYER_ROW, type Composition, type Instance } from '../art/core/composition';
+import { PLAYER_ROW, type ChunkDocument, type AssetInstance } from '../art/core/composition';
 import { SCENE_BASE } from '../art/assemblies/scene-base';
 import { sceneSourceDefinition } from '../engine/gameplay/folder-scene';
 import { emptyDeviceSource } from '../engine/empty-data';
@@ -85,15 +85,15 @@ export const PROPOSAL_SCENES: ProposalScene[] = [
 ];
 export const proposalScene = (id: string) => PROPOSAL_SCENES.find(p => p.id === id);
 
-const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
+const flat = (nodes: readonly AssetInstance[]): AssetInstance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
 export type ProposalUse = 'look' | 'play';
 /** What the composition's `scene.base` piece says: `look` takes only the base's look, `play` (or no piece) all of it. */
-export function proposalUse(doc: Composition): ProposalUse {
+export function proposalUse(doc: ChunkDocument): ProposalUse {
   const row = flat(doc.instances).find(n => n.type === SCENE_BASE);
   return row && row.props.use !== 'play' ? 'look' : 'play';
 }
 /** A proposal by id and its (pending) composition: does it take only its base's look? */
-export const proposalLooksOnly = (id: string, composition: unknown) => !!proposalScene(id) && !!composition && proposalUse(composition as Composition) === 'look';
+export const proposalLooksOnly = (id: string, composition: unknown) => !!proposalScene(id) && !!composition && proposalUse(composition as ChunkDocument) === 'look';
 
 const EMPTY_GAMEPLAY = { version: 1, flags: [], items: [], commands: {}, events: [], reactions: [], conversations: {} } as unknown as GameplayDefinition;
 /**
@@ -102,7 +102,7 @@ const EMPTY_GAMEPLAY = { version: 1, flags: [], items: [], commands: {}, events:
  * and role-based stage fields are measured on the base's own artwork, so they stay behind; a manifest
  * of the `scene.base` width and the player row as spawn stands in for the base's.
  */
-export function lookScene(base: SceneDocument, doc: Composition): SceneDocument {
+export function lookScene(base: SceneDocument, doc: ChunkDocument): SceneDocument {
   const rows = flat(doc.instances), marker = rows.find(n => n.type === SCENE_BASE), spawn = rows.find(n => n.type === PLAYER_ROW);
   if (!spawn) throw new Error('A look frame needs a player row (its spawn)');
   const width = Number(marker?.props.width ?? 1600), env = base.environment, ambient = env?.ambient;
@@ -122,9 +122,9 @@ type DefinitionArgs = Parameters<NativeSceneAdapter['definition']>;
  * Building-kit fronts get the masks of the signs attached to them (art/buildings/masks.ts) as state.
  */
 function adapter(p: ProposalScene): NativeSceneAdapter {
-  const base = nativeSceneAdapters[p.base], asBase = (doc: Composition): Composition => ({ ...doc, scene: p.base });
+  const base = nativeSceneAdapters[p.base], asBase = (doc: ChunkDocument): ChunkDocument => ({ ...doc, scene: p.base });
   /** A look frame runs the base's folder scene on the shared declared path, with its look-only document and no gameplay. */
-  const look = (doc: Composition, state: DefinitionArgs[1], options: DefinitionArgs[2], documents?: ReadonlyMap<string, unknown>) => {
+  const look = (doc: ChunkDocument, state: DefinitionArgs[1], options: DefinitionArgs[2], documents?: ReadonlyMap<string, unknown>) => {
     const source = FOLDER_BY_ID[p.base]; if (!source) throw new Error(`Base ${p.base} is not a folder scene, so ${p.id} cannot take only its look`);
     const baseScene = (documents?.get((FOLDER_DIRS[p.base] ?? p.base) + '-scene') ?? source.scene) as SceneDocument;
     return sceneSourceDefinition(p.base, source, { composition: asBase(doc), state: withFrontMasks(art, doc, state), options, scene: lookScene(baseScene, doc), gameplay: EMPTY_GAMEPLAY, devices: emptyDeviceSource(p.base, baseScene.name) });
@@ -135,7 +135,7 @@ function adapter(p: ProposalScene): NativeSceneAdapter {
     definition: (doc, state, options) => proposalUse(doc) === 'look' ? look(doc, state, options) : base.definition(asBase(doc), withFrontMasks(art, doc, state), options),
     pendingDefinition: (doc, state, options, documents) => proposalUse(doc) === 'look' ? look(doc, state, options, documents)
       : base.pendingDefinition ? base.pendingDefinition(asBase(doc), withFrontMasks(art, doc, state), options, documents) : base.definition(asBase(doc), withFrontMasks(art, doc, state), options),
-    ...(base.environment ? { environment: (doc: Composition, view: Parameters<NonNullable<NativeSceneAdapter['environment']>>[1], engine: Parameters<NonNullable<NativeSceneAdapter['environment']>>[2]) => { const env = base.environment!(asBase(doc), view, engine); return { ...env, state: withFrontMasks(art, doc, env.state) }; } } : {}),
+    ...(base.environment ? { environment: (doc: ChunkDocument, view: Parameters<NonNullable<NativeSceneAdapter['environment']>>[1], engine: Parameters<NonNullable<NativeSceneAdapter['environment']>>[2]) => { const env = base.environment!(asBase(doc), view, engine); return { ...env, state: withFrontMasks(art, doc, env.state) }; } } : {}),
   };
 }
 export const proposalAdapters: Record<string, NativeSceneAdapter> = Object.fromEntries(PROPOSAL_SCENES.map(p => [p.id, adapter(p)]));
@@ -145,7 +145,7 @@ export const proposalAdapters: Record<string, NativeSceneAdapter> = Object.fromE
  * `documents` it compiles against the base's saved documents, so editing the base scene is never refused
  * because of a style frame (the frame's own preview shows that break); with them, against the pending ones.
  */
-export function validateProposal(id: string, value: unknown, documents?: ReadonlyMap<string, unknown>): Composition {
+export function validateProposal(id: string, value: unknown, documents?: ReadonlyMap<string, unknown>): ChunkDocument {
   const a = proposalAdapters[id], doc = a.validate(value);
   try { if (documents) a.pendingDefinition!(doc, {}, { reduced: true }, documents); else a.definition(doc, {}, { reduced: true }); }
   catch (error) { throw new Error(`${id} (${proposalUse(doc)} on base ${proposalScene(id)!.base}): ${error instanceof Error ? error.message : String(error)}`); }

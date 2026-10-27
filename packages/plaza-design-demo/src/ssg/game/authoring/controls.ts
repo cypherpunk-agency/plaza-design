@@ -7,7 +7,7 @@ export const select = (values: { value: string; label: string }[], value: string
 export const label = (text: string, control: HTMLElement) => { const node = element('label'); node.append(element('span', '', text), control); return node; };
 
 export function createFieldControls(notice:(message:string,error?:boolean)=>void){
-  function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value); if (!Number.isFinite(number) || min !== undefined && number < min) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
+  function numberInput(value: number, apply: (n: number) => void, min?: number, step = 'any') { const input = element('input'); input.type = 'number'; input.step = step; if (min !== undefined) input.min = String(min); input.value = String(value); input.onchange = () => { const number = Number(input.value),minimum=input.min===''?undefined:Number(input.min),maximum=input.max===''?undefined:Number(input.max); if (!input.value.trim() || !Number.isFinite(number) || minimum !== undefined && number < minimum || maximum !== undefined && number > maximum) { notice('Enter a finite number within the field range.', true); return; } apply(number); }; return input; }
   /** Structured JSON fields with an inspector editor: rows of small fields, or a set of checkboxes. */
   function structuredInput(editor: NonNullable<Field["editor"]>, value: Value, apply: (v: Value) => void): HTMLElement {
     const wrap = element('div', 'structured-field'), auto = value === 'auto';

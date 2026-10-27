@@ -2,8 +2,6 @@ import {streetSpriteHeadHeight} from '../art/characters/presentation';
 import {actorPresentation} from '../art/characters/presentation';
 import {actorAppearanceSeed} from '../engine/gameplay/actor-identity';
 import botSource from '../engine/gameplay/bot-reactions.json';
-import {ConversationSession} from '../engine/gameplay/conversation';
-import type {GameplaySession} from '../engine/gameplay/session';
 import { drawCharacterFrame, BODIES, type Full, rnd, pick, lookFrom, type Legs, type Arms, CRITTERS, type Bot, type BotLook, BOT, type BotFull, botFrom, botKind, faceAt, psOf } from "../art/characters/appearance";
 export { lookFrom, shade, drawPortrait } from "../art/characters/appearance";
 export type { Bot, Face, BotLook } from "../art/characters/appearance";
@@ -21,7 +19,7 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  *     { look: { body: 'old', garb: 'coat', hair: 'brim' }, x: 600, act: 'smoke' },
  *     { look: 'cat', x: 700, act: 'sit' },                           // critters: cat pigeon gull crab robogull cleaner drone courier
  *     { id: 'gran', seed: 21, x: 820, act: 'sit', h: 10, name: 'GRAN',
- *       talk: [['First visit?', 'The fish is fresh.'], ['Still here?']] },  // talks; pages cycle per visit
+ *       conversation: 'talk.street.gran' },  // binds a graph in the chunk’s gameplay document
  *   ];
  *   export const myScene: Scene = { ..., people: STREET,                 // the engine makes [E] TALK targets
  *     drawBackdrop(x, v) { ...walls...; drawCharacters(x, v, STREET); ...counters in front... } };
@@ -74,7 +72,6 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
 import type { View } from "../scenes/kit";
 import { city } from "../world/clock";
 import type { TimeWindow } from "../data/types";
-import type {WeatherKind} from "../world/weather";
 import type { BODY_KINDS, HAIR_KINDS, GARB_KINDS, EXTRA_KINDS } from "../art/characters/parts";
 import type { ArchetypeId, Facial } from "../art/characters/archetypes";
 import { peopleRevision, seatedView, sittingView, type SitPose } from "../art/characters/people-style";
@@ -131,7 +128,7 @@ export interface Look {
 }
 
 export interface Character {
-  /** Compiled shared conversation ID; talk remains native visual metadata. */
+  /** The named gameplay graph used by this character, also the sole talkability marker. */
   conversation?:string;
   /** Needed for talk (the engine's target id). */
   id?: string;
@@ -148,12 +145,6 @@ export interface Character {
   name?: string;
   /** Height (world units) the person's `[E] TALK` prompt stands at; default: over their head. */
   promptH?: number;
-  talk?: string[] | string[][];
-  /**
-   * Lines for a time or a weather (TIME.md "Lines by time and weather"), before `talk`: the first
-   * whose `when` is now and whose `weather` includes the weather here is said; else `talk` as usual.
-   */
-  lines?: { when?: TimeWindow; weather?: WeatherKind[]; pages: string[] }[];
   /** Only here inside this window on the city clock: outside it they are not drawn and say nothing. */
   when?: TimeWindow;
   key?: boolean;
@@ -480,11 +471,7 @@ export function botProfile(p:Character):{voice:string;serial?:number}|null {
 }
 export function isBot(p:Character){return botProfile(p)!==null;}
 
-/** Shared dialogue is the only progression/variant owner for talkable actors. */
-export function talkTo(p:Character,gameplay?:GameplaySession):{name:string;pages:string[];completion?:{terminalPrefill:string}}{
- if(!p.conversation||!gameplay)throw new Error('Character conversation is not registered');
- const session=new ConversationSession(gameplay,p.conversation);try{const f=session.frame();return{name:f.speaker,pages:f.pages,...(f.completion?{completion:{...f.completion}}:{})};}finally{session.close();}
-}
+
 
 /** The jobs a robot in a crowd does, each with its act. */
 const CROWD_JOBS: [Bot, Act][] = [

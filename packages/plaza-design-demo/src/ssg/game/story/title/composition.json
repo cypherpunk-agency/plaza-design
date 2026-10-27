@@ -7,19 +7,12 @@
       "type": "sequence.world-control",
       "props": {
         "origin": "glide-beach",
-        "zones": [
-          "glide-beach",
-          "glide-downtown-west",
-          "glide-downtown",
-          "glide-galleria",
-          "glide-spire-bay",
-          "harbor-station",
-          "harbor-quay"
-        ],
+        "zones": [],
         "width": 1280,
         "height": 720,
         "pixel": 3,
-        "ground": 0.82
+        "ground": 0.82,
+        "worldComposition": "harbor-world"
       },
       "placement": {
         "x": 0,
@@ -275,6 +268,11 @@
         "id": "release-service",
         "scene": "harbor-station",
         "command": "intro.release"
+      },
+      {
+        "id": "retire-coast",
+        "scene": "harbor-station",
+        "command": "intro.retire-coast"
       }
     ],
     "onCancel": [
@@ -282,6 +280,11 @@
         "id": "cancel-service",
         "scene": "harbor-station",
         "command": "intro.release"
+      },
+      {
+        "id": "cancel-retire-coast",
+        "scene": "harbor-station",
+        "command": "intro.retire-coast"
       }
     ]
   }

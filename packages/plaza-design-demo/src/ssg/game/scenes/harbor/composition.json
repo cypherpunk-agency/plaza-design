@@ -3,6 +3,20 @@
   "scene": "harbor",
   "instances": [
     {
+      "id": "world-sky",
+      "type": "environment.sky",
+      "props": {
+        "horizon": 84
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -10000,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
       "id": "scene",
       "type": "harbor.marker",
       "props": {

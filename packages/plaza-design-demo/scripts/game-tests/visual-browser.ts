@@ -1,3 +1,4 @@
+import {checkSkyGroup} from './sky-group-browser';
 import * as city from '../../src/ssg/game/world/city';
 import {createNativePreview} from '../../src/ssg/game/authoring/native-preview';
 import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';
@@ -9,7 +10,7 @@ async function run(){
  const config=await (await fetch('/config')).json();
  await Promise.all([400,500,600,700].map(async weight=>{const font=new FontFace('IBM Plex Mono',`url(/fonts/ibm-plex-mono-latin-${weight}-normal.woff2)`,{weight:String(weight)});document.fonts.add(await font.load());}));
  await document.fonts.ready;
- const results=config.introOnly?checkIntroRaster():[];
+ const results=config.introOnly?checkIntroRaster():checkSkyGroup();
  for(const sample of config.samples){
   try{
    const doc=sourceDocuments.find(d=>d.kind==='composition'&&d.id===sample.scene)!;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Composition } from '../../src/ssg/game/art/core/composition';
+import type { ChunkDocument } from '../../src/ssg/game/art/core/composition';
 import { createWorldMapPreview } from '../../src/ssg/game/authoring/world-map';
 import { SCENES, type SceneId } from '../../src/ssg/game/scenes';
 import { mapKey, openMap, type MapState } from '../../src/ssg/game/ui/citymap';
@@ -10,13 +10,13 @@ import { serializeWorldDocument, snapshotWorld, validateWorldDocument, type Worl
 import { sourceDocuments } from '../../src/ssg/game/authoring/source-documents';
 // Use the real validated scene documents; only the isolated handoff below is synthetic.
 const refs=Object.fromEntries(Object.keys(SCENES).map(id=>[id,id]));
-const compositions: Record<string,Composition>={};
+const compositions: Record<string,ChunkDocument>={};
 for(const descriptor of sourceDocuments.filter(d=>d.kind==='composition')){
   const value=JSON.parse(fs.readFileSync(path.resolve('src/ssg/game',descriptor.file),'utf8'));
-  compositions[descriptor.id]=descriptor.validate(value) as Composition;
+  compositions[descriptor.id]=descriptor.validate(value) as ChunkDocument;
 }
 // authored scenes keep their composition inside the catalogue (scenes/authored.json)
-for(const entry of JSON.parse(fs.readFileSync(path.resolve('src/ssg/game/scenes/authored.json'),'utf8')).scenes)compositions[entry.scene.id]=entry.composition as Composition;
+for(const entry of JSON.parse(fs.readFileSync(path.resolve('src/ssg/game/scenes/authored.json'),'utf8')).scenes)compositions[entry.scene.id]=entry.composition as ChunkDocument;
 const sequences=[{id:'test:handoff',handoff:{scene:'capsule',entrance:'door'}}];
 const context={compositions,sequences};
 const doc=snapshotWorld(refs,[{id:'test:handoff',scene:'capsule',entrance:'door'}]);

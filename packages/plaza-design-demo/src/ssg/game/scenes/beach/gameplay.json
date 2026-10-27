@@ -214,10 +214,435 @@
           "emit": "beach.drone.cleared"
         }
       ]
+    },
+    "talk.beach.lime.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.lime.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.lime.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.lime.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.beach.lime.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.lime.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.beach.lime.advance-3": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.lime.cursor",
+          "set": 4
+        }
+      ]
+    },
+    "talk.beach.lime.advance-4": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.lime.cursor",
+          "set": 4
+        }
+      ]
+    },
+    "talk.beach.guard.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.guard.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.guard.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.guard.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.sunbather.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.sunbather.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.sunbather.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.sunbather.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.volley.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.volley.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.beach.kid.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.kid.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.surfer.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.surfer.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.surfer.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.surfer.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.fisher.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.fisher.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.beach.fisher.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.beach.fisher.cursor",
+          "set": 1
+        }
+      ]
     }
   },
   "reactions": [],
-  "conversations": {},
+  "conversations": {
+    "talk.beach.lime": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.beach.lime.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.beach.lime.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "when": {
+            "state": "talk.beach.lime.cursor",
+            "is": 2
+          },
+          "node": "visit-2"
+        },
+        {
+          "when": {
+            "state": "talk.beach.lime.cursor",
+            "is": 3
+          },
+          "node": "visit-3"
+        },
+        {
+          "node": "visit-4"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LIME",
+          "pages": [
+            "Welcome to SALT. I'm LIME. I pour, I listen, I don't keep logs. Officially.",
+            "You've got the face of someone looking for someone. Everyone at a beach bar has that face. Yours is worse."
+          ],
+          "onEnter": "talk.beach.lime.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LIME",
+          "pages": [
+            "Moth? Third stool, every evening for a month. Water with a slice of me in it. Tipped in jokes.",
+            "I don't run on jokes. I kept them anyway."
+          ],
+          "onEnter": "talk.beach.lime.advance-1"
+        },
+        "visit-2": {
+          "speaker": "LIME",
+          "pages": [
+            "That boat at the end of the pier is Moth's. Three days, nobody aboard. The harbour stuck a notice on it.",
+            "Leave it locked for now. Moth said someone would come. Didn't say when. I assumed someone taller."
+          ],
+          "onEnter": "talk.beach.lime.advance-2"
+        },
+        "visit-3": {
+          "speaker": "LIME",
+          "pages": [
+            "The photo behind the gin? Moth. The night they fixed my jukebox without asking. Said I looked 'nearly human'.",
+            "I'm still deciding if that was a compliment. I've been deciding for a year."
+          ],
+          "onEnter": "talk.beach.lime.advance-3"
+        },
+        "visit-4": {
+          "speaker": "LIME",
+          "pages": [
+            "My opinion of Moth: talks too fast, eats too little, rewires things that are not theirs. Ten out of ten. Would serve again.",
+            "Drinks are two tokens. The jukebox is free. The jukebox and the mixer get along too well, if you ask me. Nobody asks me."
+          ],
+          "onEnter": "talk.beach.lime.advance-4"
+        }
+      }
+    },
+    "talk.beach.guard": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.beach.guard.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LIFEGUARD",
+          "pages": [
+            "I'm paid to watch the water. The drone is paid to watch me. Nobody's paid to watch the drone.",
+            "If the flag goes red, everyone is out. The drone decides. Last week it decided a jellyfish was a shark. Then a cloud."
+          ],
+          "onEnter": "talk.beach.guard.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LIFEGUARD",
+          "pages": [
+            "The drone says danger, I blow the whistle. Thirty years of training. I blow the whistle."
+          ],
+          "onEnter": "talk.beach.guard.advance-1"
+        }
+      }
+    },
+    "talk.beach.sunbather": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.beach.sunbather.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SUNBATHER",
+          "pages": [
+            "I rented this sunbed for ten minutes. That was three hours ago.",
+            "I'm not getting up. If I get up, I have to look at the bill."
+          ],
+          "onEnter": "talk.beach.sunbather.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SUNBATHER",
+          "pages": [
+            "Still here. Still not looking."
+          ],
+          "onEnter": "talk.beach.sunbather.advance-1"
+        }
+      }
+    },
+    "talk.beach.volley": {
+      "entry": [
+        {
+          "node": "visit-0"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "VOLLEYBALL",
+          "pages": [
+            "We need a fourth. You any good? No? Perfect. Neither are we.",
+            "The net's municipal. We pay by the point. We stopped keeping score."
+          ],
+          "onEnter": "talk.beach.volley.advance-0"
+        }
+      }
+    },
+    "talk.beach.kid": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.beach.kid.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "KID",
+          "pages": [
+            "It's a Registry office. That's the queue. Those are the people in the queue.",
+            "When the tide comes in, it gets deleted. That is how it works, my mum said."
+          ],
+          "onEnter": "talk.beach.kid.advance-0"
+        },
+        "visit-1": {
+          "speaker": "KID",
+          "pages": [
+            "You can be in the queue if you want. You have to wait, though. That is the rule."
+          ],
+          "onEnter": "talk.beach.kid.advance-1"
+        }
+      }
+    },
+    "talk.beach.surfer": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.beach.surfer.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SURFER",
+          "pages": [
+            "Waves are good today. Waves are free. Don't tell anyone, they'll put a meter on them."
+          ],
+          "onEnter": "talk.beach.surfer.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SURFER",
+          "pages": [
+            "See the buoy? Edge of the swim zone. Past it the Registry stops counting you. Feels great. Briefly."
+          ],
+          "onEnter": "talk.beach.surfer.advance-1"
+        }
+      }
+    },
+    "talk.beach.fisher": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.beach.fisher.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "OLD MAN",
+          "pages": [
+            "Fifty years I've fished off this pier. Caught a fish twice. Same fish.",
+            "That boat at the end? Kid with a hood and a laptop. Said 'gone fishing'. Never saw a rod come out. Good. Fish deserve a break."
+          ],
+          "onEnter": "talk.beach.fisher.advance-0"
+        },
+        "visit-1": {
+          "speaker": "OLD MAN",
+          "pages": [
+            "Three days ago they tied it up and walked off along the shore. Did not look back. Looked at the water a lot."
+          ],
+          "onEnter": "talk.beach.fisher.advance-1"
+        }
+      }
+    }
+  },
   "state": {
     "beach.billing": {
       "owner": "beach",
@@ -291,6 +716,62 @@
       "lifetime": "save",
       "type": "string",
       "default": "on"
+    },
+    "talk.beach.lime.cursor": {
+      "owner": "talk.beach.lime",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 4
+    },
+    "talk.beach.guard.cursor": {
+      "owner": "talk.beach.guard",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.beach.sunbather.cursor": {
+      "owner": "talk.beach.sunbather",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.beach.volley.cursor": {
+      "owner": "talk.beach.volley",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 0
+    },
+    "talk.beach.kid.cursor": {
+      "owner": "talk.beach.kid",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.beach.surfer.cursor": {
+      "owner": "talk.beach.surfer",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.beach.fisher.cursor": {
+      "owner": "talk.beach.fisher",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
     }
   },
   "native": {

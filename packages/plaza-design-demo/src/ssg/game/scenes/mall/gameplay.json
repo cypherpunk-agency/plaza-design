@@ -60,6 +60,46 @@
       "default": 0,
       "min": 0,
       "max": 2
+    },
+    "talk.mall.teen.cursor": {
+      "owner": "talk.mall.teen",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.mall.kid.cursor": {
+      "owner": "talk.mall.kid",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.mall.diner.cursor": {
+      "owner": "talk.mall.diner",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.mall.security.cursor": {
+      "owner": "talk.mall.security",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.mall.dancer.cursor": {
+      "owner": "talk.mall.dancer",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
     }
   },
   "purchases": {
@@ -590,8 +630,276 @@
           "set": 0
         }
       ]
+    },
+    "talk.mall.teen.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.teen.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.teen.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.teen.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.kid.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.kid.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.diner.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.diner.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.diner.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.diner.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.security.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.security.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.security.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.security.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.dancer.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.dancer.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.mall.dancer.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.mall.dancer.cursor",
+          "set": 1
+        }
+      ]
     }
   },
   "reactions": [],
-  "conversations": {}
+  "conversations": {
+    "talk.mall.teen": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.mall.teen.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "KIOSK",
+          "pages": [
+            "Phone cases. Screens. Screen protectors for your screen protector.",
+            "I get paid by the hour. The hours are very long. Coincidence."
+          ],
+          "onEnter": "talk.mall.teen.advance-0"
+        },
+        "visit-1": {
+          "speaker": "KIOSK",
+          "pages": [
+            "If you're not buying, could you at least look interested? Camera 6 counts customers."
+          ],
+          "onEnter": "talk.mall.teen.advance-1"
+        }
+      }
+    },
+    "talk.mall.kid": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.mall.kid.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "KID",
+          "pages": [
+            "I threw a token in. I wished for two tokens.",
+            "The fountain is thinking about it."
+          ],
+          "onEnter": "talk.mall.kid.advance-0"
+        },
+        "visit-1": {
+          "speaker": "KID",
+          "pages": [
+            "Mum says the fountain money goes to the Registry. I said then the Registry has my wish.",
+            "She said that's what worries her."
+          ],
+          "onEnter": "talk.mall.kid.advance-1"
+        }
+      }
+    },
+    "talk.mall.diner": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.mall.diner.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "DINER",
+          "pages": [
+            "Six counters in this food court. Four of them are the same kitchen.",
+            "I eat lunch here because the park charges by the minute."
+          ],
+          "onEnter": "talk.mall.diner.advance-0"
+        },
+        "visit-1": {
+          "speaker": "DINER",
+          "pages": [
+            "Try the noodles. Everything else is also the noodles, in a different shape."
+          ],
+          "onEnter": "talk.mall.diner.advance-1"
+        }
+      }
+    },
+    "talk.mall.security": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.mall.security.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SECURITY",
+          "pages": [
+            "Galleria security. You look unverified. Most people do, after nine.",
+            "I'm not paid to chase you. I'm paid to write down which way you went."
+          ],
+          "onEnter": "talk.mall.security.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SECURITY",
+          "pages": [
+            "Lost child? Desk 2. Lost identity? Also desk 2. It's a busy desk."
+          ],
+          "onEnter": "talk.mall.security.advance-1"
+        }
+      }
+    },
+    "talk.mall.dancer": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.mall.dancer.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SECURITY",
+          "pages": [
+            "(He freezes, mid-move.)",
+            "Camera 14 has a blind spot behind this pillar. Four minutes an hour. I did not tell you that.",
+            "I'm stretching. It's in the union agreement."
+          ],
+          "onEnter": "talk.mall.dancer.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SECURITY",
+          "pages": [
+            "You again. Either dance or stand guard. Those are the only two jobs in here."
+          ],
+          "onEnter": "talk.mall.dancer.advance-1"
+        }
+      }
+    }
+  }
 }

@@ -15,7 +15,7 @@
  * while the player is inside. Every visual choice is a field; unset choices come from the seed.
  * Notices stay matter-of-fact (the world is deadpan); the colour comes from the goods and the light.
  */
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import { rng, text as paintText } from '../core/primitives';
 import { windowLit } from '../../world/light';
 import { neonPlate } from '../signage/kit';
@@ -1116,7 +1116,7 @@ export const marketOfficesElement = piece({
   },
 });
 
-export const marketInteriors: Element[] = [
+export const marketInteriors: AssetDefinition[] = [
   stallRoomElement, stairCoreElement, cageFlatsElement, landingElement, rooftopElement,
   hallShellElement, marketStallElement, wetFloorElement, cookedFoodElement, roundTableElement, railingElement, officeWindowElement,
   coldStoreElement, loadingBayElement, pumpRoomElement, tunnelDoorElement, marketOfficesElement,

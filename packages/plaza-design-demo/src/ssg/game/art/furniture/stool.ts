@@ -1,8 +1,8 @@
 import { stool } from "../assemblies/construction";
-import type { Element } from '../core/composition';
+import type { AssetDefinition } from '../core/composition';
 
 /** Catalog metadata around the shared construction kernel; one drawing implementation. */
-export const stoolElement: Element = {
+export const stoolElement: AssetDefinition = {
   type: 'furniture.stool', libraryUse: 'reusable', version: 1, label: 'Stool', category: 'furniture', parts: ['backdrop'],
   fields: { seed: { kind: 'number', label: 'Variation seed', default: 1, step: 1 } },
   bounds: () => ({ x: -10, h: 13, w: 20, tall: 13 }),

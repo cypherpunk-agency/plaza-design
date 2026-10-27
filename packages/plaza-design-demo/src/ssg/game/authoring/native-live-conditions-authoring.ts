@@ -14,5 +14,5 @@ export function renderNativeLiveConditionsAuthoring(parent:HTMLElement,doc:Gamep
   form.button(host,'Remove '+prefix,()=>edit('Remove live condition trigger',g=>{delete g.native!.triggers![id];}));
  }
  form.text(box,'New live trigger ID',draft.liveTrigger??'',value=>{draft.liveTrigger=value;});
- form.button(box,'Add live condition trigger',()=>edit('Add live condition trigger',g=>{const id=draft.liveTrigger??'';g.native!.triggers??={};if(g.native!.triggers[id])throw Error('Trigger already exists');g.native!.triggers[id]={when:{tokensAtLeast:0},command:commands[0]};}),!commands.length||rows.length>=64);
+ form.button(box,'Add live condition trigger',()=>edit('Add live condition trigger',g=>{const id=draft.liveTrigger??'';g.native!.triggers??={};if(g.native!.triggers[id])throw Error('Trigger already exists');g.native!.triggers[id]={when:{compare:{left:{literal:0},op:'eq',right:{literal:1}}},edge:'rising',command:commands[0]};}),!commands.length||rows.length>=64);
 }

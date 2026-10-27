@@ -11,7 +11,8 @@
     "train:positionBetween",
     "train:positionDoorsOpen",
     "prologue:started",
-    "opening:home"
+    "opening:home",
+    "opening:flat"
   ],
   "items": [
     "maglev.pass"
@@ -680,7 +681,7 @@
                 "is": false
               },
               {
-                "flag": "opening:home"
+                "flag": "opening:flat"
               }
             ]
           },

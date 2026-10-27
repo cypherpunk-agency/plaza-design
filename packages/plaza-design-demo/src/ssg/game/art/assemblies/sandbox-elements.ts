@@ -2,7 +2,7 @@ import {screenBounds}from './static-bounds';
 /** Independent QA machines, furnishing kits and architecture. Device state is a validated visual snapshot. */
 import { createSandboxArtwork,type ArtworkInputs,type SandboxLayout } from './sandbox';
 import { emptySandboxSnapshot,validateSandboxSnapshot,type SandboxSnapshot } from './sandbox-state';
-import type { Anchor,Bounds,Element,Field,Placement,Properties,Value } from '../core/composition';
+import type { Anchor,Bounds,AssetDefinition,Field,Placement,Properties,Value } from '../core/composition';
 import type { View } from '../core/view';
 import { exitDoor,notice,onScreen,text } from '../core/primitives';
 import { camera,ticker } from '../signage/screens';
@@ -19,7 +19,7 @@ const cache=new Map<string,{inputs:ArtworkInputs;art:Kernels}>();
 function kernel(snapshot:SandboxSnapshot,extra:Partial<Omit<ArtworkInputs,'visual'>>={}){const config={SB:layout(),STATIONS:[],SANDBOX_W:3740,...extra},key=JSON.stringify(config);let had=cache.get(key);if(!had){const inputs={...config,visual:snapshot};had={inputs,art:createSandboxArtwork(inputs)};if(cache.size>=2048)cache.clear();cache.set(key,had);}had.inputs.visual=snapshot;return had.art;}
 const visual=(s:Properties)=>s.snapshot as unknown as SandboxSnapshot;
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:SandboxSnapshot,at:Required<Placement>)=>void;
-function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):Element{return{type:'sandbox.'+id,bindingIdentity:'presentation',version:1,label,category,coordinates:'world',fields,visualFields:sandboxVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,visual(s),at)};}
+function element(id:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties)=>Bounds,draw:Draw,anchors:(p:Properties)=>Record<string,Anchor>=()=>({origin})):AssetDefinition{return{type:'sandbox.'+id,bindingIdentity:'presentation',version:1,label,category,coordinates:'world',fields,visualFields:sandboxVisualFields,parts:['backdrop'],bounds,anchors,draw:(x,v,p,s,_pass,at)=>draw(x,v,p,visual(s),at)};}
 const box=(w:number,h:number,x=0):Bounds=>({x,h,w,tall:h});
 export const sandboxPieceDefinitions: {id:string;method:keyof Kernels;device?:string}[]=[
   {id: "server-cables",method:"drawServerCables"},
@@ -259,7 +259,7 @@ export const sandboxPieceDefinitions: {id:string;method:keyof Kernels;device?:st
     "method": "drawEndWall"
   }
 ];
-export const sandboxElements:Element[]=sandboxPieceDefinitions.map(piece=>element(piece.id,piece.id.split('-').join(' '),piece.device?'electronics':'props',piece.device?{width:num('Device width',30,1),height:num('Device height',40,1)}:{},p=>piece.device?{x:-n(p,'width')/2-70,h:n(p,'height')+80,w:n(p,'width')+140,tall:n(p,'height')+80}:box(300,170,-150),(x,v,p,s,at)=>{if(piece.id==='button-counter-conduit'&&(!s.spots.button||!s.spots.counter))return;let frame=s;if(piece.device)frame={...s,spots:{...s.spots,[piece.device]:{x:at.x,y:at.h,w:n(p,'width'),h:n(p,'height')}}};const k=kernel(frame,{decorX:at.x});(k[piece.method] as (x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot)=>void)(x,piece.device?v:raised(v,at.h),frame);}));
+export const sandboxElements:AssetDefinition[]=sandboxPieceDefinitions.map(piece=>element(piece.id,piece.id.split('-').join(' '),piece.device?'electronics':'props',piece.device?{width:num('Device width',30,1),height:num('Device height',40,1)}:{},p=>piece.device?{x:-n(p,'width')/2-70,h:n(p,'height')+80,w:n(p,'width')+140,tall:n(p,'height')+80}:box(300,170,-150),(x,v,p,s,at)=>{if(piece.id==='button-counter-conduit'&&(!s.spots.button||!s.spots.counter))return;let frame=s;if(piece.device)frame={...s,spots:{...s.spots,[piece.device]:{x:at.x,y:at.h,w:n(p,'width'),h:n(p,'height')}}};const k=kernel(frame,{decorX:at.x});(k[piece.method] as (x:CanvasRenderingContext2D,v:View,m:SandboxSnapshot)=>void)(x,piece.device?v:raised(v,at.h),frame);}));
 const roomFields={width:num('Width',3740,1),ceiling:num('Ceiling',170,1)};
 const windowFields={width:num('Width',260,1),height:num('Height',122,1)};
 function windowKernel(p:Properties,at:Required<Placement>,s:SandboxSnapshot){const SB=layout();SB.window={x0:at.x,x1:at.x+n(p,'width'),h0:at.h,h1:at.h+n(p,'height')};return kernel(s,{SB});}

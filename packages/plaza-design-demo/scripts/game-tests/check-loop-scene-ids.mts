@@ -39,12 +39,12 @@ const gameSource=fs.readFileSync('src/ssg/game/runtime/game.ts','utf8');
 assert(!/here === 'downtown'|this\.downtown/.test(gameSource),'no Downtown id for the jack');
 
 // ---- per-person prompt height
-const doc=structuredClone(FOLDER_SOURCES.sandbox.scene) as SceneDocument,gameplay={version:1,flags:[],items:[],events:[],commands:{},reactions:[],conversations:{}} as never;
+const doc=structuredClone(FOLDER_SOURCES.sandbox.scene) as SceneDocument,gameplay=FOLDER_SOURCES.sandbox.gameplay as never;
 assert(doc.people!.length>0);
 const withHeight=structuredClone(doc);withHeight.people![0].promptH=88;
 for(const [name,value] of Object.entries({negative:-1,huge:100000,text:'tall',nan:Number.NaN})){const bad=structuredClone(doc);(bad.people![0] as any).promptH=value;assert.throws(()=>validateSceneDocument(bad,gameplay,{actors:true,manifest:true,nativeTargets:()=>{}}),undefined,name);}
 // the talk target stands at the declared height, else over the head (+16), exactly as before
-const person:any={id:'tall',x:50,look:'cat',talk:[['Hi.']]},standard=game.lifeTargets({...scene,people:[person]}).find((t:any)=>t.id==='talk:tall');
+const person:any={id:'tall',x:50,look:'cat',conversation:'talk.review.tall'},standard=game.lifeTargets({...scene,people:[person]}).find((t:any)=>t.id==='talk:tall');
 const declared=game.lifeTargets({...scene,people:[{...person,promptH:99}]}).find((t:any)=>t.id==='talk:tall');
 assert.equal(declared.promptH,99);assert.notEqual(standard.promptH,99);assert(Number.isFinite(standard.promptH));
 assert(!/'fixer'/.test(gameSource),'no fixer id in the loop');

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import { ArtRegistry, resolveComposition, type Composition } from '../../src/ssg/game/art/core/composition';
+import { ArtRegistry, resolveComposition, type ChunkDocument } from '../../src/ssg/game/art/core/composition';
 import { evaluateTimeline, validateTimeline, SequenceHandoff, type TimelineProgram } from '../../src/ssg/game/art/core/timeline';
 
 const registry = new ArtRegistry().register({ type: 'test', version: 1, label: 'Test', category: 'test', parts: ['backdrop'], fields: { width: { kind: 'number', label: 'Width', default: 10, min: 0, animatable: true }, fixed: { kind: 'number', label: 'Fixed', default: 0 } }, visualFields: { open: { kind: 'boolean', label: 'Open', default: false, animatable: true } }, bounds: () => ({ x: 0, h: 0, w: 10, tall: 10 }), anchors: () => ({ mount: { x: 10, h: 5, role: 'mount' } }), draw() {} });
-const composition: Composition = { version: 1, scene: 'temporary', instances: [
+const composition: ChunkDocument = { version: 1, scene: 'temporary', instances: [
   { id: 'parent', type: 'test', props: {}, placement: { x: 0, h: 0 }, order: 0, layer: 'backdrop' },
   { id: 'child', type: 'test', props: {}, placement: { x: 2, h: 1 }, attach: { instance: 'parent', anchor: 'mount' }, order: 1, layer: 'backdrop' },
 ] };

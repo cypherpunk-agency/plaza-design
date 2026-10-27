@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { type Composition } from '../../src/ssg/game/art/core/composition';
+import { type ChunkDocument } from '../../src/ssg/game/art/core/composition';
 import { validateTimeline, evaluateTimeline } from '../../src/ssg/game/art/core/timeline';
 import { openingDocuments } from '../../src/ssg/game/story/title/documents';
 import { cinematicDocuments } from '../../src/ssg/game/story/cutscenes/documents';
@@ -34,7 +34,7 @@ const frame = evaluateTimeline(cinematic, 'act2', 8, cinematicTimelineContext(cu
 assert.equal(frame.text.length, 1); assert.equal(frame.state.titles.two, 1); assert.ok((frame.state.ferry.amount as number) > 0);
 for (const composition of [openingDocuments.composition, ...Object.values(cinematicDocuments.compositions)]) {
   assert.ok(composition.instances.length >= 1); assert.deepEqual(registry.validate(JSON.parse(JSON.stringify(composition))), composition);
-  const edited = structuredClone(composition) as Composition; edited.instances[0].placement.x = 17; assert.equal(registry.validate(edited).instances[0].placement.x, 17);
+  const edited = structuredClone(composition) as ChunkDocument; edited.instances[0].placement.x = 17; assert.equal(registry.validate(edited).instances[0].placement.x, 17);
 }
 
 const view = cutView(640,360,false,lighting);

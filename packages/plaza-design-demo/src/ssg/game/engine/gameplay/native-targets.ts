@@ -9,7 +9,7 @@ import type {SceneDocument} from './scene-document';
 import type {GameplayDefinition} from './types';
 import {projectSceneState} from './scene-state';
 import type {EngineNetworkContext} from '../network-context';
-export interface NativeTargetBindings {readonly anchors:readonly string[];readonly reset:boolean}
+export interface NativeTargetBindings {readonly anchors:readonly string[];readonly reset:boolean;/** Actual artwork resolved by the same compiler that places the target. */readonly artwork?:Readonly<Record<string,string>>}
 export type NativeTargetValidator=((doc:SceneDocument,gameplay?:GameplayDefinition,context?:NativeTargetValidationContext)=>void)&{readonly bindings:NativeTargetBindings};
 export type NativeTargetValidationContext={phase:'structural'}|{phase:'assembled';data:SceneData;network:EngineNetworkContext};
 

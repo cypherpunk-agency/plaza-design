@@ -433,7 +433,7 @@ export interface DialogueNode {
   /** Only shown inside this time window (with `if`, both must hold). */
   when?: TimeWindow;
   text: string;
-  do?: Action[];
+  /** Inspection metadata only. Commands execute through ConversationSession. */
   /** [what you say, node it leads to]. No choices: the conversation ends. */
   choices?: [say: string, next: string][];
 }

@@ -63,6 +63,7 @@ export const createScenesState=()=>({
     mobiles: new Map<SceneId,{model:import('../engine/model').SceneModel;gameplay?:GameplaySession}>(),
     joinedZones: ([]) as ScenePlacement[],
     zoneTiers: new Map<string, ResidencyTier>()
+      ,zoneReasons: new Map<string,string>()
       ,directedZones: new Set<string>(),directedOrigin:undefined as string|undefined
 });
 export type ScenesState=ReturnType<typeof createScenesState>;
@@ -93,10 +94,9 @@ export const createPresentationState=()=>({
     flight: (null) as { to: Stand; start: number } | null,
     beat: (null) as { start: number; checkpoint: { x: number; h: number }; gate: GateRule; go: { to: string; at?: string } | { barrier: string } | null } | null,
     sleep: (null) as { start: number; woke: boolean; card: CardSpec } | null,
-    counters: ({}) as Record<string, number>,
+    stamps: ({}) as Record<string, number>,
     still: 0,
     goalAt: (null) as number | null,
-    petCount: 0,
     bubbleBox: (null) as { x: number; y: number; w: number; h: number } | null,
     hudH: 46,
     gainWords: '',

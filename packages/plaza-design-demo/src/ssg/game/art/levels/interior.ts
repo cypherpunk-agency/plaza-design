@@ -5,7 +5,7 @@ import {boundsFromEdges} from '../core/geometry';
  * the cut side of the building. Attach them to a building's interior handle (level kit) so they
  * show only while the player is inside, and the facade over them fades.
  */
-import type { Element, Field } from '../core/composition';
+import type { AssetDefinition, Field } from '../core/composition';
 import type { View } from '../core/view';
 import { rng } from '../core/primitives';
 
@@ -30,7 +30,7 @@ const FINISH: Record<RoomKind, { wall: string; band: string; floor: string }> = 
  * (engine/level.ts `LevelRoom`): `Opens` on arrival or never instead of always, and the artwork attached to it
  * shows only while it is open; shut, it draws its cover (dark, lit windows, a section, earth) over itself.
  */
-export const roomElement: Element = {
+export const roomElement: AssetDefinition = {
   type: 'level.room', version: 1, label: 'Room (cut-open storey)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     width: num('Width', 240, 20, 4000, 1, 'units'), height: num('Height (floor to ceiling)', 62, 30, 400, 1, 'units'),
@@ -109,7 +109,7 @@ function drawShut(x: CanvasRenderingContext2D, v: View, p: Readonly<Record<strin
 }
 
 /** The cut floor between two storeys: concrete with section hatching and a lit edge. */
-export const slabElement: Element = {
+export const slabElement: AssetDefinition = {
   type: 'level.slab', version: 1, label: 'Floor slab (cut)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { width: num('Width', 240, 10, 4000, 1, 'units'), thickness: num('Thickness', 10, 2, 60, 1, 'units') },
   bounds: p => boundsFromEdges({left:0,right:Number(p.width),bottom:-Number(p.thickness),top:0}),
@@ -125,7 +125,7 @@ export const slabElement: Element = {
 };
 
 /** A cut side wall of the building, floor to roof. */
-export const sectionWallElement: Element = {
+export const sectionWallElement: AssetDefinition = {
   type: 'level.section-wall', version: 1, label: 'Section wall (cut)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { height: num('Height', 300, 10, 4000, 1, 'units'), thickness: num('Thickness', 8, 2, 40, 1, 'units') },
   bounds: p => boundsFromEdges({left:0,right:Number(p.thickness),bottom:0,top:Number(p.height)}),
@@ -134,7 +134,7 @@ export const sectionWallElement: Element = {
 };
 
 /** Earth and rock below the street, where a basement or a station is dug in. */
-export const groundSectionElement: Element = {
+export const groundSectionElement: AssetDefinition = {
   type: 'level.ground-section', version: 1, label: 'Ground in section (below the street)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { width: num('Width', 600, 10, 10000, 1, 'units'), depth: num('Depth', 260, 10, 2000, 1, 'units'), seed: num('Seed', 3, 0, 1000000) },
   bounds: p => boundsFromEdges({left:0,right:Number(p.width)+5,bottom:-Number(p.depth),top:2}),
@@ -148,4 +148,4 @@ export const groundSectionElement: Element = {
   },
 };
 
-export const interiorElements: Element[] = [roomElement, slabElement, sectionWallElement, groundSectionElement];
+export const interiorElements: AssetDefinition[] = [roomElement, slabElement, sectionWallElement, groundSectionElement];

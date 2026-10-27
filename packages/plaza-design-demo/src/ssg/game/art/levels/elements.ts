@@ -10,7 +10,7 @@ import {boundsFromEdges} from '../core/geometry';
  * Floors, doors and the handles are logic (drawn only as editor diagrams). Stairs, escalators and
  * lifts are artwork with a mechanism. Heights are world units over the street (the player is 42).
  */
-import type { Element, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Field, Properties } from '../core/composition';
 import type { View } from '../core/view';
 
 const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
@@ -25,7 +25,7 @@ const rect = (x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: nu
 };
 
 /** A walkable line. `building` names whose floor it is (empty: outdoors, the street); `label` is what a lift shows. */
-export const floorElement: Element = {
+export const floorElement: AssetDefinition = {
   type: 'level.floor', version: 1, label: 'Floor (walkable line)', category: 'scene', parts: [], libraryUse: 'reusable',
   fields: {
     width: num('Width', 300, 10, 10000, 1, 'units'), building: text('Building (empty: outdoors)'), label: text('Name on the lift panel'),
@@ -38,7 +38,7 @@ export const floorElement: Element = {
 };
 
 /** Where the street meets a door-only building floor at the same height: Ã¢â€ â€˜ steps in, Ã¢â€ â€œ steps out. Walk-in floors need none. */
-export const doorElement: Element = {
+export const doorElement: AssetDefinition = {
   type: 'level.door', version: 1, label: 'Way into a building', category: 'scene', parts: [], libraryUse: 'reusable',
   fields: { building: text('Building'), width: num('Width', 24, 8, 200, 1, 'units') },
   bounds: p => ({ x: -Number(p.width) / 2, h: 0, w: Number(p.width), tall: 46 }),
@@ -47,7 +47,7 @@ export const doorElement: Element = {
 };
 
 /** Grouping handles: attach a building's facade to its shell and its rooms to its interior. */
-const handle = (type: string, label: string, fields: Record<string, Field> = {}): Element => ({
+const handle = (type: string, label: string, fields: Record<string, Field> = {}): AssetDefinition => ({
   type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: text('Building'), ...fields },
   bounds: () => ({ x: -6, h: 0, w: 12, tall: 12 }), anchors: origin, draw() {},
 });
@@ -56,7 +56,7 @@ export const interiorElement = handle('level.interior', 'Building interior (show
 
 /** The inside face of a building's street door, in the look of its outside: shown only while the player is in that building. */
 export const ENTRANCE_STYLES = ['glass', 'shop', 'flat', 'service'] as const;
-export const entranceElement: Element = {
+export const entranceElement: AssetDefinition = {
   type: 'level.entrance', version: 1, label: 'Street door seen from inside', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     building: text('Building (shown while inside it)'), style: { kind: 'select', label: 'Style', options: [...ENTRANCE_STYLES], default: 'glass' },
@@ -209,7 +209,7 @@ function drawSwitchback(x: CanvasRenderingContext2D, v: View, run: number, rise:
   drawFlight(x, v, run, half, null, look, rail, part);
 }
 
-export const stairsElement: Element = {
+export const stairsElement: AssetDefinition = {
   type: 'level.stairs', version: 1, label: 'Stairs between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     run: num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units'),
@@ -249,7 +249,7 @@ function drawStairs(x: CanvasRenderingContext2D, v: View, p: Properties, part: S
   else drawFlight(x, v, run, rise, null, look, rail, part);
 }
 
-export const escalatorElement: Element = {
+export const escalatorElement: AssetDefinition = {
   type: 'level.escalator', version: 1, label: 'Escalator between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     run: num('Run (to the top, negative: leftwards)', 150, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 90, -2000, 2000, 1, 'units'),
@@ -284,7 +284,7 @@ export const escalatorElement: Element = {
  * `car` (units over the bottom) with doors open by `doors` (0..1). The car is a Circuit mover (`device`):
  * its stops, speed and wiring live in the scene's devices; the doors follow its trips.
  */
-export const elevatorElement: Element = {
+export const elevatorElement: AssetDefinition = {
   type: 'level.elevator', version: 1, label: 'Lift between floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Car: the Circuit mover that moves it (device.part)'),
     doorMs: num('Doors open in', 280, 40, 3000, 10, 'ms'),
@@ -363,7 +363,7 @@ function drawLiftStyle(x: CanvasRenderingContext2D, v: View, style: string, w: n
 }
 
 /** A call button beside a lift's doors on one floor: press E at the lift to call it; the button lights while the car is on its way here. */
-export const liftButtonElement: Element = {
+export const liftButtonElement: AssetDefinition = {
   type: 'level.lift-button', version: 1, label: 'Lift call button', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: { lift: text('Lift (its instance id)') },
   visualFields: { lit: num('Lit (called here)', 0, 0, 1, 1) },
@@ -391,7 +391,7 @@ export const BARRIER_STYLES = ['turnstile', 'gate', 'door'] as const;
 const hidden = () => false;
 /** The shape only (null, or one plain condition object); its vocabulary is checked with the pending sources (world/access.ts). */
 const barrierWhen = (v: unknown) => { if (v !== null && (!v || typeof v !== 'object' || Array.isArray(v) || !Object.keys(v).length || Object.keys(v).length > 2)) throw new Error('level.barrier.when: null or one condition object'); };
-export const barrierElement: Element = {
+export const barrierElement: AssetDefinition = {
   type: 'level.barrier', version: 1, label: 'Barrier (turnstile, gate, locked door)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     style: { kind: 'select', label: 'Style', options: [...BARRIER_STYLES], default: 'turnstile' },
@@ -449,4 +449,4 @@ export const barrierElement: Element = {
   },
 };
 
-export const levelElements: Element[] = [floorElement, doorElement, shellElement, interiorElement, entranceElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement, barrierElement];
+export const levelElements: AssetDefinition[] = [floorElement, doorElement, shellElement, interiorElement, entranceElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement, barrierElement];

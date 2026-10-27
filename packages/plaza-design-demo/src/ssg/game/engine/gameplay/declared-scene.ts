@@ -13,7 +13,6 @@ import {frameView} from '../../art/core/view';
 import {drawReviewRoom} from '../../art/assemblies/review-room';
 import {residentCharacter} from '../../art/characters/resident';
 import {manifestGeometry} from './manifest-geometry';
-import {withSceneConversations,actorConversationId} from './scene-conversations';
 import type {SceneDef} from '../../scenes/kit';
 import {validateSceneDocument,type SceneDocument} from './scene-document';
 import {compileLevel,compileOccluders,levelNear,levelOpacity,levelVisualState,restingLevelView} from '../level';
@@ -32,7 +31,6 @@ import type {CityModel} from '../../world/city';
 import type {LineSystem} from '../../world/transport/line';
 import {nativeTargetValidator,compileNativeTargets,type NativeTargetValidationContext} from './native-targets';
 import type {SceneData} from '../../data/types';
-import {DEFAULT_COMPANION_FLAG} from './scene-companion';
 import {evaluateValue,valueReferences} from './scene-values';
 import {allPictureFields,pictureFields} from './controller-pictures';
 /** What scene.json `stage.values` and `stage.atrium` name must exist in the scene: interactions, the atrium's artwork roles and picture fields. An artwork role, actor role or flag role the scene lacks reads as nothing (0, false), so an optional role may be left out. */
@@ -58,7 +56,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const doc=art.validate(composition),signals=providerSignals(doc,scene.stage?.values),d=validateSceneDocument(scene,gameplay,{...declaredSceneOptions(scene,undefined,doc),sharedState});
  if(!d.manifest)throw new Error('Declared scene requires manifest bindings');
  // transport exits (`action`) are the runtime's; engine exits are opened by engine targets (stage.targetAnchors)
- if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)&&e.sets!==DEFAULT_COMPANION_FLAG&&e.sets!==d.companion?.unlockFlag))throw new Error('Exit sets an undeclared gameplay flag');
+ if(d.exits?.some(e=>e.sets&&!gameplay.flags.includes(e.sets)))throw new Error('Exit sets an undeclared gameplay flag');
  // artwork binds only to sources the engine works out (binding-sources.ts)
  if(!withActors&&JSON.stringify(doc.instances).match(/"actor\.[^"]+\.pose"/))throw new Error('Actor artwork requires scene.actors source definitions');
  const unknown=unknownBindingSources(doc);if(unknown.length)throw new Error('Unknown binding sources: '+unknown.join(', '));
@@ -68,7 +66,7 @@ export function validateDeclaredScene(scene:SceneDocument,composition:unknown,ga
  const compile=d.manifest.compile,geometry=compile?manifestGeometry(d,rows,compile.groups,compile):manifestGeometry(d,rows),bindings=geometry.bindings;
  // a scene's people are either its actors (scene.actors, with their artwork) or residents placed by the manifest
  const actors=withActors?compileSceneActors(d,rows):{};
- const people=withActors?d.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]):(d.people??[]).filter(p=>bindings.people?.[p.id]).map(p=>{const point=bindings.people[p.id],r=point.row;if(r.element.type!=='character.resident'||r.instance.layer!=='playfield')throw new Error('Person requires visible character.resident artwork in the playfield layer: '+p.id);return {...residentCharacter(r.props,point),...p,...(p.conversation!==undefined?{talk:[]}:{}),conversation:p.conversation??actorConversationId(d.id,p.id)};});
+ const people=withActors?d.actors!.filter(a=>a.band==='world').map(a=>actors[a.id]):(d.people??[]).filter(p=>bindings.people?.[p.id]).map(p=>{const point=bindings.people[p.id],r=point.row;if(r.element.type!=='character.resident'||r.instance.layer!=='playfield')throw new Error('Person requires visible character.resident artwork in the playfield layer: '+p.id);return {...residentCharacter(r.props,point),...p};});
  for(const name of d.stage?.mechanisms??[]){for(const role of SCENE_MECHANISMS[name].requires)if(!geometry.artwork[role])throw new Error('Scene mechanism '+name+' requires artwork role '+role);SCENE_MECHANISMS[name].check?.({scene:d,gameplay,roles:geometry.artwork});}
  const positions=Object.fromEntries(Object.entries(bindings.uses).map(([id,r])=>[id,r.x]));
  return {scene:d,composition:doc,signals,positions,people,actors,rows,...geometry};
@@ -95,7 +93,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  // engine targets (scene.nativeTargets) anchor to the stage's artwork roles and open the scene's engine exits
  const anchorRows:Record<string,import('../../art/core/composition').Resolved>={...roles,...Object.assign({},...mechanisms.map(m=>m.anchors?.({data,rows})??{}))};
  const anchors=(d.stage?.targetAnchors??[]).filter(a=>anchorRows[a]);
- const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,anchorRows[a].placement])),{reset:resetPermitted(d),anchors}):{};
+ const targets=d.stage?.targetAnchors||d.nativeTargets?compileNativeTargets(d,Object.fromEntries(anchors.map(a=>[a,anchorRows[a].placement])),{reset:resetPermitted(d),anchors,artwork:Object.fromEntries(anchors.map(a=>[a,anchorRows[a].instance.id]))}):{};
  // a level (floors, stairs, lifts, buildings): its lifts and building reveal come from the frame's View.level
  const level=compileLevel(rows),manifest=d.manifest!;
  const attachmentOffsets=movingManifestGeometry(d,validated.composition,rows,level);
@@ -139,7 +137,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const travelling=rows.filter(r=>mobiles.has(r.instance.id));
  const extent=travelling.flatMap(r=>{const x=r.placement.x,range=Number(r.props.range??r.props.lane??0)*r.placement.scale,b=(r.element.travelBounds??r.element.bounds)(r.props,r.state,{view:frameView(0),placement:r.placement}),left=b.x*r.placement.scale*r.placement.facing,right=(b.x+b.w)*r.placement.scale*r.placement.facing;const positions=[left,right];if(typeof r.props.range==='number'||typeof r.props.lane==='number')positions.push(0,range);return[x+Math.min(...positions)-40,x+Math.max(...positions)+40];});
  for(const a of d.actors??[]){if(!movingActors.has(a.instance))continue;let body=validated.actors[a.id],gap=0;while(body.follow){gap+=body.gap??18;body=body.follow;}const range=body.range,ends=Array.isArray(range)?range:[body.x,body.x+Number(range??0)],depth=validated.actors[a.id].parallax??1;extent.push((Math.min(...ends)-gap-64)/Math.max(.05,depth),(Math.max(...ends)+gap+64)/Math.max(.05,depth));}
- const base:SceneDef={...(extent.length?{mobileExtent:{from:Math.min(...extent),to:Math.max(...extent)}}:{}),artwork:validated.composition,peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,introOnFoot:d.introOnFoot,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay:withSceneConversations(gameplay,d,options.sharedState),...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
+ const base:SceneDef={...(extent.length?{mobileExtent:{from:Math.min(...extent),to:Math.max(...extent)}}:{}),artwork:validated.composition,peopleFlows:compilePeople(rows,level,d.id),artworkVisible,id:d.id,name:d.name,data,introOnFoot:d.introOnFoot,intro:d.introTouch?(touch:boolean)=>[...(touch?d.introTouch!:d.intro)]:d.intro.length?[...d.intro]:undefined,...(d.environment?{}:{outdoor:false,ambient:{}}),...compiled.content,exits,...(d.phases?{phases:d.phases}:{}),...(d.wash?{wash:d.wash}:{}),people:validated.people,gameplay,...stageContent(d.stage,rows,roles),...(d.stage?.values?.carry!==undefined?{dockworkerCarry:(flags:Readonly<Record<string,boolean>>,values:import('./types').StateValues|undefined=undefined)=>evaluateValue(d.stage!.values!.carry,{presentation:d.presentation,flags,values,gameplay}) as 'parcel'|'case'|null}:{}),...targets,...(signals?{presentationTargets:Object.freeze(Object.keys(validated.signals)),gameplayEvent:signals.event,presentationState:signals}:{}),...(level?{level,spawnH:heightOf(manifest.spawn)}:{}),
   visualEnvironment:(view,engine)=>environment(view,engine),drawBackdrop:(ctx,v,engine)=>draw(ctx,v,engine),...(front||!ownRoom?{drawFront:(ctx:CanvasRenderingContext2D,v:View,engine?:EngineDraw)=>draw(ctx,v,engine,true)}:{})};
  // registered mechanisms (scene-mechanisms.ts) add what they own; a world-bound scene is rebuilt with the city and line system
  // each mechanism may return picture-side state (`presentation`); the scene prepares, saves and restores them together, beside its presentation signals
@@ -150,7 +148,7 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
   // mechanisms that run code each supply rules; they combine
   return{...acc,...part,...(acc.rules&&part.rules?{rules:combine(acc.rules,part.rules)}:{})};},base);
  Object.assign(built,composePresentations(presentations,signals));
- if(rows.some(r=>r.element.framePhase==='sky'))built.drawSkyArtwork=(ctx,v)=>drawCompositionSlot(ctx,art,validated.composition,environment(v),'behind-player',undefined,'sky');
+ if(rows.some(r=>r.element.framePhase==='sky'&&r.element.type!=='environment.sky'))built.drawSkyArtwork=(ctx,v)=>drawCompositionSlot(ctx,art,validated.composition,environment(v),'behind-player',r=>r.element.type!=='environment.sky','sky');
  // the rules carry the mechanisms' Circuit devices, so the model, the contracts and the editor see the same cable endpoints
  if(built.rules&&contract?.mechanisms?.length)built.rules=withMechanismDevices(built.rules,contract.mechanisms);
  return mechanisms.some(m=>m.world)||worldBindings(validated.composition)?{...built,bindWorld:services=>declaredScene(scene,composition,gameplay,options,devices,services)}:built;

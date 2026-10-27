@@ -1,12 +1,12 @@
 /** Source-only creation recipe. Runtime motion remains ordinary Circuit movers. */
-import {art,type Instance} from '../art';
+import {art,type AssetInstance} from '../art';
 import {emptyDeviceSource} from '../engine/empty-data';
 import {newAuthoredScene,type AuthoredScene} from '../engine/gameplay/scene-catalogue';
 import type {VehicleSource} from '../world/vehicles';
 export type VehiclePreset='shuttle'|'cart';
 export function newVehicleScene(scene:string,name:string,kind:VehiclePreset='shuttle'):AuthoredScene{
  const entry=newAuthoredScene(scene,name),nodes=entry.composition.instances;
- const add=(id:string,type:string,x:number,h:number,props:Instance['props']={},attach?:Instance['attach'],layer:Instance['layer']='set',bindings?:Instance['bindings'])=>nodes.push({id,type,props,placement:{x,h},order:nodes.length,layer,...(attach?{attach}:{}),...(bindings?{bindings}:{})});
+ const add=(id:string,type:string,x:number,h:number,props:AssetInstance['props']={},attach?:AssetInstance['attach'],layer:AssetInstance['layer']='set',bindings?:AssetInstance['bindings'])=>nodes.push({id,type,props,placement:{x,h},order:nodes.length,layer,...(attach?{attach}:{}),...(bindings?{bindings}:{})});
  entry.scene.manifest!.width=2400;nodes[0].placement.x=224;
  entry.scene.environment={outdoor:true,ambient:{sky:true,weather:false}};
  add('sky-traffic','environment.sky-traffic',0,0,{},undefined,'distance');

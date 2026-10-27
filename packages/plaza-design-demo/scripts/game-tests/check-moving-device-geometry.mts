@@ -2,7 +2,7 @@ import {runtimeFixture} from './runtime-fixture.mts';
 /** Devices, hacking targets and artwork share one moving attachment geometry; no paint tick or copied save state. */
 import assert from 'node:assert/strict';
 import authored from '../../src/ssg/game/scenes/authored.json';
-import {art,resolveComposition,type Composition} from '../../src/ssg/game/art';
+import {art,resolveComposition,type ChunkDocument} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {createSceneRegistry,type SceneCatalogue} from '../../src/ssg/game/engine/gameplay/scene-catalogue';
 import {manifestAnchor} from '../../src/ssg/game/engine/gameplay/manifest-geometry';

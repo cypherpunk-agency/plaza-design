@@ -11,7 +11,7 @@ import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
 import {deviceSourceIdentity} from '../../src/ssg/game/authoring/device-document-ids';
 import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
-import {playScenes,validatePlayFixtures,defaultPlayFixture} from '../../src/ssg/game/authoring/play-fixtures';
+import {playScenes,validatePlayFixtures,defaultPlayFixture} from '../../src/ssg/game/world/checkpoints';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {gameSourceIdentity} from '../scene-system/source-identity.mts';

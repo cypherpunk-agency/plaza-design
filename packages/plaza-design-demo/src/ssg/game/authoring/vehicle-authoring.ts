@@ -1,12 +1,12 @@
 /** Typed edits of the source read by physical boarding and the moving artwork. */
 import {TypedForm} from './typed-form';
-import {art,type Composition,type Instance} from '../art';
+import {art,type ChunkDocument,type AssetInstance} from '../art';
 import {validateVehicle,type VehicleSource} from '../world/vehicles';
 import type {WorkbenchContext} from './contracts';
 import {appendVehicleCar,removeVehicleCar,setVehicleCars,splitVehicleLeg} from './vehicle-composition';
 import {legLength,routeLength} from '../world/vehicles';
-const flat=(ns:Instance[]):Instance[]=>ns.flatMap(n=>[n,...flat(n.children??[])]);
-const belongs=(node:Instance,doc:Composition,frame:string)=>{
+const flat=(ns:AssetInstance[]):AssetInstance[]=>ns.flatMap(n=>[n,...flat(n.children??[])]);
+const belongs=(node:AssetInstance,doc:ChunkDocument,frame:string)=>{
  const ns=flat(doc.instances),byId=new Map(ns.map(n=>[n.id,n])),parents=new Map(ns.flatMap(n=>(n.children??[]).map(c=>[c.id,n.id] as const)));
  let id:string|undefined=node.id;
  for(let depth=0;id&&depth<64;depth++){if(id===frame)return true;id=byId.get(id)?.attach?.instance??parents.get(id);}
@@ -15,8 +15,8 @@ const belongs=(node:Instance,doc:Composition,frame:string)=>{
 export function mountVehicleAuthoring(host:HTMLElement,context:WorkbenchContext,documentId:string,instanceId:string,scene:string){
  const api=context.authoring!,error=document.createElement('p');error.setAttribute('role','alert');
  const form=new TypedForm(e=>{error.textContent=e instanceof Error?e.message:String(e);});
- const read=()=>api.get(documentId).value as Composition;
- function edit(label:string,change:(v:VehicleSource,doc:Composition)=>void){const doc=structuredClone(read()),node=flat(doc.instances).find(n=>n.id===instanceId)!;change(node.props.vehicle as unknown as VehicleSource,doc);validateVehicle(node.props.vehicle);api.edit(documentId,label,doc);render();}
+ const read=()=>api.get(documentId).value as ChunkDocument;
+ function edit(label:string,change:(v:VehicleSource,doc:ChunkDocument)=>void){const doc=structuredClone(read()),node=flat(doc.instances).find(n=>n.id===instanceId)!;change(node.props.vehicle as unknown as VehicleSource,doc);validateVehicle(node.props.vehicle);api.edit(documentId,label,doc);render();}
  function render(){host.replaceChildren(error);error.textContent='';const doc=read(),v=validateVehicle(flat(doc.instances).find(n=>n.id===instanceId)!.props.vehicle);
   form.text(host,'Frame mover (device.part)',v.mover,value=>edit('Set vehicle frame mover',v=>{v.mover=value;}));
   form.text(host,'Boarding query (optional)',v.boardQuery??'',value=>edit('Set boarding query',v=>{if(value)v.boardQuery=value;else delete v.boardQuery;}));

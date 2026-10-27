@@ -5,9 +5,11 @@ import {SCENES} from '../../src/ssg/game/scenes';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {levelArrive,levelStep,levelHints,levelInteract,levelFloor,levelZone,mergeLevels,levelRejoin,levelUp,levelBounds,type Level} from '../../src/ssg/game/engine/level';
 import {stepLevelVehicles,validateWorldVehicles,saveVehicle,restoreVehicle} from '../../src/ssg/game/engine/level-vehicles';
-import {placeFrom,validateZoneGraph,worldProblems} from '../../src/ssg/game/world/zone-graph';
+import {placeFrom,worldProblems} from '../../src/ssg/game/world/zone-graph';
 import graphSource from '../../src/ssg/game/world/zone-graph.json';
 import {Game} from '../../src/ssg/game/runtime/game';
+import {newSave} from '../../src/ssg/game/runtime/save';
+import {compileGameWorld} from '../../src/ssg/game/world/compiled-world';
 import {art,resolveComposition} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {levelView,splitLevelView} from '../../src/ssg/game/engine/level';
@@ -15,11 +17,13 @@ import catalogue from '../../src/ssg/game/scenes/authored.json';
 import {authoredSceneAdapter} from '../../src/ssg/game/authoring/scene-adapters';
 import {readQuery} from '../../src/ssg/game/engine/gameplay/queries';
 import {resolveValues} from '../../src/ssg/game/engine/gameplay/state';
-import fixtures from '../../src/ssg/game/authoring/play-fixtures.json';
-import {fixtureSave} from '../../src/ssg/game/authoring/play-fixtures';
-const graph=validateZoneGraph(graphSource),owner='harbor-station',scene=SCENES[owner];
+import fixtures from '../../src/ssg/game/world/checkpoints.json';
+import {fixtureSave} from '../../src/ssg/game/world/checkpoints';
+const graph=compileGameWorld(SCENES),owner='harbor-station',scene=SCENES[owner];
 validateWorldVehicles(SCENES,graph);assert.deepEqual(worldProblems(graph,SCENES),[]);
 const commute=fixtureSave(fixtures.fixtures.find(f=>f.id==='harbor-commute') as never);assert.equal(commute.gameplay!.shift.statementRead,true,'the review fixture writes the shared owner directly');assert.equal(commute.gameplay![owner],undefined,'no second copy of shared state is placed under the scene');assert.equal(readQuery('commute.ready',{flags:commute.flags,items:commute.items,tokens:commute.tokens,values:commute.gameplay},{definition:scene.gameplay!}),true);
+assert.equal(readQuery('commute.present',{flags:commute.flags,items:commute.items,tokens:commute.tokens,values:commute.gameplay},{definition:scene.gameplay!}),true,'The actual post-checkout fixture must keep its commute vehicle present');
+assert.equal(readQuery('commute.present',{flags:{...commute.flags,'opening:street':true},items:commute.items,tokens:commute.tokens,values:commute.gameplay},{definition:scene.gameplay!}),true,'Passing the metro turnstile cannot retire the visible train or its passengers');
 const adapter=authoredSceneAdapter(owner,new Map([['authored-scenes',catalogue]]))!;
 assert(adapter.definition(catalogue.scenes.find(e=>e.scene.id===owner)!.composition as never,{},{}).gameplay!.state!['shift.parcelCollected'],'static authoring preview resolves shared state just like native Play');
 const model=new SceneModel({say(){},open(){},changed(){}},scene.data!,undefined,undefined,undefined,undefined,undefined,scene.gameplay);
@@ -34,7 +38,7 @@ const relative=p.x-lv.state.vehicle!.x,visited=new Set([active]);let arrived=fal
 // Use the actual Game seam handoff, including owner UI, instead of a parallel rebasing algorithm.
 let ownerCloses=0,ordinaryCloses=0,ownerPopup=true;
 const crossing:any=runtimeFixture(Game),ownerHost={model,persist(){},closeAll(){ownerCloses++;ownerPopup=false;}},ordinaryHost={model:{player:null},persist(){},closeAll(){ordinaryCloses++;}};
-Object.assign(crossing,{content:SCENES,sources:{zoneGraph:graph},introduceScene(){},p,companionBody:{x:0,h:0},save:{flags:{},rooms:{},barriers:{}},movers:model,sceneDefinition:(id:string)=>SCENES[id],hostOf:(id:string)=>id===owner?ownerHost:ordinaryHost,markSeen(){},syncHud(){},persistSave(){},term:{print(){}},hints:{sceneChanged(){}},canvas:{setAttribute(){}},scenes:Object.assign(crossing.scenes,{here:active,level:lv}),camera:Object.assign(crossing.camera,{viewW:1000000,cam:-500000,camH:0,gyBase:300,gy:300})});
+Object.assign(crossing,{content:SCENES,sources:{zoneGraph:graphSource},introduceScene(){},p,companionBody:{x:0,h:0},save:newSave(),movers:model,sceneDefinition:(id:string)=>SCENES[id],hostOf:(id:string)=>id===owner?ownerHost:ordinaryHost,markSeen(){},syncHud(){},persistSave(){},term:{print(){}},hints:{sceneChanged(){}},canvas:{setAttribute(){}},scenes:Object.assign(crossing.scenes,{here:active,level:lv}),camera:Object.assign(crossing.camera,{viewW:1000000,cam:-500000,camH:0,gyBase:300,gy:300})});
 crossing.scenes.joinedZones=[...placeFrom(graph,active,Infinity)].filter(([z])=>z!==active).map(([id,p])=>({id,dx:p.dx,dh:p.dh}));
 for(let i=0;i<2400;i++){
  model.tick(1000/60,true);levelStep(lv,p,0,1,model);
@@ -58,7 +62,7 @@ assert.equal(ordinaryCloses,beforeWalking+1,'the actual on-foot departure still 
 assert.equal(crossing.scenes.level.state.vehicle,undefined,'an on-foot seam does not fabricate a vehicle attachment');
 const bad=structuredClone(graph);bad.seams.find(s=>s.id==='line-metro')!.dh+=10;assert.throws(()=>validateWorldVehicles(SCENES,bad),/leg/,'a discontinuous pending route is rejected');
 // Exercise the real Game residency methods: the distant Circuit owner is hosted and drawn at Metro.
-const game:any=runtimeFixture(Game);Object.assign(game,{content:SCENES,sources:{zoneGraph:graph},save:{rooms:{},barriers:{}},scenes:Object.assign(game.scenes,{compiledScenes:new Map(Object.entries(SCENES)),here:'metro',hosts:new Map(),gameplaySessions:new Map()}),camera:Object.assign(game.camera,{cam:476,viewW:640})});
+const game:any=runtimeFixture(Game);Object.assign(game,{content:SCENES,sources:{zoneGraph:graphSource},save:newSave(),scenes:Object.assign(game.scenes,{compiledScenes:new Map(Object.entries(SCENES)),here:'metro',hosts:new Map(),gameplaySessions:new Map()}),camera:Object.assign(game.camera,{cam:476,viewW:640})});
 game.hostOf=(id:string)=>{let host=game.scenes.hosts.get(id);if(!host){const s=SCENES[id],m=new SceneModel({say(){},open(){},changed(){}},s.data!,undefined,undefined,undefined,undefined,undefined,s.gameplay);m.peopleSources=s.peopleFlows??[];m.peopleLevel=s.level;host={model:m,dispose(retain=false){if(!retain)m.setPaused(true);},show(_on:boolean,visible:boolean){this.visible=visible;}};game.scenes.hosts.set(id,host);}return host;};
 const joinedGame=SceneLifecycle.joinLevel(game.sceneLifecyclePort,'metro');SceneLifecycle.showHosts(game.sceneLifecyclePort);
 assert(!game.scenes.hosts.has(owner),'distant source scenery does not stay hosted for a travelling train');

@@ -3,7 +3,7 @@
   "fixtures": [
     {
       "id": "harbor-start",
-      "name": "Harbor Shift · start",
+      "name": "Harbor Shift \u00b7 start",
       "scene": "harbor-station",
       "flags": {
         "prologue:started": true
@@ -25,7 +25,7 @@
     },
     {
       "id": "harbor-commute",
-      "name": "Harbor · morning commute (board here)",
+      "name": "Harbor \u00b7 morning commute (board here)",
       "scene": "harbor-station",
       "flags": {
         "prologue:started": true,
@@ -61,7 +61,7 @@
     },
     {
       "id": "sandbox-start",
-      "name": "Sandbox · QA start",
+      "name": "Sandbox \u00b7 QA start",
       "scene": "sandbox",
       "flags": {},
       "items": {},
@@ -84,7 +84,7 @@
     },
     {
       "id": "shop-start",
-      "name": "Shop · start",
+      "name": "Shop \u00b7 start",
       "scene": "shop",
       "flags": {},
       "items": {},
@@ -107,7 +107,7 @@
     },
     {
       "id": "library-start",
-      "name": "Library · start",
+      "name": "Library \u00b7 start",
       "scene": "library",
       "flags": {},
       "items": {},
@@ -130,7 +130,7 @@
     },
     {
       "id": "laundromat-start",
-      "name": "Laundromat · start",
+      "name": "Laundromat \u00b7 start",
       "scene": "laundromat",
       "flags": {},
       "items": {},
@@ -153,7 +153,7 @@
     },
     {
       "id": "train-start",
-      "name": "Train · Galleria departure",
+      "name": "Train \u00b7 Galleria departure",
       "scene": "train",
       "flags": {},
       "items": {
@@ -188,7 +188,7 @@
     },
     {
       "id": "train-before-siding",
-      "name": "Train · approaching the hidden siding",
+      "name": "Train \u00b7 approaching the hidden siding",
       "scene": "train",
       "flags": {},
       "items": {
@@ -223,7 +223,7 @@
     },
     {
       "id": "train-at-siding",
-      "name": "Train · stopped at the hidden siding",
+      "name": "Train \u00b7 stopped at the hidden siding",
       "scene": "train",
       "flags": {},
       "items": {
@@ -258,7 +258,7 @@
     },
     {
       "id": "train-siding-open",
-      "name": "Train · siding doors released",
+      "name": "Train \u00b7 siding doors released",
       "scene": "train",
       "flags": {
         "harbor:open": true
@@ -295,7 +295,7 @@
     },
     {
       "id": "boundary-start",
-      "name": "Boundary example · beside the seam",
+      "name": "Boundary example \u00b7 beside the seam",
       "scene": "boundary-west",
       "flags": {},
       "items": {},
@@ -346,6 +346,262 @@
       "weather": "clear",
       "clock": "fixed",
       "spawn": 40
+    },
+    {
+      "id": "review-launch",
+      "name": "Review \u00b7 launch coast",
+      "scene": "harbor-station",
+      "flags": {
+        "prologue:started": true
+      },
+      "items": {},
+      "tokens": 0,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 1140,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null,
+      "composition": "harbor-world",
+      "sequence": {
+        "id": "title",
+        "time": 0
+      }
+    },
+    {
+      "id": "review-glide",
+      "name": "Review \u00b7 city glide",
+      "scene": "harbor-station",
+      "flags": {
+        "prologue:started": true
+      },
+      "items": {},
+      "tokens": 0,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 1140,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null,
+      "composition": "harbor-world",
+      "sequence": {
+        "id": "glide",
+        "time": 19
+      }
+    },
+    {
+      "id": "review-arrival",
+      "name": "Review \u00b7 Harbor arrival",
+      "scene": "harbor-station",
+      "flags": {
+        "prologue:started": true
+      },
+      "items": {},
+      "tokens": 0,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 1140,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null,
+      "composition": "harbor-world",
+      "sequence": {
+        "id": "glide",
+        "time": 68
+      }
+    },
+    {
+      "id": "review-first-task",
+      "name": "Review \u00b7 first Harbor task",
+      "scene": "harbor-shed",
+      "flags": {
+        "prologue:started": true
+      },
+      "items": {},
+      "tokens": 0,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 1140,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": 620,
+      "composition": "harbor-world",
+      "membership": {
+        "harbor-world": [
+          {
+            "id": "arrival",
+            "group": "harbor-arrival",
+            "placement": {
+              "x": 0,
+              "h": 0
+            }
+          },
+          {
+            "id": "work",
+            "group": "harbor-work",
+            "placement": {
+              "x": 2500,
+              "h": -160
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-world",
+      "name": "Review \u00b7 regular world",
+      "scene": "harbor-station",
+      "flags": {
+        "prologue:started": true,
+        "opening:home": true
+      },
+      "items": {},
+      "tokens": 3,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {
+        "shift.tagReceived": true,
+        "shift.parcelCollected": true,
+        "shift.parcelDelivered": true,
+        "shift.caseCollected": true,
+        "shift.caseReturned": true,
+        "shift.trolleyAssigned": true,
+        "shift.clampFound": true,
+        "shift.clampReleased": true,
+        "shift.trolleyMoved": true,
+        "shift.checkedOut": true,
+        "shift.statementRead": true,
+        "shift.coffeeFixed": true
+      },
+      "day": 2,
+      "minute": 370,
+      "seed": 3,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": 900,
+      "composition": "harbor-world",
+      "membership": {
+        "harbor-world": [
+          {
+            "id": "arrival",
+            "group": "harbor-arrival",
+            "placement": {
+              "x": 0,
+              "h": 0
+            }
+          },
+          {
+            "id": "work",
+            "group": "harbor-work",
+            "placement": {
+              "x": 2500,
+              "h": -160
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "new-run-demo",
+      "name": "Test District \u00b7 new run",
+      "scene": "shop",
+      "handle": "TESTER",
+      "flags": {
+        "arrived": true,
+        "schematics": true
+      },
+      "items": {},
+      "tokens": 8,
+      "modules": [
+        "timer.so",
+        "switch.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 1,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null
+    },
+    {
+      "id": "new-run-harbor",
+      "name": "Harbor shift \u00b7 new run",
+      "scene": "harbor-station",
+      "handle": "",
+      "flags": {},
+      "items": {},
+      "tokens": 0,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 1,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null,
+      "sequence": {
+        "id": "glide",
+        "time": 0
+      }
+    },
+    {
+      "id": "new-run-full",
+      "name": "Full game \u00b7 new run",
+      "scene": "harbor-station",
+      "handle": "",
+      "flags": {},
+      "items": {},
+      "tokens": 0,
+      "modules": [
+        "timer.so"
+      ],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 1,
+      "minute": 580,
+      "seed": 1,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null,
+      "sequence": {
+        "id": "glide",
+        "time": 0
+      }
     }
   ]
 }

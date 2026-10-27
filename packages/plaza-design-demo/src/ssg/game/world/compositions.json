@@ -79,6 +79,235 @@
       ],
       "connections": [],
       "exports": {}
+    },
+    "opening-coast": {
+      "name": "Opening coast",
+      "members": [
+        {
+          "id": "glide-beach",
+          "chunk": "glide-beach",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "glide-downtown-west",
+          "chunk": "glide-downtown-west",
+          "placement": {
+            "x": 4500,
+            "h": 0
+          }
+        },
+        {
+          "id": "glide-downtown",
+          "chunk": "glide-downtown",
+          "placement": {
+            "x": 7890,
+            "h": 0
+          }
+        },
+        {
+          "id": "glide-galleria",
+          "chunk": "glide-galleria",
+          "placement": {
+            "x": 10830,
+            "h": 0
+          }
+        },
+        {
+          "id": "glide-spire-bay",
+          "chunk": "glide-spire-bay",
+          "placement": {
+            "x": 11910,
+            "h": 0
+          }
+        }
+      ],
+      "connections": [
+        {
+          "id": "coast-1",
+          "kind": "walk",
+          "a": {
+            "member": "glide-beach",
+            "instance": "floor",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "glide-downtown-west",
+            "instance": "floor",
+            "anchor": "origin"
+          }
+        },
+        {
+          "id": "coast-2",
+          "kind": "walk",
+          "a": {
+            "member": "glide-downtown-west",
+            "instance": "floor",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "glide-downtown",
+            "instance": "floor",
+            "anchor": "origin"
+          }
+        },
+        {
+          "id": "coast-3",
+          "kind": "walk",
+          "a": {
+            "member": "glide-downtown",
+            "instance": "floor",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "glide-galleria",
+            "instance": "floor",
+            "anchor": "origin"
+          }
+        },
+        {
+          "id": "coast-4",
+          "kind": "walk",
+          "a": {
+            "member": "glide-galleria",
+            "instance": "floor",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "glide-spire-bay",
+            "instance": "floor",
+            "anchor": "origin"
+          }
+        }
+      ],
+      "exports": {
+        "station": {
+          "member": "glide-spire-bay",
+          "instance": "station-approach",
+          "anchor": "top"
+        }
+      }
+    },
+    "harbor-arrival": {
+      "name": "Harbor arrival",
+      "members": [
+        {
+          "id": "station",
+          "chunk": "harbor-station",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "quay",
+          "chunk": "harbor-quay",
+          "placement": {
+            "x": 900,
+            "h": -160
+          }
+        }
+      ],
+      "connections": [
+        {
+          "id": "station-quay",
+          "kind": "stairs",
+          "a": {
+            "member": "station",
+            "instance": "via-stair",
+            "anchor": "origin"
+          },
+          "b": {
+            "member": "quay",
+            "instance": "floor-quay",
+            "anchor": "origin",
+            "offset": {
+              "x": 510,
+              "h": 0
+            }
+          }
+        }
+      ],
+      "exports": {
+        "station": {
+          "member": "station",
+          "instance": "floor-platform",
+          "anchor": "origin"
+        },
+        "work": {
+          "member": "quay",
+          "instance": "floor-quay",
+          "anchor": "end"
+        }
+      }
+    },
+    "harbor-work": {
+      "name": "Harbor work sites",
+      "members": [
+        {
+          "id": "checkout",
+          "chunk": "harbor-checkout",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "yard",
+          "chunk": "harbor-yard",
+          "placement": {
+            "x": 640,
+            "h": 0
+          }
+        },
+        {
+          "id": "shed",
+          "chunk": "harbor-shed",
+          "placement": {
+            "x": 1920,
+            "h": 0
+          }
+        }
+      ],
+      "connections": [
+        {
+          "id": "checkout-yard",
+          "kind": "walk",
+          "a": {
+            "member": "checkout",
+            "instance": "floor-checkout",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "yard",
+            "instance": "floor-yard",
+            "anchor": "origin"
+          }
+        },
+        {
+          "id": "yard-shed",
+          "kind": "walk",
+          "a": {
+            "member": "yard",
+            "instance": "floor-yard",
+            "anchor": "end"
+          },
+          "b": {
+            "member": "shed",
+            "instance": "floor-bay",
+            "anchor": "origin"
+          }
+        }
+      ],
+      "exports": {
+        "arrival": {
+          "member": "checkout",
+          "instance": "floor-checkout",
+          "anchor": "origin"
+        }
+      }
     }
   },
   "compositions": {
@@ -103,6 +332,61 @@
         }
       ],
       "connections": []
+    },
+    "harbor-world": {
+      "name": "Harbor · opening and night shift",
+      "members": [
+        {
+          "id": "arrival",
+          "group": "harbor-arrival",
+          "placement": {
+            "x": 0,
+            "h": 0
+          }
+        },
+        {
+          "id": "coast",
+          "group": "opening-coast",
+          "placement": {
+            "x": -13290,
+            "h": -160
+          }
+        },
+        {
+          "id": "work",
+          "group": "harbor-work",
+          "placement": {
+            "x": 2500,
+            "h": -160
+          }
+        }
+      ],
+      "connections": [
+        {
+          "id": "coast-station",
+          "kind": "stairs",
+          "a": {
+            "member": "coast",
+            "export": "station"
+          },
+          "b": {
+            "member": "arrival",
+            "export": "station"
+          }
+        },
+        {
+          "id": "quay-work",
+          "kind": "walk",
+          "a": {
+            "member": "arrival",
+            "export": "work"
+          },
+          "b": {
+            "member": "work",
+            "export": "arrival"
+          }
+        }
+      ]
     }
   }
 }

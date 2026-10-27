@@ -414,69 +414,27 @@
     {
       "id": "teen",
       "name": "KIOSK",
-      "talk": [
-        [
-          "Phone cases. Screens. Screen protectors for your screen protector.",
-          "I get paid by the hour. The hours are very long. Coincidence."
-        ],
-        [
-          "If you're not buying, could you at least look interested? Camera 6 counts customers."
-        ]
-      ]
+      "conversation": "talk.mall.teen"
     },
     {
       "id": "kid",
       "name": "KID",
-      "talk": [
-        [
-          "I threw a token in. I wished for two tokens.",
-          "The fountain is thinking about it."
-        ],
-        [
-          "Mum says the fountain money goes to the Registry. I said then the Registry has my wish.",
-          "She said that's what worries her."
-        ]
-      ]
+      "conversation": "talk.mall.kid"
     },
     {
       "id": "diner",
       "name": "DINER",
-      "talk": [
-        [
-          "Six counters in this food court. Four of them are the same kitchen.",
-          "I eat lunch here because the park charges by the minute."
-        ],
-        [
-          "Try the noodles. Everything else is also the noodles, in a different shape."
-        ]
-      ]
+      "conversation": "talk.mall.diner"
     },
     {
       "id": "security",
       "name": "SECURITY",
-      "talk": [
-        [
-          "Galleria security. You look unverified. Most people do, after nine.",
-          "I'm not paid to chase you. I'm paid to write down which way you went."
-        ],
-        [
-          "Lost child? Desk 2. Lost identity? Also desk 2. It's a busy desk."
-        ]
-      ]
+      "conversation": "talk.mall.security"
     },
     {
       "id": "dancer",
       "name": "SECURITY",
-      "talk": [
-        [
-          "(He freezes, mid-move.)",
-          "Camera 14 has a blind spot behind this pillar. Four minutes an hour. I did not tell you that.",
-          "I'm stretching. It's in the union agreement."
-        ],
-        [
-          "You again. Either dance or stand guard. Those are the only two jobs in here."
-        ]
-      ]
+      "conversation": "talk.mall.dancer"
     }
   ],
   "readables": [

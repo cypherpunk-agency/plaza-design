@@ -19,10 +19,10 @@ export interface StoryFieldOptions {
   refresh?:()=>void;
 }
 const CUE_LISTS=['mid','end','then','begin','do','cues'];
-const CUE_KINDS=['milestone','say','print','sound','stage','counter','advance'];
+const CUE_KINDS=['milestone','say','print','sound','stage','stamp','clearStamps','advance'];
 const SOUNDS=['granted','blip','denied','close','open'];
 const isObject=(v:unknown)=>!!v&&typeof v==='object'&&!Array.isArray(v);
-const defaultCue=(kind:string,vocab:StoryVocab):Cue=>kind==='milestone'?{milestone:vocab.milestones[0]}:kind==='say'?{say:{speaker:'YOU',pages:['New line.'],height:46}}:kind==='print'?{print:{lines:['New line.']}}:kind==='sound'?{sound:'blip'}:kind==='stage'?{stage:{scene:vocab.scenes[0]}}:kind==='counter'?{counter:{id:'counter.name'}}:{advance:60};
+const defaultCue=(kind:string,vocab:StoryVocab):Cue=>kind==='milestone'?{milestone:vocab.milestones[0]}:kind==='say'?{say:{speaker:'YOU',pages:['New line.'],height:46}}:kind==='print'?{print:{lines:['New line.']}}:kind==='sound'?{sound:'blip'}:kind==='stage'?{stage:{scene:vocab.scenes[0]}}:kind==='stamp'?{stamp:'presentation.at'}:kind==='clearStamps'?{clearStamps:'presentation'}:{advance:60};
 const cueKind=(cue:object)=>Object.keys(cue)[0];
 const defaultRule=(kind:string,device:string):any=>kind==='say'?{say:{name:'YOU',pages:['Not yet.']}}:kind==='react'?{react:device,line:['','New response.']}:kind==='gate'?{gate:{verifying:'CHECKPOINT: verifying',ok:'CHECKPOINT: ok.',verifyFrames:150,okFrames:50,dotEvery:20,then:[]}}:{acknowledge:{speaker:'DEVICE',pages:['Welcome.'],height:60,then:[]}};
 
@@ -47,7 +47,7 @@ export class StoryFields {
       if(key==='arrival'){this.arrival(parent,value,path);return;}
       if(key==='say'||key==='line'){this.line(parent,value,path);return;}
       if(key==='act'||key==='set'&&value.length===2&&typeof value[1]==='boolean'){this.pair(parent,value,path,scene);return;}
-      if(key==='reset'&&parentKey!=='counter'){value.forEach((s:string,i:number)=>{form.select(parent,name+' '+(i+1),this.vocab().scenes,s,v=>this.set([...path,i],v));form.button(parent,'Remove '+name+' '+(i+1),()=>this.remove([...path,i]));});form.button(parent,'Add '+name+' scene',()=>this.change('Add reset scene',d=>{this.at(d,path).push(this.vocab().scenes[0]);}),value.length>=8);return;}
+      if(key==='reset'){value.forEach((s:string,i:number)=>{form.select(parent,name+' '+(i+1),this.vocab().scenes,s,v=>this.set([...path,i],v));form.button(parent,'Remove '+name+' '+(i+1),()=>this.remove([...path,i]));});form.button(parent,'Add '+name+' scene',()=>this.change('Add reset scene',d=>{this.at(d,path).push(this.vocab().scenes[0]);}),value.length>=8);return;}
       if(!value.length&&['messages','CONTACTS','TRIGGERS','GOAL_HINTS','resume','OPENING_LEVELS'].includes(String(key))){this.addButtons(parent,value,path);return;}
       if(value.every(v=>typeof v==='string')&&key!=='flags'){form.text(parent,name,value.join('\n\n'),v=>this.set(path,v.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean)),true);return;}
       if(key==='flags'){value.forEach((f:string,i:number)=>form.select(parent,name+' '+(i+1),this.vocab().flags,f,v=>this.set([...path,i],v)));return;}
@@ -101,7 +101,6 @@ export class StoryFields {
       form.check(parent,name+' consume scene intro',!!value.consume,x=>this.set([...path,'consume'],x));
     }
     if(parentKey==='lines'&&!value.name)form.button(parent,'Add '+name+' speaker',()=>this.set([...path,'name'],'YOU'));
-    if(key==='quiet'){const p=document.createElement('p');p.textContent='Waits for any speech bubble and popup to close';parent.append(p);}
     if(path.includes('resume')&&typeof key==='number'){
       form.select(parent,name+' condition flag',['',...v.flags],value.whenFlag??'',flag=>this.change('Edit opening resume condition',d=>{const r=this.at(d,path);if(flag)r.whenFlag=flag;else delete r.whenFlag;}));
     }
@@ -109,7 +108,7 @@ export class StoryFields {
     this.optional(parent,value,path,here);
     for(const k of keys){
       if(k==='entrance'&&'scene'in value&&keys.every(q=>['scene','entrance'].includes(q)))continue;
-      if(k==='whenFlag'||k==='consume'&&key==='intro'||k==='bubble'&&key==='quiet'||k==='popup'&&key==='quiet')continue;
+      if(k==='whenFlag'||k==='consume'&&key==='intro')continue;
       if(['door'].includes(k)&&key==='ping')continue;
       const child=value[k],box=child&&typeof child==='object'?form.section(parent,name+' '+k):parent;
       this.walk(box,child,[...path,k],here);
@@ -123,15 +122,6 @@ export class StoryFields {
     const add=(field:string,initial:unknown,label=field)=>{if(!(field in value))form.button(parent,'Add '+name+' '+label,()=>this.set([...path,field],initial));};
     const drop=(field:string)=>{if(field in value)form.button(parent,'Remove '+name+' '+field,()=>this.remove([...path,field]));};
     const first=(rows:readonly string[])=>rows[0]??'';
-    if(parentKey==='TRIGGERS'||typeof key==='number'&&path[0]==='TRIGGERS'){
-      add('start','counter.start');add('once','counter.once');add('viewing',first(this.deviceIds(scene)));
-      add('quiet',{bubble:true,popup:true,since:'counter.last',frames:100});add('when',[{counter:'counter.name',atLeast:1}]);
-      drop('start');drop('once');drop('viewing');drop('quiet');drop('when');
-    }
-    if(path[0]==='TRIGGERS'&&path.at(-2)==='when'){/* a test is a counter or an elapsed time */
-      const kind='counter'in value?'counter':'elapsed';
-      form.select(parent,name+' test',['counter','elapsed'],kind,k=>this.set(path,k==='counter'?{counter:'counter.name',atLeast:1}:{elapsed:'counter.start',frames:60}));
-    }
     if(path[0]==='PHASES'&&path.length===2){if(!value.persona)form.button(parent,'Add '+name+' persona',()=>this.set([...path,'persona'],{name:'courier',calmWeather:true,deck:{files:{},whoami:'whoami'}}));else drop('persona');}
     if(path[0]==='CARDS'&&path.length===2){add('mid',[]);add('end',[]);}
     if(key==='gate'||key==='acknowledge'){add('begin',[]);}
@@ -150,7 +140,6 @@ export class StoryFields {
     if(key==='print'&&path.at(-2)!==undefined){add('prefix','prefix> ');add('tone','ok');drop('prefix');drop('tone');}
     if(key==='say'&&path.at(-2)!==undefined&&Array.isArray(value.pages)&&!value.touchPages)form.button(parent,'Add '+name+' touch pages',()=>this.set([...path,'touchPages'],[...value.pages]));
     if(key==='say'&&value.touchPages)drop('touchPages');
-    if(key==='counter'&&typeof value.id==='string'){const kind=value.stamp?'stamp':'add';form.select(parent,name+' op',['add','stamp'],kind,k=>this.set(path,k==='stamp'?{id:value.id,stamp:true}:{id:value.id}));}
     if(key==='stage'){add('reset',true);add('face',-1);drop('reset');drop('face');}
   }
 
@@ -239,7 +228,6 @@ export class StoryFields {
     const add=(label:string,row:unknown,max=16)=>form.button(parent,'Add '+name+' '+label,()=>this.change('Add '+label,d=>{this.at(d,path).push(structuredClone(row));}),list.length>=max);
     if(key==='resume')form.button(parent,'Add '+name+' conditional rule',()=>this.change('Add opening resume rule',d=>{this.at(d,path).unshift({whenFlag:v.flags[1]??v.flags[0],destination:{scene:v.scenes[0]}});}));
     else if(top==='OPENING_LEVELS')add('level',{id:'opening-level-'+(list.length+1),name:'New opening level',flags:[v.flags[0]]});
-    else if(top==='TRIGGERS')add('trigger',{id:'trigger-'+(list.length+1),phase:v.phases[0],scene:v.scenes[0],do:[]});
     else if(top==='GOAL_HINTS')add('hint',{program:'scan.so',exceptScene:v.scenes[0],afterScene:v.scenes[0],afterGoal:'goal',line:'New hint.'},8);
     else if(top==='CONTACTS'&&path.length===1)add('contact',{id:'contact-'+(list.length+1),name:'NEW',when:'contact:new',status:'status',messages:[]});
     else if(key==='messages')add('message',{id:'message.'+(list.length+1),when:'flag.name',text:['New message.']},64);

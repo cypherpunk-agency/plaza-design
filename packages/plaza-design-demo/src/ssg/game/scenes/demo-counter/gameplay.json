@@ -32,6 +32,86 @@
       "min": 0,
       "max": 100,
       "lifetime": "save"
+    },
+    "talk.shop.keeper.cursor": {
+      "owner": "talk.shop.keeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.shop.browser.cursor": {
+      "owner": "talk.shop.browser",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.shop.android.cursor": {
+      "owner": "talk.shop.android",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.shelfe.cursor": {
+      "owner": "talk.library.shelfe",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.librarian.cursor": {
+      "owner": "talk.library.librarian",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.student.cursor": {
+      "owner": "talk.library.student",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.kid.cursor": {
+      "owner": "talk.library.kid",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.sleeper.cursor": {
+      "owner": "talk.library.sleeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.knitter.cursor": {
+      "owner": "talk.library.knitter",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.paper.cursor": {
+      "owner": "talk.library.paper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
     }
   },
   "purchases": {
@@ -204,6 +284,226 @@
         {
           "flag": "demo.mission",
           "value": false
+        }
+      ]
+    },
+    "talk.shop.keeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.keeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.keeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.keeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.browser.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.browser.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.browser.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.browser.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.android.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.android.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.shop.android.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.shop.android.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.shelfe.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.shelfe.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.shelfe.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.shelfe.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.library.librarian.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.librarian.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.librarian.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.librarian.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.student.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.student.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.student.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.student.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.kid.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.kid.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.sleeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.sleeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.knitter.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.knitter.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.knitter.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.knitter.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.paper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.paper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.paper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.paper.cursor",
+          "set": 1
         }
       ]
     }
@@ -412,6 +712,307 @@
               "next": "setup"
             }
           ]
+        }
+      }
+    },
+    "talk.shop.keeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.shop.keeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SHOPKEEPER",
+          "pages": [
+            "The quote and charge share a base price. The Test Desk can change the rules."
+          ],
+          "onEnter": "talk.shop.keeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SHOPKEEPER",
+          "pages": [
+            "I remember you. My stock remembers your purchases, too."
+          ],
+          "onEnter": "talk.shop.keeper.advance-1"
+        }
+      }
+    },
+    "talk.shop.browser": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.shop.browser.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "They moved the cheap noodles to the top shelf.",
+            "Top shelf is for people with legs.so. I have the free legs."
+          ],
+          "onEnter": "talk.shop.browser.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "I come in to read the labels. It is warmer than the library and the library closed."
+          ],
+          "onEnter": "talk.shop.browser.advance-1"
+        }
+      }
+    },
+    "talk.shop.android": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.shop.android.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "Batteries. Two packs. Do not make it weird."
+          ],
+          "onEnter": "talk.shop.android.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CUSTOMER",
+          "pages": [
+            "People ask what I do for fun. I queue. I am very good at it. I have never once been served first."
+          ],
+          "onEnter": "talk.shop.android.advance-1"
+        }
+      }
+    },
+    "talk.library.shelfe": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.shelfe.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SHELF-E",
+          "pages": [
+            "First circuit. Talk to me again: I cycle through two responses and remember my position."
+          ],
+          "onEnter": "talk.library.shelfe.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SHELF-E",
+          "pages": [
+            "Second circuit. My next response returns to the first."
+          ],
+          "onEnter": "talk.library.shelfe.advance-1"
+        }
+      }
+    },
+    "talk.library.librarian": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.librarian.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LIBRARIAN",
+          "pages": [
+            "This district uses the real gameplay engine. The empty chair is the Test Desk."
+          ],
+          "onEnter": "talk.library.librarian.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LIBRARIAN",
+          "pages": [
+            "You have visited me before. My conversation progress survives a reload."
+          ],
+          "onEnter": "talk.library.librarian.advance-1"
+        }
+      }
+    },
+    "talk.library.student": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.student.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TERMINAL 1",
+          "pages": [
+            "This district uses the real gameplay engine. The empty chair is the Test Desk."
+          ],
+          "onEnter": "talk.library.student.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TERMINAL 1",
+          "pages": [
+            "You have visited me before. My conversation progress survives a reload."
+          ],
+          "onEnter": "talk.library.student.advance-1"
+        }
+      }
+    },
+    "talk.library.kid": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.kid.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TERMINAL 2",
+          "pages": [
+            "This district uses the real gameplay engine. The empty chair is the Test Desk."
+          ],
+          "onEnter": "talk.library.kid.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TERMINAL 2",
+          "pages": [
+            "You have visited me before. My conversation progress survives a reload."
+          ],
+          "onEnter": "talk.library.kid.advance-1"
+        }
+      }
+    },
+    "talk.library.sleeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.sleeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "This district uses the real gameplay engine. The empty chair is the Test Desk."
+          ],
+          "onEnter": "talk.library.sleeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REGULAR",
+          "pages": [
+            "You have visited me before. My conversation progress survives a reload."
+          ],
+          "onEnter": "talk.library.sleeper.advance-1"
+        }
+      }
+    },
+    "talk.library.knitter": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.knitter.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "This district uses the real gameplay engine. The empty chair is the Test Desk."
+          ],
+          "onEnter": "talk.library.knitter.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REGULAR",
+          "pages": [
+            "You have visited me before. My conversation progress survives a reload."
+          ],
+          "onEnter": "talk.library.knitter.advance-1"
+        }
+      }
+    },
+    "talk.library.paper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.paper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "This district uses the real gameplay engine. The empty chair is the Test Desk."
+          ],
+          "onEnter": "talk.library.paper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REGULAR",
+          "pages": [
+            "You have visited me before. My conversation progress survives a reload."
+          ],
+          "onEnter": "talk.library.paper.advance-1"
         }
       }
     }

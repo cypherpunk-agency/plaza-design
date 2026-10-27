@@ -4,7 +4,7 @@ import type {SceneDef} from '../scenes/kit';
 
 /**
  * What one scene says and does in each phase of the story (scene.json `phases`, `wash`): the goal line, the clock, the arrival words,
- * who answers and what the exits, barriers, devices and targets do. The same controls serve Scene › Story phases and the Game opening panel.
+ * who answers and what the exits, barriers, devices and targets do. Edit these on the selected chunk under Story phases.
  * Every edit passes the pending-source validation of the whole set (a name must exist in the scene, a phase in the story).
  */
 const FIELDS=['time','goal','intro','ping','ride','arrival','lines','exits','barriers','everyday','targets'] as const;

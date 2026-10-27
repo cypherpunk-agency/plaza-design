@@ -3,6 +3,30 @@
   "scene": "backdrop-glide-coast",
   "instances": [
     {
+      "id": "world-sky",
+      "type": "environment.sky",
+      "props": {
+        "horizon": 189,
+        "style": "sunset",
+        "regions": [
+          {
+            "from": 4140,
+            "to": 11820,
+            "enter": 1320,
+            "leave": 1740,
+            "town": 1
+          }
+        ]
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -10000,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
       "id": "sea",
       "type": "environment.sea",
       "props": {
@@ -397,18 +421,5 @@
       "layer": "distance"
     }
   ],
-  "sky": {
-    "horizon": 189,
-    "style": "sunset",
-    "regions": [
-      {
-        "from": 4140,
-        "to": 11820,
-        "enter": 1320,
-        "leave": 1740,
-        "town": 1
-      }
-    ]
-  },
   "width": 20000
 }

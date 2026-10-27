@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { art, resolveComposition, type Composition, type Environment } from '../../src/ssg/game/art';
+import { art, resolveComposition, type ChunkDocument, type Environment } from '../../src/ssg/game/art';
 import { previewBounds, validatePreviewWeather } from '../../src/ssg/game/authoring/native-preview';
 import { overrideOf, setOverride, withSceneWeather, hereClimate, weatherAt } from '../../src/ssg/game/world/weather';
 import { frameView } from '../../src/ssg/game/art/core/view';
 import { CityClock } from '../../src/ssg/game/world/clock';
 
-const document: Composition = { version: 1, scene: 'preview-contract', instances: [
+const document: ChunkDocument = { version: 1, scene: 'preview-contract', instances: [
   { id: 'assembly', type: 'assembly.group', props: {}, placement: { x: 100, h: 20, scale: 2, facing: -1 }, order: 0, layer: 'backdrop', children: [
     { id: 'seat', type: 'furniture.stool', props: {}, placement: { x: 10, h: 0 }, order: 1, layer: 'backdrop' },
   ] },

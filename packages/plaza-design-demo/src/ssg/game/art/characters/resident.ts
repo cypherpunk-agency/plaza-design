@@ -5,7 +5,7 @@ import {BODY_KINDS,HAIR_KINDS,GARB_KINDS,EXTRA_KINDS,FACIAL_KINDS} from './parts
 import type {BotLook,Face} from './appearance';
 import {BOT,CRITTERS} from './appearance';
 import {ARCHETYPE_IDS,type ArchetypeId} from './archetypes';
-import type {Element,Field,Properties,Point,Value} from '../core/composition';
+import type {AssetDefinition,Field,Properties,Point,Value} from '../core/composition';
 import {DEPTH_BANDS,DEPTH_ORDER,isDepthBand} from '../core/depth';
 import {DISTRICT_PALETTES,SEATED_VIEWS,type SitPose} from './people-style';
 import type {Look} from '../../runtime/characters';
@@ -41,7 +41,7 @@ export function residentCharacter(props:Properties,point:Point):Character{
  actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:Number(props.dim??-1)>=0?Number(props.dim):band.dim,parallax:band.parallax,...(props.facing==='left'?{facing:-1 as const}:props.facing==='right'?{facing:1 as const}:{}),...body,...sitting,...rest,...(range?{range}:{}),...(speed>0?{speed}:{})};
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
-export const residentElement:Element={
+export const residentElement:AssetDefinition={
  type:'character.resident',mobility:p=>Number(p.range)!==0,version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world', libraryUse: 'reusable',parts:['people'],
  fields:{
   kind:{kind:'select',label:'Body kind',options:residentKinds,default:'human'},

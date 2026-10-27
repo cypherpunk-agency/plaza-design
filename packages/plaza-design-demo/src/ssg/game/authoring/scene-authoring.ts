@@ -1,3 +1,8 @@
+import {validationSnapshot} from './validation-snapshot';
+import {renderNativeLiveConditionsAuthoring} from './native-live-conditions-authoring';
+import {sourceGameplay} from '../engine/gameplay/shared-state';
+import type {GameplayDefinition} from '../engine/gameplay/types';
+import {mergeGameplayLibrary} from '../engine/gameplay/libraries';
 import {renderSceneStage} from './scene-stage-authoring';
 import {COMPANION_SOURCE,validateCompanionSource} from '../engine/gameplay/companion-source';
 import {rotationStateIds} from '../engine/gameplay/scene-document';
@@ -8,14 +13,14 @@ import {emptyDeviceSource} from '../engine/empty-data';
 import {projectSceneState} from '../engine/gameplay/scene-state';
 import {deviceSourceIdentity} from './device-document-ids';
 import {renderSceneCompanion} from './scene-companion-authoring';
+import {mountCompanionSourceAuthoring} from './companion-source-authoring';
 import {COMPANION_GAMEPLAY} from '../engine/gameplay/companion-conversations';
 import {SCENES} from '../scenes';
 import {renderSceneEnvironment} from './scene-environment-authoring';
-import {actorConversationId} from '../engine/gameplay/scene-conversations';
 import {actorAxes} from '../engine/gameplay/actors';
 import {actorBindingController} from '../engine/gameplay/native-actor-bindings';
 import {addSceneActor,addSceneRider,addSceneStreetSprite} from '../engine/gameplay/actor-content';
-import type {Composition} from '../art';
+import type {ChunkDocument} from '../art';
 import {addManifestObjective,removeManifestObjective,addManifestTime,removeManifestTime} from '../engine/gameplay/manifest-milestones';
 import {renderActor} from './actor-authoring';
 import {renderManifestTarget,renderArtworkRoles,renderManifestWidth} from './manifest-target-authoring';
@@ -43,43 +48,57 @@ export interface SceneLogicFocus {only?:readonly string[];groups?:readonly strin
 /** One part of the scene document at a time: a grouped list on the left, its fields on the right. */
 export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,selection:{scene?:string;use?:string;item?:string;fixed?:boolean;focus?:SceneLogicFocus}={}):WorkbenchHandle {
  const api=context.authoring!,error=document.createElement('p'),body=document.createElement('section');error.setAttribute('role','alert');error.className='error';host.replaceChildren(error,body);let use=selection.use??'boss',phasePick='';
+ const triggerDraft:Record<string,string>={};
  const form=new TypedForm(e=>error.textContent=e instanceof Error?e.message:String(e)),focusOpen=new Map<string,boolean>(),rotationDraft=new Map<string,string>();
+ const children=new Set<WorkbenchHandle>(),cleanups=new Set<()=>void>();let sharedCompanionOpen=false,disposed=false;
+ const clearChildren=()=>{for(const cleanup of cleanups)cleanup();cleanups.clear();for(const child of children)child();children.clear();};
  const selected=()=>gameplayScene(selection.scene??'downtown',context.documents);
  const identity=()=>deviceSourceIdentity(selected().id);
  const gameplay=()=>selected().validateGameplay(api.get(selected().gameplayId).value);
- const pendingDocuments=()=>new Map(context.documents.filter(row=>!row.id.startsWith('authored.')).map(row=>[row.id,api.get(row.id).value]));
- const targetContext=(source:unknown)=>{const documents=pendingDocuments(),identity=deviceSourceIdentity(selected().id),network=pendingNetworkContext(documents);return{scene:pendingScene(selected().id,documents.get(identity.composition),{sceneDocument:source,gameplay:gameplay(),devices:documents.get(identity.devices)},network),network};};
+ const pendingDocuments=()=>api.snapshot?validationSnapshot(api.snapshot()):new Map(context.documents.filter(row=>!row.id.startsWith('authored.')).map(row=>[row.id,api.get(row.id).value]));
+ const targetContext=(source:unknown)=>{const documents=pendingDocuments(),identity=deviceSourceIdentity(selected().id),network=pendingNetworkContext(documents);return{scene:pendingScene(selected().id,api.get(identity.composition).value,{sceneDocument:source,gameplay:gameplay(),devices:api.get(identity.devices).value,sharedState:documents.get('state-owners'),catalogue:documents.get('authored-scenes')},network),network};};
  const validate=(source:unknown)=>{if((source as SceneDocument)?.nativeTargets!==undefined){const assembled=targetContext(source);return selected().validateScene(source,gameplay(),{phase:'assembled',data:assembled.scene.data!,network:assembled.network});}return selected().validateScene(source,gameplay());};
  const doc=()=>validate(api.get(identity().scene).value);
- const edit=(label:string,fn:(d:SceneDocument)=>void)=>{const d=doc();fn(d);validate(d);error.textContent='';api.edit(identity().scene,label,d);};
- const actorTransaction=(label:string,fn:(source:SceneDocument,composition:Composition)=>void)=>{if(!api.editDocuments)throw new Error('Actor editing requires grouped source history');const s=doc(),c=api.get(identity().composition).value as Composition;fn(s,c);api.editDocuments([{id:identity().composition,value:c},{id:identity().scene,value:s}],label);};
+ const edit=(label:string,fn:(d:SceneDocument,g:GameplayDefinition)=>void)=>{const d=doc(),g=sourceGameplay(gameplay()),before=JSON.stringify(g);fn(d,g);if(JSON.stringify(g)!==before){if(!api.editDocuments)throw new Error('Conversation editing requires grouped source history');api.editDocuments([{id:identity().scene,value:d},{id:selected().gameplayId,value:g}],label);}else{validate(d);api.edit(identity().scene,label,d);}error.textContent='';};
+ const actorTransaction=(label:string,fn:(source:SceneDocument,composition:ChunkDocument,g:GameplayDefinition)=>void)=>{if(!api.editDocuments)throw new Error('Actor editing requires grouped source history');const s=doc(),c=api.get(identity().composition).value as ChunkDocument,g=sourceGameplay(gameplay());fn(s,c,g);api.editDocuments([{id:identity().composition,value:c},{id:identity().scene,value:s},{id:selected().gameplayId,value:g}],label);};
  const note=(parent:HTMLElement,text:string)=>{const p=document.createElement('p');p.className='muted';p.textContent=text;parent.append(p);};
  const pages=(v:string)=>v.split(/\n\s*\n/).filter(Boolean);
- function refresh(){body.replaceChildren();if(!selection.fixed)form.select(body,'Logic scene',gameplayScenes.map(s=>s.id),selected().id,id=>{selection.scene=id;selection.use=undefined;selection.item=undefined;use='';refresh();});const d=doc(),g=gameplay(),destinations=d.manifest?pendingDestinations(new Map(context.documents.filter(row=>!row.id.startsWith('authored.')).map(row=>[row.id,api.get(row.id).value]))):{};if(!d.uses.some(u=>u.id===use))use=d.uses[0]?.id??'';selection.use=use;
+ function refresh(){if(disposed)return;clearChildren();body.replaceChildren();if(!selection.fixed)form.select(body,'Logic scene',gameplayScenes.map(s=>s.id),selected().id,id=>{selection.scene=id;selection.use=undefined;selection.item=undefined;use='';refresh();});const d=doc(),g=gameplay(),destinations=d.manifest?pendingDestinations(pendingDocuments()):{};if(!d.uses.some(u=>u.id===use))use=d.uses[0]?.id??'';selection.use=use;
   form.objectiveIds=d.objectives?.map(o=>o.id)??[];
-  const keys=[...pendingNetworkContext(new Map(context.documents.filter(row=>!row.id.startsWith('authored.')).map(row=>[row.id,api.get(row.id).value]))).keyring.keys()];
+  const keys=[...pendingNetworkContext(pendingDocuments()).keyring.keys()];
   const entries:Entry[]=[];
+  entries.push({key:'triggers',group:'Scene',label:'Triggers',render:h=>{
+   note(h,'Automatic conditions in this chunk request ordinary system commands. Device sensors and their watched zones are edited on the selected device; these rules use their resulting state and events. New triggers start false and use rising activation: restoring a save establishes the baseline rather than firing again.');
+   const change=(label:string,fn:(g:GameplayDefinition)=>void)=>{const next=sourceGameplay(gameplay());fn(next);api.edit(selected().gameplayId,label,next);error.textContent='';refresh();};
+   if(!g.native){form.button(h,'Enable condition triggers',()=>change('Enable chunk triggers',next=>{next.native={verbs:[],events:{},goals:{}};}));return;}
+   if(!Object.values(g.commands).some(c=>c.sources.length===1&&c.sources[0]==='system'))note(h,'Create a system command under Logic → Commands & dialogue, then add a trigger here.');
+   renderNativeLiveConditionsAuthoring(h,g,{form,draft:triggerDraft,edit:change,section:(parent,title)=>form.section(parent,title),refresh});
+  }});
+
   entries.push({key:'environment',group:'Scene',label:'Environment',render:h=>{note(h,'These overrides control the same native lighting and weather in the game and preview. Omitted values follow the registered artwork or controller.');renderSceneEnvironment(form,h,d.environment,(label,change)=>edit(label,d=>{change(d.environment??={});}),refresh,d.id);}});
   if(Object.prototype.hasOwnProperty.call(scenePresentationRoles,d.id))entries.push({key:'presentation',group:'Scene',label:scenePresentationActorRoles[d.id as keyof typeof scenePresentationRoles]?'Actor presentation':'Visual flag bindings',render:h=>renderScenePresentation(form,h,d,g,edit,refresh)});
-  if(d.manifest)entries.push({key:'companion',group:'Scene',label:'Companion',render:h=>{const rows=manifestCompositionRows(api.get(identity().composition).value as Composition),deviceId=deviceSourceIdentity(d.id).devices,native=projectSceneState(context.documents.some(row=>row.id===deviceId)?api.get(deviceId).value as import('../data').SceneData:SCENES[d.id]?.data??emptyDeviceSource(d.id,d.name),g),library=context.documents.some(row=>row.id==='companion-gameplay')?api.get('companion-gameplay').value as import('../engine/gameplay/types').GameplayDefinition:COMPANION_GAMEPLAY;renderSceneCompanion(form,h,d,rows,Object.entries(native?.state??{}).filter(([,v])=>typeof v==='string').map(([k])=>k),Object.keys({...library.conversations,...g.conversations}),g,edit,refresh,context.documents.some(row=>row.id==='companion')?validateCompanionSource(api.get('companion').value):COMPANION_SOURCE);}});
+  if(d.manifest)entries.push({key:'companion',group:'Scene',label:'Companion',render:h=>{const rows=manifestCompositionRows(api.get(identity().composition).value as ChunkDocument),deviceId=deviceSourceIdentity(d.id).devices,native=projectSceneState(context.documents.some(row=>row.id===deviceId)?api.get(deviceId).value as import('../data').SceneData:SCENES[d.id]?.data??emptyDeviceSource(d.id,d.name),g),library=context.documents.some(row=>row.id==='companion-gameplay')?api.get('companion-gameplay').value as import('../engine/gameplay/types').GameplayDefinition:COMPANION_GAMEPLAY;renderSceneCompanion(form,h,d,rows,Object.entries(native?.state??{}).filter(([,v])=>typeof v==='string').map(([k])=>k),Object.keys({...library.conversations,...g.conversations}),mergeGameplayLibrary(g,library,'Companion conditions'),edit,refresh,context.documents.some(row=>row.id==='companion')?validateCompanionSource(api.get('companion').value,library):COMPANION_SOURCE,context.openConversation?id=>context.openConversation!(g.conversations[id]?selected().gameplayId:'companion-gameplay',id):undefined);
+   if(context.documents.some(row=>row.id==='companion')){const shared=document.createElement('details'),summary=document.createElement('summary'),controls=document.createElement('div');summary.textContent='Shared companion definition';shared.append(summary,controls);h.append(shared);shared.open=sharedCompanionOpen;let handle:WorkbenchHandle|undefined;cleanups.add(()=>{shared.ontoggle=null;});
+    const mount=()=>{if(handle)return;handle=mountCompanionSourceAuthoring(controls,context);children.add(handle);};shared.ontoggle=()=>{sharedCompanionOpen=shared.open;if(shared.open)mount();else if(handle){handle();children.delete(handle);handle=undefined;}};if(shared.open)mount();
+   }}});
   const mutableActors=!!actorBindingController(d.id)?.mutable&&!!api.editDocuments;
   if(mutableActors)entries.push({key:'actor-collection',group:'Scene',label:'Actor collection',render:h=>{let id='actor-1',n=1;while(d.actors?.some(a=>a.id===id))id='actor-'+(++n);let family='human',x=180,height=0,dialogue=true;
    note(h,'Create the actor and its artwork together. Position can be changed here, in Layout or by attaching its placement to an artwork anchor.');
    form.text(h,'New actor ID',id,value=>{id=value;});form.select(h,'New actor family',['human',...(actorBindingController(d.id)?.element==='actor.prepared'?['rider','streetSprite']:[]),...actorAxes.critter,...actorAxes.bot],family,value=>{family=value;});form.decimal(h,'New actor X',x,value=>{x=value;},-10000,10000);form.decimal(h,'New actor height',height,value=>{height=value;},-10000,10000);form.check(h,'New actor has conversation',dialogue,value=>{dialogue=value;});
-   form.button(h,'Add actor',()=>{actorTransaction('Add actor',(s,c)=>family==='streetSprite'?addSceneStreetSprite(s,c,id,{kind:'streetSprite',sprite:'hood'},x,height,dialogue):family==='rider'?addSceneRider(s,c,id,{kind:'rider',rider:'phone',phase:0},x,height,dialogue):addSceneActor(s,c,id,family==='human'?{}:family as import('../runtime/characters').Character['look'],x,height,dialogue));selection.item='actor:'+id;refresh();},(d.actors?.length??0)>=128);
+   form.button(h,'Add actor',()=>{actorTransaction('Add actor',(s,c,g)=>family==='streetSprite'?addSceneStreetSprite(s,c,id,{kind:'streetSprite',sprite:'hood'},x,height,dialogue,g):family==='rider'?addSceneRider(s,c,id,{kind:'rider',rider:'phone',phase:0},x,height,dialogue,g):addSceneActor(s,c,id,family==='human'?{}:family as import('../runtime/characters').Character['look'],x,height,dialogue,g));selection.item='actor:'+id;refresh();},(d.actors?.length??0)>=128);
   }});
-  d.actors?.forEach((a,i)=>entries.push({key:'actor:'+a.id,group:'Actors',label:a.id,detail:a.band,render:h=>renderActor(form,h,d,i,edit,refresh,mutableActors?{composition:api.get(identity().composition).value as Composition,transaction:actorTransaction}:undefined)}));
+  d.actors?.forEach((a,i)=>entries.push({key:'actor:'+a.id,group:'Actors',label:a.id,detail:a.band,render:h=>renderActor(form,h,d,i,edit,refresh,mutableActors?{composition:api.get(identity().composition).value as ChunkDocument,transaction:actorTransaction}:undefined,{context,character:targetContext(d).scene.people?.[i]})}));
   if(d.manifest)entries.push({key:'phases',group:'Scene',label:'Story phases',detail:Object.keys(d.phases??{}).join(' · ')||undefined,render:h=>{
    const registry=pendingRegistry(new Map(context.documents.map(x=>[x.id,api.get(x.id).value]))),story=validateOpeningSource(api.get('opening-story').value),vocab=()=>({scenes:Object.keys(registry),phases:Object.keys(story.PHASES),flags:Object.values(story.OPENING),cards:Object.keys(story.CARDS),milestones:Object.keys(story.WORKFLOWS),registry}),handle={value:()=>structuredClone(api.get(identity().scene).value) as any,edit:(label:string,change:(x:any)=>void)=>{edit(label,change);refresh();}};
-   note(h,'What this scene says and does in each phase of the story (the phases are the Game opening panel\'s). A field set here replaces the scene\'s usual behaviour in that phase.');
+   note(h,'What this chunk says and does in each story phase. Global phase policies are in Library → Story logic. A field set here replaces the chunk\'s usual behaviour in that phase.');
    const phases=vocab().phases;if(!phases.includes(phasePick))phasePick=phases[0];
    form.select(h,'Story phase',phases,phasePick,v=>{phasePick=v;refresh();});
    renderScenePhase({form,parent:h,doc:handle,vocab,scene:d.id,phase:phasePick,refresh});
    renderSceneWash(form,form.section(h,'Room light cue'),handle,vocab,d.id);
   }});
-  if(d.manifest)entries.push({key:'stage',group:'Scene',label:'Stage & compile',render:h=>{const composition=api.get(identity().composition).value as import('../art').Composition,types:string[]=[];const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){types.push(n.type);walk(n.children??[]);}};walk(composition.instances);renderSceneStage(form,h,d,edit,[...new Set(types)].sort());}});
+  if(d.manifest)entries.push({key:'stage',group:'Scene',label:'Stage & compile',render:h=>{const composition=api.get(identity().composition).value as import('../art').ChunkDocument,types:string[]=[];const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){types.push(n.type);walk(n.children??[]);}};walk(composition.instances);renderSceneStage(form,h,d,edit,[...new Set(types)].sort());}});
   if(d.manifest)entries.push({key:'manifest',group:'Scene',label:'Content & bindings',render:h=>{
-   const composition=api.get(identity().composition).value as import('../art').Composition,instances:import('../art').Instance[]=[];
+   const composition=api.get(identity().composition).value as import('../art').ChunkDocument,instances:import('../art').AssetInstance[]=[];
    const walk=(nodes:typeof composition.instances)=>{for(const n of nodes){instances.push(n);walk(n.children??[]);}};walk(composition.instances);
    const ids=instances.map(n=>n.id),rows=manifestCompositionRows(composition),groups=d.manifest!.compile?.groups??manifestGroups;
    renderManifestWidth(form,h,d.manifest!.width,rows,width=>edit('Edit scene width binding',d=>{d.manifest!.width=width;}));
@@ -91,7 +110,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
      form.button(box,'Remove '+group+' '+row.id,()=>{edit('Remove '+group,d=>removeManifestContent(d,group,row.id));refresh();});}
     let id='',instance=choices[0]??'';
     form.text(box,'New '+group+' ID',id,value=>{id=value;});form.select(box,'New '+group+' artwork',choices,instance,value=>{instance=value;});
-    form.button(box,'Add '+group,()=>{edit('Add '+group,d=>addManifestContent(d,group,id,instance));refresh();},!choices.length||(d[group]?.length??0)>=32);
+    form.button(box,'Add '+group,()=>{edit('Add '+group,(d,g)=>addManifestContent(d,group,id,instance,g));refresh();},!choices.length||(d[group]?.length??0)>=32);
     if(!choices.length)note(box,'Add an authored person, animal or robot through Layout first.');
    }
    note(h,'Bindings use artwork positions. Removing content keeps its artwork; Layout manages artwork separately.');
@@ -152,6 +171,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
   form.button(access,'Add access requirement',()=>edit('Add access requirement',d=>{const row=d.uses.find(v=>v.id===uid)!;(row.access??=[]).push({when:{all:[]},reason:'This action is not available yet.'});}), (u.access?.length??0)>=32);
    const routes=(parent:HTMLElement,name:string,rows:InteractionRoute[],get:(d:SceneDocument)=>InteractionRoute[],rotating=false)=>{rows.forEach((r,i)=>{const row=form.section(parent,(name==='Use'?'Outcome ':name+' outcome ')+(i+1)+(r.conversation?' · '+r.conversation:r.command?' · '+r.command:'')),change=(fn:(r:InteractionRoute)=>void)=>edit('Edit interaction route',d=>fn(get(d)[i]));if(!rotating&&i<rows.length-1)form.condition(row,name+' route '+(i+1)+' condition',r.when,when=>change(r=>{r.when=when??{tokensAtLeast:0};}),g);
     if(!rotating)form.select(row,name+' route '+(i+1)+' conversation',['',...Object.keys(g.conversations)],r.conversation??'',conversation=>change(r=>{if(conversation){r.conversation=conversation;delete r.command;delete r.pages;delete r.failure;delete r.template;delete r.speaker;}else{delete r.conversation;r.pages=['Nothing happens.'];}}));
+    if(r.conversation&&context.openConversation)form.button(row,'Edit conversation definition',()=>context.openConversation!(selected().gameplayId,r.conversation!));
     if(!r.conversation){form.text(row,name+' route '+(i+1)+' speaker override',r.speaker??'',speaker=>change(r=>{if(speaker.trim())r.speaker=speaker;else delete r.speaker;}));form.check(row,name+' route '+(i+1)+' text templates',!!r.template,on=>change(r=>{if(on)r.template=true;else delete r.template;}));if(r.template)note(row,'Read-only fields: {tokens}, {item:ID}, {state:ID}.');form.select(row,name+' route '+(i+1)+' command',['',...Object.entries(g.commands).filter(([,c])=>c.sources.includes('interaction')).map(([id])=>id)],r.command??'',command=>change(r=>{if(command)r.command=command;else{delete r.command;delete r.failure;}}));form.text(row,name+' route '+(i+1)+' pages',(r.pages??[]).join('\n\n'),v=>change(r=>{r.pages=pages(v);}),true);if(r.command)form.text(row,name+' route '+(i+1)+' failure',(r.failure??[]).join('\n\n'),v=>change(r=>{if(v.trim())r.failure=pages(v);else delete r.failure;}),true);}
     form.button(row,'Remove '+name+' outcome '+(i+1),()=>{edit('Remove interaction outcome',d=>removeInteractionOutcome(get(d),i,rotating));refresh();},rows.length<=1);
     const limit=rows.length-(rotating?0:1);for(const[direction,label]of [[-1,'up'],[1,'down']]as const)form.button(row,'Move '+name+' outcome '+(i+1)+' '+label,()=>{edit('Reorder interaction outcomes',d=>moveInteractionOutcome(get(d),i,direction,rotating));refresh();},i>=limit||i+direction<0||i+direction>=limit);
@@ -161,24 +181,13 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
    u.items?.forEach((item,i)=>{const row=form.section(h,'With carried item '+item.item);form.select(row,'Carried item '+(i+1)+' ID',g.items.filter(id=>id===item.item||!u.items?.some(r=>r.item===id)),item.item,id=>edit('Edit carried-item interaction',d=>{d.uses.find(u=>u.id===uid)!.items![i].item=id;}));form.text(row,'Carried item '+(i+1)+' label',item.label,label=>edit('Edit carried-item label',d=>{d.uses.find(u=>u.id===uid)!.items![i].label=label;}));routes(row,'Item '+(i+1),item.routes,d=>d.uses.find(u=>u.id===uid)!.items![i].routes);form.button(row,'Remove carried item '+(i+1),()=>{edit('Remove carried-item interaction',d=>{const use=d.uses.find(v=>v.id===uid)!;use.items!.splice(i,1);if(!use.items!.length)delete use.items;});refresh();});});
    const availableItems=g.items.filter(id=>!u.items?.some(r=>r.item===id));let newItem=availableItems[0]??'';form.select(h,'New carried item',availableItems,newItem,id=>{newItem=id;});form.button(h,'Add carried-item interaction',()=>{edit('Add carried-item interaction',d=>addCarriedInteraction(d.uses.find(v=>v.id===uid)!,newItem));refresh();},!availableItems.length||(u.items?.length??0)>=2);
   }});
-  d.people?.forEach((p,i)=>entries.push({key:'person:'+p.id,group:'People',label:p.name||p.id,detail:p.conversation??p.talk!.length+' conversations',prefix:'Person '+p.id+' ',render:h=>{
+  d.people?.forEach((p,i)=>entries.push({key:'person:'+p.id,group:'People',label:p.name||p.id,detail:p.conversation,prefix:'Person '+p.id+' ',render:h=>{
    const change=(label:string,fn:(p:NonNullable<SceneDocument['people']>[number])=>void)=>edit(label,d=>fn(d.people![i]));
    form.text(h,'Person '+p.id+' name',p.name,name=>change('Edit person name',p=>{p.name=name;}));
    form.number(h,'Person '+p.id+' prompt height',p.promptH??0,height=>change('Edit person prompt height',p=>{if(height>0)p.promptH=height;else delete p.promptH;}),0,10000);note(h,'Height of the [E] TALK prompt above the ground; 0 keeps it over the person’s head.');
    const graphs=Object.keys(g.conversations);
-   form.select(h,'Person '+p.id+' dialogue source',[...(!g.conversations[actorConversationId(d.id,p.id)]?['pages']:[]),...(graphs.length?['graph']:[])],p.conversation?'graph':'pages',mode=>edit('Change person dialogue source',d=>{const previous=d.people![i];d.people![i]=mode==='graph'?{id:previous.id,name:previous.name,...(previous.promptH!==undefined?{promptH:previous.promptH}:{}),conversation:graphs[0]}:{id:previous.id,name:previous.name,...(previous.promptH!==undefined?{promptH:previous.promptH}:{}),talk:[['Hello.']]};}));
-   if(p.conversation!==undefined){form.select(h,'Person '+p.id+' conversation',graphs,p.conversation,conversation=>edit('Bind person conversation',d=>{d.people![i]={id:p.id,name:p.name,...(p.promptH!==undefined?{promptH:p.promptH}:{}),conversation};}));note(h,'This person uses the existing graph in Commands & dialogue. Its pages, choices and saved progress belong to that graph.');return;}
-   form.select(h,'Person '+p.id+' repetition',['last','cycle'],p.repeat??'last',repeat=>change('Edit conversation repetition',p=>{p.repeat=repeat as 'last'|'cycle';}));
-   note(h,'“last” repeats the final conversation; “cycle” starts again from the first.');
-   p.talk.forEach((talk,j)=>{form.text(h,'Person '+p.id+' dialogue '+(j+1),talk.join('\n\n'),v=>change('Edit person dialogue',p=>{p.talk![j]=pages(v);}),true);if(p.talk.length>1)form.button(h,'Remove dialogue '+(j+1),()=>change('Remove person dialogue',p=>{p.talk!.splice(j,1);}));});
-   form.button(h,'Add dialogue',()=>change('Add person dialogue',p=>{p.talk!.push(['New conversation']);}),p.talk.length>=32);
-   p.lines?.forEach((line,j)=>{const box=form.section(h,'Contextual response '+(j+1)),prefix='Person '+p.id+' response '+(j+1);
-    form.text(box,prefix+' pages',line.pages.join('\n\n'),text=>change('Edit contextual response',p=>{p.lines![j].pages=pages(text);}),true);
-    const condition=line.condition??{all:[...(line.when?[{time:line.when}]:[]),...(line.weather?[{weather:line.weather}]:[])]};
-    form.condition(box,prefix+' condition',condition,condition=>change('Edit response condition',p=>{const row=p.lines![j];delete row.when;delete row.weather;if(condition)row.condition=condition;else delete row.condition;}),g);
-    form.button(box,'Remove contextual response '+(j+1),()=>change('Remove contextual response',p=>{p.lines!.splice(j,1);if(!p.lines!.length)delete p.lines;}));
-   });
-   form.button(h,'Add contextual response',()=>change('Add contextual response',p=>{(p.lines??=[]).push({condition:{weather:['rain']},pages:['New contextual response']});}),(p.lines?.length??0)>=32);
+   if(p.conversation!==undefined){form.select(h,'Person '+p.id+' conversation',graphs,p.conversation,conversation=>edit('Bind person conversation',d=>{d.people![i]={id:p.id,name:p.name,...(p.promptH!==undefined?{promptH:p.promptH}:{}),conversation};}));if(context.openConversation)form.button(h,'Edit conversation definition',()=>context.openConversation!(selected().gameplayId,p.conversation!));note(h,'Pages, choices and progress belong to this conversation graph. Edit its definition or inspect its references in Library → Conversations.');}
+
   }}));
   d.readables?.forEach((r,i)=>entries.push({key:'readable:'+r.id,group:'Readables',label:r.name||r.id,detail:r.id,prefix:'Readable '+r.id+' ',render:h=>{form.text(h,'Readable '+r.id+' name',r.name,name=>edit('Edit readable speaker',d=>{d.readables![i].name=name;}));if(r.promptH!==undefined)form.number(h,'Readable '+r.id+' prompt height',r.promptH,height=>edit('Edit readable prompt height',d=>{d.readables![i].promptH=height;}),0,10000);form.text(h,'Readable '+r.id+' pages',r.pages.join('\n\n'),v=>edit('Edit readable pages',d=>{d.readables![i].pages=pages(v);}),true);}}));
   d.rests?.forEach((r,i)=>entries.push({key:'rest:'+r.id,group:'Resting places',label:r.id,render:h=>{
@@ -208,5 +217,5 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
   const entry=entries.find(e=>e.key===selection.item)!,title=document.createElement('h2');title.textContent=entry.group+' · '+entry.label;detail.append(title);
   form.prefix=entry.prefix;try{entry.render(detail);}finally{form.prefix=undefined;}
  }
- refresh();const dispose=(()=>host.replaceChildren()) as WorkbenchHandle;dispose.refresh=refresh;return dispose;
+ refresh();const dispose=(()=>{disposed=true;clearChildren();host.replaceChildren();}) as WorkbenchHandle;dispose.refresh=refresh;return dispose;
 }

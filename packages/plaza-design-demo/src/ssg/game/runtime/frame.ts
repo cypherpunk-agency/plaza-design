@@ -7,7 +7,7 @@ import type {Light} from '../world/light';
 import type {TimelineFrame} from '../art/core/timeline';
 import type {TimelineOverlay} from '../art/core/timeline-overlay';
 import type {BackdropDocument} from '../world/backdrops';
-export interface WorkspaceCamera {anchorX:number;anchorH:number;x:number;h:number;zoom:number}
+export interface WorkspaceCamera {anchorX:number;anchorH:number;x:number;h:number;zoom:number;/** Composition editing keeps its own fixed pixel basis when sequence context changes. */basis?:{width:number;height:number;ground:number}}
 export interface CameraGuide {x:number;y:number;width:number;height:number;scene:string;label:string;focus:{x:number;h:number;zoom:number}}
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 /**

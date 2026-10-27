@@ -17,15 +17,15 @@
   "readables": [
     {
       "id": "plan",
-      "name": "TEST PLAN \u00b7 BAY 3",
+      "name": "TEST PLAN · BAY 3",
       "pages": [
-        "BAY 3 \u00b7 DEVICES UNDER TEST. STATIONS 01\u201310, LEFT TO RIGHT: NOUN KINDS, CABLES, GUARDS, SEALED SECTORS, TRACE, THE NET, WATCHDOG, EVERYDAY USE, PEOPLE, TIME AND WEATHER.",
+        "BAY 3 · DEVICES UNDER TEST. STATIONS 01–10, LEFT TO RIGHT: NOUN KINDS, CABLES, GUARDS, SEALED SECTORS, TRACE, THE NET, WATCHDOG, EVERYDAY USE, PEOPLE, TIME AND WEATHER.",
         "EACH STATION HAS A TEST CARD. RESET BAY 3 RETURNS EVERY DEVICE TO ITS FIRST STATE. TESTERS ARE NOT RESET."
       ]
     },
     {
       "id": "card1",
-      "name": "BAY 3\u00b701 \u00b7 NOUN KINDS",
+      "name": "BAY 3·01 · NOUN KINDS",
       "label": "[E] TEST CARD",
       "pages": [
         "NOUN KINDS. ONE DEVICE PER KIND, LEFT TO RIGHT: SENSE (MOTION SENSOR), ACT (TEST LAMP), STORE (MEMO SCREEN), LINK (WALL PORT), DAEMON (UNIT 7), CLOCK (METRONOME), LOG (TAPE RECORDER).",
@@ -34,16 +34,16 @@
     },
     {
       "id": "card2",
-      "name": "BAY 3\u00b702 \u00b7 CABLES",
+      "name": "BAY 3·02 · CABLES",
       "label": "[E] TEST CARD",
       "pages": [
         "CABLES. THE TEST BUTTON FANS OUT: ONE EVENT, THREE CABLES (BEACON, HORN, COUNTER). THE COUNTER'S IS A FIXED CONDUIT: IT CANNOT BE CUT.",
-        "CHAIN: WIRE PLATE \u2192 TIMER (WAIT 2 S) \u2192 SWITCH (ON, PASS) \u2192 HATCH OPEN. THE HATCH IS PRE-WIRED TO THE FAN. TIMER AND SWITCH ARE IN THE LOGIC DRAWER."
+        "CHAIN: WIRE PLATE → TIMER (WAIT 2 S) → SWITCH (ON, PASS) → HATCH OPEN. THE HATCH IS PRE-WIRED TO THE FAN. TIMER AND SWITCH ARE IN THE LOGIC DRAWER."
       ]
     },
     {
       "id": "card3",
-      "name": "BAY 3\u00b703 \u00b7 GUARDS",
+      "name": "BAY 3·03 · GUARDS",
       "label": "[E] TEST CARD",
       "pages": [
         "GUARDS. QA LOGIN: PASSWORD, 2 TRIES, LOCKS 5 S, A NEAR MISS (\"bay3\"). THE STICKY NOTE PUTS BOTH ON YOUR KEYRING.",
@@ -52,7 +52,7 @@
     },
     {
       "id": "card4",
-      "name": "BAY 3\u00b704 \u00b7 SEALED SECTORS",
+      "name": "BAY 3·04 · SEALED SECTORS",
       "label": "[E] TEST CARD",
       "pages": [
         "SEALED SECTORS. SECURE CABINET: DRAWER A, KEY SEAL (CUT A KEY CHIP AT THE CUTTER, DROP IT ON THE DRAWER). DRAWER B, SEQUENCE SEAL: RED, GREEN, BLUE ON THE PANEL, BY CABLE, WITHIN 3 S.",
@@ -61,7 +61,7 @@
     },
     {
       "id": "card5",
-      "name": "BAY 3\u00b705 \u00b7 TRACE",
+      "name": "BAY 3·05 · TRACE",
       "label": "[E] TEST CARD",
       "pages": [
         "TRACE. THE AUDIT DESK LOGS YOU AT 20% A SECOND WHILE YOU ARE INSIDE IT. A WRONG PASSWORD ADDS 30%. AT 100% YOU ARE OUT AND IT LOCKS FOR 8 S. THE METER ON THE WALL SHOWS IT.",
@@ -70,7 +70,7 @@
     },
     {
       "id": "card6",
-      "name": "BAY 3\u00b706 \u00b7 THE NET",
+      "name": "BAY 3·06 · THE NET",
       "label": "[E] TEST CARD",
       "pages": [
         "THE NET. THE NET JACK IS ON THE TEST LAN. IT KNOWS QA-SRV 01; A SCAN FINDS QA-PRN 2. QA-VAULT IS ONE HOP ON, THROUGH QA-SRV 01'S OWN LINK.",
@@ -79,16 +79,16 @@
     },
     {
       "id": "card7",
-      "name": "BAY 3\u00b707 \u00b7 WATCHDOG",
+      "name": "BAY 3·07 · WATCHDOG",
       "label": "[E] TEST CARD",
       "pages": [
-        "WATCHDOG. QA-WD WALKS STAMP PRESS \u2192 CONVEYOR \u2192 SIREN: 3.5 S ON EACH, 1.5 S BETWEEN. THE ONE IT SITS ON IS FROZEN: NO VERBS, NO SIGNALS. THE RED LAMP OVER A DEVICE SAYS WHERE IT IS.",
+        "WATCHDOG. QA-WD WALKS STAMP PRESS → CONVEYOR → SIREN: 3.5 S ON EACH, 1.5 S BETWEEN. THE ONE IT SITS ON IS FROZEN: NO VERBS, NO SIGNALS. THE RED LAMP OVER A DEVICE SAYS WHERE IT IS.",
         "EACH OF THE THREE HAS A WATCHDOG NOUN: WIRE ITS \"leaves\" TO SOMETHING TO ACT WHILE IT IS AWAY."
       ]
     },
     {
       "id": "card8",
-      "name": "BAY 3\u00b708 \u00b7 EVERYDAY USE",
+      "name": "BAY 3·08 · EVERYDAY USE",
       "label": "[E] TEST CARD",
       "pages": [
         "EVERYDAY USE. THE COFFEE MACHINE HAS THE FULL POPUP: THREE EVERYDAY ACTIONS, JACK IN, HACK IT.",
@@ -97,7 +97,7 @@
     },
     {
       "id": "card9",
-      "name": "BAY 3\u00b709 \u00b7 LIFE",
+      "name": "BAY 3·09 · LIFE",
       "label": "[E] TEST CARD",
       "pages": [
         "PEOPLE, ROBOTS, ANIMALS. TALK TO THE QA LEAD AND THE NIGHT TECH (THE TECH ANSWERS DIFFERENTLY BY NIGHT AND IN RAIN). TALK TO TEST UNIT 0 WHILE IT WORKS. PET THE CAT."
@@ -105,10 +105,10 @@
     },
     {
       "id": "card10",
-      "name": "BAY 3\u00b710 \u00b7 TIME AND WEATHER",
+      "name": "BAY 3·10 · TIME AND WEATHER",
       "label": "[E] TEST CARD",
       "pages": [
-        "TIME AND WEATHER. THE NIGHT LIGHT IS PERMITTED 18:00\u201306:00 ONLY, AND GOES OFF BY ITSELF AT DAYBREAK. THE VENT REFUSES RAIN, STORM AND SMOG, AND SHUTS ITSELF WHEN THEY COME.",
+        "TIME AND WEATHER. THE NIGHT LIGHT IS PERMITTED 18:00–06:00 ONLY, AND GOES OFF BY ITSELF AT DAYBREAK. THE VENT REFUSES RAIN, STORM AND SMOG, AND SHUTS ITSELF WHEN THEY COME.",
         "THE WEATHER SENSOR READS THE DISTRICT'S WEATHER. SIT ON THE BENCH TO WAIT UNTIL LATER. SUDO'S TIME CONTROL AND WEATHER OVERRIDE WORK HERE."
       ]
     }
@@ -117,76 +117,17 @@
     {
       "id": "lead",
       "name": "QA LEAD",
-      "talk": [
-        [
-          "Bay 3. Every device in here has passed its test at least once.",
-          "Not at the same time. We do not test that."
-        ],
-        [
-          "The console behind me resets the bay. Devices, cables, trace, the lot.",
-          "It does not reset me. I asked. Twice. It logged both requests."
-        ],
-        [
-          "Left to right, one bench per thing the system can do. Read the plate, then break the thing under it.",
-          "Then log that you broke it. Then log that you logged it."
-        ],
-        [
-          "The watchdog in seven is ours. Well. It is the Registry's. We just feed it."
-        ]
-      ]
+      "conversation": "talk.sandbox.lead"
     },
     {
       "id": "unit0",
       "name": "TEST UNIT 0",
-      "talk": [
-        [
-          "CARRYING: 1 DEVICE UNDER TEST. DESTINATION: THE NEXT BENCH.",
-          "I HAVE BEEN TO THE NEXT BENCH. IT IS ALSO A BENCH."
-        ],
-        [
-          "MY JOB: MOVE THE TEST. MY TEST: WHETHER I MOVE THE TEST.",
-          "RESULT: PENDING. I AM MOVING IT."
-        ]
-      ]
+      "conversation": "talk.sandbox.unit0"
     },
     {
       "id": "tech",
       "name": "NIGHT TECH",
-      "talk": [
-        [
-          "I test the bench. Sit on it, wait, see if time passes. It does. Every time.",
-          "Forty-one passes. I am going for fifty."
-        ],
-        [
-          "The cat is not a device under test. We checked. It refused the checking."
-        ],
-        [
-          "TEST UNIT 0 has carried that same box between bays since I started.",
-          "I asked what is in it. It said: \"THE TEST.\" Fair."
-        ]
-      ],
-      "lines": [
-        {
-          "weather": [
-            "rain",
-            "storm"
-          ],
-          "pages": [
-            "Rain. The vent knows before the forecast does. I trust the vent.",
-            "The vent has never once said \"light showers\"."
-          ]
-        },
-        {
-          "when": {
-            "from": "18:00",
-            "to": "06:00"
-          },
-          "pages": [
-            "Night shift. The night light is allowed on now. It waited all day for this.",
-            "Same, honestly."
-          ]
-        }
-      ]
+      "conversation": "talk.sandbox.tech"
     }
   ],
   "uses": [

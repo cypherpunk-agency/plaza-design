@@ -1,11 +1,11 @@
 /** Read-only catalog projections. References point into source documents, never a second scene graph. */
 import { LAYER_ROLES, KIND_HINTS, layerRole } from './layer-roles';
-import { type ArtRegistry, type Composition, type Instance, type Field, type Value, type Properties } from '../art/core/composition';
+import { type ArtRegistry, type ChunkDocument, type AssetInstance, type Field, type Value, type Properties } from '../art/core/composition';
 import type {EditorDocument} from './contracts';
 
 import { helperArtwork } from './asset-examples';
 
-export interface AssetUsage { document: string; scene: string; instance: string; parent?: string; path: string[]; node: Instance }
+export interface AssetUsage { document: string; scene: string; instance: string; parent?: string; path: string[]; node: AssetInstance }
 /** `family` is the broad kind (layer-roles.ts); the registered category remains a tag. */
 /**
  * Source grouping inferred from registration names and usages, not a reusability guarantee.
@@ -15,13 +15,13 @@ export const ORIGINS: readonly { id: AssetOrigin; label: string; badge: string; 
   { id: 'kit', label: 'Shared libraries', badge: 'Library', hint: 'Filed under a shared code library; this alone does not guarantee independent use' },
   { id: 'scene', label: 'Scene libraries', badge: 'Scene', hint: 'Filed under a scene’s code library; some entries draw independently, others need that scene’s state' },
   { id: 'cutscene', label: 'Cutscenes', badge: 'Cutscene', hint: 'Used by an animated sequence; inspect its source usages' },
-  { id: 'engine', label: 'Markers & engine', badge: 'Engine', hint: 'Markers and the player row: logic, not artwork' },
+  { id: 'engine', label: 'Markers & engine', badge: 'Engine', hint: 'Markers and the player row: logic helpers' },
 ];
 export type AssetStructure = 'object' | 'composition';
 export type AssetUsability = 'reusable' | 'context' | 'helper';
 export const STRUCTURES: readonly { id: AssetStructure; label: string; hint: string }[] = [
-  { id: 'object', label: 'Object', hint: 'One artwork definition, such as a person, stool, building or sign' },
-  { id: 'composition', label: 'Composition', hint: 'An arrangement of several objects' },
+  { id: 'object', label: 'Object', hint: 'One asset definition, such as a person, stool, building or sign' },
+  { id: 'composition', label: 'Assembly', hint: 'An asset made from several objects' },
 ];
 export const USABILITY: readonly { id: AssetUsability; label: string; hint: string }[] = [
   { id: 'reusable', label: 'Reusable anywhere', hint: 'Add to any scene. Uses its own properties and shared lighting/time; no source-scene bindings required' },
@@ -42,8 +42,8 @@ export function assetInventory(registry: ArtRegistry, documents: EditorDocument[
   const usages = new Map<string, AssetUsage[]>();
   for (const document of documents) {
     if (document.kind !== 'composition') continue;
-    const composition = document.value as Composition;
-    const visit = (nodes: Instance[], path: string[]) => nodes.forEach(node => {
+    const composition = document.value as ChunkDocument;
+    const visit = (nodes: AssetInstance[], path: string[]) => nodes.forEach(node => {
       const row = { document: document.id, scene: composition.scene, instance: node.id, parent: path.at(-1), path: [...path, node.id], node: structuredClone(node) };
       usages.set(node.type, [...usages.get(node.type) ?? [], row]); visit(node.children ?? [], row.path);
     });
@@ -97,7 +97,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   session.usability ??= 'reusable';
   session.collapsedFilters ??= { District: true, Kind: true, Source: true, Other: true };
   let family = session.family ?? '';
-  search.type = 'search'; search.placeholder = 'Find type, name or tag'; search.setAttribute('aria-label', 'Search artwork assets'); search.value = session.query ?? '';
+  search.type = 'search'; search.placeholder = 'Find type, name or tag'; search.setAttribute('aria-label', 'Search asset assets'); search.value = session.query ?? '';
   const kinds = LAYER_ROLES.filter(kind => entries.some(entry => entry.family === kind));
   const count = el('p'), list = el('div'), inspector = el('section'); list.className = 'catalog-list'; inspector.setAttribute('aria-label', 'Asset inspection');
   const navigation = el('div'), tabs = el('div'); tabs.setAttribute('aria-label', 'Library sections');
@@ -105,7 +105,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
   navigation.append(tabs, search, count, list);
   // District bar: a piece belongs to every district whose scenes use it. "Elsewhere" is unused or sequence-only artwork.
   const districtsOf = (entry: AssetEntry) => new Set(entry.usages.flatMap(u => { const d = options.districts?.of(u.scene); return d ? [d] : []; }));
-  const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Artwork filters');
+  const bar = el('nav'); bar.className = 'district-bar'; bar.setAttribute('aria-label', 'Asset filters');
   const inDistrict = (entry: AssetEntry, id: string) => id === '__none__' ? districtsOf(entry).size === 0 : districtsOf(entry).has(id);
 
   host.classList.add('asset-browser-grid'); host.classList.add('with-districts'); host.append(bar); host.append(navigation, inspector);
@@ -240,7 +240,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
       }
     }
     for (const entry of filtered) if (!kitPool.includes(entry)) card(entry);
-    count.textContent = `${filtered.length} / ${sectionEntries.length} ${helpers ? 'scene helpers' : 'artwork entries'}${presetCount ? ` · ${presetCount} presets` : ''}`;
+    count.textContent = `${filtered.length} / ${sectionEntries.length} ${helpers ? 'scene helpers' : 'asset entries'}${presetCount ? ` · ${presetCount} presets` : ''}`;
   }
   search.oninput = refresh; refresh();
   const selected = entries.find(entry => entry.id === session.selected);

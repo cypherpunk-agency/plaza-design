@@ -8,20 +8,20 @@ import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {sequenceCommandTargets} from '../../src/ssg/game/runtime/sequence-commands';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
-import {art,type Composition} from '../../src/ssg/game/art';
+import {art,type ChunkDocument} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
 import type {SequenceSettings} from '../../src/ssg/game/art/core/sequence';
 const documents=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'test',value:d.validate(JSON.parse(fs.readFileSync('src/ssg/game/'+d.file,'utf8')))}));
-const initial=documents.find(d=>d.id==='sequence-opening')!.value as Composition;initial.sequence!.commands=[];initial.sequence!.onComplete=[];initial.sequence!.onCancel=[];
+const initial=documents.find(d=>d.id==='sequence-opening')!.value as ChunkDocument;initial.sequence!.commands=[];initial.sequence!.onComplete=[];initial.sequence!.onCancel=[];
 const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
 const model=new ComposerModel(art,context,()=>{});model.load(documents);const values=()=>new Map(model.list().map(d=>[d.id,d.value]));
 const targets=sequenceCommandTargets(pendingRegistry(values()));assert(targets['boundary-west'].includes('mark-arrival'));
 const host=new Element();let error='';
-function render(){host.replaceChildren();const seq=(model.get('sequence-opening').value as Composition).sequence!;renderSequenceCommandsAuthoring(host as any,seq as any,targets,(label,change)=>{model.edit('sequence-opening',label,value=>{change((value as Composition).sequence as any);return value;});render();},e=>error=String(e));}
+function render(){host.replaceChildren();const seq=(model.get('sequence-opening').value as ChunkDocument).sequence!;renderSequenceCommandsAuthoring(host as any,seq as any,targets,(label,change)=>{model.edit('sequence-opening',label,value=>{change((value as ChunkDocument).sequence as any);return value;});render();},e=>error=String(e));}
 const all=(e:Element):Element[]=>[e,...e.children.flatMap(all)];const button=(text:string)=>{const e=all(host).find(e=>e.textContent===text&&e.onclick);assert(e,text);e.onclick!();assert(!error,error);};const change=(label:string,value:string)=>{const e=all(host).find(e=>e.attributes['aria-label']===label);assert(e,label);e.value=value;e.onchange!();assert(!error,error);};
 render();button('Add command markers');change('Command scene','boundary-west');change('System command','mark-arrival');change('Command time','4');change('When skipped','omit');
-const after=(model.get('sequence-opening').value as Composition).sequence!;assert.deepEqual(after.commands?.[0],{id:'command-1',scene:'boundary-west',command:'mark-arrival',time:4,skip:'omit'});
-model.undo();assert.equal(((model.get('sequence-opening').value as Composition).sequence as SequenceSettings).commands![0].skip,'run');model.redo();validateSourceDocuments(values());
-const bundle=createDocumentBundle(model.edits(),model.list()),receiver=new ComposerModel(art,context,()=>{});receiver.load(documents);receiver.importDocuments(readDocumentBundle(bundle,receiver.list()));assert.deepEqual((receiver.get('sequence-opening').value as Composition).sequence!.commands,after.commands);
-const invalid=new Map(values()),bad=structuredClone(invalid.get('sequence-opening')) as Composition;bad.sequence!.commands![0].command='absent';invalid.set('sequence-opening',bad);assert.throws(()=>validateSourceDocuments(invalid),/declared system command/);
+const after=(model.get('sequence-opening').value as ChunkDocument).sequence!;assert.deepEqual(after.commands?.[0],{id:'command-1',scene:'boundary-west',command:'mark-arrival',time:4,skip:'omit'});
+model.undo();assert.equal(((model.get('sequence-opening').value as ChunkDocument).sequence as SequenceSettings).commands![0].skip,'run');model.redo();validateSourceDocuments(values());
+const bundle=createDocumentBundle(model.edits(),model.list()),receiver=new ComposerModel(art,context,()=>{});receiver.load(documents);receiver.importDocuments(readDocumentBundle(bundle,receiver.list()));assert.deepEqual((receiver.get('sequence-opening').value as ChunkDocument).sequence!.commands,after.commands);
+const invalid=new Map(values()),bad=structuredClone(invalid.get('sequence-opening')) as ChunkDocument;bad.sequence!.commands![0].command='absent';invalid.set('sequence-opening',bad);assert.throws(()=>validateSourceDocuments(invalid),/declared system command/);
 console.log('Sequence command authoring: typed marker controls, history, bundle and linked prospective command validation PASS');

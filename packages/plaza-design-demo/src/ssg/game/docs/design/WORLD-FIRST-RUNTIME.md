@@ -96,7 +96,7 @@ Do not reopen all earlier engineering milestones or create a campaign-wide regre
   event handoff targets. Existing CutscenePlay owns live sequence time; no second playback loop.
   Typed markers dispatch existing system commands; movers remain the physical calculation.
 - `runtime/prepare-frame.ts` supplies pure layout and the selected composition’s current scope.
-  Game supplies actual resident models. Editor `sequence-inspection.ts` prepares isolated samples
+  Game supplies actual resident models. Shared `runtime/sequence-state.ts` prepares isolated samples
   before the common renderer; backward seeks reconstruct, forward samples reuse prepared models.
   Paint has no implicit inspection-model fallback. Obsolete train visual overrides are removed.
 - World → Compositions edits definitions. Selecting a world-sequence settings object edits

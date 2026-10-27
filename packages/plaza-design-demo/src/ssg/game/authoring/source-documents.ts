@@ -1,4 +1,4 @@
-import {sequenceCommandTargets,worldSequenceSources,validateSequenceHandoffs} from '../runtime/sequence-commands';
+import {sequenceCommandTargets,authoredSequenceSources,validateSequenceHandoffs} from '../runtime/sequence-commands';
 import {sequenceWorldZones} from '../runtime/prepare-frame';
 import {compileGameWorld,worldCompositionContext} from '../world/compiled-world';
 import {validateWorldCompositions,validateWorldEditReferences} from '../world/compositions';
@@ -14,7 +14,7 @@ import {validateCompanionGameplay} from '../engine/gameplay/companion-conversati
 import {validateOpeningSource} from '../story/opening-source';
 import {validateContacts} from '../story/contacts';
 import {validateEndCard} from '../story/end-card';
-import {pendingRegistry} from './pending-registry';
+import {pendingRegistry,pendingTestDistrict} from './pending-registry';
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {validateNetworkShape} from './network-source';
 import {createRuntimeSequenceDocuments} from '../story/sequence-documents';
@@ -22,28 +22,29 @@ import {validatePendingFixtures} from './pending-fixtures';
 import {deviceSceneIds,deviceDocumentId,deviceSourceIdentity,validateDeviceSource} from './device-sources';
 import {pendingDestinations,validatePendingSceneCatalogue} from './pending-destinations';
 import {pendingScene} from './pending-scene';
-import {validateFixtureMetro} from './play-fixtures';
+import {validateFixtureMetro} from '../world/checkpoints';
 import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {validatePendingCity,createPendingCity} from './pending-city';
-import {validateBotReactions} from '../engine/gameplay/bot-conversations';
+import {validateBotReactions,validateBotGameplay,validateBotConversationBindings,withBotConversations} from '../engine/gameplay/bot-conversations';
 import {validateCompanionSource} from '../engine/gameplay/companion-source';
-import {validateCritterReactions} from '../engine/gameplay/critter-reactions';
+import {validateCritterReactions,validateCritterGameplay,validateCritterConversations} from '../engine/gameplay/critter-reactions';
 import {validateReviewStations} from '../demo/review-stations';
 import {validatePendingCompanion} from './pending-rules';
 import {validateManifestComposition,validateManifestSources} from '../scenes/demo-manifest';
 import {validateDeclaredDestinations} from '../engine/gameplay/declared-scene';
 import {nativeGameplayScenes} from './native-gameplay-scenes';
 import {gameplayScenes} from './gameplay-scenes';
-import {validatePlayFixtures} from './play-fixtures';
+import {validatePlayFixtures} from '../world/checkpoints';
 import {validatePeople} from '../art/characters/people-source';
 import {validatePresets} from './kit-presets';
 import {validateStoryboard} from './storyboard';
+import {storyboardLinks} from './storyboard-links';
 import {validatePendingPlayProfiles} from './play-profile-source';
 import {validatePlayProfiles} from '../runtime/play-profiles';
 import {validateZoneGraph,worldProblems} from '../world/zone-graph';
 import {zoneInfo,zonePieces} from './zone-graph-context';
 /** Explicit source allowlist shared by the local launcher and focused save checks. */
-import { art, type Composition } from '../art';
+import { art, type ChunkDocument } from '../art';
 import { NATIVE_SCENES } from '../scenes';
 import {validateSceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import { nativeSceneAdapters } from './scene-adapters';
@@ -87,22 +88,24 @@ export const sourceDocuments: DocumentDescriptor[] = [
   {id:'people',file:'art/characters/people.json',kind:'people',validate:validatePeople},
   // Beats' scenes must be composition documents: real scenes or style-frame proposals.
   {id:'storyboard',file:'authoring/storyboard.json',kind:'storyboard',validate:value=>validateStoryboard(value),validateContext:(value,documents)=>validateStoryboard(value,new Set([
-    ...sourceDocuments.filter(d=>d.kind==='composition'&&documents.has(d.id)).map(d=>(documents.get(d.id) as Composition).scene),
+    ...sourceDocuments.filter(d=>d.kind==='composition'&&documents.has(d.id)).map(d=>(documents.get(d.id) as ChunkDocument).scene),
     ...((documents.get('authored-scenes') as import('../engine/gameplay/scene-catalogue').SceneCatalogue|undefined)?.scenes??[]).map(s=>s.scene.id),
-  ]))},
+  ]),storyboardLinks(documents).links)},
   {id:'metro-source',file:'world/transport/metro.json',kind:'transport',validate:validateMetroSource,validateContext:(value,documents)=>{validateMetroLocks(validateMetroSource(value),(documents.get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}},
   {id:'city-source',file:'world/city.json',kind:'city',validate:validatePendingCity,validateContext:validatePendingCity},
   // the seams that join zones with no cut (world/zone-graph.ts); checked against the scenes that exist and their level pieces
   {id:'zone-graph',file:'world/zone-graph.json',kind:'transport',validate:validateZoneGraph,validateContext:(value,documents)=>{const problems=worldProblems(validateZoneGraph(value),zoneInfo(documents),zonePieces(documents));if(problems.length)throw new Error(problems.join('; '));}},
-  {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'conversations',validate:validateBotReactions},
+  {id:'bot-reactions',file:'engine/gameplay/bot-reactions.json',kind:'rules',validate:validateBotReactions,validateContext:(value,documents)=>validateBotConversationBindings(validateBotReactions(value),validateBotGameplay(documents.get('bot-gameplay')))},
+  {id:'bot-gameplay',file:'engine/gameplay/bot-gameplay.json',kind:'gameplay',validate:validateBotGameplay,validateContext:(value,documents)=>validateBotConversationBindings(validateBotReactions(documents.get('bot-reactions')),validateBotGameplay(value))},
   {id:'companion',file:'engine/gameplay/companion.json',kind:'rules',validate:validateCompanionSource,validateContext:validatePendingCompanion},
-  {id:'critter-reactions',file:'engine/gameplay/critter-reactions.json',kind:'rules',validate:validateCritterReactions},
+  {id:'critter-reactions',file:'engine/gameplay/critter-reactions.json',kind:'rules',validate:validateCritterReactions,validateContext:(value,documents)=>validateCritterConversations(validateCritterReactions(value),validateCritterGameplay(documents.get('critter-gameplay')))},
+  {id:'critter-gameplay',file:'engine/gameplay/critter-gameplay.json',kind:'gameplay',validate:validateCritterGameplay,validateContext:(value,documents)=>validateCritterConversations(validateCritterReactions(documents.get('critter-reactions')),validateCritterGameplay(value))},
   {id:'review-stations',file:'demo/review-stations.json',kind:'rules',validate:validateReviewStations},
   {id:'contacts',file:'data/contacts.json',kind:'rules',validate:validateContacts},
   {id:'end-card',file:'story/end-card.json',kind:'rules',validate:validateEndCard},
   ...nativeGameplayScenes.filter(s=>!gameplayScenes.some(g=>g.gameplayId===s.gameplayId)).map(s=>({id:s.gameplayId,file:s.file,kind:'gameplay' as const,validate:s.validateGameplay})),
   ...Array.from(new Map(gameplayScenes.flatMap(s=>[{id:s.prefix+'-scene',file:'scenes/'+s.prefix+'/scene.json',kind:'scene' as const,validate:s.validateScene,validateContext:(value:unknown,documents:ReadonlyMap<string,unknown>)=>validatePendingSceneContent(s,value,documents)},{id:s.gameplayId,file:'scenes/'+s.gameplayId.replace(/-gameplay$/,'')+'/gameplay.json',kind:'gameplay' as const,validate:s.validateGameplay}]).map(d=>[d.id,d])).values()),
-  {id:'play-fixtures',file:'authoring/play-fixtures.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents))},
+  {id:'play-fixtures',file:'world/checkpoints.json',kind:'fixtures',validate:validatePlayFixtures,validateContext:(value,documents)=>validateFixtureMetro(validatePendingFixtures(value,documents),createPendingCity(documents.get('city-source'),documents))},
   ...scenes.map(scene => ({ id: scene, file: `scenes/${scene}/composition.json`, kind: 'composition' as const, validate: (value: unknown) => sceneComposition(scene, value), validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art) })),
   ...Object.entries(BACKDROP_SOURCES).map(([id,source])=>({id:backdropDocumentId(id),file:source.file,kind:'composition' as const,validate:(value:unknown)=>validateBackdrop(value,id)})),
   ...Object.entries(sequenceFiles).map(([id, file]) => ({ id, file, kind: 'composition' as const, validateUpdate: (before:unknown,after:unknown)=>preserveBoundIdentity(before,after,art), validate(value: unknown) { const doc = art.validate(value); if (doc.scene !== id) throw new Error(`Sequence identity must remain ${id}`); return doc; } })),
@@ -117,21 +120,28 @@ export function validateSourceDocuments(documents: ReadonlyMap<string, unknown>)
 function validateAll(documents: ReadonlyMap<string, unknown>) {
   const declared=validateManifestSources(documents.get('demo-manifest'),documents.get('demo-manifest-scene'),documents.get('demo-manifest-gameplay'));
   validateDeclaredDestinations(declared.scene,pendingDestinations(documents));
-  const compositions: Record<string, Composition> = {};
+  const compositions: Record<string, ChunkDocument> = {};
   for (const descriptor of sourceDocuments) {
     if (!documents.has(descriptor.id)) throw new Error(`Missing source document: ${descriptor.id}`);
     if(descriptor.validateContext)descriptor.validateContext(documents.get(descriptor.id),documents);else descriptor.validate(documents.get(descriptor.id));
-    if (descriptor.kind === 'composition') compositions[descriptor.id] = documents.get(descriptor.id) as Composition;
+    if (descriptor.kind === 'composition') compositions[descriptor.id] = documents.get(descriptor.id) as ChunkDocument;
   }
   for(const s of gameplayScenes)validatePendingSceneContent(s,documents.get(s.prefix+'-scene'),documents);
   const scenes=pendingRegistry(documents);
   for(const scene of Object.values(scenes)){const ref=scene.backdrop;if(ref&&!documents.has(backdropDocumentId(ref.id)))throw new Error('Unknown backdrop '+ref.id+' in '+scene.id);}
   for(const seam of compileGameWorld(scenes,documents).seams){const a=scenes[seam.a.zone]?.backdrop,b=scenes[seam.b.zone]?.backdrop;if(a&&b&&a.id===b.id&&(Math.abs(b.x-a.x-seam.dx)>0.001||Math.abs((b.h??0)-(a.h??0)-seam.dh)>0.001))throw new Error('Backdrop origins disagree across seam '+seam.id);}
-  const checkScope=(composition:Composition)=>{for(const row of composition.instances)if(row.type==='sequence.world-control'){const props=art.properties(row.type,row.props);sequencePlacements(compileGameWorld(scenes,documents),String(props.origin),sequenceWorldZones(props,scenes,validateWorldCompositions(documents.get('world-compositions'))),scenes);}};
+  const checkScope=(composition:ChunkDocument)=>{for(const row of composition.instances)if(row.type==='sequence.world-control'){const props=art.properties(row.type,row.props);sequencePlacements(compileGameWorld(scenes,documents),String(props.origin),sequenceWorldZones(props,scenes,validateWorldCompositions(documents.get('world-compositions'))),scenes);}};
   for(const composition of Object.values(compositions))checkScope(composition);
   validateFixtureMetro(validatePendingFixtures(documents.get('play-fixtures'),documents),createPendingCity(documents.get('city-source'),documents));
-  const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}validateStateReadReferences(definitions);validateWorldEditReferences(validateWorldCompositions(documents.get('world-compositions')),definitions.flatMap(d=>Object.values(d.commands).flatMap(c=>c.actions.flatMap(a=>'world'in a?[a.world]:[]))),worldCompositionContext(scenes));
-  const directed=worldSequenceSources(scenes),knownSequences=new Set(['intro','act2',...Object.keys(directed)]);
+  const definitions:GameplayDefinition[]=[];for(const value of documents.values()){const d=value as any;if(d?.version===1&&Array.isArray(d.flags)&&d.commands&&d.conversations)definitions.push(d);if(d?.GAMEPLAY)definitions.push(d.GAMEPLAY);for(const entry of Array.isArray(d?.scenes)?d.scenes:[])if(entry?.gameplay)definitions.push(entry.gameplay);}
+  const common=[documents.get('state-owners'),documents.get('companion-gameplay'),documents.get('critter-gameplay'),(documents.get('opening-story') as {GAMEPLAY:GameplayDefinition}).GAMEPLAY] as GameplayDefinition[];
+  // Save-isolated worlds may legitimately use the same local key with different schemas.
+  // Within each actual content set, declarations and read references must still agree.
+  const robots=validateBotReactions(documents.get('bot-reactions')),robotGameplay=validateBotGameplay(documents.get('bot-gameplay'));
+  for(const world of [scenes,pendingTestDistrict(documents,scenes)])validateStateReadReferences([...common,...Object.values(world).flatMap(scene=>{const gameplay=withBotConversations(scene,robots,robotGameplay).gameplay;return gameplay?[gameplay]:[];})]);
+  validateStateReadReferences([...common,documents.get('demo-manifest-gameplay') as GameplayDefinition]);
+  validateWorldEditReferences(validateWorldCompositions(documents.get('world-compositions')),definitions.flatMap(d=>Object.values(d.commands).flatMap(c=>c.actions.flatMap(a=>'world'in a?[a.world]:[]))),worldCompositionContext(scenes));
+  const directed=authoredSequenceSources(scenes),knownSequences=new Set(['intro','act2',...Object.keys(directed)]);
   validateSequenceHandoffs(definitions,knownSequences);
   for(const {composition}of Object.values(directed)){if(Object.values(compositions).some(c=>c!==composition&&c.sequence?.id===composition.sequence!.id))throw Error('Duplicate sequence '+composition.sequence!.id);compositions[composition.scene]=composition;}
   const context = {...createSequenceValidationContext(art, compositions, pendingDestinations(documents)),commandTargets:sequenceCommandTargets(scenes)};

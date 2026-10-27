@@ -4,7 +4,7 @@ import type{Light}from'../../world/light';
  * motion formulas. They are drawn like any other artwork, by drawComposition inside the one frame
  * (runtime/prepare-frame.ts → runtime/render-scene.ts renderWorldFrame); there is no cinematic frame renderer.
  */
-import { ArtRegistry, type Composition, type Element, type Properties } from '../core/composition';
+import { ArtRegistry, type ChunkDocument, type AssetDefinition, type Properties } from '../core/composition';
 import type { TimelineContext, TimelineProgram } from '../core/timeline';
 import type { CutView, View } from '../core/view';
 import { drawAct2Part, type Act2Part } from './act2';
@@ -18,7 +18,7 @@ export const cinematicParts = { intro: [...skylinePartIds, 'screen-fade'], act2:
 export const TAXI_SECONDS = 200 / 60;
 const number = (label: string, value = 0) => ({ kind: 'number' as const, label, default: value, animatable: true });
 const visualFields = { time: number('Seconds'), ambient: number('Decorative frame clock'), reduced: { kind: 'boolean' as const, label: 'Reduced motion', default: false }, cameraX: number('Camera X'), amount: { ...number('Amount'), min: 0, max: 1 }, x: number('X'), y: number('Y'), one: number('Act I opacity'), found: number('Found opacity'), two: number('Act II opacity'), subtitle: number('Subtitle opacity') };
-function fields(sequence: string, part: string): Element['fields'] {
+function fields(sequence: string, part: string): AssetDefinition['fields'] {
   const color=(label:string,value:string)=>({kind:'color' as const,label,default:value});
   if(sequence==='act2'&&part==='sky')return{top:color('Top sky','#02030a'),horizon:color('Horizon sky','#170803')};
   if(sequence==='act2'&&part==='water')return{fill:color('Water','#01040a')};
@@ -31,7 +31,7 @@ function fields(sequence: string, part: string): Element['fields'] {
   if (sequence === 'taxi' && part === 'destination') return { destination: { kind: 'string', label: 'Destination label override', default: '' } };
   return {};
 }
-function visual(sequence:string,part:string):Element['visualFields']{
+function visual(sequence:string,part:string):AssetDefinition['visualFields']{
   const env={time:{...visualFields.time,animatable:false},ambient:{...visualFields.ambient,animatable:false},reduced:visualFields.reduced,width:{kind:'number' as const,label:'Native viewport width',default:640,min:1},height:{kind:'number' as const,label:'Native viewport height',default:360,min:1}};
   return {...env,...(sequence==='intro'?{cameraX:{...visualFields.cameraX,animatable:false}}:{}),...(['screen-fade','fade','rain','ferry'].includes(part)?{amount:visualFields.amount}:{}),...(sequence==='act2'&&part==='titles'?{one:visualFields.one,found:visualFields.found,two:visualFields.two,subtitle:visualFields.subtitle}:{}),...(sequence==='taxi'&&part==='cab'?{x:visualFields.x,y:visualFields.y}:{}),...(sequence==='taxi'&&part==='destination'?{place:{kind:'string' as const,label:'Destination (the flight\'s stand)',default:''}}:{})};
 }
@@ -55,7 +55,7 @@ function drawPart(ctx: CanvasRenderingContext2D, view: View, sequence: string, p
       ...(part === 'sky' ? { sky: props as unknown as { top: string; middle: string; bottom: string } } : {}), ...(part === 'lights' ? { lightSpeeds: [props.far, props.middle, props.near] as number[] } : {}), ...(part === 'towers' ? { towerFill: props.fill as string } : {}) });
   }
 }
-export const cinematicElements: Element[] = Object.entries(cinematicParts).flatMap(([sequence, parts]) => parts.map<Element>(part => ({
+export const cinematicElements: AssetDefinition[] = Object.entries(cinematicParts).flatMap(([sequence, parts]) => parts.map<AssetDefinition>(part => ({
   type: `sequence.${sequence}.${part}`, version: 1 as const, label: `${sequence === 'act2' ? 'Act II' : sequence === 'taxi' ? 'Taxi' : 'Intro'} · ${part}`, category: 'Cinematic sequence', coordinates: 'world' as const, parts: ['backdrop' as const],
   fields: fields(sequence, part),
   visualFields:visual(sequence,part), bounds: (props,state) => cinematicGeometry(sequence,part,props,state).bounds, anchors: (props,state) => cinematicGeometry(sequence,part,props,state).anchors,
@@ -66,7 +66,7 @@ export const cinematicElements: Element[] = Object.entries(cinematicParts).flatM
   },
 })));
 export const cinematicRegistry = new ArtRegistry(); cinematicElements.forEach(element => cinematicRegistry.register(element));
-export interface CinematicDocuments { timeline: TimelineProgram; compositions: Record<string, Composition> }
+export interface CinematicDocuments { timeline: TimelineProgram; compositions: Record<string, ChunkDocument> }
 /** Motion-formula inputs: the flight's own progress (0 → 1) and the decorative clock, when the controller has them. */
 export interface CinematicMotion { ambient?: number; progress?: number; sequenceId?: string; registry?: ArtRegistry }
 export function cutView(W: number, H: number, reduced:boolean,lighting:Light):CutView { const size = Math.max(10, Math.min(18, Math.round(H / 26))); return {lighting,viewW: W, viewH: H, barTop: Math.round(Math.max(16, H * 0.09)), barBottom: Math.round(Math.max(size * 3.6, H * 0.16)), reduced }; }

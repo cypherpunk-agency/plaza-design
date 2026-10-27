@@ -48,87 +48,37 @@
     {
       "id": "shelfe",
       "name": "SHELF-E",
-      "talk": [
-        [
-          "First circuit. Talk to me again: I cycle through two responses and remember my position."
-        ],
-        [
-          "Second circuit. My next response returns to the first."
-        ]
-      ],
-      "repeat": "cycle"
+      "conversation": "talk.library.shelfe"
     },
     {
       "id": "librarian",
       "name": "LIBRARIAN",
-      "talk": [
-        [
-          "This district uses the real gameplay engine. The empty chair is the Test Desk."
-        ],
-        [
-          "You have visited me before. My conversation progress survives a reload."
-        ]
-      ]
+      "conversation": "talk.library.librarian"
     },
     {
       "id": "student",
       "name": "TERMINAL 1",
-      "talk": [
-        [
-          "This district uses the real gameplay engine. The empty chair is the Test Desk."
-        ],
-        [
-          "You have visited me before. My conversation progress survives a reload."
-        ]
-      ]
+      "conversation": "talk.library.student"
     },
     {
       "id": "kid",
       "name": "TERMINAL 2",
-      "talk": [
-        [
-          "This district uses the real gameplay engine. The empty chair is the Test Desk."
-        ],
-        [
-          "You have visited me before. My conversation progress survives a reload."
-        ]
-      ]
+      "conversation": "talk.library.kid"
     },
     {
       "id": "sleeper",
       "name": "REGULAR",
-      "talk": [
-        [
-          "This district uses the real gameplay engine. The empty chair is the Test Desk."
-        ],
-        [
-          "You have visited me before. My conversation progress survives a reload."
-        ]
-      ]
+      "conversation": "talk.library.sleeper"
     },
     {
       "id": "knitter",
       "name": "REGULAR",
-      "talk": [
-        [
-          "This district uses the real gameplay engine. The empty chair is the Test Desk."
-        ],
-        [
-          "You have visited me before. My conversation progress survives a reload."
-        ]
-      ]
+      "conversation": "talk.library.knitter"
     },
     {
       "id": "paper",
       "name": "REGULAR",
-      "talk": [
-        [
-          "This district uses the real gameplay engine. The empty chair is the Test Desk."
-        ],
-        [
-          "You have visited me before. My conversation progress survives a reload."
-        ]
-      ]
+      "conversation": "talk.library.paper"
     }
   ],
   "exits": [

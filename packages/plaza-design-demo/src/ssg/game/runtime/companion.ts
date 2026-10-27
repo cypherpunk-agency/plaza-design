@@ -14,7 +14,7 @@ export interface FollowTuning { distance: number; trail: number; lostAt: number 
  *
  * Pixel is only a picture: it never blocks the player, never takes a prompt,
  * and has no hit box. Whether it is with you is a save flag (the document's
- * `unlockFlag`, set when you first leave the flat); where it stands is not saved, it
+ * follow condition, initially the flag set when you first leave the flat); where it stands is not saved, it
  * simply turns up behind you.
  *
  * Native companion movement and presentation; authored conversations own the words.

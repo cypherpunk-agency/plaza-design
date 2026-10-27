@@ -36,102 +36,37 @@
     {
       "id": "lime",
       "name": "LIME",
-      "talk": [
-        [
-          "Welcome to SALT. I'm LIME. I pour, I listen, I don't keep logs. Officially.",
-          "You've got the face of someone looking for someone. Everyone at a beach bar has that face. Yours is worse."
-        ],
-        [
-          "Moth? Third stool, every evening for a month. Water with a slice of me in it. Tipped in jokes.",
-          "I don't run on jokes. I kept them anyway."
-        ],
-        [
-          "That boat at the end of the pier is Moth's. Three days, nobody aboard. The harbour stuck a notice on it.",
-          "Leave it locked for now. Moth said someone would come. Didn't say when. I assumed someone taller."
-        ],
-        [
-          "The photo behind the gin? Moth. The night they fixed my jukebox without asking. Said I looked 'nearly human'.",
-          "I'm still deciding if that was a compliment. I've been deciding for a year."
-        ],
-        [
-          "My opinion of Moth: talks too fast, eats too little, rewires things that are not theirs. Ten out of ten. Would serve again.",
-          "Drinks are two tokens. The jukebox is free. The jukebox and the mixer get along too well, if you ask me. Nobody asks me."
-        ]
-      ]
+      "conversation": "talk.beach.lime"
     },
     {
       "id": "guard",
       "name": "LIFEGUARD",
-      "talk": [
-        [
-          "I'm paid to watch the water. The drone is paid to watch me. Nobody's paid to watch the drone.",
-          "If the flag goes red, everyone is out. The drone decides. Last week it decided a jellyfish was a shark. Then a cloud."
-        ],
-        [
-          "The drone says danger, I blow the whistle. Thirty years of training. I blow the whistle."
-        ]
-      ]
+      "conversation": "talk.beach.guard"
     },
     {
       "id": "sunbather",
       "name": "SUNBATHER",
-      "talk": [
-        [
-          "I rented this sunbed for ten minutes. That was three hours ago.",
-          "I'm not getting up. If I get up, I have to look at the bill."
-        ],
-        [
-          "Still here. Still not looking."
-        ]
-      ]
+      "conversation": "talk.beach.sunbather"
     },
     {
       "id": "volley",
       "name": "VOLLEYBALL",
-      "talk": [
-        [
-          "We need a fourth. You any good? No? Perfect. Neither are we.",
-          "The net's municipal. We pay by the point. We stopped keeping score."
-        ]
-      ]
+      "conversation": "talk.beach.volley"
     },
     {
       "id": "kid",
       "name": "KID",
-      "talk": [
-        [
-          "It's a Registry office. That's the queue. Those are the people in the queue.",
-          "When the tide comes in, it gets deleted. That is how it works, my mum said."
-        ],
-        [
-          "You can be in the queue if you want. You have to wait, though. That is the rule."
-        ]
-      ]
+      "conversation": "talk.beach.kid"
     },
     {
       "id": "surfer",
       "name": "SURFER",
-      "talk": [
-        [
-          "Waves are good today. Waves are free. Don't tell anyone, they'll put a meter on them."
-        ],
-        [
-          "See the buoy? Edge of the swim zone. Past it the Registry stops counting you. Feels great. Briefly."
-        ]
-      ]
+      "conversation": "talk.beach.surfer"
     },
     {
       "id": "fisher",
       "name": "OLD MAN",
-      "talk": [
-        [
-          "Fifty years I've fished off this pier. Caught a fish twice. Same fish.",
-          "That boat at the end? Kid with a hood and a laptop. Said 'gone fishing'. Never saw a rod come out. Good. Fish deserve a break."
-        ],
-        [
-          "Three days ago they tied it up and walked off along the shore. Did not look back. Looked at the water a lot."
-        ]
-      ]
+      "conversation": "talk.beach.fisher"
     }
   ],
   "uses": [
@@ -733,7 +668,6 @@
   },
   "companion": {
     "mode": "along",
-    "unlockFlag": "pixel",
     "pet": {
       "prompt": "[E] PET PIXEL",
       "conversations": {

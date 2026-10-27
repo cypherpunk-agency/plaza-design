@@ -16,11 +16,11 @@ import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
-import type {Composition,Instance} from '../../src/ssg/game/art/core/composition';
+import type {ChunkDocument,AssetInstance} from '../../src/ssg/game/art/core/composition';
 
 performance.now=()=>1000;
 (globalThis as Record<string,unknown>).document??={createElement(){const ctx=new Proxy({canvas:{width:1600,height:900}} as Record<string,unknown>,{get(o,k){if(k in o)return o[k as string];if(k==='getTransform')return()=>({a:1,b:0,c:0,d:1,e:0,f:0});if(k==='measureText')return(s:string)=>({width:String(s).length*5});if(k==='createLinearGradient'||k==='createRadialGradient'||k==='createConicGradient'||k==='createPattern')return()=>({addColorStop(){}});if(k==='getImageData')return()=>({data:new Uint8ClampedArray(4)});return()=>undefined;},set(o,k,v){o[k as string]=v;return true;}});return{width:0,height:0,style:{},getContext:()=>ctx};}};
-const flat=(ns:Instance[]):Instance[]=>ns.flatMap(n=>[n,...flat(n.children??[])]);
+const flat=(ns:AssetInstance[]):AssetInstance[]=>ns.flatMap(n=>[n,...flat(n.children??[])]);
 
 // 1. Every provider declares keys, and a declaration is well formed.
 for(const[name,provider]of Object.entries(BINDING_PROVIDERS)){assert.ok(Array.isArray(provider.keys)&&provider.keys.length,name+' declares the keys it offers');assert.equal(new Set(provider.keys).size,provider.keys.length,name+' declares no key twice');}
@@ -40,7 +40,7 @@ for(const id of Object.keys(FOLDER_SOURCES)){
  const src=FOLDER_SOURCES[id as keyof typeof FOLDER_SOURCES],scene:SceneDef=sceneSourceDefinition(id,src);
  const rules=typeof scene.rules==='function'?scene.rules(player as never):scene.rules??{effects:{}},m=new SceneModel({say(){},changed(){},open(){}} as never,scene.data??emptyData(scene.id,scene.name),rules as never,undefined,undefined,undefined,undefined,scene.gameplay);m.setPaused(true);
  // every binding the composition uses is offered (also the builder's job; asserted here by name)
- const doc=art.validate(src.composition) as Composition;
+ const doc=art.validate(src.composition) as ChunkDocument;
  assert.deepEqual(unofferedBindings(doc,src.scene as never),[],id+': bindings offered');
  for(const layer of ['all','world','devices'] as const)for(const cam of [0,.5,1])for(const t of [0,4321]){
   const view=referenceView({sx:(wx:number,p=1)=>Math.round(wx-Math.max(0,(scene.width-960)*cam)*p),y:(h:number)=>300-h,t,cam:Math.max(0,(scene.width-960)*cam),gy:300,viewW:960,viewH:390,flags:{end:cam===1}}),engine={m,hover:null,layer};
@@ -54,12 +54,12 @@ console.log('Runtime keys: '+scenes+' folder scenes; '+[...seen].map(([p,k])=>p+
 type Match=(source:string)=>boolean;
 const bound=(prefix:string|RegExp):Match=>typeof prefix==='string'?s=>s.startsWith(prefix):s=>prefix.test(s);
 /** Rebinds the first binding that matches to `source`: the instance, its field and the corrupted composition. */
-const rebind=(composition:Composition,match:Match,source:string)=>{
+const rebind=(composition:ChunkDocument,match:Match,source:string)=>{
  const node=flat(composition.instances).find(n=>Object.values(n.bindings??{}).some(match))!;assert.ok(node,'a binding to corrupt');
  const field=Object.keys(node.bindings!).find(k=>match(node.bindings![k]))!;node.bindings![field]=source;return node;
 };
 const refused=(id:keyof typeof FOLDER_SOURCES,match:Match,source:string,reason:RegExp)=>{
- const composition=structuredClone(FOLDER_SOURCES[id].composition) as unknown as Composition,node=rebind(composition,match,source);
+ const composition=structuredClone(FOLDER_SOURCES[id].composition) as unknown as ChunkDocument,node=rebind(composition,match,source);
  assert.throws(()=>sceneSourceDefinition(id,{...FOLDER_SOURCES[id],composition}),(e:Error)=>e.message.includes('Binding not offered')&&e.message.includes('"'+node.id+'"')&&e.message.includes('"'+source+'"')&&reason.test(e.message),`${id}: ${source} is refused with a clear message`);
 };
 // downtown: a front/window/trim name that is not one, and a misspelt key
@@ -93,7 +93,7 @@ for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.
  const docId=scene;
  const model=new ComposerModel(art,createSequenceValidationContext(art,{}),(d,all)=>{if(d.id===docId)pendingRegistry(new Map(all.map(x=>[x.id,x.value])));});
  model.load(sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:structuredClone(base.get(d.id))})));
- const before=JSON.stringify(model.edits()),composition=structuredClone(model.get(docId).value) as Composition,node=rebind(composition,pick,source);
+ const before=JSON.stringify(model.edits()),composition=structuredClone(model.get(docId).value) as ChunkDocument,node=rebind(composition,pick,source);
  assert.throws(()=>model.edit(docId,'Bind a name the provider does not offer',()=>composition),(e:Error)=>e.message.includes('"'+node.id+'"')&&e.message.includes('"'+source+'"'),scene+': the composer refuses '+source);
  assert.equal(JSON.stringify(model.edits()),before,scene+': the refused edit changed nothing');
 }
@@ -107,7 +107,7 @@ for(const[scene,pick,source]of [['downtown',bound('downtown.window.'),'downtown.
 // the inspector's binding choices (art registry bindingChoices) are all offered by their providers
 let choices=0;
 for(const[id,src]of Object.entries(FOLDER_SOURCES)){
- const doc=art.validate(src.composition) as Composition,scope=bindingKeyScope(doc.instances,src.scene as never);
+ const doc=art.validate(src.composition) as ChunkDocument,scope=bindingKeyScope(doc.instances,src.scene as never);
  for(const type of new Set(flat(doc.instances).map(n=>n.type)))for(const[field,names]of Object.entries(art.get(type).bindingChoices?.(doc)??{}))for(const name of names){
   const dot=name.indexOf('.'),provider=name.slice(0,dot);choices++;
   assert.ok(provider in BINDING_PROVIDERS,`${id}: ${type}.${field} offers ${name}, which no provider owns`);

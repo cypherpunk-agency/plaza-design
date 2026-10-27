@@ -13,7 +13,7 @@
  * piece); a craft at depth `p` stands at `p·u + (1 − p)·centre`, so all depths line up at the view's middle when
  * the camera is over `u`. Heights over the ground line.
  */
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { ART, R, smooth, lerp } from '../core/pixels';
 import { BLIMP_SCALE, drawBlimp, drawCraft, drawDrone, type CraftKind } from './air-traffic';
@@ -31,7 +31,7 @@ interface Lane { kind: string; parallax: number; height: number; dir: 1 | -1; sp
 interface Patrol { x: number; parallax: number; height: number; rx: number; ry: number; period: number; beam: number }
 interface Flight { kind: string; parallax: number; height: number; face: 1 | -1; from: number; to: number; x: number; speed: number }
 
-export const airLanesElement: Element = {
+export const airLanesElement: AssetDefinition = {
   type: 'vehicle.air-lanes', version: 1, label: 'Sky traffic: lanes, patrols, a drone stream, the blimp, scheduled flights (vehicle kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     centre: { kind: 'number', label: 'Depth centre (the view’s middle, units east of the piece)', default: 640, min: -1e7, max: 1e7 },

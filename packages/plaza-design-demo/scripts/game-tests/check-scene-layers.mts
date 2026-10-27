@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {canonicalPaint} from './canonical-paint.mts';
 import {art} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
-import {drawCompositionSlot, resolveComposition, slotHasContent, type Composition, type Instance, type LayerSlot} from '../../src/ssg/game/art/core/composition';
+import {drawCompositionSlot, resolveComposition, slotHasContent, type ChunkDocument, type AssetInstance, type LayerSlot} from '../../src/ssg/game/art/core/composition';
 import {layerRows, restack} from '../../src/ssg/game/authoring/layer-stack';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {sceneSourceDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
-const libraryComposition=art.validate(FOLDER_SOURCES.library.composition),libraryScene=(composition?:Composition)=>sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition});
+const libraryComposition=art.validate(FOLDER_SOURCES.library.composition),libraryScene=(composition?:ChunkDocument)=>sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition});
 
 function recorder(){const commands:unknown[][]=[];let gradient=0;const values:Record<string,unknown>={globalAlpha:1,lineWidth:1,font:'',getTransform:()=>({a:1,b:0,c:0,d:1,e:0,f:0}),measureText:(text:string)=>({width:text.length*6}),getImageData:(_x:number,_y:number,w:number,h:number)=>({data:new Uint8ClampedArray(w*h*4),width:w,height:h})};const ctx=new Proxy(values,{get(t,k:string){if(k in t)return t[k];if(k==='createLinearGradient'||k==='createRadialGradient'||k==='createPattern')return(...args:unknown[])=>{const id=++gradient;commands.push([k,...args,id]);return{id,addColorStop:(...a:unknown[])=>commands.push(['stop',id,...a]),setTransform:()=>{}};};return(...args:unknown[])=>{commands.push([k,...args]);};},set(t,k:string,value){t[k]=value;commands.push(['set',k,value]);return true;}});return{ctx:ctx as unknown as CanvasRenderingContext2D,commands};}
 (globalThis as any).document={createElement:()=>{const rec=recorder();return{width:0,height:0,getContext:()=>rec.ctx,style:{}};},fonts:{load:async()=>[],ready:Promise.resolve()}};
@@ -15,15 +15,15 @@ const {createNativePreview}=await import('../../src/ssg/game/authoring/native-pr
 const {nativeSceneAdapters}=await import('../../src/ssg/game/authoring/scene-adapters.ts');
 
 const copy=<T,>(v:T):T=>structuredClone(v);
-const flat=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flat(n.children??[])]);
+const flat=(nodes:AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...flat(n.children??[])]);
 const doc=art.validate(copy(libraryComposition));
-const node=(d:Composition,id:string)=>flat(d.instances).find(n=>n.id===id)!;
+const node=(d:ChunkDocument,id:string)=>flat(d.instances).find(n=>n.id===id)!;
 assert.equal(node(doc,'spawn').type,'scene.player','the spawn is the player row');
 assert.equal(libraryScene().spawn,74,'the player row is still where the player arrives');
 
 // Validation: a layer on every instance, drawn artwork in visual layers, markers in logic, at most one player row, in the playfield.
-const rejects=(edit:(d:Composition)=>void,pattern:RegExp)=>{const d=copy(doc);edit(d);assert.throws(()=>art.validate(d),pattern);};
-rejects(d=>{delete (node(d,'counter') as Partial<Instance>).layer;},/missing layer/);
+const rejects=(edit:(d:ChunkDocument)=>void,pattern:RegExp)=>{const d=copy(doc);edit(d);assert.throws(()=>art.validate(d),pattern);};
+rejects(d=>{delete (node(d,'counter') as Partial<AssetInstance>).layer;},/missing layer/);
 rejects(d=>{node(d,'counter').layer='logic';},/visual layer/);
 rejects(d=>{d.instances.push({id:'marker',type:'library.spawn-marker',props:{},placement:{x:90,h:0},order:0,layer:'set'});},/logic layer/);
 rejects(d=>{node(d,'spawn').layer='set';},/player row belongs in the playfield/);
@@ -56,7 +56,7 @@ assert.ok(!drawn('behind-player').includes('library.printer')&&drawn('behind-pla
 
 // Painting through the native preview, for the layer and editor-view checks below.
 const configs=[{width:640,height:360,minute:580,time:0,weather:'clear',reduced:false,hack:false},{width:960,height:540,minute:0,time:2.25,weather:'rain',reduced:false,hack:false},{width:1280,height:720,minute:1100,time:5,weather:'storm',reduced:false,hack:false},{width:400,height:900,minute:1200,time:3.3,weather:'fog',reduced:true,hack:false},{width:960,height:540,minute:580,time:1,weather:'clear',reduced:false,hack:true}];
-const paint=(composition:Composition,c:typeof configs[number],index:number,view:{player?:boolean;hidden?:string[]}={})=>{const rec=recorder();createNativePreview(nativeSceneAdapters).render({width:c.width,height:c.height,getContext:()=>rec.ctx,style:{}} as any,{...view,composition,time:c.time,reduced:c.reduced,overlays:false,environment:{day:1,minute:c.minute,seed:3,weather:c.weather,cameraX:index%2?150:0,zoom:1,flags:'{}',state:'{}',hack:c.hack,hover:''}} as any);return JSON.stringify(canonicalPaint(rec.commands));};
+const paint=(composition:ChunkDocument,c:typeof configs[number],index:number,view:{player?:boolean;hidden?:string[]}={})=>{const rec=recorder();createNativePreview(nativeSceneAdapters).render({width:c.width,height:c.height,getContext:()=>rec.ctx,style:{}} as any,{...view,composition,time:c.time,reduced:c.reduced,overlays:false,environment:{day:1,minute:c.minute,seed:3,weather:c.weather,cameraX:index%2?150:0,zoom:1,flags:'{}',state:'{}',hack:c.hack,hover:''}} as any);return JSON.stringify(canonicalPaint(rec.commands));};
 assert.notEqual(paint(moved,configs[0],0),paint(doc,configs[0],0),'moving the counter to the foreground changes the frame');
 // Editor view state: the player figure is drawn only on request, at the player row; eyes hide objects.
 const base=paint(doc,configs[0],0),withPlayer=paint(doc,configs[0],0,{player:true});assert.notEqual(withPlayer,base,'the editor preview draws the player');
@@ -131,6 +131,10 @@ console.log('Scene layers PASS: validation, layer-then-order sorting, slots, res
  assert.deepEqual(frame.artwork!.map(a=>a.document.scene),['back-source','front-source']);
  beginLayeredFrame();flushLayeredSlot('behind-player');assert.throws(()=>measureArtwork(ctx=>drawCompositionSlot(ctx,art,docs[1],{view:{...v,sharedLayers:true},state:{},reduced:false},'behind-player')),/after slot flush/);endLayeredFrame();
  for(const z of zones)z.host.model.dispose();
+ const proposal={...docs[0],scene:'proposal-source'};
+ const proposalSelection=frameSelection(frame,{composition:proposal,documents:new Map([...docs.map(d=>[d.scene,d] as const),['proposal-doc',proposal]]),time:0,reduced:false,overlays:false,environment:{}},false);
+ assert(Object.values(proposalSelection.sources!).filter(s=>s.instance==='front-source').every(s=>s.document==='proposal-doc'),'Borrowed native behavior must not redirect picking to the base scene');
+ assert.equal(proposalSelection.regions!.find(r=>r.document==='proposal-doc')!.scene,'proposal-source','Chunk-border selection retains the edited proposal identity');
  console.log('Prepared artwork PASS: actual cross-source paint order, projected inspection, shared picking, drag projection and late-submission guard.');
 }
 

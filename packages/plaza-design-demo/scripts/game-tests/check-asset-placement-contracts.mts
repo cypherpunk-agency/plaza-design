@@ -1,6 +1,6 @@
 /** Current public placement contracts: typed defaults, finite geometry, repeatable drawing and explicit context. */
 import assert from 'node:assert/strict';
-import {art,resolveComposition,drawCompositionSlot,type Composition} from '../../src/ssg/game/art';
+import {art,resolveComposition,drawCompositionSlot,type ChunkDocument} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {assetInventory} from '../../src/ssg/game/authoring/asset-browser';
 import {drawSkyShips,createSkyShips} from '../../src/ssg/game/art/environment/sky-ships';
@@ -21,7 +21,7 @@ for(const entry of assetInventory(art,[])){
  reusable++;
  const props=art.properties(e.type,{}),state=art.visualProperties(e.type,{});
  const layer=e.framePhase==='sky'?'distance':e.parts.length?'set':'logic';
- const composition:Composition={version:1,scene:'placement',instances:[{id:'original',type:e.type,props,placement:{x:80,h:20},layer,order:0},{id:'copy',type:e.type,props:structuredClone(props),placement:{x:140,h:30},layer,order:1}]};
+ const composition:ChunkDocument={version:1,scene:'placement',instances:[{id:'original',type:e.type,props,placement:{x:80,h:20},layer,order:0},{id:'copy',type:e.type,props:structuredClone(props),placement:{x:140,h:30},layer,order:1}]};
  const rows=resolveComposition(art,art.validate(composition),{view,state:{},reduced:false}),before=JSON.stringify({props,state});
  assert.equal(rows.length,2);assert.equal(rows[1].placement.x-rows[0].placement.x,60);
  for(const row of rows){const b=e.bounds(row.props,row.state,{view,placement:row.placement});for(const v of Object.values(b))assert(Number.isFinite(v),e.type+' finite bounds');}
@@ -41,7 +41,7 @@ assert.equal(JSON.stringify(b.ops.slice(2,-1)),JSON.stringify(a.ops),'sky extrac
 assert.throws(()=>art.properties(sky.type,{ships:[{kind:'unknown'}] as never}));
 // Sky rows are excluded from ordinary world slots, painted once in their explicit phase,
 // and scaled only by composition's existing transform (never again inside the kernel).
-const fleetDoc:Composition={version:1,scene:'fleet',instances:[{id:'fleet',type:sky.type,props:{ships:[{kind:'freighter',ps:1,y:60,speed:.1,offset:800,flip:false,depth:.4}]},placement:{x:0,h:0,scale:2},layer:'distance',order:0}]};
+const fleetDoc:ChunkDocument={version:1,scene:'fleet',instances:[{id:'fleet',type:sky.type,props:{ships:[{kind:'freighter',ps:1,y:60,speed:.1,offset:800,flip:false,depth:.4}]},placement:{x:0,h:0,scale:2},layer:'distance',order:0}]};
 const fleet=record();drawCompositionSlot(fleet.ctx,art,fleetDoc,{view,state:{},reduced:false},'behind-player');assert.equal(fleet.ops.length,0,'sky rows never paint in the ordinary slot');
 drawCompositionSlot(fleet.ctx,art,fleetDoc,{view,state:{},reduced:false},'behind-player',undefined,'sky');assert.equal(fleet.ops.filter(op=>JSON.stringify(op)==='["scale",2,2]').length,1,'one scale at the composition boundary');
 for(const scene of Object.values(SCENES))if(scene.ambient?.sky)assert.equal(typeof scene.drawSkyArtwork,'function',scene.id+' sky is authored, not an automatic runtime fallback');

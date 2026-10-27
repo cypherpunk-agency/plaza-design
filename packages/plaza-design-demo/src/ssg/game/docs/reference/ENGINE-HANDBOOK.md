@@ -5,6 +5,12 @@ All 19 folder scenes and catalogue scenes use shared source and typed editor sup
 this guide describes implementation ownership, not immutable product decisions.
 Tests exercise the current engine directly; completed migration evidence is not required.
 
+Save construction uses `runtime/initial-save.ts` for both fresh runs and checkpoints. Callers
+resolve their starting inputs and clock policy; the constructor clones them without reading
+storage, sampling randomness or advancing gameplay. A checkpoint must not construct a profile
+save and then overwrite it. Fresh runs currently randomize their weather seed; checkpoints
+use their authored seed. City geography no longer carries an older-save start fallback.
+
 Animation ownership: the existing intro playback session advances skyline packets before painting;
 isolated seek sessions reconstruct their own state. Painting consumes prepared drawing commands.
 The owner also prepares viewport/layout changes before ticking; paint cannot initialize or reset
@@ -24,6 +30,23 @@ source. `runtime/prepare-frame.ts` prepares both world references and inline art
 `renderWorldFrame` renderer; no separate sequence adapters remain. In the editor, select scenery
 directly in the sequence preview to edit its source scene/backdrop without switching views.
 The inspector identifies that shared source. See [animated artwork](../../art/sequences/README.md).
+
+Sequences may target artwork in another source using `target.scene` plus the source-local instance
+ID. The normal evaluator produces source-qualified artwork values; `View.sequence.artwork` feeds
+those values to the same composition painter. Keep gameplay state and native visual inputs when
+merging partial overrides. An unqualified target always belongs to the sequence composition.
+
+Skies are ordinary `environment.sky` artwork groups, including their sun/moon/cloud drawing.
+They paint once before weather in the shared sky pass; additional sky traffic paints afterward.
+Do not also submit the sky group through `drawSkyArtwork`. Editor precise clicks reuse captured
+paint commands, rather than trusting conservative bounds to cover every generated group member.
+
+Contextual authoring uses the right inspector. `WorkbenchContext.inspect` and
+`authoring/inspector-task.ts` mount a staged typed form there; opening/canceling makes no source
+edit, invalid Apply preserves the draft, and successful Apply uses existing ComposerModel history
+and validation. Selection/source changes discard obsolete drafts. Connections, group endpoints,
+mount/create/unmount/delete flows use this path. Keep recovery text persistent and wrapped beside
+the selection; never use a modal or a cramped header message as a substitute for these controls.
 
 ## Module ownership
 
@@ -72,8 +95,7 @@ selection, inspector lifecycle, timeline and preview coalescing have separate mo
 return through ComposerModel; preview state contains derived results and gesture state only. Editor selection has one record
 (document, instance, optional temporal selection); inspector identity includes the source document.
 Preview edits/navigation invalidate active asynchronous work immediately. Playback advances coalesce
-without invalidating each other, so slow rendering still publishes frames. Stale successes, crop
-measurements and errors cannot replace the current result; disposal prevents queued restarts.
+without invalidating each other, so slow rendering still publishes frames. Stale successes and errors cannot replace the current result; disposal prevents queued restarts.
 
 Focused constructor-free runtime fixtures use `scripts/game-tests/runtime-fixture.mts` with the
 current grouped records. Exercise extracted functions or Game's actual ports; do not recreate old
@@ -160,8 +182,23 @@ its explicit modifier scope. Service purchases use service:true, not fake invent
 
 ## Recipe: dialogue and saved state
 
-Use authored conversations for choices and scene people definitions for simple chatter; the
-compiler produces the same ConversationSession graphs. Supply explicit graph IDs for native talk.
+Use named gameplay conversation graphs for both choices and simple chatter. Scene people bind
+their `conversation` ID; their source keeps names, prompts and placement bindings, not another
+copy of pages. The editor creates a normal graph atomically when adding a speaking actor and
+opens the same graph editor from its inspector or Library → Conversations. Re-enabling dialogue
+retains the existing graph and saved progress address. Native characters, robots and companions
+share the presentation decision: bubbles for chatter, the normal panel for choices/text input.
+The old people `talk`/`repeat`/`lines` format and runtime graph generation are removed. Creation
+writes a normal named graph in the same transaction as the person/artwork; enabling a previously
+disabled conversation reuses its edited graph. Duplicating an actor-specific graph specializes its
+dependencies into the copy's stable identity, giving it independent progress while retaining
+explicit canonical bindings. Explicit shared graph references remain shared.
+Robot voice metadata references `bot-gameplay.json`, edited by the ordinary
+conversation library. `conversation-instance.ts` is a pure dependency compiler: IDs under the chosen
+graph prefix specialize into the actor's existing namespace; literals and canonical bindings do
+not. It adds no runner/store and copies only reachable graph dependencies. Robot progress remains
+per actor; companion/critter lifetime semantics must not be accidentally changed by consolidation.
+Supply explicit graph IDs for native talk.
 Use entry commands for effects and onEnterFailure for refused entry. Repeated frame inspection
 must stay pure and rewards must be idempotent. A choice uses the same command engine as a device.
 
@@ -179,7 +216,7 @@ scene, and use `stateReads` only to look at another scene's own state. Interacti
 clock's `time`/`timeDay` rules and scene values (`{state}`) read saved state too. Check: `shared-state-owner harbor-zones`.
 
 Examples: [Library dialogue source](../../scenes/library/scene.json),
-[shared conversation compiler](../../engine/gameplay/scene-conversations.ts),
+[actor graph creation](../../engine/gameplay/scene-conversations.ts),
 [world-state key access](../../engine/gameplay/state.ts).
 
 ## Recipe: world membership and direction
@@ -557,29 +594,30 @@ ends with `run`; a loop line is a `ring`; what a leg needs from the scene's stat
 
 The opening is data, not a controller. There is no story runtime: `story/story-rules.ts` holds source types and pure functions; the one
 game loop (`runtime/game.ts` `stepLoop` -> `updateStory`, `pinStory`, `update`, `drawBeat`/`drawSleep`) applies them, and the few numbers they read
-(the frame clock, the loop's `counters`, the player's stillness) are the loop's own. Nothing schedules; scene time still moves only on the
+(the frame clock, presentation timestamps and the player's stillness) are the loop's own. Nothing schedules; scene time still moves only on the
 model's tick. A second timeline (shift -> commute -> home) is authored in the same files, with no new loop code.
 
 | Wanted | Where |
 | --- | --- |
 | Which phase the story is in, what each phase locks, pins and resumes at, who you are in it (`persona`) | story/opening.json `PHASES`, `PHASE_RULES` (ordered flag rules, last row the fallback) |
-| What one scene says and does in one phase: goal line, clock time, arrival words, the scripted ride, who answers, exits that act differently, everyday popup actions, story targets, the attention ping | scenes/<id>/scene.json `phases.<phase>` (editor: Scene › Story phases, or Game opening › Scene phases) |
+| What one scene says and does in one phase: goal line, clock time, arrival words, the scripted ride, who answers, exits that act differently, everyday popup actions, story targets, the attention ping | scenes/<id>/scene.json `phases.<phase>` (editor: selected chunk → Story phases) |
 | The room's light cue | scene.json `wash` rules (`washTone`) |
 | A timed checkpoint (turnstile), an acknowledging device (concierge) | an exit rule `gate` / `acknowledge` in a phase's `exits` (`gateFrame`) |
 | A level barrier that acts differently in a phase | the same exit rule shapes in a phase's `barriers` (`barrierPhaseRule`, `barrierRuleOpens`) |
 | Sleep / wait: fade, a card with two clock readings, fade | opening.json `CARDS` (`cardFrame`); a story target with `card` starts one; "wait until..." builds the same card |
-| A workflow that fires when counters, elapsed frames and quiet say so (the morning's message, jacking in) | opening.json `TRIGGERS` (`triggerFires`, `triggerStarts`) |
-| Counters (tries, last, due, at) | named by the source: a chip or react-exit `cues: [{counter}]`, a trigger's tests; the loop's `counters` record |
+| A global story trigger | opening.json `TRIGGERS`: ordinary `when` predicate, optional `watch` predicate and start timestamp, presentation `do` cues; the existing story tick uses the global GameplaySession's condition evaluator |
+| Attempts and other progression values | ordinary declared gameplay state, changed by system commands; session counts are excluded from saves |
+| Pausable presentation timestamps | `stamp` and `clearStamps` cues update the loop's `presentation.stamps`; registered `story.elapsed.<stamp>` native observations expose elapsed frames to ordinary query/compare conditions |
 | The clock pin and release | a phase's `time` in each scene; `PHASES.<p>.pinned`; `CLOCK.release` (`clockPin`) |
 | The attention (idle) ping | `ATTENTION.after` and a phase's `ping` (`attentionDue`, `attentionAim`) |
 | The scripted ride | a phase's `ride: {mover, path}`: the Train mover's `home` path (`train.car`), run on the model's tick when the scene is entered |
 | A goal hint (a program still missing) | `GOAL_HINTS` (`goalHint`) |
-| Contacts and the inbox's words | data/contacts.json (World › Game opening › Contacts) |
-| The END card's words | story/end-card.json (World › Game opening › End card); opened by a handoff `presentation: "end"` |
+| Contacts and the inbox's words | data/contacts.json (World data → Game settings → Contacts) |
+| The END card's words | story/end-card.json (World data → Game settings → Ending); opened by a handoff `presentation: "end"` |
 
 **Cues** are the finite things a gate, an acknowledgment, a card or a trigger makes happen, run in order: `milestone` (a system command of
 `WORKFLOWS`; a refused one ends the list), `say` (spoken in chain after the other cues), `print` (deck lines), `sound`, `stage` (bring the
-player to a scene's spawn, reset it, companion home), `counter` (add / stamp / reset a group) and `advance` (the city clock jumps). A new kind of
+player to a scene's spawn, reset it, companion home), `stamp` / `clearStamps` (pausable presentation timestamps) and `advance` (the city clock jumps). A new kind of
 effect is one more cue in `story-rules.ts` and one case in `runCues`; the editor offers it from the same list (authoring/story-fields.ts).
 
 To add a phase: add it to `PHASES` and a `PHASE_RULES` row, then give each scene its `phases.<id>` (only the scenes that differ). The source set
@@ -592,11 +630,10 @@ a tool for comparing a refactor with a recording, not a regression suite.
 
 ## Recipe: a way of playing (play profiles)
 
-The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: World ›
-Play profiles) declares each way of playing; runtime/play-profile.ts picks the active one from the URL
+The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: Game settings for the default run; Developer tools for test configurations) declares each way of playing; runtime/play-profile.ts picks the active one from the URL
 (`?demo`, `?play=harborShift`, else the default) or the editor Play frame, and the existing game loop, save and
 slot code read it: `can('map'|'mapKey'|'deck'|'jump'|'hack'|'sudo'|'review')`, `playProfile().start/routes/
-player/guidance/clock/chrome/seed`, `saveKey()`, `resumeKey()`, `slotPrefix()`. A profile is data plus pure
+player/guidance/clock/chrome/checkpoint`, `saveKey()`, `resumeKey()`, `slotPrefix()`. A profile is data plus pure
 helpers; it has no state or tick of its own, and `runtime/game.ts` stays the one loop. The profile decides whether
 an ability exists (`Game.hackLocked()` is `!can('hack')` or the opening's own lock); the story still decides when it
 is locked. To add or change a way of playing, edit the document; to add an ability, add it to `ABILITIES` in
@@ -605,18 +642,29 @@ every profile. A new player body is one entry in `AVATAR_PAINTERS` (runtime/avat
 installs the pending document before it builds the game (`installPlayProfiles`). Check:
 `pnpm test:game play-profiles`.
 
+Starting inventory, scalar state, handle and entry location belong to the referenced row in
+`world/checkpoints.json`, not a second profile seed or profile start scene. **Edit starting
+checkpoint** opens its Starting state inspector; private Play reuses the same typed controls.
+The registered source-document ID remains `play-fixtures`. Pending profiles validate against
+pending checkpoints as one graph; a referenced checkpoint cannot be deleted until rebound.
+Fresh-run construction resolves the checkpoint against the actual pending gameplay vocabulary;
+Continue preserves the current save and never regrants checkpoint inventory or reapplies its
+placement. Fixed checkpoint reconstruction and fresh randomized weather seeds have different
+policies. Sequence reconstruction is isolated sampling, not a trigger replay.
+
 ## Recipe: a character, a lock or a review shortcut (game rules documents)
 
 The loop never names a scene, a person or a conversation. What used to be a literal in `runtime/game.ts` is a
 source document the loop reads (private Play passes the pending one through `GameRuntimeSources`):
 
-| Document (editor: World ›) | Holds | Loop reads it as |
+| Document (contextual editor location) | Holds | Loop reads it as |
 | --- | --- | --- |
-| `engine/gameplay/companion.json` (Companion) | the companion's id, name, painter `look` (`COMPANION_LOOKS`), `speaker`, saved `unlockFlag`, scene `modes`, `avoidPopups`, arrival `greeting`, `follow` tuning, default `pet` recipe | `companionDoc`, `companionHere()` (companion-source.ts); scenes keep `scene.json` `companion` (mode, perches, pet graphs) |
-| `engine/gameplay/critter-reactions.json` (Critter dialogue) | per critter `look`, speaker `name`, `prompt`, cycling `talk` replies | `critterReaction()`; the cat and pigeon target and reply |
-| `demo/review-stations.json` (Review stations) | review bookmarks (anchored on a use, device or person, with conversation conditions), navigator buttons, the remote-device example, the hint | `reviewStations()`, `reviewActions()`; the navigator only draws what it is given |
-| `world/city.json` `LOCKS` (City & travel) | destination locks: `unlockedBy` world flag role, `destinations` (districts, stations, taxi stands), `reason` | `city.transportPermission/transportAccess/lockOpen`; taxi, map and `placeBlocked` |
-| `world/transport/metro.json` `locked` (City & travel › station lock) | station → lock id: LINE 0 does not stop there until the lock opens | `metro.syncLocks(world, flags)` each travel tick |
+| `engine/gameplay/companion.json` (selected chunk → Companion → Shared companion definition) | id, display name, painter, speaker, ordinary follow `when`, modes, popup avoidance, arrival greeting, physical follow tuning and default pet graph references | `companionHere()` uses normal gameplay conditions; scene sources select mode/perches and may override follow availability (`null` explicitly means always) |
+| `engine/gameplay/bot-reactions.json` + `bot-gameplay.json` (selected robot → Behaviour; Library → Conversations) | shared voice metadata and ordinary conversation graphs | `withBotConversations()` specializes reachable graph dependencies into the existing actor namespace; `ConversationSession` executes them |
+| `engine/gameplay/critter-reactions.json` + `critter-gameplay.json` (selected animal → Behaviour; Library → Conversations) | look/prompt/graph binding and ordinary conversation graphs, queries and session state | `critterReaction()` selects the binding; the existing global GameplaySession and ConversationSession execute it; Save excludes session values |
+| `demo/review-stations.json` (Developer tools → Review shortcuts) | review bookmarks (anchored on a use, device or person, with conversation conditions), navigator buttons, the remote-device example, the hint | `reviewStations()`, `reviewActions()`; the navigator only draws what it is given |
+| `world/city.json` `LOCKS` (City map → Travel) | destination locks: `unlockedBy` world flag role, `destinations` (districts, stations, taxi stands), `reason` | `city.transportPermission/transportAccess/lockOpen`; taxi, map and `placeBlocked` |
+| `world/transport/metro.json` `locked` (City map → Travel → station lock) | station → lock id: LINE 0 does not stop there until the lock opens | `metro.syncLocks(world, flags)` each travel tick |
 
 Scene-level flags live in `scene.json`: `stage.resettable {label, confirm, done}` makes `reset <scene id> --yes` start
 that scene over in the deck (generic command; its manual line and completion list the declared scenes),
@@ -910,3 +958,41 @@ Editor-wide declaration validation retains its synchronous scope for remaining p
 validators that read the realm's vocabulary. This stores declarations, not saved values. The scene compiler
 accepts explicit declarations/network; private Play installs declarations only in its disposable realm.
 Do not introduce another clock, weather owner, scalar copy or async ambient context.
+
+
+### Composition-centered editor and preview checkpoints
+
+Read `authoring/README.md` for the current workspace and direct review paths. `world/compositions.ts`
+compiles chunk/group membership and anchored placements; external zone-graph seams may connect
+compositions to other chunks, but cannot duplicate an internal placement. Endpoints support an
+explicit landing offset. Runtime edits remain existing gameplay world actions; optional `ensure:true`
+is an explicit idempotent mount/unmount policy, not a replacement operation.
+
+`authoring/workspace.ts` references actual chunk source documents. A workspace and optional direction
+are distinct editor context. `ChunkDocument`, `AssetDefinition` and `AssetInstance` name the existing
+visual contracts; persisted `kind:composition`/`scene` identities are not extra engine concepts.
+`world/checkpoints.json` is the only checkpoint source. `checkpointSeed` and `reconstructCheckpoint` use
+canonical scalar keys and the existing isolated sequence sampler; native private Play consumes the
+same inputs, mover snapshots and command receipts.
+Native New Game consumes the referenced checkpoint through the same `world/checkpoint-state.ts`
+reconstruction and `runtime/sequence-state.ts` sampler. Optional direction starts at its authored
+playhead with committed receipts, without replaying the launch workflow. Source-discovered native
+playback remains the sole playback owner. No direction means immediate normal play. Initial
+clock/weather/metro/location inputs apply on a new run; Continue retains current progress.
+Private Play explicitly selects a run configuration within its campaign or restricted-world scope.
+The configuration and checkpoint are independent inputs, not copied starting state. `storyboard-links.ts` reads actual commands and
+triggers; storyboard branches navigate and never execute a second progression system.
+
+Relevant checks: composition-workspace (native scope, source identity, history/bundle/protected Save),
+preview-checkpoints (state/movers/receipts/invalid starts), storyboard-navigation (typed links and source
+roundtrip), harbor-composition-lifecycle (real complete/skip, deferred removal, retained Harbor model),
+world-compositions (anchors, external seams, explicit ensure) and editor-view-memory. Rendering and
+selection still use the existing native preview and `renderWorldFrame`; sequence context adds no adapter.
+
+Global story predicates use the existing native query vocabulary: `story.phase`, `story.scene`,
+`story.viewing`, `story.bubble`, `story.popup` and elapsed reads for actual authored timestamps.
+These are read-only observations, never saved aliases. Assembled source validation checks the
+registered reads and timestamp references. Missing timestamps read -1 so source can explicitly
+allow “no previous event.” Presentation cues keep their existing ordering and pausable clock;
+ordinary rewards/progression go through GameplaySession commands. Do not restore CounterTest,
+trigger-specific phase/viewing/once/quiet fields, or an incrementing presentation counter store.

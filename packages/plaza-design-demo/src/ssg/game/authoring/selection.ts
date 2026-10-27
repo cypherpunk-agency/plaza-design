@@ -2,10 +2,16 @@ import type {TimelineSelection} from './timeline-view';
 /** Selection reads native bounds and source ownership; it never creates or edits documents. */
 import type {PreviewResult} from './contracts';
 export function hitTestArtwork(preview:PreviewResult|undefined,point:{x:number;y:number},min:number){
-    const grow = (b: PreviewResult['bounds'][number]) => { const w = Math.max(b.width, min), h = Math.max(b.height, min); return { ...b, x: b.x - (w - b.width) / 2, y: b.y - (h - b.height) / 2, width: w, height: h, area: b.width * b.height }; };
-    // Smallest box first; on a tie the frontmost wins (bounds arrive in draw order, back to front).
-    return (preview?.bounds ?? []).map((b, index) => ({ ...grow(b), index })).filter(b => (!b.clip||point.x>=b.clip.x&&point.x<=b.clip.x+b.clip.width&&point.y>=b.clip.y&&point.y<=b.clip.y+b.clip.height)&&point.x >= b.x && point.x <= b.x + b.width && point.y >= b.y && point.y <= b.y + b.height).sort((a, b) => a.area - b.area || b.index - a.index)[0];
-  }
+ let best:PreviewResult['bounds'][number]|undefined,area=Infinity;
+ for(const box of preview?.bounds??[]){
+  const clip=box.clip;if(clip&&(point.x<clip.x||point.x>=clip.x+clip.width||point.y<clip.y||point.y>=clip.y+clip.height))continue;
+  const width=Math.max(box.width,min),height=Math.max(box.height,min),x=box.x-(width-box.width)/2,y=box.y-(height-box.height)/2;
+  if(point.x<x||point.x>x+width||point.y<y||point.y>y+height)continue;
+  const next=box.width*box.height;if(next<=area){best=box;area=next;}
+ }
+ if(best)return best;
+ const id=preview?.pick?.(point);if(!id)return;const box=preview?.resolved?.[id]?.bounds;return box?{id,...box}:undefined;
+}
 
 export function sourceSelection(preview:PreviewResult|undefined,id:string,displayDocument:string){
  const source=preview?.sources?.[id];
@@ -13,6 +19,6 @@ export function sourceSelection(preview:PreviewResult|undefined,id:string,displa
 }
 
 /** One editor selection owner; source identity is independent of the displayed sequence. */
-export interface EditorSelection {document:string;instance:string;timeline?:TimelineSelection}
+export interface EditorSelection {document:string;instance:string;timeline?:TimelineSelection;chunk?:string;world?:import('./world-members').WorldMemberAddress}
 export const createSelection=():EditorSelection=>({document:'',instance:''});
 export const selectionKey=(document:string,instance:string)=>JSON.stringify([document,instance]);

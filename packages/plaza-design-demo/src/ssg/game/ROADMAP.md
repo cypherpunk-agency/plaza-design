@@ -1,8 +1,169 @@
 # ACCESS DENIED: roadmap
 
-Single priority overview, consolidated 2026-10-25. Everything remains in design.
+Single priority overview, consolidated 2026-10-26. Everything remains in design.
 This roadmap owns status and order; the [engine handbook](./docs/reference/ENGINE-HANDBOOK.md)
 owns implementation guidance. Design documents are working context, not competing roadmaps.
+
+Publication follow-up (2026-10-27): main publication of the completed E/U/P work is authorized.
+The local-only/publication-excluded wording below records the original goal boundaries; it does
+not prohibit this subsequent release. Production is not part of this publication request.
+[Pending user review](./docs/design/USER-REVIEW-GUIDE.md) provides direct checkpoints, practical
+instructions and the remaining design/usability questions; technical acceptance is separate.
+
+## Completed goal: prologue and authoring acceptance (P1–P4, local)
+
+The shared engine foundation is implemented. This follow-up proves the real opening-to-Downtown
+experience and the practical editing tasks needed to build it; it does not reopen engine migration.
+Authorized and completed locally 2026-10-26 as finite goal P1–P4. Publication is separate.
+Current task evidence is recorded in [PROLOGUE-AUTHORING-ACCEPTANCE.md](./docs/design/PROLOGUE-AUTHORING-ACCEPTANCE.md).
+
+| Step | Scope | Completion evidence |
+| --- | --- | --- |
+| P1 Current verification | Update the stale seamless-commute fixture to consume the compiled world for queries, raw source only at the runtime compilation boundary, and current save initialization. Recheck opening completion/skip, arrival, shift and commute contracts. | Existing focused checks pass without weakening assertions or replacing approved images. Describe fixture corrections separately from product fixes. |
+| P2 Integrated journey | Review one fresh local isolated run from launch through glide, Harbor tasks, checkout, train, underground arrival and Downtown stairs; target completion, Escape and save/reload boundaries. | Named steps have observed outcomes; camera/player continuity, prompts, boarding eligibility and state continuity work. Fix observed faults and recheck affected boundaries. No full-campaign claim. |
+| P3 Authoring tasks | In the existing editor, change an opening camera key; move a chunk/group; edit a connection endpoint and exercise invalid placement; edit a Harbor objective/dialogue; edit a train route/stop/door setting; edit a passenger flow; edit a starting checkpoint. | Each of the seven tasks has selection, contextual typed controls, preview, source application/rejection and Undo evidence; applicable pending native Play and Save/reload are verified. Temporary test edits are restored. Required JSON, confusing affordances, stale previews and measurable interaction stalls are gaps to fix, not accepted substitutes for authoring. |
+| P4 Bounded completion | Resolve gaps found in P2/P3 through existing controls and engine contracts; replace required raw-JSON steps for these tasks, remove superseded paths, and update usage/review guidance. | Report journey behavior, seven-task editor usability, focused checks and retained limitations separately. No unresolved mechanical blocker in these tasks; creative geography, landmarks and pacing remain designer decisions. |
+
+Acceptance result: **P1–P4 complete locally; seven of seven editor tasks demonstrated.** The
+ordinary isolated game run reached Downtown through the real shift and train. Fixed the premature
+post-checkout train switch, phase narration/goal priority on seamless arrival, catalogue actor
+inspector assembly and contextual interaction-to-graph navigation. The service handoff now occurs
+when entering home, away from the platform camera. All temporary source edits were undone.
+
+Final verification: 22/22 focused checks; the separate native-target protected Save/reload check;
+package TypeScript and homepage build; whitespace checks. The seven real source edits also passed
+one portable bundle/protected Save/native reconstruction/byte-Undo transaction. No expected images
+were replaced. A measured objective edit improved from 416 ms to 264/185/173 ms in three later local
+samples after removing redundant validation builds; these are diagnostic CPU timings. Full
+validation still costs synchronous time at commit. On-foot saves retain the current chunk/spawn
+policy; exact occupied-vehicle restoration has focused coverage. This is a verified prologue and
+bounded authoring pass, not an approval of final pacing or every editor workflow.
+
+Keep the existing renderer, world compiler, mover/session runtime, inspector and history. Add no
+new adapter, parallel simulation, broad editor redesign or unrelated performance harness. Review
+performance only where an actual task stalls. Broader asset-property debt remains listed below;
+this bounded plan does not claim every game-authoring workflow is complete.
+
+## Contextual authoring workflows (U1–U3) — acceptance verified locally
+
+Authorized 2026-10-26. The [goal contract and current acceptance audit](./docs/design/AUTHORING-WORKFLOW-GOAL.md)
+map each requirement to its implementation, browser tasks and focused checks. No push or deployment
+is included. E1–E6 remains the completed foundation; U1–U3 finishes the contextual workflows.
+
+| Milestone | Result | Status |
+| --- | --- | --- |
+| U1 World building | Select/drag/edit chunks and groups; picker-first mount, explicit connections and source-preserving unmount; create/interior sources in the workspace. Separate Scenes/Compositions/Zones panels removed. | Verified locally |
+| U2 Characters and conversations | Contextual appearance/behavior/interaction, shared definitions/usages and one ordinary graph runner for humans, robots, animals and companions. Contextual doors, vehicles and triggers. Replaced dialogue formats/panels and shorthand compiler removed. | Verified locally |
+| U3 Game configuration and shared rules | Contextual City map, World variables, grouped Game settings, Library Story logic and Developer tools. Profiles reference checkpoints; native New Game/private Play share reconstruction and receipts. Duplicated start fields, counter predicates and displaced catch-all panels removed. | Verified locally |
+
+Review follow-up: contextual editing uses the right inspector, including connection/endpoints,
+mount/create drafts and removal confirmations. Placement failures have wrapping explanations and
+recovery actions beside the selection. Modal form infrastructure is removed; AGENTS.md specifies
+the inspector-first interaction contract. This corrects workflow gaps found during user review.
+
+Shared numeric controls now support horizontal scrubbing, exact text entry, coarse/fine modifiers,
+cancel and one-command Undo. They use ordinary validated source edits and existing keyframe rules;
+Apply/Cancel forms retain their draft boundary. Review follow-up removes per-sample whole-game
+validation for artwork scrubbing (full validation remains on release), unifies hover/click targets
+for sparse groups and helpers, and preserves proposal source identities during selection.
+
+The same UX audit found remaining structured asset properties that fall back to raw JSON controls:
+tower roof gear/setbacks/signs, skyline rows, shed column/light positions, traffic/air-lane lists
+and sign/window masks. These need typed asset-property controls using the existing FieldEditor
+contract; the inspector/modal correction does not claim that this separate authoring debt is done.
+
+Current ownership and usage are documented in [AGENTS.md](./AGENTS.md), the
+[engine handbook](./docs/reference/ENGINE-HANDBOOK.md) and [authoring guide](./authoring/README.md).
+Use those guides to extend the system; the acceptance audit is a verification map, not another
+implementation plan.
+
+Verification includes actual browser source edits, invalid/cancel cases, pending private Play,
+Stop/Undo and clean-source restoration; history/bundles/protected Save/fresh native reconstruction;
+shared physical/map admission; package TypeScript and homepage build; **60/60 exact current visual
+comparisons**, with unchanged expectations. The audit names the checks for each requirement.
+
+Native startup now reads checkpoint inventory, scalars, handle, entrance/X, clock/weather,
+metro starting inputs and optional sequence/playhead. Full game and Harbor explicitly reference
+glide at 0; a start without direction enters play directly. Continue preserves the actual save.
+The shared sampler reconstructs movers and command receipts without external hooks; existing native
+playback remains the sole playback owner. Private Play offers an explicit scoped Run configuration.
+
+Ordinary progression and global story-trigger predicates execute through GameplaySession.
+Only pausable presentation timestamps remain with the existing story loop; counts live in declared
+state and cues invoke ordinary system-command milestones. Phase observations retain the original
+next-frame boundary. No new renderer, adapter, gameplay engine, scheduler or compatibility layer
+was introduced. The distinct jobs of profiles/checkpoints, inspection/native Play and physical
+following/conversation remain intentional.
+
+No further U1–U3 implementation is required. Campaign pacing, geography, art and future features
+remain separate design work; publication requires a separate instruction.
+
+## Completed goal: composition-centered world editor (E1–E6, local)
+
+Authorized 2026-10-26. The finite scope, assumptions and acceptance gates are in
+[COMPOSITION-EDITOR-GOAL.md](./docs/design/COMPOSITION-EDITOR-GOAL.md). This completes the composition-centered editor
+track; completed runtime/consolidation milestones below stay complete. The existing opening
+is the integration example, not a decision about its final geography or pacing.
+
+| Milestone | Deliverable | Acceptance gate | Status |
+| --- | --- | --- | --- |
+| E1 Content model | Composition = arrangement of chunks; chunk = spatial source; assets = visual definitions/instances. Single-chunk access uses the same workspace without duplicate authored wrappers. | Contracts, terminology and editor labels agree; source identity and existing content are preserved. | Complete |
+| E2 Composition workspace | Composition browser, cross-chunk outline/selection/editing, chunk focus/search and mounted/loaded/visible diagnostics. | Standalone interiors and multi-chunk compositions use one viewport; navigation/framing persist and shared sources are explicit. | Complete |
+| E3 Sequence context | Optional timeline/direction over the same workspace, explicit base versus keyed edits and optional camera preview. | Enter/scrub/leave sequence editing preserves editor framing; no separate rendering path or adapter. | Complete |
+| E4 Preview checkpoints | Extend existing Play fixtures with composition membership, world state, player placement and optional sequence/playhead; typed authoring. | Reconstruct isolated preview and start native private Play from the same fixture; no campaign-save effects or load-trigger replay. | Complete |
+| E5 Progression navigation | Storyboard beat links to compositions/checkpoints/sequences and inspectable actual transition commands/triggers. | Beats open the relevant editable world situation; planning links do not create a second progression executor. | Complete |
+| E6 Integration/closure | Current launch/glide/Harbor/quest/regular-world example; remove superseded navigation and duplicate controls. | Source/history/bundle/protected Save/native reload/private Play work; approved visuals and behavior remain; current guidance and review links are complete. | Complete |
+
+Stop only when E1–E6 meet their gates. Keep any remaining limitations explicit. Publication is
+separate and not authorized by this goal. No new renderer/runtime/adapter hierarchy, automatic
+campaign-history capture, arbitrary gameplay reverse-scrubbing or historical-save compatibility.
+
+Completion evidence (2026-10-26): **E1–E6 complete locally.** `ChunkDocument`,
+`AssetDefinition` and `AssetInstance` distinguish visual sources from world compositions without
+changing stored identities. Named and standalone workspaces share source-qualified selection,
+editing, navigation, history and rendering. The obsolete cropped-scene viewport branches and
+read-only neighbour tags are removed. Optional sequence context uses the same viewport and bottom
+keyframe editor; standalone cutscenes retain the common renderer.
+
+Five authored checkpoints cover launch, glide, arrival, the supervisor and the regular morning
+world. Typed forms, shared reconstruction and private native Play consume the same saved state,
+membership, real movers and sequence receipts. Invalid sequence origins/composition links reject.
+The prologue storyboard links those checkpoints, navigation branches and actual gameplay commands;
+its choices/thumbnails refresh with pending source rather than retaining stale source snapshots.
+
+Verified acceptance:
+
+- Actual browser cross-chunk property edit and Undo; sequence context; reload restores identical
+  framing, selection, sequence/time and exact preview PNG. Storyboard card/branch navigation and
+  typed note editing/Undo work alongside the workspace.
+- Protected source Save, fresh reconstruction, grouped history/bundles and invalid-reference
+  rejection pass for workspace sources and linked checkpoints/storyboard.
+- Full normal game (isolated browser saves): New Game initializes Harbor before direction;
+  natural completion and Escape both finish the real train's commands and retain playable Harbor.
+  Work mounts before safely deferred coast retirement; the same Harbor model is retained.
+  Reload mounts the launch coast; Continue returns to Harbor with arrival/work membership;
+  ordinary pause keeps the current scene. Private Play starts at authored sequence time, and the
+  supervisor checkpoint starts within actual prompt reach and advances the first quest.
+- Focused workspace/checkpoint/storyboard/world-direction/membership/sequence/view-memory,
+  trigger-baseline and private-storage checks pass. Package TypeScript and homepage build pass.
+  All 24 approved scene images and 36 sky/workspace comparisons are exact; six opening frames,
+  including the final camera fit, also match exactly. No expected images were replaced.
+
+Usage, technical behavior and direct local review paths: [authoring/README.md](./authoring/README.md#opening-review-and-membership-changes).
+Final opening geography, landmarks, spacing, route and pacing remain designer decisions outside
+this technical goal. No new renderer, adapter, runtime or progression executor was added. Work is
+uncommitted and **not published**; this goal does not authorize a push.
+
+Follow-up simplification: sequence links/checkpoints/chooser/reload now share explicit source
+resolution and one paused direction-selection operation; the old `auto` mode is removed. Single-chunk
+checkpoints do not inherit a composition. Workspace member lookup resolves only the requested
+composition. The duplicate viewport-mode alias, unused preview-scale argument, hidden per-source
+filter/sort forms, dead flat-outline path and read-only-neighbour double-click cutover are removed.
+The retired crop test/guidance is removed; stale-render/selection/disposal coverage remains.
+Verified: package TypeScript/homepage build; five focused workspace, view-memory, checkpoint,
+native-timeline and asynchronous-coordination checks; three exact before/after preview PNGs;
+standalone timeline reopening, camera-preview exit, single-chunk checkpoint scope, Show all, and
+real Harbor arrival private Play. No rendering expectations or source content were changed.
 
 ## World-first runtime and opening
 
@@ -359,7 +520,7 @@ requires a product decision. Current-format saves are supported; historic compat
 
 ## Plan ownership and references
 
-- This file owns completed G1–G7 and C1–C4 status, current W1–W6, M1–M9 priorities and next-work order.
+- This file owns completed G1–G7 and C1–C4 status, completed E1–E6 and existing W1–W6, M1–M9 priorities and next-work order.
 - [Seamless world](./docs/design/SEAMLESS-WORLD.md) owns zones/seams/vehicle implementation detail;
   its steps are not a second milestone roadmap. A zone is authored/saved/loaded independently;
   seams join zones continuously and exits join them with a cut.

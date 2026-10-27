@@ -20,6 +20,182 @@
           "emit": "library.goal.lan"
         }
       ]
+    },
+    "talk.library.shelfe.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.shelfe.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.shelfe.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.shelfe.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.librarian.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.librarian.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.librarian.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.librarian.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.library.librarian.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.librarian.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.library.librarian.advance-3": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.librarian.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.library.student.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.student.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.student.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.student.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.kid.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.kid.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.kid.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.sleeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.sleeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.sleeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.knitter.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.knitter.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.library.knitter.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.knitter.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.library.knitter.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.knitter.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.library.paper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.library.paper.cursor",
+          "set": 0
+        }
+      ]
     }
   },
   "reactions": [],
@@ -176,6 +352,254 @@
         }
       },
       "sayCommand": "say \"{line}\" > catalog"
+    },
+    "talk.library.shelfe": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.shelfe.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SHELF-E",
+          "pages": [
+            "Re-shelving. One book. Correct place: everywhere."
+          ],
+          "onEnter": "talk.library.shelfe.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SHELF-E",
+          "pages": [
+            "Shelf 14 is empty. Shelf 15 is empty. I keep them in order."
+          ],
+          "onEnter": "talk.library.shelfe.advance-1"
+        }
+      }
+    },
+    "talk.library.librarian": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.librarian.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.library.librarian.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "when": {
+            "state": "talk.library.librarian.cursor",
+            "is": 2
+          },
+          "node": "visit-2"
+        },
+        {
+          "node": "visit-3"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LIBRARIAN",
+          "pages": [
+            "Welcome to the public library. The books are on the cloud. The chairs are here.",
+            "People come for the chairs. And the radiators. Mostly the radiators."
+          ],
+          "onEnter": "talk.library.librarian.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LIBRARIAN",
+          "pages": [
+            "No card? Then you are not in the system, and I cannot lend you anything.",
+            "I can lend you a chair. Chairs are not in the system. I checked."
+          ],
+          "onEnter": "talk.library.librarian.advance-1"
+        },
+        "visit-2": {
+          "speaker": "LIBRARIAN",
+          "pages": [
+            "That printer has been printing the same overdue notice for eleven years.",
+            "Staff's. Nobody can cancel it. The staff left. The notice stayed. Like the rest of us."
+          ],
+          "onEnter": "talk.library.librarian.advance-2"
+        },
+        "visit-3": {
+          "speaker": "LIBRARIAN",
+          "pages": [
+            "If something comes back to this library after eleven years, I will not ask where it has been.",
+            "I will stamp it. I have been waiting to stamp something since 2049."
+          ],
+          "onEnter": "talk.library.librarian.advance-3"
+        }
+      }
+    },
+    "talk.library.student": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.student.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TERMINAL 1",
+          "pages": [
+            "Twelve minutes left. I am writing a thesis on why we need more than thirty minutes.",
+            "Eleven."
+          ],
+          "onEnter": "talk.library.student.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TERMINAL 1",
+          "pages": [
+            "Do not stand behind me. I think the timer counts people who stand behind me.",
+            "I have not checked. No time."
+          ],
+          "onEnter": "talk.library.student.advance-1"
+        }
+      }
+    },
+    "talk.library.kid": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.kid.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TERMINAL 2",
+          "pages": [
+            "Three minutes. I am on level nine.",
+            "If you do not talk to me I can finish level nine."
+          ],
+          "onEnter": "talk.library.kid.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TERMINAL 2",
+          "pages": [
+            "My mum is verified. I am her thirty minutes. She is at work. Do not tell the timer."
+          ],
+          "onEnter": "talk.library.kid.advance-1"
+        }
+      }
+    },
+    "talk.library.sleeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.sleeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "...not asleep. Reading. With my eyes closed. It saves the eyes."
+          ],
+          "onEnter": "talk.library.sleeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REGULAR",
+          "pages": [
+            "Forty years I came here for the books. Now I come for the chair.",
+            "The chair is better. The chair never ended badly."
+          ],
+          "onEnter": "talk.library.sleeper.advance-1"
+        }
+      }
+    },
+    "talk.library.knitter": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.library.knitter.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.library.knitter.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "I come for the radiator. Do not tell the radiator."
+          ],
+          "onEnter": "talk.library.knitter.advance-0"
+        },
+        "visit-1": {
+          "speaker": "REGULAR",
+          "pages": [
+            "It is a scarf. For the radiator. It gets cold in February. Everything does."
+          ],
+          "onEnter": "talk.library.knitter.advance-1"
+        },
+        "visit-2": {
+          "speaker": "REGULAR",
+          "pages": [
+            "The heating has been over budget every February since they digitized the books.",
+            "Nobody turns it down. The committee would never allow it. We are the committee."
+          ],
+          "onEnter": "talk.library.knitter.advance-2"
+        }
+      }
+    },
+    "talk.library.paper": {
+      "entry": [
+        {
+          "node": "visit-0"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "REGULAR",
+          "pages": [
+            "The last paper newspaper. I am reading it slowly.",
+            "If you only read this one, nothing new has happened since. It is very restful."
+          ],
+          "onEnter": "talk.library.paper.advance-0"
+        }
+      }
     }
   },
   "native": {
@@ -231,6 +655,62 @@
       "lifetime": "save",
       "type": "boolean",
       "default": false
+    },
+    "talk.library.shelfe.cursor": {
+      "owner": "talk.library.shelfe",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.librarian.cursor": {
+      "owner": "talk.library.librarian",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3
+    },
+    "talk.library.student.cursor": {
+      "owner": "talk.library.student",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.kid.cursor": {
+      "owner": "talk.library.kid",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.sleeper.cursor": {
+      "owner": "talk.library.sleeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.library.knitter.cursor": {
+      "owner": "talk.library.knitter",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.library.paper.cursor": {
+      "owner": "talk.library.paper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 0
     }
   }
 }

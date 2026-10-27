@@ -1,9 +1,9 @@
 import {mutableActorArtwork,mutableActorConsumer} from '../engine/gameplay/native-actor-bindings';
 /** Retained runtime bindings keep their identity; registered presentation-only consumers may be rebound or removed. */
-import type { ArtRegistry, Composition, Instance } from '../art/core/composition';
-const flatten = (nodes: Instance[]): Instance[] => nodes.flatMap(node => [node, ...flatten(node.children ?? [])]);
+import type { ArtRegistry, ChunkDocument, AssetInstance } from '../art/core/composition';
+const flatten = (nodes: AssetInstance[]): AssetInstance[] => nodes.flatMap(node => [node, ...flatten(node.children ?? [])]);
 export function preserveBoundIdentity(before: unknown, after: unknown, registry?:Pick<ArtRegistry,'get'>): void {
-  const previous = before as Composition, next = after as Composition;
+  const previous = before as ChunkDocument, next = after as ChunkDocument;
   const replacements = new Map(flatten(next.instances).map(node => [node.id, node]));
   for (const node of flatten(previous.instances)) {
     const bindings = Object.entries(node.bindings ?? {});

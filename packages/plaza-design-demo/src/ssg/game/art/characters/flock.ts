@@ -7,7 +7,7 @@
 import { drawDriven, type Character } from '../../runtime/characters';
 import type { View } from '../core/view';
 import {screenBounds} from '../assemblies/static-bounds';
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 
 /** One bird: start x along the flock's span, altitude, drift (units per frame), parallax, phase; `ps` 1 or 2. */
 export interface FlockBird { x: number; h: number; speed: number; parallax: number; phase: number; bobPhase?:number; flapPhase?:number; ps?: number }
@@ -112,7 +112,7 @@ export function flockOptions(p: Properties): FlockOptions {
   };
 }
 const n = (label: string, d: number, min?: number, max?: number, step?: number) => ({ kind: 'number' as const, label, default: d, ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}), ...(step !== undefined ? { step } : {}) });
-export const flockElement: Element = {
+export const flockElement: AssetDefinition = {
   mobility:()=>true,
   type: 'character.flock', version: 1, label: 'Flock of gulls (kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {

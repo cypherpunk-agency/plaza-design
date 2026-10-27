@@ -1,3 +1,4 @@
+import {matches} from '../engine/gameplay/queries';
 import type {PlayerState} from './state';
 import type {LineSystem} from '../world/transport/line';
 import type {runtimeSequenceDocuments} from '../story/sequence-documents';
@@ -20,7 +21,7 @@ import {SceneHost} from "../engine/index";
 
 import {type SceneDef,type SceneId,type SceneRest} from "../scenes/index";
 
-import {applyCounter,attentionAim,cardFrame,clockPin,gateFrame,triggerFires,triggerStarts,type CardSpec,type Cue,type Say} from "../story/story-rules";
+import {clearStoryStamps,attentionAim,cardFrame,clockPin,gateFrame,type CardSpec,type Cue,type Say} from "../story/story-rules";
 
 import {type PingTarget} from '../story/opening';
 
@@ -36,7 +37,6 @@ import {startRide} from '../engine/gameplay/mechanisms/line-ride';
 import { sound } from './audio';
 
 import {Companion} from './companion';
-import {EDITOR_PLAY} from "./mode";
 import {playProfile} from "./play-profile";
 import {type Save} from "./save";
 
@@ -44,6 +44,7 @@ import type {InputState,ScenesState,TimingState,PresentationState} from './state
 
 /** StoryTransitions functions use runtime-owned data; they never start a loop or own a save. */
 export interface StoryTransitionsPort{
+  globalGameplay:()=>GameplaySession;
   runOpeningWorkflow: (role: import('../story/opening-source').OpeningWorkflow) => boolean;
   term: Terminal;
   presentation: PresentationState;
@@ -64,7 +65,7 @@ export interface StoryTransitionsPort{
   story: string;
   openingStory: typeof openingStoryModel;
   input: InputState;
-  editorClock: "running" | "fixed" | "story";
+  clockMode: "running" | "fixed" | "story";
   save: Save;
   gameplayFor: (id: SceneId, providedModel?: SceneModel) => GameplaySession | undefined;
   stampEl: HTMLElement;
@@ -88,7 +89,8 @@ export function runCues(port:StoryTransitionsPort,cues: readonly Cue[]):boolean 
       else if ('print' in cue) cue.print.lines.forEach((l) => port.term.print((cue.print.prefix ?? '') + l, cue.print.tone ?? 'out'));
       else if ('sound' in cue) sound[cue.sound]();
       else if ('stage' in cue) { restage(port,cue.stage); changed = true; }
-      else if ('counter' in cue) applyCounter(port.presentation.counters, cue.counter, port.timing.clock);
+      else if ('stamp' in cue) port.presentation.stamps[cue.stamp]=port.timing.clock;
+      else if ('clearStamps' in cue) clearStoryStamps(port.presentation.stamps,cue.clearStamps);
       else if ('advance' in cue) { city.advance(cue.advance); syncClock(port,true); changed = true; }
     }
     if (changed) { port.persistSave(); port.syncHud(); }
@@ -124,11 +126,12 @@ export function updateStory(port:StoryTransitionsPort) {
       if (f.done) { port.presentation.sleep = null; runCues(port,card.end ?? []); }
       return;
     }
-    const st = port.story, triggers = port.openingStory.TRIGGERS;
-    for (const key of triggerStarts(triggers, st, port.scenes.here, port.presentation.counters)) port.presentation.counters[key] = port.timing.clock;
-    for (const t of triggers) {
-      if (triggerFires(t, { phase: st, scene: port.scenes.here, clock: port.timing.clock, counters: port.presentation.counters, bubble: !!port.presentation.bubble, popup: port.zh.popupOpen, viewing: port.zh.viewing ?? null })) runCues(port,t.do);
-    }
+    const triggers=port.openingStory.TRIGGERS,session=port.globalGameplay(),phase=port.story,read=session.queryContext();
+    // Phase is sampled once for this story tick. A committed milestone becomes observable to
+    // another phase's trigger next frame; presentation blocking and gameplay values stay live.
+    const context={...read,nativeRead:(key:string)=>key==='story.phase'?phase:read.nativeRead?.(key)};
+    for(const t of triggers)if(t.start&&port.presentation.stamps[t.start]===undefined&&matches(t.watch,session.state(),context))port.presentation.stamps[t.start]=port.timing.clock;
+    for(const t of triggers)if(matches(t.when,session.state(),context))runCues(port,t.do);
   }
 
 export function startCard(port:StoryTransitionsPort,card: CardSpec,closeAll: boolean) {
@@ -144,7 +147,7 @@ export function clockRuns(port:StoryTransitionsPort) {
   }
 
 export function pinStory(port:StoryTransitionsPort) {
-    if(EDITOR_PLAY&&port.editorClock!=='story'){if(port.editorClock==='fixed')city.pin(port.save.clock.min);return;}
+    if(port.clockMode!=='story'){if(port.clockMode==='fixed')city.pin(port.save.clock.min);else city.run();return;}
     if (port.def.storyMinute||port.def.storyRun||port.def.storyDay||playProfile().clock.rule === 'scene') {
       const day=port.def.storyDay?.(port.save.flags,port.gameplayFor(port.scenes.here)?.state());
       if(day!==undefined)port.save.clock.day=day;

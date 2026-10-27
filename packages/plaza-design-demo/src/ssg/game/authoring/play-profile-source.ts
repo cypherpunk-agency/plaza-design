@@ -1,9 +1,10 @@
+import {demoContent} from '../demo';
+import {pendingTestDistrict} from './pending-registry';
 import { validatePlayProfiles, type PlayProfiles } from '../runtime/play-profiles';
-import { LOGIC } from '../data/index';
 import { NATIVE_SCENES } from '../scenes';
-import { pendingRegistry } from './pending-registry';
 
 export const PLAY_PROFILES_DOCUMENT = 'play-profiles';
+const districtScenes=demoContent();
 
 /** The scenes a profile may name: the shipped scenes and the editor's authored ones. */
 export function profileSceneIds(documents: ReadonlyMap<string, unknown>): string[] {
@@ -11,14 +12,18 @@ export function profileSceneIds(documents: ReadonlyMap<string, unknown>): string
   return [...Object.keys(NATIVE_SCENES), ...authored.map(s => s.scene.id)];
 }
 
-export const profileModuleIds = (): string[] => LOGIC.modules.map(m => m.id);
 
-/** Profiles checked against the pending world: scenes exist, entrances are exits of their scene, modules exist. */
+/** Profile references resolve in the world the configuration actually runs. */
 export function validatePendingPlayProfiles(value: unknown, documents: ReadonlyMap<string, unknown>): PlayProfiles {
-  let registry: ReturnType<typeof pendingRegistry> | undefined;
-  return validatePlayProfiles(value, {
+  const checkpoints=(documents.get('play-fixtures') as import('../world/checkpoints').PlayFixtures|undefined)?.fixtures;
+  const result=validatePlayProfiles(value, {
+    checkpoints,
     scenes: profileSceneIds(documents),
-    modules: profileModuleIds(),
-    exits: scene => (registry ??= pendingRegistry(documents))[scene]?.exits.map(e => e.id),
   });
+  for(const p of result.profiles)if(p.world==='testDistrict'){
+    const checkpoint=checkpoints?.find(f=>f.id===p.checkpoint);if(!checkpoint)continue;
+    if(!Object.prototype.hasOwnProperty.call(districtScenes,checkpoint.scene))throw Error('Profile '+p.id+': starting checkpoint is outside the Test District');
+    if(checkpoint.entrance&&!pendingTestDistrict(documents)[checkpoint.scene as keyof typeof districtScenes]?.exits.some(e=>e.id===checkpoint.entrance))throw Error('Profile '+p.id+': unknown starting entrance in the Test District');
+  }
+  return result;
 }

@@ -7,7 +7,7 @@
  * Drawn in its own frame: origin at its foot, left edge; x to the right, heights up (y = -h).
  */
 import { addLight } from '../atmosphere/lighting';
-import type { Element } from '../core/composition';
+import type { AssetDefinition } from '../core/composition';
 
 const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a + ')';
 const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
@@ -88,7 +88,7 @@ export function paintAlley(x: CanvasRenderingContext2D, a: AlleySpec, t: number)
 
 const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string) => ({ kind: 'number' as const, label, default: value, min, max, step, ...(unit ? { unit } : {}) });
 
-export const alleyElement: Element = {
+export const alleyElement: AssetDefinition = {
   type: 'building.alley', version: 1, label: 'Alley or back yard (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Width', 48, 16, 400, 1, 'units'), height: num('Height (to the roofs either side)', 240, 40, 2000, 1, 'units'),

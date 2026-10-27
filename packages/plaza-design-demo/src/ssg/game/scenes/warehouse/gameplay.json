@@ -3,7 +3,158 @@
   "flags": [],
   "items": [],
   "events": [],
-  "commands": {},
+  "commands": {
+    "talk.warehouse.mender.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.warehouse.mender.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.warehouse.mender.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.warehouse.mender.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.warehouse.mender.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.warehouse.mender.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.warehouse.gull.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.warehouse.gull.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.warehouse.gull.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.warehouse.gull.cursor",
+          "set": 1
+        }
+      ]
+    }
+  },
   "reactions": [],
-  "conversations": {}
+  "conversations": {
+    "talk.warehouse.mender": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.warehouse.mender.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.warehouse.mender.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TIDE HAND",
+          "pages": [
+            "Twenty years this was the Tide's. Fish in, fish out, the odd crate nobody asked about.",
+            "Then the Registry bought the building, the lock and the silence. Now it's evidence."
+          ],
+          "onEnter": "talk.warehouse.mender.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TIDE HAND",
+          "pages": [
+            "Evidence of what? They don't say. Things people had when they got counted out. Phones. Keys. Shoes, for some reason.",
+            "If the Registry ever took something of yours, it's behind that door. Pending review."
+          ],
+          "onEnter": "talk.warehouse.mender.advance-1"
+        },
+        "visit-2": {
+          "speaker": "TIDE HAND",
+          "pages": [
+            "I mend nets out here because they let me. Nobody seizes a net. Too many holes to file."
+          ],
+          "onEnter": "talk.warehouse.mender.advance-2"
+        }
+      }
+    },
+    "talk.warehouse.gull": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.warehouse.gull.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull is standing guard over a chip packet that belongs to nobody. It looks at you like you are the review.)"
+          ],
+          "onEnter": "talk.warehouse.gull.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It takes one step towards you. Pending.)"
+          ],
+          "onEnter": "talk.warehouse.gull.advance-1"
+        }
+      }
+    }
+  },
+  "state": {
+    "talk.warehouse.mender.cursor": {
+      "owner": "talk.warehouse.mender",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.warehouse.gull.cursor": {
+      "owner": "talk.warehouse.gull",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    }
+  }
 }

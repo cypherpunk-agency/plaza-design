@@ -1,7 +1,7 @@
 import {sourceProjection} from '../art/core/geometry';
 /** Prepare ordinary and temporally directed scene inputs for the single frame renderer. */
 import {art} from '../art';
-import {drawComposition,resolveComposition,compositionAppearance,type ArtRegistry,type Composition,type Environment,type Instance,type Properties} from '../art/core/composition';
+import {drawComposition,resolveComposition,compositionAppearance,type ArtRegistry,type ChunkDocument,type Environment,type AssetInstance,type Properties} from '../art/core/composition';
 import {evaluateTimeline,type TimelineFrame,type TimelineProgram} from '../art/core/timeline';
 import {frameView,type View} from '../art/core/view';
 import {cinematicRegistry,cinematicTimelineContext,cutView,isScreenFade,type CinematicDocuments} from '../art/sequences/cinematics';
@@ -26,7 +26,7 @@ export interface FrameSource {
   world?:Partial<ZoneSequenceOptions>;
   documents: CinematicDocuments; sequenceId: string;
   /** Pending editor documents in place of the shipping ones. */
-  timeline?: TimelineProgram; composition?: Composition; registry?: ArtRegistry;
+  timeline?: TimelineProgram; composition?: ChunkDocument; registry?: ArtRegistry;
   /** An already evaluated timeline frame (the editor's scrub); else evaluated here at `time`. */
   frame?: TimelineFrame;
   scale: number; width: number; height: number; reduced: boolean; lighting: Light;
@@ -42,7 +42,7 @@ export interface FrameSource {
   cards?: boolean;
 }
 
-const flat = (nodes: readonly Instance[]): Instance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
+const flat = (nodes: readonly AssetInstance[]): AssetInstance[] => nodes.flatMap(n => [n, ...flat(n.children ?? [])]);
 const own = (v: object, k: string) => Object.prototype.hasOwnProperty.call(v, k);
 
 
@@ -57,7 +57,8 @@ export interface ZoneSequenceOptions {
 }
 /** Pure directed-camera layout, also used by the normal lifecycle before painting. */
 export function sequenceWorldLayout(documents:OpeningDocuments,id:string,time:number,options:ZoneSequenceOptions,nativeScale:number){
-  const frame=options.frame??evaluateTimeline(documents.timeline,id,time,{registry:art,compositions:{...documents.compositions,[documents.timeline.sequences.find(s=>s.id===id)?.composition??documents.compositionId]:documents.composition}},{reduced:options.reduced});
+  const referenced=Object.fromEntries([...Object.values(options.scenes??SCENES).flatMap(scene=>scene.artwork?[[scene.artwork.scene,scene.artwork] as const]:[]),...[...(options.backdrops??backdropDocuments(options.documents)).values()].map(doc=>[doc.scene,doc] as const)]);
+  const frame=options.frame??evaluateTimeline(documents.timeline,id,time,{registry:art,compositions:{...referenced,...documents.compositions,[documents.timeline.sequences.find(s=>s.id===id)?.composition??documents.compositionId]:documents.composition}},{reduced:options.reduced});
   const settings=frame.composition.instances.find(n=>n.type==='sequence.world-control');
   if(!settings)throw Error('World sequence requires sequence.world-control settings');
   const props=art.properties(settings.type,settings.props),origin=String(props.origin);
@@ -76,7 +77,9 @@ export function sequenceWorldLayout(documents:OpeningDocuments,id:string,time:nu
 /** Sequence scope follows current composition membership, not a second copy of group members. */
 export function sequenceWorldZones(props:Properties,scenes:Readonly<Record<string,SceneDef>>,compositions:WorldCompositions=worldCompositionSource as WorldCompositions){
  if(props.worldComposition&&(props.zones as string[]).length)throw Error('World sequence scope uses a composition or explicit zones, not both');
- return props.worldComposition?compileWorldComposition(compositions,String(props.worldComposition),worldCompositionContext(scenes)).chunks.map(c=>c.chunk):props.zones as string[];
+ // Camera-region precedence follows spatial order, independently of which member the editor
+ // opens first. Stable ties retain authored precedence for vertically overlapping chunks.
+ return props.worldComposition?compileWorldComposition(compositions,String(props.worldComposition),worldCompositionContext(scenes)).chunks.sort((a,b)=>a.x-b.x).map(c=>c.chunk):props.zones as string[];
 }
 function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocuments,id:string,time:number,options:ZoneSequenceOptions):WorldFrame{
   const nativeScale=Math.abs(context.getTransform().a)||1;
@@ -89,10 +92,10 @@ function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocument
 
 
   if(options.workspace){
-    const workspace=options.workspace,baseHeight=options.height/fit0,baseGround=Math.round(baseHeight/pixel*Number(props.ground))*pixel,baseCentreH=baseGround-baseHeight/2,baseCentreX=workspace.anchorX+Number(props.width)/2;
-    fit=fit0*workspace.zoom;width=options.width/fit;height=options.height/fit;
+    const workspace=options.workspace,basisFit=workspace.basis?1:fit0,baseHeight=workspace.basis?.height??options.height/fit0,baseGround=workspace.basis?.ground??Math.round(baseHeight/pixel*Number(props.ground))*pixel,baseCentreH=baseGround-baseHeight/2,baseCentreX=workspace.anchorX+(workspace.basis?.width??Number(props.width))/2;
+    fit=basisFit*workspace.zoom;width=options.width/fit;height=options.height/fit;
     cam=baseCentreX-width/2+workspace.x;gy=height/2+baseCentreH+workspace.h;
-    guide={x:(authoredLeft-cam)*nativeScale*fit,y:(gy-authoredTop)*nativeScale*fit,width:authoredWidth*nativeScale*fit,height:authoredHeight*nativeScale*fit,scene:cameraScene.id,label:cameraScene.name,focus:{x:authoredLeft+authoredWidth/2-baseCentreX,h:authoredTop-authoredHeight/2-baseCentreH,zoom:Math.min(options.width/(authoredWidth*fit0),options.height/(authoredHeight*fit0))*.9}};
+    guide={x:(authoredLeft-cam)*nativeScale*fit,y:(gy-authoredTop)*nativeScale*fit,width:authoredWidth*nativeScale*fit,height:authoredHeight*nativeScale*fit,scene:cameraScene.id,label:cameraScene.name,focus:{x:authoredLeft+authoredWidth/2-baseCentreX,h:authoredTop-authoredHeight/2-baseCentreH,zoom:Math.min(options.width/(authoredWidth*basisFit),options.height/(authoredHeight*basisFit))*.9}};
   }
   const centre=cam+width/2;
   const placements=zones.map(id=>{const scene=scenes[id],at=placed.get(id);if(!scene||!at)throw Error('World sequence zone is missing or unjoined: '+id);return{scene,x:at.dx,h:at.dh};});
@@ -114,7 +117,7 @@ function prepareWorld(context:CanvasRenderingContext2D,documents:OpeningDocument
   // World camera height follows the game's height-up coordinates. The director's
   // picture offset has the opposite sign; it is not another world-space height.
   const localFrame={...frame,camera:{...frame.camera,x:cam-active.x,h:options.workspace?0:-frame.camera.h,zoom:options.workspace?1:frame.camera.zoom}};
-  const director=directorFromTimeline(localFrame,{scale:nativeScale*fit,clock:{minute,day:1},sequence:{time,state:frame.state},passes:{casters:false,actors:false,shade:false,grade:false,lights:false,prompts:false,bubbles:false,vision:false},overlays:{
+  const director=directorFromTimeline(localFrame,{scale:nativeScale*fit,clock:{minute,day:1},sequence:{time,state:frame.state,artwork:frame.artwork},passes:{casters:false,actors:false,shade:false,grade:false,lights:false,prompts:false,bubbles:false,vision:false},overlays:{
     fades:frame.fades,cards:frame.text.map(card=>({text:card.text,opacity:1,x:card.x,y:-card.h})),
   }});
   if(options.workspace)director.overlays={fades:[],cards:[]};

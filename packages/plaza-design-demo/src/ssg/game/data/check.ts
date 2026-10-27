@@ -106,7 +106,7 @@ const KEYS: Record<string, string[]> = {
   item: ['id', 'kind', 'label', 'text', 'rule', 'from', 'card'],
   case: ['if', 'when', 'do', 'say'],
   action: ['if', 'when', 'to', 'with', 'count', ...ACTION_KEYS],
-  node: ['if', 'when', 'text', 'do', 'choices'],
+  node: ['if', 'when', 'text', 'choices'],
   dialogue: ['speaker', 'start', 'sayCmd', 'nodes', 'free'],
   goal: ['id', 'text'],
   cable: ['id', 'from', 'to', 'verb', 'fixed'],
@@ -982,7 +982,6 @@ export function checkScene(z: SceneData, code: CodeContract, world: World, engin
         keys(n, 'node', wn);
         c.cond(n.if, env.known, wn);
         c.when(n.when, wn);
-        (n.do ?? []).forEach((a, j) => c.action(a, `${wn} › do[${j}]`, env.known, env.writable, null, null));
         (n.choices ?? []).forEach(([, next], j) => { if (!exists(next)) err(`${wn} › choices[${j}]`, `leads to "${next}", which is not a node`); });
       });
       if (Array.isArray(variants) && variants.slice(0, -1).some((n) => n.if === undefined && n.when === undefined)) err(`${w} › nodes.${nid}`, 'only the last variant may have no "if" or "when"');

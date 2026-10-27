@@ -18,7 +18,7 @@
  * choice is a field; unset choices come from the seed. The world's text is dry: the supermarket and the
  * Registry say plainly what they do.
  */
-import type { Element, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import { mono, neon, rng, text as paintText } from '../core/primitives';
 import { drawPane } from '../environment/sky';
 import { neonPlate } from '../signage/kit';
@@ -1173,7 +1173,7 @@ export const deepGapElement = piece({
 });
 const signW = (p: Properties) => Math.round(String(p.text ?? '').length * Number(p.size) * 0.66 + Number(p.size) * 1.6 + 20);
 
-export const downtownEveryday: Element[] = [
+export const downtownEveryday: AssetDefinition[] = [
   freshcoFrontElement, trolleysElement, freshcoFloorElement, aisleEndElement, fruitDisplayElement, securityGateElement, selfCheckoutsElement, stockroomElement,
   dinerFrontElement, dinerSignElement, dinerRoomElement, dinerCounterElement, dinerBoothsElement,
   roofDeckElement, billboardElement, roofPlankElement, rainElement, roofSignElement, fireEscapeElement, deepGapElement,

@@ -1,7 +1,7 @@
 import {drawPreparedActor,validatePreparedActor} from '../characters/prepared-actor';
 import type {PreparedActor} from '../../engine/gameplay/actor-frame';
 /** Shared platform pieces and specialized station architecture. No element reads transport state. */
-import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
+import type { Anchor, Bounds, AssetDefinition, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { box,notice,onScreen,RED,reflect } from '../core/primitives';
 import { drawRider,KINDS,type RiderKind } from '../characters/riders';
@@ -17,14 +17,14 @@ const n=(p:Properties,k:string)=>Number(p[k]);
 const raised=(v:View,h:number):View=>h===0?v:{...v,gy:v.gy-h,y:q=>v.y(q+h)};
 const origin:Anchor={x:0,h:0,role:'origin'};
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties,s:Properties)=>Bounds,draw:Draw,visualFields:Record<string,Field>={}):Element{return{type:'station.'+type,version:1,label,category,bindingIdentity:'presentation',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},underside:{x:0,h:Number(p.under??0),role:'mount'}}),draw(x,v,p,s,_pass,at){draw(x,v,p,s,at);}};}
+function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:(p:Properties,s:Properties)=>Bounds,draw:Draw,visualFields:Record<string,Field>={}):AssetDefinition{return{type:'station.'+type,version:1,label,category,bindingIdentity:'presentation',coordinates:'world',fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},underside:{x:0,h:Number(p.under??0),role:'mount'}}),draw(x,v,p,s,_pass,at){draw(x,v,p,s,at);}};}
 const bounds=(w:number,h:number,x=-w/2):Bounds=>({x,h,w,tall:h});
 function G(beam={under:0,top:0},frieze={h0:0,h1:0,step:1}){return galleriaKernels({width:0,spawn:0,exit:0,boardAt:0,beam,frieze,posters:[],columns:[],lamps:[],board:0,benches:[],snacks:0,lineMap:0,screen:0,cams:[],waiting:[]} satisfies GLayout);}
 function H(width=0,canopy={under:0,fascia:0},horizon=0,wall=0){return harborKernels({width,spawn:0,exit:0,boardAt:0,horizon,wall,canopy,posts:[],lamps:[],cranes:[],board:0,benches:[],tide:0,screen:0,cam:0,checkpoint:0,waiting:[]} satisfies HLayout);}
 const train:Field={kind:'json',label:'Current platform train',default:null,validate:v=>{if(v===null)return;const p=v as unknown as PlatformTrainVisual;if(!p||typeof p!=='object'||!Number.isFinite(p.x)||!Number.isFinite(p.open)||p.open<0||p.open>1||typeof p.moving!=='boolean'||!Number.isFinite(p.riderSeed)||typeof p.destination!=='string')throw new Error('Invalid platform train snapshot');}};
 const departure:Field={kind:'json',label:'Departure board snapshot',default:{open:true,station:'',destination:'',left:0,due:0,message:''},validate:v=>{const p=v as unknown as DepartureVisual;if(!p||typeof p!=='object'||typeof p.open!=='boolean'||typeof p.station!=='string'||typeof p.destination!=='string'||typeof p.message!=='string'||!Number.isFinite(p.left)||!Number.isFinite(p.due))throw new Error('Invalid departure snapshot');}};
 const rider:Field={kind:'json',label:'Waiting passenger snapshot',default:{on:false,kind:'phone',flip:false,phase:0},validate:v=>{const p=v as unknown as {on:boolean;kind:RiderKind;flip:boolean;phase:number};if(!p||typeof p!=='object'||typeof p.on!=='boolean'||!KINDS.includes(p.kind)||typeof p.flip!=='boolean'||!Number.isFinite(p.phase))throw new Error('Invalid waiting rider snapshot');}};
-export const stationElements:Element[]=[
+export const stationElements:AssetDefinition[]=[
  element('marker','Station gameplay marker','markers',{role:str('Role'),width:num('Scene width')},p=>bounds(n(p,'width'),0,0),()=>{}),
  element('background','Platform interior fill','surfaces',{fill:str('Fill','#030201')},()=>bounds(1200,400,0),(x,v,p)=>{x.fillStyle=String(p.fill);x.fillRect(0,0,v.viewW,v.viewH);}),
  element('galleria-wall','Tiled tunnel wall','architecture',{height:num('Wall height',194,1)},p=>bounds(2600,n(p,'height'),0),(x,v,p,_s,at)=>G({under:0,top:n(p,'height')}).drawTiledWall(x,raised(v,at.h))),

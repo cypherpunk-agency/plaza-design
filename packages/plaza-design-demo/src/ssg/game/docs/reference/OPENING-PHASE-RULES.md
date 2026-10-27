@@ -37,8 +37,8 @@ phase is no longer pinned the clock is released to the time `CLOCK.release` name
 
 ## Editing
 
-Game opening › Phases edits `PHASE_RULES`, `PHASES` (resume rows, persona), the role flags and the sudo levels. Conditions use the
-existing typed flag-condition controls; the fallback stays last. Game opening › Scene phases and Scene › Story phases edit a scene's part
+Library → Story logic → Phases edits `PHASE_RULES`, `PHASES` (resume rows, persona), the role flags and the sudo levels. Conditions use the
+existing typed flag-condition controls; the fallback stays last. The selected chunk's Story phases controls edit its part
 in a phase. Validation rejects missing or early fallbacks, unknown phases, flags, scenes, exits, devices, nouns, states, mover paths,
 cards and milestones, and conditions requiring context that the opening phase selector does not receive. Check:
 `pnpm test:game opening-from-data story-authoring`.

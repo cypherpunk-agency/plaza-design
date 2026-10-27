@@ -3,6 +3,20 @@
   "scene": "dt-precinct",
   "instances": [
     {
+      "id": "world-sky",
+      "type": "environment.sky",
+      "props": {
+        "horizon": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -10000,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
       "id": "skyline-far",
       "type": "building.row",
       "props": {

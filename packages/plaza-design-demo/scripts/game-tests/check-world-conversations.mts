@@ -2,14 +2,18 @@ import assert from 'node:assert/strict';
 import {matches} from '../../src/ssg/game/engine/gameplay/queries';
 import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';
 import {validateSceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
-import {withSceneConversations} from '../../src/ssg/game/engine/gameplay/scene-conversations';
 import {GameplaySession,cloneState} from '../../src/ssg/game/engine/gameplay/session';
 import {ConversationSession} from '../../src/ssg/game/engine/gameplay/conversation';
 import {inWindow} from '../../src/ssg/game/world/clock';
 import type {GameplayState} from '../../src/ssg/game/engine/gameplay/types';
 const empty=validateGameplay({version:1,flags:[],items:[],events:[],commands:{},reactions:[],conversations:{}});
-const source=validateSceneDocument({version:1,id:'world-dialogue',name:'Context test',intro:['Arrival'],uses:[],people:[{id:'tech',name:'TECH',talk:[['First ordinary visit'],['Last ordinary visit']],lines:[{weather:['rain','storm'],pages:['Rain response']},{when:{from:'18:00',to:'06:00',days:['odd']},pages:['Night shift']}]}]},empty);
-const game=withSceneConversations(empty,source);let saved:GameplayState={flags:{},items:{},tokens:0,world:{day:1,minute:1100,weather:'rain'}};
+const id='talk.world-dialogue.tech',cursor=id+'.cursor';
+const game=validateGameplay({...empty,state:{[cursor]:{owner:id,lifetime:'save',type:'number',default:0,min:0,max:1}},commands:{advance:{sources:['conversation'],actions:[{state:cursor,set:1}]}},conversations:{[id]:{
+ entry:[{when:{weather:['rain','storm']},node:'rain'},{when:{time:{from:'18:00',to:'06:00',days:['odd']}},node:'night'},{when:{state:cursor,is:0},node:'first'},{node:'last'}],
+ nodes:{rain:{speaker:'TECH',pages:['Rain response']},night:{speaker:'TECH',pages:['Night shift']},first:{speaker:'TECH',pages:['First ordinary visit'],onEnter:'advance'},last:{speaker:'TECH',pages:['Last ordinary visit'],onEnter:'advance'}}
+}}});
+validateSceneDocument({version:1,id:'world-dialogue',name:'Context test',intro:['Arrival'],uses:[],people:[{id:'tech',name:'TECH',conversation:id}]},game);
+let saved:GameplayState={flags:{},items:{},tokens:0,world:{day:1,minute:1100,weather:'rain'}};
 const gp=new GameplaySession(game,{read:()=>saved,write:s=>{saved=s;}}),talk=()=>{const run=new ConversationSession(gp,'talk.world-dialogue.tech');const frame=run.frame();run.close();return frame.pages;};
 assert.deepEqual(talk(),['Rain response']);assert.equal(saved.values,undefined,'context variant must not advance the ordinary visit');
 saved.world={day:1,minute:1100,weather:'clear'};assert.deepEqual(talk(),['Night shift']);

@@ -15,7 +15,7 @@
  * `renderDowntownStreet` paints the same street from Downtown's own documents for other scenes that
  * borrow it (the back yard's walled-in sky is the street's, seen over the fence).
  */
-import {art,drawCompositionSlot,queueLayeredSlots,type Composition,type Environment,type Resolved,resolveComposition} from '../../../art';
+import {art,drawCompositionSlot,queueLayeredSlots,type ChunkDocument,type Environment,type Resolved,resolveComposition} from '../../../art';
 import {frameView,type View} from '../../../art/core/view';
 import downtownComposition from '../../../scenes/downtown/composition.json';
 import downtownScene from '../../../scenes/downtown/scene.json';
@@ -31,7 +31,7 @@ const STREET_TYPES=new Set(['downtown.street','downtown.stall-pool','downtown.sm
 const street=(r:Resolved)=>STREET_TYPES.has(r.instance.type);
 type Moment='city'|'street'|'devices'|'people';
 /** Layered Downtown keeps its engine moments: city (distance and backdrop, without the street), street, devices (set), people (playfield). */
-function paint(ctx:CanvasRenderingContext2D,doc:Composition,env:Environment,moment:Moment){
+function paint(ctx:CanvasRenderingContext2D,doc:ChunkDocument,env:Environment,moment:Moment){
  if(moment==='city')drawCompositionSlot(ctx,art,doc,env,'behind-player',r=>(r.instance.layer==='distance'||r.instance.layer==='backdrop')&&!street(r));
  else if(moment==='street')drawCompositionSlot(ctx,art,doc,env,'behind-player',street);
  else if(moment==='devices')drawCompositionSlot(ctx,art,doc,env,'behind-player',['set']);
@@ -40,7 +40,7 @@ function paint(ctx:CanvasRenderingContext2D,doc:Composition,env:Environment,mome
 /** The street moment dries and lights only what it is told: rain and whether the city is lit. */
 const streetEnv=(env:Environment,rain:number,lit:boolean):Environment=>({...env,bindings:{...env.bindings,'downtown.rain':rain,'downtown.city':lit}});
 
-let own:{doc:Composition;env:(view:View)=>Environment}|undefined;
+let own:{doc:ChunkDocument;env:(view:View)=>Environment}|undefined;
 /** Downtown's own street, from its shipped documents: what other scenes paint when they borrow it. */
 export function renderDowntownStreet(ctx:CanvasRenderingContext2D,view:View,rain:number,lit:boolean){
  if(!own){

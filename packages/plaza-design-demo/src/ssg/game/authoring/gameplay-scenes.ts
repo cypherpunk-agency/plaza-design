@@ -6,12 +6,12 @@ import {FOLDER_BY_ID,FOLDER_DIRS} from '../scenes/folder-scenes';
 import {FOLDER_SCENE_IDS} from '../scenes';
 import {validateGameplay} from '../engine/gameplay/validation';
 import {validateSceneDocument,type SceneDocument} from '../engine/gameplay/scene-document';
-import type {Composition,Environment} from '../art';
+import type {ChunkDocument,Environment} from '../art';
 import type {GameplayDefinition} from '../engine/gameplay/types';
 import type {EngineNetworkContext} from '../engine/network-context';
 import {validateManifestScene,validateManifestGameplay,manifestDemoScene} from '../scenes/demo-manifest';
 import {demoCounterScene,demoDeskScene,validateDemoGameplay,validateDemoScene} from '../demo';
-export interface SceneBuildRequest {composition:Composition;scene?:SceneDocument;gameplay:GameplayDefinition;devices?:unknown;state?:Environment['state'];options?:Partial<Environment>;context?:NativeTargetValidationContext;network?:EngineNetworkContext;sharedState?:unknown}
+export interface SceneBuildRequest {composition:ChunkDocument;scene?:SceneDocument;gameplay:GameplayDefinition;devices?:unknown;state?:Environment['state'];options?:Partial<Environment>;context?:NativeTargetValidationContext;network?:EngineNetworkContext;sharedState?:unknown}
 /** Registered source identities and protected demo policies; builds use named source inputs. */
 const definitions=[
  {id:'manifestDemo',prefix:'demo-manifest',validateScene:validateManifestScene,validateGameplay:validateManifestGameplay,definition:manifestDemoScene},

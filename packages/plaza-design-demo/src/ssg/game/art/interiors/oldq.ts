@@ -14,7 +14,7 @@
  * lines, doors and flights are the level kit's (art/levels); `interior.stair` only re-dresses a level
  * flight in timber or stone, drawn over it with the same run and rise.
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { rng } from '../core/primitives';
 import { neonPlate } from '../signage/kit';
@@ -422,7 +422,7 @@ export const roofTerraceElement = piece({
  * over it in timber (a steep house stair) or stone (a tower's turning stair). It covers the concrete
  * flight, its rail and posts; the level flight still does the walking.
  */
-export const stairDressElement: Element = {
+export const stairDressElement: AssetDefinition = {
   type: 'interior.stair', version: 1, label: 'Stair dressing (timber or stone, over a level flight)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
     run: num('Run (as its level flight)', 40, -2000, 2000, 1, 'units'), rise: num('Rise (as its level flight)', 72, -2000, 2000, 1, 'units'),
@@ -890,7 +890,7 @@ const LIGHT_FIELDS = {
   from: num('Light stays right of (from the first window)', -2000, -6000, 0, 1, 'units'), to: num('Light stays left of (from the first window)', 4000, 0, 8000, 1, 'units'),
   seed: num('Seed', 1, 0, 1000000),
 };
-export const windowLightElement: Element = {
+export const windowLightElement: AssetDefinition = {
   type: 'interior.window-light', version: 1, label: 'Light through stained glass (shafts, pools, dust)', category: 'environment', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable',
   fields: LIGHT_FIELDS,
   bounds: p => { const w = (Number(p.count) - 1) * Number(p.spacing) + Number(p.width); return { x: 0, h: Number(p.high), w, tall: Number(p.high) }; },
@@ -1311,6 +1311,6 @@ export const oldqBridgeElement = piece({
   },
 });
 
-export const oldqInteriors: Element[] = [oldqRoomElement, lightWellElement, altarElement, timberFloorElement, roofSectionElement, roofTerraceElement, stairDressElement,
+export const oldqInteriors: AssetDefinition[] = [oldqRoomElement, lightWellElement, altarElement, timberFloorElement, roofSectionElement, roofTerraceElement, stairDressElement,
   naveElement, roseWindowElement, pewsElement, churchAltarElement, votiveStandElement, confessionalElement, organLoftElement, bellTowerElement, towerFaceElement,
   windowLightElement, churchFrontElement, yardWallElement, oldqTreeElement, gravesElement, grottoElement, candleStallElement, oldqBridgeElement];

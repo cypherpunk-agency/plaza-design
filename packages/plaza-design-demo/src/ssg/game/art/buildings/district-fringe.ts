@@ -14,7 +14,7 @@
  * Palette (the Fringe's style card): structure #8a8a94, walls #16151a, windows #ffa040, neon #b07aff,
  * #ffd9a5, #ff2a44. Drawn in the piece's own frame (origin at its foot left, heights up, `y = -h`).
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import { mono, rng } from '../core/primitives';
 import { windowLit, type Light } from '../../world/light';
 import { neonPlate } from '../signage/kit';
@@ -557,4 +557,4 @@ export const solarFieldElement = piece({
   },
 });
 
-export const fringeElements: Element[] = [shedElement, dataCemeteryElement, solarFieldElement];
+export const fringeElements: AssetDefinition[] = [shedElement, dataCemeteryElement, solarFieldElement];

@@ -11,7 +11,7 @@
   "OPENING_LEVELS": [
     {
       "id": "opening",
-      "name": "PROLOGUE · HARBOR SHIFT",
+      "name": "PROLOGUE \u00b7 HARBOR SHIFT",
       "flags": [
         "prologue:started"
       ],
@@ -24,7 +24,7 @@
     },
     {
       "id": "opening-morning",
-      "name": "OPENING · MORNING, DELETED",
+      "name": "OPENING \u00b7 MORNING, DELETED",
       "flags": [
         "opening:home",
         "opening:street",
@@ -59,9 +59,9 @@
         "calmWeather": true,
         "deck": {
           "files": {
-            "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+            "shift.txt": "NIGHT SHIFT \u00b7 14 PARCELS \u00b7 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
           },
-          "whoami": "courier, capsule 7B (registered) · night shift"
+          "whoami": "courier, capsule 7B (registered) \u00b7 night shift"
         },
         "character": {
           "seed": 7303,
@@ -90,9 +90,9 @@
         "calmWeather": true,
         "deck": {
           "files": {
-            "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+            "shift.txt": "NIGHT SHIFT \u00b7 14 PARCELS \u00b7 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
           },
-          "whoami": "courier, capsule 7B (registered) · night shift"
+          "whoami": "courier, capsule 7B (registered) \u00b7 night shift"
         },
         "character": {
           "seed": 7303,
@@ -148,9 +148,9 @@
         "calmWeather": true,
         "deck": {
           "files": {
-            "shift.txt": "NIGHT SHIFT · 14 PARCELS · 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+            "shift.txt": "NIGHT SHIFT \u00b7 14 PARCELS \u00b7 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
           },
-          "whoami": "courier, capsule 7B (registered) · night shift"
+          "whoami": "courier, capsule 7B (registered) \u00b7 night shift"
         },
         "character": {
           "seed": 7303,
@@ -224,15 +224,6 @@
       "phase": "home"
     }
   ],
-  "START": {
-    "start": {
-      "scene": "harbor-station"
-    },
-    "fallback": {
-      "scene": "harbor-station"
-    },
-    "settled": "downtown"
-  },
   "ATTENTION": {
     "after": 1200
   },
@@ -262,24 +253,18 @@
           }
         },
         {
-          "counter": {
-            "prefix": "morning",
-            "reset": true
-          }
+          "milestone": "morning.reset"
         },
         {
-          "counter": {
-            "id": "morning.at",
-            "stamp": true
-          }
+          "clearStamps": "morning"
+        },
+        {
+          "stamp": "morning.at"
         }
       ],
       "end": [
         {
-          "counter": {
-            "id": "morning.at",
-            "stamp": true
-          }
+          "stamp": "morning.at"
         },
         {
           "say": {
@@ -297,38 +282,144 @@
   "TRIGGERS": [
     {
       "id": "morning",
-      "phase": "deleted",
-      "scene": "capsule",
       "start": "morning.at",
-      "once": "morning.sent",
-      "quiet": {
-        "bubble": true,
-        "popup": true,
-        "since": "morning.last",
-        "frames": 100
+      "watch": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "deleted"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "capsule"
+              }
+            }
+          }
+        ]
       },
-      "when": [
-        {
-          "counter": "morning.due",
-          "atLeast": 1
-        },
-        {
-          "counter": "morning.tries",
-          "atLeast": 2
-        },
-        {
-          "elapsed": "morning.at",
-          "frames": 1500
-        }
-      ],
+      "when": {
+        "all": [
+          {
+            "all": [
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.phase"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": "deleted"
+                  }
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.scene"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": "capsule"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "any": [
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.elapsed.morning.last"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": -1
+                  }
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.elapsed.morning.last"
+                  },
+                  "op": "gt",
+                  "right": {
+                    "literal": 100
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "any": [
+              {
+                "state": "story.morningDue",
+                "is": true
+              },
+              {
+                "compare": {
+                  "left": {
+                    "state": "story.morningTries"
+                  },
+                  "op": "gte",
+                  "right": {
+                    "literal": 2
+                  }
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.elapsed.morning.at"
+                  },
+                  "op": "gt",
+                  "right": {
+                    "literal": 1500
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
       "do": [
         {
           "milestone": "uplink"
-        },
-        {
-          "counter": {
-            "id": "morning.sent"
-          }
         },
         {
           "print": {
@@ -337,7 +428,7 @@
             "lines": [
               "they took you off the list. not a glitch. don't call anyone.",
               "here's a way back in. jack in to your PC.",
-              "→ uplink.so",
+              "\u2192 uplink.so",
               "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely."
             ]
           }
@@ -346,7 +437,7 @@
           "print": {
             "tone": "ok",
             "lines": [
-              "[deck] uplink.so received. hack vision: H · the board: B"
+              "[deck] uplink.so received. hack vision: H \u00b7 the board: B"
             ]
           }
         },
@@ -355,11 +446,11 @@
         },
         {
           "say": {
-            "speaker": "MOTH › YOU",
+            "speaker": "MOTH \u203a YOU",
             "pages": [
               "they took you off the list. not a glitch. don't call anyone.",
               "here's a way back in. jack in to your PC.",
-              "→ uplink.so",
+              "\u2192 uplink.so",
               "uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely."
             ],
             "height": 46
@@ -370,11 +461,11 @@
             "speaker": "YOU",
             "pages": [
               "uplink.so. Moth wrote this. I can tell by the comments.",
-              "H: see how things work. B: the board. E at the PC, then ⌁ jack in."
+              "H: see how things work. B: the board. E at the PC, then \u2301 jack in."
             ],
             "touchPages": [
               "uplink.so. Moth wrote this. I can tell by the comments.",
-              "HACK, top right: see how things work. Tap the PC: ⌁ jack in."
+              "HACK, top right: see how things work. Tap the PC: \u2301 jack in."
             ],
             "height": 46
           }
@@ -383,9 +474,43 @@
     },
     {
       "id": "jack",
-      "phase": "uplinked",
-      "scene": "capsule",
-      "viewing": "pc",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "uplinked"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "capsule"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.viewing"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "pc"
+              }
+            }
+          }
+        ]
+      },
       "do": [
         {
           "milestone": "jacked"
@@ -411,7 +536,9 @@
       "opening:slept",
       "opening:uplink",
       "opening:jacked",
-      "prologue:started"
+      "prologue:started",
+      "arrived",
+      "schematics"
     ],
     "items": [],
     "events": [],
@@ -486,10 +613,150 @@
             "value": true
           }
         ]
+      },
+      "opening.launch": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "world": {
+              "composition": "harbor-world",
+              "remove": [],
+              "add": [
+                {
+                  "id": "coast",
+                  "group": "opening-coast",
+                  "placement": {
+                    "x": -13290,
+                    "h": -160
+                  }
+                }
+              ],
+              "ensure": true
+            }
+          }
+        ]
+      },
+      "opening.resume": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "world": {
+              "composition": "harbor-world",
+              "remove": [
+                "coast"
+              ],
+              "add": [
+                {
+                  "id": "work",
+                  "group": "harbor-work",
+                  "placement": {
+                    "x": 2500,
+                    "h": -160
+                  }
+                }
+              ],
+              "ensure": true
+            }
+          }
+        ]
+      },
+      "opening.morning.try": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "state": "story.morningTries",
+            "add": 1
+          }
+        ]
+      },
+      "opening.morning.due": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "state": "story.morningDue",
+            "set": true
+          }
+        ]
+      },
+      "opening.morning.reset": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "state": "story.morningTries",
+            "set": 0
+          },
+          {
+            "state": "story.morningDue",
+            "set": false
+          }
+        ]
       }
     },
     "reactions": [],
-    "conversations": {}
+    "conversations": {},
+    "state": {
+      "story.morningTries": {
+        "owner": "story",
+        "type": "number",
+        "lifetime": "session",
+        "default": 0,
+        "integer": true,
+        "min": 0
+      },
+      "story.morningDue": {
+        "owner": "story",
+        "type": "boolean",
+        "lifetime": "session",
+        "default": false
+      }
+    },
+    "queries": {
+      "story.phase": {
+        "kind": "native",
+        "read": "story.phase",
+        "type": "string"
+      },
+      "story.scene": {
+        "kind": "native",
+        "read": "story.scene",
+        "type": "string"
+      },
+      "story.viewing": {
+        "kind": "native",
+        "read": "story.viewing",
+        "type": "string"
+      },
+      "story.bubble": {
+        "kind": "native",
+        "read": "story.bubble",
+        "type": "boolean"
+      },
+      "story.popup": {
+        "kind": "native",
+        "read": "story.popup",
+        "type": "boolean"
+      },
+      "story.elapsed.morning.at": {
+        "kind": "native",
+        "read": "story.elapsed.morning.at",
+        "type": "number"
+      },
+      "story.elapsed.morning.last": {
+        "kind": "native",
+        "read": "story.elapsed.morning.last",
+        "type": "number"
+      }
+    }
   },
   "WORKFLOWS": {
     "home": "opening.home",
@@ -497,6 +764,11 @@
     "flat": "opening.flat",
     "slept": "opening.slept",
     "uplink": "opening.uplink",
-    "jacked": "opening.jacked"
+    "jacked": "opening.jacked",
+    "launch": "opening.launch",
+    "resume": "opening.resume",
+    "morning.try": "opening.morning.try",
+    "morning.due": "opening.morning.due",
+    "morning.reset": "opening.morning.reset"
   }
 }

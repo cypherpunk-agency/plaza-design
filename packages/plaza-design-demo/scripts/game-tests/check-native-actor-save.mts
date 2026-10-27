@@ -1,10 +1,10 @@
 import {moveSceneActor} from '../../src/ssg/game/engine/gameplay/actors';
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
-import {art,type Composition} from '../../src/ssg/game/art';
+import {art,type ChunkDocument} from '../../src/ssg/game/art';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
 import {sceneSourceDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';
-const libraryScene=(composition?:Composition,state={},options={},scene?:any)=>sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition,state,options,scene});
+const libraryScene=(composition?:ChunkDocument,state={},options={},scene?:any)=>sceneSourceDefinition('library',FOLDER_SOURCES.library,{composition,state,options,scene});
 const LIBRARY_SCENE=FOLDER_SOURCES.library.scene as any,validateLibraryScene=(scene:any)=>libraryScene(undefined,{},{},scene);
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
@@ -17,7 +17,7 @@ const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.e
 const validate=(d:any,docs:any[])=>{if(d.id==='library-scene')validateSourceDocuments(new Map(docs.map(row=>[row.id,row.value])));};
 const make=()=>{const m=new ComposerModel(art,context,validate);m.load(documents);return m;};
 assert.throws(()=>validateLibraryScene({...LIBRARY_SCENE,actors:null}));
-const model=make(),composition=model.get('library').value as Composition,scene=structuredClone(LIBRARY_SCENE);
+const model=make(),composition=model.get('library').value as ChunkDocument,scene=structuredClone(LIBRARY_SCENE);
 composition.instances.find(i=>i.id==='armchair-2')!.placement.x+=20;
 const knitter=scene.actors!.find(a=>a.id==='knitter')!;knitter.look={body:'old',hair:'bun',garb:'coat',top:'#123456'};knitter.when={from:'18:00',to:'06:00',days:['odd']};
 const shelf=scene.actors!.find(a=>a.id==='shelfe')!;shelf.look={bot:'servbot',paint:'#456789',v:2,wear:.5};shelf.range=[-20,100];shelf.speed=.6;
@@ -31,7 +31,7 @@ const legacy=structuredClone(LIBRARY_SCENE);delete legacy.actors;assert.throws((
 const receiver=make();receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));inspect(pendingRegistry(new Map(receiver.list().map(d=>[d.id,d.value]))).library);model.undo();assert(!model.dirty());model.redo();assert.deepEqual(model.edits(),edits);
 const scratch=path.resolve('../../.game-test-output/native-actor-save');fs.mkdirSync(scratch,{recursive:true});const dir=fs.mkdtempSync(path.join(scratch,'run-'));for(const d of sourceDocuments){const dest=path.join(dir,d.file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,d.file),dest);}
 const store=new AuthoringStore({root:dir,documents:sourceDocuments,validateAll:validateSourceDocuments}),originals=Object.fromEntries(['library','library-scene'].map(id=>[id,fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8')]));
-const saved=store.save(model.edits().map(e=>({...e,revision:store.read(e.id).revision})));inspect(libraryScene(store.read('library').value as Composition,{},{},store.read('library-scene').value as any));
+const saved=store.save(model.edits().map(e=>({...e,revision:store.read(e.id).revision})));inspect(libraryScene(store.read('library').value as ChunkDocument,{},{},store.read('library-scene').value as any));
 const before=store.list(),bad=structuredClone(scene);bad.actors![0].follow='missing';assert.throws(()=>store.save([{id:'library-scene',revision:store.read('library-scene').revision,value:bad}]));assert.deepEqual(store.list(),before);
 store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));for(const[id,bytes]of Object.entries(originals))assert.equal(fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8'),bytes);
 fs.writeFileSync(path.join(dir,'evidence.json'),JSON.stringify({status:'PASS',scene:'library',documents:2,sourceTransaction:saved.transaction,checks:['appearance','relative movement','attached artwork','follow links','schedule','missing source actors reject','history','bundle','protected Save','native reload','exact byte Undo','atomic rejection']},null,2)+'\n');console.log('Native actor Save PASS: Library shared bodies, attached placement, human/robot appearance, motion, schedule and follow; grouped history/bundle/source Save/native reload/exact byte Undo. Evidence: '+dir);

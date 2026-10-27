@@ -25,7 +25,7 @@
  * Each piece is drawn in its own frame (origin at its foot on the left, `y(h) = -h`, h = 0 the platform floor).
  * Every visual choice is a field. The world's text is dry: the signs say where the stairs go.
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import { O, PAPER, mono } from '../core/primitives';
 import { METRO } from '../vehicles/train-car';
 import { piece, num, select, bool, text, isHex, rgbOf, y, type Paint } from '../buildings/types';
@@ -501,7 +501,7 @@ const stationaryCutawayTrainElement = piece({
 });
 
 /** A timeline/mover supplies visual travel and doors; the same train paints at rest and in motion. */
-export const cutawayTrainElement:Element={...stationaryCutawayTrainElement,
+export const cutawayTrainElement:AssetDefinition={...stationaryCutawayTrainElement,
  visualFields:{offset:{kind:'number',label:'Travel offset',default:0,animatable:true},open:{kind:'number',label:'Doors override (-1: authored)',default:-1,min:-1,max:1,animatable:true}},
  bounds(p,state,env){const box=stationaryCutawayTrainElement.bounds(p,state,env);return{...box,x:box.x+Number(state?.offset??0)};},
  draw(x,v,p,state,pass,at){stationaryCutawayTrainElement.draw(x,v,Number(state.open)>=0?{...p,open:state.open}:p,state,pass,{...at,x:at.x+Number(state.offset??0)});},
@@ -596,7 +596,7 @@ export function consistCarLayout(p: Properties): ConsistCarLayout {
 }
 const clamp01 = (v: unknown, d = 0) => { const n = Number(v); return Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : d; };
 /** A piece with visual state: its state fields are read in `paint` like its props (the names never overlap). */
-function stateful(o: Parameters<typeof piece>[0] & { visualFields: Record<string, import('../core/composition').Field>; bindingIdentity?:Element['bindingIdentity'] }): Element {
+function stateful(o: Parameters<typeof piece>[0] & { visualFields: Record<string, import('../core/composition').Field>; bindingIdentity?:AssetDefinition['bindingIdentity'] }): AssetDefinition {
   const e = piece(o);
   return { ...e, bindingIdentity:o.bindingIdentity, draw: (ctx, v, p, s, pass, at) => e.draw(ctx, v, { ...p, ...s }, s, pass, at) };
 }
@@ -867,5 +867,5 @@ export const vehicleSeatElement = stateful({
   },
 });
 
-export const metroKitElements: Element[] = [undergroundPlatformElement, ticketHallElement, metroStairsUpElement, cutawayCarElement, gangwayElement, cutawayTrainElement, scaleRulerElement,
+export const metroKitElements: AssetDefinition[] = [undergroundPlatformElement, ticketHallElement, metroStairsUpElement, cutawayCarElement, gangwayElement, cutawayTrainElement, scaleRulerElement,
   vehicleCarElement, vehicleCarShellElement, vehicleDoorElement, vehicleGangwayElement, vehicleSeatElement];

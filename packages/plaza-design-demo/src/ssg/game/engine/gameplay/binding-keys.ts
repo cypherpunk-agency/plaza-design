@@ -1,4 +1,4 @@
-import type {Value,Instance} from '../../art/core/composition';
+import type {Value,AssetInstance} from '../../art/core/composition';
 import type {BindingContext} from './binding-sources';
 /**
  * The keys a binding provider offers (binding-providers/). A provider declares them next to its
@@ -53,9 +53,9 @@ export function bindingKeyProblem(keys:BindingKeys,key:string,scope:BindingKeySc
  }
  return hint??'the provider does not offer it (it offers '+keys.join(', ')+')';
 }
-const flatten=(nodes:readonly Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
+const flatten=(nodes:readonly AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** What the holes of one scene can name, from its composition and scene documents. */
-export function bindingKeyScope(instances:readonly Instance[],scene:{actors?:readonly{id:string}[];stage?:{values?:Readonly<Record<string,unknown>>}}):BindingKeyScope{
+export function bindingKeyScope(instances:readonly AssetInstance[],scene:{actors?:readonly{id:string}[];stage?:{values?:Readonly<Record<string,unknown>>}}):BindingKeyScope{
  return{actors:new Set((scene.actors??[]).map(a=>a.id)),instances:new Map(flatten(instances).map(n=>[n.id,n.type])),values:new Set(Object.keys(scene.stage?.values??{}))};
 }
 /** The concrete names a provider offers in one scene: every exact key and every hole filled with what exists. The editor lists them. */

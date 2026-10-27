@@ -12,7 +12,7 @@ export class TypedForm {
  allowObjectiveContext=true;
  /** Restrict checkpoint controls to the existing scalar-state condition vocabulary. */
  stateOnly=false;
- constructor(private report:(e:unknown)=>void){}
+ constructor(private report:(e:unknown)=>void,private sectionOpen=new Map<string,boolean>()){}
  visible(name:string){const p=this.prefix,short=p instanceof RegExp?name.replace(p,'')||name:p&&name.startsWith(p)&&name.length>p.length?name.slice(p.length):name;return short.charAt(0).toUpperCase()+short.slice(1);}
  run(fn:()=>void){try{fn();}catch(e){this.report(e);}}
  field(parent:HTMLElement,name:string,control:HTMLElement){const label=document.createElement('label');label.textContent=this.visible(name)+' ';control.setAttribute('aria-label',name);label.append(control);parent.append(label);return control;}
@@ -23,8 +23,7 @@ export class TypedForm {
  check(parent:HTMLElement,name:string,value:boolean,edit:(v:boolean)=>void){const input=document.createElement('input');input.type='checkbox';input.checked=value;input.onchange=()=>this.run(()=>edit(input.checked));this.field(parent,name,input);}
  button(parent:HTMLElement,label:string,run:()=>void,disabled=false){const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=disabled;b.onclick=()=>this.run(run);parent.append(b);}
  /** Sections start collapsed so long documents read as an index; the open ones survive re-renders. */
- private sectionOpen=new Map<string,boolean>();
- section(parent:HTMLElement,title:string){const d=document.createElement('details');d.open=this.sectionOpen.get(title)??false;d.ontoggle=()=>{this.sectionOpen.set(title,d.open);};const s=document.createElement('summary');s.textContent=title;d.append(s);const body=document.createElement('div');body.className='gameplay-fields';d.append(body);parent.append(d);return body;}
+ section(parent:HTMLElement,title:string,key=title){const d=document.createElement('details');d.open=this.sectionOpen.get(key)??false;d.ontoggle=()=>{this.sectionOpen.set(key,d.open);};const s=document.createElement('summary');s.textContent=title;d.append(s);const body=document.createElement('div');body.className='gameplay-fields';d.append(body);parent.append(d);return body;}
  stateValue(parent:HTMLElement,name:string,value:StateValue,d:StateDeclaration,edit:(value:StateValue)=>void){
   if(d.nullable)this.check(parent,name+' null',value===null,on=>edit(on?null:concreteStateValue(d)));
   if(value===null)return;

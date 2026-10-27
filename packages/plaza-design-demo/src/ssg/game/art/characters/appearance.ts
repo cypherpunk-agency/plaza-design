@@ -1390,7 +1390,7 @@ export function drawCharacterFrame(x: CanvasRenderingContext2D, v: View, p: Char
     const on = Math.floor(tt / 15) % 2 === 0, [bx, by] = cell(CX, 7);
     if (on) { x.fillStyle = 'rgba(255,170,40,.95)'; x.fillRect(Math.round(bx - 2), Math.round(by - 3), 4, 2); x.fillStyle = 'rgba(255,170,40,.12)'; x.fillRect(Math.round(bx - 10), Math.round(by - 8), 20, 10); }
   }
-  if (p.key && p.talk && !crit) {
+  if (p.key && p.conversation && !crit) {
     // the faint speech mark over someone with something to say (paper, not cyan: it is a person)
     const [mx] = cell(CX, 0), top = topY + 1 + (H - b.meta.top) * ps - 7 + (Math.floor(tt / 30) % 2);
     x.fillStyle = 'rgba(255,217,165,.75)'; x.fillRect(Math.round(mx - 3), top - 4, 7, 4); x.fillRect(Math.round(mx - 2), top, 2, 2);

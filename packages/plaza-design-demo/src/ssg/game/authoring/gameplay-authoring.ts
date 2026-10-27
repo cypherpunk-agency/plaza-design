@@ -15,6 +15,8 @@ import type { Condition, ConversationChoice, GameplayAction, GameplayDefinition 
 import {validateGameplay} from '../engine/gameplay/validation';
 
 export interface GameplayAuthoring {
+  initialConversation?:string;
+  onConversationSelected?(id:string):void;
   sequenceIdsSource?():readonly string[];
   nativeData?:SceneData;
   nativeDataSource?():SceneData|undefined;
@@ -34,7 +36,7 @@ export interface GameplayAuthoring {
 
 /** Typed controls for the pilot's registered vocabulary; no executable or raw JSON fields. */
 export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthoring){
-  let conversation='',node='',command='',disposed=false;
+  let conversation=options.initialConversation??'',node='',command='',disposed=false;
   const expanded=new Map<string,boolean>(),bindingDraft:Record<string,string>={};
   const root=document.createElement('section');root.className='gameplay-editor';host.append(root);
   const error=document.createElement('p');error.className='error';error.setAttribute('role','alert');
@@ -55,7 +57,7 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     if(disposed)return;
     const doc=(options.validate??validateGameplay)(options.document());
     const nativeData=options.nativeDataSource?options.nativeDataSource():options.nativeData,nativeDerived=options.nativeDerivedSource?.();
-    if(!doc.conversations[conversation])conversation=Object.keys(doc.conversations)[0];
+    if(!doc.conversations[conversation])conversation=Object.keys(doc.conversations)[0];options.onConversationSelected?.(conversation??'');
     const writableFlags=doc.flags.filter(flag=>!doc.native?.reads?.[flag]);
     const dialogue=doc.conversations[conversation];if(dialogue&&!dialogue.nodes[node])node=Object.keys(dialogue.nodes)[0];
     if(!doc.commands[command])command=Object.keys(doc.commands)[0];
@@ -150,5 +152,5 @@ export function mountGameplayAuthoring(host:HTMLElement,options:GameplayAuthorin
     button(reactions,'Add reaction',()=>edit('Add event reaction',d=>{const pair=d.events.flatMap(event=>systemCommands.map(command=>({event,command}))).find(pair=>!d.reactions.some(r=>r.event===pair.event&&r.command===pair.command));if(!pair)throw new Error('All event/command pairs already exist');d.reactions.push(pair);}),doc.reactions.length>=128||!doc.events.length||!systemCommands.length);
   }
   refresh();
-  return{refresh,dispose(){disposed=true;root.remove();}};
+  return{refresh,selectConversation(id:string){const doc=withSharedState(options.sharedStateSource?.(),()=>(options.validate??validateGameplay)(options.document()));if(!Object.prototype.hasOwnProperty.call(doc.conversations,id))throw Error('Unknown conversation '+id);conversation=id;node='';refresh();},dispose(){disposed=true;root.remove();}};
 }

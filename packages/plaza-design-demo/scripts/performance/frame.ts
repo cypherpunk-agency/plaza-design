@@ -1,7 +1,7 @@
 /** Local-only trusted runner, built under ignored .performance; never a production entry. */
 import {Game} from '../../src/ssg/game/runtime/game';
 import {SCENES} from '../../src/ssg/game/scenes';
-import {defaultPlayFixture,fixtureSave,type PlayScene} from '../../src/ssg/game/authoring/play-fixtures';
+import {defaultPlayFixture,fixtureSave,type PlayScene} from '../../src/ssg/game/world/checkpoints';
 import {gameStorage,capturePrivateStorage} from '../../src/ssg/game/runtime/storage';
 import {EDITOR_PLAY} from '../../src/ssg/game/runtime/mode';
 import {installPlayProfiles,saveKey,SHIPPED_PROFILES} from '../../src/ssg/game/runtime/play-profile';

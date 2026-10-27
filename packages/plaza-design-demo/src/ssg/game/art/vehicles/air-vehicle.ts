@@ -4,7 +4,7 @@
  * altitude with a gentle bob. Flying taxis, pods, patrols, shuttles, haulers with their box, medevacs,
  * dropships, escorts, delivery drones and the ad blimp; fleet liveries and the autonomy cues.
  */
-import type { Element, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import type { View } from '../core/view';
 import { BOX40, type Crate } from '../props/containers';
 import { AIR_EXTENT, AIR_KINDS, drawAircraft, type AirKind } from './air-traffic';
@@ -13,7 +13,7 @@ import { bandBounds, bandOf, bobAt, laneAt, laneFields, laneOf, liveryFields, li
 const LOAD: Crate = { ...BOX40, p: 6, seed: 707 };
 const kindOf = (props: Properties): AirKind => (AIR_KINDS as readonly string[]).includes(String(props.kind)) ? props.kind as AirKind : 'pod';
 
-const fields: Element['fields'] = {
+const fields: AssetDefinition['fields'] = {
   kind: { kind: 'select', label: 'Aircraft', options: [...AIR_KINDS], default: 'taxi' },
   paint: { kind: 'string', label: 'Paint (#rrggbb; empty: the kind’s own)', default: '' },
   ...laneFields({ speed: 2.5, lane: 2400 }),
@@ -42,7 +42,7 @@ export function paintAirVehicle(ctx: CanvasRenderingContext2D, raw: Properties, 
   }));
 }
 
-export const airVehicleElement: Element = {
+export const airVehicleElement: AssetDefinition = {
   type: 'vehicle.air',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Air vehicle', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset, lift } = placeAir(props, context?.view.t ?? 0);

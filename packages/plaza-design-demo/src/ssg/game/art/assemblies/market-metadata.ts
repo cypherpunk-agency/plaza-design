@@ -1,5 +1,5 @@
 /** Physical selection geometry for the market kit. Light wash and reflections are excluded. */
-import type {Bounds,BoundsContext,Element,Properties} from '../core/composition';
+import type {Bounds,BoundsContext,AssetDefinition,Properties} from '../core/composition';
 import {DESIGN_TOP,rng,type Tower} from '../core/primitives';
 import {screenBounds} from './static-bounds';
 const box=(x:number,h:number,w:number,tall=h):Bounds=>({x,h,w,tall});
@@ -38,7 +38,7 @@ function mounted(p:Properties,c?:BoundsContext):Bounds{
  const bottom=pole?Math.max(top+tall+2,v.y(0)):top+tall+15;
  return screenBounds(c,{x:left,y:top-2,w:w+7,h:bottom-top+2},box(-w/2-2,tall+2,w+7,tall+17));
 }
-export function applyMarketMetadata(elements:Element[],far:readonly Tower[]):void{
+export function applyMarketMetadata(elements:AssetDefinition[],far:readonly Tower[]):void{
  const find=(id:string)=>elements.find(e=>e.type==='market.'+id)!;
  const fixed:Record<string,(p:Properties)=>Bounds>={
   door:()=>box(-30,70,60),lamp:lampBounds,laundry:p=>box(Math.min(0,number(p,'doorOffset')-16),116,Math.max(number(p,'width'),number(p,'doorOffset')+15)-Math.min(0,number(p,'doorOffset')-16)),

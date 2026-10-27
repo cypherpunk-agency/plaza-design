@@ -4,21 +4,21 @@ import type {CitySource,District} from '../world/city';
 import {validatePendingCity} from './pending-city';
 type DistrictId=District['id'];
 /**
- * World › Districts: create, rename, re-stratum, place on the map and remove districts in the city source.
+ * City map's Districts inspector: create, rename, re-stratum, place and remove districts in the city source.
  * A district is removable only while no place, link or planned line refers to it. People in a new district use the
  * city palette until one is made for it (art/characters/people-style.ts).
  */
-export function mountDistrictAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
+export function mountDistrictAuthoring(host:HTMLElement,context:WorkbenchContext,expanded?:Map<string,boolean>):WorkbenchHandle{
  const api=context.authoring!;let disposed=false;
  const error=document.createElement('p');error.setAttribute('role','alert');
- const form=new TypedForm(e=>{error.textContent=String(e);});
+ const form=new TypedForm(e=>{error.textContent=String(e);},expanded);
  const read=()=>validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));
  function edit(label:string,change:(source:CitySource)=>void){const d=read();change(d);api.edit('city-source',label,d);}
  /** What still refers to a district, which is why it cannot be removed yet. */
  const usersOf=(d:CitySource,id:string)=>[...d.PLACES.filter(p=>p.district===id).map(p=>'place '+p.name),...d.LINKS.filter(l=>l.from===id||l.to===id).map(l=>'link '+l.name),...d.LINES_PLANNED.filter(l=>l.stops.some(s=>s.district===id)).map(l=>'planned '+l.name)];
  const strata=['street','overworld','underworld'];
  function render(){if(disposed)return;const d=read();host.replaceChildren(error);
-  const note=document.createElement('p');note.textContent='The city’s districts: their names on the map, their stratum (street, the Spire above, the Undercity below) and where they sit on the city map. Places are assigned to a district in City & travel.';host.append(note);
+  const note=document.createElement('p');note.textContent='District names, strata and map positions. Select a place on the map to edit its district membership.';host.append(note);
   const add=form.section(host,'New district');let id='',name='New district',short='NEW',stratum='street';
   form.text(add,'New district ID',id,v=>{id=v.trim();});form.text(add,'New district name',name,v=>{name=v;});form.text(add,'New district short name',short,v=>{short=v;});form.select(add,'New district stratum',strata,stratum,v=>{stratum=v;});
   form.button(add,'Add district',()=>{
@@ -29,7 +29,7 @@ export function mountDistrictAuthoring(host:HTMLElement,context:WorkbenchContext
     d.DISTRICTS.push({id:key,name,short,stratum:stratum as District['stratum']});
     d.DISTRICT_MAP[key]={centre:null,sep:0,dens:.5,col:'120,160,200',frame:[x-80,y-60,160,120],label:[x,y],note:''};d.DISTRICT_REVEAL[key]={near:[]};});
   },d.DISTRICTS.length>=32);
-  for(const district of d.DISTRICTS){const plan=d.DISTRICT_MAP[district.id],section=form.section(host,district.name+' · '+district.id),key=district.id;
+  for(const district of d.DISTRICTS){const plan=d.DISTRICT_MAP[district.id],section=form.section(host,district.name+' · '+district.id,'district:'+district.id),key=district.id;
    form.text(section,'District '+key+' name',district.name,v=>edit('Rename district',d=>{d.DISTRICTS.find(x=>x.id===key)!.name=v;}));
    form.text(section,'District '+key+' short name',district.short,v=>edit('Edit district short name',d=>{d.DISTRICTS.find(x=>x.id===key)!.short=v;}));
    form.select(section,'District '+key+' stratum',strata,district.stratum,v=>edit('Edit district stratum',d=>{d.DISTRICTS.find(x=>x.id===key)!.stratum=v as District['stratum'];}));

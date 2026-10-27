@@ -3,7 +3,6 @@ import {validateActorPresentation} from './actor-presentation';
 import {validateActorArtwork} from './native-actor-bindings';
 import {bindActorReactionIdentity,bindActorAppearanceSeed} from './actor-identity';
 import type {SceneDocument} from './scene-document';
-import {actorConversationId} from './scene-conversations';
 /** Serializable actor bodies. Composition owns placement; scene people own dialogue. */
 import type {Character,Act} from '../../runtime/characters';
 import type {TimeWindow} from '../../data/types';
@@ -79,7 +78,7 @@ export function protectActorIdentity(actual:readonly ActorDefinition[],expected:
 /** Keep one actor object for native pose, following and shared conversation targeting. */
 export function compileSceneActors(source:Pick<SceneDocument,'id'|'actors'|'people'>,placements:ReturnType<typeof resolveComposition>):Record<string,Character>{
  const definitions=source.actors??fail('scene requires actor definitions');validateActorArtwork(source.id,definitions,placements);const actors=compileActors(definitions,placements);
- for(const person of source.people??[]){const body=definitions.find(a=>a.target===person.id)??fail('missing dialogue actor '+person.id);Object.assign(actors[body.id],structuredClone(person),{...(person.conversation!==undefined?{talk:[]}:{}),conversation:person.conversation??actorConversationId(source.id,person.id)});}
+ for(const person of source.people??[]){const body=definitions.find(a=>a.target===person.id)??fail('missing dialogue actor '+person.id);Object.assign(actors[body.id],structuredClone(person));}
  return actors;
 }
 

@@ -4,7 +4,7 @@ import {createCameraState,createInputState,createScenesState,createTimingState,c
  * lazy runtime ports are initialized by Game itself, never mocked or reimplemented here. */
 export function runtimeFixture(Game:{prototype:object},fields:Record<string,unknown>={}):any {
   const game=Object.assign(Object.create(Game.prototype),{
-    content:{},sources:{},camera:createCameraState(),input:createInputState(),scenes:createScenesState(),
+    content:{},sources:{},clockMode:'story',camera:createCameraState(),input:createInputState(),scenes:createScenesState(),
     timing:createTimingState(),presentation:createPresentationState(),
   });
   for(const [key,value] of Object.entries(fields)){

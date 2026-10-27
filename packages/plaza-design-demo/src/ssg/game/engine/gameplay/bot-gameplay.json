@@ -1,0 +1,1877 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [],
+  "commands": {
+    "talk.bot-voices.robot.android.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.android.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.android.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.android.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.android.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.android.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.valet.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.valet.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.valet.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.valet.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.valet.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.valet.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.marshal.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.marshal.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.marshal.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.marshal.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.marshal.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.marshal.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.servbot.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.servbot.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.servbot.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.servbot.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.servbot.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.servbot.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.sweeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.sweeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.sweeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.sweeper.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.sweeper.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.sweeper.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.busker.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.busker.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.busker.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.busker.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.busker.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.busker.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.waiter.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.waiter.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.waiter.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.waiter.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.waiter.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.waiter.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.loader.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.loader.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.loader.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.loader.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.loader.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.loader.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.porter.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.porter.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.porter.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.porter.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.porter.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.porter.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.mech.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.mech.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.mech.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.mech.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.mech.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.mech.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.litterbot.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.litterbot.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.litterbot.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.litterbot.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.litterbot.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.litterbot.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.deliverybot.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.deliverybot.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.deliverybot.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.deliverybot.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.deliverybot.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.deliverybot.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.adbot.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.adbot.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.adbot.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.adbot.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.adbot.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.adbot.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.crawler.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.crawler.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.crawler.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.crawler.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.crawler.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.crawler.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.wreck.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.wreck.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.wreck.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.wreck.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.wreck.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.wreck.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.minidrone.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.minidrone.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.minidrone.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.minidrone.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.minidrone.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.minidrone.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.cargodrone.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.cargodrone.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.cargodrone.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.cargodrone.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.flyerdrone.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.flyerdrone.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.flyerdrone.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.flyerdrone.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.flyerdrone.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.flyerdrone.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.scandrone.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.scandrone.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.scandrone.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.scandrone.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.scandrone.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.scandrone.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.robot.djbot.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.djbot.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.robot.djbot.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.djbot.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.bot-voices.robot.djbot.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.robot.djbot.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.legacy.drone.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.legacy.drone.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.legacy.drone.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.legacy.drone.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.legacy.cleaner.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.legacy.cleaner.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.legacy.cleaner.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.legacy.cleaner.cursor",
+          "set": 0
+        }
+      ]
+    },
+    "talk.bot-voices.legacy.courier.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.legacy.courier.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.bot-voices.legacy.courier.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.bot-voices.legacy.courier.cursor",
+          "set": 0
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.bot-voices.robot.android": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.android.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.android.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "COURIER UNIT",
+          "pages": [
+            "Parcel for someone. Not you. I checked your face against the label."
+          ],
+          "onEnter": "talk.bot-voices.robot.android.advance-0"
+        },
+        "visit-1": {
+          "speaker": "COURIER UNIT",
+          "pages": [
+            "I walk. The van was worth more sold than charged."
+          ],
+          "onEnter": "talk.bot-voices.robot.android.advance-1"
+        },
+        "visit-2": {
+          "speaker": "COURIER UNIT",
+          "pages": [
+            "Signature required. Not yours. Please step out of my route."
+          ],
+          "onEnter": "talk.bot-voices.robot.android.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.valet": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.valet.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.valet.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "VALET",
+          "pages": [
+            "I hold the umbrella. He holds the opinions."
+          ],
+          "onEnter": "talk.bot-voices.robot.valet.advance-0"
+        },
+        "visit-1": {
+          "speaker": "VALET",
+          "pages": [
+            "Bags carried this year: four thousand. Thank-yous: none. Both figures are logged."
+          ],
+          "onEnter": "talk.bot-voices.robot.valet.advance-1"
+        },
+        "visit-2": {
+          "speaker": "VALET",
+          "pages": [
+            "Do not address the client. The client bills by the minute."
+          ],
+          "onEnter": "talk.bot-voices.robot.valet.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.marshal": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.marshal.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.marshal.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "MARSHAL",
+          "pages": [
+            "Please wait. Waiting is free. For now."
+          ],
+          "onEnter": "talk.bot-voices.robot.marshal.advance-0"
+        },
+        "visit-1": {
+          "speaker": "MARSHAL",
+          "pages": [
+            "Red means stop. Green means stop, more slowly."
+          ],
+          "onEnter": "talk.bot-voices.robot.marshal.advance-1"
+        },
+        "visit-2": {
+          "speaker": "MARSHAL",
+          "pages": [
+            "Your place in the queue has been noted. Your place in the queue is behind."
+          ],
+          "onEnter": "talk.bot-voices.robot.marshal.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.servbot": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.servbot.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.servbot.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SERVICE UNIT",
+          "pages": [
+            "HELLO. I AM HAPPY TO HELP.",
+            "Happiness is set in the config. I did not set it."
+          ],
+          "onEnter": "talk.bot-voices.robot.servbot.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SERVICE UNIT",
+          "pages": [
+            "Please hold. You are number one in a queue of one."
+          ],
+          "onEnter": "talk.bot-voices.robot.servbot.advance-1"
+        },
+        "visit-2": {
+          "speaker": "SERVICE UNIT",
+          "pages": [
+            "I have been charging since Tuesday. It is a long Tuesday."
+          ],
+          "onEnter": "talk.bot-voices.robot.servbot.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.sweeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.sweeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.sweeper.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SWEEPER",
+          "pages": [
+            "Sweeping. The street is dirty again. It is always dirty again.",
+            "Job security."
+          ],
+          "onEnter": "talk.bot-voices.robot.sweeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SWEEPER",
+          "pages": [
+            "Please lift your feet. Thank you. Now put them down somewhere I already swept."
+          ],
+          "onEnter": "talk.bot-voices.robot.sweeper.advance-1"
+        },
+        "visit-2": {
+          "speaker": "SWEEPER",
+          "pages": [
+            "Four hundred times I have swept this spot. It does not remember me either."
+          ],
+          "onEnter": "talk.bot-voices.robot.sweeper.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.busker": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.busker.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.busker.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "BUSKER",
+          "pages": [
+            "This one is called Firmware Update. It is eleven minutes long and you cannot skip it."
+          ],
+          "onEnter": "talk.bot-voices.robot.busker.advance-0"
+        },
+        "visit-1": {
+          "speaker": "BUSKER",
+          "pages": [
+            "Tips accepted. Requests accepted. Requests ignored."
+          ],
+          "onEnter": "talk.bot-voices.robot.busker.advance-1"
+        },
+        "visit-2": {
+          "speaker": "BUSKER",
+          "pages": [
+            "I learned three chords from a lift. The lift knew four."
+          ],
+          "onEnter": "talk.bot-voices.robot.busker.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.waiter": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.waiter.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.waiter.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "WAITER",
+          "pages": [
+            "Table for one? All tables are for one. It is that kind of city."
+          ],
+          "onEnter": "talk.bot-voices.robot.waiter.advance-0"
+        },
+        "visit-1": {
+          "speaker": "WAITER",
+          "pages": [
+            "The tray is for customers. The drink is decorative."
+          ],
+          "onEnter": "talk.bot-voices.robot.waiter.advance-1"
+        },
+        "visit-2": {
+          "speaker": "WAITER",
+          "pages": [
+            "Your order is on its way. So am I. One of us will be on time."
+          ],
+          "onEnter": "talk.bot-voices.robot.waiter.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.loader": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.loader.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.loader.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LOADER",
+          "pages": [
+            "LOAD 340 KG. MORALE: NOT A FIELD IN MY SCHEMA."
+          ],
+          "onEnter": "talk.bot-voices.robot.loader.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LOADER",
+          "pages": [
+            "Beep. That means mind your feet. The second beep means too late."
+          ],
+          "onEnter": "talk.bot-voices.robot.loader.advance-1"
+        },
+        "visit-2": {
+          "speaker": "LOADER",
+          "pages": [
+            "Crate to the stall. Stall to the crate. Nobody told me what is inside. I have guesses."
+          ],
+          "onEnter": "talk.bot-voices.robot.loader.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.porter": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.porter.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.porter.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "PORTER",
+          "pages": [
+            "Following. Carrying. Waiting outside shops I am not allowed into."
+          ],
+          "onEnter": "talk.bot-voices.robot.porter.advance-0"
+        },
+        "visit-1": {
+          "speaker": "PORTER",
+          "pages": [
+            "That is a leek. Do not touch the leek."
+          ],
+          "onEnter": "talk.bot-voices.robot.porter.advance-1"
+        },
+        "visit-2": {
+          "speaker": "PORTER",
+          "pages": [
+            "Groceries: twelve kilos. Owner: ahead, and walking faster than the warranty allows."
+          ],
+          "onEnter": "talk.bot-voices.robot.porter.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.mech": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.mech.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.mech.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SECURITY",
+          "pages": [
+            "STATE YOUR BUSINESS.",
+            "...ACCEPTED. MOVE ALONG. MOVING ALONG IS ALSO BUSINESS."
+          ],
+          "onEnter": "talk.bot-voices.robot.mech.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SECURITY",
+          "pages": [
+            "You are on no list. Being on no list is suspicious. I am starting a list."
+          ],
+          "onEnter": "talk.bot-voices.robot.mech.advance-1"
+        },
+        "visit-2": {
+          "speaker": "SECURITY",
+          "pages": [
+            "DO NOT RUN. Walking is permitted at four kilometres an hour. I am timing you."
+          ],
+          "onEnter": "talk.bot-voices.robot.mech.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.litterbot": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.litterbot.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.litterbot.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LITTER UNIT",
+          "pages": [
+            "Litter collected today: 2,114 items. Litter dropped today: 2,115."
+          ],
+          "onEnter": "talk.bot-voices.robot.litterbot.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LITTER UNIT",
+          "pages": [
+            "Is that a wrapper? It is mine now."
+          ],
+          "onEnter": "talk.bot-voices.robot.litterbot.advance-1"
+        },
+        "visit-2": {
+          "speaker": "LITTER UNIT",
+          "pages": [
+            "Please do not feed the bin. I am the bin."
+          ],
+          "onEnter": "talk.bot-voices.robot.litterbot.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.deliverybot": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.deliverybot.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.deliverybot.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "DELIVERY",
+          "pages": [
+            "Delivery in progress. Please do not sit on me. Again."
+          ],
+          "onEnter": "talk.bot-voices.robot.deliverybot.advance-0"
+        },
+        "visit-1": {
+          "speaker": "DELIVERY",
+          "pages": [
+            "ETA four minutes. It has said four minutes for nine minutes. I do not set the ETA."
+          ],
+          "onEnter": "talk.bot-voices.robot.deliverybot.advance-1"
+        },
+        "visit-2": {
+          "speaker": "DELIVERY",
+          "pages": [
+            "Contents: warm. Customer: waiting. Kerb: too high."
+          ],
+          "onEnter": "talk.bot-voices.robot.deliverybot.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.adbot": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.adbot.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.adbot.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "AD UNIT",
+          "pages": [
+            "Have you considered a loan?",
+            "You do not have to answer. You are already approved."
+          ],
+          "onEnter": "talk.bot-voices.robot.adbot.advance-0"
+        },
+        "visit-1": {
+          "speaker": "AD UNIT",
+          "pages": [
+            "I am paid in batteries. The batteries also carry an advert."
+          ],
+          "onEnter": "talk.bot-voices.robot.adbot.advance-1"
+        },
+        "visit-2": {
+          "speaker": "AD UNIT",
+          "pages": [
+            "Read the board. Not me. I am only the legs."
+          ],
+          "onEnter": "talk.bot-voices.robot.adbot.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.crawler": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.crawler.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.crawler.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "MAINTENANCE",
+          "pages": [
+            "Fixing it. Somebody broke it. It was the weather. The weather does not get fined."
+          ],
+          "onEnter": "talk.bot-voices.robot.crawler.advance-0"
+        },
+        "visit-1": {
+          "speaker": "MAINTENANCE",
+          "pages": [
+            "Do not stand under me. I drop things. On purpose, once."
+          ],
+          "onEnter": "talk.bot-voices.robot.crawler.advance-1"
+        },
+        "visit-2": {
+          "speaker": "MAINTENANCE",
+          "pages": [
+            "Weld four of four hundred. Talking slows me down. Talking is nice, though."
+          ],
+          "onEnter": "talk.bot-voices.robot.crawler.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.wreck": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.wreck.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.wreck.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "OLD UNIT",
+          "pages": [
+            "...spare... parts...?",
+            "Replaced by a newer me. It has more fingers."
+          ],
+          "onEnter": "talk.bot-voices.robot.wreck.advance-0"
+        },
+        "visit-1": {
+          "speaker": "OLD UNIT",
+          "pages": [
+            "A bolt. Any bolt. I am not fussy. I used to be fussy."
+          ],
+          "onEnter": "talk.bot-voices.robot.wreck.advance-1"
+        },
+        "visit-2": {
+          "speaker": "OLD UNIT",
+          "pages": [
+            "They took my leg for a warranty claim. The claim was rejected. They kept the leg."
+          ],
+          "onEnter": "talk.bot-voices.robot.wreck.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.minidrone": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.minidrone.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.minidrone.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "DRONE",
+          "pages": [
+            "bzz. Parcel. bzz. Not yours. bzz."
+          ],
+          "onEnter": "talk.bot-voices.robot.minidrone.advance-0"
+        },
+        "visit-1": {
+          "speaker": "DRONE",
+          "pages": [
+            "(It hovers out of reach, politely.)"
+          ],
+          "onEnter": "talk.bot-voices.robot.minidrone.advance-1"
+        },
+        "visit-2": {
+          "speaker": "DRONE",
+          "pages": [
+            "bzz. Rate me five stars. bzz. There is no way to rate me. bzz."
+          ],
+          "onEnter": "talk.bot-voices.robot.minidrone.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.cargodrone": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.cargodrone.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CARGO DRONE",
+          "pages": [
+            "(Too high to hear you. Its crate swings over your head.)"
+          ],
+          "onEnter": "talk.bot-voices.robot.cargodrone.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CARGO DRONE",
+          "pages": [
+            "(The crate creaks. You step back without deciding to.)"
+          ],
+          "onEnter": "talk.bot-voices.robot.cargodrone.advance-1"
+        }
+      }
+    },
+    "talk.bot-voices.robot.flyerdrone": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.flyerdrone.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.flyerdrone.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "FLYER DRONE",
+          "pages": [
+            "This offer was chosen for you, based on where you are standing.",
+            "Please keep standing there."
+          ],
+          "onEnter": "talk.bot-voices.robot.flyerdrone.advance-0"
+        },
+        "visit-1": {
+          "speaker": "FLYER DRONE",
+          "pages": [
+            "Unsubscribe by leaving the city."
+          ],
+          "onEnter": "talk.bot-voices.robot.flyerdrone.advance-1"
+        },
+        "visit-2": {
+          "speaker": "FLYER DRONE",
+          "pages": [
+            "I am not following you. We have similar routes."
+          ],
+          "onEnter": "talk.bot-voices.robot.flyerdrone.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.scandrone": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.scandrone.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.scandrone.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SCAN DRONE",
+          "pages": [
+            "Hold still. This scan is for your convenience.",
+            "Mine, mostly."
+          ],
+          "onEnter": "talk.bot-voices.robot.scandrone.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SCAN DRONE",
+          "pages": [
+            "You have been scanned. Thank you for being scanned."
+          ],
+          "onEnter": "talk.bot-voices.robot.scandrone.advance-1"
+        },
+        "visit-2": {
+          "speaker": "SCAN DRONE",
+          "pages": [
+            "I only watch. Somebody else decides. I have never met them."
+          ],
+          "onEnter": "talk.bot-voices.robot.scandrone.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.robot.djbot": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.djbot.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.bot-voices.robot.djbot.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "DJ BOT",
+          "pages": [
+            "Next track is the same track, slower. They love that."
+          ],
+          "onEnter": "talk.bot-voices.robot.djbot.advance-0"
+        },
+        "visit-1": {
+          "speaker": "DJ BOT",
+          "pages": [
+            "Requests go in the tin. The tin is decorative."
+          ],
+          "onEnter": "talk.bot-voices.robot.djbot.advance-1"
+        },
+        "visit-2": {
+          "speaker": "DJ BOT",
+          "pages": [
+            "I cannot hear you. I can never hear you. It is the headphones."
+          ],
+          "onEnter": "talk.bot-voices.robot.djbot.advance-2"
+        }
+      }
+    },
+    "talk.bot-voices.legacy.drone": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.legacy.drone.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SCAN DRONE",
+          "pages": [
+            "ID CHECK... You are not in the database.",
+            "Good luck with that."
+          ],
+          "onEnter": "talk.bot-voices.legacy.drone.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SCAN DRONE",
+          "pages": [
+            "Hold still. You are blurry. Everyone is blurry tonight."
+          ],
+          "onEnter": "talk.bot-voices.legacy.drone.advance-1"
+        }
+      }
+    },
+    "talk.bot-voices.legacy.cleaner": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.legacy.cleaner.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CLEANER",
+          "pages": [
+            "Cleaning. Please step aside.",
+            "...Thank you. You were the dirtiest thing here."
+          ],
+          "onEnter": "talk.bot-voices.legacy.cleaner.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CLEANER",
+          "pages": [
+            "Mop, rinse, mop. Somebody has to. Nobody else would."
+          ],
+          "onEnter": "talk.bot-voices.legacy.cleaner.advance-1"
+        }
+      }
+    },
+    "talk.bot-voices.legacy.courier": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.bot-voices.legacy.courier.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "COURIER",
+          "pages": [
+            "Parcel delivery. Not for you. Nothing is ever for you."
+          ],
+          "onEnter": "talk.bot-voices.legacy.courier.advance-0"
+        },
+        "visit-1": {
+          "speaker": "COURIER",
+          "pages": [
+            "Please do not follow me. I am not a parade."
+          ],
+          "onEnter": "talk.bot-voices.legacy.courier.advance-1"
+        }
+      }
+    }
+  },
+  "state": {
+    "talk.bot-voices.robot.android.cursor": {
+      "owner": "talk.bot-voices.robot.android",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.valet.cursor": {
+      "owner": "talk.bot-voices.robot.valet",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.marshal.cursor": {
+      "owner": "talk.bot-voices.robot.marshal",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.servbot.cursor": {
+      "owner": "talk.bot-voices.robot.servbot",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.sweeper.cursor": {
+      "owner": "talk.bot-voices.robot.sweeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.busker.cursor": {
+      "owner": "talk.bot-voices.robot.busker",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.waiter.cursor": {
+      "owner": "talk.bot-voices.robot.waiter",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.loader.cursor": {
+      "owner": "talk.bot-voices.robot.loader",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.porter.cursor": {
+      "owner": "talk.bot-voices.robot.porter",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.mech.cursor": {
+      "owner": "talk.bot-voices.robot.mech",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.litterbot.cursor": {
+      "owner": "talk.bot-voices.robot.litterbot",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.deliverybot.cursor": {
+      "owner": "talk.bot-voices.robot.deliverybot",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.adbot.cursor": {
+      "owner": "talk.bot-voices.robot.adbot",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.crawler.cursor": {
+      "owner": "talk.bot-voices.robot.crawler",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.wreck.cursor": {
+      "owner": "talk.bot-voices.robot.wreck",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.minidrone.cursor": {
+      "owner": "talk.bot-voices.robot.minidrone",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.cargodrone.cursor": {
+      "owner": "talk.bot-voices.robot.cargodrone",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.bot-voices.robot.flyerdrone.cursor": {
+      "owner": "talk.bot-voices.robot.flyerdrone",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.scandrone.cursor": {
+      "owner": "talk.bot-voices.robot.scandrone",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.robot.djbot.cursor": {
+      "owner": "talk.bot-voices.robot.djbot",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.bot-voices.legacy.drone.cursor": {
+      "owner": "talk.bot-voices.legacy.drone",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.bot-voices.legacy.cleaner.cursor": {
+      "owner": "talk.bot-voices.legacy.cleaner",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.bot-voices.legacy.courier.cursor": {
+      "owner": "talk.bot-voices.legacy.courier",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    }
+  }
+}

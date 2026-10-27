@@ -2,7 +2,7 @@
 import type {ArtworkInspection} from '../art/core/presentation';
 import {element,button} from './controls';
 const number=(n:number)=>Number.isFinite(n)?String(Math.round(n*1000)/1000):'Unavailable';
-const point=(p:{x:number;h:number})=>`X ${number(p.x)}, H ${number(p.h)}`;
+const point=(p:{x:number;h:number})=>`X ${number(p.x)}, Y ${number(p.h)}`;
 const rect=(r:{x:number;y:number;width:number;height:number})=>`X ${number(r.x)}, Y ${number(r.y)}, ${number(r.width)} × ${number(r.height)}`;
 export function mountResolvedInspector(host:HTMLElement,read:()=>ArtworkInspection|undefined,edit:()=>void,state={open:false}){
  const section=element('details','inspector-part');section.dataset.resolvedArtwork='';section.open=state.open;section.addEventListener('toggle',()=>{state.open=section.open;});

@@ -215,7 +215,7 @@ validation; Export downloads the pending document, including unsaved work.
 Navigation away from a dirty editor uses the browser's unsaved-change prompt.
 
 
-The registered Harbor `scene.json` and `authoring/play-fixtures.json` use the same grouped Save,
+The registered Harbor `scene.json` and `world/checkpoints.json` use the same grouped Save,
 revision and journal protections as artwork, gameplay and scoped behavior. Prospective source-set
 validation cross-checks the Harbor scene against pending gameplay. Neither document may contain
 executable code. The public editor only downloads them. Play runtime snapshots and wire changes

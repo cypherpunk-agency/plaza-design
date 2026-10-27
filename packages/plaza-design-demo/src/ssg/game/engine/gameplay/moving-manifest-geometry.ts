@@ -1,5 +1,5 @@
 /** Pure manifest attachment projection; the Circuit owns motion and composition owns every anchor. */
-import {art,resolveComposition,type Composition,type Resolved} from '../../art';
+import {art,resolveComposition,type ChunkDocument,type Resolved} from '../../art';
 import {frameView} from '../../art/core/view';
 import type {LevelSource} from '../level';
 import {levelVehicleVisuals} from '../level-vehicles';
@@ -12,7 +12,7 @@ export const movingManifestGroups=['devices','uses','readables','rests','exits']
 export type MovingManifestGroup=typeof movingManifestGroups[number];
 type AttachmentOffset={dx:number;dh:number;floorH?:number};
 export type AttachmentOffsets=Partial<Record<MovingManifestGroup,Readonly<Record<string,AttachmentOffset>>>>;
-export function movingManifestGeometry(source:SceneDocument,composition:Composition,rows:readonly Resolved[],level:LevelSource|undefined):SceneRules['attachmentOffsets']{
+export function movingManifestGeometry(source:SceneDocument,composition:ChunkDocument,rows:readonly Resolved[],level:LevelSource|undefined):SceneRules['attachmentOffsets']{
  if(!level?.vehicles?.length)return;
  const byId=new Map(rows.map(r=>[r.instance.id,r])),parents=new Map(rows.flatMap(r=>(r.instance.children??[]).map(c=>[c.id,r.instance.id] as const)));
  const moving=(id:string):string|undefined=>{let at:string|undefined=id;for(let depth=0;at&&depth<64;depth++){const row=byId.get(at);if(!row)return;if(row.element.type==='vehicle.frame')return at;at=row.instance.attach?.instance??parents.get(at);}};

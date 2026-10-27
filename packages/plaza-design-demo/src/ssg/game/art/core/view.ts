@@ -33,7 +33,7 @@ export interface View {
   /** Connected chunk coordinates relative to this source; shared by route drawing and bounds. */
   worldZones?:Readonly<Record<string,{x:number;h:number;w?:number}>>;
   /** Evaluated timeline inputs prepared by the shared frame director; painting never advances them. */
-  sequence?: {time:number;state:Readonly<Record<string,import('./composition').Properties>>};
+  sequence?: {artwork?:Readonly<Record<string,import('./timeline').TimelineArtwork>>;time:number;state:Readonly<Record<string,import('./composition').Properties>>};
   /** Screen y of the ground; the strip below it (about 54 units) is the near floor. */
   gy: number;
   /** The save's flags (read only), for doors that open later (e.g. `end`: Downtown cleared, the market gate is open). */

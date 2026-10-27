@@ -24,7 +24,7 @@
  * are `SHORE` (back, mid, beach, the road's lanes). Lengths are world units. A piece placed facing -1 is the same
  * piece mirrored (the west beach), its text still readable.
  */
-import type { Bounds, Element, Field, Properties, Value } from '../core/composition';
+import type { Bounds, AssetDefinition, Field, Properties, Value } from '../core/composition';
 import { inPixels, SHORE, STRIP_K, R, hash, lerp, mixHex, smooth, ART, type Pixels } from '../core/pixels';
 import { text } from '../core/primitives';
 import { drawStringLights } from '../assemblies/beach-bar';
@@ -50,8 +50,8 @@ export function stripLines(P: Pixels, h0 = 0) {
 }
 export type StripLines = ReturnType<typeof stripLines>;
 
-interface Def { type: string; label: string; fields: Record<string, Field>; bounds: (p: Properties) => Bounds; draw: (P: Pixels, p: Properties, h0: number) => void; visual?: Record<string, Field>; parts?: Element['parts'] }
-const kit = (d: Def): Element => ({
+interface Def { type: string; label: string; fields: Record<string, Field>; bounds: (p: Properties) => Bounds; draw: (P: Pixels, p: Properties, h0: number) => void; visual?: Record<string, Field>; parts?: AssetDefinition['parts'] }
+const kit = (d: Def): AssetDefinition => ({
   type: d.type, version: 1, label: d.label, category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: d.parts ?? ['backdrop'], fields: d.fields,
   ...(d.visual ? { visualFields: d.visual } : {}),
   bounds: p => d.bounds(p), anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
@@ -436,7 +436,7 @@ export const wipeElement = kit({
  * the pixel swell (sea.ts), the swell moving with its depth, the sun's path under the sunset sun (sky kit). In the
  * distance layer; its own depth (`parallax` of the placement) moves the swell as the camera does.
  */
-export const seaElement: Element = {
+export const seaElement: AssetDefinition = {
   type: 'environment.sea', version: 1, label: 'Open sea: mirror, swell and the sun’s path (coast kit)', category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { horizon: num('Horizon (over the ground line)', 189, -400, 1200), bottom: num('Near edge (over the ground line)', 0, -600, 1200), haze: num('City haze over it', 0, 0, 1, 0.05) },
   bounds: p => ({ x: 0, h: n(p, 'horizon'), w: 4000, tall: n(p, 'horizon') - n(p, 'bottom') }),
@@ -477,4 +477,4 @@ export const bridgeElement = kit({
   },
 });
 
-export const coastElements: Element[] = [groundElement, bridgeElement, wallElement, pierElement, footbridgeElement, lifeguardElement, breakwaterElement, farShoreElement, boatsElement, wipeElement, seaElement, reflectionElement];
+export const coastElements: AssetDefinition[] = [groundElement, bridgeElement, wallElement, pierElement, footbridgeElement, lifeguardElement, breakwaterElement, farShoreElement, boatsElement, wipeElement, seaElement, reflectionElement];

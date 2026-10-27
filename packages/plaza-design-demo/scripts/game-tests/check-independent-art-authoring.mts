@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';
 import authored from '../../src/ssg/game/scenes/authored.json';
-import {art,resolveComposition,type Composition,type Value} from '../../src/ssg/game/art';
+import {art,resolveComposition,type ChunkDocument,type Value} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
@@ -21,9 +21,9 @@ const propertyEdits=new Map<string,[string,Value]>();
 for(const e of types){
  const instance=model.add(id,e.type,{x:140,h:10});added.push(instance);
  model.updateInstance(id,instance,'Move artwork',n=>{n.placement={x:240,h:30};});
- model.undo();assert.equal((model.get(id).value as Composition).instances.find(n=>n.id===instance)!.placement.x,140,e.type+' movement undo');model.redo();
+ model.undo();assert.equal((model.get(id).value as ChunkDocument).instances.find(n=>n.id===instance)!.placement.x,140,e.type+' movement undo');model.redo();
  const duplicate=model.duplicate(id,instance);added.push(duplicate);
- assert.equal((model.get(id).value as Composition).instances.find(n=>n.id===duplicate)!.placement.x,252,e.type+' duplicate has an independent position');
+ assert.equal((model.get(id).value as ChunkDocument).instances.find(n=>n.id===duplicate)!.placement.x,252,e.type+' duplicate has an independent position');
  const properties=art.properties(e.type,{});let change:[string,Value]|undefined;
  for(const [key,field] of Object.entries(e.fields)){
   const candidates:Value[]=field.kind==='string'?['TEST']:field.kind==='color'?['#bada55']:field.kind==='boolean'?[!properties[key]]:field.kind==='select'?(field.options??[]):field.kind==='number'?[Number(properties[key])+(field.step??1),Number(properties[key])-(field.step??1)]:[];
@@ -38,7 +38,7 @@ store.save(receiver.edits());assert.deepEqual(store.read(sourceId).value,model.g
 const scene=createSceneRegistry({},store.read(sourceId).value)['vehicle-lab'];
 const m=new SceneModel({say(){},open(){},changed(){}},scene.data!,undefined,undefined,undefined,undefined,undefined,scene.gameplay);
 const view={...frameView(137),viewW:640,viewH:360,gy:300,y:(h:number)=>300-h};
-const env=scene.visualEnvironment!(view,{m,hover:null,layer:'all'}),composition=(model.get(id).value as Composition),rows=resolveComposition(art,composition,env);
+const env=scene.visualEnvironment!(view,{m,hover:null,layer:'all'}),composition=(model.get(id).value as ChunkDocument),rows=resolveComposition(art,composition,env);
 for(const instance of added){const row=rows.find(r=>r.instance.id===instance)!;assert(row,instance+' compiles in another native scene');assert.equal(Object.keys(row.instance.bindings??{}).length,0,'no hidden source-scene binding');assert(Number.isFinite(row.element.bounds(row.props,row.state,{view,placement:row.placement}).w));}
 for(const [instance,[key,value]] of propertyEdits)assert.deepEqual(rows.find(r=>r.instance.id===instance)!.props[key],value,'edited typed property reaches native compilation after bundle and protected Save');
 const ops:unknown[]=[],target:Record<string,unknown>={globalAlpha:1,getTransform:()=>({a:1,b:0,c:0,d:1,e:0,f:0}),measureText:(text:string)=>({width:String(text).length*5})};

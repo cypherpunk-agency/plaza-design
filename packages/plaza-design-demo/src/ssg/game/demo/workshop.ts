@@ -1,6 +1,6 @@
 import {projectSceneState} from '../engine/gameplay/scene-state';
 import {validateGameplay} from '../engine/gameplay/validation';
-import {plainReviewScene,reviewVisibility} from './review-room';
+import {plainReviewScene,reviewVisibility,reviewActorArtwork} from './review-room';
 import {PULSE_EFFECTS} from '../engine/gameplay/mechanisms/device-pulse';
 import source from './workshop.json';
 import data from '../scenes/sandbox/devices.json';
@@ -21,6 +21,9 @@ export function workshopScene(composition=sandboxComposition,gameplay=WORKSHOP_G
  composition=structuredClone(composition);const positions:Record<string,number>={sensor:220,lamp:300,button:400,counter:470,plate:550,hatch:700,fan:820};
  for(const row of composition.instances)if(row.id in positions)row.placement.x=positions[row.id];
  const sceneDocument=structuredClone(FOLDER_SOURCES.sandbox.scene) as unknown as SceneDocument;
+ // Remove unused actor content before compiling this device-only area, together with its
+ // bound artwork. Hidden campaign NPCs must not require campaign conversation graphs here.
+ sceneDocument.actors=[];delete sceneDocument.people;sceneDocument.manifest!.people={};composition=reviewActorArtwork(composition,sceneDocument);
  // This review area deliberately contains only these devices; retain exactly their source bindings.
  sceneDocument.manifest!.devices=Object.fromEntries(Object.entries(sceneDocument.manifest!.devices??{}).filter(([id])=>REVIEW_DEVICE_IDS.includes(id)));
  // the area has no dispenser and no reset console: their uses and engine targets need commands of the full bay's gameplay

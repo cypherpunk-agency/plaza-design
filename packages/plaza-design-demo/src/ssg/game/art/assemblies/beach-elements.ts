@@ -1,5 +1,5 @@
 /** Independently placed beach artwork; controllers supply named visual snapshots. */
-import type { Element,Field,Properties,Placement } from '../core/composition';
+import type { AssetDefinition,Field,Properties,Placement } from '../core/composition';
 import { placed,type View } from '../core/view';
 import { menuBoard } from '../signage/screens';
 import { createBeachArtwork,type BeachLayout,type BeachVisualState } from './beach';
@@ -13,7 +13,7 @@ export const beachVisualFields:Record<string,Field>={limeVisible:bool('Native LI
 const common=Object.keys(beachVisualFields);
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
 const origin={x:0,h:0,role:'origin' as const};
-function element(type:string,label:string,fields:Record<string,Field>,draw:Draw,keys:string[]=common):Element{return{type:'beach.'+type,bindingIdentity:'presentation',version:1,label,category:type==='marker'?'markers':'beach',coordinates:'world',fields,visualFields:Object.fromEntries(keys.map(k=>[k,beachVisualFields[k]])),parts:['backdrop'],bounds:p=>({x:-80,h:Number(p.height??150),w:Number(p.width??160),tall:Number(p.height??150)}),anchors:()=>({origin}),draw(x,v,p,s,_pass,at){draw(x,v,p,s,at);}};}
+function element(type:string,label:string,fields:Record<string,Field>,draw:Draw,keys:string[]=common):AssetDefinition{return{type:'beach.'+type,bindingIdentity:'presentation',version:1,label,category:type==='marker'?'markers':'beach',coordinates:'world',fields,visualFields:Object.fromEntries(keys.map(k=>[k,beachVisualFields[k]])),parts:['backdrop'],bounds:p=>({x:-80,h:Number(p.height??150),w:Number(p.width??160),tall:Number(p.height??150)}),anchors:()=>({origin}),draw(x,v,p,s,_pass,at){draw(x,v,p,s,at);}};}
 const blank:BeachLayout={stairs:0,board:0,boardwalk:0,kiosk:0,sunbeds:[],mine:0,shack:{x0:0,x1:0},jukebox:0,lime:0,order:0,mixer:0,crab:0,tower:0,drone:0,net:0,castle:0,surfer:0,shore:0,pier0:0,pierLights:0,fisher:0,gull:0,boat:0};
 const kernel=(s:Properties,L:Partial<BeachLayout>={},width=0)=>createBeachArtwork({HORIZON:n(s,'horizon'),WATERLINE:n(s,'waterline'),L:{...blank,...L},BEACH_W:width});
 const state=(s:Properties):BeachVisualState=>({rented:!!s.rented,billingPaused:!!s.billingPaused,billed:n(s,'billed'),freeDrink:!!s.freeDrink,danger:!!s.danger,lamps:!!s.lamps,gullShooed:n(s,'gullShooed')});
@@ -26,7 +26,7 @@ const ordinary=(method:'kiosk'|'lime'|'crab'|'volleyball'|'castle'|'board'|'rod'
  const k=kernel(s,{[field]:at.x-(method==='board'?12:0)}),V=raised(v,at.h),st=state(s),hover=String(s.hover)||null,p=n(s,'palette');
  switch(method){case'kiosk':k.kiosk(x,V,st,hover);break;case'lime':k.lime(x,V);break;case'crab':k.crab(x,V);break;case'volleyball':k.volleyball(x,V);break;case'castle':k.castle(x,V,p);break;case'board':k.board(x,V);break;case'rod':k.rod(x,V);break;case'boat':k.boat(x,V,hover,p);break;case'postGull':k.postGull(x,V,st);break;case'publicNotice':k.publicNotice(x,V);break;case'jukebox':k.jukebox(x,V,hover);break;case'tower':k.tower(x,V,st);break;case'drone':k.drone(x,V,st,hover);break;case'pierController':k.pierController(x,V,st,hover);}
 };
-export const beachElements:Element[]=[
+export const beachElements:AssetDefinition[]=[
  element('marker','Beach gameplay marker',{role:str('Role'),width:num('Width'),height:num('Height')},()=>{},[]),
  element('light','Scene light source',{kind:{kind:'select',label:'Kind',default:'lamp',options:['lamp','neon','window']},radius:num('Radius'),color:str('RGB color'),width:num('Window width'),lightHeight:num('Window height'),alpha:num('Alpha',1)},()=>{},[]),
  element('sky','Sun, sky and clouds',{},(x,v,_p,s,at)=>kernel(s).sky(x,raised(v,at.h),n(s,'palette'))),

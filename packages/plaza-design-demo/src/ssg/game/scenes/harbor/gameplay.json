@@ -43,6 +43,86 @@
       "lifetime": "session",
       "type": "boolean",
       "default": true
+    },
+    "talk.harbor.customs.cursor": {
+      "owner": "talk.harbor.customs",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.harbor.docker.cursor": {
+      "owner": "talk.harbor.docker",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.harbor.tide.cursor": {
+      "owner": "talk.harbor.tide",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3
+    },
+    "talk.harbor.fisher.cursor": {
+      "owner": "talk.harbor.fisher",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.harbor.jogger.cursor": {
+      "owner": "talk.harbor.jogger",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.harbor.gull1.cursor": {
+      "owner": "talk.harbor.gull1",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.harbor.gull2.cursor": {
+      "owner": "talk.harbor.gull2",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.harbor.gull3.cursor": {
+      "owner": "talk.harbor.gull3",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.harbor.gull4.cursor": {
+      "owner": "talk.harbor.gull4",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.harbor.gull5.cursor": {
+      "owner": "talk.harbor.gull5",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
     }
   },
   "purchases": {
@@ -386,8 +466,752 @@
           "value": true
         }
       ]
+    },
+    "talk.harbor.customs.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.customs.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.customs.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.customs.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.docker.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.docker.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.docker.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.docker.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.tide.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.tide.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.tide.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.tide.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.tide.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.tide.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.harbor.tide.advance-3": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.tide.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.harbor.fisher.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.fisher.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.fisher.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.fisher.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.jogger.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.jogger.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.jogger.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.jogger.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.gull1.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull1.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.gull1.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull1.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull1.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull1.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull2.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull2.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.gull2.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull2.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull2.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull2.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull3.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull3.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.gull3.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull3.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull3.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull3.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull4.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull4.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.gull4.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull4.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull4.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull4.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull5.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull5.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.harbor.gull5.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull5.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.harbor.gull5.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.harbor.gull5.cursor",
+          "set": 2
+        }
+      ]
     }
   },
   "reactions": [],
-  "conversations": {}
+  "conversations": {
+    "talk.harbor.customs": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.customs.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CUSTOMS",
+          "pages": [
+            "Every container goes through the arch. The arch scans the outside.",
+            "What is inside is declared by the shipper. The shipper is very honest. It says so on the form."
+          ],
+          "onEnter": "talk.harbor.customs.advance-0"
+        },
+        "visit-1": {
+          "speaker": "CUSTOMS",
+          "pages": [
+            "You are not a container. Keep it that way and we'll get on fine."
+          ],
+          "onEnter": "talk.harbor.customs.advance-1"
+        }
+      }
+    },
+    "talk.harbor.docker": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.docker.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "DOCKER",
+          "pages": [
+            "Twelve hours lifting boxes I'm not allowed to open.",
+            "Some of them are cold. Some of them hum. One of them knocked once. I lifted that one gently."
+          ],
+          "onEnter": "talk.harbor.docker.advance-0"
+        },
+        "visit-1": {
+          "speaker": "DOCKER",
+          "pages": [
+            "Union rule: one break per shift. Management rule: the shift doesn't end."
+          ],
+          "onEnter": "talk.harbor.docker.advance-1"
+        }
+      }
+    },
+    "talk.harbor.tide": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.tide.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.tide.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.tide.cursor",
+            "is": 2
+          },
+          "node": "visit-2"
+        },
+        {
+          "node": "visit-3"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TIDE RUNNER",
+          "pages": [
+            "Don't stare at the den. Stare at the water, like a normal person.",
+            "You're the deleted one. Moth's friend. The scanners slide right off you. I like that in a customer."
+          ],
+          "onEnter": "talk.harbor.tide.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TIDE RUNNER",
+          "pages": [
+            "We're the Tide. We move what the Registry can't count: goods, data, the odd person in a crate marked FROZEN FISH.",
+            "Your friend came through here like that once. Captain Brine carried the crate personally.",
+            "The Captain doesn't do favours. The Captain does invoices."
+          ],
+          "onEnter": "talk.harbor.tide.advance-1"
+        },
+        "visit-2": {
+          "speaker": "TIDE RUNNER",
+          "pages": [
+            "Moth still owes the Captain. Moth knows it.",
+            "There's a little boat at the end of the beach pier, paid up by the month in Moth's name. The Captain's idea of a reminder."
+          ],
+          "onEnter": "talk.harbor.tide.advance-2"
+        },
+        "visit-3": {
+          "speaker": "TIDE RUNNER",
+          "pages": [
+            "Want to meet Brine? Nobody wants to. The boat's never in the same berth twice.",
+            "If the Captain wants you, you'll see a lamp out on the water. Three long. Don't wave back, it's rude."
+          ],
+          "onEnter": "talk.harbor.tide.advance-3"
+        }
+      }
+    },
+    "talk.harbor.fisher": {
+      "entry": [
+        {
+          "when": {
+            "all": [
+              {
+                "weather": [
+                  "rain",
+                  "storm"
+                ]
+              }
+            ]
+          },
+          "node": "variant-0"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "weather": [
+                  "fog"
+                ]
+              }
+            ]
+          },
+          "node": "variant-1"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.fisher.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "FISHERMAN",
+          "pages": [
+            "Fish don't need ID. Best neighbours I've had.",
+            "Caught a drone gull once. Threw it back. It filed a complaint."
+          ],
+          "onEnter": "talk.harbor.fisher.advance-0"
+        },
+        "visit-1": {
+          "speaker": "FISHERMAN",
+          "pages": [
+            "The patrol boat comes round every few minutes. The fish know the schedule better than the Registry does."
+          ],
+          "onEnter": "talk.harbor.fisher.advance-1"
+        },
+        "variant-0": {
+          "speaker": "FISHERMAN",
+          "pages": [
+            "Rain is good for fishing. The fish come up to see what all the noise is.",
+            "Also nobody checks your licence in the rain. The Registry melts."
+          ]
+        },
+        "variant-1": {
+          "speaker": "FISHERMAN",
+          "pages": [
+            "Fog. Can't see the float, can't see the patrol boat, can't see my own feet.",
+            "Best night of the year. Nobody can see me either."
+          ]
+        }
+      }
+    },
+    "talk.harbor.jogger": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.jogger.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "JOGGER",
+          "pages": [
+            "Six laps of the pier before the shift whistle. The Registry counts my steps.",
+            "I am trying to get it to give up."
+          ],
+          "onEnter": "talk.harbor.jogger.advance-0"
+        },
+        "visit-1": {
+          "speaker": "JOGGER",
+          "pages": [
+            "Can't stop. If I stop, my insurance thinks I died."
+          ],
+          "onEnter": "talk.harbor.jogger.advance-1"
+        }
+      }
+    },
+    "talk.harbor.gull1": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.gull1.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.gull1.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull looks at you, then at your pockets, then screams.)"
+          ],
+          "onEnter": "talk.harbor.gull1.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It takes a step closer. It has done this before. You are the one being mugged.)"
+          ],
+          "onEnter": "talk.harbor.gull1.advance-1"
+        },
+        "visit-2": {
+          "speaker": "GULL",
+          "pages": [
+            "(It stares at you with one eye, then the other, and finds you lacking from both sides.)"
+          ],
+          "onEnter": "talk.harbor.gull1.advance-2"
+        }
+      }
+    },
+    "talk.harbor.gull2": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.gull2.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.gull2.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(It takes a step closer. It has done this before. You are the one being mugged.)"
+          ],
+          "onEnter": "talk.harbor.gull2.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It stares at you with one eye, then the other, and finds you lacking from both sides.)"
+          ],
+          "onEnter": "talk.harbor.gull2.advance-1"
+        },
+        "visit-2": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull looks at you, then at your pockets, then screams.)"
+          ],
+          "onEnter": "talk.harbor.gull2.advance-2"
+        }
+      }
+    },
+    "talk.harbor.gull3": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.gull3.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.gull3.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(It stares at you with one eye, then the other, and finds you lacking from both sides.)"
+          ],
+          "onEnter": "talk.harbor.gull3.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull looks at you, then at your pockets, then screams.)"
+          ],
+          "onEnter": "talk.harbor.gull3.advance-1"
+        },
+        "visit-2": {
+          "speaker": "GULL",
+          "pages": [
+            "(It takes a step closer. It has done this before. You are the one being mugged.)"
+          ],
+          "onEnter": "talk.harbor.gull3.advance-2"
+        }
+      }
+    },
+    "talk.harbor.gull4": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.gull4.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.gull4.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(It takes a step closer. It has done this before. You are the one being mugged.)"
+          ],
+          "onEnter": "talk.harbor.gull4.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It stares at you with one eye, then the other, and finds you lacking from both sides.)"
+          ],
+          "onEnter": "talk.harbor.gull4.advance-1"
+        },
+        "visit-2": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull looks at you, then at your pockets, then screams.)"
+          ],
+          "onEnter": "talk.harbor.gull4.advance-2"
+        }
+      }
+    },
+    "talk.harbor.gull5": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.harbor.gull5.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.harbor.gull5.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull looks at you, then at your pockets, then screams.)"
+          ],
+          "onEnter": "talk.harbor.gull5.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It takes a step closer. It has done this before. You are the one being mugged.)"
+          ],
+          "onEnter": "talk.harbor.gull5.advance-1"
+        },
+        "visit-2": {
+          "speaker": "GULL",
+          "pages": [
+            "(It stares at you with one eye, then the other, and finds you lacking from both sides.)"
+          ],
+          "onEnter": "talk.harbor.gull5.advance-2"
+        }
+      }
+    }
+  }
 }

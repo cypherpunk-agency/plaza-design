@@ -7,7 +7,7 @@ import {mountVehicleAuthoring} from '../../src/ssg/game/authoring/vehicle-author
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
 import {createSceneRegistry,type SceneCatalogue} from '../../src/ssg/game/engine/gameplay/scene-catalogue';
-import {art,type Composition} from '../../src/ssg/game/art';
+import {art,type ChunkDocument} from '../../src/ssg/game/art';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
 import {SceneModel} from '../../src/ssg/game/engine/model';
@@ -20,7 +20,7 @@ const dir=path.resolve('../../.game-test-output/vehicle-authoring');fs.mkdirSync
 const store=new AuthoringStore({root,documents:[descriptor]}),initial=store.list(),make=()=>{const m=new ComposerModel(art,{},validate,[sceneCatalogueProjection]);m.load(initial);return m;},model=make();
 const api={get:(id:string)=>model.get(id),edit:(id:string,label:string,value:unknown)=>model.edit(id,label,()=>value)};
 const ui=mountRules((host,ctx)=>mountVehicleAuthoring(host,ctx,id,'shuttle','vehicle-lab'),new Map(),{authoring:api});
-const doc=()=>model.get(id).value as Composition,vehicle=()=>doc().instances.find(n=>n.id==='shuttle')!.props.vehicle as any;
+const doc=()=>model.get(id).value as ChunkDocument,vehicle=()=>doc().instances.find(n=>n.id==='shuttle')!.props.vehicle as any;
 ui.click('Add car');assert.equal(vehicle().cars.length,3);assert(doc().instances.some(n=>n.id==='car3-door0'),'new car includes its own door artwork');
 ui.click('Remove car car2');assert.equal(ui.host.children[0].textContent,'');assert.deepEqual(vehicle().cars.map((c:any)=>c.id),['car1','car3']);
 assert.equal(doc().instances.find(n=>n.id==='car3-gangway')!.attach!.instance,'car1','removing a middle car reconnects the gangway');

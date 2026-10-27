@@ -6,7 +6,7 @@ import { drawTaxiPad } from './taxi-pad';
 import { ticker, YELLOW } from '../signage/screens';
 import { neonPlate } from '../signage/kit';
 import { windowMask } from '../signage/kit-elements';
-import type { Anchor, Bounds, Element, Field, Placement, Properties, Value } from '../core/composition';
+import type { Anchor, Bounds, AssetDefinition, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import * as devices from '../electronics/downtown-devices';
 const num=(label:string,value=0,min=-10000,max=10000):Field=>({kind:'number',label,default:value,min,max,step:1});
@@ -21,7 +21,7 @@ const kernel=new DowntownArtwork();
 // Parent metrics, screen fills and the routed delivery sprite retain their context contract.
 const independent=new Set(['front','window','bay','penthouse','neon-sign','weather-ticker','billboard','stall','fence','alley','dumpster','entrance','fixer','counter','pedestrian','library-front','metro-stairs','taxi-pad',...['sign','box','till','relay','gate','fence','scan','cam3','billboard','map'].map(id=>'device-'+id)]);
 type Draw=(x:CanvasRenderingContext2D,v:View,p:Properties,s:Properties,at:Required<Placement>)=>void;
-function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:Element['bounds'],draw:Draw,visualFields:Record<string,Field>={}):Element {
+function element(type:string,label:string,category:string,fields:Record<string,Field>,bounds:AssetDefinition['bounds'],draw:Draw,visualFields:Record<string,Field>={}):AssetDefinition {
  return {type:'downtown.'+type,version:1,label,category,coordinates:'world',libraryUse:independent.has(type)?'reusable':undefined,fields,visualFields,parts:['backdrop'],bounds,anchors:p=>({origin,top:{x:0,h:Number(p.height??0),role:'surface'},right:{x:Number(p.width??0),h:0,role:'mount'},topCenter:{x:Number(p.width??0)/2,h:Number(p.height??0),role:'surface'}}),
   draw(x,v,p,s,_pass,at){kernel.set(x,raised(v,at.h));draw(x,v,p,s,at);}};
 }
@@ -29,7 +29,7 @@ const mask:Field=windowMask;
 const enabled={enabled:bool('Visible on parent front',true)};
 const metrics:Field={kind:'json',label:'Resolved parent dimensions and visibility',default:[0,0,false,true],validate:v=>{if(!Array.isArray(v)||v.length!==4||typeof v[0]!=='number'||typeof v[1]!=='number'||typeof v[2]!=='boolean'||typeof v[3]!=='boolean')throw new Error('Invalid front metrics');}};
 const front=(s:Properties,at:Required<Placement>):Front=>{const m=s.metrics as Value[];return{x:at.x,w:Number(m[0]),h:Number(m[1]),roof:!!m[2]};};
-export const downtownElements:Element[]=[
+export const downtownElements:AssetDefinition[]=[
  element('marker','Gameplay marker','markers',{role:str('Role','exit'),width:num('Width'),height:num('Height')},p=>box(n(p,'width'),n(p,'height')),()=>{}),
  element('light','Attached scene light','atmosphere',{kind:{kind:'select',label:'Light kind',default:'lamp',options:['lamp','window','neon','screen','head']},radius:num('Radius',56,1),color:str('Optional RGB'),alpha:num('Optional alpha',-1,-1,1)},p=>({x:-n(p,'radius'),h:n(p,'radius'),w:n(p,'radius')*2,tall:n(p,'radius')*2}),()=>{}),
  element('skyline','Seeded skyline lane','environment',{parallax:num('Parallax',0.18,0,2),seed:num('Seed',7,0),minHeight:num('Minimum height',70,0),maxHeight:num('Maximum height',150,0),alpha:num('Edge alpha',0.18,0,1),litChance:num('Window probability',0.12,0,1)},()=>box(2000,260),(x,v,p,s,at)=>{kernel.set(x,{...raised(v,at.h),cam:v.cam-at.x});kernel.drawSkyline(n(p,'parallax'),n(p,'seed'),n(p,'minHeight'),n(p,'maxHeight'),n(p,'alpha'),n(p,'litChance'),n(s,'width'));},{width:num('Street width',2000,1)}),

@@ -7,17 +7,20 @@ import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import type {CitySource} from '../world/city';
 import {validatePendingCity} from './pending-city';
 import {validateMetroSource,type MetroSource} from '../world/transport/metro-source';
+export interface CityAuthoringSession {expanded?:Map<string,boolean>;stationDraft?:Pick<CitySource,'STATIONS'|'STATION_MAP'>;stationSource?:string}
+export interface CityAuthoringScope {section:'place'|'travel'|'map';place?:string;session?:CityAuthoringSession}
 /** Typed edits use ordinary history, bundle and protected grouped source Save. */
-export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):WorkbenchHandle{
- const api=context.authoring!;let disposed=false,flagDraft='',stationDraftSource='';
- let stationDraft:Pick<CitySource,'STATIONS'|'STATION_MAP'>|undefined;
+export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,scope:CityAuthoringScope):WorkbenchHandle{
+ const api=context.authoring!;let disposed=false,flagDraft='',stationDraftSource=scope.session?.stationSource??'';
+ let stationDraft=scope.session?.stationDraft;
  const error=document.createElement('p');error.setAttribute('role','alert');
- const form=new TypedForm(e=>{error.textContent=String(e);});
- function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));change(d);api.edit('city-source',label,d);}
+ const form=new TypedForm(e=>{error.textContent=String(e);},scope.session?.expanded);
+ function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));change(d);api.edit('city-source',label,d);error.textContent='';}
  function editMetro(label:string,change:(source:MetroSource)=>void){const d=validateMetroSource(api.get('metro-source').value);change(d);api.edit('metro-source',label,validateMetroSource(d));}
  const get=(d:any,path:(string|number)[])=>path.reduce((v,k)=>v[k],d);
  const change=(path:(string|number)[],value:unknown)=>edit('Edit city '+path.join('.'),d=>{get(d,path.slice(0,-1))[path.at(-1)!]=value;});
- function prospective(){const catalogue=context.documents.find(d=>d.id==='authored-scenes')?.value as {scenes?:{scene:{id:string;exits?:{id:string}[]}}[]}|undefined;return Object.fromEntries([...Object.entries(SCENES).map(([id,s])=>{const source=context.documents.find(d=>d.id===id+'-scene')?.value as {exits?:{id:string}[]}|undefined;return[id,{exits:source?.exits??s.exits}]as const;}),...(catalogue?.scenes??[]).map(s=>[s.scene.id,{exits:s.scene.exits??[]}]as const)]);}
+ let references:Record<string,{exits:readonly {id:string}[]}>|undefined;
+ function prospective(){if(references)return references;const documents=context.documents,catalogue=documents.find(d=>d.id==='authored-scenes')?.value as {scenes?:{scene:{id:string;exits?:{id:string}[]}}[]}|undefined;return references=Object.fromEntries([...Object.entries(SCENES).map(([id,s])=>{const source=documents.find(d=>d.id===id+'-scene')?.value as {exits?:{id:string}[]}|undefined;return[id,{exits:source?.exits??s.exits}]as const;}),...(catalogue?.scenes??[]).map(s=>[s.scene.id,{exits:s.scene.exits??[]}]as const)]);}
  function checklist(parent:HTMLElement,name:string,values:readonly string[],selected:readonly string[],write:(v:string[])=>void){for(const id of values)form.check(parent,name+' '+id,selected.includes(id),on=>write(on?[...selected,id]:selected.filter(v=>v!==id)));}
  /** Primitive and structural controls for the existing bounded map source; never raw JSON. */
  function topology(parent:HTMLElement,value:any,path:(string|number)[],d:CitySource){const name='City '+path.join(' '),key=String(path.at(-1)),scenes=Object.keys(prospective()),districts=d.DISTRICTS.map(v=>v.id);
@@ -42,19 +45,23 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
   if(path[0]==='LINKS'&&path.length===2&&!value.at)form.button(parent,'Add '+name+' scene visibility',()=>change([...path,'at'],[]));
   for(const[k,v]of Object.entries(value)){if(k==='access'&&path[0]==='LINKS')continue;const row=typeof v==='object'&&v!==null?form.section(parent,name+' '+k):parent;topology(row,v,[...path,k],d);}
  }
- function render(){if(disposed)return;const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));host.replaceChildren(error);
-  const travel=form.section(host,'Travel');
+ function render(){if(disposed)return;references=undefined;const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));host.replaceChildren(error);
+  const show=(section:CityAuthoringScope['section'])=>scope.section===section,places=d.PLACES.filter(p=>show('place')&&(!scope.place||p.id===scope.place));
+  const refs=prospective(),sceneIds=Object.keys(refs),districtIds=d.DISTRICTS.map(v=>v.id);
+  const travel=show('travel')?form.section(host,'Travel'):undefined;
+  if(travel){
   form.number(travel,'Taxi fare',d.FARE,fare=>edit('Edit taxi fare',d=>{d.FARE=fare;}));
   form.number(travel,'Quick travel duration (frames)',d.HOP,frames=>edit('Edit quick travel duration',d=>{d.HOP=frames;}),1);
-  form.select(travel,'Starting scene',d.PLACES.flatMap(p=>p.scenes),d.START_SCENE,scene=>edit('Edit starting scene',d=>{d.START_SCENE=scene as CitySource['START_SCENE'];}));
-  for(const place of d.PLACES){const section=form.section(host,'Place · '+place.id);
+  }
+  for(const place of places){const section=host;
    form.select(section,'Place '+place.id+' access policy',['',...Object.keys(d.ACCESS)],place.access??'',v=>edit('Bind place access',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;if(v)p.access=v;else delete p.access;}));
+   {const policy=place.access?d.ACCESS[place.access]:undefined,note=document.createElement('p');note.textContent=policy?`Entry rule: ${policy.exit.scene} / ${policy.exit.id}. This is the same physical exit used by the game.`:'No physical-exit policy linked here. Transport locks are edited under Travel; discovery only controls what the map reveals.';section.append(note);if(policy)form.button(section,'Open entry-rule chunk',()=>context.openScene(policy.exit.scene));}
    form.text(section,'Place '+place.id+' name',place.name,name=>edit('Edit place name',d=>{d.PLACES.find(p=>p.id===place.id)!.name=name;}));
    form.select(section,'Place '+place.id+' entrance',place.scenes,place.entrance,scene=>edit('Edit place entrance',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;p.entrance=scene as typeof p.entrance;delete p.at;}));
    form.select(section,'Place '+place.id+' arrival exit',['',...prospective()[place.entrance].exits.map(e=>e.id)],place.at??'',at=>edit('Edit place arrival',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;if(at)p.at=at;else delete p.at;}));
   }
-  for(const id of d.STAND_IDS){const section=form.section(host,'Taxi · '+id);form.text(section,'Taxi '+id+' name',d.STANDS[id].name,name=>edit('Edit taxi stand name',d=>{d.STANDS[id].name=name;}));}
-  const refs=prospective(),sceneIds=Object.keys(refs),districtIds=d.DISTRICTS.map(v=>v.id);
+  if(show('travel'))for(const id of d.STAND_IDS){const section=form.section(host,'Taxi · '+id);form.text(section,'Taxi '+id+' name',d.STANDS[id].name,name=>edit('Edit taxi stand name',d=>{d.STANDS[id].name=name;}));}
+  if(travel){
   const policies=form.section(host,'Access policies');
   for(const[id,policy]of Object.entries(d.ACCESS)){
    const section=form.section(policies,'Access '+id);
@@ -81,14 +88,17 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
 
   for(const kind of ['boarding','siding']as const){const target=d.TRANSPORT[kind],section=form.section(travel,'Transport '+kind);form.select(section,'Transport '+kind+' scene',sceneIds,target.scene,v=>edit('Rebind transport scene',d=>{d.TRANSPORT[kind].scene=v as typeof target.scene;delete d.TRANSPORT[kind].entrance;}));form.select(section,'Transport '+kind+' entrance',['',...refs[target.scene].exits.map(e=>e.id)],target.entrance??'',v=>edit('Rebind transport entrance',d=>{if(v)d.TRANSPORT[kind].entrance=v;else delete d.TRANSPORT[kind].entrance;}));}
   for(const key of ['DRIVER_HARBOR','DRIVER_BROKE']as const){const section=form.section(travel,key);d[key].forEach((page,i)=>{form.text(section,key+' page '+i,page,v=>edit('Edit transport dialogue',d=>{d[key][i]=v;}),true);form.button(section,'Remove '+key+' page '+i,()=>edit('Remove transport dialogue',d=>{d[key].splice(i,1);}),d[key].length===1);});form.button(section,'Add '+key+' page',()=>edit('Add transport dialogue',d=>{d[key].push('New transport line.');}));}
-  for(const place of d.PLACES){const section=form.section(host,'Place membership '+place.id);form.select(section,'Place '+place.id+' district',['',...districtIds],place.district??'',v=>edit('Reassign place district',d=>{d.PLACES.find(x=>x.id===place.id)!.district=(v||null)as typeof place.district;}));
-   for(const scene of sceneIds){const owner=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));if(owner?.id===place.id)continue;form.button(section,'Move '+scene+' into '+place.id,()=>edit('Move scene between places',d=>{const old=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));if(old){if(old.scenes.length===1)throw Error('Merge the owning place instead of leaving it empty');old.scenes=old.scenes.filter(s=>s!==scene);if(old.entrance===scene){old.entrance=old.scenes[0];delete old.at;}}d.PLACES.find(p=>p.id===place.id)!.scenes.push(scene as typeof place.scenes[number]);}),owner?.scenes.length===1);}
-   form.check(section,'Place '+place.id+' map point',!!d.PLACE_MAP[place.id],on=>edit('Set place map marker',d=>{if(on)d.PLACE_MAP[place.id]=[...(Object.entries(d.PLACE_MAP).find(([id,p])=>p&&d.PLACES.find(v=>v.id===id)?.district===place.district)?.[1]??(place.district?d.DISTRICT_MAP[place.district].centre:null)??Object.values(d.PLACE_MAP).find((p):p is [number,number]=>!!p)??d.STATION_MAP[d.LINE[0]])];else delete d.PLACE_MAP[place.id];}));form.check(section,'Place '+place.id+' reveal rule',!!d.PLACE_IN_VIEW[place.id],on=>edit('Set place reveal rule',d=>{if(on)d.PLACE_IN_VIEW[place.id]=[];else delete d.PLACE_IN_VIEW[place.id];}));
   }
+  for(const place of places){const section=form.section(host,'Membership and discovery · '+place.id);form.select(section,'Place '+place.id+' district',['',...districtIds],place.district??'',v=>edit('Reassign place district',d=>{d.PLACES.find(x=>x.id===place.id)!.district=(v||null)as typeof place.district;}));
+   for(const scene of sceneIds){const owner=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));if(owner?.id===place.id)continue;form.button(section,'Move '+scene+' into '+place.id,()=>edit('Move scene between places',d=>{const old=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));if(old){if(old.scenes.length===1)throw Error('Merge the owning place instead of leaving it empty');old.scenes=old.scenes.filter(s=>s!==scene);if(old.entrance===scene){old.entrance=old.scenes[0];delete old.at;}}d.PLACES.find(p=>p.id===place.id)!.scenes.push(scene as typeof place.scenes[number]);}),owner?.scenes.length===1);}
+   form.check(section,'Place '+place.id+' map point',!!d.PLACE_MAP[place.id],on=>edit('Set place map marker',d=>{if(on)d.PLACE_MAP[place.id]=[...(Object.entries(d.PLACE_MAP).find(([id,p])=>p&&d.PLACES.find(v=>v.id===id)?.district===place.district)?.[1]??(place.district?d.DISTRICT_MAP[place.district].centre:null)??Object.values(d.PLACE_MAP).find((p):p is [number,number]=>!!p)??d.STATION_MAP[d.LINE[0]])];else delete d.PLACE_MAP[place.id];}));if(scope.section==='place'&&d.PLACE_MAP[place.id])topology(section,d.PLACE_MAP[place.id],['PLACE_MAP',place.id],d);form.check(section,'Place '+place.id+' reveal rule',!!d.PLACE_IN_VIEW[place.id],on=>edit('Set place reveal rule',d=>{if(on)d.PLACE_IN_VIEW[place.id]=[];else delete d.PLACE_IN_VIEW[place.id];}));if(scope.section==='place'&&d.PLACE_IN_VIEW[place.id])topology(section,d.PLACE_IN_VIEW[place.id],['PLACE_IN_VIEW',place.id],d);
+  }
+  if(show('travel')){
   // A route and its geographic point may need to change together. Keep typed drafts until
   // one atomic commit, so exchanging occupied platforms needs no invalid intermediate source.
   const stationSource=JSON.stringify([d.STATIONS,d.STATION_MAP]);
   if(!stationDraft||stationSource!==stationDraftSource){stationDraft=structuredClone({STATIONS:d.STATIONS,STATION_MAP:d.STATION_MAP});stationDraftSource=stationSource;}
+  if(scope.session){scope.session.stationDraft=stationDraft;scope.session.stationSource=stationDraftSource;}
   const routes=form.section(host,'Station routes');
   const note=document.createElement('p');note.textContent='Stage platform, surface, arrival and map-point changes, then apply all station routes together.';routes.append(note);
   for(const id of d.LINE){const section=form.section(routes,'Station routing '+id),station=stationDraft.STATIONS[id];
@@ -98,16 +108,21 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext):Wo
    for(const[axis,index]of [['x',0],['y',1]]as const)form.decimal(section,'Station '+id+' map '+axis,stationDraft.STATION_MAP[id][index],v=>{stationDraft!.STATION_MAP[id][index]=v;},-1000000,1000000);
   }
   form.button(routes,'Apply station routes',()=>{const draft=structuredClone(stationDraft!);edit('Apply station routes',d=>{d.STATIONS=draft.STATIONS;d.STATION_MAP=draft.STATION_MAP;});error.textContent='';render();});
-  form.button(routes,'Discard station route changes',()=>{stationDraft=undefined;error.textContent='';render();});
+  form.button(routes,'Discard station route changes',()=>{stationDraft=undefined;if(scope.session)scope.session.stationDraft=undefined;error.textContent='';render();});
   for(const id of d.STAND_IDS){const section=form.section(host,'Taxi routing '+id),stand=d.STANDS[id];form.select(section,'Taxi '+id+' scene',sceneIds,stand.scene,v=>edit('Rebind taxi scene',d=>{d.STANDS[id].scene=v as typeof stand.scene;delete d.STANDS[id].at;}));form.select(section,'Taxi '+id+' arrival',['',...refs[stand.scene].exits.map(e=>e.id)],stand.at??'',v=>edit('Rebind taxi arrival',d=>{if(v)d.STANDS[id].at=v;else delete d.STANDS[id].at;}));}
-  // Districts are created, renamed, placed and removed in World › Districts (district-authoring.ts).
+  }
+  if(show('map')){
+  // District controls share this map workspace.
   const registries=form.section(host,'Place registries');
-  let newPlace='',newPlaceScene=sceneIds.find(scene=>{const p=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));return!p||p.scenes.length>1;})??sceneIds[0];form.text(registries,'New place ID','',v=>{newPlace=v;});form.select(registries,'New place scene',sceneIds,newPlaceScene,v=>{newPlaceScene=v;});form.button(registries,'Add place',()=>edit('Split scene into new place',d=>{const owner=d.PLACES.find(p=>p.scenes.includes(newPlaceScene as typeof p.scenes[number]));if(owner){if(owner.scenes.length===1)throw Error('Choose a scene from a place with multiple scenes');owner.scenes=owner.scenes.filter(s=>s!==newPlaceScene);if(owner.entrance===newPlaceScene){owner.entrance=owner.scenes[0];delete owner.at;}}d.PLACES.push({id:newPlace as typeof d.PLACES[number]['id'],name:'New place',district:null,entrance:newPlaceScene as typeof d.START_SCENE,scenes:[newPlaceScene as typeof d.START_SCENE]});}));
+  let newPlace='',newPlaceScene=sceneIds.find(scene=>{const p=d.PLACES.find(p=>p.scenes.includes(scene as typeof p.scenes[number]));return!p||p.scenes.length>1;})??sceneIds[0];form.text(registries,'New place ID','',v=>{newPlace=v;});form.select(registries,'New place scene',sceneIds,newPlaceScene,v=>{newPlaceScene=v;});form.button(registries,'Add place',()=>edit('Split scene into new place',d=>{const owner=d.PLACES.find(p=>p.scenes.includes(newPlaceScene as typeof p.scenes[number]));if(owner){if(owner.scenes.length===1)throw Error('Choose a scene from a place with multiple scenes');owner.scenes=owner.scenes.filter(s=>s!==newPlaceScene);if(owner.entrance===newPlaceScene){owner.entrance=owner.scenes[0];delete owner.at;}}d.PLACES.push({id:newPlace as typeof d.PLACES[number]['id'],name:'New place',district:null,entrance:newPlaceScene as CitySource['PLACES'][number]['entrance'],scenes:[newPlaceScene as CitySource['PLACES'][number]['entrance']]});}));
   for(const place of d.PLACES){const choices=d.PLACES.filter(p=>p.id!==place.id).map(p=>p.id);let merge=choices[0];form.select(registries,'Merge '+place.id+' into',choices,merge,v=>{merge=v as typeof merge;});form.button(registries,'Merge place '+place.id,()=>edit('Merge place memberships',d=>{const owner=d.PLACES.find(p=>p.id===place.id)!,target=d.PLACES.find(p=>p.id===merge)!;target.scenes.push(...owner.scenes);d.PLACES=d.PLACES.filter(p=>p.id!==place.id);delete d.PLACE_MAP[place.id];delete d.PLACE_IN_VIEW[place.id];}),!choices.length);}
   const map=form.section(host,'Map and topology');for(const key of ['MAP_W','MAP_H','DISTRICT_MAP','PLACE_MAP','STATION_MAP','PAD_MAP','LOOP_MAP','LINES_PLANNED','LINKS','DISTRICT_REVEAL','PLACE_IN_VIEW']as const)topology(form.section(map,key),d[key],[key],d);
+  }
+  if(show('travel')){
   const order=form.section(host,'Transport route order');for(const key of ['LINE','STAND_IDS']as const)d[key].forEach((id,i)=>form.button(order,key+' move '+id+' earlier',()=>edit('Reorder registered transport stops',d=>{[d[key][i-1],d[key][i]]=[d[key][i],d[key][i-1]];}),i===0));
   const metro=validateMetroSource(api.get('metro-source').value),platform=form.section(host,'Metro platforms');
   for(const id of d.LINE){form.text(platform,'Station '+id+' name',d.STATIONS[id].name,name=>edit('Edit station name',d=>{d.STATIONS[id].name=name;}));form.select(platform,'Station '+id+' lock',['',...Object.keys(d.LOCKS)],metro.locked[id]??'',lock=>editMetro('Bind station lock',m=>{if(lock)m.locked[id]=lock;else delete m.locked[id];}));}
+ }
  }
  render();const dispose=(()=>{disposed=true;host.replaceChildren();}) as WorkbenchHandle;dispose.refresh=render;return dispose;
 }

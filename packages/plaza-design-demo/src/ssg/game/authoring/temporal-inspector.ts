@@ -5,18 +5,18 @@ import type {TimelineSelection} from './timeline-view';
 import {element,button,label,select,type createFieldControls} from './controls';
 import {TypedForm} from './typed-form';
 import {renderSequenceCommandFields} from './sequence-commands-authoring';
-const equal=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 interface TemporalInspectorPort {
  selection?:TimelineSelection;sequence?:Sequence;time:number;playing:boolean;
  fieldInput:ReturnType<typeof createFieldControls>['fieldInput'];numberInput:ReturnType<typeof createFieldControls>['numberInput'];
  keyField(target:Target):Field;keyValue(frame:TimelineFrame,target:Target):{value:Value;discrete:boolean};
  getFrame():TimelineFrame;editTimeline(label:string,edit:(program:TimelineProgram)=>void):void;
   commandTargets?:import('../art/core/timeline').TimelineContext['commandTargets'];
+ animatedControl(control:HTMLElement,target:Target,name:string):HTMLElement;
  addKey(target:Target,value?:Value):void;selectTimeline(selection:TimelineSelection|undefined,target?:Target):void;
  seekTime(time:number):void;notice(message:string,error?:boolean):void;setSelection(selection:TimelineSelection|undefined):void;close():void;
 }
 export function renderTimelineInspector(host:HTMLElement,port:TemporalInspectorPort):boolean{
-    const {selection,sequence:seq,time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,selectTimeline,seekTime,notice,setSelection,close,getFrame}=port;
+    const {selection,sequence:seq,time,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,animatedControl,selectTimeline,seekTime,notice,setSelection,close,getFrame}=port;
     if(!selection||!seq)return false;
     if(selection.kind==='command'){
       const marker=seq.commands?.find(c=>c.id===selection.id);if(!marker){setSelection(undefined);return false;}
@@ -33,9 +33,8 @@ export function renderTimelineInspector(host:HTMLElement,port:TemporalInspectorP
       host.append(element('h2','','Camera'),element('p','muted','Game camera at '+time.toFixed(3)+' s. Changing a value adds or updates its keyframe at the playhead. Workspace pan and zoom are separate editor controls.'));
       for(const property of ['x','h','zoom']as const){
         const target:Target={kind:'camera',property},field=keyField(target),input=fieldInput(field,frame.camera[property],value=>addKey(target,value));
-        input.setAttribute('aria-label',field.label);host.append(label(field.label,input));
-        const track=seq.tracks.find(t=>equal(t.target,target));
-        if(track)host.append(button('Edit '+property+' keyframes',()=>selectTimeline({kind:'track',track:track.id},target)));
+        input.setAttribute('aria-label',field.label);host.append(label(field.label,animatedControl(input,target,field.label)));
+
       }
       const shot=seq.shots.find(s=>time>=s.from&&time<s.to);
       if(shot)host.append(button('Edit shot · '+shot.id,()=>selectTimeline({kind:'shot',id:shot.id})));
@@ -53,10 +52,10 @@ export function renderTimelineInspector(host:HTMLElement,port:TemporalInspectorP
         }
       }else{
         const frame=getFrame();
-        let draft=keyValue(frame,track.target).value;
-        const field=keyField(track.target),input=fieldInput(field,draft,value=>{draft=value;});
+        const field=keyField(track.target),input=fieldInput(field,keyValue(frame,track.target).value,value=>addKey(track.target,value));
         input.setAttribute('aria-label','Value at playhead');
-        host.append(element('p','muted','Playhead: '+time.toFixed(3)+' s. Set a value, then add or update its keyframe.'),label(field.label,input),button('Add / update keyframe',()=>{if(playing){notice('Pause playback before setting a keyframe value.');return;}addKey(track.target,draft);}));
+        host.append(element('p','muted','Values follow the playhead. Editing an animated value adds or updates its key.'),label(field.label,animatedControl(input,track.target,field.label)));
+
       }
       host.append(label('Reduced motion',select([{value:'normal',label:'Keep motion'},{value:'freeze',label:'Freeze at start'}],track.reduced??'normal',value=>editTimeline('Change reduced motion',d=>{d.sequences[0].tracks.find(t=>t.id===track.id)!.reduced=value as 'normal'|'freeze';}))));
       const keys=element('div');keys.append(element('h3','','Keyframes'));
@@ -73,11 +72,11 @@ export function renderTimelineInspector(host:HTMLElement,port:TemporalInspectorP
       const change=(apply:(key:Keyframe)=>void)=>editTimeline('Edit keyframe',doc=>{const track=doc.sequences[0].tracks.find(t=>t.id===selection.track)!,key=track.keys[selection.index];apply(key);track.keys.sort((a,b)=>a.time-b.time);setSelection({...selection,index:track.keys.indexOf(key)});});
       host.append(element('h2','','Keyframe'),element('p','muted',track.id+' · '+(track.target.kind==='camera'?'Camera':track.target.instance)+' / '+track.target.property));
       host.append(label('Key time',numberInput(key.time,value=>change(k=>k.time=value),0,String(1/60))));
-      const field=keyField(track.target);host.append(label(field.label,fieldInput(field,key.value,value=>change(k=>k.value=value))));
+      const field=keyField(track.target),input=fieldInput(field,keyValue(getFrame(),track.target).value,value=>addKey(track.target,value));input.setAttribute('aria-label',field.label);host.append(label(field.label,animatedControl(input,track.target,field.label)),element('p','muted','Value and diamond follow the playhead. Time and easing below describe the selected key.'));
       host.append(label('Easing',select(['linear','hold','smooth','in','out'].map(value=>({value,label:value})),key.ease??'linear',value=>change(k=>k.ease=value as Keyframe['ease']))));
       host.append(label('Reduced motion',select([{value:'normal',label:'Keep motion'},{value:'freeze',label:'Freeze at start'}],track.reduced??'normal',value=>editTimeline('Change reduced motion',d=>{d.sequences[0].tracks.find(t=>t.id===track.id)!.reduced=value as 'normal'|'freeze';}))));
       if(track.motion)host.append(element('p','muted','This track uses procedural motion. Its registered formula supplies the animated value.'));
-      host.append(button('Key at playhead',()=>addKey(track.target)),button('Delete keyframe',()=>{setSelection(undefined);editTimeline('Delete keyframe',d=>{const seq=d.sequences[0],item=seq.tracks.find(t=>t.id===track.id)!;if(item.keys.length===1)seq.tracks=seq.tracks.filter(t=>t.id!==track.id);else item.keys.splice(selection.index,1);});}),button('Object properties',close));
+      host.append(button('Delete keyframe',()=>{setSelection(undefined);editTimeline('Delete keyframe',d=>{const seq=d.sequences[0],item=seq.tracks.find(t=>t.id===track.id)!;if(item.keys.length===1)seq.tracks=seq.tracks.filter(t=>t.id!==track.id);else item.keys.splice(selection.index,1);});}),button('Object properties',close));
       return true;
     }
     const kind=selection.kind,items=kind==='shot'?seq.shots:kind==='text'?seq.text:kind==='fade'?seq.fades:seq.beats,item=items.find(n=>n.id===selection.id);if(!item){setSelection(undefined);return false;}

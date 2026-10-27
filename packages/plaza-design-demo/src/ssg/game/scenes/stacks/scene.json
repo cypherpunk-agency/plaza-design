@@ -36,98 +36,37 @@
     {
       "id": "gatekeeper",
       "name": "GATEKEEPER",
-      "talk": [
-        [
-          "Terminal 2. Authorised vehicles only.",
-          "You are not a vehicle, so the rule does not cover you. I am not paid to extend it."
-        ],
-        [
-          "Warehouse 4 is down the lane. Registry evidence now. Used to be the Tide's.",
-          "I used to wave at the Tide's trucks. Now I wave at nobody, on a schedule."
-        ]
-      ]
+      "conversation": "talk.stacks.gatekeeper"
     },
     {
       "id": "inspector",
       "name": "PORT INSPECTOR",
-      "talk": [
-        [
-          "Thermal inspection. A container is meant to be the temperature on its label.",
-          "A reefer at four degrees reads four. If it reads thirty-one, something in it is breathing, and breathing cargo is my paperwork."
-        ],
-        [
-          "The gate wires itself to the alarm. I don't touch it. The Registry's watchdog checks the wiring every round.",
-          "When the dog sits on my gate the whole gate freezes. Nothing gets in or out of it. I take my break then. Everyone does."
-        ],
-        [
-          "The crane only lifts once the dog has cleared the ferry. Then it's three seconds and it's back at my gate.",
-          "You learn its walk. Port, crane, ferry. Port, crane, ferry. Like a man who forgot why he came into a room."
-        ]
-      ]
+      "conversation": "talk.stacks.inspector"
     },
     {
       "id": "signaller",
       "name": "SIGNALLER",
-      "talk": [
-        [
-          "I wave at the crane. The crane ignores me.",
-          "Forty years. Longest relationship I've had."
-        ],
-        [
-          "The camera on STS-2 reads every roof in the blocks. The yard system lost one tonight. The camera never loses anything. Shame about the people upstairs."
-        ]
-      ]
+      "conversation": "talk.stacks.signaller"
     },
     {
       "id": "lasher",
       "name": "LASHER",
-      "talk": [
-        [
-          "Eleven boxes down the hatch, lashed. One slot on deck for a reefer, plug ready.",
-          "Schedule says NRLU-something. Yard system says it doesn't exist. I've lashed things that don't exist before. They pay the same."
-        ],
-        [
-          "The ferry leaves when it's full. It's been one box from full since Tuesday.",
-          "The captain's asleep in the bridge. He says wake him when it's full. He says it like a man who knows."
-        ]
-      ]
+      "conversation": "talk.stacks.lasher"
     },
     {
       "id": "tally",
       "name": "TALLY-4",
-      "talk": [
-        [
-          "COUNT: 1,204 CONTAINERS. COUNT: 1,204. COUNT: 1,203.",
-          "RECOUNT."
-        ],
-        [
-          "BLOCK B, BACK ROW, SLOT 6: YARD RECORD MISSING. CONTAINER PRESENT. CONTAINER CANNOT BE PRESENT. RECOUNT."
-        ]
-      ]
+      "conversation": "talk.stacks.tally"
     },
     {
       "id": "gull1",
       "name": "GULL",
-      "talk": [
-        [
-          "(The gull looks at you, then at the stack under its feet, then screams as if you own it.)"
-        ],
-        [
-          "(It edges along the container roof to keep exactly out of reach.)"
-        ]
-      ]
+      "conversation": "talk.stacks.gull1"
     },
     {
       "id": "gull2",
       "name": "GULL",
-      "talk": [
-        [
-          "(It is guarding the gangway. From whom is not clear. Possibly you.)"
-        ],
-        [
-          "(It steps aside. It steps back. It has made a point.)"
-        ]
-      ]
+      "conversation": "talk.stacks.gull2"
     }
   ],
   "readables": [
@@ -135,7 +74,7 @@
       "id": "notice",
       "name": "PORT AUTHORITY",
       "pages": [
-        "TERMINAL 2 \u00b7 ALL OUTBOUND CARGO PASSES THE THERMAL GATE AT BERTH 4.",
+        "TERMINAL 2 · ALL OUTBOUND CARGO PASSES THE THERMAL GATE AT BERTH 4.",
         "A CONTAINER WARMER THAN ITS LABEL IS HELD FOR INSPECTION. PERSONS FOUND IN CARGO ARE RETURNED TO THEIR REGISTERED ADDRESS. PERSONS WITHOUT ONE ARE RETURNED TO THE REGISTRY."
       ]
     }
@@ -452,7 +391,6 @@
   },
   "companion": {
     "mode": "along",
-    "unlockFlag": "pixel",
     "pet": {
       "prompt": "[E] PET PIXEL",
       "conversations": {

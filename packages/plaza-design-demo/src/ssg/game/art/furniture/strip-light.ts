@@ -1,8 +1,8 @@
 /** Ceiling fixture and light cone. Its flicker is authored, not chosen by a scene-array index. */
 import {box} from '../core/primitives';
-import type {Element,Field} from '../core/composition';
+import type {AssetDefinition,Field} from '../core/composition';
 const size=(label:string,value:number):Field=>({kind:'number',label,default:value,min:1,max:2000,step:1});
-export const stripLightElement:Element={type:'furniture.strip-light',version:1,label:'Ceiling strip light',category:'electronics',libraryUse:'reusable',coordinates:'world',parts:['backdrop'],
+export const stripLightElement:AssetDefinition={type:'furniture.strip-light',version:1,label:'Ceiling strip light',category:'electronics',libraryUse:'reusable',coordinates:'world',parts:['backdrop'],
  fields:{length:size('Tube length',60),drop:size('Light cone drop',158),spread:size('Light cone spread',220),flicker:{kind:'boolean',label:'Failing tube',default:false}},
  bounds:p=>({x:-Math.max(Number(p.length),Number(p.spread))/2,h:2,w:Math.max(Number(p.length),Number(p.spread)),tall:Number(p.drop)+2}),
  anchors:()=>({origin:{x:0,h:0,role:'origin'}}),

@@ -1,5 +1,6 @@
+import {mountConversationLibrary,type ConversationSelection} from './conversation-library';
+import {mountChunkConnections} from './chunk-connections';
 import {sequenceCommandTargets} from '../runtime/sequence-commands';
-import {mountWorldCompositionAuthoring} from './world-composition-authoring';
 import {compileGameWorld} from '../world/compiled-world';
 import {validateWorldCompositions} from '../world/compositions';
 import {mountFlowAuthoring} from './flow-authoring';
@@ -9,16 +10,17 @@ import {validateBackdrop} from '../world/backdrops';
 import {withSharedState} from '../engine/gameplay/shared-state';
 import {validateSharedState,validateGameplay} from '../engine/gameplay/validation';
 import {validationSnapshot} from './validation-snapshot';
-import {mountOpeningAuthoring} from './opening-authoring';
-import {mountSharedGameplay} from './shared-gameplay-authoring';
-import {validateCompanionGameplay} from '../engine/gameplay/companion-conversations';
+import {mountStoryLogicAuthoring} from './story-logic-authoring';
+import {mountGameSettingsAuthoring} from './game-settings-authoring';
+import {mountStartingStateAuthoring} from './starting-state-authoring';
+import {mountWorldVariableAuthoring} from './world-variable-authoring';
+import {validateCompanionGameplay,validateCompanionBindings} from '../engine/gameplay/companion-conversations';
 import {pendingOpeningStory} from './pending-opening';
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {mountNetworkAuthoring} from './network-authoring';
 import {pendingRegistry} from './pending-registry';
 import {validatePendingFixtures} from './pending-fixtures';
-import {createAuthoredScene,mountSceneCatalogue,sceneCreationBlocked,scenePlaces} from './scene-catalogue-authoring';
-import {mountDistrictAuthoring} from './district-authoring';
+import {createAuthoredScene,removeAuthoredScene,authoredSceneIds,sceneCreationBlocked,scenePlaces} from './scene-catalogue-authoring';
 import {type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
 import {sceneCatalogueProjection} from './scene-catalogue-projection';
 import {mountDeviceAuthoring} from './device-authoring';
@@ -27,21 +29,17 @@ import {pendingScene} from './pending-scene';
 import {createLineSystem} from '../world/transport/line';
 import {validateMetroSource,validateMetroLocks} from '../world/transport/metro-source';
 import {validatePendingCity,createPendingCity} from './pending-city';
-import {mountCityAuthoring} from './city-authoring';
-import {mountZoneGraphAuthoring} from './zone-graph-authoring';
 import {placeFrom,validateZoneGraph} from '../world/zone-graph';
 import {zoneName} from './zone-graph-context';
-import {validateBotReactions} from '../engine/gameplay/bot-conversations';
+import {validateBotReactions,validateBotGameplay,validateBotConversationBindings} from '../engine/gameplay/bot-conversations';
 import {validatePendingRules} from './pending-rules';
-import {mountCompanionSourceAuthoring} from './companion-source-authoring';
-import {mountCritterReactionAuthoring} from './critter-reaction-authoring';
+import {validateCritterReactions,validateCritterGameplay,validateCritterConversations} from '../engine/gameplay/critter-reactions';
 import {mountReviewStationsAuthoring} from './review-stations-authoring';
-import {mountBotReactionAuthoring} from './bot-reaction-authoring';
 import {mountPlayProfileAuthoring} from './play-profile-authoring';
 import {validatePendingPlayProfiles} from './play-profile-source';
 import {manifestDemoScene,validateManifestScene,validateManifestGameplay,validateManifestComposition,validateManifestSources} from '../scenes/demo-manifest';
 import {nativeGameplayScene,nativeGameplayScenes} from './native-gameplay-scenes';
-import {pendingDestinations,validatePendingSceneCatalogue} from './pending-destinations';
+import {pendingDestinations} from './pending-destinations';
 import {validateDeclaredDestinations} from '../engine/gameplay/declared-scene';
 import {gameplayScenes,gameplayScene,authoredDocumentIds} from './gameplay-scenes';
 
@@ -50,17 +48,17 @@ import {mountRegisteredGameplay} from './registered-gameplay';
 import {mountSceneAuthoring} from './scene-authoring';
 
 
-import {validateFixtureMetro,playScenes} from './play-fixtures';
+import {validateFixtureMetro,playScenes} from '../world/checkpoints';
 
 import { mountPlayWorkbench } from './play-workbench';
 
 /** Shared browser entry: local protected source editing or public static snapshot/downloads. */
 
-import { art, type Composition } from '../art';
+import { art, type ChunkDocument } from '../art';
 
 import {mountComposer} from './app';
 import {type ComposerConfig,type EditorDocument,type InspectorSection,type WorkbenchContext,type WorkbenchHandle} from './contracts';
-import type { Instance } from '../art/core/composition';
+import type { AssetInstance } from '../art/core/composition';
 import type { SceneDocument } from '../engine/gameplay/scene-document';
 
 import { createNativePreview } from './native-preview';
@@ -83,7 +81,7 @@ import { mountWorldPanel, type WorldPanelSession } from './world-panel';
 import { createAssetPreview } from './asset-preview';
 
 import { mountCharacterWorkbench } from './character-workbench';
-import type { PlayFixtures } from './play-fixtures';
+import type { PlayFixtures } from '../world/checkpoints';
 import { mountStyleFrames, type StyleFrameSession } from './style-frames';
 
 import { mountVehicleWorkbench } from './vehicle-workbench';
@@ -107,13 +105,14 @@ import { applyPeople, validatePeople } from '../art/characters/people-source';
 import { validatePresets } from './kit-presets';
 import { mountPeopleAuthoring } from './people-authoring';
 import { validateStoryboard } from './storyboard';
+import {storyboardLinks} from './storyboard-links';
 import { mountStoryboard, type StoryboardSession } from './storyboard-workbench';
 
 
 
 /** Play context for a proposal: every document as is, except the base scene's composition, which is the proposal's. */
 function asProposal(context: WorkbenchContext, p: { id: string; base: string }): WorkbenchContext {
-  const swap = (docs: EditorDocument[]) => { const own = docs.find(d => d.id === p.id); return own ? docs.map(d => d.id === p.base ? { ...d, value: { ...(own.value as Composition), scene: p.base } } : d) : docs; };
+  const swap = (docs: EditorDocument[]) => { const own = docs.find(d => d.id === p.id); return own ? docs.map(d => d.id === p.base ? { ...d, value: { ...(own.value as ChunkDocument), scene: p.base } } : d) : docs; };
   return Object.defineProperty({ ...context }, 'documents', { get: () => swap(context.documents), enumerable: true });
 }
 
@@ -152,6 +151,7 @@ async function start() {
 
   const mapSession: WorldPanelSession = {};
 
+  const conversationSelection:ConversationSelection={document:'companion-gameplay',conversation:''};
   const deviceSelection:{scene?:string;device?:string;noun?:string;group?:string}={},wireSelection:{scene?:string}={};
   const playSelection:{fixture?:string;device?:string;scene?:string}={},previewOnly=new Set<string>();
 
@@ -176,7 +176,7 @@ async function start() {
       // Play's starting states are the scene's saved world states. A proposal uses its base scene's.
       list(scene, documents) {
         const fixtures = (documents.find(d => d.id === 'play-fixtures')?.value as PlayFixtures | undefined)?.fixtures ?? [], own = proposalScene(scene)?.base ?? scene;
-        return fixtures.filter(f => f.scene === own).map(f => ({ id: f.id, name: f.name, environment: { day: f.day, minute: f.minute, seed: f.seed, weather: f.weather, flags: JSON.stringify(f.flags) } }));
+        return fixtures.filter(f => !scene||f.scene === own).map(f => ({ id: f.id, name: f.name,checkpoint:f, environment: { day: f.day, minute: f.minute, seed: f.seed, weather: f.weather, flags: JSON.stringify(f.flags),tokens:f.tokens } }));
       },
       selected(scene, documents) { const own = proposalScene(scene)?.base ?? scene; if (previewOnly.has(own)) return ''; const ids = this.list(scene, documents).map(s => s.id); return playSelection.fixture && ids.includes(playSelection.fixture) ? playSelection.fixture : ids[0] ?? ''; },
       select(scene, id) { const own = proposalScene(scene)?.base ?? scene; if (id) { previewOnly.delete(own); playSelection.fixture = id; } else previewOnly.add(own); },
@@ -203,28 +203,34 @@ async function start() {
     // Projected authored.* children are covered by their authored-scenes source owner.
     validationInputs: documents => documents.filter(d => !proposalScene(d.id) && !d.id.startsWith('authored.')).flatMap(d => [d.id, d.kind, d.value]),
     // Scenes validate against the pending world/state-owners.json, as Save and Play do.
+    validatePlacement(composition,documents){
+      const snapshot=validationSnapshot(documents),scenes=pendingRegistry(snapshot),scene=scenes[composition.scene];
+      // Reuse the world compiler and its registered anchors without rebuilding every scene per pointer sample.
+      if(scene)compileGameWorld({...scenes,[composition.scene]:{...scene,artwork:composition}},snapshot);
+    },
     validateDocument(document,documents) {return withSharedState(documents.find(d=>d.id==='state-owners')?.value,()=>{
       if(document.id.startsWith('backdrop-')){validateBackdrop(document.value,document.id.slice(9));return;}
       if(document.id==='state-owners'){validateSharedState(document.value);for(const d of documents)if(d.kind==='gameplay'&&d.id!=='state-owners'&&(d.value as {sharedState?:unknown})?.sharedState!==undefined)validateGameplay(d.value);pendingRegistry(validationSnapshot(documents));return;}
+      if(document.id==='critter-gameplay'||document.id==='critter-reactions'){const values=validationSnapshot(documents);validateCritterConversations(validateCritterReactions(values.get('critter-reactions')),validateCritterGameplay(values.get('critter-gameplay')));return;}
+      if(document.id==='bot-gameplay'||document.id==='bot-reactions'){const values=validationSnapshot(documents);validateBotConversationBindings(validateBotReactions(values.get('bot-reactions')),validateBotGameplay(values.get('bot-gameplay')));pendingRegistry(values);return;}
       if(document.id==='companion-gameplay'){validateCompanionGameplay(document.value);pendingRegistry(validationSnapshot(documents));return;}
       if(document.id==='opening-story'){const values=validationSnapshot(documents);pendingOpeningStory(values);return;}
       if(document.id==='network'){const values=validationSnapshot(documents);validatePendingNetwork(values,pendingRegistry(values));return;}
-      if(document.id==='authored-scenes'){validatePendingSceneCatalogue(document.value,validationSnapshot(documents));return;}
+      if(document.id==='authored-scenes'){pendingRegistry(validationSnapshot(documents));return;}
       if(document.id.startsWith('authored.'))return; // The source owner validates all projected documents and references together.
-      if(document.kind==='devices'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value},pendingNetworkContext(validationSnapshot(documents)));}
+      if(document.kind==='devices'){const id=deviceSceneIds.find(id=>deviceDocumentId(id)===document.id);if(!id)throw new Error('Unknown device document');pendingScene(id,documents.find(d=>d.id===id)!.value,{devices:document.value,sceneDocument:documents.find(d=>d.id===deviceSourceIdentity(id).scene)!.value,gameplay:documents.find(d=>d.id===deviceSourceIdentity(id).gameplay)!.value,sharedState:documents.find(d=>d.id==='state-owners')?.value},pendingNetworkContext(validationSnapshot(documents)));}
       if(document.kind==='profiles'){if(document.id!=='play-profiles')throw new Error('Unsupported profiles document');validatePendingPlayProfiles(document.value,validationSnapshot(documents));}
       if(document.kind==='presets'){if(document.id!=='kit-presets')throw new Error('Unsupported presets document');validatePresets(document.value,art);}
       if(document.kind==='people'){if(document.id!=='people')throw new Error('Unsupported people document');validatePeople(document.value);}
-      if(document.kind==='storyboard'){if(document.id!=='storyboard')throw new Error('Unsupported storyboard document');validateStoryboard(document.value,new Set(documents.filter(d=>d.kind==='composition').map(d=>(d.value as import('../art').Composition).scene)));}
-      if(document.id==='world-compositions'){validateWorldCompositions(document.value);return;}
-      if(document.id==='zone-graph'){validateZoneGraph(document.value);return;} // its seams against the zones: listed in World â€º Zones, enforced on Save
+      if(document.kind==='storyboard'){if(document.id!=='storyboard')throw new Error('Unsupported storyboard document');validateStoryboard(document.value,new Set(documents.filter(d=>d.kind==='composition').map(d=>(d.value as import('../art').ChunkDocument).scene)),storyboardLinks(validationSnapshot(documents)).links);}
+      if(document.id==='world-compositions'){validateWorldCompositions(document.value);pendingRegistry(validationSnapshot(documents));return;}
+      if(document.id==='zone-graph'){validateZoneGraph(document.value);pendingRegistry(validationSnapshot(documents));return;} // Contextual connections and protected Save validate seams against their chunks.
       if(document.kind==='transport'){if(document.id!=='metro-source')throw new Error('Unsupported transport source');validateMetroLocks(validateMetroSource(document.value),(validationSnapshot(documents).get('city-source') as {LOCKS?:Record<string,unknown>}|undefined)?.LOCKS);}
       if(document.kind==='city')validatePendingCity(document.value,validationSnapshot(documents));
       if(document.kind==='rules')validatePendingRules(document.id,document.value,validationSnapshot(documents));
-      if(document.kind==='conversations'){if(document.id!=='bot-reactions')throw new Error('Unsupported conversation library');validateBotReactions(document.value);}
       if(document.id==='demo-manifest-scene'){const declared=validateManifestSources(documents.find(d=>d.id==='demo-manifest')!.value,document.value,documents.find(d=>d.id==='demo-manifest-gameplay')!.value);validateDeclaredDestinations(declared.scene,pendingDestinations(validationSnapshot(documents)));}
 
-      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=validationSnapshot(documents),identity=deviceSourceIdentity(s.id),network=pendingNetworkContext(values),scene=pendingScene(s.id,values.get(identity.composition),{sceneDocument:document.value,gameplay,devices:values.get(identity.devices)},network);s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);}
+      if(document.kind==='scene'){const s=gameplayScene(document.id),gameplay=s.validateGameplay(documents.find(d=>d.id===s.gameplayId)!.value);if((document.value as import('../engine/gameplay/scene-document').SceneDocument).nativeTargets!==undefined){const values=validationSnapshot(documents),network=pendingNetworkContext(values),scene=pendingRegistry(values)[s.id];s.validateScene(document.value,gameplay,{phase:'assembled',data:scene.data!,network});}else s.validateScene(document.value,gameplay);validateCompanionBindings((document.value as SceneDocument).companion,gameplay,validateCompanionGameplay(documents.find(d=>d.id==='companion-gameplay')!.value));}
 
       if(document.kind==='fixtures'){if(document.id!=='play-fixtures')throw new Error('Unsupported fixture document');const snapshot=validationSnapshot(documents);validateFixtureMetro(validatePendingFixtures(document.value,snapshot),createPendingCity(snapshot.get('city-source'),snapshot));}
 
@@ -232,25 +238,18 @@ async function start() {
       if (document.kind === 'gameplay') (nativeGameplayScene(document.id)??gameplayScene(document.id)).validateGameplay(document.value);
     });},
 
-    newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene,presets:[{value:'shuttle',label:'Working shuttle'},{value:'cart',label:'Curve and drop cart'}] },
+    newScene: { places: scenePlaces, blocked: sceneCreationBlocked, create: createAuthoredScene,removable:authoredSceneIds,remove:removeAuthoredScene,presets:[{value:'shuttle',label:'Working shuttle'},{value:'cart',label:'Curve and drop cart'}] },
     workbenches: [
-      {id:'opening-story',area:'world',label:'Game opening',title:'How a new game starts: the story\'s phases, cards, triggers, each scene\'s part in them, contacts and the end card',authoring:true,documentDependent:true,documentIds:['opening-story','contacts','end-card'],primaryDocumentId:'opening-story',mount:mountOpeningAuthoring},
-      {id:'play-profiles',area:'world',label:'Play profiles',title:'Ways of playing: the full game, the harbor shift and the Test District',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
-      {id:'state-owners',area:'world',layout:'sections',label:'Shared state',title:'State owners shared by several scenes (the night shift): declared once, used through each scene\'s gameplay',authoring:true,documentDependent:true,primaryDocumentId:'state-owners',mount:(host,context)=>mountSharedGameplay(host,context,'state-owners',validateSharedState,publicEditor)},
-      {id:'companion-gameplay',area:'world',layout:'sections',label:'Companion dialogue',title:'Shared companion conversations',authoring:true,documentDependent:true,primaryDocumentId:'companion-gameplay',mount:(host,context)=>mountSharedGameplay(host,context,'companion-gameplay',validateCompanionGameplay,publicEditor)},
+      {id:'conversations',area:'library',label:'Conversations',title:'Conversations · shared and character graphs',authoring:true,documentDependent:true,get primaryDocumentId(){return conversationSelection.document;},selectConversation(document,conversation){conversationSelection.document=document;conversationSelection.conversation=conversation;},mount:(host,context)=>mountConversationLibrary(host,context,conversationSelection,publicEditor)},
+      {id:'game-settings',area:'world',label:'Game settings',title:'Launch, player defaults, guidance/time, contacts and ending',authoring:true,documentDependent:true,mount:mountGameSettingsAuthoring},
+      {id:'story-logic',area:'library',label:'Story logic',title:'Global story commands, phase policies, cards and triggers',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountStoryLogicAuthoring},
+      {id:'play-profiles',area:'labs',label:'Test configurations',title:'Run configuration and isolated storage for campaign, Harbor and Test District testing',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
+      {id:'world-variables',area:'world',layout:'sections',label:'World variables',title:'Variable declarations, storage bindings, authored uses and checkpoint overrides',authoring:true,documentDependent:true,mount:mountWorldVariableAuthoring},
       {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
-      {id:'scene-catalogue',area:'world',label:'Scenes',title:'Create and manage authored scenes',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-fixtures','city-source'],primaryDocumentId:'authored-scenes',mount:mountSceneCatalogue},
       {id:'scene-connections',area:'scene',mode:'wiring',label:'Starting cables',title:'Authored scene connections',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){wireSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,wireSelection,true,()=>pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))))},
-      {id:'districts',area:'world',label:'Districts',title:'Districts Â· create, rename, place on the map and remove',authoring:true,documentDependent:true,documentIds:['city-source'],primaryDocumentId:'city-source',layout:'sections',mount:mountDistrictAuthoring},
-      {id:'city-source',area:'world',layout:'sections',label:'City & travel',title:'City places, discovery and transport',authoring:true,documentDependent:true,primaryDocumentId:'city-source',mount:mountCityAuthoring},
-      {id:'companion',area:'world',layout:'sections',label:'Companion',title:'The companion: look, unlock flag, follow modes, speaker and greeting',authoring:true,documentDependent:true,documentIds:['companion','companion-gameplay'],primaryDocumentId:'companion',mount:mountCompanionSourceAuthoring},
-      {id:'critter-reactions',area:'world',label:'Critter dialogue',title:'Cat and pigeon reactions',authoring:true,documentDependent:true,documentIds:['critter-reactions'],primaryDocumentId:'critter-reactions',mount:mountCritterReactionAuthoring},
-      {id:'world-compositions',area:'world',label:'Compositions',title:'World compositions and chunk groups',authoring:true,documentDependent:true,primaryDocumentId:'world-compositions',mount:mountWorldCompositionAuthoring},
-      {id:'zone-graph',area:'world',label:'Zones',title:'Zones and seams: which scenes join with no cut, and where each lies from the other',authoring:true,documentDependent:true,primaryDocumentId:'zone-graph',mount:mountZoneGraphAuthoring},
-      {id:'review-stations',area:'world',layout:'sections',label:'Review stations',title:'Review navigator: bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
-      {id:'bot-reactions',area:'world',label:'Bot dialogue',title:'Robot reactions Â· shared conversations',authoring:true,documentDependent:true,documentIds:[...deviceSceneIds.map(deviceDocumentId),'metro-source','city-source','bot-reactions'],mount:mountBotReactionAuthoring},
+      {id:'review-stations',area:'labs',layout:'sections',label:'Review shortcuts',title:'Test District bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab Â· the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},
-      {id:'scene-logic',area:'scene',mode:'logic',label:'Interactions & story',title:'Scene logic: interactions, objectives, dialogue and presentation',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,'authored-scenes'],
+      {id:'scene-logic',area:'scene',mode:'logic',label:'Interactions & story',title:'Scene logic: interactions, objectives, dialogue and presentation',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,'authored-scenes','bot-reactions','bot-gameplay','critter-reactions','critter-gameplay','companion','companion-gameplay'],
         supports:(scene,documents)=>{try{gameplayScene(scene,documents);return !scene.startsWith('demo-')||scene==='demo-manifest';}catch{return false;}},showScene(scene,documents){if(logicSelection.scene!==scene)logicSelection.use=undefined;logicSelection.scene=scene;logicSelection.sourceId=gameplayScene(scene,documents).prefix+'-scene';},
         unsupported:'This sceneâ€™s interactions, objectives and dialogue are still defined in code. They become editable once the scene is migrated to scene documents.',
         get primaryDocumentId(){return logicSelection.sourceId??'downtown-scene';},mount:(host,context)=>mountSceneAuthoring(host,context,logicSelection)},
@@ -267,7 +266,7 @@ async function start() {
           if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
           return { file, text: snapshot[file] };
         } } : {}), dispose = mountEventInspector(graph, { documents: context.documents, network:pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))), initialScene: context.scene,
-          onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as Composition).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
+          onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as ChunkDocument).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
           onOpenSource: reference => { void viewer.open(reference); },
         }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
       } },
@@ -308,28 +307,28 @@ async function start() {
 
     inspector: (scene, instance, documents) => scene.startsWith('backdrop-') ? (instance?[]:[backdropInspector(scene)]) : inspectorSections(scene, instance, documents),
     // the scenes one seam away (world/zone-graph.json), which the Scene preview draws beside the open one
-    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = compileGameWorld(pendingRegistry(new Map(documents.map(d=>[d.id,d.value]))),new Map(documents.map(d=>[d.id,d.value]))); } catch { return []; } const values = new Map(documents.map(d => [d.id, d.value])); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
+    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = compileGameWorld(pendingRegistry(validationSnapshot(documents)),validationSnapshot(documents)); } catch { return []; } const values = validationSnapshot(documents); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
 
-    worldPanel(panel, openScene, documents, scene) {
+    worldPanel(panel, openScene, documents, scene,context) {
 
-      const compositions = Object.fromEntries(documents.filter(doc => doc.kind === 'composition').map(doc => [doc.id, doc.value as Composition]));
+      const compositions = Object.fromEntries(documents.filter(doc => doc.kind === 'composition').map(doc => [doc.id, doc.value as ChunkDocument]));
 
       const timelines = sequenceProgram(compositions).sequences;
 
-      const snapshot=new Map(documents.map(d=>[d.id,d.value])),registry=pendingRegistry(snapshot);
+      const snapshot=validationSnapshot(documents),registry=pendingRegistry(snapshot);
       const refs = Object.fromEntries(Object.entries(compositions).filter(([, doc]) => Object.prototype.hasOwnProperty.call(registry, doc.scene)).map(([id, doc]) => [doc.scene, id]));
 
       const cityModel=createPendingCity(snapshot.get('city-source'),snapshot);
       const world = snapshotWorld(refs, timelines.flatMap(sequence => sequence.handoff ? [{ id: sequence.id, ...sequence.handoff }] : []),cityModel,registry);
 
-      return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines,world:cityModel,scenes:registry }), openScene, mapSession, scene,cityModel);
+      return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines,world:cityModel,scenes:registry }), openScene,context, mapSession, scene,cityModel);
 
     },
 
     motionTracks: createSequenceValidationContext(art,{}).motionTracks,clips:createSequenceValidationContext(art,{}).clips, timelineContext: frameTimelineContext,
 
     commandTargetsFor:documents=>sequenceCommandTargets(pendingRegistry(validationSnapshot(documents))),
-    destinationsFor:documents=>pendingDestinations(new Map(documents.map(d=>[d.id,d.value]))),
+    destinationsFor:documents=>pendingDestinations(validationSnapshot(documents)),
     destinations: Object.fromEntries(Object.entries(SCENES).map(([scene, def]) => [scene, def.exits.map(exit => exit.id)])),
 
     initialEnvironment,
@@ -363,36 +362,32 @@ async function start() {
 }
 
 /** Which scene-logic entries and devices point at a piece of artwork (see the Scene inspector). */
-function artworkLogic(scene: SceneDocument, instance: Instance) {
+function artworkLogic(scene: SceneDocument, instance: AssetInstance,targetArtwork?:Readonly<Record<string,string>>) {
   const keys = new Set<string>(), devices = new Set<string>(), prefix: Record<string, string> = { uses: 'use', readables: 'readable', exits: 'exit', rests: 'rest', people: 'person' };
-  for (const value of Object.values(instance.bindings ?? {})) {
-    const [kind, id] = typeof value === 'string' ? value.split('.') : [];
-    if (kind === 'actor' && id) { keys.add('actor:' + id); if (scene.people?.some(p => p.id === id)) keys.add('person:' + id); }
-    if (kind === 'device' && id) devices.add(id);
-  }
-  for (const actor of scene.actors ?? []) if (actor.instance === instance.id) { keys.add('actor:' + actor.id); if (scene.people?.some(p => p.id === actor.id)) keys.add('person:' + actor.id); }
+  for (const actor of scene.actors ?? []) if (actor.instance === instance.id) { keys.add('actor:' + actor.id); if (scene.people?.some(p => p.id === actor.target)) keys.add('person:' + actor.target); }
   for (const [group, rows] of Object.entries(scene.manifest ?? {})) if ((prefix[group] || group === 'devices') && rows && typeof rows === 'object') for (const [id, target] of Object.entries(rows as Record<string, unknown>)) if ((typeof target === 'string' ? target : (target as { instance?: string } | undefined)?.instance) === instance.id) {
     if (group === 'devices') devices.add(id); else keys.add(prefix[group] + ':' + id);
   }
   scene.cues?.forEach((cue, i) => { if (cue.target === instance.id) keys.add('cue:' + i); });
+  for(const target of scene.nativeTargets??[])if(targetArtwork?.[target.anchor]===instance.id)keys.add('target:'+target.id);
   return { keys: [...keys], devices: [...devices] };
 }
 /** A selected level barrier's Access tab (barrier-authoring.ts): its rule edits the composition holding it, whatever the scene's logic. */
-function barrierSection(scene: string, instance: Instance, documents: readonly EditorDocument[]): InspectorSection[] {
+function barrierSection(scene: string, instance: AssetInstance, documents: readonly EditorDocument[]): InspectorSection[] {
   if (instance.type !== 'level.barrier') return [];
-  const holds = (nodes: readonly Instance[]): boolean => nodes.some(n => n.id === instance.id || holds(n.children ?? []));
-  const doc = documents.find(d => d.kind === 'composition' && (d.value as Composition).scene === scene && holds((d.value as Composition).instances));
+  const holds = (nodes: readonly AssetInstance[]): boolean => nodes.some(n => n.id === instance.id || holds(n.children ?? []));
+  const doc = documents.find(d => d.kind === 'composition' && (d.value as ChunkDocument).scene === scene && holds((d.value as ChunkDocument).instances));
   return doc ? [{ id: 'access', label: 'Access', primary: true, title: 'When this barrier opens: its rule, Test the rule, phase rules and checks', mount: (host, context) => mountBarrierAuthoring(host, context, { scene, document: doc.id, instance: instance.id }) }] : [];
 }
-function inspectorSections(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
+function inspectorSections(scene: string, instance: AssetInstance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
   const barrier = instance ? barrierSection(scene, instance, documents) : [];
-  const owner=instance?.type==='vehicle.frame'?documents.find(d=>d.kind==='composition'&&(d.value as Composition).scene===scene):undefined;
+  const owner=instance?.type==='vehicle.frame'?documents.find(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===scene):undefined;
   const vehicle:InspectorSection[]=owner?[{id:'vehicle',label:'Vehicle',primary:true,title:'Frame, doors, cars, route and berths',mount:(host,context)=>mountVehicleAuthoring(host,context,owner.id,instance!.id,scene)}]:[];
-  const flowOwner=instance?.type==='character.flow'?documents.find(d=>d.kind==='composition'&&(d.value as Composition).scene===scene):undefined;
+  const flowOwner=instance?.type==='character.flow'?documents.find(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===scene):undefined;
   const flows:InspectorSection[]=flowOwner?[{id:'flow',label:'Passengers',primary:true,mount:(host,context)=>mountFlowAuthoring(host,context,flowOwner.id,instance!.id)}]:[];
-  return [...flows,...vehicle,...barrier, ...logicSections(scene, instance, documents)];
+  return [...flows,...vehicle,...barrier,...(!instance?[{id:'starting-state',label:'Starting state',mount:mountStartingStateAuthoring}]:[]),...(!instance&&!scene.startsWith('sequence-')?[{id:'chunk-connections',label:'Connections',mount:mountChunkConnections}]:[]), ...logicSections(scene, instance, documents)];
 }
-function logicSections(scene: string, instance: Instance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
+function logicSections(scene: string, instance: AssetInstance | undefined, documents: readonly EditorDocument[]): InspectorSection[] {
   if(scene==='sequence-opening'||scene==='sequence-title')return instance?[]:[{id:'world-sequence',label:'World sequence',mount(host){const note=document.createElement('p');note.className='muted';note.textContent='Edit timing and camera below. Select visible objects to edit their actual source without leaving the sequence.';host.replaceChildren(note);return()=>host.replaceChildren();}}];
   let entry: ReturnType<typeof gameplayScene> | undefined; try { entry = gameplayScene(scene, documents); } catch { entry = undefined; }
   const editable = !!entry && (!scene.startsWith('demo-') || scene === 'demo-manifest');
@@ -401,7 +396,9 @@ function logicSections(scene: string, instance: Instance | undefined, documents:
   if (!editable || !entry) return [inCode(instance ? 'This sceneâ€™s interactions are still defined in code, so its artwork has no editable behaviour yet.' : 'This sceneâ€™s arrival, goals and interactions are still defined in code. Its artwork can be arranged here.')];
   if (!instance) return [{ id: 'scene', label: 'Scene', title: 'Arrival, environment, goals and story clock', mount: (host, context) => mountSceneAuthoring(host, context, { scene, fixed: true, focus: { groups: ['Scene', 'Objectives'], empty: 'This scene has no scene-wide settings to edit.' } }) }];
   const source = documents.find(d => d.id === entry!.prefix + '-scene')?.value as SceneDocument | undefined;
-  const linked = source ? artworkLogic(source, instance) : { keys: [], devices: [] };
+  let targetArtwork:Readonly<Record<string,string>>|undefined;
+  if(source?.nativeTargets?.length)targetArtwork=pendingRegistry(validationSnapshot(documents))[scene]?.nativeTargetBindings?.artwork;
+  const linked = source ? artworkLogic(source, instance,targetArtwork) : { keys: [], devices: [] };
   const sections: InspectorSection[] = [{ id: 'behaviour', label: 'Behaviour', title: 'What happens when the player uses, talks to or reads this', mount: (host, context) => mountSceneAuthoring(host, context, { scene, fixed: true, focus: { only: linked.keys, empty: `Nothing the player can do involves ${instance.id} yet. Interactions are bound to artwork under Logic â€º Interactions & story â€º Content & bindings.` } }) }];
   const devices = scene !== 'demo-manifest' && documents.some(d => d.id === deviceDocumentId(scene)) ? linked.devices : [];
   for (const device of devices) sections.push(

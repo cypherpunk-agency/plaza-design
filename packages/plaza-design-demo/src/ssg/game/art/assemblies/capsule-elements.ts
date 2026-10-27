@@ -1,6 +1,6 @@
 /** Individually editable Capsule 7B artwork, using the original procedural kernels. */
 import { createCapsuleInteriorArtwork, type ArtworkInputs, type CapsuleVisualState } from './capsule-interior';
-import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
+import type { Anchor, Bounds, AssetDefinition, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 const num = (label: string, value: number, min = -10000): Field => ({ kind: 'number', label, default: value, min, max: 10000, step: 1 });
 const boolean = (label: string): Field => ({ kind: 'boolean', label, default: false });
@@ -20,13 +20,13 @@ function kernel(L: ArtworkInputs['L'], width = 520, x = 0, facing = 90, door = 0
   return result;
 }
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
-function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
+function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): AssetDefinition {
   // Plug cables and the window's floor patch use other source instances' positions.
   return { type: 'capsule.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', libraryUse:!['marker','neighbors','shell','window'].includes(id)?'reusable':undefined, fields, visualFields: capsuleVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x, v, p, s, _pass, at) => draw(x, v, p, s, at) };
 }
 const visual = (state: Properties) => state as unknown as CapsuleVisualState;
 const box = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });
-export const capsuleElements: Element[] = [
+export const capsuleElements: AssetDefinition[] = [
   { ...element('marker', 'Capsule gameplay marker', 'markers', { role: text('Role'), width: num('Width', 0, 0) }, p => ({ x: -4, h: 8, w: Math.max(8, n(p, 'width')), tall: 8 }), () => {}), visualFields: {}, parts: [] },
   element('neighbors', 'Neighboring capsule cells', 'architecture', { width: num('Room gap width', 520, 1), ceiling: num('Cell height', 104, 1) }, p => box(n(p, 'width'), n(p, 'ceiling')),
     (x, v, p, _s, at) => kernel(layout(), n(p, 'width'), at.x, undefined, undefined, n(p, 'ceiling')).drawTower(x, { ...raised(v, at.h), sx: wx => v.sx(at.x + wx) })),

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {keyframeState,removeKeyAtPlayhead} from '../../src/ssg/game/authoring/keyframe-control';
+import type {Sequence,Target} from '../../src/ssg/game/art/core/timeline';
+const target:Target={kind:'camera',property:'h'};
+const sequence:Sequence={id:'test',composition:'test',duration:10,shots:[],tracks:[{id:'height',target,keys:[{time:0,value:0},{time:5,value:20},{time:10,value:0}]}],text:[],fades:[],beats:[]};
+assert.equal(keyframeState(sequence,target,2).previous?.time,0);
+assert.equal(keyframeState(sequence,target,2).next?.time,5);
+assert.equal(keyframeState(sequence,target,5+1e-7).index,1,'rounded playhead still identifies its key');
+assert.equal(keyframeState(sequence,target,0).previous,undefined);
+assert.equal(keyframeState(sequence,target,10).next,undefined);
+removeKeyAtPlayhead(sequence,target,2);assert.equal(sequence.tracks[0].keys.length,3,'between keys deletion is inert');
+removeKeyAtPlayhead(sequence,target,5);assert.deepEqual(sequence.tracks[0].keys.map(k=>k.time),[0,10]);
+sequence.tracks[0].motion={type:'formula',props:{}};removeKeyAtPlayhead(sequence,target,0);assert.equal(sequence.tracks[0].keys.length,2,'procedural keys are protected');
+delete sequence.tracks[0].motion;removeKeyAtPlayhead(sequence,target,0);removeKeyAtPlayhead(sequence,target,10);assert.equal(sequence.tracks.length,0,'last deletion removes empty track');
+console.log('Inline keyframes: playhead precision, neighboring keys, deletion and formula protection PASS');

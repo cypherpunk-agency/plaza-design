@@ -1,5 +1,5 @@
 /** Independently authored market kit pieces. Vendor frames are explicit validated snapshots. */
-import type {Bounds,BoundsContext,Element,Field,Properties} from '../core/composition';
+import type {Bounds,BoundsContext,AssetDefinition,Field,Properties} from '../core/composition';
 import type {PreparedCharacter} from '../../runtime/characters';
 import {validatePreparedCharacter} from '../characters/prepared';
 import {drawMarketLaundry,drawMarketBulbs,drawMarketRules,drawMarketEndWall,drawNoodleMenu,drawSaleScreen} from './market-details';
@@ -11,9 +11,9 @@ const n=(label:string,defaultValue:number):Field=>({kind:'number',label,default:
 const str=(label:string,defaultValue=''):Field=>({kind:'string',label,default:defaultValue});
 const list=(label:string,values:string[]):Field=>({kind:'json',label,default:values,validate:v=>{if(!Array.isArray(v)||v.some(q=>typeof q!=='string'))throw new Error('Expected string list');}});
 const raised=(v:import('../core/view').View,h:number)=>h===0?v:({...v,gy:v.gy-h,y:(value:number)=>v.y(value+h)});
-const el=(id:string,fields:Record<string,Field>,draw:Element['draw'],bounds:Element['bounds']=(p)=>({x:0,h:Number(p.height??100),w:Number(p.width??100),tall:Number(p.height??100)})):Element=>({type:'market.'+id,version:1,label:id,category:'Market',bindingIdentity:'presentation',coordinates:'world',libraryUse:!['marker','far','wet-floor','stall','booth','ticker'].includes(id)?'reusable':undefined,fields,parts:['backdrop'],bounds,anchors:p=>({origin:{x:0,h:0,role:'origin'},center:{x:Number(p.width??0)/2,h:0,role:'origin'}}),draw});
+const el=(id:string,fields:Record<string,Field>,draw:AssetDefinition['draw'],bounds:AssetDefinition['bounds']=(p)=>({x:0,h:Number(p.height??100),w:Number(p.width??100),tall:Number(p.height??100)})):AssetDefinition=>({type:'market.'+id,version:1,label:id,category:'Market',bindingIdentity:'presentation',coordinates:'world',libraryUse:!['marker','far','wet-floor','stall','booth','ticker'].includes(id)?'reusable':undefined,fields,parts:['backdrop'],bounds,anchors:p=>({origin:{x:0,h:0,role:'origin'},center:{x:Number(p.width??0)/2,h:0,role:'origin'}}),draw});
 const far=towers(51,2600,[30,60],[160,320],.07);
-export const marketElements:Element[]=[
+export const marketElements:AssetDefinition[]=[
 {...el('marker',{role:str('Role'),width:n('Width',2080)},()=>{},()=>({x:-4,h:4,w:8,tall:8})),parts:[]},
 el('far',{},(x,v)=>{const grow=Math.max(0,v.gy-DESIGN_TOP);drawTowers(x,v,far,.25,v.y(0),.08,'#030100',1,Math.round(grow*.8));}),
 el('facade',{width:n('Width',128),seed:n('Seed',300),parallax:n('Parallax',.7),alpha:n('Opacity',.4)},(x,v,p,_s,_pass,at)=>facade(x,raised(v,at.h),{x:at.x,w:Number(p.width),seed:Number(p.seed),parallax:Number(p.parallax),alpha:Number(p.alpha)})),

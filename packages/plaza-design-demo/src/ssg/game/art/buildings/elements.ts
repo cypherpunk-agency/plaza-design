@@ -5,7 +5,7 @@
  * fascia, storey1.., bay0..) let signs, devices, entrances or a custom balcony attach without the kit
  * knowing about them; `frontMasks` (masks.ts) hides the windows behind what is attached.
  */
-import type { Element, Field, Placement, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { addLight } from '../atmosphere/lighting';
 import { adScreen } from '../signage/screens';
@@ -105,7 +105,7 @@ function drawFront(ctx: CanvasRenderingContext2D, v: View, p: Properties, s: Pro
     finally { ctx.restore(); }
 }
 
-export const buildingFrontElement: Element = {
+export const buildingFrontElement: AssetDefinition = {
   type: 'building.front', version: 1, label: 'Building front (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: frontFields, visualFields: { masks: rects('Windows hidden behind attached signs (resolved)'), near: num('The player passes behind its wall edges (level)', 0, 0, 1, 1) },
   bounds: p => { const f = frontSpec(p), top = wallTop(f) + (shapeOf(f).gear.length ? 30 : 0); return { x: -2, h: top, w: f.w + 4, tall: top }; },
@@ -125,7 +125,7 @@ const rowFields: Record<string, Field> = {
 export const rowSpec = (p: Properties): RowSpec => ({ width: Number(p.width), seed: Number(p.seed), storey: Number(p.storey), minHeight: Number(p.minHeight), maxHeight: Math.max(Number(p.minHeight), Number(p.maxHeight)),
   minWidth: Number(p.minWidth), maxWidth: Math.max(Number(p.minWidth), Number(p.maxWidth)), gap: Number(p.gap), low: Number(p.low), skin: p.skin as RowSpec['skin'], lit: Number(p.lit), haze: Number(p.haze), signs: Number(p.signs) });
 
-export const buildingRowElement: Element = {
+export const buildingRowElement: AssetDefinition = {
   type: 'building.row', version: 1, label: 'Building row (kit, distance)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'], fields: rowFields,
   bounds: (p, _s, c) => {
     const par = Number(p.parallax), at = c?.placement, shift = at && c ? c.view.cam * (at.parallax - par) / (at.scale * at.facing) : 0, tall = Number(p.maxHeight) + 40;
@@ -145,7 +145,7 @@ const attachmentBox = (k: Attachment, w: number, h: number) => k === 'ac' ? { x:
   : k === 'escape' ? { x: 0, h: h + 10, w, tall: h + 44 } : k === 'balcony' ? { x: 0, h: 18, w: 46, tall: 20 } : k === 'screen' ? { x: -w / 2 - 4, h: h + 4, w: w + 8, tall: h + 8 }
   : k === 'scanner' ? { x: -3, h: 10, w: 7, tall: 16 } : k === 'conduit' ? { x: -2, h, w: w + 4, tall: h + 10 } : k === 'planter' ? { x: 0, h: 10, w, tall: 10 }
   : { x: -w / 2 - 2, h: w + 18, w: w + 4, tall: w + 18 };
-export const buildingAttachmentElement: Element = {
+export const buildingAttachmentElement: AssetDefinition = {
   type: 'building.attachment', libraryUse: 'reusable', version: 1, label: 'Building attachment (kit)', category: 'architecture', parts: ['backdrop'],
   fields: {
     kind: select('Piece', ATTACHMENTS), width: num('Width', 40, 2, 400, 1, 'units'), height: num('Height (pipe, escape, screen, riser)', 120, 2, 3000, 1, 'units'),
@@ -170,5 +170,5 @@ export const buildingAttachmentElement: Element = {
   },
 };
 
-export const buildingElements: Element[] = [buildingFrontElement, buildingRowElement, buildingAttachmentElement, alleyElement];
+export const buildingElements: AssetDefinition[] = [buildingFrontElement, buildingRowElement, buildingAttachmentElement, alleyElement];
 export { FRONT_DEFAULTS };

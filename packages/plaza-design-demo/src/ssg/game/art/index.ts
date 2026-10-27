@@ -1,3 +1,4 @@
+import {skyElement} from './environment/sky-element';
 import {vehicleFrameElement} from './vehicles/frame';
 import {drinkElement} from './props/drink';
 import {skyTrafficElement} from './environment/sky-traffic-element';
@@ -68,6 +69,7 @@ export const art = new ArtRegistry().register(vehicleFrameElement).register(worl
 for (const element of [...libraryElements, ...capsuleElements, ...downtownElements, ...mothElements, ...cinematicElements, ...stationElements, ...laundromatElements, ...beachElements, ...sandboxElements, ...dockworkElements, ...yardElements, ...warehouseElements, ...harborElements, ...terminalElements, ...metroElements, ...marketElements, ...mallElements, ...trainElements, ...shopElements, ...signKitElements, ...buildingElements, ...districtBuildingElements, siteElement, ...marketInteriors, ...oldqInteriors, ...spireInteriors, ...marketApproach, ...downtownCivicElements, ...downtownHomeInteriors, ...undercityElements, ...fringeElements, ...skyportElements, ...streetElements, spireElement, ...levelElements, ...interiorElements, preparedCharacterElement,preparedActorElement]) art.register(element);
 for (const element of downtownEveryday) art.register(element);
 for (const element of shiftKitElements) art.register(element);
+art.register(skyElement);
 art.register(skyTrafficElement);
 art.register(drinkElement);
 art.register(shelfElement);

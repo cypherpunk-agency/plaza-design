@@ -1,6 +1,6 @@
 /** Moth's apartment catalogue: editable furnishings, devices and independent rig components. */
 import { createMothInteriorArtwork, type ArtworkInputs, type MothLayout, type MothVisualState } from './moth-interior';
-import type { Anchor, Bounds, Element, Field, Placement, Properties } from '../core/composition';
+import type { Anchor, Bounds, AssetDefinition, Field, Placement, Properties } from '../core/composition';
 import type { View } from '../core/view';
 const num = (label: string, value: number, min = -10000): Field => ({ kind: 'number', label, default: value, min, max: 10000, step: 1 });
 const bool = (label: string): Field => ({ kind: 'boolean', label, default: false });
@@ -18,7 +18,7 @@ function kernel(L = layout(), extra: Partial<Omit<ArtworkInputs, 'L'>> = {}) {
   return result;
 }
 type Draw = (ctx: CanvasRenderingContext2D, view: View, props: Properties, state: Properties, at: Required<Placement>) => void;
-function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): Element {
+function element(id: string, label: string, category: string, fields: Record<string, Field>, bounds: (props: Properties) => Bounds, draw: Draw, anchors: (props: Properties) => Record<string, Anchor> = () => ({ origin })): AssetDefinition {
   // Room-frame paintings and desk-relative cable/signal pieces retain their source context.
   return { type: 'moth.' + id, bindingIdentity:'presentation', version: 1, label, category, coordinates: 'world', libraryUse:!['marker','neighbors','shell','desk-signal'].includes(id)?'reusable':undefined, fields, visualFields: mothVisualFields, parts: ['backdrop'], bounds, anchors, draw: (x,v,p,s,_pass,at) => draw(x,v,p,s,at) };
 }
@@ -26,7 +26,7 @@ const visual = (state: Properties) => state as unknown as MothVisualState;
 const box = (w: number, h: number, x = 0): Bounds => ({ x, h, w, tall: h });
 function deskAt(x: number, width: number, height: number) { const L = layout(); L.desk = { x0: x, x1: x + width, h: height }; return L; }
 const width = { width: num('Width', 76, 1) };
-export const mothElements: Element[] = [
+export const mothElements: AssetDefinition[] = [
   { ...element('marker','Moth gameplay marker','markers',{ role: text('Role') },() => box(8,8,-4),() => {}), visualFields: {}, parts: [] },
   element('neighbors','Tenement neighbors','architecture',{ width:num('Room gap width',660,1),ceiling:num('Ceiling',112,1) },p=>box(n(p,'width'),n(p,'ceiling')),(x,v,p,_s,at)=>kernel(undefined,{MOTH_W:n(p,'width'),ceiling:n(p,'ceiling')}).drawBuilding(x,{...raised(v,at.h),sx:wx=>v.sx(at.x+wx)})),
   element('shell','Old tenement walls, bulb and floor','architecture',{ width:num('Width',660,16),ceiling:num('Ceiling',112,1) },p=>box(n(p,'width'),n(p,'ceiling')+12),(x,v,p,s,at)=>kernel(undefined,{MOTH_W:n(p,'width'),ceiling:n(p,'ceiling'),originX:at.x}).drawShell(x,raised(v,at.h),visual(s))),

@@ -1,6 +1,6 @@
 import { createFrame } from './frame';
 /** Viewing shell: typed kernels and existing source compositions share their native renderers. */
-import type {ArtRegistry,Composition}from'../art/core/composition';
+import type {ArtRegistry,ChunkDocument}from'../art/core/composition';
 import type {EditorDocument,PreviewRequest,PreviewResult} from './contracts';
 import{assetInventory,type AssetEntry,type AssetUsage}from'./asset-browser';
 import{createAssetPreview}from'./asset-preview';
@@ -22,7 +22,7 @@ export interface EmbeddedSignageSettings{time:number;minute:number;seed:number;r
 export function embeddedSignageRequest(config:SignageWorkbenchConfig,usage:AssetUsage,s:EmbeddedSignageSettings):PreviewRequest{
  const document=config.documents.find(d=>d.id===usage.document&&d.kind==='composition');if(!document)throw new Error('Missing source composition '+usage.document);
  for(const[key,value]of Object.entries(s.state??{})){const control=nativeStates.controls.find(c=>c.scene===usage.scene&&c.key===key);if(!control||!control.values.includes(value as never))throw new Error('Unsupported signage source light state '+usage.scene+'.'+key);if(key==='nightLight'&&value===true&&s.minute>=360&&s.minute<1080)throw new Error('Night light on preview requires its real 18:00–06:00 window.');}
- return{composition:document.value as Composition,time:s.reduced?0:s.time,reduced:s.reduced,overlays:false,selectedId:usage.instance,environment:{day:1,minute:s.minute,seed:s.seed,weather:s.weather,cameraX:s.cameraX,cameraH:s.cameraH,zoom:1,renderScale:s.zoom,flags:'{}',state:JSON.stringify(s.state??{})}};
+ return{composition:document.value as ChunkDocument,time:s.reduced?0:s.time,reduced:s.reduced,overlays:false,selectedId:usage.instance,environment:{day:1,minute:s.minute,seed:s.seed,weather:s.weather,cameraX:s.cameraX,cameraH:s.cameraH,zoom:1,renderScale:s.zoom,flags:'{}',state:JSON.stringify(s.state??{})}};
 }
 /** Whole-scene mode preserves overlapping artwork, grading, reflections and frame-local lights. */
 export function renderEmbeddedSignage(canvas:HTMLCanvasElement,config:SignageWorkbenchConfig,row:EmbeddedSignage,usage:AssetUsage,s:EmbeddedSignageSettings){

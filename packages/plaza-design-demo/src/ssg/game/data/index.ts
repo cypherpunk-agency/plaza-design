@@ -92,7 +92,7 @@ export const TRAIN = train as SceneData;
 
 /** The stacks at the harbor (P15 NRLU 404 0451, the end of Act I): STS-2, the thermal gate, the night ferry, the reefer, the watchdog. */
 const stacksDefinition=validateGameplay(stacksGameplay);
-const stacks: Loose<SceneData> = {...projectSceneState(stacksJson as unknown as SceneData,stacksDefinition),dialogue:nativeDeviceDialogues(stacksDefinition,stacksJson as unknown as SceneData,{entryActions:false})};
+const stacks: Loose<SceneData> = {...projectSceneState(stacksJson as unknown as SceneData,stacksDefinition),dialogue:nativeDeviceDialogues(stacksDefinition,stacksJson as unknown as SceneData)};
 export const STACKS = stacks as SceneData;
 
 /** The public library (P16 Long overdue): the card reader, the session timer, the printer, the LIBRARY LAN's nodes, scan.so. */

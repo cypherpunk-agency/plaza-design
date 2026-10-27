@@ -232,7 +232,7 @@ check. The prototype's progress is `shift:*` **flags** in `Save.flags`. Flags ar
 type, default or lifetime, so they reach across zones, but they do not answer the question.
 
 **Chosen approach: a world-level owner document.** [`world/state-owners.json`](../../world/state-owners.json)
-(source document `state-owners`, editor *World › Shared state*) is a gameplay document that only declares state.
+(source document `state-owners`, editor *World data › World variables*) is a gameplay document that only declares state.
 It declares `shift.tagReceived`, `shift.parcelDelivered`, `shift.caseReturned`, `shift.trolleyMoved` and
 `shift.checkedOut` once. A zone's gameplay opts in with `"sharedState": ["shift"]`. Its commands, conditions,
 queries and pickers then use those keys like their own. `validateGameplay` adds the owner's declarations to

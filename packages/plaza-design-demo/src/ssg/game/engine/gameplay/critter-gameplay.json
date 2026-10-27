@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "flags": [],
+  "items": [],
+  "events": [],
+  "state": {
+    "critter.visits": {
+      "owner": "critter",
+      "lifetime": "session",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "integer": true
+    }
+  },
+  "queries": {
+    "critter.cat.turn": {
+      "kind": "remainder",
+      "value": {
+        "state": "critter.visits"
+      },
+      "divisor": 3
+    },
+    "critter.pigeon.turn": {
+      "kind": "remainder",
+      "value": {
+        "state": "critter.visits"
+      },
+      "divisor": 2
+    }
+  },
+  "commands": {
+    "critter.advance": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "critter.visits",
+          "add": 1
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "critter.cat": {
+      "entry": [
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "critter.cat.turn"
+              },
+              "op": "eq",
+              "right": {
+                "literal": 0
+              }
+            }
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "critter.cat.turn"
+              },
+              "op": "eq",
+              "right": {
+                "literal": 1
+              }
+            }
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "CAT",
+          "pages": [
+            "The cat allows it. Then it decides it did not, and leaves."
+          ],
+          "onEnter": "critter.advance"
+        },
+        "visit-1": {
+          "speaker": "CAT",
+          "pages": [
+            "The cat purrs, which is a lot of commitment from a street cat."
+          ],
+          "onEnter": "critter.advance"
+        },
+        "visit-2": {
+          "speaker": "CAT",
+          "pages": [
+            "The cat sniffs your hand, finds no fish, and looks betrayed."
+          ],
+          "onEnter": "critter.advance"
+        }
+      }
+    },
+    "critter.pigeon": {
+      "entry": [
+        {
+          "when": {
+            "compare": {
+              "left": {
+                "query": "critter.pigeon.turn"
+              },
+              "op": "eq",
+              "right": {
+                "literal": 0
+              }
+            }
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "PIGEON",
+          "pages": [
+            "The pigeon takes one step to the side. Exactly one."
+          ],
+          "onEnter": "critter.advance"
+        },
+        "visit-1": {
+          "speaker": "PIGEON",
+          "pages": [
+            "The pigeon flaps, lands a metre away, and looks at you like you started it."
+          ],
+          "onEnter": "critter.advance"
+        }
+      }
+    }
+  }
+}

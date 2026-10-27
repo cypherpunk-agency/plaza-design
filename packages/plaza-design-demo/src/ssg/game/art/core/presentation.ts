@@ -1,12 +1,12 @@
 /** Pure presentation facts shared by painting, picking and scene visibility. No simulation state. */
-import type {Composition,Environment,Resolved,Placement,LayerSlot,Value} from './composition';
+import type {ChunkDocument,Environment,Resolved,Placement,LayerSlot,Value} from './composition';
 import {projectedBounds,artworkClip,dragProjection,type DragProjection} from './geometry';
 export interface ScreenRect {x:number;y:number;width:number;height:number}
 export interface ArtworkPresentation {
- drag:DragProjection;row:Resolved; document:Composition; view:Environment['view']; mobile:boolean;
+ drag:DragProjection;row:Resolved; document:ChunkDocument; view:Environment['view']; mobile:boolean;
  visible:boolean; pickable:boolean; reason?:string; pickReason?:string; opacity:number; bounds:ScreenRect; clip?:ScreenRect; clipSource:string;
 }
-export interface CapturedArtwork extends ArtworkPresentation {slot:LayerSlot;paintOrder:number;canvasTransform:Pick<DOMMatrix,'a'|'b'|'c'|'d'|'e'|'f'>}
+export interface CapturedArtwork extends ArtworkPresentation {repaint?:(ctx:CanvasRenderingContext2D)=>void;slot:LayerSlot;paintOrder:number;canvasTransform:Pick<DOMMatrix,'a'|'b'|'c'|'d'|'e'|'f'>}
 export interface ArtworkInspection {
  source:string;type:string;authored:Placement;placement:Required<Placement>;
  layer:string;order:number;paintOrder:number;mobile:boolean;visible:boolean;reason?:string;
@@ -17,7 +17,7 @@ export function intersectRects(a:ScreenRect,b:ScreenRect):ScreenRect {
  const x=Math.max(a.x,b.x),y=Math.max(a.y,b.y);
  return {x,y,width:Math.max(0,Math.min(a.x+a.width,b.x+b.width)-x),height:Math.max(0,Math.min(a.y+a.height,b.y+b.height)-y)};
 }
-export function prepareArtwork(row:Resolved,document:Composition,env:Environment,appearance:{visible:boolean;opacity:number},mobile=false,parent?:Resolved['placement']):ArtworkPresentation {
+export function prepareArtwork(row:Resolved,document:ChunkDocument,env:Environment,appearance:{visible:boolean;opacity:number},mobile=false,parent?:Resolved['placement']):ArtworkPresentation {
  const {view}=env,p=row.placement,context={view,placement:p};
  const local=row.element.bounds(row.props,row.state,context),rawBounds=projectedBounds(view,p,local);
  const sourceClip=artworkClip(row.instance,{...view,artworkScope:view.sharedLayers||view.artworkScope?(mobile?'mobile':'static'):undefined});

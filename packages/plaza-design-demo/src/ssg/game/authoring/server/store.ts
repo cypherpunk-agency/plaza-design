@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 
 export interface DocumentDescriptor {
-  id: string; file: string; kind: 'composition' | 'world-composition' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'conversations' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; validate(value: unknown): unknown;
+  id: string; file: string; kind: 'composition' | 'world-composition' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; validate(value: unknown): unknown;
   /** Reference-bearing documents validate against the complete prospective snapshot. */
   validateContext?(value:unknown,documents:ReadonlyMap<string,unknown>):unknown;
   /** Source-specific invariants checked against the current revision, including direct API saves. */

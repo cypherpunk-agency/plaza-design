@@ -8,7 +8,7 @@
  * (ART-GUIDE §6). `mask` [left, right, bottom, top] (relative, world units) hides Downtown's storey
  * windows behind the sign, as the scene's own plates do.
  */
-import type { Bounds, Element, Field, Placement, Properties, Value } from '../core/composition';
+import type { Bounds, AssetDefinition, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { box, O, onScreen, PAPER } from '../core/primitives';
 import * as screens from './screens';
@@ -39,7 +39,7 @@ const defined = <T extends object>(o: T): T => Object.fromEntries(Object.entries
 const MOUNTS = ['wall', 'pole', 'hang', 'bracket'];
 const ICONS = ['bowl', 'fish', 'eye', 'arrow', 'heart', 'chip'];
 type Draw = (x: CanvasRenderingContext2D, v: View, p: Properties, at: Required<Placement>) => void;
-function element(type: string, label: string, fields: Record<string, Field>, bounds: (p: Properties) => Bounds, draw: Draw): Element {
+function element(type: string, label: string, fields: Record<string, Field>, bounds: (p: Properties) => Bounds, draw: Draw): AssetDefinition {
   return { type: 'sign.' + type, version: 1, label, category: 'sign kit', coordinates: 'world', libraryUse: 'reusable', bindingIdentity: 'presentation', fields, parts: ['backdrop'], bounds: p => bounds(p),
     anchors: p => { const b = bounds(p); return { origin: { x: 0, h: 0, role: 'origin' }, top: { x: b.x + b.w / 2, h: b.h, role: 'mount' }, bottom: { x: b.x + b.w / 2, h: b.h - b.tall, role: 'mount' } }; },
     draw: (x, v, p, _s, _pass, at) => draw(x, v, p, at) };
@@ -59,7 +59,7 @@ const plateBox = (p: Properties): Bounds => {
 
 export const SCREEN_KINDS = ['ads', 'slogans', 'broken', 'registry', 'score', 'menu', 'odds', 'wanted', 'lottery'] as const;
 
-export const signKitElements: Element[] = [
+export const signKitElements: AssetDefinition[] = [
   element('plate', 'Neon plate', {
     text: str('Letters', 'OPEN'), color: rgb('Tube RGB', O), size: num('Letter size', 11, 4, 64), width: num('Plate width (0: fit)', 0, 0, 2000), height: num('Plate height (0: fit)', 0, 0, 2000),
     phase: num('Flicker phase'), dead: num('Burnt-out letter (-1 none)', -1, -1, 64), vertical: bool('Letters top to bottom'), printed: bool('Painted letters, not tubes'), bolts: bool('Corner bolts', true),

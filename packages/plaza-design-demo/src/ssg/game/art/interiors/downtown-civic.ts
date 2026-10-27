@@ -25,7 +25,7 @@
  *
  * Drawn in the piece's own frame: origin at its foot on the left, heights up (`y(h) = -h`).
  */
-import type { Element, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Field, Properties } from '../core/composition';
 import { windowLit } from '../../world/light';
 import { text as paintText } from '../core/primitives';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
@@ -1393,7 +1393,7 @@ export const liaisonDeskElement = piece({
   },
 });
 
-export const downtownCivicElements: Element[] = [
+export const downtownCivicElements: AssetDefinition[] = [
   roomElement, ticketMachineElement, numberDisplayElement, chairsElement, countersElement, boothsElement, holdScreenElement, posterElement, queueRailElement,
   staffDoorElement, terminalBankElement, recordsElement, nodeElement, alarmElement, registryFrontElement,
   transformerElement, busbarElement, controlHutElement, controlPanelsElement, cableTrayElement, catwalkElement,

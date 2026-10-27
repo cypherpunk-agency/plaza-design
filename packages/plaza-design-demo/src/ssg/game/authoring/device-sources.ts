@@ -12,7 +12,7 @@ import {deviceSourceIdentity} from './device-document-ids';
 import {manifestCompositionRows} from '../engine/gameplay/manifest-geometry';
 import {projectDeviceBindings} from '../engine/gameplay/device-bindings';
 import type {SceneDocument} from '../engine/gameplay/scene-document';
-import type {Composition} from '../art/core/composition';
+import type {ChunkDocument} from '../art/core/composition';
 
 export const deviceSceneIds=Object.keys(NATIVE_SCENES);
 
@@ -27,7 +27,7 @@ export function validateDeviceSource(id:string,value:unknown,scene:SceneDef=SCEN
  validateCompanionModelBindings(scene,materialized);return data;
 }
 /** Geometry and dialogue stay with their composition/shared sources; devices drive the real model. */
-export function applyDeviceSource(id:string,scene:SceneDef,composition:Composition,value:unknown,network?:EngineNetworkContext,sceneDocument?:Pick<SceneDocument,'manifest'>):SceneDef{
+export function applyDeviceSource(id:string,scene:SceneDef,composition:ChunkDocument,value:unknown,network?:EngineNetworkContext,sceneDocument?:Pick<SceneDocument,'manifest'>):SceneDef{
  const data=projectSceneState(validateDeviceSource(id,value,scene,network?.net,network?.keyring),scene.gameplay??{});const apply=(definition:SceneDef):SceneDef=>{let projected=sceneDocument?projectDeviceBindings(sceneDocument,manifestCompositionRows(composition),data,definition.width):data;projected={...projected,dialogue:definition.data?.dialogue??{}};if(definition.gameplay)projected=nativeDeviceData(projected,definition.gameplay,Object.keys(deviceRules(definition).derived??{}),deviceRules(definition).inputs,deviceRules(definition).derivedTypes,deviceRules(definition).mechanisms);return {...definition,data:projected,...(definition.bindWorld?{bindWorld:(services:Parameters<NonNullable<SceneDef['bindWorld']>>[0])=>apply(definition.bindWorld!(services))}:{})};};return apply(scene);
 }
 

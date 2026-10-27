@@ -1,5 +1,5 @@
 /** Isolated artwork views use resolved runtime inputs, never a separate drawing implementation. */
-import { compositionAppearance, drawCompositionSlot, resolveComposition, type ArtRegistry, type Composition, type Environment } from '../art/core/composition';
+import { compositionAppearance, drawCompositionSlot, resolveComposition, type ArtRegistry, type ChunkDocument, type Environment } from '../art/core/composition';
 import { frameView } from '../art/core/view';
 import { lightAt } from '../world/light';
 import type {PreviewRequest,EditorDocument,PreviewResult} from './contracts';
@@ -9,7 +9,7 @@ import type { AssetPreviewReport } from './asset-browser';
 import { centerNativePreview } from './native-camera';
 import { drawHelperPreview, exampleState, helperArtwork } from './asset-examples';
 
-export function isolateArtwork(registry: ArtRegistry, composition: Composition, environment: Environment, id: string) {
+export function isolateArtwork(registry: ArtRegistry, composition: ChunkDocument, environment: Environment, id: string) {
   const rows = resolveComposition(registry, composition, environment), included = new Set([id]);
   if (!rows.some(row => row.instance.id === id)) throw new Error(`Missing source instance ${id}`);
   // Include descendants and dependent attachments; retain resolved transforms without painting ancestors.
@@ -19,7 +19,7 @@ export function isolateArtwork(registry: ArtRegistry, composition: Composition, 
     if (parent && included.has(parent) && !included.has(row.instance.id)) { included.add(row.instance.id); changed = true; }
   } }
   const selected = rows.filter(row => included.has(row.instance.id));
-  const document: Composition = { version: 1, scene: composition.scene, instances: selected.map(row => ({
+  const document: ChunkDocument = { version: 1, scene: composition.scene, instances: selected.map(row => ({
     id: row.instance.id, type: row.instance.type, props: row.props, placement: row.placement, layer: row.instance.layer, order: row.instance.order,
   })) };
   const appearance = compositionAppearance(composition, environment);
@@ -38,7 +38,7 @@ const OPENING_SEQUENCES = ['glide', 'rise', 'title'];
  * Cutscene pieces are drawn by the directed shared world frame as one picture, so they cannot be painted alone.
  * The preview renders the sequence frame and shows the piece's box cut from it, with whatever is behind it.
  */
-function sequenceCutout(canvas: HTMLCanvasElement, render: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult | null, composition: Composition, instance: string, settings: Pick<PreviewRequest, 'reduced' | 'environment'>, showcase = false): AssetPreviewReport | string {
+function sequenceCutout(canvas: HTMLCanvasElement, render: (canvas: HTMLCanvasElement, request: PreviewRequest) => PreviewResult | null, composition: ChunkDocument, instance: string, settings: Pick<PreviewRequest, 'reduced' | 'environment'>, showcase = false): AssetPreviewReport | string {
   const frame = document.createElement('canvas'); frame.width = 960; frame.height = 540;
   const ids = composition.scene === 'sequence-opening' ? OPENING_SEQUENCES : [undefined];
   for (const sequenceId of ids) for (const time of SEQUENCE_TIMES) {
@@ -49,7 +49,7 @@ function sequenceCutout(canvas: HTMLCanvasElement, render: (canvas: HTMLCanvasEl
     if (showcase && result.deltaToLocal && (box.x + box.width < 0 || box.x > frame.width || box.y + box.height < 0 || box.y > frame.height)) {
       const delta = result.deltaToLocal(instance, frame.width / 2 - box.x - box.width / 2, frame.height / 2 - box.y - box.height / 2);
       const framed = structuredClone(composition);
-      const move = (nodes: Composition['instances']) => nodes.forEach(n => { if (n.id === instance) { n.placement.x += delta.x; n.placement.h += delta.h; } move(n.children ?? []); });
+      const move = (nodes: ChunkDocument['instances']) => nodes.forEach(n => { if (n.id === instance) { n.placement.x += delta.x; n.placement.h += delta.h; } move(n.children ?? []); });
       move(framed.instances);
       result = render(frame, { ...request, composition: framed });
       box = result?.bounds.find(b => b.id === instance); if (!box) continue;
@@ -83,10 +83,10 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
     // Unused registered pieces still get the same prepared scene inputs as their siblings.
     if (options.showcase && !usage && entry.preview === 'prepared-context' && !entry.id.startsWith('sequence.')) {
       const namespace = entry.id.split('.')[0], scene = namespace === 'station' ? 'galleriaStation' : namespace;
-      const source = documents.find(d => d.kind === 'composition' && (d.value as Composition).scene === scene);
+      const source = documents.find(d => d.kind === 'composition' && (d.value as ChunkDocument).scene === scene);
       if (source) {
-        const doc = structuredClone(source.value as Composition), definition = registry.get(entry.id);
-        const nodes = (xs: Composition['instances']): Composition['instances'] => xs.flatMap(n => [n, ...nodes(n.children ?? [])]);
+        const doc = structuredClone(source.value as ChunkDocument), definition = registry.get(entry.id);
+        const nodes = (xs: ChunkDocument['instances']): ChunkDocument['instances'] => xs.flatMap(n => [n, ...nodes(n.children ?? [])]);
         const siblings = nodes(doc.instances).filter(n => n.type.startsWith(namespace + '.'));
         const bindings = entry.id === 'station.waiting-passenger' ? {} : Object.fromEntries(siblings.flatMap(n => Object.entries(n.bindings ?? {})).filter(([key]) => key in (definition.visualFields ?? {})));
         const node = { id: '__gallery_example__', type: entry.id, props: {}, placement: { x: 400, h: 0 }, order: 9999, layer: definition.parts.length ? 'set' as const : 'logic' as const, bindings };
@@ -95,7 +95,7 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
         usage = { document: id, scene, instance: node.id, path: [node.id], node };
       }
     }
-    const isolate = (document: Composition, env: Environment, id: string) => {
+    const isolate = (document: ChunkDocument, env: Environment, id: string) => {
       const result = isolateArtwork(registry, document, env, id);
       if (options.showcase) {
         result.environment.state = Object.fromEntries(resolveComposition(registry, result.composition, result.environment).map(row => [row.instance.id, exampleState(row)]));
@@ -115,10 +115,10 @@ export function createAssetPreview(registry: ArtRegistry, native: { render(canva
     const renderScale = Number(settings.environment.renderScale ?? 1);
     if (!Number.isFinite(renderScale) || renderScale <= 0) throw new Error('Preview scale must be positive');
     const width = canvas.width / renderScale, height = canvas.height / renderScale;
-    let composition: Composition, environment: Environment, fit = 1;
+    let composition: ChunkDocument, environment: Environment, fit = 1;
     if (usage) {
       const source = documents.find(doc => doc.id === usage.document && doc.kind === 'composition'); if (!source) throw new Error('Source composition is unavailable');
-      const document = source.value as Composition;
+      const document = source.value as ChunkDocument;
       if (document.scene.startsWith('sequence-')) return sequence ? sequenceCutout(canvas, sequence, document, usage.instance, settings, options.showcase) : 'Requires cinematic controller context. Open this usage to inspect it in the native sequence preview.';
       const scratch = documentCanvas(canvas);
       const focused = centerNativePreview(renderNative, scratch, { ...settings, composition: document, overlays: false }, result => {

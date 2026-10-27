@@ -1,7 +1,7 @@
 /** Current independent fitting contracts: one kernel, native dimensions, real editor history and protected source reload. */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';import {build} from 'esbuild';
-import {art,resolveComposition,type Composition} from '../../src/ssg/game/art';
+import {art,resolveComposition,type ChunkDocument} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {sourceProjection} from '../../src/ssg/game/art/core/geometry';
 import {placementCoordinates,placeFrom} from '../../src/ssg/game/world/zone-graph';
@@ -39,12 +39,12 @@ const root=path.resolve('src/ssg/game'),documents=sourceDocuments.map(d=>({id:d.
 const make=()=>{const model=new ComposerModel(art,createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)]))),(d,docs)=>{if(d.id==='authored-scenes')validateSourceDocuments(new Map(docs.filter(d=>!d.id.startsWith('authored.')).map(d=>[d.id,d.value])));},[sceneCatalogueProjection]);model.load(documents);return model;};
 const model=make(),doc='authored.boundary-west';
 for(const [i,type]of ids.entries()){const id=model.add(doc,type,{x:100+i*65,h:0});model.updateInstance(doc,id,'Move independent fitting',n=>{n.placement.x+=15;n.placement.h=12;const e=art.get(type);if(e.fields.width)n.props.width=200;if(type==='moth.monitor')n.props.standHeight=12;if(type==='capsule.plug')n.props.cableConnected=false;});const duplicate=model.duplicate(doc,id);assert.notEqual(duplicate,id);model.undo();model.redo();if(art.get(type).fields.width){const before=model.edits();assert.throws(()=>model.updateInstance(doc,id,'Reject invalid width',n=>{n.props.width=-1;}));assert.deepEqual(model.edits(),before);}}
-const sceneId='authored.boundary-west-scene',logic=structuredClone(model.get(sceneId).value) as any,layout=structuredClone(model.get(doc).value) as Composition;
+const sceneId='authored.boundary-west-scene',logic=structuredClone(model.get(sceneId).value) as any,layout=structuredClone(model.get(doc).value) as ChunkDocument;
 (logic.stage??={}).values={...logic.stage?.values,reviewPlugOn:true};layout.instances.find(n=>n.type==='capsule.plug')!.bindings={plugOn:'scene.reviewPlugOn'};
 model.importDocuments([{id:sceneId,value:logic},{id:doc,value:layout}],'Bind independent visual input');model.undo();model.redo();
 const edits=model.edits(),receiver=make();receiver.importDocuments(readDocumentBundle(createDocumentBundle(edits,model.list()),receiver.list()));assert.deepEqual(receiver.get(doc).value,model.get(doc).value);
 const pending=pendingRegistry(new Map(receiver.list().map(d=>[d.id,d.value])));assert(pending['boundary-west']);const target=pending['boundary-west'],modelState=new SceneModel({say(){},open(){},changed(){}},target.data!,typeof target.rules==='function'?target.rules({}as never):target.rules,undefined,undefined,undefined,undefined,target.gameplay),native=target.visualEnvironment!(view,{m:modelState,hover:null,layer:'all'});assert.equal(resolveComposition(art,layout,native).find(r=>r.instance.type==='capsule.plug')!.state.plugOn,true,'the native frame resolves the edited visual binding');
-const composition=model.get(doc).value as Composition,rows=resolveComposition(art,composition,native);for(const type of ids)assert.equal(rows.filter(r=>r.instance.type===type).length,2);
+const composition=model.get(doc).value as ChunkDocument,rows=resolveComposition(art,composition,native);for(const type of ids)assert.equal(rows.filter(r=>r.instance.type===type).length,2);
 const disk=fs.mkdtempSync(path.resolve('../../.game-test-output/independent-fittings-'));for(const d of sourceDocuments){const file=path.join(disk,d.file);fs.mkdirSync(path.dirname(file),{recursive:true});fs.copyFileSync(path.join(root,d.file),file);}
 const store=new AuthoringStore({root:disk,documents:sourceDocuments,validateAll:validateSourceDocuments}),transaction=store.save(edits.map(e=>({...e,revision:store.read(e.id).revision})));
 assert.deepEqual((store.read('authored-scenes').value as any).scenes.find((s:any)=>s.scene.id==='boundary-west').composition,composition);

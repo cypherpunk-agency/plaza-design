@@ -1035,8 +1035,8 @@ Decided (save details):
 - `game/engine/`: the engine (see **The engine**).
 - `game/scenes/capsule/`: `rules.ts` (clock, router and Pixel), `scene.ts` (perches and visual
   adapter), `composition.ts`/`composition.json`, and `index.ts` (canonical scene factory).
-  Pixel's simulation is `game/runtime/companion.ts`. `START_SCENE` in `world/city.ts` remains
-  the older-save fallback; the current new-run controller uses `story/title/` and `story/opening.ts`.
+  Pixel's simulation is `game/runtime/companion.ts`. Launch and resume use `story/title/` and
+  `story/opening.ts`; the older-save city-start fallback and its configuration are removed.
   The connected `harbor-*` zones in `scenes/authored.json` implement the shift; the retired one-room prototype is removed. The full campaign entry has not yet switched.
 - `game/scenes/yard/`: `effects.ts` (`YARD_RULES`), `camera.ts`, presentation/controller state,
   composition source/adapters and the scene factory. Its crane presentation prepares once per

@@ -259,6 +259,171 @@
           "emit": "stacks.crane.cold"
         }
       ]
+    },
+    "talk.stacks.gatekeeper.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.gatekeeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.gatekeeper.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.gatekeeper.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.inspector.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.inspector.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.inspector.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.inspector.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.stacks.inspector.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.inspector.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.stacks.signaller.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.signaller.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.signaller.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.signaller.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.lasher.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.lasher.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.lasher.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.lasher.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.tally.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.tally.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.tally.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.tally.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.gull1.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.gull1.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.gull1.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.gull1.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.gull2.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.gull2.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.stacks.gull2.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.stacks.gull2.cursor",
+          "set": 1
+        }
+      ]
     }
   },
   "reactions": [],
@@ -552,6 +717,239 @@
           ]
         }
       }
+    },
+    "talk.stacks.gatekeeper": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.gatekeeper.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GATEKEEPER",
+          "pages": [
+            "Terminal 2. Authorised vehicles only.",
+            "You are not a vehicle, so the rule does not cover you. I am not paid to extend it."
+          ],
+          "onEnter": "talk.stacks.gatekeeper.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GATEKEEPER",
+          "pages": [
+            "Warehouse 4 is down the lane. Registry evidence now. Used to be the Tide's.",
+            "I used to wave at the Tide's trucks. Now I wave at nobody, on a schedule."
+          ],
+          "onEnter": "talk.stacks.gatekeeper.advance-1"
+        }
+      }
+    },
+    "talk.stacks.inspector": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.inspector.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.stacks.inspector.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "PORT INSPECTOR",
+          "pages": [
+            "Thermal inspection. A container is meant to be the temperature on its label.",
+            "A reefer at four degrees reads four. If it reads thirty-one, something in it is breathing, and breathing cargo is my paperwork."
+          ],
+          "onEnter": "talk.stacks.inspector.advance-0"
+        },
+        "visit-1": {
+          "speaker": "PORT INSPECTOR",
+          "pages": [
+            "The gate wires itself to the alarm. I don't touch it. The Registry's watchdog checks the wiring every round.",
+            "When the dog sits on my gate the whole gate freezes. Nothing gets in or out of it. I take my break then. Everyone does."
+          ],
+          "onEnter": "talk.stacks.inspector.advance-1"
+        },
+        "visit-2": {
+          "speaker": "PORT INSPECTOR",
+          "pages": [
+            "The crane only lifts once the dog has cleared the ferry. Then it's three seconds and it's back at my gate.",
+            "You learn its walk. Port, crane, ferry. Port, crane, ferry. Like a man who forgot why he came into a room."
+          ],
+          "onEnter": "talk.stacks.inspector.advance-2"
+        }
+      }
+    },
+    "talk.stacks.signaller": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.signaller.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "SIGNALLER",
+          "pages": [
+            "I wave at the crane. The crane ignores me.",
+            "Forty years. Longest relationship I've had."
+          ],
+          "onEnter": "talk.stacks.signaller.advance-0"
+        },
+        "visit-1": {
+          "speaker": "SIGNALLER",
+          "pages": [
+            "The camera on STS-2 reads every roof in the blocks. The yard system lost one tonight. The camera never loses anything. Shame about the people upstairs."
+          ],
+          "onEnter": "talk.stacks.signaller.advance-1"
+        }
+      }
+    },
+    "talk.stacks.lasher": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.lasher.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "LASHER",
+          "pages": [
+            "Eleven boxes down the hatch, lashed. One slot on deck for a reefer, plug ready.",
+            "Schedule says NRLU-something. Yard system says it doesn't exist. I've lashed things that don't exist before. They pay the same."
+          ],
+          "onEnter": "talk.stacks.lasher.advance-0"
+        },
+        "visit-1": {
+          "speaker": "LASHER",
+          "pages": [
+            "The ferry leaves when it's full. It's been one box from full since Tuesday.",
+            "The captain's asleep in the bridge. He says wake him when it's full. He says it like a man who knows."
+          ],
+          "onEnter": "talk.stacks.lasher.advance-1"
+        }
+      }
+    },
+    "talk.stacks.tally": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.tally.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TALLY-4",
+          "pages": [
+            "COUNT: 1,204 CONTAINERS. COUNT: 1,204. COUNT: 1,203.",
+            "RECOUNT."
+          ],
+          "onEnter": "talk.stacks.tally.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TALLY-4",
+          "pages": [
+            "BLOCK B, BACK ROW, SLOT 6: YARD RECORD MISSING. CONTAINER PRESENT. CONTAINER CANNOT BE PRESENT. RECOUNT."
+          ],
+          "onEnter": "talk.stacks.tally.advance-1"
+        }
+      }
+    },
+    "talk.stacks.gull1": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.gull1.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(The gull looks at you, then at the stack under its feet, then screams as if you own it.)"
+          ],
+          "onEnter": "talk.stacks.gull1.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It edges along the container roof to keep exactly out of reach.)"
+          ],
+          "onEnter": "talk.stacks.gull1.advance-1"
+        }
+      }
+    },
+    "talk.stacks.gull2": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.stacks.gull2.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "GULL",
+          "pages": [
+            "(It is guarding the gangway. From whom is not clear. Possibly you.)"
+          ],
+          "onEnter": "talk.stacks.gull2.advance-0"
+        },
+        "visit-1": {
+          "speaker": "GULL",
+          "pages": [
+            "(It steps aside. It steps back. It has made a point.)"
+          ],
+          "onEnter": "talk.stacks.gull2.advance-1"
+        }
+      }
     }
   },
   "state": {
@@ -607,6 +1005,62 @@
       "integer": false,
       "min": -9007199254740991,
       "max": 9007199254740991
+    },
+    "talk.stacks.gatekeeper.cursor": {
+      "owner": "talk.stacks.gatekeeper",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.stacks.inspector.cursor": {
+      "owner": "talk.stacks.inspector",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
+    },
+    "talk.stacks.signaller.cursor": {
+      "owner": "talk.stacks.signaller",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.stacks.lasher.cursor": {
+      "owner": "talk.stacks.lasher",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.stacks.tally.cursor": {
+      "owner": "talk.stacks.tally",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.stacks.gull1.cursor": {
+      "owner": "talk.stacks.gull1",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.stacks.gull2.cursor": {
+      "owner": "talk.stacks.gull2",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
     }
   },
   "native": {

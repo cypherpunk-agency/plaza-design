@@ -3,6 +3,20 @@
   "scene": "dt-metro-underground",
   "instances": [
     {
+      "id": "world-sky",
+      "type": "environment.sky",
+      "props": {
+        "horizon": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -10000,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
       "id": "base",
       "type": "scene.base",
       "props": {

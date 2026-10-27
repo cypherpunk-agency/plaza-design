@@ -3,9 +3,9 @@ import{art}from'../../src/ssg/game/art';
 import{createNativePreview}from'../../src/ssg/game/authoring/native-preview';
 import{evaluateTimeline,validateTimeline,type TimelineProgram}from'../../src/ssg/game/art/core/timeline';
 import{drawTimelineOverlay}from'../../src/ssg/game/art/core/timeline-overlay';
-import type{Composition}from'../../src/ssg/game/art/core/composition';
+import type{ChunkDocument}from'../../src/ssg/game/art/core/composition';
 import type {PreviewRequest} from '../../src/ssg/game/authoring/contracts';
-const composition:Composition={version:1,scene:'native-overlay-fixture',instances:[]};
+const composition:ChunkDocument={version:1,scene:'native-overlay-fixture',instances:[]};
 const timeline:TimelineProgram={version:1,sequences:[{id:'authored-on-native-scene',duration:6,composition:'room',shots:[{id:'single',from:0,to:6,camera:{x:120,h:30,zoom:2}}],tracks:[],text:[{id:'caption',from:1,to:3,text:'OPEN THE GATE\nTHEN WAIT',x:24,h:-36}],fades:[{id:'fade',from:1,to:3,color:'#123456',start:0,end:1}],beats:[]}]};
 const context={registry:art,compositions:{room:composition}};validateTimeline(timeline,context);
 function recorder(){const commands:unknown[][]=[],paints:any[]=[];let state:any={globalAlpha:1,globalCompositeOperation:'source-over',fillStyle:'#000',matrix:[1,0,0,1,0,0]},stack:any[]=[];const ctx=new Proxy({}, {get(_t,k:string){if(k in state)return state[k];if(k==='getTransform')return()=>({a:state.matrix[0]});if(k==='save')return()=>{stack.push({...state,matrix:[...state.matrix]});commands.push(['save']);};if(k==='restore')return()=>{state=stack.pop();commands.push(['restore']);};if(k==='setTransform')return(...args:number[])=>{state.matrix=args;commands.push([k,...args]);};if(k.startsWith('create'))return()=>({addColorStop(){}});return(...args:unknown[])=>{commands.push([k,...args]);if(['fillRect','fillText'].includes(k))paints.push({kind:k,args,alpha:state.globalAlpha,fill:state.fillStyle,matrix:[...state.matrix]});};},set(_t,k:string,value){state[k]=value;commands.push(['set',k,value]);return true;}})as unknown as CanvasRenderingContext2D;return{ctx,commands,paints,state:()=>({...state,matrix:[...state.matrix]})};}

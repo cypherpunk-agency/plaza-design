@@ -10,7 +10,7 @@ import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
 import {pendingNetworkContext} from '../../src/ssg/game/authoring/pending-network';
 import {pendingScene} from '../../src/ssg/game/authoring/pending-scene';
 import {pendingFixtureVocabulary} from '../../src/ssg/game/authoring/pending-fixtures';
-import {defaultPlayFixture,fixtureSave} from '../../src/ssg/game/authoring/play-fixtures';
+import {defaultPlayFixture,fixtureSave} from '../../src/ssg/game/world/checkpoints';
 import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
 import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
 import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';

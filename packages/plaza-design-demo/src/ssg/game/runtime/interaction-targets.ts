@@ -55,14 +55,14 @@ export function lifeTargets(s:SceneDef,ctx:PromptContext):InteractionTarget[]{
     // benches, stools and the bed: wait until… (not while a story beat holds the clock: the opening's own bed is its sleep)
     if (ctx.rests) for (const r of s.rests ?? []) list.push({ kind: 'life', id: 'rest:' + r.id, x: r.x, h: r.floorH ?? r.h ?? 0, label: r.kind === 'bed' ? '[E] SLEEP · WAIT' : '[E] SIT · WAIT', promptH: r.promptH ?? 60 });
     // the scene's people with something to say (characters.ts): the target follows a walker (nobody outside their time window)
-    for (const p of s.people ?? []) if (p.id && p.talk && isHere(p)) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, ctx.time), h: 0, label: '[E] TALK', promptH: p.promptH ?? characterHeight(p) + 16 });
+    for (const p of s.people ?? []) if (p.id && p.conversation && isHere(p)) list.push({ kind: 'life', id: 'talk:' + p.id, x: characterX(p, ctx.time), h: 0, label: '[E] TALK', promptH: p.promptH ?? characterHeight(p) + 16 });
     // animals: people always want to pet the cat (and the pigeon gets shooed)
     (s.people ?? []).forEach((p, i) => {
       if (!isHere(p)) return;
       const critter = critterReaction(p, ctx.critters);
-      if (!p.talk && critter) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, ctx.time), h: 0, label: critter.prompt, promptH: characterHeight(p) + 14 });
+      if (!p.conversation && critter) list.push({ kind: 'life', id: 'pet:' + i, x: characterX(p, ctx.time), h: 0, label: critter.prompt, promptH: characterHeight(p) + 14 });
       // robots without talk still answer: a beep, a status, a polite refusal
-      else if (!p.talk && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, ctx.time), h: 0, label: botVoice(p,ctx.bots).label, promptH: characterHeight(p) + 14 });
+      else if (!p.conversation && isBot(p)) list.push({ kind: 'life', id: 'bot:' + i, x: characterX(p, ctx.time), h: 0, label: botVoice(p,ctx.bots).label, promptH: characterHeight(p) + 14 });
     });
     return list;
   }

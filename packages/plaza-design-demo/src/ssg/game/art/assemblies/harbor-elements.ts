@@ -1,5 +1,5 @@
 /** Harbor pieces use authored geometry and immutable controller snapshots. */
-import type { Element,Field,Properties,Value } from '../core/composition';
+import type { AssetDefinition,Field,Properties,Value } from '../core/composition';
 import type { View } from '../core/view';
 import { container } from '../props/containers';
 import { onScreen } from '../core/primitives';
@@ -22,7 +22,7 @@ export const harborVisualFields:Record<string,Field>={forkliftOrigin:num('Forkli
 const origin={x:0,h:0,role:'origin' as const};
 type Method=keyof ReturnType<typeof createHarborPierArtwork>;
 function root(method:Method,L:HarborLayout,p:Properties):{x:number;h:number}{const ci=Number(p.index);if(method.startsWith('crane'))return{x:L.cranes[ci].x+(method==='craneLoad'?-64:0),h:method==='craneLoad'?-58:0};const names:Partial<Record<Method,keyof HarborLayout>>={noticePost:'notice',metroDoor:'metro',podium:'podium',manifest:'manifest',callBox:'callBox',denInside:'den',denTable:'den',denDoors:'den',denLamp:'den',drawTerminalGate:'terminal',berthSign:'berth',taxi:'taxi',ferryNotice:'ferry',rails:'rails',beacon:'beacon'};if(method.startsWith('arch'))return{x:L.arch.x0,h:0};const key=names[method];if(key)return{x:Number(L[key]),h:0};if(method.startsWith('hut'))return{x:L.hut.x,h:0};if(['bondedContainers','ghostMark','bondedFence'].includes(method))return{x:L.fence.x0,h:0};return{x:0,h:0};}
-function element(type:string,label:string,method?:Method):Element{
+function element(type:string,label:string,method?:Method):AssetDefinition{
  const hut=method==='hutBack'||method==='hutFront',stall=method==='fishStall'||method==='teaStall';
  return{type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:hut?harborHutFields:stall?{vendorPose:pose}:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){
  if(!method)return;
@@ -40,7 +40,7 @@ function element(type:string,label:string,method?:Method):Element{
  if(method.startsWith('crane'))(k[method] as (ctx:CanvasRenderingContext2D,v:View,ci:number)=>void)(ctx,V,Number(p.index));else if(method==='bollard'||method==='frontBollard')k[method](ctx,v,at.x);else if(method==='rod')k.rod(ctx,v,at.x,at.h,Number(p.reach));else(k[method] as (ctx:CanvasRenderingContext2D,v:View)=>void)(ctx,V);
  }};}
 const methods:Method[]=['drawLampBoat','drawPatrol','drawFerry','archChassis','archScan','archPortal','drawTerminalGate','craneFrame','craneCabBack','craneCabFront','craneCables','craneLoad','craneLight','denInside','denTable','denDoors','denLamp','bondedContainers','ghostMark','bondedFence','forkliftBody','forkliftRoof','hutBack','hutFront','fishStall','teaStall','farSky','horizon','water','flyingGulls','pierSlab','metroDoor','noticePost','podium','manifest','callBox','crates','bollard','rod','fishingBox','berthSign','taxi','ferryNotice','rails','beacon','portCamera','droneGull','nearWater','frontBollard'];
-export const harborElements:Element[]=[...methods.map(m=>element(m,m.replace(/([A-Z])/g,' $1'),m)),{...element('container','Corrugated shipping container'),draw(ctx,v,p,s,_pass,at){const L=s.layout as unknown as HarborLayout,stack=Number(p.cullStack);if(p.cullRegion&&!s[String(p.cullRegion)+'Visible'])return;if(stack>=0){const start=(s.stackOrigins as number[])[stack];if(start!==undefined&&!onScreen(v,v.sx(start)-20,180))return;}container(ctx,v,at.x,at.h,{w:Number(p.width),h:Number(p.height),p:Number(p.paint),seed:Number(p.seed),...(p.code?{code:String(p.code)}:{}),...(p.label?{label:String(p.label)}:{})});void L;}},
+export const harborElements:AssetDefinition[]=[...methods.map(m=>element(m,m.replace(/([A-Z])/g,' $1'),m)),{...element('container','Corrugated shipping container'),draw(ctx,v,p,s,_pass,at){const L=s.layout as unknown as HarborLayout,stack=Number(p.cullStack);if(p.cullRegion&&!s[String(p.cullRegion)+'Visible'])return;if(stack>=0){const start=(s.stackOrigins as number[])[stack];if(start!==undefined&&!onScreen(v,v.sx(start)-20,180))return;}container(ctx,v,at.x,at.h,{w:Number(p.width),h:Number(p.height),p:Number(p.paint),seed:Number(p.seed),...(p.code?{code:String(p.code)}:{}),...(p.label?{label:String(p.label)}:{})});void L;}},
  {type:'harbor.marker',version:1,label:'Harbor gameplay, light or shadow marker',category:'markers',coordinates:'world',fields:{role:str('Role'),width:dimension('Width'),height:dimension('Height'),kind:str('Light kind'),r:dimension('Radius'),color:str('Light color'),lightHeight:dimension('Window height')},parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin}),draw(){}},
 ];
 applyHarborMetadata(harborElements,(method,L,p)=>root(method as Method,L,p));

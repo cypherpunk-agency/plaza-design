@@ -119,7 +119,6 @@
   "environment": {},
   "companion": {
     "mode": "home",
-    "unlockFlag": "pixel",
     "pet": {
       "prompt": "[E] PET PIXEL",
       "conversations": {
@@ -386,15 +385,10 @@
           ],
           "cues": [
             {
-              "counter": {
-                "id": "morning.tries"
-              }
+              "milestone": "morning.try"
             },
             {
-              "counter": {
-                "id": "morning.last",
-                "stamp": true
-              }
+              "stamp": "morning.last"
             }
           ]
         }
@@ -410,15 +404,10 @@
             ],
             "cues": [
               {
-                "counter": {
-                  "id": "morning.tries"
-                }
+                "milestone": "morning.try"
               },
               {
-                "counter": {
-                  "id": "morning.last",
-                  "stamp": true
-                }
+                "stamp": "morning.last"
               }
             ]
           },
@@ -440,15 +429,10 @@
             ],
             "cues": [
               {
-                "counter": {
-                  "id": "morning.tries"
-                }
+                "milestone": "morning.try"
               },
               {
-                "counter": {
-                  "id": "morning.last",
-                  "stamp": true
-                }
+                "stamp": "morning.last"
               }
             ]
           }
@@ -463,15 +447,10 @@
             ],
             "cues": [
               {
-                "counter": {
-                  "id": "morning.tries"
-                }
+                "milestone": "morning.try"
               },
               {
-                "counter": {
-                  "id": "morning.last",
-                  "stamp": true
-                }
+                "stamp": "morning.last"
               }
             ]
           }
@@ -486,15 +465,10 @@
             ],
             "cues": [
               {
-                "counter": {
-                  "id": "morning.tries"
-                }
+                "milestone": "morning.try"
               },
               {
-                "counter": {
-                  "id": "morning.last",
-                  "stamp": true
-                }
+                "stamp": "morning.last"
               }
             ]
           }
@@ -509,15 +483,10 @@
             ],
             "cues": [
               {
-                "counter": {
-                  "id": "morning.due"
-                }
+                "milestone": "morning.due"
               },
               {
-                "counter": {
-                  "id": "morning.last",
-                  "stamp": true
-                }
+                "stamp": "morning.last"
               }
             ]
           }

@@ -5,7 +5,7 @@
  * most of what tells them apart: sodium Downtown, lanterns in the Old Quarter, cold white in the Spire.
  */
 import { addLight } from '../atmosphere/lighting';
-import type { Element, Field } from '../core/composition';
+import type { AssetDefinition, Field } from '../core/composition';
 import { glowLevel } from '../../world/light';
 import { drawSky } from '../environment/sky';
 import { inPixels, SHORE } from '../core/pixels';
@@ -14,7 +14,7 @@ const num = (label: string, value: number, min: number, max: number, step = 1, u
 const rgbOf = (hex: unknown, fallback: string) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex)); return m ? m.slice(1).map(h => parseInt(h, 16)).join(',') : fallback; };
 const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
 
-export const streetSurfaceElement: Element = {
+export const streetSurfaceElement: AssetDefinition = {
   type: 'street.surface', version: 1, label: 'Street surface (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     width: num('Width', 1600, 20, 40000, 10, 'units'),
@@ -69,7 +69,7 @@ export const streetSurfaceElement: Element = {
 const LAMP_STYLES = ['sodium', 'lantern', 'led', 'string', 'coast'] as const;
 const LAMP_COL: Record<string, string> = { sodium: '#ffb35a', lantern: '#ff6a3a', led: '#dce8ff', string: '#ffd28a', coast: '#ffdca0' };
 
-export const streetLampElement: Element = {
+export const streetLampElement: AssetDefinition = {
   type: 'street.lamp', version: 1, label: 'Street light (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
     style: { kind: 'select', label: 'Kind', options: [...LAMP_STYLES], default: 'sodium' },
@@ -142,7 +142,7 @@ function lantern(x: CanvasRenderingContext2D, cx: number, top: number, col: stri
 }
 
 /** The sky over a kit street, on the city clock (sun, moon, stars, twilight), for a scene whose own definition draws none. */
-export const streetSkyElement: Element = {
+export const streetSkyElement: AssetDefinition = {
   type: 'street.sky', version: 1, label: 'Sky (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: { stars: { kind: 'boolean', label: 'Stars at night', default: true } },
   bounds: () => ({ x: 0, h: 400, w: 400, tall: 400 }),
@@ -150,4 +150,4 @@ export const streetSkyElement: Element = {
   draw(x, v, p, _s, _pass, at) { drawSky(x, v, v.lighting, { horizon: v.y(at.h), stars: p.stars !== false }); },
 };
 
-export const streetElements: Element[] = [streetSkyElement, streetSurfaceElement, streetLampElement];
+export const streetElements: AssetDefinition[] = [streetSkyElement, streetSurfaceElement, streetLampElement];

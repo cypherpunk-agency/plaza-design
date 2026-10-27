@@ -1,5 +1,5 @@
 /** Selection geometry follows the native beach pieces; ambient glows are not furniture bounds. */
-import type {Anchor,Bounds,Element,Properties} from '../core/composition';
+import type {Anchor,Bounds,AssetDefinition,Properties} from '../core/composition';
 import {frameView,type View} from '../core/view';
 import {screenBounds} from './static-bounds';
 import {flockRects} from '../characters/flock';
@@ -14,7 +14,7 @@ const origin:Anchor={x:0,h:0,role:'origin'};
 const pixels=(x:number,h:number,w:number,tall:number):Geometry=>(_p,_s,v,wx,wh)=>({x:v.sx(wx)+x,y:v.y(wh)-h,w,h:tall});
 /** Native world height above the authored foot, followed by pixel-size details. */
 const body=(x:number,h:number,w:number,tall:number):Geometry=>(_p,_s,v,wx,wh)=>({x:v.sx(wx)+x,y:v.y(wh+h),w,h:Math.max(tall,v.y(wh+h-tall)-v.y(wh+h))});
-export function applyBeachMetadata(elements:Element[]):void{
+export function applyBeachMetadata(elements:AssetDefinition[]):void{
  const get=(id:string)=>elements.find(e=>e.type==='beach.'+id)!;
  const shapes:Record<string,Geometry>={
   marker:(p,_s,v,x,h)=>({x:v.sx(x),y:v.y(h+n(p,'height')),w:n(p,'width'),h:n(p,'height')}),

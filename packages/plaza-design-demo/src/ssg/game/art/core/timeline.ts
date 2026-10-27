@@ -1,12 +1,12 @@
 /** Data-only authored sequences. Evaluation is pure and never commits gameplay handoffs. */
-import { ArtRegistry, type Composition, type Instance, type Field, type Value, type Properties } from './composition';
+import { ArtRegistry, type ChunkDocument, type AssetInstance, type Field, type Value, type Properties } from './composition';
 
 export type Ease = 'linear' | 'hold' | 'smooth' | 'in' | 'out';
 export interface Keyframe { time: number; value: Value; ease?: Ease }
 export type Target = { kind: 'camera'; property: 'x' | 'h' | 'zoom' }
-  | { kind: 'instance'; instance: string; property: 'x' | 'h' | 'scale' | 'facing' | 'parallax' | 'visible' | 'opacity' }
-  | { kind: 'property' | 'state'; instance: string; property: string }
-  | { kind: 'clip'; instance: string; property: string };
+  | { scene?:string; kind: 'instance'; instance: string; property: 'x' | 'h' | 'scale' | 'facing' | 'parallax' | 'visible' | 'opacity' }
+  | { scene?:string; kind: 'property' | 'state'; instance: string; property: string }
+  | { scene?:string; kind: 'clip'; instance: string; property: string };
 export interface Track { id: string; target: Target; keys: Keyframe[]; reduced?: 'freeze' | 'normal'; motion?: { type: string; props: Properties } }
 export interface Shot { id: string; from: number; to: number; camera: { x: number; h: number; zoom: number } }
 export interface TextCard { id: string; from: number; to: number; text: string; x: number; h: number }
@@ -29,7 +29,7 @@ export interface MotionTrack {
   evaluate(time: number, props: Readonly<Properties>): Value;
 }
 export interface TimelineContext {
-  registry: ArtRegistry; compositions: Readonly<Record<string, Composition>>;
+  registry: ArtRegistry; compositions: Readonly<Record<string, ChunkDocument>>;
   destinations?: Readonly<Record<string, readonly string[]>>;
   /** Present during linked source validation; pure timeline inspection can validate shape alone. */
   commandTargets?:Readonly<Record<string,readonly string[]>>;
@@ -46,7 +46,12 @@ function json(v: unknown, seen = new Set<object>()): void {
   if (!Array.isArray(v) && Object.getPrototypeOf(v) !== Object.prototype && Object.getPrototypeOf(v) !== null) throw new Error('Timeline must contain plain objects');
   seen.add(v!); for (const [k, x] of Object.entries(v!)) { if (['__proto__', 'prototype', 'constructor'].includes(k)) throw new Error('Reserved timeline key'); json(x, seen); } seen.delete(v!);
 }
-function nodes(doc: Composition) { const m = new Map<string, Instance>(); const walk = (xs: Instance[]) => xs.forEach(n => { m.set(n.id, n); walk(n.children ?? []); }); walk(doc.instances); return m; }
+function nodes(doc: ChunkDocument) { const m = new Map<string, AssetInstance>(); const walk = (xs: AssetInstance[]) => xs.forEach(n => { m.set(n.id, n); walk(n.children ?? []); }); walk(doc.instances); return m; }
+/** Resolve a source-qualified target without confusing equal IDs in different chunks. */
+export function targetComposition(ctx:TimelineContext,composition:ChunkDocument,target:Target):ChunkDocument{
+ if(target.kind==='camera'||!target.scene||target.scene===composition.scene)return composition;
+ const source=Object.values(ctx.compositions).find(doc=>doc.scene===target.scene);if(!source)throw Error('Unknown timeline source: '+target.scene);return source;
+}
 function validField(f: Field, v: Value) {
   const valid = f.kind === 'json' ? true : f.kind === 'number' ? num(v) && (f.min === undefined || v >= f.min) && (f.max === undefined || v <= f.max)
     : f.kind === 'boolean' ? typeof v === 'boolean' : f.kind === 'select' ? !!f.options?.includes(v as string | number)
@@ -54,7 +59,7 @@ function validField(f: Field, v: Value) {
   if (!valid) return false;
   try { f.validate?.(structuredClone(v)); return true; } catch { return false; }
 }
-function targetValidator(t: Target, all: Map<string, Instance>, ctx: TimelineContext): (v: Value) => boolean {
+function targetValidator(t: Target, all: Map<string, AssetInstance>, ctx: TimelineContext): (v: Value) => boolean {
   if (!obj(t) || typeof t.property !== 'string') throw new Error('Invalid timeline target');
   if (t.kind === 'camera') {
     if (!['x', 'h', 'zoom'].includes(t.property)) throw new Error('Unknown camera property');
@@ -92,9 +97,9 @@ export function validateTimeline(input: unknown, ctx: TimelineContext): Timeline
     for (const shot of seq.shots) { id(shot); span(shot); if (shot.from < end || !obj(shot.camera) || !num(shot.camera.x) || !num(shot.camera.h) || !num(shot.camera.zoom) || shot.camera.zoom <= 0) throw new Error('Invalid or overlapping shot'); end = shot.to; }
     const targets = new Set<string>();
     for (const track of seq.tracks) {
-      id(track); const valid = targetValidator(track.target, all, ctx), target = track.target;
-      const key = [target.kind, target.kind === 'camera' ? '' : target.instance, target.property].join('/');
-      const element = target.kind === 'camera' ? undefined : ctx.registry.get(all.get(target.instance)!.type);
+      id(track); const target = track.target, source=targetComposition(ctx,ctx.compositions[seq.composition],target),targetNodes=source.scene===ctx.compositions[seq.composition].scene?all:nodes(ctx.registry.validate(source)),valid = targetValidator(target,targetNodes,ctx);
+      const key = [target.kind, target.kind === 'camera' ? '' : target.scene??ctx.compositions[seq.composition].scene, target.kind === 'camera' ? '' : target.instance, target.property].join('/');
+      const element = target.kind === 'camera' ? undefined : ctx.registry.get(targetNodes.get(target.instance)!.type);
       const continuous = target.kind === 'camera' || target.kind === 'instance' && !['visible', 'facing'].includes(target.property)
         || target.kind === 'property' && element!.fields[target.property].kind === 'number'
         || target.kind === 'state' && element!.visualFields![target.property].kind === 'number';
@@ -135,8 +140,13 @@ function sample(keys: Keyframe[], time: number): Value {
   }
   return keys[keys.length - 1].value;
 }
+export interface TimelineArtwork {
+ composition:ChunkDocument;visibility:Record<string,boolean>;opacity:Record<string,number>;state:Record<string,Properties>;clips:Record<string,Record<string,string>>;
+}
+export function timelineArtwork(frame:TimelineFrame,scene:string):TimelineArtwork|undefined{return frame.composition.scene===scene?frame:frame.artwork?.[scene];}
 export interface TimelineFrame {
-  time: number; composition: Composition; camera: { x: number; h: number; zoom: number };
+ artwork?:Record<string,TimelineArtwork>;
+  time: number; composition: ChunkDocument; camera: { x: number; h: number; zoom: number };
   visibility: Record<string, boolean>; opacity: Record<string, number>; state: Record<string, Properties>; clips: Record<string, Record<string, string>>;
   text: TextCard[]; fades: { id: string; color: string; opacity: number }[]; beats: Beat[];
 }
@@ -147,18 +157,22 @@ export function evaluateTimeline(doc: TimelineProgram, sequenceId: string, time:
   time = Math.max(0, Math.min(seq.duration, time)); const composition = structuredClone(ctx.compositions[seq.composition]), all = nodes(composition);
   const shot = seq.shots.find(s => time >= s.from && time < s.to) ?? (time === seq.duration ? seq.shots.find(s => s.to === time) : undefined);
   const frame: TimelineFrame = { time, composition, camera: { ...(shot?.camera ?? { x: 0, h: 0, zoom: 1 }) }, visibility: {}, opacity: {}, state: {}, clips: {}, text: seq.text.filter(s => time >= s.from && time < s.to).map(s => ({ ...s })), fades: [], beats: seq.beats.filter(b => b.time <= time).map(b => ({ ...b })) };
+  const sourceNodes=new Map<string,Map<string,AssetInstance>>([[composition.scene,all]]);
   for (const track of seq.tracks) {
+    const source=targetComposition(ctx,composition,track.target);let output:TimelineArtwork=frame;
+    if(source.scene!==composition.scene){const artwork=frame.artwork??={};output=artwork[source.scene]??=( {composition:structuredClone(source),visibility:{},opacity:{},state:{},clips:{}} );if(!sourceNodes.has(source.scene))sourceNodes.set(source.scene,nodes(output.composition));}
+    const targetNodes=sourceNodes.get(source.scene)!;
     const t = options.reduced && track.reduced === 'freeze' ? 0 : time;
     const value = track.motion ? ctx.motionTracks![track.motion.type].evaluate(t, structuredClone(track.motion.props)) : sample(track.keys, t);
-    if (!targetValidator(track.target, all, ctx)(value)) throw new Error(`${track.id}: motion output violates target schema`);
+    if (!targetValidator(track.target, targetNodes, ctx)(value)) throw new Error(`${track.id}: motion output violates target schema`);
     const target = track.target;
     if (target.kind === 'camera') frame.camera[target.property] = value as number;
-    else if (target.kind === 'property') all.get(target.instance)!.props[target.property] = structuredClone(value);
-    else if (target.kind === 'state') (frame.state[target.instance] ??= {})[target.property] = structuredClone(value);
-    else if (target.kind === 'clip') (frame.clips[target.instance] ??= {})[target.property] = value as string;
-    else if (target.property === 'visible') frame.visibility[target.instance] = value as boolean;
-    else if (target.property === 'opacity') frame.opacity[target.instance] = value as number;
-    else (all.get(target.instance)!.placement as unknown as Record<string, Value>)[target.property] = value;
+    else if (target.kind === 'property') targetNodes.get(target.instance)!.props[target.property] = structuredClone(value);
+    else if (target.kind === 'state') (output.state[target.instance] ??= {})[target.property] = structuredClone(value);
+    else if (target.kind === 'clip') (output.clips[target.instance] ??= {})[target.property] = value as string;
+    else if (target.property === 'visible') output.visibility[target.instance] = value as boolean;
+    else if (target.property === 'opacity') output.opacity[target.instance] = value as number;
+    else (targetNodes.get(target.instance)!.placement as unknown as Record<string, Value>)[target.property] = value;
   }
   frame.fades = seq.fades.filter(f => time >= f.from && time <= f.to).map(f => ({ id: f.id, color: f.color, opacity: f.start + (f.end - f.start) * ((time - f.from) / (f.to - f.from)) }));
   return frame;

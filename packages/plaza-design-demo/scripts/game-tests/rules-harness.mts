@@ -2,9 +2,14 @@
 import assert from 'node:assert/strict';
 export class Element {
  children:Element[]=[];attributes:Record<string,string>={};value='';checked=false;textContent='';disabled=false;className='';type='';min='';max='';step='';open=false;style:Record<string,string>={};
+ dataset:Record<string,string>={};hidden=false;parentElement?:Element;onclose?:()=>void;
+ closest(){return undefined;}
+ showModal(){this.open=true;}
+ close(){this.open=false;this.onclose?.();}
+ remove(){if(this.parentElement)this.parentElement.children=this.parentElement.children.filter(e=>e!==this);}
  onchange?:()=>void;onclick?:()=>void;ontoggle?:()=>void;onerror?:()=>void;
- append(...n:Element[]){this.children.push(...n);}
- replaceChildren(...n:Element[]){this.children=[...n];}
+ append(...n:Element[]){for(const child of n)child.parentElement=this;this.children.push(...n);}
+ replaceChildren(...n:Element[]){this.children=[];this.append(...n);}
  setAttribute(k:string,v:string){this.attributes[k]=v;}
 }
 Object.defineProperty(globalThis,'document',{configurable:true,value:{createElement:()=>new Element()}});

@@ -781,7 +781,6 @@ ${FEEDBACK_STYLES}
 
     #game-menu[hidden],
     html:not(.game-mode) #game-menu { display: none; }
-    html.game-menu #touch,
     html.game-menu #yard-btns { display: none; }
 
     #game-menu .gm-crt {
@@ -1103,7 +1102,10 @@ ${FEEDBACK_STYLES}
     }
 
     html.game-mode.touch #touch { display: flex; }
-    html.game-mode.cutscene #touch { display: none; }
+    /* Keep the gameplay inset measurable while direction/menu hides its controls.
+       The opening lands on this same ground line before normal play resumes. */
+    html.game-mode.cutscene #touch,
+    html.game-menu #touch { visibility: hidden; }
     /* the city map owns the screen: only a way out (ESC) stays */
     html.game-map #key-bar,
     html.game-map #touch .pad:first-child,

@@ -7,13 +7,13 @@ import {defaultNetworkContext} from '../network-context';
 import {validateExitKeyReferences} from '../../world/access';
 import {validateDeviceDocument} from './device-source-validation';
 import {projectDeviceBindings} from './device-bindings';
-import {art,type Composition} from '../../art';
+import {art,type ChunkDocument} from '../../art';
 import type {SceneDef} from '../../scenes/kit';
 import type {GameplayDefinition} from './types';
 import type {SceneDocument} from './scene-document';
 import {validateGameplay} from './validation';
 import {validateDeclaredScene,validateDeclaredDestinations} from './declared-scene';
-export interface AuthoredScene {composition:Composition;scene:SceneDocument;gameplay:GameplayDefinition;devices?:SceneDeviceSource}
+export interface AuthoredScene {composition:ChunkDocument;scene:SceneDocument;gameplay:GameplayDefinition;devices?:SceneDeviceSource}
 export interface SceneCatalogue {version:1;scenes:AuthoredScene[]}
 export const authoredDocumentId=(scene:string,part:'composition'|'scene'|'gameplay'|'devices')=>'authored.'+scene+(part==='composition'?'':'-'+part);
 const fields=(value:unknown,keys:string[],required=keys)=>{if(!value||typeof value!=='object'||Array.isArray(value)||Object.getPrototypeOf(value)!==Object.prototype||Object.keys(value).some(k=>!keys.includes(k))||required.some(k=>!Object.prototype.hasOwnProperty.call(value,k)))throw new Error('Invalid authored scene catalogue fields');};

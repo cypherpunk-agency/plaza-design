@@ -1,3 +1,6 @@
+import {validateGameplayCondition} from '../engine/gameplay/conditions';
+import {validateGameplayQuerySources} from '../engine/gameplay/queries';
+import {storyObservationTypes} from './observations';
 import baseline from './opening.json';
 import type {LevelSource} from '../engine/level';
 import {matches} from '../engine/gameplay/queries';
@@ -19,12 +22,9 @@ export interface OpeningPhaseRule {when?:Condition;phase:OpeningState}
 /** A sudo LEVELS entry: the opening from one of its points. `reset` scenes start over (the flat as on the first night). */
 export interface OpeningLevel {id:string;name:string;flags:string[];reset?:string[];/** A card whose `end` cues run on arrival (the morning's words). */end?:string}
 export type OpeningRoles=Record<'home'|'street'|'flat'|'slept'|'uplink'|'jacked',string>;
-/** Where the opening begins, where a save with no usable resume point lands, and the scene whose first visit means the opening is behind the save. */
-export interface OpeningStart {start:Handoff;fallback:Handoff;settled:string}
 export interface OpeningSource {
  version:1;OPENING:OpeningRoles;OPENING_LEVELS:OpeningLevel[];
  PHASES:Record<OpeningState,OpeningPhase>;PHASE_RULES:OpeningPhaseRule[];
- START:OpeningStart;
  /** How long standing still (clock frames) is before the next goal's target pings. */
  ATTENTION:{after:number};
  /** When the story lets go of the city clock, it runs on from the time this scene names in this phase. */
@@ -43,7 +43,7 @@ export interface OpeningSourceContext {
  keyring?:readonly string[];controlled?:readonly string[];programs?:readonly string[];
 }
 const ROLE_FLAGS={home:'opening:home',street:'opening:street',flat:'opening:flat',slept:'opening:slept',uplink:'opening:uplink',jacked:'opening:jacked'} as const;
-const ROOT_FIELDS=['version','OPENING','OPENING_LEVELS','PHASES','PHASE_RULES','START','ATTENTION','CLOCK','CARDS','TRIGGERS','GOAL_HINTS','GAMEPLAY','WORKFLOWS'];
+const ROOT_FIELDS=['version','OPENING','OPENING_LEVELS','PHASES','PHASE_RULES','ATTENTION','CLOCK','CARDS','TRIGGERS','GOAL_HINTS','GAMEPLAY','WORKFLOWS'];
 export function validateOpeningSource(value:unknown,context?:OpeningSourceContext):OpeningSource{
  const seen=new Set<object>();const json=(v:unknown,at:string,depth=0):void=>{if(depth>32)fail(at,'depth limit');if(v===null||typeof v==='string'||typeof v==='boolean'||typeof v==='number'&&Number.isFinite(v))return;if(!v||typeof v!=='object'||seen.has(v))fail(at,'finite acyclic JSON required');if(!Array.isArray(v))object(v,at);const node=v as object;seen.add(node);for(const[k,c]of Object.entries(node)){if(['__proto__','constructor','prototype'].includes(k))fail(at,'reserved key');json(c,at+'/'+k,depth+1);}seen.delete(node);};json(value,'root');if(JSON.stringify(value).length>256000)fail('root','size limit');
  const d=fields(value,'root',ROOT_FIELDS);if(d.version!==1)fail('version','version 1 required');
@@ -85,11 +85,10 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  for(const[p,v]of Object.entries(metadata)){const rules=(v as {resume:{whenFlag?:string}[]}).resume;if(rules.length&&!rules.some(r=>r.whenFlag===undefined))fail('PHASES/'+p,'resume fallback required');}
  const levels=list(d.OPENING_LEVELS,'OPENING_LEVELS',16),levelIds=new Set();for(const l of levels){const r=fields(l,'OPENING_LEVELS',['id','name','flags','reset','end'],['id','name','flags']);id(r.id,'level/id');text(r.name,'level/name');if(r.reset!==undefined)for(const s of list(r.reset,'level/reset',8))scene(s,'level/reset');if(levelIds.has(r.id))fail('levels','duplicate id');levelIds.add(r.id);for(const flag of list(r.flags,'level/flags',6))if(!knownFlags.has(flag))fail('level/flags','unknown opening flag');}
 
- const start=fields(d.START,'START',['start','fallback','settled']);for(const k of['start','fallback'])destination(start[k],'START/'+k);scene(start.settled,'START/settled');
  const attention=fields(d.ATTENTION,'ATTENTION',['after']);num(attention.after,'ATTENTION/after',1);
  const clock=fields(d.CLOCK,'CLOCK',['release']),release=fields(clock.release,'CLOCK/release',['phase','scene']);if(typeof release.phase!=='string'||!phases.has(release.phase))fail('CLOCK/release','unknown phase');scene(release.scene,'CLOCK/release/scene');
 
- // cues name milestones, scenes and counters; counters are the loop's own numbers, named here and nowhere else declared
+ // Cues retain presentation work; milestones dispatch ordinary global system commands.
  const checkCues=(cues:Cue[],at:string)=>{const refs=cueRefs(cues);for(const m of refs.milestones)if(!Object.prototype.hasOwnProperty.call(workflows,m))fail(at,'unknown milestone '+m);for(const s of refs.scenes)scene(s,at);};
  const cards=object(d.CARDS,'CARDS');if(Object.keys(cards).length>16)fail('CARDS','card limit');
  for(const[cardId,v]of Object.entries(cards)){
@@ -100,13 +99,11 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
  for(const l of levels)if((l as {end?:string}).end!==undefined&&!Object.prototype.hasOwnProperty.call(cards,(l as {end:string}).end))fail('OPENING_LEVELS/'+(l as {id:string}).id,'unknown card');
  const triggers=list(d.TRIGGERS,'TRIGGERS',16),triggerIds=new Set<string>();
  for(const[index,v]of triggers.entries()){
-  const a='TRIGGERS/'+index,t=fields(v,a,['id','phase','scene','viewing','start','once','quiet','when','do'],['id','phase','scene','do']);
-  id(t.id,a+'/id');if(triggerIds.has(t.id))fail(a,'duplicate trigger id');triggerIds.add(t.id);
-  if(typeof t.phase!=='string'||!phases.has(t.phase))fail(a+'/phase','unknown phase');const s=scene(t.scene,a+'/scene');
-  if(t.viewing!==undefined)device(s,t.viewing,a+'/viewing');
-  if(t.start!==undefined)id(t.start,a+'/start');if(t.once!==undefined)id(t.once,a+'/once');
-  if(t.quiet!==undefined){const q=fields(t.quiet,a+'/quiet',['bubble','popup','since','frames']);if(q.bubble!==true||q.popup!==true)fail(a+'/quiet','bubble and popup must be true');id(q.since,a+'/quiet/since');num(q.frames,a+'/quiet/frames',0,1000000);}
-  if(t.when!==undefined){const tests=list(t.when,a+'/when',8);if(!tests.length)fail(a+'/when','at least one test required');for(const[j,test]of tests.entries()){const b=a+'/when/'+j,o=object(test,b);if('counter'in o){fields(o,b,['counter','atLeast']);id(o.counter,b);num(o.atLeast,b+'/atLeast',1,1000000);}else{fields(o,b,['elapsed','frames']);id(o.elapsed,b);num(o.frames,b+'/frames',0,1000000);if(t.start===undefined&&o.elapsed!==t.start)fail(b,'an elapsed test needs a start counter that is stamped (set start, or stamp it in a cue)');}}}
+  const a='TRIGGERS/'+index,t=fields(v,a,['id','when','do','start','watch'],['id','when','do']);
+  id(t.id,a+'/id');if(triggerIds.has(String(t.id)))fail(a,'duplicate trigger');triggerIds.add(String(t.id));
+  validateGameplayCondition(t.when,gameplay);
+  if((t.start===undefined)!==(t.watch===undefined))fail(a,'start timestamp and watch condition must be supplied together');
+  if(t.start!==undefined){id(t.start,a+'/start');validateGameplayCondition(t.watch,gameplay);}
   validateCues(t.do,a+'/do');checkCues(t.do,a+'/do');
  }
  const hints=list(d.GOAL_HINTS,'GOAL_HINTS',8);
@@ -165,6 +162,7 @@ export function validateOpeningSource(value:unknown,context?:OpeningSourceContex
    }
   }
  }
+ validateGameplayQuerySources(gameplay,{tuning:{},texts:{}},storyObservationTypes(d,context?Object.values(context.scenes).map(s=>s.phases):undefined));
  return structuredClone(d) as OpeningSource;
 }
 type Flags=Readonly<Record<string,boolean>>;

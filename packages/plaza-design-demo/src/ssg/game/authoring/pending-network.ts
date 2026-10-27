@@ -9,17 +9,19 @@ import {deviceRules,deviceSceneIds,deviceDocumentId} from './device-sources';
 import {validateNetworkShape,validateNetworkSource} from './network-source';
 import {isValidationSnapshot,markValidationContext} from './validation-snapshot';
 const validationNetworks = new WeakMap<ReadonlyMap<string,unknown>,ReturnType<typeof createNetworkContext>>();
+let recentValidationNetwork:{inputs:unknown[];context:ReturnType<typeof createNetworkContext>}|undefined;
 /** Resolve pending key metadata before validating scene references; semantic validation follows assembly. */
 export function pendingNetworkContext(documents:ReadonlyMap<string,unknown>){
  const cached=isValidationSnapshot(documents)?validationNetworks.get(documents):undefined;if(cached)return cached;
- const net=validateNetworkShape(documents.get('network')??NET);
+ const rawNet=documents.get('network')??NET;
  const scenes=Object.entries(NATIVE_SCENES).flatMap(([id,scene])=>{
   const source=deviceSceneIds.includes(id)?documents.get(deviceDocumentId(id)):undefined;
   return source?[source as SceneData]:scene.data?[scene.data]:[];
  });
  const catalogue=documents.get('authored-scenes') as {scenes?:{devices?:SceneData}[]}|undefined;
  const authored=(catalogue?.scenes??[]).flatMap(entry=>entry.devices?[entry.devices]:[]);
- const context=createNetworkContext(net,[...scenes,...authored]);if(isValidationSnapshot(documents)){markValidationContext(context);validationNetworks.set(documents,context);}return context;
+ const inputs=[rawNet,...scenes,...authored];if(isValidationSnapshot(documents)&&recentValidationNetwork&&inputs.length===recentValidationNetwork.inputs.length&&inputs.every((v,i)=>v===recentValidationNetwork!.inputs[i])){validationNetworks.set(documents,recentValidationNetwork.context);return recentValidationNetwork.context;}
+ const net=validateNetworkShape(rawNet),context=createNetworkContext(net,[...scenes,...authored]);if(isValidationSnapshot(documents))recentValidationNetwork={inputs,context};if(isValidationSnapshot(documents)){markValidationContext(context);validationNetworks.set(documents,context);}return context;
 }
 export function validatePendingNetwork(documents:ReadonlyMap<string,unknown>,registry:Record<string,SceneDef>){
  const scenes=Object.values(registry).filter((s):s is SceneDef&{data:SceneData}=>!!s.data);

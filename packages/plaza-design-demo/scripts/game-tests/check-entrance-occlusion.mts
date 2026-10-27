@@ -12,7 +12,7 @@ import path from 'node:path';
 import {SCENES} from '../../src/ssg/game/scenes/index';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {art} from '../../src/ssg/game/art';
-import {beginLayeredFrame, flushLayeredSlot, resolveComposition, type Composition, type Instance} from '../../src/ssg/game/art/core/composition';
+import {beginLayeredFrame, flushLayeredSlot, resolveComposition, type ChunkDocument, type AssetInstance} from '../../src/ssg/game/art/core/composition';
 import {compileLevel, compileOccluders, levelArrive, levelBounds, levelDown, levelFloor, levelNear, levelRiding, levelStep, levelView, restingLevelView, splitLevelView, type Level, type LevelPlayer} from '../../src/ssg/game/engine/level';
 import {referenceView} from './reference-view';
 import type {SceneDef} from '../../src/ssg/game/scenes/kit';
@@ -111,10 +111,10 @@ const root = 'src/ssg/game', files = [
   ...fs.readdirSync(path.join(root, 'scenes'), {withFileTypes: true}).filter(d => d.isDirectory()).map(d => path.join(root, 'scenes', d.name, 'composition.json')),
   ...fs.readdirSync(path.join(root, 'art/proposals')).filter(n => n.endsWith('.composition.json')).map(n => path.join(root, 'art/proposals', n)),
 ].filter(x => fs.existsSync(x));
-const unbind = (nodes: Instance[]): Instance[] => nodes.map(({bindings: _, children, ...n}) => ({...n, ...(children ? {children: unbind(children)} : {})}) as Instance);
+const unbind = (nodes: AssetInstance[]): AssetInstance[] => nodes.map(({bindings: _, children, ...n}) => ({...n, ...(children ? {children: unbind(children)} : {})}) as AssetInstance);
 let pieces = 0, jambs = 0;
 for (const file of files) {
-  const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as Composition, rows = resolveComposition(art, {...doc, instances: unbind(doc.instances)}, {view: {t: 0} as never, state: {}, reduced: true});
+  const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as ChunkDocument, rows = resolveComposition(art, {...doc, instances: unbind(doc.instances)}, {view: {t: 0} as never, state: {}, reduced: true});
   if (!compileLevel(rows)) continue;
   for (const o of compileOccluders(rows)) { const t = rows.find(r => r.instance.id === o.id)!.instance.type; assert.doesNotThrow(() => art.visualProperties(t, {near: 1}), undefined, file + ': ' + o.id); pieces++; if (o.kind === 'jamb') jambs++; }
 }

@@ -183,6 +183,105 @@
           "emit": "sandbox.vent.shut"
         }
       ]
+    },
+    "talk.sandbox.lead.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.lead.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.sandbox.lead.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.lead.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.sandbox.lead.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.lead.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.sandbox.lead.advance-3": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.lead.cursor",
+          "set": 3
+        }
+      ]
+    },
+    "talk.sandbox.unit0.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.unit0.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.sandbox.unit0.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.unit0.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.sandbox.tech.advance-0": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.tech.cursor",
+          "set": 1
+        }
+      ]
+    },
+    "talk.sandbox.tech.advance-1": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.tech.cursor",
+          "set": 2
+        }
+      ]
+    },
+    "talk.sandbox.tech.advance-2": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "talk.sandbox.tech.cursor",
+          "set": 2
+        }
+      ]
     }
   },
   "reactions": [],
@@ -345,6 +444,185 @@
         "retry": "Try a sentence from the spec.",
         "retryNext": "start"
       }
+    },
+    "talk.sandbox.lead": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.sandbox.lead.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.sandbox.lead.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "when": {
+            "state": "talk.sandbox.lead.cursor",
+            "is": 2
+          },
+          "node": "visit-2"
+        },
+        {
+          "node": "visit-3"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "QA LEAD",
+          "pages": [
+            "Bay 3. Every device in here has passed its test at least once.",
+            "Not at the same time. We do not test that."
+          ],
+          "onEnter": "talk.sandbox.lead.advance-0"
+        },
+        "visit-1": {
+          "speaker": "QA LEAD",
+          "pages": [
+            "The console behind me resets the bay. Devices, cables, trace, the lot.",
+            "It does not reset me. I asked. Twice. It logged both requests."
+          ],
+          "onEnter": "talk.sandbox.lead.advance-1"
+        },
+        "visit-2": {
+          "speaker": "QA LEAD",
+          "pages": [
+            "Left to right, one bench per thing the system can do. Read the plate, then break the thing under it.",
+            "Then log that you broke it. Then log that you logged it."
+          ],
+          "onEnter": "talk.sandbox.lead.advance-2"
+        },
+        "visit-3": {
+          "speaker": "QA LEAD",
+          "pages": [
+            "The watchdog in seven is ours. Well. It is the Registry's. We just feed it."
+          ],
+          "onEnter": "talk.sandbox.lead.advance-3"
+        }
+      }
+    },
+    "talk.sandbox.unit0": {
+      "entry": [
+        {
+          "when": {
+            "state": "talk.sandbox.unit0.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "node": "visit-1"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "TEST UNIT 0",
+          "pages": [
+            "CARRYING: 1 DEVICE UNDER TEST. DESTINATION: THE NEXT BENCH.",
+            "I HAVE BEEN TO THE NEXT BENCH. IT IS ALSO A BENCH."
+          ],
+          "onEnter": "talk.sandbox.unit0.advance-0"
+        },
+        "visit-1": {
+          "speaker": "TEST UNIT 0",
+          "pages": [
+            "MY JOB: MOVE THE TEST. MY TEST: WHETHER I MOVE THE TEST.",
+            "RESULT: PENDING. I AM MOVING IT."
+          ],
+          "onEnter": "talk.sandbox.unit0.advance-1"
+        }
+      }
+    },
+    "talk.sandbox.tech": {
+      "entry": [
+        {
+          "when": {
+            "all": [
+              {
+                "weather": [
+                  "rain",
+                  "storm"
+                ]
+              }
+            ]
+          },
+          "node": "variant-0"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "time": {
+                  "from": "18:00",
+                  "to": "06:00"
+                }
+              }
+            ]
+          },
+          "node": "variant-1"
+        },
+        {
+          "when": {
+            "state": "talk.sandbox.tech.cursor",
+            "is": 0
+          },
+          "node": "visit-0"
+        },
+        {
+          "when": {
+            "state": "talk.sandbox.tech.cursor",
+            "is": 1
+          },
+          "node": "visit-1"
+        },
+        {
+          "node": "visit-2"
+        }
+      ],
+      "nodes": {
+        "visit-0": {
+          "speaker": "NIGHT TECH",
+          "pages": [
+            "I test the bench. Sit on it, wait, see if time passes. It does. Every time.",
+            "Forty-one passes. I am going for fifty."
+          ],
+          "onEnter": "talk.sandbox.tech.advance-0"
+        },
+        "visit-1": {
+          "speaker": "NIGHT TECH",
+          "pages": [
+            "The cat is not a device under test. We checked. It refused the checking."
+          ],
+          "onEnter": "talk.sandbox.tech.advance-1"
+        },
+        "visit-2": {
+          "speaker": "NIGHT TECH",
+          "pages": [
+            "TEST UNIT 0 has carried that same box between bays since I started.",
+            "I asked what is in it. It said: \"THE TEST.\" Fair."
+          ],
+          "onEnter": "talk.sandbox.tech.advance-2"
+        },
+        "variant-0": {
+          "speaker": "NIGHT TECH",
+          "pages": [
+            "Rain. The vent knows before the forecast does. I trust the vent.",
+            "The vent has never once said \"light showers\"."
+          ]
+        },
+        "variant-1": {
+          "speaker": "NIGHT TECH",
+          "pages": [
+            "Night shift. The night light is allowed on now. It waited all day for this.",
+            "Same, honestly."
+          ]
+        }
+      }
     }
   },
   "state": {
@@ -492,6 +770,30 @@
       "lifetime": "save",
       "type": "boolean",
       "default": true
+    },
+    "talk.sandbox.lead.cursor": {
+      "owner": "talk.sandbox.lead",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3
+    },
+    "talk.sandbox.unit0.cursor": {
+      "owner": "talk.sandbox.unit0",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 1
+    },
+    "talk.sandbox.tech.cursor": {
+      "owner": "talk.sandbox.tech",
+      "lifetime": "save",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 2
     }
   },
   "native": {

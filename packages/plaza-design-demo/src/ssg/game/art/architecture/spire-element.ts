@@ -4,10 +4,10 @@
  * visible from everywhere, so a dense district still opens a view to it somewhere. Place it in the
  * distance layer with a small parallax; its foot can sit below the roofs in front of it.
  */
-import type { Element } from '../core/composition';
+import type { AssetDefinition } from '../core/composition';
 import { drawSpire } from './spire';
 
-export const spireElement: Element = {
+export const spireElement: AssetDefinition = {
   type: 'landmark.spire', version: 1, label: 'Spire on the skyline (landmark)', category: 'architecture', libraryUse:'reusable', coordinates: 'world', parts: ['backdrop'],
   fields: {
     size: { kind: 'number', label: 'Size (1: as seen from the Stacks)', default: 1, min: 0.1, max: 6, step: 0.05 },

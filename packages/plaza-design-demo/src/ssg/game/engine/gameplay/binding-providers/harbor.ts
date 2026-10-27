@@ -1,5 +1,5 @@
 import {art} from '../../../art';
-import {resolveComposition,type Composition,type Instance,type Resolved,type Value} from '../../../art/core/composition';
+import {resolveComposition,type ChunkDocument,type AssetInstance,type Resolved,type Value} from '../../../art/core/composition';
 import {frameView} from '../../../art/core/view';
 import {onScreen} from '../../../art/core/primitives';
 import type {HarborLayout,HarborVisual,CraneVisual} from '../../../art/assemblies/harbor-pier';
@@ -23,10 +23,10 @@ export function harborLayoutOf(roles:Readonly<Record<string,Resolved>>,width:num
  const get=(role:string)=>roleRow(roles,role),x=(role:string)=>get(role).placement.x,arch=get('arch'),hut=get('hut'),bonded=get('bonded');
  return{width,hut:{x:x('hut'),w:Number(hut.props.width),h:Number(hut.props.height)},notice:x('notice'),arch:{x0:x('arch'),x1:x('arch')+Number(arch.props.width),h:Number(arch.props.height)},podium:x('podium'),manifest:x('manifest'),callBox:x('call-box'),cranes:[0,1].map(i=>({x:x('crane'+i),id:String(get('crane'+i).props.gantry) as 'sts1'|'sts2'|'sts3',phase:Number(get('crane'+i).props.phase)})),fish:{x:x('fish'),w:Number(get('fish').props.width)},drinks:{x:x('drinks'),w:Number(get('drinks').props.width)},den:x('den'),fence:{x0:x('bonded'),x1:x('bonded')+Number(bonded.props.width),gate:x('bonded-gate')},ghost:x('ghost'),berth:x('berth'),rails:x('rails'),beacon:x('beacon'),metro:x('metro'),terminal:x('terminal'),taxi:x('taxi'),ferry:x('ferry')};
 }
-const flatten=(nodes:Instance[]):Instance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
+const flatten=(nodes:AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** The pier's layout from its composition and scene documents (the vehicle workbench draws the pier with it). */
 export function harborLayout(composition:unknown,scene:SceneDocument):HarborLayout{
- const doc=art.validate(composition) as Composition,bindings:Record<string,Value>={};
+ const doc=art.validate(composition) as ChunkDocument,bindings:Record<string,Value>={};
  for(const n of flatten(doc.instances))for(const[k,b]of Object.entries(n.bindings??{}))bindings[b]=art.get(n.type).visualFields![k].default;
  const rows=resolveComposition(art,doc,{view:{...frameView(0),sx:x=>x,y:h=>-h,gy:0,cam:0,t:0,viewW:960,viewH:360,flags:{}},state:{},bindings,reduced:false}),geometry=manifestGeometry(scene,rows,[],{groundExits:false});
  return harborLayoutOf(geometry.artwork,geometry.width);

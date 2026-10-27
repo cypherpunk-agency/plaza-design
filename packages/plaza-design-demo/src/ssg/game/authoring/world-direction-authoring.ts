@@ -1,13 +1,13 @@
-import type {Instance,Composition} from '../art/core/composition';
+import type {AssetInstance,ChunkDocument} from '../art/core/composition';
 import type {EditorDocument} from './contracts';
-import {validateWorldCompositions} from '../world/compositions';
+import {validateWorldCompositions,worldCompositionChunks} from '../world/compositions';
 import {TypedForm} from './typed-form';
 /** Source references are typed controls; camera framing remains ordinary numeric artwork fields. */
-export function renderWorldDirectionAuthoring(host:HTMLElement,node:Instance,documents:readonly EditorDocument[],edit:(label:string,change:(node:Instance)=>void)=>void,report:(e:unknown)=>void){
+export function renderWorldDirectionAuthoring(host:HTMLElement,node:AssetInstance,documents:readonly EditorDocument[],edit:(label:string,change:(node:AssetInstance)=>void)=>void,report:(e:unknown)=>void){
  const form=new TypedForm(report),value=documents.find(d=>d.id==='world-compositions')?.value;
  const source=value?validateWorldCompositions(value):undefined;
- const chunks=[...new Set(documents.filter(d=>d.kind==='composition').map(d=>(d.value as Composition).scene))];
- const members=(id:string)=>source?.compositions[id]?.members.flatMap(m=>m.chunk?[m.chunk]:source.groups[m.group!].members.map(m=>m.chunk!))??[];
+ const chunks=[...new Set(documents.filter(d=>d.kind==='composition').map(d=>(d.value as ChunkDocument).scene))];
+ const members=(id:string)=>source?worldCompositionChunks(source,id):[];
  const scope=String(node.props.worldComposition??''),zones=(node.props.zones??[]) as string[];
  form.select(host,'World composition',['Explicit zones',...Object.keys(source?.compositions??{})],scope||'Explicit zones',id=>edit('Change directed world scope',n=>{
   n.props.worldComposition=id==='Explicit zones'?'':id;

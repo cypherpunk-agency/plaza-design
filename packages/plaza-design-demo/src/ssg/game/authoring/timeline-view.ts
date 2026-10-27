@@ -19,7 +19,7 @@ export function mountTimelineGrid(host:HTMLElement,options:{sequence:Sequence;st
   function scrub(lane:HTMLElement){lane.onpointerdown=event=>{if(event.button!==0||event.target!==lane)return;event.preventDefault();lane.setPointerCapture(event.pointerId);options.seek(seekAt(event,lane));};lane.onpointermove=event=>{if(lane.hasPointerCapture(event.pointerId))options.seek(seekAt(event,lane));};lane.onpointerup=event=>{if(lane.hasPointerCapture(event.pointerId))lane.releasePointerCapture(event.pointerId);};}
   scrub(ruler);
   const groups=new Map<string,typeof seq.tracks>();
-  for(const track of seq.tracks){const id=track.target.kind==='camera'?'Camera':track.target.instance;const rows=groups.get(id)??[];rows.push(track);groups.set(id,rows);}
+  for(const track of seq.tracks){const id=track.target.kind==='camera'?'Camera':track.target.scene?JSON.stringify([track.target.scene,track.target.instance]):track.target.instance;const rows=groups.get(id)??[];rows.push(track);groups.set(id,rows);}
   const addRow=(label:HTMLElement,cls='')=>{const row=el('div','keyframe-row '+cls),lane=el('div','keyframe-lane');label.classList.add('keyframe-label');row.append(label,lane);body.append(row);scrub(lane);return lane;};
   const keyButton=(time:number,label:string,selection:TimelineSelection,lane:HTMLElement,target?:Target)=>{
     const key=el('button','keyframe-diamond');key.type='button';key.style.left=position(time);key.title=label;key.setAttribute('aria-label',label);key.setAttribute('aria-pressed',String(JSON.stringify(selection)===JSON.stringify(options.selected)));key.dataset.time=String(time);
@@ -33,7 +33,7 @@ export function mountTimelineGrid(host:HTMLElement,options:{sequence:Sequence;st
     for(const time of new Set(tracks.flatMap(t=>t.keys.map(k=>k.time)))){const dot=el('span','keyframe-summary');dot.style.left=position(time);lane.append(dot);}
     if(folded)continue;
     for(const track of tracks){
-      const label=el('button','keyframe-property',track.target.property+(track.motion?' · motion':''));label.type='button';label.title=track.id;label.onclick=()=>options.select({kind:'track',track:track.id},track.target);
+      const label=el('button','keyframe-property',(({x:'X',h:'Y'} as Record<string,string>)[track.target.property]??track.target.property)+(track.motion?' · motion':''));label.type='button';label.title=track.id;label.onclick=()=>options.select({kind:'track',track:track.id},track.target);
       const lane=addRow(label,'keyframe-track'+((options.selected?.kind==='key'||options.selected?.kind==='track')&&options.selected.track===track.id?' selected':''));lane.dataset.track=track.id;
       if(track.motion)lane.append(el('span','keyframe-motion','Procedural motion'));
       track.keys.forEach((key,index)=>{

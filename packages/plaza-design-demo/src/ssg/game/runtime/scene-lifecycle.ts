@@ -65,10 +65,11 @@ function mobileOwnersAt(port:SceneLifecyclePort,id:SceneId,cam:number){
 
 export function joinLevel(port:SceneLifecyclePort,id: SceneId,cam = port.camera.cam):LevelSource | undefined {
     const s = port.sceneDefinition(id);
-    port.scenes.joinedZones = []; port.scenes.zoneTiers = new Map();port.scenes.mobileOwners=new Set();
+    port.scenes.joinedZones = []; port.scenes.zoneTiers = new Map();port.scenes.zoneReasons=new Map();port.scenes.mobileOwners=new Set();
     if (!s.level || !zoneJoined(port.zoneGraph, id)) return s.level;
     // the zones around this one that are resident for this camera (world/zone-graph.ts `residency`): visible or near
     const r = residencyAt(port,id, cam), parts = [];
+    port.scenes.zoneReasons=new Map([...r.zones].map(([id,row])=>[id,row.reason]));
     for (const [z, zr] of r.zones) {
       if (zr.tier === 'unloaded' || !zr.at || !port.hasScene(z)) continue;
       const d = port.sceneDefinition(z);
@@ -116,6 +117,7 @@ export function followResidency(port:SceneLifecyclePort) {
       // Disconnected interiors and a directing camera have independent references. Camera
       // residency never merges those unrelated floors or rebases the stationary player.
       const r=residencyAt(port,origin,port.camera.cam);
+      port.scenes.zoneReasons=new Map([...r.zones].map(([id,row])=>[id,row.reason]));
       port.scenes.zoneTiers=new Map([...r.zones].map(([id,row])=>[id,row.tier==='active'?'visible':row.tier]));
       port.scenes.zoneTiers.set(port.scenes.here,'active');
       const owners=new Set([...mobileOwnersAt(port,origin,port.camera.cam),...mobileOwnersAt(port,port.scenes.here,port.p.x-port.camera.viewW*.45)]);
@@ -128,6 +130,7 @@ export function followResidency(port:SceneLifecyclePort) {
     }
     if (!port.scenes.level?.source.zones) return;
     const r = residencyAt(port,port.scenes.here, port.camera.cam);
+    port.scenes.zoneReasons=new Map([...r.zones].map(([id,row])=>[id,row.reason]));
     const want = [...r.zones].filter(([z, zr]) => zr.tier !== 'unloaded' && zr.at && port.hasScene(z) && port.sceneDefinition(z).level).map(([z]) => z).sort();
     const have = Object.keys(port.scenes.level.source.zones).sort();
     for (const [z, zr] of r.zones) if (port.scenes.zoneTiers.has(z)) port.scenes.zoneTiers.set(z, zr.tier);

@@ -20,8 +20,8 @@ controlled by the authored command condition, not by a second presentation
 state owner.
 
 What the END card says is a document, not drawing code: story/end-card.json (title, lines with the tokens `{controlled}` and
-`{handle}`, the prompt), registered as source document `end-card`, validated by story/end-card.ts and edited in World › Game opening ›
-End card. Private Play passes its pending copy through `GameRuntimeSources.endCard`. The card has no state of its own.
+`{handle}`, the prompt), registered as source document `end-card`, validated by story/end-card.ts and edited in World data → Game settings →
+Ending. Private Play passes its pending copy through `GameRuntimeSources.endCard`. The card has no state of its own.
 
 The presentation callback is optional on a general SceneStore. A session whose
 source requires a presentation handoff must have a real presentation host;
