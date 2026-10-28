@@ -21,23 +21,23 @@ per-browser view preferences, never source.
 ## Window layout
 
 ```
-┌ header 44 ─ brand · workspace tabs · command search · undo/redo · unsaved count · Save · ⋯ ┐
-├ left dock 264 ┬ toolbar 38 ─────────────────────────────────────┬ right dock 312 ┤
-│ tabs: Outline │ scene preview + overlays                          │ tabs: Inspector│
-│ Library …     │                                                   │ …              │
-│               ├ bottom dock: 30 collapsed / 250 open ─────────────┤                │
-├───────────────┴ status bar 24 ─ mode chip · checkpoint · selection · grid · save state ┤
+┌ header 44 ─ brand · workspace tabs · scene toolbar · Play · Search · undo/redo · Save · ⋯ ┐
+├ panel strip 36 (workspace panels; context of the open chunk) ──────────────────────────────┤
+├ left dock 256 ┬ scene preview + overlays ─────────────────────────┬ right dock 300 ┤
+│ tabs: Outline │                                                   │ Inspector      │
+│ Library       ├ timeline: folded strip / 240 open ────────────────┤                │
+├───────────────┴ status bar 24 ─ mode chip · context · crumb · dock toggles · save state ┤
 ```
 
-- Left dock: 200–480 px, default 264. Right dock: 260–560 px, default 312. Bottom dock: 30 px
-  when collapsed (tab strip only), 160–480 px open, default 250. Drag edges to resize;
-  double-click resets. Sizes are remembered per workspace.
-- Any dock can collapse to its tab strip. `Ctrl Space` maximises the panel under the pointer
-  and restores it again.
-- A dock holds tabbed panels. Panels can move between docks; a workspace remembers the
-  arrangement. **Reset layout** in the ⋯ menu restores the workspace default.
-- No floating windows and no second top-level row of tabs. Dialogs are reserved for
-  confirmations and command search.
+- Left dock default 256, right dock default 300; Animate defaults to 220 and 280 so the scene
+  keeps its share with the timeline open. The timeline opens at 240. Drag edges to resize;
+  sizes are remembered per workspace (browser storage, never source).
+- Docks close from the status bar toggles and reopen from those toggles or the thin edge strip.
+  `Ctrl Space` maximises the panel under the pointer and restores it again.
+- Panels stay in the dock their workspace gives them; they do not move between docks.
+  **Reset layout** in the ⋯ menu restores the workspace default.
+- No floating windows. The desktop editor targets wide screens; there are no tablet or phone
+  layouts. Dialogs are reserved for confirmations and command search.
 
 ## Workspaces
 
@@ -54,7 +54,12 @@ or history; it changes what is visible.
 
 Existing workbench areas map onto workspaces: `scene` panels to Layout/Logic by their `mode`,
 `library` panels to the Library tab or Logic, `world` panels to World, `labs` panels to Review.
-Read-only galleries (vehicles, buildings, signs) open as Library tabs, not top-level screens.
+Read-only galleries (vehicles, buildings, signs) open from the Library dock, not top-level tabs.
+
+While a sequence is open (Animate), composition structure (＋ Chunk, ＋ Composition, ＋ Mount,
+chunks and groups), chunk boundary labels and connection tags are hidden; they return in base
+editing. The inspector opens on the sequence's own settings instead of the checkpoint's
+starting state.
 
 ## Panel anatomy
 
@@ -107,7 +112,9 @@ Grey panels keep the art's colours true. Colour is reserved for meaning; each co
   provenance; one **Override** link. Overridden values: a 3 px `--changed` bar on the left of the
   field and a reset `↺`.
 - Preview-only settings (time of day, weather, hack vision, discovery simulation) sit in a
-  container with a dashed border labelled **Preview only**. They never use a meaning colour.
+  container with a dashed border labelled **Preview only**. When a checkpoint is selected the
+  values come from it, so the border turns solid and the label reads **Checkpoint world**.
+  They never use a meaning colour.
 - The scene preview, graphs and maps are never tinted by the UI. Mode frames sit outside them.
 
 ## Type
@@ -160,8 +167,10 @@ Status and badges appear only for exceptions. A chunk that is fine shows no badg
 
 ## Scene overlays
 
-- Toolbar above the scene: Select `V`, Move `G`, a divider, Add, Snap; breadcrumb of
-  the selection in the middle; Play from here `F5` on the right.
+- Scene toolbar in the header: Add, Animate, sequence picker (when there is more than one),
+  Snap, checkpoint and play starting point, then ▶ Play. There are no Select/Move tools: the
+  editor has no tool modes, so clicking selects and dragging moves. The selection breadcrumb
+  sits in the status bar.
 - Inside the scene: **Preview only** bar top-right; zoom, percentage and Frame `F` bottom-left;
   Camera and Show menus bottom-right (chunk borders, outlines, status, layers).
 - Selection: 2 px `--select` outline with a label in mono 11 on a `--select` fill. Hover uses
@@ -174,7 +183,7 @@ Status and badges appear only for exceptions. A chunk that is fine shows no badg
 | Key | Action |
 | --- | --- |
 | `Ctrl K` | Command search: objects, commands, settings, library |
-| `V` `G` | Select, Move tools; drag empty space or middle-drag pans in any tool |
+| Drag | Drag artwork moves it; drag empty space or middle-drag pans |
 | `H` `I` | Preview hack vision, preview interiors (existing; same keys as the game) |
 | `F` | Frame selection (whole chunk when nothing is selected) |
 | `Shift A` | Add |

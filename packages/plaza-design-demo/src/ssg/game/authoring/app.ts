@@ -1476,6 +1476,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** Single keys in the Scene view (Delete, H for hack vision…), unless the user is typing in a field or an inspector field is active. */
   const shortcuts = (event: KeyboardEvent) => {
     if (!root.isConnected) return;
+    if (searchUi.open_) { if (event.key === 'Escape') { event.preventDefault(); searchUi.close(); } return; }
     if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'k') { event.preventDefault(); searchUi.open(); return; }
     if (event.altKey && !event.ctrlKey && !event.metaKey && /^[1-5]$/.test(event.key)) { event.preventDefault(); openWorkspace((['layout', 'animate', 'logic', 'world', 'labs'] as const)[Number(event.key) - 1]); return; }
     if (event.key === 'Escape' && !pickList.hidden) { pickList.hidden = true; return; }
