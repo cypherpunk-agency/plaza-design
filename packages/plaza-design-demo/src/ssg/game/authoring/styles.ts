@@ -371,4 +371,10 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .workspace>.inspector-dock label:has(>span:first-child+input[type=checkbox]){display:grid;grid-template-columns:var(--label-col,112px) auto minmax(0,1fr)}
 .scene-composer .workspace>.inspector-dock label>span:first-child:has(+input[type=checkbox]){grid-column:3;grid-row:1;justify-self:start;text-align:left;color:var(--ink)}
 .scene-composer .workspace>.inspector-dock label>span:first-child+input[type=checkbox]{grid-column:2;grid-row:1}
+/* Editor errors: a red chip in the status bar; the list opens above it with each error's details. */
+.scene-composer button.error-chip{min-height:0;height:20px;max-width:420px;padding:0 8px;border:1px solid var(--error);border-radius:3px;background:rgba(255,128,128,.12);color:var(--error);font:600 11px/18px var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scene-composer button.error-chip[hidden]{display:none}
+.scene-composer .error-list{position:fixed;right:12px;bottom:32px;z-index:50;width:560px;max-height:60vh;overflow:auto;padding:8px;background:var(--panel);border:1px solid var(--error);border-radius:6px;box-shadow:0 10px 30px #0009}
+.scene-composer .error-list[hidden]{display:none}.scene-composer .error-list-head{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.scene-composer .error-row summary{cursor:pointer;color:var(--error);font-size:12px;padding:4px 0}.scene-composer .error-row pre{margin:4px 0 8px;padding:8px;max-height:200px;overflow:auto;background:var(--field);border-radius:3px;font:11px/1.4 var(--mono);color:var(--muted);white-space:pre-wrap}
 `;
