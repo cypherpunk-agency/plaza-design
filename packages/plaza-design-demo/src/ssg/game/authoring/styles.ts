@@ -362,4 +362,13 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .command-empty{padding:16px;color:var(--muted)}.scene-composer .command-foot{height:32px;display:flex;align-items:center;padding:0 16px;border-top:1px solid var(--separator);font-size:11px;color:var(--faint)}
 /* Sequence editing keeps to animation: composition structure, chunk labels and connection tags wait in base editing. */
 .scene-composer[data-mode=sequence] .structure,.scene-composer[data-mode=sequence] .chunk-boundary-label,.scene-composer[data-mode=sequence] .world-connection-guide{display:none}
+/* Inspector fields: one label column, right-aligned on one line; values line up; reset and key buttons in a narrow third column. */
+.scene-composer .workspace>.inspector-dock label{display:grid;grid-template-columns:var(--label-col,112px) minmax(0,1fr) auto;align-items:center;column-gap:8px;row-gap:0;margin:2px 0;min-height:26px;justify-content:stretch;text-align:left;flex-direction:row}
+.scene-composer .workspace>.inspector-dock label>span:first-child{grid-column:1;justify-self:end;max-width:100%;color:var(--muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scene-composer .workspace>.inspector-dock label>span:first-child+*{grid-column:2;width:100%;min-width:0;margin:0}
+.scene-composer .workspace>.inspector-dock label>span:first-child+input[type=checkbox]{width:auto;justify-self:start}
+.scene-composer .workspace>.inspector-dock label>span:first-child+*+*{grid-column:3}
+.scene-composer .workspace>.inspector-dock label:has(>span:first-child+input[type=checkbox]){display:grid;grid-template-columns:var(--label-col,112px) auto minmax(0,1fr)}
+.scene-composer .workspace>.inspector-dock label>span:first-child:has(+input[type=checkbox]){grid-column:3;grid-row:1;justify-self:start;text-align:left;color:var(--ink)}
+.scene-composer .workspace>.inspector-dock label>span:first-child+input[type=checkbox]{grid-column:2;grid-row:1}
 `;
