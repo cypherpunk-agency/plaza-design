@@ -350,4 +350,14 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .library-dock .asset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.scene-composer .library-dock canvas.asset-thumb{height:64px}.scene-composer .library-dock .asset-card[draggable=true]{cursor:grab}
 .scene-composer .library-hint{font-size:11px;color:var(--faint);margin:0 0 6px}
 .scene-composer .stage-wrap[data-dropping]::after{box-shadow:inset 0 0 0 2px var(--select)}
+/* Command search (Ctrl K). */
+.scene-composer .command-search{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:flex-start;padding-top:72px}.scene-composer .command-search[hidden]{display:none}
+.scene-composer .command-dialog{width:640px;max-width:calc(100vw - 32px);max-height:70vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--control-line);border-radius:10px;box-shadow:0 18px 60px rgba(0,0,0,.6);overflow:hidden}
+.scene-composer .command-dialog>input{min-height:0;height:48px;border:0;border-bottom:1px solid var(--separator);border-radius:0;background:transparent;padding:0 16px;font-size:15px}
+.scene-composer .command-results{overflow:auto;padding:4px 0}.scene-composer .command-group{font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;padding:10px 16px 4px}
+.scene-composer button.command-row{display:flex;align-items:center;gap:10px;width:100%;min-height:0;height:34px;padding:0 16px;border:0;border-radius:0;background:none;text-align:left}
+.scene-composer button.command-row[aria-selected=true]{background:var(--select-bg);box-shadow:inset 2px 0 0 var(--select)}.scene-composer .command-label{flex:none;max-width:55%;overflow:hidden;text-overflow:ellipsis}
+.scene-composer .command-where{flex:1;min-width:0;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scene-composer .command-row kbd,.scene-composer .search-button kbd{font:11px var(--mono);color:var(--faint);border:1px solid var(--separator);border-radius:3px;padding:0 4px}
+.scene-composer .command-empty{padding:16px;color:var(--muted)}.scene-composer .command-foot{height:32px;display:flex;align-items:center;padding:0 16px;border-top:1px solid var(--separator);font-size:11px;color:var(--faint)}
 `;
