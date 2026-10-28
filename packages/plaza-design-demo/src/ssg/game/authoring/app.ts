@@ -386,7 +386,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const playingNow = !playHost.hidden, scene = root.dataset.tool === 'scene', seq = scene && !!directionDocumentId;
     modeChip.className = 'mode-chip' + (playingNow ? ' playing' : seq ? ' sequence' : '');
     modeChip.textContent = playingNow ? 'PLAYING' : seq ? `SEQUENCE · ${sequenceId} @ ${time.toFixed(1)} s` : scene ? 'BASE EDITING' : (groups.find(g => g.id === group)?.label ?? '').toUpperCase();
-    const mode = playingNow ? 'playing' : seq ? 'sequence' : ''; if (mode) root.dataset.mode = mode; else delete root.dataset.mode;
+    const mode = playingNow ? 'playing' : seq ? 'sequence' : '', entering = mode === 'sequence' && root.dataset.mode !== 'sequence'; if (mode) root.dataset.mode = mode; else delete root.dataset.mode;
+    // Entering a sequence, the inspector opens on the sequence's own settings rather than the checkpoint's starting state.
+    if (entering && inspector.selectSection('world-sequence')) refreshRight();
     modeBanner.hidden = !mode; stageWrap.toggleAttribute('data-banner', !!mode); modeBanner.className = 'mode-banner ' + mode;
     if (mode === 'playing') { bannerTitle.textContent = '● Playing · private run'; bannerDetail.textContent = 'Edits made now are not part of this run'; bannerAction.textContent = '■ Stop'; bannerAction.hidden = false; }
     else if (mode === 'sequence') { bannerTitle.textContent = `● Sequence editing · ${sequenceId}`; bannerDetail.textContent = `Changes record keys at ${time.toFixed(1)} s`; bannerAction.textContent = 'Exit to base editing'; bannerAction.hidden = !workspaceId; }
@@ -597,8 +599,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       chooser.append(optgroup);
     }
     chooser.value = workspaceId?'@composition/'+workspaceId:currentId; chooser.onchange = () => chooser.value.startsWith('@composition/')?openComposition(chooser.value.slice(13)):openDocument(chooser.value); sceneContext.replaceChildren(chooser);
-    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ Chunk', openNewScene, blocked || 'Create a new chunk source and open it here'); add.className = 'new-scene'; add.disabled = !!blocked; sceneContext.append(add); }
-    if (current()?.kind === 'composition') { sceneContext.append(button('＋ Composition', () => openMountPicker(worldControls(), true), 'Start a new composition')); if (workspaceId) sceneContext.append(button('＋ Mount', () => openMountPicker(worldControls()), 'Mount a chunk or group into this composition')); }
+    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ Chunk', openNewScene, blocked || 'Create a new chunk source and open it here'); add.className = 'new-scene structure'; add.disabled = !!blocked; sceneContext.append(add); }
+    if (current()?.kind === 'composition') { const composition = button('＋ Composition', () => openMountPicker(worldControls(), true), 'Start a new composition'); composition.classList.add('structure'); sceneContext.append(composition); if (workspaceId) { const mount = button('＋ Mount', () => openMountPicker(worldControls()), 'Mount a chunk or group into this composition'); mount.classList.add('structure'); sceneContext.append(mount); } }
     const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(actions);
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save' : 'Download edits', () => void save(), config.api ? 'Save to source (Ctrl S)' : 'Download your edits as a file'); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
     const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; const discard=button('Discard all changes',()=>{stopPlay();playing=false;animating=false;editorSelection.chunk=undefined;editorSelection.timeline=undefined;editorSelection.instance='';editorSelection.document='';run(()=>model.discard());},'Restore the last loaded or saved snapshot; Undo can recover discarded edits');discard.disabled=saving||!model.dirty();const search=button('⌕ Search',()=>searchUi.open(),'Search objects, commands, settings and library (Ctrl K)');search.className='search-button';actions.append(search,undo,redo,dirty,saveButton,menu);
@@ -1484,7 +1486,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (playHost.hidden && current()?.kind === 'composition') {
       if (event.key === 'f' || event.key === 'F' && !event.shiftKey) { event.preventDefault(); frameSelection(); return; }
       if (event.key === 'A' && event.shiftKey) { event.preventDefault(); openPicker(); return; }
-      if (event.key === 'Escape' && editorSelection.instance) { event.preventDefault(); select_(''); return; }
+      if (event.key === 'Escape' && (editorSelection.instance || editorSelection.world || editorSelection.chunk || editorSelection.timeline)) { event.preventDefault(); select_(''); return; }
     }
     const control = (config.environmentControls ?? []).find(c => c.kind === 'boolean' && c.shortcut?.toLowerCase() === event.key.toLowerCase()); if (!control) return;
     event.preventDefault(); environment[control.key] = !environment[control.key]; refreshOptions(); void draw();

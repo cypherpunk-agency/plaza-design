@@ -53,7 +53,7 @@ export function openCompositionRendering(port:WorldWorkspaceControls){
  });
 }
 export function renderWorldMembers(host:HTMLElement,port:WorldWorkspaceControls){
- if(!port.composition())return;const source=workspaceSource(port.documents());host.append(element('h3','','Chunks and groups'),element('p','muted','Select a member to move or unmount it. Drag its label in the viewport.'));
+ if(!port.composition())return;const source=workspaceSource(port.documents()),outer=host;host=element('div','world-members structure');outer.append(host);host.append(element('h3','','Chunks and groups'),element('p','muted','Select a member to move or unmount it. Drag its label in the viewport.'));
  host.append(button('Composition rendering',()=>openCompositionRendering(port)));
  const rows=worldMemberRows(source,port.composition());
  for(const row of rows){

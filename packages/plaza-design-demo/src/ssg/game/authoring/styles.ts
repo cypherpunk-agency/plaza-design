@@ -360,4 +360,6 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .command-where{flex:1;min-width:0;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .scene-composer .command-row kbd,.scene-composer .search-button kbd{font:11px var(--mono);color:var(--faint);border:1px solid var(--separator);border-radius:3px;padding:0 4px}
 .scene-composer .command-empty{padding:16px;color:var(--muted)}.scene-composer .command-foot{height:32px;display:flex;align-items:center;padding:0 16px;border-top:1px solid var(--separator);font-size:11px;color:var(--faint)}
+/* Sequence editing keeps to animation: composition structure, chunk labels and connection tags wait in base editing. */
+.scene-composer[data-mode=sequence] .structure,.scene-composer[data-mode=sequence] .chunk-boundary-label,.scene-composer[data-mode=sequence] .world-connection-guide{display:none}
 `;
