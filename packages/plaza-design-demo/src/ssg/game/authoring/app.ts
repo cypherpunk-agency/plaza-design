@@ -20,7 +20,7 @@ import {chunkStatusBadge,renderChunkStatus,renderRuntimeChunks} from './chunk-st
 import {renderWorldDirectionAuthoring} from './world-direction-authoring';
 import {renderSequenceCommandsAuthoring} from './sequence-commands-authoring';
 import {clippingControls,peopleControls} from './mobile-controls';
-import {hitTestArtwork,sourceSelection,createSelection} from './selection';
+import {hitTestArtwork,hitsAt,sourceSelection,createSelection} from './selection';
 import {createPreviewState,createPreviewRenderer} from './preview-integration';
 import {createInspector} from './inspector';
 import {createViewportState,mountViewportInput} from './viewport-input';
@@ -95,7 +95,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         const up = () => { handle.classList.remove('dragging'); handle.removeEventListener('pointermove', move); handle.removeEventListener('pointerup', up); handle.removeEventListener('pointercancel', up); writeDock({ [side]: Number.parseFloat(workspace.style.getPropertyValue(variable)) || undefined }); };
         handle.addEventListener('pointermove', move); handle.addEventListener('pointerup', up); handle.addEventListener('pointercancel', up);
       };
-      handle.ondblclick = () => { apply(null); writeDock({ [side]: undefined }); void draw(); };
+      handle.ondblclick = () => { apply(null); writeDock({ [side]: undefined }); applyDocks(dockWorkspace); void draw(); };
       return handle;
     });
   }
@@ -111,8 +111,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function setDockClosed(side: 'left' | 'right', closed: boolean) { root.toggleAttribute(`data-${side}-closed`, closed); writeDock(side === 'left' ? { leftClosed: closed } : { rightClosed: closed }); refreshDockToggles(); void draw(); }
   /** A closed dock leaves a narrow strip at its edge that reopens it. */
   function dockStrips() { return (['left', 'right'] as const).map(side => { const strip = button(side === 'left' ? 'Outline ▸' : '◂ Inspector', () => setDockClosed(side, false), `Open the ${side === 'left' ? 'outline' : 'inspector'}`); strip.className = `dock-strip ${side}`; return strip; }); }
+  /** Workspace defaults before the author resizes anything: Animate trades dock width for the timeline. */
+  const DOCK_DEFAULTS: Record<string, DockState> = { animate: { left: 220, right: 280 } };
   function applyDocks(ws: string) {
-    dockWorkspace = ws; const state = readDock(ws);
+    dockWorkspace = ws; const state = { ...DOCK_DEFAULTS[ws], ...readDock(ws) };
     for (const side of ['left', 'right'] as const) { const width = state[side]; if (width) workspace.style.setProperty(`--${side}-w`, `${width}px`); else workspace.style.removeProperty(`--${side}-w`); }
     root.toggleAttribute('data-left-closed', !!state.leftClosed); root.toggleAttribute('data-right-closed', !!state.rightClosed);
     if (state.max) root.dataset.maximized = state.max; else delete root.dataset.maximized; refreshDockToggles();
@@ -135,14 +137,23 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** The outline's eyes: objects hidden in the editor preview, per composition document. View state only. */
   const hiddenByDocument = new Map<string, Set<string>>();
   const hiddenIn = (id: string | undefined) => { if (!id) return new Set<string>(); let set = hiddenByDocument.get(id); if (!set) hiddenByDocument.set(id, set = new Set()); return set; };
-  let moreOpen = false, animating = false, ambientLabel: HTMLElement | undefined;
+  let animating = false, ambientLabel: HTMLElement | undefined;
   let updateContextSummary=()=>{};
   const inspector=createInspector();
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height));
+  /** Scene overlays. Preview-only settings sit in their own dashed bar; Camera and Show menus keep their open state across refreshes. */
+  const previewBar = element('div', 'preview-bar'); previewBar.setAttribute('role', 'group'); previewBar.setAttribute('aria-label', 'Preview settings');
+  const overlayMenu = (text: string, title: string) => { const menu = element('details', 'ov-menu'), summary = element('summary', '', text), panel = element('div', 'ov-menu-panel'); summary.title = title; menu.append(summary, panel); return { menu, panel }; };
+  const cameraMenu = overlayMenu('Camera', 'Locate, follow or look through the game camera'), showMenu = overlayMenu('Show', 'Borders, outlines, neighbours, comparison and preview settings');
+  const showSlot = element('div', 'ov-menu-extra'), viewMenus = element('div', 'view-menus'); viewMenus.append(cameraMenu.menu, showMenu.menu);
+  const modeBanner = element('div', 'mode-banner'), bannerTitle = element('strong'), bannerDetail = element('span'), bannerAction = button('', () => { if (!playHost.hidden) stopPlay(); else openWorkspace('layout'); });
+  modeBanner.append(bannerTitle, bannerDetail, element('span', 'status-spacer'), bannerAction); modeBanner.hidden = true; modeBanner.setAttribute('role', 'status');
+  const crumb = element('span', 'crumb'); crumb.setAttribute('aria-label', 'Selection');
+  const pickList = element('div', 'pick-list'); pickList.hidden = true; pickList.setAttribute('role', 'menu'); pickList.setAttribute('aria-label', 'Objects under the pointer');
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const playSettings = element('section', 'play-settings');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
-  stage.append(canvas, compareCanvas); const renderStatus=element('output','render-status');renderStatus.setAttribute('aria-label','Preview render rate');stageWrap.append(stage,playHost,joinedLayer,hoverBox,selectionBox,viewportTools,picker,previewError,renderStatus); center.append(options, stageWrap, timelineHost); workspace.append(center, left, right, ...panelHandles(), ...dockStrips()); header.append(tools); statusBar.append(modeChip, contextLine, status, element('span','status-spacer'), dockToggles, saveState); root.append(header, workspace, statusBar);
+  stage.append(canvas, compareCanvas); const renderStatus=element('output','render-status');renderStatus.setAttribute('aria-label','Preview render rate');stageWrap.append(stage,playHost,joinedLayer,hoverBox,selectionBox,modeBanner,previewBar,viewportTools,viewMenus,pickList,picker,previewError,renderStatus); center.append(stageWrap, timelineHost); workspace.append(center, left, right, ...panelHandles(), ...dockStrips()); header.append(tools); statusBar.append(modeChip, crumb, contextLine, status, element('span','status-spacer'), dockToggles, saveState); root.append(header, workspace, statusBar);
   workspace.addEventListener('pointermove', event => { const target = event.target as Node; pointerRegion = left.contains(target) ? 'left' : right.contains(target) ? 'right' : timelineHost.contains(target) ? 'timeline' : 'center'; }); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
   // An editor link: `#characters` opens a panel; `#scene=downtown-next&compare=downtown&panel=characters` also opens a scene.
@@ -167,7 +178,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let cancelWorldDrag:(()=>void)|undefined;
   let workspaceOrigin:{key:string;x:number;h:number}|undefined;
   let worldDrag:{source:import('../world/compositions').WorldCompositions;address:WorldMemberAddress;at:{x:number;h:number};x:number;y:number;scale:number;pending?:import('../world/compositions').WorldCompositions}|undefined;
-  const timelineView:TimelineViewState={zoom:1,collapsed:new Set(),scrollX:0,scrollY:0};let timelineCollapsed=false,timelineHeight=300;let playbackSpeed=1,dragPreviewDirty=false;
+  const timelineView:TimelineViewState={zoom:1,collapsed:new Set(),scrollX:0,scrollY:0};let timelineCollapsed=false,timelineHeight=240;let playbackSpeed=1,dragPreviewDirty=false;
   const speedControl=()=>select([.25,.5,1,1.5,2,4].map(value=>({value:String(value),label:value+'×'})),String(playbackSpeed),value=>playbackSpeed=Number(value));
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
   const viewMemory=createViewMemory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
@@ -332,6 +343,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const playingNow = !playHost.hidden, scene = root.dataset.tool === 'scene', seq = scene && !!directionDocumentId;
     modeChip.className = 'mode-chip' + (playingNow ? ' playing' : seq ? ' sequence' : '');
     modeChip.textContent = playingNow ? 'PLAYING' : seq ? `SEQUENCE · ${sequenceId} @ ${time.toFixed(1)} s` : scene ? 'BASE EDITING' : (groups.find(g => g.id === group)?.label ?? '').toUpperCase();
+    const mode = playingNow ? 'playing' : seq ? 'sequence' : ''; if (mode) root.dataset.mode = mode; else delete root.dataset.mode;
+    modeBanner.hidden = !mode; stageWrap.toggleAttribute('data-banner', !!mode); modeBanner.className = 'mode-banner ' + mode;
+    if (mode === 'playing') { bannerTitle.textContent = '● Playing · private run'; bannerDetail.textContent = 'Edits made now are not part of this run'; bannerAction.textContent = '■ Stop'; bannerAction.hidden = false; }
+    else if (mode === 'sequence') { bannerTitle.textContent = `● Sequence editing · ${sequenceId}`; bannerDetail.textContent = `Changes record keys at ${time.toFixed(1)} s`; bannerAction.textContent = 'Exit to base editing'; bannerAction.hidden = !workspaceId; }
     if (!scene) contextLine.textContent = panels.find(p => p.details.open)?.title ?? '';
   }
   const sceneName = (scene:string)=>{const names:Record<string,string>={'sequence-title':'Title','sequence-opening':'Opening glide','sequence-intro':'Act I cinematic','sequence-act2':'Act II cinematic','sequence-taxi':'Taxi flight'};if(names[scene])return names[scene];const doc=documentsForView().find(d=>d.id.startsWith('authored.')&&d.kind==='scene'&&(d.value as {id?:string}).id===scene);return doc?(doc.value as {name:string}).name:config.sceneLabel?.(scene)??scene;};
@@ -510,7 +525,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function openComposition(id:string){const workspace=compositionWorkspaces(documentsForView()).find(w=>w.id===id);if(!workspace){notice('Unknown composition '+id,true);return;}const source=workspace.chunks[0]??documentsForView().find(d=>d.id===currentId&&d.kind==='composition')??documentsForView().find(d=>d.kind==='composition');if(!source)return;if(!root.dataset.stagePanel)showLayout();openDocument(source.id,id);}
   function openScene(scene: string, compare?: string) { const doc = documentsForView().find(d => d.kind === 'composition' && (d.value as ChunkDocument).scene === scene); if (doc) { if (!root.dataset.stagePanel) showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Chunk ${scene} has no editable source in this session.`, true); }
   function refreshHeader() {
-    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED'), element('span', '', config.api ? 'Composer' : 'Editor')); header.replaceChildren(brand, tools, element('span', 'header-spacer'));
+    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED')); brand.title = config.api ? 'Local composer' : 'Public editor'; header.replaceChildren(brand, tools, options, element('span', 'header-spacer'));
     const actions = element('div', 'actions'), menu = element('details', 'menu'), menuItems = element('div', 'menu-items'); menu.append(element('summary', '', 'More'), menuItems);
     const docs = documentsForView(), chooser = element('select', 'document-picker'); chooser.setAttribute('aria-label', 'Composition or chunk');
     const unsaved = (doc: EditorDocument) => model.dirty(doc.id) || doc.kind === 'composition' && (config.sceneDocuments?.((doc.value as ChunkDocument).scene,docs) ?? []).some(id => model.dirty(id));
@@ -539,7 +554,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       chooser.append(optgroup);
     }
     chooser.value = workspaceId?'@composition/'+workspaceId:currentId; chooser.onchange = () => chooser.value.startsWith('@composition/')?openComposition(chooser.value.slice(13)):openDocument(chooser.value); sceneContext.replaceChildren(chooser);
-    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ New chunk', openNewScene, blocked || 'Create a scene and open it here'); add.className = 'new-scene'; add.disabled = !!blocked; sceneContext.append(add); }
+    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ Chunk', openNewScene, blocked || 'Create a new chunk source and open it here'); add.className = 'new-scene'; add.disabled = !!blocked; sceneContext.append(add); }
+    if (current()?.kind === 'composition') { sceneContext.append(button('＋ Composition', () => openMountPicker(worldControls(), true), 'Start a new composition')); if (workspaceId) sceneContext.append(button('＋ Mount', () => openMountPicker(worldControls()), 'Mount a chunk or group into this composition')); }
     const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(actions);
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save' : 'Download edits', () => void save(), config.api ? 'Save to source (Ctrl S)' : 'Download your edits as a file'); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
     const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; const discard=button('Discard all changes',()=>{stopPlay();playing=false;animating=false;editorSelection.chunk=undefined;editorSelection.timeline=undefined;editorSelection.instance='';editorSelection.document='';run(()=>model.discard());},'Restore the last loaded or saved snapshot; Undo can recover discarded edits');discard.disabled=saving||!model.dirty();actions.append(undo,redo,dirty,saveButton,menu);
@@ -560,22 +576,28 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     file.onchange = async () => { const selectedFile = file.files?.[0]; if (!selectedFile) return; try { if (selectedFile.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const value: unknown = JSON.parse(await selectedFile.text()); run(() => { const doc = activeDocument(); if (!doc || doc.kind === 'world') throw new Error('Select an editable document to import'); model.edit(doc.id, 'Import document', () => value); syncSequence(); }); } catch (e) { notice(`Import failed: ${message(e)}`, true); } };
     const importButton = button('Import JSON', () => file.click()); importButton.disabled = activeDocument()?.kind === 'world'; menuItems.append(importButton, file);
   }
+  function updateCrumb() {
+    const scene = sceneId(), node = editorSelection.instance;
+    crumb.textContent = !scene ? '' : [sceneName(scene), editorSelection.chunk && !node ? 'chunk' : '', node].filter(Boolean).join(' › ');
+  }
   function refreshOptions() {
     updateContextSummary=()=>refreshMode();contextLine.textContent='';
-    options.replaceChildren(); ambientLabel = undefined; syncWorldState();
+    options.replaceChildren(); ambientLabel = undefined; syncWorldState(); previewBar.replaceChildren(); showSlot.replaceChildren();
     const bar = element('div', 'scene-toolbar'), composition = current()?.kind === 'composition';
     const cluster = (name: string) => { const node = element('div', 'toolbar-group'); node.setAttribute('role', 'group'); node.setAttribute('aria-label', name); bar.append(node); return node; };
     if (!playHost.hidden) {
-      const stop = button('■ Stop', stopPlay, 'Stop playing and return to editing this scene'); stop.className = 'play-button';
-      bar.append(element('span', 'toolbar-label', `Playing ${sceneName(worldState()?.checkpoint?.scene??sceneId())} · game camera · from ${playStartMode==='preview'?'preview':'checkpoint start'}`), stop); options.append(bar); return;
+      bar.append(element('span', 'toolbar-label', `Playing ${sceneName(worldState()?.checkpoint?.scene??sceneId())} · game camera · from ${playStartMode==='preview'?'preview':'checkpoint start'}`)); options.append(bar); previewBar.hidden = true; refreshMode(); return;
     }
-    if(composition){const membership=cluster('World composition');membership.append(button('＋ New composition',()=>openMountPicker(worldControls(),true)));if(workspaceId)membership.append(button('＋ Mount chunk / group',()=>openMountPicker(worldControls())));}
-    if(composition){const choices=workspaceId?workspaceSequences(workspaceId,documentsForView()):documentsForView().filter(d=>d.id===currentId&&d.kind==='composition'&&(d.value as ChunkDocument).sequence),pick=select([{value:'',label:'No sequence · base editing'},...choices.map(d=>({value:d.id,label:(d.value as ChunkDocument).sequence!.id}))],directionDocumentId,value=>{selectDirection(choices.find(d=>d.id===value));refresh();rememberView();});pick.setAttribute('aria-label','Sequence context');cluster('Direction').append(pick);}
+    previewBar.hidden = !composition; updateCrumb();
     if (composition) {
-      const add = button('＋ Add asset', () => openPicker(), 'Add an asset where you are looking (A)'); add.className = 'primary';add.disabled=!!workspaceId&&!workspaceDocuments(workspaceId,documentsForView()).length; cluster('Assets').append(add);
-      const animation = cluster('Ambient animation'), toggle = button((sequence()?playing:animating) ? '❚❚ Pause' : '▶ Animate', toggleAnimation, (sequence()?playing:animating) ? 'Pause ambient animation (Space)' : 'Run ambient animation, such as people, lights and signs, without playing the game (Space)');
+      const add = button('＋ Add', () => openPicker(), 'Add artwork where you are looking (A)'); add.disabled=!!workspaceId&&!workspaceDocuments(workspaceId,documentsForView()).length; cluster('Assets').append(add);
+      const animation = cluster('Ambient animation'), toggle = button((sequence()?playing:animating) ? '❚❚ Pause' : '▶ Animate', toggleAnimation, (sequence()?playing:animating) ? 'Pause (Space)' : 'Run ambient animation, such as people, lights and signs, without playing the game (Space). Home returns to the first frame.');
       toggle.setAttribute('aria-pressed', String(sequence()?playing:animating)); ambientLabel = element('span', 'time', `${time.toFixed(1)} s`);
-      animation.append(toggle,ambientLabel,...(!currentTimeline()?[speedControl()]:[]), button('⟲', () => seekTime(0), 'Back to the first frame'));
+      animation.append(toggle,ambientLabel,...(!currentTimeline()?[speedControl()]:[]));
+      const choices = sequenceChoices();
+      if (directionDocumentId && choices.length > 1) { const pick = select(choices.map(d => ({ value: d.id, label: 'Sequence · ' + (d.value as ChunkDocument).sequence!.id })), directionDocumentId, value => { selectDirection(choices.find(d => d.id === value)); refresh(); rememberView(); }); pick.setAttribute('aria-label', 'Sequence'); cluster('Sequence').append(pick); }
+      const grid = select([{ value: '0', label: 'Snap off' }, ...[1, 2, 4, 8, 16].map(n => ({ value: String(n), label: `Snap ${n} px` }))], String(snap), value => { snap = Number(value); });
+      grid.title = 'Dragging and arrow keys snap to this grid'; grid.setAttribute('aria-label', 'Snap'); cluster('Snap').append(grid);
     }
     const controls: EnvironmentControl[] = (config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Game camera zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }]).filter(control=>!['cameraX','cameraH','zoom'].includes(control.key)||!currentTimeline());
     const quick = controls.filter(control => control.quick);
@@ -583,37 +605,35 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (states.length) {
       const chosen = worldState()?.id??'';
       const pick = select([...states.map(state => ({ value: state.id, label: `Checkpoint · ${state.name}` })), { value: '', label: 'Checkpoint · none' }], chosen, value=>openCheckpoint(value));
-      pick.title = 'The world this scene is shown in and Play starts from: time, weather and story flags. Changing time or weather edits this state; "preview only" changes nothing saved.';
+      pick.title = 'The world this scene is shown in and Play starts from: time, weather and story flags. With a checkpoint chosen, time and weather edit it.';
       pick.setAttribute('aria-label', 'Starting state'); cluster('Starting state').append(pick);
     }
-    if (quick.length) { const preview = cluster('Preview as'); preview.append(element('span', 'toolbar-label', states.length ? '' : 'Preview')); for (const control of quick) preview.append(environmentControl(control, true)); }
-    if(composition){const mode=select([{value:'workspace',label:'Workspace'},{value:'camera',label:'Camera preview'}],cameraPreview?'camera':'workspace',value=>{cameraPreview=value==='camera';refreshViewportTools();refreshOptions();void draw();});mode.setAttribute('aria-label','Sequence view');mode.title='Workspace keeps independent editor pan/zoom. Camera preview looks through the game camera.';cluster('Sequence view').append(mode);}
-    if (composition) {
-      const grid = select([{ value: '0', label: 'Grid off' }, ...[1, 2, 4, 8, 16].map(n => ({ value: String(n), label: `Grid ${n} px` }))], String(snap), value => { snap = Number(value); });
-      grid.title = 'Dragging and arrow keys snap to this grid'; grid.setAttribute('aria-label', 'Grid'); cluster('Grid').append(grid);
-    }
-    const comparable = composition&&!workspaceId&&!currentTimeline()?compareOptions():[];
-    if (comparable.length) {
-      const pick = select([{ value: '', label: 'Compare · off' }, ...comparable.map(o => ({ value: o.id, label: `Compare · ${o.label}` }))], compareId, value => { compareId = value; void draw(); });
-      pick.title = 'Show another version beside this one, with the same camera, zoom, time and weather'; pick.setAttribute('aria-label', 'Compare'); cluster('Compare').append(pick);
+    if (canPlay()) { const origin=select([{value:'preview',label:'From preview'},{value:'checkpoint',label:'From checkpoint start'}],playStartMode,value=>{playStartMode=value as typeof playStartMode;refreshOptions();});origin.setAttribute('aria-label','Play starting point');origin.title='Preview uses the selected sequence/playhead (or base editing). Checkpoint start uses its authored sequence/time. Both use the checkpoint world state.';const play = button('▶ Play', playScene, 'Run the real game here from the chosen starting point, with the same logical camera viewport'); play.className = 'play-button'; cluster('Play').append(origin, play); }
+    // With a checkpoint chosen, time and weather are part of it (saved, undoable); otherwise they only change the preview.
+    if (composition && quick.length) {
+      const stored = !!worldState(); previewBar.classList.toggle('stored', stored);
+      previewBar.title = stored ? 'Time and weather here edit the chosen checkpoint (saved, undoable).' : 'These settings change only the preview; nothing is saved.';
+      previewBar.append(element('span', 'preview-label', stored ? 'Checkpoint world' : 'Preview only')); for (const control of quick) previewBar.append(environmentControl(control, true));
     }
     // Named compositions always show their members. Standalone chunks may reveal connected neighbours.
     const joinedList = !workspaceId && composition && config.joinedScenes ? config.joinedScenes(sceneId(), documentsForView()) : [];
     if (joinedList.length) {
-      const group = cluster('Joined scenes'), on = environment.showJoined !== false, names = joinedList.map(j => j.label).join(', ');
-      const toggle = button('Show neighbours', () => { environment.showJoined = !on; refreshOptions(); void draw(); }, `${on ? 'Hide' : 'Show'} ${names}, joined to this scene with no cut, beside it`);
+      const on = environment.showJoined !== false, names = joinedList.map(j => j.label).join(', ');
+      const toggle = button('Neighbours', () => { environment.showJoined = !on; refreshOptions(); void draw(); }, `${on ? 'Hide' : 'Show'} ${names}, joined to this scene with no cut, beside it`);
       toggle.className = 'toggle'; toggle.setAttribute('aria-pressed', String(on));
       const frame = button('Fit visible chunks', fitJoined, `Zoom out to show this scene with ${names}`); frame.disabled = !on;
-      group.append(toggle, frame);
+      showSlot.append(toggle, frame);
     }
-    const more = element('details', 'more-menu'), panel = element('div', 'more-panel'); more.open = moreOpen; more.ontoggle = () => { moreOpen = more.open; };
-    more.append(element('summary', '', 'More preview settings'), panel); bar.append(more);
-    const motion = element('input'); motion.type = 'checkbox'; motion.checked = reduced; motion.onchange = () => { reduced = motion.checked; void draw(); }; panel.append(label('Reduced motion', motion));
-    const pixels=element('input');pixels.type='checkbox';pixels.checked=pixelatedScaling;pixels.setAttribute('aria-label','Pixelated scaling');pixels.onchange=()=>{pixelatedScaling=pixels.checked;refreshViewportTools();rememberView();};const pixelSetting=label('Pixelated scaling',pixels);pixelSetting.title='Use crisp pixel edges when scaling the preview canvas. Off smooths canvas scaling; authored pixel shapes and the game remain unchanged.';panel.append(pixelSetting);
-    for (const control of controls) if (!control.quick) panel.append(environmentControl(control, false));
-    if (canPlay()) { const origin=select([{value:'preview',label:'Play from current preview'},{value:'checkpoint',label:'Play from checkpoint start'}],playStartMode,value=>{playStartMode=value as typeof playStartMode;refreshOptions();});origin.setAttribute('aria-label','Play starting point');origin.title='Preview uses the selected sequence/playhead (or base editing). Checkpoint start uses its authored sequence/time. Both use the checkpoint world state.';bar.append(origin);const play = button(playStartMode==='preview'?'▶ Play preview':'▶ Play checkpoint', playScene, 'Run the real game here using the chosen starting point and the same logical camera viewport'); play.className = 'play-button'; bar.append(play); }
-    if(composition){const checkpoint=worldState()?.checkpoint,summary=contextLine,prefix='Checkpoint: '+(checkpoint?.name??'none')+(checkpoint?' (starts '+(checkpoint.sequence?checkpoint.sequence.id+' at '+checkpoint.sequence.time+' s':'without a sequence')+')':'')+' · Editing: ',editing=sequence()?sequenceId:undefined,suffix=' · View: '+(cameraPreview?'game camera':'independent workspace');updateContextSummary=()=>{refreshMode();summary.textContent=prefix+(editing?editing+' at '+time.toFixed(3)+' s':'base values')+suffix;};updateContextSummary();summary.title='Selecting a sequence here changes the editing context, not the checkpoint definition. Locate camera navigates the workspace explicitly.';}
-    options.append(bar);
+    const comparable = composition&&!workspaceId&&!currentTimeline()?compareOptions():[];
+    if (comparable.length) {
+      const pick = select([{ value: '', label: 'Compare · off' }, ...comparable.map(o => ({ value: o.id, label: `Compare · ${o.label}` }))], compareId, value => { compareId = value; void draw(); });
+      pick.title = 'Show another version beside this one, with the same camera, zoom, time and weather'; pick.setAttribute('aria-label', 'Compare'); showSlot.append(pick);
+    }
+    const motion = element('input'); motion.type = 'checkbox'; motion.checked = reduced; motion.onchange = () => { reduced = motion.checked; void draw(); }; showSlot.append(label('Reduced motion', motion));
+    const pixels=element('input');pixels.type='checkbox';pixels.checked=pixelatedScaling;pixels.setAttribute('aria-label','Pixelated scaling');pixels.onchange=()=>{pixelatedScaling=pixels.checked;refreshViewportTools();rememberView();};const pixelSetting=label('Pixelated scaling',pixels);pixelSetting.title='Use crisp pixel edges when scaling the preview canvas. Off smooths canvas scaling; authored pixel shapes and the game remain unchanged.';showSlot.append(pixelSetting);
+    for (const control of controls) if (!control.quick) showSlot.append(environmentControl(control, false));
+    if(composition){const checkpoint=worldState()?.checkpoint,summary=contextLine,prefix='Checkpoint: '+(checkpoint?.name??'none')+(checkpoint?' (starts '+(checkpoint.sequence?checkpoint.sequence.id+' at '+checkpoint.sequence.time+' s':'without a sequence')+')':'')+' · Editing: ',editing=sequence()?sequenceId:undefined,suffix=' · View: '+(cameraPreview?'game camera':'independent workspace');updateContextSummary=()=>{refreshMode();summary.textContent=prefix+(editing?editing+' at '+time.toFixed(3)+' s':'base values')+suffix;};updateContextSummary();summary.title='Selecting a sequence changes the editing context, not the checkpoint definition. Locate camera navigates the workspace explicitly.';}
+    options.append(bar); refreshMode();
   }
   function environmentControl(control: EnvironmentControl, inToolbar: boolean): HTMLElement {
     const change = (value: string | number | boolean) => {
@@ -623,6 +643,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       if (state && stored) { run(() => model.edit(stored.id, `${state.name}: ${control.label}`, () => stored.value)); return; }
       void draw(); if (inToolbar) refreshOptions();
     };
+    if (control.choices && inToolbar) {
+      const current = environment[control.key], known = control.choices.some(choice => choice.value === current);
+      const options = [...(known ? [] : [{ value: String(current ?? ''), label: typeof current === 'number' ? `${String(Math.floor(current / 60)).padStart(2, '0')}:${String(current % 60).padStart(2, '0')}` : String(current ?? '') }]), ...control.choices.map(choice => ({ value: String(choice.value), label: choice.label }))];
+      const input = select(options, String(current ?? ''), value => { const choice = control.choices!.find(item => String(item.value) === value); if (choice) change(choice.value); }); input.setAttribute('aria-label', control.label); return input;
+    }
     if (control.choices) {
       const row = element('div', 'segmented'); row.setAttribute('role', 'group'); row.setAttribute('aria-label', control.label);
       for (const choice of control.choices) { const pick = button(choice.label, () => change(choice.value), `${control.label}: ${choice.label}`); pick.setAttribute('aria-pressed', String(environment[control.key] === choice.value)); row.append(pick); }
@@ -843,6 +868,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     }else if(inspectorError){const warning=element('section','inspector-warning');warning.setAttribute('role','alert');warning.append(element('h3','','Edit blocked'),element('p','',inspectorError),button('Dismiss message',()=>{inspectorError='';refreshRight();}));right.append(warning);}
   }
   function refreshRight() {
+    updateCrumb();
     if(numericScrubbing)return;
     if(root.dataset.tool!=='scene'){layoutDirty=true;propertyUpdates=[];chunkInspectorHandle?.();chunkInspectorHandle=undefined;disposeInspector();right.replaceChildren();return;}
     propertyUpdates=[];chunkInspectorHandle?.();chunkInspectorHandle=undefined;
@@ -1202,6 +1228,16 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const coordinates = (event: { clientX: number; clientY: number }) => { return canvasPoint(event,canvas.getBoundingClientRect(),canvas.width,canvas.height); };
   /** Small artwork gets a minimum target; the smallest box under the pointer wins over the room behind it. */
   const hitTest=(point:{x:number;y:number})=>hitTestArtwork(painting.result,point,16*canvas.width/Math.max(1,canvas.getBoundingClientRect().width));
+  const hitsUnder=(point:{x:number;y:number})=>hitsAt(painting.result,point,16*canvas.width/Math.max(1,canvas.getBoundingClientRect().width));
+  const isSelectedHit=(id:string)=>{const source=painting.result?.sources?.[id];return source?source.instance===editorSelection.instance&&source.document===compositionDocument()?.id:id===editorSelection.instance;};
+  const hitLabel=(id:string)=>painting.result?.sources?.[id]?.instance??id;
+  function cycleAt(point:{x:number;y:number}){const hits=hitsUnder(point),index=hits.findIndex(hit=>isSelectedHit(hit.id));if(hits.length<2||index<0)return;const next=hits[(index+1)%hits.length];select_(next.id);notice(`${hitLabel(next.id)} · ${(index+1)%hits.length+1} of ${hits.length} here · click again for the next`);}
+  let pickListOpened=0;
+  function listAt(point:{x:number;y:number},client:{clientX:number;clientY:number}){
+    const hits=hitsUnder(point);if(!hits.length)return;const box=stageWrap.getBoundingClientRect();
+    pickList.replaceChildren(element('div','pick-head',`${hits.length} here`),...hits.map(hit=>{const item=button(hitLabel(hit.id),()=>{pickList.hidden=true;select_(hit.id);});item.setAttribute('role','menuitem');item.setAttribute('aria-pressed',String(isSelectedHit(hit.id)));return item;}));
+    pickList.style.left=`${Math.min(client.clientX-box.left,box.width-240)}px`;pickList.style.top=`${Math.min(client.clientY-box.top,box.height-40)}px`;pickListOpened=performance.now();pickList.hidden=false;(pickList.querySelector('button:not([aria-pressed=true])') as HTMLElement|null)?.focus();
+  }
   const spatialHandles=mountSpatialHandles(stageWrap,canvas);
   const resizeFeedback=element('output','spatial-feedback');resizeFeedback.hidden=true;resizeFeedback.setAttribute('aria-label','Resize values');stageWrap.append(resizeFeedback);
   /** Presentation only: candidate values belong to the viewport gesture, committed values to ComposerModel. */
@@ -1310,10 +1346,18 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function refreshViewportTools() {
     canvas.style.imageRendering=compareCanvas.style.imageRendering=pixelatedScaling?'pixelated':'auto';
     stage.classList.toggle('workspace-view',dynamicWorkspace());
-    const zoomReadout=button(Math.round(sequenceNav.zoom*100)+'%',()=>fit());zoomReadout.dataset.workspaceZoom='';
-    const follow=button('Follow camera',()=>{followCamera=!followCamera;refreshViewportTools();rememberView();void draw();},'Keep the game camera centred with a margin during playback and scrubbing. Pan or zoom to stop following.');follow.setAttribute('aria-pressed',String(followCamera));
-    const objectBounds=button('Object outlines',()=>{showObjectOutlines=!showObjectOutlines;try{localStorage.setItem('access-denied.editor.object-outlines',String(showObjectOutlines));}catch{/* optional preview preference */}refreshViewportTools();void draw();},'Show bounds of all visible objects; the selected outline remains visible');objectBounds.setAttribute('aria-pressed',String(showObjectOutlines));
-    viewportTools.hidden=!navigable();if(!navigable())return;if(navigable()){const boundaries=button('Chunk borders',()=>{showSceneBounds=!showSceneBounds;placeJoined();refreshViewportTools();});boundaries.setAttribute('aria-pressed',String(showSceneBounds));const statuses=button('Chunk status',()=>{showChunkStatus=!showChunkStatus;placeJoined();refreshViewportTools();},'Show editing preparation labels beside scene borders; runtime loading is shown in the Play outline');statuses.setAttribute('aria-pressed',String(showChunkStatus));if(cameraPreview){viewportTools.replaceChildren(button('Workspace',()=>{cameraPreview=false;refreshViewportTools();refreshOptions();void draw();}),boundaries,statuses,objectBounds);return;}viewportTools.replaceChildren(button('−',()=>zoomTo(sequenceNav.zoom/1.25)),zoomReadout,button('+',()=>zoomTo(sequenceNav.zoom*1.25)),button('Fit',fit),button('Locate camera',locateCamera,'Frame the game camera without changing its properties'),follow,boundaries,statuses,objectBounds);return;}
+    const zoomReadout=button(Math.round(sequenceNav.zoom*100)+'%',()=>fit(),'Fit (F)');zoomReadout.dataset.workspaceZoom='';
+    const toggle=(text:string,on:boolean,act:()=>void,title?:string)=>{const item=button(text,act,title);item.className='toggle';item.setAttribute('aria-pressed',String(on));return item;};
+    const follow=toggle('Follow camera',followCamera,()=>{followCamera=!followCamera;refreshViewportTools();rememberView();void draw();},'Keep the game camera centred with a margin during playback and scrubbing. Pan or zoom to stop following.');
+    const objectBounds=toggle('Object outlines',showObjectOutlines,()=>{showObjectOutlines=!showObjectOutlines;try{localStorage.setItem('access-denied.editor.object-outlines',String(showObjectOutlines));}catch{/* optional preview preference */}refreshViewportTools();void draw();},'Show bounds of all visible objects; the selected outline remains visible');
+    viewportTools.hidden=viewMenus.hidden=!navigable();if(!navigable())return;
+    const boundaries=toggle('Chunk borders',showSceneBounds,()=>{showSceneBounds=!showSceneBounds;placeJoined();refreshViewportTools();});
+    const statuses=toggle('Chunk status',showChunkStatus,()=>{showChunkStatus=!showChunkStatus;placeJoined();refreshViewportTools();},'Show editing preparation labels beside scene borders; runtime loading is shown in the Play outline');
+    const look=toggle('Look through game camera',cameraPreview,()=>{cameraPreview=!cameraPreview;refreshViewportTools();refreshOptions();void draw();},'Camera preview looks through the authored game camera; the workspace keeps independent pan and zoom.');
+    cameraMenu.panel.replaceChildren(look,...(cameraPreview?[]:[button('Locate camera',locateCamera,'Frame the game camera without changing its properties'),follow]));
+    showMenu.panel.replaceChildren(boundaries,statuses,objectBounds,showSlot);
+    if(cameraPreview){viewportTools.replaceChildren(button('Back to workspace',()=>{cameraPreview=false;refreshViewportTools();refreshOptions();void draw();}));return;}
+    viewportTools.replaceChildren(button('−',()=>zoomTo(sequenceNav.zoom/1.25),'Zoom out'),zoomReadout,button('+',()=>zoomTo(sequenceNav.zoom*1.25),'Zoom in'),button('Frame',fit,'Frame the scene (F)'));
   }
   /** Creation stays beside the world; nothing is inserted until the complete draft applies. */
   function openNewScene() {
@@ -1358,7 +1402,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
    * space (the picture, the dark area around it or the comparison) deselects. Middle and right drag pan (right also
    * covers a pen's barrel button); one finger pans on empty space and two fingers pinch-zoom.
    */
-  const disposeViewportInput=mountViewportInput({spatialFeedback,beginGesture:()=>{if(playing||animating){playing=false;animating=false;refreshOptions();}},focusArtwork:id=>{const source=painting.result?.sources?.[id];void focusArtwork(source?.document??compositionDocument()?.id??currentId,source?.instance??id);},manualNavigation:stopFollowing,get navigable(){return navigable;},get viewport(){return viewport;},get sequenceNav(){return sequenceNav;},get stage(){return stage;},get canvas(){return canvas;},get selectedId(){return editorSelection.instance;},get select_(){return select_;},get closePicker(){return closePicker;},get coordinates(){return coordinates;},get hitTest(){return hitTest;},get preview(){return painting.result;},get compositionDocument(){return compositionDocument;},get zoomTo(){return zoomTo;},get cameraPreview(){return cameraPreview;},get draw(){return draw;},get placeHover(){return placeHover;},get snap(){return snap;},get config(){return config;},get dragPreviewDirty(){return dragPreviewDirty;},set dragPreviewDirty(value){dragPreviewDirty=value;},get notice(){return notice;},get refreshOptions(){return refreshOptions;},get run(){return run;},get commitDrag(){return commitDrag;},get validateDrag(){return validateDrag;},get model(){return model;},get placeJoined(){return placeJoined;},get compareCanvas(){return compareCanvas;},get editInstance(){return editInstance;},get current(){return current;},get openPicker(){return openPicker;},get fit(){return fit;}});
+  const disposeViewportInput=mountViewportInput({spatialFeedback,beginGesture:()=>{if(playing||animating){playing=false;animating=false;refreshOptions();}},focusArtwork:id=>{const source=painting.result?.sources?.[id];void focusArtwork(source?.document??compositionDocument()?.id??currentId,source?.instance??id);},manualNavigation:stopFollowing,get navigable(){return navigable;},get viewport(){return viewport;},get sequenceNav(){return sequenceNav;},get stage(){return stage;},get canvas(){return canvas;},get selectedId(){return editorSelection.instance;},get select_(){return select_;},get closePicker(){return closePicker;},get coordinates(){return coordinates;},get hitTest(){return hitTest;},cycleAt,listAt,get preview(){return painting.result;},get compositionDocument(){return compositionDocument;},get zoomTo(){return zoomTo;},get cameraPreview(){return cameraPreview;},get draw(){return draw;},get placeHover(){return placeHover;},get snap(){return snap;},get config(){return config;},get dragPreviewDirty(){return dragPreviewDirty;},set dragPreviewDirty(value){dragPreviewDirty=value;},get notice(){return notice;},get refreshOptions(){return refreshOptions;},get run(){return run;},get commitDrag(){return commitDrag;},get validateDrag(){return validateDrag;},get model(){return model;},get placeJoined(){return placeJoined;},get compareCanvas(){return compareCanvas;},get editInstance(){return editInstance;},get current(){return current;},get openPicker(){return openPicker;},get fit(){return fit;}});
   const disposeNumericScrubbing=mountNumericScrubbing(root,{
     begin:label=>{numericSourceVersion=model.sourceVersion;const edit=model.beginInteraction(label);playing=false;animating=false;numericScrubbing=true;updateTime();return{commit:edit.commit,cancel:edit.cancel};},
     changed:()=>{numericScrubbing=false;const sourceChanged=model.sourceVersion!==numericSourceVersion;if(sourceChanged){thumbnailDocuments=undefined;thumbnails?.invalidate();}refresh();if(sourceChanged&&!picker.hidden)renderPicker();},
@@ -1376,6 +1420,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   };
   /** Single keys in the Scene view (Delete, H for hack vision…), unless the user is typing in a field or an inspector field is active. */
   const shortcuts = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && !pickList.hidden) { pickList.hidden = true; return; }
     if(group==='layout'&&playHost.hidden&&root.isConnected&&current()?.kind==='composition'){const action=animationShortcut(event);if(action&&(action==='toggle'||!('boundary'in action)||sequence())){event.preventDefault();if(action==='toggle')toggleAnimation();else seekTime('boundary'in action?(action.boundary==='start'?0:sequence()!.duration):'frames'in action?(Math.round(time*60)+action.frames)/60:time+action.seconds);return;}}
     if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.repeat || group !== 'layout' || !root.isConnected) return;
     const target = event.target as HTMLElement; if (target.closest('input, textarea, select, dialog, [contenteditable=""], [contenteditable="true"]')) return;
@@ -1383,7 +1428,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const control = (config.environmentControls ?? []).find(c => c.kind === 'boolean' && c.shortcut?.toLowerCase() === event.key.toLowerCase()); if (!control) return;
     event.preventDefault(); environment[control.key] = !environment[control.key]; refreshOptions(); void draw();
   };
-  const closeMenu = (event: Event) => { const menu = header.querySelector<HTMLDetailsElement>('details.menu'); if (menu?.open && (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button'))) menu.open = false; };
+  const closeMenu = (event: Event) => {
+    for (const menu of root.querySelectorAll<HTMLDetailsElement>('details.menu[open],details.ov-menu[open]')) if (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button')) menu.open = false;
+    if (!pickList.hidden && !pickList.contains(event.target as Node) && performance.now() - pickListOpened > 250) pickList.hidden = true;
+  };
   window.addEventListener('beforeunload', unload);window.addEventListener('hashchange',navigateEditorLink); root.addEventListener('keydown', keyboard); document.addEventListener('keydown', shortcuts); document.addEventListener('click', closeMenu);
   let previous = performance.now(), frameId = 0;
   const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous=now;if(focusMotion){const m=focusMotion;if(m.document!==currentId)focusMotion=undefined;else{m.elapsed+=delta;const t=Math.min(1,m.elapsed/.32),ease=t*t*(3-2*t);sequenceNav.x=m.from.x+(m.to.x-m.from.x)*ease;sequenceNav.y=m.from.y+(m.to.y-m.from.y)*ease;sequenceNav.zoom=Math.exp(Math.log(m.from.zoom)+(Math.log(m.to.zoom)-Math.log(m.from.zoom))*ease);if(t===1){focusMotion=undefined;refreshViewportTools();}void draw();}}if(now-lastViewSample>=500){lastViewSample=now;rememberView();}updateRenderStatus();if(dragPreviewDirty){dragPreviewDirty=false;void draw();}const seq=sequence(); if (animating && !seq && group === 'layout' && current()?.kind === 'composition') { time += delta*playbackSpeed; updateTime();void draw(true); } if (playing && seq && group==='layout' && playHost.hidden) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta*playbackSpeed; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='camera')refreshRight(); } } updateTime(); void draw(playing); } frameId = requestAnimationFrame(tick); };

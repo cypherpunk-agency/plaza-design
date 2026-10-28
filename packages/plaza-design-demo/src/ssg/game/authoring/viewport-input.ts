@@ -13,7 +13,7 @@ export interface ViewportState {
  panning?:{x:number;y:number;camera:number;scroll:number;moved:boolean;target?:string};
  pinch?:{distance:number;zoom:number};
  touches:Map<number,{x:number;y:number}>;
- dragging?:{pointerId?:number;before:ChunkDocument;pending:ChunkDocument;x:number;y:number;id:string;delta:PreviewResult['deltaToLocal'];armed:boolean;clientX:number;clientY:number;handle?:NonNullable<PreviewResult['handles']>[number]};
+ dragging?:{pointerId?:number;wasSelected?:boolean;before:ChunkDocument;pending:ChunkDocument;x:number;y:number;id:string;delta:PreviewResult['deltaToLocal'];armed:boolean;clientX:number;clientY:number;handle?:NonNullable<PreviewResult['handles']>[number]};
 }
 export const createViewportState=():ViewportState=>({hoverId:'',touches:new Map()});
 
@@ -33,6 +33,10 @@ export interface ViewportInputPort{
  closePicker:() => void;
  coordinates:(event: { clientX: number; clientY: number; }) => { x: number; y: number; };
  hitTest:(point:{x:number;y:number})=>{id:string;x:number;y:number;width:number;height:number}|undefined;
+ /** Clicking the selection again without dragging selects the next target under the point. */
+ cycleAt?:(point:{x:number;y:number})=>void;
+ /** Alt-click lists every target under the point. */
+ listAt?:(point:{x:number;y:number},client:{clientX:number;clientY:number})=>void;
  preview:PreviewResult | undefined;
  compositionDocument:() => EditorDocument | undefined;
  zoomTo:(next: number, anchor?: { clientX: number; clientY: number; }) => void;
@@ -86,15 +90,16 @@ export function mountViewportInput(port:ViewportInputPort){
     if (event.button !== 0) return;
     const point = port.coordinates(event),handle=handleAt(point),hit = handle?{id:handle.instance}:port.hitTest(point);
     if (!hit) { pressEmpty(event, port.canvas); return; }
+    if (event.altKey && port.listAt) { event.preventDefault(); port.listAt(point, event); return; }
     event.preventDefault(); port.canvas.focus({ preventScroll: true });port.beginGesture?.();
     dragError='';
-    const pickedSource=port.preview?.sources?.[hit.id];
-    if(pickedSource?pickedSource.instance!==port.selectedId||pickedSource.document!==port.compositionDocument()?.id:hit.id!==port.selectedId)port.select_(hit.id);
+    const pickedSource=port.preview?.sources?.[hit.id],wasSelected=!(pickedSource?pickedSource.instance!==port.selectedId||pickedSource.document!==port.compositionDocument()?.id:hit.id!==port.selectedId);
+    if(!wasSelected)port.select_(hit.id);
     const doc = port.compositionDocument(); if (!doc || !port.preview?.deltaToLocal) return;
     const deltaToLocal=port.preview.deltaToLocal;
     const before=copy(doc.value as ChunkDocument),sample=port.preview.resolved?.[hit.id]?.authored,source=flatten(before).find(n=>n.node.id===port.selectedId)?.node;if(sample&&source){source.placement.x=sample.x;source.placement.h=sample.h;}
     if(handle){const properties=port.preview.resolved?.[hit.id]?.properties,shown=source&&properties?{...source,props:{...source.props,...Object.fromEntries(handle.fields.filter(key=>properties[key]).map(key=>[key,properties[key].value]))}}:source;port.spatialFeedback?.('start',handle.fields,shown);}
-    port.viewport.dragging = { pointerId:event.pointerId,before, pending: copy(before), x: point.x, y: point.y, id: port.selectedId, delta: (_id,dx,dy)=>deltaToLocal(hit.id,dx,dy), armed: false, clientX: event.clientX, clientY: event.clientY,handle }; port.canvas.setPointerCapture(event.pointerId);
+    port.viewport.dragging = { pointerId:event.pointerId,wasSelected:wasSelected&&!handle,before, pending: copy(before), x: point.x, y: point.y, id: port.selectedId, delta: (_id,dx,dy)=>deltaToLocal(hit.id,dx,dy), armed: false, clientX: event.clientX, clientY: event.clientY,handle }; port.canvas.setPointerCapture(event.pointerId);
   };
   port.canvas.onpointermove = event => {
     if (port.viewport.touches.has(event.pointerId)) { port.viewport.touches.set(event.pointerId, { x: event.clientX, y: event.clientY }); if (port.viewport.pinch && port.viewport.touches.size === 2) { const [a, b] = [...port.viewport.touches.values()]; port.zoomTo(port.viewport.pinch.zoom * Math.hypot(a.x - b.x, a.y - b.y) / Math.max(1, port.viewport.pinch.distance), { clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 }); return; } }
@@ -106,7 +111,8 @@ export function mountViewportInput(port:ViewportInputPort){
   port.canvas.onpointerup = event => {
     port.viewport.touches.delete(event.pointerId); if (port.viewport.touches.size < 2) port.viewport.pinch = undefined;
     if (port.viewport.panning) { const { moved, target } = port.viewport.panning; port.viewport.panning = undefined; delete port.canvas.dataset.panning; if (port.canvas.hasPointerCapture(event.pointerId)) port.canvas.releasePointerCapture(event.pointerId); if (!moved && target !== undefined) port.select_(target); else port.refreshOptions(); return; }
-    if (!port.viewport.dragging) return; const pending = port.viewport.dragging.pending,handle=port.viewport.dragging.handle, unchanged = !port.viewport.dragging.armed || equal(pending, port.viewport.dragging.before); port.viewport.dragging = undefined; delete port.canvas.dataset.dragging; if (port.canvas.hasPointerCapture(event.pointerId)) port.canvas.releasePointerCapture(event.pointerId); try{if(!unchanged){if(port.commitDrag)port.commitDrag(pending);else port.run(()=>port.model.edit(port.compositionDocument()!.id,'Drag artwork',()=>pending));}}finally{if(handle)port.spatialFeedback?.('finish',handle.fields);port.dragPreviewDirty=true;void port.draw();}
+    if (!port.viewport.dragging) return; const press=port.viewport.dragging,pending = press.pending,handle=press.handle, unchanged = !press.armed || equal(pending, press.before);
+    if(!press.armed&&press.wasSelected&&port.cycleAt){port.viewport.dragging=undefined;delete port.canvas.dataset.dragging;if(port.canvas.hasPointerCapture(event.pointerId))port.canvas.releasePointerCapture(event.pointerId);port.cycleAt({x:press.x,y:press.y});return;} port.viewport.dragging = undefined; delete port.canvas.dataset.dragging; if (port.canvas.hasPointerCapture(event.pointerId)) port.canvas.releasePointerCapture(event.pointerId); try{if(!unchanged){if(port.commitDrag)port.commitDrag(pending);else port.run(()=>port.model.edit(port.compositionDocument()!.id,'Drag artwork',()=>pending));}}finally{if(handle)port.spatialFeedback?.('finish',handle.fields);port.dragPreviewDirty=true;void port.draw();}
   };
   port.canvas.onpointercancel = event => { port.spatialFeedback?.('cancel',[]);port.viewport.touches.delete(event.pointerId); port.viewport.pinch = undefined; port.viewport.panning = undefined; delete port.canvas.dataset.panning; port.viewport.dragging = undefined; delete port.canvas.dataset.dragging; void port.draw(); };
   port.stage.addEventListener('scroll',() => { port.placeHover(); port.placeJoined(); },{...{ passive: true },signal:abort.signal});
