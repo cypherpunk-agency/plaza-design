@@ -356,6 +356,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   const playScene = () => {
     const item = playWorkbench(), scene = worldState()?.checkpoint?.scene??sceneId(); if (!item || !canPlay()) return; stopPlay(); playing = false; animating = false; showLayout();
+    // In Animate the run starts at the playhead; otherwise it starts as the checkpoint is authored.
+    playStartMode = sequence() ? 'preview' : 'checkpoint';
     const viewport=gameViewport(playStartMode==='checkpoint'?!!worldState()?.checkpoint?.sequence:!!sequence());playHost.style.setProperty('--play-ratio',String(viewport.width/viewport.height));
     playCheckpointId=worldState()?.id;
     playHost.hidden = false; stage.hidden = true; viewportTools.hidden = true; root.dataset.playing = '';
@@ -679,11 +681,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const states = composition && config.worldStates ? config.worldStates.list('', documentsForView()) : [];
     if (states.length) {
       const chosen = worldState()?.id??'';
-      const pick = select([...states.map(state => ({ value: state.id, label: `Checkpoint · ${state.name}` })), { value: '', label: 'Checkpoint · none' }], chosen, value=>openCheckpoint(value));
+      const pick = select([...states.map(state => ({ value: state.id, label: `Checkpoint · ${state.name}` })), { value: '', label: 'No checkpoint · play from here' }], chosen, value=>openCheckpoint(value));
       pick.title = 'The world this scene is shown in and Play starts from: time, weather and story flags. With a checkpoint chosen, time and weather edit it.';
-      pick.setAttribute('aria-label', 'Starting state'); cluster('Starting state').append(pick);
+      pick.setAttribute('aria-label', 'Checkpoint'); cluster('Checkpoint').append(pick);
     }
-    if (canPlay()) { const origin=select([{value:'preview',label:'From preview'},{value:'checkpoint',label:'From checkpoint start'}],playStartMode,value=>{playStartMode=value as typeof playStartMode;refreshOptions();});origin.setAttribute('aria-label','Play starting point');origin.title='Preview uses the selected sequence/playhead (or base editing). Checkpoint start uses its authored sequence/time. Both use the checkpoint world state.';const play = button('▶ Play', playScene, 'Run the real game here from the chosen starting point, with the same logical camera viewport'); play.className = 'play-button'; cluster('Play').append(origin, play); }
+    if (canPlay()) { const play = button('▶ Play', playScene, worldState() ? 'Run the real game from this checkpoint (in Animate: from the playhead)' : 'Run the real game here from default world values; nothing is saved'); play.className = 'play-button'; cluster('Play').append(play); }
     // With a checkpoint chosen, time and weather are part of it (saved, undoable); otherwise they only change the preview.
     if (composition && quick.length) {
       const stored = !!worldState(); previewBar.classList.toggle('stored', stored);

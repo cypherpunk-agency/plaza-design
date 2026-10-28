@@ -169,7 +169,9 @@ Status and badges appear only for exceptions. A chunk that is fine shows no badg
 
 - Scene toolbar as its own row above the scene: Add, Live motion (ambient people, lights and
   signs; "Play sequence" when a sequence is open, hidden in sequence editing where the timeline
-  owns playback), sequence picker, Snap, checkpoint and play starting point, then ▶ Play. There are no Select/Move tools: the
+  owns playback), sequence picker, Snap, Checkpoint, then ▶ Play. Play starts from the chosen
+  checkpoint (in Animate, from the playhead); with no checkpoint it starts a temporary run in the open
+  chunk from default world values, writes nothing to source, and offers "Save as checkpoint". There are no Select/Move tools: the
   editor has no tool modes, so clicking selects and dragging moves. The selection breadcrumb
   sits in the status bar.
 - Inside the scene: **Preview only** bar top-right; zoom, percentage and Frame `F` bottom-left;
