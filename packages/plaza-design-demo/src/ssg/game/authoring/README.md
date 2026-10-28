@@ -4,6 +4,11 @@ For the current feedback queue, direct local links and task instructions, use
 [Pending user review](../docs/design/USER-REVIEW-GUIDE.md). It distinguishes user experience
 decisions from mechanics already verified and known work that is not ready for acceptance.
 
+Editor layout, colour, type and control rules: [Editor UI](../docs/reference/EDITOR-UI.md).
+The editor is moving to docked task workspaces in a neutral grey look; the
+[redesign plan](../docs/design/EDITOR-REDESIGN-PLAN.md) lists the phases. Until a phase lands,
+this guide describes the current screens.
+
 The header browser opens **Compositions** (named chunk arrangements) or individual chunk sources.
 For example, `/editor/#composition=boundary-example` opens all members of the Boundary example
 in one workspace. The outline shows each source; **Focus** frames a member without leaving that

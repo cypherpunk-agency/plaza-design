@@ -10,6 +10,14 @@ not prohibit this subsequent release. Production is not part of this publication
 [Pending user review](./docs/design/USER-REVIEW-GUIDE.md) provides direct checkpoints, practical
 instructions and the remaining design/usability questions; technical acceptance is separate.
 
+Editor redesign (authorized 2026-10-28, not started): docked task workspaces in a neutral grey
+look, chosen from mockups. Rules: [Editor UI](./docs/reference/EDITOR-UI.md); phases:
+[redesign plan](./docs/design/EDITOR-REDESIGN-PLAN.md). Phases 1–6 run under the
+[goal contract](./docs/design/EDITOR-REDESIGN-GOAL.md): presentation only, local until done,
+review stops after phases 1 and 2. **Phase 7 (Logic, Conversations, World, Review workspace
+content) is parked** with [notes](./docs/design/EDITOR-PHASE-7-NOTES.md); raise it with the user
+when the goal completes.
+
 Editor viewport follow-up (local, 2026-10-27): shared logical game framing for preview/Play,
 stable workspace scale as the timeline opens/closes, selectable base camera with Locate camera,
 explicit preview-versus-checkpoint starts, remembered per-sequence playheads and Home/End seek.

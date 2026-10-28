@@ -6,7 +6,7 @@ The game is in active design. The user's latest direction overrides historical d
 Read [ENGINE-HANDBOOK.md](./docs/reference/ENGINE-HANDBOOK.md) before changing gameplay or adding
 content. It explains ownership, concrete extension recipes, examples and verification.
 Read [README.md](./README.md) for launch commands and [authoring/README.md](./authoring/README.md)
-for editor work. ROADMAP.md owns current priorities. Completed migration plans and evidence
+for editor work; editor layout, colour and controls follow [EDITOR-UI.md](./docs/reference/EDITOR-UI.md). ROADMAP.md owns current priorities. Completed migration plans and evidence
 have been retired; do not recreate them or restart the completed consolidation.
 
 
