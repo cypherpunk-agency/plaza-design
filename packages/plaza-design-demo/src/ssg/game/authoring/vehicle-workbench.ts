@@ -1,3 +1,4 @@
+import {runFrame} from './frame-loop';
 import {assetPictureLimits} from '../world/render-settings';
 import {renderWorldFrame} from '../runtime/render-scene';
 
@@ -187,6 +188,6 @@ export function mountVehicleWorkbench(host:HTMLElement):()=>void{
   const paint=document.createElement('input');paint.type='color';paint.value=state.paint;paint.disabled=!f.controls.includes('paint');paint.onchange=()=>{state.paint=paint.value;draw();};label('Paint',paint);
   numeric('seed','Passenger seed',0,1000000,1,f.controls.includes('seed'));numeric('minute','Minute of day',0,1439,1,f.id==='train.interior'||f.id.startsWith('opening.')||f.id==='canal.boat');numeric('camera','Camera X',-20000,20000,10);numeric('panY','Camera vertical',-1000,1000,10);numeric('zoom','Zoom',.1,8,.1);
   const reset=document.createElement('button');reset.textContent='Reset camera';reset.onclick=()=>{state={...state,camera:f.camera,panY:0,zoom:1};refresh();draw();};controls.append(reset);draw();};
- select.onchange=()=>{state=vehicleState(select.value);refresh();};refresh();setMode('lineup');const loop=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
+ select.onchange=()=>{state=vehicleState(select.value);refresh();};refresh();setMode('lineup');const loop=(now:number)=>{if(disposed)return;runFrame(()=>clock.tick(now));raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
  return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();frame.root.remove();host.classList.remove('framed');};
 }

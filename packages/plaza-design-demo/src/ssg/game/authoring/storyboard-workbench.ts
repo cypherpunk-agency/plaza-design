@@ -8,7 +8,7 @@ import type {EditorDocument,PreviewRequest,PreviewResult,WorkbenchContext,Workbe
 import type { ChunkDocument } from '../art/core/composition';
 import {storyboardLinks} from './storyboard-links';
 import {transitionKey} from './storyboard';
-import {validationSnapshot} from './validation-snapshot';
+import {validationSnapshot,liveSources} from './validation-snapshot';
 import { PROPOSAL_SCENES } from './proposal-scenes';
 import { STYLE_FRAMES } from './style-frames';
 import { BEAT_STATUSES, STORYBOARD_DOCUMENT, freeId, validateStoryboard, type BeatStatus, type StoryAct, type StoryBeat, type Storyboard } from './storyboard';
@@ -71,7 +71,7 @@ export function mountStoryboard(host: HTMLElement, context: WorkbenchContext, re
     const source=sourceDocuments;requestAnimationFrame(() => {
       if (disposed||source!==sourceDocuments) return;
       const composition = compositionDocs.get(scene)?.value as ChunkDocument | undefined, shot = el('canvas'); shot.width = 240; shot.height = 135;
-      if (composition) try { const v = look(district); render(shot, { documents: new Map(context.documents.map(d => [d.id, d.value])), composition: structuredClone(composition), time: 0, reduced: true, overlays: false, environment: { ...environment, cameraX: 0, minute: v.minute, weather: v.weather, renderScale: shot.width / 640 } }); }
+      if (composition) try { const v = look(district); render(shot, { documents: liveSources(context), sourceVersion: liveSources(context), composition: structuredClone(composition), time: 0, reduced: true, overlays: false, environment: { ...environment, cameraX: 0, minute: v.minute, weather: v.weather, renderScale: shot.width / 640 } }); }
       catch (e) { status.textContent = `Preview of ${sceneName(scene)} unavailable: ${e instanceof Error ? e.message : String(e)}`; }
       shots.set(key, shot);
       for (const c of waiting.get(key) ?? []) if (c.isConnected) c.getContext('2d')?.drawImage(shot, 0, 0, c.width, c.height);

@@ -1,3 +1,4 @@
+import {liveSources} from './validation-snapshot';
 import { TypedForm } from './typed-form';
 import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import { ABILITIES, ABILITY_LABELS, AVATARS, CLOCK_RULES, GUIDANCE_STYLES, ROUTES, WORLDS, LOOK_PARTS,LOOK_COLOURS,type PlayProfile, type PlayProfiles } from '../runtime/play-profiles';
@@ -19,7 +20,7 @@ export function mountPlayProfileAuthoring(host: HTMLElement, context: WorkbenchC
   function render() {
     if (disposed) return;
     host.replaceChildren(error);
-    const doc = raw(), scenes = profileSceneIds(new Map(context.documents.map(d => [d.id, d.value])));
+    const doc = raw(), scenes = profileSceneIds(liveSources(context));
     const choices=doc.profiles.filter(p=>settings?!p.select:!!p.select);
     if(!choices.length){host.append(Object.assign(document.createElement('p'),{textContent:'No run configurations.'}));return;}
     if (!choices.some(p => p.id === current)) current = choices[0].id;

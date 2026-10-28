@@ -1,3 +1,4 @@
+import {liveSources,perSources} from './validation-snapshot';
 import {storyObservationTypes} from '../story/observations';
 import {renameSharedFlagDocuments} from './world-flag-references';
 import {mountGameplayAuthoring} from './gameplay-authoring';
@@ -26,11 +27,13 @@ export function mountStoryLogicAuthoring(host:HTMLElement,context:WorkbenchConte
  let workflowEditor:ReturnType<typeof mountGameplayAuthoring>|undefined,refreshMilestones:(()=>void)|undefined;
  const form=new TypedForm(e=>{error.textContent=String(e);});
  let registry:ReturnType<typeof pendingRegistry>={};
- const documents=()=>new Map(context.documents.map(x=>[x.id,api.get(x.id).value]));
- const story=()=>validateOpeningSource(api.get('opening-story').value);
+ const documents=()=>liveSources(context);
+ // StoryFields asks for the vocabulary once per field, so the story is validated once per source version.
+ const storyFor=perSources(sources=>validateOpeningSource(structuredClone(sources.get('opening-story'))));
+ const story=()=>storyFor(liveSources(context));
  const vocab=():StoryVocab=>{const s=story();return{scenes:Object.keys(registry),phases:Object.keys(s.PHASES),flags:[...s.GAMEPLAY.flags],cards:Object.keys(s.CARDS),milestones:Object.keys(s.WORKFLOWS),registry};};
  /** A handle on one source document: its value, and an edit that validates, records history and re-renders. */
- const handle=(id:string)=>({value:()=>structuredClone(api.get(id).value) as any,edit:(label:string,change:(d:any)=>void)=>{const d=structuredClone(api.get(id).value) as any;change(d);api.edit(id,label,d);render();}});
+ const handle=(id:string)=>({value:()=>structuredClone(liveSources(context).get(id)) as any,edit:(label:string,change:(d:any)=>void)=>{const d=structuredClone(api.get(id).value) as any;change(d);api.edit(id,label,d);render();}});
  /** Controls that need more than the one document. */
  const special=(docId:DocId)=>(parent:HTMLElement,_value:any,path:(string|number)[])=>{
   if(docId!=='opening-story')return false;

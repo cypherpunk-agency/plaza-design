@@ -9,7 +9,7 @@ import {backdropAdapters,backdropInspector} from './backdrop-preview';
 import {validateBackdrop} from '../world/backdrops';
 import {withSharedState} from '../engine/gameplay/shared-state';
 import {validateSharedState,validateGameplay} from '../engine/gameplay/validation';
-import {validationSnapshot} from './validation-snapshot';
+import {validationSnapshot,liveSources,perSources} from './validation-snapshot';
 import {mountStoryLogicAuthoring} from './story-logic-authoring';
 import {mountGameSettingsAuthoring} from './game-settings-authoring';
 import {mountStartingStateAuthoring} from './starting-state-authoring';
@@ -111,6 +111,8 @@ import { mountStoryboard, type StoryboardSession } from './storyboard-workbench'
 
 
 /** Play context for a proposal: every document as is, except the base scene's composition, which is the proposal's. */
+/** The compiled world for the joined-scene strip, once per source version rather than on every toolbar refresh. */
+const joinedWorld = perSources(sources => compileGameWorld(pendingRegistry(sources), sources));
 function asProposal(context: WorkbenchContext, p: { id: string; base: string }): WorkbenchContext {
   const swap = (docs: EditorDocument[]) => { const own = docs.find(d => d.id === p.id); return own ? docs.map(d => d.id === p.base ? { ...d, value: { ...(own.value as ChunkDocument), scene: p.base } } : d) : docs; };
   return Object.defineProperty({ ...context }, 'documents', { get: () => swap(context.documents), enumerable: true });
@@ -245,8 +247,8 @@ async function start() {
       {id:'story-logic',area:'library',label:'Story logic',title:'Global story commands, phase policies, cards and triggers',authoring:true,documentDependent:true,primaryDocumentId:'opening-story',mount:mountStoryLogicAuthoring},
       {id:'play-profiles',area:'labs',label:'Test configurations',title:'Run configuration and isolated storage for campaign, Harbor and Test District testing',authoring:true,documentDependent:true,documentIds:['authored-scenes','play-profiles'],primaryDocumentId:'play-profiles',mount:mountPlayProfileAuthoring},
       {id:'world-variables',area:'world',layout:'sections',label:'World variables',title:'Variable declarations, storage bindings, authored uses and checkpoint overrides',authoring:true,documentDependent:true,mount:mountWorldVariableAuthoring},
-      {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(new Map(context.documents.map(d=>[d.id,d.value])))).flatMap(s=>s.data?[s.data]:[]))},
-      {id:'scene-connections',area:'scene',mode:'wiring',label:'Starting cables',title:'Authored scene connections',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){wireSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,wireSelection,true,()=>pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))))},
+      {id:'network',area:'world',layout:'sections',label:'Networks',title:'Networks, reach and permissions',authoring:true,documentDependent:true,primaryDocumentId:'network',mount:(host,context)=>mountNetworkAuthoring(host,context,()=>Object.values(pendingRegistry(liveSources(context))).flatMap(s=>s.data?[s.data]:[]))},
+      {id:'scene-connections',area:'scene',mode:'wiring',label:'Starting cables',title:'Authored scene connections',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){wireSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,wireSelection,true,()=>pendingNetworkContext(liveSources(context)))},
       {id:'review-stations',area:'labs',layout:'sections',label:'Review shortcuts',title:'Test District bookmarks, buttons and the remote-device example',authoring:true,documentDependent:true,documentIds:['review-stations'],primaryDocumentId:'review-stations',mount:mountReviewStationsAuthoring},
       {id:'manifest-pilot',area:'labs',label:'Manifest pilot',title:'Declared scene: pending source in private Play',authoring:true,documentDependent:true,mount:(host,context)=>mountPlayWorkbench(host,context,manifestSelection,false,true,'Lab · the declared demo scene, built only from its pending manifest source, running in private Play. A test bed for the scene manifest format, not part of the scene workflow.')},
       {id:'scene-logic',area:'scene',mode:'logic',label:'Interactions & story',title:'Scene logic: interactions, objectives, dialogue and presentation',authoring:true,documentDependent:true,documentIds:[...authoredDocumentIds,'authored-scenes','bot-reactions','bot-gameplay','critter-reactions','critter-gameplay','companion','companion-gameplay'],
@@ -257,7 +259,7 @@ async function start() {
         supports:(scene,documents)=>{if(commandScenes.includes(scene))return true;try{return !!gameplayScene(scene,documents);}catch{return false;}},showScene(scene,documents){gameplaySelection.scene=scene;gameplaySelection.sourceId=(nativeGameplayScene(scene)??gameplayScene(scene,documents)).gameplayId;},
         unsupported:'This scene has no gameplay document yet. Its commands are still defined in code.',
         get primaryDocumentId(){return gameplaySelection.sourceId??'downtown-gameplay';},mount:(host,context)=>mountRegisteredGameplay(host,context,gameplaySelection,publicEditor)},
-      {id:'device-config',area:'scene',mode:'logic',label:'Devices',title:'Device nouns, verbs, guards and controller parameters',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){if(deviceSelection.scene!==scene){deviceSelection.device=undefined;deviceSelection.noun=undefined;}deviceSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,deviceSelection,false,()=>pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))))},
+      {id:'device-config',area:'scene',mode:'logic',label:'Devices',title:'Device nouns, verbs, guards and controller parameters',authoring:true,documentDependent:true,supports:(scene,documents)=>{try{return scene!=='demo-manifest'&&!!gameplayScene(scene,documents);}catch{return false;}},showScene(scene){if(deviceSelection.scene!==scene){deviceSelection.device=undefined;deviceSelection.noun=undefined;}deviceSelection.scene=scene;},unsupported:'This scene has no registered device document yet.',mount:(host,context)=>mountDeviceAuthoring(host,context,deviceSelection,false,()=>pendingNetworkContext(liveSources(context)))},
       { id: 'events', area: 'scene', mode: 'wiring', label: 'Events', title: 'Scene events and connections · read-only', documentDependent: true, mount(panel, context) {
         const graph = document.createElement('section'), source = document.createElement('section'); panel.replaceChildren(graph, source);
         const viewer = mountSourceViewer(source, publicEditor ? { async read(file, signal) {
@@ -265,7 +267,7 @@ async function start() {
           const snapshot = await sourceSnapshot; if (signal.aborted) throw new Error('Source selection changed');
           if (!Object.prototype.hasOwnProperty.call(snapshot, file) || typeof snapshot[file] !== 'string') throw new Error('Source is outside this published inspector snapshot');
           return { file, text: snapshot[file] };
-        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents, network:pendingNetworkContext(new Map(context.documents.map(d=>[d.id,d.value]))), initialScene: context.scene,
+        } } : {}), dispose = mountEventInspector(graph, { documents: context.documents, network:pendingNetworkContext(liveSources(context)), initialScene: context.scene,
           onOpenScene(scene, instance) { const doc = context.documents.find(doc => doc.kind === 'composition' && (doc.value as ChunkDocument).scene === scene); if (doc && instance) context.openInstance(doc.id, instance); else context.openScene(scene); },
           onOpenSource: reference => { void viewer.open(reference); },
         }); return () => { dispose(); viewer.dispose(); panel.replaceChildren(); };
@@ -307,7 +309,7 @@ async function start() {
 
     inspector: (scene, instance, documents) => scene.startsWith('backdrop-') ? (instance?[]:[backdropInspector(scene)]) : inspectorSections(scene, instance, documents),
     // the scenes one seam away (world/zone-graph.json), which the Scene preview draws beside the open one
-    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = compileGameWorld(pendingRegistry(validationSnapshot(documents)),validationSnapshot(documents)); } catch { return []; } const values = validationSnapshot(documents); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
+    joinedScenes(scene, documents) { const source = documents.find(d => d.id === 'zone-graph')?.value; if (source === undefined) return []; let graph; try { graph = joinedWorld(validationSnapshot(documents)); } catch { return []; } const values = validationSnapshot(documents); return [...placeFrom(graph, scene)].filter(([zone]) => zone !== scene).map(([zone]) => ({ zone, label: zoneName(zone, values) })); },
 
     worldPanel(panel, openScene, documents, scene,context) {
 
@@ -390,7 +392,7 @@ function logicSections(scene: string, instance: AssetInstance | undefined, docum
   if(scene==='sequence-opening'||scene==='sequence-title')return instance?[]:[{id:'world-sequence',label:'World sequence',mount(host){const note=document.createElement('p');note.className='muted';note.textContent='Edit timing and camera below. Select visible objects to edit their actual source without leaving the sequence.';host.replaceChildren(note);return()=>host.replaceChildren();}}];
   let entry: ReturnType<typeof gameplayScene> | undefined; try { entry = gameplayScene(scene, documents); } catch { entry = undefined; }
   const editable = !!entry && (!scene.startsWith('demo-') || scene === 'demo-manifest');
-  const network = (context: WorkbenchContext) => () => pendingNetworkContext(new Map(context.documents.map(d => [d.id, d.value])));
+  const network = (context: WorkbenchContext) => () => pendingNetworkContext(liveSources(context));
   const inCode = (text: string): InspectorSection => ({ id: instance ? 'behaviour' : 'scene', label: instance ? 'Behaviour' : 'Scene', mount(host) { const note = document.createElement('p'); note.className = 'muted'; note.textContent = text; host.replaceChildren(note); return (() => host.replaceChildren()) as WorkbenchHandle; } });
   if (!editable || !entry) return [inCode(instance ? 'This scene’s interactions are still defined in code, so its artwork has no editable behaviour yet.' : 'This scene’s arrival, goals and interactions are still defined in code. Its artwork can be arranged here.')];
   if (!instance) return [{ id: 'scene', label: 'Scene', title: 'Arrival, environment, goals and story clock', mount: (host, context) => mountSceneAuthoring(host, context, { scene, fixed: true, focus: { groups: ['Scene', 'Objectives'], empty: 'This scene has no scene-wide settings to edit.' } }) }];

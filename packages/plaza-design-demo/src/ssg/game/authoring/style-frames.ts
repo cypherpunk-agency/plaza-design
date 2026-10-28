@@ -5,6 +5,7 @@
  * with its proposal when there is one) without leaving the tab.
  * Read-only.
  */
+import {liveSources} from './validation-snapshot';
 import type {EditorDocument,PreviewRequest,PreviewResult,WorkbenchContext} from './contracts';
 import type { ChunkDocument } from '../art/core/composition';
 import { crowdMix } from '../art/characters/crowds';
@@ -64,7 +65,7 @@ export function mountStyleFrames(host: HTMLElement, context: WorkbenchContext, r
   }
   function draw(canvas: HTMLCanvasElement, status: HTMLElement, scene: string, v: { cameraX: number; minute: number; weather: string }) {
     const composition = docs.get(scene)?.value as ChunkDocument | undefined; if (!composition) return;
-    try { render(canvas, { documents: new Map(context.documents.map(d => [d.id, d.value])), composition: structuredClone(composition), time: 0, reduced: true, overlays: false,
+    try { render(canvas, { documents: liveSources(context), sourceVersion: liveSources(context), composition: structuredClone(composition), time: 0, reduced: true, overlays: false,
       environment: { ...environment, cameraX: v.cameraX, minute: v.minute, weather: v.weather, renderScale: canvas.width / 640 } }); status.textContent = ''; }
     catch (error) { status.textContent = `Preview unavailable: ${error instanceof Error ? error.message : String(error)}`; }
   }

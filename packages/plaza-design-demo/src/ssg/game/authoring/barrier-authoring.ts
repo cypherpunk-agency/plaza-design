@@ -1,3 +1,4 @@
+import {liveSources} from './validation-snapshot';
 import {TypedForm} from './typed-form';
 import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import {pendingNetworkContext} from './pending-network';
@@ -132,7 +133,7 @@ export function mountBarrierAuthoring(host:HTMLElement,context:WorkbenchContext,
  const error=document.createElement('p');error.setAttribute('role','alert');const form=new TypedForm(e=>{error.textContent=e instanceof Error?e.message:String(e);});
  // Test the rule: a disposable fixture kept across refreshes (never a source edit)
  const fixture={keys:new Set<string>(),flags:new Set<string>(),items:new Set<string>(),phase:''};
- const live=()=>context.documents.map(d=>({id:d.id,value:api.get(d.id).value}));
+ const live=()=>context.authoring?.snapshot?.()??context.documents;
  const read=()=>{const c=api.get(options.document).value as ChunkDocument;return findInstance(c.instances,options.instance);};
  function editProps(label:string,change:(props:Record<string,unknown>)=>void){
   const value=structuredClone(api.get(options.document).value) as ChunkDocument,node=findInstance(value.instances,options.instance);
@@ -148,7 +149,7 @@ export function mountBarrierAuthoring(host:HTMLElement,context:WorkbenchContext,
  function render(){
   if(disposed)return;host.replaceChildren(error);
   const node=read();if(!node){para('This barrier is no longer in the scene.');return;}
-  const docs=live(),values=new Map(docs.map(d=>[d.id,d.value])),vocab=barrierVocabulary(values),rule=barrierRule(node.props as Record<string,unknown>);
+  const docs=live(),values=liveSources(context),vocab=barrierVocabulary(values),rule=barrierRule(node.props as Record<string,unknown>);
   // the rule first, in large type: this tab opens first when a barrier is selected
   const top=document.createElement('div');top.className='barrier-head';host.append(top);
   const title=document.createElement('h3');title.textContent='Access · when '+options.instance+' opens';top.append(title);

@@ -1,3 +1,4 @@
+import {runFrame} from './frame-loop';
 import { createFrame } from './frame';
 /** Viewing shell: typed kernels and existing source compositions share their native renderers. */
 import type {ArtRegistry,ChunkDocument}from'../art/core/composition';
@@ -56,6 +57,6 @@ export function mountSignageWorkbench(host:HTMLElement,config?:SignageWorkbenchC
   const weatherSelect=document.createElement('select');for(const w of ['clear','rain','storm','fog']){const o=document.createElement('option');o.value=w;o.textContent=w;weatherSelect.append(o);}weatherSelect.value=weather;weatherSelect.disabled=!row||sequence;weatherSelect.onchange=()=>{weather=weatherSelect.value as typeof weather;draw();};label('Native scene weather',weatherSelect);
   if(sequence){mode.value='composed';(mode.options[1] as HTMLOptionElement).disabled=true;}else(mode.options[1] as HTMLOptionElement).disabled=false;
   draw();};
- select.onchange=()=>{const row=current();usageSelect.replaceChildren();for(const[u,i]of(row?.usages??[]).map((u,i)=>[u,i] as const)){const o=document.createElement('option');o.value=String(i);o.textContent=u.document+' / '+u.path.join(' / ');usageSelect.append(o);}sourceState={};state={...state,cameraX:0,cameraH:0,zoom:1};refresh();};usageSelect.onchange=()=>{sourceState={};refresh();};mode.onchange=draw;open.onclick=()=>{const u=usage();if(u)config?.openUsage(u);};refresh();const loop=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
+ select.onchange=()=>{const row=current();usageSelect.replaceChildren();for(const[u,i]of(row?.usages??[]).map((u,i)=>[u,i] as const)){const o=document.createElement('option');o.value=String(i);o.textContent=u.document+' / '+u.path.join(' / ');usageSelect.append(o);}sourceState={};state={...state,cameraX:0,cameraH:0,zoom:1};refresh();};usageSelect.onchange=()=>{sourceState={};refresh();};mode.onchange=draw;open.onclick=()=>{const u=usage();if(u)config?.openUsage(u);};refresh();const loop=(now:number)=>{if(disposed)return;runFrame(()=>clock.tick(now));raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);
  return()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();ui?.dispose();frame.root.remove();host.classList.remove('framed');};
 }

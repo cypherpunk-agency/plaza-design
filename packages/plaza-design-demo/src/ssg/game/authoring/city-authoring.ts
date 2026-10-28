@@ -1,4 +1,4 @@
-import {validationSnapshot} from './validation-snapshot';
+import {liveSources} from './validation-snapshot';
 import {climateAuthoring} from './climate-authoring';
 import {validateOpeningSource} from '../story/opening-source';
 import {pendingRegistry} from './pending-registry';
@@ -17,7 +17,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,sco
  let stationDraft=scope.session?.stationDraft;
  const error=document.createElement('p');error.setAttribute('role','alert');
  const form=new TypedForm(e=>{error.textContent=String(e);},scope.session?.expanded);
- function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,validationSnapshot(context.documents));change(d);api.edit('city-source',label,d);error.textContent='';}
+ function edit(label:string,change:(source:CitySource)=>void){const sources=liveSources(context),d=validatePendingCity(sources.get('city-source'),sources);change(d);api.edit('city-source',label,d);error.textContent='';}
  function editMetro(label:string,change:(source:MetroSource)=>void){const d=validateMetroSource(api.get('metro-source').value);change(d);api.edit('metro-source',label,validateMetroSource(d));}
  const get=(d:any,path:(string|number)[])=>path.reduce((v,k)=>v[k],d);
  const change=(path:(string|number)[],value:unknown)=>edit('Edit city '+path.join('.'),d=>{get(d,path.slice(0,-1))[path.at(-1)!]=value;});
@@ -47,7 +47,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,sco
   if(path[0]==='LINKS'&&path.length===2&&!value.at)form.button(parent,'Add '+name+' scene visibility',()=>change([...path,'at'],[]));
   for(const[k,v]of Object.entries(value)){if(k==='access'&&path[0]==='LINKS')continue;const row=typeof v==='object'&&v!==null?form.section(parent,name+' '+k):parent;topology(row,v,[...path,k],d);}
  }
- function render(){if(disposed)return;references=undefined;const d=validatePendingCity(api.get('city-source').value,validationSnapshot(context.documents));host.replaceChildren(error);
+ function render(){if(disposed)return;references=undefined;const sources=liveSources(context),d=validatePendingCity(sources.get('city-source'),sources);host.replaceChildren(error);
   const show=(section:CityAuthoringScope['section'])=>scope.section===section,places=d.PLACES.filter(p=>show('place')&&(!scope.place||p.id===scope.place));
   const refs=prospective(),sceneIds=Object.keys(refs),districtIds=d.DISTRICTS.map(v=>v.id);
   const travel=show('travel')?form.section(host,'Travel'):undefined;
@@ -86,7 +86,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,sco
   form.button(locks,'Add destination lock',()=>edit('Create destination lock',d=>{if(Object.prototype.hasOwnProperty.call(d.LOCKS,lockId))throw Error('Lock already exists');d.LOCKS[lockId]={unlockedBy:'HARBOR_FLAG',destinations:[districtIds[0]],reason:'ACCESS DENIED'};}));
   let policyId='';form.text(policies,'New access policy ID','',v=>{policyId=v;});
   form.button(policies,'Add access policy',()=>edit('Create exit access policy',d=>{if(Object.prototype.hasOwnProperty.call(d.ACCESS,policyId))throw Error('Access policy already exists');const scene=sceneIds.find(id=>refs[id].exits.length);if(!scene)throw Error('No exit access owners');d.ACCESS[policyId]={exit:{scene,id:refs[scene].exits[0].id},reason:'ACCESS DENIED'};}));
-  const flagDocuments=()=>new Map(context.documents.map(d=>[d.id,api.get(d.id).value]));
+  const flagDocuments=()=>liveSources(context);
   form.select(travel,'Harbor access flag',[...sharedWorldFlags(pendingRegistry(flagDocuments()),validateOpeningSource(flagDocuments().get('opening-story')).GAMEPLAY)],d.HARBOR_FLAG,v=>edit('Rebind harbor access flag',d=>{d.HARBOR_FLAG=v;}));
   form.text(travel,'Rename harbor access flag to',flagDraft,v=>{flagDraft=v;});
   form.button(travel,'Rename harbor access flag across sources',()=>{if(!api.editDocuments)throw Error('Grouped source editing is unavailable');api.editDocuments(renameWorldFlagDocuments(flagDocuments(),d.HARBOR_FLAG,flagDraft),'Rename shared harbor access flag');},!api.editDocuments);

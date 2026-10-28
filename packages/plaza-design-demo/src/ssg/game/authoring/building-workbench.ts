@@ -3,6 +3,7 @@
  * kernels the registered elements use (`building.front`, `building.row`) with explicit inputs, next to
  * the player for scale. Nothing here saves or changes artwork.
  */
+import {runFrame} from './frame-loop';
 import { WorkbenchPlayback, mountWorkbenchPlayback } from './workbench-playback';
 import { frameView, type View } from '../art/core/view';
 import { createFrame } from './frame';
@@ -108,6 +109,6 @@ export function mountBuildingWorkbench(host: HTMLElement): () => void {
     if (!hit) return; s.front = { ...s.front, skin: hit.skin as FrontSpec['skin'] }; skin.value = hit.skin; setMode('single');
   };
   setMode('lineup');
-  const loop = (now: number) => { if (disposed) return; clock.tick(now); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop);
+  const loop = (now: number) => { if (disposed) return; runFrame(() => clock.tick(now)); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop);
   return () => { disposed = true; cancelAnimationFrame(raf); clock.dispose(); ui?.dispose(); host.classList.remove('framed'); host.replaceChildren(); };
 }

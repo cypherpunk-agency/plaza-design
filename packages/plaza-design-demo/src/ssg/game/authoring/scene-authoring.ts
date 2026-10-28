@@ -1,6 +1,6 @@
 import {renderPolicy} from '../world/render-policy';
 import type {CitySource} from '../world/city';
-import {validationSnapshot} from './validation-snapshot';
+import {liveSources} from './validation-snapshot';
 import {renderNativeLiveConditionsAuthoring} from './native-live-conditions-authoring';
 import {sourceGameplay} from '../engine/gameplay/shared-state';
 import type {GameplayDefinition} from '../engine/gameplay/types';
@@ -57,7 +57,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
  const selected=()=>gameplayScene(selection.scene??'downtown',context.documents);
  const identity=()=>deviceSourceIdentity(selected().id);
  const gameplay=()=>selected().validateGameplay(api.get(selected().gameplayId).value);
- const pendingDocuments=()=>api.snapshot?validationSnapshot(api.snapshot()):new Map(context.documents.filter(row=>!row.id.startsWith('authored.')).map(row=>[row.id,api.get(row.id).value]));
+ const pendingDocuments=()=>liveSources(context);
  const targetContext=(source:unknown)=>{const documents=pendingDocuments(),identity=deviceSourceIdentity(selected().id),network=pendingNetworkContext(documents);return{scene:pendingScene(selected().id,api.get(identity.composition).value,{sceneDocument:source,gameplay:gameplay(),devices:api.get(identity.devices).value,sharedState:documents.get('state-owners'),catalogue:documents.get('authored-scenes')},network),network};};
  const validate=(source:unknown)=>{if((source as SceneDocument)?.nativeTargets!==undefined){const assembled=targetContext(source);return selected().validateScene(source,gameplay(),{phase:'assembled',data:assembled.scene.data!,network:assembled.network});}return selected().validateScene(source,gameplay());};
  const doc=()=>validate(api.get(identity().scene).value);
@@ -91,7 +91,7 @@ export function mountSceneAuthoring(host:HTMLElement,context:WorkbenchContext,se
   }});
   d.actors?.forEach((a,i)=>entries.push({key:'actor:'+a.id,group:'Actors',label:a.id,detail:a.band,render:h=>renderActor(form,h,d,i,edit,refresh,mutableActors?{composition:api.get(identity().composition).value as ChunkDocument,transaction:actorTransaction}:undefined,{context,character:targetContext(d).scene.people?.[i]})}));
   if(d.manifest)entries.push({key:'phases',group:'Scene',label:'Story phases',detail:Object.keys(d.phases??{}).join(' · ')||undefined,render:h=>{
-   const registry=pendingRegistry(new Map(context.documents.map(x=>[x.id,api.get(x.id).value]))),story=validateOpeningSource(api.get('opening-story').value),vocab=()=>({scenes:Object.keys(registry),phases:Object.keys(story.PHASES),flags:Object.values(story.OPENING),cards:Object.keys(story.CARDS),milestones:Object.keys(story.WORKFLOWS),registry}),handle={value:()=>structuredClone(api.get(identity().scene).value) as any,edit:(label:string,change:(x:any)=>void)=>{edit(label,change);refresh();}};
+   const registry=pendingRegistry(liveSources(context)),story=validateOpeningSource(api.get('opening-story').value),vocab=()=>({scenes:Object.keys(registry),phases:Object.keys(story.PHASES),flags:Object.values(story.OPENING),cards:Object.keys(story.CARDS),milestones:Object.keys(story.WORKFLOWS),registry}),handle={value:()=>structuredClone(api.get(identity().scene).value) as any,edit:(label:string,change:(x:any)=>void)=>{edit(label,change);refresh();}};
    note(h,'What this chunk says and does in each story phase. Global phase policies are in Library → Story logic. A field set here replaces the chunk\'s usual behaviour in that phase.');
    const phases=vocab().phases;if(!phases.includes(phasePick))phasePick=phases[0];
    form.select(h,'Story phase',phases,phasePick,v=>{phasePick=v;refresh();});

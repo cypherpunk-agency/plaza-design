@@ -244,6 +244,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const viewMemory=createViewMemory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
   const sequenceTimes=new Map<string,number>();
   let ambientOffset=0;
+  let timelineSettingsOpen = false;
   let viewReady=false,lastViewSample=0,restoredScroll:{x:number;y:number}|undefined;
   const viewScene=()=>{const doc=current();return doc?.kind==='composition'?(doc.value as ChunkDocument).scene:'';};
   let pixelatedScaling=true;
@@ -297,7 +298,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const thumbnails = config.assetPreview ? createThumbnails((target, entry) => config.assetPreview!(target, entry, entry.preview === 'standalone' ? undefined : entry.usages.find(usage => !usage.scene.startsWith('sequence-')) ?? entry.usages[0], thumbnailDocuments ??= model.list(), { time: 0, reduced: true, environment: { ...config.initialEnvironment, renderScale: 1 } })) : undefined;
   const workbenches = (config.workbenches ?? []).map(workbench => {
     const details = element('details', 'workbench-screen tool-panel'), panel = element('section'); details.dataset.workbench = details.dataset.tool = workbench.id; details.append(element('summary', '', workbench.title), panel); if (workbench.beside) { details.classList.add('stage-panel'); workspace.append(details); } else root.insertBefore(details, workspace);
-    return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: '', scene: '', autostart: false };
+    return { config: workbench, details, panel, dispose: undefined as WorkbenchHandle | undefined, documentsVersion: [] as readonly unknown[], scene: '', autostart: false };
   });
   /**
    * Scene is the editor itself: outline, viewport and an inspector for the selection. Logic lists all of
@@ -428,12 +429,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (handle.refresh) dispose.refresh = () => handle.refresh!();
     return dispose;
   };
+  const sameDocuments = (a: readonly unknown[], b: readonly unknown[]) => a === b || a.length === b.length && a.every((doc, index) => doc === b[index]);
   const refreshWorkbench = (item: typeof workbenches[number], changed = false) => {
     if (!item.details.open) { item.dispose?.(); item.dispose = undefined; return; }
     const documents = documentsForView(), relevant = item.config.documentIds ? documents.filter(doc => item.config.documentIds!.includes(doc.id)) : documents;
-    const version = item.config.documentDependent ? JSON.stringify(relevant) : '', scene = sceneId(), sceneBound = item.config.area === 'scene';
+    // Document views are frozen and change identity only when their source changes, so identity is the version.
+    const version: readonly unknown[] = item.config.documentDependent ? relevant : [], scene = sceneId(), sceneBound = item.config.area === 'scene';
     if (sceneBound && item.dispose && item.scene !== scene) { item.dispose(); item.dispose = undefined; }
-    else if (changed && item.config.documentDependent && version !== item.documentsVersion && item.dispose) {
+    else if (changed && item.config.documentDependent && !sameDocuments(version, item.documentsVersion) && item.dispose) {
       if (item.dispose.refresh) { item.documentsVersion = version; item.dispose.refresh(); }
       else { item.dispose(); item.dispose = undefined; }
     }
@@ -474,7 +477,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** The document an open panel edits (Export/Import JSON), otherwise the current composition. */
   const activeDocument = () => { const id = workbenches.find(item => item.details.open)?.config.primaryDocumentId; return id && documentsForView().some(doc => doc.id === id) ? model.get(id) : current(); };
   const directionDocument=()=>documentsForView().find(d=>d.id===directionDocumentId);
-  const currentTimeline = () => { const doc = directionDocument(); return doc?.kind === 'composition' && (doc.value as ChunkDocument).sequence ? sequenceProgram({[doc.id]:doc.value as ChunkDocument}) : undefined; };
+  // The frame loop and every draw ask for the open sequence; it is compiled once per document version.
+  const timelines = new WeakMap<object, ReturnType<typeof sequenceProgram>>();
+  const currentTimeline = () => { const doc = directionDocument(); if (!(doc?.kind === 'composition' && (doc.value as ChunkDocument).sequence)) return undefined; if (!Object.isFrozen(doc.value)) return sequenceProgram({[doc.id]:doc.value as ChunkDocument}); let program = timelines.get(doc.value as object); if (!program) { program = sequenceProgram({[doc.id]:doc.value as ChunkDocument}); timelines.set(doc.value as object, program); } return program; };
   const sequence = () => currentTimeline()?.sequences.find(s => s.id === sequenceId);
   let evaluatedContext:{key:string;version:object;value:import('../art/core/timeline').TimelineContext}|undefined;
   const evaluationContext = () => {const key=JSON.stringify([currentId,time,reduced,sequenceId,environment,canvas.width,canvas.height]);if(evaluatedContext?.version===model.sourceVersion&&evaluatedContext.key===key)return evaluatedContext.value;const base=model.timelineContext(),value=config.timelineContext?.(base,{time,reduced,sequenceId,environment:{...environment},viewport:{width:baseWidth,height:baseHeight},timeline:currentTimeline()})??base;evaluatedContext={key,version:model.sourceVersion,value};return value;};
@@ -761,8 +766,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     for (const item of panels.filter(p => p.group === 'library')) { const row = element('li'), open = button(item.label, () => openPanel(item.details), item.title); row.append(open); list.append(row); }
     body.append(element('h3', '', 'Library screens'), list); return body;
   }
+  // The library and world map rebuild only when what they show changed: the source version, the chunk or their open state.
+  let libraryShown: readonly unknown[] = [], mapShown: readonly unknown[] = [];
   function refreshLeft() {
-    workbenches.forEach(item=>refreshWorkbench(item,true));refreshLibrary();refreshMap();
+    workbenches.forEach(item=>refreshWorkbench(item,true));
+    { const docs = documentsForView(), library = [docs, sceneId(), assetHost.open, current()?.kind], map = [docs, sceneId(), mapHost.open, cityDistrict];
+      if (!sameDocuments(library, libraryShown)) { libraryShown = library; refreshLibrary(); }
+      if (!sameDocuments(map, mapShown)) { mapShown = map; refreshMap(); } }
     if(root.dataset.tool!=='scene'){layoutDirty=true;return;}
     if(leftTab==='library'){if(left.querySelector('.library-dock')&&outlineView===currentId)return;outlineVersion='';outlineSnapshot=undefined;outlineView=currentId;left.replaceChildren(leftDockHead(),renderLibraryDock());return;}
     if(outlineSnapshot===model.sourceVersion&&outlineView===currentId){updateOutlineSelection();return;}
@@ -1164,11 +1174,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     timeLabel=element('span','time');transport.append(timeLabel);timelineHost.append(transport);updateTime();if(timelineCollapsed)return;
     const zoom=numberInput(timelineView.zoom,value=>{timelineView.zoom=Math.max(1,Math.min(16,value));refreshTimeline();},1);const speed=speedControl();speed.setAttribute('aria-label','Playback speed');transport.append(speed);zoom.max='16';zoom.setAttribute('aria-label','Timeline zoom');transport.append(label('Zoom',zoom));
     const settings=element('details','timeline-settings'),dataPanel=element('div');settings.append(element('summary','','Settings'),dataPanel);transport.append(settings,button('Rendering',openSequenceRendering,'Inspect sequence overrides and their inherited source'));
+    const trackSelect=select([{value:'',label:'Add keyframe…'},...thisTargets()],'',value=>{if(value)addKey(JSON.parse(value) as Target);});trackSelect.setAttribute('aria-label','Add keyframe target');transport.append(trackSelect);
+    timelineGrid=mountTimelineGrid(timelineHost,{sequence:seq,state:timelineView,time,onZoom:value=>zoom.value=String(Math.round(value*100)/100),selected:editorSelection.timeline,instance:editorSelection.document?JSON.stringify([(compositionDocument()!.value as ChunkDocument).scene,editorSelection.instance]):editorSelection.instance,label:id=>{let scene='',instance=id;if(id.startsWith('[')){[scene,instance]=JSON.parse(id) as string[];}const doc=scene?documentsForView().find(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===scene):viewCompositionDocument(),node=doc&&flatten(doc.value as ChunkDocument).find(n=>n.node.id===instance)?.node;return (scene?sceneName(scene)+' / ':'')+instance+(node?' · '+config.registry.get(node.type).label:'');},select:selectTimeline,seek:seekTime,moveKey:(track,index,seconds)=>{editTimeline('Move keyframe',d=>{editorSelection.timeline={kind:'key',track,index:moveKey(d.sequences[0],track,index,seconds)};});refreshTimeline();refreshRight();}});
+    // Settings is folded by default: its forms are built when it is first opened, and it stays open across refreshes.
+    let settingsBuilt=false;const buildSettings=()=>{if(settingsBuilt)return;settingsBuilt=true;
     dataPanel.append(label('Duration',numberInput(seq.duration,value=>editTimeline('Change duration',d=>d.sequences[0].duration=value),1/60)));
     const loopInput=element('input');loopInput.type='checkbox';loopInput.checked=loop;loopInput.onchange=()=>loop=loopInput.checked;
     dataPanel.append(label('Loop range',loopInput),label('From',numberInput(loopFrom,v=>{if(v>=(loopTo||seq.duration)){notice('Loop start must precede loop end.',true);return;}loopFrom=v;},0)),label('To',numberInput(loopTo||seq.duration,v=>{if(v<=loopFrom||v>seq.duration){notice('Loop end must follow its start and remain within the sequence.',true);return;}loopTo=v;},0)));
-    const trackSelect=select([{value:'',label:'Add keyframe…'},...thisTargets()],'',value=>{if(value)addKey(JSON.parse(value) as Target);});trackSelect.setAttribute('aria-label','Add keyframe target');transport.append(trackSelect);
-    timelineGrid=mountTimelineGrid(timelineHost,{sequence:seq,state:timelineView,time,onZoom:value=>zoom.value=String(Math.round(value*100)/100),selected:editorSelection.timeline,instance:editorSelection.document?JSON.stringify([(compositionDocument()!.value as ChunkDocument).scene,editorSelection.instance]):editorSelection.instance,label:id=>{let scene='',instance=id;if(id.startsWith('[')){[scene,instance]=JSON.parse(id) as string[];}const doc=scene?documentsForView().find(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===scene):viewCompositionDocument(),node=doc&&flatten(doc.value as ChunkDocument).find(n=>n.node.id===instance)?.node;return (scene?sceneName(scene)+' / ':'')+instance+(node?' · '+config.registry.get(node.type).label:'');},select:selectTimeline,seek:seekTime,moveKey:(track,index,seconds)=>{editTimeline('Move keyframe',d=>{editorSelection.timeline={kind:'key',track,index:moveKey(d.sequences[0],track,index,seconds)};});refreshTimeline();refreshRight();}});
     const apply = <K extends keyof Sequence>(key: K, value: Sequence[K]) => editTimeline(`Edit ${key}`, d => { d.sequences.find(s => s.id === sequenceId)![key] = value; });
     editArray(dataPanel, 'Shots', seq.shots, value => apply('shots', value), 'Ordered {id,from,to,camera:{x,h,zoom}}. Times are seconds. Shots must not overlap.');
     editArray(dataPanel, 'Text cards', seq.text, value => apply('text', value), '{id,from,to,text,x,h}. Cards are rendered by the shared preview provider.');
@@ -1178,6 +1190,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const handoff = element('details'); handoff.append(element('summary', '', 'Handoff destination')); const destinations = Object.keys(model.timelineContext().destinations ?? {}); handoff.append(label('Chunk', select([{ value: '', label: 'No handoff' }, ...destinations.map(v => ({ value: v, label: v }))], seq.handoff?.scene ?? '', v => apply('handoff', v ? { scene: v } : undefined))));
     if (seq.handoff) handoff.append(label('Entrance', select([{ value: '', label: 'Default entrance' }, ...(model.timelineContext().destinations?.[seq.handoff.scene] ?? []).map(v => ({ value: v, label: v }))], seq.handoff.entrance ?? '', v => apply('handoff', { scene: seq.handoff!.scene, ...(v ? { entrance: v } : {}) })))); handoff.append(element('p', 'muted', 'Preview never travels or changes player progress.')); dataPanel.append(handoff);
     editArray(dataPanel, 'Sequence document', seq, value => editTimeline('Edit sequence', d => { const i = d.sequences.findIndex(s => s.id === sequenceId); d.sequences[i] = value; sequenceId = value.id; }), 'Advanced full sequence data, including registered exact motion tracks and clips. No code is accepted.');
+    };
+    settings.open=timelineSettingsOpen;if(settings.open)buildSettings();settings.ontoggle=()=>{timelineSettingsOpen=settings.open;if(settings.open)buildSettings();};
   }
   function thisTargets(): { value: string; label: string }[] {
     const result: { value: string; label: string }[] = [];

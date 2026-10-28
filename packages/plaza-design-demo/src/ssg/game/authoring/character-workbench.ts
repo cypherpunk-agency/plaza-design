@@ -1,4 +1,5 @@
 /** Read-only character viewer. Native controllers prepare private actors; native artwork paints them. */
+import {runFrame} from './frame-loop';
 import inventory from './catalogues/characters.json';
 import {prepareCharacter,type Act,type Character,type Look,type PreparedCharacter,type BotLook} from '../runtime/characters';
 import {type Bot,drawCharacterFrame} from '../art/characters/appearance';
@@ -291,7 +292,7 @@ export function mountCharacterWorkbench(host:HTMLElement,options:{people?(host:H
   }else{ruler(ctx,view);player(ctx,view,120);if(onFurniture(config))bench(ctx,view,220,config);shown=session.prepare(config,t);drawCharacterWorkbenchSnapshot(ctx,view,shown);}
   error.textContent='';const {pose,...rest}=shown;json.textContent=JSON.stringify({...rest,...(pose?{pose:pose.visible?{visible:true,frame:pose.frame,height:pose.height,appearance:pose.ready.full??pose.ready.bot??pose.ready.critter}:{visible:false}}:{})},null,2);}catch(e){error.textContent=e instanceof Error?e.message:String(e);}}
  canvas.onclick=event=>{if(mode==='single')return;const r=canvas.getBoundingClientRect(),x=(event.clientX-r.left)*canvas.width/r.width,y=(event.clientY-r.top)*canvas.height/r.height,slot=[...slots].reverse().find(s=>x>=s.x0&&x<s.x1&&(s.y0===undefined||y>=s.y0&&y<=s.y1!));if(!slot)return;config={...slot.config,inPlace:false};setMode('single');};
- const frame=(now:number)=>{if(disposed)return;clock.tick(now);raf=requestAnimationFrame(frame);};
+ const frame=(now:number)=>{if(disposed)return;runFrame(()=>clock.tick(now));raf=requestAnimationFrame(frame);};
  refresh();draw();raf=requestAnimationFrame(frame);
  const handle=(()=>{disposed=true;cancelAnimationFrame(raf);clock.dispose();transport.dispose();session.dispose();people?.();host.replaceChildren();host.classList.remove('framed');}) as WorkbenchHandle;
  handle.refresh=()=>{people?.refresh?.();refresh();draw();};return handle;

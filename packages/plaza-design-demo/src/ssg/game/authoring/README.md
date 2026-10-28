@@ -374,7 +374,10 @@ viewers and world tools retain that common structure.
 
 ## Implementation boundaries
 
-- Read `authoring.snapshot()` for an immutable current document view when deriving shared inspector data. Reuse `validationSnapshot` and the prospective registry; do not deep-copy every document or reassemble an already-validated scene for each field/section. Source edits still use the normal validated command/history operations.
+- Read source through `liveSources(context)` (one frozen map per source version, from `validation-snapshot.ts`). Pending validators (`pendingRegistry`, `pendingNetworkContext`, `createPendingCity`) cache only on that map, and only when the value you pass is the one in it (`sources.get('city-source')`, not an `api.get` copy). Never build `new Map(context.documents…)` or call `api.get` per document: either misses every cache and rebuilds the world on each render. Use `perSources()` for a derived value asked for many times per render (a story model, a vocabulary). Source edits still use the normal validated command/history operations.
+- Rebuild a panel only when its inputs changed: compare document identity (views are frozen and change identity only on edit), never `JSON.stringify` the document set. Build folded sections when they are first opened.
+- Animation loops wrap each frame's work in `runFrame()` (`frame-loop.ts`), so one failing frame never stops the loop and the error reaches the status-bar error chip.
+- `check-authoring-read-patterns` fails on whole-document maps, per-document copies and unguarded loops; `check-authoring-source-snapshot` and `check-play-startup` hold the work budget (one build per source version; bounded validations and reads per Play start).
 
 - `contracts.ts` owns editor document, preview and extension contracts. Non-UI modules import these types directly.
 - `composer-model.ts` owns prospective document validation, grouped changes and undo/redo. There is one model; UI modules never maintain another copy of edited source.

@@ -3,6 +3,9 @@ import type {ChunkDocument} from '../art/core/composition';
 import {validateWorldCompositions,worldCompositionChunks,worldWithMembership,type WorldMembership,type WorldCompositions} from '../world/compositions';
 import type {EditorDocument} from './contracts';
 
+/** Each draw asks for workspace members; the layout is validated once per source object (frozen per version). */
+const validatedLayouts=new WeakMap<object,WorldCompositions>();
+const validatedLayout=(raw:unknown)=>{if(!raw||typeof raw!=='object'||!Object.isFrozen(raw))return validateWorldCompositions(raw);let layout=validatedLayouts.get(raw);if(!layout){layout=validateWorldCompositions(raw);validatedLayouts.set(raw,layout);}return layout;};
 export interface CompositionWorkspace {id:string;name:string;chunks:EditorDocument[]}
 function memberDocuments(id:string,source:WorldCompositions,documents:readonly EditorDocument[]){
  const chunks=new Map<string,EditorDocument>();for(const document of documents)if(document.kind==='composition'){const scene=(document.value as ChunkDocument).scene;if(!chunks.has(scene))chunks.set(scene,document);}
@@ -12,13 +15,13 @@ function memberDocuments(id:string,source:WorldCompositions,documents:readonly E
 }
 export function compositionWorkspaces(documents:readonly EditorDocument[],membership?:WorldMembership):CompositionWorkspace[]{
  const raw=documents.find(d=>d.id==='world-compositions')?.value;if(!raw)return[];
- const source=worldWithMembership(validateWorldCompositions(raw),membership);
+ const source=worldWithMembership(validatedLayout(raw),membership);
  return Object.entries(source.compositions).map(([id,definition])=>({id,name:definition.name,chunks:memberDocuments(id,source,documents)}));
 }
 /** Membership describes authoring, never an assertion that these chunks are loaded in Play. */
 export function workspaceDocuments(id:string,documents:readonly EditorDocument[],membership?:WorldMembership):EditorDocument[]{
  const raw=documents.find(d=>d.id==='world-compositions')?.value;
- const source=raw?worldWithMembership(validateWorldCompositions(raw),membership):undefined;
+ const source=raw?worldWithMembership(validatedLayout(raw),membership):undefined;
  if(!source||!Object.prototype.hasOwnProperty.call(source.compositions,id))throw Error('Unknown composition '+id);
  return memberDocuments(id,source,documents);
 }

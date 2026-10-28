@@ -1,3 +1,4 @@
+import {runFrame} from './frame-loop';
 import type {CityModel} from '../world/city';
 /** City geography and travel editing around the existing native map preview. */
 import { createWorldMapPreview, type WorldPlaceInspection, type WorldMapPreviewState } from './world-map';
@@ -80,6 +81,6 @@ export function mountWorldPanel(host: HTMLElement, document: WorldDocument, open
   canvas.onkeydown = event => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Escape', 'Tab'].includes(event.key) && event.key !== 'Tab') { event.preventDefault(); preview.key(event.key); } };
   preview.selectPlace(session.place ?? document.map.places[0].id);
   let active = true, frame = 0;
-  const draw = () => { if (!active) return; preview.draw(); frame = requestAnimationFrame(draw); }; draw();
+  const draw = () => { if (!active) return; runFrame(() => preview.draw()); frame = requestAnimationFrame(draw); }; draw();
   return () => { editor?.();editor=undefined;mode.onchange=null;resize.disconnect(); session.preview = preview.getPreview(); active = false; cancelAnimationFrame(frame); canvas.onpointermove = canvas.onpointerdown = canvas.onkeydown = null; };
 }

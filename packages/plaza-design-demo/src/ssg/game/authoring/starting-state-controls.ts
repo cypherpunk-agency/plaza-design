@@ -1,3 +1,4 @@
+import {liveSources} from './validation-snapshot';
 import {checkpointControls} from './checkpoint-controls';
 import {pendingRegistry} from './pending-registry';
 import {concreteStateValue} from '../engine/gameplay/state';
@@ -14,7 +15,7 @@ import type {TypedForm} from './typed-form';
 import type {WorkbenchContext} from './contracts';
 /** One form for world-inspector checkpoints and private Play starting inputs. */
 export function renderStartingStateControls(details:HTMLElement,context:WorkbenchContext,f:PlayFixture,form:TypedForm,edit:(label:string,change:(f:PlayFixture)=>void)=>void,report:(error:unknown)=>void){
- const api=context.authoring!,currentDocuments=()=>new Map(context.documents.filter(d=>!d.id.startsWith('authored.')).map(d=>[d.id,api.get(d.id).value]));
+ const api=context.authoring!,currentDocuments=()=>liveSources(context);
   form.text(details,'Checkpoint name',f.name,name=>edit('Rename fixture',f=>{f.name=name;}));
   form.check(details,'Override run handle',f.handle!==undefined,on=>edit('Set checkpoint handle override',f=>{if(on)f.handle='';else delete f.handle;}));
   if(f.handle!==undefined)form.text(details,'Starting handle',f.handle,value=>edit('Edit checkpoint handle',f=>{f.handle=value;}));
@@ -27,7 +28,7 @@ export function renderStartingStateControls(details:HTMLElement,context:Workbenc
   for(const [key,name,min,max] of [['day','City day',1,10000],['minute','City minute',0,1439],['seed','Weather seed',0,2147483647]] as const)form.number(details,name,f[key],value=>edit('Edit fixture '+key,f=>{f[key]=value;}),min,max);
   form.select(details,'Weather',['forecast',...WEATHER_KINDS],f.weather,weather=>edit('Edit fixture weather',f=>{f.weather=weather as PlayFixture['weather'];}));
   form.check(details,'Override spawn',f.spawn!==null,on=>edit('Edit fixture spawn',f=>{f.spawn=on?80:null;}));if(f.spawn!==null)form.number(details,'Starting X',f.spawn,spawn=>edit('Edit fixture spawn',f=>{f.spawn=spawn;}),12,100000);
-  const city=createPendingCity(api.get('city-source').value,currentDocuments());
+  const city=createPendingCity(fixtureDocuments.get('city-source'),fixtureDocuments);
   const metroSource=validateMetroSource(api.get('metro-source').value),metroPanel=form.section(details,'Metro starting state');
   form.check(metroPanel,'Override metro state',!!f.metro,on=>edit('Edit fixture metro override',f=>{if(on)f.metro=metroStartingState('at-station',city.stationAt(f.scene)??'galleria',city,metroSource);else delete f.metro;}));
   if(f.metro){const start=validateMetroStart(f.metro,city.LINE);
