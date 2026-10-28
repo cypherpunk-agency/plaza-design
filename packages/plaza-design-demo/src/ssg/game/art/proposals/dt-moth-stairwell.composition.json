@@ -40,10 +40,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 495,
@@ -93,9 +93,6 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "floors": 7,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "framed",
         "roof": "cornice",
@@ -114,7 +111,10 @@
             "from": 110,
             "width": 24
           }
-        ]
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 0,
@@ -128,9 +128,6 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "floors": 5,
-        "storey": 70,
-        "ground": 80,
         "skin": "stone",
         "windows": "punched",
         "roof": "cornice",
@@ -148,7 +145,10 @@
             "from": 110,
             "width": 24
           }
-        ]
+        ],
+        "height": 430,
+        "groundFloorHeight": 80,
+        "floorHeight": 70
       },
       "placement": {
         "x": 160,
@@ -163,14 +163,14 @@
       "props": {
         "width": 44,
         "height": 420,
-        "depth": 0.6,
         "light": "warm",
         "escape": "left",
         "bins": true,
         "steam": true,
         "cables": true,
         "yard": false,
-        "seed": 9
+        "seed": 9,
+        "perspectiveAmount": 0.6
       },
       "placement": {
         "x": 620,
@@ -184,9 +184,6 @@
       "type": "building.front",
       "props": {
         "width": 170,
-        "floors": 6,
-        "storey": 66,
-        "ground": 76,
         "skin": "tenement",
         "windows": "curtained",
         "balconies": "some",
@@ -204,7 +201,10 @@
             "width": 100,
             "tenant": "grocer"
           }
-        ]
+        ],
+        "height": 472,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 664,
@@ -218,9 +218,6 @@
       "type": "building.front",
       "props": {
         "width": 166,
-        "floors": 8,
-        "storey": 66,
-        "ground": 76,
         "skin": "concrete",
         "windows": "framed",
         "roof": "stepped",
@@ -238,7 +235,10 @@
             "from": 120,
             "width": 24
           }
-        ]
+        ],
+        "height": 604,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 834,
@@ -346,7 +346,7 @@
       "props": {
         "columns": 3,
         "rows": 4,
-        "from": 20,
+        "bottomY": 20,
         "metal": "brass",
         "stuffed": 0.5,
         "taped": 1,
@@ -1021,9 +1021,6 @@
       "type": "building.front",
       "props": {
         "width": 300,
-        "floors": 4,
-        "storey": 78,
-        "ground": 90,
         "skin": "tenement",
         "windows": "curtained",
         "roof": "cornice",
@@ -1043,7 +1040,10 @@
             "from": 190,
             "width": 90
           }
-        ]
+        ],
+        "height": 402,
+        "groundFloorHeight": 90,
+        "floorHeight": 78
       },
       "placement": {
         "x": 320,
@@ -1104,10 +1104,10 @@
       "props": {
         "text": "114",
         "color": "255,217,165",
-        "size": 9,
         "printed": true,
         "bolts": true,
-        "mask": []
+        "mask": [],
+        "fontSize": 9
       },
       "placement": {
         "x": 35,
@@ -1205,12 +1205,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5201,
         "act": "sit",
         "archetype": "elder",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 298,
@@ -1224,11 +1224,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5202,
         "act": "play",
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 140,
@@ -1242,12 +1242,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5203,
         "act": "walk",
         "range": -260,
-        "archetype": "shopper"
+        "archetype": "shopper",
+        "depthBand": "play"
       },
       "placement": {
         "x": 760,
@@ -1261,11 +1261,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5204,
         "act": "smoke",
-        "archetype": "dockworker"
+        "archetype": "dockworker",
+        "depthBand": "play"
       },
       "placement": {
         "x": 640,
@@ -1279,10 +1279,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5211,
-        "act": "vend"
+        "act": "vend",
+        "depthBand": "play"
       },
       "placement": {
         "x": 66,
@@ -1300,11 +1300,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5212,
         "act": "read",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 30,
@@ -1322,11 +1322,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5213,
         "act": "wait",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 80,
@@ -1344,11 +1344,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5214,
         "act": "carry",
-        "archetype": "shopper"
+        "archetype": "shopper",
+        "depthBand": "play"
       },
       "placement": {
         "x": 136,
@@ -1366,8 +1366,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 150,

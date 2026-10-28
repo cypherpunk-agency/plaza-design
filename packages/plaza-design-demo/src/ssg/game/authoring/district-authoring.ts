@@ -1,3 +1,7 @@
+import {validationSnapshot} from './validation-snapshot';
+import {climateAuthoring} from './climate-authoring';
+import {renderSettingsAuthoring} from './render-settings-authoring';
+import {resolveRenderSettings} from '../world/render-settings';
 import {TypedForm} from './typed-form';
 import type {WorkbenchContext,WorkbenchHandle} from './contracts';
 import type {CitySource,District} from '../world/city';
@@ -12,7 +16,7 @@ export function mountDistrictAuthoring(host:HTMLElement,context:WorkbenchContext
  const api=context.authoring!;let disposed=false;
  const error=document.createElement('p');error.setAttribute('role','alert');
  const form=new TypedForm(e=>{error.textContent=String(e);},expanded);
- const read=()=>validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));
+ const read=()=>validatePendingCity(api.get('city-source').value,validationSnapshot(context.documents));
  function edit(label:string,change:(source:CitySource)=>void){const d=read();change(d);api.edit('city-source',label,d);}
  /** What still refers to a district, which is why it cannot be removed yet. */
  const usersOf=(d:CitySource,id:string)=>[...d.PLACES.filter(p=>p.district===id).map(p=>'place '+p.name),...d.LINKS.filter(l=>l.from===id||l.to===id).map(l=>'link '+l.name),...d.LINES_PLANNED.filter(l=>l.stops.some(s=>s.district===id)).map(l=>'planned '+l.name)];
@@ -26,10 +30,12 @@ export function mountDistrictAuthoring(host:HTMLElement,context:WorkbenchContext
    // A new district starts without ground of its own: the street plan gives land to the nearest district centre, so a
    // centre would take land (and places) from its neighbours. Give it streets below once its position is chosen.
    edit('Add district '+id,d=>{const key=id as DistrictId,x=Math.round(d.MAP_W/2),y=Math.round(d.MAP_H/2);
-    d.DISTRICTS.push({id:key,name,short,stratum:stratum as District['stratum']});
+    d.CLIMATES[key]={name,seed:1+Math.max(0,...Object.values(d.CLIMATES).map(c=>c.seed)),weights:{clear:1}};d.DISTRICTS.push({id:key,name,short,stratum:stratum as District['stratum']});
     d.DISTRICT_MAP[key]={centre:null,sep:0,dens:.5,col:'120,160,200',frame:[x-80,y-60,160,120],label:[x,y],note:''};d.DISTRICT_REVEAL[key]={near:[]};});
   },d.DISTRICTS.length>=32);
   for(const district of d.DISTRICTS){const plan=d.DISTRICT_MAP[district.id],section=form.section(host,district.name+' · '+district.id,'district:'+district.id),key=district.id;
+   renderSettingsAuthoring(form,section,district.rendering,settings=>edit('Edit district rendering',d=>{const district=d.DISTRICTS.find(x=>x.id===key)!;if(settings)district.rendering=settings;else delete district.rendering;}),resolveRenderSettings([{source:{kind:'district',id:key},settings:district.rendering}]),'Rendering',context.openRenderingSource,'district-rendering:'+key);
+   climateAuthoring(form,section,key,d.CLIMATES[key],change=>edit('Edit district climate',d=>change(d.CLIMATES[key])));
    form.text(section,'District '+key+' name',district.name,v=>edit('Rename district',d=>{d.DISTRICTS.find(x=>x.id===key)!.name=v;}));
    form.text(section,'District '+key+' short name',district.short,v=>edit('Edit district short name',d=>{d.DISTRICTS.find(x=>x.id===key)!.short=v;}));
    form.select(section,'District '+key+' stratum',strata,district.stratum,v=>edit('Edit district stratum',d=>{d.DISTRICTS.find(x=>x.id===key)!.stratum=v as District['stratum'];}));

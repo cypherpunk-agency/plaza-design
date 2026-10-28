@@ -1,3 +1,4 @@
+import {source as defaultCitySource} from '../world/city';
 import { gameStorage } from '../runtime/storage';
 /**
  * Sudo's time control (`?sudo` only): a thin transport bar along the bottom edge while a timed
@@ -20,7 +21,7 @@ import { gameStorage } from '../runtime/storage';
 
 import { city, CLOCK_SPEEDS, hm } from "../world/clock";
 import { moonName, moonPhase } from "../world/light";
-import { anyOverride, CLIMATE_IDS, CLIMATES, isWeather, overrideOf, setOverride, WEATHER_KINDS, weatherNow, type Climate } from "../world/weather";
+import { anyOverride, isWeather, overrideOf, setOverride, WEATHER_KINDS, weatherNow, type Climate } from "../world/weather";
 
 export interface Beat { at: number; name: string }
 
@@ -203,7 +204,7 @@ export class ClockBar {
   private shown = { day: '', time: '', slider: -1, speed: '', now: '', kind: '' };
   private sliding = false;
 
-  constructor(host: HTMLElement, private here: () => Climate | null, private changed: () => void) {
+  constructor(host: HTMLElement, private here: () => Climate | null, private changed: () => void,private weatherSource:()=>import('../world/weather').WeatherSource=()=>defaultCitySource) {
     const root = (this.root = document.createElement('div'));
     root.id = 'sudo-clock';
     root.hidden = true;
@@ -220,7 +221,7 @@ export class ClockBar {
       '<span class="st-time sc-time"></span>' +
       '<button type="button" class="st-b st-speed" data-do="speed" title="Clock speed: stop, 1×, 10×, 60×" aria-label="Clock speed"></button>' +
       '<select class="sc-where" aria-label="Weather override: where" title="Weather override: where">' + opt('here', 'HERE') + opt('city', 'CITY') +
-      CLIMATE_IDS.map((c) => opt(c, CLIMATES[c].name)).join('') + '</select>' +
+      Object.entries(this.weatherSource().CLIMATES).map(([c,climate]) => opt(c, climate.name)).join('') + '</select>' +
       '<select class="sc-kind" aria-label="Weather override: what" title="Weather override: what">' + opt('', 'AUTO') + WEATHER_KINDS.map((k) => opt(k, k.toUpperCase())).join('') + '</select>' +
       '<span class="st-beat sc-now"></span>' +
       '</div>';
@@ -273,9 +274,9 @@ export class ClockBar {
     const s = this.shown, e = this.els;
     const day = 'DAY ' + city.day, time = hm(city.min) + (city.pinned !== null ? ' PINNED' : '');
     const speed = city.speed ? city.speed + '×' : '■';
-    const here = this.here(), w = weatherNow(here);
+    const here = this.here(), w = weatherNow(here,this.weatherSource());
     // the weather here, and tonight's moon (light.ts: phases by the day count)
-    const now = (here ? CLIMATES[here].name : '-') + ' · ' + w.kind.toUpperCase() + (anyOverride() ? ' · SET' : '') + ' · ' + moonName(moonPhase(city.day));
+    const now = (here ? this.weatherSource().CLIMATES[here].name : '-') + ' · ' + w.kind.toUpperCase() + (anyOverride() ? ' · SET' : '') + ' · ' + moonName(moonPhase(city.day));
     if (day !== s.day) e.day.textContent = s.day = day;
     if (time !== s.time) e.time.textContent = s.time = time;
     if (speed !== s.speed) { e.speed.textContent = s.speed = speed; e.speed.setAttribute('aria-label', 'Clock speed: ' + (city.speed ? city.speed + ' times' : 'stopped')); }

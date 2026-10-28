@@ -7,7 +7,18 @@ import type {Light} from '../world/light';
 import type {TimelineFrame} from '../art/core/timeline';
 import type {TimelineOverlay} from '../art/core/timeline-overlay';
 import type {BackdropDocument} from '../world/backdrops';
-export interface WorkspaceCamera {anchorX:number;anchorH:number;x:number;h:number;zoom:number;/** Composition editing keeps its own fixed pixel basis when sequence context changes. */basis?:{width:number;height:number;ground:number}}
+import type {Sequence} from '../art/core/timeline';
+import type {CitySource} from '../world/city';
+import type {WorldCompositions} from '../world/compositions';
+import type {ResolvedRenderSettings} from '../world/render-settings';
+export interface WorkspaceCamera {anchorX:number;anchorH:number;x:number;h:number;zoom:number;followCamera?:boolean;/** Composition editing keeps its own fixed pixel basis when sequence context changes. */basis?:{width:number;height:number;ground:number}}
+/** Presentation dimensions supplied by a host. Display fitting never changes this logical frame. */
+export interface FrameViewport {width:number;height:number;scale:number;ground?:number}
+export function validateFrameViewport(value:unknown):FrameViewport{
+ const v=value as FrameViewport;
+ if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['width','height','scale','ground'].includes(k))||![v.width,v.height].every(n=>Number.isInteger(n)&&n>=120&&n<=8192)||!Number.isFinite(v.scale)||v.scale<.1||v.scale>16||v.ground!==undefined&&(!Number.isFinite(v.ground)||Math.abs(v.ground)>1e8))throw Error('Invalid frame viewport');
+ return{width:v.width,height:v.height,scale:v.scale,...(v.ground===undefined?{}:{ground:v.ground})};
+}
 export interface CameraGuide {x:number;y:number;width:number;height:number;scene:string;label:string;focus:{x:number;h:number;zoom:number}}
 type Draw = (ctx: CanvasRenderingContext2D, view: View) => void;
 /**
@@ -24,7 +35,6 @@ export interface ZoneFrame {
   below?: boolean;
 }
 /** A pass of the one frame that a director can switch off (all run by default, as in play). */
-export type FramePass = 'sky' | 'weather' | 'casters' | 'actors' | 'shade' | 'grade' | 'lights' | 'prompts' | 'bubbles' | 'vision';
 /**
  * The configuration of the one frame for a sequence (the title glide, a cutscene, the taxi flight): where the camera is,
  * which passes run, what is drawn over the world, the time of day and the pixel scale. A sequence is never a second
@@ -38,8 +48,8 @@ export interface FrameDirector {
    * always meant), `zoom` scales the world about the middle of the viewport (overlays stay unzoomed).
    */
   camera?: { x: number; h: number; zoom?: number };
-  /** Which passes run (default: all on, as play). Sequences switch off what they don't have. */
-  passes?: Partial<Record<FramePass, boolean>>;
+  /** Authored source, not an implicit policy selected by sequence mode. */
+  rendering?:Pick<Sequence,'id'|'rendering'|'memberRendering'>;
   /**
    * Drawn over the world, under nothing (in logical viewport coordinates, unzoomed), in this order: full-screen fades,
    * the letterbox bars, then text cards (the glide's district names). A card without `x` is centred; `y` is the
@@ -52,14 +62,12 @@ export interface FrameDirector {
   scale?: number;
   sequence?: View['sequence'];
 }
-/** Does the director let this pass run? */
-export const passOn = (d: FrameDirector | undefined, pass: FramePass) => d?.passes?.[pass] !== false;
 
 /**
  * The one bridge from timelines to the frame: an evaluated timeline frame (art/core/timeline.ts `evaluateTimeline`) as
  * a director. The shot camera and the camera tracks become the camera, the timeline's fades and text cards the
  * overlays (a card's `h` is up from the viewport's top edge, as the timeline stores it), a piece's `clock` state (a city
- * minute, -1 none) the time of day. `base` adds what the timeline does not own (passes, letterbox, scale) and wins.
+ * minute, -1 none) the time of day. `base` adds source rendering, letterbox and scale and wins.
  */
 export function directorFromTimeline(frame: Pick<TimelineFrame, 'camera' | 'fades' | 'text' | 'state'>, base: FrameDirector = {}): FrameDirector {
   const director: FrameDirector = {
@@ -77,8 +85,13 @@ export function directorFromTimeline(frame: Pick<TimelineFrame, 'camera' | 'fade
 }
 
 /** One frame of the world: the zone the player is in (the scene) and the zones joined to it that are on screen. */
-export interface FrameInspection { scene:SceneDef; view:View; transform:import('../art/core/geometry').CanvasTransform;viewport:{width:number;height:number} }
+export interface FrameInspection { scene:SceneDef; view:View; rendering:ResolvedRenderSettings;transform:import('../art/core/geometry').CanvasTransform;viewport:{width:number;height:number} }
 export interface WorldFrame {
+  unavailablePasses?:import('../world/render-settings').RenderLimits;
+  /** Validated source references; these are not copied configuration or runtime state. */
+  citySource?:CitySource;worldCompositions?:WorldCompositions;compositionId?:string;
+  /** Host presentation only; never an authored sky or world-state value. */
+  background?:string;
   /** Editor-only inspection metadata; gameplay supplies no workspace camera. */
   cameraGuide?:CameraGuide;workspaceScale?:number;
   evaluation?:TimelineFrame;

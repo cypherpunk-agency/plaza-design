@@ -1,3 +1,4 @@
+import {MARKET_BULB_PARALLAX} from './market-details';
 /** Physical selection geometry for the market kit. Light wash and reflections are excluded. */
 import type {Bounds,BoundsContext,AssetDefinition,Properties} from '../core/composition';
 import {DESIGN_TOP,rng,type Tower} from '../core/primitives';
@@ -32,7 +33,7 @@ function lampBounds(p:Properties):Bounds{
  return box(left,h,right-left);
 }
 function mounted(p:Properties,c?:BoundsContext):Bounds{
- const w=number(p,'w'),tall=number(p,'tall'),pole=p.mount==='pole';
+ const w=number(p,'width'),tall=number(p,'height'),pole=p.mount==='pole';
  if(!c)return box(-w/2-2,tall+2,w+7,tall+2+(pole?2:15));
  const {view:v,placement:a}=c,cx=v.sx(a.x,Number(p.parallax??1)),top=Math.round(v.y(a.h+tall)),left=Math.round(cx-w/2)-2;
  const bottom=pole?Math.max(top+tall+2,v.y(0)):top+tall+15;
@@ -48,7 +49,7 @@ export function applyMarketMetadata(elements:AssetDefinition[],far:readonly Towe
  for(const [id,geometry] of Object.entries(fixed))find(id).bounds=(p,_s,c)=>physical(c,geometry(p));
  for(const id of ['ticker','wanted','ad','registry','odds','score']){
   const e=find(id);e.bounds=(p,_s,c)=>mounted(p,c);
-  e.anchors=p=>({origin:{x:0,h:0,role:'origin'},screen:{x:0,h:number(p,'tall')/2,role:'surface'},top:{x:0,h:number(p,'tall'),role:'mount'}});
+  e.anchors=p=>({origin:{x:0,h:0,role:'origin'},screen:{x:0,h:number(p,'height')/2,role:'surface'},top:{x:0,h:number(p,'height'),role:'mount'}});
  }
  find('camera').bounds=(p,_s,c)=>physical(c,number(p,'facing')<0?box(-14,13,17,16):box(-3,13,16,16),number(p,'parallax'));
  find('camera').anchors=()=>({origin:{x:0,h:0,role:'mount'},lens:{x:0,h:8,role:'surface'}});
@@ -57,7 +58,7 @@ export function applyMarketMetadata(elements:AssetDefinition[],far:readonly Towe
  find('bulbs').bounds=(p,_s,c)=>{
   const w=number(p,'width'),fallback=box(0,151,w,24);
   if(!c)return fallback;
-  const {view:v,placement:a}=c,l=v.sx(a.x,.85),right=v.sx(a.x+w,.85);
+  const {view:v,placement:a}=c,l=v.sx(a.x,MARKET_BULB_PARALLAX),right=v.sx(a.x+w,MARKET_BULB_PARALLAX);
   return screenBounds(c,{x:l,y:v.y(a.h+150)-1,w:right-l,h:25},fallback);
  };
  find('bulbs').anchors=p=>({origin:{x:0,h:0,role:'origin'},left:{x:0,h:150,role:'mount'},right:{x:number(p,'width'),h:150,role:'mount'}});

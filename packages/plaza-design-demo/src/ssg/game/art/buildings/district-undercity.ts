@@ -1,3 +1,7 @@
+import {colorField} from '../core/fields';
+import {velocity} from '../core/fields';
+import {axisControl,combineControls,rectangleControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * BUILDING KIT, undercity ("Below the record."). Tommi, 2026-10-22: underground needs its own logic,
  * not a street with a ceiling. Space is scarce and pressed: tunnels barely taller than a person and
@@ -29,8 +33,8 @@ const CONCRETE = ['#081010', '#091211', '#0a100f', '#081112'];
 const TARPS = ['#24343c', '#3a2c20', '#2a3626', '#3c2a26', '#262e36', '#36362a'];
 const PIPES = ['70,84,82', '96,72,54', '62,74,84', '112,92,62'];
 const R = Math.round;
-const seedField = num('Seed', 1, 0, 1000000);
-const ledField = (label: string, value: string) => ({ kind: 'color' as const, label, default: value });
+const seedField = generationSeed(num('Seed', 1, 0, 1000000));
+const ledField = colorField;
 const hexOr = (v: unknown, fallback: string) => rgbOf(isHex(v) ? String(v) : fallback);
 const mod = (a: number, m: number) => ((a % m) + m) % m;
 /** A hex colour lifted (or dropped) by `k` on every channel. */
@@ -184,17 +188,18 @@ function bricks(x: CanvasRenderingContext2D, l: number, bottom: number, w: numbe
 const MATERIAL: Record<string, string> = { rock: '#070807', concrete: '#0c1110', brick: '#140d0b', earth: '#0d0a08' };
 
 export const rockElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'undercity.rock', label: 'Rock or fill in section (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 800, 10, 10000, 1, 'units'), tall: num('Height', 300, 10, 3000, 1, 'units'),
-    material: select('Material', ['rock', 'concrete', 'brick', 'earth']), crust: select('Top surface', ['none', 'paving', 'soil']),
-    fill: colour('Colour', 'The material’s own'), seams: num('Strata, cracks and stones', 0.5, 0, 1, 0.05), seep: num('Seeping water', 0.3, 0, 1, 0.05), seed: seedField,
+    width: shapeLength(num('Width', 800, 10, 10000, 1, 'units')), height: shapeLength(num('Height', 300, 10, 3000, 1, 'units')),
+    material: appearanceChoice(select('Material', ['rock', 'concrete', 'brick', 'earth'])), crust: appearanceChoice(select('Top surface', ['none', 'paving', 'soil'])),
+    fill: appearanceStructure(colour('Colour', 'The material’s own')), seams: appearanceRatio(num('Strata, cracks and stones', 0.5, 0, 1, 0.05)), seep: appearanceRatio(num('Seeping water', 0.3, 0, 1, 0.05)), seed: seedField,
   },
-  size: p => ({ w: Number(p.width), tall: Number(p.tall) }),
-  bounds: p => ({ x: 0, h: Number(p.tall), w: Number(p.width), tall: Number(p.tall) }),
-  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: Number(p.width) / 2, h: Number(p.tall), role: 'surface' } }),
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: Number(p.width) / 2, h: Number(p.height), role: 'surface' } }),
   paint(x, p) {
-    const w = Number(p.width), T = Number(p.tall), mat = String(p.material), base = isHex(p.fill) ? String(p.fill) : MATERIAL[mat] ?? MATERIAL.rock, seams = Number(p.seams), seed = Number(p.seed), r = rng(seed * 977 + 3);
+    const w = Number(p.width), T = Number(p.height), mat = String(p.material), base = isHex(p.fill) ? String(p.fill) : MATERIAL[mat] ?? MATERIAL.rock, seams = Number(p.seams), seed = Number(p.seed), r = rng(seed * 977 + 3);
     x.fillStyle = base; x.fillRect(0, y(T), w, T);
     if (mat === 'brick') bricks(x, 0, 0, w, T, seed, 5, 12);
     else if (mat === 'concrete') {
@@ -232,17 +237,18 @@ export const rockElement = piece({
 const TUNNEL_WALLS: Record<string, string> = { round: '#0b1414', horseshoe: '#0c1312', brick: '#150f0c', gallery: '#0d1312' };
 
 export const tunnelElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'building.tunnel', label: 'Tunnel section (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 400, 40, 6000, 1, 'units'), height: num('Clear height (floor to crown)', 64, 44, 200, 1, 'units'),
-    profile: select('Section', ['round', 'horseshoe', 'brick', 'gallery']), lining: num('Lining thickness (cut)', 8, 2, 40, 1, 'units'),
-    wall: colour('Wall colour'), rings: num('Ring joints every (0: none)', 30, 0, 200, 1, 'units'),
-    pipes: num('Pipes under the crown', 2, 0, 6), cables: num('Cable runs on the wall', 0.5, 0, 1, 0.05),
-    homes: num('Niches lived in', 0.3, 0, 1, 0.05), tarp: colour('Tarp colour'), led: ledField('LED string colour', '#e8e0b0'),
-    lamps: num('Lamps', 2, 0, 40), lamp: select('Lamp kind', ['emergency', 'bulkhead', 'battery']), lampColour: colour('Lamp colour', 'The kind’s own'),
-    marks: num('Chalk and spray marks', 0.5, 0, 1, 0.05), chalk: text('Chalk words (empty: none)', ''), chalkAt: num('Chalk words from the left', 40, 0, 6000, 1, 'units'),
-    floodline: num('Old flood line', 14, 0, 100, 1, 'units'), drips: num('Drips', 0.4, 0, 1, 0.05),
-    ends: select('Closed ends', ['open', 'left', 'right', 'both']), seed: seedField,
+    width: shapeLength(num('Width', 400, 40, 6000, 1, 'units')), height: shapeLength(num('Clear height (floor to crown)', 64, 44, 200, 1, 'units')),
+    profile: appearanceChoice(select('Section', ['round', 'horseshoe', 'brick', 'gallery'])), lining: shapeLength(num('Lining thickness (cut)', 8, 2, 40, 1, 'units')),
+    wall: appearanceStructure(colour('Wall colour')), rings: shapeLength(num('Ring joints every (0: none)', 30, 0, 200, 1, 'units')),
+    pipes: generationCount(num('Pipes under the crown', 2, 0, 6)), cables: appearanceRatio(num('Cable runs on the wall', 0.5, 0, 1, 0.05)),
+    homes: appearanceRatio(num('Niches lived in', 0.3, 0, 1, 0.05)), tarp: appearanceStructure(colour('Tarp colour')), led: appearanceColor(ledField('LED string colour', '#e8e0b0')),
+    lamps: generationCount(num('Lamps', 2, 0, 40)), lamp: appearanceChoice(select('Lamp kind', ['emergency', 'bulkhead', 'battery'])), lampColour: semantic(colour('Lamp colour', 'The kind’s own'),{group:'Appearance',quantity:'structured',unit:'optional color'}),
+    marks: appearanceRatio(num('Chalk and spray marks', 0.5, 0, 1, 0.05)), chalk: appearanceText(text('Chalk words (empty: none)', '')), chalkAt: shapePosition(num('Chalk words from the left', 40, 0, 6000, 1, 'units')),
+    floodline: shapeLength(num('Old flood line', 14, 0, 100, 1, 'units')), drips: appearanceRatio(num('Drips', 0.4, 0, 1, 0.05)),
+    ends: appearanceChoice(select('Closed ends', ['open', 'left', 'right', 'both'])), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.lining) }),
   bounds: p => ({ x: 0, h: Number(p.height) + Number(p.lining), w: Number(p.width), tall: Number(p.height) + 2 * Number(p.lining) }),
@@ -311,19 +317,20 @@ export const tunnelElement = piece({
 // ---------------------------------------------------------------- the canal below the towpath
 
 export const canalElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'undercity.canal', label: 'Canal or sewer channel below a path (kit, Undercity)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 800, 20, 10000, 1, 'units'), depth: num('Water seen below the path', 40, 10, 200, 1, 'units'),
-    edge: select('Edge', ['towpath', 'quay', 'none']), water: colour('Water colour', 'Undercity'), glint: ledField('Light on the water', '#6fd6c4'),
-    ripples: num('Ripples', 1, 0, 2, 0.05), flow: num('Current (negative: to the left)', 0.3, -3, 3, 0.05), litter: num('Floating litter', 0.4, 0, 1, 0.05),
-    boat: select('Boat', ['none', 'punt', 'raft', 'tub']), boatAt: num('Boat from the left', 200, 0, 10000, 1, 'units'), boatDrift: num('Boat drifts (units each way)', 0, 0, 400, 1, 'units'),
-    lantern: bool('Lantern on the boat', true), seed: seedField,
+    width: shapeLength(num('Width', 800, 20, 10000, 1, 'units')), depth: shapeLength(num('Water seen below the path', 40, 10, 200, 1, 'units')),
+    edge: appearanceChoice(select('Edge', ['towpath', 'quay', 'none'])), water: appearanceStructure(colour('Water colour', 'Undercity')), glint: appearanceColor(ledField('Light on the water', '#6fd6c4')),
+    ripples: generationCount(num('Ripples', 1, 0, 2, 0.05)), velocityX:velocity('Current (negative: to the left)',18,{min:-180,max:180,step:3}), litter: appearanceRatio(num('Floating litter', 0.4, 0, 1, 0.05)),
+    boat: appearanceChoice(select('Boat', ['none', 'punt', 'raft', 'tub'])), boatAt: shapePosition(num('Boat from the left', 200, 0, 10000, 1, 'units')), boatDrift: semantic(num('Boat drifts (units each way)', 0, 0, 400, 1, 'units'),{"group":"Motion","quantity":"length","unit":"world units","space":"local"}),
+    lantern: appearanceBoolean(bool('Lantern on the boat', true)), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.depth) + 60 }),
   bounds: p => ({ x: 0, h: 60, w: Number(p.width), tall: Number(p.depth) + 60 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' }, boat: { x: Number(p.boatAt) + 30, h: -8, role: 'mount' } }),
   paint(x, p, o) {
-    const w = Number(p.width), D = Number(p.depth), seed = Number(p.seed), t = o.t, edge = String(p.edge), glint = hexOr(p.glint, '#6fd6c4'), flow = Number(p.flow), rip = Number(p.ripples);
+    const w = Number(p.width), D = Number(p.depth), seed = Number(p.seed), t = o.t, edge = String(p.edge), glint = hexOr(p.glint, '#6fd6c4'), flow = Number(p.velocityX)/60, rip = Number(p.ripples);
     const kerb = edge === 'none' ? 0 : 4, face = edge === 'quay' ? 12 : edge === 'towpath' ? 6 : 2, wt = -(kerb + face);
     if (kerb) {
       x.fillStyle = '#1a2120'; x.fillRect(0, y(0), w, kerb); x.fillStyle = rgba(STRUCT, 0.45); x.fillRect(0, y(0), w, 1);
@@ -384,14 +391,15 @@ export const canalElement = piece({
 // ---------------------------------------------------------------- shafts and ladders between levels
 
 export const shaftElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'undercity.shaft', label: 'Shaft between levels (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    height: num('Height (bottom floor to top floor)', 110, 20, 2000, 1, 'units'), width: num('Width', 26, 14, 400, 1, 'units'),
-    from: num('Cut opens at (the lower tunnel’s crown)', 64, 0, 2000, 1, 'units'),
-    kind: select('Kind', ['ladder', 'stairwell', 'lift', 'drain']), top: select('At the top', ['manhole', 'grate', 'hatch', 'open']),
-    wall: colour('Wall colour'), stuck: num('Lift car stuck at (share of the way up)', 0.55, 0, 1, 0.01),
-    lamp: bool('Battery lamp tied in it', true), lampColour: ledField('Lamp colour', '#e8e0b0'),
-    label: text('Chalk mark at the foot (empty: none)', ''), seed: seedField,
+    height: shapeLength(num('Height (bottom floor to top floor)', 110, 20, 2000, 1, 'units')), width: shapeLength(num('Width', 26, 14, 400, 1, 'units')),
+    from: shapePosition(num('Cut opens at (the lower tunnel’s crown)', 64, 0, 2000, 1, 'units')),
+    kind: appearanceChoice(select('Kind', ['ladder', 'stairwell', 'lift', 'drain'])), top: appearanceChoice(select('At the top', ['manhole', 'grate', 'hatch', 'open'])),
+    wall: appearanceStructure(colour('Wall colour')), stuck: appearanceRatio(num('Lift car stuck at (share of the way up)', 0.55, 0, 1, 0.01)),
+    lamp: appearanceBoolean(bool('Battery lamp tied in it', true)), lampColour: semantic(ledField('Lamp colour', '#e8e0b0'),{group:'Appearance',quantity:'color',unit:'color'}),
+    label: appearanceText(text('Chalk mark at the foot (empty: none)', '')), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 30 }),
   bounds: p => ({ x: -8, h: Number(p.height) + 30, w: Number(p.width) + 16, tall: Number(p.height) + 30 }),
@@ -444,11 +452,12 @@ export const shaftElement = piece({
 const METALS: Record<string, string> = { steel: '120,125,130', rust: '130,80,50', galvanised: '150,160,160' };
 
 export const ladderElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'undercity.ladder', label: 'Ladder (kit, Undercity; stand it on a level.stairs with run 0)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    height: num('Height (to the top floor)', 110, 10, 2000, 1, 'units'), width: num('Width', 12, 8, 30, 1, 'units'), rungs: num('Rung spacing', 6, 3, 16, 1, 'units'),
-    handles: num('Handles over the top', 30, 0, 60, 1, 'units'), cage: bool('Safety cage', false), metal: select('Metal', ['steel', 'rust', 'galvanised']),
-    missing: num('Rungs missing', 0.1, 0, 0.6, 0.05), seed: seedField,
+    height: shapeLength(num('Height (to the top floor)', 110, 10, 2000, 1, 'units')), width: shapeLength(num('Width', 12, 8, 30, 1, 'units')), rungs: shapeLength(num('Rung spacing', 6, 3, 16, 1, 'units')),
+    handles: shapeLength(num('Handles over the top', 30, 0, 60, 1, 'units')), cage: appearanceBoolean(bool('Safety cage', false)), metal: appearanceChoice(select('Metal', ['steel', 'rust', 'galvanised'])),
+    missing: semantic(num('Rungs missing', 0.1, 0, 0.6, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.handles) }),
   bounds: p => ({ x: -6, h: Number(p.height) + Number(p.handles), w: Number(p.width) + 12, tall: Number(p.height) + Number(p.handles) }),
@@ -470,17 +479,18 @@ export const ladderElement = piece({
 // ---------------------------------------------------------------- the vaulted arcade (the arches where people live)
 
 export const vaultElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'building.vault', label: 'Vaulted arcade (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 60, 4000, 1, 'units'), height: num('Height to the crown', 120, 80, 600, 1, 'units'),
-    ceiling: select('Ceiling', ['arch', 'flat', 'ribbed']), bays: num('Bays between piers (0: by width)', 0, 0, 24),
-    rise: num('Arch rise', 44, 0, 300, 1, 'units'), wall: colour('Concrete'),
-    pipes: num('Pipes in the bundle', 3, 0, 8), drips: num('Condensation drips', 0.6, 0, 1, 0.05), tray: bool('Cable tray', true),
-    alcoves: num('Alcoves lived in behind tarps', 0.6, 0, 1, 0.05), tarp: colour('Tarp colour'), led: ledField('LED string colour', '#e8e0b0'),
-    emergency: num('Emergency lights', 2, 0, 12), emergencyColour: ledField('Emergency light colour', '#ff2a44'),
-    marks: num('Chalk and spray marks', 0.5, 0, 1, 0.05), chalk: text('Chalk words on the wall (empty: none)', ''),
-    screens: num('Rewired screens', 1, 0, 6), screenText: text('Screen text (empty: static)', ''),
-    floodline: num('Old flood line', 28, 0, 120, 1, 'units'), seed: seedField,
+    width: shapeLength(num('Width', 300, 60, 4000, 1, 'units')), height: shapeLength(num('Height to the crown', 120, 80, 600, 1, 'units')),
+    ceiling: appearanceChoice(select('Ceiling', ['arch', 'flat', 'ribbed'])), bays: shapeLength(num('Bays between piers (0: by width)', 0, 0, 24)),
+    rise: shapeLength(num('Arch rise', 44, 0, 300, 1, 'units')), wall: appearanceStructure(colour('Concrete')),
+    pipes: generationCount(num('Pipes in the bundle', 3, 0, 8)), drips: appearanceRatio(num('Condensation drips', 0.6, 0, 1, 0.05)), tray: appearanceBoolean(bool('Cable tray', true)),
+    alcoves: appearanceRatio(num('Alcoves lived in behind tarps', 0.6, 0, 1, 0.05)), tarp: appearanceStructure(colour('Tarp colour')), led: appearanceColor(ledField('LED string colour', '#e8e0b0')),
+    emergency: shapePosition(num('Emergency lights', 2, 0, 12)), emergencyColour: appearanceColor(ledField('Emergency light colour', '#ff2a44')),
+    marks: appearanceRatio(num('Chalk and spray marks', 0.5, 0, 1, 0.05)), chalk: appearanceText(text('Chalk words on the wall (empty: none)', '')),
+    screens: generationCount(num('Rewired screens', 1, 0, 6)), screenText: appearanceText(text('Screen text (empty: static)', '')),
+    floodline: shapeLength(num('Old flood line', 28, 0, 120, 1, 'units')), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 60 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 60, w: Number(p.width), tall: Number(p.height) + 60 }),
@@ -591,16 +601,17 @@ export const vaultElement = piece({
 export const metroEntranceElement = piece({
   type: 'undercity.metro-entrance', label: 'Dead metro entrance, cut open below the street (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    depth: num('Depth of the ticket hall below the street', 96, 60, 400, 1, 'units'), run: num('Stair run', 120, 60, 400, 1, 'units'),
-    landing: num('Ticket hall width', 220, 60, 800, 1, 'units'), tiles: colour('Tile colour', 'Grimy cream'), stripe: ledField('Line colour band', '#8a6a2a'),
-    label: text('Sign on the post (empty: none)', 'LINE 4'), notice: text('Board on the railing (empty: none)', 'CLOSED'),
-    sealed: select('Far end of the hall', ['bricked', 'boarded', 'rubble']), turnstiles: num('Turnstiles', 3, 0, 8), marks: num('Chalk marks going down', 0.6, 0, 1, 0.05), seed: seedField,
+    depthBelowStreet: shapeLength(num('Depth of the ticket hall below the street', 96, 60, 400, 1, 'units')), run: shapeLength(num('Stair run', 120, 60, 400, 1, 'units')),
+    hallWidth: shapeLength(num('Ticket hall width', 220, 60, 800, 1, 'units')), tiles: appearanceStructure(colour('Tile colour', 'Grimy cream')), stripe: appearanceColor(ledField('Line colour band', '#8a6a2a')),
+    label: appearanceText(text('Sign on the post (empty: none)', 'LINE 4')), notice: appearanceText(text('Board on the railing (empty: none)', 'CLOSED')),
+    sealed: appearanceChoice(select('Far end of the hall', ['bricked', 'boarded', 'rubble'])), turnstiles: generationCount(num('Turnstiles', 3, 0, 8)), marks: appearanceRatio(num('Chalk marks going down', 0.6, 0, 1, 0.05)), seed: seedField,
   },
-  size: p => ({ w: Number(p.run) + Number(p.landing), tall: 80 }),
-  bounds: p => ({ x: -24, h: 80, w: Number(p.run) + Number(p.landing) + 24, tall: 80 + Number(p.depth) }),
-  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, foot: { x: Number(p.run), h: -Number(p.depth), role: 'mount' }, hall: { x: Number(p.run) + Number(p.landing) / 2, h: -Number(p.depth), role: 'surface' } }),
+  spatial:combineControls({fields:['run','depthBelowStreet'],handles:p=>[{id:'stair-foot',label:'Stair foot',fields:['run','depthBelowStreet'],point:{x:Number(p.run),h:-Number(p.depthBelowStreet)},cursor:'move',edit:d=>({props:{run:Number(p.run)+d.x,depthBelowStreet:Number(p.depthBelowStreet)-d.h}})}]},axisControl('hallWidth','x',p=>-Number(p.depthBelowStreet),'Hall end',{offset:p=>Number(p.run)})),
+  size: p => ({ w: Number(p.run) + Number(p.hallWidth), tall: 80 }),
+  bounds: p => ({ x: -24, h: 80, w: Number(p.run) + Number(p.hallWidth) + 24, tall: 80 + Number(p.depthBelowStreet) }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, foot: { x: Number(p.run), h: -Number(p.depthBelowStreet), role: 'mount' }, hall: { x: Number(p.run) + Number(p.hallWidth) / 2, h: -Number(p.depthBelowStreet), role: 'surface' } }),
   paint(x, p, o) {
-    const D = Number(p.depth), Rn = Number(p.run), Lw = Number(p.landing), seed = Number(p.seed), t = o.t, W = Rn + Lw;
+    const D = Number(p.depthBelowStreet), Rn = Number(p.run), Lw = Number(p.hallWidth), seed = Number(p.seed), t = o.t, W = Rn + Lw;
     const tiles = isHex(p.tiles) ? String(p.tiles) : '#1d1f19', stripe = hexOr(p.stripe, '#8a6a2a');
     const hc = Math.min(-10, -D + 56), xm = R(Math.min(Rn, Math.max(30, (66 * Rn) / D)));
     const path = () => { x.beginPath(); x.moveTo(0, y(0)); x.lineTo(Rn, y(-D)); x.lineTo(W, y(-D)); x.lineTo(W, y(hc)); x.lineTo(Rn, y(hc)); x.lineTo(xm, y(-10)); x.lineTo(xm, y(0)); x.closePath(); };
@@ -660,11 +671,12 @@ export const metroEntranceElement = piece({
 });
 
 export const lotElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'undercity.lot', label: 'Overgrown lot behind a fence (kit, Undercity)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 60, 3000, 1, 'units'), fence: bool('Chain-link fence', true), fenceHeight: num('Fence height', 54, 20, 140, 1, 'units'),
-    gap: num('Cut in the fence, from the left (-1: none)', 120, -1, 3000, 1, 'units'), weeds: num('Weeds and bushes', 0.7, 0, 1, 0.05), rubble: num('Rubble and dumped things', 0.5, 0, 1, 0.05),
-    sign: text('Sign on the fence (empty: none)', 'NO ENTRY'), marks: num('Chalk on the posts', 0.5, 0, 1, 0.05), seed: seedField,
+    width: shapeLength(num('Width', 300, 60, 3000, 1, 'units')), fence: appearanceBoolean(bool('Chain-link fence', true)), fenceHeight: shapeLength(num('Fence height', 54, 20, 140, 1, 'units')),
+    gap: shapePosition(num('Cut in the fence, from the left (-1: none)', 120, -1, 3000, 1, 'units')), weeds: appearanceRatio(num('Weeds and bushes', 0.7, 0, 1, 0.05)), rubble: appearanceRatio(num('Rubble and dumped things', 0.5, 0, 1, 0.05)),
+    sign: appearanceText(text('Sign on the fence (empty: none)', 'NO ENTRY')), marks: appearanceRatio(num('Chalk on the posts', 0.5, 0, 1, 0.05)), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.fenceHeight) + 30 }),
   bounds: p => ({ x: 0, h: Number(p.fenceHeight) + 30, w: Number(p.width), tall: Number(p.fenceHeight) + 30 }),
@@ -741,22 +753,23 @@ function rack(x: CanvasRenderingContext2D, o: Paint, x0: number, base: number, r
 }
 
 export const dataHallElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'landmark.data-hall', label: 'The flooded data hall (landmark, Undercity)', category: 'architecture',
   fields: {
-    width: num('Width', 1100, 400, 4000, 1, 'units'), height: num('Height to the ceiling', 330, 160, 700, 1, 'units'),
-    below: num('Water seen below the walkway', 110, 20, 300, 1, 'units'), far: num('Where the water meets the back wall', 40, 10, 140, 1, 'units'),
-    rows: num('Rows of racks', 3, 1, 4), racks: num('Racks in the nearest row', 14, 2, 60), depth: num('Water up the racks', 0.45, 0, 0.9, 0.05),
-    running: num('Racks still running', 0.35, 0, 1, 0.05), led: ledField('Rack LED colour', '#6fd6c4'), ripples: num('Ripples', 1, 0, 2, 0.05),
-    columns: num('Columns every (0: none)', 220, 0, 1000, 1, 'units'), lights: num('Hall lights still working', 0.2, 0, 1, 0.05), cables: num('Cables hanging from the ceiling', 0.5, 0, 1, 0.05),
-    mouth: select('Tunnel mouth', ['left', 'right', 'none']), mouthHeight: num('Tunnel mouth height', 66, 44, 200, 1, 'units'),
-    gallery: num('Gallery height', 120, 60, 400, 1, 'units'), galleryFrom: num('Gallery from the left', 640, 0, 4000, 1, 'units'), galleryWidth: num('Gallery width (0: none)', 400, 0, 4000, 1, 'units'),
-    stair: bool('Gallery stair, broken off', true), letters: text('Stencil on the back wall (empty: none)', 'B2 · DATA HALL'), wall: colour('Concrete', 'Undercity'), seed: seedField,
+    width: shapeLength(num('Width', 1100, 400, 4000, 1, 'units')), height: shapeLength(num('Height to the ceiling', 330, 160, 700, 1, 'units')),
+    below: shapeLength(num('Water seen below the walkway', 110, 20, 300, 1, 'units')), far: shapeLength(num('Where the water meets the back wall', 40, 10, 140, 1, 'units')),
+    rows: generationCount(num('Rows of racks', 3, 1, 4)), racks: generationCount(num('Racks in the nearest row', 14, 2, 60)), waterLevelRatio: appearanceRatio(num('Water up the racks', 0.45, 0, 0.9, 0.05)),
+    running: appearanceRatio(num('Racks still running', 0.35, 0, 1, 0.05)), led: appearanceColor(ledField('Rack LED colour', '#6fd6c4')), ripples: generationCount(num('Ripples', 1, 0, 2, 0.05)),
+    columns: semantic(num('Columns every (0: none)', 220, 0, 1000, 1, 'units'),{"group":"Generation","quantity":"length","unit":"world units","space":"local"}), lights: appearanceRatio(num('Hall lights still working', 0.2, 0, 1, 0.05)), cables: appearanceRatio(num('Cables hanging from the ceiling', 0.5, 0, 1, 0.05)),
+    mouth: appearanceChoice(select('Tunnel mouth', ['left', 'right', 'none'])), mouthHeight: shapeLength(num('Tunnel mouth height', 66, 44, 200, 1, 'units')),
+    gallery: shapePosition(num('Gallery height', 120, 60, 400, 1, 'units')), galleryFrom: shapePosition(num('Gallery from the left', 640, 0, 4000, 1, 'units')), galleryWidth: shapeLength(num('Gallery width (0: none)', 400, 0, 4000, 1, 'units')),
+    stair: appearanceBoolean(bool('Gallery stair, broken off', true)), letters: appearanceText(text('Stencil on the back wall (empty: none)', 'B2 · DATA HALL')), wall: appearanceStructure(colour('Concrete', 'Undercity')), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 40 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 40, w: Number(p.width), tall: Number(p.height) + 40 + Number(p.below) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, gallery: { x: Number(p.galleryFrom), h: Number(p.gallery), role: 'surface' } }),
   paint(x, p, o) {
-    const w = Number(p.width), H = Number(p.height), B = Number(p.below), far = Number(p.far), seed = Number(p.seed), t = o.t, depth = Number(p.depth), running = Number(p.running), rip = Number(p.ripples);
+    const w = Number(p.width), H = Number(p.height), B = Number(p.below), far = Number(p.far), seed = Number(p.seed), t = o.t, depth = Number(p.waterLevelRatio), running = Number(p.running), rip = Number(p.ripples);
     const wall = isHex(p.wall) ? String(p.wall) : '#081010', near = lift(wall, 9), led = hexOr(p.led, '#6fd6c4');
     const gH = Number(p.gallery), gx = Number(p.galleryFrom), gw = Math.min(Number(p.galleryWidth), w - gx);
     // the rock over the hall and its ceiling slab, the back wall in panels
@@ -846,11 +859,12 @@ export const dataHallElement = piece({
 });
 
 export const catwalkElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'undercity.catwalk', label: 'Catwalk over water (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 600, 20, 6000, 1, 'units'), posts: num('Posts every', 48, 16, 300, 1, 'units'), postDepth: num('Posts down into the water', 110, 10, 400, 1, 'units'),
-    rail: select('Handrail', ['full', 'broken', 'none']), ladder: num('Ladder down, from the left (-1: none)', -1, -1, 6000, 1, 'units'), ladderDepth: num('Ladder down to', 40, 10, 400, 1, 'units'),
-    lamps: num('Battery lamps on the rail', 3, 0, 40), led: ledField('Lamp colour', '#e8e0b0'), seed: seedField,
+    width: shapeLength(num('Width', 600, 20, 6000, 1, 'units')), posts: semantic(num('Posts every', 48, 16, 300, 1, 'units'),{"group":"Generation","quantity":"length","unit":"world units","space":"local"}), postDepth: shapeLength(num('Posts down into the water', 110, 10, 400, 1, 'units')),
+    rail: appearanceChoice(select('Handrail', ['full', 'broken', 'none'])), ladder: shapePosition(num('Ladder down, from the left (-1: none)', -1, -1, 6000, 1, 'units')), ladderDepth: shapeLength(num('Ladder down to', 40, 10, 400, 1, 'units')),
+    lamps: generationCount(num('Battery lamps on the rail', 3, 0, 40)), led: appearanceColor(ledField('Lamp colour', '#e8e0b0')), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: 40 }),
   bounds: p => ({ x: 0, h: 40, w: Number(p.width), tall: 40 + Number(p.postDepth) }),
@@ -886,10 +900,11 @@ export const catwalkElement = piece({
 });
 
 export const pontoonElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'undercity.pontoon', label: 'Pontoon raft with a terminal (kit, Undercity)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 80, 30, 300, 1, 'units'), drums: num('Drums under it', 3, 1, 8), terminal: bool('Terminal on a crate', true),
-    screen: ledField('Screen colour', '#6fd6c4'), lamp: bool('Lantern on a pole', true), rope: select('Moored by a rope', ['left', 'right', 'none']), seed: seedField,
+    width: shapeLength(num('Width', 80, 30, 300, 1, 'units')), drums: generationCount(num('Drums under it', 3, 1, 8)), terminal: appearanceBoolean(bool('Terminal on a crate', true)),
+    screen: appearanceColor(ledField('Screen colour', '#6fd6c4')), lamp: appearanceBoolean(bool('Lantern on a pole', true)), rope: appearanceChoice(select('Moored by a rope', ['left', 'right', 'none'])), seed: seedField,
   },
   size: p => ({ w: Number(p.width), tall: 50 }),
   bounds: p => ({ x: 0, h: 50, w: Number(p.width), tall: 64 }),

@@ -7,11 +7,11 @@
       "type": "undercity.rock",
       "props": {
         "width": 1600,
-        "tall": 740,
         "material": "rock",
         "seams": 0.6,
         "seep": 0.4,
-        "seed": 11
+        "seed": 11,
+        "height": 740
       },
       "placement": {
         "x": 0,
@@ -109,13 +109,13 @@
         "width": 1600,
         "depth": 40,
         "edge": "towpath",
-        "flow": 0.4,
         "litter": 0.5,
         "boat": "punt",
         "boatAt": 960,
         "boatDrift": 50,
         "lantern": true,
-        "seed": 5
+        "seed": 5,
+        "velocityX": 24
       },
       "placement": {
         "x": 0,
@@ -266,7 +266,7 @@
           "STEPS",
           "SLIPPERY"
         ],
-        "tilt": 0.05
+        "tiltAngle": 2.8647889756541165
       },
       "placement": {
         "x": 660,
@@ -300,12 +300,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "walk",
         "archetype": "ghost",
         "range": 400,
-        "seed": 1201
+        "seed": 1201,
+        "depthBand": "play"
       },
       "placement": {
         "x": 500,
@@ -319,12 +319,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "sit",
         "archetype": "ghost",
         "sitting": "side",
-        "seed": 1203
+        "seed": 1203,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1100,
@@ -338,8 +338,8 @@
       "type": "character.resident",
       "props": {
         "kind": "crawler",
-        "depth": "play",
-        "act": "scrub"
+        "act": "scrub",
+        "depthBand": "play"
       },
       "placement": {
         "x": 900,
@@ -353,12 +353,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "seed": 1210,
         "act": "sit",
         "archetype": "ghost",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 400,
@@ -372,11 +372,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "seed": 1217,
         "act": "talk",
-        "archetype": "ghost"
+        "archetype": "ghost",
+        "depthBand": "play"
       },
       "placement": {
         "x": 560,
@@ -390,11 +390,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "seed": 1224,
         "act": "talk",
-        "archetype": "drifter"
+        "archetype": "drifter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 582,
@@ -408,12 +408,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "seed": 1231,
         "act": "run",
         "archetype": "kid",
-        "range": 200
+        "range": 200,
+        "depthBand": "play"
       },
       "placement": {
         "x": 820,
@@ -427,11 +427,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "seed": 1238,
         "act": "sleep",
-        "archetype": "drifter"
+        "archetype": "drifter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 980,
@@ -445,12 +445,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "seed": 1245,
         "act": "sit",
         "archetype": "elder",
-        "sitting": "mixed"
+        "sitting": "mixed",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1180,
@@ -464,11 +464,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "smoke",
         "archetype": "drifter",
-        "seed": 1251
+        "seed": 1251,
+        "depthBand": "play"
       },
       "placement": {
         "x": 420,
@@ -482,11 +482,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "wait",
         "archetype": "ghost",
-        "seed": 1253
+        "seed": 1253,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1000,
@@ -500,9 +500,9 @@
       "type": "character.resident",
       "props": {
         "kind": "litterbot",
-        "depth": "play",
         "act": "roll",
-        "range": 300
+        "range": 300,
+        "depthBand": "play"
       },
       "placement": {
         "x": 600,
@@ -516,8 +516,8 @@
       "type": "character.resident",
       "props": {
         "kind": "wreck",
-        "depth": "play",
-        "act": "slump"
+        "act": "slump",
+        "depthBand": "play"
       },
       "placement": {
         "x": 180,
@@ -531,8 +531,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1250,

@@ -92,8 +92,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 401,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 0,
@@ -124,8 +124,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 402,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 200,
@@ -157,8 +157,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 403,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 380,
@@ -189,8 +189,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 404,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 600,
@@ -216,8 +216,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 405,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 760,
@@ -248,8 +248,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 406,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 960,
@@ -280,8 +280,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 407,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1150,
@@ -308,8 +308,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 408,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1370,
@@ -335,8 +335,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 409,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1570,
@@ -362,8 +362,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 410,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1750,
@@ -389,8 +389,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 411,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1950,
@@ -416,8 +416,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 412,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 2150,
@@ -485,7 +485,7 @@
         "gate": 560,
         "gateNote": "TICKET AND ID REQUIRED",
         "ends": "left",
-        "deadLamp": 4
+        "flickeringLampIndex": 4
       },
       "placement": {
         "x": 0,
@@ -501,7 +501,7 @@
         "width": 1540,
         "name": "DOWNTOWN",
         "ends": "right",
-        "nameEvery": 420
+        "nameSpacing": 420
       },
       "placement": {
         "x": 620,
@@ -570,8 +570,8 @@
         "run": 240,
         "rise": 150,
         "direction": "up",
-        "speed": 0.6,
-        "style": "standard"
+        "style": "standard",
+        "speed": 36
       },
       "placement": {
         "x": 1880,
@@ -723,11 +723,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6101,
         "act": "queue",
-        "archetype": "office"
+        "archetype": "office",
+        "depthBand": "play"
       },
       "placement": {
         "x": 340,
@@ -742,11 +742,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6102,
         "act": "wait",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 366,
@@ -761,11 +761,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6103,
         "act": "phone",
-        "archetype": "student"
+        "archetype": "student",
+        "depthBand": "play"
       },
       "placement": {
         "x": 432,
@@ -780,11 +780,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6104,
         "act": "stand",
-        "archetype": "security"
+        "archetype": "security",
+        "depthBand": "play"
       },
       "placement": {
         "x": 612,
@@ -799,11 +799,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6105,
         "act": "sleep",
-        "archetype": "drifter"
+        "archetype": "drifter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 110,
@@ -818,9 +818,9 @@
       "type": "character.resident",
       "props": {
         "kind": "busker",
-        "depth": "play",
         "seed": 6106,
-        "act": "play"
+        "act": "play",
+        "depthBand": "play"
       },
       "placement": {
         "x": 680,
@@ -835,9 +835,9 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
         "seed": 6107,
-        "act": "scan"
+        "act": "scan",
+        "depthBand": "play"
       },
       "placement": {
         "x": 600,
@@ -852,9 +852,9 @@
       "type": "character.resident",
       "props": {
         "kind": "sweeper",
-        "depth": "play",
         "seed": 6108,
-        "act": "sweep"
+        "act": "sweep",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1700,
@@ -869,11 +869,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5410,
         "act": "stand",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1080,
@@ -888,11 +888,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5411,
         "act": "phone",
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 920,
@@ -907,11 +907,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5412,
         "act": "read",
-        "archetype": "reader"
+        "archetype": "reader",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1373,
@@ -926,11 +926,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5413,
         "act": "stand",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1600,
@@ -945,11 +945,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5415,
         "act": "wait",
-        "archetype": "shopper"
+        "archetype": "shopper",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1150,
@@ -964,13 +964,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5401,
         "act": "read",
         "archetype": "office",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 805,
@@ -985,13 +985,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5402,
         "act": "doze",
         "archetype": "student",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1078,
@@ -1006,13 +1006,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5404,
         "act": "talk",
         "archetype": "courier",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1358,
@@ -1027,13 +1027,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5405,
         "act": "phone",
         "archetype": "elder",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1411,
@@ -1048,13 +1048,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5406,
         "act": "read",
         "archetype": "punk",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1494,
@@ -1069,13 +1069,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5408,
         "act": "sit",
         "archetype": "shopper",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1547,
@@ -1090,13 +1090,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5409,
         "act": "talk",
         "archetype": "sleeper",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1631,
@@ -1111,12 +1111,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5414,
         "act": "walk",
         "archetype": "office",
-        "range": 600
+        "range": 600,
+        "depthBand": "play"
       },
       "placement": {
         "x": 760,
@@ -1172,10 +1172,10 @@
       "id": "label",
       "type": "metro.scale-ruler",
       "props": {
-        "span": 0,
+        "length": 0,
         "bar": false,
         "numbers": false,
-        "size": 9,
+        "fontSize": 9,
         "ink": "#ffd9a5",
         "title": "DOWNTOWN METRO · UNDERGROUND (PROPOSAL, REPLACES THE RAISED PLATFORM)",
         "note": "Street 150 above the platform: ceiling 124, slab 26 (metro-len-2 sizes); 2-car train 1,086, platform 1,540|West: real stairs up to the street, ticket hall, turnstile (level.barrier) at the gate line|East: up escalator to a second way out, exit-only gate|Indoor floors: the station is lit by its own lamps, not the sky"

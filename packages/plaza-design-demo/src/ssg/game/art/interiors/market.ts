@@ -1,3 +1,6 @@
+import {colorField} from '../core/fields';
+import {rectangleControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * INTERIOR KIT, market: the Neon Market seen from inside (Tommi, 2026-10-21). Two places:
  * - a stacked-housing block cut open (after Kowloon's subdivided flats): the stall's back room at the
@@ -34,7 +37,7 @@ const R = (x: X, l: number, h: number, w: number, t: number, fill: string) => {
 const hexOr = (v: Value, fallback: string) => isHex(v) ? String(v) : fallback;
 const rgbField = (v: Value, fallback: string) => isHex(v) ? rgbOf(String(v)) : fallback;
 const pick = <T,>(r: () => number, list: readonly T[]) => list[Math.floor(r() * list.length) % list.length];
-const colourField = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const colourField = colorField;
 const listOf = (label: string, item: Record<string, Field>, addLabel: string, next: (rows: Properties[]) => Properties, value: Properties[]): Field => ({
   kind: 'json', label, default: value, editor: { kind: 'list', item, addLabel, next },
   validate: v => { if (!Array.isArray(v) || !v.every(r => !!r && typeof r === 'object' && !Array.isArray(r))) throw new Error(label + ': expected a list'); },
@@ -133,14 +136,14 @@ function handbills(x: X, l: number, w: number, lo: number, hi: number, n: number
 
 export const FLAT_KINDS = ['cage', 'cubicle', 'bunks', 'kitchen', 'empty'] as const;
 const flatItem: Record<string, Field> = {
-  kind: { kind: 'select', label: 'Kind', options: [...FLAT_KINDS], default: 'cage' },
-  tv: { kind: 'boolean', label: 'TV', default: false },
-  window: { kind: 'boolean', label: 'Window onto the light well (cubicle, kitchen)', default: true },
-  fan: { kind: 'boolean', label: 'Fan', default: true },
-  cooker: { kind: 'boolean', label: 'Rice cooker', default: false },
-  bags: { kind: 'number', label: 'Belongings in bags', default: 0.5, min: 0, max: 1, step: 0.05 },
-  lit: { kind: 'boolean', label: 'Light on', default: true },
-  cloth: { kind: 'color', label: 'Blanket or curtain', default: '#8a3a3a' },
+  kind: appearanceChoice({ kind: 'select', label: 'Kind', options: [...FLAT_KINDS], default: 'cage' }),
+  tv: appearanceBoolean({ kind: 'boolean', label: 'TV', default: false }),
+  window: appearanceBoolean({ kind: 'boolean', label: 'Window onto the light well (cubicle, kitchen)', default: true }),
+  fan: appearanceBoolean({ kind: 'boolean', label: 'Fan', default: true }),
+  cooker: appearanceBoolean({ kind: 'boolean', label: 'Rice cooker', default: false }),
+  bags: appearanceRatio({ kind: 'number', label: 'Belongings in bags', default: 0.5, min: 0, max: 1, step: 0.05 }),
+  lit: appearanceBoolean({ kind: 'boolean', label: 'Light on', default: true }),
+  cloth: appearanceColor({ kind: 'color', label: 'Blanket or curtain', default: '#8a3a3a' }),
 };
 const FLATS_DEFAULT: Properties[] = [
   { kind: 'cage', tv: true, fan: true, cooker: false, bags: 0.6, lit: true, cloth: '#7a3434' },
@@ -228,13 +231,14 @@ function emptyUnit(x: X, o: Paint, l: number, w: number, ih: number, seed: numbe
 }
 
 export const cageFlatsElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.cage-flats', label: 'Subdivided flats, cut open (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 240, 40, 2000, 1, 'units'), height: num('Storey height', 64, 40, 140, 1, 'units'),
-    flats: listOf('Flats along the corridor', flatItem, 'Add flat', rows => ({ ...FLATS_DEFAULT[rows.length % FLATS_DEFAULT.length] }), FLATS_DEFAULT),
-    tiers: num('Cage tiers (cage homes)', 2, 1, 3), light: select('Corridor light', LIGHT_KINDS),
-    wiring: bool('Cables along the ceiling', true), laundry: bool('Washing hung in the corridor', true),
-    wall: colourField('Corridor wall', '#262a26'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 240, 40, 2000, 1, 'units')), height: shapeLength(num('Storey height', 64, 40, 140, 1, 'units')),
+    flats: appearanceStructure(listOf('Flats along the corridor', flatItem, 'Add flat', rows => ({ ...FLATS_DEFAULT[rows.length % FLATS_DEFAULT.length] }), FLATS_DEFAULT)),
+    tiers: generationCount(num('Cage tiers (cage homes)', 2, 1, 3)), light: appearanceChoice(select('Corridor light', LIGHT_KINDS)),
+    wiring: appearanceBoolean(bool('Cables along the ceiling', true)), laundry: appearanceBoolean(bool('Washing hung in the corridor', true)),
+    wall: appearanceColor(colourField('Corridor wall', '#262a26')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -289,13 +293,14 @@ const STOCK: Record<string, string[]> = {
 };
 
 export const stallRoomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.stall-room', label: 'Stall back room (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 230, 40, 1000, 1, 'units'), height: num('Storey height', 72, 40, 160, 1, 'units'),
-    goods: select('What the stall sells', ['roast', 'fish', 'fruit', 'electronics', 'dried', 'clothes', 'herbs'], 'dried'),
-    loft: bool('Sleeping loft over the stall', true), altar: bool('Earth god shrine on the floor', true), tv: bool('TV on the shelf', true),
-    boxes: num('Boxes and sacks of stock', 0.7, 0, 1, 0.05), bulbs: num('Bare bulbs', 3, 0, 8), shutter: bool('Rolled-up shutter at the front', true),
-    wall: colourField('Wall', '#2a221b'), lit: num('Lights on', 1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 230, 40, 1000, 1, 'units')), height: shapeLength(num('Storey height', 72, 40, 160, 1, 'units')),
+    goods: appearanceChoice(select('What the stall sells', ['roast', 'fish', 'fruit', 'electronics', 'dried', 'clothes', 'herbs'], 'dried')),
+    loft: appearanceBoolean(bool('Sleeping loft over the stall', true)), altar: appearanceBoolean(bool('Earth god shrine on the floor', true)), tv: appearanceBoolean(bool('TV on the shelf', true)),
+    boxes: appearanceRatio(num('Boxes and sacks of stock', 0.7, 0, 1, 0.05)), bulbs: generationCount(num('Bare bulbs', 3, 0, 8)), shutter: appearanceBoolean(bool('Rolled-up shutter at the front', true)),
+    wall: appearanceColor(colourField('Wall', '#2a221b')), lit: appearanceRatio(num('Lights on', 1, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -347,12 +352,13 @@ export const stallRoomElement = piece({
 });
 
 export const stairCoreElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.stair-core', label: 'Stair core, one storey (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 92, 30, 400, 1, 'units'), height: num('Storey height', 64, 40, 160, 1, 'units'), label: text('Floor painted on the wall', '1/F'),
-    labelFrom: num('Floor label from the left', 14, 0, 400, 1, 'units'), labelAt: num('Floor label height', 36, 0, 160, 1, 'units'),
-    mailboxes: bool('Mailboxes', false), flyers: num('Handbills on the wall', 0.6, 0, 1, 0.05), window: bool('Barred window to the light well', true), windowFrom: num('Window from the left', 38, 0, 400, 1, 'units'),
-    light: select('Light', LIGHT_KINDS, 'bulb'), wall: colourField('Wall', '#2d302a'), dado: colourField('Dado (lower wall)', '#1c3226'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 92, 30, 400, 1, 'units')), height: shapeLength(num('Storey height', 64, 40, 160, 1, 'units')), label: appearanceText(text('Floor painted on the wall', '1/F')),
+    labelFrom: shapePosition(num('Floor label from the left', 14, 0, 400, 1, 'units')), labelAt: shapeLength(num('Floor label height', 36, 0, 160, 1, 'units')),
+    mailboxes: appearanceBoolean(bool('Mailboxes', false)), flyers: appearanceRatio(num('Handbills on the wall', 0.6, 0, 1, 0.05)), window: appearanceBoolean(bool('Barred window to the light well', true)), windowFrom: shapePosition(num('Window from the left', 38, 0, 400, 1, 'units')),
+    light: appearanceChoice(select('Light', LIGHT_KINDS, 'bulb')), wall: appearanceColor(colourField('Wall', '#2d302a')), dado: appearanceColor(colourField('Dado (lower wall)', '#1c3226')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -379,13 +385,14 @@ export const stairCoreElement = piece({
 });
 
 export const landingElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.landing', label: 'Stair landing: shrine and fuse box (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 110, 40, 600, 1, 'units'), height: num('Storey height', 64, 40, 160, 1, 'units'),
-    shrine: bool('Shrine on the wall', true), earthGod: bool('Earth god on the floor', true), fuse: select('Fuse box', ['closed', 'open', 'sparking'], 'sparking'),
-    meters: num('Electricity meters', 4, 0, 10), gate: bool('Metal gate to a flat', true), shoes: bool('Shoes by the gate', true), chair: bool('Plastic stool', true),
-    notice: text('Notice (empty: none)', 'NO HAWKING'), light: select('Light', LIGHT_KINDS, 'tube'),
-    wall: colourField('Wall', '#2d302a'), dado: colourField('Dado (lower wall)', '#1c3226'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 110, 40, 600, 1, 'units')), height: shapeLength(num('Storey height', 64, 40, 160, 1, 'units')),
+    shrine: appearanceBoolean(bool('Shrine on the wall', true)), earthGod: appearanceBoolean(bool('Earth god on the floor', true)), fuse: appearanceChoice(select('Fuse box', ['closed', 'open', 'sparking'], 'sparking')),
+    meters: generationCount(num('Electricity meters', 4, 0, 10)), gate: appearanceBoolean(bool('Metal gate to a flat', true)), shoes: appearanceBoolean(bool('Shoes by the gate', true)), chair: appearanceBoolean(bool('Plastic stool', true)),
+    notice: appearanceText(text('Notice (empty: none)', 'NO HAWKING')), light: appearanceChoice(select('Light', LIGHT_KINDS, 'tube')),
+    wall: appearanceColor(colourField('Wall', '#2d302a')), dado: appearanceColor(colourField('Dado (lower wall)', '#1c3226')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -437,12 +444,13 @@ export const landingElement = piece({
 });
 
 export const rooftopElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.rooftop', label: 'Rooftop shack village (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 360, 60, 2000, 1, 'units'), shacks: num('Shacks', 3, 0, 10), antennas: num('Antennas', 10, 0, 40), tanks: num('Water tanks', 2, 0, 6),
-    hut: num('Stair head from the left', 228, 0, 2000, 1, 'units'), hutWidth: num('Stair head width (0: none)', 132, 0, 400, 1, 'units'),
-    laundry: bool('Washing lines', true), plants: bool('Plants in foam boxes', true), coop: bool('Pigeon coop', true), dish: bool('Satellite dish', true),
-    bulbs: bool('String of bulbs', true), tarp: colourField('Tarp colour', '#2a5a8a'), lit: num('Shacks with a light', 0.7, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 360, 60, 2000, 1, 'units')), shacks: generationCount(num('Shacks', 3, 0, 10)), antennas: generationCount(num('Antennas', 10, 0, 40)), tanks: generationCount(num('Water tanks', 2, 0, 6)),
+    hut: shapePosition(num('Stair head from the left', 228, 0, 2000, 1, 'units')), hutWidth: shapeLength(num('Stair head width (0: none)', 132, 0, 400, 1, 'units')),
+    laundry: appearanceBoolean(bool('Washing lines', true)), plants: appearanceBoolean(bool('Plants in foam boxes', true)), coop: appearanceBoolean(bool('Pigeon coop', true)), dish: appearanceBoolean(bool('Satellite dish', true)),
+    bulbs: appearanceBoolean(bool('String of bulbs', true)), tarp: appearanceColor(colourField('Tarp colour', '#2a5a8a')), lit: appearanceRatio(num('Shacks with a light', 0.7, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 120 }),
   bounds: p => ({ x: 0, h: 120, w: Number(p.width), tall: 124 }),
@@ -527,15 +535,16 @@ export const rooftopElement = piece({
 // ---------------------------------------------------------------- the wet market hall
 
 export const hallShellElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.hall-shell', label: 'Market hall from inside: walls, arched roof, glazing (Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 1200, 200, 4000, 1, 'units'), spring: num('Walls up to (arch springs at)', 190, 60, 400, 1, 'units'), rise: num('Arch rise', 170, 40, 400, 1, 'units'),
-    bay: num('Columns every', 150, 40, 600, 1, 'units'), steel: colourField('Painted steel', '#2f6f62'), wall: colourField('Wall', '#151b19'), tiles: colourField('Tiles (lower wall)', '#2a302d'),
-    glass: colourField('Glazing tint', '#9fc8bf'), rings: num('Rings in the fan of glazing', 3, 0, 6), mullions: num('Ribs in the fan of glazing', 18, 4, 60),
-    broken: num('Panes patched or missing', 0.12, 0, 1, 0.01), shafts: num('Light shafts by day', 0.8, 0, 1, 0.05), lamps: num('Hanging lamps', 7, 0, 40), lampDrop: num('Lamps hang down to', 168, 40, 500, 1, 'units'),
-    fans: bool('Fans on the columns', true), entrance: select('Way in (strip curtain)', ['left', 'right', 'both', 'none'], 'left'),
-    banner: text('Board under the tie (empty: none)', 'COOKED FOOD CENTRE · UPSTAIRS'), bannerFrom: num('Board centre from the left', 450, 0, 4000, 1, 'units'),
-    notice: text('Notice on the wall (empty: none)', 'NO SPITTING · NO SMOKING'), noticeFrom: num('Notice centre from the left', 330, 0, 4000, 1, 'units'), noticeAt: num('Notice height', 120, 0, 400, 1, 'units'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1200, 200, 4000, 1, 'units')), spring: shapeLength(num('Walls up to (arch springs at)', 190, 60, 400, 1, 'units')), rise: shapeLength(num('Arch rise', 170, 40, 400, 1, 'units')),
+    bay: shapePosition(num('Columns every', 150, 40, 600, 1, 'units')), steel: appearanceColor(colourField('Painted steel', '#2f6f62')), wall: appearanceColor(colourField('Wall', '#151b19')), tiles: appearanceColor(colourField('Tiles (lower wall)', '#2a302d')),
+    glass: appearanceColor(colourField('Glazing tint', '#9fc8bf')), rings: shapeLength(num('Rings in the fan of glazing', 3, 0, 6)), mullions: generationCount(num('Ribs in the fan of glazing', 18, 4, 60)),
+    broken: appearanceRatio(num('Panes patched or missing', 0.12, 0, 1, 0.01)), shafts: appearanceRatio(num('Light shafts by day', 0.8, 0, 1, 0.05)), lamps: generationCount(num('Hanging lamps', 7, 0, 40)), lampDrop: shapePosition(num('Lamps hang down to', 168, 40, 500, 1, 'units')),
+    fans: appearanceBoolean(bool('Fans on the columns', true)), entrance: appearanceChoice(select('Way in (strip curtain)', ['left', 'right', 'both', 'none'], 'left')),
+    banner: appearanceText(text('Board under the tie (empty: none)', 'COOKED FOOD CENTRE · UPSTAIRS')), bannerFrom: shapePosition(num('Board centre from the left', 450, 0, 4000, 1, 'units')),
+    notice: appearanceText(text('Notice on the wall (empty: none)', 'NO SPITTING · NO SMOKING')), noticeFrom: shapePosition(num('Notice centre from the left', 330, 0, 4000, 1, 'units')), noticeAt: shapeLength(num('Notice height', 120, 0, 400, 1, 'units')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.spring) + Number(p.rise) + 10 }),
   bounds: p => ({ x: 0, h: Number(p.spring) + Number(p.rise) + 10, w: Number(p.width), tall: Number(p.spring) + Number(p.rise) + 10 }),
@@ -635,11 +644,12 @@ const LAMP_COL: Record<string, string> = { red: '255,70,70', warm: '255,210,140'
 const CANOPIES = ['200,40,40', '40,90,200', '230,180,40', '40,150,90', '220,90,160'];
 
 export const marketStallElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.market-stall', label: 'Wet market stall (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 76, 36, 240, 1, 'units'), kind: select('Sells', HALL_STALLS), lamp: select('Lamp colour', ['auto', 'red', 'warm', 'cold', 'green']),
-    sign: text('Name board (empty: what it sells, - for none)', ''), number: text('Stall number (empty: none)', 'A12'), neon: bool('Name in neon', false),
-    canopy: bool('Plastic canopy', true), canopyColour: colour('Canopy colour'), prices: num('Price cards', 3, 0, 10), wet: bool('Hose and puddle', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 76, 36, 240, 1, 'units')), kind: appearanceChoice(select('Sells', HALL_STALLS)), lamp: appearanceChoice(select('Lamp colour', ['auto', 'red', 'warm', 'cold', 'green'])),
+    sign: appearanceText(text('Name board (empty: what it sells, - for none)', '')), number: appearanceText(text('Stall number (empty: none)', 'A12')), neon: appearanceBoolean(bool('Name in neon', false)),
+    canopy: appearanceBoolean(bool('Plastic canopy', true)), canopyColour: appearanceStructure(colour('Canopy colour')), prices: generationCount(num('Price cards', 3, 0, 10)), wet: appearanceBoolean(bool('Hose and puddle', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 92 }),
   bounds: p => ({ x: -6, h: 92, w: Number(p.width) + 12, tall: 96 }),
@@ -747,10 +757,11 @@ export const marketStallElement = piece({
 });
 
 export const wetFloorElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.wet-floor', label: 'Wet market floor: tiles, puddles, drains (kit, Neon Market)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 1200, 20, 10000, 1, 'units'), depth: num('Depth (down to the frame)', 80, 10, 400, 1, 'units'), tiles: colourField('Tiles', '#18201d'),
-    wet: num('Wet (puddles)', 0.8, 0, 1, 0.05), drains: num('Drain every', 140, 30, 800, 1, 'units'), hoses: num('Hoses', 3, 0, 20), edge: colourField('Lit edge', '#3fa88f'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1200, 20, 10000, 1, 'units')), depth: shapeLength(num('Depth (down to the frame)', 80, 10, 400, 1, 'units')), tiles: appearanceColor(colourField('Tiles', '#18201d')),
+    wet: appearanceRatio(num('Wet (puddles)', 0.8, 0, 1, 0.05)), drains: shapeLength(num('Drain every', 140, 30, 800, 1, 'units')), hoses: generationCount(num('Hoses', 3, 0, 20)), edge: appearanceColor(colourField('Lit edge', '#3fa88f')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 4 }),
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.depth) }),
@@ -780,12 +791,13 @@ export const wetFloorElement = piece({
 });
 
 export const cookedFoodElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.cooked-food', label: 'Cooked-food centre: kitchens and menus (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 560, 80, 3000, 1, 'units'), height: num('Wall height', 88, 50, 300, 1, 'units'), kitchens: num('Kitchens', 3, 0, 10),
-    names: text('Kitchen names (comma between)', 'WING KEE,GOLDEN BOWL,LUCKY 8'), menu: num('Menu strips per kitchen', 6, 0, 14), roast: bool('Roast meats in the first window', true),
-    steam: num('Steam', 0.8, 0, 1, 0.05), tv: bool('TV on a bracket (the races)', true), clock: bool('Wall clock', true), fridge: bool('Drinks fridge', true),
-    notice: text('Notice (empty: none)', 'NO OUTSIDE FOOD'), tiles: colourField('Wall tiles', '#22302b'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 560, 80, 3000, 1, 'units')), height: shapeLength(num('Wall height', 88, 50, 300, 1, 'units')), kitchens: generationCount(num('Kitchens', 3, 0, 10)),
+    names: appearanceText(text('Kitchen names (comma between)', 'WING KEE,GOLDEN BOWL,LUCKY 8')), menu: generationCount(num('Menu strips per kitchen', 6, 0, 14)), roast: appearanceBoolean(bool('Roast meats in the first window', true)),
+    steam: appearanceRatio(num('Steam', 0.8, 0, 1, 0.05)), tv: appearanceBoolean(bool('TV on a bracket (the races)', true)), clock: semantic(bool('Wall clock', true),{"group":"Motion","quantity":"boolean","unit":"boolean"}), fridge: appearanceBoolean(bool('Drinks fridge', true)),
+    notice: appearanceText(text('Notice (empty: none)', 'NO OUTSIDE FOOD')), tiles: appearanceColor(colourField('Wall tiles', '#22302b')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -836,10 +848,11 @@ export const cookedFoodElement = piece({
 });
 
 export const roundTableElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.round-table', label: 'Round table with stools (kit, Neon Market)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 44, 20, 120, 1, 'units'), stools: num('Stools', 4, 0, 8), stoolColour: select('Stool colour', ['red', 'blue', 'mixed']),
-    top: colourField('Table top', '#d8cfb8'), dishes: num('Dishes on the table', 0.7, 0, 1, 0.05), bottles: bool('Beer bottles', true), steam: bool('Steam from the bowls', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 44, 20, 120, 1, 'units')), stools: generationCount(num('Stools', 4, 0, 8)), stoolColour: appearanceChoice(select('Stool colour', ['red', 'blue', 'mixed'])),
+    top: appearanceColor(colourField('Table top', '#d8cfb8')), dishes: appearanceRatio(num('Dishes on the table', 0.7, 0, 1, 0.05)), bottles: appearanceBoolean(bool('Beer bottles', true)), steam: appearanceBoolean(bool('Steam from the bowls', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width) + 30, tall: 40 }),
   bounds: p => ({ x: -15, h: 40, w: Number(p.width) + 30, tall: 40 }),
@@ -865,16 +878,17 @@ export const roundTableElement = piece({
 });
 
 export const railingElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.railing', label: 'Gallery railing (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 10, 4000, 1, 'units'), height: num('Height', 32, 12, 80, 1, 'units'), style: select('Style', ['pipe', 'mesh', 'bars']),
-    posts: num('Posts every', 40, 10, 400, 1, 'units'), kick: bool('Kick plate at the foot', true), colour: colourField('Paint', '#3f7a6c'),
+    width: shapeLength(num('Width', 300, 10, 4000, 1, 'units')), height: shapeLength(num('Height', 32, 12, 80, 1, 'units')), style: appearanceChoice(select('Style', ['pipe', 'mesh', 'bars'])),
+    posts: semantic(num('Posts every', 40, 10, 400, 1, 'units'),{"group":"Generation","quantity":"length","unit":"world units","space":"local"}), kick: appearanceBoolean(bool('Kick plate at the foot', true)), paintColor: appearanceColor(colourField('Paint', '#3f7a6c')),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
   paint(x, p, o) {
-    const w = Number(p.width), h = Number(p.height), c = rgbField(p.colour, '63,122,108'), style = String(p.style);
+    const w = Number(p.width), h = Number(p.height), c = rgbField(p.paintColor, '63,122,108'), style = String(p.style);
     for (let k = 0; k <= w; k += Number(p.posts)) R(x, Math.min(k, w - 2), 0, 2, h, rgba(c, 1));
     R(x, 0, h - 2, w, 2, rgba(c, 1)); R(x, 0, h, w, 1, 'rgba(255,200,140,.3)');
     if (style === 'pipe') R(x, 0, Math.round(h / 2), w, 1, rgba(c, 0.95));
@@ -886,11 +900,12 @@ export const railingElement = piece({
 });
 
 export const officeWindowElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.office-window', label: 'Manager’s office window on stilts (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 120, 50, 400, 1, 'units'), height: num('Height', 50, 30, 140, 1, 'units'), stilts: num('Stands this high on its stilts', 110, 0, 400, 1, 'units'),
-    ladder: bool('Steel stair down', true), blinds: num('Blinds down', 0.45, 0, 1, 0.05), monitors: num('CCTV monitors', 3, 0, 8), clock: bool('Clock and calendar', true),
-    sign: text('Sign (empty: none)', 'MANAGEMENT OFFICE'), lit: num('Lights on', 1, 0, 1, 0.05), panel: colourField('Panels', '#24302c'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 120, 50, 400, 1, 'units')), height: shapeLength(num('Height', 50, 30, 140, 1, 'units')), stilts: shapeLength(num('Stands this high on its stilts', 110, 0, 400, 1, 'units')),
+    ladder: appearanceBoolean(bool('Steel stair down', true)), blinds: appearanceRatio(num('Blinds down', 0.45, 0, 1, 0.05)), monitors: generationCount(num('CCTV monitors', 3, 0, 8)), clock: semantic(bool('Clock and calendar', true),{"group":"Motion","quantity":"boolean","unit":"boolean"}),
+    sign: appearanceText(text('Sign (empty: none)', 'MANAGEMENT OFFICE')), lit: appearanceRatio(num('Lights on', 1, 0, 1, 0.05)), panel: appearanceColor(colourField('Panels', '#24302c')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width) + 20, tall: Number(p.stilts) + Number(p.height) + 16 }),
   bounds: p => ({ x: -20, h: Number(p.stilts) + Number(p.height) + 16, w: Number(p.width) + 24, tall: Number(p.stilts) + Number(p.height) + 16 }),
@@ -929,17 +944,18 @@ export const officeWindowElement = piece({
 // ---------------------------------------------------------------- the hall's basement and top floor
 
 export const coldStoreElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.cold-store', label: 'Cold store doors (kit, market basement)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 240, 60, 1000, 1, 'units'), height: num('Height', 90, 50, 200, 1, 'units'), doors: num('Doors', 2, 1, 6), open: num('Door standing open (0: none)', 1, 0, 6),
-    frost: num('Frost', 0.6, 0, 1, 0.05), hanging: bool('Carcasses hanging inside', true), reading: text('Temperature display', '-18'), sign: text('Sign (empty: none)', 'COLD STORE · KEEP SHUT'),
-    panel: colourField('Insulated panels', '#2a3338'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 240, 60, 1000, 1, 'units')), height: shapeLength(num('Height', 90, 50, 200, 1, 'units')), doors: generationCount(num('Doors', 2, 1, 6)), openDoorIndex: semantic(num('Door standing open (0: none)', 1, 0, 6),{"group":"Appearance","quantity":"index","unit":"integer"}),
+    frost: appearanceRatio(num('Frost', 0.6, 0, 1, 0.05)), hanging: appearanceBoolean(bool('Carcasses hanging inside', true)), reading: appearanceText(text('Temperature display', '-18')), sign: appearanceText(text('Sign (empty: none)', 'COLD STORE · KEEP SHUT')),
+    panel: appearanceColor(colourField('Insulated panels', '#2a3338')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   paint(x, p, o) {
-    const w = Number(p.width), H = Number(p.height), n = Number(p.doors), open = Number(p.open), seed = Number(p.seed), t = o.t, frost = Number(p.frost);
+    const w = Number(p.width), H = Number(p.height), n = Number(p.doors), open = Number(p.openDoorIndex), seed = Number(p.seed), t = o.t, frost = Number(p.frost);
     R(x, 0, 0, w, H - 4, hexOr(p.panel, '#2a3338')); for (let k = 0; k < w; k += 24) R(x, k, 0, 1, H - 4, 'rgba(0,0,0,.35)'); R(x, 0, H - 6, w, 2, 'rgba(255,255,255,.08)');
     const dw = Math.min(46, Math.floor((w - 10) / n) - 10), gap = (w - n * dw) / (n + 1), dh = Math.min(64, H - 26);
     for (let i = 0; i < n; i++) {
@@ -969,11 +985,12 @@ export const coldStoreElement = piece({
 });
 
 export const loadingBayElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.loading-bay', label: 'Loading bay with its ramp (kit, market basement)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 80, 1200, 1, 'units'), height: num('Height', 90, 50, 200, 1, 'units'), door: num('Roller door raised', 0.8, 0, 1, 0.05),
-    outside: select('Light up the ramp', ['sodium', 'neon', 'none']), pallets: num('Pallets of boxes', 3, 0, 8), trolley: bool('Hand trolley', true),
-    hazard: bool('Hazard stripes on the dock', true), sign: text('Sign (empty: none)', 'LOADING BAY · NO PARKING'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 300, 80, 1200, 1, 'units')), height: shapeLength(num('Height', 90, 50, 200, 1, 'units')), door: appearanceRatio(num('Roller door raised', 0.8, 0, 1, 0.05)),
+    outside: appearanceChoice(select('Light up the ramp', ['sodium', 'neon', 'none'])), pallets: generationCount(num('Pallets of boxes', 3, 0, 8)), trolley: appearanceBoolean(bool('Hand trolley', true)),
+    hazard: appearanceBoolean(bool('Hazard stripes on the dock', true)), sign: appearanceText(text('Sign (empty: none)', 'LOADING BAY · NO PARKING')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -1006,11 +1023,12 @@ export const loadingBayElement = piece({
 });
 
 export const pumpRoomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.pump-room', label: 'Fish-tank pump room (kit, market basement)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 200, 60, 800, 1, 'units'), height: num('Height', 90, 50, 200, 1, 'units'), tanks: num('Header tanks', 2, 0, 6), pumps: num('Pumps', 3, 0, 8),
-    pipes: num('Pipe runs', 4, 0, 10), gauges: bool('Gauges', true), leak: bool('A leak', true), light: select('Light', LIGHT_KINDS, 'flicker'),
-    sign: text('Sign (empty: none)', 'SEAWATER PUMPS · STAFF ONLY'), pipe: colourField('Pipe paint', '#2f6a74'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 200, 60, 800, 1, 'units')), height: shapeLength(num('Height', 90, 50, 200, 1, 'units')), tanks: generationCount(num('Header tanks', 2, 0, 6)), pumps: generationCount(num('Pumps', 3, 0, 8)),
+    pipes: generationCount(num('Pipe runs', 4, 0, 10)), gauges: appearanceBoolean(bool('Gauges', true)), leak: appearanceBoolean(bool('A leak', true)), light: appearanceChoice(select('Light', LIGHT_KINDS, 'flicker')),
+    sign: appearanceText(text('Sign (empty: none)', 'SEAWATER PUMPS · STAFF ONLY')), pipe: appearanceColor(colourField('Pipe paint', '#2f6a74')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -1045,11 +1063,12 @@ export const pumpRoomElement = piece({
 });
 
 export const tunnelDoorElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.tunnel-door', label: 'Way into the tunnels: an arch with a gate (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 110, 40, 400, 1, 'units'), height: num('Height', 90, 40, 200, 1, 'units'), gate: select('Gate', ['shut', 'ajar', 'open'], 'ajar'),
-    glow: colourField('Light deep inside', '#5a8a6a'), graffiti: bool('Tags on the wall', true), drip: bool('Water dripping', true),
-    sign: text('Sign (empty: none)', 'FLOOD CHANNEL · NO ENTRY'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 110, 40, 400, 1, 'units')), height: shapeLength(num('Height', 90, 40, 200, 1, 'units')), gate: appearanceChoice(select('Gate', ['shut', 'ajar', 'open'], 'ajar')),
+    glow: appearanceColor(colourField('Light deep inside', '#5a8a6a')), graffiti: appearanceBoolean(bool('Tags on the wall', true)), drip: appearanceBoolean(bool('Water dripping', true)),
+    sign: appearanceText(text('Sign (empty: none)', 'FLOOD CHANNEL · NO ENTRY')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -1078,12 +1097,13 @@ export const tunnelDoorElement = piece({
 });
 
 export const marketOfficesElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.market-offices', label: 'Market management floor: counters, files, storage (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 500, 80, 3000, 1, 'units'), height: num('Wall height', 88, 50, 300, 1, 'units'), counters: num('Service windows', 2, 0, 6),
-    label: text('Over the windows', 'LICENSING · STALL FEES'), ticket: bool('Queue number display', true), filing: num('Filing cabinets', 4, 0, 12),
-    storage: bool('Storage cage of crates and baskets', true), board: bool('Notice board', true), light: select('Light', LIGHT_KINDS, 'tube'),
-    wall: colourField('Wall', '#2a2f2e'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 500, 80, 3000, 1, 'units')), height: shapeLength(num('Wall height', 88, 50, 300, 1, 'units')), counters: generationCount(num('Service windows', 2, 0, 6)),
+    label: appearanceText(text('Over the windows', 'LICENSING · STALL FEES')), ticket: appearanceBoolean(bool('Queue number display', true)), filing: generationCount(num('Filing cabinets', 4, 0, 12)),
+    storage: appearanceBoolean(bool('Storage cage of crates and baskets', true)), board: appearanceBoolean(bool('Notice board', true)), light: appearanceChoice(select('Light', LIGHT_KINDS, 'tube')),
+    wall: appearanceColor(colourField('Wall', '#2a2f2e')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),

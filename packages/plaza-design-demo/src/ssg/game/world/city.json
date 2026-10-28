@@ -217,7 +217,8 @@
       "at": "harbor",
       "scenes": [
         "beach"
-      ]
+      ],
+      "climate": "beach"
     },
     {
       "id": "line0",
@@ -1099,6 +1100,117 @@
         "id": "market"
       },
       "reason": "THE MARKET GATE IS SHUT"
+    }
+  },
+  "CLIMATES": {
+    "downtown": {
+      "name": "DOWNTOWN",
+      "weights": {
+        "rain": 4,
+        "cloudy": 3,
+        "clear": 2,
+        "storm": 1,
+        "fog": 1,
+        "smog": 1
+      },
+      "seed": 1
+    },
+    "market": {
+      "name": "NEON MARKET",
+      "weights": {
+        "smog": 3,
+        "rain": 3,
+        "cloudy": 2,
+        "clear": 1,
+        "storm": 0.5,
+        "fog": 0.5
+      },
+      "seed": 2
+    },
+    "galleria": {
+      "name": "GALLERIA",
+      "weights": {
+        "cloudy": 3,
+        "rain": 2,
+        "clear": 2,
+        "smog": 1
+      },
+      "roof": "UNDER ROOF. CLIMATE CONTROLLED. 21 °C.",
+      "seed": 3
+    },
+    "harbor": {
+      "name": "HARBOR",
+      "weights": {
+        "fog": 4,
+        "cloudy": 2,
+        "rain": 2,
+        "clear": 2,
+        "storm": 0.6
+      },
+      "seed": 4
+    },
+    "beach": {
+      "name": "BEACH",
+      "weights": {
+        "clear": 4,
+        "heat": 5,
+        "cloudy": 2,
+        "fog": 1,
+        "rain": 1,
+        "storm": 0.5
+      },
+      "seed": 5
+    },
+    "spire": {
+      "name": "THE SPIRE",
+      "weights": {
+        "clear": 1
+      },
+      "fixed": "clear",
+      "note": "CLEAR. ABOVE THE WEATHER.",
+      "seed": 6
+    },
+    "undercity": {
+      "name": "UNDERCITY",
+      "weights": {
+        "rain": 1
+      },
+      "fixed": "rain",
+      "note": "WET. DRAINAGE AT CAPACITY.",
+      "seed": 7
+    },
+    "fringe": {
+      "name": "THE FRINGE",
+      "weights": {
+        "smog": 3,
+        "heat": 2,
+        "clear": 2,
+        "cloudy": 1,
+        "rain": 0.5
+      },
+      "seed": 8
+    },
+    "oldq": {
+      "name": "OLD QUARTER",
+      "weights": {
+        "fog": 3,
+        "rain": 3,
+        "cloudy": 3,
+        "clear": 1,
+        "storm": 0.5
+      },
+      "seed": 9
+    },
+    "skyport": {
+      "name": "SKYPORT",
+      "weights": {
+        "clear": 3,
+        "heat": 3,
+        "smog": 1,
+        "cloudy": 1,
+        "storm": 0.5
+      },
+      "seed": 10
     }
   }
 }

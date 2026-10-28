@@ -97,7 +97,7 @@
         "glow": "#5a8a6a",
         "graffiti": true,
         "drip": true,
-        "sign": "FLOOD CHANNEL \u00b7 NO ENTRY",
+        "sign": "FLOOD CHANNEL · NO ENTRY",
         "seed": 3
       },
       "placement": {
@@ -114,13 +114,13 @@
         "width": 250,
         "height": 90,
         "doors": 3,
-        "open": 2,
         "frost": 0.6,
         "hanging": true,
         "reading": "-18",
-        "sign": "COLD STORE \u00b7 KEEP SHUT",
+        "sign": "COLD STORE · KEEP SHUT",
         "panel": "#2a3338",
-        "seed": 4
+        "seed": 4,
+        "openDoorIndex": 2
       },
       "placement": {
         "x": 310,
@@ -141,7 +141,7 @@
         "gauges": true,
         "leak": true,
         "light": "flicker",
-        "sign": "SEAWATER PUMPS \u00b7 STAFF ONLY",
+        "sign": "SEAWATER PUMPS · STAFF ONLY",
         "pipe": "#2f6a74",
         "seed": 5
       },
@@ -163,7 +163,7 @@
         "pallets": 3,
         "trolley": true,
         "hazard": true,
-        "sign": "LOADING BAY \u00b7 NO PARKING",
+        "sign": "LOADING BAY · NO PARKING",
         "seed": 6
       },
       "placement": {
@@ -193,9 +193,9 @@
         "lampDrop": 480,
         "fans": true,
         "entrance": "left",
-        "banner": "COOKED FOOD 2/F \u00b7 DRY GOODS 1/F \u00b7 OFFICE 3/F",
+        "banner": "COOKED FOOD 2/F · DRY GOODS 1/F · OFFICE 3/F",
         "bannerFrom": 640,
-        "notice": "NO SPITTING \u00b7 NO SMOKING",
+        "notice": "NO SPITTING · NO SMOKING",
         "noticeFrom": 820,
         "noticeAt": 130,
         "seed": 7
@@ -363,7 +363,7 @@
         "width": 70,
         "kind": "meat",
         "lamp": "auto",
-        "sign": "BEEF \u00b7 PORK",
+        "sign": "BEEF · PORK",
         "number": "A6",
         "neon": false,
         "canopy": true,
@@ -669,7 +669,7 @@
         "width": 76,
         "kind": "dried",
         "lamp": "auto",
-        "sign": "BIRD'S NEST \u00b7 ABALONE",
+        "sign": "BIRD'S NEST · ABALONE",
         "number": "M4",
         "neon": true,
         "canopy": true,
@@ -715,7 +715,7 @@
         "width": 80,
         "kind": "rice",
         "lamp": "auto",
-        "sign": "RICE \u00b7 NOODLES",
+        "sign": "RICE · NOODLES",
         "number": "M6",
         "neon": false,
         "canopy": true,
@@ -927,7 +927,7 @@
         "width": 510,
         "height": 90,
         "counters": 3,
-        "label": "LICENSING \u00b7 STALL FEES",
+        "label": "LICENSING · STALL FEES",
         "ticket": true,
         "filing": 5,
         "storage": true,
@@ -952,7 +952,7 @@
         "style": "bars",
         "posts": 40,
         "kick": true,
-        "colour": "#3f7a6c"
+        "paintColor": "#3f7a6c"
       },
       "placement": {
         "x": 10,
@@ -970,7 +970,7 @@
         "style": "bars",
         "posts": 40,
         "kick": true,
-        "colour": "#3f7a6c"
+        "paintColor": "#3f7a6c"
       },
       "placement": {
         "x": 640,
@@ -988,7 +988,7 @@
         "style": "mesh",
         "posts": 40,
         "kick": true,
-        "colour": "#3f7a6c"
+        "paintColor": "#3f7a6c"
       },
       "placement": {
         "x": 10,
@@ -1018,7 +1018,7 @@
         "run": 120,
         "rise": 100,
         "direction": "up",
-        "speed": 0.6
+        "speed": 36
       },
       "placement": {
         "x": 380,
@@ -1034,7 +1034,7 @@
         "run": 120,
         "rise": 100,
         "direction": "down",
-        "speed": 0.6
+        "speed": 36
       },
       "placement": {
         "x": 300,
@@ -1050,7 +1050,7 @@
         "run": 210,
         "rise": 100,
         "direction": "down",
-        "speed": 0.6
+        "speed": 36
       },
       "placement": {
         "x": 400,
@@ -1066,7 +1066,7 @@
         "run": 210,
         "rise": 100,
         "direction": "up",
-        "speed": 0.6
+        "speed": 36
       },
       "placement": {
         "x": 430,
@@ -1109,11 +1109,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3037,
         "act": "walk",
-        "range": 240
+        "range": 240,
+        "depthBand": "play"
       },
       "placement": {
         "x": 840,
@@ -1127,10 +1127,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3074,
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 420,
@@ -1144,10 +1144,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3111,
-        "act": "lean"
+        "act": "lean",
+        "depthBand": "play"
       },
       "placement": {
         "x": 650,
@@ -1161,11 +1161,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3148,
         "act": "wait",
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 96,
@@ -1179,8 +1179,8 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "play",
-        "act": "carry"
+        "act": "carry",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1100,
@@ -1194,8 +1194,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 140,
@@ -1209,11 +1209,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3185,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 74,
@@ -1227,11 +1227,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3222,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 226,
@@ -1245,11 +1245,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3259,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 304,
@@ -1263,11 +1263,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3296,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 392,
@@ -1281,11 +1281,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3333,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 466,
@@ -1299,11 +1299,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3370,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 546,
@@ -1317,11 +1317,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3407,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 628,
@@ -1335,11 +1335,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3444,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 712,
@@ -1353,11 +1353,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3481,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 796,
@@ -1371,11 +1371,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3518,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 964,
@@ -1389,10 +1389,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3555,
-        "act": "haggle"
+        "act": "haggle",
+        "depthBand": "play"
       },
       "placement": {
         "x": 246,
@@ -1406,11 +1406,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3592,
         "act": "haggle",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 410,
@@ -1424,10 +1424,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3629,
-        "act": "haggle"
+        "act": "haggle",
+        "depthBand": "play"
       },
       "placement": {
         "x": 650,
@@ -1441,10 +1441,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3666,
-        "act": "queue"
+        "act": "queue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 818,
@@ -1458,10 +1458,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3703,
-        "act": "queue"
+        "act": "queue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 838,
@@ -1475,11 +1475,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3740,
         "act": "queue",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 858,
@@ -1493,11 +1493,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3777,
         "act": "walk",
-        "range": 420
+        "range": 420,
+        "depthBand": "play"
       },
       "placement": {
         "x": 150,
@@ -1511,11 +1511,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3814,
         "act": "walk",
-        "range": -520
+        "range": -520,
+        "depthBand": "play"
       },
       "placement": {
         "x": 900,
@@ -1529,12 +1529,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3851,
         "act": "walk",
         "range": 220,
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 330,
@@ -1548,11 +1548,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3888,
         "act": "steal",
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1040,
@@ -1566,10 +1566,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3925,
-        "act": "sweep"
+        "act": "sweep",
+        "depthBand": "play"
       },
       "placement": {
         "x": 700,
@@ -1583,11 +1583,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3962,
         "act": "lean",
-        "archetype": "fixer"
+        "archetype": "fixer",
+        "depthBand": "play"
       },
       "placement": {
         "x": 160,
@@ -1601,8 +1601,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 258,
@@ -1616,8 +1616,8 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "play",
-        "act": "carry"
+        "act": "carry",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1124,
@@ -1631,11 +1631,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 3999,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 56,
@@ -1649,11 +1649,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4036,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 140,
@@ -1667,11 +1667,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4073,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 226,
@@ -1685,11 +1685,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4110,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 310,
@@ -1703,11 +1703,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4147,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 390,
@@ -1721,11 +1721,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4184,
         "act": "vend",
-        "archetype": "vendor"
+        "archetype": "vendor",
+        "depthBand": "play"
       },
       "placement": {
         "x": 470,
@@ -1739,11 +1739,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4221,
         "act": "haggle",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 160,
@@ -1757,10 +1757,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4258,
-        "act": "haggle"
+        "act": "haggle",
+        "depthBand": "play"
       },
       "placement": {
         "x": 330,
@@ -1774,11 +1774,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4295,
         "act": "walk",
-        "range": 300
+        "range": 300,
+        "depthBand": "play"
       },
       "placement": {
         "x": 40,
@@ -1792,10 +1792,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4332,
-        "act": "phone"
+        "act": "phone",
+        "depthBand": "play"
       },
       "placement": {
         "x": 520,
@@ -1809,11 +1809,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4369,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 664,
@@ -1827,11 +1827,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4406,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 716,
@@ -1845,11 +1845,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4443,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 756,
@@ -1863,11 +1863,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4480,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 808,
@@ -1881,11 +1881,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4517,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 848,
@@ -1899,11 +1899,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4554,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 940,
@@ -1917,11 +1917,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4591,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 992,
@@ -1935,11 +1935,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4628,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1032,
@@ -1953,11 +1953,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4665,
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1084,
@@ -1971,8 +1971,8 @@
       "type": "character.resident",
       "props": {
         "kind": "waiter",
-        "depth": "play",
-        "act": "serve"
+        "act": "serve",
+        "depthBand": "play"
       },
       "placement": {
         "x": 900,
@@ -1986,10 +1986,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4702,
-        "act": "queue"
+        "act": "queue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1110,
@@ -2003,10 +2003,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4739,
-        "act": "queue"
+        "act": "queue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1130,
@@ -2020,10 +2020,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4776,
-        "act": "queue"
+        "act": "queue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 120,
@@ -2037,11 +2037,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4813,
         "act": "queue",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 140,
@@ -2055,10 +2055,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4850,
-        "act": "queue"
+        "act": "queue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 160,
@@ -2072,11 +2072,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4887,
         "act": "stand",
-        "archetype": "inspector"
+        "archetype": "inspector",
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -2090,11 +2090,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "market",
         "seed": 4924,
         "act": "read",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 420,
@@ -2120,7 +2120,7 @@
       "props": {
         "width": 1200,
         "building": "",
-        "label": "B1 \u00b7 Service"
+        "label": "B1 · Service"
       },
       "placement": {
         "x": 0,
@@ -2150,7 +2150,7 @@
       "props": {
         "width": 560,
         "building": "",
-        "label": "1/F \u00b7 Dry goods"
+        "label": "1/F · Dry goods"
       },
       "placement": {
         "x": 0,
@@ -2165,7 +2165,7 @@
       "props": {
         "width": 600,
         "building": "",
-        "label": "2/F \u00b7 Cooked food"
+        "label": "2/F · Cooked food"
       },
       "placement": {
         "x": 600,
@@ -2180,7 +2180,7 @@
       "props": {
         "width": 520,
         "building": "",
-        "label": "3/F \u00b7 Office"
+        "label": "3/F · Office"
       },
       "placement": {
         "x": 0,

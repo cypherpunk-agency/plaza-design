@@ -1,15 +1,22 @@
+import {appearanceColor} from '../core/fields';
+import {rectangleControls,axisControl,translatedControls} from '../core/spatial';
+import {stallBox} from './construction';
+import {fixedGeometry} from '../core/spatial';
+import {textField} from '../core/fields';
+import {numericFields} from '../core/fields';
+import {appearanceText,semantic,shapeLength} from '../core/fields';
 /** Harbor pieces use authored geometry and immutable controller snapshots. */
 import type { AssetDefinition,Field,Properties,Value } from '../core/composition';
 import type { View } from '../core/view';
-import { container } from '../props/containers';
+import { container,CH } from '../props/containers';
 import { onScreen } from '../core/primitives';
 import { validatePreparedCharacter } from '../characters/prepared';
 import type { PreparedCharacter } from '../../runtime/characters';
 import { createHarborPierArtwork,type HarborLayout,type HarborVisual } from './harbor-pier';
 import {applyHarborMetadata} from './harbor-metadata';
-import {harborFields,harborHutFields,harborHutSize} from './harbor-fields';
-const num=(label:string,value=0):Field=>({kind:'number',label,default:value,min:-1e12,max:1e12,step:1});
-const str=(label:string,value=''):Field=>({kind:'string',label,default:value});
+import {harborFields,harborHutFields} from './harbor-fields';
+const num=numericFields({value:0,min:-1e12,max:1e12,step:1});
+const str=textField;
 const dimension=(label:string):Field=>({...num(label),min:0,max:10000,unit:'world units'});
 const nil={visible:false,character:{x:0}};
 const validateTree=(v:Value,path='snapshot'):void=>{if(v===null||typeof v==='string'||typeof v==='boolean'||typeof v==='number'&&Number.isFinite(v))return;if(typeof v!=='object')throw new Error(path+': invalid value');for(const[k,q]of Object.entries(v))validateTree(q,path+'.'+k);};
@@ -24,7 +31,7 @@ type Method=keyof ReturnType<typeof createHarborPierArtwork>;
 function root(method:Method,L:HarborLayout,p:Properties):{x:number;h:number}{const ci=Number(p.index);if(method.startsWith('crane'))return{x:L.cranes[ci].x+(method==='craneLoad'?-64:0),h:method==='craneLoad'?-58:0};const names:Partial<Record<Method,keyof HarborLayout>>={noticePost:'notice',metroDoor:'metro',podium:'podium',manifest:'manifest',callBox:'callBox',denInside:'den',denTable:'den',denDoors:'den',denLamp:'den',drawTerminalGate:'terminal',berthSign:'berth',taxi:'taxi',ferryNotice:'ferry',rails:'rails',beacon:'beacon'};if(method.startsWith('arch'))return{x:L.arch.x0,h:0};const key=names[method];if(key)return{x:Number(L[key]),h:0};if(method.startsWith('hut'))return{x:L.hut.x,h:0};if(['bondedContainers','ghostMark','bondedFence'].includes(method))return{x:L.fence.x0,h:0};return{x:0,h:0};}
 function element(type:string,label:string,method?:Method):AssetDefinition{
  const hut=method==='hutBack'||method==='hutFront',stall=method==='fishStall'||method==='teaStall';
- return{type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:hut?harborHutFields:stall?{vendorPose:pose}:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){
+ return{spatial:fixedGeometry('This pier component follows its native kernel and prepared harbor layout. Edit the linked source layout or Transform; no independent body dimensions are authored for this component.'),type:'harbor.'+type,bindingIdentity:'presentation',version:1,label,category:'harbor',coordinates:'world',fields:harborFields(type),visualFields:hut?harborHutFields:stall?{vendorPose:pose}:harborVisualFields,parts:[method==='frontBollard'?'foreground':'backdrop'],bounds:p=>({x:-80,h:Number(p.height)||150,w:Number(p.width)||160,tall:Number(p.height)||150}),anchors:()=>({origin}),draw(ctx,v,p,s,_pass,at){
  if(!method)return;
  if(method==='fishStall'||method==='teaStall'){
   const L={...blank,fish:{x:at.x,w:Number(p.width)},drinks:{x:at.x,w:Number(p.width)}};
@@ -32,7 +39,7 @@ function element(type:string,label:string,method?:Method):AssetDefinition{
   createHarborPierArtwork({L,visual,fishPose:s.vendorPose as unknown as PreparedCharacter,teaPose:s.vendorPose as unknown as PreparedCharacter,loads:[]})[method](ctx,raised);return;
  }
  if(method==='hutBack'||method==='hutFront'){
-  const size=harborHutSize(p,s),L={...blank,hut:{x:at.x,...size}},raised=at.h?{...v,gy:v.gy-at.h,y:(h:number)=>v.y(h+at.h)}:v;
+  const size={w:Number(p.width),h:Number(p.height)},L={...blank,hut:{x:at.x,...size}},raised=at.h?{...v,gy:v.gy-at.h,y:(h:number)=>v.y(h+at.h)}:v;
   createHarborPierArtwork({L,visual,fishPose:nil as unknown as PreparedCharacter,teaPose:nil as unknown as PreparedCharacter,loads:[]})[method](ctx,raised);return;
  }
  const L=s.layout as unknown as HarborLayout,vis=s.visual as unknown as HarborVisual,k=createHarborPierArtwork({L,visual:vis,fishPose:s.fishPose as unknown as PreparedCharacter,teaPose:s.teaPose as unknown as PreparedCharacter,loads:s.loads as any});let base=root(method,L,p);if(['drawLampBoat','drawFerry','drawPatrol','crates','fishingBox','portCamera','droneGull','forkliftBody','forkliftRoof'].includes(method)){const positions:Partial<Record<Method,[number,number]>>={drawLampBoat:[1650,56],drawFerry:[0,34],drawPatrol:[0,46],crates:[1112,0],fishingBox:[2112,0],portCamera:[156,136],droneGull:[1460,128],forkliftBody:[vis.forklift.x,0],forkliftRoof:[vis.forklift.x,0]};const pos=positions[method]!;base={x:pos[0],h:pos[1]};if(method.startsWith('forklift'))base.x=Number((s.forkliftOrigin as number)??0);}
@@ -40,8 +47,8 @@ function element(type:string,label:string,method?:Method):AssetDefinition{
  if(method.startsWith('crane'))(k[method] as (ctx:CanvasRenderingContext2D,v:View,ci:number)=>void)(ctx,V,Number(p.index));else if(method==='bollard'||method==='frontBollard')k[method](ctx,v,at.x);else if(method==='rod')k.rod(ctx,v,at.x,at.h,Number(p.reach));else(k[method] as (ctx:CanvasRenderingContext2D,v:View)=>void)(ctx,V);
  }};}
 const methods:Method[]=['drawLampBoat','drawPatrol','drawFerry','archChassis','archScan','archPortal','drawTerminalGate','craneFrame','craneCabBack','craneCabFront','craneCables','craneLoad','craneLight','denInside','denTable','denDoors','denLamp','bondedContainers','ghostMark','bondedFence','forkliftBody','forkliftRoof','hutBack','hutFront','fishStall','teaStall','farSky','horizon','water','flyingGulls','pierSlab','metroDoor','noticePost','podium','manifest','callBox','crates','bollard','rod','fishingBox','berthSign','taxi','ferryNotice','rails','beacon','portCamera','droneGull','nearWater','frontBollard'];
-export const harborElements:AssetDefinition[]=[...methods.map(m=>element(m,m.replace(/([A-Z])/g,' $1'),m)),{...element('container','Corrugated shipping container'),draw(ctx,v,p,s,_pass,at){const L=s.layout as unknown as HarborLayout,stack=Number(p.cullStack);if(p.cullRegion&&!s[String(p.cullRegion)+'Visible'])return;if(stack>=0){const start=(s.stackOrigins as number[])[stack];if(start!==undefined&&!onScreen(v,v.sx(start)-20,180))return;}container(ctx,v,at.x,at.h,{w:Number(p.width),h:Number(p.height),p:Number(p.paint),seed:Number(p.seed),...(p.code?{code:String(p.code)}:{}),...(p.label?{label:String(p.label)}:{})});void L;}},
- {type:'harbor.marker',version:1,label:'Harbor gameplay, light or shadow marker',category:'markers',coordinates:'world',fields:{role:str('Role'),width:dimension('Width'),height:dimension('Height'),kind:str('Light kind'),r:dimension('Radius'),color:str('Light color'),lightHeight:dimension('Window height')},parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin}),draw(){}},
+export const harborElements:AssetDefinition[]=[...methods.map(m=>element(m,m.replace(/([A-Z])/g,' $1'),m)),{...element('container','Corrugated shipping container'),draw(ctx,v,p,s,_pass,at){const L=s.layout as unknown as HarborLayout,stack=Number(p.cullStack);if(p.cullRegion&&!s[String(p.cullRegion)+'Visible'])return;if(stack>=0){const start=(s.stackOrigins as number[])[stack];if(start!==undefined&&!onScreen(v,v.sx(start)-20,180))return;}container(ctx,v,at.x,at.h,{w:Number(p.width),h:Number(p.height),p:Number(p.paletteIndex),seed:Number(p.seed),...(p.code?{code:String(p.code)}:{}),...(p.label?{label:String(p.label)}:{})});void L;}},
+ {type:'harbor.marker',version:1,label:'Harbor gameplay, light or shadow marker',category:'markers',coordinates:'world',fields:{role:semantic(str('Role'),{"group":"Appearance","quantity":"reference","unit":"identifier"}),width:shapeLength(dimension('Width')),height:shapeLength(dimension('Height')),kind:appearanceText(str('Light kind')),r:shapeLength(dimension('Radius')),color:appearanceColor(str('Light color'),"RGB"),lightHeight:shapeLength(dimension('Window height'))},parts:['backdrop'],bounds:p=>({x:0,h:Number(p.height),w:Number(p.width),tall:Number(p.height)}),anchors:()=>({origin}),draw(){}},
 ];
 applyHarborMetadata(harborElements,(method,L,p)=>root(method as Method,L,p));
 // Each of these fittings cancels its source datum before applying its own placement.
@@ -61,4 +68,29 @@ for(const e of harborElements){
  const travel=harborTravel[e.type.slice(7) as keyof typeof harborTravel];if(!travel)continue;
  e.mobility=()=>true;
  e.travelBounds=(_p,_s,c)=>{const origin=c?.placement.x??0;return{x:(origin+travel.x)/travel.depth-origin,h:travel.h,w:travel.w/travel.depth,tall:travel.tall};};
+}
+
+harborElements.find(e=>e.type==='harbor.marker')!.spatial=fixedGeometry('This non-drawing marker supplies gameplay or chunk-layout parameters. Edit its typed fields; it has no visible body to resize.');
+
+for(const e of harborElements){
+ const id=e.type.slice(7);
+ if(id==='hutBack'||id==='hutFront')e.spatial=rectangleControls({width:'width',height:'height'});
+ if(id==='container')e.spatial=rectangleControls({width:'width',height:'height'});
+ if(id==='fishStall'||id==='teaStall')e.spatial={...rectangleControls({width:'width'}),handles:p=>rectangleControls({width:'width',baseline:stallBox({x:0,w:Number(p.width),seed:id==='teaStall'?34:31}).counter}).handles(p)};
+ if(id==='rod')e.spatial=axisControl('reach','x',34,'Fishing line endpoint');
+}
+
+// Cargo dimensions and shuttle reach are authored here; prepared motion is read-only context.
+for(const e of harborElements){
+ if(e.type==='harbor.forkliftBody'){
+  e.spatial=axisControl('travel','x',0,'Shuttle route end');
+  e.drawingNote=()=>"Travel distance defines the forklift's shuttle route from its authored origin; it does not resize the vehicle.";
+ }
+ if(e.type==='harbor.craneLoad'){
+  const controls=translatedControls(rectangleControls({width:'width',baseline:CH/2}), (p,c)=>{
+   const i=Number(p.index),visual=c?.state?.visual as unknown as HarborVisual|undefined,layout=c?.state?.layout as unknown as HarborLayout|undefined;
+   const crane=visual?.cranes[i],base=layout&&root('craneLoad',layout,p);return{x:crane&&base?crane.twx-64-base.x:0,h:crane&&base?crane.hang-CH-base.h:0};
+  });
+  e.spatial={...controls,handles:(p,c)=>{const pose=(c?.state?.visual as unknown as HarborVisual|undefined)?.cranes[Number(p.index)];return pose&&!pose.carry?[]:controls.handles(p,c);}};
+ }
 }

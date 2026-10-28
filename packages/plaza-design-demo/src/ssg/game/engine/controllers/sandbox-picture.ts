@@ -31,10 +31,10 @@ export function validateSandboxGeometry(data:Pick<SceneData,'controller'>,rows:r
 }
 function daylight(minute:number){const h=minute/60;if(h<5||h>=20)return 0;if(h<8)return(h-5)/3;if(h<17)return 1;return 1-(h-17)/3;}
 export function sandboxPicture(m:SceneModel,hover:string|null,view:View,rows:readonly Resolved[],sceneId:string):Record<string,Value>{
- const wx=weatherNow(sceneClimate(sceneId)),c=sandboxController(m.data),w=c?.geometry.window?rowOf(rows,c.geometry.window):undefined;
+ const wx=weatherNow(sceneClimate(sceneId,view.weatherSource),view.weatherSource),c=sandboxController(m.data),w=c?.geometry.window?rowOf(rows,c.geometry.window):undefined;
  const snapshot:SandboxSnapshot={...structuredClone(emptySandboxSnapshot),...sandboxModelSnapshot(m)};
  for(const row of rows){const piece=sandboxPieceDefinitions.find(piece=>piece.device&&row.instance.type==='sandbox.'+piece.id);if(piece?.device)snapshot.spots[piece.device]={x:row.placement.x,y:row.placement.h,w:Number(row.props.width),h:Number(row.props.height)};}
- snapshot.minute=city.min;snapshot.daylight=daylight(city.min);snapshot.forecast=screenLine(sceneClimate(sceneId));snapshot.hourLabel=hm(city.min);
+ snapshot.minute=city.min;snapshot.daylight=daylight(city.min);snapshot.forecast=screenLine(sceneClimate(sceneId,view.weatherSource),view.weatherSource);snapshot.hourLabel=hm(city.min);
  snapshot.weather={cloud:wx.cloud,smog:wx.smog,rain:wx.rain,storm:wx.storm,fog:wx.fog,heat:wx.heat,wind:wx.wind};
  for(const st of sandboxStations(rows,c??null))snapshot.stationCenters[String(st.n)]=(st.x0+st.x1)/2;
  snapshot.windowVisible=!!w&&onScreen(view,view.sx(w.placement.x)-20,Number(w.props.width)+40);

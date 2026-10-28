@@ -1,3 +1,5 @@
+import {validationSnapshot} from './validation-snapshot';
+import {climateAuthoring} from './climate-authoring';
 import {validateOpeningSource} from '../story/opening-source';
 import {pendingRegistry} from './pending-registry';
 import {sharedWorldFlags,renameWorldFlagDocuments} from './world-flag-references';
@@ -15,7 +17,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,sco
  let stationDraft=scope.session?.stationDraft;
  const error=document.createElement('p');error.setAttribute('role','alert');
  const form=new TypedForm(e=>{error.textContent=String(e);},scope.session?.expanded);
- function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));change(d);api.edit('city-source',label,d);error.textContent='';}
+ function edit(label:string,change:(source:CitySource)=>void){const d=validatePendingCity(api.get('city-source').value,validationSnapshot(context.documents));change(d);api.edit('city-source',label,d);error.textContent='';}
  function editMetro(label:string,change:(source:MetroSource)=>void){const d=validateMetroSource(api.get('metro-source').value);change(d);api.edit('metro-source',label,validateMetroSource(d));}
  const get=(d:any,path:(string|number)[])=>path.reduce((v,k)=>v[k],d);
  const change=(path:(string|number)[],value:unknown)=>edit('Edit city '+path.join('.'),d=>{get(d,path.slice(0,-1))[path.at(-1)!]=value;});
@@ -45,7 +47,7 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,sco
   if(path[0]==='LINKS'&&path.length===2&&!value.at)form.button(parent,'Add '+name+' scene visibility',()=>change([...path,'at'],[]));
   for(const[k,v]of Object.entries(value)){if(k==='access'&&path[0]==='LINKS')continue;const row=typeof v==='object'&&v!==null?form.section(parent,name+' '+k):parent;topology(row,v,[...path,k],d);}
  }
- function render(){if(disposed)return;references=undefined;const d=validatePendingCity(api.get('city-source').value,new Map(context.documents.map(d=>[d.id,d.value])));host.replaceChildren(error);
+ function render(){if(disposed)return;references=undefined;const d=validatePendingCity(api.get('city-source').value,validationSnapshot(context.documents));host.replaceChildren(error);
   const show=(section:CityAuthoringScope['section'])=>scope.section===section,places=d.PLACES.filter(p=>show('place')&&(!scope.place||p.id===scope.place));
   const refs=prospective(),sceneIds=Object.keys(refs),districtIds=d.DISTRICTS.map(v=>v.id);
   const travel=show('travel')?form.section(host,'Travel'):undefined;
@@ -54,6 +56,9 @@ export function mountCityAuthoring(host:HTMLElement,context:WorkbenchContext,sco
   form.number(travel,'Quick travel duration (frames)',d.HOP,frames=>edit('Edit quick travel duration',d=>{d.HOP=frames;}),1);
   }
   for(const place of places){const section=host;
+   form.select(section,'Place '+place.id+' climate override',['',...Object.keys(d.CLIMATES)],place.climate??'',v=>edit('Edit place climate binding',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;if(v)p.climate=v;else delete p.climate;}));
+   if(place.climate)climateAuthoring(form,section,place.climate,d.CLIMATES[place.climate],change=>edit('Edit place climate',d=>change(d.CLIMATES[place.climate!])));
+
    form.select(section,'Place '+place.id+' access policy',['',...Object.keys(d.ACCESS)],place.access??'',v=>edit('Bind place access',d=>{const p=d.PLACES.find(p=>p.id===place.id)!;if(v)p.access=v;else delete p.access;}));
    {const policy=place.access?d.ACCESS[place.access]:undefined,note=document.createElement('p');note.textContent=policy?`Entry rule: ${policy.exit.scene} / ${policy.exit.id}. This is the same physical exit used by the game.`:'No physical-exit policy linked here. Transport locks are edited under Travel; discovery only controls what the map reveals.';section.append(note);if(policy)form.button(section,'Open entry-rule chunk',()=>context.openScene(policy.exit.scene));}
    form.text(section,'Place '+place.id+' name',place.name,name=>edit('Edit place name',d=>{d.PLACES.find(p=>p.id===place.id)!.name=name;}));

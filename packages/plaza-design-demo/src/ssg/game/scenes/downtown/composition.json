@@ -50,8 +50,8 @@
         "seed": 7,
         "minHeight": 70,
         "maxHeight": 150,
-        "alpha": 0.18,
-        "litChance": 0.12
+        "litChance": 0.12,
+        "edgeOpacity": 0.18
       },
       "placement": {
         "x": 0,
@@ -82,8 +82,8 @@
         "seed": 19,
         "minHeight": 50,
         "maxHeight": 120,
-        "alpha": 0.3,
-        "litChance": 0.18
+        "litChance": 0.18,
+        "edgeOpacity": 0.3
       },
       "placement": {
         "x": 0,
@@ -3487,15 +3487,15 @@
         "height": 15,
         "text": "< NEON MARKET",
         "color": "0,255,255",
-        "size": 10,
-        "phase": 120,
         "mask": [
           -50,
           50,
           -10,
           10
         ],
-        "smear": true
+        "smear": true,
+        "flickerTimeOffset": 2,
+        "fontSize": 10
       },
       "placement": {
         "x": 90,
@@ -3516,15 +3516,15 @@
         "height": 15,
         "text": "SPACEPORT >",
         "color": "255,136,0",
-        "size": 10,
-        "phase": 70,
         "mask": [
           -43,
           43,
           -10,
           10
         ],
-        "smear": true
+        "smear": true,
+        "flickerTimeOffset": 1.1666666666666667,
+        "fontSize": 10
       },
       "placement": {
         "x": 90,
@@ -3545,15 +3545,15 @@
         "height": 13,
         "text": "OPEN 24/7",
         "color": "255,136,0",
-        "size": 8,
-        "phase": 160,
         "mask": [
           -47,
           47,
           -10,
           10
         ],
-        "smear": true
+        "smear": true,
+        "flickerTimeOffset": 2.6666666666666665,
+        "fontSize": 8
       },
       "placement": {
         "x": 45,
@@ -3662,10 +3662,7 @@
         "h": 0
       },
       "order": 199,
-      "layer": "backdrop",
-      "bindings": {
-        "doorOffset": "downtown.doorOffset"
-      }
+      "layer": "backdrop"
     },
     {
       "id": "dumpster",
@@ -4614,7 +4611,7 @@
       "props": {
         "kind": "screen",
         "radius": 30,
-        "alpha": 0.7
+        "lightOpacity": 0.7
       },
       "placement": {
         "x": 0,

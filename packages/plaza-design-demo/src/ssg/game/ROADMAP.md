@@ -10,6 +10,43 @@ not prohibit this subsequent release. Production is not part of this publication
 [Pending user review](./docs/design/USER-REVIEW-GUIDE.md) provides direct checkpoints, practical
 instructions and the remaining design/usability questions; technical acceptance is separate.
 
+Editor viewport follow-up (local, 2026-10-27): shared logical game framing for preview/Play,
+stable workspace scale as the timeline opens/closes, selectable base camera with Locate camera,
+explicit preview-versus-checkpoint starts, remembered per-sequence playheads and Home/End seek.
+Checkpoint/start versus editing context is visible; reload preserves base editing. This resolves
+reported review-workflow faults without a new renderer/adapter or campaign redesign. Browser
+verification includes exact paused-image restoration on Stop, native starts at two different
+times, camera-property edits without workspace panning and checkpoint/sequence/reload navigation.
+This follow-up remains unpublished until requested.
+TypeScript/homepage build and focused camera, history, keyboard, checkpoint and Play-start checks
+pass. The existing intro-only native playback/seek/paused/resize raster check passes 84/84 exact
+comparisons; it does not replace approved images or claim an all-scene visual campaign.
+
+## Completed goal: location and sequence configuration (L1–L5, local)
+
+Authorized and completed 2026-10-28. All five phases and eight named acceptance cases pass. The
+[implementation plan and goal conditions](./docs/design/LOCAL-PRESENTATION-PLAN.md)
+cover existing switches and values that differ by district, chunk, composition or sequence.
+Globally identical behavior stays in code. This follows the reported Glide/base grading
+difference without reopening completed asset-contract work or exposing every engine constant.
+
+| Phase | Deliverable | Acceptance gate |
+| --- | --- | --- |
+| L1 | Finite inventory of actual local configuration and implicit exceptions | Every setting/use classified, authoritative source and inspector destination defined; zero unresolved ownership or precedence |
+| L2 | Typed settings and shared effective-value/provenance resolution | Game/editor/sequences consume one result; inheritance, false/zero, reset, precedence and differing neighbors verified |
+| L3 | Contextual Rendering, Lighting, Climate and Camera controls | Real edit/reset/Cancel/Undo/save workflows; original grey wash explainable from the inspector |
+| L4 | Migrate every inventoried use and remove competing policies | All missing controls/fields and affected uses migrated; zero stale consumers or undisclosed local code settings |
+| L5 | Native acceptance, preservation, responsiveness and guidance | Eight named cases pass; appearance/behavior preserved, references/focused checks/build pass, timings reported and temporary artifacts removed |
+
+Use the existing sources, compiler, renderer and inspector. No new renderer, adapter, settings
+store or compatibility layer. Preserve current cinematic choices as explicit authored overrides;
+correct grading of empty editor background separately.
+[Coverage and acceptance](./docs/design/LOCAL-PRESENTATION-PROGRESS.md) records native workflows,
+24/24 preserved scene pictures, all five sequence pictures, focused checks, source references and
+measured edit timings. Existing five stored-reference discrepancies predate this work and remain
+unchanged. Whole-source climate edits still take about 0.28 s median on the measured machine.
+Publication remains separate.
+
 ## Completed goal: prologue and authoring acceptance (P1–P4, local)
 
 The shared engine foundation is implemented. This follow-up proves the real opening-to-Downtown
@@ -43,6 +80,39 @@ Keep the existing renderer, world compiler, mover/session runtime, inspector and
 new adapter, parallel simulation, broad editor redesign or unrelated performance harness. Review
 performance only where an actual task stalls. Broader asset-property debt remains listed below;
 this bounded plan does not claim every game-authoring workflow is complete.
+
+## Asset contracts and direct manipulation (A1–A6)
+
+A1 classification was completed and reviewed. The user then authorized **A2–A6 together**
+as the active autonomous goal, with publishing excluded. The
+[goal conditions](./docs/design/ASSET-CONTRACT-GOAL.md) define exact completion; the
+[design proposal](./docs/design/ASSET-DIRECT-MANIPULATION.md) defines property names, units,
+inspector groups, meaningful edge manipulation and new-asset admission. This consolidates the
+broader asset-property follow-up rather than reopening completed engine migrations.
+
+| Phase | Deliverable | Status |
+| --- | --- | --- |
+| A1 | Complete current registry/property/source-use classification and review proposal | Complete locally; design direction accepted |
+| A2 | Shared semantic field, grouping, geometry and admission contracts | Complete locally;890 definitions/3,401 authored schema fields,146 typed structured contracts,canonical units and shared scalar/discrete-key validation |
+| A3 | Shared direct manipulation and representative complete workflows | Complete locally;445 controlled/445 explicit fixed dispositions;native building/cloud/lane/group/masked/attached/mirrored/scaled/keyframe/history/save workflows accepted mechanically |
+| A4 | All eligible assets and affected content migrated | Complete locally;167 building uses,seven opening behaviors,24 road lanes,29 fleets,744 residents;245 top-level/24 nested naming proposals reconciled;152 documents/158 references validate |
+| A5 | Obsolete controls/constructors/fallbacks removed;guidance consolidated | Complete locally;old traffic bundle,Look/implicit-geometry fallbacks,unused train fields,aliases and disposable migration/proposal fixtures retired;current authoring guidance updated |
+| A6 | Whole-system coverage,preservation and authoring acceptance | Complete locally;126/126 full-scene frames,50/50 sequence frames,family comparisons,native workflows and focused checks pass. Five height edits40.3ms median;TypeScript/homepage pass |
+
+A2–A6 are complete locally. Publication remains separate.
+[Current evidence](./docs/design/ASSET-CONTRACT-PROGRESS.md) distinguishes implemented contracts,
+command/native comparisons,completed workflows and real limitations. Exact counts replace estimated percentages.
+A1 covered886 original definitions. All885 retained types satisfy current admission; the removed
+traffic bundle becomes five ordinary behavior types. Its245 top-level and24 nested naming
+proposals are reconciled. Disposable proposal snapshots have been retired.
+
+Accepted design follow-up: building height and floorHeight are authored; complete floor count
+is derived, with remaining space below the roof. Roof dragging changes height continuously.
+Traffic lanes, patrol generators and drone streams become separate ordinary assets, grouped
+for collective movement and assembled with presets. Preserve seeds, projection, timing,
+clearance/density behavior and paint order during migration; remove superseded bundled paths.
+Opposite-edge anchoring and coherent property names/units are confirmed. This request updates
+planning and acceptance conditions. The subsequent request authorized implementation; publishing remains excluded.
 
 ## Contextual authoring workflows (U1–U3) — acceptance verified locally
 

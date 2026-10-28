@@ -1,3 +1,7 @@
+import {colorField} from '../core/fields';
+import {fixedGeometry} from '../core/spatial';
+import {rectangleControls,combineControls,axisControl,repeatedWidthControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * INTERIOR KIT, Downtown everyday (Tommi, 2026-10-22: "what we can get out of Downtown"; Act I walks the
  * hero through ordinary places). Three places, each from reusable pieces:
@@ -26,6 +30,7 @@ import type { View } from '../core/view';
 import { residentCharacter } from '../characters/resident';
 import { drawCharacter } from '../../runtime/characters';
 import { piece, num, select, bool, text, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
+const fixedNativeGeometry=fixedGeometry("This downtown everyday component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 type X = CanvasRenderingContext2D;
 /** The view in a piece's own frame, so the character kit can draw a person inside a piece (seen through glass). */
@@ -33,7 +38,7 @@ const localView = (v: View): View => ({ ...v, sx: (wx: number) => wx, y: (h: num
 const SEATED_ACTS = ['sit', 'read', 'phone', 'talk', 'doze'] as const;
 /** A seated kit person at (cx, h) in the piece's frame, back-band size and dimming, facing left or right. */
 function seated(x: X, o: Paint, cx: number, h: number, seed: number, face: 1 | -1) {
-  const p = residentCharacter({ kind: 'human', depth: 'back', district: 'downtown', seed, act: SEATED_ACTS[seed % SEATED_ACTS.length], sitting: 'side' }, { x: 0, h: 0 });
+  const p = residentCharacter({ kind: 'human', depthBand: 'back', district: 'downtown', seed, act: SEATED_ACTS[seed % SEATED_ACTS.length], sitting: 'side' }, { x: 0, h: 0 });
   x.save(); x.translate(cx, -h); if (face < 0) x.scale(-1, 1);
   try { drawCharacter(x, localView(o.view), p); } finally { x.restore(); }
 }
@@ -48,7 +53,7 @@ const R = (x: X, l: number, h: number, w: number, t: number, fill: string) => {
 const hexOr = (v: Value, fallback: string) => isHex(v) ? String(v) : fallback;
 const rgbField = (v: Value, fallback: string) => isHex(v) ? rgbOf(String(v)) : fallback;
 const pick = <T,>(r: () => number, list: readonly T[]) => list[Math.floor(r() * list.length) % list.length];
-const colourField = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const colourField = colorField;
 const listOf = (label: string, item: Record<string, Field>, addLabel: string, next: (rows: Properties[]) => Properties, value: Properties[]): Field => ({
   kind: 'json', label, default: value, editor: { kind: 'list', item, addLabel, next },
   validate: v => { if (!Array.isArray(v) || !v.every(r => !!r && typeof r === 'object' && !Array.isArray(r))) throw new Error(label + ': expected a list'); },
@@ -118,14 +123,15 @@ const GOODS_COLS = ['220,60,50', '240,200,60', '60,120,200', '240,240,235', '90,
 // ---------------------------------------------------------------- FRESHCO: the street front
 
 export const freshcoFrontElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'everyday.freshco-front', label: 'FRESHCO shopfront: logo, sliding doors, the bright window (Downtown)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 540, 120, 2000, 1, 'units'), height: num('Ground floor height', 92, 60, 200, 1, 'units'),
-    logo: text('Logo', 'FRESHCO'), tagline: text('Under the logo (empty: none)', 'GROCERIES · OPEN 06–24'),
-    fascia: colourField('Fascia', '#b81f2a'), ink: colourField('Logo letters', '#fff3dc'), leaf: colourField('Leaf mark', '#7cc04a'),
-    door: select('Corner entrance', ['left', 'right', 'none'], 'left'), gate: bool('ID gate behind the doors', true),
-    posters: text('Window posters (separate with |)', 'MEMBER PRICES|PRICES SET DAILY|ID REQUIRED AT CHECKOUT'),
-    index: bool('Price index screen by the door', true), lit: num('Shop lights on', 1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 540, 120, 2000, 1, 'units')), height: shapeLength(num('Ground floor height', 92, 60, 200, 1, 'units')),
+    logo: appearanceText(text('Logo', 'FRESHCO')), tagline: appearanceText(text('Under the logo (empty: none)', 'GROCERIES · OPEN 06–24')),
+    fascia: appearanceColor(colourField('Fascia', '#b81f2a')), ink: appearanceColor(colourField('Logo letters', '#fff3dc')), leaf: appearanceColor(colourField('Leaf mark', '#7cc04a')),
+    door: appearanceChoice(select('Corner entrance', ['left', 'right', 'none'], 'left')), gate: appearanceBoolean(bool('ID gate behind the doors', true)),
+    posters: appearanceText(text('Window posters (separate with |)', 'MEMBER PRICES|PRICES SET DAILY|ID REQUIRED AT CHECKOUT')),
+    index: appearanceBoolean(bool('Price index screen by the door', true)), lit: appearanceRatio(num('Shop lights on', 1, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(p),
@@ -211,11 +217,11 @@ export const freshcoFrontElement = piece({
   },
 });
 
-export const trolleysElement = piece({
+export const trolleysElement = piece({spatial:fixedNativeGeometry,
   type: 'everyday.trolleys', label: 'Trolleys: a nested row on its chain, a loose one (kit)', category: 'props', libraryUse: 'reusable',
   fields: {
-    count: num('Trolleys in the row', 5, 0, 16), loose: num('Loose trolleys', 1, 0, 4), handle: colourField('Handle colour', '#b81f2a'),
-    bay: bool('Trolley bay with its sign', true), sign: text('Bay sign', 'RETURN TROLLEYS HERE'), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Trolleys in the row', 5, 0, 16)), loose: generationCount(num('Loose trolleys', 1, 0, 4)), handle: appearanceColor(colourField('Handle colour', '#b81f2a')),
+    bay: appearanceBoolean(bool('Trolley bay with its sign', true)), sign: appearanceText(text('Bay sign', 'RETURN TROLLEYS HERE')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: 34 + Number(p.count) * 6 + Number(p.loose) * 36 + 10, tall: 40 }),
   bounds: p => ({ x: -4, h: 44, w: 44 + Number(p.count) * 6 + Number(p.loose) * 36 + 10, tall: 44 }),
@@ -252,8 +258,8 @@ export const trolleysElement = piece({
 
 export const SHOP_SECTIONS = ['entrance', 'produce', 'shelves', 'chiller', 'freezer', 'bakery', 'tobacco', 'staff', 'blank'] as const;
 const sectionItem: Record<string, Field> = {
-  kind: { kind: 'select', label: 'Kind', options: [...SHOP_SECTIONS], default: 'shelves' },
-  width: num('Width', 90, 20, 600, 1, 'units'), sign: text('Sign above (empty: none)', ''),
+  kind: appearanceChoice({ kind: 'select', label: 'Kind', options: [...SHOP_SECTIONS], default: 'shelves' }),
+  width: shapeLength(num('Width', 90, 20, 600, 1, 'units')), sign: appearanceText(text('Sign above (empty: none)', '')),
 };
 const SECTIONS_DEFAULT: Properties[] = [
   { kind: 'entrance', width: 80, sign: '' }, { kind: 'tobacco', width: 70, sign: 'TOBACCO · SPIRITS' }, { kind: 'produce', width: 90, sign: 'PRODUCE' },
@@ -262,12 +268,13 @@ const SECTIONS_DEFAULT: Properties[] = [
 
 /** The shop's back wall, section by section, under the ceiling's tubes. */
 export const freshcoFloorElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.freshco-floor', label: 'Supermarket shop floor, back wall in sections (kit, Downtown)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 540, 60, 4000, 1, 'units'), height: num('Storey height', 92, 50, 200, 1, 'units'),
-    sections: listOf('Sections along the back wall', sectionItem, 'Add section', rows => ({ ...SECTIONS_DEFAULT[rows.length % SECTIONS_DEFAULT.length] }), SECTIONS_DEFAULT),
-    light: select('Ceiling lights', LIGHT_KINDS), wall: colourField('Wall', '#2a2f2c'), brand: colourField('Brand colour (trims, signs)', '#b81f2a'),
-    screen: text('Screen at the entrance (empty: none)', 'CUSTOMER VERIFICATION IN PROGRESS'), cameras: bool('Camera domes', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 540, 60, 4000, 1, 'units')), height: shapeLength(num('Storey height', 92, 50, 200, 1, 'units')),
+    sections: appearanceStructure(listOf('Sections along the back wall', sectionItem, 'Add section', rows => ({ ...SECTIONS_DEFAULT[rows.length % SECTIONS_DEFAULT.length] }), SECTIONS_DEFAULT)),
+    light: appearanceChoice(select('Ceiling lights', LIGHT_KINDS)), wall: appearanceColor(colourField('Wall', '#2a2f2c')), brand: appearanceColor(colourField('Brand colour (trims, signs)', '#b81f2a')),
+    screen: appearanceText(text('Screen at the entrance (empty: none)', 'CUSTOMER VERIFICATION IN PROGRESS')), cameras: appearanceBoolean(bool('Camera domes', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(p),
@@ -361,11 +368,12 @@ export const freshcoFloorElement = piece({
 });
 
 export const aisleEndElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.aisle-end', label: 'Aisle end, seen end-on: end cap and number blade (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    number: num('Aisle number', 3, 0, 99), label: text('What is down the aisle', 'TINS · RICE'), promo: text('Card on the end cap (empty: none)', 'LIMIT 2'),
-    width: num('Width', 36, 20, 80, 1, 'units'), height: num('Height', 60, 30, 90, 1, 'units'), blade: num('Blade over it at', 82, 0, 200, 1, 'units'),
-    brand: colourField('Brand colour', '#b81f2a'), seed: num('Seed', 1, 0, 1000000),
+    number: semantic(num('Aisle number', 3, 0, 99),{"group":"Appearance","quantity":"index","unit":"integer"}), label: appearanceText(text('What is down the aisle', 'TINS · RICE')), promo: appearanceText(text('Card on the end cap (empty: none)', 'LIMIT 2')),
+    width: shapeLength(num('Width', 36, 20, 80, 1, 'units')), height: shapeLength(num('Height', 60, 30, 90, 1, 'units')), blade: shapeLength(num('Blade over it at', 82, 0, 200, 1, 'units')),
+    brand: appearanceColor(colourField('Brand colour', '#b81f2a')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Math.max(Number(p.height), Number(p.blade) + 8) }),
   bounds: p => ({ x: -14, h: Math.max(Number(p.height), Number(p.blade) + 8), w: Number(p.width) + 28, tall: Math.max(Number(p.height), Number(p.blade) + 8) }),
@@ -400,15 +408,16 @@ const FRUITS: Record<string, string[]> = {
   apples: ['200,40,40', '230,70,50'], oranges: ['250,150,30', '240,130,20'], bananas: ['245,215,60', '230,200,50'], lemons: ['250,235,90', '240,225,70'],
   limes: ['120,190,60', '100,170,50'], melons: ['160,200,90', '200,200,120'], grapes: ['120,60,130', '150,80,160'], tomatoes: ['220,50,40', '200,40,30'], peppers: ['240,200,40', '220,50,40', '90,160,50'],
 };
-const fruitItem: Record<string, Field> = { kind: { kind: 'select', label: 'Fruit', options: Object.keys(FRUITS), default: 'apples' }, price: text('Price card', '2.40') };
+const fruitItem: Record<string, Field> = { kind: appearanceChoice({ kind: 'select', label: 'Fruit', options: Object.keys(FRUITS), default: 'apples' }), price: appearanceText(text('Price card', '2.40')) };
 const FRUIT_DEFAULT: Properties[] = [{ kind: 'oranges', price: '3.10' }, { kind: 'apples', price: '2.40' }, { kind: 'bananas', price: '1.90' }, { kind: 'limes', price: '0.60' }, { kind: 'grapes', price: '4.80' }, { kind: 'tomatoes', price: '2.20' }];
 
 export const fruitDisplayElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.fruit-display', label: 'Fruit display: tiered crates, price cards, mist (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 96, 40, 300, 1, 'units'), tiers: num('Tiers', 3, 1, 4),
-    fruits: listOf('Crates (left to right, row by row)', fruitItem, 'Add crate', rows => ({ ...FRUIT_DEFAULT[rows.length % FRUIT_DEFAULT.length] }), FRUIT_DEFAULT),
-    mist: bool('Mist bar', true), scale: bool('Hanging scale', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 96, 40, 300, 1, 'units')), tiers: generationCount(num('Tiers', 3, 1, 4)),
+    fruits: appearanceStructure(listOf('Crates (left to right, row by row)', fruitItem, 'Add crate', rows => ({ ...FRUIT_DEFAULT[rows.length % FRUIT_DEFAULT.length] }), FRUIT_DEFAULT)),
+    mist: appearanceBoolean(bool('Mist bar', true)), showWeighingScale: appearanceBoolean(bool('Hanging scale', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 56 }),
   bounds: p => ({ x: 0, h: 58, w: Number(p.width), tall: 58 }),
@@ -435,21 +444,22 @@ export const fruitDisplayElement = piece({
       }
     }
     const topH = 4 + tiers * th;
-    if (p.mist !== false || p.scale !== false) {
+    if (p.mist !== false || p.showWeighingScale !== false) {
       // a bar on two posts over the stand: the mist nozzles, the scale hung from it
       R(x, 4, topH, 2, 52 - topH, '#6a7076'); R(x, w - 6, topH, 2, 52 - topH, '#6a7076'); R(x, 2, 50, w - 4, 2, '#7a8288');
       if (p.mist !== false) for (let k = 12; k < w - 10; k += 14) { R(x, k, 48, 2, 2, '#9aa2a8'); if (Math.floor(t / 300 + seed) % 2 === 0) for (let d = 0; d < 3; d++) R(x, k - 2 + d * 2, 44 - ((t * 0.3 + d * 3) % 8), 2, 1, 'rgba(220,235,240,.3)'); }
-      if (p.scale !== false) { const sx = w - 20; R(x, sx, 38, 1, 12, '#2a2a2a'); R(x, sx - 5, 31, 11, 8, '#d8d8d0'); R(x, sx - 3, 33, 7, 4, '#202020'); R(x, sx, 34, 1, 2, 'rgba(255,60,50,.9)'); x.strokeStyle = 'rgba(200,200,200,.7)'; x.beginPath(); x.moveTo(sx - 6, y(24)); x.quadraticCurveTo(sx + 0.5, y(20), sx + 7, y(24)); x.stroke(); R(x, sx, 24, 1, 7, 'rgba(180,180,180,.6)'); }
+      if (p.showWeighingScale !== false) { const sx = w - 20; R(x, sx, 38, 1, 12, '#2a2a2a'); R(x, sx - 5, 31, 11, 8, '#d8d8d0'); R(x, sx - 3, 33, 7, 4, '#202020'); R(x, sx, 34, 1, 2, 'rgba(255,60,50,.9)'); x.strokeStyle = 'rgba(200,200,200,.7)'; x.beginPath(); x.moveTo(sx - 6, y(24)); x.quadraticCurveTo(sx + 0.5, y(20), sx + 7, y(24)); x.stroke(); R(x, sx, 24, 1, 7, 'rgba(180,180,180,.6)'); }
     }
   },
 });
 
 export const GATE_STATES = ['cycle', 'idle', 'green', 'red'] as const;
 export const securityGateElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'interior.security-gate', label: 'ID gate: scanner posts, light bars, the screen (kit)', category: 'machines', libraryUse: 'reusable',
   fields: {
-    lanes: num('Lanes', 2, 1, 4), lane: num('Lane width', 24, 16, 40, 1, 'units'), height: num('Post height', 46, 30, 70, 1, 'units'),
-    state: select('State', GATE_STATES), label: text('Screen (empty: none)', 'SCAN ID'), seed: num('Seed', 1, 0, 1000000),
+    lanes: generationCount(num('Lanes', 2, 1, 4)), lane: shapeLength(num('Lane width', 24, 16, 40, 1, 'units')), height: shapeLength(num('Post height', 46, 30, 70, 1, 'units')),
+    state: appearanceChoice(select('State', GATE_STATES)), label: appearanceText(text('Screen (empty: none)', 'SCAN ID')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.lanes) * (Number(p.lane) + 4) + 4, tall: Number(p.height) + 20 }),
   bounds: p => ({ x: -2, h: Number(p.height) + 22, w: Number(p.lanes) * (Number(p.lane) + 4) + 30, tall: Number(p.height) + 22 }),
@@ -479,15 +489,15 @@ export const securityGateElement = piece({
 export const selfCheckoutsElement = piece({
   type: 'interior.self-checkouts', label: 'Self-checkouts in a row, one refusing (kit)', category: 'machines', libraryUse: 'reusable',
   fields: {
-    count: num('Checkouts', 4, 1, 10), spacing: num('Spacing', 40, 30, 80, 1, 'units'), alarm: num('Which one refuses (0: none)', 3, 0, 10),
-    message: text('Its message (separate lines with |)', 'UNEXPECTED ITEM|IDENTITY NOT FOUND'), header: text('Sign over the row (empty: none)', 'SELF CHECKOUT · CARD OR ID'),
-    gantry: num('Gantry height', 82, 0, 200, 1, 'units'), brand: colourField('Brand colour', '#b81f2a'), attendant: bool('Attendant’s podium', true), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Checkouts', 4, 1, 10)), spacing: shapeLength(num('Spacing', 40, 30, 80, 1, 'units')), alarm: semantic(num('Which one refuses (0: none)', 3, 0, 10),{"group":"Appearance","quantity":"index","unit":"integer"}),
+    message: appearanceText(text('Its message (separate lines with |)', 'UNEXPECTED ITEM|IDENTITY NOT FOUND')), header: appearanceText(text('Sign over the row (empty: none)', 'SELF CHECKOUT · CARD OR ID')),
+    gantryY: shapePosition(num('Gantry height', 82, 0, 200, 1, 'units')), brand: appearanceColor(colourField('Brand colour', '#b81f2a')), attendant: appearanceBoolean(bool('Attendant’s podium', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.count) * Number(p.spacing) + (p.attendant !== false ? 26 : 6), tall: Math.max(60, Number(p.gantry) + 4) }),
-  bounds: p => ({ x: -6, h: Math.max(60, Number(p.gantry) + 4), w: Number(p.count) * Number(p.spacing) + (p.attendant !== false ? 36 : 16), tall: Math.max(60, Number(p.gantry) + 4) }),
+  size: p => ({ w: Number(p.count) * Number(p.spacing) + (p.attendant !== false ? 26 : 6), tall: Math.max(60, Number(p.gantryY) + 4) }),
+  bounds: p => ({ x: -6, h: Math.max(60, Number(p.gantryY) + 4), w: Number(p.count) * Number(p.spacing) + (p.attendant !== false ? 36 : 16), tall: Math.max(60, Number(p.gantryY) + 4) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, refusing: { x: (Math.max(1, Number(p.alarm)) - 0.5) * Number(p.spacing), h: 0, role: 'mount' } }),
   paint(x, p, o) {
-    const n = Number(p.count), sp = Number(p.spacing), alarm = Number(p.alarm), t = o.t, seed = Number(p.seed), brand = rgbField(p.brand, '184,31,42'), G = Number(p.gantry);
+    const n = Number(p.count), sp = Number(p.spacing), alarm = Number(p.alarm), t = o.t, seed = Number(p.seed), brand = rgbField(p.brand, '184,31,42'), G = Number(p.gantryY);
     const flash = Math.floor(t / 14) % 2 === 0, msg = lines(p.message), rowW = n * sp;
     // the gantry: two posts and a beam carrying the sign and the refusing machine's warning screen
     if (G > 60) {
@@ -534,12 +544,13 @@ export const selfCheckoutsElement = piece({
 });
 
 export const stockroomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.stockroom', label: 'Stockroom and staff room above the shop (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 540, 80, 3000, 1, 'units'), height: num('Storey height', 76, 50, 160, 1, 'units'),
-    racks: num('Racking bays', 3, 0, 10), boxes: num('Stock on the racks', 0.75, 0, 1, 0.05), staff: bool('Staff corner: table, microwave, lockers', true),
-    monitors: num('Camera monitors', 4, 0, 9), notice: text('Notice in the staff corner', 'LOSSES ARE DEDUCTED FROM WAGES'), light: select('Light', LIGHT_KINDS, 'flicker'),
-    wall: colourField('Wall', '#262826'), brand: colourField('Brand colour', '#b81f2a'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 540, 80, 3000, 1, 'units')), height: shapeLength(num('Storey height', 76, 50, 160, 1, 'units')),
+    racks: generationCount(num('Racking bays', 3, 0, 10)), boxes: appearanceRatio(num('Stock on the racks', 0.75, 0, 1, 0.05)), staff: appearanceBoolean(bool('Staff corner: table, microwave, lockers', true)),
+    monitors: generationCount(num('Camera monitors', 4, 0, 9)), notice: appearanceText(text('Notice in the staff corner', 'LOSSES ARE DEDUCTED FROM WAGES')), light: appearanceChoice(select('Light', LIGHT_KINDS, 'flicker')),
+    wall: appearanceColor(colourField('Wall', '#262826')), brand: appearanceColor(colourField('Brand colour', '#b81f2a')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(p),
@@ -598,12 +609,13 @@ export const stockroomElement = piece({
 // ---------------------------------------------------------------- the 24h diner
 
 export const dinerFrontElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'everyday.diner-front', label: 'All-night diner front: chrome, long windows, neon name (Downtown)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 400, 120, 1600, 1, 'units'), height: num('Height', 86, 60, 160, 1, 'units'),
-    name: text('Name in neon', 'MARLA’S'), sub: text('Under it (empty: none)', 'DINER · OPEN 24H'), neon: colourField('Neon', '#ff6a5a'),
-    door: num('Door position (share of the width)', 0.72, 0, 1, 0.01), booths: bool('Booths and people seen inside', true), rain: bool('Rain running down the glass', true),
-    panel: colourField('Enamel band', '#7a1f24'), lit: num('Lights on', 1, 0, 1, 0.05), exhaust: bool('Kitchen exhaust on the roof', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 400, 120, 1600, 1, 'units')), height: shapeLength(num('Height', 86, 60, 160, 1, 'units')),
+    name: appearanceText(text('Name in neon', 'MARLA’S')), sub: appearanceText(text('Under it (empty: none)', 'DINER · OPEN 24H')), neon: appearanceColor(colourField('Neon', '#ff6a5a')),
+    door: appearanceRatio(num('Door position (share of the width)', 0.72, 0, 1, 0.01)), booths: appearanceBoolean(bool('Booths and people seen inside', true)), rain: appearanceBoolean(bool('Rain running down the glass', true)),
+    panel: appearanceColor(colourField('Enamel band', '#7a1f24')), lit: appearanceRatio(num('Lights on', 1, 0, 1, 0.05)), exhaust: appearanceBoolean(bool('Kitchen exhaust on the roof', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 20 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 24, w: Number(p.width), tall: Number(p.height) + 24 }),
@@ -661,10 +673,11 @@ export const dinerFrontElement = piece({
 });
 
 export const dinerSignElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'everyday.diner-sign', label: 'Diner pole sign: neon box, chaser-bulb arrow (Downtown)', category: 'signage', libraryUse: 'reusable',
   fields: {
-    height: num('Pole height', 120, 30, 400, 1, 'units'), text: text('Sign', 'DINER'), sub: text('Under it (empty: none)', 'OPEN 24H'),
-    neon: colourField('Neon', '#ff6a5a'), arrow: bool('Chaser-bulb arrow', true), dead: num('Dead letter (0: none)', 3, 0, 12), seed: num('Seed', 1, 0, 1000000),
+    height: shapeLength(num('Pole height', 120, 30, 400, 1, 'units')), text: appearanceText(text('Sign', 'DINER')), sub: appearanceText(text('Under it (empty: none)', 'OPEN 24H')),
+    neon: appearanceColor(colourField('Neon', '#ff6a5a')), arrow: appearanceBoolean(bool('Chaser-bulb arrow', true)), dead: semantic(num('Dead letter (0: none)', 3, 0, 12),{"group":"Appearance","quantity":"index","unit":"integer"}), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: 90, tall: Number(p.height) + 36 }),
   bounds: p => ({ x: -50, h: Number(p.height) + 40, w: 100, tall: Number(p.height) + 40 }),
@@ -699,13 +712,14 @@ export const dinerSignElement = piece({
 
 const MENU_DEFAULT = 'EGGS ANY STYLE 6|HASH BROWNS 3|PANCAKES 5|PIE OF THE DAY 4|COFFEE 2 · REFILLS 2';
 export const dinerRoomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.diner-room', label: 'Diner from inside: window wall, griddle, pie case, menu (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 400, 120, 2000, 1, 'units'), height: num('Height', 86, 60, 160, 1, 'units'), windows: num('Window wall (share of the width)', 0.5, 0, 1, 0.01),
-    rain: bool('Rain on the windows', true), blinds: bool('Blinds half down', true), griddle: bool('Griddle and hood', true), pie: bool('Pie case', true), coffee: bool('Coffee station', true),
-    menu: text('Menu board (separate lines with |)', MENU_DEFAULT), plaque: text('Plaque (empty: none)', 'NO SLEEPING IN BOOTHS'), clock: bool('Wall clock', true),
-    jukebox: bool('Jukebox at the back', true), restroom: text('Restroom door sign (empty: no door)', 'RESTROOMS CUSTOMERS ONLY'),
-    wall: colourField('Wall', '#3a2c22'), tile: colourField('Wall tiles', '#d8d0c0'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 400, 120, 2000, 1, 'units')), height: shapeLength(num('Height', 86, 60, 160, 1, 'units')), windows: appearanceRatio(num('Window wall (share of the width)', 0.5, 0, 1, 0.01)),
+    rain: appearanceBoolean(bool('Rain on the windows', true)), blinds: appearanceBoolean(bool('Blinds half down', true)), griddle: appearanceBoolean(bool('Griddle and hood', true)), pie: appearanceBoolean(bool('Pie case', true)), coffee: appearanceBoolean(bool('Coffee station', true)),
+    menu: appearanceText(text('Menu board (separate lines with |)', MENU_DEFAULT)), plaque: appearanceText(text('Plaque (empty: none)', 'NO SLEEPING IN BOOTHS')), clock: semantic(bool('Wall clock', true),{"group":"Motion","quantity":"boolean","unit":"boolean"}),
+    jukebox: appearanceBoolean(bool('Jukebox at the back', true)), restroom: appearanceText(text('Restroom door sign (empty: no door)', 'RESTROOMS CUSTOMERS ONLY')),
+    wall: appearanceColor(colourField('Wall', '#3a2c22')), tile: appearanceColor(colourField('Wall tiles', '#d8d0c0')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(p),
@@ -808,11 +822,12 @@ export const dinerRoomElement = piece({
 });
 
 export const dinerCounterElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.diner-counter', label: 'Diner counter with stools (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 200, 40, 1200, 1, 'units'), height: num('Counter height', 24, 16, 36, 1, 'units'), stools: num('Stools', 5, 0, 20),
-    top: colourField('Counter top', '#d8d0c0'), front: colourField('Counter front', '#7a1f24'), seat: colourField('Stool seats', '#b02a34'),
-    items: bool('Things on the counter', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 200, 40, 1200, 1, 'units')), height: shapeLength(num('Counter height', 24, 16, 36, 1, 'units')), stools: generationCount(num('Stools', 5, 0, 20)),
+    top: appearanceColor(colourField('Counter top', '#d8d0c0')), front: appearanceColor(colourField('Counter front', '#7a1f24')), seat: appearanceColor(colourField('Stool seats', '#b02a34')),
+    items: appearanceBoolean(bool('Things on the counter', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 12 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 12, w: Number(p.width), tall: Number(p.height) + 12 }),
@@ -846,14 +861,14 @@ export const dinerCounterElement = piece({
 export const dinerBoothsElement = piece({
   type: 'interior.diner-booths', label: 'Diner booths along the window (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    count: num('Booths', 3, 1, 12), booth: num('Booth width', 60, 44, 100, 1, 'units'), seat: colourField('Upholstery', '#8a1f2a'),
-    table: colourField('Table top', '#d8d0c0'), items: bool('Plates and cups', true), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Booths', 3, 1, 12)), boothWidth: shapeLength(num('Booth width', 60, 44, 100, 1, 'units')), seat: appearanceColor(colourField('Upholstery', '#8a1f2a')),
+    table: appearanceColor(colourField('Table top', '#d8d0c0')), items: appearanceBoolean(bool('Plates and cups', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.count) * Number(p.booth), tall: 34 }),
-  bounds: p => ({ x: 0, h: 34, w: Number(p.count) * Number(p.booth), tall: 34 }),
+  size: p => ({ w: Number(p.count) * Number(p.boothWidth), tall: 34 }),
+  bounds: p => ({ x: 0, h: 34, w: Number(p.count) * Number(p.boothWidth), tall: 34 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' }, seat0: { x: 12, h: 13, role: 'mount' } }),
   paint(x, p, o) {
-    const n = Number(p.count), bw = Number(p.booth), seat = rgbField(p.seat, '138,31,42'), seed = Number(p.seed), t = o.t;
+    const n = Number(p.count), bw = Number(p.boothWidth), seat = rgbField(p.seat, '138,31,42'), seed = Number(p.seed), t = o.t;
     for (let i = 0; i < n; i++) {
       const l = i * bw, s = seed * 11 + i;
       // high-backed benches facing each other, a table on its pedestal between
@@ -877,14 +892,15 @@ export const dinerBoothsElement = piece({
 // ---------------------------------------------------------------- the roofs
 
 export const roofDeckElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'everyday.roof-deck', label: 'Roof deck: parapet, plant, tank, the stair hut (kit, Downtown)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 40, 3000, 1, 'units'), parapet: num('Parapet height', 8, 0, 40, 1, 'units'),
-    units: num('AC units and condensers', 3, 0, 12), condensers: bool('Big condensers (shop plant) instead of AC units', false),
-    tank: select('Water tank', ['none', 'left', 'right'], 'right'), hut: select('Stair hut', ['none', 'left', 'right', 'hatch'], 'left'),
-    vents: num('Vents', 2, 0, 8), dishes: num('Dishes', 1, 0, 4), cables: bool('Cable runs along the parapet', true), puddles: bool('Puddles', true),
-    sign: text('Notice over the hut door (empty: none)', 'NO ACCESS'),
-    hangout: select('Somebody’s hangout: bulbs on two poles, plastic chairs', ['none', 'left', 'middle', 'right'], 'none'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 300, 40, 3000, 1, 'units')), parapet: shapeLength(num('Parapet height', 8, 0, 40, 1, 'units')),
+    units: generationCount(num('AC units and condensers', 3, 0, 12)), condensers: appearanceBoolean(bool('Big condensers (shop plant) instead of AC units', false)),
+    tank: appearanceChoice(select('Water tank', ['none', 'left', 'right'], 'right')), hut: appearanceChoice(select('Stair hut', ['none', 'left', 'right', 'hatch'], 'left')),
+    vents: generationCount(num('Vents', 2, 0, 8)), dishes: generationCount(num('Dishes', 1, 0, 4)), cables: appearanceBoolean(bool('Cable runs along the parapet', true)), puddles: appearanceBoolean(bool('Puddles', true)),
+    sign: appearanceText(text('Notice over the hut door (empty: none)', 'NO ACCESS')),
+    hangout: appearanceChoice(select('Somebody’s hangout: bulbs on two poles, plastic chairs', ['none', 'left', 'middle', 'right'], 'none')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 90 }),
   bounds: p => ({ x: 0, h: 96, w: Number(p.width), tall: 96 }),
@@ -963,14 +979,15 @@ const AD_COPY: Record<string, { title: string; lines: string; small: string }> =
   custom: { title: '', lines: '', small: '' },
 };
 export const billboardElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'everyday.billboard', label: 'Rooftop billboard: back-lit ad, catwalk, lamps, ladder (Downtown)', category: 'signage', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 80, 1200, 1, 'units'), panel: num('Panel height', 110, 40, 400, 1, 'units'), legs: num('Catwalk height over the roof', 40, 0, 200, 1, 'units'),
-    ad: select('Advertiser', ADS), title: text('Headline (custom, or empty: the advertiser’s)', ''), lines: text('Copy (separate lines with |; empty: the advertiser’s)', ''),
-    small: text('Small print (empty: the advertiser’s)', ''), gold: colourField('Gold', '#d8b45a'), back: colourField('Black of the panel', '#070605'),
-    lamps: num('Lamps on goosenecks', 4, 0, 12), dead: num('Failing tube (0: none)', 2, 0, 12), ladder: select('Ladder up to the catwalk', ['left', 'right', 'none'], 'left'),
-    shelter: bool('Someone’s shelter under the catwalk', true), box: num('Junction box on the catwalk (share of the width, 0: none)', 0.62, 0, 1, 0.01),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 300, 80, 1200, 1, 'units')), panel: shapeLength(num('Panel height', 110, 40, 400, 1, 'units')), legs: shapeLength(num('Catwalk height over the roof', 40, 0, 200, 1, 'units')),
+    ad: appearanceChoice(select('Advertiser', ADS)), title: appearanceText(text('Headline (custom, or empty: the advertiser’s)', '')), lines: appearanceText(text('Copy (separate lines with |; empty: the advertiser’s)', '')),
+    small: appearanceText(text('Small print (empty: the advertiser’s)', '')), gold: appearanceColor(colourField('Gold', '#d8b45a')), back: appearanceColor(colourField('Black of the panel', '#070605')),
+    lamps: generationCount(num('Lamps on goosenecks', 4, 0, 12)), dead: semantic(num('Failing tube (0: none)', 2, 0, 12),{"group":"Appearance","quantity":"index","unit":"integer"}), ladder: appearanceChoice(select('Ladder up to the catwalk', ['left', 'right', 'none'], 'left')),
+    shelter: appearanceBoolean(bool('Someone’s shelter under the catwalk', true)), box: appearanceRatio(num('Junction box on the catwalk (share of the width, 0: none)', 0.62, 0, 1, 0.01)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.legs) + Number(p.panel) + 10 }),
   bounds: p => ({ x: -12, h: Number(p.legs) + Number(p.panel) + 12, w: Number(p.width) + 24, tall: Number(p.legs) + Number(p.panel) + 12 }),
@@ -1051,8 +1068,9 @@ export const billboardElement = piece({
 });
 
 export const roofPlankElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'everyday.roof-plank', label: 'Across a gap: a plank, a grating or a ladder laid flat (kit)', category: 'architecture', libraryUse: 'reusable',
-  fields: { width: num('Span', 40, 10, 300, 1, 'units'), kind: select('Kind', ['plank', 'grating', 'ladder'], 'plank'), rail: bool('A rope to hold', false), sag: num('Sag', 1, 0, 6, 0.5), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Span', 40, 10, 300, 1, 'units')), kind: appearanceChoice(select('Kind', ['plank', 'grating', 'ladder'], 'plank')), rail: appearanceBoolean(bool('A rope to hold', false)), sag: shapeLength(num('Sag', 1, 0, 6, 0.5)), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: 20 }),
   bounds: p => ({ x: -6, h: 22, w: Number(p.width) + 12, tall: 26 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
@@ -1070,16 +1088,17 @@ export const roofPlankElement = piece({
 });
 
 export const rainElement = piece({
-  type: 'everyday.rain', label: 'Rain over an area, splashing on the ground (kit)', category: 'environment', libraryUse: 'reusable',
+  spatial:rectangleControls({width:'width',height:'height'}),
+  type: 'everyday.rain', selection:'region', label: 'Rain over an area, splashing on the ground (kit)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 1000, 20, 20000, 1, 'units'), height: num('Height', 420, 20, 2000, 1, 'units'), density: num('Density', 0.5, 0, 1, 0.05),
-    slant: num('Slant', 0.25, -1, 1, 0.05), colour: colourField('Colour', '#a8bcd0'), when: select('When', ['always', 'weather'], 'always'), splash: bool('Splashes on the ground', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1000, 20, 20000, 1, 'units')), height: shapeLength(num('Height', 420, 20, 2000, 1, 'units')), density: semantic(num('Density', 0.5, 0, 1, 0.05),{"group":"Generation","quantity":"ratio","unit":"ratio"}),
+    slant: semantic(num('Slant', 0.25, -1, 1, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), color: appearanceColor(colourField('Colour', '#a8bcd0')), when: appearanceChoice(select('When', ['always', 'weather'], 'always')), splash: appearanceBoolean(bool('Splashes on the ground', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(p),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   paint(x, p, o) {
-    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t, col = rgbField(p.colour, '168,188,208'), sl = Number(p.slant);
+    const w = Number(p.width), H = Number(p.height), seed = Number(p.seed), t = o.t, col = rgbField(p.color, '168,188,208'), sl = Number(p.slant);
     const k = p.when === 'weather' ? clamp(o.lighting.w?.rain ?? 0, 0, 1) : 1, n = Math.round(w * H / 900 * Number(p.density) * k);
     if (n <= 0) return;
     x.strokeStyle = rgba(col, 0.32); x.lineWidth = 1; x.beginPath();
@@ -1097,16 +1116,16 @@ export const rainElement = piece({
 export const roofSignElement = piece({
   type: 'everyday.roof-sign', label: 'Rooftop letters on a steel frame (kit, Downtown)', category: 'signage', libraryUse: 'reusable',
   fields: {
-    text: text('Letters', 'FRESHCO'), size: num('Letter height', 26, 10, 80, 1, 'units'), legs: num('Frame height under the letters', 16, 0, 120, 1, 'units'),
-    colour: colourField('Letters', '#fff3dc'), backing: colourField('Backing box', '#b81f2a'), leaf: colourField('Mark', '#7cc04a'),
-    bulbs: bool('Bulbs round the box', true), seed: num('Seed', 1, 0, 1000000),
+    text: appearanceText(text('Letters', 'FRESHCO')), fontSize: semantic(num('Letter height', 26, 10, 80, 1, 'units'),{group:'Appearance',quantity:'length',unit:'artwork pixels',space:'artwork'}), frameHeight: shapeLength(num('Frame height under the letters', 16, 0, 120, 1, 'units')),
+    textColor: appearanceColor(colourField('Letters', '#fff3dc')), backing: appearanceColor(colourField('Backing box', '#b81f2a')), leaf: appearanceColor(colourField('Mark', '#7cc04a')),
+    bulbs: appearanceBoolean(bool('Bulbs round the box', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: signW(p), tall: Number(p.legs) + Number(p.size) + 12 }),
-  bounds: p => ({ x: -4, h: Number(p.legs) + Number(p.size) + 12, w: signW(p) + 8, tall: Number(p.legs) + Number(p.size) + 12 }),
+  size: p => ({ w: signW(p), tall: Number(p.frameHeight) + Number(p.fontSize) + 12 }),
+  bounds: p => ({ x: -4, h: Number(p.frameHeight) + Number(p.fontSize) + 12, w: signW(p) + 8, tall: Number(p.frameHeight) + Number(p.fontSize) + 12 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   paint(x, p, o) {
-    const s = String(p.text ?? ''), sz = Number(p.size), L = Number(p.legs), w = signW(p), bh = sz + 12, t = o.t, glow = 0.45 + 0.55 * o.lighting.lamps;
-    const back = rgbField(p.backing, '184,31,42'), ink = rgbField(p.colour, '255,243,220'), leaf = rgbField(p.leaf, '124,192,74');
+    const s = String(p.text ?? ''), sz = Number(p.fontSize), L = Number(p.frameHeight), w = signW(p), bh = sz + 12, t = o.t, glow = 0.45 + 0.55 * o.lighting.lamps;
+    const back = rgbField(p.backing, '184,31,42'), ink = rgbField(p.textColor, '255,243,220'), leaf = rgbField(p.leaf, '124,192,74');
     // the frame: posts on base plates, X-bracing, a rail for whoever changes the bulbs
     const posts: number[] = []; for (let k = 6; k < w - 12; k += 46) posts.push(Math.round(k)); posts.push(Math.round(w - 8));
     for (const px of posts) { R(x, px, 0, 3, L + bh, '#1c1d20'); R(x, px - 3, 0, 9, 2, '#2a2b2e'); }
@@ -1123,17 +1142,18 @@ export const roofSignElement = piece({
 });
 
 export const fireEscapeElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'everyday.fire-escape', label: 'Fire escape: landings down a building face (kit; the flights are level stairs)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Landing width', 64, 30, 200, 1, 'units'), landings: num('Landings', 2, 1, 10), storey: num('Storey height', 66, 40, 120, 1, 'units'),
-    top: num('Top landing height (from this piece’s foot)', 208, 40, 2000, 1, 'units'), door: bool('A window onto each landing', true),
-    plants: bool('Pots and a chair on the top landing', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Landing width', 64, 30, 200, 1, 'units')), landings: generationCount(num('Landings', 2, 1, 10)), floorHeight: shapeLength(num('Storey height', 66, 40, 120, 1, 'units')),
+    top: shapeLength(num('Top landing height (from this piece’s foot)', 208, 40, 2000, 1, 'units')), door: appearanceBoolean(bool('A window onto each landing', true)),
+    plants: appearanceBoolean(bool('Pots and a chair on the top landing', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.top) + 36 }),
   bounds: p => ({ x: -4, h: Number(p.top) + 36, w: Number(p.width) + 8, tall: Number(p.top) + 36 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: 0, h: Number(p.top), role: 'mount' } }),
   paint(x, p, o) {
-    const w = Number(p.width), n = Number(p.landings), st = Number(p.storey), top = Number(p.top), seed = Number(p.seed), lamp = 0.4 + 0.6 * o.lighting.lamps;
+    const w = Number(p.width), n = Number(p.landings), st = Number(p.floorHeight), top = Number(p.top), seed = Number(p.seed), lamp = 0.4 + 0.6 * o.lighting.lamps;
     for (let i = 0; i < n; i++) {
       const h = top - i * st; if (h < 10) break;
       // the opening onto the landing: a sash window, lit or dark
@@ -1148,10 +1168,11 @@ export const fireEscapeElement = piece({
 });
 
 export const deepGapElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'everyday.deep-gap', label: 'Down a gap between buildings: walls falling away to the lit street (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 30, 10, 200, 1, 'units'), height: num('Depth (roof to street)', 340, 40, 2000, 1, 'units'), light: colourField('Street light at the bottom', '#ffb35a'),
-    escape: bool('Fire escape zigzag on one wall', true), cables: bool('Cables slung across', true), steam: bool('Steam rising', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 30, 10, 200, 1, 'units')), height: shapeLength(num('Depth (roof to street)', 340, 40, 2000, 1, 'units')), light: appearanceColor(colourField('Street light at the bottom', '#ffb35a')),
+    escape: appearanceBoolean(bool('Fire escape zigzag on one wall', true)), cables: appearanceBoolean(bool('Cables slung across', true)), steam: appearanceBoolean(bool('Steam rising', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(p),
@@ -1171,10 +1192,14 @@ export const deepGapElement = piece({
     if (p.steam !== false) for (let k = 0; k < 4; k++) { const f = (t * 0.25 + k * 60 + seed * 13) % H; R(x, w / 2 - 3 + Math.sin(t / 40 + k) * 3, f, 6, 3, 'rgba(200,200,200,' + (0.1 * (1 - f / H)).toFixed(3) + ')'); }
   },
 });
-const signW = (p: Properties) => Math.round(String(p.text ?? '').length * Number(p.size) * 0.66 + Number(p.size) * 1.6 + 20);
+const signW = (p: Properties) => Math.round(String(p.text ?? '').length * Number(p.fontSize) * 0.66 + Number(p.fontSize) * 1.6 + 20);
 
 export const downtownEveryday: AssetDefinition[] = [
   freshcoFrontElement, trolleysElement, freshcoFloorElement, aisleEndElement, fruitDisplayElement, securityGateElement, selfCheckoutsElement, stockroomElement,
   dinerFrontElement, dinerSignElement, dinerRoomElement, dinerCounterElement, dinerBoothsElement,
   roofDeckElement, billboardElement, roofPlankElement, rainElement, roofSignElement, fireEscapeElement, deepGapElement,
 ];
+
+selfCheckoutsElement.spatial=combineControls(repeatedWidthControls('spacing','count',undefined,24),axisControl('gantryY','h',p=>Number(p.count)*Number(p.spacing)/2,'Gantry elevation'));
+dinerBoothsElement.spatial=repeatedWidthControls('boothWidth','count',undefined,13);
+roofSignElement.spatial=axisControl('frameHeight','h',0,'Frame / lettering baseline');

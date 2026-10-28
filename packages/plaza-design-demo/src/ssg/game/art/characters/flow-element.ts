@@ -1,3 +1,6 @@
+import {fixedGeometry} from '../core/spatial';
+import {contextualEditor} from '../core/fields';
+import {appearanceStructure,semantic,shapeLength} from '../core/fields';
 import {frameView} from '../core/view';
 import type {FlowPicture} from '../../engine/people';
 /**
@@ -41,7 +44,7 @@ function source(p: Properties,view:import('../core/view').View,at:{x:number;h:nu
 }
 function looks(p: Properties): Character[] {
   const key = p.looks as object; let l = looksOf.get(key); if (l) return l;
-  l = (p.looks as unknown as Properties[]).map(look => typeof look.rider==='string'?riderCharacter(look.rider as RiderKind,Number(look.phase??0),false,Number(look.ps??3)):residentCharacter({ kind: 'human', act: 'stand', depth: 'play', ...look }, { x: 0, h: 0 }));
+  l = (p.looks as unknown as Properties[]).map(look => typeof look.rider==='string'?riderCharacter(look.rider as RiderKind,Number(look.phase??0),false,Number(look.ps??3)):residentCharacter({ kind: 'human', act: 'stand', depthBand: 'play', ...look }, { x: 0, h: 0 }));
   looksOf.set(key, l); return l;
 }
 function world(p: Properties): FlowWorld {
@@ -53,18 +56,18 @@ function world(p: Properties): FlowWorld {
 }
 
 export const flowElement: AssetDefinition = {
-  type: 'character.flow',mobility:()=>true, version: 1, label: 'People flow: walkers, queues, riders boarding (character kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['people'],
+  type: 'character.flow', selection:'region',mobility:()=>true, version: 1, label: 'People flow: walkers, queues, riders boarding (character kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['people'],
   fields: {
-    flow: { kind: 'json', label: 'Flow (seed, speed, spawn, route)', default: { seed: 1, speed: 21, spawn: { kind: 'interval', every: 7 }, route: [{ kind: 'walk', x: 0, h: 0 }, { kind: 'leave', x: 300, h: 0 }] }, validate: validFlow },
-    looks: { kind: 'json', label: 'Looks (resident fields, or rider/phase/ps)', default: [{ seed: 1 }], validate: v => { if (!Array.isArray(v) || !v.length || v.length > 24 || !v.every(object)) throw new Error('Looks: expected a list of resident looks');for(const look of v as Record<string,Value>[])if(look.rider!==undefined&&(!KINDS.includes(look.rider as RiderKind)||look.phase!==undefined&&(typeof look.phase!=='number'||!Number.isFinite(look.phase)||look.phase<0)||look.ps!==undefined&&(typeof look.ps!=='number'||!Number.isFinite(look.ps)||look.ps<1||look.ps>6)))throw Error('Invalid flow rider look'); } },
-    vehicle: { kind: 'json', label: 'The vehicle a board step waits for (id, doors, open, close) or null', default: null, validate: v => { if (v !== null && !(object(v)&&typeof v.frame==='string'&&typeof v.board==='string'&&typeof v.alight==='string') && !(object(v) && typeof v.id === 'string' && Array.isArray(v.doors) && v.doors.every(d => typeof d === 'number') && typeof v.open === 'number' && typeof v.close === 'number')) throw new Error('Vehicle: expected { id, doors, open, close } or null'); } },
-    clock: { kind: 'select', label: 'Clock', options: ['frame', 'sequence','scene'], default: 'frame' },
-    exit:{kind:'json',label:'Walk after alighting',default:[{kind:'leave',x:300,h:0}],validate:v=>{if(!Array.isArray(v)||!v.length||v.length>24||!v.every(w=>object(w)&&['walk','wait','leave'].includes(String(w.kind))&&typeof w.x==='number'))throw Error('Exit route needs walk, wait or leave points');}},
-    ride: { kind: 'number', label: 'Riding step (people stand on it; -1 none)', default: -1, min: -1, max: 24, step: 1 },
-    lift: { kind: 'number', label: 'Riders stand this much higher on the moving step', default: 6, min: 0, max: 60 },
+    flow: contextualEditor(semantic({ kind: 'json', label: 'Flow (seed, speed, spawn, route)', default: { seed: 1, speed: 21, spawn: { kind: 'interval', every: 7 }, route: [{ kind: 'walk', x: 0, h: 0 }, { kind: 'leave', x: 300, h: 0 }] }, validate: validFlow },{"group":"Motion","quantity":"structured","unit":"structured"}),'flow','Edit passenger flow'),
+    looks: contextualEditor(semantic({ kind: 'json', label: 'Looks (resident fields, or rider/phase/ps)', default: [{ seed: 1 }], validate: v => { if (!Array.isArray(v) || !v.length || v.length > 24 || !v.every(object)) throw new Error('Looks: expected a list of resident looks');for(const look of v as Record<string,Value>[])if(look.rider!==undefined&&(!KINDS.includes(look.rider as RiderKind)||look.phase!==undefined&&(typeof look.phase!=='number'||!Number.isFinite(look.phase)||look.phase<0)||look.ps!==undefined&&(typeof look.ps!=='number'||!Number.isFinite(look.ps)||look.ps<1||look.ps>6)))throw Error('Invalid flow rider look'); } },{"group":"Motion","quantity":"structured","unit":"structured"}),'flow','Edit passenger flow'),
+    vehicle: contextualEditor(appearanceStructure({ kind: 'json', label: 'The vehicle a board step waits for (id, doors, open, close) or null', default: null, validate: v => { if (v !== null && !(object(v)&&typeof v.frame==='string'&&typeof v.board==='string'&&typeof v.alight==='string') && !(object(v) && typeof v.id === 'string' && Array.isArray(v.doors) && v.doors.every(d => typeof d === 'number') && typeof v.open === 'number' && typeof v.close === 'number')) throw new Error('Vehicle: expected { id, doors, open, close } or null'); } }),'flow','Edit passenger flow'),
+    clock: semantic({ kind: 'select', label: 'Clock', options: ['frame', 'sequence','scene'], default: 'frame' },{"group":"Motion","quantity":"choice","unit":"choice"}),
+    exit:contextualEditor(appearanceStructure({kind:'json',label:'Walk after alighting',default:[{kind:'leave',x:300,h:0}],validate:v=>{if(!Array.isArray(v)||!v.length||v.length>24||!v.every(w=>object(w)&&['walk','wait','leave'].includes(String(w.kind))&&typeof w.x==='number'))throw Error('Exit route needs walk, wait or leave points');}}),'flow','Edit passenger flow'),
+    ride: semantic({ kind: 'number', label: 'Riding step (people stand on it; -1 none)', default: -1, min: -1, max: 24, step: 1 },{"group":"Appearance","quantity":"index","unit":"integer"}),
+    riderLift: shapeLength({ kind: 'number', label: 'Riders stand this much higher on the moving step', default: 6, min: 0, max: 60 }),
   },
   visualFields: { people:{kind:'json',label:'Prepared live passengers',default:null,validate:v=>{if(v!==null&&(!Array.isArray(v)||v.length>128||!v.every(p=>object(p)&&typeof p.x==='number'&&typeof p.h==='number')))throw Error('Invalid prepared people');}}, sequenceTime: { kind: 'number', label: 'Sequence seconds', default: -1, animatable: true } },
-  bounds: (p,state,context) => { const r = [...source(p,context?.view??frameView(0),context?.placement??{x:0,h:0}).route,...(p.exit as unknown as {x:number;h?:number}[]),...((state.people as unknown as FlowPicture[]|null)??[])], a = Math.min(...r.map(w => w.x)), b = Math.max(...r.map(w => w.x)),lo=Math.min(...r.map(w=>w.h??0)),hi=Math.max(...r.map(w=>w.h??0)); return { x: a - 20, h: hi+160, w: b - a + 40, tall: hi-lo+220 }; },
+  bounds: (p,_state,context) => { const r = [...source(p,context?.view??frameView(0),context?.placement??{x:0,h:0}).route,...(p.exit as unknown as {x:number;h?:number}[])], a = Math.min(...r.map(w => w.x)), b = Math.max(...r.map(w => w.x)),lo=Math.min(...r.map(w=>w.h??0)),hi=Math.max(...r.map(w=>w.h??0)); return { x: a - 20, h: hi+160, w: b - a + 40, tall: hi-lo+220 }; },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(x, v, p, state, _pass, at) {
     const t = p.clock === 'sequence' ? (Number(state.sequenceTime)>=0?Number(state.sequenceTime):v.sequence?.time??-1) : v.t / 60;
@@ -80,9 +83,11 @@ export const flowElement: AssetDefinition = {
       const look = typeof recipe.rider==='string'?riderCharacter(recipe.rider as RiderKind,Number(recipe.phase??0),person.act==='sit',Number(recipe.ps??3)):body[Number(person.look)] ?? body[0];
       const pose = prepareCharacter(look, f, { x: 0, h: 0, act: person.act==='sit'?(typeof recipe.rider==='string'?look.act:'sit'):moving ? 'walk' : person.act === 'queue' ? 'queue' : typeof recipe.rider==='string'?look.act:'stand',...('seat'in person?{seat:Number(person.seat)}:{}), facing: person.facing as 1 | -1 }, moving);
       if (!pose.visible) continue;
-      const y = v.y(at.h + (person.h ?? 0) + (riding && person.h !== undefined ? n(p, 'lift') : 0));
+      const y = v.y(at.h + (person.h ?? 0) + (riding && person.h !== undefined ? n(p, 'riderLift') : 0));
       x.save(); x.translate(Math.round(sx), Math.round(y));
       try { drawCharacterFrame(x, { ...v, sx: wx => wx, y: h => -h, gy: 0 }, pose.character, pose.ready!, pose.pixelSize!, pose.frame!, pose.height!); } finally { x.restore(); }
     }
   },
 };
+
+flowElement.spatial=fixedGeometry('The flow follows its typed route, queues and boarding steps. It has no scalar generated width or height; riderLift offsets riding people rather than resizing the route. Edit its route and boarding settings.');

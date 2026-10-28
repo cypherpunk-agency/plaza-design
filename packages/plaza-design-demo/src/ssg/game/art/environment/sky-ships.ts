@@ -13,24 +13,25 @@ export interface Ship { kind: SkyShipKind; ps: number; y: number; speed: number;
 /** Units per sprite pixel inside the air class (air-traffic.ts SPRITE_PX). */
 const SPRITE_PX = 9;
 
-/** Same seeded fleet for the game and the isolated scene composer. */
-export function createSkyShips(seed = 3): Ship[] {
-  let state = seed;
-  const random = () => (state = (state * 9301 + 49297) % 233280) / 233280;
-  const kinds: SkyShipKind[] = ['spinner', 'spinner', 'freighter', 'skydrone'];
-  return Array.from({ length: 9 }, (_, i) => {
-    const depth = 0.15 + (i / 9) * 0.5;
-    return { kind: kinds[i % kinds.length], ps: depth > 0.45 ? 2 : 1, y: 18 + random() * 120, speed: 0.04 + depth * 0.12, offset: random() * 3000, flip: random() < 0.5, depth };
-  });
+/** Deterministic particle configuration; these are parts of one background generator. */
+export function createSkyShips(seed=3):Ship[]{
+  let state=seed;
+  const random=()=>(state=(state*9301+49297)%233280)/233280;
+  const kinds:SkyShipKind[]=['spinner','spinner','freighter','skydrone'];
+  return Array.from({length:9},(_,i)=>{const depth=.15+i/9*.5;return{kind:kinds[i%kinds.length],ps:depth>.45?2:1,y:18+random()*120,speed:.04+depth*.12,offset:random()*3000,flip:random()<.5,depth};});
 }
-export function drawSkyShips(x: CanvasRenderingContext2D, v: View, ships: readonly Ship[]) {
-  const span = v.viewW + 260;
-  ships.forEach((s, i) => {
+
+/** One generator paint: preserve native particle order and the shared Canvas context. */
+export function drawSkyShips(x:CanvasRenderingContext2D,v:View,ships:readonly Ship[],route={from:-130,length:3000}){
+  for(const ship of ships)drawSkyCraft(x,v,ship,route);
+}
+
+export function drawSkyCraft(x: CanvasRenderingContext2D, v: View, s: Ship,route={from:-130,length:3000}) {
     const sc = s.ps / SPRITE_PX, dir = s.flip ? -1 : 1, bottom = s.y + 10;
-    const px = laneAt({ mode: 'loop', dir, speed: s.speed, length: span, start: s.offset - (v.skyCam??v.cam) * s.depth }, v.t).offset - 130;
+    const px = route.from+laneAt({ mode: 'loop', dir, speed: s.speed, length: route.length, start: s.offset }, v.reduced?0:v.t).offset-(v.skyCam??v.cam)*s.depth;
     // the sprite's frame is centred, so its underside lands where the old sprite stood
     x.save(); x.translate(Math.round(px), bottom - spriteShipRows(s.kind) * s.ps / 2); x.scale(sc, sc);
-    drawAircraft(x, s.kind, { t: v.t, face: dir as 1 | -1, scale: sc, phase: i * 13 });
+    drawAircraft(x, s.kind, { t: v.t, face: dir as 1 | -1, scale: sc });
     x.restore();
     if (s.kind === 'skydrone' && s.ps > 1) {
       // a drone near enough to see its light on the street under it
@@ -39,5 +40,4 @@ export function drawSkyShips(x: CanvasRenderingContext2D, v: View, ships: readon
       x.fillStyle = beam;
       x.beginPath(); x.moveTo(px - 2, bottom); x.lineTo(px - 26, bottom + 80); x.lineTo(px + 26, bottom + 80); x.lineTo(px + 2, bottom); x.closePath(); x.fill();
     }
-  });
 }

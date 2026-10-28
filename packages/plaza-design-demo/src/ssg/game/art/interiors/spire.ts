@@ -1,3 +1,8 @@
+import {screenBounds} from '../assemblies/static-bounds';
+import {velocity} from '../core/fields';
+import {seconds} from '../core/fields';
+import {rectangleControls,combineControls,axisControl,conditionalControls,atDepthControls,depthControl} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * INTERIOR KIT, spire: inside the monolith and up on it (Tommi, 2026-10-21: district interiors).
  *
@@ -53,20 +58,21 @@ function ring(x: CanvasRenderingContext2D, cx: number, cy: number, r: number, co
   x.fillStyle = col;
   for (let i = 0; i < n; i++) { const a = from + (i / n) * Math.PI * 2; x.fillRect(Math.round(cx + Math.cos(a) * r) - 1, Math.round(cy + Math.sin(a) * r) - 1, 2, 2); }
 }
-const stoneFields = () => ({ stone: colour('Stone', 'Black stone'), gold: colour('Gold', 'Spire gold') });
+const stoneFields = () => ({ stone: appearanceStructure(colour('Stone', 'Black stone')), gold: appearanceStructure(colour('Gold', 'Spire gold')) });
 
 // ---------------------------------------------------------------- the lobby
 
 export const atriumElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.atrium', label: 'Spire atrium (interior kit: black stone, gold, light from far above)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 1400, 100, 6000, 1, 'units'), height: num('Height (runs on out of the view)', 900, 150, 4000, 1, 'units'), ...stoneFields(),
-    bay: num('Column spacing', 160, 40, 600, 1, 'units'), column: num('Column width', 26, 6, 120, 1, 'units'),
-    seams: num('Gold seams', 0.6, 0, 1, 0.05), galleryFrom: num('First gallery above (out of reach)', 360, 60, 4000, 1, 'units'),
-    galleries: num('Gallery spacing (0: none)', 140, 0, 600, 1, 'units'),
-    shafts: num('Daylight from the roof', 0.6, 0, 1, 0.05), slant: num('Light slant', 0.3, -1, 1, 0.05), sheen: num('Floor polish', 0.6, 0, 1, 0.05),
-    entry: num('Portal from the left (inside)', 40, 0, 6000, 1, 'units'), entryWidth: num('Portal width (0: none)', 110, 0, 400, 1, 'units'),
-    entryHeight: num('Portal height', 170, 40, 600, 1, 'units'), cut: bool('Cut walls at both ends', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1400, 100, 6000, 1, 'units')), height: shapeLength(num('Height (runs on out of the view)', 900, 150, 4000, 1, 'units')), ...stoneFields(),
+    bay: shapePosition(num('Column spacing', 160, 40, 600, 1, 'units')), column: shapeLength(num('Column width', 26, 6, 120, 1, 'units')),
+    seams: appearanceRatio(num('Gold seams', 0.6, 0, 1, 0.05)), galleryFrom: shapeLength(num('First gallery above (out of reach)', 360, 60, 4000, 1, 'units')),
+    gallerySpacing: shapeLength(num('Gallery spacing (0: none)', 140, 0, 600, 1, 'units')),
+    shafts: appearanceRatio(num('Daylight from the roof', 0.6, 0, 1, 0.05)), slant: semantic(num('Light slant', 0.3, -1, 1, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), sheen: appearanceRatio(num('Floor polish', 0.6, 0, 1, 0.05)),
+    entry: shapePosition(num('Portal from the left (inside)', 40, 0, 6000, 1, 'units')), entryWidth: shapeLength(num('Portal width (0: none)', 110, 0, 400, 1, 'units')),
+    entryHeight: shapeLength(num('Portal height', 170, 40, 600, 1, 'units')), cut: appearanceBoolean(bool('Cut walls at both ends', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) + 60 }),
@@ -81,7 +87,7 @@ export const atriumElement = piece({
     for (let k = 20; k < w; k += 40) box(x, 'rgba(255,255,255,.018)', k, 0, 1, H);
     for (let h = 80; h < H; h += 80) box(x, 'rgba(0,0,0,.35)', 0, h, w, 1);
     // galleries nobody down here reaches: thin ledges, a row of small cold lights
-    const gs = Number(p.galleries);
+    const gs = Number(p.gallerySpacing);
     if (gs > 0) for (let h = Number(p.galleryFrom), n = 0; h < H; h += gs, n++) {
       box(x, '#141419', 0, h - 4, w, 4); box(x, rgba(g, 0.35), 0, h, w, 1);
       for (let k = 14 + (n % 3) * 7; k < w; k += 28) box(x, rgba(COLD, 0.2 + 0.2 * (n % 2)), k, h - 3, 2, 1);
@@ -151,17 +157,18 @@ function calmData(x: CanvasRenderingContext2D, x0: number, W: number, H: number,
 }
 
 export const slowScreenElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.slow-screen', label: 'Wall-sized slow screen (interior kit: the Registry seal, calm data)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 320, 40, 2000, 1, 'units'), height: num('Height', 150, 20, 1000, 1, 'units'), shows: select('Shows', ['seal', 'data', 'both'], 'both'),
-    speed: num('Speed', 0.3, 0, 2, 0.05), glow: num('Brightness', 0.6, 0, 1, 0.05), ink: select('Light', ['cold', 'gold'], 'cold'),
-    caption: text('Caption under the seal (empty: none)', ''), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 320, 40, 2000, 1, 'units')), height: shapeLength(num('Height', 150, 20, 1000, 1, 'units')), shows: appearanceChoice(select('Shows', ['seal', 'data', 'both'], 'both')),
+    playbackRate: semantic(num('Speed', 0.3, 0, 2, 0.05),{"group":"Motion","quantity":"factor","unit":"factor"}), glow: appearanceRatio(num('Brightness', 0.6, 0, 1, 0.05)), ink: appearanceChoice(select('Light', ['cold', 'gold'], 'cold')),
+    caption: appearanceText(text('Caption under the seal (empty: none)', '')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width) + 12, tall: Number(p.height) + 12 }),
   bounds: p => ({ x: -6, h: Number(p.height) + 6, w: Number(p.width) + 12, tall: Number(p.height) + 12 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, middle: { x: Number(p.width) / 2, h: Number(p.height) / 2, role: 'mount' } }),
   paint(x, p, o) {
-    const W = Number(p.width), H = Number(p.height), k = Number(p.glow), ink = p.ink === 'gold' ? GOLD : COLD, t = o.t * Number(p.speed);
+    const W = Number(p.width), H = Number(p.height), k = Number(p.glow), ink = p.ink === 'gold' ? GOLD : COLD, t = o.t * Number(p.playbackRate);
     // set flush into the stone: a black recess, gold hairlines
     box(x, '#030304', -6, -6, W + 12, H + 12); box(x, rgba(GOLD, 0.55), -6, H + 5, W + 12, 1); box(x, rgba(GOLD, 0.3), -6, -6, W + 12, 1);
     box(x, '#0a0c10', 0, 0, W, H);
@@ -176,10 +183,11 @@ export const slowScreenElement = piece({
 });
 
 export const receptionElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.reception', label: 'Reception desk (interior kit: one long stone counter)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 200, 40, 1000, 1, 'units'), height: num('Counter height', 24, 12, 44, 1, 'units'), ...stoneFields(),
-    screens: num('Screens on the desk', 2, 0, 10), glow: num('Screen glow', 0.6, 0, 1, 0.05), plaque: text('Plaque on the front (empty: none)', ''),
+    width: shapeLength(num('Width', 200, 40, 1000, 1, 'units')), height: shapeLength(num('Counter height', 24, 12, 44, 1, 'units')), ...stoneFields(),
+    screens: generationCount(num('Screens on the desk', 2, 0, 10)), glow: appearanceRatio(num('Screen glow', 0.6, 0, 1, 0.05)), plaque: appearanceText(text('Plaque on the front (empty: none)', '')),
   },
   size: p => ({ w: Number(p.width) + 6, tall: Number(p.height) + 16 }),
   bounds: p => ({ x: -3, h: Number(p.height) + 14, w: Number(p.width) + 6, tall: Number(p.height) + 16 }),
@@ -204,17 +212,18 @@ export const receptionElement = piece({
 });
 
 export const idGatesElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'interior.id-gates', label: 'ID gates (interior kit: turnstile lanes, glass flaps, scanners)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    lanes: num('Lanes', 4, 1, 16), lane: num('Lane width', 22, 12, 60, 1, 'units'), height: num('Post height', 24, 12, 44, 1, 'units'),
-    glass: num('Glass flaps', 0.6, 0, 1, 0.05), cycle: num('Someone passes every (frames)', 300, 60, 3000, 10), refuse: num('Share refused', 0.2, 0, 1, 0.05),
-    ...stoneFields(), seed: num('Seed', 1, 0, 1000000),
+    lanes: generationCount(num('Lanes', 4, 1, 16)), lane: shapeLength(num('Lane width', 22, 12, 60, 1, 'units')), height: shapeLength(num('Post height', 24, 12, 44, 1, 'units')),
+    glass: appearanceRatio(num('Glass flaps', 0.6, 0, 1, 0.05)), cycleDuration:seconds("Cycle duration",5,{"min":1,"max":50,"step":0.16666666666666666}), refuse: appearanceRatio(num('Share refused', 0.2, 0, 1, 0.05)),
+    ...stoneFields(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.lanes) * Number(p.lane) + 5, tall: Number(p.height) + 2 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 2, w: Number(p.lanes) * Number(p.lane) + 5, tall: Number(p.height) + 4 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.lanes) * Number(p.lane) + 5, h: 0, role: 'mount' } }),
   paint(x, p, o) {
-    const n = Number(p.lanes), L = Number(p.lane), H = Number(p.height), g = rgbOr(p.gold, GOLD), st = hexOr(p.stone, '#17181d'), cyc = Number(p.cycle), seed = Number(p.seed);
+    const n = Number(p.lanes), L = Number(p.lane), H = Number(p.height), g = rgbOr(p.gold, GOLD), st = hexOr(p.stone, '#17181d'), cyc = (Number(p.cycleDuration)*60), seed = Number(p.seed);
     box(x, rgba(g, 0.45), 0, -2, n * L + 5, 1);
     const status: string[] = [];
     for (let i = 0; i < n; i++) {
@@ -236,8 +245,9 @@ export const idGatesElement = piece({
 });
 
 export const benchesElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.benches', label: 'Stone benches (interior kit: a waiting area nobody uses)', category: 'architecture', libraryUse: 'reusable',
-  fields: { count: num('Benches', 2, 1, 10), width: num('Bench width', 46, 16, 160, 1, 'units'), gap: num('Gap', 18, 0, 200, 1, 'units'), seat: num('Seat height', 10, 6, 24, 1, 'units'), ...stoneFields() },
+  fields: { count: generationCount(num('Benches', 2, 1, 10)), width: shapeLength(num('Bench width', 46, 16, 160, 1, 'units')), gap: shapeLength(num('Gap', 18, 0, 200, 1, 'units')), seat: shapeLength(num('Seat height', 10, 6, 24, 1, 'units')), ...stoneFields() },
   size: p => ({ w: Number(p.count) * (Number(p.width) + Number(p.gap)), tall: Number(p.seat) + 2 }),
   bounds: p => ({ x: 0, h: Number(p.seat) + 1, w: Number(p.count) * (Number(p.width) + Number(p.gap)) - Number(p.gap), tall: Number(p.seat) + 8 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
@@ -253,11 +263,12 @@ export const benchesElement = piece({
 });
 
 export const mezzanineElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.mezzanine', label: 'Mezzanine (interior kit: stone slab, glass balustrade, one column)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 540, 40, 4000, 1, 'units'), thickness: num('Slab thickness', 12, 4, 40, 1, 'units'), rail: num('Balustrade height (0: none)', 26, 0, 60, 1, 'units'),
-    glass: num('Glass', 0.5, 0, 1, 0.05), downlights: num('Lights under the slab', 0.7, 0, 1, 0.05),
-    column: bool('A column down to the floor', true), support: num('Column from the left', 100, 0, 4000, 1, 'units'), clearance: num('Height over the floor below', 140, 20, 1000, 1, 'units'),
+    width: shapeLength(num('Width', 540, 40, 4000, 1, 'units')), thickness: shapeLength(num('Slab thickness', 12, 4, 40, 1, 'units')), rail: shapeLength(num('Balustrade height (0: none)', 26, 0, 60, 1, 'units')),
+    glass: appearanceRatio(num('Glass', 0.5, 0, 1, 0.05)), downlights: appearanceRatio(num('Lights under the slab', 0.7, 0, 1, 0.05)),
+    column: appearanceBoolean(bool('A column down to the floor', true)), support: shapePosition(num('Column from the left', 100, 0, 4000, 1, 'units')), clearance: shapeLength(num('Height over the floor below', 140, 20, 1000, 1, 'units')),
     ...stoneFields(),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.rail) + 2 }),
@@ -288,17 +299,18 @@ export const mezzanineElement = piece({
 });
 
 export const liftBankElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.lift-bank', label: 'Lift bank (interior kit: gold doors, the sky elevator)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    count: num('Lifts', 3, 1, 10), width: num('Door width', 40, 20, 120, 1, 'units'), height: num('Door height', 58, 44, 160, 1, 'units'), gap: num('Gap', 18, 0, 120, 1, 'units'),
-    cycle: num('A car arrives every (frames)', 1100, 120, 20000, 10), indicators: bool('Floor indicators', true), label: text('Plaque over the bank (empty: none)', ''),
-    ...stoneFields(), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Lifts', 3, 1, 10)), width: shapeLength(num('Door width', 40, 20, 120, 1, 'units')), height: shapeLength(num('Door height', 58, 44, 160, 1, 'units')), gap: shapeLength(num('Gap', 18, 0, 120, 1, 'units')),
+    cycleDuration:seconds("Cycle duration",18.333333333333332,{"min":2,"max":333.3333333333333,"step":0.16666666666666666}), indicators: appearanceBoolean(bool('Floor indicators', true)), label: appearanceText(text('Plaque over the bank (empty: none)', '')),
+    ...stoneFields(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.count) * Number(p.width) + (Number(p.count) - 1) * Number(p.gap) + 24, tall: Number(p.height) + 26 }),
   bounds: p => { const w = Number(p.count) * Number(p.width) + (Number(p.count) - 1) * Number(p.gap) + 24; return { x: 0, h: Number(p.height) + 26, w, tall: Number(p.height) + 26 }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, middle: { x: (Number(p.count) * Number(p.width) + (Number(p.count) - 1) * Number(p.gap) + 24) / 2, h: 0, role: 'entrance' } }),
   paint(x, p, o) {
-    const n = Number(p.count), W = Number(p.width), H = Number(p.height), gap = Number(p.gap), cyc = Number(p.cycle), seed = Number(p.seed), g = rgbOr(p.gold, GOLD);
+    const n = Number(p.count), W = Number(p.width), H = Number(p.height), gap = Number(p.gap), cyc = (Number(p.cycleDuration)*60), seed = Number(p.seed), g = rgbOr(p.gold, GOLD);
     const total = n * W + (n - 1) * gap + 24;
     box(x, hexOr(p.stone, '#060608'), 0, 0, total, H + 26); box(x, rgba(g, 0.5), 0, H + 25, total, 1); box(x, rgba(g, 0.3), 0, 0, 1, H + 26); box(x, rgba(g, 0.3), total - 1, 0, 1, H + 26);
     for (let i = 0; i < n; i++) {
@@ -337,21 +349,21 @@ function framed(x: CanvasRenderingContext2D, v: View, at: { x: number; h: number
 }
 
 export const cloudSeaElement: AssetDefinition = {
-  type: 'deck.cloud-sea', version: 1, label: 'Sea of cloud, towers poking through (Spire deck, distance)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'deck.cloud-sea', selection:'region',version: 1, label: 'Sea of cloud, towers poking through (Spire deck, distance)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    width: num('Width', 4000, 200, 40000, 10, 'units'), parallax: num('Parallax (0: fixed, 1: with the deck)', 0.2, 0, 1, 0.01),
-    horizon: num('Horizon height', 70, -200, 400, 1, 'units'), below: num('Clouds down to (below the deck)', 120, 0, 600, 1, 'units'),
-    banks: num('Cloud banks', 5, 1, 8), drift: num('Drift', 0.3, 0, 3, 0.05), towers: num('Towers poking through', 7, 0, 20),
-    towerMax: num('Tallest tower over the horizon', 200, 20, 600, 1, 'units'), haze: num('Haze', 0.5, 0, 1, 0.05),
-    cloud: colour('Cloud colour', 'By the clock'), wind: num('Wind streaks', 0.4, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 4000, 200, 40000, 10, 'units')), parallax: semantic(num('Parallax (0: fixed, 1: with the deck)', 0.2, 0, 1, 0.01),{"group":"Depth","quantity":"factor","unit":"factor"}),
+    horizonY: shapePosition(num('Horizon height', 70, -200, 400, 1, 'units')), depthBelowDeck: shapeLength(num('Clouds down to (below the deck)', 120, 0, 600, 1, 'units')),
+    banks: generationCount(num('Cloud banks', 5, 1, 8)), velocityX:velocity('Drift',18,{min:0,max:180,step:3}), towers: generationCount(num('Towers poking through', 7, 0, 20)),
+    maxTowerHeight: shapeLength(num('Tallest tower over the horizon', 200, 20, 600, 1, 'units')), haze: appearanceRatio(num('Haze', 0.5, 0, 1, 0.05)),
+    cloud: appearanceStructure(colour('Cloud colour', 'By the clock')), wind: appearanceRatio(num('Wind streaks', 0.4, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   bounds: (p, _s, c) => {
-    const par = Number(p.parallax), at = c?.placement, shift = at && c ? (c.view.cam * (at.parallax - par)) / (at.scale * at.facing) : 0, tall = Number(p.horizon) + Number(p.towerMax) + 40;
-    return { x: shift, h: tall, w: Number(p.width), tall: tall + Number(p.below) };
+    const top=Number(p.horizonY)+Number(p.maxTowerHeight)+40,w=Number(p.width),height=top+Number(p.depthBelowDeck),fallback={x:0,h:top,w,tall:height};
+    return c?screenBounds(c,{x:c.view.sx(c.placement.x,Number(p.parallax)),y:c.view.y(c.placement.h+top),w,h:height},fallback):fallback;
   },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(x, v, p: Properties, _s, _pass, at) {
-    const par = Number(p.parallax), hz = Number(p.horizon), d = clamp01(v.lighting.daylight), seed = Number(p.seed), t = v.t;
+    const par = Number(p.parallax), hz = Number(p.horizonY), d = clamp01(v.lighting.daylight), seed = Number(p.seed), t = v.t;
     const left = Math.max(0, Math.floor(v.sx(at.x, par))), right = Math.min(v.viewW, Math.ceil(v.sx(at.x + Number(p.width), par)));
     if (right <= left) return;
     const base = v.y(at.h), Y = (h: number) => Math.round(base - h);
@@ -363,7 +375,7 @@ export const cloudSeaElement: AssetDefinition = {
     // the towers: dark slabs, hazed by distance, a cold rim, a beacon on top
     const r = rng(seed * 131 + 7);
     for (let i = 0; i < Number(p.towers); i++) {
-      const wx = r() * Number(p.width), tw = 8 + Math.floor(r() * 18), th = hz + 16 + Math.floor(r() * (Number(p.towerMax) - 16)), hk = haze * (0.4 + 0.6 * r()), bl = r();
+      const wx = r() * Number(p.width), tw = 8 + Math.floor(r() * 18), th = hz + 16 + Math.floor(r() * (Number(p.maxTowerHeight) - 16)), hk = haze * (0.4 + 0.6 * r()), bl = r();
       const sx = Math.round(v.sx(at.x + wx, par));
       if (sx + tw < left || sx > right) continue;
       x.fillStyle = 'rgb(' + mix('#0e1014', top, hk * 0.7) + ')'; x.fillRect(sx, Y(th), tw, Y(hz - 40) - Y(th));
@@ -373,7 +385,7 @@ export const cloudSeaElement: AssetDefinition = {
       x.fillStyle = Math.floor((t + bl * 300) / 45) % 2 === 0 ? rgba(RED, 0.9) : rgba(RED, 0.25); x.fillRect(sx + (tw >> 1) - 1, Y(th + 19), 3, 2);
     }
     // the banks, far (flat, pale, at the horizon) to near (big billows below the deck, faster)
-    const banks = Number(p.banks), below = Number(p.below), drift = Number(p.drift);
+    const banks = Number(p.banks), below = Number(p.depthBelowDeck), drift = Number(p.velocityX)/60;
     for (let b = 0; b < banks; b++) {
       const f = banks === 1 ? 1 : b / (banks - 1), hb = hz - Math.pow(f, 1.2) * (hz + below - 20), amp = 3 + f * 22, fr = 0.05 - f * 0.035;
       const bpar = par * (1 + f * 2.5), speed = drift * (0.15 + f * 0.6), off = b * 977 + seed * 13;
@@ -396,19 +408,20 @@ export const cloudSeaElement: AssetDefinition = {
 };
 
 export const spireWallElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'deck.spire-wall', label: 'The Spire’s face (deck: black glass rising out of the view, a crew bay)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 430, 40, 4000, 1, 'units'), height: num('Height (runs on out of the view)', 1400, 100, 6000, 1, 'units'), below: num('Runs on below the deck', 90, 0, 600, 1, 'units'),
-    ...stoneFields(), seams: num('Gold seams', 0.6, 0, 1, 0.05), seamGap: num('Seam spacing', 48, 8, 400, 1, 'units'), panes: num('Pane grid', 0.5, 0, 1, 0.05),
-    edge: num('Lit corner', 0.7, 0, 1, 0.05), corner: select('Corner on the', ['right', 'left'], 'right'),
-    bayFrom: num('Crew bay from the left', 120, 0, 4000, 1, 'units'), bayWidth: num('Crew bay width (0: none)', 190, 0, 2000, 1, 'units'),
-    bayHeight: num('Crew bay height', 74, 30, 300, 1, 'units'), bayLit: num('Crew bay lights', 0.8, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 430, 40, 4000, 1, 'units')), height: shapeLength(num('Height (runs on out of the view)', 1400, 100, 6000, 1, 'units')), below: shapeLength(num('Runs on below the deck', 90, 0, 600, 1, 'units')),
+    ...stoneFields(), seams: appearanceRatio(num('Gold seams', 0.6, 0, 1, 0.05)), seamSpacing: shapeLength(num('Seam spacing', 48, 8, 400, 1, 'units')), panes: appearanceRatio(num('Pane grid', 0.5, 0, 1, 0.05)),
+    edge: appearanceRatio(num('Lit corner', 0.7, 0, 1, 0.05)), corner: appearanceChoice(select('Corner on the', ['right', 'left'], 'right')),
+    bayFrom: shapePosition(num('Crew bay from the left', 120, 0, 4000, 1, 'units')), bayWidth: shapeLength(num('Crew bay width (0: none)', 190, 0, 2000, 1, 'units')),
+    bayHeight: shapeLength(num('Crew bay height', 74, 30, 300, 1, 'units')), bayLit: appearanceRatio(num('Crew bay lights', 0.8, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) + Number(p.below) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, bay: { x: Number(p.bayFrom) + Number(p.bayWidth) / 2, h: 0, role: 'entrance' } }),
   paint(x, p, o) {
-    const W = Number(p.width), H = Number(p.height), B = Number(p.below), g = rgbOr(p.gold, GOLD), d = daylight(o), seams = Number(p.seams), gap = Number(p.seamGap), pn = Number(p.panes);
+    const W = Number(p.width), H = Number(p.height), B = Number(p.below), g = rgbOr(p.gold, GOLD), d = daylight(o), seams = Number(p.seams), gap = Number(p.seamSpacing), pn = Number(p.panes);
     box(x, hexOr(p.stone, '#060709'), 0, -B, W, H + B);
     const sky = x.createLinearGradient(0, y(H), 0, y(-B)); sky.addColorStop(0, rgba('130,150,180', 0.06 + 0.12 * d)); sky.addColorStop(1, rgba('130,150,180', 0.02));
     x.fillStyle = sky; x.fillRect(0, y(H), W, H + B);
@@ -431,22 +444,23 @@ export const spireWallElement = piece({
 });
 
 export const platformElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'deck.platform', label: 'Docking deck (deck: cantilevered slab, truss, edge lights, mast)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 1200, 40, 6000, 1, 'units'), thickness: num('Slab thickness', 14, 4, 60, 1, 'units'), surface: colour('Deck', 'Dark steel'),
-    from: num('Truss from (where the wall is)', 430, 0, 6000, 1, 'units'), depth: num('Truss depth at the wall (0: none)', 56, 0, 300, 1, 'units'),
-    lights: num('Edge light spacing', 24, 6, 200, 1, 'units'), lightCol: colour('Edge lights', 'Spire gold'), chase: num('Lights running (speed)', 0.6, 0, 3, 0.05),
-    chaseTo: num('Lights run towards', 850, 0, 6000, 1, 'units'), mast: num('Mast at the tip (0: none)', 80, 0, 400, 1, 'units'),
-    sock: bool('Windsock on the mast', true), wind: num('Wind', 0.6, 0, 1, 0.05), rail: num('Railing at the tip (0: none)', 30, 0, 60, 1, 'units'),
+    width: shapeLength(num('Width', 1200, 40, 6000, 1, 'units')), thickness: shapeLength(num('Slab thickness', 14, 4, 60, 1, 'units')), surface: appearanceStructure(colour('Deck', 'Dark steel')),
+    trussStartX: shapePosition(num('Truss from (where the wall is)', 430, 0, 6000, 1, 'units')), trussDepth: shapeLength(num('Truss depth at the wall (0: none)', 56, 0, 300, 1, 'units')),
+    lightSpacing: shapeLength(num('Edge light spacing', 24, 6, 200, 1, 'units')), lightCol: appearanceStructure(colour('Edge lights', 'Spire gold')), chaseFrequency:semantic(num('Light chase frequency',.6,0,3,.05),{group:'Motion',quantity:'frequency',unit:'cycles / second'}),
+    chaseTo: shapePosition(num('Lights run towards', 850, 0, 6000, 1, 'units')), mast: shapeLength(num('Mast at the tip (0: none)', 80, 0, 400, 1, 'units')),
+    sock: appearanceBoolean(bool('Windsock on the mast', true)), wind: appearanceRatio(num('Wind', 0.6, 0, 1, 0.05)), rail: shapeLength(num('Railing at the tip (0: none)', 30, 0, 60, 1, 'units')),
     ...stoneFields(),
   },
   size: p => ({ w: Number(p.width) + 40, tall: Math.max(Number(p.mast), Number(p.rail)) + 10 }),
-  bounds: p => { const tall = Math.max(Number(p.mast), Number(p.rail)) + 6; return { x: 0, h: tall, w: Number(p.width) + 6, tall: tall + Number(p.thickness) + Number(p.depth) }; },
+  bounds: p => { const tall = Math.max(Number(p.mast), Number(p.rail)) + 6; return { x: 0, h: tall, w: Number(p.width) + 6, tall: tall + Number(p.thickness) + Number(p.trussDepth) }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, tip: { x: Number(p.width), h: 0, role: 'mount' } }),
   paint(x, p, o) {
     const W = Number(p.width), T = Number(p.thickness), g = rgbOr(p.gold, GOLD), lc = rgbOr(p.lightCol, GOLD), st = hexOr(p.surface, '#101114'), t = o.t;
     // the truss under the deck, deep at the wall and thin at the tip (nothing floats)
-    const tf = Number(p.from), D = Number(p.depth), end = W - 10;
+    const tf = Number(p.trussStartX), D = Number(p.trussDepth), end = W - 10;
     if (D > 0 && tf < end) {
       const bottom = (xx: number) => -T - D + ((D - 6) * (xx - tf)) / (end - tf);
       for (let xx = tf; xx < end; xx += 2) box(x, '#17181c', xx, bottom(xx), 2, 3);
@@ -460,7 +474,7 @@ export const platformElement = piece({
     box(x, st, 0, -T, W, T); box(x, 'rgba(0,0,0,.4)', 0, -T, W, 2); box(x, rgba(COLD, 0.5), 0, -1, W, 1);
     for (let c = 40; c < W; c += 40) box(x, 'rgba(255,255,255,.04)', c, -T + 2, 1, T - 3);
     // edge lights in a running chase towards the pad
-    const sp = Number(p.lights), chase = Number(p.chase), to = Number(p.chaseTo);
+    const sp = Number(p.lightSpacing), chase = Number(p.chaseFrequency), to = Number(p.chaseTo);
     for (let c = sp / 2; c < W; c += sp) {
       const ph = (Math.abs(c - to) / sp) * 0.5 + (t * chase) / 20, a = chase > 0 ? 0.35 + 0.65 * Math.max(0, 1 - (((ph % 3) + 3) % 3)) : 0.7;
       box(x, rgba(lc, 0.12 * a), c - 3, -7, 6, 6); box(x, rgba(lc, a), c - 1, -5, 2, 2);
@@ -496,19 +510,19 @@ const PAD_CRAFT = ['shuttle', 'escort', 'medevac', 'taxi'] as const;
 export const landingPadElement: AssetDefinition = {
   type: 'deck.landing-pad', version: 1, label: 'Landing pad and its craft (deck: a visit on a long cycle, or parked for good)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    width: num('Pad length', 420, 120, 2000, 1, 'units'), mode: select('Craft', ['visiting', 'parked', 'none'], 'visiting'), craft: select('Kind of craft', PAD_CRAFT, 'shuttle'),
-    cycle: num('One visit (frames)', 2400, 600, 30000, 10), phase: num('Phase (frames)', 0, 0, 30000, 10),
-    from: select('Comes in from the (nose points away)', ['right', 'left'], 'right'), leaves: select('Leaves', ['climbing', 'onward'], 'climbing'),
-    hover: num('Hover before touchdown', 26, 0, 120, 1, 'units'), paint: colour('Hull', 'Spire black'), stripe: colour('Fleet stripe', 'Gold'),
-    ramp: bool('Boarding ramp down (parked)', true), umbilical: bool('Power umbilical (parked)', true), post: num('Power post from the pad’s left', 30, 0, 2000, 1, 'units'),
-    lights: bool('Pad lights', true), ...stoneFields(),
+    width: shapeLength(num('Pad length', 420, 120, 2000, 1, 'units')), mode: appearanceChoice(select('Craft', ['visiting', 'parked', 'none'], 'visiting')), craft: appearanceChoice(select('Kind of craft', PAD_CRAFT, 'shuttle')),
+    cycleDuration:seconds("Cycle duration",40,{"min":10,"max":500,"step":0.16666666666666666}), timeOffset:seconds("Time offset",0,{"min":0,"max":500,"step":0.16666666666666666}),
+    from: appearanceChoice(select('Comes in from the (nose points away)', ['right', 'left'], 'right')), leaves: appearanceChoice(select('Leaves', ['climbing', 'onward'], 'climbing')),
+    hoverHeight: shapeLength(num('Hover before touchdown', 26, 0, 120, 1, 'units')), paint: appearanceStructure(colour('Hull', 'Spire black')), stripe: appearanceStructure(colour('Fleet stripe', 'Gold')),
+    ramp: appearanceBoolean(bool('Boarding ramp down (parked)', true)), umbilical: appearanceBoolean(bool('Power umbilical (parked)', true)), powerPostX: shapePosition(num('Power post from the pad’s left', 30, 0, 2000, 1, 'units')),
+    lights: appearanceBoolean(bool('Pad lights', true)), ...stoneFields(),
   },
   bounds: p => ({ x: 0, h: 120, w: Number(p.width), tall: 124 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, pad: { x: Number(p.width) / 2, h: 3, role: 'surface' } }),
   draw(ctx, v, p, _s, _pass, at) {
     framed(ctx, v, at, o => {
-      const x = ctx, W = Number(p.width), g = rgbOr(p.gold, GOLD), cyc = Number(p.cycle), u = ((((o.t + Number(p.phase)) % cyc) + cyc) % cyc) / cyc;
-      const s = p.from === 'left' ? -1 : 1, face = (-s) as 1 | -1, hover = Number(p.hover), cx = W / 2, mode = String(p.mode);
+      const x = ctx, W = Number(p.width), g = rgbOr(p.gold, GOLD), cyc = (Number(p.cycleDuration)*60), u = ((((o.t + (Number(p.timeOffset)*60)) % cyc) + cyc) % cyc) / cyc;
+      const s = p.from === 'left' ? -1 : 1, face = (-s) as 1 | -1, hover = Number(p.hoverHeight), cx = W / 2, mode = String(p.mode);
       const kind = (PAD_CRAFT as readonly string[]).includes(String(p.craft)) ? String(p.craft) as typeof PAD_CRAFT[number] : 'shuttle';
       const L = CRAFT_LEN[kind] / 2, ext = CRAFT_EXTENT[kind], hatchH = Math.min(30, Math.round(ext.top * 0.6)), hatchW = Math.max(12, Math.round(L * 0.13));
       // where the craft is: in, down onto the pad, a wait with the hatch open, up, away (or parked: down, open, for good)
@@ -543,7 +557,7 @@ export const landingPadElement: AssetDefinition = {
       const hx = -face * Math.round(L * 0.3) - Math.round(hatchW / 2), hatchX = sx + hx;
       // a parked craft's power umbilical: a pedestal on the pad, a cable sagging up to the belly
       if (mode === 'parked' && p.umbilical !== false) {
-        const px = Number(p.post), bx = sx + face * Math.round(L * 0.35), bh = base + 6, ph = 24, on = 0.6 + 0.4 * Math.sin(o.t / 50);
+        const px = Number(p.powerPostX), bx = sx + face * Math.round(L * 0.35), bh = base + 6, ph = 24, on = 0.6 + 0.4 * Math.sin(o.t / 50);
         box(x, '#16171c', px - 6, 3, 12, ph); box(x, rgba(COLD, 0.25), px - 6, 3, 1, ph); box(x, rgba(g, 0.8), px - 6, 3 + ph, 12, 1);
         box(x, '#08080a', px - 3, ph - 8, 6, 5); box(x, rgba(g, 0.9 * on), px - 2, ph - 7, 4, 2);
         o.light?.(px, ph - 6, 4, 2, g, 'screen');
@@ -572,11 +586,12 @@ export const landingPadElement: AssetDefinition = {
 };
 
 export const loungeElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'deck.lounge', label: 'Deck lounge (deck: a room cut into the Spire, sofa, bar, low lamps)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 340, 60, 2000, 1, 'units'), height: num('Room height', 92, 62, 300, 1, 'units'), slab: num('Floor thickness', 12, 4, 60, 1, 'units'),
-    ...stoneFields(), warm: num('Lamps', 0.7, 0, 1, 0.05), sofaFrom: num('Sofa from the left', 30, 0, 2000, 1, 'units'), sofaWidth: num('Sofa width (0: none)', 130, 0, 1000, 1, 'units'),
-    barFrom: num('Bar from the left', 240, 0, 2000, 1, 'units'), barWidth: num('Bar width (0: none)', 70, 0, 600, 1, 'units'), seal: bool('The Registry seal on the back wall', true),
+    width: shapeLength(num('Width', 340, 60, 2000, 1, 'units')), height: shapeLength(num('Room height', 92, 62, 300, 1, 'units')), slab: shapeLength(num('Floor thickness', 12, 4, 60, 1, 'units')),
+    ...stoneFields(), warm: appearanceRatio(num('Lamps', 0.7, 0, 1, 0.05)), sofaFrom: shapePosition(num('Sofa from the left', 30, 0, 2000, 1, 'units')), sofaWidth: shapeLength(num('Sofa width (0: none)', 130, 0, 1000, 1, 'units')),
+    barFrom: shapePosition(num('Bar from the left', 240, 0, 2000, 1, 'units')), barWidth: shapeLength(num('Bar width (0: none)', 70, 0, 600, 1, 'units')), seal: appearanceBoolean(bool('The Registry seal on the back wall', true)),
   },
   size: p => ({ w: Number(p.width) + 8, tall: Number(p.height) + 8 }),
   bounds: p => ({ x: -4, h: Number(p.height) + 8, w: Number(p.width) + 8, tall: Number(p.height) + 8 + Number(p.slab) }),
@@ -614,10 +629,11 @@ export const loungeElement = piece({
 });
 
 export const glassFrontElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'deck.glass-front', label: 'Glass front (deck: the lounge’s tinted wall, sky in the glass)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 340, 40, 4000, 1, 'units'), height: num('Height', 92, 20, 600, 1, 'units'), panes: num('Pane width', 56, 16, 400, 1, 'units'),
-    glass: num('Tint', 0.5, 0, 1, 0.05), reflect: num('Sky in the glass', 0.6, 0, 1, 0.05), frame: colour('Frame', 'Black steel'), gold: colour('Gold', 'Spire gold'),
+    width: shapeLength(num('Width', 340, 40, 4000, 1, 'units')), height: shapeLength(num('Height', 92, 20, 600, 1, 'units')), panes: shapeLength(num('Pane width', 56, 16, 400, 1, 'units')),
+    glass: appearanceRatio(num('Tint', 0.5, 0, 1, 0.05)), reflect: appearanceRatio(num('Sky in the glass', 0.6, 0, 1, 0.05)), frame: appearanceStructure(colour('Frame', 'Black steel')), gold: appearanceStructure(colour('Gold', 'Spire gold')),
   },
   size: p => ({ w: Number(p.width) + 4, tall: Number(p.height) + 4 }),
   bounds: p => ({ x: -2, h: Number(p.height) + 3, w: Number(p.width) + 4, tall: Number(p.height) + 3 }),
@@ -638,3 +654,8 @@ export const glassFrontElement = piece({
 
 export const spireInteriors: AssetDefinition[] = [atriumElement, slowScreenElement, receptionElement, idGatesElement, benchesElement, mezzanineElement, liftBankElement,
   cloudSeaElement, spireWallElement, platformElement, landingPadElement, loungeElement, glassFrontElement];
+
+landingPadElement.spatial=combineControls(rectangleControls({width:'width',baseline:3}),conditionalControls(axisControl('hoverHeight','h',p=>Number(p.width)/2,'Hover level',{offset:3}),p=>p.mode==='visiting'),conditionalControls(axisControl('powerPostX','x',27,'Power post'),p=>p.mode==='parked'&&p.umbilical!==false));
+
+cloudSeaElement.spatial=atDepthControls(combineControls(rectangleControls({width:'width',baseline:'horizonY'}),axisControl('horizonY','h',p=>Number(p.width)/3,'Cloud horizon'),depthControl('depthBelowDeck',20,p=>Number(p.width)/2),axisControl('maxTowerHeight','h',p=>Number(p.width)*2/3,'Maximum tower height',{offset:p=>Number(p.horizonY)})),'parallax','world');
+cloudSeaElement.fields.parallax={...cloudSeaElement.fields.parallax,label:'Artwork parallax'};

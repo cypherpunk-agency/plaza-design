@@ -1,13 +1,20 @@
+import {assetPictureLimits} from '../world/render-settings';
+import {renderSettingsAuthoring} from './render-settings-authoring';
+import {renderPolicy} from '../world/render-policy';
+import type {CitySource} from '../world/city';
+import {mountSpatialHandles} from './spatial-handles';
+import {PROPERTY_GROUPS,fieldUnit,fieldIsContinuous} from '../art/core/fields';
+import {windowEdges,framingBounds} from './visibility';
 import {mountNumericScrubbing} from './numeric-scrub';
 import {inspectorTask,type InspectorTask} from './inspector-task';
 import {worldChunkPlacements,compileWorldComposition} from '../world/compositions';
 import {worldCompositionContext} from '../world/compiled-world';
 import {pendingRegistry} from './pending-registry';
 import {worldMemberAt,addressForChunk,moveWorldMember,linkedWorldMembers,type WorldMemberAddress} from './world-members';
-import {workspaceSource,editMemberConnection,renderWorldConnections,renderWorldMembers,renderWorldMemberInspector,openMountPicker,type WorldWorkspaceControls} from './world-workspace-controls';
+import {workspaceSource,openCompositionRendering,editMemberConnection,renderWorldConnections,renderWorldMembers,renderWorldMemberInspector,openMountPicker,type WorldWorkspaceControls} from './world-workspace-controls';
 import {validationSnapshot} from './validation-snapshot';
 import {keyframeControl,keyframeState,setKeyAtPlayhead} from './keyframe-control';
-import {createViewMemory} from './view-memory';
+import {createViewMemory,viewMatchesLocation} from './view-memory';
 import {preparedChunkStatus,type ChunkStatus} from '../runtime/chunk-status';
 import {chunkStatusBadge,renderChunkStatus,renderRuntimeChunks} from './chunk-status';
 import {renderWorldDirectionAuthoring} from './world-direction-authoring';
@@ -18,7 +25,7 @@ import {createPreviewState,createPreviewRenderer} from './preview-integration';
 import {createInspector} from './inspector';
 import {createViewportState,mountViewportInput} from './viewport-input';
 import {canvasPoint} from '../art/core/geometry';
-import {zoomWorkspace} from './viewport-navigation';
+import {zoomWorkspace,workspaceZoom,resizeWorkspace} from './viewport-navigation';
 import {element,button,select,label,createFieldControls} from './controls';
 import {renderTimelineInspector} from './temporal-inspector';
 import {outlineDocuments} from './outline-documents';
@@ -58,7 +65,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
 
   const viewport=createViewportState();
 
-  const {numberInput,fieldInput}=createFieldControls((text,error)=>notice(text,error));
+  const {numberInput,fieldInput}=createFieldControls((text,error)=>notice(text,error),section=>{inspector.selectSection(section);refreshRight();},()=>JSON.stringify([currentId,editorSelection.document,editorSelection.instance,editorSelection.timeline?.kind]));
   const model = new ComposerModel(config.registry, { destinations: config.destinations, clips: config.clips, motionTracks: config.motionTracks }, config.validateDocument, config.projections,config.destinationsFor,config.validationInputs);
   let commandTargetsVersion:object|undefined,commandTargetsCache:NonNullable<import('../art/core/timeline').TimelineContext['commandTargets']>={};
   const commandTargets=()=>{if(commandTargetsVersion!==model.sourceVersion){commandTargetsCache=config.commandTargetsFor?.(model.inspectDocuments())??{};commandTargetsVersion=model.sourceVersion;}return commandTargetsCache;};
@@ -110,11 +117,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const hiddenByDocument = new Map<string, Set<string>>();
   const hiddenIn = (id: string | undefined) => { if (!id) return new Set<string>(); let set = hiddenByDocument.get(id); if (!set) hiddenByDocument.set(id, set = new Set()); return set; };
   let moreOpen = false, animating = false, ambientLabel: HTMLElement | undefined;
+  let updateContextSummary=()=>{};
   const inspector=createInspector();
   const showPanel = (panel: 'layers' | 'properties') => { root.dataset.panel = panel; for (const item of panelSwitch.children) item.setAttribute('aria-pressed', String((item as HTMLElement).dataset.panel === panel)); };
   for (const [panel, text] of [['layers', 'Outline'], ['properties', 'Inspector']] as const) { const tab = button(text, () => showPanel(panel)); tab.dataset.panel = panel; panelSwitch.append(tab); }
   canvas.style.setProperty('--ratio', String(canvas.width / canvas.height)); showPanel('layers');
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
+  const playSettings = element('section', 'play-settings');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
   stage.append(canvas, compareCanvas); const renderStatus=element('output','render-status');renderStatus.setAttribute('aria-label','Preview render rate');stageWrap.append(stage,playHost,joinedLayer,hoverBox,selectionBox,viewportTools,picker,previewError,renderStatus); center.append(options, stageWrap, timelineHost); workspace.append(center, panelSwitch, left, right, ...panelHandles()); header.append(tools, status); root.append(header, workspace); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
@@ -125,7 +134,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let workspaceId='',directionDocumentId='', compareId = '', currentId = '', sequenceId = '', time = 0, playing = false, loop = false, loopFrom = 0, loopTo = 0, reduced = false, overlays = true, snap = 1, saving = false, disposed = false;
 
   /** Editor-only framing: persisted as a workspace preference, never authored source or a game save. */
-  const sequenceNav={zoom:1,x:0,y:0};let cameraPreview=false,showObjectOutlines=false,showSceneBounds=true,showChunkStatus=true,renderWindow=performance.now(),renderFps=0,statusUpdatedAt=0;
+  let boundaryFor='';
+  const sequenceNav={zoom:1,x:0,y:0};let cameraPreview=false,followCamera=false,showObjectOutlines=false,showSceneBounds=true,showChunkStatus=true,renderWindow=performance.now(),renderFps=0,statusUpdatedAt=0;
   try{showObjectOutlines=localStorage.getItem('access-denied.editor.object-outlines')==='true';}catch{/* optional preview preference */}
 
 
@@ -143,24 +153,29 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const speedControl=()=>select([.25,.5,1,1.5,2,4].map(value=>({value:String(value),label:value+'×'})),String(playbackSpeed),value=>playbackSpeed=Number(value));
   const environment: Record<string, string | number | boolean> = { cameraX: 0, zoom: 1, ...config.initialEnvironment };
   const viewMemory=createViewMemory({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
+  const sequenceTimes=new Map<string,number>();
+  let ambientOffset=0;
   let viewReady=false,lastViewSample=0,restoredScroll:{x:number;y:number}|undefined;
   const viewScene=()=>{const doc=current();return doc?.kind==='composition'?(doc.value as ChunkDocument).scene:'';};
+  let pixelatedScaling=true;
   const navigable=()=>current()?.kind==='composition';
   const viewKey=()=>workspaceId?'composition:'+workspaceId:viewScene();
   function rememberView(){
     const scene=viewKey();if(!viewReady||!scene||!playHost.hidden)return;
     const anchor=painting.workspaceAnchor?.document===currentId?{x:painting.workspaceAnchor.x,h:painting.workspaceAnchor.h}:undefined;
-    viewMemory.write(scene,{checkpoint:activeCheckpointId,sequence:sequenceId,time,compare:compareId,workspace:{x:workspaceNavigation(false).x,y:workspaceNavigation(false).h,zoom:sequenceNav.zoom,anchor},cameraPreview,environment:{...environment},
+    if(directionDocumentId)sequenceTimes.set(directionDocumentId,time);
+    viewMemory.write(scene,{checkpoint:activeCheckpointId,sequence:sequenceId,time,ambientTime:time+ambientOffset,sequenceTimes:Object.fromEntries(sequenceTimes),compare:compareId,workspace:{x:workspaceNavigation(false).x,y:workspaceNavigation(false).h,zoom:sequenceNav.zoom,anchor},cameraPreview,environment:{...environment},
       timeline:{zoom:timelineView.zoom,collapsed:[...timelineView.collapsed],scrollX:timelineView.scrollX,scrollY:timelineView.scrollY,height:timelineHeight,folded:timelineCollapsed},
-      speed:playbackSpeed,snap,loop:{enabled:loop,from:loopFrom,to:loopTo},outlines:showObjectOutlines,borders:showSceneBounds,chunkStatus:showChunkStatus,reduced,overlays,
+      speed:playbackSpeed,snap,loop:{enabled:loop,from:loopFrom,to:loopTo},outlines:showObjectOutlines,borders:showSceneBounds,chunkStatus:showChunkStatus,reduced,overlays,pixelatedScaling,followCamera,
       scroll:restoredScroll??{x:stage.scrollLeft,y:stage.scrollTop},selection:{...editorSelection},outline:{sort:layerSort,query:layerQuery}});
     syncEditorLocation();
   }
   function restoreView(){
-    const saved=viewMemory.read(viewKey());if(!saved)return;activeCheckpointId=saved.checkpoint;focusCheckpointRoot();selectDirection(sequenceSource(saved.sequence,documentsForView(),workspaceId),saved.time);
+    const saved=viewMemory.read(viewKey());if(!saved)return;activeCheckpointId=saved.checkpoint;focusCheckpointRoot();selectDirection(sequenceSource(saved.sequence,documentsForView(),workspaceId),saved.time);for(const [id,at]of Object.entries(saved.sequenceTimes??{}))sequenceTimes.set(id,at);
     const duration=sequence()?.duration;
+    ambientOffset=(saved.ambientTime??saved.time)-time;
     Object.assign(sequenceNav,{x:saved.workspace.x,y:saved.workspace.y,zoom:saved.workspace.zoom});if(saved.workspace.anchor)painting.workspaceAnchor={document:currentId,...saved.workspace.anchor};
-    cameraPreview=!!currentTimeline()&&saved.cameraPreview;Object.assign(environment,saved.environment);
+    cameraPreview=saved.cameraPreview;followCamera=saved.followCamera??false;pixelatedScaling=saved.pixelatedScaling??true;Object.assign(environment,saved.environment);
     Object.assign(timelineView,{zoom:saved.timeline.zoom,collapsed:new Set(saved.timeline.collapsed),scrollX:saved.timeline.scrollX,scrollY:saved.timeline.scrollY});
     timelineHeight=saved.timeline.height;timelineCollapsed=saved.timeline.folded;playbackSpeed=saved.speed;snap=saved.snap;
     loop=saved.loop.enabled;loopTo=Math.min(saved.loop.to,duration??saved.loop.to);loopFrom=Math.min(saved.loop.from,loopTo);if(loopFrom>=loopTo){loopFrom=0;loopTo=duration??0;}
@@ -171,6 +186,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     Object.assign(editorSelection,{document:validInstance?saved.selection.document:'',instance:validInstance?saved.selection.instance:'',timeline:undefined,chunk:undefined,world:saved.selection.world?.composition===workspaceId?saved.selection.world:undefined});
     if(saved.selection.chunk&&documentsForView().some(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===saved.selection.chunk))editorSelection.chunk=saved.selection.chunk;
     const t=saved.selection.timeline,seq=sequence();
+    if(t?.kind==='camera')editorSelection.timeline=t;
     if(t&&seq){const track=(t.kind==='key'||t.kind==='track')?seq.tracks.find(r=>r.id===t.track):undefined;
       if(t.kind==='camera'||t.kind==='track'&&track||t.kind==='key'&&track?.keys[t.index]||'id'in t&&(t.kind==='shot'?seq.shots:t.kind==='text'?seq.text:t.kind==='fade'?seq.fades:t.kind==='beat'?seq.beats:seq.commands??[]).some(r=>r.id===t.id))editorSelection.timeline=t;
     }
@@ -185,6 +201,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let cleanupWorld: void | (() => void);
   let cleanupAssets: void | (() => void); const assetSession: AssetBrowserSession = {};
   const assetHost = element('details', 'asset-browser tool-panel'); assetHost.dataset.tool = 'assets'; assetHost.append(element('summary', '', 'Asset library')); const assetPanel = element('div'); assetHost.append(assetPanel); if (config.assetPreview) root.insertBefore(assetHost, workspace);
+  let cityDistrict:string|undefined,layoutDirty=false;
   const mapHost = element('details', 'world-map tool-panel'); mapHost.dataset.tool = 'world-map'; mapHost.append(element('summary', '', 'City map')); const mapPanel = element('div'); mapHost.append(mapPanel); if (config.worldPanel) root.insertBefore(mapHost, workspace);
   /** Artwork pictures for the Add picker and the Library, drawn by the same isolated game preview. */
   let thumbnailDocuments: EditorDocument[] | undefined;
@@ -225,6 +242,9 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const canPlay = () => { if(workspaceId&&!workspaceDocuments(workspaceId,documentsForView(),worldState()?.checkpoint?.membership).length)return false;const item = playWorkbench(), scene = worldState()?.checkpoint?.scene??sceneId(); return !!item && !!scene && (!item.config.supports || item.config.supports(scene, documentsForView())); };
   /** Play runs the game on the Scene stage, in place of the canvas; Stop returns to editing at the same spot. */
   let playHandle: WorkbenchHandle | undefined;
+  let playCheckpointId:string|undefined;
+  let playStartMode:'preview'|'checkpoint'='preview';
+  let locateCameraPending=false;
   let liveChunkRows:readonly ChunkStatus[]|undefined,chunkSignature='';
   const runtimeOutline=element('div','runtime-chunks');runtimeOutline.hidden=true;
   const inspectChunk=(id:string)=>{editorSelection.world=undefined;editorSelection.chunk=id;editorSelection.document='';editorSelection.instance='';editorSelection.timeline=undefined;refreshRight();if(compact.matches)showPanel('properties');};
@@ -235,16 +255,20 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if(editorSelection.chunk)refreshRight();
   }
   const playScene = () => {
-    const item = playWorkbench(), scene = worldState()?.checkpoint?.scene??sceneId(); if (!item || !canPlay()) return; stopPlay(); animating = false; showLayout();
+    const item = playWorkbench(), scene = worldState()?.checkpoint?.scene??sceneId(); if (!item || !canPlay()) return; stopPlay(); playing = false; animating = false; showLayout();
+    const viewport=gameViewport(playStartMode==='checkpoint'?!!worldState()?.checkpoint?.sequence:!!sequence());playHost.style.setProperty('--play-ratio',String(viewport.width/viewport.height));
+    playCheckpointId=worldState()?.id;
     playHost.hidden = false; stage.hidden = true; viewportTools.hidden = true; root.dataset.playing = '';
     item.config.showScene?.(scene, documentsForView());
-    try { playHandle = item.config.mount(playHost, { documents: documentsForView(),checkpoint:worldState()?.id,onCheckpoint:id=>{activeCheckpointId=id;}, openScene, openInstance, scene, autostart: true, onResidency:receiveResidency, ...(item.config.authoring ? { authoring: authoringApi() } : {}) }); }
+    try { playHandle = item.config.mount(playHost, { documents: documentsForView(),checkpoint:playCheckpointId,onCheckpoint:id=>{playCheckpointId=id;}, openScene, openInstance, scene, autostart: true, playSettings, stopPlay, playStart:{mode:playStartMode,viewport,sequence:sequence()?{id:sequenceId,time}:undefined,camera:painting.result?.gameCamera}, onResidency:receiveResidency, ...(item.config.authoring ? { authoring: authoringApi() } : {}) }); }
     catch (error) { playHost.replaceChildren(element('p', 'error', `Play unavailable: ${message(error)}`)); }
-    refreshOptions();
+    refreshOptions(); refreshTimeline(); refreshRight();
   };
   function stopPlay() {
     if (playHost.hidden) return; playHandle?.(); playHandle = undefined; playHost.replaceChildren(); playHost.hidden = true; stage.hidden = false; delete root.dataset.playing;
-    refreshViewportTools(); refreshOptions(); void draw();
+    const checkpoint=playCheckpointId;playCheckpointId=undefined;playSettings.replaceChildren();
+    if(checkpoint&&checkpoint!==activeCheckpointId){openCheckpoint(checkpoint);return;}
+    refreshViewportTools(); refreshOptions(); refreshTimeline(); refreshRight(); void draw();
   }
   const showGroup = (id: Group) => { if (id === 'layout') { showLayout(); return; } if (id === 'logic' && !panels.some(p => p.group === 'logic')) { showLayout(); return; } const target = chosen.get(id) ?? panels.find(p => p.group === id)?.details; if (target) openPanel(target); };
   function refreshTools() {
@@ -269,6 +293,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       }
     } else subtools.hidden = members.length < 2;
     if (group !== 'layout' && members.length > 1 || group === 'logic') for (const item of members) { const tab = button(item.label, () => openPanel(item.details), item.title); tab.dataset.tool = item.details.dataset.tool; tab.setAttribute('aria-pressed', String(item.details.open)); subtools.append(tab); }
+    if(root.dataset.tool==='scene'&&layoutDirty){layoutDirty=false;refreshLeft();refreshRight();}
   }
   const sceneName = (scene:string)=>{const names:Record<string,string>={'sequence-title':'Title','sequence-opening':'Opening glide','sequence-intro':'Act I cinematic','sequence-act2':'Act II cinematic','sequence-taxi':'Taxi flight'};if(names[scene])return names[scene];const doc=documentsForView().find(d=>d.id.startsWith('authored.')&&d.kind==='scene'&&(d.value as {id?:string}).id===scene);return doc?(doc.value as {name:string}).name:config.sceneLabel?.(scene)??scene;};
   const sceneId = () => { const doc = compositionDocument(); return doc ? (doc.value as ChunkDocument).scene : ''; };
@@ -327,7 +352,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   mapHost.ontoggle = () => { closeOthers(mapHost); refreshMap(); refreshTools(); };
   refreshTools();
   const notice = (text: string, error = false) => { if(error){inspectorError=text;refreshRight();right.scrollTop=0;if(compact.matches)showPanel('properties');} status.textContent = error?'Edit blocked · see inspector':text; status.title = text; status.className = 'status' + (error ? ' error' : ''); };
-  const run = (action: () => void,propagate=false) => perfMeasure('editor.command', () => { try { notice(''); perfMeasure('editor.action', action); inspectorError='';placementIssue=undefined;if(!numericScrubbing){thumbnailDocuments = undefined; thumbnails?.invalidate();}refresh(); if (!picker.hidden&&!numericScrubbing) renderPicker(); } catch (e) { notice(message(e), true);if(propagate)throw e; } });
+  let refreshHeaderActions=()=>{};
+  const run = (action: () => void,propagate=false,scope:'all'|'artwork'='all') => perfMeasure('editor.command', () => { try { notice(''); perfMeasure('editor.action', action); inspectorError='';placementIssue=undefined;if(!numericScrubbing){thumbnailDocuments = undefined; thumbnails?.invalidate();}if(scope==='artwork'&&!numericScrubbing){withViewDocuments(()=>{refreshHeaderActions();perfMeasure('editor.inspector',refreshRight);perfMeasure('editor.timeline',refreshTimeline);void draw();});}else refresh(); if (!picker.hidden&&!numericScrubbing) renderPicker(); } catch (e) { notice(message(e), true);if(propagate)throw e; } });
   const current = () => currentId ? documentsForView().find(d=>d.id===currentId) : undefined;
   /** The document an open panel edits (Export/Import JSON), otherwise the current composition. */
   const activeDocument = () => { const id = workbenches.find(item => item.details.open)?.config.primaryDocumentId; return id && documentsForView().some(doc => doc.id === id) ? model.get(id) : current(); };
@@ -335,11 +361,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const currentTimeline = () => { const doc = directionDocument(); return doc?.kind === 'composition' && (doc.value as ChunkDocument).sequence ? sequenceProgram({[doc.id]:doc.value as ChunkDocument}) : undefined; };
   const sequence = () => currentTimeline()?.sequences.find(s => s.id === sequenceId);
   let evaluatedContext:{key:string;version:object;value:import('../art/core/timeline').TimelineContext}|undefined;
-  const evaluationContext = () => {const key=JSON.stringify([currentId,time,reduced,sequenceId,environment,canvas.width,canvas.height]);if(evaluatedContext?.version===model.sourceVersion&&evaluatedContext.key===key)return evaluatedContext.value;const base=model.timelineContext(),value=config.timelineContext?.(base,{time,reduced,sequenceId,environment:{...environment},viewport:{width:canvas.width,height:canvas.height},timeline:currentTimeline()})??base;evaluatedContext={key,version:model.sourceVersion,value};return value;};
+  const evaluationContext = () => {const key=JSON.stringify([currentId,time,reduced,sequenceId,environment,canvas.width,canvas.height]);if(evaluatedContext?.version===model.sourceVersion&&evaluatedContext.key===key)return evaluatedContext.value;const base=model.timelineContext(),value=config.timelineContext?.(base,{time,reduced,sequenceId,environment:{...environment},viewport:{width:baseWidth,height:baseHeight},timeline:currentTimeline()})??base;evaluatedContext={key,version:model.sourceVersion,value};return value;};
   const viewCompositionDocument = () => { const doc = directionDocument()??current(); return doc?.kind === 'composition'?doc:undefined; };
   const compositionDocument = () => editorSelection.document ? documentsForView().find(d=>d.id===editorSelection.document) : viewCompositionDocument();
   const selected = () => { const doc = compositionDocument(); return doc ? flatten(doc.value as ChunkDocument).find(x => x.node.id === editorSelection.instance)?.node : undefined; };
-  const editInstance = (name: string, action: (node: AssetInstance) => void) => run(() => { const doc = compositionDocument(); if (!doc || !editorSelection.instance) return; model.updateInstance(doc.id, editorSelection.instance, name, action); });
+  const editInstance = (name: string, action: (node: AssetInstance) => void, scope:'all'|'artwork'='all') => run(() => { const doc = compositionDocument(); if (!doc || !editorSelection.instance) return; model.updateInstance(doc.id, editorSelection.instance, name, n=>{const before={...n.props},bindings={...n.bindings};action(n);guardLinkedProperties(doc.id,n,before,bindings);}); },false,scope);
   const editTimeline = (name: string, action: (doc: TimelineProgram) => void) => { playing = false; run(() => model.edit(viewCompositionDocument()!.id, name, value => { const composition=value as ChunkDocument,program=sequenceProgram({[viewCompositionDocument()!.id]:composition});action(program);const {composition:reference,...sequence}=program.sequences[0];composition.sequence=sequence;return composition; })); };
   async function api(path: string, body?: unknown) {
     if (!config.api) throw new Error('This browser editor has no repository write service. Download edits instead.');
@@ -358,7 +384,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   function openLinkedScene(){
     if(sceneLinked)return;sceneLinked=true;
-    if(linkQuery?.has('checkpoint')||linkQuery?.has('composition')||linkQuery?.has('scene')){applyLinkedContext(linkQuery);return;}
+    if(linkQuery?.has('checkpoint')||linkQuery?.has('composition')||linkQuery?.has('scene')){applyLinkedContext(linkQuery);const saved=viewMemory.read(viewKey());if(saved&&viewMatchesLocation(saved,linkQuery)){restoreView();refresh();}return;}
     const last=viewMemory.lastScene();if(last.startsWith('composition:'))openComposition(last.slice(12));
     else if(documentsForView().some(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===last))openScene(last);
     else{restoreView();refresh();}
@@ -407,16 +433,19 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     });
   }
   /** All direction entry points establish the same paused temporal context. */
-  function selectDirection(source:EditorDocument|undefined,at=0){
-    directionDocumentId=source?.id??'';sequenceId='';time=at;playing=false;animating=false;if(!source)cameraPreview=false;
+  function selectDirection(source:EditorDocument|undefined,at?:number,preserveAmbient=at===undefined){
+    const ambient=time+ambientOffset;
+    if(directionDocumentId)sequenceTimes.set(directionDocumentId,time);
+    directionDocumentId=source?.id??'';sequenceId='';time=at??(source?sequenceTimes.get(source.id)??0:time);playing=false;animating=false;
     editorSelection.timeline=undefined;outlineSnapshot=undefined;outlineVersion='';syncSequence();
+    ambientOffset=preserveAmbient?ambient-time:0;
   }
   function openSequence(id:string,at?:number){
     const source=sequenceSource(id,documentsForView(),workspaceId);
     if(!source){notice('Sequence '+id+' does not exist in this workspace.',true);return;}
-    const playhead=at??(directionDocumentId===source.id?time:0);
+    const playhead=at??(directionDocumentId===source.id?time:sequenceTimes.get(source.id));
     if(!workspaceId&&source.id!==currentId)openDocument(source.id);
-    selectDirection(source,playhead);refresh();rememberView();
+    selectDirection(source,playhead,at===undefined);refresh();rememberView();
   }
   function openCheckpoint(id:string,requestedComposition?:string){
     stopPlay();
@@ -476,6 +505,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save to source' : 'Download edits', () => void save()); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
     const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; const discard=button('Discard all changes',()=>{stopPlay();playing=false;animating=false;editorSelection.chunk=undefined;editorSelection.timeline=undefined;editorSelection.instance='';editorSelection.document='';run(()=>model.discard());},'Restore the last loaded or saved snapshot; Undo can recover discarded edits');discard.disabled=saving||!model.dirty();actions.append(status,dirty,undo,redo,saveButton,discard,menu);
     menuItems.append(button(config.api ? 'Reload source' : 'Reset edits', () => void requestReload()));
+    // A geometry gesture cannot change composition membership, checkpoints or toolbar choices.
+    // Update its status/history without recompiling all of those unrelated menus on release.
+    refreshHeaderActions=()=>{const changed=model.dirty();dirty.textContent=changed?'Unsaved changes':config.api?'Saved':'Published snapshot';dirty.className='state '+(changed?'dirty':'muted');saveButton.disabled=discard.disabled=saving||!changed;undo.disabled=!model.canUndo;undo.title=model.undoLabel??'';redo.disabled=!model.canRedo;
+      const ids=new Set([compositionDocument()?.id,viewCompositionDocument()?.id]);for(const row of chooser.options)if(ids.has(row.value)){const doc=documentsForView().find(d=>d.id===row.value);if(doc)row.textContent=(unsaved(doc)?'● ':'')+(row.textContent??'').replace(/^● /,'');}
+    };
     const bundleFile = element('input'); bundleFile.type = 'file'; bundleFile.accept = 'application/json,.json'; bundleFile.hidden = true; bundleFile.setAttribute('aria-label', 'Import downloaded edits');
     bundleFile.onchange = async () => { const file = bundleFile.files?.[0]; if (!file) return; try { if (file.size > 2 * 1024 * 1024) throw new Error('Import exceeds 2 MiB'); const changes = readDocumentBundle(JSON.parse(await file.text()), documentsForView()); run(() => { model.importDocuments(changes); syncSequence(); }); } catch (error) { notice(`Import failed: ${message(error)}`, true); } finally { bundleFile.value = ''; } };
     menuItems.append(button('Import edits', () => bundleFile.click()), bundleFile);
@@ -488,12 +522,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const importButton = button('Import JSON', () => file.click()); importButton.disabled = activeDocument()?.kind === 'world'; menuItems.append(importButton, file);
   }
   function refreshOptions() {
+    updateContextSummary=()=>{};
     options.replaceChildren(); ambientLabel = undefined; syncWorldState();
     const bar = element('div', 'scene-toolbar'), composition = current()?.kind === 'composition';
     const cluster = (name: string) => { const node = element('div', 'toolbar-group'); node.setAttribute('role', 'group'); node.setAttribute('aria-label', name); bar.append(node); return node; };
     if (!playHost.hidden) {
       const stop = button('■ Stop', stopPlay, 'Stop playing and return to editing this scene'); stop.className = 'play-button';
-      bar.append(element('span', 'toolbar-label', `Playing ${sceneName(sceneId())}`), stop); options.append(bar); return;
+      bar.append(element('span', 'toolbar-label', `Playing ${sceneName(worldState()?.checkpoint?.scene??sceneId())} · game camera · from ${playStartMode==='preview'?'preview':'checkpoint start'}`), stop); options.append(bar); return;
     }
     if(composition){const membership=cluster('World composition');membership.append(button('＋ New composition',()=>openMountPicker(worldControls(),true)));if(workspaceId)membership.append(button('＋ Mount chunk / group',()=>openMountPicker(worldControls())));}
     if(composition){const choices=workspaceId?workspaceSequences(workspaceId,documentsForView()):documentsForView().filter(d=>d.id===currentId&&d.kind==='composition'&&(d.value as ChunkDocument).sequence),pick=select([{value:'',label:'No sequence · base editing'},...choices.map(d=>({value:d.id,label:(d.value as ChunkDocument).sequence!.id}))],directionDocumentId,value=>{selectDirection(choices.find(d=>d.id===value));refresh();rememberView();});pick.setAttribute('aria-label','Sequence context');cluster('Direction').append(pick);}
@@ -503,7 +538,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       toggle.setAttribute('aria-pressed', String(sequence()?playing:animating)); ambientLabel = element('span', 'time', `${time.toFixed(1)} s`);
       animation.append(toggle,ambientLabel,...(!currentTimeline()?[speedControl()]:[]), button('⟲', () => seekTime(0), 'Back to the first frame'));
     }
-    const controls: EnvironmentControl[] = config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }];
+    const controls: EnvironmentControl[] = (config.environmentControls ?? [{ key: 'cameraX', label: 'Camera X', kind: 'number', step: 10 }, { key: 'zoom', label: 'Game camera zoom', kind: 'number', min: 0.1, max: 8, step: 0.1 }]).filter(control=>!['cameraX','cameraH','zoom'].includes(control.key)||!currentTimeline());
     const quick = controls.filter(control => control.quick);
     const states = composition && config.worldStates ? config.worldStates.list('', documentsForView()) : [];
     if (states.length) {
@@ -513,7 +548,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       pick.setAttribute('aria-label', 'Starting state'); cluster('Starting state').append(pick);
     }
     if (quick.length) { const preview = cluster('Preview as'); preview.append(element('span', 'toolbar-label', states.length ? '' : 'Preview')); for (const control of quick) preview.append(environmentControl(control, true)); }
-    if(currentTimeline()){const mode=select([{value:'workspace',label:'Workspace'},{value:'camera',label:'Camera preview'}],cameraPreview?'camera':'workspace',value=>{cameraPreview=value==='camera';refreshViewportTools();refreshOptions();void draw();});mode.setAttribute('aria-label','Sequence view');cluster('Sequence view').append(mode);}
+    if(composition){const mode=select([{value:'workspace',label:'Workspace'},{value:'camera',label:'Camera preview'}],cameraPreview?'camera':'workspace',value=>{cameraPreview=value==='camera';refreshViewportTools();refreshOptions();void draw();});mode.setAttribute('aria-label','Sequence view');mode.title='Workspace keeps independent editor pan/zoom. Camera preview looks through the game camera.';cluster('Sequence view').append(mode);}
     if (composition) {
       const grid = select([{ value: '0', label: 'Grid off' }, ...[1, 2, 4, 8, 16].map(n => ({ value: String(n), label: `Grid ${n} px` }))], String(snap), value => { snap = Number(value); });
       grid.title = 'Dragging and arrow keys snap to this grid'; grid.setAttribute('aria-label', 'Grid'); cluster('Grid').append(grid);
@@ -535,8 +570,10 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const more = element('details', 'more-menu'), panel = element('div', 'more-panel'); more.open = moreOpen; more.ontoggle = () => { moreOpen = more.open; };
     more.append(element('summary', '', 'More preview settings'), panel); bar.append(more);
     const motion = element('input'); motion.type = 'checkbox'; motion.checked = reduced; motion.onchange = () => { reduced = motion.checked; void draw(); }; panel.append(label('Reduced motion', motion));
+    const pixels=element('input');pixels.type='checkbox';pixels.checked=pixelatedScaling;pixels.setAttribute('aria-label','Pixelated scaling');pixels.onchange=()=>{pixelatedScaling=pixels.checked;refreshViewportTools();rememberView();};const pixelSetting=label('Pixelated scaling',pixels);pixelSetting.title='Use crisp pixel edges when scaling the preview canvas. Off smooths canvas scaling; authored pixel shapes and the game remain unchanged.';panel.append(pixelSetting);
     for (const control of controls) if (!control.quick) panel.append(environmentControl(control, false));
-    if (canPlay()) { const play = button('▶ Play scene', playScene, 'Run this scene in the game from its starting state, here on the stage'); play.className = 'play-button'; bar.append(play); }
+    if (canPlay()) { const origin=select([{value:'preview',label:'Play from current preview'},{value:'checkpoint',label:'Play from checkpoint start'}],playStartMode,value=>{playStartMode=value as typeof playStartMode;refreshOptions();});origin.setAttribute('aria-label','Play starting point');origin.title='Preview uses the selected sequence/playhead (or base editing). Checkpoint start uses its authored sequence/time. Both use the checkpoint world state.';bar.append(origin);const play = button(playStartMode==='preview'?'▶ Play preview':'▶ Play checkpoint', playScene, 'Run the real game here using the chosen starting point and the same logical camera viewport'); play.className = 'play-button'; bar.append(play); }
+    if(composition){const checkpoint=worldState()?.checkpoint,summary=element('p','view-context'),prefix='Checkpoint: '+(checkpoint?.name??'none')+(checkpoint?' (starts '+(checkpoint.sequence?checkpoint.sequence.id+' at '+checkpoint.sequence.time+' s':'without a sequence')+')':'')+' · Editing: ',editing=sequence()?sequenceId:undefined,suffix=' · View: '+(cameraPreview?'game camera':'independent workspace');updateContextSummary=()=>summary.textContent=prefix+(editing?editing+' at '+time.toFixed(3)+' s':'base values')+suffix;updateContextSummary();summary.title='Selecting a sequence here changes the editing context, not the checkpoint definition. Locate camera navigates the workspace explicitly.';bar.append(summary);}
     options.append(bar);
   }
   function environmentControl(control: EnvironmentControl, inToolbar: boolean): HTMLElement {
@@ -560,7 +597,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const row = label(control.label, input); if (control.kind === 'text') row.classList.add('wide'); return row;
   }
   /** The artwork browser, shared by Library › Artwork and the Scene view's Add asset picker (same filters, same session). */
-  function mountArtwork(host: HTMLElement, scene: string, add: (entry: AssetEntry) => void, addPreset: (kit: AssetEntry, settings: Properties) => void) {
+  function mountArtwork(host: HTMLElement, scene: string, add: (entry: AssetEntry) => void, addPreset: (kit: AssetEntry, settings: Properties,children?:AssetInstance[]) => void) {
     return mountAssetBrowser(host, { registry: config.registry, documents: documentsForView(),
       openUsage(usage) { closePicker(); openInstance(usage.document, usage.instance); },
       preview: (canvas, entry, usage, zoom, overrides) => config.assetPreview!(canvas, entry, usage, documentsForView(), { time, reduced, environment: { ...environment, renderScale: zoom },...overrides }),
@@ -569,22 +606,23 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       ...(thumbnails ? { thumbnail: (entry: AssetEntry) => thumbnails.thumbnail(entry) } : {}),
       ...(scene ? { useInScene: { label: `Add to ${sceneName(scene)}`, run: add } } : {}),
       ...(presetsDoc() ? { presets: { of: (kit: AssetEntry) => presetsFor(presetsDoc(), kit.id).map(pr => ({ id: pr.id, label: pr.label, note: pr.note, family: presetFamily(pr, kit) })),
-        add: (kit: AssetEntry, preset: AssetPreset) => { const pr = presetsFor(presetsDoc(), kit.id).find(x => x.id === preset.id); if (pr) addPreset(kit, pr.props); } } } : {}),
+        add: (kit: AssetEntry, preset: AssetPreset) => { const pr = presetsFor(presetsDoc(), kit.id).find(x => x.id === preset.id); if (pr) addPreset(kit, pr.props,pr.children); } } } : {}),
     }, assetSession);
   }
   function refreshLibrary() { return perfMeasure('editor.library', refreshLibraryContent); }
   function refreshLibraryContent() {
     cleanupAssets?.(); cleanupAssets = undefined; assetPanel.replaceChildren(); thumbnails?.prune(); if (!config.assetPreview || !assetHost.open) return;
     const scene = current()?.kind === 'composition' ? sceneId() : '';
-    cleanupAssets = mountArtwork(assetPanel, scene, entry => { showLayout(); void addAtView(entry.id); }, (kit, settings) => { showLayout(); void addAtView(kit.id, settings); });
+    cleanupAssets = mountArtwork(assetPanel, scene, entry => { showLayout(); void addAtView(entry.id); }, (kit, settings,children) => { showLayout(); void addAtView(kit.id, settings,children); });
   }
-  function refreshMap() { cleanupWorld?.(); cleanupWorld = undefined; mapPanel.replaceChildren(); if (config.worldPanel && mapHost.open) cleanupWorld = config.worldPanel(mapPanel, openScene, documentsForView(), sceneId(),liveContext(sceneId())); }
+  function refreshMap() { cleanupWorld?.(); cleanupWorld = undefined; mapPanel.replaceChildren(); if (config.worldPanel && mapHost.open) cleanupWorld = config.worldPanel(mapPanel, openScene, documentsForView(), sceneId(),liveContext(sceneId())); cityDistrict=undefined; }
   const readFolds=(key:string)=>{try{return new Map<string,boolean>(JSON.parse(localStorage.getItem('access-denied.editor.'+key)??'[]'));}catch{return new Map<string,boolean>();}};
   const outlineSceneOwners=new Map<string,string>();const outlineSourceOpen=readFolds('source-folds');for(const [key,value]of readFolds('kind-folds'))roleOpen.set(key,value);
   const saveFolds=()=>{try{localStorage.setItem('access-denied.editor.source-folds',JSON.stringify([...outlineSourceOpen]));localStorage.setItem('access-denied.editor.kind-folds',JSON.stringify([...roleOpen]));}catch{/* optional editor preferences */}};
   let outlineVersion='',outlineSnapshot:object|undefined,outlineView='',updateOutlineSelection=()=>{};
   function refreshLeft() {
     workbenches.forEach(item=>refreshWorkbench(item,true));refreshLibrary();refreshMap();
+    if(root.dataset.tool!=='scene'){layoutDirty=true;return;}
     if(outlineSnapshot===model.sourceVersion&&outlineView===currentId){updateOutlineSelection();return;}
     outlineSnapshot=model.sourceVersion;outlineView=currentId;
     const docs=documentsForView(),sources=workspaceId?[...new Map([...(currentTimeline()?outlineDocuments(viewCompositionDocument(),docs):[]),...workspaceDocuments(workspaceId,docs),...workspaceDocuments(workspaceId,docs,worldState()?.checkpoint?.membership)].map(d=>[d.id,d])).values()]:outlineDocuments(viewCompositionDocument(),docs,config.joinedScenes?.(viewScene(),docs).map(r=>r.zone)??[]);outlineSceneOwners.clear();for(const source of sources)outlineSceneOwners.set((source.value as ChunkDocument).scene,source.id);
@@ -596,7 +634,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if(!sources.length)left.append(element('p','muted','Open a scene to inspect its assets.'));
     if(navigable()){
       const camera=button('Camera',()=>selectTimeline({kind:'camera'}),'Inspect the authored game camera');camera.setAttribute('aria-label','Camera in outline');
-      if(currentTimeline())left.append(camera);updates.push(()=>camera.setAttribute('aria-pressed',String(cameraSelected())));
+      left.append(camera);updates.push(()=>camera.setAttribute('aria-pressed',String(cameraSelected())));
       left.append(element('p','outline-context',workspaceId?'Composition members · prepared for editing, independently of runtime residency.':'The sequence and its referenced chunks. Selection does not change this list.'));
       const tools=element('div','layer-tools'),search=element('input'),sort=element('div','segmented');sort.setAttribute('role','group');sort.setAttribute('aria-label','Arrange the outline');search.type='search';search.placeholder='Filter all sources';search.value=layerQuery;search.setAttribute('aria-label','Filter the outline');search.oninput=()=>{layerQuery=search.value;filters.forEach(render=>render());};
       for(const mode of ['kind','order']as const){const pick=button(mode==='kind'?'Kind':'Order',()=>{layerSort=mode;for(const child of sort.children)child.setAttribute('aria-pressed',String((child as HTMLElement).dataset.mode===mode));filters.forEach(render=>render());});pick.dataset.mode=mode;pick.setAttribute('aria-pressed',String(layerSort===mode));sort.append(pick);}tools.append(search,sort);left.append(tools);
@@ -606,7 +644,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       group.dataset.document=source.id;group.open=outlineSourceOpen.get(source.id)??false;
       const summary=element('summary','',source.id===viewCompositionDocument()?.id?(currentTimeline()&&sources.length>1?'Sequence controls':sceneName(composition.scene)):source.id.startsWith('backdrop-')?'Shared backdrop · '+source.id.slice(9):sceneName(composition.scene));summary.title=source.id;
       if(!source.id.startsWith('backdrop-')&&!composition.scene.startsWith('sequence-'))summary.append(chunkStatusBadge(preparedChunkStatus(composition.scene,sceneName(composition.scene)),()=>inspectChunk(composition.scene)));
-      if(workspaceId){const focus=button('Focus',()=>{},'Frame this chunk without leaving the composition');focus.onclick=event=>{event.preventDefault();event.stopPropagation();const region=painting.result?.regions?.find(r=>r.document===source.id);if(region){sequenceNav.x+=(region.x+region.width/2-canvas.width/2)/(painting.result?.workspaceScale??1);editorSelection.world=undefined;editorSelection.document=source.id;editorSelection.instance='';editorSelection.chunk=composition.scene;refreshRight();refreshViewportTools();void draw();}};summary.append(focus);}
+      if(workspaceId){const focus=button('Focus',()=>{},'Frame this chunk without leaving the composition');focus.onclick=event=>{event.preventDefault();event.stopPropagation();const region=painting.result?.regions?.find(r=>r.document===source.id);if(region){stopFollowing();sequenceNav.x+=(region.x+region.width/2-canvas.width/2)/(painting.result?.workspaceScale??1);editorSelection.world=undefined;editorSelection.document=source.id;editorSelection.instance='';editorSelection.chunk=composition.scene;refreshRight();refreshViewportTools();void draw();}};summary.append(focus);}
       const container=element('div');group.append(summary,container);left.append(group);
       group.ontoggle=()=>{if(!layerQuery.trim()){outlineSourceOpen.set(source.id,group.open);saveFolds();}};
       const handle=renderOutlineDocument(source,container);filters.push(()=>{handle.filter();if(layerQuery.trim())group.open=true;else group.open=outlineSourceOpen.get(source.id)??false;});
@@ -644,6 +682,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const item = (node: AssetInstance, depth: number) => {
         const key=JSON.stringify([doc.id,node.id]),active=()=>compositionDocument()?.id===doc.id&&node.id===editorSelection.instance;
         const li = element('li'), pick = button('', () => { if(active())select_('');else{editorSelection.world=undefined;editorSelection.chunk=undefined;editorSelection.timeline=undefined;editorSelection.document=doc.id;editorSelection.instance=node.id;timelineView.collapsed.delete(node.id);refreshRight();updateOutlineSelection();refreshTimeline();void draw();} }, `${art(node).label} · ${node.type} · ${LAYER_LABELS[node.layer]}${parents.has(node.id) ? ` · in ${parents.get(node.id)}` : ''}`);
+        const selectRow=pick.onclick!;pick.onclick=event=>{if(event.detail<2)selectRow.call(pick,event);};
+        pick.ondblclick=event=>{event.preventDefault();if(!active())selectRow.call(pick,event);void focusArtwork(doc.id,node.id);};pick.title+=' · Double-click to frame asset';
         pick.onmouseenter = pick.onfocus = () => { viewport.hoverId=painting.result?.sources?.[key]?key:doc.id===currentId?node.id:key;placeHover(); }; pick.onmouseleave = pick.onblur = () => { if (viewport.hoverId === key||viewport.hoverId===node.id) { viewport.hoverId = ''; placeHover(); } };
         const parallax = node.placement.parallax ?? 1;
         if (node.type === 'level.barrier') { const mark = element('span', 'layer-badge'); mark.innerHTML = BARRIER_ICON; mark.title = 'Barrier: select it to edit who may pass (Access)'; pick.append(mark); }
@@ -660,7 +700,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         return true;
       };
       function renderLayers() {
-        const fresh = reveal(); listHost.replaceChildren(); let shown = 0;
+        const scroll=left.scrollTop;reveal(); listHost.replaceChildren(); let shown = 0;
         if (hidden.size) { const reveal = button(`Show all (${hidden.size})`, () => { hidden.clear(); renderLayers(); void draw(); }, 'Show everything hidden with the eyes'); reveal.className = 'show-all'; listHost.append(reveal); }
         if (layerSort === 'order') shown = renderStack();
         else for (const role of LAYER_ROLES) {
@@ -674,8 +714,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
           const summary = element('summary', '', `${role} · ${count}`); summary.title = KIND_HINTS[role]; group.append(summary, list); listHost.append(group);
         }
         if (!shown) listHost.append(element('p', 'muted', layerQuery.trim() ? 'Nothing matches this filter.' : 'This scene has no assets yet. Use ＋ Add asset in the toolbar.'));
-        // Once the outline is attached (the left column is rebuilt around this list). A new selection is centred; later refreshes only keep it in view.
-        queueMicrotask(() => listHost.querySelector<HTMLElement>('.hierarchy button[aria-pressed=true]')?.scrollIntoView({ block: fresh ? 'center' : 'nearest' }));
+        left.scrollTop=scroll;
+        // Selection never scrolls the outline; the user owns its scroll position.
       }
       /** Front at the top, like a paint program's layer list. */
       function renderStack() {
@@ -723,7 +763,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
         container.querySelectorAll<HTMLElement>('[data-instance]').forEach(row => { const active=row.dataset.document===compositionDocument()?.id&&row.dataset.instance===editorSelection.instance; row.setAttribute('aria-pressed', String(active)); if (active) selectedRow = row; });
         if(fresh&&!selectedRow){renderLayers();return;}
         if (fresh && selectedRow && (selectedRow.closest('details:not([open])') || selectedRow.closest('[hidden]'))) { renderLayers(); return; }
-        if (fresh) selectedRow?.scrollIntoView({ block: 'center' });
+
       };
       renderLayers();
 
@@ -731,7 +771,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   const disposeInspector=inspector.dispose;
   /** Sections read the live documents, so a section's own refresh always sees the latest edit. */
-  const liveContext = (scene: string): WorkbenchContext => ({ get documents() { return documentsForView(); }, scene,get checkpoint(){return activeCheckpointId||worldState()?.id;},openCheckpoint,editCheckpoint,openScene, openInstance,openConversation,inspect:openInspector, authoring: authoringApi() });
+  const liveContext = (scene: string): WorkbenchContext => ({ get documents() { return documentsForView(); }, scene,get checkpoint(){return activeCheckpointId||worldState()?.id;},openCheckpoint,editCheckpoint,openScene, openInstance,openConversation,openRenderingSource,cityDistrict,inspect:openInspector, authoring: authoringApi() });
   let propertyUpdates:(()=>void)[]=[],chunkInspectorHandle:WorkbenchHandle|undefined;
   const inspectorContext=()=>JSON.stringify([currentId,workspaceId,editorSelection]);
   function openInspector(request:InspectorTask){
@@ -752,21 +792,30 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   function refreshRight() {
     if(numericScrubbing)return;
+    if(root.dataset.tool!=='scene'){layoutDirty=true;propertyUpdates=[];chunkInspectorHandle?.();chunkInspectorHandle=undefined;disposeInspector();right.replaceChildren();return;}
     propertyUpdates=[];chunkInspectorHandle?.();chunkInspectorHandle=undefined;
     const node = selected(), scene = sceneId(), doc = compositionDocument(); right.replaceChildren();
+    if(!playHost.hidden&&!editorSelection.chunk){disposeInspector();right.append(playSettings);return;}
     renderInspectorMessages();
     if(inspectorDraft&&(inspectorDraft.selection!==inspectorContext()||inspectorDraft.version!==model.sourceVersion))inspectorDraft=undefined;
     if(inspectorDraft){disposeInspector();right.append(inspectorDraft.host);return;}
     if(editorSelection.world){const address=editorSelection.world,source=workspaceSource(documentsForView()),row=source.compositions[address.composition]?.members.find(m=>m.id===address.member);if(!row||address.child&&(!row.group||!source.groups[row.group].members.some(m=>m.id===address.child)))editorSelection.world=undefined;}
-    if(editorSelection.world){disposeInspector();renderWorldMemberInspector(right,worldControls(),editorSelection.world);const source=worldMemberAt(workspaceSource(documentsForView()),editorSelection.world).member.chunk;if(source){const section=config.inspector?.(source,undefined,documentsForView()).find(s=>s.id==='chunk-connections');if(section){const host=element('section');right.append(host);chunkInspectorHandle=section.mount(host,liveContext(source));}}return;}
+    if(editorSelection.world){disposeInspector();renderWorldMemberInspector(right,worldControls(),editorSelection.world);const source=worldMemberAt(workspaceSource(documentsForView()),editorSelection.world).member.chunk;if(source){const sections=config.inspector?.(source,undefined,documentsForView()).filter(s=>s.id==='chunk-connections'||s.id==='scene')??[],handles:WorkbenchHandle[]=[];for(const section of sections){const host=element('section');right.append(host);handles.push(section.mount(host,liveContext(source)));}chunkInspectorHandle=()=>{for(const handle of handles)handle();};}return;}
     if(editorSelection.chunk){
       const id=editorSelection.chunk,row=liveChunkRows?.find(r=>r.id===id)??(!liveChunkRows?preparedChunkStatus(id,sceneName(id)):undefined);
       disposeInspector();if(row)renderChunkStatus(right,row,()=>{editorSelection.chunk=undefined;refreshRight();},playHost.hidden?()=>{editorSelection.chunk=undefined;openScene(id);}:undefined);else right.append(element('p','muted','Waiting for this chunk in the next runtime snapshot.'));return;
     }
-    if(renderTimelineInspector(right,{selection:editorSelection.timeline,sequence:sequence(),commandTargets:commandTargets(),time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,animatedControl,selectTimeline,seekTime,notice,setSelection:value=>{editorSelection.timeline=value;},close:()=>{editorSelection.timeline=undefined;refreshRight();refreshTimeline();},getFrame:()=>evaluateTimeline(currentTimeline()!,sequenceId,time,evaluationContext(),{reduced})})){disposeInspector();return;}
+    if(editorSelection.timeline?.kind==='camera'&&!sequence()){
+      disposeInspector();right.append(element('h2','','Game camera'),element('p','muted','Base preview camera. This is distinct from editor pan/zoom. Normal gameplay follows the player; a selected sequence can direct this same frame. These preview settings do not author a new camera entity.'));
+      for(const [key,name]of [['cameraX','Camera X'],['cameraH','Camera Y']]as const){const input=numberInput(Number(environment[key]??0),value=>{environment[key]=value;void draw();});input.setAttribute('aria-label',name);right.append(label(name,input));}
+      const zoom=numberInput(Number(environment.zoom??1),value=>{environment.zoom=value;void draw();},.1);zoom.max='8';zoom.setAttribute('aria-label','Game camera zoom');right.append(label('Game camera zoom',zoom));
+      right.append(element('p','muted','Logical frame: '+baseWidth+' × '+baseHeight),button('Locate camera',locateCamera),button(cameraPreview?'Return to Workspace':'Look through camera',()=>{cameraPreview=!cameraPreview;refreshOptions();refreshViewportTools();refreshRight();void draw();}));return;
+    }
+    if(editorSelection.timeline&&renderTimelineInspector(right,{selection:editorSelection.timeline,sequence:sequence(),commandTargets:commandTargets(),time,playing,fieldInput,numberInput,keyField,keyValue,editTimeline,addKey,animatedControl,selectTimeline,seekTime,notice,setSelection:value=>{editorSelection.timeline=value;},close:()=>{editorSelection.timeline=undefined;refreshRight();refreshTimeline();},getFrame:()=>evaluateTimeline(currentTimeline()!,sequenceId,time,evaluationContext(),{reduced})})){disposeInspector();return;}
     inspector.render(right,{node,scene,doc,sceneName:sceneName(scene),sharedSource:!!editorSelection.document&&editorSelection.document!==currentId,registry:config.registry,
       duplicate:()=>run(()=>{editorSelection.instance=model.duplicate(doc!.id,editorSelection.instance);}),remove:deleteSelected,deselect:()=>select_(''),openSource:()=>openDocument(editorSelection.document),refresh:refreshRight,
-      resolved:()=>{const preview=painting.result,key=Object.keys(preview?.resolved??{}).find(k=>k===node?.id&&!preview?.sources?.[k]||preview?.sources?.[k]?.document===doc?.id&&preview?.sources?.[k]?.instance===node?.id);const data=key?preview?.resolved?.[key]:undefined;return data&&node?{...data,authored:node.placement}:undefined;},
+      resolved:()=>{const data=resolvedArtwork(doc!.id,node?.id??'');return data&&node?{...data,authored:node.placement}:undefined;},
+      visibility:{missingReason:()=>hiddenIn(doc!.id).has(node?.id??'')?'Hidden with the outline eye. Use its eye button to show it again.':undefined,showBoundary:()=>showDrawingBoundary()},
       sections:()=>scene&&config.inspector?config.inspector(scene,node,documentsForView()):[],context:()=>liveContext(scene),appearance:renderAppearance});
   }
 
@@ -774,23 +823,37 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function renderPresets(host: HTMLElement, node: AssetInstance) {
     const doc = presetsDoc()!, mine = presetsFor(doc, node.type), settings = presetProps(config.registry, node.type, config.registry.properties(node.type, node.props));
     const editPresets = (labelText: string, change: (d: KitPresets) => void) => run(() => model.edit(PRESETS_DOCUMENT, labelText, value => { const next = copy(value) as KitPresets; change(next); return next; }));
-    const same = mine.find(p => JSON.stringify(presetProps(config.registry, node.type, config.registry.properties(node.type, p.props))) === JSON.stringify(settings));
+    const children=node.type==='assembly.group'?node.children:undefined;
+    const same = mine.find(p => JSON.stringify(presetProps(config.registry, node.type, config.registry.properties(node.type, p.props))) === JSON.stringify(settings)&&JSON.stringify(p.children)===JSON.stringify(children));
     host.append(element('p', 'muted', same ? `These settings are the preset “${same.label}”.` : 'A preset saves these settings under a name; Add asset lists it under this kit.'));
     const name = element('input'); name.type = 'text'; name.placeholder = 'Preset name'; name.setAttribute('aria-label', 'Preset name');
-    host.append(label('Name', name), button('Save as new preset', () => { const text = name.value.trim(); if (!text) { notice('Give the preset a name first.', true); return; } editPresets('Save preset', d => { d.presets.push({ id: presetId(d, text), label: text, kit: node.type, props: settings }); }); }));
+    host.append(label('Name', name), button('Save as new preset', () => { const text = name.value.trim(); if (!text) { notice('Give the preset a name first.', true); return; } editPresets('Save preset', d => { d.presets.push({ id: presetId(d, text), label: text, kit: node.type, props: settings,...(children?{children:copy(children)}:{}) }); }); }));
     if (!mine.length) return;
     let chosen = same?.id ?? mine[0].id;
     const pick = select(mine.map(p => ({ value: p.id, label: p.label })), chosen, v => { chosen = v; }); host.append(label('Existing preset', pick));
     const row = element('div', 'row');
     row.append(
-      button('Update with these settings', () => editPresets('Update preset', d => { d.presets.find(p => p.id === chosen)!.props = settings; }), 'Replace the chosen preset’s settings with this piece’s'),
+      button('Update with these settings', () => editPresets('Update preset', d => { const p=d.presets.find(p => p.id === chosen)!;p.props = settings;if(children)p.children=copy(children);else delete p.children; }), 'Replace the chosen preset’s settings with this piece’s'),
       button('Rename', () => { const text = name.value.trim(); if (!text) { notice('Type the new name in Name first.', true); return; } editPresets('Rename preset', d => { d.presets.find(p => p.id === chosen)!.label = text; }); }, 'Give the chosen preset the name typed above'),
       button('Delete', () => editPresets('Delete preset', d => { d.presets = d.presets.filter(p => p.id !== chosen); }), 'Delete the chosen preset (pieces placed from it stay as they are)'),
     );
     host.append(row);
   }
+  const inspectorFolds=readFolds('inspector-folds');
+  let displayedPropertyLinks='';
+  function propertyLinkSignature(node:AssetInstance){const fields=config.registry.get(node.type).fields,values=resolvedArtwork(compositionDocument()?.id??currentId,node.id)?.properties;return JSON.stringify(Object.entries(fields).filter(([,f])=>f.stateOverride).map(([key])=>[key,!!values?.[key]?.readOnly,values?.[key]?.source??null]));}
+  function guardLinkedProperties(document:string,node:AssetInstance,before:Properties,bindings:AssetInstance['bindings']){
+    const values=resolvedArtwork(document,node.id)?.properties;
+    for(const[key,field]of Object.entries(config.registry.get(node.type).fields))if(field.stateOverride&&values?.[key]?.readOnly&&(before[key]??field.default)!==(node.props[key]??field.default)&&node.bindings?.[field.stateOverride.state]===bindings?.[field.stateOverride.state])throw Error(field.label+' is linked. Edit its shared source parameter instead.');
+  }
+  function syncLinkedProperties(){const node=selected();if(!node||!Object.values(config.registry.get(node.type).fields).some(f=>f.stateOverride))return;
+    if(propertyLinkSignature(node)!==displayedPropertyLinks){refreshRight();return;}
+    const values=resolvedArtwork(compositionDocument()?.id??currentId,node.id)?.properties;
+    for(const output of right.querySelectorAll<HTMLOutputElement>('output[data-linked-property]')){const key=output.dataset.linkedProperty!,unit=fieldUnit(config.registry.get(node.type).fields[key]),value=values?.[key]?.value;if(value===undefined)continue;const text=String(value)+(unit?' '+unit:'');if(output.textContent!==text)output.textContent=text;}
+  }
   function renderAppearance(host: HTMLElement, node: AssetInstance) {
-    const art = config.registry.get(node.type), part = (title: string, open: boolean) => { const box = element('details', 'inspector-part'), inner = element('div'); box.open = open; box.append(element('summary', '', title), inner); host.append(box); return inner; };
+    displayedPropertyLinks=propertyLinkSignature(node);
+    const art = config.registry.get(node.type), part = (title: string, open: boolean) => { const box = element('details', 'inspector-part'), inner = element('div'),key=node.type+':'+title; box.open = inspectorFolds.get(key)??open; box.append(element('summary', '', title), inner); box.addEventListener('toggle',()=>{if(!box.isConnected)return;inspectorFolds.set(key,box.open);try{localStorage.setItem('access-denied.editor.inspector-folds',JSON.stringify([...inspectorFolds]));}catch{/* Optional workspace preference. */}});host.append(box); return inner; };
     const canAnimate=!!sequence();
     const qualify=(target:Target):Target=>target.kind==='camera'||compositionDocument()?.id===viewCompositionDocument()?.id?target:{...target,scene:(compositionDocument()!.value as ChunkDocument).scene};
     host.append(element('p','muted',canAnimate?'Use the diamond to add or remove a key at the playhead. Colored diamonds indicate animation. Arrows jump between keys.':'Y is height above the floor; positive values move upward.'));
@@ -798,13 +861,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       target=qualify(target);const track=canAnimate?keyframeState(sequence()!,target,time).track:undefined;
       const value=canAnimate?keyValue(inspectorFrame(),target).value:base;
       const control=fieldInput(field,value,v=>track?addKey(target,v):apply(v));control.setAttribute('aria-label',name);
+      if(target.kind==='property')control.dataset.assetProperty=target.property;
       if(canAnimate)parent.append(label(name,animatedControl(control,target,name)));else{const row=element('div','animated-property'),icon=button('◇',()=>{},'Animatable property: open a sequence to add keyframes');icon.className='property-key';icon.disabled=true;icon.setAttribute('aria-label',name+' supports animation in a sequence');row.append(control,icon);parent.append(label(name,row));}
     };
     const position = part('Position', true);
     for(const [key,name,value,min] of [['x','X',node.placement.x,undefined],['h','Y',node.placement.h,undefined],['scale','Scale',node.placement.scale??1,.0001],['parallax','Parallax',node.placement.parallax??1,0]] as const){
-      propertyRow(position,name,{kind:'instance',instance:node.id,property:key},{kind:'number',label:name,default:value,...(min!==undefined?{min}:{})},value,v=>editInstance('Change '+key,n=>n.placement[key]=v as number));
+      propertyRow(position,name,{kind:'instance',instance:node.id,property:key},{kind:'number',label:name,default:value,...(min!==undefined?{min}:{})},value,v=>editInstance('Change '+key,n=>n.placement[key]=v as number,'artwork'));
     }
-    propertyRow(position,'Facing',{kind:'instance',instance:node.id,property:'facing'},{kind:'select',label:'Facing',default:1,options:[-1,1]},node.placement.facing??1,v=>editInstance('Change facing',n=>n.placement.facing=v as 1|-1));
+    propertyRow(position,'Facing',{kind:'instance',instance:node.id,property:'facing'},{kind:'select',label:'Facing',default:1,options:[-1,1]},node.placement.facing??1,v=>editInstance('Change facing',n=>n.placement.facing=v as 1|-1,'artwork'));
     if(canAnimate)for(const property of ['visible','opacity'] as const)propertyRow(position,property==='visible'?'Visible':'Opacity',{kind:'instance',instance:node.id,property},keyField({kind:'instance',instance:node.id,property}),property==='visible'?true:1,value=>addKey({kind:'instance',instance:node.id,property},value));
     const composed = compositionDocument()!;
     const drawn = art.parts.length > 0 || art.role === 'group', choices: Layer[] = art.framePhase==='sky'?['distance']:isPlayerRow(node) ? ['playfield'] : drawn ? [...VISUAL_LAYERS] : ['logic'];
@@ -812,13 +876,34 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if (choices.length < 2) (pick as HTMLSelectElement).disabled = true; pick.title = LAYER_HINTS[node.layer];
     position.append(label('Layer', pick));
     if(drawn)clippingControls(part('Visibility at chunk boundaries',false),node,editInstance,numberInput);
+    if(art.spatial?.reason)host.append(element('p','muted',art.spatial.reason));
     if(node.type==='character.flow')peopleControls(part('People · spawn, route and sink',true),node,documentsForView().filter(d=>d.kind==='composition'&&!(d.value as ChunkDocument).sequence).map(d=>(d.value as ChunkDocument).scene),editInstance,numberInput);
     const siblings = layerRows(composed.value as ChunkDocument, node.layer), at = siblings.findIndex(n => n.id === node.id), stepper = element('div', 'row');
     const forward = button('Bring forward', () => run(() => model.restack(composed.id, node.id, node.layer, at + 1)), 'Draw in front of the next item in this layer'), backward = button('Send backward', () => run(() => model.restack(composed.id, node.id, node.layer!, at - 1)), 'Draw behind the previous item in this layer');
     forward.disabled = at >= siblings.length - 1; backward.disabled = at <= 0; stepper.append(backward, forward); position.append(stepper);
     if(node.type==='sequence.world-control')renderWorldDirectionAuthoring(part('World direction',true),node,documentsForView(),editInstance,e=>notice(String(e),true));
     const fields = Object.entries(art.fields).filter(([key])=>node.type!=='sequence.world-control'||!['origin','zones','worldComposition'].includes(key));
-    if (fields.length) { const look = part('Look', true); const shown = config.registry.properties(node.type, node.props); for (const [key, field] of fields) { if(node.type==='character.flow'&&(key==='flow'||key==='exit'))continue; if (field.showIf && !field.showIf(shown)) continue; const value = node.props[key] ?? field.default; const name=field.label+(field.unit?` (${field.unit})`:'');if(field.animatable)propertyRow(look,name,{kind:'property',instance:node.id,property:key},field,value,v=>editInstance(`Change ${field.label}`,n=>n.props[key]=v));else look.append(label(name,fieldInput(field,value,v=>editInstance(`Change ${field.label}`,n=>n.props[key]=v)))); } }
+    if (fields.length) {
+      const shown=config.registry.properties(node.type,node.props);
+      for(const group of PROPERTY_GROUPS){
+        const entries=fields.filter(([,field])=>field.semantics?.group===group);
+        if(!entries.length)continue;const section=part(group,true);
+        for(const[key,field]of entries){
+          if(node.type==='character.flow'&&(key==='flow'||key==='exit')||field.showIf&&!field.showIf(shown))continue;
+          const value=node.props[key]??field.default,name=field.label+(fieldUnit(field)?` (${fieldUnit(field)})`:'');
+          const linked=resolvedArtwork(compositionDocument()?.id??currentId,node.id)?.properties[key];
+          if(linked?.readOnly){const row=element('div','linked-property'),output=element('output','',String(linked.value)+(fieldUnit(field)?' '+fieldUnit(field):''));output.dataset.linkedProperty=key;output.setAttribute('aria-label',field.label+' · linked value');row.append(label(field.label,output));
+            const source=linked.source,owner=source&&documentsForView().find(d=>d.kind==='composition'&&(d.value as ChunkDocument).scene===source.scene);
+            if(source&&owner)row.append(button('Edit shared '+field.label,()=>{if(owner.id!==compositionDocument()?.id){openInstance(owner.id,source.instance);return;}editorSelection.document=owner.id;editorSelection.instance=source.instance;editorSelection.timeline=undefined;refreshRight();updateOutlineSelection();void draw();},'Select '+source.instance+' · '+source.property));
+            else row.append(element('p','muted','Controlled by '+(linked.binding??field.stateOverride?.state??'prepared input')+'.'));
+            section.append(row);continue;
+          }
+          if(field.animatable)propertyRow(section,name,{kind:'property',instance:node.id,property:key},field,value,v=>editInstance(`Change ${field.label}`,n=>n.props[key]=v,art.spatial?.fields.includes(key)?'artwork':'all'));
+          else{const control=fieldInput(field,value,v=>editInstance(`Change ${field.label}`,n=>n.props[key]=v,art.spatial?.fields.includes(key)?'artwork':'all'));control.dataset.assetProperty=key;section.append(label(name,control));}
+        }
+      }
+      if(art.derived){const section=part('Derived geometry',true);for(const value of Object.values(art.derived(shown))){const output=element('output','',String(value.value)+(value.unit?' '+value.unit:''));section.append(label(value.label,output));}}
+    }
     if(canAnimate){const fields=Object.entries(art.visualFields??{}).filter(([,field])=>field.animatable);if(fields.length){const state=part('Animated state',true);for(const [property,field] of fields){const target:Target=qualify({kind:'state',instance:node.id,property});state.append(label(field.label,animatedControl(fieldInput(field,keyValue(inspectorFrame(),target).value,value=>addKey(target,value)),target,field.label)));}}}
     if (art.libraryUse === 'reusable' && presetsDoc()) renderPresets(part('Preset', false), node);
     const composition = compositionDocument()!.value as ChunkDocument, anchorDetails = part('Attachment and anchors', !!node.attach);
@@ -838,24 +923,24 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const scene = sceneId(), head = element('div', 'picker-head'), body = element('div', 'picker-browser');
     head.append(element('strong', '', `Add asset to ${sceneName(scene)}`), element('span', 'muted', 'Double-click a piece, or select it and use Add'), button('✕', closePicker, 'Close (Esc)'));
     picker.replaceChildren(head, body); cleanupPicker?.();
-    cleanupPicker = mountArtwork(body, scene, entry => { closePicker(); void addAtView(entry.id); }, (kit, settings) => { closePicker(); void addAtView(kit.id, settings); });
+    cleanupPicker = mountArtwork(body, scene, entry => { closePicker(); void addAtView(entry.id); }, (kit, settings,children) => { closePicker(); void addAtView(kit.id, settings,children); });
   }
   picker.addEventListener('keydown', event => { if (event.key === 'Escape') { event.preventDefault(); closePicker(); canvas.focus(); } });
   /** The editable kit presets document, when this editor has one. */
   const presetsDoc = () => documentsForView().find(d => d.id === PRESETS_DOCUMENT)?.value as KitPresets | undefined;
   /** A people-kit preset is a human, an animal or a robot by its body kind; other presets share their kit's kind. */
   const presetFamily = (preset: KitPreset, kit: AssetEntry) => kit.id !== 'character.resident' ? kit.family : preset.props.kind === undefined || preset.props.kind === 'human' ? 'Human' : ['cat', 'pigeon', 'gull', 'crab'].includes(String(preset.props.kind)) ? 'Animal' : 'Robot';
-  async function addAtView(type: string, settings?: Properties) { const token = perfBegin('editor.add'); try {
+  async function addAtView(type: string, settings?: Properties,children?:AssetInstance[]) { const token = perfBegin('editor.add'); try {
     const doc = compositionDocument(); if (!doc || current()?.kind !== 'composition') { notice('Open a chunk to add assets.', true); return; }
     let x = 0;
     try {
       // Draw the new piece once off-screen at x = 0, then move it by its measured distance to the centre of the view.
-      const draft = model.draftAdd(doc.id, type, settings), probe = element('canvas'); probe.width = canvas.width; probe.height = canvas.height;
+      const draft = model.draftAdd(doc.id, type, settings,children), probe = element('canvas'); probe.width = canvas.width; probe.height = canvas.height;
       const result = await config.preview.render(probe, previewRequest(draft.composition, false)), box = result.bounds.find(b => b.id === draft.instanceId);
       if (box && result.deltaToLocal) { const rect = canvas.getBoundingClientRect(), view = stage.getBoundingClientRect(), centre = ((Math.max(rect.left, view.left) + Math.min(rect.right, view.right)) / 2 - rect.left) * canvas.width / Math.max(1, rect.width); x = result.deltaToLocal(draft.instanceId, centre - (box.x + box.width / 2), 0).x; }
     } catch { x = 0; }
     x = snap ? Math.round(x / snap) * snap : Math.round(x);
-    let added = false; run(() => { editorSelection.instance = model.add(doc.id, type, { x, h: 0 }, settings); inspector.appearance(); added = true; });
+    let added = false; run(() => { editorSelection.instance = model.add(doc.id, type, { x, h: 0 }, settings,children); inspector.appearance(); added = true; });
     if (added) { if (compact.matches) showPanel('properties'); notice(`Added ${config.registry.get(type).label}. Drag it into place or set its position in the inspector.`); }
   } finally { perfEnd(token); }
   }
@@ -896,16 +981,40 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='key')return sequence()?.tracks.find(t=>t.id===(editorSelection.timeline as {track:string}).track)?.target.kind==='camera';
     return false;
   }
+  function openRenderingSource(source:import('../world/render-settings').RenderSource){
+    inspectorDraft=undefined;refreshRight();
+    if(source.kind==='district'){cityDistrict=source.id;mapHost.open=true;refreshMap();return;}
+    if(source.kind==='chunk'){openScene(source.id);return;}
+    if(source.kind==='sequence'||source.kind==='sequence-member'){openSequence(source.id);openSequenceRendering();return;}
+    if(source.kind==='composition'){openComposition(source.id);openCompositionRendering(worldControls());return;}
+    if(source.kind==='member'){if(workspaceId!==source.composition)openComposition(source.composition);selectWorldMember({composition:source.composition,member:source.member,...(source.child?{child:source.child}:{})});return;}
+    if(source.kind==='group'){const world=workspaceSource(documentsForView());for(const [composition,definition]of Object.entries(world.compositions)){const member=definition.members.find(m=>m.group===source.id);if(member){if(workspaceId!==composition)openComposition(composition);selectWorldMember({composition,member:member.id});return;}}}
+  }
+  function openSequenceRendering(){
+    const sequenceSource=sequence();if(!sequenceSource)return;
+    openInspector({title:'Sequence rendering · '+sequenceSource.id,build:(body,form)=>{
+      const draft=structuredClone(sequenceSource),documents=validationSnapshot(documentsForView()),city=documents.get('city-source') as CitySource,world=documents.get('world-compositions') as import('../world/compositions').WorldCompositions,scenes=pendingRegistry(documents);
+      const worldDirected=(viewCompositionDocument()!.value as ChunkDocument).instances.some(n=>n.type==='sequence.world-control');
+      const available=worldDirected?(workspaceId?worldChunkPlacements(world,workspaceId).map(c=>c.chunk):Object.keys(scenes)):[];let target='';
+      const render=()=>{body.replaceChildren();form.select(body,'Rendering target',['',...available],target,value=>{target=value;render();});
+        const note=element('p','muted','The empty target applies to the whole picture. A named chunk overrides only that member. Inherit removes this sequence override.');body.append(note);
+        const local=target?draft.memberRendering?.[target]:draft.rendering,scene=scenes[target||painting.result?.activeScene||viewScene()]??{id:target||viewScene()};
+        body.append(element('p','muted','Effective values shown for '+(scene.name??scene.id)+'. Other members may inherit different settings.'));
+        const effective=renderPolicy(scene,city,world,draft,workspaceId||undefined,worldDirected?undefined:assetPictureLimits);
+        renderSettingsAuthoring(form,body,local,value=>{if(target){if(value)(draft.memberRendering??={})[target]=value;else{delete draft.memberRendering?.[target];if(!Object.keys(draft.memberRendering??{}).length)delete draft.memberRendering;}}else if(value)draft.rendering=value;else delete draft.rendering;render();},effective,'Rendering',openRenderingSource);
+      };render();return()=>editTimeline('Edit sequence rendering',program=>{const index=program.sequences.findIndex(s=>s.id===draft.id);program.sequences[index]=draft;});
+    }});
+  }
   function refreshTimeline() {
     timelineGrid?.dispose();timelineGrid=undefined;timelineHost.replaceChildren();timeLabel=undefined;transportPlay=undefined;
-    const seq=sequence();if(!seq){timelineHost.hidden=true;return;}timelineHost.hidden=false;timelineHost.classList.toggle('collapsed',timelineCollapsed);timelineHost.style.height=timelineCollapsed?'42px':timelineHeight+'px';
+    const seq=sequence();if(!seq||!playHost.hidden){timelineHost.hidden=true;return;}timelineHost.hidden=false;timelineHost.classList.toggle('collapsed',timelineCollapsed);timelineHost.style.height=timelineCollapsed?'42px':timelineHeight+'px';
     const resize=element('div','timeline-resize');resize.tabIndex=0;resize.setAttribute('role','separator');resize.setAttribute('aria-label','Resize timeline');resize.setAttribute('aria-orientation','horizontal');
     let drag:{y:number;height:number}|undefined;resize.onpointerdown=e=>{drag={y:e.clientY,height:timelineHost.clientHeight};resize.setPointerCapture(e.pointerId);};resize.onpointermove=e=>{if(!drag)return;timelineHeight=Math.max(150,Math.min(center.clientHeight-200,drag.height+drag.y-e.clientY));timelineHost.style.height=timelineHeight+'px';};resize.onpointerup=e=>{drag=undefined;if(resize.hasPointerCapture(e.pointerId))resize.releasePointerCapture(e.pointerId);};resize.onkeydown=e=>{if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();timelineHeight=Math.max(150,timelineHeight+(e.key==='ArrowUp'?30:-30));timelineHost.style.height=timelineHeight+'px';}};
     timelineHost.append(resize);
     const transport=element('div','timeline-transport');transportPlay=button(playing?'Pause':'Play',toggleAnimation,'Space: play / pause');transport.append(button(timelineCollapsed?'▸ Timeline':'▾ Timeline',()=>{timelineCollapsed=!timelineCollapsed;refreshTimeline();}),transportPlay,button('−1 frame',()=>seekTime((Math.round(time*60)-1)/60),'Comma: previous frame'),button('+1 frame',()=>seekTime((Math.round(time*60)+1)/60),'Period: next frame'));
     timeLabel=element('span','time');transport.append(timeLabel);timelineHost.append(transport);updateTime();if(timelineCollapsed)return;
     const zoom=numberInput(timelineView.zoom,value=>{timelineView.zoom=Math.max(1,Math.min(16,value));refreshTimeline();},1);const speed=speedControl();speed.setAttribute('aria-label','Playback speed');transport.append(speed);zoom.max='16';zoom.setAttribute('aria-label','Timeline zoom');transport.append(label('Zoom',zoom));
-    const settings=element('details','timeline-settings'),dataPanel=element('div');settings.append(element('summary','','Settings'),dataPanel);transport.append(settings);
+    const settings=element('details','timeline-settings'),dataPanel=element('div');settings.append(element('summary','','Settings'),dataPanel);transport.append(settings,button('Rendering',openSequenceRendering,'Inspect sequence overrides and their inherited source'));
     dataPanel.append(label('Duration',numberInput(seq.duration,value=>editTimeline('Change duration',d=>d.sequences[0].duration=value),1/60)));
     const loopInput=element('input');loopInput.type='checkbox';loopInput.checked=loop;loopInput.onchange=()=>loop=loopInput.checked;
     dataPanel.append(label('Loop range',loopInput),label('From',numberInput(loopFrom,v=>{if(v>=(loopTo||seq.duration)){notice('Loop start must precede loop end.',true);return;}loopFrom=v;},0)),label('To',numberInput(loopTo||seq.duration,v=>{if(v<=loopFrom||v>seq.duration){notice('Loop end must follow its start and remain within the sequence.',true);return;}loopTo=v;},0)));
@@ -925,7 +1034,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const result: { value: string; label: string }[] = [];
     const add = (target: Target, text: string) => result.push({ value: JSON.stringify(target.kind==='camera'||compositionDocument()?.id===viewCompositionDocument()?.id?target:{...target,scene:(compositionDocument()!.value as ChunkDocument).scene}), label: text });
     for (const property of ['x', 'h', 'zoom'] as const) add({ kind: 'camera', property }, `Camera · ${property}`);
-    const node = selected(); if (node) { for (const property of ['x', 'h', 'scale', 'facing', 'parallax', 'visible', 'opacity'] as const) add({ kind: 'instance', instance: node.id, property }, `${node.id} · ${property}`); const entry = config.registry.get(node.type); for (const [property, field] of Object.entries(entry.fields)) if (field.animatable) add({ kind: 'property', instance: node.id, property }, `${node.id} · ${field.label}`); for (const [property, field] of Object.entries(entry.visualFields ?? {})) { if (field.animatable) add({ kind: 'state', instance: node.id, property }, `${node.id} state · ${field.label}`); if (config.clips?.[node.type]?.length) add({ kind: 'clip', instance: node.id, property }, `${node.id} clip · ${field.label}`); } }
+    const node = selected(); if (node) { for (const property of ['x', 'h', 'scale', 'facing', 'parallax', 'visible', 'opacity'] as const) add({ kind: 'instance', instance: node.id, property }, `${node.id} · ${property}`); const entry = config.registry.get(node.type); for (const [property, field] of Object.entries(entry.fields)) if (field.animatable&&!resolvedArtwork(compositionDocument()?.id??currentId,node.id)?.properties[property]?.readOnly) add({ kind: 'property', instance: node.id, property }, `${node.id} · ${field.label}`); for (const [property, field] of Object.entries(entry.visualFields ?? {})) { if (field.animatable) add({ kind: 'state', instance: node.id, property }, `${node.id} state · ${field.label}`); if (config.clips?.[node.type]?.length) add({ kind: 'clip', instance: node.id, property }, `${node.id} clip · ${field.label}`); } }
     return result;
   }
   function keyValue(frame:TimelineFrame,target:Target):{value:Value;discrete:boolean}{
@@ -934,7 +1043,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       let value: Value, discrete = false;
       if (target.kind === 'camera') value = frame.camera[target.property];
       else if (target.kind === 'instance') { value = target.property === 'visible' ? source?.visibility[target.instance] ?? true : target.property === 'opacity' ? source?.opacity[target.instance] ?? 1 : node!.placement[target.property] ?? 1; discrete = ['visible', 'facing'].includes(target.property); }
-      else if (target.kind === 'property' || target.kind === 'state') { const entry = config.registry.get(node!.type), field = (target.kind === 'property' ? entry.fields : entry.visualFields!)[target.property]; value = target.kind === 'property' ? node!.props[target.property] ?? field.default : source?.state[target.instance]?.[target.property] ?? field.default; discrete = field.kind !== 'number'; }
+      else if (target.kind === 'property' || target.kind === 'state') { const entry = config.registry.get(node!.type), field = (target.kind === 'property' ? entry.fields : entry.visualFields!)[target.property]; value = target.kind === 'property' ? node!.props[target.property] ?? field.default : source?.state[target.instance]?.[target.property] ?? field.default; discrete = !fieldIsContinuous(field); }
       else { value = source?.clips[target.instance]?.[target.property] ?? config.clips?.[node!.type]?.[0] ?? ''; discrete = true; }
     return{value,discrete};
   }
@@ -949,9 +1058,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const node=flatten(pending).find(n=>n.node.id===editorSelection.instance)?.node;
     if(!node)return;
     const base=selected(),seq=sequence(),sequenceDoc=viewCompositionDocument(),doc=compositionDocument();
+    if(base&&doc)guardLinkedProperties(doc.id,node,base.props,base.bindings);
     for(const property of ['x','h'] as const){
       const target:Target={kind:'instance',instance:node.id,property,...(doc?.id!==sequenceDoc?.id?{scene:pending.scene}:{})};
       if(base&&node.placement[property]!==base.placement[property]&&seq&&keyframeState(seq,target,time).track?.motion)throw Error(property+' is controlled by procedural motion.');
+    }
+    for(const [property,value] of Object.entries(node.props)){
+      const target:Target={kind:'property',instance:node.id,property,...(doc?.id!==sequenceDoc?.id?{scene:pending.scene}:{})};
+      if(base&&value!==(base.props[property]??config.registry.get(node.type).fields[property]?.default)&&seq&&keyframeState(seq,target,time).track?.motion)throw Error(property+' is controlled by procedural motion.');
     }
     config.validatePlacement?.(pending,documentsForView());
   }
@@ -964,11 +1078,19 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       for(const property of ['x','h'] as const){const target:Target={kind:'instance',instance:node.id,property,...(doc.id!==sequenceDoc?.id?{scene:pending.scene}:{})};const track=currentSequence&&keyframeState(currentSequence,target,time).track;
         if(!track)continue;if(track.motion)throw Error(property+' is controlled by procedural motion.');setKeyAtPlayhead(directed!.sequence!,target,time,node.placement[property],false);node.placement[property]=base.placement[property];keyed=true;
       }
+      for(const[property,value]of Object.entries(node.props)){
+        if(value===(base.props[property]??config.registry.get(node.type).fields[property]?.default))continue;
+        const target:Target={kind:'property',instance:node.id,property,...(doc.id!==sequenceDoc?.id?{scene:pending.scene}:{})};
+        const track=currentSequence&&keyframeState(currentSequence,target,time).track;
+        if(!track)continue;if(track.motion)throw Error(property+' is controlled by procedural motion.');
+        setKeyAtPlayhead(directed!.sequence!,target,time,value,!fieldIsContinuous(config.registry.get(node.type).fields[property]));
+        if(Object.prototype.hasOwnProperty.call(base.props,property))node.props[property]=base.props[property];else delete node.props[property];keyed=true;
+      }
       if(keyed){if(doc.id===sequenceDoc!.id)pending.sequence=directed!.sequence;model.importDocuments([{id:doc.id,value:pending},...(doc.id!==sequenceDoc!.id?[{id:sequenceDoc!.id,value:directed}]:[])],'Drag artwork');}
       else model.edit(doc.id,'Drag artwork',()=>pending);
-    });
+    },false,'artwork');
   }
-  function updateTime() { for(const update of propertyUpdates)update(); timelineGrid?.update(time);if(transportPlay){transportPlay.textContent=playing?'Pause':'Play';transportPlay.setAttribute('aria-pressed',String(playing));}if(ambientLabel)ambientLabel.textContent=`${time.toFixed(3)} s`; if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
+  function updateTime() { updateContextSummary();for(const update of propertyUpdates)update(); timelineGrid?.update(time);if(transportPlay){transportPlay.textContent=playing?'Pause':'Play';transportPlay.setAttribute('aria-pressed',String(playing));}if(ambientLabel)ambientLabel.textContent=`${time.toFixed(3)} s`; if (timeLabel) timeLabel.textContent = `${time.toFixed(3)} / ${(sequence()?.duration ?? 0).toFixed(3)} s · frame ${Math.round(time * 60)}`; }
   function workspaceNavigation(transient=true){
     // Rendering uses chunk-local coordinates; membership moves must not move the editor view.
     let originDelta={x:0,h:0};
@@ -977,27 +1099,82 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     }else workspaceOrigin=undefined;
     return {x:sequenceNav.x-originDelta.x,h:sequenceNav.y-originDelta.h,zoom:sequenceNav.zoom};
   }
-  function previewRequest(composition: ChunkDocument, overlay: boolean, frame?: TimelineFrame): PreviewRequest {
+  function gameViewport(directed=!!sequence()){const scale=Number(environment.renderScale??1),zoom=directed?1:Number(environment.zoom??1);return{width:baseWidth,height:baseHeight,scale:scale*zoom,...(zoom===1?{}:{ground:(baseHeight/scale-54)/zoom})};}
+  function dynamicWorkspace(){return navigable()&&!cameraPreview&&!comparing();}
+  function previewSize(){return dynamicWorkspace()?{width:Math.max(120,Math.round(stage.clientWidth-16)),height:Math.max(120,Math.round(stage.clientHeight-16))}:{width:baseWidth,height:baseHeight};}
+  let focusMotion:{from:{x:number;y:number;zoom:number};to:{x:number;y:number;zoom:number};elapsed:number;document:string}|undefined;
+  function stopFollowing(){focusMotion=undefined;if(followCamera){followCamera=false;refreshViewportTools();rememberView();}}
+  function locateCamera(){const focus=painting.result?.camera?.focus;if(cameraPreview||!focus){cameraPreview=false;locateCameraPending=true;refreshViewportTools();refreshOptions();void draw();return;}sequenceNav.x=focus.x;sequenceNav.y=focus.h;sequenceNav.zoom=focus.zoom;refreshViewportTools();refreshOptions();void draw();}
+  function previewRequest(composition: ChunkDocument, overlay: boolean, frame?: TimelineFrame): PreviewRequest { return perfMeasure('editor.preview-request',()=>{
     const interaction=model.interactionPreview(),timeline = currentTimeline(),documents=worldDrag?.pending?model.previewDocuments('world-compositions',worldDrag.pending):viewport.dragging&&editorSelection.document?model.previewDocuments(editorSelection.document,viewport.dragging.pending):validationSnapshot(documentsForView());
-    return {direction:currentTimeline()?'sequence':'base',checkpoint:worldState()?.checkpoint,scope:workspaceId?{composition:workspaceId,origin:viewScene(),chunks:workspaceDocuments(workspaceId,documentsForView(),worldState()?.checkpoint?.membership).map(d=>(d.value as ChunkDocument).scene)}:undefined,workspace:navigable()&&!cameraPreview?{...workspaceNavigation(),...(painting.workspaceAnchor?.document===currentId?{anchorX:painting.workspaceAnchor.x,anchorH:painting.workspaceAnchor.h}:{})}:undefined,sourceVersion:worldDrag?.pending??interaction?.sourceVersion??model.sourceVersion,transient:interaction?.transient??(viewport.dragging?{document:compositionDocument()!.id,composition:viewport.dragging.pending}:undefined),documents, composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time, reduced,overlays:overlay,objectOutlines:overlay&&showObjectOutlines,selectedId:Object.entries(painting.result?.sources??{}).find(([,source])=>source.document===compositionDocument()?.id&&source.instance===editorSelection.instance)?.[0]??editorSelection.instance, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment } };
+    return {viewport:gameViewport(),direction:currentTimeline()?'sequence':'base',checkpoint:worldState()?.checkpoint,scope:workspaceId?{composition:workspaceId,origin:viewScene(),chunks:workspaceDocuments(workspaceId,documentsForView(),worldState()?.checkpoint?.membership).map(d=>(d.value as ChunkDocument).scene)}:undefined,workspace:navigable()&&!cameraPreview?{...workspaceNavigation(),followCamera,...(painting.workspaceAnchor?.document===currentId?{anchorX:painting.workspaceAnchor.x,anchorH:painting.workspaceAnchor.h}:{})}:undefined,sourceVersion:worldDrag?.pending??interaction?.sourceVersion??model.sourceVersion,transient:interaction?.transient??(viewport.dragging?{document:compositionDocument()!.id,composition:viewport.dragging.pending}:undefined),documents, composition: copy(composition), frame, timeline, sequenceId: timeline ? sequenceId : undefined, time,ambientTime:time+ambientOffset+Number(environment.titleOffset??0), reduced,overlays:overlay,objectOutlines:overlay&&showObjectOutlines,selectedId:Object.entries(painting.result?.sources??{}).find(([,source])=>source.document===compositionDocument()?.id&&source.instance===editorSelection.instance)?.[0]??editorSelection.instance, player: true, hidden: [...hiddenIn(compositionDocument()?.id)], environment: { ...environment } };
+  });}
+    const previewRenderer=createPreviewRenderer({get reduced(){return reduced;},get disposed(){return disposed;},get emptyWorkspace(){return !!workspaceId&&!workspaceDocuments(workspaceId,documentsForView(),worldState()?.checkpoint?.membership).length;},get painting(){return painting;},get viewCompositionDocument(){return viewCompositionDocument;},get previewError(){return previewError;},get current(){return current;},get canvas(){return canvas;},get syncWorldState(){return syncWorldState;},get currentTimeline(){return currentTimeline;},get selectedDocumentId(){return editorSelection.document;},get viewport(){return viewport;},get evaluationContext(){return evaluationContext;},get sequence(){return sequence;},get sequenceId(){return sequenceId;},get time(){return time;},get previewRequest(){return previewRequest;},get currentId(){return currentId;},get sizeCanvas(){return sizeCanvas;},get baseWidth(){return previewSize().width;},get baseHeight(){return previewSize().height;},get config(){return config;},get overlays(){return overlays;},get updateRenderStatus(){return updateRenderStatus;},get placeHover(){return placeHover;},get placeJoined(){return placeJoined;},get presented(){return ()=>{inspector.updateResolved();syncLinkedProperties();if(followCamera&&!cameraPreview&&painting.result?.camera){const focus=painting.result.camera.focus,nav=workspaceNavigation();sequenceNav.x+=focus.x-nav.x;sequenceNav.y+=focus.h-nav.h;sequenceNav.zoom=focus.zoom;const readout=viewportTools.querySelector<HTMLElement>('[data-workspace-zoom]');if(readout)readout.textContent=Math.round(sequenceNav.zoom*100)+'%';}if(locateCameraPending&&painting.result?.camera){locateCameraPending=false;locateCamera();}};},get comparing(){return comparing;},get documentsForView(){return documentsForView;},get compareId(){return compareId;},get stage(){return stage;},get compareCanvas(){return compareCanvas;}});
+  function resolvedArtwork(document:string,id:string,result=painting.result){
+    const key=Object.keys(result?.resolved??{}).find(k=>result?.sources?.[k]?result.sources[k].document===document&&result.sources[k].instance===id:document===currentId&&k===id);
+    return key?result?.resolved?.[key]:undefined;
   }
-    const previewRenderer=createPreviewRenderer({get reduced(){return reduced;},get disposed(){return disposed;},get emptyWorkspace(){return !!workspaceId&&!workspaceDocuments(workspaceId,documentsForView(),worldState()?.checkpoint?.membership).length;},get painting(){return painting;},get viewCompositionDocument(){return viewCompositionDocument;},get previewError(){return previewError;},get current(){return current;},get canvas(){return canvas;},get syncWorldState(){return syncWorldState;},get currentTimeline(){return currentTimeline;},get selectedDocumentId(){return editorSelection.document;},get viewport(){return viewport;},get evaluationContext(){return evaluationContext;},get sequence(){return sequence;},get sequenceId(){return sequenceId;},get time(){return time;},get previewRequest(){return previewRequest;},get currentId(){return currentId;},get sizeCanvas(){return sizeCanvas;},get baseWidth(){return baseWidth;},get baseHeight(){return baseHeight;},get config(){return config;},get overlays(){return overlays;},get updateRenderStatus(){return updateRenderStatus;},get placeHover(){return placeHover;},get placeJoined(){return placeJoined;},get presented(){return inspector.updateResolved;},get comparing(){return comparing;},get documentsForView(){return documentsForView;},get compareId(){return compareId;},get stage(){return stage;},get compareCanvas(){return compareCanvas;}});
+  function editDrawingBoundary(field?:string){
+    const a=resolvedArtwork(compositionDocument()?.id??currentId,editorSelection.instance),key=field??a?.drawingWindow?.from;
+    inspector.appearance();refreshRight();
+    const label=key&&a?.properties[key]?.label;
+    if(label)queueMicrotask(()=>{const input=[...right.querySelectorAll<HTMLInputElement>('input[aria-label]')].find(e=>e.getAttribute('aria-label')===label);input?.focus({preventScroll:true});input?.scrollIntoView({block:'nearest'});});
+  }
+  function showDrawingBoundary(){
+    const doc=compositionDocument()?.id??currentId,id=editorSelection.instance,a=resolvedArtwork(doc,id);if(!a?.drawingWindow)return;
+    const key=JSON.stringify([doc,id]);if(boundaryFor===key){boundaryFor='';placeJoined();return;}
+    boundaryFor=key;stopFollowing();
+    const x=windowEdges(a)[0].x;
+    if(!cameraPreview&&(x<40||x>canvas.width-40)){sequenceNav.x+=(x-canvas.width/2)/(painting.result?.workspaceScale??1);void draw();}else placeJoined();
+  }
+  function placeDrawingBoundary(){
+    if(!overlays||boundaryFor!==JSON.stringify([compositionDocument()?.id??currentId,editorSelection.instance]))return;
+    const a=resolvedArtwork(compositionDocument()?.id??currentId,editorSelection.instance);if(!a?.drawingWindow)return;
+    const rect=canvas.getBoundingClientRect(),frame=stageWrap.getBoundingClientRect(),scale=rect.width/canvas.width,left=rect.left-frame.left,top=rect.top-frame.top,w=a.drawingWindow.bounds;
+    const lo=Math.max(0,w.x),hi=Math.min(canvas.width,w.x+w.width);
+    if(hi>lo){const area=element('div');area.dataset.visibilityArea='';Object.assign(area.style,{position:'absolute',pointerEvents:'none',left:(left+lo*scale)+'px',top:top+'px',width:(hi-lo)*scale+'px',height:rect.height+'px',background:'rgba(80,210,230,.07)'});joinedLayer.append(area);}
+    for(const edge of windowEdges(a)){if(edge.x<0||edge.x>canvas.width)continue;const line=element('div');line.dataset.visibilityBoundary=edge.field;Object.assign(line.style,{position:'absolute',pointerEvents:'none',left:(left+edge.x*scale)+'px',top:top+'px',height:rect.height+'px',borderLeft:'2px dashed #50d2e6'});const label=button((edge.field===a.drawingWindow.from?'Drawing starts':'Drawing ends')+' · X '+String(a.properties[edge.field]?.value),()=>editDrawingBoundary(edge.field),'Select this drawing boundary to edit its value in the inspector');Object.assign(label.style,{position:'absolute',pointerEvents:'auto',left:'4px',top:'40px',whiteSpace:'nowrap'});line.append(label);joinedLayer.append(line);}
+  }
   function draw(advance=false){return previewRenderer.draw(advance);}
+  const viewportObserver=new ResizeObserver(()=>{if(!disposed&&playHost.hidden&&group==='layout'&&dynamicWorkspace())void draw();});viewportObserver.observe(stage);
   function refresh() { if(numericScrubbing){void draw();return;}return withViewDocuments(() => { if (disposed) return; if(workspaceId){const members=workspaceDocuments(workspaceId,documentsForView(),worldState()?.checkpoint?.membership);if(members.length&&!members.some(d=>d.id===currentId)){const next=members[0],at=painting.result?.projectChunk?.((next.value as ChunkDocument).scene,0,0),previous=painting.result?.projectChunk?.(viewScene(),0,0),scale=painting.result?.workspaceScale??1;if(at&&previous&&!currentTimeline()){sequenceNav.x-=(at.x-previous.x)/scale;sequenceNav.y+=(at.y-previous.y)/scale;}currentId=next.id;painting.workspaceAnchor=undefined;}} if(currentId&&!documentsForView().some(d=>d.id===currentId)){currentId=documentsForView().find(d=>d.kind==='composition')?.id??'';editorSelection.instance='';editorSelection.document='';stopPlay();} const timeline = currentTimeline(); if (timeline && !timeline.sequences.some(s => s.id === sequenceId)) sequenceId = timeline.sequences[0]?.id ?? ''; const seq = sequence(); if (seq) { time = Math.max(0, Math.min(time, seq.duration)); loopTo = Math.min(loopTo || seq.duration, seq.duration); if (loopFrom >= loopTo) loopFrom = 0; } perfMeasure('editor.header', refreshHeader); perfMeasure('editor.options', refreshOptions); refreshViewportTools(); perfMeasure('editor.outline', refreshLeft); playHandle?.refresh?.(); perfMeasure('editor.inspector', refreshRight); perfMeasure('editor.timeline', refreshTimeline); void draw(); }); }
   /** The chosen saved world state, if any; its values override the preview environment on every draw. */
   function syncWorldState() { const state = worldState(); if (state) Object.assign(environment, state.environment); }
   function worldState() { const scene = viewScene(); if (!config.worldStates || !scene || current()?.kind !== 'composition') return undefined;if(activeCheckpointId!==undefined)return config.worldStates.list('',documentsForView()).find(s=>s.id===activeCheckpointId); const id = config.worldStates.selected(scene, documentsForView()); return id ? config.worldStates.list(scene, documentsForView()).find(state => state.id === id) : undefined; }
   function compareOptions() { const doc = compositionDocument(); return doc && config.compareWith ? config.compareWith((doc.value as ChunkDocument).scene, documentsForView()) : []; }
   function comparing() { return !!compareId && !workspaceId && !currentTimeline() && compareOptions().some(o => o.id === compareId); }
-  function sizeCanvas(width:number,height:number){if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}canvas.style.setProperty('--ratio',String(width/height));canvas.style.setProperty('--fit-ratio',String(width/height));}
+  function sizeCanvas(width:number,height:number){if(canvas.width!==width||canvas.height!==height){
+    if(dynamicWorkspace()&&painting.resultDocument===currentId&&painting.result?.workspaceScale){Object.assign(sequenceNav,resizeWorkspace(sequenceNav,canvas,{width,height},painting.result.workspaceScale));rememberView();}
+    canvas.width=width;canvas.height=height;
+  }canvas.style.setProperty('--ratio',String(width/height));canvas.style.setProperty('--fit-ratio',String(width/height));}
   const coordinates = (event: { clientX: number; clientY: number }) => { return canvasPoint(event,canvas.getBoundingClientRect(),canvas.width,canvas.height); };
   /** Small artwork gets a minimum target; the smallest box under the pointer wins over the room behind it. */
   const hitTest=(point:{x:number;y:number})=>hitTestArtwork(painting.result,point,16*canvas.width/Math.max(1,canvas.getBoundingClientRect().width));
+  const spatialHandles=mountSpatialHandles(stageWrap,canvas);
+  const resizeFeedback=element('output','spatial-feedback');resizeFeedback.hidden=true;resizeFeedback.setAttribute('aria-label','Resize values');stageWrap.append(resizeFeedback);
+  /** Presentation only: candidate values belong to the viewport gesture, committed values to ComposerModel. */
+  function spatialFeedback(phase:'start'|'preview'|'finish'|'cancel',fields:readonly string[],node?:AssetInstance){
+    if(phase==='start'){
+      const changed=inspector.selectSection('appearance'),timeline=!!editorSelection.timeline;editorSelection.timeline=undefined;if(changed||timeline)refreshRight();
+    }
+    if(phase==='start'||phase==='finish'||phase==='cancel'){
+      for(const row of right.querySelectorAll<HTMLElement>('[data-spatial-active]'))delete row.dataset.spatialActive;
+      const controls=[...right.querySelectorAll<HTMLElement>('[data-asset-property]')].filter(control=>fields.includes(control.dataset.assetProperty!));
+      if(phase!=='cancel')for(const control of controls){const row=control.closest<HTMLElement>('label')??control;row.dataset.spatialActive='true';let parent:HTMLElement|null=control;while(parent&&parent!==right){if(parent instanceof HTMLDetailsElement)parent.open=true;parent=parent.parentElement;}}
+      if(phase==='finish'){
+        if(compact.matches)showPanel('properties');
+        const control=controls[0];if(control){const area=right.getBoundingClientRect(),at=control.getBoundingClientRect();if(at.top<area.top)right.scrollTop+=at.top-area.top-12;else if(at.bottom>area.bottom)right.scrollTop+=at.bottom-area.bottom+12;control.focus({preventScroll:true});}
+      }
+    }
+    resizeFeedback.hidden=phase==='finish'||phase==='cancel'||!node;
+    if(!resizeFeedback.hidden&&node){const schema=config.registry.get(node.type).fields;resizeFeedback.textContent=fields.map(key=>{const field=schema[key],value=node.props[key]??field.default,shown=typeof value==='number'?String(Number(value.toFixed(3))):String(value);return field.label+' '+shown+(fieldUnit(field)?' '+fieldUnit(field):'');}).join(' · ');}
+  }
   function placeHover() {
     const selected=painting.result?.bounds.find(box=>{
       const source=painting.result?.sources?.[box.id];
       return source?source.document===editorSelection.document&&source.instance===editorSelection.instance:box.id===editorSelection.instance;
     });
+    spatialHandles.update(painting.result?.handles,overlays&&playHost.hidden);
     placeObjectLabel(selectionBox,overlays?selected:undefined);
     placeObjectLabel(hoverBox,viewport.hoverId!==selected?.id?painting.result?.bounds.find(box=>box.id===viewport.hoverId):undefined);
   }
@@ -1015,6 +1192,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
 
   function updateRenderStatus(){renderStatus.hidden=!playHost.hidden;if(renderStatus.hidden)return;const now=performance.now();if(now-statusUpdatedAt<250)return;statusUpdatedAt=now;if(now-renderWindow>=500){renderFps=painting.renderCount*1000/(now-renderWindow);painting.renderCount=0;renderWindow=now;}const scene=painting.result?.camera??painting.result?.regions?.find(region=>region.active);renderStatus.textContent=(scene?'Chunk: '+scene.label+' · ':'')+(!(playing||animating||viewport.dragging?.armed)?'Paused':renderFps.toFixed(0)+' render fps')+' · '+painting.lastPaintMs.toFixed(1)+' ms';renderStatus.title='Completed editor renders per second and CPU render submission time; not GPU/display FPS';}
   function zoomTo(next: number, anchor?: { clientX: number; clientY: number }) {
+    stopFollowing();
     if(navigable()){if(cameraPreview)return;const rect=canvas.getBoundingClientRect(),point=anchor??{clientX:rect.left+rect.width/2,clientY:rect.top+rect.height/2};Object.assign(sequenceNav,zoomWorkspace(sequenceNav,next,{x:point.clientX-rect.left-rect.width/2,y:point.clientY-rect.top-rect.height/2},canvas.width/rect.width/(painting.result?.workspaceScale??1)));refreshViewportTools();void draw();return;}
   }
   function selectWorldMember(address:WorldMemberAddress){
@@ -1023,7 +1201,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     refreshRight();for(const row of left.querySelectorAll<HTMLElement>('[data-world-member]'))row.setAttribute('aria-pressed',String(row.dataset.worldMember===address.member&&row.dataset.worldChild===address.child));
     if(compact.matches)showPanel('properties');void draw();
   }
-  function worldControls(documents:()=>readonly EditorDocument[]=documentsForView):WorldWorkspaceControls{return{inspect:openInspector,activeInspector:()=>inspectorDraft?.request.id,registry:config.registry,documents,composition:()=>workspaceId,selection:()=>editorSelection.world,select:selectWorldMember,openChunk:openScene,
+  function worldControls(documents:()=>readonly EditorDocument[]=documentsForView):WorldWorkspaceControls{return{openRenderingSource,inspect:openInspector,activeInspector:()=>inspectorDraft?.request.id,registry:config.registry,documents,composition:()=>workspaceId,selection:()=>editorSelection.world,select:selectWorldMember,openChunk:openScene,
     apply:(label,source)=>{model.edit('world-compositions',label,()=>source);if(!numericScrubbing){thumbnailDocuments=undefined;thumbnails?.invalidate();}},changed:()=>{outlineSnapshot=undefined;refresh();}};}
   function startWorldDrag(event:PointerEvent,address:WorldMemberAddress){
     if(event.button!==0||cameraPreview||!playHost.hidden)return;event.preventDefault();event.stopPropagation();selectWorldMember(address);
@@ -1045,20 +1223,45 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   }
   /** Fit the actual prepared chunk regions using the shared workspace navigation. */
   function fitJoined(){
+    stopFollowing();
     const regions=painting.result?.regions;if(!regions?.length||cameraPreview)return;
     const left=Math.min(...regions.map(r=>r.x)),right=Math.max(...regions.map(r=>r.x+r.width)),top=Math.min(...regions.map(r=>r.y)),bottom=Math.max(...regions.map(r=>r.y+r.height)),scale=painting.result?.workspaceScale??1;
     sequenceNav.x+=((left+right)/2-canvas.width/2)/scale;sequenceNav.y-=((top+bottom)/2-canvas.height/2)/scale;
-    sequenceNav.zoom=Math.max(.05,Math.min(8,sequenceNav.zoom*Math.min(canvas.width/Math.max(1,right-left),canvas.height/Math.max(1,bottom-top))*.94));
+    sequenceNav.zoom=workspaceZoom(sequenceNav.zoom*Math.min(canvas.width/Math.max(1,right-left),canvas.height/Math.max(1,bottom-top))*.94);
     refreshViewportTools();void draw();
   }
   /** A tag over each joined scene in the preview: its name, which side it joins on, and a button that opens it. */
   function placeJoined() {
-    if(restoredScroll){stage.scrollLeft=restoredScroll.x;stage.scrollTop=restoredScroll.y;restoredScroll=undefined;}joinedLayer.replaceChildren();if(navigable()){const rect=canvas.getBoundingClientRect(),frame=stageWrap.getBoundingClientRect(),scale=rect.width/canvas.width;if(painting.result?.camera){const camera=painting.result.camera,box=element('div','sequence-camera-guide');const pick=button('Camera · '+camera.label,()=>selectTimeline({kind:'camera'}),'Select the game camera');pick.setAttribute('aria-label','Select game camera');pick.style.pointerEvents='auto';pick.setAttribute('aria-pressed',String(cameraSelected()));box.append(pick);for(const edge of ['top','right','bottom','left']){const handle=button('',()=>selectTimeline({kind:'camera'}),'Select the game camera');handle.className='camera-border-hit '+edge;handle.setAttribute('aria-label','Select camera '+edge+' border');box.append(handle);}Object.assign(box.style,{left:(rect.left-frame.left+camera.x*scale)+'px',top:(rect.top-frame.top+camera.y*scale)+'px',width:camera.width*scale+'px',height:camera.height*scale+'px'});joinedLayer.append(box);}for(const group of left.querySelectorAll('.outline-source.active-scene'))group.classList.remove('active-scene');for(const region of painting.result?.regions??[]){left.querySelector<HTMLElement>(`.outline-source[data-document="${region.document}"]`)?.classList.toggle('active-scene',region.active);if(!showSceneBounds)continue;const box=element('div','scene-boundary'+(region.active?' active':'')+(inspectorDraft?.request.highlightChunks?.includes(region.scene)?' connection-endpoint':''));const address=workspaceId?addressForChunk(workspaceSource(documentsForView()),workspaceId,region.scene):undefined;const caption=button(region.label+(showChunkStatus?' · Prepared for editing':''),()=>address?selectWorldMember(address):inspectChunk(region.scene),'Select chunk; drag to move, Shift-drag moves connected members together');caption.className='chunk-boundary-label';caption.style.pointerEvents='auto';if(address){caption.setAttribute('aria-pressed',String(editorSelection.world?.member===address.member&&editorSelection.world?.child===address.child));caption.onpointerdown=event=>startWorldDrag(event,address);}box.append(caption);if(address?.child){const parent={composition:address.composition,member:address.member},group=button('Group · '+address.member,()=>selectWorldMember(parent),'Select or drag the containing group; Shift-drag moves connected groups together');group.className='chunk-boundary-label';group.style.pointerEvents='auto';group.onpointerdown=event=>startWorldDrag(event,parent);box.append(group);}Object.assign(box.style,{left:(rect.left-frame.left+region.x*scale)+'px',top:(rect.top-frame.top+region.y*scale)+'px',width:region.width*scale+'px',height:region.height*scale+'px'});joinedLayer.append(box);}if(showSceneBounds&&workspaceId&&painting.result)renderWorldConnections(joinedLayer,worldControls(()=>model.interactionPreview()?.documents??documentsForView()),painting.result,{x:rect.left-frame.left,y:rect.top-frame.top,scale});const cameraOwner=painting.result?.camera&&outlineSceneOwners.get(painting.result.camera.scene);if(cameraOwner)left.querySelector<HTMLElement>(`.outline-source[data-document="${cameraOwner}"]`)?.classList.add('active-scene');updateRenderStatus();return;}
+    if(restoredScroll){stage.scrollLeft=restoredScroll.x;stage.scrollTop=restoredScroll.y;restoredScroll=undefined;}joinedLayer.replaceChildren();placeDrawingBoundary();if(navigable()){const rect=canvas.getBoundingClientRect(),frame=stageWrap.getBoundingClientRect(),scale=rect.width/canvas.width;if(painting.result?.camera){const camera=painting.result.camera,box=element('div','sequence-camera-guide');const pick=button('Camera · '+camera.label,()=>selectTimeline({kind:'camera'}),'Select the game camera');pick.setAttribute('aria-label','Select game camera');pick.style.pointerEvents='auto';pick.setAttribute('aria-pressed',String(cameraSelected()));box.append(pick);for(const edge of ['top','right','bottom','left']){const handle=button('',()=>selectTimeline({kind:'camera'}),'Select the game camera');handle.className='camera-border-hit '+edge;handle.setAttribute('aria-label','Select camera '+edge+' border');box.append(handle);}Object.assign(box.style,{left:(rect.left-frame.left+camera.x*scale)+'px',top:(rect.top-frame.top+camera.y*scale)+'px',width:camera.width*scale+'px',height:camera.height*scale+'px'});joinedLayer.append(box);}for(const group of left.querySelectorAll('.outline-source.active-scene'))group.classList.remove('active-scene');for(const region of painting.result?.regions??[]){left.querySelector<HTMLElement>(`.outline-source[data-document="${region.document}"]`)?.classList.toggle('active-scene',region.active);if(!showSceneBounds)continue;const box=element('div','scene-boundary'+(region.active?' active':'')+(inspectorDraft?.request.highlightChunks?.includes(region.scene)?' connection-endpoint':''));const address=workspaceId?addressForChunk(workspaceSource(documentsForView()),workspaceId,region.scene):undefined;const caption=button(region.label+(showChunkStatus?' · Prepared for editing':''),()=>address?selectWorldMember(address):inspectChunk(region.scene),'Select chunk; drag to move, Shift-drag moves connected members together');caption.className='chunk-boundary-label';caption.style.pointerEvents='auto';if(address){caption.setAttribute('aria-pressed',String(editorSelection.world?.member===address.member&&editorSelection.world?.child===address.child));caption.onpointerdown=event=>startWorldDrag(event,address);}box.append(caption);if(address?.child){const parent={composition:address.composition,member:address.member},group=button('Group · '+address.member,()=>selectWorldMember(parent),'Select or drag the containing group; Shift-drag moves connected groups together');group.className='chunk-boundary-label';group.style.pointerEvents='auto';group.onpointerdown=event=>startWorldDrag(event,parent);box.append(group);}Object.assign(box.style,{left:(rect.left-frame.left+region.x*scale)+'px',top:(rect.top-frame.top+region.y*scale)+'px',width:region.width*scale+'px',height:region.height*scale+'px'});joinedLayer.append(box);}if(showSceneBounds&&workspaceId&&painting.result)renderWorldConnections(joinedLayer,worldControls(()=>model.interactionPreview()?.documents??documentsForView()),painting.result,{x:rect.left-frame.left,y:rect.top-frame.top,scale});const cameraOwner=painting.result?.camera&&outlineSceneOwners.get(painting.result.camera.scene);if(cameraOwner)left.querySelector<HTMLElement>(`.outline-source[data-document="${cameraOwner}"]`)?.classList.add('active-scene');updateRenderStatus();return;}
   }
-  function fit(){sequenceNav.zoom=1;sequenceNav.x=0;sequenceNav.y=0;refreshViewportTools();void draw();}
+  /** Explicit framing never changes the authored game camera or timeline. */
+  async function focusArtwork(documentId:string,id:string){
+    if(!navigable()||!playHost.hidden)return;
+    stopFollowing();
+    if(cameraPreview){cameraPreview=false;refreshViewportTools();refreshOptions();}
+    const rootDocument=currentId;
+    await draw();
+    if(disposed||currentId!==rootDocument)return;
+    let result=painting.result,a=resolvedArtwork(documentId,id);
+    if(!a){
+      const doc=documentsForView().find(d=>d.id===documentId&&d.kind==='composition'),at=doc&&result?.projectChunk?.((doc.value as ChunkDocument).scene,0,0);
+      if(at){const scale=result?.workspaceScale??1;sequenceNav.x+=(at.x-canvas.width/2)/scale;sequenceNav.y-=(at.y-canvas.height/2)/scale;await draw();if(disposed||currentId!==rootDocument)return;result=painting.result;a=resolvedArtwork(documentId,id);}
+    }
+    const box=a?framingBounds(a):undefined;
+    if(!box||box.width<=0||box.height<=0)return;
+    const scale=result?.workspaceScale??1;
+    const target={x:sequenceNav.x+(box.x+box.width/2-canvas.width/2)/scale,y:sequenceNav.y-(box.y+box.height/2-canvas.height/2)/scale,zoom:workspaceZoom(sequenceNav.zoom*Math.min(canvas.width/Math.max(80,box.width),canvas.height/Math.max(80,box.height))*.8)};
+    if(reduced){Object.assign(sequenceNav,target);refreshViewportTools();void draw();}
+    else focusMotion={from:{...sequenceNav},to:target,elapsed:0,document:currentId};
+  }
+  function fit(){stopFollowing();sequenceNav.zoom=1;sequenceNav.x=0;sequenceNav.y=0;refreshViewportTools();void draw();}
   function refreshViewportTools() {
+    canvas.style.imageRendering=compareCanvas.style.imageRendering=pixelatedScaling?'pixelated':'auto';
+    stage.classList.toggle('workspace-view',dynamicWorkspace());
+    const zoomReadout=button(Math.round(sequenceNav.zoom*100)+'%',()=>fit());zoomReadout.dataset.workspaceZoom='';
+    const follow=button('Follow camera',()=>{followCamera=!followCamera;refreshViewportTools();rememberView();void draw();},'Keep the game camera centred with a margin during playback and scrubbing. Pan or zoom to stop following.');follow.setAttribute('aria-pressed',String(followCamera));
     const objectBounds=button('Object outlines',()=>{showObjectOutlines=!showObjectOutlines;try{localStorage.setItem('access-denied.editor.object-outlines',String(showObjectOutlines));}catch{/* optional preview preference */}refreshViewportTools();void draw();},'Show bounds of all visible objects; the selected outline remains visible');objectBounds.setAttribute('aria-pressed',String(showObjectOutlines));
-    viewportTools.hidden=!navigable();if(!navigable())return;if(navigable()){const boundaries=button('Chunk borders',()=>{showSceneBounds=!showSceneBounds;placeJoined();refreshViewportTools();});boundaries.setAttribute('aria-pressed',String(showSceneBounds));const statuses=button('Chunk status',()=>{showChunkStatus=!showChunkStatus;placeJoined();refreshViewportTools();},'Show editing preparation labels beside scene borders; runtime loading is shown in the Play outline');statuses.setAttribute('aria-pressed',String(showChunkStatus));if(cameraPreview){viewportTools.replaceChildren(button('Workspace',()=>{cameraPreview=false;refreshViewportTools();refreshOptions();void draw();}),boundaries,statuses,objectBounds);return;}viewportTools.replaceChildren(button('−',()=>zoomTo(sequenceNav.zoom/1.25)),button(Math.round(sequenceNav.zoom*100)+'%',()=>fit()),button('+',()=>zoomTo(sequenceNav.zoom*1.25)),button('Fit',fit),button('Frame camera',()=>{if(painting.result?.camera){const focus=painting.result.camera.focus;sequenceNav.x=focus.x;sequenceNav.y=focus.h;sequenceNav.zoom=focus.zoom;refreshViewportTools();void draw();}}),boundaries,statuses,objectBounds);return;}
+    viewportTools.hidden=!navigable();if(!navigable())return;if(navigable()){const boundaries=button('Chunk borders',()=>{showSceneBounds=!showSceneBounds;placeJoined();refreshViewportTools();});boundaries.setAttribute('aria-pressed',String(showSceneBounds));const statuses=button('Chunk status',()=>{showChunkStatus=!showChunkStatus;placeJoined();refreshViewportTools();},'Show editing preparation labels beside scene borders; runtime loading is shown in the Play outline');statuses.setAttribute('aria-pressed',String(showChunkStatus));if(cameraPreview){viewportTools.replaceChildren(button('Workspace',()=>{cameraPreview=false;refreshViewportTools();refreshOptions();void draw();}),boundaries,statuses,objectBounds);return;}viewportTools.replaceChildren(button('−',()=>zoomTo(sequenceNav.zoom/1.25)),zoomReadout,button('+',()=>zoomTo(sequenceNav.zoom*1.25)),button('Fit',fit),button('Locate camera',locateCamera,'Frame the game camera without changing its properties'),follow,boundaries,statuses,objectBounds);return;}
   }
   /** Creation stays beside the world; nothing is inserted until the complete draft applies. */
   function openNewScene() {
@@ -1103,7 +1306,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
    * space (the picture, the dark area around it or the comparison) deselects. Middle and right drag pan (right also
    * covers a pen's barrel button); one finger pans on empty space and two fingers pinch-zoom.
    */
-  const disposeViewportInput=mountViewportInput({get navigable(){return navigable;},get viewport(){return viewport;},get sequenceNav(){return sequenceNav;},get stage(){return stage;},get canvas(){return canvas;},get selectedId(){return editorSelection.instance;},get select_(){return select_;},get closePicker(){return closePicker;},get coordinates(){return coordinates;},get hitTest(){return hitTest;},get preview(){return painting.result;},get compositionDocument(){return compositionDocument;},get zoomTo(){return zoomTo;},get cameraPreview(){return cameraPreview;},get draw(){return draw;},get placeHover(){return placeHover;},get snap(){return snap;},get config(){return config;},get dragPreviewDirty(){return dragPreviewDirty;},set dragPreviewDirty(value){dragPreviewDirty=value;},get notice(){return notice;},get refreshOptions(){return refreshOptions;},get run(){return run;},get commitDrag(){return commitDrag;},get validateDrag(){return validateDrag;},get model(){return model;},get placeJoined(){return placeJoined;},get compareCanvas(){return compareCanvas;},get editInstance(){return editInstance;},get current(){return current;},get openPicker(){return openPicker;},get fit(){return fit;}});
+  const disposeViewportInput=mountViewportInput({spatialFeedback,beginGesture:()=>{if(playing||animating){playing=false;animating=false;refreshOptions();}},focusArtwork:id=>{const source=painting.result?.sources?.[id];void focusArtwork(source?.document??compositionDocument()?.id??currentId,source?.instance??id);},manualNavigation:stopFollowing,get navigable(){return navigable;},get viewport(){return viewport;},get sequenceNav(){return sequenceNav;},get stage(){return stage;},get canvas(){return canvas;},get selectedId(){return editorSelection.instance;},get select_(){return select_;},get closePicker(){return closePicker;},get coordinates(){return coordinates;},get hitTest(){return hitTest;},get preview(){return painting.result;},get compositionDocument(){return compositionDocument;},get zoomTo(){return zoomTo;},get cameraPreview(){return cameraPreview;},get draw(){return draw;},get placeHover(){return placeHover;},get snap(){return snap;},get config(){return config;},get dragPreviewDirty(){return dragPreviewDirty;},set dragPreviewDirty(value){dragPreviewDirty=value;},get notice(){return notice;},get refreshOptions(){return refreshOptions;},get run(){return run;},get commitDrag(){return commitDrag;},get validateDrag(){return validateDrag;},get model(){return model;},get placeJoined(){return placeJoined;},get compareCanvas(){return compareCanvas;},get editInstance(){return editInstance;},get current(){return current;},get openPicker(){return openPicker;},get fit(){return fit;}});
   const disposeNumericScrubbing=mountNumericScrubbing(root,{
     begin:label=>{numericSourceVersion=model.sourceVersion;const edit=model.beginInteraction(label);playing=false;animating=false;numericScrubbing=true;updateTime();return{commit:edit.commit,cancel:edit.cancel};},
     changed:()=>{numericScrubbing=false;const sourceChanged=model.sourceVersion!==numericSourceVersion;if(sourceChanged){thumbnailDocuments=undefined;thumbnails?.invalidate();}refresh();if(sourceChanged&&!picker.hidden)renderPicker();},
@@ -1120,7 +1323,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   };
   /** Single keys in the Scene view (Delete, H for hack vision…), unless the user is typing in a field or an inspector field is active. */
   const shortcuts = (event: KeyboardEvent) => {
-    if(group==='layout'&&playHost.hidden&&root.isConnected&&current()?.kind==='composition'){const action=animationShortcut(event);if(action){event.preventDefault();if(action==='toggle')toggleAnimation();else seekTime('frames'in action?(Math.round(time*60)+action.frames)/60:time+action.seconds);return;}}
+    if(group==='layout'&&playHost.hidden&&root.isConnected&&current()?.kind==='composition'){const action=animationShortcut(event);if(action&&(action==='toggle'||!('boundary'in action)||sequence())){event.preventDefault();if(action==='toggle')toggleAnimation();else seekTime('boundary'in action?(action.boundary==='start'?0:sequence()!.duration):'frames'in action?(Math.round(time*60)+action.frames)/60:time+action.seconds);return;}}
     if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.repeat || group !== 'layout' || !root.isConnected) return;
     const target = event.target as HTMLElement; if (target.closest('input, textarea, select, dialog, [contenteditable=""], [contenteditable="true"]')) return;
     if ((event.key === 'Delete' || event.key === 'Backspace') && editorSelection.instance && current()?.kind === 'composition' && playHost.hidden) { event.preventDefault(); deleteSelected(); return; }
@@ -1130,8 +1333,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const closeMenu = (event: Event) => { const menu = header.querySelector<HTMLDetailsElement>('details.menu'); if (menu?.open && (!menu.contains(event.target as Node) || (event.target as HTMLElement).closest('.menu-items button'))) menu.open = false; };
   window.addEventListener('beforeunload', unload);window.addEventListener('hashchange',navigateEditorLink); root.addEventListener('keydown', keyboard); document.addEventListener('keydown', shortcuts); document.addEventListener('click', closeMenu);
   let previous = performance.now(), frameId = 0;
-  const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous=now;if(now-lastViewSample>=500){lastViewSample=now;rememberView();}updateRenderStatus();if(dragPreviewDirty){dragPreviewDirty=false;void draw();}const seq=sequence(); if (animating && !seq && group === 'layout' && current()?.kind === 'composition') { time += delta*playbackSpeed; updateTime();void draw(true); } if (playing && seq && group==='layout' && playHost.hidden) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta*playbackSpeed; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='camera')refreshRight(); } } updateTime(); void draw(playing); } frameId = requestAnimationFrame(tick); };
+  const tick = (now: number) => { if (disposed) return; const delta = Math.min(0.1, (now - previous) / 1000); previous=now;if(focusMotion){const m=focusMotion;if(m.document!==currentId)focusMotion=undefined;else{m.elapsed+=delta;const t=Math.min(1,m.elapsed/.32),ease=t*t*(3-2*t);sequenceNav.x=m.from.x+(m.to.x-m.from.x)*ease;sequenceNav.y=m.from.y+(m.to.y-m.from.y)*ease;sequenceNav.zoom=Math.exp(Math.log(m.from.zoom)+(Math.log(m.to.zoom)-Math.log(m.from.zoom))*ease);if(t===1){focusMotion=undefined;refreshViewportTools();}void draw();}}if(now-lastViewSample>=500){lastViewSample=now;rememberView();}updateRenderStatus();if(dragPreviewDirty){dragPreviewDirty=false;void draw();}const seq=sequence(); if (animating && !seq && group === 'layout' && current()?.kind === 'composition') { time += delta*playbackSpeed; updateTime();void draw(true); } if (playing && seq && group==='layout' && playHost.hidden) { const end = loop ? loopTo || seq.duration : seq.duration; time += delta*playbackSpeed; if (time >= end) { if (loop) time = loopFrom + (time - loopFrom) % Math.max(1 / 60, end - loopFrom); else { time = seq.duration; playing = false; refreshTimeline(); if(editorSelection.timeline?.kind==='track'||editorSelection.timeline?.kind==='camera')refreshRight(); } } updateTime(); void draw(playing); } frameId = requestAnimationFrame(tick); };
   frameId = requestAnimationFrame(tick); void load();
   const disposePerformance = mountPerformancePanel(root, () => ({ editor: true, scene: sceneId(), selected: editorSelection.instance, zoom: sequenceNav.zoom, comparison: compareId }), new URLSearchParams(location.search).has('perf')||!!linkQuery?.has('profile-editor'));
-  return { model, openScene, reload: load, save, dispose() { rememberView();disposed = true;disposeNumericScrubbing();chunkInspectorHandle?.();cancelWorldDrag?.();disposeViewportInput();timelineGrid?.dispose(); disposePerformance(); playHandle?.(); playHandle = undefined; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload);window.removeEventListener('hashchange',navigateEditorLink); root.removeEventListener('keydown', keyboard); document.removeEventListener('keydown', shortcuts); document.removeEventListener('click', closeMenu); root.remove(); } };
+  return { model, openScene, reload: load, save, dispose() { rememberView();disposed = true;viewportObserver.disconnect();disposeNumericScrubbing();chunkInspectorHandle?.();cancelWorldDrag?.();disposeViewportInput();spatialHandles.dispose();timelineGrid?.dispose(); disposePerformance(); playHandle?.(); playHandle = undefined; cancelAnimationFrame(frameId); cleanupWorld?.(); cleanupAssets?.(); disposeInspector(); thumbnails?.dispose(); workbenches.forEach(item => item.dispose?.()); window.removeEventListener('beforeunload', unload);window.removeEventListener('hashchange',navigateEditorLink); root.removeEventListener('keydown', keyboard); document.removeEventListener('keydown', shortcuts); document.removeEventListener('click', closeMenu); root.remove(); } };
 }

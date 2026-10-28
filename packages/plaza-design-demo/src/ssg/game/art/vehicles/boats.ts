@@ -1,3 +1,6 @@
+import {fixedGeometry} from '../core/spatial';
+import {optionalColor} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceText,semantic,shapeLength} from '../core/fields';
 /**
  * The WATER class of the vehicle kit (ART-GUIDE §12): the city's boats, side on, drawn once and used by
  * the harbor, the beach and the Act II picture.
@@ -114,26 +117,26 @@ function nav(x: CanvasRenderingContext2D, bow: number, stern: number, y: number)
 }
 
 const fields: AssetDefinition['fields'] = {
-  kind: { kind: 'select', label: 'Boat', options: [...BOAT_KINDS], default: 'ferry' },
-  paint: { kind: 'string', label: 'Hull paint (#rrggbb; empty: the kind’s own)', default: '' },
-  named: { kind: 'boolean', label: 'Name on the hull', default: true },
-  name: { kind: 'string', label: 'Name (empty: the kind’s own)', default: '' },
-  ...laneFields({ speed: 0.3, lane: 2600 }),
-  waterline: { kind: 'number', label: 'Waterline height', default: 40, min: -400, max: 2000, step: 1, unit: 'units' },
-  bob: { kind: 'number', label: 'Bob', default: 1, min: 0, max: 12, step: 0.5, unit: 'units' },
-  wake: { kind: 'boolean', label: 'Wake (when moving)', default: true },
-  reflection: { kind: 'boolean', label: 'Reflection of its lights', default: true },
-  searchlight: { kind: 'boolean', label: 'Searchlight (patrol)', default: false },
-  lamp: { kind: 'select', label: 'Lamp', options: ['on', 'off', 'signal'], default: 'on' },
-  nav: { kind: 'boolean', label: 'Navigation lights', default: false },
+  kind: appearanceChoice({ kind: 'select', label: 'Boat', options: [...BOAT_KINDS], default: 'ferry' }),
+  paintColor: optionalColor('Paint color'),
+  named: appearanceBoolean({ kind: 'boolean', label: 'Name on the hull', default: true }),
+  name: appearanceText({ kind: 'string', label: 'Name (empty: the kind’s own)', default: '' }),
+  ...laneFields({ speed: 18, routeLength: 2600 }),
+  waterline: shapeLength({ kind: 'number', label: 'Waterline height', default: 40, min: -400, max: 2000, step: 1, unit: 'units' }),
+  bobAmplitude: semantic({ kind: 'number', label: 'Bob', default: 1, min: 0, max: 12, step: 0.5, unit: 'units' },{"group":"Motion","quantity":"length","unit":"world units","space":"local"}),
+  wake: appearanceBoolean({ kind: 'boolean', label: 'Wake (when moving)', default: true }),
+  reflection: appearanceBoolean({ kind: 'boolean', label: 'Reflection of its lights', default: true }),
+  searchlight: semantic({ kind: 'boolean', label: 'Searchlight (patrol)', default: false },{"group":"Motion","quantity":"boolean","unit":"boolean"}),
+  lamp: appearanceChoice({ kind: 'select', label: 'Lamp', options: ['on', 'off', 'signal'], default: 'on' }),
+  nav: appearanceBoolean({ kind: 'boolean', label: 'Navigation lights', default: false }),
 };
 const kindOf = (props: Properties): BoatKind => (BOAT_KINDS as readonly string[]).includes(String(props.kind)) ? props.kind as BoatKind : 'ferry';
 
 /** One boat at the current origin (its waterline middle), at its band's size and darkening. Partial props take the field defaults. */
 export function paintBoatVehicle(ctx: CanvasRenderingContext2D, raw: Properties, t: number, face: 1 | -1, moving: boolean) {
-  const props = withDefaults(fields, raw), kind = kindOf(props), paint = String(props.paint);
+  const props = withDefaults(fields, raw), kind = kindOf(props), paint = String(props.paintColor);
   paintBanded(ctx, bandOf(props), BOAT_EXTENT[kind], g => drawBoat(g, kind, {
-    t, face, heave: bobAt(t, Number(props.bob), kind === 'patrol' ? 0.05 : 0.03),
+    t, face, heave: bobAt(t, Number(props.bobAmplitude), kind === 'patrol' ? 0.05 : 0.03),
     name: props.named === false ? '' : String(props.name) || undefined,
     lamp: props.lamp === 'signal' ? 'signal' : props.lamp !== 'off', wake: moving && props.wake === true, reflection: props.reflection === true,
     searchlight: props.searchlight === true, nav: props.nav === true, ...(/^#[\da-f]{6}$/i.test(paint) ? { paint } : {}),
@@ -141,6 +144,7 @@ export function paintBoatVehicle(ctx: CanvasRenderingContext2D, raw: Properties,
 }
 
 export const boatVehicleElement: AssetDefinition = {
+  spatial:fixedGeometry('The selected vehicle body has kit-defined proportions. Route length, offsets and altitude configure its motion, not its body size. Use placement or route properties; no silhouette stretching.'),
   type: 'vehicle.boat',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Boat', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);

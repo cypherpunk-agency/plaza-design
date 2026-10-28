@@ -195,7 +195,8 @@
   },
   "stage": {
     "facing": {
-      "role": "orientation"
+      "role": "orientation",
+      "prop": "bearing"
     },
     "shade": {
       "front": {

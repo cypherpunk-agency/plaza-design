@@ -293,7 +293,8 @@
   ],
   "stage": {
     "facing": {
-      "role": "orientation"
+      "role": "orientation",
+      "prop": "bearing"
     }
   }
 }

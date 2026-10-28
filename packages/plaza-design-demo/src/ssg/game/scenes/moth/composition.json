@@ -7,7 +7,7 @@
       "type": "moth.neighbors",
       "props": {
         "width": 660,
-        "ceiling": 112
+        "height": 112
       },
       "placement": {
         "x": 0,
@@ -30,7 +30,7 @@
       "type": "moth.shell",
       "props": {
         "width": 660,
-        "ceiling": 112
+        "height": 112
       },
       "placement": {
         "x": 0,
@@ -54,7 +54,7 @@
       "props": {
         "width": 74,
         "height": 58,
-        "facing": 270
+        "bearing": 270
       },
       "placement": {
         "x": 442,
@@ -279,7 +279,7 @@
       "id": "rig-glow",
       "type": "moth.rig-glow",
       "props": {
-        "width": 76
+        "deskWidth": 76
       },
       "placement": {
         "x": 0,
@@ -417,9 +417,7 @@
     {
       "id": "webcams",
       "type": "moth.webcams",
-      "props": {
-        "width": 76
-      },
+      "props": {},
       "placement": {
         "x": 38,
         "h": 0

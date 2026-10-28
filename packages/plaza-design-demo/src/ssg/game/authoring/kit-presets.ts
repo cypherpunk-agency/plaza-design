@@ -4,9 +4,9 @@
  * inspector saves, updates, renames and deletes them. A preset is only settings: placing one adds an
  * ordinary kit instance, so later kit improvements reach every piece made from it.
  */
-import type { ArtRegistry, Properties } from '../art/core/composition';
+import type { ArtRegistry, Properties,AssetInstance } from '../art/core/composition';
 
-export interface KitPreset { id: string; label: string; kit: string; note?: string; props: Properties }
+export interface KitPreset { id: string; label: string; kit: string; note?: string; props: Properties;children?:AssetInstance[] }
 export interface KitPresets { version: 1; presets: KitPreset[] }
 export const PRESETS_DOCUMENT = 'kit-presets';
 
@@ -22,15 +22,31 @@ export function validatePresets(value: unknown, registry: ArtRegistry): KitPrese
   const ids = new Set<string>();
   for (const raw of d.presets as unknown[]) {
     const p = plain(raw, 'preset');
-    if (Object.keys(p).some(k => !['id', 'label', 'kit', 'note', 'props'].includes(k))) fail('unknown preset field');
+    if (Object.keys(p).some(k => !['id', 'label', 'kit', 'note', 'props','children'].includes(k))) fail('unknown preset field');
     if (typeof p.id !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(p.id)) fail(`preset id "${String(p.id)}" must be lower-case letters, digits and dashes`);
     const id = p.id as string; if (ids.has(id)) fail(`two presets are called ${id}`); ids.add(id);
     if (typeof p.label !== 'string' || !p.label.trim() || p.label.length > 80) fail(`${p.id}: name must be 1 to 80 characters`);
     if (p.note !== undefined && (typeof p.note !== 'string' || p.note.length > 240)) fail(`${p.id}: note must be text (240 characters at most)`);
     if (typeof p.kit !== 'string' || !registry.catalog().some(e => e.type === p.kit && e.libraryUse === 'reusable')) fail(`${p.id}: "${String(p.kit)}" is not a kit element`);
     try { registry.properties(p.kit as string, plain(p.props, `${p.id} settings`) as Properties); } catch (e) { fail(`${p.id}: ${e instanceof Error ? e.message : String(e)}`); }
+    if(p.children!==undefined){
+      if(p.kit!=='assembly.group')fail(`${p.id}: only an ordinary group can contain an arrangement`);
+      validatePresetChildren(p.children,registry);
+    }
   }
   return structuredClone(value) as KitPresets;
+}
+
+/** An arrangement is an ordinary self-contained subtree, never a hidden scene/controller copy. */
+export function validatePresetChildren(value:unknown,registry:ArtRegistry):AssetInstance[]{
+ if(!Array.isArray(value)||!value.length)fail('an arrangement needs children');
+ const doc=registry.validate({version:1,scene:'preset-validation',instances:value});
+ const all=(nodes:AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...all(n.children??[])]),nodes=all(doc.instances),ids=new Set(nodes.map(n=>n.id));
+ for(const node of nodes){
+  if(registry.get(node.type).libraryUse!=='reusable'||Object.keys(node.bindings??{}).length)fail(node.id+': arrangements require reusable assets without live bindings');
+  if(node.attach&&!ids.has(node.attach.instance))fail(node.id+': attachment must stay inside the arrangement');
+ }
+ return structuredClone(doc.instances);
 }
 
 export const presetsFor = (doc: KitPresets | undefined, kit: string) => (doc?.presets ?? []).filter(p => p.kit === kit);

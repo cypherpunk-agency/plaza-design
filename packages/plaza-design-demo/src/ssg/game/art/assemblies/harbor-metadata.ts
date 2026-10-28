@@ -7,10 +7,9 @@ import {HZ} from '../environment/harbor-distance';
 import {rng} from '../core/primitives';
 import {stallBox} from './construction';
 import {HARBOR_FLOCK,droneGullAt,type HarborLayout,type HarborVisual} from './harbor-pier';
-import {flockRects} from '../characters/flock';
+import {flockRegion} from '../characters/flock';
 import type {PreparedCharacter} from '../../runtime/characters';
 import {screenBounds} from './static-bounds';
-import {harborHutSize} from './harbor-fields';
 type Rect={x:number;y:number;w:number;h:number};
 const n=(p:Properties,k:string)=>Number(p[k]??0);
 const union=(rows:Rect[]):Rect=>{if(!rows.length)return{x:0,y:0,w:0,h:0};const x=Math.min(...rows.map(r=>r.x)),y=Math.min(...rows.map(r=>r.y));return{x,y,w:Math.max(...rows.map(r=>r.x+r.w))-x,h:Math.max(...rows.map(r=>r.y+r.h))-y};};
@@ -52,7 +51,7 @@ export function applyHarborMetadata(elements:AssetDefinition[],root:(method:stri
   farSky:a=>({x:0,y:0,w:a.v.viewW,h:Math.max(0,a.v.y(HZ)+1)}),
   horizon:a=>({x:0,y:a.v.y(HZ)-45,w:a.v.viewW,h:48}),
   water:a=>({x:0,y:a.v.y(HZ),w:a.v.viewW,h:Math.max(0,a.v.y(0)-a.v.y(HZ)+1)}),
-  flyingGulls:a=>union(flockRects(a.v,HARBOR_FLOCK)),
+  flyingGulls:a=>flockRegion(a.v,HARBOR_FLOCK),
   pierSlab:a=>({x:0,y:a.v.y(6),w:a.v.viewW,h:6}),metroDoor:at(-30,70,60),noticePost:at(-26,72,52),podium:at(-11,44,22),manifest:at(-15,46,30,26),callBox:at(-8,62,16),
   crates:a=>{const r=rng(41*19+3),rows:Rect[]=[];let x=1112;for(let i=0;i<2;i++){r();const w=16+Math.round(r()*8),h=12+Math.round(r()*8),stack=r()<.4;rows.push(rect(a.v,x,h,w,h));if(stack){const offset=Math.round((r()-.5)*6);rows.push(rect(a.v,x,2*h,w-4,h,offset));}x+=w+2;}return union(rows);},bollard:at(-7,12,14),
   rod:a=>{const reach=n(a.p,'reach'),v=a.v,top=v.y(a.h+34)-1,bottom=v.gy+30+Math.sin(v.t*.03+a.x)*3+2;return{x:v.sx(a.x)-1,y:Math.min(top,bottom),w:Math.max(0,reach+8),h:Math.abs(bottom-top)};},
@@ -62,9 +61,9 @@ export function applyHarborMetadata(elements:AssetDefinition[],root:(method:stri
   frontBollard:a=>({x:a.v.sx(a.x,1.3)-14,y:a.v.gy+15,w:135,h:32}),
   container:a=>rect(a.v,a.x,a.h+n(a.p,'height'),n(a.p,'width'),n(a.p,'height')),
  };
- for(const e of elements){const id=e.type.slice(7);if(id==='marker'){e.parts=[];continue;}
+ for(const e of elements){if(['harbor.farSky','harbor.horizon','harbor.water','harbor.flyingGulls','harbor.nearWater'].includes(e.type))e.selection='region';const id=e.type.slice(7);if(id==='marker'){e.parts=[];continue;}
   if(id==='hutBack'||id==='hutFront'){
-   e.bounds=(p,s)=>{const{w,h}=harborHutSize(p,s);if(id==='hutBack'){const top=Math.max(60,h);return{x:0,h:top,w:Math.max(68,w),tall:top};}const top=Math.max(59,h+4),bottom=Math.min(34,h-1);return{x:-4,h:top,w:Math.max(72,w+8),tall:top-bottom};};
+   e.bounds=p=>{const w=Number(p.width),h=Number(p.height);if(id==='hutBack'){const top=Math.max(60,h);return{x:0,h:top,w:Math.max(68,w),tall:top};}const top=Math.max(59,h+4),bottom=Math.min(34,h-1);return{x:-4,h:top,w:Math.max(72,w+8),tall:top-bottom};};
    continue;
   }
   const shape=shapes[id];if(!shape)throw new Error('Missing harbor metadata: '+id);
@@ -82,7 +81,7 @@ export function applyHarborMetadata(elements:AssetDefinition[],root:(method:stri
  for(const[id,points]of Object.entries(anchors))get(id).anchors=()=>({origin,...points});
  get('container').anchors=p=>({origin,top:{x:n(p,'width')/2,h:n(p,'height'),role:'surface'},left:{x:0,h:0,role:'origin'},right:{x:n(p,'width'),h:0,role:'origin'}});
  for(const id of ['fishStall','teaStall'])get(id).anchors=(p)=>{const tea=id==='teaStall',w=Number(p.width),shape=stallBox({x:0,w,seed:tea?34:31});return{origin,counter:{x:w/2,h:shape.counter,role:'surface'},awning:{x:w/2,h:shape.awning,role:'mount'}};};
- for(const id of ['hutBack','hutFront'])get(id).anchors=(p,s)=>{const{w,h}=harborHutSize(p,s);return{origin,window:{x:54,h:48,role:'surface'},roof:{x:w/2,h:h+4,role:'surface'}};};
+ for(const id of ['hutBack','hutFront'])get(id).anchors=p=>{const w=Number(p.width),h=Number(p.height);return{origin,window:{x:54,h:48,role:'surface'},roof:{x:w/2,h:h+4,role:'surface'}};};
  for(const id of ['craneFrame','craneCabBack','craneCabFront','craneCables','craneLoad','craneLight'])get(id).anchors=(p,s):Record<string,Anchor>=>{
   const L=s.layout as unknown as HarborLayout|undefined,vis=s.visual as unknown as HarborVisual|undefined,ci=n(p,'index'),base=L?.cranes[ci]?.x??0,c=vis?.cranes[ci],dx=(c?.twx??base)-base;
   if(id==='craneFrame')return{origin,rail:{x:0,h:0,role:'surface'},boom:{x:0,h:206,role:'mount'}};

@@ -3,6 +3,7 @@ import {newSave} from '../../src/ssg/game/runtime/save';
 import assert from 'node:assert/strict';
 import {Game} from '../../src/ssg/game/runtime/game';
 import {runtimeFixture} from './runtime-fixture.mts';
+import {validateFrameViewport} from '../../src/ssg/game/runtime/frame';
 import {SHIPPED_PROFILES,installPlayProfiles} from '../../src/ssg/game/runtime/play-profile';
 import starts from '../../src/ssg/game/world/checkpoints.json';
 import {SCENES} from '../../src/ssg/game/scenes';
@@ -14,6 +15,13 @@ import * as world from '../../src/ssg/game/world/city';
 import {weatherNow,setOverride} from '../../src/ssg/game/world/weather';
 
 const profile=SHIPPED_PROFILES.profiles.find(p=>p.id==='full')!;
+const dimensions=validateFrameViewport({width:960,height:540,scale:1}),properties=new Map<string,string>();
+for(const invalid of [{...dimensions,width:0},{...dimensions,height:NaN},{...dimensions,scale:0},{...dimensions,extra:1}])assert.throws(()=>validateFrameViewport(invalid));
+const embedded=runtimeFixture(Game,{host:{viewport:dimensions,windowEl:{style:{setProperty:(key:string,value:string)=>properties.set(key,value)},getBoundingClientRect(){throw Error('Embedding layout must not refit the authored camera');}}},canvas:{width:0,height:0},spanW:1440,camera:{camH:20}});
+embedded.onResize();assert.deepEqual([embedded.canvas.width,embedded.canvas.height,embedded.camera.k,embedded.camera.viewW,embedded.camera.viewH,embedded.camera.gy],[960,540,1,960,540,506]);
+assert.equal(properties.get('--game-top'),'0px');assert.equal(properties.get('--game-bottom'),'0px','Hidden editor chrome must not squeeze the game canvas');
+embedded.onResize();assert.equal(embedded.camera.viewW,960,'Display resize cannot change a fixed logical presentation');
+embedded.host.viewport=validateFrameViewport({...dimensions,scale:2,ground:243});embedded.onResize();assert.deepEqual([embedded.camera.viewW,embedded.camera.viewH,embedded.camera.gy],[480,270,263],'Camera zoom retains the same resolved ground as the preview');
 function run(change:(f:any)=>void){
  const checkpoints=structuredClone(starts),f=checkpoints.fixtures.find(f=>f.id===profile.checkpoint)!;change(f);
  installPlayProfiles(SHIPPED_PROFILES,false,checkpoints);

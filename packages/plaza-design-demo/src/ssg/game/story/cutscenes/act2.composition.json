@@ -46,7 +46,7 @@
       "id": "water",
       "type": "sequence.act2.water",
       "props": {
-        "fill": "#01040a"
+        "fillColor": "#01040a"
       },
       "placement": {
         "x": 0,
@@ -59,7 +59,7 @@
       "id": "ferry",
       "type": "sequence.act2.ferry",
       "props": {
-        "paint": "#0a0504"
+        "paintColor": "#0a0504"
       },
       "placement": {
         "x": 0,

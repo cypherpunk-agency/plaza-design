@@ -1,3 +1,8 @@
+import {colorField} from '../core/fields';
+import {fixedGeometry} from '../core/spatial';
+import {seconds} from '../core/fields';
+import {rectangleControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * BUILDING KIT, Skyport and the Exclusion Zone ("Fenced launches."). The port's own shapes, not a
  * skin on the city's fronts (Tommi, 2026-10-21: every district looked like New York with cyberpunk
@@ -16,14 +21,15 @@
  * origin at its foot on the left, heights up (`y = -h`). `size` scales a piece inside its own frame
  * (use it, not the placement's scale, for a far copy).
  */
-import type { AssetDefinition, Field } from '../core/composition';
+import type { AssetDefinition } from '../core/composition';
 import { windowLit } from '../../world/light';
 import { mono, paperSign } from '../core/primitives';
 import { neonPlate } from '../signage/kit';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from './types';
+const fixedNativeGeometry=fixedGeometry("This district skyport component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 const STRUCT = '170,190,210', WIN = '232,240,255', HAZARD = '255,210,58', WARN = '255,42,68';
-const colourField = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const colourField = colorField;
 const ease = (k: number) => { const c = Math.max(0, Math.min(1, k)); return c * c * (3 - 2 * c); };
 const clamp01 = (k: number) => Math.max(0, Math.min(1, k));
 /** #rrggbb mixed toward #rrggbb by k. */
@@ -68,20 +74,21 @@ function floodMast(x: CanvasRenderingContext2D, mx: number, mh: number, face: 1 
 const INSIDE = ['craft', 'crates', 'empty'] as const;
 
 export const hangarElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'building.hangar', label: 'Hangar or terminal (kit, Skyport)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['hangar', 'terminal']),
-    width: num('Width', 420, 120, 1600, 1, 'units'), height: num('Wall height', 150, 60, 360, 1, 'units'),
-    roof: select('Roof', ['arched', 'gabled', 'flat']), wall: colour('Wall colour', 'Skyport grey'),
-    door: num('Door width (share of the front)', 0.7, 0.3, 0.95, 0.01), doorHeight: num('Door height (share of the wall)', 0.78, 0.4, 0.95, 0.01),
-    open: num('Doors opened (0 shut)', 0.12, 0, 1, 0.01), inside: select('Inside the crack', INSIDE),
-    craft: colourField('Craft rim colour', '#aabed2'), glow: colourField('Light inside', '#e8f0ff'),
-    number: text('Apron number on the doors (empty: none)', '07'), letters: text('Letters on the fascia (empty: none)', 'HANGAR 07'),
-    stripes: bool('Hazard stripes along the door foot', true), beacons: bool('Red lights on the roof', true),
-    cabin: select('Ops cabin', ['none', 'left', 'right']), cabinHeight: num('Ops cabin height', 230, 60, 600, 1, 'units'),
-    masts: num('Floodlight masts', 2, 0, 4), mastHeight: num('Mast height', 210, 60, 600, 1, 'units'),
-    lit: num('Terminal windows lit', 0.7, 0, 1, 0.05),
-    size: num('Size (far copies smaller)', 1, 0.2, 2, 0.05), seed: num('Seed', 1, 0, 1000000),
+    kind: appearanceChoice(select('Kind', ['hangar', 'terminal'])),
+    width: shapeLength(num('Width', 420, 120, 1600, 1, 'units')), height: shapeLength(num('Wall height', 150, 60, 360, 1, 'units')),
+    roof: appearanceChoice(select('Roof', ['arched', 'gabled', 'flat'])), wall: appearanceStructure(colour('Wall colour', 'Skyport grey')),
+    door: appearanceRatio(num('Door width (share of the front)', 0.7, 0.3, 0.95, 0.01)), doorHeight: appearanceRatio(num('Door height (share of the wall)', 0.78, 0.4, 0.95, 0.01)),
+    open: appearanceRatio(num('Doors opened (0 shut)', 0.12, 0, 1, 0.01)), inside: appearanceChoice(select('Inside the crack', INSIDE)),
+    craft: appearanceColor(colourField('Craft rim colour', '#aabed2')), glow: appearanceColor(colourField('Light inside', '#e8f0ff')),
+    number: appearanceText(text('Apron number on the doors (empty: none)', '07')), letters: appearanceText(text('Letters on the fascia (empty: none)', 'HANGAR 07')),
+    stripes: appearanceBoolean(bool('Hazard stripes along the door foot', true)), beacons: appearanceBoolean(bool('Red lights on the roof', true)),
+    cabin: appearanceChoice(select('Ops cabin', ['none', 'left', 'right'])), cabinHeight: shapeLength(num('Ops cabin height', 230, 60, 600, 1, 'units')),
+    masts: generationCount(num('Floodlight masts', 2, 0, 4)), mastHeight: shapeLength(num('Mast height', 210, 60, 600, 1, 'units')),
+    lit: appearanceRatio(num('Terminal windows lit', 0.7, 0, 1, 0.05)),
+    size: semantic(num('Size (far copies smaller)', 1, 0.2, 2, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => { const s = Number(p.size); return { w: Number(p.width) * s, tall: (Math.max(Number(p.height) * 1.3, p.cabin === 'none' ? 0 : Number(p.cabinHeight) + 30, Number(p.masts) > 0 ? Number(p.mastHeight) + 16 : 0)) * s }; },
   bounds: p => { const s = Number(p.size), tall = Math.max(Number(p.height) * 1.3, p.cabin === 'none' ? 0 : Number(p.cabinHeight) + 30, Number(p.masts) > 0 ? Number(p.mastHeight) + 16 : 0) * s; return { x: -10 * s, h: tall, w: (Number(p.width) + 20) * s, tall }; },
@@ -197,17 +204,18 @@ export const hangarElement = piece({
 // ---------------------------------------------------------------- the perimeter fence
 
 export const fenceElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'street.fence', label: 'Perimeter fence (kit, Skyport)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 1600, 20, 40000, 10, 'units'), height: num('Height', 82, 30, 220, 1, 'units'),
-    spacing: num('Post spacing', 96, 30, 400, 1, 'units'), top: select('On top', ['razor', 'barbed', 'none']),
-    mesh: colourField('Mesh and posts', '#aabed2'), density: num('Mesh strength', 0.35, 0, 1, 0.05),
-    footing: bool('Concrete footing with hazard stripes', true),
-    gate: num('Gate from the left (-1: none)', -1, -1, 40000, 1, 'units'), gateWidth: num('Gate width', 96, 30, 400, 1, 'units'),
-    gateOpen: num('Gate opened', 0, 0, 1, 0.05), gateLabel: text('Letters over the gate (empty: none)', 'GATE 3'),
-    notice: text('Notice on the mesh (lines split by /)', 'NO ENTRY/AUTHORISED STAFF'), header: text('Notice header', 'RESTRICTED AREA'),
-    noticeEvery: num('A notice every N bays (0: none)', 3, 0, 40), lampEvery: num('A floodlight every N posts (0: none)', 4, 0, 40),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1600, 20, 40000, 10, 'units')), height: shapeLength(num('Height', 82, 30, 220, 1, 'units')),
+    spacing: shapeLength(num('Post spacing', 96, 30, 400, 1, 'units')), top: appearanceChoice(select('On top', ['razor', 'barbed', 'none'])),
+    mesh: appearanceColor(colourField('Mesh and posts', '#aabed2')), density: semantic(num('Mesh strength', 0.35, 0, 1, 0.05),{"group":"Generation","quantity":"ratio","unit":"ratio"}),
+    footing: appearanceBoolean(bool('Concrete footing with hazard stripes', true)),
+    gate: shapePosition(num('Gate from the left (-1: none)', -1, -1, 40000, 1, 'units')), gateWidth: shapeLength(num('Gate width', 96, 30, 400, 1, 'units')),
+    gateOpen: appearanceRatio(num('Gate opened', 0, 0, 1, 0.05)), gateLabel: appearanceText(text('Letters over the gate (empty: none)', 'GATE 3')),
+    notice: appearanceText(text('Notice on the mesh (lines split by /)', 'NO ENTRY/AUTHORISED STAFF')), header: appearanceText(text('Notice header', 'RESTRICTED AREA')),
+    noticeEvery: shapePosition(num('A notice every N bays (0: none)', 3, 0, 40)), lampEvery: shapePosition(num('A floodlight every N posts (0: none)', 4, 0, 40)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 30 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 30, w: Number(p.width), tall: Number(p.height) + 30 }),
@@ -299,17 +307,17 @@ export const fenceElement = piece({
 /** The frame: hardstand from 30 to 330, the service tower at 112..140, the vehicle on the pad at 190, the assembly hall at 360..500. */
 const PAD = { w: 520, cx: 190, tower: 112, towerW: 28, towerH: 330, vab: 360, vabW: 150, vabH: 350, base: 44 } as const;
 
-export const launchPadElement = piece({
+export const launchPadElement = piece({spatial:fixedNativeGeometry,
   type: 'landmark.launch-pad', label: 'Launch pad (landmark, Skyport)', category: 'architecture',
   fields: {
-    size: num('Size (far away: smaller)', 0.7, 0.2, 2, 0.05),
-    state: select('Launches', ['cycle', 'waiting', 'empty']),
-    cycle: num('Launch every', 7200, 3600, 72000, 60, 'frames'), phase: num('Cycle phase', 0, 0, 72000, 10, 'frames'),
-    body: colourField('Vehicle colour', '#8e9aa8'), plume: colourField('Plume and launch glow', '#ffa04a'),
-    letters: text('Letters down the vehicle (empty: none)', 'SKYPORT 9'), boosters: bool('Side boosters', true),
-    hall: bool('Assembly hall it rolls out of', true), waterTower: bool('Water tower', true),
-    steam: num('Steam', 1, 0, 2, 0.05), floods: num('Floodlights', 1, 0, 2, 0.05), haze: num('Distance haze', 0.3, 0, 1, 0.05),
-    seed: num('Seed', 1, 0, 1000000),
+    size: semantic(num('Size (far away: smaller)', 0.7, 0.2, 2, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}),
+    state: appearanceChoice(select('Launches', ['cycle', 'waiting', 'empty'])),
+    cycleDuration:seconds("Cycle duration",120,{"min":60,"max":1200,"step":1}), timeOffset:seconds("Time offset",0,{"min":0,"max":1200,"step":0.16666666666666666}),
+    body: appearanceColor(colourField('Vehicle colour', '#8e9aa8')), plume: appearanceColor(colourField('Plume and launch glow', '#ffa04a')),
+    letters: appearanceText(text('Letters down the vehicle (empty: none)', 'SKYPORT 9')), boosters: appearanceBoolean(bool('Side boosters', true)),
+    hall: appearanceBoolean(bool('Assembly hall it rolls out of', true)), waterTower: appearanceBoolean(bool('Water tower', true)),
+    steam: semantic(num('Steam', 1, 0, 2, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), floods: generationCount(num('Floodlights', 1, 0, 2, 0.05)), haze: semantic(num('Distance haze', 0.3, 0, 1, 0.05),{"group":"Depth","quantity":"ratio","unit":"ratio"}),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: PAD.w * Number(p.size), tall: 420 * Number(p.size) }),
   bounds: p => ({ x: 0, h: 420 * Number(p.size), w: PAD.w * Number(p.size), tall: 420 * Number(p.size) }),
@@ -319,7 +327,7 @@ export const launchPadElement = piece({
     const light = sized(o, s), t = o.t, seed = Number(p.seed), on = lampsOf(o), haze = Number(p.haze), floods = Number(p.floods) * (0.25 + 0.75 * on);
     const fog = (hex: string) => mixHex(hex, '#222a36', haze * 0.6), plume = isHex(p.plume) ? rgbOf(String(p.plume)) : '255,160,74', body = isHex(p.body) ? String(p.body) : '#8e9aa8';
     // where in the cycle: roll out of the hall, arms in, wait venting, arms back, ignition, ascent
-    const C = Number(p.cycle), state = String(p.state), ph = state === 'cycle' ? (t + Number(p.phase)) % C : state === 'waiting' ? 2000 : C - 1, L = C - 1500;
+    const C = (Number(p.cycleDuration)*60), state = String(p.state), ph = state === 'cycle' ? (t + (Number(p.timeOffset)*60)) % C : state === 'waiting' ? 2000 : C - 1, L = C - 1500;
     const sinceLaunch = state === 'cycle' ? (ph - L + C) % C : state === 'empty' ? 2400 : 99999;
     const launched = state === 'empty' || (state === 'cycle' && ph >= L);
     const roll = p.hall !== false && state === 'cycle' ? 1 - ease(ph / 1200) : 0, dx = Math.round(roll * (PAD.vab + PAD.vabW / 2 - PAD.cx));

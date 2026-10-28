@@ -1,3 +1,5 @@
+import {fieldValueValid,fieldIsContinuous} from './fields';
+import {validateRenderSettings,type RenderSettings} from '../../world/render-settings';
 /** Data-only authored sequences. Evaluation is pure and never commits gameplay handoffs. */
 import { ArtRegistry, type ChunkDocument, type AssetInstance, type Field, type Value, type Properties } from './composition';
 
@@ -16,6 +18,9 @@ export interface Handoff { scene: string; entrance?: string }
 export interface SequenceCommand {id:string;scene:string;command:string}
 export interface SequenceCommandMarker extends SequenceCommand {time:number;skip:'run'|'omit'}
 export interface Sequence {
+  rendering?:RenderSettings;
+  /** Source chunk IDs, not instance IDs. Applied after the whole-picture override. */
+  memberRendering?:Record<string,RenderSettings>;
   id: string; duration: number; composition: string; shots: Shot[]; tracks: Track[];
   text: TextCard[]; fades: Fade[]; beats: Beat[]; handoff?: Handoff;
   commands?:SequenceCommandMarker[];
@@ -53,9 +58,7 @@ export function targetComposition(ctx:TimelineContext,composition:ChunkDocument,
  const source=Object.values(ctx.compositions).find(doc=>doc.scene===target.scene);if(!source)throw Error('Unknown timeline source: '+target.scene);return source;
 }
 function validField(f: Field, v: Value) {
-  const valid = f.kind === 'json' ? true : f.kind === 'number' ? num(v) && (f.min === undefined || v >= f.min) && (f.max === undefined || v <= f.max)
-    : f.kind === 'boolean' ? typeof v === 'boolean' : f.kind === 'select' ? !!f.options?.includes(v as string | number)
-    : typeof v === 'string' && (f.kind !== 'color' || /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(v));
+  const valid = fieldValueValid(f,v);
   if (!valid) return false;
   try { f.validate?.(structuredClone(v)); return true; } catch { return false; }
 }
@@ -80,6 +83,7 @@ function targetValidator(t: Target, all: Map<string, AssetInstance>, ctx: Timeli
   const fields = t.kind === 'property' ? element.fields : element.visualFields ?? {};
   if (!own(fields, t.property)) throw new Error(`Unknown ${t.kind} field ${node.type}.${t.property}`);
   const field = fields[t.property];
+  if(t.kind==='property'&&field.stateOverride&&node.bindings?.[field.stateOverride.state])throw Error('Field is linked to a shared source: '+node.type+'.'+t.property);
   if (!field.animatable) throw new Error(`Field is not animatable: ${node.type}.${t.property}`);
   return v => validField(field, v);
 }
@@ -90,6 +94,8 @@ export function validateTimeline(input: unknown, ctx: TimelineContext): Timeline
   for (const raw of input.sequences) {
     if (!obj(raw) || typeof raw.id !== 'string' || !raw.id || seqIds.has(raw.id) || !num(raw.duration) || raw.duration <= 0 || typeof raw.composition !== 'string' || !own(ctx.compositions, raw.composition)) throw new Error('Invalid sequence id, duration or composition');
     seqIds.add(raw.id); const seq = raw as unknown as Sequence, all = nodes(ctx.registry.validate(ctx.compositions[seq.composition]));
+    if(seq.rendering!==undefined){validateRenderSettings(seq.rendering);if(!ctx.compositions[seq.composition].instances.some(n=>n.type==='sequence.world-control')&&Object.values(seq.rendering).some(v=>v))throw Error('Asset-only sequence has no world rendering passes');}
+    if(seq.memberRendering!==undefined){if(!obj(seq.memberRendering))throw Error('Sequence member rendering requires a source map');if(!ctx.compositions[seq.composition].instances.some(n=>n.type==='sequence.world-control')&&Object.keys(seq.memberRendering).length)throw Error('Asset-only sequence has no world members');for(const [scene,settings]of Object.entries(seq.memberRendering)){if(!Object.values(ctx.compositions).some(c=>c.scene===scene))throw Error('Unknown sequence rendering source: '+scene);validateRenderSettings(settings);}}
     const ids = new Set<string>(); const id = (x: { id: string }) => { if (typeof x.id !== 'string' || !x.id || ids.has(x.id)) throw new Error(`${seq.id}: duplicate/missing item id`); ids.add(x.id); };
     const span = (x: { from: number; to: number }) => { if (!num(x.from) || !num(x.to) || x.from < 0 || x.to <= x.from || x.to > seq.duration) throw new Error(`${seq.id}: invalid time span`); };
     if (![seq.shots, seq.tracks, seq.text, seq.fades, seq.beats].every(Array.isArray)) throw new Error(`${seq.id}: missing timeline arrays`);
@@ -101,8 +107,8 @@ export function validateTimeline(input: unknown, ctx: TimelineContext): Timeline
       const key = [target.kind, target.kind === 'camera' ? '' : target.scene??ctx.compositions[seq.composition].scene, target.kind === 'camera' ? '' : target.instance, target.property].join('/');
       const element = target.kind === 'camera' ? undefined : ctx.registry.get(targetNodes.get(target.instance)!.type);
       const continuous = target.kind === 'camera' || target.kind === 'instance' && !['visible', 'facing'].includes(target.property)
-        || target.kind === 'property' && element!.fields[target.property].kind === 'number'
-        || target.kind === 'state' && element!.visualFields![target.property].kind === 'number';
+        || target.kind === 'property' && fieldIsContinuous(element!.fields[target.property])
+        || target.kind === 'state' && fieldIsContinuous(element!.visualFields![target.property]);
       if (targets.has(key)) throw new Error('Multiple tracks write the same target'); targets.add(key);
       if (track.reduced !== undefined && !['freeze', 'normal'].includes(track.reduced)) throw new Error('Invalid reduced motion policy');
       if (!Array.isArray(track.keys) || !track.keys.length) throw new Error('A track needs keys');

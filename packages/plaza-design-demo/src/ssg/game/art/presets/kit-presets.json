@@ -1,54 +1,515 @@
 {
   "version": 1,
   "presets": [
-    { "id": "evidence-van", "label": "Registry evidence van", "kit": "vehicle.road", "note": "From Warehouse 4's van.",
-      "props": { "kind": "van", "paint": "#c8c4b8", "stripe": "#c8203a", "decal": "REGISTRY / EVIDENCE TRANSPORT", "fleetNo": "RX 114", "qr": true } },
-    { "id": "yard-truck-waiting", "label": "Yard truck, waiting", "kit": "vehicle.road", "note": "From the opening's coast.",
-      "props": { "kind": "yard", "paint": "#2a4a6a", "direction": "left" } },
-    { "id": "dumped-hatchback", "label": "Dumped hatchback", "kit": "vehicle.road", "note": "From the opening's coast.",
-      "props": { "kind": "hatch", "paint": "#2a2224" } },
-    { "id": "sky-cab", "label": "Sky cab", "kit": "vehicle.air", "props": { "kind": "cab" } },
-    { "id": "night-ferry", "label": "Night ferry", "kit": "vehicle.boat", "note": "From Harbor's ferry.",
-      "props": { "kind": "ferry", "motion": "loop", "speed": 0.16, "nav": true } },
-    { "id": "harbor-patrol-boat", "label": "Harbor patrol boat", "kit": "vehicle.boat", "note": "From Harbor's patrol.",
-      "props": { "kind": "patrol", "motion": "run", "dwell": 900, "searchlight": true } },
-    { "id": "signal-lamp-boat", "label": "Signal lamp boat", "kit": "vehicle.boat", "note": "From Harbor's lamp boat.",
-      "props": { "kind": "lamp", "lamp": "signal", "depth": "far" } },
-    { "id": "platform-train", "label": "Platform train", "kit": "vehicle.rail", "note": "The station train without its timetable link.",
-      "props": { "car": "platform", "cars": 3 } },
-    { "id": "hi-vis-dock-worker", "label": "Dock worker in hi-vis", "kit": "character.resident", "note": "Like the opening's dockers.",
-      "props": { "kind": "human", "archetype": "dockworker", "garb": "hivis", "district": "harbor" } },
-    { "id": "noodle-vendor", "label": "Noodle vendor", "kit": "character.resident",
-      "props": { "kind": "human", "archetype": "vendor", "act": "vend", "district": "market" } },
-    { "id": "commuter-on-the-phone", "label": "Commuter on the phone", "kit": "character.resident",
-      "props": { "kind": "human", "archetype": "commuter", "act": "phone", "district": "downtown" } },
-    { "id": "bench-sleeper", "label": "Sleeper on a bench", "kit": "character.resident",
-      "props": { "kind": "human", "archetype": "sleeper", "act": "doze", "sitting": "mixed" } },
-    { "id": "gate-marshal-bot", "label": "Gate marshal bot", "kit": "character.resident", "note": "From the opening's coast gate.",
-      "props": { "kind": "marshal", "act": "direct" } },
-    { "id": "busker-bot", "label": "Busker bot", "kit": "character.resident", "note": "From the opening's coast.",
-      "props": { "kind": "busker", "act": "play" } },
-    { "id": "rescue-scan-drone", "label": "Rescue scan drone", "kit": "character.resident", "note": "Like the beach drone, without its warning light link.",
-      "props": { "kind": "scandrone", "act": "scan" } },
-    { "id": "patrol-robogull", "label": "Patrol robogull", "kit": "character.resident", "note": "From Harbor's drone gull.",
-      "props": { "kind": "robogull", "act": "scan" } },
-    { "id": "digging-crab", "label": "Digging crab", "kit": "character.resident", "note": "From the beach crab.",
-      "props": { "kind": "crab", "act": "dig", "seed": 5 } },
-    { "id": "diner-cook", "label": "Diner cook", "kit": "character.resident", "note": "Whites, a white cap, a towel; at the griddle.",
-      "props": { "kind": "human", "archetype": "cook", "act": "vend", "district": "downtown" } },
-    { "id": "diner-waitress", "label": "Diner waitress", "kit": "character.resident", "note": "Diner uniform, apron, notepad.",
-      "props": { "kind": "human", "archetype": "waitress", "act": "stand", "district": "downtown" } },
-    { "id": "shop-security", "label": "Shop security", "kit": "character.resident", "note": "Private security, not the Registry: dark SECURITY polo or hi-vis, a radio.",
-      "props": { "kind": "human", "archetype": "security", "act": "stand", "district": "downtown" } },
-    { "id": "store-cashier", "label": "Store cashier", "kit": "character.resident", "note": "A store tabard and a name badge.",
-      "props": { "kind": "human", "archetype": "cashier", "act": "stand", "district": "downtown" } },
-    { "id": "registry-clerk", "label": "Registry clerk", "kit": "character.resident", "note": "Office shirt, ID on a lanyard; behind a counter.",
-      "props": { "kind": "human", "archetype": "clerk", "act": "stand", "district": "downtown" } },
-    { "id": "precinct-officer", "label": "Precinct officer", "kit": "character.resident", "note": "City police: dark olive uniform, radio and badge.",
-      "props": { "kind": "human", "archetype": "police", "act": "stand", "district": "downtown" } },
-    { "id": "stool-regular", "label": "Regular on a counter stool", "kit": "character.resident", "note": "Sits on a 19-unit diner stool, feet dangling.",
-      "props": { "kind": "human", "act": "sit", "sitting": "side", "seat": 19, "district": "downtown" } },
-    { "id": "patient-on-a-cot", "label": "Patient on a cot", "kit": "character.resident", "note": "Lying on the back at bed height 16, a blanket over them.",
-      "props": { "kind": "human", "act": "lie", "seat": 16, "lying": "asleep", "cover": "#6a7a6a" } }
+    {
+      "id": "evidence-van",
+      "label": "Registry evidence van",
+      "kit": "vehicle.road",
+      "note": "From Warehouse 4's van.",
+      "props": {
+        "kind": "van",
+        "stripe": "#c8203a",
+        "decal": "REGISTRY / EVIDENCE TRANSPORT",
+        "fleetNo": "RX 114",
+        "qr": true,
+        "paintColor": "#c8c4b8"
+      }
+    },
+    {
+      "id": "yard-truck-waiting",
+      "label": "Yard truck, waiting",
+      "kit": "vehicle.road",
+      "note": "From the opening's coast.",
+      "props": {
+        "kind": "yard",
+        "direction": -1,
+        "paintColor": "#2a4a6a"
+      }
+    },
+    {
+      "id": "dumped-hatchback",
+      "label": "Dumped hatchback",
+      "kit": "vehicle.road",
+      "note": "From the opening's coast.",
+      "props": {
+        "kind": "hatch",
+        "paintColor": "#2a2224"
+      }
+    },
+    {
+      "id": "sky-cab",
+      "label": "Sky cab",
+      "kit": "vehicle.air",
+      "props": {
+        "kind": "cab"
+      }
+    },
+    {
+      "id": "night-ferry",
+      "label": "Night ferry",
+      "kit": "vehicle.boat",
+      "note": "From Harbor's ferry.",
+      "props": {
+        "kind": "ferry",
+        "motion": "loop",
+        "speed": 9.6,
+        "nav": true
+      }
+    },
+    {
+      "id": "harbor-patrol-boat",
+      "label": "Harbor patrol boat",
+      "kit": "vehicle.boat",
+      "note": "From Harbor's patrol.",
+      "props": {
+        "kind": "patrol",
+        "motion": "run",
+        "searchlight": true,
+        "dwellDuration": 15
+      }
+    },
+    {
+      "id": "signal-lamp-boat",
+      "label": "Signal lamp boat",
+      "kit": "vehicle.boat",
+      "note": "From Harbor's lamp boat.",
+      "props": {
+        "kind": "lamp",
+        "lamp": "signal",
+        "depthBand": "far"
+      }
+    },
+    {
+      "id": "platform-train",
+      "label": "Platform train",
+      "kit": "vehicle.rail",
+      "note": "The station train without its timetable link.",
+      "props": {
+        "car": "platform",
+        "cars": 3
+      }
+    },
+    {
+      "id": "hi-vis-dock-worker",
+      "label": "Dock worker in hi-vis",
+      "kit": "character.resident",
+      "note": "Like the opening's dockers.",
+      "props": {
+        "kind": "human",
+        "archetype": "dockworker",
+        "garb": "hivis",
+        "district": "harbor"
+      }
+    },
+    {
+      "id": "noodle-vendor",
+      "label": "Noodle vendor",
+      "kit": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "vendor",
+        "act": "vend",
+        "district": "market"
+      }
+    },
+    {
+      "id": "commuter-on-the-phone",
+      "label": "Commuter on the phone",
+      "kit": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "commuter",
+        "act": "phone",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "bench-sleeper",
+      "label": "Sleeper on a bench",
+      "kit": "character.resident",
+      "props": {
+        "kind": "human",
+        "archetype": "sleeper",
+        "act": "doze",
+        "sitting": "mixed"
+      }
+    },
+    {
+      "id": "gate-marshal-bot",
+      "label": "Gate marshal bot",
+      "kit": "character.resident",
+      "note": "From the opening's coast gate.",
+      "props": {
+        "kind": "marshal",
+        "act": "direct"
+      }
+    },
+    {
+      "id": "busker-bot",
+      "label": "Busker bot",
+      "kit": "character.resident",
+      "note": "From the opening's coast.",
+      "props": {
+        "kind": "busker",
+        "act": "play"
+      }
+    },
+    {
+      "id": "rescue-scan-drone",
+      "label": "Rescue scan drone",
+      "kit": "character.resident",
+      "note": "Like the beach drone, without its warning light link.",
+      "props": {
+        "kind": "scandrone",
+        "act": "scan"
+      }
+    },
+    {
+      "id": "patrol-robogull",
+      "label": "Patrol robogull",
+      "kit": "character.resident",
+      "note": "From Harbor's drone gull.",
+      "props": {
+        "kind": "robogull",
+        "act": "scan"
+      }
+    },
+    {
+      "id": "digging-crab",
+      "label": "Digging crab",
+      "kit": "character.resident",
+      "note": "From the beach crab.",
+      "props": {
+        "kind": "crab",
+        "act": "dig",
+        "seed": 5
+      }
+    },
+    {
+      "id": "diner-cook",
+      "label": "Diner cook",
+      "kit": "character.resident",
+      "note": "Whites, a white cap, a towel; at the griddle.",
+      "props": {
+        "kind": "human",
+        "archetype": "cook",
+        "act": "vend",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "diner-waitress",
+      "label": "Diner waitress",
+      "kit": "character.resident",
+      "note": "Diner uniform, apron, notepad.",
+      "props": {
+        "kind": "human",
+        "archetype": "waitress",
+        "act": "stand",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "shop-security",
+      "label": "Shop security",
+      "kit": "character.resident",
+      "note": "Private security, not the Registry: dark SECURITY polo or hi-vis, a radio.",
+      "props": {
+        "kind": "human",
+        "archetype": "security",
+        "act": "stand",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "store-cashier",
+      "label": "Store cashier",
+      "kit": "character.resident",
+      "note": "A store tabard and a name badge.",
+      "props": {
+        "kind": "human",
+        "archetype": "cashier",
+        "act": "stand",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "registry-clerk",
+      "label": "Registry clerk",
+      "kit": "character.resident",
+      "note": "Office shirt, ID on a lanyard; behind a counter.",
+      "props": {
+        "kind": "human",
+        "archetype": "clerk",
+        "act": "stand",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "precinct-officer",
+      "label": "Precinct officer",
+      "kit": "character.resident",
+      "note": "City police: dark olive uniform, radio and badge.",
+      "props": {
+        "kind": "human",
+        "archetype": "police",
+        "act": "stand",
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "stool-regular",
+      "label": "Regular on a counter stool",
+      "kit": "character.resident",
+      "note": "Sits on a 19-unit diner stool, feet dangling.",
+      "props": {
+        "kind": "human",
+        "act": "sit",
+        "sitting": "side",
+        "seat": 19,
+        "district": "downtown"
+      }
+    },
+    {
+      "id": "patient-on-a-cot",
+      "label": "Patient on a cot",
+      "kit": "character.resident",
+      "note": "Lying on the back at bed height 16, a blanket over them.",
+      "props": {
+        "kind": "human",
+        "act": "lie",
+        "seat": 16,
+        "lying": "asleep",
+        "cover": "#6a7a6a"
+      }
+    },
+    {
+      "id": "city-air-traffic",
+      "label": "City air traffic",
+      "kit": "assembly.group",
+      "note": "Seven independent craft and traffic generators. Move the group together; edit each route separately.",
+      "props": {},
+      "children": [
+        {
+          "id": "air-lanes.blimp-1",
+          "type": "vehicle.ad-blimp",
+          "props": {
+            "startX": 2253.6,
+            "altitude": 500,
+            "velocityX": -1.728
+          },
+          "placement": {
+            "x": 563.2,
+            "h": 0,
+            "parallax": 0.12
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-1",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -1680,
+            "maxX": 10920,
+            "altitude": 504.6,
+            "kind": "pod",
+            "direction": 1,
+            "speed": 128.51999999999998,
+            "spacing": 655.1999999999999,
+            "seed": 3,
+            "densityStartX": 3855.6,
+            "densityEndX": 4863.599999999999,
+            "densityBefore": 1,
+            "densityAfter": 0.25,
+            "quietBelowX": 630,
+            "clearance": [],
+            "quietFadeDistance": 504
+          },
+          "placement": {
+            "x": 371.20000000000005,
+            "h": 0,
+            "parallax": 0.42
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-2",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -2000,
+            "maxX": 13000,
+            "altitude": 461.4,
+            "kind": "pod",
+            "direction": -1,
+            "speed": 135,
+            "spacing": 840,
+            "seed": 5,
+            "densityStartX": 4590,
+            "densityEndX": 5790,
+            "densityBefore": 1,
+            "densityAfter": 0.2,
+            "quietBelowX": 750,
+            "clearance": [],
+            "quietFadeDistance": 600
+          },
+          "placement": {
+            "x": 320,
+            "h": 0,
+            "parallax": 0.5
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-3",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -2320,
+            "maxX": 15079.999999999998,
+            "altitude": 411,
+            "kind": "taxi",
+            "direction": 1,
+            "speed": 198.35999999999999,
+            "spacing": 1113.6,
+            "seed": 7,
+            "densityStartX": 5846.4,
+            "densityEndX": 6890.4,
+            "densityBefore": 0.8,
+            "densityAfter": 0,
+            "quietBelowX": 869.9999999999999,
+            "clearance": [],
+            "quietFadeDistance": 696
+          },
+          "placement": {
+            "x": 268.8,
+            "h": 0,
+            "parallax": 0.58
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-4",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -2480,
+            "maxX": 16120,
+            "altitude": 382.20000000000005,
+            "kind": "taxi",
+            "direction": -1,
+            "speed": 178.56,
+            "spacing": 1302,
+            "seed": 9,
+            "densityStartX": 6249.6,
+            "densityEndX": 7365.6,
+            "densityBefore": 0.7,
+            "densityAfter": 0,
+            "quietBelowX": 930,
+            "clearance": [],
+            "quietFadeDistance": 744
+          },
+          "placement": {
+            "x": 243.2,
+            "h": 0,
+            "parallax": 0.62
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.patrol-1",
+          "type": "vehicle.air-patrol",
+          "props": {
+            "centerX": 6960,
+            "altitude": 360,
+            "radiusX": 480,
+            "radiusY": 30,
+            "loopDuration": 13.333333333333334,
+            "beamMode": 1,
+            "beamRange": 288
+          },
+          "placement": {
+            "x": 127.99999999999997,
+            "h": 0,
+            "parallax": 0.8
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.stream-1",
+          "type": "vehicle.drone-stream",
+          "props": {
+            "startX": 8250,
+            "endX": 4250,
+            "spacing": 630,
+            "speed": 162,
+            "startAltitude": 300,
+            "endAltitude": 480,
+            "climbDistance": 240,
+            "fadeDistance": 240
+          },
+          "placement": {
+            "x": 320,
+            "h": 0,
+            "parallax": 0.5
+          },
+          "order": 8,
+          "layer": "distance"
+        }
+      ]
+    },
+    {
+      "id": "classic-sky-traffic",
+      "label": "Distant sky traffic",
+      "kit": "environment.sky-traffic",
+      "note": "One sky traffic generator with typed internal craft settings and a shared route area.",
+      "props": {}
+    },
+    {
+      "id": "two-road-lanes",
+      "label": "Two road traffic lanes",
+      "kit": "assembly.group",
+      "note": "Separate far and near lanes with independent seeds, speed and spacing.",
+      "props": {},
+      "children": [
+        {
+          "id": "far",
+          "type": "street.traffic",
+          "props": {
+            "lane": "far",
+            "direction": 1,
+            "seed": 29,
+            "velocityX": 189,
+            "spacing": 528
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "layer": "playfield",
+          "order": 0
+        },
+        {
+          "id": "near",
+          "type": "street.traffic",
+          "props": {
+            "lane": "near",
+            "direction": -1,
+            "seed": 11,
+            "velocityX": 225,
+            "spacing": 528
+          },
+          "placement": {
+            "x": 0,
+            "h": 0
+          },
+          "layer": "playfield",
+          "order": 1
+        }
+      ]
+    }
   ]
 }

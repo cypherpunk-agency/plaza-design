@@ -282,7 +282,8 @@
   "stage": {
     "facing": {
       "role": "window",
-      "fallback": 180
+      "fallback": 180,
+      "prop": "bearing"
     },
     "values": {
       "hover": {

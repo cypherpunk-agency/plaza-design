@@ -2,7 +2,7 @@
 import type {Anchor,Bounds,AssetDefinition,Properties} from '../core/composition';
 import {frameView,type View} from '../core/view';
 import {screenBounds} from './static-bounds';
-import {flockRects} from '../characters/flock';
+import {flockRegion} from '../characters/flock';
 import {BEACH_FLOCK,RESCUE_AIR,RESCUE_HALF} from './beach';
 type Rect={x:number;y:number;w:number;h:number};
 const n=(p:Properties,k:string)=>Number(p[k]??0);
@@ -18,7 +18,7 @@ export function applyBeachMetadata(elements:AssetDefinition[]):void{
  const get=(id:string)=>elements.find(e=>e.type==='beach.'+id)!;
  const shapes:Record<string,Geometry>={
   marker:(p,_s,v,x,h)=>({x:v.sx(x),y:v.y(h+n(p,'height')),w:n(p,'width'),h:n(p,'height')}),
-  light:(p,_s,v,x,h)=>{const r=n(p,'radius');return{x:v.sx(x)-r,y:v.y(h)-r,w:Math.max(r*2,n(p,'width')),h:Math.max(r*2,n(p,'lightHeight'))};},
+  light:(p,_s,v,x,h)=>{const r=n(p,'radius'),w=p.kind==='window'?(n(p,'width')||12):0,tall=p.kind==='window'?(n(p,'height')||20):0;return{x:v.sx(x)-r-w/2,y:v.y(h)-r-tall/2,w:r*2+w,h:r*2+tall};},
   sky:(_p,s,v,_x,h)=>({x:0,y:0,w:v.viewW,h:Math.max(0,v.y(h+n(s,'horizon'))+1)}),
   city:(_p,s,v,_x,h)=>({x:0,y:v.y(h+n(s,'horizon'))-48,w:v.viewW,h:50}),
   sea:(_p,s,v,_x,h)=>({x:0,y:v.y(h+n(s,'horizon')),w:v.viewW,h:Math.max(0,v.y(h+n(s,'waterline'))-v.y(h+n(s,'horizon'))+1)}),
@@ -26,16 +26,16 @@ export function applyBeachMetadata(elements:AssetDefinition[]):void{
   foreground:(_p,_s,v,_x,h)=>({x:0,y:v.gy-h,w:v.viewW,h:Math.max(60,v.viewH-v.gy+h)}),
   buoy:(_p,_s,v,x,h)=>({x:v.sx(x,.55)-3,y:v.y(h)+Math.round(Math.sin(v.t*.05)*1.2)-12,w:6,h:12}),
   surfing:(_p,s,v,x,h)=>{const top=v.y(h+n(s,'horizon')),height=v.y(h+n(s,'waterline'))-top,c=v.sx(x+Math.sin(v.t*.004)*220,.6),y=Math.round(top+height*.62*.62)-1,face=Math.cos(v.t*.004)>0?1:-1;return union([{x:c-5,y:y-8,w:10,h:9},{x:c-10*face-4,y:y+1,w:10,h:1}]);},
-  swimmer:(p,s,v,x,h)=>{if(s.danger)return{x:0,y:0,w:0,h:0};const d=n(p,'depth'),i=n(p,'phase'),top=v.y(h+n(s,'horizon')),height=v.y(h+n(s,'waterline'))-top,c=v.sx(x+Math.sin(v.t*.006+i)*12,.45+d*.4),y=Math.round(top+height*d*d)+Math.round(Math.sin(v.t*.04+i*2));return{x:c-4,y:y-4,w:8,h:7};},
-  gulls:(_p,_s,v,_x,h)=>union(flockRects(v,BEACH_FLOCK,0,h)),
+  swimmer:(p,s,v,x,h)=>{if(s.danger)return{x:0,y:0,w:0,h:0};const d=n(p,'waterDepthFraction'),i=n(p,'variation'),top=v.y(h+n(s,'horizon')),height=v.y(h+n(s,'waterline'))-top,c=v.sx(x+Math.sin(v.t*.006+i)*12,.45+d*.4),y=Math.round(top+height*d*d)+Math.round(Math.sin(v.t*.04+i*2));return{x:c-4,y:y-4,w:8,h:7};},
+  gulls:(_p,_s,v,_x,h)=>flockRegion(v,BEACH_FLOCK,0,h),
   stairs:body(-200,108,400,108),
   boardwalk:(p,_s,v,x,h)=>({x:v.sx(x),y:v.y(h+4),w:v.sx(x+n(p,'width'))-v.sx(x),h:6}),
   'public-notice':body(-66,96,135,96),sunbed:pixels(-32,53,48,53),kiosk:body(-40,76,80,76),
-  'bar-under':(p,s,v,x,h)=>({x:v.sx(x)+4,y:v.y(h)-64,w:Math.max(153,(n(s,'barWidth')||n(p,'width'))-5)-4,h:64}),
-  'bar-back':(p,s,v,x,h)=>({x:v.sx(x)+8,y:v.y(h)-62,w:Math.max(0,(n(s,'barWidth')||n(p,'width'))-16),h:34}),
-  'bar-shell':(p,s,v,x,h)=>({x:v.sx(x)-16,y:v.y(h)-134,w:(n(s,'barWidth')||n(p,'width'))+32,h:134}),
-  'bar-counter':(p,s,v,x,h)=>({x:v.sx(x)+2,y:v.y(h)-26,w:Math.max(0,(n(s,'barWidth')||n(p,'width'))-4),h:26}),
-  'bar-lights':(p,s,v,x,h)=>({x:v.sx(x)-41,y:v.y(h)-99,w:(n(s,'barWidth')||n(p,'width'))+89,h:99}),
+  'bar-under':(p,_s,v,x,h)=>({x:v.sx(x)+4,y:v.y(h)-64,w:Math.max(153,n(p,'width')-5)-4,h:64}),
+  'bar-back':(p,_s,v,x,h)=>({x:v.sx(x)+8,y:v.y(h)-62,w:Math.max(0,n(p,'width')-16),h:34}),
+  'bar-shell':(p,_s,v,x,h)=>({x:v.sx(x)-16,y:v.y(h)-134,w:n(p,'width')+32,h:134}),
+  'bar-counter':(p,_s,v,x,h)=>({x:v.sx(x)+2,y:v.y(h)-26,w:Math.max(0,n(p,'width')-4),h:26}),
+  'bar-lights':(p,_s,v,x,h)=>({x:v.sx(x)-41,y:v.y(h)-99,w:n(p,'width')+89,h:99}),
   'bar-photo':body(-4,58,8,9),lime:pixels(-14,65,36,48),menu:body(-35,64,70,30),'bar-stool':body(-5,16,10,16),jukebox:body(-13,72,31,72),
   mixer:body(-11,52,22,26),
   crab:(_p,_s,v,x,h)=>({x:v.sx(x+Math.sin(v.t*.01)*10)-9,y:v.y(h+11),w:18,h:12}),
@@ -47,7 +47,7 @@ export function applyBeachMetadata(elements:AssetDefinition[]):void{
   rod:(_p,s,v,x,h)=>{const top=Math.max(52,n(s,'waterline')+6),bottom=Math.min(0,n(s,'waterline')+1);return{x:v.sx(x)-5,y:v.y(h+top)-1,w:63,h:v.y(h+bottom)-v.y(h+top)+2};},
   'post-gull':(_p,s,v,x,h)=>{const since=v.t-n(s,'gullShooed');if(since>=600)return{x:v.sx(x)-8,y:v.y(h+42),w:16,h:42};const f=since/600,out=f<.5?f*2:2-f*2,gx=v.sx(x)+out*160,gy=v.y(h+32+out*90);return union([{x:v.sx(x)-3,y:v.y(h+30),w:6,h:30},{x:Math.round(gx)-12,y:Math.round(gy)-12,w:24,h:12}]);},
  };
- for(const e of elements){const id=e.type.slice(6),shape=shapes[id];if(!shape)throw new Error('Missing beach metadata: '+id);e.bounds=(p,s,c)=>{
+ for(const e of elements){if(['beach.sky','beach.sea','beach.gulls','beach.foreground'].includes(e.type))e.selection='region';const id=e.type.slice(6),shape=shapes[id];if(!shape)throw new Error('Missing beach metadata: '+id);e.bounds=(p,s,c)=>{
   const v=c?.view??fallbackView(),at=c?.placement??{x:0,h:0,scale:1,facing:1,parallax:1},r=shape(p,s,v,at.x,at.h);
   const fallback:Bounds={x:r.x-v.sx(at.x),h:v.y(at.h)-r.y,w:Math.max(0,r.w),tall:Math.max(0,r.h)};
   return screenBounds(c,{...r,w:Math.max(0,r.w),h:Math.max(0,r.h)},fallback);

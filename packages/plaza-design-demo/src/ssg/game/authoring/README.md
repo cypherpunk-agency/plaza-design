@@ -9,11 +9,48 @@ For example, `/editor/#composition=boundary-example` opens all members of the Bo
 in one workspace. The outline shows each source; **Focus** frames a member without leaving that
 workspace. Source edits still use ComposerModel history and the protected source Save/bundle path.
 Composition membership is an authoring fact, separately from the loading status reported by Play.
+
+Switching sequence context retains the Workspace view, zoom and ambient animation clock. Timeline
+panels reveal or hide canvas area without recentering existing content. Each sequence remembers its
+playhead; base editing disables its animated values without restarting clouds or traffic. Workspace
+parallax uses a fixed navigation reference, while Camera preview follows the authored game camera.
+Sequence-controlled lighting, weather and object properties can still differ from their base values.
+
+Rendering settings use **Inherit / On / Off**, with the effective value and its source displayed
+below each control. **Edit source** follows the typed reference to the supplying context.
+The available contexts are:
+
+- **Sequence:** the timeline's **Rendering** button opens a staged inspector. The empty target
+  means the whole picture; choose a chunk for a member-specific override. Apply changes source;
+  Cancel changes nothing. A sequence otherwise inherits its world settings.
+- **Composition:** **Composition rendering** under Chunks and groups opens a staged inspector.
+- **Member/group:** select its outline row or border label, then use **Member rendering** or
+  **Shared group rendering**. These override membership without changing the chunk source.
+- **Chunk:** its Scene → Environment → Chunk rendering controls edit base source values. Composition
+  and sequence overrides can still supersede these during preview or play.
+- **District:** World data → City map → Districts → the district → Rendering or Climate.
+  Place controls bind an optional separate climate, such as Beach, and expose that definition.
+
+Climate weights, fixed weather, report text and forecast seed salt are saved authoring data.
+The seed salts preserve existing forecasts independently of climate registry ordering. A roof
+report is reporting text; use the chunk's ambient/weather geometry to control precipitation.
+Toolbar weather remains a temporary preview override. The clock, weather sampling, daylight
+and grading algorithms are shared engine behavior.
+
+Grading is applied inside the game camera picture, without washing over the surrounding
+workspace. Joined chunk windows resolve overlapping post-effects once in scenery order.
+Travelling light additions use their current projected region rather than being clipped to
+their spawning chunk. **Actor overlay** controls the native player/actor overlay; a character
+embedded in an asset is edited through that asset's visibility. Asset-only cutscenes and the
+vehicle gallery explain unavailable world passes instead of offering switches without inputs.
+
 Hover and click share one hit target. A highlighted object's selectable rectangle, including gaps
 inside a people-flow group or an editor handle, selects that source. Masks and clipping still limit
-the target; smaller targets take priority, with paint order breaking equal-size ties. The native
-pixel query is only a fallback for paint outside conservative rectangles. Proposal/style frames
+the target; smaller targets take priority, with paint order breaking equal-size ties. Drawing-derived
+rectangles are shared by hover, click and outlines; small-target padding is invisible. Proposal/style frames
 retain their own authoring source when borrowing native scene behavior.
+Workspace zoom and framing share the1%–800% range, so wide configured generator routes can be
+framed with both endpoint handles visible. This navigation never changes authored camera data.
 Artwork drags check world connections before updating the preview. A connected floor or other
 anchor stays in place when moving it would separate endpoints; edit the connection first.
 Procedural motion also blocks direct dragging. A rejected drop immediately restores the committed view.
@@ -21,7 +58,7 @@ Procedural motion also blocks direct dragging. A rejected drop immediately resto
 Numeric values throughout the editor support horizontal scrubbing: drag right to increase or left
 to decrease, Shift for 10× increments, Alt for 0.1× increments. Click without dragging to type an
 exact value; Enter applies it. Escape cancels an active drag. Whole-number fields stay whole and
-field ranges are enforced. Artwork drags use the existing transient preview with composition/schema checks during movement;
+field ranges are enforced. Continuous asset quantities use schema steps as scrub increments, while typed source validation owns validity; between-step animation/unit-converted values remain valid. Count/index/seed inputs retain discrete steps. Artwork drags use the existing transient preview with composition/schema checks during movement;
 full prospective game validation runs once on release and rejects the entire edit atomically if
 needed. Other numeric source edits retain their registered validation. Scrubbing pauses editor
 animation at the playhead and creates one Undo command on release. Numeric fields inside an
@@ -147,10 +184,41 @@ remain editor preferences. Standalone sequences still open directly. `ChunkDocum
 source type, `AssetInstance` its placed content and `AssetDefinition` its registered definition;
 stored `kind: composition`, `scene` and `instances` fields retain their source identities.
 
+The context line states the checkpoint's authored start separately from the sequence/time being
+edited and the current viewing mode. The Direction picker does not rewrite a checkpoint.
+It replaces the obsolete, unused Opening sequence preview-setting picker. During sequence editing,
+camera properties live on its Camera inspector; inactive base-camera overrides are hidden.
+Each sequence remembers its last playhead when closed; checkpoint/storyboard links with an
+explicit time still open that time. Reloading the editor's own base-editing URL stays in base
+editing rather than silently reactivating the checkpoint's sequence.
+
+Workspace uses a canvas sized to the available editing area, with a stable on-screen world position
+and scale. Opening/closing/resizing the timeline reveals or hides area at the edges; navigation
+compensates for the canvas centre changing so existing content stays put.
+The game-camera layout keeps its separate logical dimensions. Camera preview looks through
+that frame; changing its sequence/time deliberately changes that picture. Returning to Workspace
+retains its independent navigation. Ordinary game-camera properties and selection never navigate
+the workspace. Locate camera, Focus and Fit are explicit navigation actions.
+
 Checkpoints extend `world/checkpoints.json`; there is no second starting-state source. Choose one from
 the workspace's checkpoint selector. In Play's existing starting-state form, configure its player
 chunk/X, world flags, inventory, scalar inputs, clock/weather, optional composition membership and
 optional sequence/time. Membership overrides belong to that checkpoint, not the source arrangement.
+
+Choose **Play from current preview** to start the selected sequence at its visible playhead, or
+base editing without a sequence. Choose **Play from checkpoint start** to use that checkpoint's
+authored sequence/time instead. Both use checkpoint world-state inputs; this is reconstruction,
+not a capture or reverse simulation of arbitrary campaign progress. Editing navigation does not
+become player placement. The button names its operation: Play preview or Play checkpoint.
+
+In-place Play uses the preview's logical dimensions and render scale through the existing
+GameHost viewport contract. Its isolated realm does not independently choose a responsive pixel
+scale or reserve hidden header/footer space. Resizing the display fits that same game-camera
+picture; the native camera and sequence remain the sole playback owners. Editing timeline,
+labels and outlines are hidden while playing; Play settings, startup errors and live diagnostics
+use the existing right inspector. Stop restores the paused editing picture, sequence/playhead and
+workspace framing. Choosing another checkpoint in Play's settings uses that checkpoint's direction
+context when returning to editing; a checkpoint without a sequence clears the timeline.
 `checkpointSeed` is the shared lowering to current world state. `sequenceInspection` reconstructs
 earlier sequence commands and real mover paths without native triggers/storage/reward observers;
 private Play restores those inputs and receipts through the existing playback controllers.
@@ -167,6 +235,21 @@ sequence, timeline layout/scroll/folds, selection, preview settings and outline 
 remembers its own view; explicit composition/checkpoint/chunk links take precedence. Playback resumes paused. These
 preferences do not save source edits or game progress. The outline defaults to Order, and both
 the layer name and its arrow toggle the layer's contents.
+
+In Workspace, **Follow camera** beside **Locate camera** keeps the authored camera centred
+with a margin while playing or scrubbing. Objects remain editable. Toggle it off to hold the
+current workspace view; pan, wheel/keyboard zoom, Fit or Focus also stop following. The preference
+is remembered with the workspace view. **Camera preview** still shows only the game picture.
+
+**More preview settings → Pixelated scaling** switches between crisp pixel scaling (default)
+and smooth canvas scaling. It applies to the editing and comparison previews and is remembered
+with the workspace view. It does not change authored pixel shapes, canvas resolution or game rendering.
+
+Coast ground, coast walls, street surfaces and the harbor work floor expose **Depth below ground**
+in their asset properties. Their lower edges and floor patterns use world dimensions, so zooming
+out or enlarging the workspace reveals their finite extent rather than stretching them to the screen edge.
+The two Ring through-block buildings expose **Building height**; their roof, facade rows and
+footing have fixed world dimensions rather than following the preview's top or bottom edge.
 
 Chunk badges live in the left outline. Click one to inspect its status in the right inspector.
 Editing previews say **Prepared for editing**, which is not a claim about gameplay residency.
@@ -210,13 +293,43 @@ Explicit `animatable:false`, structured lists and source/configuration fields re
 explicitly opted in. The registry exposes this same eligibility to the evaluator, inspector and grid.
 Outside a sequence, muted disabled diamonds explain that a sequence is required to author keys.
 
-Visible artwork is click-picked by replaying captured paint commands with the same primitive painter
-on a one-pixel probe. No separate drawing implementation is involved. This respects native masks,
-visibility, camera transforms and paint order, including grouped items beyond conservative bounds.
-Hover outlines still use inexpensive bounds. Neighboring visible chunks remain selectable through
-source-qualified IDs. The camera frame edges and label select Camera. Skies (sun, moon, clouds)
+Ordinary artwork is selected through rectangles captured from its actual current drawing commands,
+including transforms, native text metrics and clipping. The drawing runs once; there is no pixel-probe
+replay or per-frame bitmap readback. Cached character sprites supply their occupied pixel extent,
+not their transparent canvas margins; cast shadows are excluded from body outlines. Separate parts
+combine into one object box, and non-drawing assemblies enclose their visible descendants. Curved
+paths retain conservative rectangular extents. Small-target padding affects clicking only, not outlines.
+Dynamic generators use stable **Configured generator region** bounds instead: cloud fields, sky/road
+traffic, flocks, people flows, rain and water surfaces. The box describes the configured route,
+spawn area or surface, including empty intervals between emissions; it does not follow individual
+particles or currently visible members. Changing its configuration/placement changes the region.
+The inspector's always-visible **Visibility** section explains missing drawing separately from
+selection. **Show visibility boundary** reveals the authored drawing window; click a labelled
+boundary to focus its existing Appearance field. These handles use the asset's registered
+drawing-window geometry, not editor-specific clipping calculations.
+
+Far Shore also retains its configured skyline area when its world-X drawing window hides it.
+Resolved rendering reports current drawing bounds separately and explains that restriction,
+so outline selection and double-click framing still work without changing the game picture.
+A drifting blimp contributes its authored spawn position, not an ever-growing travel box. Individual
+vehicles and characters still use their drawn body. Camera-relative sky/water surfaces follow their
+view dimensions; spatial fields keep their authored extents when viewport culling changes.
+Selecting an outline row preserves the outline scroll position. Double-click an asset row or
+its artwork to smoothly frame it in Workspace; this changes only editor navigation, never the
+authored game camera or playhead. Pan/zoom cancels the move; reduced motion frames immediately.
+Neighboring visible chunks remain selectable through source-qualified IDs. The camera frame edges and label select Camera. Skies (atmosphere, sun and moon)
 are ordinary `environment.sky` groups in scene/backdrop sources; they paint once in the shared sky
 pass. Backdrop sky settings are no longer duplicated in a separate metadata form.
+Workspace clears to a neutral dark blue-grey; Camera preview and native Play retain the game background.
+Moving the Sky asset translates its camera picture without stretching it. The sunset's thin clouds
+are now a separate **Cloud layer** asset in the distance layer: From X / To X, Altitude, Height variation,
+Spacing, Drift, Parallax and Seed define a finite world field. The opening's layer is in the shared
+`glide-coast` backdrop. Pan/zoom changes which clouds are visible, not their positions or sizes.
+**Flight lanes** on the Air Lanes asset use typed inspector rows with route start/end, density ramps,
+spacing and craft choice. Patrols, drone streams, blimps and scheduled flights use the same list controls.
+The simpler **Sky traffic** fleet has a fixed Route start / Route length; it no longer wraps at viewport width.
+Cloud placement and traffic wrapping intentionally change with this spatial model; sun/moon projection
+and the authored game camera remain unchanged.
 
 Performance: validators and editor reads share immutable inspection snapshots. Mutable get/list
 reads remain detached. Unchanged source subtrees retain identity, while edits/history/save replace
@@ -496,7 +609,15 @@ editable fields retain their own keys. **Alt+arrows** nudges artwork; Up/Down
 also retain vertical nudging when the scene canvas is focused. Private native Play owns its own
 inputs inside its isolated frame.
 
-The sequence outline includes a selectable **Camera**. Its inspector exposes game-camera X,
+**Home / Pos1** seeks to the sequence start; **End** seeks to its end and pauses. These retain
+normal text-field behavior while typing and do nothing in base editing without a sequence.
+The Direction picker remembers each sequence's last playhead, including when switching to base
+editing and reloading. An explicit checkpoint or storyboard time still opens its authored time.
+
+The outline includes a selectable **Camera** in both sequence and base editing. In base editing
+its preview X/Y and game-camera zoom controls are explicitly local camera settings, not new source entities or
+keyframes; the sky uses this same frame. The guide can be located, selected and previewed even
+without a sequence. During a sequence, its inspector exposes game-camera X,
 height and zoom at the playhead, links to their tracks and the active shot; changing a value
 sets a keyframe through the same history/save path. The camera-frame label also selects it.
 These controls are separate from workspace navigation.
@@ -521,7 +642,7 @@ preview and outline, independently of the inspected object. Scene borders can be
 Sequence editing defaults to Workspace: its independent editor camera stays fixed while the
 authored camera frame animates through the world. Wheel zooms, Shift+wheel pans horizontally, and
 middle/right drag pans both axes. Zoom range is 5–800%; referenced world scenery outside the shot
-can be inspected directly. Fit restores the initial workspace view; Frame camera explicitly
+can be inspected directly. Fit restores the initial workspace view; Locate camera explicitly
 centres and fits the current shot. The Sequence view selector switches to Camera preview for the
 finished player picture, including camera movement, framing, fades and cards. Changing modes or
 workspace navigation never writes camera tracks or progression. The closing playFit/height blend
@@ -618,3 +739,195 @@ The verified prologue/editor tasks and exact review steps are listed in
 The Harbor shuttle remains after checkout and through the commute; the ordinary line takes over
 once the player enters home (`opening:flat`), away from the platform camera. Phase arrival speech
 and goals apply on seamless crossings as well as ordinary entrances.
+
+
+## Adding assets consistently
+
+Use the existing registered asset/source workflow and the
+[direct-manipulation and naming proposal](../docs/design/ASSET-DIRECT-MANIPULATION.md).
+The agreed inspector groups are Transform, Shape / Area, Generation, Appearance, Motion,
+Depth, and Visibility & Drawing. Name fields by their actual meaning; specify units/ranges
+accurately and reuse existing typed structured controls. Placement, generated dimensions,
+routes and drawing restrictions remain distinct. Assets should declare meaningful spatial
+controls or explain why edge resizing does not apply; do not infer handles from field names.
+Authored fields require the implemented semantic contract in `art/core/fields.ts`. The production
+registry validates metadata, defaults and `validateProperties`. Reuse `distance`, `count` and the
+semantic decorators; do not infer units from labels. `AssetDefinition.spatial` uses pure controls
+from `art/core/spatial.ts`: rectangle edges/corners, range bands, routes, signed endpoints and
+chunk drawing-window boundaries. A handle returns only changed properties plus an optional local
+origin offset, preserving the opposite edge. Native capture supplies projection, parent transforms
+and facing; the existing viewport owns snapping, validation, cancel and history. Derived layout
+values belong in `derived()`, never writable duplicate properties.
+
+Building height and floorHeight use `art/buildings/layout.ts`: ground/roof reservations, complete
+floors and remainder share one layout. Traffic lanes, patrols and streams are individual assets.
+To reuse an arrangement, select its ordinary group and save a preset in the inspector. The preset
+stores reusable children without live bindings or external attachments. Add asset → Assembly →
+City air traffic inserts seven independently editable children; one Undo removes that insertion.
+
+Keep source/default/preset/sequence-target/key-value/binding conversions atomic when changing a
+property name or unit. Seconds/degrees/spatial distances are distinct; native drawing kernels can
+retain explicit internal frame/radian parameters. Do not add current-source compatibility aliases.
+The asset-contract acceptance ledger records completed coverage and real limits;use the current
+authoring contract rather than retired A1 proposal snapshots.
+
+Asset migration and geometry details:
+
+- Scope a conversion to the actual asset definition and its native call sites. A module can contain
+  several assets with a property called phase whose meanings differ. Update source uses, presets,
+  tracks and any field-pruning lists together. Test native pixels as well as registered defaults.
+- `SpatialContract.handles(props, context)` can use the captured native context. Ordinary handles
+  use local source units; chunk drawing windows declare chunk space. Camera-space primitives may
+  explicitly declare screen space. Do not reconstruct a camera from its X value.
+- `verticalRangeControls` edits two authored elevations; `rectangleControls` edits a dimension.
+  An elevation called height does not thereby become a resizable height. `repeatedWidthControls`
+  edits cell width through the complete arrangement edge while keeping count and seed fixed.
+  `viewportElevationControls` places elevation controls in the captured native viewport for
+  full-width surfaces. `repetitionExtentControl` edits a chunk-space repeat limit, such as gap
+  warnings or girder rivets; it does not resize the viewport-filling slab. Describe that distinction
+  in the field label/group, and validate related elevations through the asset's normal validator.
+- `environment.sky-traffic` is one selectable camera-space generator with typed craft settings.
+  Its particles remain internal; they do not need individual scene instances. `street.traffic`
+  is one independently configured road lane. Ordinary groups/presets combine independent lanes,
+  patrols and streams; keep each generator's particle configuration with that generator.
+
+
+
+Shared artwork dimensions use existing source bindings. The inspector shows the effective value and
+an **Edit shared Width/Height** button when another asset supplies a dimension. Selecting that source
+keeps the workspace view. A linked dimension has no ineffective numeric input, resize handle or
+property track. Add an independent copy to use its own dimensions. Native frame preparation resolves
+world-space linked dimensions into the asset's local units once, including parent scale; the source
+JSON retains the authored fallback and binding names, never a copied live value.
+
+For native artwork anchored to a screen-top inset, use `screenBaselineControls` with the existing
+rectangle control and declare the inset as a screen position. It converts vertical origin adjustments
+into that inset so opposite edges stay fixed; ground placement Y is not a substitute. An independent
+`screenInsetControl` moves the authored inset. Keep this handle clear of body resize handles. Pure
+artwork factories that only close over input values need no serialized-dimension cache; avoid caches
+that retain every intermediate width/height from an editor drag.
+
+Radial sources use `radiusControl`: this edits the named radius/reach from its centre, rather than
+pretending it is a rectangular body width. Lighting sources painted by the shared illumination pass
+use the existing `selection: 'region'` contract so a silent local draw does not erase their controls.
+Window-light regions include the source window plus glow; only show window-size controls in window
+mode with explicit dimensions. Describe fixed device interaction regions as such: changing a spot's
+width/height does not regenerate the device skin. Font measurements use `fontSize`, not physical width.
+
+Linked spatial fields normally use positive values, with zero selecting their local fallback. A genuine zero elevation declares stateOverride.allowZero and uses a distinct unset sentinel (the train ceiling uses -1). Declare the binding's actual space: a local
+ceiling/fascia/landing parameter remains local when its object scales; a prepared world dimension
+normalizes once through resolved scale. Neither needs a paint/anchor/bounds fallback calculation.
+Keep non-body inputs explicit: Mall stock uses `drawingWidth` for culling, and its reflection uses
+`shopWidth` as a layout reference. These are distinct from a room's physical width. Native factories
+which build structured/seeded geometry may retain an existing bounded cache; keep its lifecycle in
+one helper rather than repeating allocation/invalidation paths for every piece.
+
+`circleControls` edits a generated circle's radius while preserving its fixed border, opposite edge
+and perpendicular centre; its source origin is the lower-left corner. Use `radiusControl` for a
+centred radius/reach parameter instead. `worldElevationControl` represents an absolute elevation
+such as a pendant's ceiling attachment; `axisControl` represents a local elevation or displacement.
+Rectangle and repeated-width controls accept a pure derived-baseline callback. Keep culling based
+on all configurable children: moving a terminal chair away from its desk must not hide that chair.
+
+Explicit framing works for an offscreen world member without moving the authored camera: project its
+canonical origin through the captured native view/worldZones, navigate there, then use its normal
+captured artwork bounds. Do not fabricate a second offscreen renderer or guess asset positions from
+camera X. Awaited editor preview requests finish on an accepted frame after coalescing; callers may
+then read captured geometry. Continuous playback does not have to stop or become idle for that wait.
+
+Beach pier controls edit deck width and railing length independently. Beach light sources use
+`width`/`height` for window dimensions and `radius` for glow reach; the shared lighting pass
+paints them. Their selectable region includes both aperture and glow. Non-window modes expose
+only the radius handle. Source dimensions and opposite-edge edits use normal attachment,
+projection and Undo paths.
+
+For source depth below a fixed baseline, use depthControl; its lower handle changes the source
+extent without moving the top. Viewport-wide sea/sky elevation controls use the captured View,
+not guessed object width. Absolute world-elevation inputs (such as the reflection kernel) use
+worldElevationControl and declare space world; they do not add placement Y. Repetition-only
+limits belong in Visibility & Drawing: dockwork.ground drawingWidth changes its lane dashes,
+while the slab fills the viewport. Sign chain/rod handles edit only mount lengths; text-fitted
+blade signs expose typography instead of independent body dimensions. axisControl's optional
+fixed offset locates a source endpoint above a body without saving another property.
+
+Downtown interior fittings qualify subpart dimensions: windowWidth/deskWidth/barrierWidth,
+conduitLength/loomLength/poleHeight; mailbox bottomY and glassTopY are positions. Fixed-count
+repetition handles change cell width while retaining count/seed. Conditional controls must hide
+inputs ignored by the chosen mount/part. axisControl options can specify a source-derived
+endpoint offset and direction (-1 for westward extents); values remain ordinary positive source
+lengths. Alarm reachScale is a factor for light/beam extent, not a physical housing dimension.
+
+Palms author height/lean in world units. The existing pixel kernel receives their ART conversion;
+use the single two-axis trunk-tip handle so height and lean do not overlap as separate controls.
+Generated subpart regions can declare a source-derived rectangle offset (the hose puddle's
+spray/flow centre). Keep configured extents stable instead of measuring current particles.
+Footbridge deckY is a position and roof height is clearance above it; landing pads conditionally
+expose visiting hoverHeight or parked powerPostX. Boats use an explicit world waterLevel and
+stable configured hull bounds. Character flows edit routes/boarding through the existing typed
+flow editor; riderLift is a riding offset and is not an independently resizable flow envelope.
+
+Train ceiling light/camera/pole heights bind to the ordinary scene.trainCeiling stage value,
+whose source is the ceiling marker placement H. Window frames, seats and staff doors do not
+accept unused prepared train frames. Linked heights display read-only; Edit shared selects the
+ceiling source while preserving workspace navigation. Binding provenance for stage x/h reads
+uses placement.x/placement.h; property reads continue to use their authored property names.
+
+For an existing kernel with internal depth, atDepthControls projects through captured View.sx;
+choose native pixel-sized geometry or world endpoints to match the kernel. It uses the existing
+scale/mirror pivot and pointer projection. Never reconstruct editor-camera corrections from
+View.cam. Bounds use the same View through screenBounds. Artwork parallax means the kernel's
+internal depth; placement parallax remains its composition anchor depth. New single-depth
+assets should normally use placement parallax rather than adding another independent input.
+Building-row handles edit configured distribution limits, not the current generated silhouette.
+Cloud-sea horizonY is an elevation; depthBelowDeck and maxTowerHeight are lengths. Keep its
+selection region configured/stable rather than following each animated billow.
+
+Transit cabin controls distinguish ceilingHeight, roofHeight and maxDoorHeight. The inspector
+shows the effective capped door height. Full train length includes every car and intervening
+gangway; dragging its outer edge changes the repeated car length while keeping the opposite
+edge, car count and gangway length fixed. Prepared train movement offsets controls in the same
+captured frame and is never baked into authored placement. Station minStreetY and stair
+maxCeilingHeight are source limits; derived values show the effective native elevations.
+Selected resize handles take precedence over camera/chunk border hit targets.
+
+Below-ground assets use positive depthBelowStreet and coneDepth lengths; their controls move
+in negative Y. The metro entrance's stair-foot handle changes run/depth together, while its
+hall-end handle changes hallWidth. A Harbor forklift route endpoint changes travel distance,
+not body dimensions. Crane cargo width handles follow the captured crane pose and are absent
+when it carries no load. The Downtown alley uses its authored doorOffset directly, without a
+self-bound visual copy.
+
+Harbor Shift uses explicit maxTowerHeight/minTowerHeight, trolleyX/dropLength, edgeY/depthBelowGround,
+columnGap, wheelOffsetX and roofHeight/roofReach. Controls follow native caps, mirrored shelter
+sides, captured trolley motion and visibility. Generated limits/spacing remain distinct from
+particle selection or physical body size. Outdoor platform/portal edges edit length/width;
+single-flight controls edit the starting point while velocity and timing remain independent.
+
+Every registered production asset explicitly supplies spatial controls or fixedGeometry(reason).
+Fieldless assets are included; registry admission no longer supplies an automatic exclusion.
+Through-block buildings use physical height above bottomY, fixed floorHeight and derived upper
+floor count/remainder. Ring/viaduct endpoints use startX/endX; drawing windows use drawingMinX/
+drawingMaxX, distinct from generated extent. pendingRegistryInputs is the shared dependency rule
+for semantic validation and immutable preview-registry reuse. Never cache mutable source maps or
+skip a changed real scene/world/gameplay input to make edits appear faster.
+
+Structured list/array controls select, reorder, add and remove internal settings through ordinary
+ComposerModel edits. Their transient row keys follow those operations and the model's retained
+Undo/Redo history; they are not scene identities or a second property store. Changing the selected
+asset releases that UI cache. Structured fields use grouped forms rather than a label that targets
+the first nested button. Nested configuration is not independently keyframeable; registry admission
+rejects that unsupported declaration. Authored units live solely in Field.semantics.unit; reuse
+semantic constructors and colorField instead of redundant display-unit hints or local constructors.
+Compass angles use bearing (degrees), distinct from placement facing (−1/+1). Native scene-stage
+orientation sources explicitly reference bearing; SceneDef.facing is the existing scene output.
+Letter sizing uses fontSize, distinct from physical width/height, pixelSize and transform scale.
+Resize handles open and highlight their registered inspector fields. During dragging,a compact
+viewport readout shows validated values/units; canvas focus preserves Escape cancellation.
+Release focuses the matching field for exact entry. The readout reads captured/pending values;
+it must never create an independently writable property copy or trigger full panel refreshes
+on each pointer movement.
+Use role-qualified colors:paintColor for painted surfaces,lightColor for emitted light,textColor
+for lettering and fillColor for silhouettes; paletteIndex is a discrete palette selection.
+Palm trunkHeight/leanX describe its actual shaping inputs. Spire and reflection generatorScale
+are factors,distinct from placement scale. Flock wrapAfterParallax is boolean; native screenWrap
+is a compiler option. Swimmer waterDepthFraction places it across the water's perspective band.

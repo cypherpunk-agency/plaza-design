@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {visibilityMessage,windowEdges,framingBounds} from '../../src/ssg/game/authoring/visibility';
+import {art} from '../../src/ssg/game/art';
+import {frameView} from '../../src/ssg/game/art/core/view';
+import {projectedBounds} from '../../src/ssg/game/art/core/geometry';
+const a={visible:true,paintOrder:1,boundsSource:'region',bounds:{x:10,y:20,width:200,height:40},drawingBounds:{x:0,y:0,width:0,height:0},drawingWindow:{bounds:{x:4680,y:0,width:900000,height:540},from:'drawingMinX',to:'drawingMaxX'}} as any;
+assert.match(visibilityMessage(a),/Outside its permitted drawing area/);
+assert.match(visibilityMessage(undefined,'Hidden with outline eye'),/outline eye/);
+assert.match(visibilityMessage({...a,visible:false,reason:'Actor pose is hidden'}),/Actor pose is hidden/);
+assert.deepEqual(windowEdges(a),[{field:'drawingMinX',x:4680},{field:'drawingMaxX',x:904680}]);
+assert.deepEqual(framingBounds({...a,bounds:{x:0,y:0,width:0,height:0},framingBounds:a.bounds}),a.bounds);
+const shore=art.get('coast.far-shore'),props=art.properties(shore.type,{drawingMinX:4680,drawingMaxX:7000}),placement={x:2330.8,h:0,scale:1,facing:1 as const,parallax:.12},view={...frameView(0),cam:4000,viewW:960,viewH:540,gy:486,sx:(x:number,p=1)=>x-4000*p,y:(h:number)=>486-h};
+const window=shore.drawingWindow!(props,{}, {view,placement});
+assert.equal(window.from,'drawingMinX');assert.equal(window.to,'drawingMaxX');
+assert.deepEqual(projectedBounds(view,placement,window.bounds),{x:680,y:0,width:2320,height:540},'Boundary uses the same world projection as the native clipping window, independent of skyline parallax');
+console.log('PASS: missing/hidden/empty drawing explanations, framing fallback and source-projected drawing boundaries.');

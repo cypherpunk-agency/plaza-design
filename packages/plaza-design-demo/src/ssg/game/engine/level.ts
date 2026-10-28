@@ -143,7 +143,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     const turn = shape === 'switchback' ? [low, { x: p.x + run, h: (low.h + high.h) / 2 }, high] : undefined;
     // an escalator runs from its foot to its top ('up') or back; physically that may be downhill
     const footToTop = (r.props.direction ?? 'up') !== 'down', uphill = top.h >= foot.h;
-    const speed = Number(r.props.speed ?? LEVEL_DEFAULTS.stairSpeed);
+    const speed = r.props.speed===undefined?LEVEL_DEFAULTS.stairSpeed:Number(r.props.speed)/60;
     return { id: r.instance.id, kind: stairs ? 'stairs' : 'escalator', low, high, runs: stairs ? 'both' : footToTop === uphill ? 'up' : 'down', speed, ...tuned('reach', r.props.reach, LEVEL_DEFAULTS.reach), ...insideOf(r.instance.id),
       ...(shape !== 'flight' ? { shape } : {}), ...(turn ? { path: turn } : {}) } as LevelLink;
   });
@@ -155,7 +155,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
     const crossed = floors.filter(f => p.x >= f.x && p.x <= f.x + f.w && f.h >= bottom - 0.75 && f.h <= bottom + height + 0.75).sort((a, b) => a.h - b.h || Number(!a.building) - Number(!b.building));
     const stops = crossed.filter((f, i) => i === 0 || !near(f.h, crossed[i - 1].h)).map(f => ({ h: f.h, floor: f.id, label: f.label || f.id }));
     const device = String(r.props.device ?? '').trim(), own = buttons.filter(b => String(b.props.lift ?? '').trim() === r.instance.id).map(b => ({ id: b.instance.id, h: b.placement.h }));
-    return { id: r.instance.id, x: p.x, w: Number(r.props.width) * p.scale, bottom, height, stops, ...(device ? { device } : {}), ...tuned('doorMs', r.props.doorMs, LEVEL_DEFAULTS.doorMs), ...insideOf(r.instance.id), ...(own.length ? { buttons: own } : {}), ...(r.props.style === 'broken' ? { broken: true as const } : {}) };
+    return { id: r.instance.id, x: p.x, w: Number(r.props.width) * p.scale, bottom, height, stops, ...(device ? { device } : {}), ...tuned('doorMs',r.props.doorDuration===undefined?undefined:Number(r.props.doorDuration)*1000,LEVEL_DEFAULTS.doorMs), ...insideOf(r.instance.id), ...(own.length ? { buttons: own } : {}), ...(r.props.style === 'broken' ? { broken: true as const } : {}) };
   });
   // rooms that open on their own (a room that opens always just shows with its building); their building is the interior they are attached to
   const rooms: LevelRoom[] = rows.filter(r => r.element.type === 'level.room' && (r.props.reveal === 'arrival' || r.props.reveal === 'never')).map(r => {
@@ -174,7 +174,7 @@ export function compileLevel(rows: readonly Resolved[]): LevelSource | undefined
       ...(key ? { key } : {}), ...(flag ? { flag } : {}), ...(when ? { when: structuredClone(when) } : {}), refuse: String(r.props.refuse ?? '').trim() || 'ACCESS DENIED.', ...insideOf(r.instance.id), ...(r.props.closes === true ? { closes: true as const } : {}) };
   });
   const hs = floors.length?floors.map(f => f.h):[0], revealSpeed: Record<string, number> = {}, ghost: Record<string, number> = {};
-  for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealSpeed, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }
+  for (const r of rows) if (r.element.type === 'level.shell') { const b = String(r.props.building ?? ''); Object.assign(revealSpeed, tuned(b, r.props.revealRate===undefined?undefined:Number(r.props.revealRate)/60, LEVEL_DEFAULTS.revealSpeed)); Object.assign(ghost, tuned(b, r.props.ghost, LEVEL_DEFAULTS.ghost)); }
   const vehicles=compileLevelVehicles(rows),shells=group(rows,'level.shell');
   for(const lift of lifts){const source=liftVehicle(lift,'here');if(source)vehicles.push({id:source.id,source,lift:lift.id,x:0,h:0});}
   for(const v of vehicles){if(v.lift)continue;shells[v.id]=v.source.shell??[];ghost[v.id]=v.source.ghost??.12;revealSpeed[v.id]=v.source.revealSpeed??.08;}

@@ -7,7 +7,7 @@
       "type": "laundromat.background",
       "props": {
         "width": 880,
-        "ceiling": 150
+        "height": 150
       },
       "placement": {
         "x": 0,
@@ -39,7 +39,7 @@
       "type": "laundromat.room",
       "props": {
         "width": 880,
-        "ceiling": 150
+        "height": 150
       },
       "placement": {
         "x": 0,
@@ -72,7 +72,7 @@
       "props": {
         "width": 192,
         "height": 84,
-        "facing": 180
+        "bearing": 180
       },
       "placement": {
         "x": 640,
@@ -156,7 +156,7 @@
       "props": {
         "width": 192,
         "height": 84,
-        "facing": 180
+        "bearing": 180
       },
       "placement": {
         "x": 0,
@@ -791,7 +791,7 @@
       "props": {
         "first": "MINE",
         "second": "SINCE TUE",
-        "tilt": -0.06
+        "tiltAngle": -3.437746770784939
       },
       "placement": {
         "x": 4,
@@ -828,7 +828,7 @@
       "props": {
         "first": "WAKE ME",
         "second": "AT DONE",
-        "tilt": 0.05
+        "tiltAngle": 2.8647889756541165
       },
       "placement": {
         "x": -2,

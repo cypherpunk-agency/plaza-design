@@ -30,7 +30,8 @@ export function drawMarketLaundry(x:CanvasRenderingContext2D,v:View,origin:numbe
   sign(x, t, 'LAUNDRY', sx(F.x0 + w / 2), y(106), C, { size: 8, phase: 70 });
   camera(x, v, { x: F.door - 2, h: 64, facing: -1, phase: 12 });
 }
-export function drawMarketBulbs(x:CanvasRenderingContext2D,v:View,origin:number,width:number){const {sx,y,t}=v,a=sx(origin,.85),b=sx(origin+width,.85);if(b<0||a>v.viewW)return;
+export const MARKET_BULB_PARALLAX=.85;
+export function drawMarketBulbs(x:CanvasRenderingContext2D,v:View,origin:number,width:number){const {sx,y,t}=v,a=sx(origin,MARKET_BULB_PARALLAX),b=sx(origin+width,MARKET_BULB_PARALLAX);if(b<0||a>v.viewW)return;
 x.strokeStyle='rgba(40,24,14,1)';x.beginPath();x.moveTo(a,y(150));x.quadraticCurveTo((a+b)/2,y(112),b,y(150));x.stroke();
 for(let k=1;k<11;k++){const f=k/11,bx=a+(b-a)*f,by=(1-f)*(1-f)*y(150)+2*f*(1-f)*y(112)+f*f*y(150);x.fillStyle=(k+Math.floor(t/50))%7===0?'rgba(255,217,165,.2)':k%2?'rgba(255,190,110,.7)':'rgba(255,136,0,.6)';x.fillRect(Math.round(bx)-1,Math.round(by)+1,2,3);}}
 export function drawMarketRules(x:CanvasRenderingContext2D,v:View,origin:number){const nb=v.sx(origin);if(onScreen(v,nb-40,80))notice(x,v.t,nb,v.y(78),44,30,['MARKET','RULES']);}

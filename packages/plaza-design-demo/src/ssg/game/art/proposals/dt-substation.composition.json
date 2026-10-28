@@ -21,8 +21,8 @@
         "seed": 11,
         "minHeight": 70,
         "maxHeight": 150,
-        "alpha": 0.18,
-        "litChance": 0.12
+        "litChance": 0.12,
+        "edgeOpacity": 0.18
       },
       "placement": {
         "x": 0,
@@ -39,8 +39,8 @@
         "seed": 23,
         "minHeight": 50,
         "maxHeight": 120,
-        "alpha": 0.3,
-        "litChance": 0.18
+        "litChance": 0.18,
+        "edgeOpacity": 0.3
       },
       "placement": {
         "x": 0,
@@ -88,8 +88,8 @@
         "skin": "tenement",
         "density": 0.8,
         "seed": 501,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 0,
@@ -118,8 +118,8 @@
         "skin": "concrete",
         "density": 0.6,
         "seed": 502,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 160,
@@ -149,8 +149,8 @@
         "balconies": "some",
         "density": 0.7,
         "seed": 503,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1110,
@@ -180,8 +180,8 @@
         "skin": "panel",
         "density": 0.5,
         "seed": 504,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1270,
@@ -283,9 +283,9 @@
         "fascia": false,
         "density": 0.4,
         "seed": 505,
-        "floors": 5,
-        "top": 0,
-        "ground": 70
+        "height": 400,
+        "groundFloorHeight": 70,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 330,
@@ -381,13 +381,13 @@
       "props": {
         "width": 140,
         "height": 150,
-        "phases": 3,
         "down": 90,
         "out": "left",
         "outLength": 360,
         "outDrop": 30,
         "plate": "DANGER · KEEP OFF",
-        "power": "on"
+        "power": "on",
+        "phaseCount": 3
       },
       "placement": {
         "x": 370,
@@ -402,13 +402,13 @@
       "props": {
         "width": 140,
         "height": 150,
-        "phases": 3,
         "down": 90,
         "out": "left",
         "outLength": 44,
         "outDrop": 0,
         "plate": "",
-        "power": "on"
+        "power": "on",
+        "phaseCount": 3
       },
       "placement": {
         "x": 560,
@@ -510,8 +510,8 @@
       "props": {
         "width": 330,
         "height": 70,
-        "legs": 82,
-        "rail": 24
+        "rail": 24,
+        "legSpacing": 82
       },
       "placement": {
         "x": 560,
@@ -597,9 +597,9 @@
         "state": "normal",
         "mimic": true,
         "desk": true,
-        "tell": 2,
         "power": "on",
-        "seed": 4
+        "seed": 4,
+        "highlightedIndex": 2
       },
       "placement": {
         "x": 908,
@@ -671,12 +671,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5101,
         "act": "read",
         "archetype": "technician",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1024,
@@ -780,7 +780,7 @@
       "type": "sign.camera",
       "props": {
         "pole": true,
-        "phase": 30
+        "blinkTimeOffset": 0.5
       },
       "placement": {
         "x": 460,
@@ -798,11 +798,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5201,
         "act": "walk",
-        "range": 220
+        "range": 220,
+        "depthBand": "play"
       },
       "placement": {
         "x": 100,
@@ -816,11 +816,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5202,
         "act": "smoke",
-        "archetype": "punk"
+        "archetype": "punk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1150,
@@ -834,8 +834,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 338,
@@ -849,11 +849,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "back",
         "district": "downtown",
         "seed": 5203,
         "act": "walk",
-        "range": -300
+        "range": -300,
+        "depthBand": "back"
       },
       "placement": {
         "x": 700,
@@ -867,11 +867,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 5204,
         "act": "stand",
-        "archetype": "technician"
+        "archetype": "technician",
+        "depthBand": "play"
       },
       "placement": {
         "x": 580,

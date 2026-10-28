@@ -57,10 +57,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.8,
-        "fill": "#0a0812",
         "edge": 0.06,
-        "traffic": false
+        "traffic": false,
+        "generatorScale": 0.8,
+        "fillColor": "#0a0812"
       },
       "placement": {
         "x": 680,
@@ -75,13 +75,13 @@
       "type": "building.shophouse",
       "props": {
         "width": 110,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 501,
         "goods": "tea",
         "board": "TEA",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 0,
@@ -95,15 +95,15 @@
       "type": "building.shophouse",
       "props": {
         "width": 116,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 502,
         "goods": "home",
         "board": "",
         "lanterns": 0,
         "wall": "#232b2c",
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 110,
@@ -117,13 +117,13 @@
       "type": "building.shophouse",
       "props": {
         "width": 104,
-        "floors": 2,
-        "storey": 90,
-        "ground": 92,
         "seed": 503,
         "goods": "lanterns",
         "board": "",
-        "lanterns": 2
+        "lanterns": 2,
+        "height": 302,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 226,
@@ -137,13 +137,13 @@
       "type": "building.shophouse",
       "props": {
         "width": 104,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 504,
         "goods": "pottery",
         "board": "",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 746,
@@ -157,14 +157,14 @@
       "type": "building.shophouse",
       "props": {
         "width": 96,
-        "floors": 2,
-        "storey": 90,
-        "ground": 92,
         "seed": 505,
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 302,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 850,
@@ -178,14 +178,14 @@
       "type": "building.shophouse",
       "props": {
         "width": 94,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 506,
         "goods": "shrine",
         "board": "",
         "lanterns": 1,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 946,
@@ -565,14 +565,14 @@
       "type": "building.shophouse",
       "props": {
         "width": 168,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 520,
         "goods": "tailor",
         "board": "TAILOR",
         "lanterns": 2,
-        "wall": "#3a2c16"
+        "wall": "#3a2c16",
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 330,
@@ -590,15 +590,15 @@
       "type": "building.shophouse",
       "props": {
         "width": 136,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 521,
         "goods": "home",
         "board": "",
         "lanterns": 0,
         "wall": "#3a2c16",
-        "shutters": "mixed"
+        "shutters": "mixed",
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 498,
@@ -616,16 +616,16 @@
       "type": "building.shophouse",
       "props": {
         "width": 112,
-        "floors": 1,
-        "storey": 90,
-        "ground": 92,
         "seed": 522,
         "goods": "closed",
         "board": "",
         "lanterns": 0,
         "wall": "#3a2c16",
         "gallery": false,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 212,
+        "groundFloorHeight": 92,
+        "floorHeight": 90
       },
       "placement": {
         "x": 634,
@@ -717,14 +717,14 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 731,
         "archetype": "elder",
         "act": "sit",
         "sitting": "side",
-        "hair": "brim"
+        "hair": "brim",
+        "depthBand": "play"
       },
       "placement": {
         "x": 432,
@@ -742,13 +742,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 752,
         "archetype": "elder",
         "act": "sweep",
-        "hair": "scarf"
+        "hair": "scarf",
+        "depthBand": "play"
       },
       "placement": {
         "x": 520,
@@ -766,13 +766,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 763,
         "archetype": "kid",
         "act": "read",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 588,
@@ -790,8 +790,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 380,
@@ -809,12 +809,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 788,
         "act": "walk",
-        "range": -200
+        "range": -200,
+        "depthBand": "play"
       },
       "placement": {
         "x": 900,

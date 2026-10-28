@@ -217,7 +217,7 @@
       "type": "sign.camera",
       "props": {
         "pole": true,
-        "phase": 3
+        "blinkTimeOffset": 0.05
       },
       "placement": {
         "x": 900,
@@ -252,11 +252,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 900,
         "archetype": "guard",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 560,
@@ -270,12 +270,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 953,
         "archetype": "office",
         "act": "walk",
-        "range": 500
+        "range": 500,
+        "depthBand": "play"
       },
       "placement": {
         "x": 740,
@@ -289,11 +289,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1006,
         "archetype": "inspector",
-        "act": "phone"
+        "act": "phone",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1150,
@@ -307,11 +307,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1059,
         "archetype": "plazastaff",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -325,9 +325,9 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "play",
         "act": "carry",
-        "range": 200
+        "range": 200,
+        "depthBand": "play"
       },
       "placement": {
         "x": 120,
@@ -341,9 +341,9 @@
       "type": "character.resident",
       "props": {
         "kind": "porter",
-        "depth": "play",
         "act": "walk",
-        "range": 300
+        "range": 300,
+        "depthBand": "play"
       },
       "placement": {
         "x": 340,
@@ -357,8 +357,8 @@
       "type": "character.resident",
       "props": {
         "kind": "sweeper",
-        "depth": "play",
-        "act": "sweep"
+        "act": "sweep",
+        "depthBand": "play"
       },
       "placement": {
         "x": 480,
@@ -372,8 +372,8 @@
       "type": "character.resident",
       "props": {
         "kind": "marshal",
-        "depth": "play",
-        "act": "direct"
+        "act": "direct",
+        "depthBand": "play"
       },
       "placement": {
         "x": 640,
@@ -387,9 +387,9 @@
       "type": "character.resident",
       "props": {
         "kind": "cleaner",
-        "depth": "play",
         "act": "walk",
-        "range": 200
+        "range": 200,
+        "depthBand": "play"
       },
       "placement": {
         "x": 820,
@@ -403,9 +403,9 @@
       "type": "character.resident",
       "props": {
         "kind": "deliverybot",
-        "depth": "play",
         "act": "roll",
-        "range": 500
+        "range": 500,
+        "depthBand": "play"
       },
       "placement": {
         "x": 930,
@@ -419,8 +419,8 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
-        "act": "scan"
+        "act": "scan",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1100,
@@ -434,10 +434,10 @@
       "type": "character.resident",
       "props": {
         "kind": "valet",
-        "depth": "play",
         "act": "walk",
         "range": -180,
-        "seed": 4
+        "seed": 4,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1250,
@@ -451,8 +451,8 @@
       "type": "character.resident",
       "props": {
         "kind": "valet",
-        "depth": "play",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1450,
@@ -466,8 +466,8 @@
       "type": "character.resident",
       "props": {
         "kind": "minidrone",
-        "depth": "play",
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1530,
@@ -481,15 +481,15 @@
       "type": "vehicle.road",
       "props": {
         "kind": "sedan",
-        "paint": "#101114",
         "stripe": "#d8b45a",
         "autonomous": true,
-        "depth": "back",
         "motion": "loop",
-        "direction": "right",
-        "speed": 1.6,
-        "lane": 2000,
-        "lights": true
+        "direction": 1,
+        "speed": 96.0,
+        "lights": true,
+        "depthBand": "back",
+        "routeLength": 2000,
+        "paintColor": "#101114"
       },
       "placement": {
         "x": 0,
@@ -503,15 +503,15 @@
       "type": "vehicle.road",
       "props": {
         "kind": "cab",
-        "paint": "#e8e4da",
         "autonomous": true,
-        "depth": "near",
         "motion": "run",
-        "direction": "left",
-        "speed": 2.2,
-        "lane": 2000,
-        "dwell": 3000,
-        "lights": true
+        "direction": -1,
+        "speed": 132.0,
+        "lights": true,
+        "depthBand": "near",
+        "routeLength": 2000,
+        "paintColor": "#e8e4da",
+        "dwellDuration": 50.0
       },
       "placement": {
         "x": 0,

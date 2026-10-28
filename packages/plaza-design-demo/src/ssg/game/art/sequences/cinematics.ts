@@ -1,3 +1,7 @@
+import {colorField} from '../core/fields';
+import {fixedGeometry} from '../core/spatial';
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceColor,appearanceRatio,appearanceText,semantic,shapePosition} from '../core/fields';
 import type{Light}from'../../world/light';
 /**
  * The cinematic pieces (the intro skyline, the ACT II card, the taxi flight) as registered art elements, and their timeline
@@ -16,19 +20,19 @@ import { cinematicGeometry } from './cinematic-metadata';
 export const cinematicParts = { intro: [...skylinePartIds, 'screen-fade'], act2: ['sky', 'city', 'spire', 'water', 'ferry', 'titles', 'screen-fade'], taxi: ['sky', 'lights', 'towers', 'cab', 'destination', 'fade'] };
 /** The taxi sequence's native length when a document does not say (200 frames of the game clock). */
 export const TAXI_SECONDS = 200 / 60;
-const number = (label: string, value = 0) => ({ kind: 'number' as const, label, default: value, animatable: true });
-const visualFields = { time: number('Seconds'), ambient: number('Decorative frame clock'), reduced: { kind: 'boolean' as const, label: 'Reduced motion', default: false }, cameraX: number('Camera X'), amount: { ...number('Amount'), min: 0, max: 1 }, x: number('X'), y: number('Y'), one: number('Act I opacity'), found: number('Found opacity'), two: number('Act II opacity'), subtitle: number('Subtitle opacity') };
+const number = numericFields({value:0,animatable:true});
+const visualFields = { time: number('Seconds'), ambient: number('Decorative frame clock'), reduced: { kind: 'boolean' as const, label: 'Reduced motion', default: false }, cameraX: number('Camera X'), amount: { ...number('Amount'), min: 0, max: 1 }, x: shapePosition(number('X')), y: number('Y'), one: number('Act I opacity'), found: number('Found opacity'), two: number('Act II opacity'), subtitle: number('Subtitle opacity') };
 function fields(sequence: string, part: string): AssetDefinition['fields'] {
-  const color=(label:string,value:string)=>({kind:'color' as const,label,default:value});
-  if(sequence==='act2'&&part==='sky')return{top:color('Top sky','#02030a'),horizon:color('Horizon sky','#170803')};
-  if(sequence==='act2'&&part==='water')return{fill:color('Water','#01040a')};
-  if(sequence==='act2'&&part==='ferry')return{paint:color('Hull and bridge','#0a0504')};
-  if(sequence==='act2'&&part==='spire')return{windows:{...number('Window light',1.6),min:0,max:4},edge:{...number('Edge light',.18),min:0,max:1},glow:{kind:'boolean',label:'Glow',default:true}};
-  if(sequence==='taxi'&&part==='sky')return{top:color('Top sky','#02030a'),middle:color('Middle sky','#0a0403'),bottom:color('Bottom sky','#170803')};
-  if(sequence==='taxi'&&part==='lights')return{far:{...number('Far light speed',.6),min:0,max:100},middle:{...number('Middle light speed',1.8),min:0,max:100},near:{...number('Near light speed',4.5),min:0,max:100}};
-  if(sequence==='taxi'&&part==='towers')return{fill:color('Tower silhouette','#030100')};
-  if (sequence === 'act2' && part === 'titles') return { actOne: { kind: 'string', label: 'Act I', default: 'ACT I · WHERE IS MOTH?' }, found: { kind: 'string', label: 'Found', default: 'FOUND.' }, actTwo: { kind: 'string', label: 'Act II', default: 'ACT II' }, subtitle: { kind: 'string', label: 'Subtitle', default: 'SEVEN FRAGMENTS' } };
-  if (sequence === 'taxi' && part === 'destination') return { destination: { kind: 'string', label: 'Destination label override', default: '' } };
+  const color = colorField;
+  if(sequence==='act2'&&part==='sky')return{top:appearanceColor(color('Top sky','#02030a')),horizon:appearanceColor(color('Horizon sky','#170803'))};
+  if(sequence==='act2'&&part==='water')return{fillColor:appearanceColor(color('Water','#01040a'))};
+  if(sequence==='act2'&&part==='ferry')return{paintColor:appearanceColor(color('Hull and bridge','#0a0504'))};
+  if(sequence==='act2'&&part==='spire')return{windows:{...semantic(number('Window light',1.6),{"group":"Appearance","quantity":"factor","unit":"factor"}),min:0,max:4},edge:{...appearanceRatio(number('Edge light',.18)),min:0,max:1},glow:appearanceBoolean({kind:'boolean',label:'Glow',default:true})};
+  if(sequence==='taxi'&&part==='sky')return{top:appearanceColor(color('Top sky','#02030a')),middle:appearanceColor(color('Middle sky','#0a0403')),bottom:appearanceColor(color('Bottom sky','#170803'))};
+  if(sequence==='taxi'&&part==='lights')return Object.fromEntries([['farSpeed','Far light speed',36],['middleSpeed','Middle light speed',108],['nearSpeed','Near light speed',270]].map(([key,label,value])=>[String(key),semantic(number(String(label),Number(value),0,6000),{group:'Motion',quantity:'speed',unit:'render pixels / second',space:'screen'})]));
+  if(sequence==='taxi'&&part==='towers')return{fillColor:appearanceColor(color('Tower silhouette','#030100'))};
+  if (sequence === 'act2' && part === 'titles') return { actOne: appearanceText({ kind: 'string', label: 'Act I', default: 'ACT I · WHERE IS MOTH?' }), found: appearanceText({ kind: 'string', label: 'Found', default: 'FOUND.' }), actTwo: appearanceText({ kind: 'string', label: 'Act II', default: 'ACT II' }), subtitle: appearanceText({ kind: 'string', label: 'Subtitle', default: 'SEVEN FRAGMENTS' }) };
+  if (sequence === 'taxi' && part === 'destination') return { destination: appearanceText({ kind: 'string', label: 'Destination label override', default: '' }) };
   return {};
 }
 function visual(sequence:string,part:string):AssetDefinition['visualFields']{
@@ -41,21 +45,22 @@ export function paintBlack(ctx: CanvasRenderingContext2D, W: number, H: number, 
 const num = (v: unknown, fallback = 0) => typeof v === 'number' ? v : fallback;
 /** One cinematic part, in its picture's own frame (the viewport, its letterbox bars): the drawing kernels, unchanged. */
 function drawPart(ctx: CanvasRenderingContext2D, view: View, sequence: string, part: string, props: Properties, state: Properties) {
-  const cut = cutView(view.viewW, view.viewH, !!state.reduced, view.lighting), time = num(state.time);
-  if (part === 'screen-fade') { paintBlack(ctx, view.viewW, view.viewH, num(state.amount)); return; }
+  const cut = cutView(num(state.width)||view.viewW, num(state.height)||view.viewH, !!state.reduced, view.lighting), time = num(state.time);
+  if (part === 'screen-fade') { paintBlack(ctx, cut.viewW, cut.viewH, num(state.amount)); return; }
   if (sequence === 'intro') {
     if (!view.skyline) throw new Error('Intro piece requires a prepared skyline session (View.skyline) from its controller');
     drawIntroPart(ctx, cut, part, time, { ...view.skyline, cameraX: view.cam, rain: num(state.amount) });
   } else if (sequence === 'act2') {
     drawAct2Part(ctx, cut, part as Act2Part, time, 16, { ferryProgress: num(state.amount), alpha: { one: num(state.one), found: num(state.found), two: num(state.two), subtitle: num(state.subtitle) },
       ...(part === 'titles' ? { titles: props as unknown as { actOne: string; found: string; actTwo: string; subtitle: string } } : {}), ...(part === 'sky' ? { sky: props as unknown as { top: string; horizon: string } } : {}),
-      ...(part === 'water' ? { water: props.fill as string } : {}), ...(part === 'ferry' ? { ferryPaint: props.paint as string } : {}), ...(part === 'spire' ? { spire: props as unknown as { windows: number; edge: number; glow: boolean } } : {}) });
+      ...(part === 'water' ? { water: props.fillColor as string } : {}), ...(part === 'ferry' ? { ferryPaint: props.paintColor as string } : {}), ...(part === 'spire' ? { spire: props as unknown as { windows: number; edge: number; glow: boolean } } : {}) });
   } else {
-    drawFlightPart(ctx, view.viewW, view.viewH, part as FlightPart, time / TAXI_SECONDS, num(state.ambient), String(props.destination || state.place || ''), { cabX: num(state.x), cabY: num(state.y), fade: num(state.amount),
-      ...(part === 'sky' ? { sky: props as unknown as { top: string; middle: string; bottom: string } } : {}), ...(part === 'lights' ? { lightSpeeds: [props.far, props.middle, props.near] as number[] } : {}), ...(part === 'towers' ? { towerFill: props.fill as string } : {}) });
+    drawFlightPart(ctx, cut.viewW, cut.viewH, part as FlightPart, time / TAXI_SECONDS, num(state.ambient), String(props.destination || state.place || ''), { cabX: num(state.x), cabY: num(state.y), fade: num(state.amount),
+      ...(part === 'sky' ? { sky: props as unknown as { top: string; middle: string; bottom: string } } : {}), ...(part === 'lights' ? { lightSpeeds: [Number(props.farSpeed)/60,Number(props.middleSpeed)/60,Number(props.nearSpeed)/60] } : {}), ...(part === 'towers' ? { towerFill: props.fillColor as string } : {}) });
   }
 }
 export const cinematicElements: AssetDefinition[] = Object.entries(cinematicParts).flatMap(([sequence, parts]) => parts.map<AssetDefinition>(part => ({
+  spatial:fixedGeometry('This sequence part follows its native composition and prepared timeline state. Edit the supported appearance/state tracks or Transform; no independent body dimensions are authored.'),
   type: `sequence.${sequence}.${part}`, version: 1 as const, label: `${sequence === 'act2' ? 'Act II' : sequence === 'taxi' ? 'Taxi' : 'Intro'} · ${part}`, category: 'Cinematic sequence', coordinates: 'world' as const, parts: ['backdrop' as const],
   fields: fields(sequence, part),
   visualFields:visual(sequence,part), bounds: (props,state) => cinematicGeometry(sequence,part,props,state).bounds, anchors: (props,state) => cinematicGeometry(sequence,part,props,state).anchors,

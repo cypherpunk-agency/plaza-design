@@ -1,3 +1,7 @@
+import {renderPolicy} from '../world/render-policy';
+import type {CitySource} from '../world/city';
+import {renderSettingsAuthoring} from './render-settings-authoring';
+import {resolveRenderSettings} from '../world/render-settings';
 import type {OpenInspector} from './inspector-task';
 import {element,button,select} from './controls';
 import {TypedForm} from './typed-form';
@@ -11,6 +15,7 @@ import {validationSnapshot} from './validation-snapshot';
 import {worldMemberRows,worldMemberAt,moveWorldMember,unmountWorldMember,mountWorldMember,linkedWorldMembers,alignWorldConnection,type WorldMemberAddress} from './world-members';
 
 export interface WorldWorkspaceControls {
+ openRenderingSource?(source:import('../world/render-settings').RenderSource):void;
  inspect:OpenInspector;activeInspector?():string|undefined;
  registry:ArtRegistry;documents():readonly EditorDocument[];composition():string;
  select(address:WorldMemberAddress):void;selection():WorldMemberAddress|undefined;
@@ -40,8 +45,16 @@ export function openMountPicker(port:WorldWorkspaceControls,create=false,groupAd
   };
  });
 }
+export function openCompositionRendering(port:WorldWorkspaceControls){
+ const source=workspaceSource(port.documents());
+ inspect(port,'Composition rendering',(body,form)=>{const draft=structuredClone(source),def=draft.compositions[port.composition()];
+  const render=()=>{body.replaceChildren();body.append(element('p','muted','These overrides apply across the composition. Select a chunk to inspect its resolved values.'));renderSettingsAuthoring(form,body,def.rendering,value=>{if(value)def.rendering=value;else delete def.rendering;render();});};
+  render();return()=>port.apply('Edit composition rendering',draft);
+ });
+}
 export function renderWorldMembers(host:HTMLElement,port:WorldWorkspaceControls){
  if(!port.composition())return;const source=workspaceSource(port.documents());host.append(element('h3','','Chunks and groups'),element('p','muted','Select a member to move or unmount it. Drag its label in the viewport.'));
+ host.append(button('Composition rendering',()=>openCompositionRendering(port)));
  const rows=worldMemberRows(source,port.composition());
  for(const row of rows){
   const pick=(address:WorldMemberAddress,text:string)=>{const b=button(text,()=>port.select(address));b.setAttribute('aria-pressed',String(same(port.selection(),address)));b.dataset.worldMember=address.member;if(address.child)b.dataset.worldChild=address.child;return b;};
@@ -105,9 +118,11 @@ export function renderWorldMemberInspector(host:HTMLElement,port:WorldWorkspaceC
  const move=(at:WorldPosition)=>{port.apply('Move world member',moveWorldMember(source,address,at,moveLinked));port.changed();};
  form.decimal(host,'Member X',member.placement.x,x=>move({...member.placement,x}),-10000000,10000000);
  form.decimal(host,'Member Y',member.placement.h,h=>move({...member.placement,h}),-10000000,10000000);
+ renderSettingsAuthoring(form,host,member.rendering,value=>{if(value)member.rendering=value;else delete member.rendering;port.apply('Edit member rendering',source);port.changed();},member.chunk?renderPolicy(pendingRegistry(validationSnapshot(port.documents()))[member.chunk],port.documents().find(d=>d.id==='city-source')!.value as CitySource,source,undefined,address.composition):resolveRenderSettings([{source:{kind:'composition',id:address.composition},settings:source.compositions[address.composition].rendering},{source:{kind:'member',composition:address.composition,member:address.member,child:address.child},settings:member.rendering}]),'Member rendering',port.openRenderingSource);
  if(member.chunk)host.append(button('Open chunk source',()=>port.openChunk(member.chunk!)));
  if(member.group){
   const groupSource=source.groups[member.group];host.append(element('h3','','Shared group · '+member.group));
+  renderSettingsAuthoring(form,host,groupSource.rendering,value=>{if(value)groupSource.rendering=value;else delete groupSource.rendering;port.apply('Edit group rendering',source);port.changed();},undefined,'Shared group rendering');
   form.text(host,'Group name',groupSource.name,name=>{groupSource.name=name;port.apply('Rename group',source);port.changed();});
   host.append(element('p','muted','This definition is reused wherever the group is mounted.'));
   for(const child of groupSource.members)host.append(button(child.chunk!,()=>port.select({...address,child:child.id})));

@@ -50,8 +50,8 @@
         "seed": 7,
         "minHeight": 70,
         "maxHeight": 150,
-        "alpha": 0.18,
-        "litChance": 0.12
+        "litChance": 0.12,
+        "edgeOpacity": 0.18
       },
       "placement": {
         "x": 0,
@@ -71,8 +71,8 @@
         "seed": 19,
         "minHeight": 50,
         "maxHeight": 120,
-        "alpha": 0.3,
-        "litChance": 0.18
+        "litChance": 0.18,
+        "edgeOpacity": 0.3
       },
       "placement": {
         "x": 0,
@@ -88,12 +88,12 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
         "seams": 1,
         "glow": true,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 404,
@@ -110,7 +110,7 @@
         "width": 120,
         "seed": 400,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": -60,
@@ -126,7 +126,7 @@
         "width": 157,
         "seed": 413,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 90,
@@ -142,7 +142,7 @@
         "width": 144,
         "seed": 426,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 240,
@@ -158,7 +158,7 @@
         "width": 131,
         "seed": 439,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 390,
@@ -174,7 +174,7 @@
         "width": 155,
         "seed": 465,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 690,
@@ -190,7 +190,7 @@
         "width": 142,
         "seed": 478,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 840,
@@ -206,7 +206,7 @@
         "width": 129,
         "seed": 491,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 990,
@@ -222,7 +222,7 @@
         "width": 140,
         "seed": 530,
         "parallax": 0.7,
-        "alpha": 0.5
+        "opacity": 0.5
       },
       "placement": {
         "x": 1440,
@@ -257,8 +257,8 @@
         "skin": "tenement",
         "density": 0.8,
         "seed": 101,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 0,
@@ -273,14 +273,14 @@
       "props": {
         "width": 46,
         "height": 300,
-        "depth": 0.5,
         "light": "warm",
         "escape": "right",
         "bins": true,
         "steam": true,
         "cables": true,
         "yard": true,
-        "seed": 3
+        "seed": 3,
+        "perspectiveAmount": 0.5
       },
       "placement": {
         "x": 104,
@@ -312,8 +312,8 @@
         "roof": "cornice",
         "density": 0.5,
         "seed": 102,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 150,
@@ -343,8 +343,8 @@
         "skin": "concrete",
         "density": 0.7,
         "seed": 103,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 270,
@@ -375,8 +375,8 @@
         "balconies": "some",
         "density": 0.6,
         "seed": 104,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 420,
@@ -412,8 +412,8 @@
         "skin": "panel",
         "density": 0.5,
         "seed": 105,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 550,
@@ -432,8 +432,8 @@
         "windows": "curtained",
         "density": 0.7,
         "seed": 106,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 720,
@@ -458,8 +458,8 @@
         "skin": "glass",
         "density": 0.3,
         "seed": 107,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 860,
@@ -493,9 +493,9 @@
         "balconies": "none",
         "density": 0.6,
         "seed": 108,
-        "floors": 0,
-        "top": 0,
-        "ground": 62
+        "height": 62,
+        "groundFloorHeight": 62,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1040,
@@ -519,8 +519,8 @@
         "skin": "panel",
         "density": 0.6,
         "seed": 109,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1200,
@@ -566,8 +566,8 @@
             300
           ]
         ],
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1260,
@@ -598,8 +598,8 @@
         "escape": "right",
         "density": 0.9,
         "seed": 111,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1420,
@@ -624,8 +624,8 @@
         "skin": "glass",
         "density": 0.4,
         "seed": 112,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1680,
@@ -655,8 +655,8 @@
         "skin": "brick",
         "density": 0.8,
         "seed": 113,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1840,
@@ -688,15 +688,15 @@
         "height": 15,
         "text": "< NEON MARKET",
         "color": "255,217,165",
-        "size": 10,
-        "phase": 120,
         "mask": [
           -50,
           50,
           -10,
           10
         ],
-        "smear": true
+        "smear": true,
+        "flickerTimeOffset": 2,
+        "fontSize": 10
       },
       "placement": {
         "x": 90,
@@ -717,15 +717,15 @@
         "height": 15,
         "text": "SPACEPORT >",
         "color": "255,136,0",
-        "size": 10,
-        "phase": 70,
         "mask": [
           -43,
           43,
           -10,
           10
         ],
-        "smear": true
+        "smear": true,
+        "flickerTimeOffset": 1.1666666666666667,
+        "fontSize": 10
       },
       "placement": {
         "x": 90,
@@ -746,15 +746,15 @@
         "height": 13,
         "text": "OPEN 24/7",
         "color": "255,136,0",
-        "size": 8,
-        "phase": 160,
         "mask": [
           -47,
           47,
           -10,
           10
         ],
-        "smear": true
+        "smear": true,
+        "flickerTimeOffset": 2.6666666666666665,
+        "fontSize": 8
       },
       "placement": {
         "x": 45,
@@ -863,9 +863,6 @@
         "h": 0
       },
       "order": 264,
-      "bindings": {
-        "doorOffset": "downtown.doorOffset"
-      },
       "layer": "backdrop"
     },
     {
@@ -1815,7 +1812,7 @@
       "props": {
         "kind": "screen",
         "radius": 30,
-        "alpha": 0.7
+        "lightOpacity": 0.7
       },
       "placement": {
         "x": 0,
@@ -1872,15 +1869,15 @@
         "height": 15,
         "text": "CLINIC 24H",
         "color": "255,42,68",
-        "size": 10,
-        "phase": 44,
         "mask": [
           -48,
           48,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 0.7333333333333333,
+        "fontSize": 10
       },
       "placement": {
         "x": 75,
@@ -1920,15 +1917,15 @@
         "height": 15,
         "text": "KOBA SOY",
         "color": "255,136,0",
-        "size": 10,
-        "phase": 155,
         "mask": [
           -44,
           44,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 2.5833333333333335,
+        "fontSize": 10
       },
       "placement": {
         "x": 70,
@@ -1968,15 +1965,15 @@
         "height": 15,
         "text": "PAWN · CASH",
         "color": "255,217,165",
-        "size": 10,
-        "phase": 46,
         "mask": [
           -50,
           50,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 0.7666666666666666,
+        "fontSize": 10
       },
       "placement": {
         "x": 80,
@@ -2016,15 +2013,15 @@
         "height": 15,
         "text": "HOTEL · HOURLY",
         "color": "168,130,255",
-        "size": 10,
-        "phase": 153,
         "mask": [
           -60,
           60,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 2.55,
+        "fontSize": 10
       },
       "placement": {
         "x": 80,
@@ -2064,15 +2061,15 @@
         "height": 15,
         "text": "REPAIRS",
         "color": "255,136,0",
-        "size": 10,
-        "phase": 98,
         "mask": [
           -40,
           40,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 1.6333333333333333,
+        "fontSize": 10
       },
       "placement": {
         "x": 80,
@@ -2112,15 +2109,15 @@
         "height": 15,
         "text": "VERIFY HERE",
         "color": "255,217,165",
-        "size": 10,
-        "phase": 90,
         "mask": [
           -50,
           50,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 1.5,
+        "fontSize": 10
       },
       "placement": {
         "x": 60,
@@ -2160,15 +2157,15 @@
         "height": 15,
         "text": "LOANS IN 5 MIN",
         "color": "255,42,68",
-        "size": 10,
-        "phase": 9,
         "mask": [
           -62,
           62,
           -10,
           12
         ],
-        "smear": false
+        "smear": false,
+        "flickerTimeOffset": 0.15,
+        "fontSize": 10
       },
       "placement": {
         "x": 85,
@@ -2207,7 +2204,7 @@
         "text": "SIM",
         "parallax": 1,
         "dim": 1,
-        "phase": 83
+        "flickerTimeOffset": 1.3833333333333333
       },
       "placement": {
         "x": 120,
@@ -2227,7 +2224,7 @@
         "text": "BAR",
         "parallax": 1,
         "dim": 1,
-        "phase": 15
+        "flickerTimeOffset": 0.25
       },
       "placement": {
         "x": 82,
@@ -2247,7 +2244,7 @@
         "text": "NOODLE",
         "parallax": 1,
         "dim": 1,
-        "phase": 186
+        "flickerTimeOffset": 3.1
       },
       "placement": {
         "x": 6,
@@ -2267,7 +2264,7 @@
         "text": "BEDS",
         "parallax": 1,
         "dim": 1,
-        "phase": 147
+        "flickerTimeOffset": 2.45
       },
       "placement": {
         "x": 150,
@@ -2284,11 +2281,11 @@
       "id": "ad-front-5",
       "type": "market.ad",
       "props": {
-        "w": 92,
-        "tall": 40,
         "parallax": 1,
         "seed": 90,
-        "phase": 186
+        "timeOffset": 3.1,
+        "width": 92,
+        "height": 40
       },
       "placement": {
         "x": 24,
@@ -2324,11 +2321,11 @@
       "id": "ad-front-11",
       "type": "market.ad",
       "props": {
-        "w": 92,
-        "tall": 40,
         "parallax": 1,
         "seed": 98,
-        "phase": 178
+        "timeOffset": 2.966666666666667,
+        "width": 92,
+        "height": 40
       },
       "placement": {
         "x": 34,
@@ -2364,11 +2361,11 @@
       "id": "ad-front-0",
       "type": "market.ad",
       "props": {
-        "w": 92,
-        "tall": 40,
         "parallax": 1,
         "seed": 463,
-        "phase": 110
+        "timeOffset": 1.8333333333333333,
+        "width": 92,
+        "height": 40
       },
       "placement": {
         "x": 30,
@@ -2406,7 +2403,7 @@
       "props": {
         "parallax": 1,
         "facing": 1,
-        "phase": 8
+        "blinkTimeOffset": 0.13333333333333333
       },
       "placement": {
         "x": 8,
@@ -2425,7 +2422,7 @@
       "props": {
         "parallax": 1,
         "facing": -1,
-        "phase": 35
+        "blinkTimeOffset": 0.5833333333333334
       },
       "placement": {
         "x": 150,
@@ -2444,7 +2441,7 @@
       "props": {
         "parallax": 1,
         "facing": 1,
-        "phase": 49
+        "blinkTimeOffset": 0.8166666666666667
       },
       "placement": {
         "x": 4,
@@ -2464,7 +2461,7 @@
         "kind": "human",
         "seed": 41922,
         "act": "stand",
-        "depth": "back"
+        "depthBand": "back"
       },
       "placement": {
         "x": 230,
@@ -2480,7 +2477,7 @@
         "kind": "human",
         "seed": 84608,
         "act": "phone",
-        "depth": "back"
+        "depthBand": "back"
       },
       "placement": {
         "x": 660,
@@ -2496,7 +2493,7 @@
         "kind": "human",
         "seed": 66559,
         "act": "stand",
-        "depth": "back"
+        "depthBand": "back"
       },
       "placement": {
         "x": 1150,
@@ -2512,7 +2509,7 @@
         "kind": "human",
         "seed": 14387,
         "act": "talk",
-        "depth": "back"
+        "depthBand": "back"
       },
       "placement": {
         "x": 1480,
@@ -2528,7 +2525,7 @@
         "kind": "human",
         "seed": 29568,
         "act": "smoke",
-        "depth": "back"
+        "depthBand": "back"
       },
       "placement": {
         "x": 1900,
@@ -2546,7 +2543,7 @@
         "rear": true,
         "lights": true,
         "fleetNo": "R-114",
-        "phase": 0
+        "timeOffset": 0
       },
       "placement": {
         "x": 470,
@@ -2565,8 +2562,8 @@
         "side": true,
         "lights": true,
         "fleetNo": "R-207",
-        "phase": 13,
-        "flood": true
+        "flood": true,
+        "timeOffset": 0.21666666666666667
       },
       "placement": {
         "x": 1300,
@@ -2620,7 +2617,7 @@
       "type": "civic.checkpoint",
       "props": {
         "table": true,
-        "barrier": 64,
+        "barrierWidth": 64,
         "text": "IDENTITY CHECK/HAVE YOUR ID READY",
         "cones": 2,
         "scanning": true
@@ -2659,11 +2656,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6001,
         "act": "stand",
-        "archetype": "inspector"
+        "archetype": "inspector",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1066,
@@ -2678,10 +2675,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6002,
-        "act": "argue"
+        "act": "argue",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1042,
@@ -2696,11 +2693,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6003,
         "act": "queue",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1018,
@@ -2714,11 +2711,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6004,
         "act": "talk",
-        "archetype": "inspector"
+        "archetype": "inspector",
+        "depthBand": "play"
       },
       "placement": {
         "x": 338,
@@ -2732,11 +2729,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6005,
         "act": "wait",
-        "archetype": "drifter"
+        "archetype": "drifter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 368,
@@ -2751,11 +2748,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6006,
         "act": "talk",
-        "archetype": "inspector"
+        "archetype": "inspector",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1236,
@@ -2769,12 +2766,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6007,
         "act": "walk",
         "archetype": "inspector",
-        "range": -120
+        "range": -120,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1620,
@@ -2788,8 +2785,8 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
-        "act": "scan"
+        "act": "scan",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1130,
@@ -2803,9 +2800,9 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
         "act": "hover",
-        "range": 300
+        "range": 300,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1050,
@@ -2819,9 +2816,9 @@
       "type": "character.resident",
       "props": {
         "kind": "mech",
-        "depth": "back",
         "act": "patrol",
-        "range": 200
+        "range": 200,
+        "depthBand": "back"
       },
       "placement": {
         "x": 560,
@@ -2835,10 +2832,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "back",
         "district": "downtown",
         "seed": 6011,
-        "act": "lean"
+        "act": "lean",
+        "depthBand": "back"
       },
       "placement": {
         "x": 242,
@@ -2852,11 +2849,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "back",
         "district": "downtown",
         "seed": 6012,
         "act": "wait",
-        "archetype": "ghost"
+        "archetype": "ghost",
+        "depthBand": "back"
       },
       "placement": {
         "x": 122,
@@ -2870,11 +2867,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6013,
         "act": "wait",
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 878,
@@ -2888,11 +2885,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6014,
         "act": "wait",
-        "archetype": "punk"
+        "archetype": "punk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1912,
@@ -2906,10 +2903,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "back",
         "district": "downtown",
         "seed": 6015,
-        "act": "lean"
+        "act": "lean",
+        "depthBand": "back"
       },
       "placement": {
         "x": 972,
@@ -2943,11 +2940,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6016,
         "act": "queue",
-        "archetype": "office"
+        "archetype": "office",
+        "depthBand": "play"
       },
       "placement": {
         "x": 994,
@@ -2961,11 +2958,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6018,
         "act": "wait",
-        "archetype": "teen"
+        "archetype": "teen",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1262,
@@ -3000,14 +2997,14 @@
         "color": "255,42,68",
         "width": 130,
         "height": 10,
-        "speed": 0.5,
         "mount": "wall",
         "mask": [
           -66,
           66,
           -8,
           8
-        ]
+        ],
+        "scrollSpeed": 30
       },
       "placement": {
         "x": 80,

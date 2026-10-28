@@ -70,7 +70,7 @@
       "type": "station.harbor-crane",
       "props": {
         "height": 150,
-        "phase": 0
+        "highlightPhaseAngle": 0
       },
       "placement": {
         "x": 240,
@@ -88,7 +88,7 @@
       "type": "station.harbor-crane",
       "props": {
         "height": 180,
-        "phase": 1.7
+        "highlightPhaseAngle": 97.40282517223994
       },
       "placement": {
         "x": 620,
@@ -106,7 +106,7 @@
       "type": "station.harbor-crane",
       "props": {
         "height": 160,
-        "phase": 3.1
+        "highlightPhaseAngle": 177.6169164905552
       },
       "placement": {
         "x": 1180,
@@ -294,7 +294,7 @@
       "id": "camera-0",
       "type": "station.camera",
       "props": {
-        "flip": false
+        "mirrored": false
       },
       "placement": {
         "x": 6,
@@ -311,7 +311,8 @@
       "id": "screen",
       "type": "station.screen",
       "props": {
-        "phase": 2
+        "displayTimeOffset": 3.2333333333333334,
+        "indicatorPhaseAngle": 114.59155902616465
       },
       "placement": {
         "x": 860,
@@ -332,8 +333,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "HARBOR",
-        "alpha": 0.92,
-        "hang": true
+        "hang": true,
+        "textOpacity": 0.92
       },
       "placement": {
         "x": 170,
@@ -354,8 +355,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "HARBOR",
-        "alpha": 0.92,
-        "hang": true
+        "hang": true,
+        "textOpacity": 0.92
       },
       "placement": {
         "x": 900,
@@ -428,7 +429,7 @@
         "height": 32,
         "first": "STATION CLOSED",
         "second": "BY ORDER · PA-7",
-        "phase": 2
+        "highlightPhaseAngle": 114.59155902616465
       },
       "placement": {
         "x": 0,
@@ -452,7 +453,7 @@
         "height": 32,
         "first": "STATION CLOSED",
         "second": "BY ORDER · PA-7",
-        "phase": 2
+        "highlightPhaseAngle": 114.59155902616465
       },
       "placement": {
         "x": 0,
@@ -476,7 +477,7 @@
         "height": 32,
         "first": "STATION CLOSED",
         "second": "BY ORDER · PA-7",
-        "phase": 2
+        "highlightPhaseAngle": 114.59155902616465
       },
       "placement": {
         "x": 0,
@@ -500,8 +501,8 @@
         "height": 32,
         "first": "REGISTRY",
         "second": "CHECKPOINT",
-        "phase": 3,
-        "red": true
+        "red": true,
+        "highlightPhaseAngle": 171.88733853924697
       },
       "placement": {
         "x": 150,
@@ -518,8 +519,8 @@
         "height": 30,
         "first": "TIDE",
         "second": "TABLE",
-        "phase": 1,
-        "red": false
+        "red": false,
+        "highlightPhaseAngle": 57.29577951308232
       },
       "placement": {
         "x": 1120,
@@ -545,7 +546,7 @@
       "type": "station.slab",
       "props": {
         "width": 1200,
-        "fill": "#0b0806"
+        "fillColor": "#0b0806"
       },
       "placement": {
         "x": 0,
@@ -558,8 +559,8 @@
       "id": "reflection-0",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.8,
-        "width": 16
+        "width": 16,
+        "opacity": 0.8
       },
       "placement": {
         "x": 0,
@@ -576,8 +577,8 @@
       "id": "reflection-1",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.8,
-        "width": 16
+        "width": 16,
+        "opacity": 0.8
       },
       "placement": {
         "x": 0,
@@ -594,8 +595,8 @@
       "id": "reflection-2",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.8,
-        "width": 16
+        "width": 16,
+        "opacity": 0.8
       },
       "placement": {
         "x": 0,
@@ -612,8 +613,8 @@
       "id": "reflection-3",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.8,
-        "width": 16
+        "width": 16,
+        "opacity": 0.8
       },
       "placement": {
         "x": 0,
@@ -630,8 +631,8 @@
       "id": "reflection-4",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.8,
-        "width": 16
+        "width": 16,
+        "opacity": 0.8
       },
       "placement": {
         "x": 0,

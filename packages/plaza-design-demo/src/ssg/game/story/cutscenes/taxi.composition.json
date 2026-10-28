@@ -21,9 +21,9 @@
       "id": "lights",
       "type": "sequence.taxi.lights",
       "props": {
-        "far": 0.6,
-        "middle": 1.8,
-        "near": 4.5
+        "farSpeed": 36,
+        "middleSpeed": 108,
+        "nearSpeed": 270
       },
       "placement": {
         "x": 0,
@@ -36,7 +36,7 @@
       "id": "towers",
       "type": "sequence.taxi.towers",
       "props": {
-        "fill": "#030100"
+        "fillColor": "#030100"
       },
       "placement": {
         "x": 0,

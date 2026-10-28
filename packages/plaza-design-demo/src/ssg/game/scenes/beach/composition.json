@@ -102,7 +102,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -133,7 +132,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -164,7 +162,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -195,7 +192,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -226,7 +222,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -238,8 +233,8 @@
       "id": "swimmer-0",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.55,
-        "phase": 0
+        "variation": 0,
+        "waterDepthFraction": 0.55
       },
       "placement": {
         "x": 610,
@@ -260,7 +255,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -272,8 +266,8 @@
       "id": "swimmer-1",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.35,
-        "phase": 1
+        "variation": 1,
+        "waterDepthFraction": 0.35
       },
       "placement": {
         "x": 680,
@@ -294,7 +288,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -306,8 +299,8 @@
       "id": "swimmer-2",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.6,
-        "phase": 2
+        "variation": 2,
+        "waterDepthFraction": 0.6
       },
       "placement": {
         "x": 740,
@@ -328,7 +321,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -340,8 +332,8 @@
       "id": "swimmer-3",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.45,
-        "phase": 3
+        "variation": 3,
+        "waterDepthFraction": 0.45
       },
       "placement": {
         "x": 830,
@@ -362,7 +354,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -374,8 +365,8 @@
       "id": "swimmer-4",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.5,
-        "phase": 4
+        "variation": 4,
+        "waterDepthFraction": 0.5
       },
       "placement": {
         "x": 960,
@@ -396,7 +387,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -408,8 +398,8 @@
       "id": "swimmer-5",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.4,
-        "phase": 5
+        "variation": 5,
+        "waterDepthFraction": 0.4
       },
       "placement": {
         "x": 1180,
@@ -430,7 +420,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -442,8 +431,8 @@
       "id": "swimmer-6",
       "type": "beach.swimmer",
       "props": {
-        "depth": 0.6,
-        "phase": 6
+        "variation": 6,
+        "waterDepthFraction": 0.6
       },
       "placement": {
         "x": 1250,
@@ -464,7 +453,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -495,7 +483,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -526,7 +513,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -669,7 +655,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -719,7 +704,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -750,7 +734,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -785,7 +768,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -820,7 +802,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -855,7 +836,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -890,7 +870,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -981,7 +960,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1003,8 +981,7 @@
       "layer": "playfield",
       "bindings": {
         "palette": "scene.palette",
-        "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth"
+        "barVisible": "scene.barVisible"
       }
     },
     {
@@ -1054,7 +1031,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1089,7 +1065,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1187,7 +1162,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1239,7 +1213,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1274,7 +1247,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1309,7 +1281,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1364,7 +1335,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1399,7 +1369,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1449,7 +1418,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1480,7 +1448,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1515,7 +1482,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1566,7 +1532,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1597,7 +1562,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1632,7 +1596,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1831,7 +1794,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1865,7 +1827,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1900,7 +1861,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1935,7 +1895,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -1970,7 +1929,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -2005,7 +1963,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -2040,7 +1997,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -2095,7 +2051,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -2150,7 +2105,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -2181,7 +2135,6 @@
         "gullShooed": "scene.gullShooed",
         "hover": "scene.hover",
         "barVisible": "scene.barVisible",
-        "barWidth": "scene.barWidth",
         "towerVisible": "scene.towerVisible",
         "pierVisible": "scene.pierVisible",
         "boardwalkVisible": "scene.boardwalkVisible",
@@ -2310,8 +2263,8 @@
         "kind": "window",
         "radius": 40,
         "width": 90,
-        "lightHeight": 24,
-        "alpha": 0.8
+        "height": 24,
+        "lightOpacity": 0.8
       },
       "placement": {
         "x": 114,
@@ -2406,7 +2359,7 @@
         "kind": "neon",
         "radius": 26,
         "color": "255,170,90",
-        "alpha": 0.6
+        "lightOpacity": 0.6
       },
       "placement": {
         "x": 0,

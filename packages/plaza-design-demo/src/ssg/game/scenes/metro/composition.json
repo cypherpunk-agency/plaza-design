@@ -16,7 +16,7 @@
         "gate": 560,
         "gateNote": "TICKET AND ID REQUIRED",
         "ends": "left",
-        "deadLamp": 4
+        "flickeringLampIndex": 4
       },
       "placement": {
         "x": 0,
@@ -32,7 +32,7 @@
         "width": 1540,
         "name": "DOWNTOWN",
         "ends": "right",
-        "nameEvery": 420
+        "nameSpacing": 420
       },
       "placement": {
         "x": 620,
@@ -219,7 +219,7 @@
       "props": {
         "first": "LINE",
         "second": "MAP",
-        "phase": 1
+        "highlightPhaseAngle": 57.29577951308232
       },
       "placement": {
         "x": 446,
@@ -233,7 +233,7 @@
       "type": "metro.notice",
       "props": {
         "first": "ADS",
-        "phase": 2
+        "highlightPhaseAngle": 114.59155902616465
       },
       "placement": {
         "x": 460,

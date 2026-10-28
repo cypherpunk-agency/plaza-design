@@ -8,14 +8,18 @@ import type {AssetEntry,AssetUsage,AssetPreviewOverrides,AssetPreviewReport} fro
 /** Source-store discriminators retain their persisted spelling: composition is a ChunkDocument,
  * world-composition is the named chunk-arrangement catalogue. UI names describe their actual roles. */
 export interface EditorDocument { id: string; kind: 'composition' | 'world-composition' | 'world' | 'gameplay' | 'scene' | 'fixtures' | 'city' | 'transport' | 'devices' | 'people' | 'presets' | 'profiles' | 'rules' | 'storyboard'; revision: string; value: unknown }
-export interface PreviewRequest { workspace?:{x:number;h:number;zoom:number;anchorX?:number;anchorH?:number}; transient?:{document:string;composition:ChunkDocument}; sourceVersion?:object; documents?:ReadonlyMap<string,unknown>; composition: ChunkDocument; frame?: TimelineFrame; timeline?: TimelineProgram; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; objectOutlines?:boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
+export interface PreviewRequest { /** Ambient seconds remain continuous when changing sequence context. */ ambientTime?:number; workspace?:{x:number;h:number;zoom:number;anchorX?:number;anchorH?:number;followCamera?:boolean}; transient?:{document:string;composition:ChunkDocument}; sourceVersion?:object; documents?:ReadonlyMap<string,unknown>; composition: ChunkDocument; frame?: TimelineFrame; timeline?: TimelineProgram; sequenceId?: string; time: number; reduced: boolean; overlays: boolean; objectOutlines?:boolean; selectedId?: string; /** Editor view state: draw the player at its row, hide these objects. Never saved. */ player?: boolean; hidden?: readonly string[]; lighting?: Light; weather?: Weather; climate?: Climate | null; environment: Record<string, string | number | boolean> }
 /** A scene joined to the previewed one by a seam, drawn beside it read-only: where it is on the canvas (canvas pixels) and on which side. */
 export interface JoinedPreview { zone: string; label: string; x: number; y: number; width: number; height: number; side: 'left' | 'right' | 'above' | 'below' }
 export interface PreviewResult {
+  rendering?:Record<string,import('../world/render-settings').ResolvedRenderSettings>;
+  handles?:{id:string;instance:string;label:string;x:number;y:number;cursor:string;fields:readonly string[];edit(dx:number,dy:number,snap?:number):import('../art/core/spatial').SpatialEdit}[];
+  /** Resolved game-camera start; independent of editor pan/zoom. */
+  gameCamera?:{scene:string;x:number;h:number};
   /** Physical chunk coordinates through the captured native view, for editor connection guides. */
   projectChunk?(chunk:string,x:number,h:number):{x:number;y:number}|undefined;
   /** Exact click picking replays captured paint commands through the same primitive painter. */
-  pick?:(point:{x:number;y:number})=>string|undefined;resolved?:Record<string,import('../art/core/presentation').ArtworkInspection>;camera?:import('../runtime/frame').CameraGuide;workspaceScale?:number;workspaceAnchor?:{x:number;h:number}; activeScene?:string;regions?:{document:string;scene:string;label:string;x:number;y:number;width:number;height:number;active:boolean}[]; sources?:Record<string,{document:string;instance:string}>; bounds: { id: string; x: number; y: number; width: number; height: number; clip?:{x:number;y:number;width:number;height:number} }[]; /** Joined scenes drawn beside this one, and the camera-x range (scene units) that holds the scene and them. */ joined?: JoinedPreview[]; extent?: { from: number; to: number }; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: ChunkDocument; environment: Environment } }
+  resolved?:Record<string,import('../art/core/presentation').ArtworkInspection>;camera?:import('../runtime/frame').CameraGuide;workspaceScale?:number;workspaceAnchor?:{x:number;h:number}; activeScene?:string;regions?:{document:string;scene:string;label:string;x:number;y:number;width:number;height:number;active:boolean}[]; sources?:Record<string,{document:string;instance:string}>; bounds: { id: string; x: number; y: number; width: number; height: number; clip?:{x:number;y:number;width:number;height:number} }[]; /** Joined scenes drawn beside this one, and the camera-x range (scene units) that holds the scene and them. */ joined?: JoinedPreview[]; extent?: { from: number; to: number }; deltaToLocal?(id: string, dx: number, dy: number): Point; artwork?: { composition: ChunkDocument; environment: Environment } }
 /** A saved world state for a scene: the environment keys it fixes (day, minute, weather, seed, flags). */
 export interface WorldState { id: string; name: string; checkpoint?:import('../world/checkpoints').PlayFixture;environment: Record<string, string | number | boolean> }
 export interface WorldStates {
@@ -29,12 +33,15 @@ export interface WorldStates {
 }
 /** Limit an editing frame to authored composition members without changing gameplay membership. */
 export interface WorkspaceScope {composition:string;origin?:string;chunks:readonly string[]}
-export interface PreviewRequest {scope?:WorkspaceScope;checkpoint?:import('../world/checkpoints').PlayFixture;direction?:'base'|'sequence'}
+export interface PreviewRequest {scope?:WorkspaceScope;checkpoint?:import('../world/checkpoints').PlayFixture;direction?:'base'|'sequence';viewport?:import('../runtime/frame').FrameViewport}
+export interface PlayStart {mode:'preview'|'checkpoint';viewport:import('../runtime/frame').FrameViewport;sequence?:{id:string;time:number};camera?:{scene:string;x:number;h:number}}
 /** `quick` controls sit in the Scene toolbar; `choices` render as a segmented row of named presets. The rest live under More. */
 export interface EnvironmentControl { key: string; label: string; kind: 'number' | 'boolean' | 'select' | 'text'; options?: string[]; min?: number; max?: number; step?: number; quick?: boolean; choices?: { label: string; value: number | string }[]; /** A single key that toggles a boolean control in the Scene view. */ shortcut?: string }
 /** One inspector tab beside Appearance: the logic, device or wiring that belongs to the selection (or to the scene when nothing is selected). */
 export interface InspectorSection { id: string; label: string; title?: string; /** Listed first and opened first whenever the selection changes (a barrier's Access). */ primary?: boolean; mount(host: HTMLElement, context: WorkbenchContext): WorkbenchHandle }
 export interface WorkbenchContext {
+  openRenderingSource?(source:import('../world/render-settings').RenderSource):void;
+  cityDistrict?:string;
   inspect?:import('./inspector-task').OpenInspector;
   openConversation?(document:string,conversation:string):void;
   checkpoint?:string;
@@ -50,6 +57,10 @@ export interface WorkbenchContext {
   scene?: string;
   /** Set when the panel was opened by an action that asks it to start (the Scene toolbar's Play). */
   autostart?: boolean;
+  /** In-place Play uses the existing right inspector; labs retain their own framed settings. */
+  playSettings?:HTMLElement;
+  playStart?:PlayStart;
+  stopPlay?():void;
   authoring?: { /** Immutable current source snapshot; use for shared reads instead of copying each document. */ snapshot?():readonly EditorDocument[]; get(id: string): EditorDocument; edit(id: string, label: string, value: unknown): void; editDocuments?(changes:{id:string;value:unknown}[],label:string):void; undo(): void; redo(): void; save(): Promise<void>; reload(): Promise<void>; dirty(id: string): boolean };
 }
 export type WorkbenchHandle = (() => void) & { refresh?(): void };

@@ -1,3 +1,4 @@
+import {appearanceChoice,appearanceRatio,generationCount,generationSeed,semantic,shapePosition,velocity,numericFields} from '../core/fields';
 /**
  * Flocks: birds wheeling or drifting overhead, drawn with the character kit's gull (its flying pose) or
  * the Registry's robot gull. A flock is plain data: how many, a seed, an altitude band, a parallax range
@@ -95,43 +96,66 @@ export function drawFlock(x: CanvasRenderingContext2D, v: View, o: FlockOptions,
   }
 }
 
-/** Screen rectangles of the visible birds (editor hit areas); about 6 cells wide a bird at its pixel size. */
-export function flockRects(v: View, o: FlockOptions, x0 = 0, h0 = 0) {
-  return flockAt(o, v.t, x0, h0).map(b => { const s = screenX(v,o,b), y = v.y(b.h); return { x: Math.round(s) - 6 * b.ps, y: Math.round(y) - 5 * b.ps, w: 12 * b.ps, h: 6 * b.ps }; })
-    .filter(r => r.x + r.w >= -10 && r.x <= v.viewW + 10);
+/** Stable configured flock strip, before viewport culling and independent of flap/drift time. */
+export function flockRegion(v:View,o:FlockOptions,x0=0,h0=0){
+ const birds=flockBirds(o);if(!birds.length)return{x:0,y:0,w:0,h:0};
+ const span=o.span??2400,margin=o.margin??200,bob=Math.abs(o.bob??8),pad=8*Math.max(1,o.birds?Math.max(...birds.map(b=>b.ps??1)):(o.ps??1)+((o.big??0)>0?1:0));
+ const low=(o.birds?Math.min(...birds.map(b=>b.h)):o.low??130)-bob-pad,high=(o.birds?Math.max(...birds.map(b=>b.h)):o.high??260)+bob+pad;
+ const depths=o.birds?birds.map(b=>b.parallax):o.parallax??[.7,1];
+ const edges=depths.flatMap(depth=>o.screenWrap?[-margin,span-margin]:[v.sx(x0-margin,depth),v.sx(x0+span-margin,depth)]);
+ const left=Math.min(...edges)-pad,right=Math.max(...edges)+pad;
+ return{x:left,y:v.y(h0+high),w:right-left,h:v.y(h0+low)-v.y(h0+high)};
 }
 
 const num = (p: Properties, k: string, d: number) => { const n = Number(p[k]); return Number.isFinite(n) ? n : d; };
 /** The flock's options from element properties. */
 export function flockOptions(p: Properties): FlockOptions {
   return {
-    bob:num(p,'bob',8),screenWrap:p.screenWrap===true,kind: p.kind === 'robogull' ? 'robogull' : 'gull', appearance: p.appearance as FlockOptions['appearance'], count: num(p, 'count', 7), seed: num(p, 'seed', 1),
-    low: num(p, 'low', 0), high: num(p, 'high', 120), parallax: [num(p, 'parallaxFar', 0.7), num(p, 'parallaxNear', 1)],
-    drift: [num(p, 'driftMin', 0.25), num(p, 'driftMax', 0.6)], wander: num(p, 'wander', 0), span: Math.max(100, num(p, 'span', 2400)), margin: num(p, 'margin', 200),
-    ps: Math.max(1, Math.min(3, Math.round(num(p, 'ps', 1)))), big: num(p, 'big', 0),
+    bob:num(p,'bobAmplitude',8),screenWrap:p.wrapAfterParallax===true,kind:p.kind==='robogull'?'robogull':'gull',appearance:p.appearance as FlockOptions['appearance'],count:num(p,'count',7),seed:num(p,'seed',1),
+    low:num(p,'minAltitude',0),high:num(p,'maxAltitude',120),parallax:[num(p,'minParallax',.7),num(p,'maxParallax',1)],
+    drift:[num(p,'minVelocityX',15)/60,num(p,'maxVelocityX',36)/60],wander:num(p,'wanderAmplitude',0),span:num(p,'maxX',2200)-num(p,'minX',-200),margin:-num(p,'minX',-200),
+    ps:num(p,'pixelSize',1),big:num(p,'largeBirdShare',0),
+
   };
 }
-const n = (label: string, d: number, min?: number, max?: number, step?: number) => ({ kind: 'number' as const, label, default: d, ...(min !== undefined ? { min } : {}), ...(max !== undefined ? { max } : {}), ...(step !== undefined ? { step } : {}) });
+const n=numericFields();
 export const flockElement: AssetDefinition = {
   mobility:()=>true,
-  type: 'character.flock', version: 1, label: 'Flock of gulls (kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'character.flock', selection:'region', version: 1, label: 'Flock of gulls (kit)', category: 'characters', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    appearance: {kind:'select',label:'Bird drawing',options:['kit','white silhouette','grey silhouette'],default:'kit'},
-    kind: { kind: 'select', label: 'Bird', options: ['gull', 'robogull'], default: 'gull' },
-    bob:n('Vertical sway',8,-100,100),screenWrap:{kind:'boolean',label:'Wrap after parallax',default:false},
-    count: n('Birds', 7, 1, 60, 1), seed: n('Seed', 1, 0, 1000000, 1),
-    low: n('Lowest (over placement)', 0), high: n('Highest (over placement)', 120),
-    parallaxFar: n('Parallax, furthest', 0.7, 0.05, 2, 0.05), parallaxNear: n('Parallax, nearest', 1, 0.05, 2, 0.05),
-    driftMin: n('Drift, slowest', 0.25, -3, 3, 0.05), driftMax: n('Drift, fastest', 0.6, -3, 3, 0.05), wander: n('Wheeling', 0, 0, 1000, 10),
-    span: n('Span', 2400, 100, 20000, 10), margin: n('Starts before x', 200, 0, 5000, 10),
-    ps: n('Pixel size', 1, 1, 3, 1), big: n('Share one size bigger', 0, 0, 1, 0.05),
+    appearance: semantic({kind:'select',label:'Bird drawing',options:['kit','white silhouette','grey silhouette'],default:'kit'},{"group":"Visibility & Drawing","quantity":"choice","unit":"choice"}),
+    kind: appearanceChoice({ kind: 'select', label: 'Bird', options: ['gull', 'robogull'], default: 'gull' }),
+    bobAmplitude:semantic(n('Vertical sway',8,-100,100),{"group":"Motion","quantity":"length","unit":"world units","space":"local"}),wrapAfterParallax:semantic({kind:'boolean',label:'Wrap after parallax',default:false},{"group":"Depth","quantity":"boolean","unit":"boolean"}),
+    count: generationCount(n('Birds', 7, 1, 60, 1)), seed: generationSeed(n('Seed', 1, 0, 1000000, 1)),
+    minAltitude:shapePosition(n('Minimum altitude',0,-10000,10000,1)),maxAltitude:shapePosition(n('Maximum altitude',120,-10000,10000,1)),
+    minParallax: semantic(n('Parallax, furthest', 0.7, 0.05, 2, 0.05),{"group":"Depth","quantity":"factor","unit":"factor"}), maxParallax: semantic(n('Parallax, nearest', 1, 0.05, 2, 0.05),{"group":"Depth","quantity":"factor","unit":"factor"}),
+    minVelocityX:velocity('Minimum drift speed',15,{min:-180,max:180,step:3}),maxVelocityX:velocity('Maximum drift speed',36,{min:-180,max:180,step:3}), wanderAmplitude: semantic(n('Wheeling amplitude', 0, 0, 1000, 10),{"group":"Motion","quantity":"length","unit":"world units","space":"local"}),
+    minX:shapePosition(n('From X',-200,-1e6,1e6,1)),maxX:shapePosition(n('To X',2200,-1e6,1e6,1)),
+    pixelSize: semantic(n('Pixel size', 1, 1, 3, 1),{"group":"Appearance","quantity":"length","unit":"artwork pixels","space":"artwork"}), largeBirdShare: appearanceRatio(n('Share one size bigger', 0, 0, 1, 0.05)),
   },
+  validateProperties(p){
+    if(Number(p.maxX)-Number(p.minX)<100||Number(p.maxX)-Number(p.minX)>20000)throw Error('Flock wrap area must be between 100 and 20000 units wide.');
+    if(Number(p.maxAltitude)<Number(p.minAltitude))throw Error('Maximum altitude must not be below minimum altitude.');
+    if(Number(p.maxParallax)<Number(p.minParallax))throw Error('Maximum parallax must not be below minimum parallax.');
+    if(Number(p.maxVelocityX)<Number(p.minVelocityX))throw Error('Maximum drift speed must not be below minimum drift speed.');
+  },
+  spatial:{fields:['minX','maxX','minAltitude','maxAltitude'],handles(p,c){
+    const start=Number(p.minX),end=Number(p.maxX),low=Number(p.minAltitude),high=Number(p.maxAltitude),at=c?.placement??{x:0,h:0},v=c?.view;
+    // A source strip has many particle depths; show its configured projection envelope.
+    // Camera-space wrapping happens after projection in the native kernel.
+    const project=(value:number,side:'left'|'right')=>!v?value:p.wrapAfterParallax?value-at.x:(side==='left'?Math.min:Math.max)(v.sx(at.x+value,Number(p.minParallax)),v.sx(at.x+value,Number(p.maxParallax)))-at.x;
+    const left=project(start,'left'),right=project(end,'right');
+    const h=(value:number)=>v?-v.y(at.h+value)-at.h:value;
+    return[
+      {id:'start',label:'Wrap area start',fields:['minX'],point:{x:left,h:h((low+high)/2)},...(v?{space:'screen' as const}:{}),cursor:'ew-resize',edit:d=>({props:{minX:start+d.x}})},
+      {id:'end',label:'Wrap area end',fields:['maxX'],point:{x:right,h:h((low+high)/2)},...(v?{space:'screen' as const}:{}),cursor:'ew-resize',edit:d=>({props:{maxX:end+d.x}})},
+      {id:'bottom',label:'Minimum altitude',fields:['minAltitude'],point:{x:(left+right)/2,h:h(low)},...(v?{space:'screen' as const}:{}),cursor:'ns-resize',edit:d=>({props:{minAltitude:low+d.h}})},
+      {id:'top',label:'Maximum altitude',fields:['maxAltitude'],point:{x:(left+right)/2,h:h(high)},...(v?{space:'screen' as const}:{}),cursor:'ns-resize',edit:d=>({props:{maxAltitude:high+d.h}})},
+    ];
+  }},
   bounds:(p,_s,c)=>{
-    const o=flockOptions(p),fallback={x:-(o.margin??200)-20,h:(o.high??120)+20,w:(o.span??2400)+40,tall:(o.high??120)-(o.low??0)+40};
-    if(!c)return fallback;
-    const birds=flockRects(c.view,o,c.placement.x,c.placement.h);if(!birds.length)return{x:0,h:0,w:0,tall:0};
-    const x=Math.min(...birds.map(b=>b.x)),y=Math.min(...birds.map(b=>b.y));
-    return screenBounds(c,{x,y,w:Math.max(...birds.map(b=>b.x+b.w))-x,h:Math.max(...birds.map(b=>b.y+b.h))-y},fallback);
+    const o=flockOptions(p),fallback={x:-(o.margin??200)-32,h:(o.high??120)+40,w:(o.span??2400)+64,tall:(o.high??120)-(o.low??0)+80};
+    return c?screenBounds(c,flockRegion(c.view,o,c.placement.x,c.placement.h),fallback):fallback;
   },
   travelBounds:(p,_s,c)=>{const o=flockOptions(p),depth=Math.max(.05,Math.min(...(o.parallax??[.7,1]))),left=-(o.margin??200)-20,right=(o.span??2400)-(o.margin??200)+20;const origin=c?.placement.x??0;return{x:(origin+left)/depth-origin,h:(o.high??120)+20,w:(right-left)/depth,tall:(o.high??120)-(o.low??0)+40};},
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),

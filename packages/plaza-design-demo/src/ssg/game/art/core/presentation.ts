@@ -1,4 +1,5 @@
 /** Pure presentation facts shared by painting, picking and scene visibility. No simulation state. */
+import {propertyIsLinked} from './composition';
 import type {ChunkDocument,Environment,Resolved,Placement,LayerSlot,Value} from './composition';
 import {projectedBounds,artworkClip,dragProjection,type DragProjection} from './geometry';
 export interface ScreenRect {x:number;y:number;width:number;height:number}
@@ -6,12 +7,12 @@ export interface ArtworkPresentation {
  drag:DragProjection;row:Resolved; document:ChunkDocument; view:Environment['view']; mobile:boolean;
  visible:boolean; pickable:boolean; reason?:string; pickReason?:string; opacity:number; bounds:ScreenRect; clip?:ScreenRect; clipSource:string;
 }
-export interface CapturedArtwork extends ArtworkPresentation {repaint?:(ctx:CanvasRenderingContext2D)=>void;slot:LayerSlot;paintOrder:number;canvasTransform:Pick<DOMMatrix,'a'|'b'|'c'|'d'|'e'|'f'>}
+export interface CapturedArtwork extends ArtworkPresentation {framingBounds?:ScreenRect;drawingWindow?:{bounds:ScreenRect;from:string;to:string};drawingBounds?:ScreenRect;boundsSource?:'drawing'|'descendants'|'region';slot:LayerSlot;paintOrder:number;canvasTransform:Pick<DOMMatrix,'a'|'b'|'c'|'d'|'e'|'f'>}
 export interface ArtworkInspection {
  source:string;type:string;authored:Placement;placement:Required<Placement>;
  layer:string;order:number;paintOrder:number;mobile:boolean;visible:boolean;reason?:string;
- opacity:number;bounds:ScreenRect;clip?:ScreenRect;clipSource:string;
- bindings:Record<string,string>;properties:Record<string,{label:string;value:Value}>;
+ opacity:number;bounds:ScreenRect;framingBounds?:ScreenRect;drawingWindow?:CapturedArtwork['drawingWindow'];drawingBounds?:ScreenRect;drawingNote?:string;boundsSource?:CapturedArtwork['boundsSource'];clip?:ScreenRect;clipSource:string;
+ bindings:Record<string,string>;properties:Record<string,{label:string;value:Value;readOnly?:boolean;source?:import('./composition').ArtworkPropertySource;binding?:string}>;
 }
 export function intersectRects(a:ScreenRect,b:ScreenRect):ScreenRect {
  const x=Math.max(a.x,b.x),y=Math.max(a.y,b.y);
@@ -22,8 +23,8 @@ export function prepareArtwork(row:Resolved,document:ChunkDocument,env:Environme
  const local=row.element.bounds(row.props,row.state,context),rawBounds=projectedBounds(view,p,local);
  const sourceClip=artworkClip(row.instance,{...view,artworkScope:view.sharedLayers||view.artworkScope?(mobile?'mobile':'static'):undefined});
  const mask=row.element.mask?.(row.props,row.state,context),nativeClip=mask?projectedBounds(view,p,mask):undefined;
- const bounds=nativeClip?intersectRects(rawBounds,nativeClip):rawBounds;
  const clip=sourceClip&&nativeClip?intersectRects(sourceClip,nativeClip):sourceClip??nativeClip;
+ const bounds=clip?intersectRects(rawBounds,clip):rawBounds;
  const reason=!appearance.visible?'Hidden by object or parent visibility':appearance.opacity===0?'Object or parent opacity is zero':row.element.hiddenReason?.(row.props,row.state,context);
  // A conservative selection rectangle is not permission to suppress native painting.
  const pickReason=reason??(row.element.parts.length&&(local.w<=0||local.tall<=0)?'No selection geometry':clip&&(intersectRects(bounds,clip).width<=0||intersectRects(bounds,clip).height<=0)?'Outside clipping mask':undefined);
@@ -31,5 +32,5 @@ export function prepareArtwork(row:Resolved,document:ChunkDocument,env:Environme
 }
 export function inspectArtwork(a:CapturedArtwork):ArtworkInspection {
  const {row:r}=a;
- return {source:a.document.scene,type:r.instance.type,authored:r.instance.placement,placement:r.placement,layer:r.instance.layer,order:r.instance.order,paintOrder:a.paintOrder,mobile:a.mobile,visible:a.visible,reason:a.reason,opacity:a.opacity,bounds:a.bounds,clip:a.clip,clipSource:a.clipSource,bindings:r.instance.bindings??{},properties:Object.fromEntries(Object.entries(r.props).map(([key,value])=>[key,{label:r.element.fields[key]?.label??key,value}]))};
+ return {source:a.document.scene,type:r.instance.type,authored:r.instance.placement,placement:r.placement,layer:r.instance.layer,order:r.instance.order,paintOrder:a.paintOrder,mobile:a.mobile,visible:a.visible,reason:a.reason,opacity:a.opacity,bounds:a.bounds,framingBounds:a.framingBounds,drawingWindow:a.drawingWindow,drawingBounds:a.drawingBounds,drawingNote:r.element.drawingNote?.(r.props,r.state),boundsSource:a.boundsSource,clip:a.clip,clipSource:a.clipSource,bindings:r.instance.bindings??{},properties:Object.fromEntries(Object.entries(r.props).map(([key,value])=>[key,{label:r.element.fields[key]?.label??key,value,...(propertyIsLinked(r,key)?{readOnly:true,...r.propertyOverrides![key]}:{})}]))};
 }

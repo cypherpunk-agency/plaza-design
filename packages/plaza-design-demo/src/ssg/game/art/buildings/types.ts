@@ -1,3 +1,8 @@
+import {choiceField,booleanField,textField} from '../core/fields';
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,distance,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
+import {floorLayout,floorDiagnostics} from './layout';
+import {rectangleControls,conditionalControls,type DerivedProperty} from '../core/spatial';
 /**
  * BUILDING KIT, district types (Tommi, 2026-10-21: every district looked like New York with cyberpunk
  * on top; districts need their own architecture, and the odd special building). Each type is its own
@@ -27,10 +32,10 @@ import { TENANTS, TENANT_IDS, shopWindow } from './tenants';
 export const y = (h: number) => -h;
 export const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a.toFixed(3) + ')';
 export const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
-export const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
-export const select = (label: string, options: readonly string[], value = options[0]): Field => ({ kind: 'select', label, options: [...options], default: value });
-export const bool = (label: string, value: boolean): Field => ({ kind: 'boolean', label, default: value });
-export const text = (label: string, value: string): Field => ({ kind: 'string', label, default: value });
+export const num = numericFields({step:1});
+export const select = choiceField;
+export const bool = booleanField;
+export const text = textField;
 export const isHex = (v: unknown) => typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v);
 /** An optional colour: empty keeps the seeded one. */
 export const colour = (label: string, empty = 'Seeded'): Field => ({ kind: 'json', label, default: '', editor: { kind: 'colour', empty },
@@ -95,37 +100,38 @@ const STACK_WALLS = ['#1f2a26', '#2a1f22', '#29251b', '#1d2329', '#262226'];
 export const STALLS = ['roast', 'fish', 'fruit', 'electronics', 'dried', 'clothes', 'herbs'] as const;
 const STALL_NAMES: Record<string, string> = { roast: 'ROAST', fish: 'LIVE FISH', fruit: 'FRUIT', electronics: 'PARTS', dried: 'DRIED GOODS', clothes: 'CLOTHES', herbs: 'HERBS' };
 const shopItem: Record<string, Field> = {
-  tenant: { kind: 'select', label: 'Tenant', options: TENANT_IDS, default: 'noodles' },
-  sign: { kind: 'string', label: 'Name (empty: the tenant’s, - for none)', default: '' },
-  stall: { kind: 'select', label: 'Market stall instead (spills onto the street)', options: ['none', ...STALLS], default: 'none' },
+  tenant: appearanceChoice({ kind: 'select', label: 'Tenant', options: TENANT_IDS, default: 'noodles' }),
+  sign: appearanceText({ kind: 'string', label: 'Name (empty: the tenant’s, - for none)', default: '' }),
+  stall: appearanceChoice({ kind: 'select', label: 'Market stall instead (spills onto the street)', options: ['none', ...STALLS], default: 'none' }),
 };
 const hungItem: Record<string, Field> = {
-  text: { kind: 'string', label: 'Letters', default: 'HOTEL' },
-  color: { kind: 'color', label: 'Tube colour', default: '#ff3a5a' },
-  floor: { kind: 'number', label: 'Floor', default: 2, min: 1, max: 60, step: 1 },
-  from: { kind: 'number', label: 'From the left', default: 10, min: 0, max: 1000, step: 1, unit: 'units' },
-  vertical: { kind: 'boolean', label: 'Letters top to bottom', default: true },
+  text: appearanceText({ kind: 'string', label: 'Letters', default: 'HOTEL' }),
+  color: appearanceColor({ kind: 'color', label: 'Tube colour', default: '#ff3a5a' }),
+  floor: semantic({ kind: 'number', label: 'Floor', default: 2, min: 1, max: 60, step: 1 },{"group":"Appearance","quantity":"index","unit":"integer"}),
+  from: shapePosition({ kind: 'number', label: 'From the left', default: 10, min: 0, max: 1000, step: 1, unit: 'units' }),
+  vertical: appearanceBoolean({ kind: 'boolean', label: 'Letters top to bottom', default: true }),
 };
 const listOf = (label: string, item: Record<string, Field>, addLabel: string, next: (rows: Properties[]) => Properties): Field => ({ kind: 'json', label, default: [], editor: { kind: 'list', item, addLabel, next },
   validate: v => { if (!Array.isArray(v) || !v.every(r => !!r && typeof r === 'object' && !Array.isArray(r))) throw new Error(label + ': expected a list'); } });
 
 export const stackElement = piece({
   type: 'building.stack', label: 'Stacked housing (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
+  spatial:rectangleControls({width:'width',height:'height'}),derived:floorDiagnostics(40),validateProperties:p=>{floorLayout(p,40);},
   fields: {
-    width: num('Width', 120, 30, 600, 1, 'units'), floors: num('Floors above the shops', 7, 1, 40), storey: num('Floor height', 44, 28, 120, 1, 'units'),
-    ground: num('Shop floor height', 72, 50, 140, 1, 'units'), wall: colour('Wall colour'), cages: num('Window cages', 0.6, 0, 1, 0.05),
-    density: num('AC, laundry and pipes', 0.8, 0, 1, 0.05), lit: num('Rooms with a light', 0.55, 0, 1, 0.05),
-    canopy: bool('Covered walkway over the shops', true), shacks: bool('Shacks and antennas on the roof', true),
-    shops: listOf('Shops under the walkway', shopItem, 'Add shop', () => ({ tenant: 'noodles', sign: '' })),
-    hung: listOf('Signs hung over the street', hungItem, 'Add sign', rows => ({ text: 'HOTEL', color: '#ff3a5a', floor: rows.length + 1, from: 10 + rows.length * 30, vertical: true })),
-    seed: num('Seed', 1, 0, 1000000), ...stateFields,
+    width: shapeLength(num('Width', 120, 30, 600, 1, 'units')), height: shapeLength(distance('Height',420,{min:0,max:5000})), floorHeight: shapeLength(distance('Floor height',44,{min:28,max:120})),
+    groundFloorHeight: shapeLength(distance('Ground floor height',72,{min:50,max:140})), wall: appearanceStructure(colour('Wall colour')), cages: appearanceRatio(num('Window cages', 0.6, 0, 1, 0.05)),
+    density: semantic(num('AC, laundry and pipes', 0.8, 0, 1, 0.05),{"group":"Generation","quantity":"ratio","unit":"ratio"}), lit: appearanceRatio(num('Rooms with a light', 0.55, 0, 1, 0.05)),
+    canopy: appearanceBoolean(bool('Covered walkway over the shops', true)), shacks: appearanceBoolean(bool('Shacks and antennas on the roof', true)),
+    shops: appearanceStructure(listOf('Shops under the walkway', shopItem, 'Add shop', () => ({ tenant: 'noodles', sign: '' }))),
+    hung: appearanceStructure(listOf('Signs hung over the street', hungItem, 'Add sign', rows => ({ text: 'HOTEL', color: '#ff3a5a', floor: rows.length + 1, from: 10 + rows.length * 30, vertical: true }))),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)), ...stateFields,
   },
-  state: { vacant: p => ({ ...p, lit: 0, shops: [], hung: [] }), box: p => ({ w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey), g: Number(p.ground), seed: Number(p.seed) }) },
-  size: p => ({ w: Number(p.width), tall: Number(p.ground) + Number(p.floors) * Number(p.storey) + 40 }),
-  bounds: p => { const tall = Number(p.ground) + Number(p.floors) * Number(p.storey) + 40; return { x: -10, h: tall, w: Number(p.width) + 20, tall }; },
-  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, roof: { x: Number(p.width) / 2, h: Number(p.ground) + Number(p.floors) * Number(p.storey), role: 'surface' }, walkway: { x: Number(p.width) / 2, h: 66, role: 'mount' } }),
+  state: { vacant: p => ({ ...p, lit: 0, shops: [], hung: [] }), box: p => ({ w: Number(p.width), h: floorLayout(p,40).wallTop, g: Number(p.groundFloorHeight), seed: Number(p.seed) }) },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => { const tall = Number(p.height); return { x: -10, h: tall, w: Number(p.width) + 20, tall }; },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, roof: { x: Number(p.width) / 2, h: floorLayout(p,40).wallTop, role: 'surface' }, walkway: { x: Number(p.width) / 2, h: 66, role: 'mount' } }),
   paint(x, p, o) {
-    const w = Number(p.width), floors = Number(p.floors), st = Number(p.storey), g = Number(p.ground), H = g + floors * st, seed = Number(p.seed), r = rng(seed * 7919 + 17);
+    const w = Number(p.width), floors = floorLayout(p,40).floorCount, st = Number(p.floorHeight), g = Number(p.groundFloorHeight), H = floorLayout(p,40).wallTop, seed = Number(p.seed), r = rng(seed * 7919 + 17);
     const d = Number(p.density), wall = isHex(p.wall) ? String(p.wall) : STACK_WALLS[Math.floor(r() * STACK_WALLS.length)];
     x.fillStyle = wall; x.fillRect(0, y(H), w, H);
     // tiled facade, streaked by decades of rain from the AC drips
@@ -221,20 +227,21 @@ const eaveRise = 9;
 
 export const shophouseElement = piece({
   type: 'building.shophouse', label: 'Shophouse (kit, Old Quarter)', category: 'architecture', libraryUse: 'reusable',
+  spatial:rectangleControls({width:'width',height:'height'}),derived:floorDiagnostics(30),validateProperties:p=>{floorLayout(p,30);},
   fields: {
-    width: num('Width', 84, 40, 240, 1, 'units'), floors: num('Floors above the shop', 1, 0, 3), storey: num('Floor height', 50, 30, 130, 1, 'units'),
-    ground: num('Shop floor height', 66, 44, 120, 1, 'units'), wall: colour('Wall colour'),
-    goods: select('Shop front', GOODS), board: text('Name board (empty: none)', ''),
-    gallery: bool('Wooden gallery upstairs', true), shutters: select('Shutters', ['mixed', 'open', 'closed']),
-    lanterns: num('Lanterns on the eave', 3, 0, 12), lantern: { kind: 'color', label: 'Lantern colour', default: '#ff6a3a' },
-    seed: num('Seed', 1, 0, 1000000), ...stateFields,
+    width: shapeLength(num('Width', 84, 40, 240, 1, 'units')), height: shapeLength(distance('Height',146,{min:0,max:1000})), floorHeight: shapeLength(distance('Floor height',50,{min:30,max:130})),
+    groundFloorHeight: shapeLength(distance('Ground floor height',66,{min:44,max:120})), wall: appearanceStructure(colour('Wall colour')),
+    goods: appearanceChoice(select('Shop front', GOODS)), board: appearanceText(text('Name board (empty: none)', '')),
+    gallery: appearanceBoolean(bool('Wooden gallery upstairs', true)), shutters: appearanceChoice(select('Shutters', ['mixed', 'open', 'closed'])),
+    lanterns: generationCount(num('Lanterns on the eave', 3, 0, 12)), lantern: appearanceColor({ kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)), ...stateFields,
   },
-  state: { vacant: p => ({ ...p, goods: 'closed', shutters: 'closed', lanterns: 0, board: '' }), box: p => ({ w: Number(p.width), h: Number(p.ground) + Number(p.floors) * Number(p.storey), g: Number(p.ground), seed: Number(p.seed) }) },
-  size: p => ({ w: Number(p.width), tall: Number(p.ground) + Number(p.floors) * Number(p.storey) + 30 }),
-  bounds: p => { const tall = Number(p.ground) + Number(p.floors) * Number(p.storey) + 30; return { x: -8, h: tall, w: Number(p.width) + 16, tall }; },
-  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, eave: { x: Number(p.width) / 2, h: Number(p.ground), role: 'mount' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),
+  state: { vacant: p => ({ ...p, goods: 'closed', shutters: 'closed', lanterns: 0, board: '' }), box: p => ({ w: Number(p.width), h: floorLayout(p,30).wallTop, g: Number(p.groundFloorHeight), seed: Number(p.seed) }) },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => { const tall = Number(p.height); return { x: -8, h: tall, w: Number(p.width) + 16, tall }; },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, eave: { x: Number(p.width) / 2, h: Number(p.groundFloorHeight), role: 'mount' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),
   paint(x, p, o) {
-    const w = Number(p.width), floors = Number(p.floors), st = Number(p.storey), g = Number(p.ground), H = g + floors * st, seed = Number(p.seed), r = rng(seed * 4999 + 3);
+    const w = Number(p.width), floors = floorLayout(p,30).floorCount, st = Number(p.floorHeight), g = Number(p.groundFloorHeight), H = floorLayout(p,30).wallTop, seed = Number(p.seed), r = rng(seed * 4999 + 3);
     const wall = isHex(p.wall) ? String(p.wall) : HOUSE_WALLS[Math.floor(r() * HOUSE_WALLS.length)], on = (s: number) => windowLit(s, o.lighting);
     const lanternCol = isHex(p.lantern) ? rgbOf(String(p.lantern)) : '255,106,58', glow = o.lighting.outdoor ? o.lighting.lamps : 1;
     x.fillStyle = wall; x.fillRect(0, y(H), w, H);
@@ -351,10 +358,12 @@ function shopGoods(x: CanvasRenderingContext2D, goods: string, ox: number, ow: n
 // ---------------------------------------------------------------- the Spire's foot
 
 export const pavilionElement = piece({
+  spatial:conditionalControls(rectangleControls({width:'width',height:'height'}),(p,key)=>key!=='height'||p.kind!=='elevator'),
+  derived:(p):Record<string,DerivedProperty>=>p.kind==='elevator'?{fixedHeight:{label:'Fixed elevator shaft height',value:900,unit:'world units'}}:{},
   type: 'building.pavilion', label: 'Spire pavilion (kit: checkpoint, sky elevator, annex)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['checkpoint', 'elevator', 'annex']), width: num('Width', 110, 40, 400, 1, 'units'), height: num('Height', 60, 30, 200, 1, 'units'),
-    label: text('Letters (empty: none)', 'IDENTIFY'), seed: num('Seed', 1, 0, 1000000),
+    kind: appearanceChoice(select('Kind', ['checkpoint', 'elevator', 'annex'])), width: shapeLength(num('Width', 110, 40, 400, 1, 'units')), height: {...shapeLength(num('Height',60,30,200,1,'units')),showIf:p=>p.kind!=='elevator'},
+    label: appearanceText(text('Letters (empty: none)', 'IDENTIFY')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: p.kind === 'elevator' ? 900 : Number(p.height) + 10 }),
   bounds: p => { const tall = p.kind === 'elevator' ? 900 : Number(p.height) + 10; return { x: 0, h: tall, w: Number(p.width), tall }; },
@@ -402,11 +411,12 @@ export const pavilionElement = piece({
 });
 
 export const spireFootElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'landmark.spire-foot', label: 'The Spire’s foot (landmark)', category: 'architecture',
   fields: {
-    width: num('Width', 1600, 200, 20000, 10, 'units'), portal: num('Portal from the left', 760, 0, 20000, 1, 'units'), portalWidth: num('Portal width', 110, 40, 400, 1, 'units'),
-    plinth: num('Plinth height', 28, 0, 120, 1, 'units'), setback: num('Plaza depth (wall sits back)', 0.86, 0.5, 1, 0.01),
-    letters: text('Letters over the portal', 'PLAZA CENTRAL'), seams: num('Seams of light', 1, 0, 3, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1600, 200, 20000, 10, 'units')), portal: shapePosition(num('Portal from the left', 760, 0, 20000, 1, 'units')), portalWidth: shapeLength(num('Portal width', 110, 40, 400, 1, 'units')),
+    plinth: shapeLength(num('Plinth height', 28, 0, 120, 1, 'units')), setback: shapeLength(num('Plaza depth (wall sits back)', 0.86, 0.5, 1, 0.01)),
+    letters: appearanceText(text('Letters over the portal', 'PLAZA CENTRAL')), seams: semantic(num('Seams of light', 1, 0, 3, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 2000 }),
   bounds: p => ({ x: 0, h: 2000, w: Number(p.width), tall: 2000 }),
@@ -440,8 +450,9 @@ export const spireFootElement = piece({
 // ---------------------------------------------------------------- special buildings
 
 export const marketHallElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'landmark.market-hall', label: 'Market hall (landmark, Neon Market)', category: 'architecture',
-  fields: { width: num('Width', 260, 140, 600, 1, 'units'), letters: text('Letters', 'WET MARKET'), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 260, 140, 600, 1, 'units')), letters: appearanceText(text('Letters', 'WET MARKET')), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: 210 }),
   bounds: p => ({ x: 0, h: 210, w: Number(p.width), tall: 210 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),
@@ -476,8 +487,9 @@ export const marketHallElement = piece({
 });
 
 export const churchElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'landmark.church', label: 'St. Agnes (landmark, Old Quarter)', category: 'architecture',
-  fields: { width: num('Width', 200, 140, 400, 1, 'units'), letters: text('Letters over the door', 'ST. AGNES'), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 200, 140, 400, 1, 'units')), letters: appearanceText(text('Letters over the door', 'ST. AGNES')), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: 300 }),
   bounds: p => ({ x: 0, h: 300, w: Number(p.width), tall: 300 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),

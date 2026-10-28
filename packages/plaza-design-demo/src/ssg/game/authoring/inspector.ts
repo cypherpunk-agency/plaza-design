@@ -1,4 +1,4 @@
-import {mountResolvedInspector} from './resolved-inspector';
+import {mountResolvedInspector,type VisibilityActions} from './resolved-inspector';
 import type {ArtworkInspection} from '../art/core/presentation';
 import {selectionKey} from './selection';
 /** Inspector DOM lifecycle. Commands and documents remain owned by the composer model. */
@@ -10,6 +10,7 @@ interface InspectorOptions {
  node?:AssetInstance;scene:string;doc?:EditorDocument;sceneName:string;sharedSource:boolean;registry:ArtRegistry;
  duplicate():void;remove():void;deselect():void;openSource():void;refresh():void;
  resolved?():ArtworkInspection|undefined;
+ visibility?:VisibilityActions;
  sections():InspectorSection[];context():WorkbenchContext;appearance(host:HTMLElement,node:AssetInstance):void;
 }
 export function createInspector(){
@@ -31,7 +32,7 @@ export function createInspector(){
     } else head.append(element('h2', '', options.sceneName || 'Scene'), element('p', 'muted', 'Nothing selected, so these are the scene’s own settings. Click artwork in the preview or the outline to inspect it.'));
     if(options.sharedSource)head.append(element('p','muted','Editing '+options.sceneName+'; these changes also appear in the game.'),button('Open source scene',()=>options.openSource()));
     right.append(head);
-    if(node&&options.resolved){updateResolved=mountResolvedInspector(right,options.resolved,()=>{inspectorTab='appearance';options.refresh();},resolvedState);updateResolved();}
+    if(node&&options.resolved){updateResolved=mountResolvedInspector(right,options.resolved,()=>{inspectorTab='appearance';options.refresh();},resolvedState,options.visibility);updateResolved();}
     let sections: InspectorSection[] = [];
     try { sections = options.sections(); } catch (e) { right.append(element('p', 'error', `Inspector unavailable: ${message(e)}`)); }
     // a primary section (a barrier's Access) comes first and opens first each time the selection changes
@@ -53,5 +54,5 @@ export function createInspector(){
     dispose(); const host = element('div', 'inspector-mount'); body.append(host); inspectorMount = { key, host };
     try { inspectorMount.handle = section.mount(host, options.context()); } catch (e) { host.replaceChildren(element('p', 'error', `Unavailable: ${message(e)}`)); }
  };
- return{render,dispose,selectSection(id:string){inspectorTab=id;},updateResolved:()=>updateResolved(),appearance(){inspectorTab='appearance';}};
+ return{render,dispose,selectSection(id:string){const changed=inspectorTab!==id;inspectorTab=id;return changed;},updateResolved:()=>updateResolved(),appearance(){inspectorTab='appearance';}};
 }

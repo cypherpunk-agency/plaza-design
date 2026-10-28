@@ -57,10 +57,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.8,
-        "fill": "#0a0812",
         "edge": 0.06,
-        "traffic": false
+        "traffic": false,
+        "generatorScale": 0.8,
+        "fillColor": "#0a0812"
       },
       "placement": {
         "x": 470,
@@ -75,11 +75,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 80,
-        "floors": 1,
         "seed": 401,
         "goods": "tea",
         "board": "TEA",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 146
       },
       "placement": {
         "x": 0,
@@ -93,13 +93,13 @@
       "type": "building.shophouse",
       "props": {
         "width": 64,
-        "floors": 1,
         "seed": 402,
         "goods": "home",
         "board": "",
         "wall": "#232b2c",
         "lanterns": 0,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 146
       },
       "placement": {
         "x": 80,
@@ -113,11 +113,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 92,
-        "floors": 2,
         "seed": 403,
         "goods": "home",
         "board": "",
-        "lanterns": 0
+        "lanterns": 0,
+        "height": 196
       },
       "placement": {
         "x": 144,
@@ -131,12 +131,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 70,
-        "floors": 0,
         "seed": 404,
         "goods": "closed",
         "board": "",
         "lanterns": 0,
-        "gallery": false
+        "gallery": false,
+        "height": 96
       },
       "placement": {
         "x": 236,
@@ -165,12 +165,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 76,
-        "floors": 1,
         "seed": 405,
         "goods": "shrine",
         "board": "",
         "lanterns": 1,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 146
       },
       "placement": {
         "x": 602,
@@ -184,11 +184,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 88,
-        "floors": 1,
         "seed": 406,
         "goods": "home",
         "board": "",
-        "lanterns": 0
+        "lanterns": 0,
+        "height": 146
       },
       "placement": {
         "x": 678,
@@ -203,14 +203,14 @@
       "props": {
         "width": 32,
         "height": 150,
-        "depth": 0.7,
         "light": "warm",
         "escape": "none",
         "bins": false,
         "steam": false,
         "cables": false,
         "yard": true,
-        "seed": 2
+        "seed": 2,
+        "perspectiveAmount": 0.7
       },
       "placement": {
         "x": 766,
@@ -224,11 +224,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 96,
-        "floors": 2,
         "seed": 407,
         "goods": "lanterns",
         "board": "LANTERNS",
-        "lanterns": 2
+        "lanterns": 2,
+        "height": 196
       },
       "placement": {
         "x": 798,
@@ -242,13 +242,13 @@
       "type": "building.shophouse",
       "props": {
         "width": 66,
-        "floors": 1,
         "seed": 408,
         "goods": "closed",
         "board": "",
         "lanterns": 0,
         "wall": "#2e2a22",
-        "state": "empty"
+        "state": "empty",
+        "height": 146
       },
       "placement": {
         "x": 894,
@@ -262,12 +262,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 84,
-        "floors": 1,
         "seed": 409,
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 146
       },
       "placement": {
         "x": 960,
@@ -281,12 +281,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 100,
-        "floors": 2,
         "seed": 410,
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "wall": "#232b2c"
+        "wall": "#232b2c",
+        "height": 196
       },
       "placement": {
         "x": 1044,
@@ -300,11 +300,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 72,
-        "floors": 1,
         "seed": 411,
         "goods": "tailor",
         "board": "MEND",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 146
       },
       "placement": {
         "x": 1144,
@@ -318,12 +318,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 192,
-        "floors": 1,
         "seed": 412,
         "goods": "closed",
         "board": "",
         "lanterns": 0,
-        "state": "for sale"
+        "state": "for sale",
+        "height": 146
       },
       "placement": {
         "x": 1216,
@@ -337,12 +337,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 192,
-        "floors": 2,
         "seed": 413,
         "goods": "home",
         "board": "",
         "lanterns": 1,
-        "wall": "#3a2c16"
+        "wall": "#3a2c16",
+        "height": 196
       },
       "placement": {
         "x": 1408,
@@ -450,13 +450,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 700,
         "archetype": "elder",
         "act": "sit",
-        "sitting": "mixed"
+        "sitting": "mixed",
+        "depthBand": "play"
       },
       "placement": {
         "x": 200,
@@ -470,12 +470,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 741,
         "archetype": "church",
-        "act": "sweep"
+        "act": "sweep",
+        "depthBand": "play"
       },
       "placement": {
         "x": 374,
@@ -489,12 +489,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 782,
         "act": "walk",
-        "range": -300
+        "range": -300,
+        "depthBand": "play"
       },
       "placement": {
         "x": 840,
@@ -508,13 +508,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 823,
         "archetype": "kid",
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1000,
@@ -528,13 +528,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 864,
         "archetype": "elder",
         "act": "doze",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1180,
@@ -548,8 +548,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 520,
@@ -563,9 +563,9 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
         "act": "walk",
-        "range": 120
+        "range": 120,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1240,
@@ -579,9 +579,9 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
         "act": "walk",
-        "range": 40
+        "range": 40,
+        "depthBand": "play"
       },
       "placement": {
         "x": 404,
@@ -595,8 +595,8 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 424,

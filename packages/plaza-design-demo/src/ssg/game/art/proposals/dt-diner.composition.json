@@ -39,12 +39,12 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
         "seams": 1,
         "glow": true,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 560,
@@ -98,8 +98,8 @@
         "escape": "right",
         "density": 0.7,
         "seed": 301,
-        "floors": 6,
-        "top": 0
+        "height": 472,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 0,
@@ -114,14 +114,14 @@
       "props": {
         "width": 70,
         "height": 160,
-        "depth": 0.5,
         "light": "warm",
         "escape": "none",
         "bins": true,
         "steam": false,
         "cables": true,
         "yard": true,
-        "seed": 8
+        "seed": 8,
+        "perspectiveAmount": 0.5
       },
       "placement": {
         "x": 190,
@@ -193,8 +193,8 @@
         "windows": "curtained",
         "density": 0.8,
         "seed": 302,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 820,
@@ -223,8 +223,8 @@
         "skin": "concrete",
         "density": 0.6,
         "seed": 303,
-        "floors": 7,
-        "top": 0
+        "height": 538,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1040,
@@ -303,10 +303,10 @@
       "type": "vehicle.road",
       "props": {
         "kind": "cab",
-        "paint": "#c8a020",
-        "depth": "play",
         "motion": "parked",
-        "lights": true
+        "lights": true,
+        "depthBand": "play",
+        "paintColor": "#c8a020"
       },
       "placement": {
         "x": 930,
@@ -437,7 +437,7 @@
       "type": "interior.diner-booths",
       "props": {
         "count": 4,
-        "booth": 54,
+        "boothWidth": 54,
         "seat": "#8a1f2a",
         "table": "#d8d0c0",
         "items": true,
@@ -459,11 +459,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4101,
         "act": "vend",
-        "archetype": "cook"
+        "archetype": "cook",
+        "depthBand": "play"
       },
       "placement": {
         "x": 640,
@@ -481,11 +481,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4102,
         "act": "stand",
-        "archetype": "waitress"
+        "archetype": "waitress",
+        "depthBand": "play"
       },
       "placement": {
         "x": 494,
@@ -528,13 +528,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4103,
         "act": "sit",
         "archetype": "inspector",
         "sitting": "side",
-        "seat": 19
+        "seat": 19,
+        "depthBand": "play"
       },
       "placement": {
         "x": 544,
@@ -552,13 +552,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4104,
         "act": "read",
         "archetype": "dockworker",
         "sitting": "side",
-        "seat": 19
+        "seat": 19,
+        "depthBand": "play"
       },
       "placement": {
         "x": 601,
@@ -576,12 +576,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4105,
         "act": "doze",
         "sitting": "side",
-        "seat": 19
+        "seat": 19,
+        "depthBand": "play"
       },
       "placement": {
         "x": 659,
@@ -599,13 +599,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4106,
         "act": "doze",
         "archetype": "sleeper",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 280,
@@ -623,13 +623,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4107,
         "act": "talk",
         "archetype": "courier",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 334,
@@ -647,12 +647,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4108,
         "act": "phone",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 360,
@@ -671,13 +671,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4109,
         "act": "read",
         "archetype": "reader",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 388,
@@ -695,13 +695,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4110,
         "act": "sit",
         "archetype": "elder",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 441,
@@ -719,13 +719,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4111,
         "act": "talk",
         "archetype": "student",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 467,
@@ -744,13 +744,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4112,
         "act": "phone",
         "archetype": "commuter",
         "sitting": "side",
-        "seat": 19
+        "seat": 19,
+        "depthBand": "play"
       },
       "placement": {
         "x": 716,
@@ -768,11 +768,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4113,
         "act": "stand",
-        "archetype": "punk"
+        "archetype": "punk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 784,
@@ -791,12 +791,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4121,
         "act": "walk",
         "archetype": "office",
-        "range": 380
+        "range": 380,
+        "depthBand": "play"
       },
       "placement": {
         "x": 40,
@@ -810,11 +810,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4122,
         "act": "smoke",
-        "archetype": "punk"
+        "archetype": "punk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 836,
@@ -828,8 +828,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 214,
@@ -843,10 +843,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "back",
         "seed": 4123,
         "act": "walk",
-        "range": -500
+        "range": -500,
+        "depthBand": "back"
       },
       "placement": {
         "x": 1100,

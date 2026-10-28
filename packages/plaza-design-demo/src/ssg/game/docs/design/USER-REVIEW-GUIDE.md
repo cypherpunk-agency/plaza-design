@@ -22,6 +22,16 @@ Use **Full game** in its Run configuration when reviewing campaign settings. Swi
 checkpoint stops the previous private run. Timeline playback previews direction; private Play
 is the place to judge interactions and progression.
 
+During private Play, the game fits the preview area and the editing timeline is hidden. Run
+configuration, checkpoint controls and diagnostics appear in the right inspector. Stop restores
+the paused editing view. Harbor arrival intentionally references glide at second 68; the first-task
+and morning-platform checkpoints have no sequence and therefore no editing timeline.
+
+The Play starting-point picker distinguishes **current preview** (selected sequence/time,
+or base editing) from **checkpoint start** (its authored sequence/time). Play looks through the
+game camera; Workspace is your independent editing view. Both start from checkpoint world state.
+The context line makes those values explicit; choosing a sequence does not edit the checkpoint.
+
 Undo each temporary source edit before the next item. Cancel leaves a staged inspector form
 unapplied. Do not use repository Save for temporary experiments. Public/static editors offer
 downloads; repository Save requires the protected local source service.
@@ -83,7 +93,8 @@ Return to [City glide](http://127.0.0.1:64422/editor/#checkpoint=review-glide).
 4. Select a camera/property track and a keyframe. Change its typed value, inspect the preview,
    then Undo. Try the inspector keyframe diamond and previous/next-key controls.
 5. Play/pause with Space, step frames with comma/period and jump seconds with Left/Right
-   (outside text fields). Try a playback speed. Workspace navigation should remain independent
+   (outside text fields). Home/Pos1 and End go to the start/end. Switch to base editing and back:
+   the sequence should resume its previous playhead. Try a playback speed. Workspace navigation should remain independent
    of the animated camera; Camera preview shows the finished shot.
 6. Reload after settling on a scene, zoom and timeline time. Check whether the restored editing
    context feels right. This remembers editor preferences, not arbitrary live gameplay history.

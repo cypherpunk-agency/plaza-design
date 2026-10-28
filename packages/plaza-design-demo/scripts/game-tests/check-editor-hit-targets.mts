@@ -10,9 +10,9 @@ assert.equal(hitTestArtwork({bounds:[{...box,id:'behind'},{...box,id:'front'}]},
 assert.equal(hitTestArtwork({bounds:[{...box,clip:{x:150,y:100,width:100,height:200}}]},{x:110,y:110},0),undefined,'Clipped portions are never hit targets');
 assert.equal(hitTestArtwork({bounds:[{id:'small',x:10,y:10,width:2,height:2}]},{x:6,y:6},16)?.id,'small','Small handles retain a usable click target');
 const repaint={bounds:[],pick:()=> 'outside',resolved:{outside:{bounds:{x:0,y:0,width:20,height:20}}}} as any;
-assert.equal(hitTestArtwork(repaint,{x:5,y:5},0)?.id,'outside','Native pixel fallback still reaches paint beyond a conservative rectangle');
+assert.equal(hitTestArtwork(repaint,{x:5,y:5},0),undefined,'Selection has one authority; obsolete repaint callbacks cannot add invisible targets');
 const input=fs.readFileSync('src/ssg/game/authoring/viewport-input.ts','utf8');assert(!/hitTest\([^;]*,\s*true\)/.test(input),'Press must not select a stricter target than hover');
-console.log('Editor hit targets: shared hover/press regions, sparse groups, clipped pieces, small handles, cross-source paint ties and native fallback PASS');
+console.log('Editor hit targets: shared hover/press regions, sparse groups, clipped pieces, small handles, cross-source paint ties and no repaint fallback PASS');
 
 // A blocked edit must never enter the transient preview; rejection on release must repaint immediately.
 const {mountViewportInput,createViewportState}=await import('../../src/ssg/game/authoring/viewport-input');
@@ -31,3 +31,22 @@ canvas.onpointerup(event(20,20));assert.equal(commits,0);assert.equal(draws,1);a
 rejectPreview=false;canvas.onpointerdown(event(0,0));canvas.onpointermove(event(10,10));assert.equal(viewport.dragging!.pending.instances[0].placement.x,10,'Allowed objects still preview movement');
 rejectCommit=true;assert.throws(()=>canvas.onpointerup(event(10,10)),/Commit rejected/);assert.equal(viewport.dragging,undefined);assert.equal(draws,2,'Even a failed commit immediately repaints the committed source');dispose();
 console.log('Viewport drag constraints: blocked previews stay put, allowed moves preview and rejected commits repaint PASS');
+
+// Exercise the actual shared dimension gesture, including admission before preview and cancellation.
+const {art}=await import('../../src/ssg/game/art');
+const {rectangleControls}=await import('../../src/ssg/game/art/core/spatial');
+canvas.width=1000;canvas.getBoundingClientRect=()=>({width:1000});
+const right=rectangleControls({width:'width'}).handles({width:300}).find(h=>h.id==='right')!;
+port.config.registry=art;port.preview.handles=[{id:'right',instance:'floor',x:300,y:0,fields:['width'],label:'Width',cursor:'ew-resize',edit:(x:number,y:number,snap:number)=>right.edit({x:snap?Math.round(x/snap)*snap:x,h:-y})}];
+const feedback:{phase:string;fields:string[];width?:number}[]=[];port.spatialFeedback=(phase:string,fields:string[],node?:any)=>feedback.push({phase,fields,width:node?.props.width});
+port.preview.resolved={floor:{properties:{width:{value:300}}}};
+rejectPreview=false;rejectCommit=false;const beforeCommits=commits,stop=mountViewportInput(port);
+canvas.onpointerdown(event(300,0));canvas.onpointermove(event(-100,0));assert.deepEqual(viewport.dragging!.pending,composition,'An out-of-range dimension cannot enter transient source');canvas.onpointerup(event(-100,0));assert.equal(commits,beforeCommits);
+assert.deepEqual(feedback.map(f=>f.phase),['start','finish'],'Rejected candidates never publish misleading live values');
+assert.equal(feedback[0].width,300,'The initial readout uses the captured effective property, including sampled animation');assert.deepEqual(doc.value,composition,'Readout sampling cannot write effective values into source');
+port.snap=8;canvas.onpointerdown(event(300,0));canvas.onpointermove(event(341,0));assert.equal(viewport.dragging!.pending.instances[0].props.width,340,'Spatial edits receive the shared snap increment');
+assert.deepEqual(feedback.at(-1),{phase:'preview',fields:['width'],width:340},'Live feedback reads the validated candidate, not an independent property value');
+canvas.onkeydown({key:'Escape',preventDefault(){}});assert.equal(viewport.dragging,undefined);assert.equal(commits,beforeCommits,'Escape discards the entire dimension gesture');assert.deepEqual(doc.value,composition);
+assert.equal(feedback.at(-1)?.phase,'cancel','Escape clears live feedback without committing');
+canvas.onpointerdown(event(300,0));canvas.onpointermove(event(340,0));canvas.onpointercancel(event(340,0));assert.equal(viewport.dragging,undefined);assert.equal(commits,beforeCommits,'Pointer cancellation cannot commit');stop();
+console.log('Spatial viewport gestures: source validation before preview, snapping, Escape and pointer cancellation PASS');

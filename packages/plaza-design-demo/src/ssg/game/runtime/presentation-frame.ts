@@ -43,6 +43,8 @@ import type {CameraState,ScenesState,TimingState,PresentationState} from './stat
 
 /** PresentationFrame functions use runtime-owned data; they never start a loop or own a save. */
 export interface PresentationFramePort{
+  citySource:import('../world/city').CitySource;
+  worldCompositions:import('../world/compositions').WorldCompositions;
   view: (camera?:CameraProjection) => SceneView;
   x: CanvasRenderingContext2D;
   camera: CameraState;
@@ -81,6 +83,7 @@ export interface PresentationFramePort{
 export function drawWorld(port:PresentationFramePort) {
     const camera=projection(port.camera),v = port.view(camera);
     renderWorldFrame({ context: port.x, scale: camera.k, view: v, scene: port.def, sceneId: port.scenes.here,
+      citySource:port.citySource,worldCompositions:port.worldCompositions,
       host: port.zh, reduced: port.reduced, clock: port.timing.clock,backdrops:port.sources.backdrops,
       weather: () => port.weatherHere(), lighting: W => port.lightHere(W),
       preparePresentation: prepared => port.zh.preparePresentation(prepared, port.zh.visionOn && port.def.layers ? 'devices' : 'all'),

@@ -1,3 +1,5 @@
+import {rectangleControls,circleControls,endpointControls,repeatedWidthControls,combineControls,axisControl,rangeControls,verticalRangeControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * INTERIOR KIT, oldq: the Old Quarter seen cut open (Tommi, 2026-10-21: every district building can be
  * entered; the Old Quarter's are the tube house and St. Agnes).
@@ -119,14 +121,15 @@ const WOOD = '#2a1a0d', WOOD_LIT = 'rgba(230,170,100,.35)';
 
 /** One storey of a tube house seen cut open: lime-washed back wall, floor, posts and beams, what stands in it, its lamp. */
 export const oldqRoomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.oldq-room', label: 'Old Quarter room (cut open)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 120, 20, 2000, 1, 'units'), height: num('Height (floor to ceiling)', 66, 30, 300, 1, 'units'),
-    kind: select('Kind', ROOMS), wall: colour('Wall colour', 'The kind’s own'),
-    floor: select('Floor', ['tile', 'timber', 'stone']), beams: bool('Timber posts and beams', true),
-    lamp: select('Lamp', ['bulb', 'oil lamp', 'none']), lit: num('Lamp on', 1, 0, 1, 0.05),
-    door: select('Back door', ['none', 'left', 'right']), cut: select('Cut wall (section)', ['none', 'left', 'right', 'both']),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 120, 20, 2000, 1, 'units')), height: shapeLength(num('Height (floor to ceiling)', 66, 30, 300, 1, 'units')),
+    kind: appearanceChoice(select('Kind', ROOMS)), wall: appearanceStructure(colour('Wall colour', 'The kind’s own')),
+    floor: appearanceChoice(select('Floor', ['tile', 'timber', 'stone'])), beams: appearanceBoolean(bool('Timber posts and beams', true)),
+    lamp: appearanceChoice(select('Lamp', ['bulb', 'oil lamp', 'none'])), lit: appearanceRatio(num('Lamp on', 1, 0, 1, 0.05)),
+    door: appearanceChoice(select('Back door', ['none', 'left', 'right'])), cut: appearanceChoice(select('Cut wall (section)', ['none', 'left', 'right', 'both'])),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -244,11 +247,12 @@ function furnish(x: Ctx, kind: string, w: number, H: number, o: Paint, seed: num
 
 /** The open courtyard between the front and back of a tube house: sky light falls in on plants and the water jar. */
 export const lightWellElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.light-well', label: 'Light well (tube house courtyard)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 56, 20, 400, 1, 'units'), height: num('Height of its walls', 170, 40, 600, 1, 'units'), wall: colour('Wall colour', 'Lime wash'),
-    light: num('Sky light falling in', 1, 0, 1, 0.05), plants: num('Potted plants', 4, 0, 10), jar: bool('Water jar', true),
-    bridge: num('Walkway across at (0: none)', 72, 0, 400, 1, 'units'), laundry: bool('Washing line', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 56, 20, 400, 1, 'units')), height: shapeLength(num('Height of its walls', 170, 40, 600, 1, 'units')), wall: appearanceStructure(colour('Wall colour', 'Lime wash')),
+    light: appearanceRatio(num('Sky light falling in', 1, 0, 1, 0.05)), plants: generationCount(num('Potted plants', 4, 0, 10)), jar: appearanceBoolean(bool('Water jar', true)),
+    bridge: shapeLength(num('Walkway across at (0: none)', 72, 0, 400, 1, 'units')), laundry: appearanceBoolean(bool('Washing line', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -304,11 +308,12 @@ export const lightWellElement = piece({
 
 /** The family altar: a red lacquered shelf (or cabinet) with photographs, incense, fruit and oil lamps. */
 export const altarElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.altar', label: 'Family altar (Old Quarter)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 36, 18, 120, 1, 'units'), stand: select('Stands on', ['wall shelf', 'cabinet']), lacquer: { kind: 'color', label: 'Lacquer', default: '#5a140c' },
-    photos: num('Photographs', 3, 0, 6), incense: num('Incense sticks', 3, 0, 9), smoke: bool('Smoke rising', true),
-    fruit: bool('Fruit offering', true), lamps: num('Oil lamps', 2, 0, 4), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 36, 18, 120, 1, 'units')), stand: appearanceChoice(select('Stands on', ['wall shelf', 'cabinet'])), lacquer: appearanceColor({ kind: 'color', label: 'Lacquer', default: '#5a140c' }),
+    photos: generationCount(num('Photographs', 3, 0, 6)), incense: semantic(num('Incense sticks', 3, 0, 9),{"group":"Appearance","quantity":"factor","unit":"factor"}), smoke: appearanceBoolean(bool('Smoke rising', true)),
+    fruit: appearanceBoolean(bool('Fruit offering', true)), lamps: generationCount(num('Oil lamps', 2, 0, 4)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: (p.stand === 'cabinet' ? 34 : 0) + 46 }),
   bounds: p => { const tall = (p.stand === 'cabinet' ? 34 : 0) + 46; return { x: -4, h: tall, w: Number(p.width) + 8, tall: tall + 6 }; },
@@ -341,8 +346,9 @@ export const altarElement = piece({
 
 /** A cut timber floor (boards on joists) or a tiled roof slab between storeys. */
 export const timberFloorElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.timber-floor', label: 'Timber floor (cut, Old Quarter)', category: 'architecture', libraryUse: 'reusable',
-  fields: { width: num('Width', 120, 10, 4000, 1, 'units'), thickness: num('Thickness', 6, 2, 30, 1, 'units'), surface: select('Surface', ['boards', 'tiles']), wood: { kind: 'color', label: 'Timber', default: '#2a1a0d' } },
+  fields: { width: shapeLength(num('Width', 120, 10, 4000, 1, 'units')), thickness: shapeLength(num('Thickness', 6, 2, 30, 1, 'units')), surface: appearanceChoice(select('Surface', ['boards', 'tiles'])), wood: appearanceColor({ kind: 'color', label: 'Timber', default: '#2a1a0d' }) },
   size: p => ({ w: Number(p.width), tall: Number(p.thickness) }),
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.thickness) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
@@ -358,10 +364,11 @@ export const timberFloorElement = piece({
 
 /** A tiled roof (curved clay tiles, ridge ends turned up) over a cut-open house. */
 export const roofSectionElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.roof-section', label: 'Tiled roof (Old Quarter)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 132, 20, 2000, 1, 'units'), rise: num('Rise', 26, 4, 120, 1, 'units'), inset: num('Ridge set in', 16, 0, 400, 1, 'units'),
-    tiles: { kind: 'color', label: 'Tiles', default: '#1c0d08' }, ends: bool('Ridge ends turned up', true), moss: num('Moss', 0.3, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 132, 20, 2000, 1, 'units')), rise: shapeLength(num('Rise', 26, 4, 120, 1, 'units')), inset: shapeLength(num('Ridge set in', 16, 0, 400, 1, 'units')),
+    tiles: appearanceColor({ kind: 'color', label: 'Tiles', default: '#1c0d08' }), ends: appearanceBoolean(bool('Ridge ends turned up', true)), moss: appearanceRatio(num('Moss', 0.3, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.rise) + 8 }),
   bounds: p => ({ x: 0, h: Number(p.rise) + 8, w: Number(p.width), tall: Number(p.rise) + 8 }),
@@ -383,11 +390,12 @@ export const roofSectionElement = piece({
 
 /** A roof terrace: a parapet with green glazed tiles, pots, water jars, a washing line, the small altar to heaven. */
 export const roofTerraceElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.roof-terrace', label: 'Roof terrace (Old Quarter)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 144, 30, 1000, 1, 'units'), parapet: num('Parapet height', 14, 4, 40, 1, 'units'), wall: colour('Parapet colour', 'Lime wash'),
-    plants: num('Potted plants', 4, 0, 10), jars: num('Water jars', 2, 0, 4), laundry: bool('Washing on bamboo poles', true),
-    shrine: bool('Altar to heaven on a post', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 144, 30, 1000, 1, 'units')), parapet: shapeLength(num('Parapet height', 14, 4, 40, 1, 'units')), wall: appearanceStructure(colour('Parapet colour', 'Lime wash')),
+    plants: generationCount(num('Potted plants', 4, 0, 10)), jars: generationCount(num('Water jars', 2, 0, 4)), laundry: appearanceBoolean(bool('Washing on bamboo poles', true)),
+    shrine: appearanceBoolean(bool('Altar to heaven on a post', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 50 }),
   bounds: p => ({ x: 0, h: 50, w: Number(p.width), tall: 50 }),
@@ -423,10 +431,11 @@ export const roofTerraceElement = piece({
  * flight, its rail and posts; the level flight still does the walking.
  */
 export const stairDressElement: AssetDefinition = {
+  spatial:endpointControls('run','rise'),
   type: 'interior.stair', version: 1, label: 'Stair dressing (timber or stone, over a level flight)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
-    run: num('Run (as its level flight)', 40, -2000, 2000, 1, 'units'), rise: num('Rise (as its level flight)', 72, -2000, 2000, 1, 'units'),
-    material: select('Material', ['timber', 'stone']), colour: colour('Colour', 'The material’s own'),
+    run: shapeLength(num('Run (as its level flight)', 40, -2000, 2000, 1, 'units')), rise: semantic(num('Rise (as its level flight)', 72, -2000, 2000, 1, 'units'),{"group":"Shape / Area","quantity":"length","unit":"world units","space":"local"}),
+    material: appearanceChoice(select('Material', ['timber', 'stone'])), materialColor: appearanceStructure(colour('Colour', 'The material’s own')),
   },
   bounds: p => { const r = Number(p.run), h = Number(p.rise); return { x: Math.min(0, r) - 2, h: Math.max(0, h) + 34, w: Math.abs(r) + 4, tall: Math.abs(h) + 46 }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
@@ -434,7 +443,7 @@ export const stairDressElement: AssetDefinition = {
 };
 function dressFlight(x: Ctx, v: View, p: Properties) {
   const run = Number(p.run), rise = Number(p.rise), stone = p.material === 'stone', n = Math.max(2, Math.round(Math.abs(rise) / 8)), dx = run / n, dh = rise / n, s = Math.sign(run) || 1;
-  const body = colourOr(p.colour, stone ? '#3e3c3a' : '#3a2412'), side = stone ? '#2a2928' : '#24150a', tread = stone ? '#5a5652' : '#5a3a1c', edge = stone ? 'rgba(200,190,175,.45)' : 'rgba(230,170,100,.5)';
+  const body = colourOr(p.materialColor, stone ? '#3e3c3a' : '#3a2412'), side = stone ? '#2a2928' : '#24150a', tread = stone ? '#5a5652' : '#5a3a1c', edge = stone ? 'rgba(200,190,175,.45)' : 'rgba(230,170,100,.5)';
   const rect = (wx: number, h: number, w: number, tall: number, c: string) => { const a = v.sx(wx), b = v.sx(wx + w), top = v.y(h + tall), bottom = v.y(h); x.fillStyle = c; x.fillRect(Math.floor(Math.min(a, b)), Math.floor(Math.min(top, bottom)), Math.max(1, Math.ceil(Math.abs(b - a))), Math.max(1, Math.ceil(Math.abs(bottom - top)))); };
   // the stringer (or the masonry under a stone flight), a unit wider than the level flight's
   x.fillStyle = side; x.beginPath(); x.moveTo(v.sx(-s), v.y(1)); x.lineTo(v.sx(run + s), v.y(rise + 1)); x.lineTo(v.sx(run + s), v.y(rise - 11)); x.lineTo(v.sx(-s), v.y(-11)); x.closePath(); x.fill();
@@ -453,13 +462,14 @@ function dressFlight(x: Ctx, v: View, p: Properties) {
  * the apse at the right end has tall windows. Daylight falls through in coloured shafts.
  */
 export const naveElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.nave', label: 'Church nave (cut open, side-on)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 860, 200, 4000, 1, 'units'), height: num('Vault height', 236, 120, 500, 1, 'units'), arcade: num('Arcade height', 124, 60, 300, 1, 'units'),
-    bay: num('Bay width', 110, 50, 300, 1, 'units'), crossing: num('Crossing at (0: none)', 550, 0, 4000, 1, 'units'), crossingWidth: num('Crossing width', 100, 40, 300, 1, 'units'),
-    apse: num('Apse at the right end (0: none)', 210, 0, 1000, 1, 'units'), stone: { kind: 'color', label: 'Stone', default: '#2a2a2c' },
-    glass: num('Stained glass', 0.8, 0, 1, 0.05), shafts: num('Daylight shafts', 0.6, 0, 1, 0.05), damp: num('Damp', 0.6, 0, 1, 0.05),
-    chandeliers: num('Candle chandeliers', 2, 0, 8), chandelierFrom: num('Chandeliers from', 0, 0, 4000, 1, 'units'), roof: bool('Roof over the vault', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 860, 200, 4000, 1, 'units')), height: shapeLength(num('Vault height', 236, 120, 500, 1, 'units')), arcade: shapeLength(num('Arcade height', 124, 60, 300, 1, 'units')),
+    bay: shapePosition(num('Bay width', 110, 50, 300, 1, 'units')), crossing: shapePosition(num('Crossing at (0: none)', 550, 0, 4000, 1, 'units')), crossingWidth: shapeLength(num('Crossing width', 100, 40, 300, 1, 'units')),
+    apse: shapeLength(num('Apse at the right end (0: none)', 210, 0, 1000, 1, 'units')), stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#2a2a2c' }),
+    glass: appearanceRatio(num('Stained glass', 0.8, 0, 1, 0.05)), shafts: appearanceRatio(num('Daylight shafts', 0.6, 0, 1, 0.05)), damp: appearanceRatio(num('Damp', 0.6, 0, 1, 0.05)),
+    chandeliers: generationCount(num('Candle chandeliers', 2, 0, 8)), chandelierFrom: shapePosition(num('Chandeliers from', 0, 0, 4000, 1, 'units')), roof: appearanceBoolean(bool('Roof over the vault', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + (p.roof !== false ? 56 : 0) }),
   bounds: p => { const tall = Number(p.height) + (p.roof !== false ? 56 : 0); return { x: 0, h: tall, w: Number(p.width), tall }; },
@@ -570,9 +580,10 @@ export const naveElement = piece({
 
 /** A rose window: petals of coloured glass in stone tracery, round a small centre. */
 export const roseWindowElement = piece({
+  spatial:circleControls('radius',4),
   type: 'interior.rose-window', label: 'Rose window', category: 'architecture', libraryUse: 'reusable',
-  fields: { radius: num('Radius', 34, 10, 120, 1, 'units'), petals: num('Petals', 12, 6, 24), glass: num('Stained glass', 0.9, 0, 1, 0.05), frame: { kind: 'color', label: 'Stone frame', default: '#1a1918' },
-    faces: select('Looks out from', Object.keys(WINDOW_FACES)), seed: num('Seed', 1, 0, 1000000) },
+  fields: { radius: shapeLength(num('Radius', 34, 10, 120, 1, 'units')), petals: generationCount(num('Petals', 12, 6, 24)), glass: appearanceRatio(num('Stained glass', 0.9, 0, 1, 0.05)), frame: appearanceColor({ kind: 'color', label: 'Stone frame', default: '#1a1918' }),
+    faces: appearanceChoice(select('Looks out from', Object.keys(WINDOW_FACES))), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.radius) * 2 + 8, tall: Number(p.radius) * 2 + 8 }),
   bounds: p => { const d = Number(p.radius) * 2 + 8; return { x: 0, h: d, w: d, tall: d }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, centre: { x: Number(p.radius) + 4, h: Number(p.radius) + 4, role: 'mount' } }),
@@ -606,10 +617,11 @@ export const roseWindowElement = piece({
 
 /** Pews seen from their ends, facing right (towards the altar): back, seat, kneeler, hymn books; a second row behind. */
 export const pewsElement = piece({
+  spatial:repeatedWidthControls('spacing','count'),
   type: 'interior.pews', label: 'Church pews (seen from the end)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    count: num('Pews', 6, 1, 30), spacing: num('Spacing', 44, 24, 120, 1, 'units'), rows: num('Rows in depth', 2, 1, 3),
-    wood: { kind: 'color', label: 'Wood', default: '#3a2414' }, kneelers: bool('Kneelers', true), books: bool('Hymn books', true),
+    count: generationCount(num('Pews', 6, 1, 30)), spacing: shapeLength(num('Spacing', 44, 24, 120, 1, 'units')), rows: generationCount(num('Rows in depth', 2, 1, 3)),
+    wood: appearanceColor({ kind: 'color', label: 'Wood', default: '#3a2414' }), kneelers: appearanceBoolean(bool('Kneelers', true)), books: appearanceBoolean(bool('Hymn books', true)),
   },
   size: p => ({ w: Number(p.count) * Number(p.spacing), tall: 36 }),
   bounds: p => ({ x: 0, h: 36, w: Number(p.count) * Number(p.spacing), tall: 36 }),
@@ -632,11 +644,12 @@ export const pewsElement = piece({
 
 /** The high altar: steps, a stone altar with its cloth and frontal, candles, a crucifix, the red sanctuary lamp, flowers. */
 export const churchAltarElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.church-altar', label: 'Church altar', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 90, 40, 300, 1, 'units'), steps: num('Steps', 2, 0, 4), candles: num('Candles', 6, 0, 12),
-    cloth: { kind: 'color', label: 'Altar cloth', default: '#d8d0c0' }, frontal: { kind: 'color', label: 'Frontal', default: '#5a1a18' },
-    crucifix: bool('Crucifix', true), lamp: bool('Sanctuary lamp', true), flowers: bool('Flowers', true),
+    width: shapeLength(num('Width', 90, 40, 300, 1, 'units')), steps: generationCount(num('Steps', 2, 0, 4)), candles: generationCount(num('Candles', 6, 0, 12)),
+    cloth: appearanceColor({ kind: 'color', label: 'Altar cloth', default: '#d8d0c0' }), frontal: appearanceColor({ kind: 'color', label: 'Frontal', default: '#5a1a18' }),
+    crucifix: appearanceBoolean(bool('Crucifix', true)), lamp: appearanceBoolean(bool('Sanctuary lamp', true)), flowers: appearanceBoolean(bool('Flowers', true)),
   },
   size: p => ({ w: Number(p.width), tall: 150 }),
   bounds: p => ({ x: -Number(p.steps) * 8 - 20, h: 150, w: Number(p.width) + Number(p.steps) * 16 + 20, tall: 150 }),
@@ -658,10 +671,11 @@ export const churchAltarElement = piece({
 
 /** A votive stand: tiers of small candles, a cash box on its post and the card that goes with it. */
 export const votiveStandElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.votive-stand', label: 'Votive candle stand with cash box', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 40, 20, 160, 1, 'units'), tiers: num('Tiers', 3, 1, 5), candles: num('Candles', 18, 0, 60), lit: num('Share lit', 0.7, 0, 1, 0.05),
-    box: bool('Cash box', true), notice: text('Card on the box post', 'CASH ONLY'), price: text('Card on the stand (empty: none)', 'CANDLES 2'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 40, 20, 160, 1, 'units')), tiers: generationCount(num('Tiers', 3, 1, 5)), candles: generationCount(num('Candles', 18, 0, 60)), lit: appearanceRatio(num('Share lit', 0.7, 0, 1, 0.05)),
+    box: appearanceBoolean(bool('Cash box', true)), notice: appearanceText(text('Card on the box post', 'CASH ONLY')), price: appearanceText(text('Card on the stand (empty: none)', 'CANDLES 2')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width) + (p.box !== false ? 30 : 0), tall: 80 }),
   bounds: p => ({ x: -10, h: 80, w: Number(p.width) + (p.box !== false ? 50 : 20), tall: 80 }),
@@ -692,11 +706,12 @@ export const votiveStandElement = piece({
 
 /** A confessional: a carved timber cabinet with the priest's door between two curtained sides, a small light over it. */
 export const confessionalElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.confessional', label: 'Confessional', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 70, 40, 200, 1, 'units'), height: num('Height', 62, 44, 120, 1, 'units'),
-    wood: { kind: 'color', label: 'Wood', default: '#2e1c10' }, curtain: { kind: 'color', label: 'Curtains', default: '#4a1418' },
-    occupied: bool('Priest inside (light on)', true), sign: text('Card on the door (empty: none)', ''),
+    width: shapeLength(num('Width', 70, 40, 200, 1, 'units')), height: shapeLength(num('Height', 62, 44, 120, 1, 'units')),
+    wood: appearanceColor({ kind: 'color', label: 'Wood', default: '#2e1c10' }), curtain: appearanceColor({ kind: 'color', label: 'Curtains', default: '#4a1418' }),
+    occupied: appearanceBoolean(bool('Priest inside (light on)', true)), sign: appearanceText(text('Card on the door (empty: none)', '')),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 8 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 8, w: Number(p.width), tall: Number(p.height) + 8 }),
@@ -717,11 +732,12 @@ export const confessionalElement = piece({
 
 /** The organ loft: a gallery on a beam and its column, a balustrade, the organ case with its pipes. */
 export const organLoftElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.organ-loft', label: 'Organ loft', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 170, 60, 600, 1, 'units'), height: num('Loft floor height', 100, 50, 300, 1, 'units'), columns: num('Columns under it', 1, 0, 4),
-    pipes: num('Pipes', 17, 0, 60), metal: { kind: 'color', label: 'Pipe metal', default: '#8a7a5a' }, wood: { kind: 'color', label: 'Wood', default: '#2e1c10' },
-    stone: { kind: 'color', label: 'Stone', default: '#343436' },
+    width: shapeLength(num('Width', 170, 60, 600, 1, 'units')), height: shapeLength(num('Loft floor height', 100, 50, 300, 1, 'units')), columns: generationCount(num('Columns under it', 1, 0, 4)),
+    pipes: generationCount(num('Pipes', 17, 0, 60)), metal: appearanceColor({ kind: 'color', label: 'Pipe metal', default: '#8a7a5a' }), wood: appearanceColor({ kind: 'color', label: 'Wood', default: '#2e1c10' }),
+    stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#343436' }),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 96 }),
   bounds: p => ({ x: 0, h: Number(p.height) + 96, w: Number(p.width), tall: Number(p.height) + 96 }),
@@ -756,13 +772,14 @@ export const organLoftElement = piece({
  * roofs (the scene's sky and the Spire show through them), the pyramid roof.
  */
 export const bellTowerElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.bell-tower', label: 'Bell tower (cut open)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 180, 60, 400, 1, 'units'), shaft: num('Belfry floor height', 256, 40, 800, 1, 'units'), belfry: num('Belfry height', 74, 40, 200, 1, 'units'),
-    flights: num('Flights (landings between them)', 4, 1, 12), landing: num('Landing width', 60, 20, 200, 1, 'units'),
-    bells: num('Bells', 3, 0, 4), swing: num('Bells swinging', 0.2, 0, 1, 0.05), openings: num('Arches open to the sky', 2, 1, 4), louvres: num('Louvres over the arches', 0.3, 0, 1, 0.05),
-    roofs: bool('Roofs seen through the arches', true), rope: bool('Bell rope', true), door: select('Door at the foot', ['right', 'left', 'none']),
-    stone: { kind: 'color', label: 'Stone', default: '#2a2a2c' }, seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 180, 60, 400, 1, 'units')), shaft: shapeLength(num('Belfry floor height', 256, 40, 800, 1, 'units')), belfry: shapePosition(num('Belfry height', 74, 40, 200, 1, 'units')),
+    flights: generationCount(num('Flights (landings between them)', 4, 1, 12)), landing: shapeLength(num('Landing width', 60, 20, 200, 1, 'units')),
+    bells: generationCount(num('Bells', 3, 0, 4)), swing: appearanceRatio(num('Bells swinging', 0.2, 0, 1, 0.05)), openings: generationCount(num('Arches open to the sky', 2, 1, 4)), louvres: appearanceRatio(num('Louvres over the arches', 0.3, 0, 1, 0.05)),
+    roofs: appearanceBoolean(bool('Roofs seen through the arches', true)), rope: appearanceBoolean(bool('Bell rope', true)), door: appearanceChoice(select('Door at the foot', ['right', 'left', 'none'])),
+    stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#2a2a2c' }), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.shaft) + Number(p.belfry) + 70 }),
   bounds: p => { const tall = Number(p.shaft) + Number(p.belfry) + 70; return { x: 0, h: tall, w: Number(p.width), tall }; },
@@ -833,11 +850,12 @@ function towerRoof(x: Ctx, W: number, top: number, stone: string) {
 
 /** The bell tower from inside the church, shut: a stone mass with slits, louvred belfry arches, its roof, the door at its foot and a plaque. */
 export const towerFaceElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.tower-face', label: 'Bell tower face (shut)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 180, 60, 400, 1, 'units'), height: num('Height to the cornice', 330, 60, 1000, 1, 'units'), stone: { kind: 'color', label: 'Stone', default: '#2a2a2c' },
-    door: select('Door', ['right', 'left', 'none']), open: num('Door open', 0.35, 0, 1, 0.05), plaque: text('Plaque by the door (empty: none)', 'BELFRY · 112 STEPS'),
-    openings: num('Belfry arches', 2, 1, 4), damp: num('Damp', 0.6, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 180, 60, 400, 1, 'units')), height: shapeLength(num('Height to the cornice', 330, 60, 1000, 1, 'units')), stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#2a2a2c' }),
+    door: appearanceChoice(select('Door', ['right', 'left', 'none'])), open: appearanceRatio(num('Door open', 0.35, 0, 1, 0.05)), plaque: appearanceText(text('Plaque by the door (empty: none)', 'BELFRY · 112 STEPS')),
+    openings: generationCount(num('Belfry arches', 2, 1, 4)), damp: appearanceRatio(num('Damp', 0.6, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 70 }),
   bounds: p => { const tall = Number(p.height) + 70; return { x: 0, h: tall, w: Number(p.width), tall }; },
@@ -881,19 +899,21 @@ export const towerFaceElement = piece({
  * (layer set) with the windows' positions; it only adds light (screen), so people and pews show through.
  */
 const LIGHT_FIELDS = {
-  source: select('Window', ['lancets', 'rose']), count: num('Windows', 5, 1, 30), spacing: num('Spacing', 110, 4, 600, 0.5, 'units'),
-  width: num('Window width (rose: diameter)', 36, 4, 240, 1, 'units'), low: num('Window bottom', 150, 0, 900, 1, 'units'), high: num('Window top', 202, 4, 1000, 1, 'units'),
-  faces: select('Windows look out from', Object.keys(WINDOW_FACES)),
-  slant: num('Slant (0: follow the sun or moon; negative: to the left)', 0, -3, 3, 0.05), strength: num('Strength by day', 1, 0, 1.5, 0.05),
-  moon: num('Moonlight at night', 0.5, 0, 1, 0.05), colour: num('Colour in the light', 0.85, 0, 1, 0.05), dust: num('Dust in the beams', 0.6, 0, 1, 0.05),
-  pools: bool('Pools on the floor', true),
-  from: num('Light stays right of (from the first window)', -2000, -6000, 0, 1, 'units'), to: num('Light stays left of (from the first window)', 4000, 0, 8000, 1, 'units'),
-  seed: num('Seed', 1, 0, 1000000),
+  source: appearanceChoice(select('Window', ['lancets', 'rose'])), count: generationCount(num('Windows', 5, 1, 30)), spacing: shapeLength(num('Spacing', 110, 4, 600, 0.5, 'units')),
+  width: shapeLength(num('Window width (rose: diameter)', 36, 4, 240, 1, 'units')), bottomY: shapePosition(num('Window bottom', 150, 0, 900, 1, 'units')), topY: shapePosition(num('Window top', 202, 4, 1000, 1, 'units')),
+  faces: appearanceChoice(select('Windows look out from', Object.keys(WINDOW_FACES))),
+  slant: semantic(num('Slant (0: follow the sun or moon; negative: to the left)', 0, -3, 3, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), strength: appearanceRatio(num('Strength by day', 1, 0, 1.5, 0.05)),
+  moon: appearanceRatio(num('Moonlight at night', 0.5, 0, 1, 0.05)), colorAmount: appearanceRatio(num('Colour in the light', 0.85, 0, 1, 0.05)), dust: appearanceRatio(num('Dust in the beams', 0.6, 0, 1, 0.05)),
+  pools: appearanceBoolean(bool('Pools on the floor', true)),
+  drawingMinX: semantic(num('Light stays right of (from the first window)', -2000, -6000, 0, 1, 'units'),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"local"}), drawingMaxX: semantic(num('Light stays left of (from the first window)', 4000, 0, 8000, 1, 'units'),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"local"}),
+  seed: generationSeed(num('Seed', 1, 0, 1000000)),
 };
 export const windowLightElement: AssetDefinition = {
-  type: 'interior.window-light', version: 1, label: 'Light through stained glass (shafts, pools, dust)', category: 'environment', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable',
+  type: 'interior.window-light', selection:'region', version: 1, label: 'Light through stained glass (shafts, pools, dust)', category: 'environment', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable',
   fields: LIGHT_FIELDS,
-  bounds: p => { const w = (Number(p.count) - 1) * Number(p.spacing) + Number(p.width); return { x: 0, h: Number(p.high), w, tall: Number(p.high) }; },
+  spatial:combineControls(rangeControls('drawingMinX','drawingMaxX',p=>Number(p.topY)+10),verticalRangeControls('bottomY','topY'),repeatedWidthControls('spacing','count',undefined,p=>Number(p.topY)+20),rectangleControls({width:'width',baseline:p=>(Number(p.bottomY)+Number(p.topY))/2})),
+  validateProperties(p){if(Number(p.topY)<Number(p.bottomY)+2)throw Error('Window top must be at least 2 units above its bottom');},
+  bounds:p=>({x:Number(p.drawingMinX),h:Number(p.topY)+1,w:Number(p.drawingMaxX)-Number(p.drawingMinX),tall:Number(p.topY)+12}),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, v, p, _s, _pass, at) {
     ctx.save(); ctx.translate(v.sx(at.x), v.y(at.h));
@@ -911,9 +931,9 @@ function paintGlassLight(x: Ctx, p: Properties, o: Paint) {
   // the slant: down and away from the sun (or moon) as it stands now, long and low morning and evening, steep at noon
   let s = Number(p.slant);
   if (s === 0) { const k = sunSlope(o, !byDay); if (k === null) return; s = k; }
-  x.save(); x.beginPath(); x.rect(Number(p.from), y(Number(p.high) + 20), Number(p.to) - Number(p.from), Number(p.high) + 36); x.clip();
-  const n = Number(p.count), sp = Number(p.spacing), w = Number(p.width), lo = Number(p.low), hi = Math.max(lo + 2, Number(p.high)), rose = p.source === 'rose', seed = Number(p.seed);
-  const tint = Number(p.colour) * (byDay ? 1 : 0.3), strip = 3;
+  x.save(); x.beginPath(); x.rect(Number(p.drawingMinX), y(Number(p.topY) + 20), Number(p.drawingMaxX) - Number(p.drawingMinX), Number(p.topY) + 36); x.clip();
+  const n = Number(p.count), sp = Number(p.spacing), w = Number(p.width), lo = Number(p.bottomY), hi = Number(p.topY), rose = p.source === 'rose', seed = Number(p.seed);
+  const tint = Number(p.colorAmount) * (byDay ? 1 : 0.3), strip = 3;
   x.globalCompositeOperation = 'screen';
   for (let i = 0; i < n; i++) {
     const x0 = i * sp;
@@ -955,12 +975,13 @@ function paintGlassLight(x: Ctx, p: Properties, o: Paint) {
  * inside; steps up to it. Grey stone gone black with damp.
  */
 export const churchFrontElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'landmark.church-front', label: 'St. Agnes west front (landmark, forecourt)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 340, 160, 800, 1, 'units'), towers: num('Tower height', 280, 120, 700, 1, 'units'), gable: num('Gable height', 200, 80, 600, 1, 'units'),
-    stone: { kind: 'color', label: 'Stone', default: '#262628' }, steps: num('Steps up to the doors', 3, 0, 8), open: num('Middle door open', 0.6, 0, 1, 0.05),
-    inside: num('Candlelight inside', 1, 0, 1, 0.05), letters: text('Letters over the door (empty: none)', 'ST. AGNES'), notice: text('Board by the door (empty: none)', 'MASS 6 AND 9'),
-    statues: bool('Statues in the niches', true), damp: num('Damp', 0.8, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 340, 160, 800, 1, 'units')), towers: shapeLength(num('Tower height', 280, 120, 700, 1, 'units')), gable: shapeLength(num('Gable height', 200, 80, 600, 1, 'units')),
+    stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#262628' }), steps: generationCount(num('Steps up to the doors', 3, 0, 8)), open: appearanceRatio(num('Middle door open', 0.6, 0, 1, 0.05)),
+    inside: appearanceRatio(num('Candlelight inside', 1, 0, 1, 0.05)), letters: appearanceText(text('Letters over the door (empty: none)', 'ST. AGNES')), notice: appearanceText(text('Board by the door (empty: none)', 'MASS 6 AND 9')),
+    statues: appearanceBoolean(bool('Statues in the niches', true)), damp: appearanceRatio(num('Damp', 0.8, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Math.max(Number(p.towers) + 30, Number(p.gable) + 34) }),
   bounds: p => { const tall = Math.max(Number(p.towers) + 30, Number(p.gable) + 34); return { x: -Number(p.steps) * 6, h: tall, w: Number(p.width) + Number(p.steps) * 12, tall }; },
@@ -1028,12 +1049,13 @@ export const churchFrontElement = piece({
 
 /** A churchyard's front: a stone plinth, an iron railing between pillars with lanterns, a gate with an iron arch. */
 export const yardWallElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'street.yard-wall', label: 'Churchyard wall, railing and gate', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 660, 40, 6000, 1, 'units'), height: num('Wall height', 14, 4, 80, 1, 'units'), railing: num('Railing height (0: none)', 28, 0, 80, 1, 'units'),
-    pillars: num('A pillar every', 80, 20, 600, 1, 'units'), gate: num('Gate from the left (-1: none)', 330, -1, 6000, 1, 'units'), gateWidth: num('Gate width', 40, 16, 200, 1, 'units'),
-    gateOpen: num('Gate opened', 0.8, 0, 1, 0.05), lanterns: bool('Lanterns on the pillars', true), letters: text('Letters on the gate arch (empty: no arch)', 'ST. AGNES'),
-    stone: { kind: 'color', label: 'Stone', default: '#2e2d2c' }, seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 660, 40, 6000, 1, 'units')), height: shapeLength(num('Wall height', 14, 4, 80, 1, 'units')), railing: shapeLength(num('Railing height (0: none)', 28, 0, 80, 1, 'units')),
+    pillarSpacing: shapeLength(num('A pillar every', 80, 20, 600, 1, 'units')), gate: shapePosition(num('Gate from the left (-1: none)', 330, -1, 6000, 1, 'units')), gateWidth: shapeLength(num('Gate width', 40, 16, 200, 1, 'units')),
+    gateOpen: appearanceRatio(num('Gate opened', 0.8, 0, 1, 0.05)), lanterns: appearanceBoolean(bool('Lanterns on the pillars', true)), letters: appearanceText(text('Letters on the gate arch (empty: no arch)', 'ST. AGNES')),
+    stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#2e2d2c' }), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.railing) + 50 }),
   bounds: p => { const tall = Number(p.height) + Number(p.railing) + 50; return { x: 0, h: tall, w: Number(p.width), tall }; },
@@ -1054,7 +1076,7 @@ export const yardWallElement = piece({
     if (rh > 0) for (const [a, b] of hasGate ? [[0, g0], [g1, W]] : [[0, W]]) { R(x, a, wh + 6, b - a, 1, '#101012'); R(x, a, wh + rh - 4, b - a, 1, '#101012'); }
     // pillars with caps and lanterns
     const ph = wh + rh + 6;
-    for (let k = 0; k <= W; k += Number(p.pillars)) {
+    for (let k = 0; k <= W; k += Number(p.pillarSpacing)) {
       const px = Math.min(W - 10, k); if (inGate(px - 6, px + 16)) continue;
       R(x, px, 0, 10, ph, stone); R(x, px - 1, ph, 12, 3, '#3a3836'); R(x, px - 1, ph + 2, 12, 1, 'rgba(210,190,160,.35)'); R(x, px, 0, 1, ph, 'rgba(255,190,120,.2)');
       if (p.lanterns !== false) lantern(px + 5, ph + 3, k);
@@ -1077,11 +1099,12 @@ export const yardWallElement = piece({
 
 /** A tree of the Old Quarter: a banyan with hanging roots, a frangipani in flower, a broad tamarind; paper lanterns can hang in it. */
 export const oldqTreeElement = piece({
+  spatial:rectangleControls({width:'spread',height:'height'}),
   type: 'environment.oldq-tree', label: 'Tree (banyan, frangipani, tamarind)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['banyan', 'frangipani', 'tamarind']), height: num('Height', 170, 40, 500, 1, 'units'), spread: num('Spread', 130, 30, 500, 1, 'units'),
-    leaves: { kind: 'color', label: 'Leaves', default: '#16220f' }, blossom: num('Blossom (frangipani)', 0.7, 0, 1, 0.05), sway: num('Sway', 0.4, 0, 1, 0.05),
-    lanterns: num('Paper lanterns hanging in it', 3, 0, 12), lantern: { kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }, seed: num('Seed', 1, 0, 1000000),
+    kind: appearanceChoice(select('Kind', ['banyan', 'frangipani', 'tamarind'])), height: shapeLength(num('Height', 170, 40, 500, 1, 'units')), spread: shapeLength(num('Spread', 130, 30, 500, 1, 'units')),
+    leaves: appearanceColor({ kind: 'color', label: 'Leaves', default: '#16220f' }), blossom: appearanceRatio(num('Blossom (frangipani)', 0.7, 0, 1, 0.05)), sway: semantic(num('Sway', 0.4, 0, 1, 0.05),{"group":"Motion","quantity":"ratio","unit":"ratio"}),
+    lanterns: generationCount(num('Paper lanterns hanging in it', 3, 0, 12)), lantern: appearanceColor({ kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.spread), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.spread), tall: Number(p.height) }),
@@ -1189,10 +1212,11 @@ function paintTree(x: Ctx, p: Properties, o: Paint) {
 
 /** A few graves in a churchyard: crosses, headstones with a photograph, small tiled tombs; candles and flowers. */
 export const gravesElement = piece({
+  spatial:repeatedWidthControls('spacing','count'),
   type: 'environment.graves', label: 'Graves (churchyard)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    count: num('Graves', 4, 1, 20), spacing: num('Spacing', 30, 14, 120, 1, 'units'), kinds: select('Kinds', ['mixed', 'crosses', 'headstones', 'tombs']),
-    stone: { kind: 'color', label: 'Stone', default: '#4a4844' }, candles: bool('Candles', true), flowers: bool('Flowers', true), moss: num('Moss', 0.5, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Graves', 4, 1, 20)), spacing: shapeLength(num('Spacing', 30, 14, 120, 1, 'units')), kinds: appearanceChoice(select('Kinds', ['mixed', 'crosses', 'headstones', 'tombs'])),
+    stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#4a4844' }), candles: appearanceBoolean(bool('Candles', true)), flowers: appearanceBoolean(bool('Flowers', true)), moss: appearanceRatio(num('Moss', 0.5, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.count) * Number(p.spacing), tall: 34 }),
   bounds: p => ({ x: 0, h: 34, w: Number(p.count) * Number(p.spacing), tall: 34 }),
@@ -1214,11 +1238,12 @@ export const gravesElement = piece({
 
 /** A grotto shrine of the Virgin: a heap of rough stone with a niche, the white statue in a blue mantle, candles and flowers. */
 export const grottoElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'environment.grotto', label: 'Grotto shrine (churchyard)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 60, 30, 240, 1, 'units'), height: num('Height', 64, 30, 240, 1, 'units'), rock: { kind: 'color', label: 'Rock', default: '#24221f' },
-    mantle: { kind: 'color', label: 'Statue’s mantle', default: '#4a6a9a' }, candles: num('Candles', 8, 0, 30), lit: num('Share lit', 0.8, 0, 1, 0.05), flowers: bool('Flowers', true),
-    plaque: text('Plaque (empty: none)', ''), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 60, 30, 240, 1, 'units')), height: shapeLength(num('Height', 64, 30, 240, 1, 'units')), rock: appearanceColor({ kind: 'color', label: 'Rock', default: '#24221f' }),
+    mantle: appearanceColor({ kind: 'color', label: 'Statue’s mantle', default: '#4a6a9a' }), candles: generationCount(num('Candles', 8, 0, 30)), lit: appearanceRatio(num('Share lit', 0.8, 0, 1, 0.05)), flowers: appearanceBoolean(bool('Flowers', true)),
+    plaque: appearanceText(text('Plaque (empty: none)', '')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -1249,10 +1274,11 @@ export const grottoElement = piece({
 
 /** A candle seller's pitch: a low table of candles and incense, a parasol with lanterns, a cash tin and a card. */
 export const candleStallElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'street.candle-stall', label: 'Candle seller’s stall', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 46, 24, 160, 1, 'units'), parasol: { kind: 'color', label: 'Parasol', default: '#7a2a1c' }, lanterns: num('Lanterns under the parasol', 2, 0, 6),
-    card: text('Card (empty: none)', 'CANDLES 2'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 46, 24, 160, 1, 'units')), parasol: appearanceColor({ kind: 'color', label: 'Parasol', default: '#7a2a1c' }), lanterns: generationCount(num('Lanterns under the parasol', 2, 0, 6)),
+    card: appearanceText(text('Card (empty: none)', 'CANDLES 2')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 64 }),
   bounds: p => ({ x: -10, h: 64, w: Number(p.width) + 20, tall: 64 }),
@@ -1278,10 +1304,11 @@ export const candleStallElement = piece({
 
 /** A stone hump bridge over a side canal, seen side-on in the middle band; covered with a timber roof as at Hoi An if wanted. */
 export const oldqBridgeElement = piece({
+  spatial:combineControls(rectangleControls({width:'span'}),axisControl('rise','h',p=>Number(p.span)/2,'Deck rise')),
   type: 'environment.oldq-bridge', label: 'Canal bridge (Old Quarter)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    span: num('Span', 130, 40, 600, 1, 'units'), rise: num('Rise of the deck', 22, 4, 80, 1, 'units'), stone: { kind: 'color', label: 'Stone', default: '#34302a' },
-    covered: bool('Covered (timber roof)', true), lanterns: num('Lanterns', 4, 0, 12), lantern: { kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }, water: bool('Water under the arch', true), seed: num('Seed', 1, 0, 1000000),
+    span: shapeLength(num('Span', 130, 40, 600, 1, 'units')), rise: shapeLength(num('Rise of the deck', 22, 4, 80, 1, 'units')), stone: appearanceColor({ kind: 'color', label: 'Stone', default: '#34302a' }),
+    covered: appearanceBoolean(bool('Covered (timber roof)', true)), lanterns: generationCount(num('Lanterns', 4, 0, 12)), lantern: appearanceColor({ kind: 'color', label: 'Lantern colour', default: '#ff6a3a' }), water: appearanceBoolean(bool('Water under the arch', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.span), tall: Number(p.rise) + (p.covered ? 70 : 24) }),
   bounds: p => { const tall = Number(p.rise) + (p.covered ? 70 : 24); return { x: 0, h: tall, w: Number(p.span), tall }; },

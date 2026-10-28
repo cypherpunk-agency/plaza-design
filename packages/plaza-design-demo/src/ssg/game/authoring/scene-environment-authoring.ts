@@ -1,8 +1,11 @@
+import {renderSettingsAuthoring} from './render-settings-authoring';
+import type {ResolvedRenderSettings} from '../world/render-settings';
 import {environmentArtworkOwners,type SceneEnvironment} from '../engine/gameplay/scene-environment';
 import type {TypedForm} from './typed-form';
 import {BACKDROP_SOURCES} from '../world/backdrops';
 /** Registered artwork may derive these values; explicit source overrides are optional. */
-export function renderSceneEnvironment(form:TypedForm,host:HTMLElement,value:SceneEnvironment|undefined,edit:(label:string,change:(environment:SceneEnvironment)=>void)=>void,refresh:()=>void,scene?:string){
+export function renderSceneEnvironment(form:TypedForm,host:HTMLElement,value:SceneEnvironment|undefined,edit:(label:string,change:(environment:SceneEnvironment)=>void)=>void,refresh:()=>void,scene?:string,effective?:ResolvedRenderSettings,openSource?:(source:import('../world/render-settings').RenderSource)=>void){
+ renderSettingsAuthoring(form,host,value?.rendering,settings=>{edit('Edit chunk rendering',e=>{if(settings)e.rendering=settings;else delete e.rendering;});refresh();},effective,'Chunk rendering',openSource);
  const owners=scene?environmentArtworkOwners[scene]:undefined;for(const [key,owner]of Object.entries(owners??{})){const note=document.createElement('p');note.textContent=key+' follows Layout: '+owner;host.append(note);}
  const env=value??{},change=(fn:(e:SceneEnvironment)=>void)=>edit('Edit scene environment',fn);
  const backdropIds=Object.keys(BACKDROP_SOURCES);

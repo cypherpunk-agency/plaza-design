@@ -23,6 +23,7 @@
  * belong only to that frame. Glows use cached sprites; shadows use single polygons.
  */
 
+import {isMeasuringArtwork,withoutArtworkBounds} from '../core/measure';
 import { smooth, windowLit, type Light } from "../../world/light";
 import type { View } from "../core/view";
 
@@ -157,6 +158,10 @@ function shadowStrength(l: Light) {
  * Draws the contact shadow always; the cast shadow outdoors in sun (or at night near a lamp).
  */
 export function castShadow(x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: number, foot = 0, par = 1, dim = 0) {
+  if(!isMeasuringArtwork(x)){paintCastShadow(x,v,wx,h,w,foot,par,dim);return;}
+  withoutArtworkBounds(x,()=>paintCastShadow(x,v,wx,h,w,foot,par,dim));
+}
+function paintCastShadow(x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: number, foot: number, par: number, dim: number) {
   if (!v.illumination.shadows) return;
   const l = v.lighting, sx = v.sx(wx, par), gy = Math.round(v.y(foot));
   if (sx < -300 || sx > v.viewW + 300) return;

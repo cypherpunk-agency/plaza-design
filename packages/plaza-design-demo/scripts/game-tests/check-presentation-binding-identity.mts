@@ -11,4 +11,5 @@ assert.throws(()=>preserveBoundIdentity(doc('mechanic'),{scene:'fixture',instanc
 assert.doesNotThrow(()=>preserveBoundIdentity(doc('mechanic'),doc('mechanic'),registry));
 console.log('Presentation binding identity PASS: registered pictures can rebind/remove; retained types and gameplay binding identities stay protected. Native source validation separately rejects dangling streams.');
 
-for(const type of ['train.seatBack','train.seatFront'])assert.deepEqual(art.get(type).bindingChoices!({scene:'train',instances:[{id:'replacement',type:'train.windowFrame',children:[]},{id:'decoration',type:'furniture.stool',children:[]}]}as any),{frame:['train.frame'],width:['train.replacement.width']});
+// Seat layers consume their actual width link; the unused train.frame binding was removed.
+for(const type of ['train.seatBack','train.seatFront'])assert.deepEqual(art.get(type).bindingChoices!({scene:'train',instances:[{id:'replacement',type:'train.windowFrame',children:[]},{id:'decoration',type:'furniture.stool',children:[]}]}as any),{width:['train.replacement.width']});

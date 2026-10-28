@@ -63,12 +63,12 @@
             "type": "building.front",
             "props": {
               "width": 220,
-              "floors": 2,
-              "storey": 66,
-              "ground": 76,
-              "top": 0,
               "skin": "concrete",
-              "seed": 41
+              "seed": 41,
+              "height": 208,
+              "groundFloorHeight": 76,
+              "floorHeight": 66,
+              "parapetHeight": 0
             },
             "placement": {
               "x": 120,
@@ -82,12 +82,12 @@
             "type": "building.front",
             "props": {
               "width": 180,
-              "floors": 1,
-              "storey": 66,
-              "ground": 76,
-              "top": 10,
               "skin": "brick",
-              "seed": 42
+              "seed": 42,
+              "height": 152,
+              "groundFloorHeight": 76,
+              "floorHeight": 66,
+              "parapetHeight": 10
             },
             "placement": {
               "x": 620,
@@ -201,12 +201,12 @@
             "type": "building.front",
             "props": {
               "width": 90,
-              "floors": 1,
-              "storey": 50,
-              "ground": 56,
-              "top": 0,
               "skin": "panel",
-              "seed": 43
+              "seed": 43,
+              "height": 106,
+              "groundFloorHeight": 56,
+              "floorHeight": 50,
+              "parapetHeight": 0
             },
             "placement": {
               "x": 700,
@@ -308,8 +308,8 @@
               "height": 160,
               "width": 34,
               "device": "lift.car",
-              "doorMs": 280,
-              "style": "glass"
+              "style": "glass",
+              "doorDuration": 0.28
             },
             "placement": {
               "x": 1150,
@@ -451,7 +451,7 @@
             "props": {
               "name": "HARBOR",
               "rods": 20,
-              "alpha": 0.92
+              "textOpacity": 0.92
             },
             "placement": {
               "x": 330,
@@ -466,7 +466,7 @@
             "props": {
               "name": "HARBOR",
               "rods": 20,
-              "alpha": 0.92
+              "textOpacity": 0.92
             },
             "placement": {
               "x": 1100,
@@ -491,9 +491,11 @@
               "title": "DEPARTURES",
               "text": "",
               "color": "255,170,60",
-              "period": 260,
-              "phase": 0,
-              "seed": 2
+              "seed": 2,
+              "timeOffset": 0,
+              "highlightPhaseAngle": 0,
+              "statusIndexOffset": 0,
+              "pageDuration": 4.333333333333333
             },
             "placement": {
               "x": 760,
@@ -543,8 +545,8 @@
               "archetype": "clerk",
               "seed": 7362,
               "act": "talk",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 520,
@@ -972,11 +974,11 @@
             "type": "vehicle.car",
             "props": {
               "length": 533,
-              "ceiling": 62,
-              "roof": 12,
+              "ceilingHeight": 62,
+              "roofHeight": 12,
               "doors": 4,
               "doorWidth": 36,
-              "doorHeight": 54,
+              "maxDoorHeight": 54,
               "cab": "left",
               "plate": "CAR 1",
               "inside": "#3b352e",
@@ -1084,7 +1086,7 @@
             "type": "vehicle.seat",
             "props": {
               "places": 4,
-              "place": 20
+              "placeWidth": 20
             },
             "placement": {
               "x": 2,
@@ -1123,11 +1125,11 @@
             "type": "vehicle.car",
             "props": {
               "length": 533,
-              "ceiling": 62,
-              "roof": 12,
+              "ceilingHeight": 62,
+              "roofHeight": 12,
               "doors": 4,
               "doorWidth": 36,
-              "doorHeight": 54,
+              "maxDoorHeight": 54,
               "cab": "right",
               "plate": "CAR 2",
               "inside": "#3b352e",
@@ -1235,7 +1237,7 @@
             "type": "vehicle.seat",
             "props": {
               "places": 4,
-              "place": 20
+              "placeWidth": 20
             },
             "placement": {
               "x": 2,
@@ -1356,21 +1358,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -6990,
-              "windowTo": -4800,
-              "lanes": [
-                {
-                  "lane": "far",
-                  "dir": 1,
-                  "v": 1.05,
-                  "gap": 176,
-                  "seed": 29
-                }
-              ]
+              "drawingMinX": -6990,
+              "drawingMaxX": -4800,
+              "lane": "far",
+              "direction": 1,
+              "velocityX": 189.00000000000003,
+              "spacing": 528,
+              "seed": 29
             },
             "placement": {
               "x": 6990,
@@ -1390,21 +1388,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -6990,
-              "windowTo": -4800,
-              "lanes": [
-                {
-                  "lane": "near",
-                  "dir": -1,
-                  "v": 1.25,
-                  "gap": 176,
-                  "seed": 11
-                }
-              ]
+              "drawingMinX": -6990,
+              "drawingMaxX": -4800,
+              "lane": "near",
+              "direction": -1,
+              "velocityX": 225,
+              "spacing": 528,
+              "seed": 11
             },
             "placement": {
               "x": 6990,
@@ -1415,28 +1409,76 @@
           },
           {
             "id": "traffic-street",
-            "type": "street.traffic",
-            "props": {
-              "mouths": [
-                -10260,
-                -11340,
-                -12390,
-                -13440,
-                -14400
-              ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
-              "pass": "street",
-              "windowFrom": -6990,
-              "windowTo": -4800
-            },
+            "type": "assembly.group",
+            "props": {},
             "placement": {
               "x": 6990,
               "h": -160
             },
             "order": 80,
-            "layer": "backdrop"
+            "layer": "backdrop",
+            "children": [
+              {
+                "id": "traffic-street-0-far",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -6990,
+                  "drawingMaxX": -4800,
+                  "lane": "far",
+                  "direction": 1,
+                  "velocityX": 189.00000000000003,
+                  "spacing": 528,
+                  "seed": 29
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              },
+              {
+                "id": "traffic-street-1-near",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -6990,
+                  "drawingMaxX": -4800,
+                  "lane": "near",
+                  "direction": -1,
+                  "velocityX": 225,
+                  "spacing": 528,
+                  "seed": 11
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              }
+            ]
           }
         ]
       },
@@ -2088,7 +2130,6 @@
             "props": {
               "width": 1600,
               "concrete": "#26241f",
-              "joint": 96,
               "walkway": true,
               "puddles": [
                 {
@@ -2133,7 +2174,8 @@
                   "x": 1460,
                   "color": "255,176,92"
                 }
-              ]
+              ],
+              "jointSpacing": 96
             },
             "placement": {
               "x": 0,
@@ -2227,8 +2269,8 @@
               "archetype": "vendor",
               "seed": 7381,
               "act": "vend",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 780,
@@ -2296,8 +2338,8 @@
               "archetype": "vendor",
               "seed": 7382,
               "act": "haggle",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 920,
@@ -2315,8 +2357,8 @@
               "archetype": "elder",
               "seed": 7383,
               "act": "haggle",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 880,
@@ -2355,12 +2397,12 @@
             "type": "vehicle.air",
             "props": {
               "kind": "taxi",
-              "depth": "back",
               "motion": "parked",
               "altitude": 0,
-              "bob": 1,
               "lights": true,
-              "cargo": false
+              "cargo": false,
+              "depthBand": "back",
+              "bobAmplitude": 1
             },
             "placement": {
               "x": 1540,
@@ -2471,9 +2513,9 @@
               "archetype": "commuter",
               "seed": 7391,
               "act": "walk",
-              "depth": "play",
               "district": "harbor",
-              "range": -420
+              "range": -420,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1000,
@@ -2491,9 +2533,9 @@
               "archetype": "dockworker",
               "seed": 7392,
               "act": "walk",
-              "depth": "play",
               "district": "harbor",
-              "range": -300
+              "range": -300,
+              "depthBand": "play"
             },
             "placement": {
               "x": 880,
@@ -2511,8 +2553,8 @@
               "archetype": "dockworker",
               "seed": 7393,
               "act": "sleep",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 1060,
@@ -2529,17 +2571,17 @@
               "kind": "gull",
               "count": 6,
               "seed": 5,
-              "low": 30,
-              "high": 140,
-              "parallaxFar": 0.7,
-              "parallaxNear": 1,
-              "driftMin": 0.25,
-              "driftMax": 0.6,
-              "wander": 0,
-              "span": 1800,
-              "margin": 200,
-              "ps": 1,
-              "big": 0
+              "minX": -200,
+              "maxX": 1600,
+              "minAltitude": 30,
+              "maxAltitude": 140,
+              "minParallax": 0.7,
+              "maxParallax": 1,
+              "minVelocityX": 15,
+              "maxVelocityX": 36,
+              "wanderAmplitude": 0,
+              "pixelSize": 1,
+              "largeBirdShare": 0
             },
             "placement": {
               "x": 0,
@@ -2993,7 +3035,6 @@
             "props": {
               "width": 640,
               "concrete": "#26241f",
-              "joint": 96,
               "walkway": true,
               "puddles": [
                 {
@@ -3020,7 +3061,8 @@
                   "x": 480,
                   "color": "255,232,196"
                 }
-              ]
+              ],
+              "jointSpacing": 96
             },
             "placement": {
               "x": 0,
@@ -3092,8 +3134,8 @@
               "before": "SCAN TAG",
               "after": "VERIFIED",
               "shelter": true,
-              "roof": 88,
-              "reach": 70,
+              "roofHeight": 88,
+              "roofReach": 70,
               "turnstile": false,
               "side": "left"
             },
@@ -3186,7 +3228,7 @@
             "type": "sign.camera",
             "props": {
               "pole": true,
-              "phase": 3
+              "blinkTimeOffset": 0.05
             },
             "placement": {
               "x": 260,
@@ -3203,9 +3245,9 @@
               "archetype": "dockworker",
               "seed": 7371,
               "act": "walk",
-              "depth": "play",
               "district": "harbor",
-              "range": -160
+              "range": -160,
+              "depthBand": "play"
             },
             "placement": {
               "x": 170,
@@ -3223,8 +3265,8 @@
               "archetype": "dockworker",
               "seed": 7372,
               "act": "queue",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 390,
@@ -3864,7 +3906,6 @@
             "props": {
               "width": 1280,
               "concrete": "#26241f",
-              "joint": 96,
               "walkway": true,
               "puddles": [
                 {
@@ -3913,7 +3954,8 @@
                   "x": 1200,
                   "color": "255,232,196"
                 }
-              ]
+              ],
+              "jointSpacing": 96
             },
             "placement": {
               "x": 0,
@@ -4121,7 +4163,7 @@
             "id": "clamp",
             "type": "shift.clamp",
             "props": {
-              "wheel": 17
+              "wheelOffsetX": 17
             },
             "placement": {
               "x": 0,
@@ -4202,12 +4244,12 @@
             "type": "vehicle.road",
             "props": {
               "kind": "straddle",
-              "depth": "back",
               "motion": "parked",
-              "direction": "right",
+              "direction": 1,
               "cargo": true,
               "pose": 0.6,
-              "lights": true
+              "lights": true,
+              "depthBand": "back"
             },
             "placement": {
               "x": 250,
@@ -4249,8 +4291,8 @@
               "archetype": "dockworker",
               "seed": 7344,
               "act": "direct",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 520,
@@ -4268,8 +4310,8 @@
               "archetype": "dockworker",
               "seed": 7342,
               "act": "smoke",
-              "depth": "back",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "back"
             },
             "placement": {
               "x": 320,
@@ -4286,17 +4328,17 @@
               "kind": "gull",
               "count": 5,
               "seed": 3,
-              "low": 120,
-              "high": 220,
-              "parallaxFar": 0.7,
-              "parallaxNear": 1,
-              "driftMin": 0.25,
-              "driftMax": 0.6,
-              "wander": 0,
-              "span": 1400,
-              "margin": 200,
-              "ps": 1,
-              "big": 0
+              "minX": -200,
+              "maxX": 1200,
+              "minAltitude": 120,
+              "maxAltitude": 220,
+              "minParallax": 0.7,
+              "maxParallax": 1,
+              "minVelocityX": 15,
+              "maxVelocityX": 36,
+              "wanderAmplitude": 0,
+              "pixelSize": 1,
+              "largeBirdShare": 0
             },
             "placement": {
               "x": 0,
@@ -5306,7 +5348,6 @@
             "props": {
               "width": 1280,
               "concrete": "#26241f",
-              "joint": 96,
               "walkway": true,
               "puddles": [
                 {
@@ -5355,7 +5396,8 @@
                   "x": 1190,
                   "color": "255,176,92"
                 }
-              ]
+              ],
+              "jointSpacing": 96
             },
             "placement": {
               "x": 0,
@@ -5485,7 +5527,7 @@
                 "COFFEE",
                 "OUT OF ORDER"
               ],
-              "tilt": -0.06
+              "tiltAngle": -3.437746770784939
             },
             "placement": {
               "x": 938,
@@ -5502,8 +5544,8 @@
               "archetype": "dockworker",
               "seed": 7361,
               "act": "lean",
-              "depth": "play",
-              "district": "harbor"
+              "district": "harbor",
+              "depthBand": "play"
             },
             "placement": {
               "x": 1020,
@@ -5522,7 +5564,7 @@
               "style": "pipe",
               "posts": 30,
               "kick": true,
-              "colour": "#7c858b"
+              "paintColor": "#7c858b"
             },
             "placement": {
               "x": 860,
@@ -5555,9 +5597,9 @@
               "width": 15,
               "height": 60,
               "color": "#3d5566",
-              "open": 3,
               "bench": true,
-              "seed": 2
+              "seed": 2,
+              "openDoorIndex": 3
             },
             "placement": {
               "x": 986,
@@ -5574,9 +5616,9 @@
               "archetype": "dockworker",
               "seed": 7350,
               "act": "sit",
-              "depth": "play",
               "district": "harbor",
-              "sitting": "side"
+              "sitting": "side",
+              "depthBand": "play"
             },
             "placement": {
               "x": 1068,
@@ -5616,7 +5658,7 @@
             "type": "sign.camera",
             "props": {
               "pole": false,
-              "phase": 11
+              "blinkTimeOffset": 0.18333333333333332
             },
             "placement": {
               "x": 810,
@@ -5809,11 +5851,11 @@
               "color": "255,170,60",
               "width": 104,
               "height": 10,
-              "speed": 0.35,
-              "phase": 0,
               "mount": "wall",
               "reach": 0,
-              "seed": 0
+              "seed": 0,
+              "scrollOffset": 0,
+              "scrollSpeed": 21
             },
             "placement": {
               "x": 330,
@@ -5876,9 +5918,9 @@
               "archetype": "dockworker",
               "seed": 7321,
               "act": "walk",
-              "depth": "back",
               "district": "harbor",
-              "range": -480
+              "range": -480,
+              "depthBand": "back"
             },
             "placement": {
               "x": 860,
@@ -5896,9 +5938,9 @@
               "archetype": "dockworker",
               "seed": 7330,
               "act": "carry",
-              "depth": "back",
               "district": "harbor",
-              "range": 220
+              "range": 220,
+              "depthBand": "back"
             },
             "placement": {
               "x": 100,
@@ -7172,9 +7214,9 @@
             "id": "palm-0",
             "type": "environment.palm",
             "props": {
-              "height": 150,
-              "lean": 26,
-              "seed": 1
+              "seed": 1,
+              "trunkHeight": 450,
+              "leanX": 78
             },
             "placement": {
               "x": 2334,
@@ -7190,9 +7232,9 @@
             "id": "palm-1",
             "type": "environment.palm",
             "props": {
-              "height": 112,
-              "lean": 14,
-              "seed": 4
+              "seed": 4,
+              "trunkHeight": 336,
+              "leanX": 42
             },
             "placement": {
               "x": 1890,
@@ -7208,9 +7250,9 @@
             "id": "palm-2",
             "type": "environment.palm",
             "props": {
-              "height": 80,
-              "lean": -10,
-              "seed": 11
+              "seed": 11,
+              "trunkHeight": 240,
+              "leanX": -30
             },
             "placement": {
               "x": 1392,
@@ -7226,9 +7268,9 @@
             "id": "palm-3",
             "type": "environment.palm",
             "props": {
-              "height": 128,
-              "lean": -20,
-              "seed": 5
+              "seed": 5,
+              "trunkHeight": 384,
+              "leanX": -60
             },
             "placement": {
               "x": 1032,
@@ -7244,9 +7286,9 @@
             "id": "palm-4",
             "type": "environment.palm",
             "props": {
-              "height": 92,
-              "lean": -6,
-              "seed": 6
+              "seed": 6,
+              "trunkHeight": 276,
+              "leanX": -18
             },
             "placement": {
               "x": 834,
@@ -7262,9 +7304,9 @@
             "id": "palm-5",
             "type": "environment.palm",
             "props": {
-              "height": 70,
-              "lean": 10,
-              "seed": 7
+              "seed": 7,
+              "trunkHeight": 210,
+              "leanX": 30
             },
             "placement": {
               "x": 2634,
@@ -7280,9 +7322,9 @@
             "id": "palm-6",
             "type": "environment.palm",
             "props": {
-              "height": 98,
-              "lean": -8,
-              "seed": 8
+              "seed": 8,
+              "trunkHeight": 294,
+              "leanX": -24
             },
             "placement": {
               "x": 2976,
@@ -7298,9 +7340,9 @@
             "id": "palm-7",
             "type": "environment.palm",
             "props": {
-              "height": 84,
-              "lean": 12,
-              "seed": 9
+              "seed": 9,
+              "trunkHeight": 252,
+              "leanX": 36
             },
             "placement": {
               "x": 3606,
@@ -7316,9 +7358,9 @@
             "id": "palm-8",
             "type": "environment.palm",
             "props": {
-              "height": 60,
-              "lean": -14,
-              "seed": 12
+              "seed": 12,
+              "trunkHeight": 180,
+              "leanX": -42
             },
             "placement": {
               "x": 3825,
@@ -7335,7 +7377,7 @@
             "type": "props.lounger",
             "props": {
               "color": "#c83a2a",
-              "flip": false
+              "mirrored": false
             },
             "placement": {
               "x": 1284,
@@ -7352,7 +7394,7 @@
             "type": "props.lounger",
             "props": {
               "color": "#d8b040",
-              "flip": false
+              "mirrored": false
             },
             "placement": {
               "x": 1164,
@@ -7369,7 +7411,7 @@
             "type": "props.lounger",
             "props": {
               "color": "#3a6ad8",
-              "flip": true
+              "mirrored": true
             },
             "placement": {
               "x": 720,
@@ -7386,7 +7428,7 @@
             "type": "props.lounger",
             "props": {
               "color": "#e8e0d0",
-              "flip": true
+              "mirrored": true
             },
             "placement": {
               "x": 2406,
@@ -7405,12 +7447,12 @@
               "kind": "human",
               "seed": 4101,
               "act": "lean",
-              "depth": "play",
               "body": "tall",
               "garb": "tee",
               "hair": "long",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2061,
@@ -7429,12 +7471,12 @@
               "kind": "human",
               "seed": 4102,
               "act": "stand",
-              "depth": "play",
               "body": "avg",
               "garb": "dress",
               "hair": "bun",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2019,
@@ -7453,11 +7495,11 @@
               "kind": "human",
               "seed": 4103,
               "act": "dance",
-              "depth": "play",
               "garb": "tee",
               "hair": "mohawk",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1866,
@@ -7476,14 +7518,14 @@
               "kind": "human",
               "seed": 4104,
               "act": "dance",
-              "depth": "play",
               "garb": "dress",
               "hair": "long",
               "extras": [
                 "headphones"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1830,
@@ -7502,12 +7544,12 @@
               "kind": "human",
               "seed": 4105,
               "act": "dance",
-              "depth": "play",
               "body": "wide",
               "garb": "jacket",
               "hair": "cap",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1794,
@@ -7526,7 +7568,6 @@
               "kind": "human",
               "seed": 4106,
               "act": "dance",
-              "depth": "play",
               "body": "slim",
               "garb": "tee",
               "hair": "short",
@@ -7534,7 +7575,8 @@
                 "visor"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1758,
@@ -7553,12 +7595,12 @@
               "kind": "human",
               "seed": 4107,
               "act": "dance",
-              "depth": "play",
               "body": "short",
               "garb": "robe",
               "hair": "scarf",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1722,
@@ -7577,14 +7619,14 @@
               "kind": "human",
               "seed": 4108,
               "act": "phone",
-              "depth": "play",
               "garb": "jacket",
               "hair": "beanie",
               "extras": [
                 "phone"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1680,
@@ -7603,12 +7645,12 @@
               "kind": "human",
               "seed": 4111,
               "act": "sit",
-              "depth": "play",
               "body": "avg",
               "garb": "tee",
               "hair": "long",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1560,
@@ -7627,12 +7669,12 @@
               "kind": "human",
               "seed": 4112,
               "act": "smoke",
-              "depth": "play",
               "body": "tall",
               "garb": "jacket",
               "hair": "brim",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1527,
@@ -7651,12 +7693,12 @@
               "kind": "human",
               "seed": 4113,
               "act": "dance",
-              "depth": "play",
               "body": "kid",
               "garb": "tee",
               "hair": "cap",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1452,
@@ -7675,12 +7717,12 @@
               "kind": "human",
               "seed": 4114,
               "act": "sit",
-              "depth": "play",
               "body": "old",
               "garb": "coat",
               "hair": "bald",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1422,
@@ -7699,7 +7741,6 @@
               "kind": "human",
               "seed": 4115,
               "act": "sleep",
-              "depth": "play",
               "body": "slim",
               "garb": "dress",
               "hair": "long",
@@ -7707,7 +7748,8 @@
                 "glasses"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1284,
@@ -7726,13 +7768,13 @@
               "kind": "human",
               "seed": 4116,
               "act": "walk",
-              "depth": "play",
               "body": "avg",
               "garb": "tee",
               "hair": "short",
               "dim": 0,
-              "speed": 0.25,
-              "range": 120
+              "speed": 15,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1095,
@@ -7751,11 +7793,11 @@
               "kind": "human",
               "seed": 4117,
               "act": "stand",
-              "depth": "play",
               "garb": "dress",
               "hair": "long",
               "dim": 0.5,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1266,
@@ -7774,11 +7816,11 @@
               "kind": "human",
               "seed": 4118,
               "act": "phone",
-              "depth": "play",
               "garb": "tee",
               "hair": "short",
               "dim": 0.5,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1206,
@@ -7797,12 +7839,12 @@
               "kind": "human",
               "seed": 4121,
               "act": "walk",
-              "depth": "play",
               "garb": "coat",
               "hair": "hood",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2520,
@@ -7821,15 +7863,15 @@
               "kind": "human",
               "seed": 4122,
               "act": "walk",
-              "depth": "play",
               "garb": "tee",
               "hair": "bun",
               "extras": [
                 "bag"
               ],
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2556,
@@ -7848,10 +7890,10 @@
               "kind": "litterbot",
               "seed": 1,
               "act": "roll",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2760,
@@ -7870,13 +7912,13 @@
               "kind": "human",
               "seed": 4123,
               "act": "walk",
-              "depth": "play",
               "body": "kid",
               "garb": "tee",
               "hair": "short",
               "dim": 0,
-              "speed": 0.6,
-              "range": 120
+              "speed": 36,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3300,
@@ -7895,10 +7937,10 @@
               "kind": "gull",
               "seed": 1,
               "act": "walk",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3456,
@@ -7917,12 +7959,12 @@
               "kind": "human",
               "seed": 4124,
               "act": "sit",
-              "depth": "play",
               "body": "old",
               "garb": "jacket",
               "hair": "cap",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3720,
@@ -7941,11 +7983,11 @@
               "kind": "human",
               "seed": 4131,
               "act": "stand",
-              "depth": "play",
               "garb": "coat",
               "hair": "long",
               "dim": 0.93,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2976,
@@ -7964,11 +8006,11 @@
               "kind": "human",
               "seed": 4132,
               "act": "stand",
-              "depth": "play",
               "garb": "jacket",
               "hair": "short",
               "dim": 0.93,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2997,
@@ -7987,11 +8029,11 @@
               "kind": "human",
               "seed": 4133,
               "act": "dance",
-              "depth": "play",
               "garb": "dress",
               "hair": "bun",
               "dim": 0.93,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3180,
@@ -8010,11 +8052,11 @@
               "kind": "human",
               "seed": 4134,
               "act": "dance",
-              "depth": "play",
               "garb": "tee",
               "hair": "cap",
               "dim": 0.93,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3213,
@@ -8033,11 +8075,11 @@
               "kind": "human",
               "seed": 4136,
               "act": "phone",
-              "depth": "play",
               "garb": "jacket",
               "hair": "hood",
               "dim": 0.93,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3390,
@@ -8056,12 +8098,12 @@
               "kind": "human",
               "seed": 4137,
               "act": "sit",
-              "depth": "play",
               "body": "old",
               "garb": "coat",
               "hair": "brim",
               "dim": 0.93,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3504,
@@ -8080,12 +8122,12 @@
               "kind": "human",
               "seed": 4138,
               "act": "sit",
-              "depth": "play",
               "body": "wide",
               "garb": "coat",
               "hair": "beanie",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3996,
@@ -8104,7 +8146,6 @@
               "kind": "human",
               "seed": 4139,
               "act": "walk",
-              "depth": "play",
               "garb": "hivis",
               "hair": "helmet",
               "body": "avg",
@@ -8112,8 +8153,9 @@
                 "backpack"
               ],
               "dim": 0,
-              "speed": 0.32,
-              "range": 120
+              "speed": 19.2,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 4260,
@@ -8136,21 +8178,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -20280,
-              "windowTo": -15780,
-              "lanes": [
-                {
-                  "lane": "far",
-                  "dir": 1,
-                  "v": 1.05,
-                  "gap": 176,
-                  "seed": 29
-                }
-              ]
+              "drawingMinX": -20280,
+              "drawingMaxX": -15780,
+              "lane": "far",
+              "direction": 1,
+              "velocityX": 189.00000000000003,
+              "spacing": 528,
+              "seed": 29
             },
             "placement": {
               "x": 20280,
@@ -8170,21 +8208,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -20280,
-              "windowTo": -15780,
-              "lanes": [
-                {
-                  "lane": "near",
-                  "dir": -1,
-                  "v": 1.25,
-                  "gap": 176,
-                  "seed": 11
-                }
-              ]
+              "drawingMinX": -20280,
+              "drawingMaxX": -15780,
+              "lane": "near",
+              "direction": -1,
+              "velocityX": 225,
+              "spacing": 528,
+              "seed": 11
             },
             "placement": {
               "x": 20280,
@@ -8195,28 +8229,76 @@
           },
           {
             "id": "traffic-street",
-            "type": "street.traffic",
-            "props": {
-              "mouths": [
-                -10260,
-                -11340,
-                -12390,
-                -13440,
-                -14400
-              ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
-              "pass": "street",
-              "windowFrom": -20280,
-              "windowTo": -15780
-            },
+            "type": "assembly.group",
+            "props": {},
             "placement": {
               "x": 20280,
               "h": 0
             },
             "order": 80,
-            "layer": "backdrop"
+            "layer": "backdrop",
+            "children": [
+              {
+                "id": "traffic-street-0-far",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -20280,
+                  "drawingMaxX": -15780,
+                  "lane": "far",
+                  "direction": 1,
+                  "velocityX": 189.00000000000003,
+                  "spacing": 528,
+                  "seed": 29
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              },
+              {
+                "id": "traffic-street-1-near",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -20280,
+                  "drawingMaxX": -15780,
+                  "lane": "near",
+                  "direction": -1,
+                  "velocityX": 225,
+                  "spacing": 528,
+                  "seed": 11
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              }
+            ]
           },
           {
             "id": "sky-traffic",
@@ -8595,7 +8677,6 @@
               "kind": "human",
               "seed": 9102,
               "act": "walk",
-              "depth": "play",
               "body": "slim",
               "hair": "long",
               "garb": "coat",
@@ -8603,8 +8684,9 @@
                 "umbrella"
               ],
               "dim": 0,
-              "speed": 0.28,
-              "range": 120
+              "speed": 16.8,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3300,
@@ -8623,13 +8705,13 @@
               "kind": "human",
               "seed": 9103,
               "act": "stand",
-              "depth": "play",
               "body": "old",
               "hair": "brim",
               "garb": "coat",
               "extras": [],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 3030,
@@ -8648,7 +8730,6 @@
               "kind": "human",
               "seed": 9104,
               "act": "walk",
-              "depth": "play",
               "body": "tall",
               "hair": "short",
               "garb": "suit",
@@ -8656,8 +8737,9 @@
                 "umbrella"
               ],
               "dim": 0,
-              "speed": 0.4,
-              "range": 120
+              "speed": 24,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2610,
@@ -8676,10 +8758,10 @@
               "kind": "sweeper",
               "seed": 1,
               "act": "sweep",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2370,
@@ -8702,21 +8784,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -15780,
-              "windowTo": -12390,
-              "lanes": [
-                {
-                  "lane": "far",
-                  "dir": 1,
-                  "v": 1.05,
-                  "gap": 176,
-                  "seed": 29
-                }
-              ]
+              "drawingMinX": -15780,
+              "drawingMaxX": -12390,
+              "lane": "far",
+              "direction": 1,
+              "velocityX": 189.00000000000003,
+              "spacing": 528,
+              "seed": 29
             },
             "placement": {
               "x": 15780,
@@ -8736,21 +8814,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -15780,
-              "windowTo": -12390,
-              "lanes": [
-                {
-                  "lane": "near",
-                  "dir": -1,
-                  "v": 1.25,
-                  "gap": 176,
-                  "seed": 11
-                }
-              ]
+              "drawingMinX": -15780,
+              "drawingMaxX": -12390,
+              "lane": "near",
+              "direction": -1,
+              "velocityX": 225,
+              "spacing": 528,
+              "seed": 11
             },
             "placement": {
               "x": 15780,
@@ -8761,28 +8835,76 @@
           },
           {
             "id": "traffic-street",
-            "type": "street.traffic",
-            "props": {
-              "mouths": [
-                -10260,
-                -11340,
-                -12390,
-                -13440,
-                -14400
-              ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
-              "pass": "street",
-              "windowFrom": -15780,
-              "windowTo": -12390
-            },
+            "type": "assembly.group",
+            "props": {},
             "placement": {
               "x": 15780,
               "h": 0
             },
             "order": 80,
-            "layer": "backdrop"
+            "layer": "backdrop",
+            "children": [
+              {
+                "id": "traffic-street-0-far",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -15780,
+                  "drawingMaxX": -12390,
+                  "lane": "far",
+                  "direction": 1,
+                  "velocityX": 189.00000000000003,
+                  "spacing": 528,
+                  "seed": 29
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              },
+              {
+                "id": "traffic-street-1-near",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -15780,
+                  "drawingMaxX": -12390,
+                  "lane": "near",
+                  "direction": -1,
+                  "velocityX": 225,
+                  "spacing": 528,
+                  "seed": 11
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              }
+            ]
           },
           {
             "id": "west-gate",
@@ -8790,7 +8912,9 @@
             "props": {
               "width": 172,
               "entry": "east",
-              "foot": -1500
+              "bottomY": -1500,
+              "height": 2900,
+              "floorHeight": 85
             },
             "placement": {
               "x": 0,
@@ -8803,10 +8927,10 @@
             "id": "line0-viaduct",
             "type": "transit.viaduct",
             "props": {
-              "from": 0,
-              "to": 3390,
-              "origin": 0,
-              "base": 40
+              "startX": 0,
+              "endX": 3390,
+              "columnOriginX": 0,
+              "baseY": 40
             },
             "placement": {
               "x": 0,
@@ -8819,9 +8943,9 @@
             "id": "ring",
             "type": "architecture.ring",
             "props": {
-              "from": 0,
-              "to": 3390,
-              "origin": 0,
+              "startX": 0,
+              "endX": 3390,
+              "gridOriginX": 0,
               "curve": false,
               "part": "structure"
             },
@@ -8847,9 +8971,9 @@
             "id": "ring-traffic-far",
             "type": "vehicle.ring-traffic",
             "props": {
-              "from": 0,
-              "to": 3390,
-              "origin": 0,
+              "startX": 0,
+              "endX": 3390,
+              "gridOriginX": 0,
               "lane": "far"
             },
             "placement": {
@@ -8867,9 +8991,9 @@
             "id": "ring-traffic-near",
             "type": "vehicle.ring-traffic",
             "props": {
-              "from": 0,
-              "to": 3390,
-              "origin": 0,
+              "startX": 0,
+              "endX": 3390,
+              "gridOriginX": 0,
               "lane": "near"
             },
             "placement": {
@@ -8887,9 +9011,9 @@
             "id": "ring-front",
             "type": "architecture.ring",
             "props": {
-              "from": 0,
-              "to": 3390,
-              "origin": 0,
+              "startX": 0,
+              "endX": 3390,
+              "gridOriginX": 0,
               "curve": false,
               "part": "front"
             },
@@ -9296,15 +9420,15 @@
               "kind": "human",
               "seed": 4171,
               "act": "walk",
-              "depth": "play",
               "garb": "coat",
               "hair": "hood",
               "extras": [
                 "umbrella"
               ],
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2790,
@@ -9323,15 +9447,15 @@
               "kind": "human",
               "seed": 4172,
               "act": "walk",
-              "depth": "play",
               "garb": "suit",
               "hair": "short",
               "extras": [
                 "umbrella"
               ],
               "dim": 0,
-              "speed": 0.4,
-              "range": 120
+              "speed": 24,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 2400,
@@ -9350,11 +9474,11 @@
               "kind": "human",
               "seed": 4173,
               "act": "queue",
-              "depth": "play",
               "garb": "jacket",
               "hair": "beanie",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1980,
@@ -9373,12 +9497,12 @@
               "kind": "human",
               "seed": 4174,
               "act": "queue",
-              "depth": "play",
               "body": "old",
               "garb": "coat",
               "hair": "scarf",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1944,
@@ -9397,7 +9521,6 @@
               "kind": "human",
               "seed": 4176,
               "act": "phone",
-              "depth": "play",
               "body": "slim",
               "garb": "jacket",
               "hair": "cap",
@@ -9405,7 +9528,8 @@
                 "phone"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1908,
@@ -9424,9 +9548,9 @@
               "kind": "drone",
               "seed": 1,
               "act": "scan",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1710,
@@ -9445,10 +9569,10 @@
               "kind": "android",
               "seed": 1,
               "act": "walk",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1290,
@@ -9467,15 +9591,15 @@
               "kind": "human",
               "seed": 4175,
               "act": "walk",
-              "depth": "play",
               "garb": "dress",
               "hair": "long",
               "extras": [
                 "umbrella"
               ],
               "dim": 0,
-              "speed": 0.25,
-              "range": 120
+              "speed": 15,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1020,
@@ -9494,10 +9618,10 @@
               "kind": "deliverybot",
               "seed": 1,
               "act": "roll",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 675,
@@ -9516,7 +9640,6 @@
               "kind": "human",
               "seed": 9101,
               "act": "walk",
-              "depth": "play",
               "body": "avg",
               "hair": "beanie",
               "garb": "jacket",
@@ -9524,8 +9647,9 @@
                 "bag"
               ],
               "dim": 0,
-              "speed": 0.35,
-              "range": 120
+              "speed": 21,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 240,
@@ -9548,21 +9672,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -12390,
-              "windowTo": -9450,
-              "lanes": [
-                {
-                  "lane": "far",
-                  "dir": 1,
-                  "v": 1.05,
-                  "gap": 176,
-                  "seed": 29
-                }
-              ]
+              "drawingMinX": -12390,
+              "drawingMaxX": -9450,
+              "lane": "far",
+              "direction": 1,
+              "velocityX": 189.00000000000003,
+              "spacing": 528,
+              "seed": 29
             },
             "placement": {
               "x": 12390,
@@ -9582,21 +9702,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -12390,
-              "windowTo": -9450,
-              "lanes": [
-                {
-                  "lane": "near",
-                  "dir": -1,
-                  "v": 1.25,
-                  "gap": 176,
-                  "seed": 11
-                }
-              ]
+              "drawingMinX": -12390,
+              "drawingMaxX": -9450,
+              "lane": "near",
+              "direction": -1,
+              "velocityX": 225,
+              "spacing": 528,
+              "seed": 11
             },
             "placement": {
               "x": 12390,
@@ -9607,28 +9723,76 @@
           },
           {
             "id": "traffic-street",
-            "type": "street.traffic",
-            "props": {
-              "mouths": [
-                -10260,
-                -11340,
-                -12390,
-                -13440,
-                -14400
-              ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
-              "pass": "street",
-              "windowFrom": -12390,
-              "windowTo": -9450
-            },
+            "type": "assembly.group",
+            "props": {},
             "placement": {
               "x": 12390,
               "h": 0
             },
             "order": 80,
-            "layer": "backdrop"
+            "layer": "backdrop",
+            "children": [
+              {
+                "id": "traffic-street-0-far",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -12390,
+                  "drawingMaxX": -9450,
+                  "lane": "far",
+                  "direction": 1,
+                  "velocityX": 189.00000000000003,
+                  "spacing": 528,
+                  "seed": 29
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              },
+              {
+                "id": "traffic-street-1-near",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -12390,
+                  "drawingMaxX": -9450,
+                  "lane": "near",
+                  "direction": -1,
+                  "velocityX": 225,
+                  "spacing": 528,
+                  "seed": 11
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              }
+            ]
           },
           {
             "id": "ring-east",
@@ -9639,7 +9803,9 @@
               "street": false,
               "name": "R4 · INLAND",
               "code": "",
-              "foot": -12
+              "bottomY": -12,
+              "height": 1412,
+              "floorHeight": 85
             },
             "placement": {
               "x": 2760,
@@ -9652,10 +9818,10 @@
             "id": "line0-viaduct",
             "type": "transit.viaduct",
             "props": {
-              "from": 0,
-              "to": 2940,
-              "origin": -3390,
-              "base": 40
+              "startX": 0,
+              "endX": 2940,
+              "columnOriginX": -3390,
+              "baseY": 40
             },
             "placement": {
               "x": 0,
@@ -9668,9 +9834,9 @@
             "id": "ring",
             "type": "architecture.ring",
             "props": {
-              "from": 0,
-              "to": 2850,
-              "origin": -3390,
+              "startX": 0,
+              "endX": 2850,
+              "gridOriginX": -3390,
               "curve": true,
               "part": "structure"
             },
@@ -9696,9 +9862,9 @@
             "id": "ring-traffic-far",
             "type": "vehicle.ring-traffic",
             "props": {
-              "from": 0,
-              "to": 2850,
-              "origin": -3390,
+              "startX": 0,
+              "endX": 2850,
+              "gridOriginX": -3390,
               "lane": "far"
             },
             "placement": {
@@ -9716,9 +9882,9 @@
             "id": "ring-traffic-near",
             "type": "vehicle.ring-traffic",
             "props": {
-              "from": 0,
-              "to": 2850,
-              "origin": -3390,
+              "startX": 0,
+              "endX": 2850,
+              "gridOriginX": -3390,
               "lane": "near"
             },
             "placement": {
@@ -9736,9 +9902,9 @@
             "id": "ring-front",
             "type": "architecture.ring",
             "props": {
-              "from": 0,
-              "to": 2850,
-              "origin": -3390,
+              "startX": 0,
+              "endX": 2850,
+              "gridOriginX": -3390,
               "curve": true,
               "part": "front"
             },
@@ -9887,15 +10053,15 @@
               "kind": "human",
               "seed": 4161,
               "act": "walk",
-              "depth": "play",
               "garb": "dress",
               "hair": "bun",
               "extras": [
                 "bag"
               ],
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 1020,
@@ -9914,7 +10080,6 @@
               "kind": "human",
               "seed": 4162,
               "act": "phone",
-              "depth": "play",
               "garb": "suit",
               "hair": "short",
               "extras": [
@@ -9922,7 +10087,8 @@
                 "phone"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 816,
@@ -9941,9 +10107,9 @@
               "kind": "mech",
               "seed": 1,
               "act": "patrol",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 714,
@@ -9962,14 +10128,14 @@
               "kind": "human",
               "seed": 4163,
               "act": "queue",
-              "depth": "play",
               "garb": "coat",
               "hair": "long",
               "extras": [
                 "bag"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 600,
@@ -9988,12 +10154,12 @@
               "kind": "human",
               "seed": 4164,
               "act": "queue",
-              "depth": "play",
               "body": "kid",
               "garb": "tee",
               "hair": "cap",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 570,
@@ -10012,7 +10178,6 @@
               "kind": "human",
               "seed": 4165,
               "act": "queue",
-              "depth": "play",
               "body": "wide",
               "garb": "jacket",
               "hair": "beanie",
@@ -10020,7 +10185,8 @@
                 "bag"
               ],
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 540,
@@ -10039,9 +10205,9 @@
               "kind": "busker",
               "seed": 1,
               "act": "play",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3
+              "speed": 18,
+              "depthBand": "play"
             },
             "placement": {
               "x": 396,
@@ -10060,10 +10226,10 @@
               "kind": "sweeper",
               "seed": 1,
               "act": "sweep",
-              "depth": "play",
               "dim": 0,
-              "speed": 0.3,
-              "range": 120
+              "speed": 18,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 270,
@@ -10082,15 +10248,15 @@
               "kind": "human",
               "seed": 4166,
               "act": "walk",
-              "depth": "play",
               "garb": "jacket",
               "hair": "mohawk",
               "extras": [
                 "bag"
               ],
               "dim": 0,
-              "speed": 0.4,
-              "range": 120
+              "speed": 24,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 150,
@@ -10113,21 +10279,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -9450,
-              "windowTo": -8370,
-              "lanes": [
-                {
-                  "lane": "far",
-                  "dir": 1,
-                  "v": 1.05,
-                  "gap": 176,
-                  "seed": 29
-                }
-              ]
+              "drawingMinX": -9450,
+              "drawingMaxX": -8370,
+              "lane": "far",
+              "direction": 1,
+              "velocityX": 189.00000000000003,
+              "spacing": 528,
+              "seed": 29
             },
             "placement": {
               "x": 9450,
@@ -10147,21 +10309,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -9450,
-              "windowTo": -8370,
-              "lanes": [
-                {
-                  "lane": "near",
-                  "dir": -1,
-                  "v": 1.25,
-                  "gap": 176,
-                  "seed": 11
-                }
-              ]
+              "drawingMinX": -9450,
+              "drawingMaxX": -8370,
+              "lane": "near",
+              "direction": -1,
+              "velocityX": 225,
+              "spacing": 528,
+              "seed": 11
             },
             "placement": {
               "x": 9450,
@@ -10172,37 +10330,85 @@
           },
           {
             "id": "traffic-street",
-            "type": "street.traffic",
-            "props": {
-              "mouths": [
-                -10260,
-                -11340,
-                -12390,
-                -13440,
-                -14400
-              ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
-              "pass": "street",
-              "windowFrom": -9450,
-              "windowTo": -8370
-            },
+            "type": "assembly.group",
+            "props": {},
             "placement": {
               "x": 9450,
               "h": 0
             },
             "order": 80,
-            "layer": "backdrop"
+            "layer": "backdrop",
+            "children": [
+              {
+                "id": "traffic-street-0-far",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -9450,
+                  "drawingMaxX": -8370,
+                  "lane": "far",
+                  "direction": 1,
+                  "velocityX": 189.00000000000003,
+                  "spacing": 528,
+                  "seed": 29
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              },
+              {
+                "id": "traffic-street-1-near",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -9450,
+                  "drawingMaxX": -8370,
+                  "lane": "near",
+                  "direction": -1,
+                  "velocityX": 225,
+                  "spacing": 528,
+                  "seed": 11
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              }
+            ]
           },
           {
             "id": "line0-viaduct",
             "type": "transit.viaduct",
             "props": {
-              "from": 0,
-              "to": 1080,
-              "origin": -6330,
-              "base": 40
+              "startX": 0,
+              "endX": 1080,
+              "columnOriginX": -6330,
+              "baseY": 40
             },
             "placement": {
               "x": 0,
@@ -10412,15 +10618,15 @@
               "kind": "human",
               "seed": 4151,
               "act": "walk",
-              "depth": "play",
               "garb": "tee",
               "hair": "short",
               "extras": [
                 "headphones"
               ],
               "dim": 0,
-              "speed": 0.7,
-              "range": 120
+              "speed": 42,
+              "range": 120,
+              "depthBand": "play"
             },
             "placement": {
               "x": 930,
@@ -10443,21 +10649,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -8370,
-              "windowTo": -6990,
-              "lanes": [
-                {
-                  "lane": "far",
-                  "dir": 1,
-                  "v": 1.05,
-                  "gap": 176,
-                  "seed": 29
-                }
-              ]
+              "drawingMinX": -8370,
+              "drawingMaxX": -6990,
+              "lane": "far",
+              "direction": 1,
+              "velocityX": 189.00000000000003,
+              "spacing": 528,
+              "seed": 29
             },
             "placement": {
               "x": 8370,
@@ -10477,21 +10679,17 @@
                 -13440,
                 -14400
               ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
+              "gateX": -6810,
+              "quayX": -4800,
+              "portalX": -15780,
               "pass": "road",
-              "windowFrom": -8370,
-              "windowTo": -6990,
-              "lanes": [
-                {
-                  "lane": "near",
-                  "dir": -1,
-                  "v": 1.25,
-                  "gap": 176,
-                  "seed": 11
-                }
-              ]
+              "drawingMinX": -8370,
+              "drawingMaxX": -6990,
+              "lane": "near",
+              "direction": -1,
+              "velocityX": 225,
+              "spacing": 528,
+              "seed": 11
             },
             "placement": {
               "x": 8370,
@@ -10502,28 +10700,76 @@
           },
           {
             "id": "traffic-street",
-            "type": "street.traffic",
-            "props": {
-              "mouths": [
-                -10260,
-                -11340,
-                -12390,
-                -13440,
-                -14400
-              ],
-              "gate": -6810,
-              "quay": -4800,
-              "portal": -15780,
-              "pass": "street",
-              "windowFrom": -8370,
-              "windowTo": -6990
-            },
+            "type": "assembly.group",
+            "props": {},
             "placement": {
               "x": 8370,
               "h": 0
             },
             "order": 80,
-            "layer": "backdrop"
+            "layer": "backdrop",
+            "children": [
+              {
+                "id": "traffic-street-0-far",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -8370,
+                  "drawingMaxX": -6990,
+                  "lane": "far",
+                  "direction": 1,
+                  "velocityX": 189.00000000000003,
+                  "spacing": 528,
+                  "seed": 29
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              },
+              {
+                "id": "traffic-street-1-near",
+                "type": "street.traffic",
+                "props": {
+                  "mouths": [
+                    -10260,
+                    -11340,
+                    -12390,
+                    -13440,
+                    -14400
+                  ],
+                  "gateX": -6810,
+                  "quayX": -4800,
+                  "portalX": -15780,
+                  "pass": "street",
+                  "drawingMinX": -8370,
+                  "drawingMaxX": -6990,
+                  "lane": "near",
+                  "direction": -1,
+                  "velocityX": 225,
+                  "spacing": 528,
+                  "seed": 11
+                },
+                "placement": {
+                  "x": 0,
+                  "h": 0
+                },
+                "layer": "backdrop",
+                "order": 80
+              }
+            ]
           },
           {
             "id": "bay-bridge",
@@ -10558,10 +10804,10 @@
             "id": "line0-viaduct",
             "type": "transit.viaduct",
             "props": {
-              "from": 0,
-              "to": 1380,
-              "origin": -7410,
-              "base": 40
+              "startX": 0,
+              "endX": 1380,
+              "columnOriginX": -7410,
+              "baseY": 40
             },
             "placement": {
               "x": 0,
@@ -10827,11 +11073,11 @@
             "type": "vehicle.car",
             "props": {
               "length": 533,
-              "ceiling": 62,
-              "roof": 12,
+              "ceilingHeight": 62,
+              "roofHeight": 12,
               "doors": 4,
               "doorWidth": 36,
-              "doorHeight": 54,
+              "maxDoorHeight": 54,
               "cab": "left",
               "plate": "CAR 1",
               "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
@@ -10873,11 +11119,11 @@
             "type": "vehicle.car",
             "props": {
               "length": 533,
-              "ceiling": 62,
-              "roof": 12,
+              "ceilingHeight": 62,
+              "roofHeight": 12,
               "doors": 4,
               "doorWidth": 36,
-              "doorHeight": 54,
+              "maxDoorHeight": 54,
               "cab": "right",
               "plate": "CAR 2",
               "ads": "LINE 0 · ON TIME 61%|SPIRE RESIDENCES · BY INVITATION|REPORT UNREGISTERED PERSONS",
@@ -10899,7 +11145,7 @@
             "type": "vehicle.seat",
             "props": {
               "places": 4,
-              "place": 20,
+              "placeWidth": 20,
               "style": "bench"
             },
             "placement": {
@@ -10918,7 +11164,7 @@
             "type": "vehicle.seat",
             "props": {
               "places": 4,
-              "place": 20,
+              "placeWidth": 20,
               "style": "bench"
             },
             "placement": {
@@ -11247,9 +11493,9 @@
               "text": "SHUTTLE",
               "width": 50,
               "height": 12,
-              "size": 7,
               "color": "0,255,255",
-              "printed": true
+              "printed": true,
+              "fontSize": 7
             },
             "placement": {
               "x": 24,
@@ -11269,9 +11515,9 @@
               "text": "ANNOUNCE",
               "width": 64,
               "height": 12,
-              "size": 7,
               "color": "0,255,255",
-              "printed": true
+              "printed": true,
+              "fontSize": 7
             },
             "placement": {
               "x": 120,
@@ -11291,9 +11537,9 @@
               "text": "ROUTE",
               "width": 50,
               "height": 12,
-              "size": 7,
               "color": "0,255,255",
-              "printed": true
+              "printed": true,
+              "fontSize": 7
             },
             "placement": {
               "x": 420,
@@ -12201,10 +12447,10 @@
             "type": "metro.underground-platform",
             "props": {
               "width": 660,
-              "ceiling": 180,
-              "street": 208,
+              "ceilingHeight": 180,
+              "minStreetY": 208,
               "name": "SERVICE SIDING",
-              "nameEvery": 420,
+              "nameSpacing": 420,
               "tile": "#191d1c",
               "band": "#24180e",
               "edge": true,
@@ -12425,7 +12671,7 @@
             "props": {
               "text": "WEST CHUNK",
               "color": "0,255,255",
-              "size": 10
+              "fontSize": 10
             },
             "placement": {
               "x": 160,
@@ -12563,7 +12809,7 @@
             "props": {
               "text": "CROSSING · WEST SOURCE",
               "color": "255,180,60",
-              "size": 10
+              "fontSize": 10
             },
             "placement": {
               "x": 310,
@@ -12603,8 +12849,8 @@
             "type": "sign.plate",
             "props": {
               "text": "UNLOCK  /  SWITCH",
-              "size": 8,
-              "color": "0,255,255"
+              "color": "0,255,255",
+              "fontSize": 8
             },
             "placement": {
               "x": 90,
@@ -13161,7 +13407,7 @@
             "props": {
               "text": "EAST CHUNK",
               "color": "0,255,255",
-              "size": 10
+              "fontSize": 10
             },
             "placement": {
               "x": 160,
@@ -13292,8 +13538,8 @@
             "type": "sign.plate",
             "props": {
               "text": "ORIGINAL DISPLAY",
-              "size": 8,
-              "color": "255,217,165"
+              "color": "255,217,165",
+              "fontSize": 8
             },
             "placement": {
               "x": 80,
@@ -13429,8 +13675,8 @@
             "type": "sign.plate",
             "props": {
               "text": "BLUE DISPLAY",
-              "size": 8,
-              "color": "0,255,255"
+              "color": "0,255,255",
+              "fontSize": 8
             },
             "placement": {
               "x": 80,

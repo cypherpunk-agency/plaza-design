@@ -14,7 +14,7 @@ import type {SceneAtrium} from './scene-atrium';
 export interface StageLightSource {
  /** Rows of this artwork type, or rows whose `role` property is this. */
  type?:string;role?:string;
- /** `element`: the row's own light fields (kind, radius, width, height or lightHeight, color, alpha; an alpha of 1 is left out); `lamp`: a lamp as wide as the row, in `color`; `marker`: a marker row's `kind`, `r`, `color` and, for a window, `width` and `lightHeight`. */
+ /** `element`: the row's own light fields (kind, radius, width, height or lightHeight, color, lightOpacity; an opacity of 1 is left out); `lamp`: a lamp as wide as the row, in `color`; `marker`: a marker row's `kind`, `r`, `color` and, for a window, `width` and `lightHeight`. */
  style:'element'|'lamp'|'marker';color?:string;
  /** Lamp only: the lamp hangs over the middle of the row (its `width`) instead of at its start. */
  centre?:boolean;
@@ -90,7 +90,7 @@ export function stageContent(stage:SceneStage|undefined,rows:readonly Resolved[]
  if(back)out.shade={...out.shade,back:{h:back.placement.h,gaps:rows.filter(r=>r.props.role===stage.shade!.back!.gaps).map(r=>[r.placement.x,r.placement.x+Number(r.props.width)] as [number,number])}};
  if(stage.lights)out.lights=stage.lights.flatMap(src=>pick(rows,src).filter(row=>src.tint?.without===undefined||String(row.props[src.tint.prop])!==src.tint.without).map((row):SceneLight=>{const p=row.props,at=row.placement;
   if(src.style==='marker')return{x:at.x,h:at.h,kind:p.kind as SceneLight['kind'],r:Number(p.r),...(p.color?{col:String(p.color)}:{}),...(Number(p.width)?{w:Number(p.width),hh:Number(p.lightHeight)}:{})};
-  return src.style==='lamp'?{x:at.x+(src.centre?Number(p.width)*at.scale/2:0),h:at.h+(src.lift??0),kind:'lamp',r:src.radius??Number(p.width),col:src.tint?.tints?.[String(p[src.tint.prop])]??src.color}:{x:at.x,h:at.h,kind:p.kind as SceneLight['kind'],r:Number(p.radius)*at.scale,...(Number(p.width)?{w:Number(p.width)*at.scale}:{}),...(Number(p.height??p.lightHeight)?{hh:Number(p.height??p.lightHeight)*at.scale}:{}),...(p.color?{col:String(p.color)}:{}),...(Number(p.alpha)>=0&&Number(p.alpha)!==1?{a:Number(p.alpha)}:{})};}));
+  return src.style==='lamp'?{x:at.x+(src.centre?Number(p.width)*at.scale/2:0),h:at.h+(src.lift??0),kind:'lamp',r:src.radius??Number(p.width),col:src.tint?.tints?.[String(p[src.tint.prop])]??src.color}:{x:at.x,h:at.h,kind:p.kind as SceneLight['kind'],r:Number(p.radius)*at.scale,...(Number(p.width)?{w:Number(p.width)*at.scale}:{}),...(Number(p.height??p.lightHeight)?{hh:Number(p.height??p.lightHeight)*at.scale}:{}),...(p.color?{col:String(p.color)}:{}),...(Number(p.lightOpacity)>=0&&Number(p.lightOpacity)!==1?{a:Number(p.lightOpacity)}:{})};}));
  if(stage.casters)out.casters=stage.casters.flatMap(src=>{const width=src.widthRole?roles[src.widthRole]:undefined;if(src.widthRole&&!width)return[];return pick(rows,src).map((row):Caster=>({x:row.placement.x,h:row.placement.h,w:width?Number(width.props.width)*width.placement.scale:Number(row.props.width)*row.placement.scale}));});
  return out;
 }

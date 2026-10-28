@@ -37,12 +37,12 @@
       "type": "building.stack",
       "props": {
         "width": 180,
-        "floors": 6,
         "seed": 501,
         "shops": [],
         "canopy": false,
         "wall": "#1d2329",
-        "density": 0.5
+        "density": 0.5,
+        "height": 376
       },
       "placement": {
         "x": 0,
@@ -56,12 +56,12 @@
       "type": "building.stack",
       "props": {
         "width": 220,
-        "floors": 8,
         "seed": 502,
         "shops": [],
         "canopy": false,
         "wall": "#22201a",
-        "density": 0.6
+        "density": 0.6,
+        "height": 464
       },
       "placement": {
         "x": 980,
@@ -75,12 +75,12 @@
       "type": "undercity.rock",
       "props": {
         "width": 1200,
-        "tall": 110,
         "material": "earth",
         "crust": "paving",
         "seams": 0.4,
         "seep": 0.2,
-        "seed": 3
+        "seed": 3,
+        "height": 110
       },
       "placement": {
         "x": 0,
@@ -94,11 +94,11 @@
       "type": "undercity.rock",
       "props": {
         "width": 1200,
-        "tall": 190,
         "material": "rock",
         "seams": 0.6,
         "seep": 0.4,
-        "seed": 4
+        "seed": 4,
+        "height": 190
       },
       "placement": {
         "x": 0,
@@ -130,9 +130,9 @@
       "id": "metro",
       "type": "undercity.metro-entrance",
       "props": {
-        "depth": 96,
+        "depthBelowStreet": 96,
         "run": 120,
-        "landing": 260,
+        "hallWidth": 260,
         "label": "LINE 4",
         "notice": "CLOSED",
         "sealed": "bricked",
@@ -277,7 +277,7 @@
           "STATION CLOSED",
           "USE LINE 0"
         ],
-        "tilt": -0.04
+        "tiltAngle": -2.291831180523293
       },
       "placement": {
         "x": 780,
@@ -291,11 +291,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "lean",
         "archetype": "ghost",
-        "seed": 1101
+        "seed": 1101,
+        "depthBand": "play"
       },
       "placement": {
         "x": 420,
@@ -309,12 +309,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "sit",
         "archetype": "drifter",
         "sitting": "side",
-        "seed": 1103
+        "seed": 1103,
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -328,11 +328,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "archetype": "commuter",
         "act": "walk",
         "range": 380,
-        "seed": 1107
+        "seed": 1107,
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -346,11 +346,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "smoke",
         "archetype": "ghost",
-        "seed": 1109
+        "seed": 1109,
+        "depthBand": "play"
       },
       "placement": {
         "x": 860,
@@ -364,11 +364,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "sleep",
         "archetype": "sleeper",
-        "seed": 1113
+        "seed": 1113,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1080,
@@ -382,8 +382,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 250,

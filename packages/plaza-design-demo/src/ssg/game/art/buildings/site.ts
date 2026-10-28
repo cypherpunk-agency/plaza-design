@@ -1,12 +1,15 @@
+import {rectangleControls} from '../core/spatial';
+import {appearanceBoolean,appearanceText,generationCount,generationSeed,shapeLength} from '../core/fields';
 /** BUILDING KIT: a construction site on an empty lot (see state.ts for buildings under construction). */
 import { neonPlate } from '../signage/kit';
 import { hash, num, piece, text, y } from './types';
 
 /** An empty lot being built on: hoarding, a hole with rebar, site cabins, and a tower crane going up out of the view. */
 export const siteElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'building.site', label: 'Construction site (kit)', category: 'architecture', libraryUse: 'reusable',
-  fields: { width: num('Width', 220, 80, 800, 1, 'units'), crane: { kind: 'boolean', label: 'Tower crane', default: true }, cabins: num('Site cabins', 2, 0, 4),
-    notice: text('Notice on the hoarding', 'SITE · KEEP OUT'), picture: text('Developer’s board', 'COMING SOON · 400 HOMES'), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 220, 80, 800, 1, 'units')), crane: appearanceBoolean({ kind: 'boolean', label: 'Tower crane', default: true }), cabins: generationCount(num('Site cabins', 2, 0, 4)),
+    notice: appearanceText(text('Notice on the hoarding', 'SITE · KEEP OUT')), picture: appearanceText(text('Developer’s board', 'COMING SOON · 400 HOMES')), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: p.crane !== false ? 900 : 120 }),
   bounds: p => { const tall = p.crane !== false ? 900 : 120; return { x: 0, h: tall, w: Number(p.width), tall }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, gate: { x: Number(p.width) / 2, h: 0, role: 'entrance' } }),

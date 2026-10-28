@@ -582,8 +582,8 @@
             "OPEN UNTIL 01:00"
           ]
         ],
-        "period": 300,
-        "seed": 1240
+        "seed": 1240,
+        "pageDuration": 5.0
       },
       "placement": {
         "x": 1240,
@@ -599,7 +599,7 @@
         "width": 120,
         "height": 50,
         "seed": 3,
-        "phase": 80
+        "timeOffset": 1.3333333333333333
       },
       "placement": {
         "x": 400,
@@ -628,8 +628,8 @@
             "SECURITY DESK 2"
           ]
         ],
-        "phase": 160,
-        "seed": 2100
+        "seed": 2100,
+        "timeOffset": 2.6666666666666665
       },
       "placement": {
         "x": 2100,
@@ -899,8 +899,8 @@
       "id": "implants-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 180,
-        "shop": "implants"
+        "shop": "implants",
+        "drawingWidth": 180
       },
       "placement": {
         "x": 0,
@@ -977,8 +977,8 @@
       "id": "pawn-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 180,
-        "shop": "pawn"
+        "shop": "pawn",
+        "drawingWidth": 180
       },
       "placement": {
         "x": 0,
@@ -1055,8 +1055,8 @@
       "id": "florist-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 180,
-        "shop": "florist"
+        "shop": "florist",
+        "drawingWidth": 180
       },
       "placement": {
         "x": 0,
@@ -1133,8 +1133,8 @@
       "id": "keys-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 150,
-        "shop": "keys"
+        "shop": "keys",
+        "drawingWidth": 150
       },
       "placement": {
         "x": 0,
@@ -1211,8 +1211,8 @@
       "id": "noodles-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 140,
-        "shop": "noodles"
+        "shop": "noodles",
+        "drawingWidth": 140
       },
       "placement": {
         "x": 0,
@@ -1289,8 +1289,8 @@
       "id": "burger-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 140,
-        "shop": "burger"
+        "shop": "burger",
+        "drawingWidth": 140
       },
       "placement": {
         "x": 0,
@@ -1367,8 +1367,8 @@
       "id": "dumplings-stock",
       "type": "mall.shop-stock",
       "props": {
-        "width": 140,
-        "shop": "dumplings"
+        "shop": "dumplings",
+        "drawingWidth": 140
       },
       "placement": {
         "x": 0,
@@ -1517,7 +1517,7 @@
       "type": "mall.camera",
       "props": {
         "facing": 1,
-        "phase": 4
+        "blinkTimeOffset": 0.06666666666666667
       },
       "placement": {
         "x": 392,
@@ -1531,7 +1531,7 @@
       "type": "mall.camera",
       "props": {
         "facing": -1,
-        "phase": 22
+        "blinkTimeOffset": 0.36666666666666664
       },
       "placement": {
         "x": 1778,
@@ -1545,7 +1545,7 @@
       "type": "mall.camera",
       "props": {
         "facing": -1,
-        "phase": 41
+        "blinkTimeOffset": 0.6833333333333333
       },
       "placement": {
         "x": 2376,
@@ -1559,7 +1559,7 @@
       "type": "mall.camera",
       "props": {
         "facing": -1,
-        "phase": 17
+        "blinkTimeOffset": 0.2833333333333333
       },
       "placement": {
         "x": 1200,
@@ -2354,8 +2354,8 @@
       "id": "implants-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 180,
-        "tint": "230,235,255"
+        "tint": "230,235,255",
+        "shopWidth": 180
       },
       "placement": {
         "x": 0,
@@ -2375,8 +2375,8 @@
       "id": "pawn-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 180,
-        "tint": "255,200,120"
+        "tint": "255,200,120",
+        "shopWidth": 180
       },
       "placement": {
         "x": 0,
@@ -2396,8 +2396,8 @@
       "id": "florist-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 180,
-        "tint": "210,240,190"
+        "tint": "210,240,190",
+        "shopWidth": 180
       },
       "placement": {
         "x": 0,
@@ -2417,8 +2417,8 @@
       "id": "keys-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 150,
-        "tint": "255,190,110"
+        "tint": "255,190,110",
+        "shopWidth": 150
       },
       "placement": {
         "x": 0,
@@ -2438,8 +2438,8 @@
       "id": "noodles-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 140,
-        "tint": "255,190,110"
+        "tint": "255,190,110",
+        "shopWidth": 140
       },
       "placement": {
         "x": 0,
@@ -2459,8 +2459,8 @@
       "id": "burger-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 140,
-        "tint": "255,170,120"
+        "tint": "255,170,120",
+        "shopWidth": 140
       },
       "placement": {
         "x": 0,
@@ -2480,8 +2480,8 @@
       "id": "dumplings-reflection",
       "type": "mall.shop-reflection",
       "props": {
-        "width": 140,
-        "tint": "255,210,140"
+        "tint": "255,210,140",
+        "shopWidth": 140
       },
       "placement": {
         "x": 0,

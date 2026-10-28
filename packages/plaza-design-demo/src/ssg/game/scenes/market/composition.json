@@ -358,10 +358,10 @@
       "id": "ad-2",
       "type": "market.ad",
       "props": {
-        "w": 92,
-        "tall": 38,
         "seed": 9,
-        "phase": 120
+        "timeOffset": 2,
+        "width": 92,
+        "height": 38
       },
       "placement": {
         "x": 1660,
@@ -386,7 +386,7 @@
       "type": "market.camera",
       "props": {
         "facing": -1,
-        "phase": 40
+        "blinkTimeOffset": 0.6666666666666666
       },
       "placement": {
         "x": 1190,
@@ -400,7 +400,7 @@
       "type": "market.blade",
       "props": {
         "text": "HOTEL",
-        "phase": 150
+        "flickerTimeOffset": 2.5
       },
       "placement": {
         "x": 150,
@@ -414,7 +414,7 @@
       "type": "market.blade",
       "props": {
         "text": "PAWN",
-        "phase": 520
+        "flickerTimeOffset": 8.666666666666666
       },
       "placement": {
         "x": 520,
@@ -428,7 +428,7 @@
       "type": "market.blade",
       "props": {
         "text": "CLINIC",
-        "phase": 860
+        "flickerTimeOffset": 14.333333333333334
       },
       "placement": {
         "x": 860,
@@ -442,7 +442,7 @@
       "type": "market.blade",
       "props": {
         "text": "KARAOKE",
-        "phase": 1180
+        "flickerTimeOffset": 19.666666666666668
       },
       "placement": {
         "x": 1180,
@@ -456,7 +456,7 @@
       "type": "market.blade",
       "props": {
         "text": "BATHS",
-        "phase": 1520
+        "flickerTimeOffset": 25.333333333333332
       },
       "placement": {
         "x": 1520,
@@ -952,7 +952,6 @@
       "props": {
         "seed": 11,
         "sign": "NOODLES",
-        "col": "255,136,0",
         "goods": "noodles",
         "awning": "scallop",
         "light": "lantern",
@@ -960,7 +959,8 @@
         "vendor": "cook",
         "back": "menu",
         "vendorX": 54,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "255,136,0"
       },
       "placement": {
         "x": 96,
@@ -978,7 +978,6 @@
       "props": {
         "seed": 12,
         "sign": "SIM CARDS",
-        "col": "255,217,165",
         "goods": "sims",
         "awning": "tin",
         "light": "tube",
@@ -986,7 +985,8 @@
         "vendor": "simVendor",
         "back": "none",
         "vendorX": 66,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "255,217,165"
       },
       "placement": {
         "x": 290,
@@ -1004,7 +1004,6 @@
       "props": {
         "seed": 13,
         "sign": "UMBRELLAS",
-        "col": "255,136,0",
         "goods": "umbrellas",
         "awning": "tarp",
         "light": "bulb",
@@ -1015,7 +1014,8 @@
         "vendor": "brolly",
         "back": "none",
         "vendorX": 46,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "255,136,0"
       },
       "placement": {
         "x": 424,
@@ -1033,7 +1033,6 @@
       "props": {
         "seed": 14,
         "sign": "FRUIT",
-        "col": "255,210,58",
         "goods": "fruit",
         "awning": "stripe",
         "light": "bulb",
@@ -1041,7 +1040,8 @@
         "vendor": "fruitVendor",
         "back": "none",
         "vendorX": 28,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "255,210,58"
       },
       "placement": {
         "x": 640,
@@ -1059,7 +1059,6 @@
       "props": {
         "seed": 15,
         "sign": "USED IMPLANTS",
-        "col": "255,42,68",
         "goods": "implants",
         "awning": "stripe",
         "light": "tube",
@@ -1071,7 +1070,8 @@
         "vendor": "implantVendor",
         "back": "none",
         "vendorX": 42,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "255,42,68"
       },
       "placement": {
         "x": 820,
@@ -1089,7 +1089,6 @@
       "props": {
         "seed": 16,
         "sign": "FISH",
-        "col": "255,217,165",
         "goods": "fish",
         "awning": "scallop",
         "light": "bulb",
@@ -1097,7 +1096,8 @@
         "vendor": "fishmonger",
         "back": "none",
         "vendorX": 62,
-        "vendorH": 2
+        "vendorH": 2,
+        "color": "255,217,165"
       },
       "placement": {
         "x": 1000,
@@ -1115,7 +1115,6 @@
       "props": {
         "seed": 18,
         "sign": "REPAIRS",
-        "col": "255,136,0",
         "goods": "tech",
         "awning": "tin",
         "light": "tube",
@@ -1123,7 +1122,8 @@
         "vendor": "fixer2",
         "back": "none",
         "vendorX": 62,
-        "vendorH": 6
+        "vendorH": 6,
+        "color": "255,136,0"
       },
       "placement": {
         "x": 1290,
@@ -1141,7 +1141,6 @@
       "props": {
         "seed": 19,
         "sign": "DUMPLINGS",
-        "col": "255,136,0",
         "goods": "dumplings",
         "awning": "stripe",
         "light": "lantern",
@@ -1149,7 +1148,8 @@
         "vendor": "dumplingCook",
         "back": "none",
         "vendorX": 60,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "255,136,0"
       },
       "placement": {
         "x": 1500,
@@ -1167,7 +1167,6 @@
       "props": {
         "seed": 20,
         "sign": "FIRMWARE",
-        "col": "255,217,165",
         "goods": "tech",
         "awning": "tarp",
         "light": "none",
@@ -1178,7 +1177,8 @@
         ],
         "width": 112,
         "vendor": "",
-        "back": "none"
+        "back": "none",
+        "color": "255,217,165"
       },
       "placement": {
         "x": 1750,
@@ -1196,7 +1196,6 @@
       "props": {
         "seed": 21,
         "sign": "CLOSING DOWN",
-        "col": "255,42,68",
         "goods": "junk",
         "awning": "stripe",
         "light": "bulb",
@@ -1207,7 +1206,8 @@
         ],
         "width": 104,
         "vendor": "",
-        "back": "sale"
+        "back": "sale",
+        "color": "255,42,68"
       },
       "placement": {
         "x": 1878,
@@ -1226,7 +1226,6 @@
         "width": 76,
         "seed": 17,
         "sign": "FORTUNES",
-        "col": "34,197,94",
         "goods": "junk",
         "awning": "none",
         "vendor": "fortuneBot",
@@ -1234,7 +1233,8 @@
           "1 TOKEN"
         ],
         "vendorX": 36,
-        "vendorH": 0
+        "vendorH": 0,
+        "color": "34,197,94"
       },
       "placement": {
         "x": 1170,

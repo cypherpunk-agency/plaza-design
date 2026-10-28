@@ -18,8 +18,8 @@
       "type": "library.room",
       "props": {
         "width": 960,
-        "ceiling": 176,
-        "wallBand": 380
+        "wallBand": 380,
+        "height": 176
       },
       "placement": {
         "x": 0,
@@ -33,7 +33,7 @@
       "type": "library.window",
       "props": {
         "width": 64,
-        "facing": 270
+        "bearing": 270
       },
       "placement": {
         "x": 648,
@@ -47,7 +47,7 @@
       "type": "library.window",
       "props": {
         "width": 72,
-        "facing": 270
+        "bearing": 270
       },
       "placement": {
         "x": 768,
@@ -61,7 +61,7 @@
       "type": "library.window",
       "props": {
         "width": 48,
-        "facing": 270
+        "bearing": 270
       },
       "placement": {
         "x": 892,
@@ -91,7 +91,7 @@
       "type": "library.gallery",
       "props": {
         "width": 580,
-        "ceiling": 176
+        "height": 176
       },
       "placement": {
         "x": 380,
@@ -105,7 +105,7 @@
       "type": "library.ceiling",
       "props": {
         "width": 960,
-        "ceiling": 176
+        "height": 176
       },
       "placement": {
         "x": 0,
@@ -120,7 +120,7 @@
       "props": {
         "width": 280,
         "text": "QUIET PLEASE   ·   CONVERSATIONS ARE TRANSCRIBED   ·   PUBLIC TERMINALS: 30 MIN PER VERIFIED IDENTITY   ·   UNVERIFIED PERSONS MAY SIT   ·   SOFTWARE LENDING SUSPENDED PENDING RETURNS",
-        "speed": 0.35
+        "scrollSpeed": 21
       },
       "placement": {
         "x": 230,
@@ -133,8 +133,8 @@
       "id": "registry-camera",
       "type": "library.camera",
       "props": {
-        "phase": 3,
-        "direction": -1
+        "direction": -1,
+        "blinkTimeOffset": 0.05
       },
       "placement": {
         "x": 400,
@@ -158,8 +158,8 @@
       "id": "pendant-1",
       "type": "library.pendant",
       "props": {
-        "ceiling": 176,
-        "flicker": false
+        "flicker": false,
+        "ceilingHeight": 176
       },
       "placement": {
         "x": 200,
@@ -172,8 +172,8 @@
       "id": "pendant-2",
       "type": "library.pendant",
       "props": {
-        "ceiling": 176,
-        "flicker": true
+        "flicker": true,
+        "ceilingHeight": 176
       },
       "placement": {
         "x": 330,
@@ -186,8 +186,8 @@
       "id": "pendant-3",
       "type": "library.pendant",
       "props": {
-        "ceiling": 176,
-        "flicker": false
+        "flicker": false,
+        "ceilingHeight": 176
       },
       "placement": {
         "x": 500,
@@ -200,8 +200,8 @@
       "id": "pendant-4",
       "type": "library.pendant",
       "props": {
-        "ceiling": 176,
-        "flicker": false
+        "flicker": false,
+        "ceilingHeight": 176
       },
       "placement": {
         "x": 760,
@@ -240,7 +240,7 @@
       "props": {
         "first": "T3: FREE",
         "second": "CARD ONLY",
-        "tilt": 0.05
+        "tiltAngle": 2.8647889756541165
       },
       "placement": {
         "x": 372,
@@ -255,7 +255,7 @@
       "props": {
         "first": "DO NOT",
         "second": "CANCEL",
-        "tilt": -0.07
+        "tiltAngle": -4.010704565915763
       },
       "placement": {
         "x": 518,

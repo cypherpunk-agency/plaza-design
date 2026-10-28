@@ -245,7 +245,13 @@
   "stage": {
     "mechanisms": [
       "lineRide"
-    ]
+    ],
+    "values": {
+      "trainCeiling": {
+        "role": "ceiling",
+        "get": "h"
+      }
+    }
   },
   "phases": {
     "home": {

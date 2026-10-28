@@ -27,6 +27,19 @@
       "clip": "none"
     },
     {
+      "id": "clouds",
+      "type": "environment.cloud-layer",
+      "props": {},
+      "placement": {
+        "x": 576,
+        "h": 0,
+        "parallax": 0.1
+      },
+      "order": -9999,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
       "id": "sea",
       "type": "environment.sea",
       "props": {
@@ -45,9 +58,9 @@
       "id": "far-shore",
       "type": "coast.far-shore",
       "props": {
-        "length": 1566,
         "rise": 378,
-        "windowFrom": 4680
+        "drawingMinX": 4680,
+        "width": 1566
       },
       "placement": {
         "x": 2330.8,
@@ -68,17 +81,17 @@
             "mast": 0
           },
           {
-            "x": 4592.0,
+            "x": 4592,
             "len": 12,
             "mast": 1
           },
           {
-            "x": 4388.0,
+            "x": 4388,
             "len": 14,
             "mast": 1
           },
           {
-            "x": 4148.0,
+            "x": 4148,
             "len": 34,
             "mast": 0
           },
@@ -98,49 +111,49 @@
             "mast": 1
           },
           {
-            "x": 740.0,
+            "x": 740,
             "len": 22,
             "mast": 0,
             "flip": true
           },
           {
-            "x": 812.0,
+            "x": 812,
             "len": 12,
             "mast": 1,
             "flip": true
           },
           {
-            "x": 1016.0,
+            "x": 1016,
             "len": 14,
             "mast": 1,
             "flip": true
           },
           {
-            "x": 1256.0,
+            "x": 1256,
             "len": 34,
             "mast": 0,
             "flip": true
           },
           {
-            "x": 1436.0,
+            "x": 1436,
             "len": 18,
             "mast": 1,
             "flip": true
           },
           {
-            "x": 2426.0,
+            "x": 2426,
             "len": 26,
             "mast": 0,
             "flip": true
           },
           {
-            "x": 2666.0,
+            "x": 2666,
             "len": 16,
             "mast": 1,
             "flip": true
           }
         ],
-        "water": 183
+        "waterLevel": 183
       },
       "placement": {
         "x": 0,
@@ -154,7 +167,7 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 1.488
+        "generatorScale": 1.488
       },
       "placement": {
         "x": 4361.2,
@@ -178,101 +191,186 @@
     },
     {
       "id": "air-lanes",
-      "type": "vehicle.air-lanes",
-      "props": {
-        "quiet": 1500,
-        "lanes": [
-          {
-            "kind": "pod",
-            "parallax": 0.42,
-            "height": 504.6,
-            "dir": 1,
-            "speed": 1.7,
-            "gap": 520,
-            "seed": 3,
-            "busyFrom": 9180,
-            "busyTo": 11580,
-            "busyLow": 1,
-            "busyHigh": 0.25
-          },
-          {
-            "kind": "pod",
-            "parallax": 0.5,
-            "height": 461.4,
-            "dir": -1,
-            "speed": 1.5,
-            "gap": 560,
-            "seed": 5,
-            "busyFrom": 9180,
-            "busyTo": 11580,
-            "busyLow": 1,
-            "busyHigh": 0.2
-          },
-          {
-            "kind": "taxi",
-            "parallax": 0.58,
-            "height": 411.0,
-            "dir": 1,
-            "speed": 1.9,
-            "gap": 640,
-            "seed": 7,
-            "busyFrom": 10080,
-            "busyTo": 11880,
-            "busyLow": 0.8,
-            "busyHigh": 0
-          },
-          {
-            "kind": "taxi",
-            "parallax": 0.62,
-            "height": 382.20000000000005,
-            "dir": -1,
-            "speed": 1.6,
-            "gap": 700,
-            "seed": 9,
-            "busyFrom": 10080,
-            "busyTo": 11880,
-            "busyLow": 0.7,
-            "busyHigh": 0
-          }
-        ],
-        "blimp": [
-          {
-            "u": 18780,
-            "parallax": 0.12,
-            "height": 500,
-            "drift": 0.08
-          }
-        ],
-        "patrols": [
-          {
-            "x": 8700,
-            "parallax": 0.8,
-            "height": 360,
-            "rx": 600,
-            "ry": 30,
-            "period": 800,
-            "beam": 1
-          }
-        ],
-        "stream": [
-          {
-            "from": 16500,
-            "to": 8500,
-            "parallax": 0.5,
-            "gap": 420,
-            "speed": 1.8,
-            "low": 300,
-            "high": 480
-          }
-        ]
-      },
+      "type": "assembly.group",
+      "props": {},
       "placement": {
         "x": 0,
         "h": 0,
         "parallax": 1
       },
       "order": 8,
-      "layer": "distance"
+      "layer": "distance",
+      "children": [
+        {
+          "id": "air-lanes.blimp-1",
+          "type": "vehicle.ad-blimp",
+          "props": {
+            "startX": 2253.6,
+            "altitude": 500,
+            "velocityX": -1.728
+          },
+          "placement": {
+            "x": 563.2,
+            "h": 0,
+            "parallax": 0.12
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-1",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -1680,
+            "maxX": 10920,
+            "altitude": 504.6,
+            "kind": "pod",
+            "direction": 1,
+            "speed": 128.51999999999998,
+            "spacing": 655.1999999999999,
+            "seed": 3,
+            "densityStartX": 3855.6,
+            "densityEndX": 4863.599999999999,
+            "densityBefore": 1,
+            "densityAfter": 0.25,
+            "quietBelowX": 630,
+            "clearance": [],
+            "quietFadeDistance": 504
+          },
+          "placement": {
+            "x": 371.20000000000005,
+            "h": 0,
+            "parallax": 0.42
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-2",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -2000,
+            "maxX": 13000,
+            "altitude": 461.4,
+            "kind": "pod",
+            "direction": -1,
+            "speed": 135,
+            "spacing": 840,
+            "seed": 5,
+            "densityStartX": 4590,
+            "densityEndX": 5790,
+            "densityBefore": 1,
+            "densityAfter": 0.2,
+            "quietBelowX": 750,
+            "clearance": [],
+            "quietFadeDistance": 600
+          },
+          "placement": {
+            "x": 320,
+            "h": 0,
+            "parallax": 0.5
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-3",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -2320,
+            "maxX": 15079.999999999998,
+            "altitude": 411,
+            "kind": "taxi",
+            "direction": 1,
+            "speed": 198.35999999999999,
+            "spacing": 1113.6,
+            "seed": 7,
+            "densityStartX": 5846.4,
+            "densityEndX": 6890.4,
+            "densityBefore": 0.8,
+            "densityAfter": 0,
+            "quietBelowX": 869.9999999999999,
+            "clearance": [],
+            "quietFadeDistance": 696
+          },
+          "placement": {
+            "x": 268.8,
+            "h": 0,
+            "parallax": 0.58
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.lane-4",
+          "type": "vehicle.traffic-lane",
+          "props": {
+            "minX": -2480,
+            "maxX": 16120,
+            "altitude": 382.20000000000005,
+            "kind": "taxi",
+            "direction": -1,
+            "speed": 178.56,
+            "spacing": 1302,
+            "seed": 9,
+            "densityStartX": 6249.6,
+            "densityEndX": 7365.6,
+            "densityBefore": 0.7,
+            "densityAfter": 0,
+            "quietBelowX": 930,
+            "clearance": [],
+            "quietFadeDistance": 744
+          },
+          "placement": {
+            "x": 243.2,
+            "h": 0,
+            "parallax": 0.62
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.patrol-1",
+          "type": "vehicle.air-patrol",
+          "props": {
+            "centerX": 6960,
+            "altitude": 360,
+            "radiusX": 480,
+            "radiusY": 30,
+            "loopDuration": 13.333333333333334,
+            "beamMode": 1,
+            "beamRange": 288
+          },
+          "placement": {
+            "x": 127.99999999999997,
+            "h": 0,
+            "parallax": 0.8
+          },
+          "order": 8,
+          "layer": "distance"
+        },
+        {
+          "id": "air-lanes.stream-1",
+          "type": "vehicle.drone-stream",
+          "props": {
+            "startX": 8250,
+            "endX": 4250,
+            "spacing": 630,
+            "speed": 162,
+            "startAltitude": 300,
+            "endAltitude": 480,
+            "climbDistance": 240,
+            "fadeDistance": 240
+          },
+          "placement": {
+            "x": 320,
+            "h": 0,
+            "parallax": 0.5
+          },
+          "order": 8,
+          "layer": "distance"
+        }
+      ]
     },
     {
       "id": "skyline",
@@ -302,14 +400,14 @@
           },
           {
             "parallax": 0.5,
-            "x": 6710.0,
+            "x": 6710,
             "seed": 351,
-            "length": 7860.0,
+            "length": 7860,
             "haze": 0.25
           }
         ],
-        "from": 4680,
-        "to": 10890
+        "drawingMinX": 4680,
+        "drawingMaxX": 10890
       },
       "placement": {
         "x": 0,
@@ -322,7 +420,7 @@
       "id": "spire-reflection",
       "type": "environment.reflection",
       "props": {
-        "size": 1.488
+        "generatorScale": 1.488
       },
       "placement": {
         "x": 4361.2,
@@ -338,12 +436,12 @@
       "props": {
         "gantry": "sts1",
         "boomUp": 1,
-        "trolley": -60,
-        "hang": 40,
+        "trolleyX": -60,
+        "dropLength": 40,
         "load": false,
-        "loadPaint": 2,
         "floods": 0.3,
-        "phase": 0.0
+        "phaseAngle": 0,
+        "loadPaletteIndex": 2
       },
       "placement": {
         "x": 7685.5,
@@ -358,13 +456,13 @@
       "id": "harbor-fog",
       "type": "shift.fog",
       "props": {
-        "top": 80,
+        "height": 80,
         "density": 0.35,
-        "drift": 0.06,
-        "parallax": 0.6
+        "parallax": 0.6,
+        "velocityX": 3.5999999999999996
       },
       "placement": {
-        "x": 8514.0,
+        "x": 8514,
         "h": 0
       },
       "order": 23,
@@ -377,18 +475,18 @@
         "kind": "ferry",
         "named": true,
         "name": "HARBOR LINE",
-        "depth": "back",
         "motion": "parked",
-        "direction": "left",
+        "direction": -1,
         "waterline": 40,
-        "bob": 1,
         "wake": false,
         "reflection": true,
         "lamp": "on",
-        "nav": true
+        "nav": true,
+        "depthBand": "back",
+        "bobAmplitude": 1
       },
       "placement": {
-        "x": 11133.0,
+        "x": 11133,
         "h": 0,
         "parallax": 0.7
       },
@@ -401,16 +499,16 @@
       "props": {
         "kind": "lamp",
         "named": false,
-        "depth": "far",
         "motion": "loop",
-        "direction": "right",
-        "speed": 0.2,
-        "lane": 2400,
+        "direction": 1,
+        "speed": 12,
         "waterline": 40,
-        "bob": 1,
         "wake": true,
         "reflection": true,
-        "lamp": "on"
+        "lamp": "on",
+        "depthBand": "far",
+        "routeLength": 2400,
+        "bobAmplitude": 1
       },
       "placement": {
         "x": 5566.5,

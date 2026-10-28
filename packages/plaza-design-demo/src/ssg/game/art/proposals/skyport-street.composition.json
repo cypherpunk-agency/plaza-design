@@ -19,11 +19,11 @@
       "props": {
         "size": 0.7,
         "state": "cycle",
-        "cycle": 5400,
-        "phase": 1800,
         "letters": "SKYPORT 9",
         "haze": 0.35,
-        "seed": 3
+        "seed": 3,
+        "cycleDuration": 90,
+        "timeOffset": 30
       },
       "placement": {
         "x": 287,
@@ -38,13 +38,13 @@
       "type": "vehicle.air",
       "props": {
         "kind": "freighter",
-        "depth": "far",
         "motion": "loop",
-        "direction": "right",
-        "speed": 0.5,
-        "lane": 2400,
+        "direction": 1,
+        "speed": 30,
         "altitude": 400,
-        "bob": 0
+        "depthBand": "far",
+        "routeLength": 2400,
+        "bobAmplitude": 0
       },
       "placement": {
         "x": 0,
@@ -58,14 +58,14 @@
       "type": "vehicle.air",
       "props": {
         "kind": "shuttle",
-        "depth": "far",
         "motion": "loop",
-        "direction": "left",
-        "speed": 1.4,
-        "lane": 2600,
-        "start": 900,
+        "direction": -1,
+        "speed": 84,
         "altitude": 300,
-        "bob": 2
+        "depthBand": "far",
+        "routeLength": 2600,
+        "startOffset": 900,
+        "bobAmplitude": 2
       },
       "placement": {
         "x": 0,
@@ -79,16 +79,17 @@
       "type": "vehicle.air",
       "props": {
         "kind": "patrol",
-        "depth": "far",
         "motion": "shuttle",
-        "direction": "right",
-        "speed": 1.8,
-        "lane": 1600,
-        "dwell": 600,
+        "direction": 1,
+        "speed": 108,
         "altitude": 230,
-        "bob": 3,
         "lights": true,
-        "strobe": 40
+        "depthBand": "far",
+        "routeLength": 1600,
+        "bobAmplitude": 3,
+        "dwellDuration": 10,
+        "strobeTimeOffset": 0.6666666666666666,
+        "bobPhaseAngle": 229.1831180523293
       },
       "placement": {
         "x": 0,
@@ -102,12 +103,13 @@
       "type": "vehicle.air",
       "props": {
         "kind": "dropship",
-        "depth": "far",
         "motion": "parked",
-        "start": 1240,
         "altitude": 190,
-        "bob": 4,
-        "strobe": 120
+        "depthBand": "far",
+        "startOffset": 1240,
+        "bobAmplitude": 4,
+        "strobeTimeOffset": 2,
+        "bobPhaseAngle": 687.5493541569879
       },
       "placement": {
         "x": 0,
@@ -398,9 +400,9 @@
       "props": {
         "text": "LAUNCH ROAD",
         "color": "170,190,210",
-        "size": 7,
         "printed": true,
-        "bolts": true
+        "bolts": true,
+        "fontSize": 7
       },
       "placement": {
         "x": 661,
@@ -479,16 +481,16 @@
       "type": "vehicle.road",
       "props": {
         "kind": "truck",
-        "paint": "#2a3038",
         "stripe": "#ffd23a",
         "fleetNo": "SP-14",
         "autonomous": true,
-        "depth": "back",
         "motion": "loop",
-        "direction": "left",
-        "speed": 1.4,
-        "lane": 2000,
-        "lights": true
+        "direction": -1,
+        "speed": 84,
+        "lights": true,
+        "depthBand": "back",
+        "routeLength": 2000,
+        "paintColor": "#2a3038"
       },
       "placement": {
         "x": 0,
@@ -502,11 +504,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "skyport",
         "seed": 1200,
         "archetype": "guard",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1080,
@@ -520,11 +522,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "skyport",
         "seed": 1247,
         "archetype": "guard",
-        "act": "wait"
+        "act": "wait",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1160,
@@ -538,12 +540,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "skyport",
         "seed": 1294,
         "archetype": "guard",
         "act": "walk",
-        "range": 520
+        "range": 520,
+        "depthBand": "play"
       },
       "placement": {
         "x": 240,
@@ -557,12 +559,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "skyport",
         "seed": 1341,
         "archetype": "technician",
         "act": "walk",
-        "range": -320
+        "range": -320,
+        "depthBand": "play"
       },
       "placement": {
         "x": 600,
@@ -576,11 +578,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "skyport",
         "seed": 1388,
         "archetype": "technician",
-        "act": "smoke"
+        "act": "smoke",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1430,
@@ -594,7 +596,6 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "skyport",
         "seed": 1435,
         "archetype": "student",
@@ -602,7 +603,8 @@
         "extras": [
           "backpack",
           "headphones"
-        ]
+        ],
+        "depthBand": "play"
       },
       "placement": {
         "x": 480,
@@ -616,8 +618,8 @@
       "type": "character.resident",
       "props": {
         "kind": "marshal",
-        "depth": "play",
-        "act": "direct"
+        "act": "direct",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1040,
@@ -631,8 +633,8 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
-        "act": "scan"
+        "act": "scan",
+        "depthBand": "play"
       },
       "placement": {
         "x": 900,
@@ -646,8 +648,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cargodrone",
-        "depth": "play",
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1270,
@@ -661,16 +663,16 @@
       "type": "vehicle.road",
       "props": {
         "kind": "van",
-        "paint": "#d8dde2",
         "stripe": "#ff2a44",
         "autonomous": true,
-        "depth": "near",
         "motion": "run",
-        "direction": "right",
-        "speed": 2.6,
-        "lane": 2000,
-        "dwell": 2600,
-        "lights": true
+        "direction": 1,
+        "speed": 156,
+        "lights": true,
+        "depthBand": "near",
+        "routeLength": 2000,
+        "paintColor": "#d8dde2",
+        "dwellDuration": 43.333333333333336
       },
       "placement": {
         "x": 0,

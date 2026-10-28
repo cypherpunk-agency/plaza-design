@@ -7,10 +7,10 @@
       "type": "undercity.rock",
       "props": {
         "width": 1400,
-        "tall": 560,
         "material": "rock",
         "seams": 0.6,
-        "seed": 31
+        "seed": 31,
+        "height": 560
       },
       "placement": {
         "x": 0,
@@ -52,7 +52,6 @@
         "far": 40,
         "rows": 3,
         "racks": 14,
-        "depth": 0.45,
         "running": 0.35,
         "columns": 220,
         "lights": 0.2,
@@ -63,7 +62,8 @@
         "galleryWidth": 440,
         "stair": true,
         "letters": "B2 · DATA HALL",
-        "seed": 7
+        "seed": 7,
+        "waterLevelRatio": 0.45
       },
       "placement": {
         "x": 260,
@@ -163,7 +163,7 @@
           "WATER IS LIVE",
           "IN PLACES"
         ],
-        "tilt": -0.03
+        "tiltAngle": -1.7188733853924696
       },
       "placement": {
         "x": 200,
@@ -177,12 +177,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "sit",
         "archetype": "ghost",
         "sitting": "side",
-        "seed": 1301
+        "seed": 1301,
+        "depthBand": "play"
       },
       "placement": {
         "x": 120,
@@ -196,11 +196,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "lean",
         "archetype": "ghost",
-        "seed": 1303
+        "seed": 1303,
+        "depthBand": "play"
       },
       "placement": {
         "x": 520,
@@ -214,12 +214,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "sit",
         "archetype": "drifter",
         "sitting": "side",
-        "seed": 1305
+        "seed": 1305,
+        "depthBand": "play"
       },
       "placement": {
         "x": 690,
@@ -233,11 +233,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "undercity",
         "act": "lean",
         "archetype": "ghost",
-        "seed": 1307
+        "seed": 1307,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1050,
@@ -251,8 +251,8 @@
       "type": "character.resident",
       "props": {
         "kind": "crawler",
-        "depth": "play",
-        "act": "scrub"
+        "act": "scrub",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1000,
@@ -266,8 +266,8 @@
       "type": "character.resident",
       "props": {
         "kind": "wreck",
-        "depth": "play",
-        "act": "slump"
+        "act": "slump",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1200,

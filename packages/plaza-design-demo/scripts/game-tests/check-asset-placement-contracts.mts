@@ -5,6 +5,7 @@ import {frameView} from '../../src/ssg/game/art/core/view';
 import {assetInventory} from '../../src/ssg/game/authoring/asset-browser';
 import {drawSkyShips,createSkyShips} from '../../src/ssg/game/art/environment/sky-ships';
 import {SCENES} from '../../src/ssg/game/scenes';
+import {backdropDocuments} from '../../src/ssg/game/world/backdrops';
 import shop from '../../src/ssg/game/scenes/shop/composition.json';
 import {shelf,type ShelfSpec} from '../../src/ssg/game/art/assemblies/construction';
 import {createCornerShopArtwork} from '../../src/ssg/game/art/assemblies/corner-shop';
@@ -41,10 +42,10 @@ assert.equal(JSON.stringify(b.ops.slice(2,-1)),JSON.stringify(a.ops),'sky extrac
 assert.throws(()=>art.properties(sky.type,{ships:[{kind:'unknown'}] as never}));
 // Sky rows are excluded from ordinary world slots, painted once in their explicit phase,
 // and scaled only by composition's existing transform (never again inside the kernel).
-const fleetDoc:ChunkDocument={version:1,scene:'fleet',instances:[{id:'fleet',type:sky.type,props:{ships:[{kind:'freighter',ps:1,y:60,speed:.1,offset:800,flip:false,depth:.4}]},placement:{x:0,h:0,scale:2},layer:'distance',order:0}]};
+const fleetDoc:ChunkDocument={version:1,scene:'fleet',instances:[{id:'fleet',type:sky.type,props:{ships:[{kind:'freighter',pixelSize:1,screenY:60,velocityX:6,startOffset:800,direction:1,parallax:.4}]},placement:{x:0,h:0,scale:2},layer:'distance',order:0}]};
 const fleet=record();drawCompositionSlot(fleet.ctx,art,fleetDoc,{view,state:{},reduced:false},'behind-player');assert.equal(fleet.ops.length,0,'sky rows never paint in the ordinary slot');
 drawCompositionSlot(fleet.ctx,art,fleetDoc,{view,state:{},reduced:false},'behind-player',undefined,'sky');assert.equal(fleet.ops.filter(op=>JSON.stringify(op)==='["scale",2,2]').length,1,'one scale at the composition boundary');
-for(const scene of Object.values(SCENES))if(scene.ambient?.sky)assert.equal(typeof scene.drawSkyArtwork,'function',scene.id+' sky is authored, not an automatic runtime fallback');
+const backdrops=backdropDocuments();for(const scene of Object.values(SCENES))if(scene.ambient?.sky)assert.ok(scene.artwork?.instances.some(n=>n.type==='environment.sky')||scene.backdrop&&backdrops.get(scene.backdrop.id)?.instances.some(n=>n.type==='environment.sky')||typeof scene.drawSkyArtwork==='function',scene.id+' sky uses registered source artwork or its native authored sky pass');
 // The Shop uses the shared shelf kernel directly: no numbered type or source-layout wrapper survives.
 const shelves=shop.instances.filter(n=>n.type==='furniture.shelf');assert.deepEqual(shelves.map(n=>n.id),['shelf-0','shelf-1','shelf-2']);
 for(const row of shelves)for(const cam of [0,133.5,400])for(const h of [0,25]){

@@ -13,7 +13,7 @@ assert.ok(entries.length > 0);
 for (const entry of entries) {
   if (entry.usability === 'reusable') assert.equal(art.get(entry.id).libraryUse, 'reusable', `${entry.id}: placement must be explicitly declared`);
 }
-assert.equal(entries.find(e => e.id === 'assembly.group')!.usability, 'helper');
+assert.equal(entries.find(e => e.id === 'assembly.group')!.usability, 'reusable','Ordinary groups support independently editable arrangement presets');
 assert.equal(entries.find(e => e.id === 'actor.prepared')!.usability, 'context');
 assert.equal(entries.find(e => e.id === 'sign.billboard')!.usability, 'reusable');
 assert.equal(entries.find(e => e.id === 'sequence.intro.hero')!.structure, 'object');

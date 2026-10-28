@@ -5,6 +5,7 @@ import authored from '../../src/ssg/game/scenes/authored.json';
 import {trafficPlan,type TrafficVehicle} from '../../src/ssg/game/art/street/traffic';
 import {inPixels} from '../../src/ssg/game/art/core/pixels';
 import {frameView} from '../../src/ssg/game/art/core/view';
+const laneRows=(nodes:any[],x=0):any[]=>nodes.flatMap(n=>n.type==='street.traffic'?[{...n,placement:{...n.placement,x:x+n.placement.x}}]:laneRows(n.children??[],x+n.placement.x));
 const scene=authored.scenes.find(z=>z.scene.id==='glide-downtown')!,row=scene.composition.instances.find(n=>n.type==='street.traffic')!,props=art.properties(row.type,row.props);
 const origin=scene.scene.environment!.backdrop!.x+row.placement.x;
 const ctx=new Proxy({save(){},restore(){},scale(){}},{get:(o,k)=>k in o?(o as any)[k]:()=>{}}) as CanvasRenderingContext2D;
@@ -24,13 +25,13 @@ console.log('Shared title traffic PASS: deterministic route sampling, unique slo
 // vehicle exactly once. They must never become a Canvas clip at a seam.
 const {artworkClip}=await import('../../src/ssg/game/art/core/composition');
 const {mobileInstances}=await import('../../src/ssg/game/art/core/mobility');
-const chunks=authored.scenes.filter(s=>s.composition.instances.some(n=>n.type==='street.traffic'));
+const chunks=authored.scenes.filter(s=>laneRows(s.composition.instances).length);
 assert.equal(chunks.length,6,'the traffic corridor includes Harbor Station');
-const street=scene.composition.instances.find(n=>n.id==='traffic-street')!,allProps=art.properties(street.type,street.props);
+const allProps=laneRows(scene.composition.instances).filter(n=>n.props.pass==='street').map(n=>art.properties(n.type,n.props));
 let stationVehicles=0,boundaryVehicles=0;
 for(const chunk of chunks){
- const doc=art.validate(chunk.composition),mobiles=mobileInstances(doc,art),rows=doc.instances.filter(n=>n.type==='street.traffic');
- assert.equal(rows.length,3,'independently ordered far road, near road and turning traffic');
+ const doc=art.validate(chunk.composition),mobiles=mobileInstances(doc,art),rows=laneRows(doc.instances);
+ assert.equal(rows.length,4,'two independent road lanes and two independent street passes');
  for(const r of rows){
   assert(mobiles.has(r.id),'traffic participates in cross-chunk mobile lifetime');
   assert.equal(artworkClip(r,{...frameView(0),artworkScope:'mobile',zoneWindow:{left:0,right:chunk.scene.manifest.width}}),undefined);
@@ -41,14 +42,14 @@ for(const chunk of chunks){
 for(const cam of [7500,10300,11600,12800,13800])for(let t=0;t<=4080;t+=31){
  const view={...frameView(t),viewW:1280,viewH:720,gy:591,cam,sx:(x:number,p=1)=>x-cam*p,y:(h:number)=>591-h};
  let expected:TrafficVehicle[]=[];
- inPixels(ctx,view,{x:origin,h:0,scale:1,facing:1,parallax:1},P=>{expected=trafficPlan(P,allProps,0);});
+ inPixels(ctx,view,{x:origin,h:0,scale:1,facing:1,parallax:1},P=>{expected=allProps.flatMap(p=>trafficPlan(P,p,0));});
  expected=expected.filter(v=>origin-v.X*3>=0&&origin-v.X*3<15480);
  const owned:TrafficVehicle[]=[];
- for(const chunk of chunks)for(const n of chunk.composition.instances.filter(n=>n.type==='street.traffic')){
+ for(const chunk of chunks)for(const n of laneRows(chunk.composition.instances)){
   const p=art.properties(n.type,n.props),anchor=chunk.scene.environment!.backdrop!.x+n.placement.x;
   assert.equal(anchor,origin,'all chunks reference the same world route');
   inPixels(ctx,view,{x:anchor,h:0,scale:1,facing:1,parallax:1},P=>{
-   for(const v of trafficPlan(P,p,0))if(v.pass===p.pass&&-v.X*3>=Number(p.windowFrom)&&-v.X*3<Number(p.windowTo)){
+   for(const v of trafficPlan(P,p,0))if(v.pass===p.pass&&-v.X*3>=Number(p.drawingMinX)&&-v.X*3<Number(p.drawingMaxX)){
     owned.push(v);const x=origin-v.X*3;
     if(chunk.scene.id==='harbor-station')stationVehicles++;
     if(chunks.some(c=>Math.abs(x-c.scene.environment!.backdrop!.x)<v.half*3))boundaryVehicles++;
@@ -81,6 +82,6 @@ for(const id of ['harbor-quay','harbor-yard']){const source=authored.scenes.find
 for(const type of ['harbor.drawFerry','harbor.drawPatrol','harbor.forkliftBody','harbor.forkliftRoof','harbor.flyingGulls','harbor.droneGull','terminal.straddle','beach.gulls']){const e=art.get(type);assert(e.mobility?.(art.properties(type,{})),type+' participates in mobile lifetime');assert(e.travelBounds,type+' supplies a complete travel envelope');}
 console.log('Ring, flocks and port motion PASS: independent mobile ownership, road occlusion order, and explicit travel envelopes.');
 
-const {drawSkyShips,createSkyShips}=await import('../../src/ssg/game/art/environment/sky-ships');
-const skyPoses=(cam:number)=>{const at:number[][]=[];const canvas=new Proxy({save(){},restore(){},translate(...p:number[]){at.push(p);},createLinearGradient(){return{addColorStop(){}};}},{get:(o,k)=>k in o?(o as any)[k]:()=>{}}) as CanvasRenderingContext2D;drawSkyShips(canvas,{...frameView(600),viewW:640,viewH:360,cam,skyCam:14190},createSkyShips());return at;};
+const {drawSkyCraft}=await import('../../src/ssg/game/art/environment/sky-ships');
+const skyPoses=(cam:number)=>{const at:number[][]=[];const canvas=new Proxy({save(){},restore(){},translate(...p:number[]){at.push(p);},createLinearGradient(){return{addColorStop(){}};}},{get:(o,k)=>k in o?(o as any)[k]:()=>{}}) as CanvasRenderingContext2D;drawSkyCraft(canvas,{...frameView(600),viewW:640,viewH:360,cam,skyCam:14190},{kind:'freighter',ps:2,y:66,speed:.15,offset:800,flip:true,depth:.4});return at;};
 assert.deepEqual(skyPoses(900),skyPoses(0),'active-chunk rebasing never moves screen-space sky lanes');

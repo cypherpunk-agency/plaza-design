@@ -48,7 +48,7 @@ export type Rect = [number, number, number, number];
 export interface FrontSpec {
   w: number; h: number;
   /** A storey's height and the ground floor's (the shop floor under the fascia). */
-  storey: number; ground: number;
+  storey: number; ground: number; parapetHeight?:number;
   skin: Skin | 'auto';
   windows: WindowKind | 'auto';
   /** Windows per storey; 0 picks from the width. */
@@ -110,7 +110,7 @@ export function shapeOf(f: FrontSpec): Shape {
     : skin === 'timber' ? 'tiled' : skin === 'stone' ? (r() < 0.6 ? 'cornice' : 'tiled')
     : skin === 'brick' ? (r() < 0.6 ? 'cornice' : 'parapet') : skin === 'tenement' ? (r() < 0.5 ? 'parapet' : 'flat')
     : skin === 'glass' ? (r() < 0.6 ? 'stepped' : 'flat') : skin === 'panel' ? 'flat' : pick(r, ['flat', 'parapet', 'stepped'] as const);
-  const fill = /^#[0-9a-f]{6}$/i.test(f.wall) ? f.wall : tone(skin, r), storeys = Math.max(0, Math.floor((f.h - f.ground) / f.storey));
+  const fill = /^#[0-9a-f]{6}$/i.test(f.wall) ? f.wall : tone(skin, r), storeys = Math.max(0, Math.floor((f.h - f.ground - (f.parapetHeight??0)) / f.storey));
   const setback = roof === 'stepped' && storeys > 1 && f.w > 70 ? Math.round(f.w * (0.1 + r() * 0.08)) : 0;
   // the window grid: one size per building, an even or paired rhythm, centred. Every window is big enough
   // for a person to stand in (the player is 42 tall, about 13 wide): 18+ wide, 26+ tall, the sill near the waist.

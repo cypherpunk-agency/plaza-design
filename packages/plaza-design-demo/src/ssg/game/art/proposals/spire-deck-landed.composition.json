@@ -19,16 +19,16 @@
       "props": {
         "width": 4000,
         "parallax": 0.2,
-        "horizon": 70,
-        "below": 120,
+        "horizonY": 70,
+        "depthBelowDeck": 120,
         "banks": 6,
-        "drift": 0.3,
         "towers": 9,
-        "towerMax": 210,
+        "maxTowerHeight": 210,
         "haze": 0.5,
         "cloud": "",
         "wind": 0.4,
-        "seed": 5
+        "seed": 5,
+        "velocityX": 18
       },
       "placement": {
         "x": -400,
@@ -45,7 +45,6 @@
         "height": 1400,
         "below": 100,
         "seams": 0.6,
-        "seamGap": 48,
         "panes": 0.5,
         "edge": 0.7,
         "corner": "right",
@@ -53,7 +52,8 @@
         "bayWidth": 380,
         "bayHeight": 112,
         "bayLit": 0.8,
-        "seed": 2
+        "seed": 2,
+        "seamSpacing": 48
       },
       "placement": {
         "x": -100,
@@ -102,15 +102,15 @@
       "props": {
         "width": 1700,
         "thickness": 16,
-        "from": 640,
-        "depth": 70,
-        "lights": 24,
-        "chase": 0.6,
         "chaseTo": 1070,
         "mast": 90,
         "sock": true,
         "wind": 0.6,
-        "rail": 30
+        "rail": 30,
+        "chaseFrequency": 0.6,
+        "trussStartX": 640,
+        "trussDepth": 70,
+        "lightSpacing": 24
       },
       "placement": {
         "x": -100,
@@ -129,7 +129,7 @@
         "from": "right",
         "ramp": true,
         "umbilical": true,
-        "post": 40,
+        "powerPostX": 40,
         "lights": true
       },
       "placement": {
@@ -146,12 +146,12 @@
         "width": 240,
         "mode": "visiting",
         "craft": "escort",
-        "cycle": 3000,
-        "phase": 900,
         "from": "right",
         "leaves": "climbing",
-        "hover": 20,
-        "lights": true
+        "hoverHeight": 20,
+        "lights": true,
+        "cycleDuration": 50,
+        "timeOffset": 15
       },
       "placement": {
         "x": 1300,
@@ -179,12 +179,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1601,
         "archetype": "office",
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 95,
@@ -198,12 +198,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1633,
         "archetype": "shopper",
         "act": "phone",
-        "sitting": "mixed"
+        "sitting": "mixed",
+        "depthBand": "play"
       },
       "placement": {
         "x": 165,
@@ -217,11 +217,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1667,
         "archetype": "office",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 265,
@@ -235,11 +235,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1689,
         "archetype": "inspector",
-        "act": "talk"
+        "act": "talk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -253,8 +253,8 @@
       "type": "character.resident",
       "props": {
         "kind": "waiter",
-        "depth": "play",
-        "act": "serve"
+        "act": "serve",
+        "depthBand": "play"
       },
       "placement": {
         "x": 400,
@@ -268,11 +268,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1701,
         "archetype": "guard",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 480,
@@ -286,8 +286,8 @@
       "type": "character.resident",
       "props": {
         "kind": "servbot",
-        "depth": "play",
-        "act": "charge"
+        "act": "charge",
+        "depthBand": "play"
       },
       "placement": {
         "x": 120,
@@ -301,9 +301,9 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "play",
         "act": "carry",
-        "range": 220
+        "range": 220,
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -317,9 +317,9 @@
       "type": "character.resident",
       "props": {
         "kind": "cleaner",
-        "depth": "play",
         "act": "walk",
-        "range": 260
+        "range": 260,
+        "depthBand": "play"
       },
       "placement": {
         "x": 560,
@@ -333,9 +333,9 @@
       "type": "character.resident",
       "props": {
         "kind": "valet",
-        "depth": "play",
         "act": "stand",
-        "seed": 4
+        "seed": 4,
+        "depthBand": "play"
       },
       "placement": {
         "x": 665,
@@ -349,12 +349,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1720,
         "archetype": "office",
         "act": "walk",
-        "range": 260
+        "range": 260,
+        "depthBand": "play"
       },
       "placement": {
         "x": 700,
@@ -368,8 +368,8 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 830,
@@ -383,11 +383,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "spire",
         "seed": 1740,
         "archetype": "guard",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1025,
@@ -401,9 +401,9 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "play",
         "act": "carry",
-        "range": 150
+        "range": 150,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1060,
@@ -417,9 +417,9 @@
       "type": "character.resident",
       "props": {
         "kind": "porter",
-        "depth": "play",
         "act": "walk",
-        "range": -120
+        "range": -120,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1200,
@@ -433,9 +433,9 @@
       "type": "character.resident",
       "props": {
         "kind": "marshal",
-        "depth": "play",
         "act": "direct",
-        "seed": 2
+        "seed": 2,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1270,

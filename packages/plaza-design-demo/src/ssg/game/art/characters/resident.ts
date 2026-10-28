@@ -1,3 +1,5 @@
+import {fixedGeometry} from '../core/spatial';
+import {appearanceChoice,appearanceStructure,generationSeed,semantic,shapeLength,velocity} from '../core/fields';
 import {screenBounds} from '../assemblies/static-bounds';
 /** Standalone authored actors reuse the game's existing seeded appearance and animation kernels. */
 import {drawCharacter,characterHeight,characterX,KIT_ACTS,type Character,type Act} from '../../runtime/characters';
@@ -24,7 +26,7 @@ const cache=new Map<string,Character>();
 /** Bounded cache keeps the existing renderer's WeakMap appearance identity stable across frames. */
 export function residentCharacter(props:Properties,point:Point):Character{
  const key=JSON.stringify([props,point.x,point.h]);let actor=cache.get(key);if(actor){cache.delete(key);cache.set(key,actor);return actor;}
- const band=DEPTH_BANDS[isDepthBand(props.depth)?props.depth:'play'];
+ const band=DEPTH_BANDS[isDepthBand(props.depthBand)?props.depthBand:'play'];
  // a human may wear a named look (archetypes.ts); the seed varies the rest
  // a human may also take a colour style, a district's clothes, visible tech, and sit (mixed: the pose changes now and then)
  const own=(k:string)=>typeof props[k]==='string'&&props[k]!==''&&props[k]!=='seeded'?String(props[k]):undefined;
@@ -35,38 +37,39 @@ export function residentCharacter(props:Properties,point:Point):Character{
  const sitting=props.kind==='human'&&props.sitting&&props.sitting!=='no'?{seated:true,...(props.sitting!=='mixed'?{sitView:props.sitting as SitPose}:{})}:{};
  const body=props.kind==='human'?(Object.keys(look).length?{look}:{}):{look:robot&&Object.keys(robot).length>1?robot:props.kind as Character['look']};
  // movers go between here and `range` units away (negative: to the left); speed 0 is the body's usual pace
- const range=Number(props.range??0),speed=Number(props.speed??0);
+ const range=Number(props.range??0),speed=Number(props.speed??0)/60;
  // a seat or bed height (0: the kit's own, as before); lying: asleep, a blanket
  const seat=Number(props.seat??0),rest=props.kind==='human'?{...(seat>0?{seat}:{}),...(props.act==='lie'&&props.lying==='asleep'?{asleep:true}:{}),...(props.act==='lie'&&typeof props.cover==='string'&&props.cover!==''?{cover:props.cover}:{})}:{};
  actor={x:point.x,h:point.h,seed:Number(props.seed),act:props.act as Act,ps:band.ps,dim:Number(props.dim??-1)>=0?Number(props.dim):band.dim,parallax:band.parallax,...(props.facing==='left'?{facing:-1 as const}:props.facing==='right'?{facing:1 as const}:{}),...body,...sitting,...rest,...(range?{range}:{}),...(speed>0?{speed}:{})};
  cache.set(key,actor);if(cache.size>256)cache.delete(cache.keys().next().value!);return actor;
 }
 export const residentElement:AssetDefinition={
+ spatial:fixedGeometry('The character body uses its kit proportions and depth band. Travel range and seat height configure motion and pose; they do not resize the body. Use placement or the supported pose controls.'),
  type:'character.resident',mobility:p=>Number(p.range)!==0,version:1,label:'Authored person, animal or robot',category:'characters',coordinates:'world', libraryUse: 'reusable',parts:['people'],
  fields:{
-  kind:{kind:'select',label:'Body kind',options:residentKinds,default:'human'},
-  archetype:{kind:'select',label:'Named look',options:['',...ARCHETYPE_IDS],default:'',showIf:human},
-  seed:{kind:'number',label:'Appearance seed',default:1,min:0,max:1000000,step:1},
-  act:{kind:'select',label:'Activity',options:residentActs,default:'stand'},
-  range:{kind:'number',label:'Travel range (movers; negative: to the left)',default:0,min:-4000,max:4000,step:1,unit:'units'},
-  speed:{kind:'number',label:'Speed (0: usual pace)',default:0,min:0,max:10,step:0.05},
-  depth:{kind:'select',label:'Depth',options:[...DEPTH_ORDER],default:'play'},
+  kind:appearanceChoice({kind:'select',label:'Body kind',options:residentKinds,default:'human'}),
+  archetype:appearanceChoice({kind:'select',label:'Named look',options:['',...ARCHETYPE_IDS],default:'',showIf:human}),
+  seed:generationSeed({kind:'number',label:'Appearance seed',default:1,min:0,max:1000000,step:1}),
+  act:appearanceChoice({kind:'select',label:'Activity',options:residentActs,default:'stand'}),
+  range:shapeLength({kind:'number',label:'Travel range (movers; negative: to the left)',default:0,min:-4000,max:4000,step:1,unit:'units'}),
+  speed:velocity('Speed (0: usual pace)',0,{min:0,max:600,step:3}),
+  depthBand:semantic({kind:'select',label:'Depth',options:[...DEPTH_ORDER],default:'play'},{"group":"Depth","quantity":"choice","unit":"choice"}),
   // a silhouette against the light (the pier at sunset): darker than its depth band makes it; -1 keeps the band's
-  dim:{kind:'number',label:'Dimming (-1: the depth band’s)',default:-1,min:-1,max:1,step:0.01},
-  facing:{kind:'select',label:'Faces (standing; walkers face where they go)',options:['auto','right','left'],default:'auto'},
-  style:{kind:'select',label:'Colour style',options:['automatic','vivid','muted'],default:'automatic',showIf:human},
-  district:{kind:'select',label:'District clothes',options:['',...DISTRICTS],default:'',showIf:human},
-  tech:{kind:'select',label:'Visible tech',options:['automatic','yes','no'],default:'automatic',showIf:human},
-  sitting:{kind:'select',label:'Sitting',options:['no',...SEATED_VIEWS],default:'no',showIf:human},
+  dim:semantic({kind:'number',label:'Dimming (-1: the depth band’s)',default:-1,min:-1,max:1,step:0.01},{"group":"Depth","quantity":"factor","unit":"factor"}),
+  facing:semantic({kind:'select',label:'Faces (standing; walkers face where they go)',options:['auto','right','left'],default:'auto'},{"group":"Transform","quantity":"choice","unit":"choice"}),
+  style:appearanceChoice({kind:'select',label:'Colour style',options:['automatic','vivid','muted'],default:'automatic',showIf:human}),
+  district:appearanceChoice({kind:'select',label:'District clothes',options:['',...DISTRICTS],default:'',showIf:human}),
+  tech:semantic({kind:'select',label:'Visible tech',options:['automatic','yes','no'],default:'automatic',showIf:human},{"group":"Visibility & Drawing","quantity":"choice","unit":"choice"}),
+  sitting:appearanceChoice({kind:'select',label:'Sitting',options:['no',...SEATED_VIEWS],default:'no',showIf:human}),
   // h is the floor; the seat (a sitter's lap) or the bed (someone lying) is this far above it. Furniture's `seat` anchors give the number.
-  seat:{kind:'number',label:'Seat or bed height over the floor (0: the kit’s own)',default:0,min:0,max:120,step:1,unit:'units',showIf:seatedOrLying},
-  lying:{kind:'select',label:'Lying',options:['awake','asleep'],default:'awake',showIf:lying},
-  cover:colour('Blanket (lying)',lying,'No blanket'),
-  body:sel('Build',['seeded',...BODY_KINDS],human),hair:sel('Hair or headwear',['seeded',...HAIR_KINDS],human),garb:sel('Clothes',['seeded',...GARB_KINDS],human),facial:sel('Facial hair',['seeded',...FACIAL_KINDS],human),
-  extras:{kind:'json',label:'Extras',default:'auto',showIf:human,editor:{kind:'set',options:EXTRA_KINDS,auto:'Seeded extras'},validate:(v:Value)=>{if(v!=='auto'&&!(Array.isArray(v)&&v.every(e=>(EXTRA_KINDS as readonly string[]).includes(e as string))))throw new Error('Extras: expected "auto" or a list of '+EXTRA_KINDS.join(', '));}},
-  skin:colour('Skin',human),hairColour:colour('Hair colour',human),top:colour('Top',human),bottom:colour('Trousers or skirt',human),accent:colour('Accent (hat, bag, umbrella)',human),
-  variant:sel('Robot variant',['seeded','0','1','2'],isBot),face:sel('Robot face',['seeded',...FACES],isBot),
-  paint:colour('Robot paint',isBot),trim:colour('Robot trim',isBot),screen:colour('Robot screen',isBot),
+  seat:shapeLength({kind:'number',label:'Seat or bed height over the floor (0: the kit’s own)',default:0,min:0,max:120,step:1,unit:'units',showIf:seatedOrLying}),
+  lying:appearanceChoice({kind:'select',label:'Lying',options:['awake','asleep'],default:'awake',showIf:lying}),
+  cover:appearanceStructure(colour('Blanket (lying)',lying,'No blanket')),
+  body:appearanceChoice(sel('Build',['seeded',...BODY_KINDS],human)),hair:appearanceChoice(sel('Hair or headwear',['seeded',...HAIR_KINDS],human)),garb:appearanceChoice(sel('Clothes',['seeded',...GARB_KINDS],human)),facial:appearanceChoice(sel('Facial hair',['seeded',...FACIAL_KINDS],human)),
+  extras:appearanceStructure({kind:'json',label:'Extras',default:'auto',showIf:human,editor:{kind:'set',options:EXTRA_KINDS,auto:'Seeded extras'},validate:(v:Value)=>{if(v!=='auto'&&!(Array.isArray(v)&&v.every(e=>(EXTRA_KINDS as readonly string[]).includes(e as string))))throw new Error('Extras: expected "auto" or a list of '+EXTRA_KINDS.join(', '));}}),
+  skin:appearanceStructure(colour('Skin',human)),hairColour:appearanceStructure(colour('Hair colour',human)),top:appearanceStructure(colour('Top',human)),bottom:appearanceStructure(colour('Trousers or skirt',human)),accent:appearanceStructure(colour('Accent (hat, bag, umbrella)',human)),
+  variant:appearanceChoice(sel('Robot variant',['seeded','0','1','2'],isBot)),face:appearanceChoice(sel('Robot face',['seeded',...FACES],isBot)),
+  paint:appearanceStructure(colour('Robot paint',isBot)),trim:appearanceStructure(colour('Robot trim',isBot)),screen:appearanceStructure(colour('Robot screen',isBot)),
  },
  bounds:(props,_state,context)=>{
   const at=context?.placement??{x:0,h:0},body=residentCharacter(props,at),height=characterHeight(body),x=characterX(body,context?.view.t??0);

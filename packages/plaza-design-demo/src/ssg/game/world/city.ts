@@ -38,6 +38,7 @@ export type Stratum = 'overworld' | 'street' | 'underworld';
 
 
 export interface District {
+  rendering?:import('./render-settings').RenderSettings;
   id: DistrictId;
   name: string;
   /** What the city map writes on its block (where it has one). */
@@ -53,7 +54,7 @@ export type DistrictId = "downtown" | "oldq" | "market" | "galleria" | "harbor" 
  * LINE 0's car, which runs between the street districts. `entrance` is the scene
  * quick travel lands in, at its exit `at` (none: its spawn).
  */
-export interface PlaceData { access?: string; id: string; name: string; district: DistrictId | null; entrance: SceneId; at?: string }
+export interface PlaceData { climate?:string;access?: string; id: string; name: string; district: DistrictId | null; entrance: SceneId; at?: string }
 
 export type PlaceId = string;
 
@@ -150,6 +151,7 @@ export interface TravelState {
 
 /** Authored world values; scene exits remain owned by their scene documents. */
 export interface CitySource {
+ CLIMATES:Record<string,import('./weather-kinds').ClimateDef>;
  version:2;ACCESS:Record<string,{exit:{scene:string;id:string};reason:string}>;LOCKS:Record<string,{unlockedBy:'HARBOR_FLAG';destinations:string[];reason:string}>;DISTRICTS:District[];PLACES:Place[];
  LINE:Station[];STATIONS:Record<Station,{name:string;scene:SceneId;up:SceneId;at?:string}>;
  TRANSPORT:{boarding:{scene:SceneId;entrance?:string};siding:{scene:SceneId;entrance?:string}};
@@ -398,8 +400,8 @@ export function createCityModel(input:CitySource,context?:CitySourceContext){
   ]);
   return access.ok?'':access.reason;
 }
- return {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
+ return {source:data,ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked};
 }
 export type CityModel=ReturnType<typeof createCityModel>;
 const shippingCity=createCityModel(citySource as unknown as CitySource);
-export const {ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;
+export const {source,ACCESS,DISTRICTS,SCENE_PLACE,PLACES,placeOf,districtOf,cityProblems,seenFlag,seenPlace,LINE,STATIONS,TRANSPORT,stationAt,HARBOR_FLAG,harborOpen,LOCKS,lockOf,lockOpen,transportPermission,transportAccess,DRIVER_HARBOR,STAND_IDS,STANDS,standOf,FARE,HOP,DRIVER_BROKE,MAP_W,MAP_H,DISTRICT_MAP,PLACE_MAP,STATION_MAP,PAD_MAP,LOOP_MAP,LINES_PLANNED,lineKnownFlag,LINKS,MAP_PLACES,districtPlaces,districtSeen,DISTRICT_REVEAL,heardFlag,mappedFlag,districtStage,districtName,PLACE_IN_VIEW,placeKnown,knownPlaces,linkKnown,stationKnown,accessPolicy,placeBlocked}=shippingCity;

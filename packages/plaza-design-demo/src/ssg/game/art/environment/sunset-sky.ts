@@ -2,7 +2,7 @@
  * The sky kit's sunset style (`drawSky` with `style: 'sunset'`): the coast's sky, the title glide's look as Tommi
  * reviewed it, now a style of the one sky pass. A sunset gradient mixed from the frame's light (night, the golden
  * hour, the late afternoon) and toward the city's redder haze (`town`), a big slatted sun sinking into the sea with
- * its glow, twinkling stars at night, thin clouds drifting. Drawn in the coast kit's pixels (three world units each).
+ * its glow and twinkling stars at night. Thin clouds use the separate cloud-layer asset. Drawn in the coast kit's pixels (three world units each).
  */
 import { FOV, type Light } from '../../world/light';
 import type { View } from '../core/view';
@@ -11,7 +11,7 @@ import {skyPos,type SkyOpts} from './sky-layout';
 
 const rngOf = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
 const STARS = (() => { const r = rngOf(11); return Array.from({ length: 60 }, () => [r(), r() * 0.45, 0.25 + r() * 0.5, r() * 6]); })();
-const CLOUDS = (() => { const r = rngOf(5); return Array.from({ length: 9 }, () => [r() * 2, 0.12 + r() * 0.4, 30 + r() * 70]); })();
+
 /** Where the sun's middle sits below the horizon, in sun radii (negative: above it), from its height. */
 const sunDepth = (el: number) => el >= 0 ? 0.1 - el * 5.2 : 0.1 - el * 12;
 /** The city sky drifts a touch with the camera (sky.ts PAR); the sunset sun does not: joined zones share one sky. */
@@ -30,7 +30,7 @@ export function sunsetSun(v: View, l: Light, horizon: number):{x:number;y:number
 export function drawSunsetSky(x: CanvasRenderingContext2D, v: View, l: Light, o: SkyOpts) {
   const W = v.viewW / ART, hz = R(o.horizon / ART), city = Math.max(0, Math.min(1, o.town ?? 0));
   const t = v.t / 60, low = l.sun.el > 0 ? l.low : 1, lit = smooth(-0.18, -0.01, l.sun.el), el = l.sun.el;
-  const warm = lerp(0.35, 1, smooth(-0.17, 0, el)), up = smooth(-0.12, 0.02, el), sun = sunsetSun(v, l, o.horizon);
+  const up = smooth(-0.12, 0.02, el), sun = sunsetSun(v, l, o.horizon);
   const sunX = sun.x / ART, sunY = sun.y / ART, Rs = sun.r / ART;
   const mix = (night: string, gold: string, town: string, day: string) => mixHex(mixHex(night, mixHex(day, gold, low), lit), town, city);
   x.save(); x.scale(ART, ART);
@@ -48,11 +48,6 @@ export function drawSunsetSky(x: CanvasRenderingContext2D, v: View, l: Light, o:
     if (starK > 0) for (const [sxr, syr, a, ph] of STARS) {
       const tw = 0.6 + 0.4 * Math.sin(t * 1.3 + ph);
       x.fillStyle = 'rgba(255,217,165,' + Math.min(1, a * tw * starK * (1 - syr * 1.6)).toFixed(2) + ')'; x.fillRect(R(sxr * W), R(syr * hz), 1, 1);
-    }
-    for (const [cx, cy, cw] of CLOUDS) {
-      const px = ((cx * W * 1.4 + t * 1.2) % (W * 1.6)) - W * 0.3, py = R(hz * cy);
-      x.fillStyle = 'rgba(255,150,120,' + ((0.18 + (cy * 0.4)) * lerp(0.25, 1, warm) * (1 - city * 0.3)).toFixed(3) + ')'; x.fillRect(R(px), py, R(cw), 1);
-      x.fillStyle = 'rgba(40,10,50,.35)'; x.fillRect(R(px + 6), py + 1, R(cw * 0.7), 1);
     }
     // the sun, low and slatted, and its glow; behind the view it is not drawn, cloud swallows it
     const vis = 1 - smooth(0.3, 0.92, l.cover);

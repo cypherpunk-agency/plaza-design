@@ -9,8 +9,7 @@ export function hitTestArtwork(preview:PreviewResult|undefined,point:{x:number;y
   if(point.x<x||point.x>x+width||point.y<y||point.y>y+height)continue;
   const next=box.width*box.height;if(next<=area){best=box;area=next;}
  }
- if(best)return best;
- const id=preview?.pick?.(point);if(!id)return;const box=preview?.resolved?.[id]?.bounds;return box?{id,...box}:undefined;
+ return best;
 }
 
 export function sourceSelection(preview:PreviewResult|undefined,id:string,displayDocument:string){

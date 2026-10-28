@@ -1,3 +1,12 @@
+import {colorField} from '../core/fields';
+import {fixedGeometry} from '../core/spatial';
+import {choiceField,booleanField} from '../core/fields';
+import {positionListEditor} from '../core/fields';
+import {textField} from '../core/fields';
+import {numericFields} from '../core/fields';
+import {rectangleControls,combineControls,drawingWindowControls,depthControl,viewportElevationControls,worldElevationControl,axisControl,conditionalControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
+import {screenBounds} from '../assemblies/static-bounds';
 /**
  * COAST AND SHORE KIT: the shore seen side on, in the coast's coarse pixels (art/core/pixels.ts, three world
  * units each). It began as the title glide's hand-drawn panorama (Tommi reviewed it, 2026-10-15/22) and is a kit
@@ -24,7 +33,7 @@
  * are `SHORE` (back, mid, beach, the road's lanes). Lengths are world units. A piece placed facing -1 is the same
  * piece mirrored (the west beach), its text still readable.
  */
-import type { Bounds, AssetDefinition, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import { inPixels, SHORE, STRIP_K, R, hash, lerp, mixHex, smooth, ART, type Pixels } from '../core/pixels';
 import { text } from '../core/primitives';
 import { drawStringLights } from '../assemblies/beach-bar';
@@ -32,12 +41,13 @@ import { placed } from '../core/view';
 import { drawPalm } from './palm';
 import { drawSea } from './sea';
 import { sunsetSun } from './sunset-sky';
+const fixedNativeGeometry=fixedGeometry("This screen wipe follows the camera and authored fade state. It is an overlay, not a world object with physical resize edges.");
 
 const S = 1 / ART;
 export const PAPER = '255,217,165', ORANGE = '255,136,0', RED = '255,42,68', DAWN = '255,150,90';
-const num = (label: string, value: number, min = -1e6, max = 1e6, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
-const str = (label: string, value: string): Field => ({ kind: 'string', label, default: value });
-const color = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const num = numericFields({min:-1e6,max:1e6,step:1});
+const str = textField;
+const color = colorField;
 const n = (p: Properties, k: string) => Number(p[k]);
 const s = (p: Properties, k: string) => String(p[k]);
 const list = (label: string, value: Value, check: (row: Record<string, unknown>) => boolean, what: string): Field => ({ kind: 'json', label, default: value,
@@ -50,11 +60,11 @@ export function stripLines(P: Pixels, h0 = 0) {
 }
 export type StripLines = ReturnType<typeof stripLines>;
 
-interface Def { type: string; label: string; fields: Record<string, Field>; bounds: (p: Properties) => Bounds; draw: (P: Pixels, p: Properties, h0: number) => void; visual?: Record<string, Field>; parts?: AssetDefinition['parts'] }
+interface Def { spatial?:AssetDefinition['spatial'];validateProperties?:AssetDefinition['validateProperties'];drawingWindow?:AssetDefinition['drawingWindow']; drawingNote?:AssetDefinition['drawingNote']; selection?:AssetDefinition['selection']; type: string; label: string; fields: Record<string, Field>; bounds: AssetDefinition['bounds']; draw: (P: Pixels, p: Properties, h0: number) => void; visual?: Record<string, Field>; parts?: AssetDefinition['parts'] }
 const kit = (d: Def): AssetDefinition => ({
-  type: d.type, version: 1, label: d.label, category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: d.parts ?? ['backdrop'], fields: d.fields,
+  spatial:d.spatial,validateProperties:d.validateProperties,drawingWindow:d.drawingWindow,drawingNote:d.drawingNote,selection:d.selection,type: d.type, version: 1, label: d.label, category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: d.parts ?? ['backdrop'], fields: d.fields,
   ...(d.visual ? { visualFields: d.visual } : {}),
-  bounds: p => d.bounds(p), anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  bounds: d.bounds, anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, view, props, _state, _pass, at) { inPixels(ctx, view, at, P => d.draw(P, props, at.h)); },
 });
 
@@ -71,7 +81,8 @@ function spanOf(P: Pixels, from: number, to: number): [number, number] | null {
 }
 
 function groundSegment(P: Pixels, L: StripLines, seg: Segment, O: number, p: Properties) {
-  const x = P.x, GY = L.GY, bottom = P.H + 90, warm = P.warm, H = P.H;
+  // Material geometry and pattern depth belong to the piece, never the editor viewport.
+  const x = P.x, GY = L.GY, bottom = GY + Number(p.depthBelowGround ?? 384) * S, warm = P.warm, H = GY + 54 * S;
   const sp = spanOf(P, seg.from, seg.to); if (!sp) return;
   const [a, b] = sp;
   const fill = (top: string, low: string, from = GY) => { const gr = x.createLinearGradient(0, from, 0, H); gr.addColorStop(0, top); gr.addColorStop(1, low); x.fillStyle = gr; x.fillRect(a, from, b - a, bottom - from); };
@@ -151,7 +162,7 @@ function groundSegment(P: Pixels, L: StripLines, seg: Segment, O: number, p: Pro
     case 'street': {
       // the street's surface, its joints, the steps up to the plaza at its east end (`steps`)
       const gr = x.createLinearGradient(0, GY, 0, H); gr.addColorStop(0, '#241a22'); gr.addColorStop(1, '#0e0a0e');
-      x.fillStyle = gr; x.fillRect(a, GY, b - a, P.H + 400 - GY);
+      x.fillStyle = gr; x.fillRect(a, GY, b - a, bottom - GY);
       x.fillStyle = 'rgba(255,217,165,.07)'; for (let px = a - ((((a - O) % 9) + 9) % 9); px < b; px += 9) x.fillRect(R(px), GY, 1, L.ROAD0 - GY);
       if (p.steps === true) { const s0 = P.u(seg.to * S); if (P.onScreen(s0, s0, 30)) for (let k = 0; k < 4; k++) { x.fillStyle = k % 2 ? '#3a2c3c' : '#2e2232'; x.fillRect(R(s0) - 6, GY + k * 3, 14, 3); x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(R(s0) - 6, GY + k * 3, 14, 1); } }
       // the wet street: every sign's colour lying in it, broken up
@@ -178,38 +189,43 @@ function groundSegment(P: Pixels, L: StripLines, seg: Segment, O: number, p: Pro
 }
 
 export const groundElement = kit({
+  spatial:depthControl('depthBelowGround',0,p=>{const rows=p.segments as unknown as Segment[];return (Math.min(0,...rows.map(r=>r.from))+Math.max(0,...rows.map(r=>r.to)))/2;}),
   type: 'coast.ground', label: 'Shore strip: sand, water, rocks, quay, bridge, plaza, street, road (coast kit)',
   fields: {
-    segments: list('Segments, drawn in order (kind, from, to: world units east of the piece)', [{ kind: 'sand', from: 0, to: 1200 }], r => GROUND_KINDS.includes(r.kind as GroundKind) && fin(r.from) && fin(r.to) && Number(r.to) > Number(r.from), 'expected { kind, from, to } rows'),
-    origin: num('Pattern origin (world units east of the piece)', 0),
-    wet: num('Wet street (rain sheen, sign colours lying in it)', 0, 0, 1, 0.05),
-    steps: { kind: 'boolean', label: 'Steps up to the plaza at the street’s east end', default: false },
-    glows: list('Sign colours in the wet street (x, w: world units; col "r,g,b"; a)', [], r => fin(r.x) && fin(r.w) && typeof r.col === 'string' && fin(r.a), 'expected { x, w, col, a } rows'),
-    crossings: { kind: 'json', label: 'Road crossings (world x east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || !v.every(fin)) throw new Error('Road crossings: expected numbers'); } },
+    depthBelowGround: shapeLength(num('Depth below ground', 384, 150, 6000, 1, 'units')),
+    segments: ({...appearanceStructure(list('Segments, drawn in order (kind, from, to: world units east of the piece)', [{ kind: 'sand', from: 0, to: 1200 }], r => GROUND_KINDS.includes(r.kind as GroundKind) && fin(r.from) && fin(r.to) && Number(r.to) > Number(r.from), 'expected { kind, from, to } rows')),editor:{kind:'list',item:{kind:appearanceChoice(choiceField('Material',GROUND_KINDS,'sand')),from:shapePosition(numericFields({value:0})('Start X')),to:shapePosition(numericFields({value:1200})('End X'))}}}),
+    origin: shapePosition(num('Pattern origin (world units east of the piece)', 0)),
+    wet: appearanceRatio(num('Wet street (rain sheen, sign colours lying in it)', 0, 0, 1, 0.05)),
+    steps: appearanceBoolean({ kind: 'boolean', label: 'Steps up to the plaza at the street’s east end', default: false }),
+    glows: ({...appearanceStructure(list('Sign colours in the wet street (x, w: world units; col "r,g,b"; a)', [], r => fin(r.x) && fin(r.w) && typeof r.col === 'string' && fin(r.a), 'expected { x, w, col, a } rows')),editor:{kind:'list',item:{x:shapePosition(numericFields({value:0})('X')),w:shapeLength(numericFields({value:120,min:0})('Width')),col:semantic(textField('Color RGB','255,136,0'),{group:'Appearance',quantity:'color',unit:'RGB'}),a:appearanceRatio(numericFields({value:.2,min:0,max:1,step:.01})('Opacity'))}}}),
+    crossings: positionListEditor(appearanceStructure({ kind: 'json', label: 'Road crossings (world x east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || !v.every(fin)) throw new Error('Road crossings: expected numbers'); } }),'Crossing X'),
   },
-  bounds: p => { const seg = p.segments as unknown as Segment[], a = Math.min(0, ...seg.map(q => q.from)), b = Math.max(0, ...seg.map(q => q.to)); return { x: a, h: 0, w: b - a, tall: 130 }; },
+  bounds: p => { const seg = p.segments as unknown as Segment[], a = Math.min(0, ...seg.map(q => q.from)), b = Math.max(0, ...seg.map(q => q.to)); return { x: a, h: 12, w: b - a, tall: Number(p.depthBelowGround ?? 384) + 12 }; },
   draw(P, p, h0) {
     const L = stripLines(P, h0), O = P.u(n(p, 'origin') * S);
-    for (const seg of p.segments as unknown as Segment[]) groundSegment(P, L, seg, O, p);
+    const [a,b]=P.span();P.x.save();P.x.beginPath();P.x.rect(a,L.GY-4,b-a,Number(p.depthBelowGround??384)*S+4);P.x.clip();
+    try { for (const seg of p.segments as unknown as Segment[]) groundSegment(P, L, seg, O, p); }
+    finally { P.x.restore(); }
   },
 });
 
 /** A wall into the water where the strip changes: the inlet's sea wall (the port's side) or a bridge abutment. */
 export const wallElement = kit({
+  spatial:depthControl('depthBelowGround'),
   type: 'coast.wall', label: 'Sea wall or bridge abutment (coast kit)',
-  fields: { kind: { kind: 'select', label: 'Kind', options: ['sea-wall', 'abutment'], default: 'sea-wall' } },
-  bounds: () => ({ x: -24, h: 12, w: 48, tall: 150 }),
+  fields: { kind: appearanceChoice({ kind: 'select', label: 'Kind', options: ['sea-wall', 'abutment'], default: 'sea-wall' }), depthBelowGround: shapeLength(num('Depth below ground', 384, 150, 6000, 1, 'units')) },
+  bounds: p => ({ x: -24, h: 12, w: 48, tall: Number(p.depthBelowGround ?? 384) + 12 }),
   draw(P, p, h0) {
-    const x = P.x, GY = P.y(h0), bottom = P.H + 90, sx = P.ax;
+    const x = P.x, GY = P.y(h0), bottom = GY + Number(p.depthBelowGround ?? 384) * S, sx = P.ax;
     if (!P.onScreen(sx, sx, 30)) return;
     if (p.kind === 'sea-wall') {
       x.fillStyle = '#3a2c32'; x.fillRect(R(sx) - 2, GY - 4, 10, bottom - GY);
       x.fillStyle = 'rgba(' + ORANGE + ',.5)'; x.fillRect(R(sx) - 2, GY - 4, 10, 1); x.fillRect(R(sx) - 2, GY - 4, 1, bottom - GY);
-      x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = GY + 4; h < P.H + 40; h += 5) x.fillRect(R(sx) - 1, h, 8, 1);
+      x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = GY + 4; h < bottom; h += 5) x.fillRect(R(sx) - 1, h, 8, 1);
     } else {
       x.fillStyle = '#2e2228'; x.fillRect(R(sx) - 8, GY, 16, bottom - GY);
       x.fillStyle = 'rgba(' + ORANGE + ',.45)'; x.fillRect(R(sx) - 8, GY, 1, bottom - GY); x.fillRect(R(sx) + 7, GY, 1, bottom - GY);
-      x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = GY + 6; h < P.H + 40; h += 6) x.fillRect(R(sx) - 7, h, 14, 1);
+      x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = GY + 6; h < bottom; h += 6) x.fillRect(R(sx) - 7, h, 14, 1);
     }
   },
 });
@@ -222,17 +238,18 @@ export const wallElement = kit({
  * stairs down to the sand east of the land end, the lantern at the seaward end. Black against the sun.
  */
 export const pierElement = kit({
+  spatial:rectangleControls({width:'length',originX:1,baseline:SHORE.pier}),
   type: 'coast.pier', label: 'Timber pier: piles, deck, railing, kiosk, lamps, lantern (coast kit)',
   fields: {
-    length: num('Length', 720, 60, 6000, 3, 'units'), paint: color('Timber silhouette', '#0a0310'), kiosk: str('Kiosk sign (empty: no kiosk)', 'BAIT · ICE · TEA'),
-    lamp: str('Lamp colour', 'rgba(255,220,160,.95)'), lantern: str('Lantern colour', 'rgba(255,232,190,.95)'), sag: num('String light sag', 6, 0, 100), lights: { kind: 'boolean', label: 'String lights between the lamps', default: true },
+    length: shapeLength(num('Length', 720, 60, 6000, 3, 'units')), fillColor: appearanceColor(color('Timber silhouette', '#0a0310')), kiosk: appearanceText(str('Kiosk sign (empty: no kiosk)', 'BAIT · ICE · TEA')),
+    lamp: appearanceColor(str('Lamp colour', 'rgba(255,220,160,.95)'),"CSS color"), lantern: appearanceColor(str('Lantern colour', 'rgba(255,232,190,.95)'),"CSS color"), sag: shapeLength(num('String light sag', 6, 0, 100)), lights: appearanceBoolean({ kind: 'boolean', label: 'String lights between the lamps', default: true }),
   },
   bounds: p => ({ x: -n(p, 'length'), h: 160, w: n(p, 'length') + 72, tall: 250 }),
   draw(P, p, h0) {
     const x = P.x, len = R(n(p, 'length') * S), L = stripLines(P, h0), deck = L.PIER, GY = L.GY;
     const a = R(P.u(-len)), b = R(P.ax);
     if (!P.onScreen(a - 10, b + 30, 40)) return;
-    const ink = s(p, 'paint'), rim = 'rgba(' + DAWN + ',' + (0.55 * P.warm).toFixed(2) + ')';
+    const ink = s(p, 'fillColor'), rim = 'rgba(' + DAWN + ',' + (0.55 * P.warm).toFixed(2) + ')';
     // the piles into the water, their cross-bracing, their reflections
     for (let u = -6; u >= -len; u -= 16) {
       const sx = R(P.u(u)); x.fillStyle = ink; x.fillRect(sx, deck, 3, GY - deck + 1);
@@ -270,7 +287,7 @@ export const pierElement = kit({
     }
     if (p.lights !== false) for (let i = 0; i + 1 < posts.length; i++) {
       const s0 = P.u(posts[i + 1]), s1 = P.u(posts[i]);
-      placed(x, R(s0), deck, S, () => drawStringLights(x, 0, 78, (s1 - s0) / S, 78, P.f, { sag: n(p, 'sag'), phase: i, still: P.still }));
+      placed(x, R(s0), deck, S, () => drawStringLights(x, 0, 78, (s1 - s0) / S, 78, P.f, { sag: n(p, 'sag'), phaseAngle:i,paletteOffset:i,still:P.still }));
     }
     // the lantern on its mast at the seaward end: a warm white, the pier's own
     const e = R(P.u(-len + 2));
@@ -282,8 +299,9 @@ export const pierElement = kit({
 
 /** A steel truss walkway over an inlet at the ground line, from the anchor `length` west; lamps at both ends, a moored dinghy. */
 export const footbridgeElement = kit({
+  spatial:rectangleControls({width:'length',originX:1,baseline:SHORE.mid}),
   type: 'coast.footbridge', label: 'Footbridge over an inlet, lamps, a moored dinghy (coast kit)',
-  fields: { length: num('Span', 480, 60, 3000, 3, 'units'), dinghy: { kind: 'boolean', label: 'Moored dinghy', default: true } },
+  fields: { length: shapeLength(num('Span', 480, 60, 3000, 3, 'units')), dinghy: appearanceBoolean({ kind: 'boolean', label: 'Moored dinghy', default: true }) },
   bounds: p => ({ x: -n(p, 'length'), h: 60, w: n(p, 'length'), tall: 230 }),
   draw(P, p, h0) {
     const x = P.x, len = R(n(p, 'length') * S), L = stripLines(P, h0);
@@ -310,8 +328,8 @@ export const footbridgeElement = kit({
 /** The lifeguard's hut on stilts, off duty: shutter down, the flag; the NO SWIMMING sign on its post `sign` units west. */
 export const lifeguardElement = kit({
   type: 'coast.lifeguard', label: 'Lifeguard hut on stilts, flag, NO SWIMMING post (coast kit)',
-  fields: { sign: num('Sign post (units west of the hut; 0: none)', 132, 0, 1200), text: str('Sign', 'NO SWIMMING') },
-  bounds: () => ({ x: -45, h: 190, w: 90, tall: 190 }),
+  fields: { signOffset: shapeLength(num('Sign post (units west of the hut; 0: none)', 132, 0, 1200)), text: appearanceText(str('Sign', 'NO SWIMMING')) },
+  bounds: p => {const left=Number(p.signOffset)>0?Math.min(-45,-Number(p.signOffset)-36):-45;return{x:left,h:190,w:48-left,tall:190};},
   draw(P, p, h0) {
     const x = P.x, L = stripLines(P, h0), sx = P.ax;
     if (P.onScreen(sx, sx, 40)) {
@@ -324,7 +342,7 @@ export const lifeguardElement = kit({
       const wave = P.still ? 0 : Math.sin(P.f * 0.08) * 1;
       x.fillStyle = '#c8302a'; x.fillRect(R(sx) + 10, b - 58 + wave, 6, 4);
     }
-    const off = n(p, 'sign') * S;
+    const off = n(p, 'signOffset') * S;
     if (off > 0) {
       const ps = P.u(-off); if (!P.onScreen(ps, ps, 20)) return;
       x.fillStyle = '#140812'; x.fillRect(R(ps), L.BACK - 14, 1, 16);
@@ -338,9 +356,10 @@ export const lifeguardElement = kit({
 
 /** The mole out in the bay: rough blocks along the water from the anchor `length` west, the swell breaking white, the light tower at its seaward end. */
 export const breakwaterElement = kit({
+  spatial:rectangleControls({width:'length',originX:1,baseline:'water'}),
   type: 'coast.breakwater', label: 'Breakwater with its light tower (coast kit, distance)',
-  fields: { windowFrom:num('Visible east of (world x)',-1e6,-1e7,1e7),windowTo:num('Visible west of (world x)',1e6,-1e7,1e7),
-    length: num('Length (in its own depth)', 497, 30, 6000, 1, 'units'), water: num('Height on the water (over the ground line)', 85, -400, 600) },
+  fields: {
+    length: shapeLength(num('Length (in its own depth)', 497, 30, 6000, 1, 'units')), water: shapePosition(num('Height on the water (over the ground line)', 85, -400, 600)) },
   bounds: p => ({ x: -n(p, 'length'), h: n(p, 'water') + 70, w: n(p, 'length'), tall: 80 }),
   draw(P, p) {
     const x = P.x, len = n(p, 'length') * S, a = P.u(-len), b = P.ax;
@@ -364,19 +383,24 @@ export const breakwaterElement = kit({
  * and height, taller toward the west end (`rise` per unit), a few lit windows. In its own depth (place it with a
  * small parallax). `town` from..to (units west of the anchor): where the city's haze lies over it.
  */
+const farShoreWindow=(view:Pixels['view'],p:Properties)=>({left:view.sx(n(p,'drawingMinX'),1),right:view.sx(n(p,'drawingMaxX'),1)});
 export const farShoreElement = kit({
-  type: 'coast.far-shore', label: 'Far shore: a low city along the horizon (coast kit, distance)',
+  type: 'coast.far-shore', selection:'region',
+  spatial:combineControls(rectangleControls({width:'width',originX:1,baseline:'horizon'}),drawingWindowControls('drawingMinX','drawingMaxX','horizon')),
+  validateProperties:p=>{if(n(p,'drawingMaxX')<=n(p,'drawingMinX'))throw Error('Drawing window east boundary must be after its west boundary.');},
+  drawingWindow:(p,_s,c)=>{const w=farShoreWindow(c.view,p);return{bounds:screenBounds(c,{x:w.left,y:0,w:w.right-w.left,h:c.view.viewH},{x:0,h:0,w:0,tall:0}),from:'drawingMinX',to:'drawingMaxX'};},
+  drawingNote:p=>`Drawing is restricted to world X ${n(p,'drawingMinX')}–${n(p,'drawingMaxX')}. The selection shows the full skyline area. Change Drawing window minimum/maximum X or drag its boundary handles.`, label: 'Far shore: a low city along the horizon (coast kit, distance)',
   fields: {
-    windowFrom:num('Visible east of (world x)',-1e6,-1e7,1e7),windowTo:num('Visible west of (world x)',1e6,-1e7,1e7),
-    length: num('Length (in its own depth)', 1566, 30, 40000, 1, 'units'), seed: num('Seed', 17, 0, 1e6), horizon: num('Horizon (over the ground line)', 189, -400, 1200),
-    spacing: num('Block spacing (world units across the far shore)', 144, 4, 2000), rise: num('Taller toward the west, from (units west)', 378, 0, 40000), clipEast: num('Hidden east of (units west of the anchor; 0: none)', 0, 0, 40000),
+    drawingMinX:semantic(num('Drawing window minimum X',-1e6,-1e7,1e7),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"world"}),drawingMaxX:semantic(num('Drawing window maximum X',1e6,-1e7,1e7),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"world"}),
+    width: shapeLength(num('Width to the west', 1566, 30, 40000, 1, 'units')), seed: generationSeed(num('Seed', 17, 0, 1e6)), horizon: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)),
+    spacing: shapeLength(num('Block spacing (world units across the far shore)', 144, 4, 2000)), rise: shapeLength(num('Taller toward the west, from (units west)', 378, 0, 40000)), hiddenNearAnchorDistance: semantic(num('Hidden east of (units west of the anchor; 0: none)', 0, 0, 40000),{"group":"Visibility & Drawing","quantity":"length","unit":"world units","space":"local"}),
   },
-  bounds: p => ({ x: -n(p, 'length'), h: n(p, 'horizon') + 60, w: n(p, 'length'), tall: 60 }),
+  bounds:p=>{const top=30+Math.max(0,n(p,'width')-n(p,'rise'))*.005/(n(p,'spacing')/3/130);return{x:-n(p,'width')-48,h:n(p,'horizon')+top,w:n(p,'width')+48,tall:top+3};},
   draw(P, p) {
-    const x = P.x, rng = seeded(n(p, 'seed')), len = n(p, 'length') * S, base = P.y(n(p, 'horizon')), rise = n(p, 'rise') * S, clip = n(p, 'clipEast') * S;
+    const x = P.x, rng = seeded(n(p, 'seed')), len = n(p, 'width') * S, base = P.y(n(p, 'horizon')), rise = n(p, 'rise') * S, clip = n(p, 'hiddenNearAnchorDistance') * S;
     // laid out as the original row: 40 + r·90 apart in the shore's own units (`spacing` scales it)
     const unit = n(p, 'spacing') * S / 130;
-    x.save();x.beginPath();const lo=Math.max(0,P.sx(n(p,'windowFrom'),1)),hi=Math.min(P.W,P.sx(n(p,'windowTo'),1));x.rect(lo,0,Math.max(0,hi-lo),P.H);x.clip();
+    x.save();x.beginPath();const window=farShoreWindow(P.view,p),lo=Math.max(0,window.left/ART),hi=Math.min(P.W,window.right/ART);x.rect(lo,0,Math.max(0,hi-lo),P.H);x.clip();
     for (let u = 0; u < len; u += (40 + rng() * 90) * unit) {
       const h = 3 + rng() * 7 + Math.max(0, u - rise) * 0.005 / unit, w = 4 + rng() * 12, r = rng();
       if (clip > 0 && u < clip) continue;
@@ -391,14 +415,17 @@ function seeded(seed: number) { let v = seed; return () => (v = (v * 9301 + 4929
 
 /** Boats far out on the sea: hulls on the water, a sail or a little wheelhouse with a lit window, bobbing. */
 export const boatsElement = kit({
-  type: 'coast.boats', label: 'Boats far out on the sea, silhouettes (coast kit, distance)',
+  type: 'coast.boats', selection:'region', label: 'Boats far out on the sea, silhouettes (coast kit, distance)',
   fields: {
-    boats: list('Boats (x: units east of the piece, len: pixels, mast: 1 sail / 0 wheelhouse, flip)', [{ x: 0, len: 22, mast: 0 }], r => fin(r.x) && fin(r.len) && (r.mast === 0 || r.mast === 1), 'expected { x, len, mast } rows'),
-    water: num('Height on the water (over the ground line)', 180, -400, 1200),
+    boats: ({...appearanceStructure(list('Boats (x: units east of the piece, len: pixels, mast: 1 sail / 0 wheelhouse, flip)', [{ x: 0, len: 22, mast: 0 }], r => fin(r.x) && fin(r.len) && (r.mast === 0 || r.mast === 1), 'expected { x, len, mast } rows')),editor:{kind:'list',item:{x:shapePosition(numericFields({value:0})('X')),len:semantic(numericFields({value:22,min:1,step:1})('Length'),{group:'Shape / Area',quantity:'length',unit:'artwork pixels',space:'artwork'}),mast:appearanceChoice(choiceField('Mast',[0,1],0)),flip:appearanceBoolean(booleanField('Face left'))}}}),
+    waterLevel: semantic(num('Water level (world elevation)', 180, -400, 1200),{group:'Shape / Area',quantity:'position',unit:'world units',space:'world'}),
   },
-  bounds: p => { const b = p.boats as unknown as { x: number }[]; const a = Math.min(0, ...b.map(q => q.x)), e = Math.max(0, ...b.map(q => q.x)); return { x: a, h: n(p, 'water') + 40, w: e - a + 100, tall: 50 }; },
+  bounds: (p,_s,c) => { const boats=p.boats as unknown as {x:number;len:number;mast:number;flip?:boolean}[];
+    const extent=(b:typeof boats[number])=>Math.max(b.len,b.mast?b.len/2+7:9)*ART;
+    const left=Math.min(0,...boats.map(b=>b.x-(b.flip?extent(b):0)))-3,right=Math.max(0,...boats.map(b=>b.x+(b.flip?0:extent(b))))+3;
+    return{x:left,h:n(p,'waterLevel')-(c?.placement.h??0)+40,w:right-left,tall:54}; },
   draw(P, p) {
-    const x = P.x, by = R(P.y(n(p, 'water')));
+    const x = P.x, by = R(P.y(n(p, 'waterLevel')));
     for (const boat of p.boats as unknown as { x: number; len: number; mast: number; flip?: boolean }[]) {
       const len = boat.len, sx = P.u(boat.x * S) - (boat.flip ? len : 0);
       if (!P.onScreen(sx - len, sx + len)) continue;
@@ -413,9 +440,9 @@ export const boatsElement = kit({
 });
 
 /** Something big and dark passing close to the camera at the bottom of the view: a palm, a post with a lit sign, a lamp, a signal pole. Place it with a parallax over 1. */
-export const wipeElement = kit({
+export const wipeElement = kit({spatial:fixedNativeGeometry,
   type: 'coast.wipe', label: 'Foreground wipe: a palm, a post, a lamp or a signal close to the camera (coast kit)', parts: ['foreground'],
-  fields: { kind: { kind: 'select', label: 'Kind', options: ['palm', 'post', 'lamp', 'signal'], default: 'palm' }, ink: color('Silhouette', '#040106') },
+  fields: { kind: appearanceChoice({ kind: 'select', label: 'Kind', options: ['palm', 'post', 'lamp', 'signal'], default: 'palm' }), ink: appearanceColor(color('Silhouette', '#040106')) },
   bounds: () => ({ x: -60, h: 700, w: 120, tall: 900 }),
   draw(P, p) {
     const x = P.x, sx = P.ax, ink = s(p, 'ink'), kind = s(p, 'kind'), H = P.H;
@@ -437,9 +464,11 @@ export const wipeElement = kit({
  * distance layer; its own depth (`parallax` of the placement) moves the swell as the camera does.
  */
 export const seaElement: AssetDefinition = {
-  type: 'environment.sea', version: 1, label: 'Open sea: mirror, swell and the sun’s path (coast kit)', category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
-  fields: { horizon: num('Horizon (over the ground line)', 189, -400, 1200), bottom: num('Near edge (over the ground line)', 0, -600, 1200), haze: num('City haze over it', 0, 0, 1, 0.05) },
-  bounds: p => ({ x: 0, h: n(p, 'horizon'), w: 4000, tall: n(p, 'horizon') - n(p, 'bottom') }),
+  spatial:viewportElevationControls('horizon','bottom'),
+  validateProperties:p=>{if(n(p,'bottom')>n(p,'horizon'))throw Error('Sea near edge must not be above its horizon');},
+  type: 'environment.sea', selection:'region', version: 1, label: 'Open sea: mirror, swell and the sun’s path (coast kit)', category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  fields: { horizon: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)), bottom: shapePosition(num('Near edge (over the ground line)', 0, -600, 1200)), haze: appearanceRatio(num('City haze over it', 0, 0, 1, 0.05)) },
+  bounds:(p,_s,c)=>{const b={x:0,h:n(p,'horizon'),w:4000,tall:n(p,'horizon')-n(p,'bottom')};return c?screenBounds(c,{x:0,y:c.view.y(c.placement.h+b.h),w:c.view.viewW,h:Math.max(12,c.view.y(c.placement.h+n(p,'bottom'))-c.view.y(c.placement.h+b.h))+6},b):b;},
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, v, p, _s, _pass, at) {
     const top = R(v.y(at.h + n(p, 'horizon')) / ART), bot = v.y(at.h + n(p, 'bottom')) / ART, l = v.lighting;
@@ -453,11 +482,13 @@ export const seaElement: AssetDefinition = {
 
 /** A far landmark's shadow and its red light lying on the water under it (the Spire across the bay). */
 export const reflectionElement = kit({
-  type: 'environment.reflection', label: 'Landmark reflection on the water: dark shape, red light (coast kit, distance)',
-  fields: { size: num('Landmark size (its scale)', 1.49, 0.1, 10, 0.01), horizon: num('Horizon (over the ground line)', 189, -400, 1200), depth: num('Down to (over the ground line)', 0, -600, 1200) },
-  bounds: p => ({ x: -100 * n(p, 'size'), h: n(p, 'horizon'), w: 200 * n(p, 'size'), tall: n(p, 'horizon') - n(p, 'depth') }),
+  spatial:combineControls(worldElevationControl('horizon'),worldElevationControl('depth')),
+  validateProperties:p=>{if(n(p,'depth')>n(p,'horizon'))throw Error('Reflection near edge must not be above its horizon');},
+  type: 'environment.reflection', selection:'region', label: 'Landmark reflection on the water: dark shape, red light (coast kit, distance)',
+  fields: { generatorScale: semantic(num('Landmark size (its scale)', 1.49, 0.1, 10, 0.01),{"group":"Appearance","quantity":"factor","unit":"factor"}), horizon: semantic(num('Horizon (world elevation)', 189, -400, 1200),{group:'Shape / Area',quantity:'position',unit:'world units',space:'world'}), depth: semantic(num('Near edge (world elevation)', 0, -600, 1200),{group:'Shape / Area',quantity:'position',unit:'world units',space:'world'}) },
+  bounds: p => ({ x: -100 * n(p, 'generatorScale'), h: n(p, 'horizon'), w: 200 * n(p, 'generatorScale'), tall: n(p, 'horizon') - n(p, 'depth') }),
   draw(P, p) {
-    const x = P.x, sx = P.ax, spS = n(p, 'size') * S, top = R(P.y(n(p, 'horizon'))), bot = P.y(n(p, 'depth'));
+    const x = P.x, sx = P.ax, spS = n(p, 'generatorScale') * S, top = R(P.y(n(p, 'horizon'))), bot = P.y(n(p, 'depth'));
     if (!P.onScreen(sx, sx, 60)) return;
     x.fillStyle = 'rgba(8,3,14,.35)'; x.fillRect(R(sx - 16 * spS * 2), top + 1, R(64 * spS * 2), R((bot - top) * 0.45));
     for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(' + RED + ',' + (0.12 * (1 - i / 6)).toFixed(3) + ')'; x.fillRect(R(sx - 2 + (P.still ? 0 : Math.sin(P.t * 2 + i) * 1.5)), top + 2 + i * 3, 3, 1); }
@@ -466,11 +497,12 @@ export const reflectionElement = kit({
 
 /** Low bay bridge: railing, end signals and widely spaced lamps, in the shared world's pixels. */
 export const bridgeElement = kit({
+  spatial:rectangleControls({width:'length',baseline:SHORE.back}),
   type: 'coast.bridge', label: 'Bay bridge rail, signals and lamps (coast kit)',
-  fields: {length:num('Length',1380,120,12000),paint:{kind:'color',label:'Rail',default:'#3a2a3a'}},
+  fields: {length:shapeLength(num('Length',1380,120,12000)),paintColor:appearanceColor({kind:'color',label:'Rail',default:'#3a2a3a'})},
   bounds:p=>({x:0,h:150,w:n(p,'length'),tall:150}),
   draw(P,p,h){const x=P.x,len=n(p,'length')/ART,a=P.ax,b=P.u(len),gy=P.y(h),L=stripLines(P,h);
-    x.fillStyle=String(p.paint);x.fillRect(R(a),R(gy-5),R(b-a),1);
+    x.fillStyle=String(p.paintColor);x.fillRect(R(a),R(gy-5),R(b-a),1);
     for(let u=0;u<len;u+=10){const s=R(P.u(u));if(P.onScreen(s,s,2))x.fillRect(s,R(gy-5),1,5);}
     for(const u of [14,len-14]){const s=R(P.u(u)),top=gy-46;if(!P.onScreen(s,s,20))continue;x.fillStyle='#1e1222';x.fillRect(s-3,R(top),6,46);x.fillRect(s-5,R(top),10,3);x.fillStyle='rgba(255,136,0,.35)';x.fillRect(s+2,R(top),1,46);x.fillStyle=P.still||Math.floor(P.f/20)%2?'rgba(255,42,68,1)':'rgba(255,42,68,.3)';x.fillRect(s-1,R(top-3),3,3);}
     for(let u=80;u<len-40;u+=115){const s=R(P.u(u)),top=L.BACK-36;if(!P.onScreen(s,s,30))continue;x.fillStyle='#0e080c';x.fillRect(s,R(top),2,R(L.BACK-top));x.fillRect(s-6,R(top),8,2);x.fillStyle='rgba(255,220,160,.95)';x.fillRect(s-6,R(top+2),4,1);const glow=x.createRadialGradient(s-4,top+3,1,s-4,top+3,22);glow.addColorStop(0,'rgba(255,210,150,.18)');glow.addColorStop(1,'rgba(255,210,150,0)');x.fillStyle=glow;x.fillRect(s-26,top-18,44,44);}
@@ -478,3 +510,6 @@ export const bridgeElement = kit({
 });
 
 export const coastElements: AssetDefinition[] = [groundElement, bridgeElement, wallElement, pierElement, footbridgeElement, lifeguardElement, breakwaterElement, farShoreElement, boatsElement, wipeElement, seaElement, reflectionElement];
+
+lifeguardElement.spatial=conditionalControls(axisControl('signOffset','x',54,'Sign position to west',{direction:-1}),p=>Number(p.signOffset)>0);
+boatsElement.spatial=worldElevationControl('waterLevel');

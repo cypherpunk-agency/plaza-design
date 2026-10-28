@@ -17,9 +17,15 @@ const dir=path.resolve('../../.game-test-output/sky-authoring');fs.mkdirSync(dir
 const store=new AuthoringStore({root,documents:[descriptor]}),initial=store.list();
 const make=()=>{const model=new ComposerModel(art,{},d=>{if(d.id===sourceId)descriptor.validate(d.value);},[sceneCatalogueProjection]);model.load(initial);return model;};
 const model=make(),document=()=>model.get(id).value as ChunkDocument;
+const cloudDraft=model.draftAdd(id,'environment.cloud-layer');
+assert.equal(cloudDraft.composition.instances.find(n=>n.id===cloudDraft.instanceId)!.layer,'distance');
+const beforeCloud=model.list();model.edit(id,'Add cloud layer',()=>cloudDraft.composition);
+model.updateInstance(id,cloudDraft.instanceId,'Configure clouds',n=>{n.props={...n.props,altitude:620,spacing:900,minX:-2000,maxX:14000};});
+assert.equal((model.get(id).value as ChunkDocument).instances.find(n=>n.id===cloudDraft.instanceId)!.props.altitude,620);
+model.undo();model.undo();assert.deepEqual(model.list(),beforeCloud,'Cloud creation and typed changes use normal history');
 const draft=model.draftAdd(id,'environment.sky-traffic');assert.equal(draft.composition.instances.find(n=>n.id===draft.instanceId)!.layer,'distance','the actual Add path places sky art in its supported layer');
 const initialState=model.list();assert.throws(()=>model.updateInstance(id,'sky-traffic','Put sky in foreground',n=>{n.layer='foreground';}),/distance layer/);assert.deepEqual(model.list(),initialState,'unsupported phase/layer edit rejects atomically');
-model.edit(id,'Configure sky traffic',value=>{const doc=structuredClone(value) as ChunkDocument,row=doc.instances.find(n=>n.type==='environment.sky-traffic')!;row.props={...row.props,ships:[{kind:'freighter',ps:2,y:66,speed:.15,offset:800,flip:true,depth:.4}]};row.placement={x:30,h:15};const copy=structuredClone(row);copy.id='sky-copy';copy.placement.x=110;doc.instances.push(copy);return doc;});
+model.edit(id,'Configure sky traffic',value=>{const doc=structuredClone(value) as ChunkDocument,row=doc.instances.find(n=>n.type==='environment.sky-traffic')!;row.props={...row.props,ships:[{kind:'freighter',pixelSize:2,screenY:66,velocityX:9,startOffset:800,direction:-1,parallax:.4}]};row.placement={x:30,h:15};const copy=structuredClone(row);copy.id='sky-copy';copy.placement.x=110;doc.instances.push(copy);return doc;});
 assert.equal(document().instances.filter(n=>n.type==='environment.sky-traffic').length,2);
 model.undo();assert.equal(document().instances.filter(n=>n.type==='environment.sky-traffic').length,1);model.redo();
 const pending=model.list();assert.throws(()=>model.edit(id,'Invalid fleet',value=>{const doc=structuredClone(value) as ChunkDocument;doc.instances.find(n=>n.type==='environment.sky-traffic')!.props.ships=[{kind:'invalid'}];return doc;}));assert.deepEqual(model.list(),pending,'invalid grouped source edit is atomic');

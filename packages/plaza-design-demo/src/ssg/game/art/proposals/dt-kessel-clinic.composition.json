@@ -40,10 +40,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 450,
@@ -93,9 +93,6 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "floors": 7,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "framed",
         "roof": "cornice",
@@ -114,7 +111,10 @@
             "from": 100,
             "width": 24
           }
-        ]
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 0,
@@ -128,9 +128,6 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "floors": 8,
-        "storey": 66,
-        "ground": 76,
         "skin": "panel",
         "windows": "framed",
         "density": 0.6,
@@ -147,7 +144,10 @@
             "width": 80,
             "tenant": "repair"
           }
-        ]
+        ],
+        "height": 604,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 150,
@@ -162,14 +162,14 @@
       "props": {
         "width": 50,
         "height": 480,
-        "depth": 0.7,
         "light": "red",
         "escape": "none",
         "bins": true,
         "steam": false,
         "cables": true,
         "yard": true,
-        "seed": 12
+        "seed": 12,
+        "perspectiveAmount": 0.7
       },
       "placement": {
         "x": 700,
@@ -183,9 +183,6 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "floors": 7,
-        "storey": 66,
-        "ground": 76,
         "skin": "concrete",
         "windows": "punched",
         "roof": "stepped",
@@ -202,7 +199,10 @@
             "from": 110,
             "width": 24
           }
-        ]
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 750,
@@ -216,9 +216,6 @@
       "type": "building.front",
       "props": {
         "width": 120,
-        "floors": 5,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "curtained",
         "density": 0.6,
@@ -230,7 +227,10 @@
             "width": 70,
             "tenant": "bar"
           }
-        ]
+        ],
+        "height": 406,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 910,
@@ -244,9 +244,6 @@
       "type": "building.front",
       "props": {
         "width": 170,
-        "floors": 6,
-        "storey": 66,
-        "ground": 76,
         "skin": "tenement",
         "windows": "framed",
         "escape": "left",
@@ -264,7 +261,10 @@
             "width": 90,
             "tenant": "laundry"
           }
-        ]
+        ],
+        "height": 472,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 1030,
@@ -615,7 +615,7 @@
       "type": "sign.camera",
       "props": {
         "pole": false,
-        "phase": 7
+        "blinkTimeOffset": 0.11666666666666667
       },
       "placement": {
         "x": 282,
@@ -796,7 +796,7 @@
         "upholstery": "#2a5a5a",
         "lamp": "ceiling arm",
         "lampOn": 1,
-        "ceiling": 90,
+        "ceilingHeight": 90,
         "tray": true,
         "monitor": true,
         "straps": true,
@@ -823,9 +823,9 @@
         "height": 26,
         "from": 56,
         "mount": "wall",
-        "colour": "cyan",
         "glitch": 0.2,
-        "seed": 53
+        "seed": 53,
+        "colorChoice": "cyan"
       },
       "placement": {
         "x": 150,
@@ -894,11 +894,11 @@
       "props": {
         "racks": 3,
         "height": 96,
-        "colour": "mixed",
         "glass": true,
         "coolant": true,
         "ceiling": 130,
-        "seed": 63
+        "seed": 63,
+        "colorChoice": "mixed"
       },
       "placement": {
         "x": 10,
@@ -920,9 +920,9 @@
         "height": 34,
         "from": 64,
         "mount": "wall",
-        "colour": "magenta",
         "glitch": 0.3,
-        "seed": 64
+        "seed": 64,
+        "colorChoice": "magenta"
       },
       "placement": {
         "x": 96,
@@ -944,9 +944,9 @@
         "height": 18,
         "from": 40,
         "mount": "stand",
-        "colour": "cyan",
         "glitch": 0.1,
-        "seed": 65
+        "seed": 65,
+        "colorChoice": "cyan"
       },
       "placement": {
         "x": 104,
@@ -968,7 +968,7 @@
         "lid": 0.7,
         "glow": "cyan",
         "active": 0.6,
-        "loom": 40,
+        "loomLength": 40,
         "seed": 66
       },
       "placement": {
@@ -1035,11 +1035,11 @@
       "props": {
         "racks": 2,
         "height": 100,
-        "colour": "cyan",
         "glass": true,
         "coolant": true,
         "ceiling": 130,
-        "seed": 69
+        "seed": 69,
+        "colorChoice": "cyan"
       },
       "placement": {
         "x": 400,
@@ -1299,8 +1299,8 @@
         "width": 460,
         "depth": 22,
         "density": 0.7,
-        "colour": "cyan",
-        "seed": 70
+        "seed": 70,
+        "colorChoice": "cyan"
       },
       "placement": {
         "x": 0,
@@ -1331,9 +1331,6 @@
       "type": "building.front",
       "props": {
         "width": 260,
-        "floors": 0,
-        "storey": 66,
-        "ground": 110,
         "skin": "brick",
         "windows": "none",
         "roof": "flat",
@@ -1354,7 +1351,10 @@
             "from": 220,
             "width": 24
           }
-        ]
+        ],
+        "height": 110,
+        "groundFloorHeight": 110,
+        "floorHeight": 66
       },
       "placement": {
         "x": 440,
@@ -1396,7 +1396,7 @@
       "type": "sign.camera",
       "props": {
         "pole": false,
-        "phase": 30
+        "blinkTimeOffset": 0.5
       },
       "placement": {
         "x": 214,
@@ -1414,9 +1414,6 @@
       "type": "building.front",
       "props": {
         "width": 260,
-        "floors": 6,
-        "storey": 66,
-        "ground": 14,
         "skin": "tenement",
         "windows": "curtained",
         "roof": "parapet",
@@ -1426,7 +1423,10 @@
         "density": 0.8,
         "lit": 0.5,
         "seed": 905,
-        "bays": []
+        "bays": [],
+        "height": 410,
+        "groundFloorHeight": 14,
+        "floorHeight": 66
       },
       "placement": {
         "x": 440,
@@ -1440,12 +1440,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6101,
         "act": "sit",
         "sitting": "side",
-        "archetype": "office"
+        "archetype": "office",
+        "depthBand": "play"
       },
       "placement": {
         "x": 330,
@@ -1459,11 +1459,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6102,
         "act": "talk",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 412,
@@ -1477,12 +1477,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6103,
         "act": "walk",
         "range": 200,
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -1496,12 +1496,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6104,
         "act": "wait",
         "archetype": "drifter",
-        "hair": "hood"
+        "hair": "hood",
+        "depthBand": "play"
       },
       "placement": {
         "x": 726,
@@ -1515,11 +1515,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6111,
         "act": "vend",
-        "garb": "apron"
+        "garb": "apron",
+        "depthBand": "play"
       },
       "placement": {
         "x": 510,
@@ -1537,11 +1537,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6114,
         "act": "carry",
-        "archetype": "dockworker"
+        "archetype": "dockworker",
+        "depthBand": "play"
       },
       "placement": {
         "x": 160,
@@ -1559,14 +1559,14 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6113,
         "act": "lie",
         "archetype": "punk",
         "seat": 13,
         "lying": "asleep",
-        "cover": "#5a4a32"
+        "cover": "#5a4a32",
+        "depthBand": "play"
       },
       "placement": {
         "x": 103,
@@ -1584,12 +1584,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6115,
         "act": "phone",
         "archetype": "teen",
-        "garb": "hoodie"
+        "garb": "hoodie",
+        "depthBand": "play"
       },
       "placement": {
         "x": 182,
@@ -1607,7 +1607,6 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6112,
         "act": "stand",
@@ -1615,7 +1614,8 @@
         "garb": "coat",
         "top": "#d8dcd8",
         "hair": "bald",
-        "facial": "stubble"
+        "facial": "stubble",
+        "depthBand": "play"
       },
       "placement": {
         "x": 250,
@@ -1633,10 +1633,10 @@
       "type": "character.resident",
       "props": {
         "kind": "deliverybot",
-        "depth": "play",
         "act": "stand",
         "seed": 9,
-        "face": "off"
+        "face": "off",
+        "depthBand": "play"
       },
       "placement": {
         "x": 317,

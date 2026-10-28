@@ -1,3 +1,5 @@
+import {textField} from '../core/fields';
+import {appearanceChoice,appearanceText} from '../core/fields';
 /**
  * BUILDING KIT, a building's state (Tommi, 2026-10-21: the city should have the occasional building
  * for sale, standing empty or under construction, depending on the district). Every building type
@@ -16,13 +18,13 @@ const y = (h: number) => -h;
 const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a.toFixed(3) + ')';
 const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
 const select = (label: string, options: readonly string[]): Field => ({ kind: 'select', label, options: [...options], default: options[0] });
-const text = (label: string, value: string): Field => ({ kind: 'string', label, default: value });
+const text = textField;
 
 export const BUILDING_STATES = ['lived in', 'for sale', 'empty', 'construction'] as const;
 export const stateFields: Record<string, Field> = {
-  state: select('State', BUILDING_STATES),
-  notice: text('Notice (empty: the state’s own)', ''),
-  scaffold: select('Scaffolding (construction)', ['steel', 'bamboo']),
+  state: appearanceChoice(select('State', BUILDING_STATES)),
+  notice: appearanceText(text('Notice (empty: the state’s own)', '')),
+  scaffold: appearanceChoice(select('Scaffolding (construction)', ['steel', 'bamboo'])),
 };
 /** Whether the building is out of use: its rooms stay dark and its shops shut. */
 export const vacant = (p: Properties) => typeof p.state === 'string' && p.state !== 'lived in';

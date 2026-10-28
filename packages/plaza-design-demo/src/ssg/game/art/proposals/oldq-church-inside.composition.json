@@ -57,10 +57,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.8,
-        "fill": "#0a0812",
         "edge": 0.06,
-        "traffic": false
+        "traffic": false,
+        "generatorScale": 0.8,
+        "fillColor": "#0a0812"
       },
       "placement": {
         "x": 150,
@@ -483,17 +483,17 @@
         "count": 5,
         "spacing": 110,
         "width": 36,
-        "low": 150,
-        "high": 202,
         "strength": 1,
         "moon": 0.5,
-        "colour": 0.85,
         "dust": 0.7,
         "pools": true,
         "faces": "far wall",
-        "from": -37,
-        "to": 823,
-        "seed": 7
+        "seed": 7,
+        "bottomY": 150,
+        "topY": 202,
+        "colorAmount": 0.85,
+        "drawingMinX": -37,
+        "drawingMaxX": 823
       },
       "placement": {
         "x": 217,
@@ -510,17 +510,17 @@
         "count": 5,
         "spacing": 110,
         "width": 10,
-        "low": 34,
-        "high": 77,
         "strength": 0.8,
         "moon": 0.4,
-        "colour": 0.9,
         "dust": 0.4,
         "pools": true,
         "faces": "far wall",
-        "from": -50,
-        "to": 810,
-        "seed": 8
+        "seed": 8,
+        "bottomY": 34,
+        "topY": 77,
+        "colorAmount": 0.9,
+        "drawingMinX": -50,
+        "drawingMaxX": 810
       },
       "placement": {
         "x": 230,
@@ -537,17 +537,17 @@
         "count": 1,
         "spacing": 110,
         "width": 68,
-        "low": 106,
-        "high": 174,
         "strength": 1.2,
         "moon": 0.6,
-        "colour": 0.95,
         "dust": 0.8,
         "pools": true,
         "faces": "far wall",
-        "from": -566,
-        "to": 294,
-        "seed": 3
+        "seed": 3,
+        "bottomY": 106,
+        "topY": 174,
+        "colorAmount": 0.95,
+        "drawingMinX": -566,
+        "drawingMaxX": 294
       },
       "placement": {
         "x": 746,
@@ -564,17 +564,17 @@
         "count": 4,
         "spacing": 52.5,
         "width": 12,
-        "low": 46,
-        "high": 190,
         "strength": 1,
         "moon": 0.5,
-        "colour": 0.9,
         "dust": 0.6,
         "pools": true,
         "faces": "right end",
-        "from": -670,
-        "to": 190,
-        "seed": 9
+        "seed": 9,
+        "bottomY": 46,
+        "topY": 190,
+        "colorAmount": 0.9,
+        "drawingMinX": -670,
+        "drawingMaxX": 190
       },
       "placement": {
         "x": 850,
@@ -588,7 +588,6 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 911,
@@ -596,7 +595,8 @@
         "garb": "robe",
         "hair": "short",
         "top": "#16161a",
-        "bottom": "#16161a"
+        "bottom": "#16161a",
+        "depthBand": "play"
       },
       "placement": {
         "x": 864,
@@ -611,14 +611,14 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 924,
         "archetype": "elder",
         "act": "sit",
         "sitting": "side",
-        "hair": "scarf"
+        "hair": "scarf",
+        "depthBand": "play"
       },
       "placement": {
         "x": 528,
@@ -632,14 +632,14 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 937,
         "archetype": "elder",
         "act": "sit",
         "sitting": "side",
-        "hair": "scarf"
+        "hair": "scarf",
+        "depthBand": "play"
       },
       "placement": {
         "x": 572,
@@ -653,13 +653,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 948,
         "archetype": "sleeper",
         "act": "doze",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 660,
@@ -673,8 +673,8 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 52,
@@ -692,9 +692,9 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
         "act": "walk",
-        "range": 30
+        "range": 30,
+        "depthBand": "play"
       },
       "placement": {
         "x": 118,

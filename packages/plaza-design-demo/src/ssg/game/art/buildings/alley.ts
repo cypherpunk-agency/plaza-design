@@ -1,3 +1,5 @@
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceRatio,generationSeed,shapeLength} from '../core/fields';
 /**
  * BUILDING KIT alley: the gap between two fronts, seen straight in from the street. Side walls run back
  * to a back wall with one light (a doorway, a lamp over a yard), wet ground catches it, and the usual
@@ -8,6 +10,7 @@
  */
 import { addLight } from '../atmosphere/lighting';
 import type { AssetDefinition } from '../core/composition';
+import {rectangleControls} from '../core/spatial';
 
 const rgba = (c: string, a: number) => 'rgba(' + c + ',' + a + ')';
 const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
@@ -86,18 +89,19 @@ export function paintAlley(x: CanvasRenderingContext2D, a: AlleySpec, t: number)
   return { x: dx + dw / 2, h: floor + dh / 2, w: dw, hh: dh };
 }
 
-const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string) => ({ kind: 'number' as const, label, default: value, min, max, step, ...(unit ? { unit } : {}) });
+const num = numericFields({step:1});
 
 export const alleyElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'building.alley', version: 1, label: 'Alley or back yard (kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    width: num('Width', 48, 16, 400, 1, 'units'), height: num('Height (to the roofs either side)', 240, 40, 2000, 1, 'units'),
-    depth: num('Depth (0 shallow, 1 far back)', 0.6, 0, 1, 0.05),
-    light: { kind: 'select', label: 'Back light', options: ['warm', 'neon', 'cold', 'red', 'none'], default: 'warm' },
-    escape: { kind: 'select', label: 'Fire escape', options: ['left', 'right', 'none'], default: 'left' },
-    bins: { kind: 'boolean', label: 'Bins', default: true }, steam: { kind: 'boolean', label: 'Steam from a grate', default: true },
-    cables: { kind: 'boolean', label: 'Cables across the top', default: true }, yard: { kind: 'boolean', label: 'A yard behind (sky and laundry)', default: false },
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 48, 16, 400, 1, 'units')), height: shapeLength(num('Height (to the roofs either side)', 240, 40, 2000, 1, 'units')),
+    perspectiveAmount: appearanceRatio(num('Perspective amount (0 shallow, 1 far back)', 0.6, 0, 1, 0.05)),
+    light: appearanceChoice({ kind: 'select', label: 'Back light', options: ['warm', 'neon', 'cold', 'red', 'none'], default: 'warm' }),
+    escape: appearanceChoice({ kind: 'select', label: 'Fire escape', options: ['left', 'right', 'none'], default: 'left' }),
+    bins: appearanceBoolean({ kind: 'boolean', label: 'Bins', default: true }), steam: appearanceBoolean({ kind: 'boolean', label: 'Steam from a grate', default: true }),
+    cables: appearanceBoolean({ kind: 'boolean', label: 'Cables across the top', default: true }), yard: appearanceBoolean({ kind: 'boolean', label: 'A yard behind (sky and laundry)', default: false }),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, mouth: { x: Number(p.width) / 2, h: 0, role: 'entrance' }, top: { x: Number(p.width) / 2, h: Number(p.height), role: 'surface' } }),
@@ -108,7 +112,7 @@ export const alleyElement: AssetDefinition = {
     const [light, bright] = lights[String(p.light)] ?? lights.warm;
     ctx.save(); ctx.translate(sx, v.y(at.h));
     let lamp: ReturnType<typeof paintAlley> | undefined;
-    try { lamp = paintAlley(ctx, { w, h: Number(p.height), depth: Number(p.depth), light, bright, escape: p.escape as AlleySpec['escape'], bins: p.bins !== false, steam: p.steam !== false, cables: p.cables !== false, yard: p.yard === true, seed: Number(p.seed) }, v.t); }
+    try { lamp = paintAlley(ctx, { w, h: Number(p.height), depth: Number(p.perspectiveAmount), light, bright, escape: p.escape as AlleySpec['escape'], bins: p.bins !== false, steam: p.steam !== false, cables: p.cables !== false, yard: p.yard === true, seed: Number(p.seed) }, v.t); }
     finally { ctx.restore(); }
     if (lamp && bright > 0 && at.parallax === 1) addLight(v, { x: at.x + lamp.x * at.scale * at.facing, h: at.h + lamp.h * at.scale, kind: 'window', w: lamp.w, hh: lamp.hh, r: 26, col: light, a: 0.5 });
   },

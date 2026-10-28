@@ -40,10 +40,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 567,
@@ -93,9 +93,6 @@
       "type": "building.front",
       "props": {
         "width": 140,
-        "floors": 8,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "framed",
         "roof": "cornice",
@@ -114,7 +111,10 @@
             "from": 96,
             "width": 24
           }
-        ]
+        ],
+        "height": 604,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 0,
@@ -128,9 +128,6 @@
       "type": "building.front",
       "props": {
         "width": 120,
-        "floors": 6,
-        "storey": 66,
-        "ground": 76,
         "skin": "tenement",
         "balconies": "some",
         "density": 0.8,
@@ -147,7 +144,10 @@
             "from": 86,
             "width": 24
           }
-        ]
+        ],
+        "height": 472,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 140,
@@ -186,9 +186,6 @@
       "type": "building.front",
       "props": {
         "width": 160,
-        "floors": 7,
-        "storey": 66,
-        "ground": 76,
         "skin": "concrete",
         "windows": "punched",
         "roof": "parapet",
@@ -206,7 +203,10 @@
             "width": 64,
             "tenant": "pawn"
           }
-        ]
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 1000,
@@ -220,9 +220,6 @@
       "type": "building.front",
       "props": {
         "width": 140,
-        "floors": 5,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "curtained",
         "escape": "left",
@@ -240,7 +237,10 @@
             "width": 70,
             "tenant": "noodles"
           }
-        ]
+        ],
+        "height": 406,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 1160,
@@ -439,7 +439,7 @@
         "mood": "refusing",
         "name": "CONCIERGE",
         "line": "IDENTITY NOT FOUND",
-        "conduit": 18,
+        "conduitLength": 18,
         "camera": true,
         "slot": true,
         "tell": true,
@@ -462,7 +462,7 @@
       "props": {
         "columns": 5,
         "rows": 7,
-        "from": 14,
+        "bottomY": 14,
         "metal": "steel",
         "stuffed": 0.35,
         "taped": 2,
@@ -1504,9 +1504,6 @@
       "type": "building.front",
       "props": {
         "width": 440,
-        "floors": 7,
-        "storey": 76,
-        "ground": 96,
         "skin": "panel",
         "windows": "framed",
         "roof": "parapet",
@@ -1531,7 +1528,10 @@
             "from": 330,
             "width": 60
           }
-        ]
+        ],
+        "height": 628,
+        "groundFloorHeight": 96,
+        "floorHeight": 76
       },
       "placement": {
         "x": 260,
@@ -1567,13 +1567,13 @@
       "props": {
         "text": "CAPSULE HOUSING · BLOCK 7",
         "color": "255,136,0",
-        "size": 10,
         "mask": [
           -90,
           90,
           -10,
           10
-        ]
+        ],
+        "fontSize": 10
       },
       "placement": {
         "x": 220,
@@ -1591,7 +1591,7 @@
       "type": "sign.camera",
       "props": {
         "pole": false,
-        "phase": 12
+        "blinkTimeOffset": 0.2
       },
       "placement": {
         "x": 50,
@@ -1635,9 +1635,9 @@
       "props": {
         "text": "BEDS · LONG STAY",
         "color": "255,217,165",
-        "size": 9,
-        "phase": 40,
-        "mask": []
+        "mask": [],
+        "flickerTimeOffset": 0.6666666666666666,
+        "fontSize": 9
       },
       "placement": {
         "x": 434,
@@ -1868,12 +1868,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4101,
         "act": "walk",
         "range": 200,
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -1887,11 +1887,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4102,
         "act": "smoke",
-        "archetype": "punk"
+        "archetype": "punk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 236,
@@ -1905,11 +1905,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4103,
         "act": "carry",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 900,
@@ -1923,12 +1923,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4104,
         "act": "stand",
         "archetype": "elder",
-        "garb": "apron"
+        "garb": "apron",
+        "depthBand": "play"
       },
       "placement": {
         "x": 820,
@@ -1942,8 +1942,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 852,
@@ -1957,11 +1957,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4105,
         "act": "read",
-        "archetype": "office"
+        "archetype": "office",
+        "depthBand": "play"
       },
       "placement": {
         "x": 386,
@@ -1979,11 +1979,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4106,
         "act": "phone",
-        "archetype": "teen"
+        "archetype": "teen",
+        "depthBand": "play"
       },
       "placement": {
         "x": 474,
@@ -2001,12 +2001,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4107,
         "act": "sweep",
         "archetype": "technician",
-        "garb": "hivis"
+        "garb": "hivis",
+        "depthBand": "play"
       },
       "placement": {
         "x": 120,
@@ -2024,10 +2024,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4111,
-        "act": "vend"
+        "act": "vend",
+        "depthBand": "play"
       },
       "placement": {
         "x": 50,
@@ -2045,11 +2045,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4112,
         "act": "sleep",
-        "archetype": "sleeper"
+        "archetype": "sleeper",
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -2067,11 +2067,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4113,
         "act": "read",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -2089,11 +2089,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4114,
         "act": "play",
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 30,
@@ -2111,11 +2111,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4115,
         "act": "sit",
-        "sitting": "front"
+        "sitting": "front",
+        "depthBand": "play"
       },
       "placement": {
         "x": 50,
@@ -2133,11 +2133,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4116,
         "act": "smoke",
-        "archetype": "drifter"
+        "archetype": "drifter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -2155,10 +2155,10 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 4117,
-        "act": "phone"
+        "act": "phone",
+        "depthBand": "play"
       },
       "placement": {
         "x": 30,

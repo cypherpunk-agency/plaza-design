@@ -290,12 +290,12 @@
       "type": "building.front",
       "props": {
         "width": 180,
-        "floors": 3,
-        "storey": 66,
-        "ground": 76,
-        "top": 0,
         "skin": "brick",
-        "seed": 21
+        "seed": 21,
+        "height": 274,
+        "groundFloorHeight": 76,
+        "floorHeight": 66,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 120,
@@ -309,12 +309,12 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "floors": 2,
-        "storey": 66,
-        "ground": 76,
-        "top": 10,
         "skin": "tenement",
-        "seed": 22
+        "seed": 22,
+        "height": 218,
+        "groundFloorHeight": 76,
+        "floorHeight": 66,
+        "parapetHeight": 10
       },
       "placement": {
         "x": 310,
@@ -328,12 +328,12 @@
       "type": "building.front",
       "props": {
         "width": 200,
-        "floors": 4,
-        "storey": 66,
-        "ground": 76,
-        "top": 0,
         "skin": "panel",
-        "seed": 23
+        "seed": 23,
+        "height": 340,
+        "groundFloorHeight": 76,
+        "floorHeight": 66,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1020,
@@ -347,12 +347,12 @@
       "type": "building.front",
       "props": {
         "width": 200,
-        "floors": 3,
-        "storey": 66,
-        "ground": 76,
-        "top": 0,
         "skin": "concrete",
-        "seed": 24
+        "seed": 24,
+        "height": 274,
+        "groundFloorHeight": 76,
+        "floorHeight": 66,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1380,
@@ -379,10 +379,6 @@
       "type": "building.front",
       "props": {
         "width": 460,
-        "floors": 2,
-        "storey": 90,
-        "ground": 110,
-        "top": 0,
         "skin": "glass",
         "roof": "stepped",
         "bays": [
@@ -403,7 +399,11 @@
           }
         ],
         "seed": 30,
-        "jamb": 20
+        "jamb": 20,
+        "height": 290,
+        "groundFloorHeight": 110,
+        "floorHeight": 90,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 520,
@@ -562,7 +562,7 @@
         "run": -110,
         "rise": 100,
         "direction": "down",
-        "speed": 0.6
+        "speed": 36.0
       },
       "placement": {
         "x": 880,

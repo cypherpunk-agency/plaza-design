@@ -80,7 +80,7 @@ const {measureArtwork}=await import('../../src/ssg/game/art/core/measure');
 (globalThis as any).document={createElement:()=>{let ctx!:CanvasRenderingContext2D;measureArtwork(c=>{ctx=c;});return {width:0,height:0,getContext:()=>ctx};}};
 let vehicleCases=0;
 for(const type of ['vehicle.road','vehicle.air','vehicle.rail','vehicle.boat'])for(const depth of ['far','back','play','near'])for(const facing of [-1,1])for(const scale of [.5,2]){
- const doc=art.validate({version:1,scene:'camera-bounds',instances:[{id:'vehicle',type,props:{depth,motion:'parked'},placement:{x:1000,h:0,facing,scale},layer:'set',order:0}]});
+ const doc=art.validate({version:1,scene:'camera-bounds',instances:[{id:'vehicle',type,props:{depthBand:depth,motion:'parked'},placement:{x:1000,h:0,facing,scale},layer:'set',order:0}]});
  const samples=[150,600].map(cam=>{
   const view={...frameView(600),viewW:1600,viewH:720,cam,gy:500,sx:(x:number,p=1)=>x-100*p+100-cam,y:(h:number)=>500-h},env={view,state:{},reduced:false},r=resolveComposition(art,doc,env)[0];
   return {box:projectedBounds(view,r.placement,r.element.bounds(r.props,r.state,{view,placement:r.placement})),painted:measureArtwork(ctx=>drawCompositionSlot(ctx,art,doc,env,'behind-player'))};

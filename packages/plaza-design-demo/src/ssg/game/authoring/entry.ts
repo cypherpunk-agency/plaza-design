@@ -18,7 +18,7 @@ import {validateCompanionGameplay,validateCompanionBindings} from '../engine/gam
 import {pendingOpeningStory} from './pending-opening';
 import {pendingNetworkContext,validatePendingNetwork} from './pending-network';
 import {mountNetworkAuthoring} from './network-authoring';
-import {pendingRegistry} from './pending-registry';
+import {pendingRegistry,authoringValidationInputs} from './pending-registry';
 import {validatePendingFixtures} from './pending-fixtures';
 import {createAuthoredScene,removeAuthoredScene,authoredSceneIds,sceneCreationBlocked,scenePlaces} from './scene-catalogue-authoring';
 import {type SceneCatalogue} from '../engine/gameplay/scene-catalogue';
@@ -145,7 +145,7 @@ async function start() {
 
   await document.fonts.ready;
 
-  const initialEnvironment = { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7, sequence: 'glide' };
+  const initialEnvironment = { cameraX: 0, zoom: 1, day: 1, minute: 720, seed: 3, flags: '{}', state: '{}', weather: 'forecast', hover: '', titleOffset: 7 };
   const styleFrameSession: StyleFrameSession = {}, storyboardSession: StoryboardSession = {};
   const native = createNativePreview({...backdropAdapters,...nativeSceneAdapters,...proposalAdapters,'demo-manifest':{validate:validateManifestComposition,definition:manifestDemoScene,pendingDefinition:(composition,state,options,documents)=>{const gameplay=validateManifestGameplay(documents.get('demo-manifest-gameplay'));return manifestDemoScene(composition,state,options,validateManifestScene(documents.get('demo-manifest-scene'),gameplay),gameplay);}}},(scene,request)=>{if(!request.documents)return scene;const deviceId=deviceDocumentId(request.composition.scene);if(request.documents.has(deviceId))scene=applyDeviceSource(request.composition.scene,scene,request.frame?.composition??request.composition,request.documents.get(deviceId),pendingNetworkContext(request.documents),request.documents.get(deviceSourceIdentity(request.composition.scene).scene) as import('../engine/gameplay/scene-document').SceneDocument);if(!scene.bindWorld)return scene;const city=createPendingCity(request.documents.get('city-source'),request.documents),metro=createLineSystem(city,validateMetroSource(request.documents.get('metro-source')));return scene.bindWorld({city,metro});},(id,request)=>authoredSceneAdapter(id,request.documents));
 
@@ -201,7 +201,7 @@ async function start() {
 
     // Proposals borrow gameplay from their base; validators below never read proposal artwork.
     // Projected authored.* children are covered by their authored-scenes source owner.
-    validationInputs: documents => documents.filter(d => !proposalScene(d.id) && !d.id.startsWith('authored.')).flatMap(d => [d.id, d.kind, d.value]),
+    validationInputs: authoringValidationInputs,
     // Scenes validate against the pending world/state-owners.json, as Save and Play do.
     validatePlacement(composition,documents){
       const snapshot=validationSnapshot(documents),scenes=pendingRegistry(snapshot),scene=scenes[composition.scene];
@@ -321,6 +321,7 @@ async function start() {
       const cityModel=createPendingCity(snapshot.get('city-source'),snapshot);
       const world = snapshotWorld(refs, timelines.flatMap(sequence => sequence.handoff ? [{ id: sequence.id, ...sequence.handoff }] : []),cityModel,registry);
 
+      if(context.cityDistrict){mapSession.mode='Districts';mapSession.editing??={expanded:new Map()};mapSession.editing.expanded??=new Map();mapSession.editing.expanded.set('district:'+context.cityDistrict,true);mapSession.editing.expanded.set('district-rendering:'+context.cityDistrict,true);}
       return mountWorldPanel(panel, validateWorldDocument(world, { compositions, sequences: timelines,world:cityModel,scenes:registry }), openScene,context, mapSession, scene,cityModel);
 
     },
@@ -337,7 +338,7 @@ async function start() {
 
       { key: 'cameraX', label: 'Camera X', kind: 'number', step: 20 }, { key: 'cameraH', label: 'Camera height', kind: 'number', step: 10 },
 
-      { key: 'zoom', label: 'Zoom', kind: 'number', min: .1, max: 8, step: .1 },
+      { key: 'zoom', label: 'Game camera zoom', kind: 'number', min: .1, max: 8, step: .1 },
 
       { key: 'minute', label: 'Time of day', kind: 'number', min: 0, max: 1439, step: 10, quick: true, choices: [{ label: 'Morning', value: 480 }, { label: 'Noon', value: 720 }, { label: 'Evening', value: 1110 }, { label: 'Night', value: 1320 }] },
       { key: 'weather', label: 'Weather', kind: 'select', options: ['forecast', ...WEATHER_KINDS], quick: true },
@@ -350,8 +351,6 @@ async function start() {
       { key: 'flags', label: 'Story flags (JSON)', kind: 'text' }, { key: 'state', label: 'Device state (JSON)', kind: 'text' },
 
       { key: 'presentation', label: 'Presentation controller (JSON, optional)', kind: 'text' },
-
-      { key: 'sequence', label: 'Opening sequence', kind: 'select', options: ['title', 'rise', 'glide'] },
 
       { key: 'titleOffset', label: 'Title clock offset', kind: 'number', min: 0, step: 1 },
 

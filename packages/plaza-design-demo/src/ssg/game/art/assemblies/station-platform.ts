@@ -52,7 +52,7 @@ export function drawBench(x: CanvasRenderingContext2D, v: View, b: { x: number; 
 
 
 /** A Registry screen hung on two rods from `roof`: its slogans, a scan line, a red REC light, the cyan tell. Pages through every three seconds (sign kit sloganScreen). */
-export function drawScreen(x: CanvasRenderingContext2D, v: View, wx: number, h: number, roof: number, phase = 0) {
+export function drawScreen(x: CanvasRenderingContext2D, v: View, wx: number, h: number, roof: number, displayOffsetFrames = 0, indicatorPhaseRadians = 0) {
   const { y, t } = v, s = v.sx(wx);
   if (!onScreen(v, s - 40, 80)) return;
   x.fillStyle = 'rgba(' + O + ',.5)'; x.fillRect(s - 24, y(roof), 1, roof - h); x.fillRect(s + 23, y(roof), 1, roof - h);
@@ -61,11 +61,11 @@ export function drawScreen(x: CanvasRenderingContext2D, v: View, wx: number, h: 
   x.fillStyle = g; x.fillRect(s - 60, y(h + 40), 120, 100);
   box(x, s - 36, y(h), 72, 34, '#0c0605', 'rgba(' + O + ',.7)');
   box(x, s - 33, y(h - 3), 66, 28, '#1a0d0a');
-  const lines = SLOGANS[Math.floor((t + phase * 97) / 180) % SLOGANS.length];
+  const lines = SLOGANS[Math.floor((t + displayOffsetFrames) / 180) % SLOGANS.length];
   text(x, lines[0], s, y(h - 11), 'rgba(255,205,175,.9)', 7, '600'); text(x, lines[1], s, y(h - 21), 'rgba(255,205,175,.9)', 7, '600');
   x.fillStyle = 'rgba(255,205,175,.06)'; x.fillRect(s - 33, Math.round(y(h - 3) + ((t * 0.4) % 28)), 66, 2);
   x.fillStyle = Math.floor(t / 30) % 2 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(s + 28, y(h - 5), 2, 2);
-  tell(x, t, s - 30, y(h - 30), phase);
+  tell(x,t,s-30,y(h-30),indicatorPhaseRadians);
 }
 
 

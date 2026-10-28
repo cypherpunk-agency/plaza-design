@@ -10,8 +10,9 @@ import type {DocumentProjection} from './document-projection';
 import type {EditorDocument,ComposerConfig} from './contracts';
 interface Snapshot { id: string; value: unknown }
 interface Command { label: string; before: Snapshot[]; after: Snapshot[] }
+export const COMPOSER_HISTORY_LIMIT=100;
 const copy = <T>(value:T):T=>structuredClone(value);
-const equal = (a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
+const equal = (a:unknown,b:unknown)=>a===b||JSON.stringify(a)===JSON.stringify(b);
 const message = (e:unknown)=>e instanceof Error?e.message:String(e);
 const flatten=(doc:ChunkDocument)=>{const list:{node:AssetInstance;depth:number}[]=[];const visit=(nodes:AssetInstance[],depth:number)=>nodes.forEach(node=>{list.push({node,depth});visit(node.children??[],depth+1);});visit(doc.instances,0);return list;};
 /** Preserve unchanged JSON subtrees, so one visual edit does not invalidate every scene's dependencies. */
@@ -27,6 +28,13 @@ export class ComposerModel {
   private saved = new Map<string, unknown>();
   private savedDocuments?:Map<string,EditorDocument>;
   private dirtyCache=new WeakMap<object,Map<string,boolean>>();
+  private savedComparisons=new WeakMap<object,Map<unknown,boolean>>();
+  private differsFromSaved(value:unknown,saved:unknown){
+    if(value===saved)return false;
+    if(!value||typeof value!=='object')return !equal(value,saved);
+    let cache=this.savedComparisons.get(value);if(!cache)this.savedComparisons.set(value,cache=new Map());
+    if(!cache.has(saved))cache.set(saved,!equal(value,saved));return cache.get(saved)!;
+  }
   /** Opaque immutable-snapshot identity for derived preview caches; edits/history replace it. */
   get sourceVersion():object{return this.documents;}
   private past: Command[] = [];
@@ -53,7 +61,7 @@ export class ComposerModel {
   interactionPreview(){const drag=this.interaction;if(!drag?.deferred||drag.full||!drag.composition)return;return{sourceVersion:drag.documents,documents:this.inspectDocuments(drag.documents),transient:{document:drag.composition,composition:this.get(drag.composition).value as ChunkDocument}};}
   private record(command:Command){
     if(this.interaction)return;
-    this.past.push(command);if(this.past.length>100)this.past.shift();this.future=[];
+    this.past.push(command);if(this.past.length>COMPOSER_HISTORY_LIMIT)this.past.shift();this.future=[];
   }
 
   constructor(readonly registry: ArtRegistry, readonly context: Omit<TimelineContext, 'registry' | 'compositions'> = {}, readonly validateDocument?: ComposerConfig['validateDocument'],readonly projections:readonly DocumentProjection[]=[],readonly destinationsFor?:ComposerConfig['destinationsFor'],readonly validationInputs?:ComposerConfig['validationInputs']) {}
@@ -165,7 +173,7 @@ export class ComposerModel {
   dirty(id?:string):boolean{
     let cache=this.dirtyCache.get(this.documents);if(!cache){cache=new Map();this.dirtyCache.set(this.documents,cache);}const key=id??'';if(cache.has(key))return cache.get(key)!;
     this.savedDocuments??=new Map([...this.documents].map(([key,d])=>[key,{...d,value:this.saved.get(key)}]));
-    const dirty=id?!equal(this.expanded(this.documents).get(id)?.value,this.expanded(this.savedDocuments).get(id)?.value):[...this.documents.keys()].some(id=>this.dirty(id));cache.set(key,dirty);return dirty;
+    const dirty=id?this.differsFromSaved(this.expanded(this.documents).get(id)?.value,this.expanded(this.savedDocuments).get(id)?.value):[...this.documents.keys()].some(id=>this.dirty(id));cache.set(key,dirty);return dirty;
   }
 
   edits() { return [...this.documents.values()].filter(d => d.kind !== 'world' && this.dirty(d.id)).map(d => ({ id: d.id, revision: d.revision, value: copy(d.value) })); }
@@ -175,19 +183,21 @@ export class ComposerModel {
   updateInstance(id: string, instanceId: string, label: string, edit: (node: AssetInstance) => void) {
     this.edit(id, label, value => { const doc = value as ChunkDocument, node = flatten(doc).find(x => x.node.id === instanceId)?.node; if (!node) throw new Error('Selected instance no longer exists'); edit(node); return doc; });
   }
-  add(id: string, type: string, placement: AssetInstance['placement'] = { x: 0, h: 0 }, settings?: Properties) {
+  add(id: string, type: string, placement: AssetInstance['placement'] = { x: 0, h: 0 }, settings?: Properties,children?:AssetInstance[]) {
     let instanceId = '';
-    this.edit(id, 'Add artwork', value => { const doc = value as ChunkDocument; instanceId = this.insert(doc, type, placement, settings); return doc; }); return instanceId;
+    this.edit(id, 'Add artwork', value => { const doc = value as ChunkDocument; instanceId = this.insert(doc, type, placement, settings,children); return doc; }); return instanceId;
   }
   /** The composition as it would be after `add`, without touching history (used to measure placement). */
-  draftAdd(id: string, type: string, settings?: Properties) { const doc = copy(this.get(id).value as ChunkDocument), instanceId = this.insert(doc, type, { x: 0, h: 0 }, settings); return { composition: this.registry.validate(doc), instanceId }; }
+  draftAdd(id: string, type: string, settings?: Properties,children?:AssetInstance[]) { const doc = copy(this.get(id).value as ChunkDocument), instanceId = this.insert(doc, type, { x: 0, h: 0 }, settings,children); return { composition: this.registry.validate(doc), instanceId }; }
   /** `settings`: a kit preset's settings over the element's defaults. */
-  private insert(doc: ChunkDocument, type: string, placement: AssetInstance['placement'], settings: Properties = {}) {
+  private insert(doc: ChunkDocument, type: string, placement: AssetInstance['placement'], settings: Properties = {},children?:AssetInstance[]) {
     const element = this.registry.get(type), instanceId = this.unique(doc, type.replace(/[^a-zA-Z0-9_-]/g, '-')), props: Properties = {};
     for (const [key, field] of Object.entries(element.fields)) props[key] = copy(settings[key] ?? field.default) as Value;
     const bindings=element.bindingIdentity==='presentation'?Object.fromEntries(Object.entries(element.bindingChoices?.(doc)??{}).filter(([,choices])=>choices.length).map(([key,choices])=>[key,choices[0]])):{};
-    const layer: Layer = element.framePhase==='sky'?'distance':element.parts.length || element.role === 'group' ? 'set' : 'logic', order = frontOrder(doc, layer);
-    doc.instances.push({ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, layer }); return instanceId;
+    const layer: Layer = element.defaultLayer??(element.framePhase==='sky'?'distance':element.parts.length || element.role === 'group' ? 'set' : 'logic'), order = frontOrder(doc, layer);
+    const node:AssetInstance={ id: instanceId, type, props,...(Object.keys(bindings).length?{bindings}:{}), placement: { ...placement }, order, layer };
+    if(children){if(type!=='assembly.group')throw Error('Only groups can add preset children');const ids=new Map<string,string>(),used=new Set(flatten(doc).map(x=>x.node.id));used.add(instanceId);node.children=copy(children);const walk=(n:AssetInstance)=>{const old=n.id;let next=instanceId+'-'+old,i=2;while(used.has(next))next=instanceId+'-'+old+'-'+i++;used.add(next);ids.set(old,next);n.id=next;n.children?.forEach(walk);};node.children.forEach(walk);const attach=(n:AssetInstance)=>{if(n.attach){const id=ids.get(n.attach.instance);if(!id)throw Error('Preset attachment points outside its group');n.attach.instance=id;}n.children?.forEach(attach);};node.children.forEach(attach);}
+    doc.instances.push(node); return instanceId;
   }
   /** Layered compositions: move artwork to a back-to-front position in a layer. */
   restack(id: string, instanceId: string, layer: Layer, index: number) {

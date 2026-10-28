@@ -15,7 +15,7 @@ import {provide} from '../binding-keys';
  *
  * - `downtown.width`: the scene's width. `downtown.weatherText`, `downtown.rain` and `downtown.city`: the ticker's line, the rain and
  *   whether the city is lit (the street moment passes the last two; every other moment paints them dry and lit).
- * - `downtown.stall` (`[x, width]` of the `stall` role) and `downtown.doorOffset` (the `alley` role's door).
+ * - `downtown.stall`: `[x, width]` of the `stall` role. The alley reads its authored doorOffset directly.
  * - `downtown.front.<id>.metrics` / `.visible` and `downtown.window.<id>.enabled`: each building front's size and whether
  *   it is on screen, and whether a window is lit (its front is visible, it is not above the street's view and no
  *   mask covers it).
@@ -47,10 +47,9 @@ function layoutOf(rows:readonly Resolved[],source:Parameters<typeof manifestGeom
 }
 const downtownValues=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,roles,source}=ctx,out:Record<string,Value>={},layout=layoutOf(rows,source);
- out.width=layout.width;out.weatherText=screenLine(sceneClimate(source.id));out.rain=0;out.city=true;
- const stall=roles.stall,alley=roles.alley;
+ out.width=layout.width;out.weatherText=screenLine(sceneClimate(source.id,view.weatherSource),view.weatherSource);out.rain=0;out.city=true;
+ const stall=roles.stall;
  if(stall)out.stall=[stall.placement.x,Number(stall.props.width)];
- if(alley)out.doorOffset=Number(alley.props.doorOffset);
  for(const row of layout.fronts){
   const p=row.placement,w=Number(row.props.width),sx=view.sx(p.x),end=sx+w*p.scale*p.facing,visible=!(Math.max(sx,end)+4*p.scale<0||Math.min(sx,end)-4*p.scale>view.viewW);
   out['front.'+row.instance.id+'.metrics']=[w,Number(row.props.height),!!row.props.roof,visible];out['front.'+row.instance.id+'.visible']=visible;
@@ -72,5 +71,5 @@ const downtownValues=(ctx:BindingContext):Record<string,Value>=>{
  return out;
 };
 /** What the provider offers: its exact keys, and fronts, windows and street people by what the composition and scene hold. */
-export const DOWNTOWN_KEYS=['width','weatherText','rain','city','stall','doorOffset','front.<instance:downtown.front>.metrics','front.<instance:downtown.front>.visible','window.<instance:downtown.window>.enabled',...SMEAR_ORDER.flatMap(id=>['smear.'+id+'.x','smear.'+id+'.color']),'pose.<actor>',...DEVICES.map(id=>'device.'+id+'.snapshot'),'device.dlv9.position'];
+export const DOWNTOWN_KEYS=['width','weatherText','rain','city','stall','front.<instance:downtown.front>.metrics','front.<instance:downtown.front>.visible','window.<instance:downtown.window>.enabled',...SMEAR_ORDER.flatMap(id=>['smear.'+id+'.x','smear.'+id+'.color']),'pose.<actor>',...DEVICES.map(id=>'device.'+id+'.snapshot'),'device.dlv9.position'];
 export const downtown=provide(DOWNTOWN_KEYS,downtownValues);

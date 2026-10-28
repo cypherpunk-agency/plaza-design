@@ -49,11 +49,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 4,
         "seed": 31,
         "dx": 0,
         "block": 0,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 4
       },
       "placement": {
         "x": 10,
@@ -74,11 +74,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 7,
         "seed": 32,
         "dx": 0,
         "block": 0,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 7
       },
       "placement": {
         "x": 10,
@@ -99,11 +99,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 2,
         "seed": 33,
         "dx": 0,
         "block": 0,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 2
       },
       "placement": {
         "x": 10,
@@ -124,11 +124,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 3,
         "seed": 34,
         "dx": 0,
         "block": 1,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 3
       },
       "placement": {
         "x": 10,
@@ -149,11 +149,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 5,
         "seed": 35,
         "dx": 0,
         "block": 1,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 5
       },
       "placement": {
         "x": 10,
@@ -174,11 +174,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 0,
         "seed": 36,
         "dx": 0,
         "block": 1,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 0
       },
       "placement": {
         "x": 10,
@@ -199,11 +199,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 1,
         "seed": 37,
         "dx": 0,
         "block": 2,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 1
       },
       "placement": {
         "x": 10,
@@ -224,11 +224,11 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 6,
         "seed": 38,
         "dx": 0,
         "block": 2,
-        "dim": true
+        "dim": true,
+        "paletteIndex": 6
       },
       "placement": {
         "x": 10,
@@ -504,10 +504,10 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 0,
         "seed": 21,
         "dx": 0,
-        "block": 0
+        "block": 0,
+        "paletteIndex": 0
       },
       "placement": {
         "x": 0,
@@ -528,10 +528,10 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 5,
         "seed": 22,
         "dx": -5,
-        "block": 0
+        "block": 0,
+        "paletteIndex": 5
       },
       "placement": {
         "x": 0,
@@ -573,10 +573,10 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 2,
         "seed": 23,
         "dx": 0,
-        "block": 1
+        "block": 1,
+        "paletteIndex": 2
       },
       "placement": {
         "x": 0,
@@ -597,10 +597,10 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 1,
         "seed": 24,
         "dx": 6,
-        "block": 1
+        "block": 1,
+        "paletteIndex": 1
       },
       "placement": {
         "x": 0,
@@ -642,10 +642,10 @@
       "type": "terminal.container",
       "props": {
         "width": 128,
-        "paint": 6,
         "seed": 25,
         "dx": 0,
-        "block": 2
+        "block": 2,
+        "paletteIndex": 6
       },
       "placement": {
         "x": 0,

@@ -1,3 +1,4 @@
+import {bindingPropertySources} from './binding-sources';
 import {prepareArtwork,intersectRects} from '../../art/core/presentation';
 import {compositionAppearance} from '../../art/core/composition';
 import {mobileInstances} from '../../art/core/mobility';
@@ -115,12 +116,13 @@ export function declaredScene(scene:SceneDocument,composition:unknown,gameplay:G
  const signals=Object.keys(validated.signals).length?new PresentationSignals(d.cues??[],validated.signals):undefined;
  const movingActors=new Set((d.actors??[]).filter(a=>{const body=validated.actors[a.id];return !!body&&(!!body.follow||(Array.isArray(body.range)?body.range[0]!==body.range[1]:!!body.range));}).map(a=>a.instance));
  const mobiles=mobileInstances(validated.composition,art,movingActors);
+ const bindingSources=bindingPropertySources(validated.composition,d,roles);
  const environment=(view:View,engine?:EngineDraw):Environment=>{const live=level?view.level??restingLevelView(level,false):undefined;
   const pieces=live?levelVisualState(live):{},near=level&&live?levelNear(level,live,occluders):{},vehicles=level?.vehicles?.length&&engine?levelVehicleVisuals(engine.m.peopleLevel??level,engine.m):{},state:Record<string,import('../../art').Properties>={...(options.state??{}),...vehicles,...pieces};
   for(const[id,v]of Object.entries(near))state[id]={...(state[id]??{}),...v};
   for(const source of engine?.m.peopleSources??[]){const people=engine!.m.people.pictures[source.id];if(people)state[source.id]={...(state[source.id]??{}),people:people as unknown as import('../../art').Value};}
   const {sharedState:_declarations,...appearance}=options;
-  return {...appearance,view,mobileArtwork:mobiles,state,visibility:{...options.visibility,...(level&&engine?levelVehicleVisibility(level,engine.m):{})},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
+  return {...appearance,view,mobileArtwork:mobiles,state,bindingSources,visibility:{...options.visibility,...(level&&engine?levelVehicleVisibility(level,engine.m):{})},sequenceTime:view.sequence?.time??options.sequenceTime,...(level&&live?{opacity:{...(options.opacity??{}),...levelOpacity(level,live)}}:{}),
    bindings:bindingValues(validated.composition,{view,rows:(()=>{if(!level?.vehicles?.length||!d.actors?.length)return rows;const moved=new Map(resolveComposition(art,validated.composition,{view,state,bindings:bindingDefaults(validated.composition),reduced:false},d.actors.map(a=>a.instance)).map(r=>[r.instance.id,r]));return rows.map(r=>moved.get(r.instance.id)??r);})(),roles,actors:validated.actors,source:d,gameplay,uses:compiled.content.uses,engine,world,signals,shared},d.stage?.actors),reduced:view.reduced??options.reduced??false};};
  const draw=(ctx:CanvasRenderingContext2D,view:View,engine?:EngineDraw,inFront=false)=>{const env=environment(view,engine);if(!inFront){if(!level&&!ownRoom)drawReviewRoom(ctx,view);drawComposition(ctx,art,validated.composition,env,'backdrop');}else drawComposition(ctx,art,validated.composition,env,'foreground');};
  const artworkVisible:NonNullable<SceneDef['artworkVisible']>=(view,model)=>{

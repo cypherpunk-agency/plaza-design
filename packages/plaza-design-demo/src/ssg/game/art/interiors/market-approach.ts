@@ -1,3 +1,7 @@
+import {colorField} from '../core/fields';
+import {fixedGeometry} from '../core/spatial';
+import {rectangleControls,combineControls,axisControl,conditionalControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * The approach to the wet market hall (Tommi, 2026-10-22: the hall is only hinted at on the district
  * street, so it gets a scene of its own where you come up to it from outside). The pieces:
@@ -14,12 +18,13 @@
  * Every piece is drawn in its own frame (origin at its foot on the left, `y(h) = -h`), every visual
  * choice is a field, unset choices come from the seed. The world's text stays deadpan.
  */
-import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
+import type { AssetDefinition, Properties, Value } from '../core/composition';
 import { rng, text as paintText } from '../core/primitives';
 import { windowLit } from '../../world/light';
 import { neonPlate } from '../signage/kit';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
 import * as P from '../buildings/parts';
+const fixedNativeGeometry=fixedGeometry("This market approach component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 type X = CanvasRenderingContext2D;
 
@@ -28,7 +33,7 @@ const R = (x: X, l: number, h: number, w: number, t: number, fill: string) => {
   if (w <= 0 || t <= 0) return;
   x.fillStyle = fill; x.fillRect(Math.round(l), Math.round(y(h + t)), Math.max(1, Math.round(w)), Math.max(1, Math.round(t)));
 };
-const colourField = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const colourField = colorField;
 const rgbOr = (v: Value, fallback: string) => isHex(v) ? rgbOf(String(v)) : fallback;
 const glowOf = (o: Paint) => o.lighting.outdoor ? 0.45 + 0.55 * o.lighting.lamps : 1;
 const between = (m: number, a: number, b: number) => a <= b ? m >= a && m < b : m >= a || m < b;
@@ -47,33 +52,34 @@ function steam(x: X, cx: number, h: number, t: number, seed: number, n: number, 
 // ---------------------------------------------------------------- the hall's front
 
 export const marketHallFrontElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'landmark.market-hall-front', label: 'Market hall front, full size (landmark, Neon Market)', category: 'architecture',
   fields: {
-    width: num('Width', 760, 300, 2400, 1, 'units'), base: num('Front wall height (to the arch)', 165, 80, 400, 1, 'units'), rise: num('Arch rise over the wall', 165, 40, 600, 1, 'units'),
-    steel: colourField('Steel (painted)', '#2f6f62'), wall: colourField('Wall', '#121a18'), rust: num('Rust and streaks', 0.5, 0, 1, 0.05),
-    glazing: colourField('Light behind the glazing', '#ffbe78'), glow: num('Glazing lit from inside', 0.8, 0, 1, 0.05),
-    ribs: num('Glazing bars (fan)', 16, 4, 48), rings: num('Glazing rings', 3, 0, 10), boarded: num('Panes boarded or broken', 0.1, 0, 1, 0.05),
-    doors: num('Doorways', 5, 1, 9), mainDoor: num('Main doorway width', 130, 50, 400, 1, 'units'), sideDoor: num('Side doorway width', 70, 30, 300, 1, 'units'),
-    doorHeight: num('Doorway height', 104, 50, 300, 1, 'units'), doorTop: select('Doorway head', ['arched', 'square']),
-    shutters: num('Side shutters pulled down', 0.25, 0, 1, 0.05), inside: num('Bustle seen inside', 0.8, 0, 1, 0.05),
-    canopy: bool('Canopy over the main doorway', true), transom: bool('Lit clerestory over the doorways', true),
-    letters: text('Name', 'WET MARKET'), lettersColour: colourField('Name colour', '#ff5a46'), letterSize: num('Name letter size', 18, 7, 48),
-    nameAt: select('Name mounted', ['band', 'crown']), subline: text('Second line (empty: none)', 'MARKET AND COOKED FOOD CENTRE'),
-    clock: bool('Clock in the gable', true), hours: select('Open', ['clock', 'open', 'closed']),
-    opens: num('Opens at (clock)', 5, 0, 24, 0.5, 'h'), closes: num('Closes at (clock)', 21, 0, 24, 0.5, 'h'),
-    notices: text('Boards on the piers (comma separated)', 'OPEN 05:00-21:00,NO TROLLEYS INSIDE'),
-    camera: bool('Camera over the main doorway', true), birds: num('Pigeons on the ledge', 6, 0, 30), spill: num('Light spilled on the ground', 0.6, 0, 1, 0.05),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 760, 300, 2400, 1, 'units')), base: shapeLength(num('Front wall height (to the arch)', 165, 80, 400, 1, 'units')), rise: shapeLength(num('Arch rise over the wall', 165, 40, 600, 1, 'units')),
+    steel: appearanceColor(colourField('Steel (painted)', '#2f6f62')), wall: appearanceColor(colourField('Wall', '#121a18')), rust: appearanceRatio(num('Rust and streaks', 0.5, 0, 1, 0.05)),
+    glazing: appearanceColor(colourField('Light behind the glazing', '#ffbe78')), glow: appearanceRatio(num('Glazing lit from inside', 0.8, 0, 1, 0.05)),
+    ribs: generationCount(num('Glazing bars (fan)', 16, 4, 48)), rings: shapeLength(num('Glazing rings', 3, 0, 10)), boarded: appearanceRatio(num('Panes boarded or broken', 0.1, 0, 1, 0.05)),
+    doors: generationCount(num('Doorways', 5, 1, 9)), mainDoor: shapeLength(num('Main doorway width', 130, 50, 400, 1, 'units')), sideDoor: shapeLength(num('Side doorway width', 70, 30, 300, 1, 'units')),
+    doorHeight: shapeLength(num('Doorway height', 104, 50, 300, 1, 'units')), doorTop: appearanceChoice(select('Doorway head', ['arched', 'square'])),
+    shutters: appearanceRatio(num('Side shutters pulled down', 0.25, 0, 1, 0.05)), inside: appearanceRatio(num('Bustle seen inside', 0.8, 0, 1, 0.05)),
+    canopy: appearanceBoolean(bool('Canopy over the main doorway', true)), transom: appearanceBoolean(bool('Lit clerestory over the doorways', true)),
+    letters: appearanceText(text('Name', 'WET MARKET')), lettersColour: appearanceColor(colourField('Name colour', '#ff5a46')), fontSize: semantic(num('Name letter size', 18, 7, 48),{"group":"Appearance","quantity":"length","unit":"artwork pixels","space":"artwork"}),
+    nameAt: appearanceChoice(select('Name mounted', ['band', 'crown'])), subline: appearanceText(text('Second line (empty: none)', 'MARKET AND COOKED FOOD CENTRE')),
+    clock: semantic(bool('Clock in the gable', true),{"group":"Motion","quantity":"boolean","unit":"boolean"}), hours: appearanceChoice(select('Open', ['clock', 'open', 'closed'])),
+    openingHour: semantic(num('Opens at (clock)', 5, 0, 24, 0.5, 'h'),{"group":"Motion","quantity":"time-of-day","unit":"city hours"}), closingHour: semantic(num('Closes at (clock)', 21, 0, 24, 0.5, 'h'),{"group":"Motion","quantity":"time-of-day","unit":"city hours"}),
+    notices: appearanceText(text('Boards on the piers (comma separated)', 'OPEN 05:00-21:00,NO TROLLEYS INSIDE')),
+    camera: appearanceBoolean(bool('Camera over the main doorway', true)), birds: generationCount(num('Pigeons on the ledge', 6, 0, 30)), spill: appearanceRatio(num('Light spilled on the ground', 0.6, 0, 1, 0.05)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.width), tall: Number(p.base) + Number(p.rise) + Math.max(44, Number(p.letterSize) + 20) }),
-  bounds: p => { const tall = Number(p.base) + Number(p.rise) + Math.max(44, Number(p.letterSize) + 20); return { x: -4, h: tall, w: Number(p.width) + 8, tall }; },
+  size: p => ({ w: Number(p.width), tall: Number(p.base) + Number(p.rise) + Math.max(44, Number(p.fontSize) + 20) }),
+  bounds: p => { const tall = Number(p.base) + Number(p.rise) + Math.max(44, Number(p.fontSize) + 20); return { x: -4, h: tall, w: Number(p.width) + 8, tall }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, door: { x: Number(p.width) / 2, h: 0, role: 'entrance' }, crown: { x: Number(p.width) / 2, h: Number(p.base) + Number(p.rise), role: 'mount' }, ledge: { x: Number(p.width) / 2, h: Number(p.base), role: 'surface' } }),
   paint(x, p, o) {
     const w = Number(p.width), base = Number(p.base), rise = Number(p.rise), seed = Number(p.seed), t = o.t, cx = w / 2;
     const steel = rgbOr(p.steel, '47,111,98'), wall = isHex(p.wall) ? String(p.wall) : '#121a18', warm = rgbOr(p.glazing, '255,190,120'), nameCol = rgbOr(p.lettersColour, '255,90,70');
     const glow = glowOf(o), lit = Number(p.glow), rust = Number(p.rust), day = o.lighting.outdoor ? o.lighting.daylight : 0;
-    const open = p.hours === 'open' ? true : p.hours === 'closed' ? false : between(o.lighting.min / 60, Number(p.opens), Number(p.closes));
-    const size = Number(p.letterSize), band = Math.max(18, size + 10), bandBot = base - band, pw = 18;
+    const open = p.hours === 'open' ? true : p.hours === 'closed' ? false : between(o.lighting.min / 60, Number(p.openingHour), Number(p.closingHour));
+    const size = Number(p.fontSize), band = Math.max(18, size + 10), bandBot = base - band, pw = 18;
     const dh = Math.min(Number(p.doorHeight), bandBot - 6), md = Math.min(Number(p.mainDoor), w - 2 * pw - 20), sd = Number(p.sideDoor), arched = p.doorTop !== 'square';
 
     // ---- the arched gable: the roof's barrel behind it, the frame, the fan of glazing
@@ -263,13 +269,14 @@ const FORE_NAMES: Record<string, string> = { fish: 'SEAFOOD', veg: 'VEGETABLES',
 const TARP_COLS = ['200,40,40', '40,90,200', '230,180,40', '40,150,90', '60,110,190'];
 
 export const forecourtStallElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'market.forecourt-stall', label: 'Forecourt stall under a tarp (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 90, 40, 260, 1, 'units'), kind: select('Sells', FORE_GOODS), cover: select('Cover', ['tarp', 'umbrella', 'none']),
-    tarp: colour('Tarp colour'), stripes: bool('Striped tarp', true), height: num('Cover height', 76, 50, 140, 1, 'units'), poles: select('Poles', ['bamboo', 'steel']),
-    table: num('Table height', 26, 14, 40, 1, 'units'), boxes: num('Polystyrene boxes under the table', 3, 0, 10), bulbs: num('Bare bulbs', 2, 0, 8),
-    lamp: select('Bulb light', ['warm', 'cold', 'red']), sign: text('Name board (empty: what it sells, - for none)', ''), neon: bool('Name in neon', false),
-    prices: num('Price cards', 3, 0, 10), steam: num('Steam', 0, 0, 1, 0.05), wet: bool('Wet ground under it', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 90, 40, 260, 1, 'units')), kind: appearanceChoice(select('Sells', FORE_GOODS)), cover: appearanceChoice(select('Cover', ['tarp', 'umbrella', 'none'])),
+    tarp: appearanceStructure(colour('Tarp colour')), stripes: appearanceBoolean(bool('Striped tarp', true)), height: shapeLength(num('Cover height', 76, 50, 140, 1, 'units')), poles: appearanceChoice(select('Poles', ['bamboo', 'steel'])),
+    table: shapeLength(num('Table height', 26, 14, 40, 1, 'units')), boxes: generationCount(num('Polystyrene boxes under the table', 3, 0, 10)), bulbs: generationCount(num('Bare bulbs', 2, 0, 8)),
+    lamp: appearanceChoice(select('Bulb light', ['warm', 'cold', 'red'])), sign: appearanceText(text('Name board (empty: what it sells, - for none)', '')), neon: appearanceBoolean(bool('Name in neon', false)),
+    prices: generationCount(num('Price cards', 3, 0, 10)), steam: appearanceRatio(num('Steam', 0, 0, 1, 0.05)), wet: appearanceBoolean(bool('Wet ground under it', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 30 }),
   bounds: p => ({ x: -10, h: Number(p.height) + 30, w: Number(p.width) + 20, tall: Number(p.height) + 30 }),
@@ -381,13 +388,13 @@ export const forecourtStallElement = piece({
 const CRATE_COLS: Record<string, string> = { red: '190,40,40', blue: '40,90,190', green: '40,140,80', yellow: '220,180,40' };
 const cratesWidth = (p: Properties) => Number(p.boxes) * 16 + Math.ceil(Number(p.crates) / 2) * 18 + (p.cart === 'none' ? 0 : 38);
 
-export const marketCratesElement = piece({
+export const marketCratesElement = piece({spatial:fixedNativeGeometry,
   type: 'market.crates', label: 'Fish boxes, crates and a hand cart (kit, Neon Market)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    boxes: num('Polystyrene stacks', 3, 0, 12), tall: num('Boxes per stack (most)', 4, 1, 9), crates: num('Plastic crates', 3, 0, 12),
-    crateColour: select('Crate colour', ['mixed', 'red', 'blue', 'green', 'yellow']), contents: select('In the crates', ['veg', 'fish', 'fruit', 'empty']),
-    cart: select('Hand cart', ['none', 'trolley', 'flatbed']), cartLoad: num('Boxes on the cart', 3, 0, 8), ice: bool('Melting ice (drips, a puddle)', true),
-    seed: num('Seed', 1, 0, 1000000),
+    boxes: generationCount(num('Polystyrene stacks', 3, 0, 12)), tall: generationCount(num('Boxes per stack (most)', 4, 1, 9)), crates: generationCount(num('Plastic crates', 3, 0, 12)),
+    crateColour: appearanceChoice(select('Crate colour', ['mixed', 'red', 'blue', 'green', 'yellow'])), contents: appearanceChoice(select('In the crates', ['veg', 'fish', 'fruit', 'empty'])),
+    cart: appearanceChoice(select('Hand cart', ['none', 'trolley', 'flatbed'])), cartLoad: generationCount(num('Boxes on the cart', 3, 0, 8)), ice: appearanceBoolean(bool('Melting ice (drips, a puddle)', true)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Math.max(10, cratesWidth(p)), tall: Number(p.tall) * 9 + 40 }),
   bounds: p => ({ x: -6, h: Math.max(Number(p.tall) * 9, 50) + 10, w: Math.max(10, cratesWidth(p)) + 12, tall: Math.max(Number(p.tall) * 9, 50) + 16 }),
@@ -441,10 +448,10 @@ export const marketCratesElement = piece({
 export const marketLorryElement = piece({
   type: 'market.lorry', label: 'Delivery lorry, side open (kit, Neon Market)', category: 'vehicles', libraryUse: 'reusable',
   fields: {
-    length: num('Length', 160, 110, 260, 1, 'units'), cab: colourField('Cab colour', '#d9d5c8'), body: select('Body', ['box', 'flatbed', 'reefer']),
-    bodyColour: colourField('Body colour', '#c8c4b4'), name: text('Name on the body (empty: none)', 'TAI KEE TRANSPORT'),
-    open: bool('Side open, the load showing', true), tailLift: bool('Tail lift down', true), load: num('Load', 0.7, 0, 1, 0.05), loadKind: select('Load', ['fish', 'veg', 'mixed']),
-    hazards: bool('Hazard lights blinking', true), headlights: bool('Headlights on', false), engine: bool('Engine running (exhaust)', true), seed: num('Seed', 1, 0, 1000000),
+    length: shapeLength(num('Length', 160, 110, 260, 1, 'units')), cab: appearanceColor(colourField('Cab colour', '#d9d5c8')), body: appearanceChoice(select('Body', ['box', 'flatbed', 'reefer'])),
+    bodyColour: appearanceColor(colourField('Body colour', '#c8c4b4')), name: appearanceText(text('Name on the body (empty: none)', 'TAI KEE TRANSPORT')),
+    open: appearanceBoolean(bool('Side open, the load showing', true)), tailLift: appearanceBoolean(bool('Tail lift down', true)), load: appearanceRatio(num('Load', 0.7, 0, 1, 0.05)), loadKind: appearanceChoice(select('Load', ['fish', 'veg', 'mixed'])),
+    hazards: appearanceBoolean(bool('Hazard lights blinking', true)), headlights: appearanceBoolean(bool('Headlights on', false)), engine: appearanceBoolean(bool('Engine running (exhaust)', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.length), tall: 96 }),
   bounds: p => ({ x: p.tailLift !== false ? -24 : -4, h: 96, w: Number(p.length) + (p.tailLift !== false ? 30 : 10), tall: 96 }),
@@ -513,17 +520,17 @@ export const marketLorryElement = piece({
 export const marketHoseElement = piece({
   type: 'market.hose', label: 'Hose washing the ground (kit, Neon Market)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    length: num('Hose length', 110, 20, 400, 1, 'units'), tap: select('Tap', ['standpipe', 'wall', 'none']), hose: colourField('Hose colour', '#d8b828'),
-    flow: num('Water (0: off)', 0.8, 0, 1, 0.05), reach: num('Spray reach', 50, 10, 160, 1, 'units'), puddle: num('Puddle width', 140, 0, 600, 1, 'units'),
-    coils: num('Loops lying on the ground', 1, 0, 4), seed: num('Seed', 1, 0, 1000000),
+    length: shapeLength(num('Hose length', 110, 20, 400, 1, 'units')), tap: appearanceChoice(select('Tap', ['standpipe', 'wall', 'none'])), hose: appearanceColor(colourField('Hose colour', '#d8b828')),
+    flow: appearanceRatio(num('Water (0: off)', 0.8, 0, 1, 0.05)), sprayReach: shapeLength(num('Spray reach', 50, 10, 160, 1, 'units')), puddleWidth: shapeLength(num('Puddle width', 140, 0, 600, 1, 'units')),
+    coils: generationCount(num('Loops lying on the ground', 1, 0, 4)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.length), tall: 30 }),
-  bounds: p => { const back = Math.max(Number(p.reach), Number(p.puddle) / 2 + Number(p.reach) / 2); return { x: -back, h: 30, w: Number(p.length) + back + 6, tall: 36 }; },
+  bounds: p => { const back = Math.max(Number(p.sprayReach), Number(p.puddleWidth) / 2 + Number(p.sprayReach) / 2); return { x: -back, h: 30, w: Number(p.length) + back + 6, tall: 36 }; },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, tap: { x: Number(p.length), h: 0, role: 'mount' } }),
   paint(x, p, o) {
-    const L = Number(p.length), seed = Number(p.seed), t = o.t, flow = Number(p.flow), reach = Number(p.reach), hose = isHex(p.hose) ? String(p.hose) : '#d8b828', glow = glowOf(o);
+    const L = Number(p.length), seed = Number(p.seed), t = o.t, flow = Number(p.flow), reach = Number(p.sprayReach), hose = isHex(p.hose) ? String(p.hose) : '#d8b828', glow = glowOf(o);
     // the puddle first: the wet ground's sheen, rings where the spray lands
-    const pw = Number(p.puddle), pc = -reach * flow * 0.7;
+    const pw = Number(p.puddleWidth), pc = -reach * flow * 0.7;
     if (pw > 0) {
       R(x, pc - pw / 2, -6, pw, 5, 'rgba(120,160,180,.12)'); R(x, pc - pw / 2 + 6, -2, pw - 12, 1, 'rgba(200,230,240,' + (0.1 + 0.1 * glow).toFixed(3) + ')');
       if (flow > 0) for (let k = 0; k < 3; k++) { const g = ((t * 0.4 + k * 10) % 30) / 30; R(x, pc - 4 - g * 14, -3 - k, 8 + g * 28, 1, 'rgba(210,235,245,' + (0.25 * (1 - g)).toFixed(3) + ')'); }
@@ -557,16 +564,16 @@ export const marketHoseElement = piece({
 export const marketFootbridgeElement = piece({
   type: 'market.footbridge', label: 'Covered footbridge (kit, Neon Market)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    span: num('Span', 200, 60, 1600, 1, 'units'), deck: num('Deck height', 116, 50, 400, 1, 'units'), depth: num('Deck to roof', 40, 24, 80, 1, 'units'),
-    roof: bool('Roof', true), sides: select('Sides', ['glass', 'mesh', 'solid']), colour: colourField('Steel colour', '#2f3a38'),
-    lit: num('Lights inside', 0.8, 0, 1, 0.05), piers: num('Piers to the ground', 1, 0, 8), stairs: select('Stair down', ['none', 'left', 'right']),
-    sign: text('Sign on the side (empty: none)', 'MARKET · LEVEL 1'), walkers: num('People crossing', 2, 0, 8), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Span', 200, 60, 1600, 1, 'units')), deckY: shapePosition(num('Deck height', 116, 50, 400, 1, 'units')), height: shapeLength(num('Deck to roof', 40, 24, 80, 1, 'units')),
+    roof: appearanceBoolean(bool('Roof', true)), sides: appearanceChoice(select('Sides', ['glass', 'mesh', 'solid'])), paintColor: appearanceColor(colourField('Steel colour', '#2f3a38')),
+    lit: appearanceRatio(num('Lights inside', 0.8, 0, 1, 0.05)), piers: generationCount(num('Piers to the ground', 1, 0, 8)), stairs: appearanceChoice(select('Stair down', ['none', 'left', 'right'])),
+    sign: appearanceText(text('Sign on the side (empty: none)', 'MARKET · LEVEL 1')), walkers: generationCount(num('People crossing', 2, 0, 8)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.span), tall: Number(p.deck) + Number(p.depth) + 6 }),
-  bounds: p => { const st = p.stairs === 'none' ? 0 : Math.round(Number(p.deck) * 1.1); return { x: p.stairs === 'left' ? -st : 0, h: Number(p.deck) + Number(p.depth) + 6, w: Number(p.span) + st, tall: Number(p.deck) + Number(p.depth) + 6 }; },
-  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, deck: { x: Number(p.span) / 2, h: Number(p.deck), role: 'surface' } }),
+  size: p => ({ w: Number(p.width), tall: Number(p.deckY) + Number(p.height) + 6 }),
+  bounds: p => { const st = p.stairs === 'none' ? 0 : Math.round(Number(p.deckY) * 1.1); return { x: p.stairs === 'left' ? -st : 0, h: Number(p.deckY) + Number(p.height) + 6, w: Number(p.width) + st, tall: Number(p.deckY) + Number(p.height) + 6 }; },
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, deck: { x: Number(p.width) / 2, h: Number(p.deckY), role: 'surface' } }),
   paint(x, p, o) {
-    const S = Number(p.span), D = Number(p.deck), top = D + Number(p.depth), seed = Number(p.seed), t = o.t, steel = isHex(p.colour) ? String(p.colour) : '#2f3a38', glow = glowOf(o), lit = Number(p.lit), lc = '225,240,235';
+    const S = Number(p.width), D = Number(p.deckY), top = D + Number(p.height), seed = Number(p.seed), t = o.t, steel = isHex(p.paintColor) ? String(p.paintColor) : '#2f3a38', glow = glowOf(o), lit = Number(p.lit), lc = '225,240,235';
     // piers to the ground
     const piers = Math.round(Number(p.piers));
     for (let i = 0; i < piers; i++) { const px = Math.round((S * (i + 1)) / (piers + 1)) - 4; R(x, px, 0, 8, D - 8, steel); R(x, px, 0, 1, D - 8, 'rgba(255,255,255,.08)'); R(x, px - 3, 0, 14, 4, '#1a1d1c'); R(x, px - 2, D - 12, 12, 4, steel); }
@@ -602,3 +609,7 @@ export const marketFootbridgeElement = piece({
 });
 
 export const marketApproach: AssetDefinition[] = [marketHallFrontElement, forecourtStallElement, marketCratesElement, marketLorryElement, marketHoseElement, marketFootbridgeElement];
+
+marketLorryElement.spatial=rectangleControls({width:'length',baseline:20});
+marketHoseElement.spatial=combineControls(axisControl('length','x',15,'Tap endpoint'),axisControl('sprayReach','x',2,'Maximum spray reach',{direction:-1,offset:-6}),rectangleControls({width:'puddleWidth',originX:.5,offsetX:p=>-Number(p.sprayReach)*Number(p.flow)*.7,baseline:-6}));
+marketFootbridgeElement.spatial=combineControls(rectangleControls({width:'width',baseline:'deckY'}),axisControl('deckY','h',p=>Number(p.width)/2,'Deck elevation'),conditionalControls(axisControl('height','h',p=>Number(p.width)/2,'Roof edge',{offset:p=>Number(p.deckY)}),p=>p.roof!==false));

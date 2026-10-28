@@ -189,6 +189,7 @@ export interface SceneArtworkFrame {
   reflections?:[number,string][];
 }
 export interface SceneDef {
+  rendering?:import('../world/render-settings').RenderSettings;
   drawSkyArtwork?:(context:CanvasRenderingContext2D,view:View)=>void;
   peopleFlows?:readonly import('../engine/people').PeopleSource[];
   artworkFrame?:SceneArtworkFrame;

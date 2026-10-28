@@ -1,3 +1,7 @@
+import {rangeControls} from '../core/spatial';
+import {positionListEditor,choiceField,generationSeed,tupleArrayEditor,appearanceRatio} from '../core/fields';
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceStructure,semantic,shapePosition} from '../core/fields';
 /**
  * STREET KIT: road traffic (Tommi, 2026-10-15 and 2026-10-22: where do the cars come from and go; cars must not
  * appear or vanish; the lane behind must not draw over the lane in front). From the title glide, now a kit piece
@@ -17,7 +21,7 @@
  *
  * Positions are world units east of the piece; the vehicles are the kit's (vehicles.ts) at the player's scale.
  */
-import type { AssetDefinition, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Properties } from '../core/composition';
 import { inPixels, SHORE, R, ART, type Pixels } from '../core/pixels';
 import { drawCar, drawTruck, SIZE, type CarKind } from '../vehicles/vehicles';
 import { BOX40, type Crate } from '../props/containers';
@@ -25,7 +29,7 @@ import { placed } from '../core/view';
 import { routeAt, routeLength, type RouteLeg, type VehicleRoute } from '../../world/vehicles';
 
 const S = 1 / ART;
-const num = (label: string, value: number, min = -1e7, max = 1e7, step = 1): Field => ({ kind: 'number', label, default: value, min, max, step });
+const num = numericFields({min:-1e7,max:1e7,step:1});
 const fin = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 const n = (p: Properties, k: string) => Number(p[k]);
 
@@ -33,8 +37,6 @@ const n = (p: Properties, k: string) => Number(p[k]);
 export const MOUTH = 26;
 const ZONE = 'street-traffic';
 type LaneId = 'far' | 'near';
-interface Lane { lane: LaneId; dir: 1 | -1; v: number; gap: number; seed: number }
-const DEFAULT_LANES: Lane[] = [{ lane: 'far', dir: 1, v: 1.05, gap: 176, seed: 29 }, { lane: 'near', dir: -1, v: 1.25, gap: 176, seed: 11 }];
 const DEFAULT_ENDS: [number, number][] = [[-1, 0.2], [0, 0.12], [1, 0.14], [2, 0.14], [3, 0.14], [4, 0.08]];
 const PAINTS = ['#8a2a2a', '#2a4a6a', '#c8c0b0', '#3a3a3a', '#6a5a2a', '#e8e0d0', '#4a2a4a'];
 const TRUCK_PAINTS = ['#c8c0b0', '#8a2a2a', '#3a5a3a', '#2a3a5a'];
@@ -46,7 +48,7 @@ const at = <T>(list: readonly T[], k: number) => list[((k % list.length) + list.
 /** The street in route units: X runs west in pixels (the route's own frame), from the piece's anchor. */
 interface Street { mouths: number[]; gate: number; road: number; quay: number; portal: number; ends: [number, number][] }
 const streetOf = (p: Properties): Street => ({
-  mouths: (p.mouths as number[]).map(m => -m * S), gate: -n(p, 'gate') * S, road: -n(p, 'gate') * S + 20, quay: -n(p, 'quay') * S, portal: -n(p, 'portal') * S,
+  mouths: (p.mouths as number[]).map(m => -m * S), gate: -n(p, 'gateX') * S, road: -n(p, 'gateX') * S + 20, quay: -n(p, 'quayX') * S, portal: -n(p, 'portalX') * S,
   ends: (p.ends as unknown as [number, number][]),
 });
 
@@ -95,7 +97,7 @@ export interface TrafficVehicle { id: string; lane: LaneId; k: number; kind: Car
 
 /** Every vehicle near the view this frame, in draw order (far to near, east to west at one depth). Pure: a function of the frame clock and the street. */
 export function trafficPlan(P: Pixels, p: Properties, h0: number): TrafficVehicle[] {
-  const st = streetOf(p), lanes = p.lanes as unknown as Lane[], f = P.still ? 0 : P.f, out: TrafficVehicle[] = [];
+  const st = streetOf(p), lanes = [{lane:p.lane as LaneId,dir:Number(p.direction) as 1|-1,v:n(p,'velocityX')/ART/60,gap:n(p,'spacing')/ART,seed:n(p,'seed')}], f = P.still ? 0 : P.f, out: TrafficVehicle[] = [];
   const back = P.y(h0 + SHORE.back), mid = P.y(h0 + SHORE.mid), far = P.y(h0 + SHORE.farLane), near = P.y(h0 + SHORE.nearLane);
   const [v0, v1] = P.span(), Xe = -(v1 - P.ax) - 520, Xw = -(v0 - P.ax) + 520;
   for (const ln of lanes) {
@@ -132,27 +134,32 @@ function drawVehicle(P: Pixels, p: Properties, h0: number, v: TrafficVehicle) {
 }
 
 export const trafficElement: AssetDefinition = {
-  type: 'street.traffic', mobility:()=>true, version: 1, label: 'Road traffic between side streets, a truck gate and a portal (street kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'street.traffic', selection:'region', mobility:()=>true, version: 1, label: 'Road traffic lane', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    sideStreets: { kind: 'boolean', label: 'Use visible side-street turns', default: false },
-    mouths: { kind: 'json', label: 'Side streets, east to west (units east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || v.length > 20 || !v.every(fin)) throw new Error('Side streets: expected numbers'); } },
-    gate: num('Truck gate (units east of the piece; trucks come and go there)', 0), quay: num('Trucks run on to (units east of the piece)', 2000), portal: num('The street’s west portal (units east of the piece)', -6000),
-    lanes: { kind: 'json', label: 'Lanes, far first (lane far/near, dir 1 east, v pixels a frame, gap, seed)', default: DEFAULT_LANES as never, validate: v => { if (!Array.isArray(v) || v.length > 4 || !v.every(l => !!l && typeof l === 'object' && ['far', 'near'].includes((l as unknown as Lane).lane) && [1, -1].includes((l as unknown as Lane).dir) && fin((l as unknown as Lane).v) && (l as unknown as Lane).gap > 20 && fin((l as unknown as Lane).seed))) throw new Error('Lanes: expected { lane, dir, v, gap, seed } rows'); } },
-    ends: { kind: 'json', label: 'Near ends and their chance (end -1: the gate; 0..: a side street)', default: DEFAULT_ENDS as never, validate: v => { if (!Array.isArray(v) || !v.every(e => Array.isArray(e) && e.length === 2 && e.every(fin))) throw new Error('Ends: expected [end, chance] pairs'); } },
-    pass: { kind: 'select', label: 'Draws', options: ['road', 'street'], default: 'road' }, windowFrom: num('Only vehicles from (units east of the piece)', -1e7), windowTo: num('to', 1e7),
-    lights: { kind: 'boolean', label: 'Headlights on', default: true }, route: { kind: 'string', label: 'Bus route', default: '7' },
+    sideStreets: semantic({ kind: 'boolean', label: 'Use visible side-street turns', default: false },{"group":"Visibility & Drawing","quantity":"boolean","unit":"boolean"}),
+    mouths: positionListEditor(appearanceStructure({ kind: 'json', label: 'Side streets, east to west (units east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || v.length > 20 || !v.every(fin)) throw new Error('Side streets: expected numbers'); } }),'Side street X'),
+    gateX: shapePosition(num('Truck gate (units east of the piece; trucks come and go there)', 0)), quayX: shapePosition(num('Trucks run on to (units east of the piece)', 2000)), portalX: shapePosition(num('The street’s west portal (units east of the piece)', -6000)),
+    lane:appearanceChoice(choiceField('Lane',['far','near'],'far')),
+    direction:semantic(choiceField('Direction',[1,-1],1),{group:'Motion',quantity:'choice',unit:'choice'}),
+    velocityX:semantic(numericFields({value:189,min:0,max:18000,step:1})('Speed'),{group:'Motion',quantity:'speed',unit:'world units / second',space:'local'}),
+    spacing:semantic(numericFields({value:528,min:63,step:1})('Spacing'),{group:'Generation',quantity:'length',unit:'world units',space:'local'}),
+    seed:generationSeed(numericFields({value:29,min:0,step:1})('Seed')),
+    ends: tupleArrayEditor(appearanceStructure({ kind: 'json', label: 'Near ends and their chance (end -1: the gate; 0..: a side street)', default: DEFAULT_ENDS as never, validate: v => { if (!Array.isArray(v) || !v.every(e => Array.isArray(e) && e.length === 2 && e.every(fin))) throw new Error('Ends: expected [end, chance] pairs'); } }),'Near end',[semantic(numericFields({value:-1,min:-1,step:1})('End index (-1: gate)'),{group:'Generation',quantity:'index',unit:'integer'}),appearanceRatio(numericFields({value:.2,min:0,max:1,step:.01})('Probability'))]),
+    pass: appearanceChoice({ kind: 'select', label: 'Draws', options: ['road', 'street'], default: 'road' }), drawingMinX: shapePosition(num('Only vehicles from (units east of the piece)', -1e7)), drawingMaxX: shapePosition(num('to', 1e7)),
+    lights: appearanceBoolean({ kind: 'boolean', label: 'Headlights on', default: true }), route: semantic({ kind: 'string', label: 'Bus route', default: '7' },{"group":"Motion","quantity":"text","unit":"text"}),
   },
+  spatial:rangeControls('portalX','quayX',p=>p.lane==='near'?SHORE.nearLane:SHORE.farLane),
   bounds: p => {
     // The ownership window selects whole vehicles by their centre; it never clips their body.
     // Include their overhang so the native world retains this source across a chunk edge.
-    const ends=[...(p.mouths as number[]),n(p,'gate'),n(p,'quay'),n(p,'portal')];
-    const from=Math.max(Math.min(...ends),n(p,'windowFrom')),to=Math.min(Math.max(...ends),n(p,'windowTo')),pad=SIZE.truck;
+    const ends=[...(p.mouths as number[]),n(p,'gateX'),n(p,'quayX'),n(p,'portalX')];
+    const from=Math.max(Math.min(...ends),n(p,'drawingMinX')),to=Math.min(Math.max(...ends),n(p,'drawingMaxX')),pad=SIZE.truck;
     return{x:from-pad,h:160,w:Math.max(0,to-from)+2*pad,tall:320};
   },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, v, p, _s, _pass, at) {
     inPixels(ctx, v, at, P => {
-      const a = n(p, 'windowFrom') * S, b = n(p, 'windowTo') * S, pass = String(p.pass);
+      const a = n(p, 'drawingMinX') * S, b = n(p, 'drawingMaxX') * S, pass = String(p.pass);
       for (const veh of trafficPlan(P, p, at.h)) {
         const local = -veh.X; if (local < a || local >= b || veh.pass !== pass) continue;
         if (veh.sx + veh.half < -60 || veh.sx - veh.half > P.W + 60) continue;

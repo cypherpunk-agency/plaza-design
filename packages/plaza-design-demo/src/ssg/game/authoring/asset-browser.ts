@@ -53,7 +53,8 @@ export function assetInventory(registry: ArtRegistry, documents: EditorDocument[
     const family = layerRole(element.type, element.label, element.category), used = usages.get(element.type) ?? [], origin = originOf(element.type, family, used);
     const structure: AssetStructure = element.role === 'group' ? 'composition' : 'object';
     // logic pieces a kit offers for placing (the level kit's floors, doors, building handles) are reusable too
-    const usability: AssetUsability = !element.parts.length && element.libraryUse !== 'reusable' || element.role === 'player' || element.role === 'group' || helperArtwork(element.type) ? 'helper'
+    const reusableGroup=element.role==='group'&&element.libraryUse==='reusable';
+    const usability: AssetUsability = !reusableGroup&&(!element.parts.length && element.libraryUse !== 'reusable' || element.role === 'player' || element.role === 'group' || helperArtwork(element.type)) ? 'helper'
       : element.libraryUse === 'reusable' ? 'reusable' : 'context';
     return { id: element.type, label: element.label, family, origin, structure, usability,
     tags: [...new Set([ORIGINS.find(o => o.id === origin)!.badge.toLowerCase(), element.category, ...element.type.split('.'), ...element.parts,
@@ -230,7 +231,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     };
     // Kits first, each followed by its presets; a preset matches the search by its own name and note, and the Kind by its own family.
     let presetCount = 0;
-    const kitPool = helpers || !options.presets ? [] : base.filter(e => e.origin === 'kit' && placed(e));
+    const kitPool = helpers || !options.presets ? [] : base.filter(e => e.usability==='reusable' && placed(e));
     for (const kit of kitPool) {
       if (filtered.includes(kit)) card(kit);
       for (const preset of options.presets!.of(kit)) {

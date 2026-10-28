@@ -33,7 +33,7 @@ export class Opening {
   private titleTl: Timeline | null = null;
   private glideTl: Timeline | null = null;
 
-  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/prepare-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'|'model'|'flags'|'compositions'>={}) { this.t = reduced ? this.rise : 0; }
+  constructor(private reduced: boolean,private documents:OpeningDocuments=openingDocuments,private world:Pick<import('../../runtime/prepare-frame').ZoneSequenceOptions,'scenes'|'graph'|'backdrops'|'model'|'flags'|'compositions'|'citySource'>={}) { this.t = reduced ? this.rise : 0; }
   private get titleSequence(){return this.documents.timeline.sequences.find(s=>s.id==='title')!;}
   private get glideSequence(){return this.documents.timeline.sequences.find(s=>s.id==='glide')!;}
   private get rise(){return this.titleSequence.duration;}

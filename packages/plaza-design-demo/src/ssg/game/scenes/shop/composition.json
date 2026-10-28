@@ -18,7 +18,7 @@
       "type": "shop.wall",
       "props": {
         "width": 900,
-        "ceiling": 160
+        "height": 160
       },
       "placement": {
         "x": 0,
@@ -185,8 +185,8 @@
       "type": "furniture.strip-light",
       "props": {
         "length": 60,
-        "drop": 158,
-        "spread": 220,
+        "coneDepth": 158,
+        "coneWidth": 220,
         "flicker": false
       },
       "placement": {
@@ -201,8 +201,8 @@
       "type": "furniture.strip-light",
       "props": {
         "length": 60,
-        "drop": 158,
-        "spread": 220,
+        "coneDepth": 158,
+        "coneWidth": 220,
         "flicker": true
       },
       "placement": {
@@ -217,8 +217,8 @@
       "type": "furniture.strip-light",
       "props": {
         "length": 60,
-        "drop": 158,
-        "spread": 220,
+        "coneDepth": 158,
+        "coneWidth": 220,
         "flicker": false
       },
       "placement": {

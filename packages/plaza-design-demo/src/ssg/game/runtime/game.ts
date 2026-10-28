@@ -201,6 +201,8 @@ export class Game {
   private presentationFramePortValue?:PresentationFrame.PresentationFramePort;
   private get presentationFramePort():PresentationFrame.PresentationFramePort{return this.presentationFramePortValue??=(()=>{const game=this;return{
     view:(...args)=>game.view(...args),
+    get citySource(){return game.world.source;},
+    get worldCompositions(){void game.zoneGraph;return game.appliedWorldSource!;},
     get x(){return game.x;},
     get camera(){return game.camera;},
     get def(){return game.def;},
@@ -427,7 +429,7 @@ export class Game {
   private gameplayStatePort(id?:SceneId):import('../engine/gameplay/types').StatePort {
     return {
         prepareWorld:edits=>this.prepareWorldEdits(edits),
-        read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id??this.scenes.here)).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
+        read:()=>{const state:import('../engine/gameplay/types').GameplayState={world:{day:city.day,minute:city.min,weather:weatherNow(sceneClimate(id??this.scenes.here,this.world.source),this.world.source).kind},player:{handle:this.save.handle,jump:this.save.jump,controlled:this.save.controlled,keyring:this.save.keyring},flags:{...this.save.flags},items:this.save.items,tokens:this.save.tokens,values:this.save.gameplay};return state;},
         write:state=>{this.save.flags=state.flags;this.save.items=state.items;this.save.tokens=state.tokens;if(state.player){this.save.keyring=[...state.player.keyring];this.save.controlled=[...state.player.controlled];this.save.jump=state.player.jump;}mergeValues(this.save.gameplay??={},state.values??{});},
       };
   }
@@ -524,7 +526,7 @@ export class Game {
     // sudo: the time control over the title's sunrise, the glide and cutscenes (transport.ts); in a scene, the city clock's
     if (sudoOn()) {
       this.transport = new Transport(host.windowEl);
-      this.clockBar = new ClockBar(host.windowEl, () => sceneClimate(this.scenes.here), () => StoryTransitions.syncClock(this.storyTransitionsPort,true));
+      this.clockBar = new ClockBar(host.windowEl, () => sceneClimate(this.scenes.here,this.world.source), () => StoryTransitions.syncClock(this.storyTransitionsPort,true),()=>this.world.source);
     }
     // the city clock: the save's, and what every scene's conditions read of the city (engine/model.ts CITY)
     city.bind(this.save.clock);
@@ -724,6 +726,8 @@ export class Game {
     const first = !this.timing.started;
     this.timing.started = true;
     this.continueGame(scene && this.hasScene(scene) ? scene : undefined, first,entrance,spawn);
+    const initial=this.host.initialCamera;
+    if(first&&initial?.scene===this.scenes.here){this.camera.cam=initial.x;this.camera.camH=initial.h;this.camera.gy=this.camera.gyBase+initial.h;}
     if(this.reviewAllowed()&&!this.reviewNav){const stations=reviewStations(this.content,this.reviewDoc);if(stations.length)this.reviewNav=mountReviewNavigator(this.host.windowEl,{stations,actions:this.reviewDoc.actions,hint:this.reviewDoc.hint,open:!EDITOR_PLAY,communication:can('review')?id=>this.reviewCommunication(id):undefined,jump:id=>this.reviewJump(id),run:a=>this.reviewRun(a)});this.refreshReview();}
   }
 
@@ -804,7 +808,7 @@ export class Game {
     this.term.close();
     if(launchWorkflow&&this.openingStory.WORKFLOWS.launch){if(!this.runOpeningWorkflow('launch'))throw Error('Launch composition workflow refused');this.reconcileWorldEdits();}
     const game=this;
-    this.presentation.opening = new Opening(this.reduced,this.sequenceDocuments.opening,{scenes:{...SCENES,...this.content},get graph(){return game.zoneGraph;},get compositions(){void game.zoneGraph;return game.appliedWorldSource;},backdrops:this.sources.backdrops,model:id=>game.scenes.hosts.get(id as SceneId)?.model??game.scenes.mobiles.get(id as SceneId)?.model,get flags(){return game.save.flags;}});
+    this.presentation.opening = new Opening(this.reduced,this.sequenceDocuments.opening,{scenes:{...SCENES,...this.content},get graph(){return game.zoneGraph;},citySource:game.world.source,get compositions(){void game.zoneGraph;return game.appliedWorldSource;},backdrops:this.sources.backdrops,model:id=>game.scenes.hosts.get(id as SceneId)?.model??game.scenes.mobiles.get(id as SceneId)?.model,get flags(){return game.save.flags;}});
     this.syncEnginePause();
     document.documentElement.classList.add('cutscene');
     this.host.setScene('ACCESS DENIED');
@@ -974,6 +978,7 @@ export class Game {
   }
 
   private onResize() {
+    if(this.host.viewport){const {width,height,scale}=this.host.viewport;this.host.windowEl.style.setProperty('--game-top','0px');this.host.windowEl.style.setProperty('--game-bottom','0px');this.canvas.width=width;this.canvas.height=height;this.camera.k=scale;this.camera.viewW=width/scale;this.camera.viewH=height/scale;this.camera.gyBase=this.host.viewport.ground??this.camera.viewH-54;this.camera.gy=this.camera.gyBase+Math.round(this.camera.camH);this.camera.fitW=this.spanW;return;}
     const win = this.host.windowEl.getBoundingClientRect();
     // a hidden header or footer (phones) takes no room
     const shown = (el: HTMLElement) => el.getClientRects().length > 0;
@@ -1290,7 +1295,7 @@ export class Game {
       // your own deck, while you still exist
       deck: this.openingStory.persona(this.save.flags)?.deck,
       // the Registry's forecast, where you are
-      weather: () => reportLines(sceneClimate(this.scenes.here)),
+      weather: () => reportLines(sceneClimate(this.scenes.here,this.world.source),12,this.world.source),
       // the net from where you stand (NET.md): scan, connect (needs scan.so, except what a port here knows)
       net: this.hackLocked() ? undefined : {
         scan: () => this.deckScan(),
@@ -1475,7 +1480,7 @@ export class Game {
    * dry whatever the forecast says ("Rain's late today": the opening is scripted).
    */
   private weatherOf(scene: string): Weather {
-    const w = weatherNow(sceneClimate(scene));
+    const w = weatherNow(sceneClimate(scene,this.world.source),this.world.source);
     if (!this.openingStory.persona(this.save.flags)?.calmWeather || (w.rain < 0.01 && w.storm < 0.01)) return w;
     return { ...w, kind: w.kind === 'rain' || w.kind === 'storm' ? 'cloudy' : w.kind, rain: 0, storm: 0, wet: Math.min(w.wet, 0.4), wind: Math.min(w.wind, 0.3) };
   }
@@ -1735,7 +1740,7 @@ export class Game {
       const liveWorld=composition.instances.some(n=>n.type==='sequence.world-control');
       scene={id,title:id,duration:sequence.duration,next:sequence.handoff?.scene??'',handoff:sequence.handoff,ownsFade:true,liveWorld,cards:sequence.text.map(c=>({at:c.from,until:c.to,text:c.text,x:c.x,h:c.h})),beats:sequence.beats.map(b=>({at:b.time,name:b.id})),
         ...(liveWorld?{advance:(time:number)=>this.directWorld(documents,id,time,this.timing.t/60,false)}:{}),
-        render:(context,view,time,scale,director)=>{renderWorldFrame({kind:'sequence',context,documents,sequenceId:id,registry:art,scale,width:view.viewW,height:view.viewH,reduced:this.reduced,lighting:view.lighting,time,director,cards:false,world:{scenes:{...SCENES,...this.content},graph:this.zoneGraph,compositions:this.appliedWorldSource,ambientTime:this.timing.t/60,flags:this.save.flags,model:id=>this.scenes.hosts.get(id as SceneId)?.model??this.scenes.mobiles.get(id as SceneId)?.model,backdrops:this.sources.backdrops}});}};
+        render:(context,view,time,scale,director)=>{renderWorldFrame({kind:'sequence',context,documents,sequenceId:id,registry:art,scale,width:view.viewW,height:view.viewH,reduced:this.reduced,lighting:view.lighting,time,director,cards:false,world:{citySource:this.world.source,scenes:{...SCENES,...this.content},graph:this.zoneGraph,compositions:this.appliedWorldSource,ambientTime:this.timing.t/60,flags:this.save.flags,model:id=>this.scenes.hosts.get(id as SceneId)?.model??this.scenes.mobiles.get(id as SceneId)?.model,backdrops:this.sources.backdrops}});}};
     }
     const handoff=()=>{if(!scene)return;const destination=scene.handoff??{scene:scene.next};
       // A story interlude returning to its current scene preserves native runtime state.

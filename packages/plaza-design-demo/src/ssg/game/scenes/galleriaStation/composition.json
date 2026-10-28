@@ -44,7 +44,7 @@
       "id": "background",
       "type": "station.background",
       "props": {
-        "fill": "#030201"
+        "fillColor": "#030201"
       },
       "placement": {
         "x": 0,
@@ -144,8 +144,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 60,
@@ -164,8 +164,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 340,
@@ -184,8 +184,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 620,
@@ -204,8 +204,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 900,
@@ -224,8 +224,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 1180,
@@ -244,8 +244,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 1460,
@@ -264,8 +264,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 1740,
@@ -284,8 +284,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 2020,
@@ -304,8 +304,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 2300,
@@ -324,8 +324,8 @@
       "type": "station.nameplate",
       "props": {
         "name": "GALLERIA",
-        "alpha": 0.75,
-        "hang": false
+        "hang": false,
+        "textOpacity": 0.75
       },
       "placement": {
         "x": 2580,
@@ -560,7 +560,7 @@
       "id": "camera-0",
       "type": "station.camera",
       "props": {
-        "flip": false
+        "mirrored": false
       },
       "placement": {
         "x": 12,
@@ -577,7 +577,7 @@
       "id": "camera-1",
       "type": "station.camera",
       "props": {
-        "flip": true
+        "mirrored": true
       },
       "placement": {
         "x": -12,
@@ -594,7 +594,8 @@
       "id": "screen",
       "type": "station.screen",
       "props": {
-        "phase": 1
+        "displayTimeOffset": 1.6166666666666667,
+        "indicatorPhaseAngle": 57.29577951308232
       },
       "placement": {
         "x": 390,
@@ -637,8 +638,8 @@
         "height": 30,
         "first": "LINE",
         "second": "MAP",
-        "phase": 2,
-        "red": false
+        "red": false,
+        "highlightPhaseAngle": 114.59155902616465
       },
       "placement": {
         "x": 1040,
@@ -707,7 +708,7 @@
       "type": "station.slab",
       "props": {
         "width": 1200,
-        "fill": "#0c0907"
+        "fillColor": "#0c0907"
       },
       "placement": {
         "x": 0,
@@ -720,8 +721,8 @@
       "id": "reflection-0",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -738,8 +739,8 @@
       "id": "reflection-1",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -756,8 +757,8 @@
       "id": "reflection-2",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -774,8 +775,8 @@
       "id": "reflection-3",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -792,8 +793,8 @@
       "id": "reflection-4",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -810,8 +811,8 @@
       "id": "reflection-5",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -828,8 +829,8 @@
       "id": "reflection-6",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,
@@ -846,8 +847,8 @@
       "id": "reflection-7",
       "type": "station.reflection",
       "props": {
-        "alpha": 0.5,
-        "width": 20
+        "width": 20,
+        "opacity": 0.5
       },
       "placement": {
         "x": 0,

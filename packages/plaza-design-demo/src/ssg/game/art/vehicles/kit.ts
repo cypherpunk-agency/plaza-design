@@ -1,3 +1,4 @@
+import {appearanceBoolean,appearanceText,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * The vehicle kit's shared parts (ART-GUIDE §2, §12): every class (ground, air, water, rail) moves,
  * sits at a depth band and wears a livery through these, so no class repeats them.
@@ -12,6 +13,7 @@
  *   puck and a status light bar on the roof), drawn in a vehicle's own (possibly mirrored) frame.
  * - `laneFields`/`liveryFields`/`laneOf`/`liveryOf`: the composition fields every vehicle element shares.
  */
+import {isMeasuringArtwork,measureArtwork,registerBitmapBounds} from '../core/measure';
 import type { BoundsContext, Field, Properties } from '../core/composition';
 import { DEPTH_BANDS, DEPTH_ORDER, isDepthBand, type DepthSpec } from '../core/depth';
 import { rng } from '../core/primitives';
@@ -95,13 +97,13 @@ export function paintBanded(ctx: CanvasRenderingContext2D, band: DepthSpec, e: E
     scratch ??= document.createElement('canvas');
     scratch.width = Math.max(1, Math.ceil(w * density)); scratch.height = Math.max(1, Math.ceil(h * density));
     const g = scratch.getContext('2d')!; g.setTransform(density, 0, 0, density, (pad - e.x0) * density, (e.top + pad) * density);
-    paint(g);
+    if(isMeasuringArtwork(ctx))registerBitmapBounds(scratch,measureArtwork(target=>paint(target),g));else paint(g);
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(5,8,12,${band.dim})`; g.fillRect(0, 0, scratch.width, scratch.height); g.globalCompositeOperation = 'source-over';
     ctx.imageSmoothingEnabled = false; ctx.drawImage(scratch, e.x0 - pad, -(e.top + pad), w, h);
   } finally { ctx.restore(); }
 }
 
-export const bandOf = (props: Properties): DepthSpec => DEPTH_BANDS[isDepthBand(props.depth) ? props.depth : 'play'];
+export const bandOf = (props: Properties): DepthSpec => DEPTH_BANDS[isDepthBand(props.depthBand) ? props.depthBand : 'play'];
 /** Selection bounds for a vehicle `offset` along its lane, `lift` units up, shifted so the box sits on the band's parallax. */
 export function bandBounds(props: Properties, e: Extent, offset: number, lift: number, context?: BoundsContext) {
   const band = bandOf(props), p = context?.placement, s = band.scale;
@@ -122,21 +124,21 @@ export const withDefaults = (fields: Record<string, Field>, props: Properties): 
 };
 
 /** The lane fields every vehicle element shares. */
-export function laneFields(o: { speed: number; lane: number; motion?: LaneMode }): Record<string, Field> {
+export function laneFields(o: { speed: number; routeLength: number; motion?: LaneMode }): Record<string, Field> {
   return {
-    depth: { kind: 'select', label: 'Depth', options: [...DEPTH_ORDER], default: 'play' },
-    motion: { kind: 'select', label: 'Motion (parked, loop lane, shuttle out and back, one-way runs)', options: [...LANE_MODES], default: o.motion ?? 'parked' },
-    direction: { kind: 'select', label: 'Direction', options: ['right', 'left'], default: 'right' },
-    speed: { kind: 'number', label: 'Speed (units per frame)', default: o.speed, min: 0, max: 40, step: 0.01 },
-    lane: { kind: 'number', label: 'Lane length', default: o.lane, min: 100, max: 20000, step: 10, unit: 'units' },
-    dwell: { kind: 'number', label: 'Hold / gap (shuttle, run)', default: 300, min: 0, max: 20000, step: 10, unit: 'frames' },
-    start: { kind: 'number', label: 'Start along the lane (loop)', default: 0, min: 0, max: 20000, step: 10, unit: 'units' },
+    depthBand: semantic({ kind: 'select', label: 'Depth', options: [...DEPTH_ORDER], default: 'play' },{group:'Depth',quantity:'choice',unit:'depth band'}),
+    motion: semantic({ kind: 'select', label: 'Motion (parked, loop lane, shuttle out and back, one-way runs)', options: [...LANE_MODES], default: o.motion ?? 'parked' },{"group":"Motion","quantity":"choice","unit":"choice"}),
+    direction: semantic({kind:'select',label:'Direction',options:[-1,1],default:1},{group:'Motion',quantity:'choice',unit:'left / right'}),
+    speed: semantic({ kind: 'number', label: 'Speed', default: o.speed, min: 0, max: 2400, step: 0.6 },{"group":"Motion","quantity":"speed","unit":"world units / second","space":"local"}),
+    routeLength: shapeLength({ kind: 'number', label: 'Lane length', default: o.routeLength, min: 100, max: 20000, step: 10, unit: 'units' }),
+    dwellDuration: semantic({kind:'number',label:'Hold / gap (shuttle, run)',default:5,min:0,max:20000/60,step:1/6,unit:'seconds'},{group:'Motion',quantity:'duration',unit:'seconds'}),
+    startOffset: shapePosition({ kind: 'number', label: 'Start along the lane (loop)', default: 0, min: 0, max: 20000, step: 10, unit: 'units' }),
   };
 }
 export const laneOf = (props: Properties): Lane => ({
   mode: (LANE_MODES as readonly string[]).includes(String(props.motion)) ? props.motion as LaneMode : 'parked',
-  dir: props.direction === 'left' ? -1 : 1, speed: Number(props.speed) || 0, length: Number(props.lane) || 1,
-  dwell: Number(props.dwell) || 0, start: Number(props.start) || 0,
+  dir: props.direction === -1 ? -1 : 1, speed: (Number(props.speed)||0)/60, length: Number(props.routeLength) || 1,
+  dwell: (Number(props.dwellDuration)||0)*60, start: Number(props.startOffset) || 0,
 });
 
 // ---------- liveries ----------
@@ -195,11 +197,11 @@ export function drawLivery(x: CanvasRenderingContext2D, lv: Livery | undefined, 
 
 /** The livery fields ground and air elements share. */
 export const liveryFields: Record<string, Field> = {
-  stripe: { kind: 'string', label: 'Fleet stripe (#rrggbb, empty for none)', default: '' },
-  fleetNo: { kind: 'string', label: 'Fleet number', default: '' },
-  qr: { kind: 'boolean', label: 'QR fleet plate', default: false },
-  autonomous: { kind: 'boolean', label: 'Autonomous (sensor puck, status light bar)', default: false },
-  decal: { kind: 'string', label: 'Decal lines (separate with /)', default: '' },
+  stripe: appearanceText({ kind: 'string', label: 'Fleet stripe (#rrggbb, empty for none)', default: '' }),
+  fleetNo: appearanceText({ kind: 'string', label: 'Fleet number', default: '' }),
+  qr: appearanceBoolean({ kind: 'boolean', label: 'QR fleet plate', default: false }),
+  autonomous: appearanceBoolean({ kind: 'boolean', label: 'Autonomous (sensor puck, status light bar)', default: false }),
+  decal: appearanceText({ kind: 'string', label: 'Decal lines (separate with /)', default: '' }),
 };
 export function liveryOf(props: Properties): Livery | undefined {
   const decal = String(props.decal ?? '').split('/').map(s => s.trim()).filter(Boolean);

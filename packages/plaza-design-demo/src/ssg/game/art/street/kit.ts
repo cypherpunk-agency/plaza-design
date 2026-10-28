@@ -1,3 +1,6 @@
+import {fixedGeometry} from '../core/spatial';
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,generationCount,generationSeed,shapeLength} from '../core/fields';
 /**
  * STREET KIT: the street itself, for any scene built from kits. The surface (dark ground, a lit edge,
  * the wet sheen or cobbles) and the lights along it (a sodium post, a paper lantern, a cold LED pole,
@@ -5,35 +8,42 @@
  * most of what tells them apart: sodium Downtown, lanterns in the Old Quarter, cold white in the Spire.
  */
 import { addLight } from '../atmosphere/lighting';
-import type { AssetDefinition, Field } from '../core/composition';
+import type { AssetDefinition } from '../core/composition';
 import { glowLevel } from '../../world/light';
 import { drawSky } from '../environment/sky';
 import { inPixels, SHORE } from '../core/pixels';
+import {rectangleControls} from '../core/spatial';
+const fixedNativeGeometry=fixedGeometry("This kit component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
-const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
+const num = numericFields({step:1});
 const rgbOf = (hex: unknown, fallback: string) => { const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex)); return m ? m.slice(1).map(h => parseInt(h, 16)).join(',') : fallback; };
 const hash = (n: number) => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
 
 export const streetSurfaceElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width',height:'depthBelowGround',originY:1}),
   type: 'street.surface', version: 1, label: 'Street surface (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    width: num('Width', 1600, 20, 40000, 10, 'units'),
-    ground: { kind: 'color', label: 'Ground', default: '#030201' },
-    edge: { kind: 'color', label: 'Lit edge and sheen', default: '#ff8800' },
-    sheen: num('Wet sheen (0 dry)', 0.7, 0, 1, 0.05),
-    kerb: { kind: 'boolean', label: 'Kerb line', default: true },
-    cobbles: { kind: 'boolean', label: 'Cobbles', default: false },
-    water: num('Canal in front (0: none; depth below the quay)', 0, 0, 200, 1, 'units'),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 1600, 20, 40000, 10, 'units')),
+    depthBelowGround: shapeLength(num('Depth below ground', 384, 54, 6000, 1, 'units')),
+    ground: appearanceColor({ kind: 'color', label: 'Ground', default: '#030201' }),
+    edge: appearanceColor({ kind: 'color', label: 'Lit edge and sheen', default: '#ff8800' }),
+    sheen: appearanceRatio(num('Wet sheen (0 dry)', 0.7, 0, 1, 0.05)),
+    kerb: appearanceBoolean({ kind: 'boolean', label: 'Kerb line', default: true }),
+    cobbles: appearanceBoolean({ kind: 'boolean', label: 'Cobbles', default: false }),
+    water: shapeLength(num('Canal in front (0: none; depth below the quay)', 0, 0, 200, 1, 'units')),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: 4 }),
+  bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: Number(p.depthBelowGround ?? 384) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, end: { x: Number(p.width), h: 0, role: 'mount' } }),
   draw(x, v, p, _s, _pass, at) {
     const water = Number(p.water ?? 0);
     const a = Math.max(0, v.sx(at.x)), b = Math.min(v.viewW, v.sx(at.x + Number(p.width))), gy = v.y(at.h);
     if (b <= a) return;
     const edge = rgbOf(p.edge, '255,136,0'), sheen = Number(p.sheen);
-    x.fillStyle = String(p.ground); x.fillRect(a, gy, b - a, v.viewH - gy);
+    const bottom=v.y(at.h-Number(p.depthBelowGround??384));
+    x.save();x.beginPath();x.rect(a,gy,b-a,bottom-gy);x.clip();
+    try {
+    x.fillStyle = String(p.ground); x.fillRect(a, gy, b - a, bottom - gy);
     x.fillStyle = 'rgba(' + edge + ',' + (0.2 + 0.35 * sheen).toFixed(3) + ')'; x.fillRect(a, gy, b - a, 1);
     if (p.kerb !== false) { x.fillStyle = 'rgba(0,0,0,.6)'; x.fillRect(a, gy + 4, b - a, 1); x.fillStyle = 'rgba(' + edge + ',.08)'; x.fillRect(a, gy + 5, b - a, 1); }
     for (let i = 0; i < 6 && sheen > 0; i++) { x.fillStyle = 'rgba(' + edge + ',' + ((0.16 - i * 0.024) * sheen).toFixed(3) + ')'; x.fillRect(a, gy + 6 + i * i * 2 + i * 4, b - a, 1); }
@@ -52,7 +62,7 @@ export const streetSurfaceElement: AssetDefinition = {
     if (water > 0) {
       // the canal below the quay: dark water, the quay's stone lip, light broken up on the ripples
       const qy = gy + 14, cam = at.x - v.sx(at.x), seed = Number(p.seed);
-      x.fillStyle = '#05080a'; x.fillRect(a, qy, b - a, v.viewH - qy);
+      x.fillStyle = '#05080a'; x.fillRect(a, qy, b - a, bottom - qy);
       x.fillStyle = '#16120e'; x.fillRect(a, qy - 2, b - a, 3); x.fillStyle = 'rgba(' + edge + ',.25)'; x.fillRect(a, qy - 2, b - a, 1);
       for (let row = 0; row < 14; row++) {
         const yy = qy + 4 + row * 3 + Math.floor(row * row / 6), drift = v.t * (0.12 + row * 0.01);
@@ -63,6 +73,7 @@ export const streetSurfaceElement: AssetDefinition = {
         }
       }
     }
+    } finally { x.restore(); }
   },
 };
 
@@ -70,16 +81,20 @@ const LAMP_STYLES = ['sodium', 'lantern', 'led', 'string', 'coast'] as const;
 const LAMP_COL: Record<string, string> = { sodium: '#ffb35a', lantern: '#ff6a3a', led: '#dce8ff', string: '#ffd28a', coast: '#ffdca0' };
 
 export const streetLampElement: AssetDefinition = {
+  spatial:{fields:['width','height'],handles:p=>[
+    ...(p.style==='string'?rectangleControls({width:'width',baseline:'height'}).handles(p):[]),
+    ...rectangleControls({height:'height'}).handles(p).filter(h=>h.id==='top'),
+  ]},
   type: 'street.lamp', version: 1, label: 'Street light (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    style: { kind: 'select', label: 'Kind', options: [...LAMP_STYLES], default: 'sodium' },
-    color: { kind: 'json', label: 'Light colour', default: '', editor: { kind: 'colour', empty: 'The kind’s own' },
-      validate: v => { if (v !== '' && !(typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v))) throw new Error('Light colour: expected a #rrggbb colour or empty'); } },
-    height: num('Height', 110, 20, 600, 1, 'units'),
-    width: num('Span (string of bulbs)', 160, 20, 2000, 1, 'units'),
-    count: num('Lanterns or bulbs', 6, 1, 60),
-    reach: num('Light reach', 1, 0, 3, 0.05),
-    seed: num('Seed', 1, 0, 1000000),
+    style: appearanceChoice({ kind: 'select', label: 'Kind', options: [...LAMP_STYLES], default: 'sodium' }),
+    color: appearanceStructure({ kind: 'json', label: 'Light colour', default: '', editor: { kind: 'colour', empty: 'The kind’s own' },
+      validate: v => { if (v !== '' && !(typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v))) throw new Error('Light colour: expected a #rrggbb colour or empty'); } }),
+    height: shapeLength(num('Height', 110, 20, 600, 1, 'units')),
+    width: shapeLength(num('Span (string of bulbs)', 160, 20, 2000, 1, 'units')),
+    count: generationCount(num('Lanterns or bulbs', 6, 1, 60)),
+    reach: shapeLength(num('Light reach', 1, 0, 3, 0.05)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   bounds: p => p.style === 'string' ? { x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) } : { x: -18, h: Number(p.height) + 6, w: 36, tall: Number(p.height) + 6 },
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, head: { x: 0, h: Number(p.height), role: 'mount' } }),
@@ -142,9 +157,9 @@ function lantern(x: CanvasRenderingContext2D, cx: number, top: number, col: stri
 }
 
 /** The sky over a kit street, on the city clock (sun, moon, stars, twilight), for a scene whose own definition draws none. */
-export const streetSkyElement: AssetDefinition = {
+export const streetSkyElement: AssetDefinition = {spatial:fixedNativeGeometry,
   type: 'street.sky', version: 1, label: 'Sky (kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
-  fields: { stars: { kind: 'boolean', label: 'Stars at night', default: true } },
+  fields: { stars: appearanceBoolean({ kind: 'boolean', label: 'Stars at night', default: true }) },
   bounds: () => ({ x: 0, h: 400, w: 400, tall: 400 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(x, v, p, _s, _pass, at) { drawSky(x, v, v.lighting, { horizon: v.y(at.h), stars: p.stars !== false }); },

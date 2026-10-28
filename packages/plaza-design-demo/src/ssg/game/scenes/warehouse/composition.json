@@ -22,7 +22,7 @@
       "props": {
         "role": "scene",
         "width": 900,
-        "facing": 270
+        "bearing": 270
       },
       "placement": {
         "x": 0,
@@ -181,8 +181,8 @@
       "props": {
         "text": "WAREHOUSE 4",
         "color": "rgba(255,217,165,.5)",
-        "size": 16,
-        "weight": "700"
+        "weight": "700",
+        "fontSize": 16
       },
       "placement": {
         "x": 360,
@@ -201,8 +201,8 @@
       "props": {
         "text": "T D  M R N",
         "color": "rgba(255,217,165,.12)",
-        "size": 9,
-        "weight": "700"
+        "weight": "700",
+        "fontSize": 9
       },
       "placement": {
         "x": 360,
@@ -280,7 +280,7 @@
       "type": "warehouse.camera",
       "props": {
         "direction": 1,
-        "phase": 21
+        "blinkTimeOffset": 0.35
       },
       "placement": {
         "x": 10,
@@ -298,7 +298,7 @@
       "type": "warehouse.camera",
       "props": {
         "direction": -1,
-        "phase": 41
+        "blinkTimeOffset": 0.6833333333333333
       },
       "placement": {
         "x": 720,
@@ -409,7 +409,7 @@
       "props": {
         "width": 110,
         "text": "EVIDENCE CUSTODY · INTAKE 24 H · RELEASE: ON COMPLETION OF REVIEW · REVIEW: SCHEDULED",
-        "speed": 0.3
+        "scrollSpeed": 18
       },
       "placement": {
         "x": 0,
@@ -455,7 +455,7 @@
           "ASK INSIDE",
           "(DON'T)"
         ],
-        "tilt": 0.04
+        "tiltAngle": 2.291831180523293
       },
       "placement": {
         "x": 120,
@@ -555,8 +555,8 @@
       "type": "warehouse.neon",
       "props": {
         "text": "NO ENTRY",
-        "size": 7,
-        "phase": 12
+        "flickerTimeOffset": 0.2,
+        "fontSize": 7
       },
       "placement": {
         "x": 0,
@@ -609,7 +609,7 @@
         "height": 22,
         "radius": 28,
         "color": "",
-        "alpha": -1
+        "lightOpacity": -1
       },
       "placement": {
         "x": 15,
@@ -629,7 +629,7 @@
         "kind": "lamp",
         "radius": 40,
         "color": "255,60,60",
-        "alpha": 0.7
+        "lightOpacity": 0.7
       },
       "placement": {
         "x": 0,
@@ -649,7 +649,7 @@
         "kind": "lamp",
         "radius": 46,
         "color": "",
-        "alpha": -1
+        "lightOpacity": -1
       },
       "placement": {
         "x": 600,

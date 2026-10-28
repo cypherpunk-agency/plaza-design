@@ -1,12 +1,12 @@
 /** Portable train fittings use scalar native bindings and retain their drawing/animation geometry. */
 import assert from 'node:assert/strict';
 import composition from '../../src/ssg/game/scenes/train/composition.json';
-import {art,resolveComposition} from '../../src/ssg/game/art';
+import {art,resolveComposition,propertyIsLinked} from '../../src/ssg/game/art';
 import {frameView} from '../../src/ssg/game/art/core/view';
 import {SCENES} from '../../src/ssg/game/scenes';
 import {SceneModel} from '../../src/ssg/game/engine/model';
 import {createTrainInteriorArtwork} from '../../src/ssg/game/art/assemblies/train-interior';
-import {drawCabCeilingLight,drawCabAdvert,drawCabAdTell,drawCabCarPlate,drawCabRegistry,drawCabHandrail,drawCabStrap} from '../../src/ssg/game/art/vehicles/train-fittings';
+import {drawCabCeilingLight,drawCabAdvert,drawCabAdTell,drawCabCarPlate,drawCabRegistry,drawCabHandrail,drawCabStrap,drawCabSeatBack,drawCabSeatFront} from '../../src/ssg/game/art/vehicles/train-fittings';
 const ids=['ceilingLight','advert','adTell','carPlate','registryScreen','handrail','strap'];
 function record(){const ops:any[]=[],state:Record<string,unknown>={};const ctx=new Proxy(state,{get(o,k:string){
  if(k in o)return o[k];if(k==='measureText')return(text:string)=>({width:text.length*5});
@@ -18,7 +18,7 @@ for(const id of ids)for(const home of [false,true])for(const t of [0,137,181])fo
  assert.equal(element.libraryUse,'reusable');assert(!element.visualFields?.frame,'a portable fitting has no room-frame input');
  const v={...frameView(t),viewW:640,viewH:360,gy:300,y:(q:number)=>300-q},V={...v,gy:300-h,y:(q:number)=>300-q-h},a=record(),b=record();
  element.draw(a.ctx,v,props,state,'backdrop',{x,h,scale:1,facing:1,parallax:1});
- switch(id){case'ceilingLight':drawCabCeilingLight(b.ctx,V,x,Number(props.width),Number(props.ceiling));break;
+ switch(id){case'ceilingLight':drawCabCeilingLight(b.ctx,V,x,Number(props.width),Number(props.ceilingHeight));break;
   case'advert':drawCabAdvert(b.ctx,V,x,String(props.text),String(props.homeText),Number(props.index),home,'NATIVE NEWS');break;
   case'adTell':drawCabAdTell(b.ctx,V,x);break;
   case'carPlate':drawCabCarPlate(b.ctx,V,x,String(props.text),Number(props.width),Number(props.height));break;
@@ -49,7 +49,7 @@ const env=scene.visualEnvironment!(view,{m:model,hover:null,layer:'all'}),rows=r
 const room=createTrainInteriorArtwork(frame);
 for(const id of ids){assert(!(id in room),'removed room-factory method '+id);for(const row of rows.filter(r=>r.instance.type==='train.'+id)){
  assert(!('frame'in row.state));assert(!('frame'in(row.instance.bindings??{})));
- if('width'in row.state)assert.equal(row.state.width,frame.L.width);
+ if('width'in row.state){assert.equal(row.state.width,frame.L.width);assert.equal(row.props.width,frame.L.width);assert(propertyIsLinked(row,'width'),'Native width is inspected as linked rather than an ignored fallback');}
  if('ceiling'in row.state)assert.equal(row.state.ceiling,frame.L.ceil);
  if('home'in row.state)assert.equal(row.state.home,frame.visual.home);
  if('running'in row.state)assert.equal(row.state.running,frame.visual.ride.phase==='running');
@@ -57,3 +57,22 @@ for(const id of ids){assert(!(id in room),'removed room-factory method '+id);for
  const r=record();row.element.draw(r.ctx,view,row.props,row.state,'backdrop',row.placement);
 }}
 console.log('Train scalar fittings PASS: seven independent kernels, native scalar bindings, preserved coordinates/news/swing, strict pages and removed room-factory methods.');
+
+// Ordinary standalone copies retain source dimensions and opposite-edge anchoring.
+for(const id of ['handrail','seatBack','seatFront']){
+ const type='train.'+id,e=art.get(type),p=art.properties(type,{width:100});
+ const handles=e.spatial!.handles(p);assert.equal(handles.length,2);
+ const west=handles.find(h=>h.id==='left')!,edit=west.edit({x:20,h:0});
+ assert.equal(edit.props.width,80);assert.equal(edit.offset!.x+Number(edit.props.width),100);
+ const doc=art.validate({version:1,scene:'fitting-copy',instances:[{id:'copy',type,props:{width:100},placement:{x:70,h:0},layer:'set',order:0}]});
+ const own=resolveComposition(art,doc,{view,state:{},reduced:false})[0];assert.equal(propertyIsLinked(own,'width'),false);
+ const linked=structuredClone(doc);linked.instances[0].bindings={width:'fitting.width'};
+ const bound=resolveComposition(art,linked,{view,state:{},bindings:{'fitting.width':160},reduced:false})[0];
+ assert.equal(bound.props.width,160);assert.equal(bound.instance.props.width,100);assert(propertyIsLinked(bound,'width'));
+ const actual=record(),expected=record();e.draw(actual.ctx,view,bound.props,bound.state,'backdrop',bound.placement);
+ if(id==='handrail')drawCabHandrail(expected.ctx,view,70,160,0);
+ else if(id==='seatBack')drawCabSeatBack(expected.ctx,view,70,160);
+ else drawCabSeatFront(expected.ctx,view,70,160);
+ assert.deepEqual(actual.ops,expected.ops,'Linked '+id+' uses the same effective width for paint and inspection');
+ assert.equal(e.bounds(bound.props,bound.state).w,id==='handrail'?160:168);
+}

@@ -302,7 +302,7 @@ function straddle(x:CanvasRenderingContext2D,v:View){
   const at = laneAt(STRADDLE_LANE, v.t), wx = inputs.x - STRADDLE_LANE.length + at.offset, s = v.sx(wx, DEPTH_BANDS.back.parallax);
   if (!onScreen(v, s - 60, 120)) return;
   const loaded = at.leg === 'out' || at.leg === 'far' || (at.leg === 'home' && at.legT > 200);
-  placed(x, s, v.y(0), PORT_SCALE, () => paintRoadVehicle(x, { kind: 'straddle', depth: 'back', motion: 'shuttle', cargo: loaded, pose: 0.2, fleetNo: 'SC-11', stripe: '#1a1206' }, v.t, at.face, at.driven));
+  placed(x, s, v.y(0), PORT_SCALE, () => paintRoadVehicle(x, { kind: 'straddle', depthBand: 'back', motion: 'shuttle', cargo: loaded, pose: 0.2, fleetNo: 'SC-11', stripe: '#1a1206' }, v.t, at.face, at.driven));
 }
 function chassis(x:CanvasRenderingContext2D,v:View){
 const m=inputs.visual,H=inputs.visual.geometry.H,KIND={none:0,regular:1,box:2};

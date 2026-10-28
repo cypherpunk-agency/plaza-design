@@ -13,6 +13,7 @@ import {moveKey} from '../../src/ssg/game/authoring/timeline-view';
 /** Sequence inspection selects actual source objects; edits use ordinary history and protected Save. */
 import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';
 import {art,type ChunkDocument} from '../../src/ssg/game/art';
+import {fixedGeometry} from '../../src/ssg/game/art/core/spatial';
 import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
 import {createNativePreview} from '../../src/ssg/game/authoring/native-preview';
 import {nativeSceneAdapters} from '../../src/ssg/game/authoring/scene-adapters';
@@ -99,7 +100,23 @@ function workspaceAt(time:number){const surface=canvas();surface.width=960;surfa
 const workspaceStart=workspaceAt(0),workspaceEnd=workspaceAt(68),staticKey=Object.keys(workspaceStart.sources!).find(key=>workspaceStart.sources![key].document===owner.document&&workspaceStart.sources![key].instance===owner.instance)!;
 assert.deepEqual(workspaceStart.bounds.find(b=>b.id===staticKey),workspaceEnd.bounds.find(b=>b.id===staticKey),'camera animation cannot move static scenery in the editor workspace');
 assert.notDeepEqual(workspaceStart.camera,workspaceEnd.camera,'authored camera frame changes independently');assert.equal(workspaceStart.workspaceScale,workspaceEnd.workspaceScale,'playFit cannot change editor scale');assert(workspaceEnd.camera!.width<workspaceStart.camera!.width,'player zoom changes the camera frame size');
+const distantKey=Object.keys(workspaceStart.resolved!).find(key=>workspaceStart.sources?.[key]?.instance==='spire'&&workspaceStart.resolved![key].placement.parallax!==1);
+assert(distantKey,'Exercise a real distant landmark');
+assert.deepEqual(workspaceStart.resolved![distantKey].framingBounds??workspaceStart.resolved![distantKey].bounds,workspaceEnd.resolved![distantKey].framingBounds??workspaceEnd.resolved![distantKey].bounds,'Animated game camera must not rearrange parallax scenery in Workspace');
+const directionAt=(direction:'base'|'sequence')=>preview.render(canvas()as unknown as HTMLCanvasElement,{composition:model.get('sequence-opening').value as ChunkDocument,documents:new Map(model.list().map(d=>[d.id,d.value])),sourceVersion:model.sourceVersion,time:19,ambientTime:26,direction,reduced:false,overlays:false,workspace:{x:0,h:0,zoom:1,anchorX:0,anchorH:0},environment:{titleOffset:7}});
+const directedPicture=directionAt('sequence'),basePicture=directionAt('base');
+assert.deepEqual(directedPicture.resolved![distantKey].bounds,basePicture.resolved![distantKey].bounds,'Switching direction preserves the native parallax landmark and its ambient craft, including title offset');
 console.log('Independent workspace PASS: stable world-object bounds/scale at 0 and 68 seconds while the actual camera moves and zooms.');
+// Base editing disables direction, not the ambient clock used by the same native painter.
+let ambientClock=-1;
+art.register({type:'test.sequence-ambient',version:1,label:'Ambient clock probe',category:'test',fields:{},spatial:fixedGeometry('Fixed test mark'),parts:['backdrop'],bounds:()=>({x:0,h:4,w:4,tall:4}),anchors:()=>({}),draw(x,v){ambientClock=v.t;x.fillRect(0,0,4,4);}});
+const ambientComposition:ChunkDocument={version:1,scene:'test-sequence-ambient',instances:[{id:'mark',type:'test.sequence-ambient',props:{},placement:{x:0,h:0},layer:'backdrop',order:0}],sequence:{id:'ambient-test',duration:60,tracks:[],shots:[],text:[],fades:[],beats:[]}};
+for(const direction of ['base','sequence']as const){
+ preview.render(canvas()as unknown as HTMLCanvasElement,{composition:ambientComposition,time:23,ambientTime:31,direction,reduced:false,overlays:false,environment:{}});
+ assert.equal(ambientClock,31*60,direction+' must use the preserved ambient clock');
+}
+preview.render(canvas()as unknown as HTMLCanvasElement,{composition:ambientComposition,time:23,direction:'base',reduced:false,overlays:false,environment:{}});
+assert.equal(ambientClock,23*60,'Base editing must not force a zero-time frame');
 
 // Real frame preparation keeps camera-relative sky layout independent of workspace navigation.
 const opening=createRuntimeSequenceDocuments(values,context).opening,skyLight=lightAt(1,1075,270,null,true);

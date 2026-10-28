@@ -53,12 +53,12 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
         "seams": 1,
         "glow": true,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 760,
@@ -111,8 +111,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 301,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 0,
@@ -143,8 +143,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 302,
-        "floors": 6,
-        "top": 0
+        "height": 472,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 200,
@@ -176,8 +176,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 303,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 380,
@@ -208,8 +208,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 304,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 600,
@@ -235,8 +235,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 305,
-        "floors": 6,
-        "top": 0
+        "height": 472,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 760,
@@ -267,8 +267,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 306,
-        "floors": 4,
-        "top": 0
+        "height": 340,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 960,
@@ -299,8 +299,8 @@
         "roof": "parapet",
         "density": 0.7,
         "seed": 307,
-        "floors": 5,
-        "top": 0
+        "height": 406,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1150,
@@ -327,8 +327,8 @@
         "roof": "cornice",
         "density": 0.7,
         "seed": 308,
-        "floors": 6,
-        "top": 0
+        "height": 472,
+        "parapetHeight": 0
       },
       "placement": {
         "x": 1370,
@@ -404,7 +404,7 @@
       "props": {
         "text": "METRO · LINE 0",
         "color": "0,255,255",
-        "size": 10
+        "fontSize": 10
       },
       "placement": {
         "x": 520,
@@ -531,12 +531,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6201,
         "act": "walk",
         "archetype": "office",
-        "range": 200
+        "range": 200,
+        "depthBand": "play"
       },
       "placement": {
         "x": 180,
@@ -551,14 +551,14 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6202,
         "act": "stand",
         "archetype": "punk",
         "extras": [
           "umbrella"
-        ]
+        ],
+        "depthBand": "play"
       },
       "placement": {
         "x": 820,
@@ -573,11 +573,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6203,
         "act": "smoke",
-        "archetype": "dockworker"
+        "archetype": "dockworker",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1180,
@@ -592,11 +592,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6204,
         "act": "phone",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 380,
@@ -611,11 +611,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6205,
         "act": "stand",
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 585,
@@ -630,11 +630,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6206,
         "act": "queue",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 780,
@@ -649,11 +649,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6207,
         "act": "wait",
-        "archetype": "student"
+        "archetype": "student",
+        "depthBand": "play"
       },
       "placement": {
         "x": 806,
@@ -668,11 +668,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6208,
         "act": "stand",
-        "archetype": "security"
+        "archetype": "security",
+        "depthBand": "play"
       },
       "placement": {
         "x": 978,
@@ -687,9 +687,9 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
         "seed": 6209,
-        "act": "scan"
+        "act": "scan",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1030,
@@ -704,11 +704,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6210,
         "act": "phone",
-        "archetype": "shopper"
+        "archetype": "shopper",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1150,
@@ -723,13 +723,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 6211,
         "act": "read",
         "archetype": "office",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1265,
@@ -785,10 +785,10 @@
       "id": "label",
       "type": "metro.scale-ruler",
       "props": {
-        "span": 0,
+        "length": 0,
         "bar": false,
         "numbers": false,
-        "size": 9,
+        "fontSize": 9,
         "ink": "#ffd9a5",
         "title": "DOWNTOWN STREET OVER DOWNTOWN METRO · THE STAIRS SEAM (PROPOSAL)",
         "note": "The street's ground line is the station's ceiling slab: Downtown above, the Metro zone 150 below|The stairs are the seam: walk down from the pavement into the ticket hall with no cut|The turnstile at the gate line is a barrier in the world; the platform and train continue east"

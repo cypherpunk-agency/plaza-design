@@ -286,6 +286,16 @@
         "scene": "harbor-station",
         "command": "intro.retire-coast"
       }
-    ]
+    ],
+    "rendering": {
+      "casters": false,
+      "actors": false,
+      "shade": false,
+      "grade": false,
+      "lights": false,
+      "prompts": false,
+      "bubbles": false,
+      "vision": false
+    }
   }
 }

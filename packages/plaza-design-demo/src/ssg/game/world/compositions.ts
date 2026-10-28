@@ -1,11 +1,12 @@
 /** Authoring definitions compiled into the ordinary world graph. No live state or renderer. */
 import {SEAM_KINDS,worldProblems,type SeamKind,type ZoneGraphSource,type ZoneInfo} from './zone-graph';
+import {RENDER_PASSES,validateRenderSettings,type RenderSettings,type RenderSettingsLayer} from './render-settings';
 
 export interface WorldPosition {x:number;h:number}
-export type WorldMember = {id:string;placement:WorldPosition}&({chunk:string;group?:never}|{group:string;chunk?:never});
+export type WorldMember = {id:string;placement:WorldPosition;rendering?:RenderSettings}&({chunk:string;group?:never}|{group:string;chunk?:never});
 export type WorldEndpoint = {member:string;offset?:WorldPosition}&({instance:string;anchor:string;export?:never}|{export:string;instance?:never;anchor?:never});
 export interface WorldConnection {id:string;kind:SeamKind;a:WorldEndpoint;b:WorldEndpoint}
-export interface WorldComposition {name:string;members:WorldMember[];connections:WorldConnection[]}
+export interface WorldComposition {name:string;members:WorldMember[];connections:WorldConnection[];rendering?:RenderSettings}
 export interface ChunkGroup extends WorldComposition {exports:Record<string,WorldEndpoint>}
 export interface WorldCompositions {version:1;groups:Record<string,ChunkGroup>;compositions:Record<string,WorldComposition>}
 export interface WorldChunk extends WorldPosition {chunk:string;path:string}
@@ -31,10 +32,10 @@ function chunkId(v:unknown):string {if(typeof v!=='string'||v.length>128||!/^[a-
 function name(v:unknown,where:string):string {if(typeof v!=='string'||!v.trim()||v.length>256)fail(where+' requires a name');return v;}
 function rows(v:unknown,where:string):unknown[]{if(!Array.isArray(v)||v.length>256)fail(where+' requires at most 256 rows');return v;}
 function position(v:unknown,where:string):WorldPosition {const p=fields(v,['x','h'],where);if(typeof p.x!=='number'||!Number.isFinite(p.x)||typeof p.h!=='number'||!Number.isFinite(p.h))fail(where+' requires finite x and h');return{x:p.x,h:p.h};}
-function member(v:unknown,group:boolean):WorldMember {const m=fields(v,['id','chunk','group','placement'],'member');if((m.chunk!==undefined)===(m.group!==undefined)||group&&m.group!==undefined)fail('member requires exactly one chunk or group; nested groups are unsupported');return{id:id(m.id,'member'),placement:position(m.placement,'placement'),...(m.chunk!==undefined?{chunk:chunkId(m.chunk)}:{group:id(m.group,'group')})} as WorldMember;}
+function member(v:unknown,group:boolean):WorldMember {const m=fields(v,['id','chunk','group','placement','rendering'],'member');if((m.chunk!==undefined)===(m.group!==undefined)||group&&m.group!==undefined)fail('member requires exactly one chunk or group; nested groups are unsupported');return{id:id(m.id,'member'),placement:position(m.placement,'placement'),...(m.rendering===undefined?{}:{rendering:validateRenderSettings(m.rendering)}),...(m.chunk!==undefined?{chunk:chunkId(m.chunk)}:{group:id(m.group,'group')})} as WorldMember;}
 function endpoint(v:unknown):WorldEndpoint {const e=fields(v,['member','instance','anchor','export','offset'],'endpoint');const common={member:id(e.member,'endpoint member'),...(e.offset===undefined?{}:{offset:position(e.offset,'endpoint offset')})};if(e.export!==undefined){if(e.instance!==undefined||e.anchor!==undefined)fail('export endpoint cannot also name an instance');return{...common,export:id(e.export,'export')};}return{...common,instance:name(e.instance,'instance'),anchor:name(e.anchor,'anchor')};}
 function unique<T extends{id:string}>(values:T[],where:string):T[]{if(new Set(values.map(v=>v.id)).size!==values.length)fail(where+' has duplicate IDs');return values;}
-function definition(v:unknown,group:boolean):WorldComposition|ChunkGroup {const d=fields(v,group?['name','members','connections','exports']:['name','members','connections'],'definition');const members=unique(rows(d.members,'members').map(m=>member(m,group)),'members');const connections=unique(rows(d.connections,'connections').map(v=>{const c=fields(v,['id','kind','a','b'],'connection');if(!SEAM_KINDS.includes(c.kind as SeamKind))fail('unknown connection kind');return{id:id(c.id,'connection'),kind:c.kind as SeamKind,a:endpoint(c.a),b:endpoint(c.b)};}),'connections');const result={name:name(d.name,'definition'),members,connections};if(!group)return result;if(!object(d.exports)||Object.keys(d.exports).length>256)fail('group exports must be a map');return{...result,exports:Object.fromEntries(Object.entries(d.exports).map(([k,v])=>[id(k,'export'),endpoint(v)]))};}
+function definition(v:unknown,group:boolean):WorldComposition|ChunkGroup {const d=fields(v,group?['name','members','connections','exports','rendering']:['name','members','connections','rendering'],'definition');const members=unique(rows(d.members,'members').map(m=>member(m,group)),'members');const connections=unique(rows(d.connections,'connections').map(v=>{const c=fields(v,['id','kind','a','b'],'connection');if(!SEAM_KINDS.includes(c.kind as SeamKind))fail('unknown connection kind');return{id:id(c.id,'connection'),kind:c.kind as SeamKind,a:endpoint(c.a),b:endpoint(c.b)};}),'connections');const result={name:name(d.name,'definition'),members,connections,...(d.rendering===undefined?{}:{rendering:validateRenderSettings(d.rendering)})};if(!group)return result;if(!object(d.exports)||Object.keys(d.exports).length>256)fail('group exports must be a map');return{...result,exports:Object.fromEntries(Object.entries(d.exports).map(([k,v])=>[id(k,'export'),endpoint(v)]))};}
 export function validateWorldCompositions(value:unknown):WorldCompositions {
  const d=fields(value,['version','groups','compositions'],'source');if(d.version!==1||!object(d.groups)||!object(d.compositions))fail('expected version 1, groups and compositions');
  const map=<T>(raw:Record<string,unknown>,group:boolean):Record<string,T>=>{if(Object.keys(raw).length>256)fail('too many definitions');return Object.fromEntries(Object.entries(raw).map(([k,v])=>[id(k,'definition'),definition(v,group)])) as Record<string,T>;};
@@ -101,7 +102,7 @@ export function validateCompositionEdit(value:unknown):CompositionEdit {
 function editedMembers(current:readonly WorldMember[],edit:CompositionEdit):WorldMember[]{
  if(new Set(edit.remove).size!==edit.remove.length||!edit.ensure&&edit.remove.some(id=>!current.some(m=>m.id===id)))fail('remove requires distinct existing member IDs');
  const next=structuredClone(current.filter(m=>!edit.remove.includes(m.id)));
- for(const addition of edit.add){const existing=next.find(m=>m.id===addition.id);if(edit.ensure&&existing){if(existing.chunk!==addition.chunk||existing.group!==addition.group||existing.placement.x!==addition.placement.x||existing.placement.h!==addition.placement.h)fail('ensure cannot replace existing member '+addition.id);continue;}next.push(structuredClone(addition));}
+ for(const addition of edit.add){const existing=next.find(m=>m.id===addition.id);if(edit.ensure&&existing){if(existing.chunk!==addition.chunk||existing.group!==addition.group||existing.placement.x!==addition.placement.x||existing.placement.h!==addition.placement.h||RENDER_PASSES.some(key=>existing.rendering?.[key]!==addition.rendering?.[key]))fail('ensure cannot replace existing member '+addition.id);continue;}next.push(structuredClone(addition));}
  return next;
 }
 /** Current membership is ordinary saved world data; source definitions still own chunk content. */
@@ -147,4 +148,19 @@ export function compileWorldGraph(source:WorldCompositions,base:ZoneGraphSource,
  for(const seam of base.seams)if(duplicate(seam.a.zone,seam.b.zone))fail('chunk has both graph and composition placement authority: '+seam.id);
  for(const link of base.placements??[])if(duplicate(link.a,link.b))fail('chunk has both graph and composition placement authority');
  const graph={version:1 as const,seams:[...base.seams,...compiled.flatMap(c=>c.graph.seams)],placements:[...(base.placements??[]),...compiled.flatMap(c=>c.graph.placements??[])]};if(new Set(graph.seams.map(s=>s.id)).size!==graph.seams.length)fail('duplicate compiled seam IDs');const problems=worldProblems(graph,context.chunks);if(problems.length)fail(problems.join('; '));return graph;
+}
+
+/** Existing mounted membership supplies contextual settings without copying them into chunk sources. */
+export function worldRenderLayers(source:WorldCompositions,chunk:string,composition?:string):RenderSettingsLayer[]{
+ const result:RenderSettingsLayer[]=[];
+ for(const [key,def]of Object.entries(source.compositions)){
+  if(composition&&key!==composition)continue;
+  for(const member of def.members){
+   if(member.chunk===chunk)result.push({source:{kind:'composition',id:key},settings:def.rendering},{source:{kind:'member',composition:key,member:member.id},settings:member.rendering});
+   else if(member.group){const group=source.groups[member.group],child=group.members.find(c=>c.chunk===chunk);if(child)result.push(
+    {source:{kind:'composition',id:key},settings:def.rendering},{source:{kind:'group',id:member.group},settings:group.rendering},
+    {source:{kind:'member',composition:key,member:member.id},settings:member.rendering},{source:{kind:'member',composition:key,member:member.id,child:child.id},settings:child.rendering});}
+  }
+ }
+ return result;
 }

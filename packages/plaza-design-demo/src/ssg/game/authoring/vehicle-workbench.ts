@@ -1,5 +1,6 @@
+import {assetPictureLimits} from '../world/render-settings';
 import {renderWorldFrame} from '../runtime/render-scene';
-import {SEQUENCE_PASSES} from '../runtime/prepare-frame';
+
 import type {SceneDef} from '../scenes/kit';
 /** Viewing only. Native paint kernels consume explicit, disposable presentation inputs. */
 import { VEHICLE_FAMILIES,type VehicleFamily } from './catalogues/vehicles';
@@ -8,7 +9,7 @@ import { drawCar,drawTruck,drawStraddle,drawReachStacker,drawForklift,type CarKi
 import { drawAircraft,drawCab,AIR_EXTENT,AIR_KINDS,type AirKind } from '../art/vehicles/air-traffic';
 import { drawPlatformTrain,consistLength,RAIL_CAR,RAIL_CARS,type PlatformTrainVisual } from '../art/vehicles/rail';
 import { drawMetroCar } from '../art/vehicles/train-car';
-import { drawSkyShips,type Ship } from '../art/environment/sky-ships';
+import { drawSkyCraft,type Ship } from '../art/environment/sky-ships';
 import { SPR } from '../art/core/sprites';
 import { drawBoat,paintBoatVehicle,BOAT_EXTENT,BOAT_KINDS,type BoatKind } from '../art/vehicles/boats';
 import { paintAirVehicle } from '../art/vehicles/air-vehicle';
@@ -73,7 +74,7 @@ export function prepareVehiclePreview(input:VehiclePreviewState,width=800,height
  }else if(state.id==='cab.legacy'){job('drawCab',{cx:0,base:0,k:1,t},x=>drawCab(x,0,0,1,t));
  }else if(state.id.startsWith('water.')){const o={t,still:state.reduced,face:state.facing,...(family.controls.includes('paint')?{paint:state.paint}:{}),wake:state.route==='linear',reflection:true,searchlight:state.lights,lamp:kind==='lamp'?(state.lights?true:'signal' as const):state.lights};job('drawBoat',{kind,...o},x=>drawBoat(x,kind as BoatKind,o));
  }else if(state.id.startsWith('fleet.')){
-  const ship:Ship={kind:FLEET_SHIP[kind],ps:2,y:68,speed:state.speed/60,offset:W/2+130,flip:state.facing<0,depth:.55};job('drawSkyShips',{ships:[ship]},x=>drawSkyShips(x,view,[ship]));
+  const ship:Ship={kind:FLEET_SHIP[kind],ps:2,y:68,speed:state.speed/60,offset:W/2+130,flip:state.facing<0,depth:.55};job('drawSkyCraft',{ship},x=>drawSkyCraft(x,view,ship));
  }else if(state.id==='train.platform'){
   // Existing renderer only takes seeded crowd; an explicit rider seed is the supported passenger variation.
   const train:PlatformTrainVisual={x:40,open:state.doors,moving:state.doors===0,riderSeed:state.passengers?state.seed:0,destination:'GALLERIA'};
@@ -119,7 +120,7 @@ export function paintVehiclePreview(ctx:CanvasRenderingContext2D,p:PreparedVehic
    for(const job of p.jobs)job.paint(ctx);
   });},drawFront:()=>transform(()=>{for(const job of p.jobs)job.foreground?.(ctx);})};
  const view={...p.view,viewW:p.width,viewH:p.height,cam:0,gy:0,sx:(x:number)=>x,y:(h:number)=>-h};
- ctx.save();try{renderWorldFrame({context:ctx,scene,sceneId:scene.id,view,scale:1,reduced:p.state.reduced,clock:p.state.time*60,lighting:()=>p.view.lighting!,weather:()=>{throw Error('Vehicle artwork has no weather pass');},host:{model:{spots:()=>[]} as never,visionOn:false,draw:()=>scene.drawBackdrop(ctx,view,{} as never)},director:{passes:SEQUENCE_PASSES}});}finally{ctx.restore();}
+ ctx.save();try{renderWorldFrame({context:ctx,scene,sceneId:scene.id,view,scale:1,reduced:p.state.reduced,clock:p.state.time*60,lighting:()=>p.view.lighting!,weather:()=>{throw Error('Vehicle artwork has no weather pass');},host:{model:{spots:()=>[]} as never,visionOn:false,draw:()=>scene.drawBackdrop(ctx,view,{} as never)},unavailablePasses:assetPictureLimits});}finally{ctx.restore();}
 }
 
 /** The kit's classes, each a lineup of its placeable kinds (Library › Artwork: Road vehicle, Air vehicle, Boat, Train). */
@@ -128,10 +129,10 @@ export const VEHICLE_CLASSES:readonly {id:VehicleClass;label:string;prefix:strin
 interface LineupItem{kind:string;e:Extent;paint:(ctx:CanvasRenderingContext2D)=>void}
 function lineupItems(cls:VehicleClass,o:{depth:DepthBand;t:number;moving:boolean;lights:boolean;paint:string;livery:boolean}):LineupItem[]{
  const lv={...(o.livery?{stripe:'#d8b040',fleetNo:'F 207',qr:true,autonomous:true}:{})},motion=o.moving?'loop':'parked';
- if(cls==='air')return AIR_KINDS.filter(k=>k!=='blimp').map(kind=>({kind,e:AIR_EXTENT[kind],paint:ctx=>paintAirVehicle(ctx,{kind,depth:o.depth,motion,lights:o.lights,...lv,...(kind==='pod'?{paint:o.paint}:{})},o.t,1)}));
- if(cls==='water')return BOAT_KINDS.map(kind=>({kind,e:BOAT_EXTENT[kind],paint:ctx=>paintBoatVehicle(ctx,{kind,depth:o.depth,motion,searchlight:o.lights,lamp:o.lights?'on':'signal'},o.t,1,o.moving)}));
- if(cls==='rail')return RAIL_CARS.map(car=>({kind:car,e:{x0:0,x1:consistLength(car,1),top:RAIL_CAR[car].top,bottom:0},paint:ctx=>paintRailVehicle(ctx,{car,cars:1,depth:o.depth,motion,doors:o.moving?0:1},o.t,o.moving)}));
- return roadVehicleKinds.map(kind=>({kind,e:roadExtent(kind),paint:ctx=>paintRoadVehicle(ctx,{kind,paint:o.paint,depth:o.depth,motion,lights:o.lights,cargo:['straddle','stacker','forklift','truck'].includes(kind),...lv},o.t,1,o.moving?o.t*2:0)}));
+ if(cls==='air')return AIR_KINDS.filter(k=>k!=='blimp').map(kind=>({kind,e:AIR_EXTENT[kind],paint:ctx=>paintAirVehicle(ctx,{kind,depthBand:o.depth,motion,lights:o.lights,...lv,...(kind==='pod'?{paintColor:o.paint}:{})},o.t,1)}));
+ if(cls==='water')return BOAT_KINDS.map(kind=>({kind,e:BOAT_EXTENT[kind],paint:ctx=>paintBoatVehicle(ctx,{kind,depthBand:o.depth,motion,searchlight:o.lights,lamp:o.lights?'on':'signal'},o.t,1,o.moving)}));
+ if(cls==='rail')return RAIL_CARS.map(car=>({kind:car,e:{x0:0,x1:consistLength(car,1),top:RAIL_CAR[car].top,bottom:0},paint:ctx=>paintRailVehicle(ctx,{car,cars:1,depthBand:o.depth,motion,doors:o.moving?0:1},o.t,o.moving)}));
+ return roadVehicleKinds.map(kind=>({kind,e:roadExtent(kind),paint:ctx=>paintRoadVehicle(ctx,{kind,paintColor:o.paint,depthBand:o.depth,motion,lights:o.lights,cargo:['straddle','stacker','forklift','truck'].includes(kind),...lv},o.t,1,o.moving?o.t*2:0)}));
 }
 /** One class's placeable kinds side by side at true scale, the player first, on a metre ruler. Returns each one's span in canvas pixels. */
 export function paintVehicleLineup(ctx:CanvasRenderingContext2D,width:number,height:number,o:{cls?:VehicleClass;depth:DepthBand;t:number;moving:boolean;lights:boolean;paint:string;minute:number;livery?:boolean}):{kind:string;x0:number;x1:number}[]{

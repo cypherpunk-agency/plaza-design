@@ -131,10 +131,10 @@ function sessionTimer(x: CanvasRenderingContext2D, v: View, hover: boolean) {
 
 /** One public terminal: a desk, a lamp, a screen (a session, or PRESENT CARD), a chair. */
 function terminal(x: CanvasRenderingContext2D, v: View, i: number) {
-  const { sx, y, t } = v, cx = sx(L.desks[i]);
-  if (!onScreen(v, cx - 40, 70)) return;
+  const { sx, y, t } = v, cx = sx(L.desks[i]), ch = sx(L.seats[i]);
+  const left=Math.min(cx-40,ch-8),right=Math.max(cx+30,ch+6);
+  if (!onScreen(v, left, right-left)) return;
   // the chair
-  const ch = sx(L.seats[i]);
   box(x, ch - 7, y(12), 14, 2, '#3a2416'); x.fillStyle = '#2a1a10'; x.fillRect(ch - 6, y(10), 2, 10); x.fillRect(ch + 4, y(10), 2, 10); x.fillRect(ch - 8, y(26), 2, 16);
   // the desk
   box(x, cx - 22, y(24), 44, 3, '#4a301c', 'rgba(' + O + ',.5)');

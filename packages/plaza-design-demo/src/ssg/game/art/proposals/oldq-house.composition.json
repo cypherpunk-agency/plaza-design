@@ -57,10 +57,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.8,
-        "fill": "#0a0812",
         "edge": 0.06,
-        "traffic": false
+        "traffic": false,
+        "generatorScale": 0.8,
+        "fillColor": "#0a0812"
       },
       "placement": {
         "x": 520,
@@ -75,11 +75,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 84,
-        "floors": 1,
         "seed": 501,
         "goods": "tea",
         "board": "TEA",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 146
       },
       "placement": {
         "x": 0,
@@ -93,13 +93,13 @@
       "type": "building.shophouse",
       "props": {
         "width": 86,
-        "floors": 1,
         "seed": 502,
         "goods": "home",
         "board": "",
         "lanterns": 0,
         "wall": "#232b2c",
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 146
       },
       "placement": {
         "x": 84,
@@ -113,11 +113,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 80,
-        "floors": 2,
         "seed": 503,
         "goods": "lanterns",
         "board": "",
-        "lanterns": 2
+        "lanterns": 2,
+        "height": 196
       },
       "placement": {
         "x": 170,
@@ -131,11 +131,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 80,
-        "floors": 1,
         "seed": 504,
         "goods": "pottery",
         "board": "",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 146
       },
       "placement": {
         "x": 570,
@@ -149,12 +149,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 74,
-        "floors": 2,
         "seed": 505,
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 196
       },
       "placement": {
         "x": 650,
@@ -168,12 +168,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 76,
-        "floors": 1,
         "seed": 506,
         "goods": "shrine",
         "board": "",
         "lanterns": 1,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 146
       },
       "placement": {
         "x": 724,
@@ -553,14 +553,14 @@
       "type": "building.shophouse",
       "props": {
         "width": 128,
-        "floors": 1,
-        "storey": 72,
-        "ground": 72,
         "seed": 520,
         "wall": "#3a2c16",
         "goods": "tailor",
         "board": "TAILOR",
-        "lanterns": 2
+        "lanterns": 2,
+        "height": 174,
+        "groundFloorHeight": 72,
+        "floorHeight": 72
       },
       "placement": {
         "x": 250,
@@ -578,15 +578,15 @@
       "type": "building.shophouse",
       "props": {
         "width": 104,
-        "floors": 1,
-        "storey": 72,
-        "ground": 72,
         "seed": 521,
         "wall": "#3a2c16",
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "shutters": "mixed"
+        "shutters": "mixed",
+        "height": 174,
+        "groundFloorHeight": 72,
+        "floorHeight": 72
       },
       "placement": {
         "x": 378,
@@ -604,16 +604,16 @@
       "type": "building.shophouse",
       "props": {
         "width": 88,
-        "floors": 1,
-        "storey": 72,
-        "ground": 72,
         "seed": 522,
         "wall": "#3a2c16",
         "goods": "closed",
         "board": "",
         "lanterns": 0,
         "gallery": false,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 174,
+        "groundFloorHeight": 72,
+        "floorHeight": 72
       },
       "placement": {
         "x": 482,
@@ -705,14 +705,14 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 731,
         "archetype": "elder",
         "act": "sit",
         "sitting": "side",
-        "hair": "brim"
+        "hair": "brim",
+        "depthBand": "play"
       },
       "placement": {
         "x": 330,
@@ -730,13 +730,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 752,
         "archetype": "elder",
         "act": "sweep",
-        "hair": "scarf"
+        "hair": "scarf",
+        "depthBand": "play"
       },
       "placement": {
         "x": 394,
@@ -754,13 +754,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 763,
         "archetype": "kid",
         "act": "read",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 448,
@@ -778,8 +778,8 @@
       "type": "character.resident",
       "props": {
         "kind": "cat",
-        "depth": "play",
-        "act": "sit"
+        "act": "sit",
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -797,12 +797,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 788,
         "act": "walk",
-        "range": -160
+        "range": -160,
+        "depthBand": "play"
       },
       "placement": {
         "x": 700,

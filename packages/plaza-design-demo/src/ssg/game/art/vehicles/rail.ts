@@ -1,3 +1,5 @@
+import {fixedGeometry} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceRatio,appearanceText,generationCount,generationSeed,shapeLength} from '../core/fields';
 /**
  * The RAIL class of the vehicle kit (ART-GUIDE §12): LINE 0 trains as consists of cars. Two cars exist
  * (train-car.ts): the `platform` car the stations draw at their own scale (six bays, sliding doors,
@@ -78,15 +80,15 @@ export function drawPlatformTrain(x: CanvasRenderingContext2D, v: View, state: P
 // ---------- the placeable train ----------
 
 const fields: AssetDefinition['fields'] = {
-  car: { kind: 'select', label: 'Car', options: [...RAIL_CARS], default: 'platform' },
-  cars: { kind: 'number', label: 'Cars', default: 3, min: 1, max: 8, step: 1 },
-  ...laneFields({ speed: 6, lane: 4000 }),
-  elevation: { kind: 'number', label: 'Rail height', default: 0, min: -400, max: 4000, step: 1, unit: 'units' },
-  doors: { kind: 'number', label: 'Doors (0 shut, 1 open; platform cars)', default: 0, min: 0, max: 1, step: 0.1 },
-  riders: { kind: 'number', label: 'Rider seed', default: 41, min: 0, max: 1000000, step: 1 },
-  destination: { kind: 'string', label: 'Destination board', default: 'DOWNTOWN' },
-  plate: { kind: 'string', label: 'Car plate (metro)', default: 'CAR 3' },
-  headlight: { kind: 'boolean', label: 'Headlight glow', default: true },
+  car: appearanceChoice({ kind: 'select', label: 'Car', options: [...RAIL_CARS], default: 'platform' }),
+  cars: generationCount({ kind: 'number', label: 'Cars', default: 3, min: 1, max: 8, step: 1 }),
+  ...laneFields({ speed: 360, routeLength: 4000 }),
+  elevation: shapeLength({ kind: 'number', label: 'Rail height', default: 0, min: -400, max: 4000, step: 1, unit: 'units' }),
+  doors: appearanceRatio({ kind: 'number', label: 'Doors (0 shut, 1 open; platform cars)', default: 0, min: 0, max: 1, step: 0.1 }),
+  riders: generationSeed({ kind: 'number', label: 'Rider seed', default: 41, min: 0, max: 1000000, step: 1 }),
+  destination: appearanceText({ kind: 'string', label: 'Destination board', default: 'DOWNTOWN' }),
+  plate: appearanceText({ kind: 'string', label: 'Car plate (metro)', default: 'CAR 3' }),
+  headlight: appearanceBoolean({ kind: 'boolean', label: 'Headlight glow', default: true }),
 };
 const carOf = (props: Properties): RailCar => props.car === 'metro' ? 'metro' : 'platform';
 const countOf = (props: Properties) => Math.max(1, Math.min(8, Math.round(Number(props.cars) || 1)));
@@ -102,6 +104,7 @@ export function paintRailVehicle(ctx: CanvasRenderingContext2D, raw: Properties,
 }
 
 export const railVehicleElement: AssetDefinition = {
+  spatial:fixedGeometry('The selected vehicle body has kit-defined proportions. Route length, offsets and altitude configure its motion, not its body size. Use placement or route properties; no silhouette stretching.'),
   type: 'vehicle.rail',mobility:p=>p.motion!=='parked'&&Number(p.speed)>0, libraryUse: 'reusable', version: 1, label: 'Train', category: 'vehicles', parts: ['backdrop'], fields,
   bounds: (raw, _state, context) => {
     const props = withDefaults(fields, raw), { offset } = laneAt(laneOf(props), context?.view.t ?? 0);

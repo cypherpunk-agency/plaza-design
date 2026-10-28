@@ -97,6 +97,16 @@
         "id": "SETTLED",
         "time": 6.5
       }
-    ]
+    ],
+    "rendering": {
+      "casters": false,
+      "actors": false,
+      "shade": false,
+      "grade": false,
+      "lights": false,
+      "prompts": false,
+      "bubbles": false,
+      "vision": false
+    }
   }
 }

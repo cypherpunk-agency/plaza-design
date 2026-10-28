@@ -1,3 +1,6 @@
+import {seconds} from '../core/fields';
+import {rectangleControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,shapeLength} from '../core/fields';
 /**
  * BUILDING KIT, the Fringe ("Automated. No residents."): industry run by machines, out past the city.
  * - `building.shed`: long low sheds of corrugated sheet metal, a sawtooth, barrel or flat roof, roller
@@ -125,15 +128,16 @@ function dust(x: CanvasRenderingContext2D, l: number, r: number, amount: number,
 const shedRoofRise = (p: Properties) => p.roof === 'sawtooth' ? 22 : p.roof === 'barrel' ? Math.min(40, R(Number(p.width) * 0.12)) : 6;
 
 export const shedElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'building.shed', label: 'Industrial shed (kit, Fringe)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 240, 80, 1200, 1, 'units'), height: num('Wall height', 76, 40, 200, 1, 'units'), roof: select('Roof', ROOFS),
-    wall: colour('Wall colour'), doors: num('Roller doors', 2, 0, 10), open: num('Doors open (share)', 0.5, 0, 1, 0.05), docks: bool('Loading docks under the doors', true),
-    grow: num('Grow lights (vertical farm, share)', 0.6, 0, 1, 0.05), growColour: { kind: 'color', label: 'Grow-light colour', default: '#b07aff' },
-    number: text('Stencilled number (empty: none)', '07'), code: bool('Machine code by the number', true), notice: text('Notice by the door (empty: none)', 'NO STAFF ON SITE'),
-    hazard: bool('Hazard stripes and bollards', true), stacks: num('Stacks and roof vents', 2, 0, 8), smoke: bool('Stacks steaming', true),
-    floods: num('Floodlights on brackets', 2, 0, 8), dust: num('Dust against the base', 0.6, 0, 1, 0.05), dead: bool('Abandoned (dark, panels missing)', false),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 240, 80, 1200, 1, 'units')), height: shapeLength(num('Wall height', 76, 40, 200, 1, 'units')), roof: appearanceChoice(select('Roof', ROOFS)),
+    wall: appearanceStructure(colour('Wall colour')), doors: generationCount(num('Roller doors', 2, 0, 10)), open: appearanceRatio(num('Doors open (share)', 0.5, 0, 1, 0.05)), docks: appearanceBoolean(bool('Loading docks under the doors', true)),
+    grow: appearanceRatio(num('Grow lights (vertical farm, share)', 0.6, 0, 1, 0.05)), growColour: appearanceColor({ kind: 'color', label: 'Grow-light colour', default: '#b07aff' }),
+    number: appearanceText(text('Stencilled number (empty: none)', '07')), code: appearanceBoolean(bool('Machine code by the number', true)), notice: appearanceText(text('Notice by the door (empty: none)', 'NO STAFF ON SITE')),
+    hazard: appearanceBoolean(bool('Hazard stripes and bollards', true)), stacks: generationCount(num('Stacks and roof vents', 2, 0, 8)), smoke: appearanceBoolean(bool('Stacks steaming', true)),
+    floods: generationCount(num('Floodlights on brackets', 2, 0, 8)), dust: appearanceRatio(num('Dust against the base', 0.6, 0, 1, 0.05)), dead: appearanceBoolean(bool('Abandoned (dark, panels missing)', false)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + shedRoofRise(p) + 90 }),
   bounds: p => { const tall = Number(p.height) + shedRoofRise(p) + 90; return { x: -14, h: tall, w: Number(p.width) + 28, tall }; },
@@ -290,13 +294,14 @@ const RACK_BODY = ['#17161b', '#141318', '#111015', '#0f0e13', '#0d0c11'];
 const LED = ['90,230,130', AMBER, '90,230,130', '120,190,255'];
 
 export const dataCemeteryElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'landmark.data-cemetery', label: 'The data cemetery (landmark, Fringe)', category: 'architecture',
   fields: {
-    width: num('Width', 520, 400, 1600, 1, 'units'), terraces: num('Terraces of racks', 3, 1, 5), blinking: num('Racks still blinking (share)', 0.22, 0, 1, 0.01),
-    piles: num('Piles of drives (share of the gaps)', 0.4, 0, 1, 0.05), memorials: num('Memorial racks (candles, photos)', 3, 0, 12),
-    crane: bool('Gantry crane moving racks', true), cycle: num('Crane cycle', 2400, 600, 12000, 10, 'frames'), towers: num('Cooling towers behind', 2, 0, 3), steam: bool('Towers steaming', true),
-    masts: num('Flood masts', 2, 0, 6), fence: bool('Fence along the front', true), gate: num('Gate from the left (share of the width)', 0.43, 0, 0.9, 0.01), gateOpen: bool('Gate standing open', true),
-    sign: text('Gate sign', 'YARD 7'), notice: text('Notice on the gate (empty: none)', 'DECOMMISSIONED MEDIA'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 520, 400, 1600, 1, 'units')), terraces: generationCount(num('Terraces of racks', 3, 1, 5)), blinking: appearanceRatio(num('Racks still blinking (share)', 0.22, 0, 1, 0.01)),
+    piles: appearanceRatio(num('Piles of drives (share of the gaps)', 0.4, 0, 1, 0.05)), memorials: generationCount(num('Memorial racks (candles, photos)', 3, 0, 12)),
+    crane: appearanceBoolean(bool('Gantry crane moving racks', true)), cycleDuration:seconds("Cycle duration",40,{"min":10,"max":200,"step":0.16666666666666666}), towers: generationCount(num('Cooling towers behind', 2, 0, 3)), steam: appearanceBoolean(bool('Towers steaming', true)),
+    masts: generationCount(num('Flood masts', 2, 0, 6)), fence: appearanceBoolean(bool('Fence along the front', true)), gate: appearanceRatio(num('Gate from the left (share of the width)', 0.43, 0, 0.9, 0.01)), gateOpen: appearanceBoolean(bool('Gate standing open', true)),
+    sign: appearanceText(text('Gate sign', 'YARD 7')), notice: appearanceText(text('Notice on the gate (empty: none)', 'DECOMMISSIONED MEDIA')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 330 }),
   bounds: p => ({ x: -6, h: 330, w: Number(p.width) + 12, tall: 330 }),
@@ -398,7 +403,7 @@ export const dataCemeteryElement = piece({
       x.strokeStyle = rgba(SHEET, 0.3); x.lineWidth = 1; for (let k = lx; k < rx - 10; k += 14) { x.beginPath(); x.moveTo(k + 0.5, y(G + 1)); x.lineTo(k + 7.5, y(G + 11)); x.lineTo(k + 14.5, y(G + 1)); x.stroke(); }
       x.fillStyle = rgba(SHEET, 0.5); x.fillRect(lx - 8, y(G + 12), rx - lx + 16, 1); x.fillStyle = '#0a0a0c'; x.fillRect(lx - 8, y(G), rx - lx + 16, 1);
       hazard(x, lx - 8, 14, G + 2, 8, 0.8); hazard(x, rx - 6, 14, G + 2, 8, 0.8);
-      const ph = ((t + seed * 131) % Number(p.cycle)) / Number(p.cycle), ease = (k: number) => k * k * (3 - 2 * k), seg = (a: number, b2: number) => ease(Math.min(1, Math.max(0, (ph - a) / (b2 - a))));
+      const ph = ((t + seed * 131) % (Number(p.cycleDuration)*60)) / (Number(p.cycleDuration)*60), ease = (k: number) => k * k * (3 - 2 * k), seg = (a: number, b2: number) => ease(Math.min(1, Math.max(0, (ph - a) / (b2 - a))));
       const A = R(w * 0.2), B = R(w * 0.66), top = G - 16, low = step + rackH + 4;
       const tx = ph < 0.22 ? A : ph < 0.5 ? A + (B - A) * seg(0.22, 0.5) : ph < 0.72 ? B : B + (A - B) * seg(0.72, 1);
       const hook = ph < 0.12 ? top - (top - low) * seg(0, 0.12) : ph < 0.22 ? low + (top - low) * seg(0.12, 0.22) : ph < 0.5 ? top : ph < 0.62 ? top - (top - low) * seg(0.5, 0.62) : ph < 0.72 ? low + (top - low) * seg(0.62, 0.72) : top;
@@ -487,11 +492,12 @@ export const dataCemeteryElement = piece({
 const mixHex = (a: string, b: string, k: number) => '#' + [1, 3, 5].map(i => R(parseInt(a.slice(i, i + 2), 16) * (1 - k) + parseInt(b.slice(i, i + 2), 16) * k).toString(16).padStart(2, '0')).join('');
 
 export const solarFieldElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'environment.solar-field', label: 'Fringe distance: solar fields, sheds, stacks (kit; set its depth with the placement parallax)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Length', 1600, 100, 20000, 10, 'units'), form: select('Shows', ['solar', 'sheds', 'mixed']), rise: num('Ground rise (the plateau it stands on)', 70, 0, 400, 1, 'units'),
-    rows: num('Rows of panels', 4, 1, 8), stacks: num('Stacks, pylons and masts', 0.5, 0, 1, 0.05), lit: num('Lit windows and warning lights', 0.4, 0, 1, 0.05),
-    haze: num('Haze (distance)', 0.5, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Length', 1600, 100, 20000, 10, 'units')), form: appearanceChoice(select('Shows', ['solar', 'sheds', 'mixed'])), rise: shapeLength(num('Ground rise (the plateau it stands on)', 70, 0, 400, 1, 'units')),
+    rows: generationCount(num('Rows of panels', 4, 1, 8)), stacks: appearanceRatio(num('Stacks, pylons and masts', 0.5, 0, 1, 0.05)), lit: appearanceRatio(num('Lit windows and warning lights', 0.4, 0, 1, 0.05)),
+    haze: appearanceRatio(num('Haze (distance)', 0.5, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.rise) + 160 }),
   bounds: p => ({ x: 0, h: Number(p.rise) + 160, w: Number(p.width), tall: Number(p.rise) + 160 }),

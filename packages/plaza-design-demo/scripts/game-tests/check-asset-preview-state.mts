@@ -11,7 +11,7 @@ function draw(id:string,overrides={}){
  const input={time:2,reduced:false,environment:{day:1,minute:580},...overrides},before=JSON.stringify(input),result=preview(canvas,entries.find(e=>e.id===id)!,undefined,[],input);
  assert.equal(JSON.stringify(input),before,'rendering never writes preview inputs');return{ops,result};
 }
-for(const [id,change] of [['train.brake',{state:{pulled:true}}],['shift.printer',{state:{checked:true}}],['shop.counter-label',{props:{text:'TEST LABEL'}}],['train.drawPole',{props:{ceiling:120}}]] as const){
+for(const [id,change] of [['train.brake',{state:{pulled:true}}],['shift.printer',{state:{checked:true}}],['shop.counter-label',{props:{text:'TEST LABEL'}}],['train.drawPole',{props:{ceilingHeight:120}}]] as const){
  const original=draw(id),changed=draw(id,change),reset=draw(id);
  assert.notDeepEqual(changed.ops,original.ops,id+' actual drawing responds to typed preview settings');
  assert.deepEqual(reset.ops,original.ops,id+' reset does not retain another preview state');

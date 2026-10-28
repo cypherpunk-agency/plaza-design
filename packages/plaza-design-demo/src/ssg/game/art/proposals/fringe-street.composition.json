@@ -17,10 +17,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.45,
-        "fill": "#0a0912",
         "edge": 0.08,
-        "traffic": false
+        "traffic": false,
+        "generatorScale": 0.45,
+        "fillColor": "#0a0912"
       },
       "placement": {
         "x": 420,
@@ -127,7 +127,6 @@
         "piles": 0.45,
         "memorials": 3,
         "crane": true,
-        "cycle": 2400,
         "towers": 2,
         "steam": true,
         "masts": 2,
@@ -136,7 +135,8 @@
         "gateOpen": true,
         "sign": "YARD 7",
         "notice": "DECOMMISSIONED MEDIA",
-        "seed": 7
+        "seed": 7,
+        "cycleDuration": 40
       },
       "placement": {
         "x": 470,
@@ -367,9 +367,9 @@
       "props": {
         "text": "ZONE F4",
         "color": "216,212,200",
-        "size": 8,
         "printed": true,
-        "bolts": true
+        "bolts": true,
+        "fontSize": 8
       },
       "placement": {
         "x": 1040,
@@ -385,10 +385,10 @@
         "kind": "human",
         "archetype": "technician",
         "district": "fringe",
-        "depth": "play",
         "act": "walk",
         "range": 220,
-        "seed": 1201
+        "seed": 1201,
+        "depthBand": "play"
       },
       "placement": {
         "x": 860,
@@ -405,9 +405,9 @@
         "archetype": "ghost",
         "district": "fringe",
         "tech": "no",
-        "depth": "play",
         "act": "smoke",
-        "seed": 1207
+        "seed": 1207,
+        "depthBand": "play"
       },
       "placement": {
         "x": 590,
@@ -421,9 +421,9 @@
       "type": "character.resident",
       "props": {
         "kind": "crawler",
-        "depth": "play",
         "seed": 1450,
-        "act": "weld"
+        "act": "weld",
+        "depthBand": "play"
       },
       "placement": {
         "x": 150,
@@ -437,10 +437,10 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "play",
         "seed": 1600,
         "act": "carry",
-        "range": 150
+        "range": 150,
+        "depthBand": "play"
       },
       "placement": {
         "x": 300,
@@ -454,9 +454,9 @@
       "type": "character.resident",
       "props": {
         "kind": "minidrone",
-        "depth": "play",
         "seed": 1720,
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 420,
@@ -470,10 +470,10 @@
       "type": "character.resident",
       "props": {
         "kind": "mech",
-        "depth": "play",
         "seed": 2060,
         "act": "patrol",
-        "range": 100
+        "range": 100,
+        "depthBand": "play"
       },
       "placement": {
         "x": 760,
@@ -487,9 +487,9 @@
       "type": "character.resident",
       "props": {
         "kind": "scandrone",
-        "depth": "play",
         "seed": 5,
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 800,
@@ -503,9 +503,9 @@
       "type": "character.resident",
       "props": {
         "kind": "sweeper",
-        "depth": "play",
         "seed": 2300,
-        "act": "sweep"
+        "act": "sweep",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1000,
@@ -519,10 +519,10 @@
       "type": "character.resident",
       "props": {
         "kind": "deliverybot",
-        "depth": "play",
         "seed": 2360,
         "act": "roll",
-        "range": 420
+        "range": 420,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1060,
@@ -536,9 +536,9 @@
       "type": "character.resident",
       "props": {
         "kind": "crawler",
-        "depth": "play",
         "seed": 2590,
-        "act": "scrub"
+        "act": "scrub",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1290,
@@ -552,10 +552,10 @@
       "type": "character.resident",
       "props": {
         "kind": "android",
-        "depth": "play",
         "seed": 2720,
         "act": "carry",
-        "range": -180
+        "range": -180,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1420,
@@ -569,9 +569,9 @@
       "type": "character.resident",
       "props": {
         "kind": "cargodrone",
-        "depth": "play",
         "seed": 2640,
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1340,
@@ -585,9 +585,9 @@
       "type": "character.resident",
       "props": {
         "kind": "cargodrone",
-        "depth": "play",
         "seed": 9,
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 560,
@@ -601,9 +601,9 @@
       "type": "character.resident",
       "props": {
         "kind": "minidrone",
-        "depth": "play",
         "seed": 4,
-        "act": "hover"
+        "act": "hover",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1540,
@@ -617,10 +617,10 @@
       "type": "character.resident",
       "props": {
         "kind": "loader",
-        "depth": "back",
         "seed": 2480,
         "act": "walk",
-        "range": -260
+        "range": -260,
+        "depthBand": "back"
       },
       "placement": {
         "x": 1180,
@@ -634,10 +634,10 @@
       "type": "character.resident",
       "props": {
         "kind": "deliverybot",
-        "depth": "back",
         "seed": 1500,
         "act": "roll",
-        "range": 360
+        "range": 360,
+        "depthBand": "back"
       },
       "placement": {
         "x": 200,
@@ -651,17 +651,17 @@
       "type": "vehicle.road",
       "props": {
         "kind": "truck",
-        "paint": "#2a2a30",
         "stripe": "#ffa040",
         "fleetNo": "F-112",
         "qr": true,
         "autonomous": true,
-        "depth": "back",
         "motion": "loop",
-        "direction": "right",
-        "speed": 1.6,
-        "lane": 2600,
-        "lights": true
+        "direction": 1,
+        "speed": 96,
+        "lights": true,
+        "depthBand": "back",
+        "routeLength": 2600,
+        "paintColor": "#2a2a30"
       },
       "placement": {
         "x": -500,
@@ -675,17 +675,17 @@
       "type": "vehicle.road",
       "props": {
         "kind": "yard",
-        "paint": "#d8a03a",
         "autonomous": true,
         "qr": true,
         "fleetNo": "Y-04",
-        "depth": "back",
         "motion": "shuttle",
-        "direction": "right",
-        "speed": 0.9,
-        "lane": 240,
-        "dwell": 500,
-        "lights": true
+        "direction": 1,
+        "speed": 54,
+        "lights": true,
+        "depthBand": "back",
+        "routeLength": 240,
+        "paintColor": "#d8a03a",
+        "dwellDuration": 8.333333333333334
       },
       "placement": {
         "x": 1230,
@@ -702,13 +702,13 @@
         "autonomous": true,
         "cargo": true,
         "pose": 0.3,
-        "depth": "play",
         "motion": "shuttle",
-        "direction": "left",
-        "speed": 0.5,
-        "lane": 140,
-        "dwell": 600,
-        "lights": true
+        "direction": -1,
+        "speed": 30,
+        "lights": true,
+        "depthBand": "play",
+        "routeLength": 140,
+        "dwellDuration": 10
       },
       "placement": {
         "x": 420,
@@ -723,14 +723,14 @@
       "props": {
         "kind": "hauler",
         "cargo": true,
-        "depth": "far",
         "motion": "loop",
-        "direction": "left",
-        "speed": 1.1,
-        "lane": 3200,
+        "direction": -1,
+        "speed": 66,
         "altitude": 300,
         "qr": true,
-        "autonomous": true
+        "autonomous": true,
+        "depthBand": "far",
+        "routeLength": 3200
       },
       "placement": {
         "x": -800,
@@ -745,13 +745,13 @@
       "props": {
         "kind": "drone",
         "cargo": true,
-        "depth": "back",
         "motion": "shuttle",
-        "direction": "right",
-        "speed": 1.0,
-        "lane": 700,
-        "dwell": 400,
-        "altitude": 190
+        "direction": 1,
+        "speed": 60,
+        "altitude": 190,
+        "depthBand": "back",
+        "routeLength": 700,
+        "dwellDuration": 6.666666666666667
       },
       "placement": {
         "x": 250,
@@ -765,13 +765,14 @@
       "type": "vehicle.air",
       "props": {
         "kind": "freighter",
-        "depth": "far",
         "motion": "loop",
-        "direction": "right",
-        "speed": 0.5,
-        "lane": 4000,
+        "direction": 1,
+        "speed": 30,
         "altitude": 440,
-        "strobe": 120
+        "depthBand": "far",
+        "routeLength": 4000,
+        "strobeTimeOffset": 2,
+        "bobPhaseAngle": 687.5493541569879
       },
       "placement": {
         "x": -1400,
@@ -785,16 +786,16 @@
       "type": "vehicle.road",
       "props": {
         "kind": "truck",
-        "paint": "#3a3a40",
         "autonomous": true,
         "qr": true,
-        "depth": "near",
         "motion": "run",
-        "direction": "left",
-        "speed": 3.0,
-        "lane": 2400,
-        "dwell": 3200,
-        "lights": true
+        "direction": -1,
+        "speed": 180,
+        "lights": true,
+        "depthBand": "near",
+        "routeLength": 2400,
+        "paintColor": "#3a3a40",
+        "dwellDuration": 53.333333333333336
       },
       "placement": {
         "x": 0,

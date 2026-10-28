@@ -7,7 +7,7 @@
       "type": "capsule.neighbors",
       "props": {
         "width": 520,
-        "ceiling": 104
+        "height": 104
       },
       "placement": {
         "x": 0,
@@ -37,7 +37,7 @@
       "type": "capsule.shell",
       "props": {
         "width": 520,
-        "ceiling": 104
+        "height": 104
       },
       "placement": {
         "x": 0,
@@ -95,7 +95,7 @@
       "props": {
         "width": 62,
         "height": 54,
-        "facing": 90
+        "bearing": 90
       },
       "placement": {
         "x": 262,

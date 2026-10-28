@@ -1,3 +1,8 @@
+import {fixedGeometry} from '../core/spatial';
+import {textField} from '../core/fields';
+import {rectangleControls,combineControls,conditionalControls,rangeControls,axisControl,translatedControls} from '../core/spatial';
+import {numericFields} from '../core/fields';
+import {appearanceChoice,appearanceColor,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * LINE 0 KIT, outdoors: the raised line seen from the street, from the title glide's panorama (Tommi reviewed it,
  * 2026-10-15/22), for any scene or zone:
@@ -13,46 +18,51 @@
  *
  * World units at the player's scale; heights over the ground line (the line stands on the street's back line).
  */
-import type { AssetDefinition, Field, Properties } from '../core/composition';
+import type { AssetDefinition, Properties,Placement } from '../core/composition';
 import { inPixels, SHORE, R, ART } from '../core/pixels';
 import { drawTunnelPortal, drawViaduct, drawWallPortal, LINE0 } from '../architecture/line0';
 import { drawMetroCar, METRO } from '../vehicles/train-car';
 import { drawBogies } from '../vehicles/rail';
+import type {View} from '../core/view';
 import { readableMirror } from '../core/mirror';
+const fixedNativeGeometry=fixedGeometry("This line0 kit component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 const S = 1 / ART, ORANGE = '255,136,0', PAPER = '255,217,165';
-const num = (label: string, value: number, min = -1e6, max = 1e6, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
-const str = (label: string, value: string): Field => ({ kind: 'string', label, default: value });
+const num = numericFields({min:-1e6,max:1e6,step:1});
+const str = textField;
 const n = (p: Properties, k: string) => Number(p[k]);
 const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
 
 /** The rail's height over the line's base at local x: the deck, down the ramp (`rampTop` east, `rampFoot` west) to 0, and on down under the street west of the foot. */
 const railH = (x: number, top: number, foot: number) => x >= top ? LINE0.deck : x <= foot ? 0 : LINE0.deck * (x - foot) / (top - foot);
 
+function viaductOrigin(view:View,at:Readonly<Required<Placement>>,p:Readonly<Properties>){return R(view.sx(at.x+Number(p.columnOriginX),at.parallax)/ART)*ART;}
+
 export const viaductElement: AssetDefinition = {
   type: 'transit.viaduct', version: 1, label: 'LINE 0 viaduct, its columns and a ramp down (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    from: num('From (units east of the piece)', 0), to: num('To', 3000), origin: num('Column pitch origin (units east of the piece)', 0),
-    rampTop: num('Ramp top (deck height east of here)', -1e6), rampFoot: num('Ramp foot (at the portal)', -1e6), fill: { kind: 'color', label: 'Concrete', default: '#1c1418' },
-    base: num('Stands on (over the ground line)', SHORE.back, -400, 400),
+    startX: shapePosition(num('From (units east of the piece)', 0)), endX: shapePosition(num('To', 3000)), columnOriginX: shapePosition(num('Column pitch origin (units east of the piece)', 0)),
+    rampTopX: shapePosition(num('Ramp top (deck height east of here)', -1e6)), rampFootX: shapePosition(num('Ramp foot (at the portal)', -1e6)), fillColor: appearanceColor({ kind: 'color', label: 'Concrete', default: '#1c1418' }),
+    baseY: shapePosition(num('Stands on (over the ground line)', SHORE.back, -400, 400)),
   },
-  bounds: p => ({ x: n(p, 'from'), h: LINE0.deck + 10, w: n(p, 'to') - n(p, 'from'), tall: LINE0.deck + 10 }),
+  bounds: p => ({ x:n(p,'startX'),h:n(p,'baseY')+LINE0.deck+10,w:n(p,'endX')-n(p,'startX'),tall:LINE0.deck+10 }),
   anchors: origin,
   draw(x, v, p, _s, _pass, at) {
-    const o0 = R(v.sx(at.x + n(p, 'origin'), at.parallax) / ART) * ART, back = v.y(at.h + n(p, 'base')), org = n(p, 'origin');
-    const a = Math.max(-60 * ART - o0, n(p, 'from') - org), b = Math.min(v.viewW + 60 * ART - o0, n(p, 'to') - org);
+    const o0 = viaductOrigin(v,at,p), back = v.y(at.h + n(p, 'baseY')), org = n(p, 'columnOriginX');
+    const a = Math.max(-60 * ART - o0, n(p, 'startX') - org), b = Math.min(v.viewW + 60 * ART - o0, n(p, 'endX') - org);
     if (b <= a) return;
-    const top = n(p, 'rampTop') - org, foot = n(p, 'rampFoot') - org;
+    const top = n(p, 'rampTopX') - org, foot = n(p, 'rampFootX') - org;
     // drawn on the back line, above it only (the street hides what goes under it)
     x.save(); x.beginPath(); x.rect(-10, -4000, v.viewW + 20, back + 4 * ART + 4000); x.clip(); x.translate(o0, back);
-    try { drawViaduct(x, a, b, { t: v.t, fill: String(p.fill), height: fx => railH(fx, top, foot) }); }
+    try { drawViaduct(x, a, b, { t: v.t, fill: String(p.fillColor), height: fx => railH(fx, top, foot) }); }
     finally { x.restore(); }
   },
 };
 
 export const wallPortalElement: AssetDefinition = {
   type: 'transit.wall-portal', version: 1, label: 'LINE 0 portal in a tower’s wall (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
-  fields: { width: num('Width', 360, 60, 2000, 1, 'units') },
+  fields: { width: shapeLength(num('Width', 360, 60, 2000, 1, 'units')) },
+  spatial:rectangleControls({width:'width',baseline:LINE0.deck+75}),
   bounds: p => ({ x: 0, h: LINE0.deck + 210, w: n(p, 'width'), tall: 210 }),
   anchors: origin,
   draw(x, v, p, _s, _pass, at) {
@@ -62,7 +72,7 @@ export const wallPortalElement: AssetDefinition = {
   },
 };
 
-export const tunnelPortalElement: AssetDefinition = {
+export const tunnelPortalElement: AssetDefinition = {spatial:fixedNativeGeometry,
   type: 'transit.tunnel-portal', version: 1, label: 'LINE 0 tunnel headwall (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {},
   bounds: () => ({ x: -150, h: 280, w: 190, tall: 340 }),
@@ -77,7 +87,8 @@ export const tunnelPortalElement: AssetDefinition = {
 /** A raised platform on the viaduct from the anchor `length` east: slab and edge line, canopy on two posts, stairs down off its east end, the plate and the departure board. */
 export const platformElement: AssetDefinition = {
   type: 'transit.platform', version: 1, label: 'Raised LINE 0 platform: canopy, stairs, plate, departure board (LINE 0 kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
-  fields: { length: num('Length', 222, 60, 4000, 3, 'units'), plate: str('Station plate', '0 · GALLERIA'), next: str('Board: next train to', 'DOWNTOWN'), when: str('Board: when', '2 MIN') },
+  fields: { length: shapeLength(num('Length', 222, 60, 4000, 3, 'units')), plate: appearanceText(str('Station plate', '0 · GALLERIA')), next: appearanceText(str('Board: next train to', 'DOWNTOWN')), when: appearanceText(str('Board: when', '2 MIN')) },
+  spatial:rectangleControls({width:'length',baseline:SHORE.back+LINE0.deck}),
   bounds: p => ({ x: 0, h: LINE0.deck + 180, w: n(p, 'length') + 90, tall: LINE0.deck + 180 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' }, deck: { x: 0, h: SHORE.back + LINE0.deck, role: 'surface' } }),
   draw(ctx, v, p, _s, _pass, at) {
@@ -109,16 +120,16 @@ export const runDoors = (nose: number, cars: number, direction: 1 | -1) => Array
 export const line0RunElement: AssetDefinition = {
   type: 'vehicle.line0-run', version: 1, label: 'LINE 0 train on the viaduct, where its nose is (LINE 0 kit)', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
   fields: {
-    cars: num('Cars', 2, 1, 4), direction: { kind: 'select', label: 'Running', options: [1, -1], default: 1 }, destination: str('Destination', 'HARBOR'), plate: str('Plate on the last car', 'CAR 2'),
-    seed: num('Riders seed', 78, 0, 1e6), from: num('Hidden west of (units east of the piece)', -1e6), base: num('Line stands on (over the ground line)', SHORE.back, -400, 400),
+    cars: generationCount(num('Cars', 2, 1, 4)), direction: appearanceChoice({ kind: 'select', label: 'Running', options: [1, -1], default: 1 }), destination: appearanceText(str('Destination', 'HARBOR')), plate: appearanceText(str('Plate on the last car', 'CAR 2')),
+    seed: generationSeed(num('Riders seed', 78, 0, 1e6)), drawingMinX: semantic(num('Hidden west of (units east of the piece)', -1e6),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"local"}), baseY: shapePosition(num('Line stands on (over the ground line)', SHORE.back, -400, 400)),
   },
   visualFields: { nose: { kind: 'number', label: 'Nose (units east of the piece; -1e9: none)', default: -1e9, animatable: true } },
   bounds: p => ({ x: -n(p, 'cars') * (CAR_L + GAP), h: LINE0.deck + METRO.top + 10, w: n(p, 'cars') * (CAR_L + GAP), tall: METRO.top + 10 }),
   anchors: origin,
   draw(x, v, p, state, _pass, at) {
     const nose = Number(state.nose); if (!(nose > -1e8)) return;
-    const dir = Number(p.direction) as 1 | -1, cars = n(p, 'cars'), back = v.y(at.h + n(p, 'base')), deck = back - LINE0.deck;
-    const left = Math.max(-200 * ART, v.sx(at.x + n(p, 'from'), at.parallax));
+    const dir = Number(p.direction) as 1 | -1, cars = n(p, 'cars'), back = v.y(at.h + n(p, 'baseY')), deck = back - LINE0.deck;
+    const left = Math.max(-200 * ART, v.sx(at.x + n(p, 'drawingMinX'), at.parallax));
     x.save(); x.beginPath(); x.rect(left, -4000, v.viewW + 200 * ART - left, back + 4 * ART + 4000); x.clip();
     try {
       const xr = readableMirror(x);
@@ -138,3 +149,8 @@ export const line0RunElement: AssetDefinition = {
 };
 
 export const line0KitElements: AssetDefinition[] = [viaductElement, wallPortalElement, tunnelPortalElement, platformElement, line0RunElement];
+
+const viaductControls=combineControls(rangeControls('startX','endX',p=>Number(p.baseY)+LINE0.deck),axisControl('columnOriginX','x','baseY','Column pitch origin'),conditionalControls(combineControls(axisControl('rampTopX','x',p=>Number(p.baseY)+LINE0.deck,'Ramp top'),axisControl('rampFootX','x','baseY','Ramp foot')),p=>Number(p.rampTopX)>Number(p.rampFootX)),axisControl('baseY','h',p=>(Number(p.startX)+Number(p.endX))/2,'Viaduct base'));
+viaductElement.spatial={...translatedControls(viaductControls,(p,c)=>({x:c?viaductOrigin(c.view,c.placement,p)-c.view.sx(c.placement.x,c.placement.parallax)-Number(p.columnOriginX):0,h:0})),validate:p=>{if(Number(p.startX)>=Number(p.endX))throw Error('Viaduct end must be after its start');if(Number(p.rampTopX)<Number(p.rampFootX))throw Error('Ramp top must not be west of its foot');}};
+line0RunElement.spatial=combineControls(axisControl('drawingMinX','x',p=>Number(p.baseY)+LINE0.deck,'Drawing starts'),axisControl('baseY','h',0,'Rail base'));
+line0RunElement.drawingNote=()=>"Drawing starts clips the train west of that position. Base Y sets the rail elevation; nose position is prepared animation, not an authored body dimension.";

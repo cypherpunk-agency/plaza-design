@@ -40,10 +40,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.7,
-        "fill": "#0a0610",
         "edge": 0.08,
-        "traffic": true
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
       },
       "placement": {
         "x": 640,
@@ -93,9 +93,6 @@
       "type": "building.front",
       "props": {
         "width": 140,
-        "floors": 7,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "framed",
         "roof": "cornice",
@@ -114,7 +111,10 @@
             "from": 100,
             "width": 24
           }
-        ]
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 0,
@@ -128,9 +128,6 @@
       "type": "building.front",
       "props": {
         "width": 120,
-        "floors": 6,
-        "storey": 66,
-        "ground": 76,
         "skin": "tenement",
         "windows": "curtained",
         "balconies": "some",
@@ -148,7 +145,10 @@
             "width": 64,
             "tenant": "pawn"
           }
-        ]
+        ],
+        "height": 472,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 140,
@@ -162,9 +162,6 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "floors": 8,
-        "storey": 66,
-        "ground": 76,
         "skin": "concrete",
         "windows": "punched",
         "roof": "parapet",
@@ -182,7 +179,10 @@
             "from": 110,
             "width": 24
           }
-        ]
+        ],
+        "height": 604,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 1000,
@@ -196,9 +196,6 @@
       "type": "building.front",
       "props": {
         "width": 150,
-        "floors": 6,
-        "storey": 66,
-        "ground": 76,
         "skin": "brick",
         "windows": "curtained",
         "escape": "left",
@@ -216,7 +213,10 @@
             "width": 80,
             "tenant": "noodles"
           }
-        ]
+        ],
+        "height": 472,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
       },
       "placement": {
         "x": 1150,
@@ -405,7 +405,7 @@
       "type": "sign.camera",
       "props": {
         "pole": false,
-        "phase": 30
+        "blinkTimeOffset": 0.5
       },
       "placement": {
         "x": 590,
@@ -423,9 +423,9 @@
       "type": "civic.counters",
       "props": {
         "windows": 2,
-        "bay": 44,
-        "counter": 30,
-        "glass": 62,
+        "windowWidth": 44,
+        "counterHeight": 30,
+        "glassTopY": 62,
         "open": "1",
         "label": "FRONT DESK",
         "line": true,
@@ -698,7 +698,7 @@
       "type": "civic.terminal-bank",
       "props": {
         "desks": 3,
-        "desk": 52,
+        "deskWidth": 52,
         "partitions": false,
         "people": "1,3",
         "hours": "open",
@@ -818,10 +818,10 @@
         "unit": 28,
         "height": 62,
         "fill": 0.9,
-        "aisle": 0,
         "labels": true,
         "hours": "open",
-        "seed": 32
+        "seed": 32,
+        "openAisleIndex": 0
       },
       "placement": {
         "x": 132,
@@ -1004,9 +1004,6 @@
       "type": "building.front",
       "props": {
         "width": 740,
-        "floors": 1,
-        "storey": 78,
-        "ground": 96,
         "skin": "concrete",
         "windows": "punched",
         "roof": "parapet",
@@ -1047,7 +1044,10 @@
             "from": 560,
             "width": 92
           }
-        ]
+        ],
+        "height": 174,
+        "groundFloorHeight": 96,
+        "floorHeight": 78
       },
       "placement": {
         "x": 260,
@@ -1066,10 +1066,10 @@
       "props": {
         "text": "CITY POLICE · PRECINCT 9",
         "color": "235,238,230",
-        "size": 9,
         "printed": true,
         "bolts": true,
-        "mask": []
+        "mask": [],
+        "fontSize": 9
       },
       "placement": {
         "x": 226,
@@ -1088,10 +1088,10 @@
       "props": {
         "text": "REGISTRY LIAISON OFFICE",
         "color": "216,180,90",
-        "size": 8,
         "printed": true,
         "bolts": true,
-        "mask": []
+        "mask": [],
+        "fontSize": 8
       },
       "placement": {
         "x": 418,
@@ -1128,7 +1128,7 @@
       "type": "sign.camera",
       "props": {
         "pole": false,
-        "phase": 12
+        "blinkTimeOffset": 0.2
       },
       "placement": {
         "x": 118,
@@ -1234,7 +1234,7 @@
         "side": false,
         "lights": false,
         "fleetNo": "R-031",
-        "phase": 0
+        "timeOffset": 0
       },
       "placement": {
         "x": 862,
@@ -1252,13 +1252,13 @@
       "type": "vehicle.road",
       "props": {
         "kind": "sedan",
-        "paint": "#2a3226",
         "motion": "parked",
         "lights": false,
         "stripe": "#c9a227",
         "fleetNo": "P-09",
         "decal": "POLICE",
-        "direction": "left"
+        "direction": -1,
+        "paintColor": "#2a3226"
       },
       "placement": {
         "x": 1084,
@@ -1283,11 +1283,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9101,
         "act": "smoke",
-        "archetype": "police"
+        "archetype": "police",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1028,
@@ -1301,11 +1301,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9102,
         "act": "read",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 520,
@@ -1323,12 +1323,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9103,
         "act": "walk",
         "range": -300,
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1240,
@@ -1342,11 +1342,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9104,
         "act": "play",
-        "archetype": "kid"
+        "archetype": "kid",
+        "depthBand": "play"
       },
       "placement": {
         "x": 120,
@@ -1360,11 +1360,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9105,
         "act": "phone",
-        "archetype": "inspector"
+        "archetype": "inspector",
+        "depthBand": "play"
       },
       "placement": {
         "x": 236,
@@ -1378,13 +1378,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9111,
         "act": "sit",
         "seat": 10,
         "sitting": "front",
-        "archetype": "shopper"
+        "archetype": "shopper",
+        "depthBand": "play"
       },
       "placement": {
         "x": 440,
@@ -1402,12 +1402,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9112,
         "act": "doze",
         "seat": 10,
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 478,
@@ -1425,11 +1425,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9113,
         "act": "read",
-        "archetype": "police"
+        "archetype": "police",
+        "depthBand": "play"
       },
       "placement": {
         "x": 536,
@@ -1447,9 +1447,9 @@
       "type": "civic.counters",
       "props": {
         "windows": 2,
-        "bay": 44,
-        "counter": 30,
-        "glass": 62,
+        "windowWidth": 44,
+        "counterHeight": 30,
+        "glassTopY": 62,
         "open": "1",
         "label": "FRONT DESK",
         "line": true,
@@ -1472,11 +1472,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9114,
         "act": "argue",
-        "archetype": "dockworker"
+        "archetype": "dockworker",
+        "depthBand": "play"
       },
       "placement": {
         "x": 552,
@@ -1494,11 +1494,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9121,
         "act": "stand",
-        "archetype": "clerk"
+        "archetype": "clerk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 52,
@@ -1539,11 +1539,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9122,
         "act": "wait",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 104,
@@ -1561,13 +1561,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9131,
         "act": "lie",
         "seat": 14,
         "lying": "asleep",
-        "archetype": "drifter"
+        "archetype": "drifter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 18,
@@ -1585,11 +1585,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9132,
         "act": "lean",
-        "archetype": "punk"
+        "archetype": "punk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 84,
@@ -1607,13 +1607,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9133,
         "act": "sit",
         "seat": 14,
         "sitting": "side",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 124,
@@ -1631,11 +1631,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9134,
         "act": "wait",
-        "archetype": "ghost"
+        "archetype": "ghost",
+        "depthBand": "play"
       },
       "placement": {
         "x": 174,
@@ -1679,12 +1679,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9141,
         "act": "doze",
         "seat": 12,
-        "archetype": "police"
+        "archetype": "police",
+        "depthBand": "play"
       },
       "placement": {
         "x": 236,
@@ -1702,11 +1702,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9142,
         "act": "phone",
-        "archetype": "police"
+        "archetype": "police",
+        "depthBand": "play"
       },
       "placement": {
         "x": 350,
@@ -1724,11 +1724,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9143,
         "act": "smoke",
-        "archetype": "police"
+        "archetype": "police",
+        "depthBand": "play"
       },
       "placement": {
         "x": 60,
@@ -1746,11 +1746,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "downtown",
         "seed": 9144,
         "act": "read",
-        "archetype": "clerk"
+        "archetype": "clerk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 110,

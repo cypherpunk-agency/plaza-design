@@ -29,6 +29,15 @@ cards, fades, beats and handoff. The temporal evaluation program is derived, nev
 source. `runtime/prepare-frame.ts` prepares both world references and inline artwork for the sole
 `renderWorldFrame` renderer; no separate sequence adapters remain. In the editor, select scenery
 directly in the sequence preview to edit its source scene/backdrop without switching views.
+
+The embedding editor supplies an optional fixed `GameHost.viewport` (logical pixel dimensions
+and render scale). Game.onResize consumes it instead of independently refitting the responsive
+game camera; ordinary game hosts retain their existing sizing policy. Preview and native Play
+therefore agree on camera layout. The workspace canvas may grow around that fixed camera without
+moving or scaling the world. Base-camera guides, sky layout and sequence controls consume that
+same frame. Authoring Play explicitly chooses current sequence/playhead or checkpoint start;
+the existing checkpoint sampler supplies world state/movers/receipts, not an arbitrary saved
+editor simulation. See authoring/README.md for the UI controls and navigation policy.
 The inspector identifies that shared source. See [animated artwork](../../art/sequences/README.md).
 
 Sequences may target artwork in another source using `target.scene` plus the source-local instance
@@ -36,10 +45,16 @@ ID. The normal evaluator produces source-qualified artwork values; `View.sequenc
 those values to the same composition painter. Keep gameplay state and native visual inputs when
 merging partial overrides. An unqualified target always belongs to the sequence composition.
 
-Skies are ordinary `environment.sky` artwork groups, including their sun/moon/cloud drawing.
+Skies are ordinary `environment.sky` artwork groups for atmosphere, sun and moon. Thin clouds are
+independent `environment.cloud-layer` world assets with finite ranges and seeded distribution.
 They paint once before weather in the shared sky pass; additional sky traffic paints afterward.
-Do not also submit the sky group through `drawSkyArtwork`. Editor precise clicks reuse captured
-paint commands, rather than trusting conservative bounds to cover every generated group member.
+Do not also submit the sky group through `drawSkyArtwork`. Editor hover/click/outline geometry
+comes from observing the actual captured drawing commands, not replaying a pixel probe. Dynamic
+generators explicitly declare `selection:'region'` and supply time-independent configured regions
+through `bounds`; emitted members and frustum culling do not resize their selection. The same
+capture path applies source/native clips, visibility and canvas transforms. Ordinary moving
+objects continue to use their current drawn body. The resolved inspector reports which policy
+produced the rectangle.
 
 Contextual authoring uses the right inspector. `WorkbenchContext.inspect` and
 `authoring/inspector-task.ts` mount a staged typed form there; opening/canceling makes no source
@@ -57,6 +72,15 @@ imports the other for a positioning helper. Serializable character recipes/size 
 mutually recursive condition/query language; `validation.ts` and `native-validation.ts` validate source.
 Response graph validation is separate from its installed conversation behavior. These dependencies are
 acyclic at runtime; do not introduce a return import from a primitive to its caller.
+
+Local rendering switches resolve through `world/render-policy.ts`; its data/validation and typed
+provenance contracts live in `world/render-settings.ts`. District → chunk → composition/group/member
+→ sequence overrides feed the same native frame and inspection. Defaults are shared; absence
+inherits, while false remains an override. Asset-only pictures declare missing world-pass inputs
+as capabilities, rather than installing a hidden sequence preset. Climate definitions and stable
+seed salts belong to `city.json`; weather sampling/reporting receives that source explicitly.
+The forecast algorithm, grading formula and camera smoothing remain shared code. See the authoring
+guide for contextual controls and the distinction between saved configuration and temporary preview.
 
 `runtime/game.ts` is the composition root: it creates services and state, serializes saves and
 orders the single frame loop. It calls focused functions through typed ports referencing the
@@ -828,7 +852,13 @@ adds source-derived roots via Environment.mobileArtwork. Membership is compiled 
 attachments; do not repeat actor motion in artwork properties or classify mobiles in Game with a
 scene/type switch. Frame queues hold paint commands only and clear every frame.
 
-`bounds` describes the live drawn pose for visibility and picking. `travelBounds`, when needed,
+`bounds` supplies conservative live geometry for runtime visibility, gallery fitting and non-drawing
+editor handles. Ordinary editor outlines instead use the actual command extents captured during
+the single native paint in `art/core/measure.ts`, with the current transforms and clips. Do not
+expand an outline to make a small object easier to click: selection owns invisible target padding.
+Cached sprites register occupied bitmap extents; cast shadows are excluded. Multipart captures
+combine their extents; assembly outlines union visible descendants. Curves remain conservative
+rectangles, not pixel contours. Resolved rendering identifies the geometry source. `travelBounds`, when needed,
 describes the complete source-camera travel envelope relative to placement, including parallax,
 for lifecycle retention; otherwise ordinary registered bounds/range/lane metadata is used.
 Prepared actors derive their boxes from native pose coordinates, not their authored starting X.

@@ -8,7 +8,7 @@ function record(){const ops:unknown[]=[],state:Record<string,unknown>={};return{
 for(const id of ['drawCam','drawPole','windowFrame','staffDoor','seatBack','seatFront'] as const)for(const ceiling of [120,166,220])for(const width of [80,160])for(const x of [70,500,1000])for(const h of [0,25]){
  const frame={L:{width:1200,ceil:ceiling,staff:x},visual:{ride:{phase:'running',pos:0,open:0},run:0,home:false},roof:{cove:14,shell:12,wire:0,messenger:0},windows:[],doors:[],hover:null,riders:{}} as unknown as TrainFrame;
  const view={...frameView(137),viewW:640,viewH:360,gy:300,y:(q:number)=>300-q},nativeView={...view,gy:300-h,y:(q:number)=>300-q-h};
- const element=art.get('train.'+id),props=art.properties(element.type,id==='windowFrame'?{width,h0:40,h1:100}:id.startsWith('seat')?{width}:id==='drawCam'||id==='drawPole'?{ceiling}:{}),state=art.visualProperties(element.type,{frame:frame as never,...(id.startsWith('seat')?{width}:{})}),before=JSON.stringify(frame);
+ const element=art.get('train.'+id),props=art.properties(element.type,id==='windowFrame'?{width,bottomY:40,topY:100}:id.startsWith('seat')?{width}:id==='drawCam'||id==='drawPole'?{ceilingHeight:ceiling}:{}),state=art.visualProperties(element.type,{frame:frame as never,...(id.startsWith('seat')?{width}:{})}),before=JSON.stringify(frame);
  const kernel=createTrainInteriorArtwork(frame),a=record(),b=record(),c=record();
  switch(id){case'windowFrame':kernel.windowFrame(a.ctx,nativeView,x,width,40,100);break;case'staffDoor':kernel.staffDoor(a.ctx,nativeView);break;case'seatBack':case'seatFront':kernel[id](a.ctx,nativeView,x,width);break;default:kernel[id](a.ctx,nativeView,x);}
  const placement={x,h,scale:1,facing:1 as const,parallax:1};element.draw(b.ctx,view,props,state,'backdrop',placement);

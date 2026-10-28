@@ -1,6 +1,10 @@
 import type {EditorSelection} from './selection';
 export interface EditorViewSnapshot {
  checkpoint?:string;sequence:string;time:number;compare:string;
+ sequenceTimes?:Record<string,number>;
+ ambientTime?:number;
+ pixelatedScaling?:boolean;
+ followCamera?:boolean;
  workspace:{x:number;y:number;zoom:number;anchor?:{x:number;h:number}};cameraPreview:boolean;
  environment:Record<string,string|number|boolean>;
  timeline:{zoom:number;collapsed:string[];scrollX:number;scrollY:number;height:number;folded:boolean};
@@ -10,11 +14,19 @@ export interface EditorViewSnapshot {
  outline:{sort:'kind'|'order';query:string};
 }
 const prefix='access-denied.editor.view.';
+/** Editor-generated links restore preferences; an explicit new checkpoint/sequence/time wins. */
+export function viewMatchesLocation(view:EditorViewSnapshot,query:URLSearchParams){
+ return(query.has('composition')||query.has('scene'))&&(view.checkpoint??'')===(query.get('checkpoint')??'')&&view.sequence===(query.get('sequence')??'')&&(!query.has('time')||view.time===Number(query.get('time')));
+}
 const finite=(v:unknown,min=-1e8,max=1e8)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
 /** Optional workspace preference, never source content or a game save. Invalid storage is ignored. */
 export function parseEditorView(value:unknown):EditorViewSnapshot|undefined {
  const v=value as EditorViewSnapshot;if(!v||typeof v!=='object')return;
  if(v.checkpoint!==undefined&&typeof v.checkpoint!=='string')return;
+ if(v.pixelatedScaling!==undefined&&typeof v.pixelatedScaling!=='boolean')return;
+ if(v.followCamera!==undefined&&typeof v.followCamera!=='boolean')return;
+ if(v.ambientTime!==undefined&&!finite(v.ambientTime,-1e8,1e8))return;
+ if(v.sequenceTimes!==undefined&&(!v.sequenceTimes||typeof v.sequenceTimes!=='object'||Array.isArray(v.sequenceTimes)||Object.keys(v.sequenceTimes).length>2000||Object.entries(v.sequenceTimes).some(([id,time])=>['__proto__','prototype','constructor'].includes(id)||!finite(time,0))))return;
  if(typeof v.sequence!=='string'||typeof v.compare!=='string'||!finite(v.time,0)||!finite(v.speed,.01,100)||!finite(v.snap,0,10000))return;
  if(!v.workspace||!finite(v.workspace.x)||!finite(v.workspace.y)||!finite(v.workspace.zoom,.01,100))return;
  if(v.workspace.anchor&&(!finite(v.workspace.anchor.x)||!finite(v.workspace.anchor.h)))return;

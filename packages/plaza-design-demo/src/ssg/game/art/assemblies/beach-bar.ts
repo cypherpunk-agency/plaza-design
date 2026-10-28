@@ -105,23 +105,24 @@ export function saltLights(x: CanvasRenderingContext2D, w: number, t: number, st
   const y = (h: number) => -h, { floor } = SALT;
   const poles = [-40, w + 46];
   for (const px of poles) { x.fillStyle = '#3a2618'; x.fillRect(px - 1, y(86), 3, 86); }
-  drawStringLights(x, poles[0], 84, -4, floor + 34, t, { sag: 8, phase: 0, still });
-  drawStringLights(x, -4, floor + 34, w + 4, floor + 34, t, { sag: 10, phase: 1, still });
-  drawStringLights(x, w + 4, floor + 34, poles[1], 84, t, { sag: 8, phase: 2, still });
+  drawStringLights(x, poles[0], 84, -4, floor + 34, t, { sag: 8, phaseAngle:0,paletteOffset:0,still });
+  drawStringLights(x, -4, floor + 34, w + 4, floor + 34, t, { sag: 10, phaseAngle:1,paletteOffset:1,still });
+  drawStringLights(x, w + 4, floor + 34, poles[1], 84, t, { sag: 8, phaseAngle:2,paletteOffset:2,still });
 }
 
 /**
  * One run of string lights from (ax, ah) to (bx, bh) (heights up), sagging and swaying, a bulb
  * every 14 units. Whoever calls it draws what the ends hang from (ART-GUIDE �5): a pole, the eaves.
  */
-export function drawStringLights(x: CanvasRenderingContext2D, ax: number, ah: number, bx: number, bh: number, t: number, o: { sag?: number; phase?: number; still?: boolean } = {}) {
-  const y = (h: number) => -h, sag = o.sag ?? 8, ri = o.phase ?? 0, still = !!o.still, sw = still ? 0 : Math.sin(t * 0.02 + ri) * 1.5;
+/** Native drawing accepts radians and an independent whole-number palette offset. */
+export function drawStringLights(x: CanvasRenderingContext2D, ax: number, ah: number, bx: number, bh: number, t: number, o: { sag?: number; phaseAngle?: number; paletteOffset?: number; still?: boolean } = {}) {
+  const y = (h: number) => -h, sag = o.sag ?? 8, ri = o.phaseAngle ?? 0, palette = o.paletteOffset ?? 0, still = !!o.still, sw = still ? 0 : Math.sin(t * 0.02 + ri) * 1.5;
   x.strokeStyle = 'rgba(40,24,16,.9)'; x.lineWidth = 1; x.beginPath(); x.moveTo(ax, y(ah)); x.quadraticCurveTo((ax + bx) / 2 + sw, y((ah + bh) / 2 - sag * 2), bx, y(bh)); x.stroke();
   const n = Math.max(3, Math.round(Math.abs(bx - ax) / 14));
   for (let k = 1; k < n; k++) {
     const f = k / n, mx = (ax + bx) / 2 + sw, my = y((ah + bh) / 2 - sag * 2);
     const qx = (1 - f) * (1 - f) * ax + 2 * (1 - f) * f * mx + f * f * bx, qy = (1 - f) * (1 - f) * y(ah) + 2 * (1 - f) * f * my + f * f * y(bh);
-    const col = BULBS[(k + ri) % 4], on = still ? 1 : 0.5 + 0.5 * Math.sin(t * 0.06 + k * 1.7 + ri);
+    const col = BULBS[((k+palette)%4+4)%4], on = still ? 1 : 0.5 + 0.5 * Math.sin(t * 0.06 + k * 1.7 + ri);
     x.fillStyle = 'rgba(30,14,10,.9)'; x.fillRect(Math.round(qx) - 1, Math.round(qy), 2, 1);
     x.fillStyle = 'rgba(' + col + ',' + (0.45 + on * 0.55).toFixed(2) + ')'; x.fillRect(Math.round(qx) - 1, Math.round(qy) + 1, 2, 3);
     const gg = x.createRadialGradient(qx, qy + 2, 0, qx, qy + 2, 8);

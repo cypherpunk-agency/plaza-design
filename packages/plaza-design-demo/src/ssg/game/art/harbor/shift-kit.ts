@@ -1,3 +1,11 @@
+import {colorField} from '../core/fields';
+import {fixedGeometry} from '../core/spatial';
+import {degrees} from '../core/fields';
+import {velocity} from '../core/fields';
+import {rectangleControls,repeatedWidthControls,combineControls,verticalRangeControls,conditionalControls,axisControl,translatedControls,viewportElevationControls} from '../core/spatial';
+import {textField,booleanField,choiceField} from '../core/fields';
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * HARBOR SHIFT KIT (Tommi, 2026-10-22: the prologue's night shift "looks ugly, needs to be completely
  * redone"). The working container yard where the hero works the night shift, from sundown into the
@@ -27,7 +35,7 @@
  * `piece()` (buildings/types.ts); state-driven pieces read their presentation state (visual fields)
  * and never change it. Lamps join the light layer only in the play band (parallax 1) or when asked.
  */
-import type { Anchor, AssetDefinition, Field, Placement, Properties, Value } from '../core/composition';
+import type { Anchor, AssetDefinition, Bounds, Field, Placement, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
 import { addLight, type SceneLight } from '../atmosphere/lighting';
 import { container, PAL } from '../props/containers';
@@ -36,14 +44,15 @@ import { drawSpire } from '../architecture/spire';
 import { seaCols, skyCols, sunPath } from '../environment/sky';
 import { glowLevel, type Light } from '../../world/light';
 import { mono, rng } from '../core/primitives';
+const fixedNativeGeometry=fixedGeometry("This shift kit component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 // ---------------------------------------------------------------- fields and helpers
 
-const num = (label: string, value: number, min = -100000, max = 100000, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
-const str = (label: string, value = ''): Field => ({ kind: 'string', label, default: value });
-const bool = (label: string, value = false): Field => ({ kind: 'boolean', label, default: value });
-const select = (label: string, options: readonly string[], value = options[0]): Field => ({ kind: 'select', label, options: [...options], default: value });
-const colour = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const num = numericFields({min:-100000,max:100000,step:1});
+const str = textField;
+const bool = booleanField;
+const select = choiceField;
+const colour = colorField;
 /** An "r,g,b" light colour. */
 const rgbField = (label: string, value: string): Field => ({ kind: 'string', label, default: value,
   validate: (v: Value) => { if (typeof v !== 'string' || !/^\d{1,3},\d{1,3},\d{1,3}$/.test(v)) throw new Error(label + ': expected "r,g,b"'); } });
@@ -102,6 +111,7 @@ const defaults = (fields: Record<string, Field>, p: Properties): Properties => {
  * scene binds (a parcel present, the trolley's position); such pieces read it and never change it.
  */
 function kit(o: {
+  spatial?:AssetDefinition['spatial'];
   type: string; label: string; fields: Record<string, Field>; visual?: Record<string, Field>;
   box: (p: Properties) => { x: number; w: number; tall: number };
   anchors?: (p: Properties) => Record<string, Anchor>;
@@ -112,7 +122,7 @@ function kit(o: {
   return {
     type: 'shift.' + o.type, version: 1, label: o.label, category: 'harbor shift', coordinates: 'world', parts: ['backdrop'],
     ...(o.visual ? { visualFields: o.visual, bindingIdentity: 'presentation' as const } : { libraryUse: 'reusable' as const }),
-    fields: o.fields,
+    fields: o.fields,spatial:o.spatial,
     bounds: p => { const b = o.box(defaults(o.fields, p)); return { x: b.x, h: b.tall, w: b.w, tall: b.tall }; },
     anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, ...(o.anchors?.(defaults(o.fields, p)) ?? {}) }),
     draw(ctx, v, raw, s, _pass, at) {
@@ -132,10 +142,12 @@ function kit(o: {
 
 /** A full-width backdrop drawn in screen space (sky band, floor): `paint` gets the view directly. */
 function band(o: { type: string; label: string; fields: Record<string, Field>; tall: (p: Properties) => number;
+  spatial?:AssetDefinition['spatial'];
+  bounds?: (p: Properties) => Bounds;
   paint: (x: CanvasRenderingContext2D, v: View, p: Properties, at: Readonly<Required<Placement>>) => void }): AssetDefinition {
   return {
-    type: 'shift.' + o.type, version: 1, label: o.label, category: 'harbor shift', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable', fields: o.fields,
-    bounds: p => ({ x: 0, h: o.tall(defaults(o.fields, p)), w: 1200, tall: o.tall(defaults(o.fields, p)) + 40 }),
+    type: 'shift.' + o.type, version: 1, label: o.label, category: 'harbor shift', coordinates: 'world', parts: ['backdrop'], libraryUse: 'reusable', fields: o.fields,spatial:o.spatial,
+    bounds: p => o.bounds?.(defaults(o.fields,p)) ?? ({ x: 0, h: o.tall(defaults(o.fields, p)), w: 1200, tall: o.tall(defaults(o.fields, p)) + 40 }),
     anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
     draw(ctx, v, raw, _s, _pass, at) { ctx.save(); try { o.paint(ctx, v, defaults(o.fields, raw), at); } finally { ctx.restore(); } },
   };
@@ -192,13 +204,13 @@ const RIPPLES = (() => { const r = rng(91); return Array.from({ length: 120 }, (
 const farShore = band({
   type: 'far-shore', label: 'Bay: the city across the water and the Spire (harbor shift)',
   fields: {
-    parallax: num('Parallax', 0.08, 0, 1, 0.01), seed: num('Seed', 7, 0, 1000000),
-    tall: num('Tallest towers', 150, 20, 400, 1, 'units'), low: num('Low towers', 26, 4, 200, 1, 'units'),
-    lit: num('Lit windows', 0.32, 0, 1, 0.01), haze: num('Haze', 0.6, 0, 1, 0.05),
-    spireX: num('Spire position (at its parallax)', 560, -5000, 5000, 1, 'units'), spireSize: num('Spire size', 0.95, 0.1, 4, 0.05),
-    traffic: bool('Spire traffic (shuttles, patrol)', true), water: bool('Water from the horizon down', true),
+    parallax: semantic(num('Parallax', 0.08, 0, 1, 0.01),{"group":"Depth","quantity":"factor","unit":"factor"}), seed: generationSeed(num('Seed', 7, 0, 1000000)),
+    maxTowerHeight: shapeLength(num('Tallest towers', 150, 20, 400, 1, 'units')), minTowerHeight: shapeLength(num('Low towers', 26, 4, 200, 1, 'units')),
+    lit: appearanceRatio(num('Lit windows', 0.32, 0, 1, 0.01)), haze: appearanceRatio(num('Haze', 0.6, 0, 1, 0.05)),
+    spireX: shapePosition(num('Spire position (at its parallax)', 560, -5000, 5000, 1, 'units')), spireScale: semantic(num('Spire scale', 0.95, 0.1, 4, 0.05),{"group":"Shape / Area","quantity":"factor","unit":"factor"}),
+    traffic: semantic(bool('Spire traffic (shuttles, patrol)', true),{"group":"Motion","quantity":"boolean","unit":"boolean"}), water: appearanceBoolean(bool('Water from the horizon down', true)),
   },
-  tall: p => N(p, 'tall') + 300 * N(p, 'spireSize'),
+  tall: p => N(p, 'maxTowerHeight') + 300 * N(p, 'spireScale'),
   paint(x, v, p, at) {
     const L = v.lighting, on = L ? glowLevel(L) : 1, par = N(p, 'parallax'), base = Math.round(v.y(at.h)), t = v.t, haze = N(p, 'haze');
     const hz = L ? skyCols(L)[2] : [18, 9, 26], fog = fogCol(L, on);
@@ -213,12 +225,12 @@ const farShore = band({
         x.fillStyle = 'rgba(170,205,235,' + (0.03 + 0.06 * f).toFixed(3) + ')'; x.fillRect(Math.round(px + Math.sin(t * 0.02 + rx) * 3), Math.round(yy), Math.round(len), 1);
       }
     }
-    const seed = N(p, 'seed'), tall = N(p, 'tall'), low = N(p, 'low');
+    const seed = N(p, 'seed'), tall = N(p, 'maxTowerHeight'), low = N(p, 'minTowerHeight');
     const back = farTowers(seed, -600, 3200, low * 0.6, tall * 0.62), front = farTowers(seed + 1, -600, 3200, low * 0.4, tall);
     const dark: RGB = [9, 10, 15];
     // the far band first (further, hazier), then the Spire standing in the bay, then the nearer towers
     paintTowers(x, v, back, par * 0.6, base, css(mix(dark, hz, 0.55 * haze)), css(mix(dark, hz, 0.7 * haze), 0.6), N(p, 'lit') * 0.7, 0.25 + 0.45 * on, t, false);
-    const spX = v.sx(N(p, 'spireX'), par * 0.8), size = N(p, 'spireSize');
+    const spX = v.sx(N(p, 'spireX'), par * 0.8), size = N(p, 'spireScale');
     if (spX > -120 * size && spX < v.viewW + 120 * size) {
       x.save(); x.translate(Math.round(spX), base); x.scale(size, size);
       try { drawSpire(x, { t, fill: css(mix([4, 4, 8], hz, 0.26 * haze)), edge: 0.14, windows: 0.6 + 0.6 * on, glow: true, traffic: p.traffic !== false, scale: size }); } finally { x.restore(); }
@@ -257,13 +269,14 @@ function deckBox(x: CanvasRenderingContext2D, l: number, b: number, w: number, h
 }
 
 const ship = kit({
+  spatial:rectangleControls({width:'length',height:'freeboard'}),
   type: 'ship', label: 'Container ship at the berth (harbor shift)',
   fields: {
-    length: num('Length', 760, 200, 3000, 1, 'units'), freeboard: num('Hull above the water', 36, 12, 120, 1, 'units'),
-    hull: colour('Hull', '#1c2530'), boot: colour('Boot-top (waterline)', '#5c2219'), name: str('Name on the bow', 'MERIDIAN CONSTANCE'),
-    tiers: num('Container tiers on deck', 4, 0, 8), box: num('Box height', 20, 8, 60, 1, 'units'), bay: num('Bay width', 46, 16, 140, 1, 'units'),
-    bridge: num('Bridge along the hull (0 stern … 1 bow)', 0.84, 0, 1, 0.01), dim: num('Distance dimming', 0.3, 0, 0.9, 0.05),
-    lights: bool('Deck and bridge lights', true), seed: num('Seed', 31, 0, 1000000),
+    length: shapeLength(num('Length', 760, 200, 3000, 1, 'units')), freeboard: shapeLength(num('Hull above the water', 36, 12, 120, 1, 'units')),
+    hull: appearanceColor(colour('Hull', '#1c2530')), boot: appearanceColor(colour('Boot-top (waterline)', '#5c2219')), name: appearanceText(str('Name on the bow', 'MERIDIAN CONSTANCE')),
+    tiers: generationCount(num('Container tiers on deck', 4, 0, 8)), box: shapePosition(num('Box height', 20, 8, 60, 1, 'units')), bay: shapePosition(num('Bay width', 46, 16, 140, 1, 'units')),
+    bridge: appearanceRatio(num('Bridge along the hull (0 stern … 1 bow)', 0.84, 0, 1, 0.01)), dim: semantic(num('Distance dimming', 0.3, 0, 0.9, 0.05),{"group":"Depth","quantity":"factor","unit":"factor"}),
+    lights: appearanceBoolean(bool('Deck and bridge lights', true)), seed: generationSeed(num('Seed', 31, 0, 1000000)),
   },
   box: p => ({ x: 0, w: N(p, 'length'), tall: N(p, 'freeboard') + N(p, 'tiers') * N(p, 'box') + 90 }),
   anchors: p => ({ deck: { x: N(p, 'length') / 2, h: N(p, 'freeboard'), role: 'surface' } }),
@@ -322,18 +335,18 @@ const ship = kit({
 const crane = kit({
   type: 'crane', label: 'Ship-to-shore crane with spreader and floods (harbor shift)',
   fields: {
-    gantry: select('Crane frame', ['sts1', 'sts3', 'sts2'], 'sts1'), paint: colour('Steel paint', '#4a1c0c'), rim: num('Rim', 0.55, 0, 1, 0.05), boomUp: num('Boom raised (0 working, 1 idle)', 0, 0, 1, 0.05),
-    trolley: num('Trolley along the boom', -120, -600, 1000, 1, 'units'), hang: num('Spreader drop under the boom', 120, 10, 400, 1, 'units'),
-    load: bool('Container on the spreader', true), loadPaint: num('Container paint (0-7)', 3, 0, 7), floods: num('Floodlights under the boom', 0.8, 0, 1, 0.05),
-    phase: num('Light phase', 0, 0, 100, 0.1),
+    gantry: appearanceChoice(select('Crane frame', ['sts1', 'sts3', 'sts2'], 'sts1')), paintColor: appearanceColor(colour('Steel paint', '#4a1c0c')), rim: appearanceRatio(num('Rim', 0.55, 0, 1, 0.05)), boomUp: appearanceRatio(num('Boom raised (0 working, 1 idle)', 0, 0, 1, 0.05)),
+    trolleyX: shapePosition(num('Trolley along the boom', -120, -600, 1000, 1, 'units')), dropLength: shapeLength(num('Spreader drop under the boom', 120, 10, 400, 1, 'units')),
+    load: appearanceBoolean(bool('Container on the spreader', true)), loadPaletteIndex: appearanceChoice(select('Container palette',PAL.map((_color,index)=>index),3)), floods: appearanceRatio(num('Floodlights under the boom', 0.8, 0, 1, 0.05)),
+    phaseAngle:degrees('Light phase',0,{group:'Motion',min:0,max:100*180/Math.PI,step:1}),
   },
   box: () => ({ x: -240, w: 420, tall: 340 }),
   farLights: true,
   paint(x, p, c) {
     const g: Gantry = GANTRIES[(S(p, 'gantry') in GANTRIES ? S(p, 'gantry') : 'sts1') as keyof typeof GANTRIES], up = N(p, 'boomUp'), B = g.boom;
-    drawGantry(x, g, c.t, 'all', N(p, 'phase'), false, { paint: S(p, 'paint'), rim: N(p, 'rim'), lit: 0.3, boomUp: up });
+    drawGantry(x, g, c.t,'all',N(p,'phaseAngle')*Math.PI/180,false, { paint: S(p, 'paintColor'), rim: N(p, 'rim'), lit: 0.3, boomUp: up });
     if (up > 0.15) return;
-    const tx = clamp(N(p, 'trolley'), B.x0 + 20, B.x1 - 20), low = B.low, drop = N(p, 'hang'), sp = low - drop, on = c.on, fl = N(p, 'floods');
+    const tx = clamp(N(p, 'trolleyX'), B.x0 + 20, B.x1 - 20), low = B.low, drop = N(p, 'dropLength'), sp = low - drop, on = c.on, fl = N(p, 'floods');
     // the trolley on the boom, its cables, the spreader and what it carries
     R(x, tx - 12, low - 6, 24, 8, '#2a1c14'); R(x, tx - 12, low + 1, 24, 1, 'rgba(255,190,120,.3)');
     x.strokeStyle = 'rgba(200,190,170,.45)'; x.lineWidth = 1; x.beginPath();
@@ -341,7 +354,7 @@ const crane = kit({
     x.stroke();
     R(x, tx - 26, sp, 52, 4, '#c88a1a'); R(x, tx - 26, sp + 3, 52, 1, 'rgba(255,230,170,.5)');
     if (p.load) {
-      const [fill, edge, hi] = PAL[N(p, 'loadPaint') % PAL.length];
+      const [fill, edge, hi] = PAL[N(p, 'loadPaletteIndex') % PAL.length];
       R(x, tx - 25, sp - 26, 50, 26, edge); R(x, tx - 24, sp - 25, 48, 24, fill);
       x.fillStyle = 'rgba(0,0,0,.3)'; for (let i = 3; i < 47; i += 3) x.fillRect(Math.round(tx - 24 + i), -(sp - 2), 1, 22);
       R(x, tx - 24, sp - 2, 48, 1, hi);
@@ -362,15 +375,17 @@ const crane = kit({
 const quay = band({
   type: 'quay', label: 'Quay apron behind the work bay (harbor shift)',
   fields: {
-    top: num('Quay edge height', 34, 4, 200, 1, 'units'), parallax: num('Parallax at the quay edge', 0.5, 0, 1, 0.01),
-    concrete: colour('Concrete', '#24221f'), rails: bool('Crane rails', true), lanes: num('Lane lines', 2, 0, 6),
-    pools: listOf('Light pools (world x at the quay\'s parallax)', { x: num('X', 400, -10000, 10000), width: num('Width', 120, 10, 1000) }, 'Add pool', [{ x: 300, width: 140 }, { x: 760, width: 160 }, { x: 1180, width: 140 }]),
+    depthBelowGround: shapeLength(num('Depth below ground', 384, 54, 6000, 1, 'units')),
+    edgeY: shapePosition(num('Quay edge height', 34, 4, 200, 1, 'units')), parallax: semantic(num('Parallax at the quay edge', 0.5, 0, 1, 0.01),{"group":"Depth","quantity":"ratio","unit":"ratio"}),
+    concrete: appearanceColor(colour('Concrete', '#24221f')), rails: appearanceBoolean(bool('Crane rails', true)), lanes: generationCount(num('Lane lines', 2, 0, 6)),
+    pools: semantic(listOf('Light pools (world x at the quay\'s parallax)', { x: shapePosition(num('X', 400, -10000, 10000)), width: shapeLength(num('Width', 120, 10, 1000)) }, 'Add pool', [{ x: 300, width: 140 }, { x: 760, width: 160 }, { x: 1180, width: 140 }]),{"group":"Depth","quantity":"structured","unit":"structured"}),
   },
-  tall: p => N(p, 'top'),
+  tall: p => N(p, 'edgeY'),
+  bounds: p => ({x:0,h:N(p, 'edgeY')+6,w:1200,tall:N(p, 'edgeY')+6+N(p, 'depthBelowGround')}),
   paint(x, v, p, at) {
-    const top = Math.round(v.y(at.h + N(p, 'top'))), bot = Math.round(v.y(at.h)), H = N(p, 'top'), par = N(p, 'parallax'), L = v.lighting, on = L ? glowLevel(L) : 1;
+    const top = Math.round(v.y(at.h + N(p, 'edgeY'))), bot = Math.round(v.y(at.h)), H = N(p, 'edgeY'), par = N(p, 'parallax'), L = v.lighting, on = L ? glowLevel(L) : 1;
     if (bot <= top) return;
-    x.fillStyle = S(p, 'concrete'); x.fillRect(0, top, v.viewW, v.viewH - top);
+    x.fillStyle = S(p, 'concrete'); x.fillRect(0, top, v.viewW, v.y(at.h-N(p, 'depthBelowGround')) - top);
     const fog = fogCol(L, on), fg = x.createLinearGradient(0, top, 0, bot);
     fg.addColorStop(0, css(fog, 0.28)); fg.addColorStop(1, css(fog, 0.04));
     x.fillStyle = fg; x.fillRect(0, top, v.viewW, bot - top);
@@ -413,12 +428,12 @@ function reefer(x: CanvasRenderingContext2D, l: number, b: number, w: number, h:
 const stackBlock = kit({
   type: 'stack', label: 'Container block (harbor shift)',
   fields: {
-    columns: num('Columns', 3, 1, 30), tiers: num('Tiers (highest)', 3, 1, 8), box: select('Box length', ['20ft', '40ft'], '40ft'),
-    ragged: num('Ragged (lower columns)', 0.5, 0, 1, 0.05), reefers: num('Reefers (share)', 0, 0, 1, 0.05),
-    codes: bool('Codes and line names', true), dim: num('Distance dimming', 0, 0, 0.9, 0.05), gap: num('Gap between columns', 3, 0, 40), seed: num('Seed', 11, 0, 1000000),
+    columns: generationCount(num('Columns', 3, 1, 30)), tiers: generationCount(num('Tiers (highest)', 3, 1, 8)), box: appearanceChoice(select('Box length', ['20ft', '40ft'], '40ft')),
+    ragged: appearanceRatio(num('Ragged (lower columns)', 0.5, 0, 1, 0.05)), reefers: appearanceRatio(num('Reefers (share)', 0, 0, 1, 0.05)),
+    codes: appearanceBoolean(bool('Codes and line names', true)), dim: semantic(num('Distance dimming', 0, 0, 0.9, 0.05),{"group":"Depth","quantity":"factor","unit":"factor"}), columnGap: shapeLength(num('Gap between columns', 3, 0, 40)), seed: generationSeed(num('Seed', 11, 0, 1000000)),
   },
-  box: p => { const w = p.box === '20ft' ? 66 : 128; return { x: 0, w: N(p, 'columns') * (w + N(p, 'gap')), tall: N(p, 'tiers') * 58 }; },
-  anchors: p => { const w = p.box === '20ft' ? 66 : 128; return { top: { x: N(p, 'columns') * (w + N(p, 'gap')) / 2, h: N(p, 'tiers') * 58, role: 'surface' } }; },
+  box: p => { const w = p.box === '20ft' ? 66 : 128; return { x: 0, w: N(p, 'columns') * (w + N(p, 'columnGap')), tall: N(p, 'tiers') * 58 }; },
+  anchors: p => { const w = p.box === '20ft' ? 66 : 128; return { top: { x: N(p, 'columns') * (w + N(p, 'columnGap')) / 2, h: N(p, 'tiers') * 58, role: 'surface' } }; },
   paint(x, p, c) {
     const w = p.box === '20ft' ? 66 : 128, seed = N(p, 'seed'), r = rng(seed * 71 + 3), dim = N(p, 'dim'), tiers = N(p, 'tiers');
     const lv: View = { ...c.v, sx: (wx: number) => wx, y: (h: number) => -h, viewW: 1e6 };
@@ -427,7 +442,7 @@ const stackBlock = kit({
     for (let col = 0; col < N(p, 'columns'); col++) {
       const n = Math.max(1, tiers - Math.floor(r() * (N(p, 'ragged') * tiers + 0.999)));
       for (let k = 0; k < n; k++) {
-        const l = col * (w + N(p, 'gap')) + Math.round((r() - 0.5) * 4), b = k * 58, s = seed * 100 + col * 10 + k;
+        const l = col * (w + N(p, 'columnGap')) + Math.round((r() - 0.5) * 4), b = k * 58, s = seed * 100 + col * 10 + k;
         if (r() < N(p, 'reefers')) reefer(x, l, b, w, 58, s, c.t, c.on);
         else container(x, lv, l, b, { w, h: 58, p: Math.floor(r() * 8), seed: s, ...(p.codes !== false ? { code: CODES[Math.floor(r() * CODES.length)] + ' ' + (100 + Math.floor(r() * 899)) + (w > 100 ? ' ' + (1000 + Math.floor(r() * 8999)) : ''), label: NAMES[Math.floor(r() * NAMES.length)] } : {}) });
         if (dim > 0) R(x, l, b, w, 58, 'rgba(8,10,14,' + dim + ')');
@@ -437,9 +452,10 @@ const stackBlock = kit({
 });
 
 const reeferRack = kit({
+  spatial:rectangleControls({width:'width'}),
   type: 'reefer-rack', label: 'Reefer plug gantry (harbor shift)',
-  fields: { tiers: num('Tiers', 3, 1, 8), width: num('Width', 36, 16, 200, 1, 'units'), cable: select('Cables run to', ['left', 'right', 'both'], 'both'), reach: num('Cable reach', 26, 4, 200, 1, 'units'),
-    dim: num('Distance dimming', 0, 0, 0.9, 0.05), seed: num('Seed', 5, 0, 1000000) },
+  fields: { tiers: generationCount(num('Tiers', 3, 1, 8)), width: shapeLength(num('Width', 36, 16, 200, 1, 'units')), cable: appearanceChoice(select('Cables run to', ['left', 'right', 'both'], 'both')), reach: shapeLength(num('Cable reach', 26, 4, 200, 1, 'units')),
+    dim: semantic(num('Distance dimming', 0, 0, 0.9, 0.05),{"group":"Depth","quantity":"factor","unit":"factor"}), seed: generationSeed(num('Seed', 5, 0, 1000000)) },
   box: p => ({ x: -N(p, 'reach'), w: N(p, 'width') + 2 * N(p, 'reach'), tall: N(p, 'tiers') * 58 + 16 }),
   paint(x, p, c) {
     const W = N(p, 'width'), n = N(p, 'tiers'), H = n * 58 + 12, steel = '#4a5560', seed = N(p, 'seed'), reach = N(p, 'reach');
@@ -467,11 +483,12 @@ const reeferRack = kit({
 // ---------------------------------------------------------------- high-mast light
 
 const mast = kit({
+  spatial:rectangleControls({height:'height'}),
   type: 'mast', label: 'High-mast light, sodium in fog (harbor shift)',
   fields: {
-    height: num('Height', 280, 40, 800, 1, 'units'), lamps: num('Lamps on the crown', 6, 1, 16), color: rgbField('Lamp colour (r,g,b)', SODIUM),
-    cone: num('Light cone in the fog', 0.6, 0, 1, 0.05), halo: num('Halo', 1, 0, 3, 0.05), spread: num('Cone spread at the ground', 90, 10, 600, 1, 'units'),
-    dead: num('Dead lamp (-1 none)', -1, -1, 16), glow: bool('Glow on the light layer (and a pool on the ground)', true),
+    height: shapeLength(num('Height', 280, 40, 800, 1, 'units')), lamps: generationCount(num('Lamps on the crown', 6, 1, 16)), color: appearanceColor(rgbField('Lamp colour (r,g,b)', SODIUM),"RGB"),
+    cone: appearanceRatio(num('Light cone in the fog', 0.6, 0, 1, 0.05)), halo: semantic(num('Halo', 1, 0, 3, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), spread: shapeLength(num('Cone spread at the ground', 90, 10, 600, 1, 'units')),
+    dead: semantic(num('Dead lamp (-1 none)', -1, -1, 16),{"group":"Appearance","quantity":"index","unit":"integer"}), glow: appearanceBoolean(bool('Glow on the light layer (and a pool on the ground)', true)),
   },
   box: p => ({ x: -Math.max(40, N(p, 'spread')), w: Math.max(80, N(p, 'spread') * 2), tall: N(p, 'height') + 20 }),
   anchors: p => ({ crown: { x: 0, h: N(p, 'height'), role: 'mount' } }),
@@ -509,17 +526,17 @@ const mast = kit({
 const FOG = (() => { const r = rng(57); return Array.from({ length: 16 }, () => [r() * 2400, r(), 140 + r() * 260, 5 + r() * 10]); })();
 const fogBank = band({
   type: 'fog', label: 'Fog bank drifting over the yard (harbor shift)',
-  fields: { top: num('Top', 70, 4, 400, 1, 'units'), density: num('Density', 0.5, 0, 1, 0.05), drift: num('Drift', 0.06, 0, 2, 0.01), parallax: num('Parallax', 0.6, 0, 2, 0.01) },
-  tall: p => N(p, 'top'),
+  fields: { height: shapeLength(num('Top', 70, 4, 400, 1, 'units')), density: semantic(num('Density', 0.5, 0, 1, 0.05),{"group":"Generation","quantity":"ratio","unit":"ratio"}), velocityX:velocity('Drift',3.6,{min:0,max:120,step:.6}), parallax: semantic(num('Parallax', 0.6, 0, 2, 0.01),{"group":"Depth","quantity":"factor","unit":"factor"}) },
+  tall: p => N(p, 'height'),
   paint(x, v, p, at) {
-    const L = v.lighting, on = L ? glowLevel(L) : 1, fog = fogCol(L, on), d = N(p, 'density'), H = N(p, 'top'), base = v.y(at.h), top = v.y(at.h + H);
+    const L = v.lighting, on = L ? glowLevel(L) : 1, fog = fogCol(L, on), d = N(p, 'density'), H = N(p, 'height'), base = v.y(at.h), top = v.y(at.h + H);
     if (d <= 0) return;
     const g = x.createLinearGradient(0, top, 0, base);
     g.addColorStop(0, css(fog, 0)); g.addColorStop(1, css(fog, 0.22 * d));
     x.fillStyle = g; x.fillRect(0, top, v.viewW, base - top);
     const span = 2400, par = N(p, 'parallax');
     for (const [fx, fh, w, th] of FOG) {
-      const sx = (((fx + v.t * N(p, 'drift') - v.cam * par) % span) + span) % span - 300;
+      const sx = (((fx + v.t * (N(p, 'velocityX')/60) - v.cam * par) % span) + span) % span - 300;
       if (sx > v.viewW || sx + w < 0) continue;
       const cy = v.y(at.h + fh * H);
       x.fillStyle = css(fog, 0.07 * d); x.beginPath(); x.ellipse(sx + w / 2, cy, w / 2, th, 0, 0, Math.PI * 2); x.fill();
@@ -530,16 +547,17 @@ const fogBank = band({
 // ---------------------------------------------------------------- the transit shed and its canopy
 
 const shed = kit({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'shed', label: 'Transit shed front with canopy: the work bay (harbor shift)',
   fields: {
-    width: num('Width', 730, 80, 4000, 1, 'units'), height: num('Wall height', 172, 60, 600, 1, 'units'),
-    canopy: num('Canopy height', 122, 56, 400, 1, 'units'), fascia: num('Canopy fascia', 12, 4, 40, 1, 'units'), overhang: num('Canopy overhang past the ends', 14, 0, 200, 1, 'units'),
-    wall: colour('Cladding', '#283038'), name: str('Name on the wall', 'TRANSIT SHED 3'), sub: str('Second line', 'NIGHT TRANSPORT · BAY 3'),
-    columns: { kind: 'json', label: 'Canopy columns (x from the left end)', default: [40, 276, 402, 544, 726],
-      validate: v => { if (!Array.isArray(v) || v.some(q => typeof q !== 'number')) throw new Error('Columns: expected a list of numbers'); } },
-    strips: { kind: 'json', label: 'Work lights under the canopy (x)', default: [200, 340, 460, 620],
-      validate: v => { if (!Array.isArray(v) || v.some(q => typeof q !== 'number')) throw new Error('Work lights: expected a list of numbers'); } },
-    stripColor: rgbField('Work light colour (r,g,b)', '255,232,196'), pipes: bool('Downpipes and conduit', true), seed: num('Seed', 3, 0, 1000000),
+    width: shapeLength(num('Width', 730, 80, 4000, 1, 'units')), height: shapeLength(num('Wall height', 172, 60, 600, 1, 'units')),
+    canopy: shapePosition(num('Canopy height', 122, 56, 400, 1, 'units')), fascia: shapeLength(num('Canopy fascia', 12, 4, 40, 1, 'units')), overhang: shapeLength(num('Canopy overhang past the ends', 14, 0, 200, 1, 'units')),
+    wall: appearanceColor(colour('Cladding', '#283038')), name: appearanceText(str('Name on the wall', 'TRANSIT SHED 3')), sub: appearanceText(str('Second line', 'NIGHT TRANSPORT · BAY 3')),
+    columns: appearanceStructure({ kind: 'json', label: 'Canopy columns (x from the left end)', default: [40, 276, 402, 544, 726],
+      validate: v => { if (!Array.isArray(v) || v.some(q => typeof q !== 'number')) throw new Error('Columns: expected a list of numbers'); } ,editor:{kind:'array',item:shapePosition(numericFields({value:40,step:1})('Column X'))}}),
+    strips: appearanceStructure({ kind: 'json', label: 'Work lights under the canopy (x)', default: [200, 340, 460, 620],
+      validate: v => { if (!Array.isArray(v) || v.some(q => typeof q !== 'number')) throw new Error('Work lights: expected a list of numbers'); } ,editor:{kind:'array',item:shapePosition(numericFields({value:40,step:1})('Light strip X'))}}),
+    stripColor: appearanceColor(rgbField('Work light colour (r,g,b)', '255,232,196'),"RGB"), pipes: appearanceBoolean(bool('Downpipes and conduit', true)), seed: generationSeed(num('Seed', 3, 0, 1000000)),
   },
   box: p => ({ x: -N(p, 'overhang'), w: N(p, 'width') + 2 * N(p, 'overhang'), tall: N(p, 'height') + 30 }),
   anchors: p => ({ canopy: { x: N(p, 'width') / 2, h: N(p, 'canopy') + N(p, 'fascia'), role: 'surface' }, roof: { x: N(p, 'width') / 2, h: N(p, 'height') + 4, role: 'surface' } }),
@@ -594,11 +612,12 @@ const shed = kit({
 // ---------------------------------------------------------------- the supervisor's glass booth
 
 const booth = kit({
+  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
   type: 'booth', label: 'Supervisor\'s glass booth (back and front, harbor shift)',
   fields: {
-    part: select('Part (the back behind the person, the front over them)', ['back', 'front'], 'back'), width: num('Width', 96, 50, 300, 1, 'units'), height: num('Height', 80, 56, 160, 1, 'units'),
-    label: str('Sign', 'SUPERVISOR'), sub: str('Sign, second line', 'BAY 3'), hatch: num('Service window width', 46, 0, 200, 1, 'units'),
-    door: select('Door', ['right', 'left', 'none'], 'right'), frame: colour('Frame', '#59636c'), room: colour('Room wall', '#3e3529'),
+    part: appearanceChoice(select('Part (the back behind the person, the front over them)', ['back', 'front'], 'back')), width: shapeLength(num('Width', 96, 50, 300, 1, 'units')), height: shapeLength(num('Height', 80, 56, 160, 1, 'units')),
+    label: appearanceText(str('Sign', 'SUPERVISOR')), sub: appearanceText(str('Sign, second line', 'BAY 3')), hatch: shapeLength(num('Service window width', 46, 0, 200, 1, 'units')),
+    door: appearanceChoice(select('Door', ['right', 'left', 'none'], 'right')), frame: appearanceColor(colour('Frame', '#59636c')), room: appearanceColor(colour('Room wall', '#3e3529')),
   },
   box: p => ({ x: -N(p, 'width') / 2 - 4, w: N(p, 'width') + 8, tall: N(p, 'height') + 30 }),
   anchors: p => ({ roof: { x: 0, h: N(p, 'height') + 6, role: 'surface' } }),
@@ -651,9 +670,10 @@ const booth = kit({
 // ---------------------------------------------------------------- counters, openings, the case rack
 
 const counter = kit({
+  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
   type: 'counter', label: 'Work counter (harbor shift)',
-  fields: { width: num('Width', 56, 8, 600, 1, 'units'), height: num('Height', 22, 6, 80, 1, 'units'), color: colour('Body', '#4a5058'), edge: colour('Top', '#b3b9bd'),
-    style: select('Front', ['steel', 'panel', 'desk'], 'steel'), label: str('Stencil on the front', '') },
+  fields: { width: shapeLength(num('Width', 56, 8, 600, 1, 'units')), height: shapeLength(num('Height', 22, 6, 80, 1, 'units')), color: appearanceColor(colour('Body', '#4a5058')), edge: appearanceColor(colour('Top', '#b3b9bd')),
+    style: appearanceChoice(select('Front', ['steel', 'panel', 'desk'], 'steel')), label: appearanceText(str('Stencil on the front', '')) },
   box: p => ({ x: -N(p, 'width') / 2, w: N(p, 'width'), tall: N(p, 'height') }),
   anchors: p => ({ top: { x: 0, h: N(p, 'height'), role: 'surface' } }),
   paint(x, p) {
@@ -670,10 +690,11 @@ const counter = kit({
 
 const HATCH_STOCK = ['#7a6040', '#39678b', '#77664d', '#5a4a36', '#8a7250', '#3f566e'];
 const hatch = kit({
+  spatial:combineControls(rectangleControls({width:'width',originX:.5,baseline:'sill'}),verticalRangeControls('sill','top')),
   type: 'hatch', label: 'Service opening in the shed wall: dispatch or receiving window (harbor shift)',
-  fields: { width: num('Width', 64, 20, 400, 1, 'units'), sill: num('Sill height', 24, 0, 120, 1, 'units'), top: num('Top', 72, 30, 200, 1, 'units'),
-    shutter: num('Roller shutter down (share)', 0.3, 0, 1, 0.05), stock: select('Inside', ['parcels', 'cases', 'office'], 'parcels'), screen: str('Screen inside', ''),
-    room: colour('Room light colour', '#4a3f2f'), seed: num('Seed', 9, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 64, 20, 400, 1, 'units')), sill: shapeLength(num('Sill height', 24, 0, 120, 1, 'units')), top: shapeLength(num('Top', 72, 30, 200, 1, 'units')),
+    shutter: appearanceRatio(num('Roller shutter down (share)', 0.3, 0, 1, 0.05)), stock: appearanceChoice(select('Inside', ['parcels', 'cases', 'office'], 'parcels')), screen: appearanceText(str('Screen inside', '')),
+    room: appearanceColor(colour('Room light colour', '#4a3f2f')), seed: generationSeed(num('Seed', 9, 0, 1000000)) },
   box: p => ({ x: -N(p, 'width') / 2 - 5, w: N(p, 'width') + 10, tall: N(p, 'top') + 8 }),
   paint(x, p, c) {
     const W = N(p, 'width'), sill = N(p, 'sill'), top = N(p, 'top'), l = -W / 2, oh = top - sill, on = c.on, r = rng(N(p, 'seed') * 17 + 5);
@@ -721,10 +742,11 @@ function drawCase(x: CanvasRenderingContext2D, l: number, b: number, w: number, 
 }
 
 const rack = kit({
+  spatial:rectangleControls({width:'width',originX:.5}),
   type: 'rack', label: 'Transport-case return rack (harbor shift)',
-  fields: { width: num('Width', 104, 30, 400, 1, 'units'), shelves: num('Shelves', 3, 1, 6), slots: num('Slots per shelf', 3, 1, 10),
-    pitch: num('Shelf pitch', 20, 12, 60, 1, 'units'), fill: num('Upper shelves filled', 0.7, 0, 1, 0.05), free: num('Free return slot (bottom shelf, -1 none)', 1, -1, 10),
-    upright: colour('Uprights', '#34516b'), beam: colour('Beams', '#c06a2a'), caseColor: colour('Cases', '#77664d'), seed: num('Seed', 4, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 104, 30, 400, 1, 'units')), shelves: generationCount(num('Shelves', 3, 1, 6)), slots: generationCount(num('Slots per shelf', 3, 1, 10)),
+    pitch: shapeLength(num('Shelf pitch', 20, 12, 60, 1, 'units')), fill: appearanceRatio(num('Upper shelves filled', 0.7, 0, 1, 0.05)), free: semantic(num('Free return slot (bottom shelf, -1 none)', 1, -1, 10),{"group":"Appearance","quantity":"index","unit":"integer"}),
+    upright: appearanceColor(colour('Uprights', '#34516b')), beam: appearanceColor(colour('Beams', '#c06a2a')), caseColor: appearanceColor(colour('Cases', '#77664d')), seed: generationSeed(num('Seed', 4, 0, 1000000)) },
   box: p => ({ x: -N(p, 'width') / 2 - 2, w: N(p, 'width') + 4, tall: N(p, 'shelves') * N(p, 'pitch') + 12 }),
   anchors: () => ({ slot: { x: 0, h: 7, role: 'surface' } }),
   paint(x, p) {
@@ -751,8 +773,9 @@ const rack = kit({
 
 const visible = { visible: bool('Present', true) };
 const parcel = kit({
+  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
   type: 'parcel', label: 'Parcel (harbor shift)', visual: visible,
-  fields: { width: num('Width', 22, 6, 100, 1, 'units'), height: num('Height', 18, 6, 100, 1, 'units'), color: colour('Carton', '#39678b') },
+  fields: { width: shapeLength(num('Width', 22, 6, 100, 1, 'units')), height: shapeLength(num('Height', 18, 6, 100, 1, 'units')), color: appearanceColor(colour('Carton', '#39678b')) },
   box: p => ({ x: -N(p, 'width') / 2, w: N(p, 'width'), tall: N(p, 'height') }),
   paint(x, p, c) {
     if (c.s.visible === false) return;
@@ -765,15 +788,16 @@ const parcel = kit({
 });
 
 const caseEl = kit({
+  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
   type: 'case', label: 'Empty transport case (harbor shift)', visual: { visible: bool('Present', false) },
-  fields: { width: num('Width', 26, 6, 100, 1, 'units'), height: num('Height', 14, 4, 60, 1, 'units'), color: colour('Plastic', '#77664d') },
+  fields: { width: shapeLength(num('Width', 26, 6, 100, 1, 'units')), height: shapeLength(num('Height', 14, 4, 60, 1, 'units')), color: appearanceColor(colour('Plastic', '#77664d')) },
   box: p => ({ x: -N(p, 'width') / 2, w: N(p, 'width'), tall: N(p, 'height') }),
   paint(x, p, c) { if (c.s.visible === true) drawCase(x, -N(p, 'width') / 2, 0, N(p, 'width'), N(p, 'height'), S(p, 'color')); },
 });
 
-const trolley = kit({
+const trolley = kit({spatial:fixedNativeGeometry,
   type: 'trolley', label: 'Platform trolley (harbor shift)', visual: { x: num('Current position (world x)', 0) },
-  fields: { cargo: bool('Load strapped on', true), color: colour('Deck plate', '#8b939a'), stripe: colour('Frame paint', '#c9862a') },
+  fields: { cargo: appearanceBoolean(bool('Load strapped on', true)), color: appearanceColor(colour('Deck plate', '#8b939a')), stripe: appearanceColor(colour('Frame paint', '#c9862a')) },
   box: () => ({ x: -34, w: 68, tall: 44 }),
   paint(x, p, c) {
     // `x` is a world position; the piece paints in its own (possibly turned or scaled) frame, so the move is taken into it:
@@ -794,9 +818,9 @@ const trolley = kit({
   },
 });
 
-const release = kit({
+const release = kit({spatial:fixedNativeGeometry,
   type: 'release', label: 'Wheel-clamp release handle (harbor shift)', visual: { released: bool('Clamp released') },
-  fields: { label: str('Plate', 'CLAMP') },
+  fields: { label: appearanceText(str('Plate', 'CLAMP')) },
   box: () => ({ x: -10, w: 20, tall: 44 }),
   paint(x, p, c) {
     const done = c.s.released === true, col = done ? '34,197,94' : '255,42,68';
@@ -813,12 +837,12 @@ const release = kit({
 
 const clampEl = kit({
   type: 'clamp', label: 'Red wheel clamp (harbor shift)', visual: { released: bool('Released'), trolleyX: num('Trolley position', 0), restX: num('Trolley origin', 0) },
-  fields: { wheel: num('Wheel offset from the trolley', 17, -60, 60, 1, 'units') },
+  fields: { wheelOffsetX: shapePosition(num('Wheel offset from the trolley', 17, -60, 60, 1, 'units')) },
   box: () => ({ x: -12, w: 40, tall: 16 }),
   paint(x, p, c) {
     if (c.s.released === true) return;
     // the trolley's move is in world units; the clamp paints in its own frame (turned with the trolley it is attached to)
-    const wx = (Number(c.s.trolleyX ?? c.at.x) - Number(c.s.restX ?? c.at.x)) / (c.at.scale * c.at.facing) + N(p, 'wheel');
+    const wx = (Number(c.s.trolleyX ?? c.at.x) - Number(c.s.restX ?? c.at.x)) / (c.at.scale * c.at.facing) + N(p, 'wheelOffsetX');
     R(x, wx - 7, 0, 2, 12, '#b5352a'); R(x, wx + 5, 0, 2, 12, '#b5352a'); R(x, wx - 7, 10, 14, 3, '#d0453a'); R(x, wx - 7, 12, 14, 1, 'rgba(255,200,170,.6)');
     R(x, wx - 2, 6, 4, 4, '#e8c03a'); R(x, wx + 7, 2, 5, 6, '#2a2a2a'); R(x, wx + 8, 6, 3, 1, '#c9ced2');
   },
@@ -828,13 +852,13 @@ const clampEl = kit({
 
 const reader = kit({
   type: 'reader', label: 'Checkout: tag reader, turnstile and shelter (harbor shift)', visual: { checked: bool('Tag returned') },
-  fields: { before: str('Screen before', 'SCAN TAG'), after: str('Screen after', 'VERIFIED'), shelter: bool('Shelter roof', true), roof: num('Shelter height', 88, 60, 200, 1, 'units'),
-    reach: num('Shelter reach past the reader (away from the turnstile)', 70, 20, 300, 1, 'units'), turnstile: bool('Turnstile', true),
-    side: select('Turnstile on the', ['left', 'right'], 'left') },
-  box: p => p.side === 'right' ? { x: -N(p, 'reach') - 4, w: 66 + N(p, 'reach') + 4, tall: N(p, 'roof') + 8 } : { x: -66, w: 66 + N(p, 'reach') + 4, tall: N(p, 'roof') + 8 },
-  anchors: p => ({ roof: { x: 0, h: N(p, 'roof') + 2, role: 'surface' } }),
+  fields: { before: appearanceText(str('Screen before', 'SCAN TAG')), after: appearanceText(str('Screen after', 'VERIFIED')), shelter: appearanceBoolean(bool('Shelter roof', true)), roofHeight: shapeLength(num('Shelter height', 88, 60, 200, 1, 'units')),
+    roofReach: shapeLength(num('Shelter reach past the reader (away from the turnstile)', 70, 20, 300, 1, 'units')), turnstile: appearanceBoolean(bool('Turnstile', true)),
+    side: appearanceChoice(select('Turnstile on the', ['left', 'right'], 'left')) },
+  box: p => p.side === 'right' ? { x: -N(p, 'roofReach') - 4, w: 66 + N(p, 'roofReach') + 4, tall: N(p, 'roofHeight') + 8 } : { x: -66, w: 66 + N(p, 'roofReach') + 4, tall: N(p, 'roofHeight') + 8 },
+  anchors: p => ({ roof: { x: 0, h: N(p, 'roofHeight') + 2, role: 'surface' } }),
   paint(x, p, c) {
-    const done = c.s.checked === true, on = c.on, sig = done ? '34,197,94' : '255,42,68', H = N(p, 'roof'), reach = N(p, 'reach');
+    const done = c.s.checked === true, on = c.on, sig = done ? '34,197,94' : '255,42,68', H = N(p, 'roofHeight'), reach = N(p, 'roofReach');
     // the turnstile and shelter are drawn for a turnstile on the left; on the right they are mirrored, the reader's screen is not
     const m = p.side === 'right' ? -1 : 1, Rm = (l: number, b: number, w: number, h: number, col: string) => R(x, m > 0 ? l : -l - w, b, w, h, col);
     if (p.shelter !== false) {
@@ -860,9 +884,9 @@ const reader = kit({
   },
 });
 
-const printer = kit({
+const printer = kit({spatial:fixedNativeGeometry,
   type: 'printer', label: 'Wage-slip printer (harbor shift)', visual: { checked: bool('Statement printed') },
-  fields: { slip: str('Slip', 'NET 3') },
+  fields: { slip: appearanceText(str('Slip', 'NET 3')) },
   box: () => ({ x: -16, w: 32, tall: 46 }),
   paint(x, p, c) {
     const done = c.s.checked === true;
@@ -878,8 +902,9 @@ const printer = kit({
 });
 
 const board = kit({
+  spatial:rectangleControls({width:'width',originX:.5,baseline:'height'}),
   type: 'board', label: 'Shift status board (harbor shift)', visual: { done: bool('Shift complete') },
-  fields: { before: str('Before', 'SHIFT OPEN'), after: str('After', 'SHIFT COMPLETE'), width: num('Width', 96, 20, 400, 1, 'units'), height: num('Height (bottom of the board)', 86, 0, 400, 1, 'units'), legs: num('Legs (0: on its own pole)', 6, 0, 60, 1, 'units') },
+  fields: { before: appearanceText(str('Before', 'SHIFT OPEN')), after: appearanceText(str('After', 'SHIFT COMPLETE')), width: shapeLength(num('Width', 96, 20, 400, 1, 'units')), height: shapeLength(num('Height (bottom of the board)', 86, 0, 400, 1, 'units')), legs: shapeLength(num('Legs (0: on its own pole)', 6, 0, 60, 1, 'units')) },
   box: p => ({ x: -N(p, 'width') / 2 - 2, w: N(p, 'width') + 4, tall: N(p, 'height') + 16 }),
   paint(x, p, c) {
     const W = N(p, 'width'), b = N(p, 'height'), done = c.s.done === true, col = done ? '120,230,150' : '255,186,90', legs = N(p, 'legs');
@@ -895,9 +920,10 @@ const board = kit({
 // ---------------------------------------------------------------- signs, lockers, floor markings, the ends of the bay
 
 const sign = kit({
+  spatial:conditionalControls(rectangleControls({width:'width',originX:.5,baseline:'height'}),(p)=>Number(p.width)>0),
   type: 'sign', label: 'Station sign: stencilled plate with an amber band (harbor shift)',
-  fields: { text: str('Text', 'DISPATCH'), sub: str('Second line', ''), code: str('Code tag', ''), height: num('Height (centre)', 84, 0, 400, 1, 'units'),
-    mount: select('Mount', ['wall', 'chains', 'post'], 'wall'), to: num('Chains up to (height)', 122, 0, 600, 1, 'units'), lamp: bool('Lamp over it', true), width: num('Width (0: fit)', 0, 0, 400, 1, 'units') },
+  fields: { text: appearanceText(str('Text', 'DISPATCH')), sub: appearanceText(str('Second line', '')), code: appearanceText(str('Code tag', '')), height: shapeLength(num('Height (centre)', 84, 0, 400, 1, 'units')),
+    mount: appearanceChoice(select('Mount', ['wall', 'chains', 'post'], 'wall')), to: shapeLength(num('Chains up to (height)', 122, 0, 600, 1, 'units')), lamp: appearanceBoolean(bool('Lamp over it', true)), width: shapeLength(num('Width (0: fit)', 0, 0, 400, 1, 'units')) },
   box: p => { const w = N(p, 'width') || Math.max(S(p, 'text').length * 5.2 + 18, S(p, 'sub').length * 4.6 + 14) + (S(p, 'code') ? 18 : 0); return { x: -w / 2, w, tall: Math.max(N(p, 'height') + 14, N(p, 'to')) }; },
   anchors: p => ({ plate: { x: 0, h: N(p, 'height'), role: 'mount' } }),
   paint(x, p, c) {
@@ -921,16 +947,17 @@ const sign = kit({
 });
 
 const lockers = kit({
+  spatial:repeatedWidthControls('width','count','height'),
   type: 'lockers', label: 'Staff lockers and bench (harbor shift)',
-  fields: { count: num('Lockers', 5, 1, 30), width: num('Locker width', 15, 8, 40, 1, 'units'), height: num('Height', 60, 30, 120, 1, 'units'),
-    color: colour('Paint', '#3d5566'), open: num('Door left open (-1 none)', 3, -1, 30), bench: bool('Bench in front', true), seed: num('Seed', 2, 0, 1000000) },
+  fields: { count: generationCount(num('Lockers', 5, 1, 30)), width: shapeLength(num('Locker width', 15, 8, 40, 1, 'units')), height: shapeLength(num('Height', 60, 30, 120, 1, 'units')),
+    color: appearanceColor(colour('Paint', '#3d5566')), openDoorIndex: semantic(num('Door left open (-1 none)', 3, -1, 30),{"group":"Appearance","quantity":"index","unit":"integer"}), bench: appearanceBoolean(bool('Bench in front', true)), seed: generationSeed(num('Seed', 2, 0, 1000000)) },
   box: p => ({ x: 0, w: N(p, 'count') * N(p, 'width') + 4, tall: N(p, 'height') + 12 }),
   paint(x, p) {
     const n = N(p, 'count'), w = N(p, 'width'), H = N(p, 'height'), col = S(p, 'color'), r = rng(N(p, 'seed') * 19 + 4);
     R(x, 0, 0, n * w + 2, H + 2, '#15191c');
     for (let i = 0; i < n; i++) {
       const l = 1 + i * w;
-      if (i === N(p, 'open')) {
+      if (i === N(p, 'openDoorIndex')) {
         R(x, l + 1, 2, w - 2, H - 2, '#0c0e10'); R(x, l + 3, H - 18, w - 6, 12, '#5a3b26'); R(x, l + 4, H - 10, w - 8, 4, '#d8a03a');
         x.fillStyle = shade(col, 0.8); x.beginPath(); x.moveTo(l + w - 1, -2); x.lineTo(l + w + 6, -6); x.lineTo(l + w + 6, -(H - 4)); x.lineTo(l + w - 1, -H); x.closePath(); x.fill();
         continue;
@@ -947,8 +974,9 @@ const lockers = kit({
 });
 
 const trolleyPark = kit({
+  spatial:repeatedWidthControls('pitch','spots'),
   type: 'trolley-park', label: 'Trolley parking spots on the floor (harbor shift)',
-  fields: { spots: num('Spots', 3, 1, 20), pitch: num('Spot width', 64, 20, 300, 1, 'units'), first: num('First spot number', 3, 0, 999), prefix: str('Prefix', 'T') },
+  fields: { spots: generationCount(num('Spots', 3, 1, 20)), pitch: shapeLength(num('Spot width', 64, 20, 300, 1, 'units')), first: semantic(num('First spot number', 3, 0, 999),{"group":"Appearance","quantity":"index","unit":"integer"}), prefix: appearanceText(str('Prefix', 'T')) },
   box: p => ({ x: 0, w: N(p, 'spots') * N(p, 'pitch'), tall: 6 }),
   paint(x, p) {
     const n = N(p, 'spots'), P = N(p, 'pitch');
@@ -959,8 +987,9 @@ const trolleyPark = kit({
 });
 
 const bay = kit({
+  spatial:rectangleControls({width:'width',originX:.5}),
   type: 'bay', label: 'Marked loading position with its post (harbor shift)',
-  fields: { width: num('Width', 76, 20, 400, 1, 'units'), label: str('Post sign', 'LOADING BAY 2'), stencil: str('On the floor', 'BAY 2'), post: num('Post offset', 50, -400, 400, 1, 'units'), beacon: bool('Amber beacon', true) },
+  fields: { width: shapeLength(num('Width', 76, 20, 400, 1, 'units')), label: appearanceText(str('Post sign', 'LOADING BAY 2')), stencil: appearanceText(str('On the floor', 'BAY 2')), post: shapeLength(num('Post offset', 50, -400, 400, 1, 'units')), beacon: appearanceBoolean(bool('Amber beacon', true)) },
   box: p => ({ x: -N(p, 'width') / 2 - 4 + Math.min(0, N(p, 'post')), w: N(p, 'width') + 8 + Math.abs(N(p, 'post')), tall: 90 }),
   paint(x, p, c) {
     const W = N(p, 'width'), l = -W / 2, on = c.on;
@@ -985,8 +1014,9 @@ const bay = kit({
 });
 
 const end = kit({
+  spatial:conditionalControls(rectangleControls({width:'width'}),p=>p.style!=='bollards'),
   type: 'end', label: 'End of the work bay: bollards, gate or fence (harbor shift)',
-  fields: { style: select('Kind', ['bollards', 'gate', 'fence'], 'bollards'), side: select('Fence runs to the', ['right', 'left'], 'right'), width: num('Fence length', 120, 10, 2000, 1, 'units'), label: str('Gate sign', 'STAFF EXIT · TAGS RETURNED ONLY') },
+  fields: { style: appearanceChoice(select('Kind', ['bollards', 'gate', 'fence'], 'bollards')), side: appearanceChoice(select('Fence runs to the', ['right', 'left'], 'right')), width: shapeLength(num('Fence length', 120, 10, 2000, 1, 'units')), label: appearanceText(str('Gate sign', 'STAFF EXIT · TAGS RETURNED ONLY')) },
   box: p => p.style === 'bollards' ? { x: -6, w: 40, tall: 30 } : p.side === 'left' ? { x: -N(p, 'width') - 10, w: N(p, 'width') + 70, tall: 80 } : { x: -60, w: N(p, 'width') + 70, tall: 80 },
   paint(x, p, c) {
     const style = S(p, 'style');
@@ -1024,24 +1054,29 @@ const end = kit({
 // ---------------------------------------------------------------- the work bay's floor: wet concrete
 
 const floor = band({
+  spatial:rectangleControls({width:'width',height:'depthBelowGround',originY:1}),
   type: 'floor', label: 'Wet concrete floor with puddles (harbor shift)',
   fields: {
-    width: num('Scene width', 1180, 100, 20000, 1, 'units'), concrete: colour('Concrete', '#26241f'), joint: num('Slab joints every', 96, 20, 1000, 1, 'units'),
-    walkway: bool('Walkway line', true),
-    puddles: listOf('Puddles', { x: num('X', 200, -10000, 20000), width: num('Width', 60, 8, 600), depth: num('Depth into the floor', 10, 2, 40) }, 'Add puddle',
-      [{ x: 120, width: 70, depth: 12 }, { x: 470, width: 90, depth: 9 }, { x: 690, width: 60, depth: 14 }, { x: 960, width: 110, depth: 10 }]),
-    glints: listOf('Lights the puddles reflect', { x: num('X', 200, -10000, 20000), color: rgbField('Colour (r,g,b)', SODIUM) }, 'Add light',
-      [{ x: 160, color: '255,214,160' }, { x: 200, color: '255,232,196' }, { x: 470, color: '255,232,196' }, { x: 580, color: '255,214,160' }, { x: 960, color: SODIUM }, { x: 880, color: '255,170,40' }]),
+    depthBelowGround: shapeLength(num('Depth below ground', 384, 54, 6000, 1, 'units')),
+    width: shapeLength(num('Scene width', 1180, 100, 20000, 1, 'units')), concrete: appearanceColor(colour('Concrete', '#26241f')), jointSpacing: shapeLength(num('Slab joints every', 96, 20, 1000, 1, 'units')),
+    walkway: appearanceBoolean(bool('Walkway line', true)),
+    puddles: appearanceStructure(listOf('Puddles', { x: semantic(num('X', 200, -10000, 20000),{"group":"Shape / Area","quantity":"position","unit":"world units","space":"local"}), width: semantic(num('Width', 60, 8, 600),{"group":"Shape / Area","quantity":"length","unit":"world units","space":"local"}), depth: semantic(num('Depth into the floor',10,2,40),{group:'Shape / Area',quantity:'length',unit:'world units',space:'local'}) }, 'Add puddle',
+      [{ x: 120, width: 70, depth: 12 }, { x: 470, width: 90, depth: 9 }, { x: 690, width: 60, depth: 14 }, { x: 960, width: 110, depth: 10 }])),
+    glints: appearanceStructure(listOf('Lights the puddles reflect', { x: semantic(num('X', 200, -10000, 20000),{"group":"Shape / Area","quantity":"position","unit":"world units","space":"local"}), color: semantic(rgbField('Colour (r,g,b)',SODIUM),{group:'Appearance',quantity:'color',unit:'RGB'}) }, 'Add light',
+      [{ x: 160, color: '255,214,160' }, { x: 200, color: '255,232,196' }, { x: 470, color: '255,232,196' }, { x: 580, color: '255,214,160' }, { x: 960, color: SODIUM }, { x: 880, color: '255,170,40' }])),
   },
   tall: () => 0,
+  bounds: p => ({x:0,h:0,w:N(p,'width'),tall:N(p,'depthBelowGround')}),
   paint(x, v, p, at) {
     const gy = Math.round(v.y(at.h)), L = v.lighting, on = L ? glowLevel(L) : 1, sky = L ? skyCols(L)[1] : [20, 14, 30];
-    x.fillStyle = S(p, 'concrete'); x.fillRect(0, gy, v.viewW, v.viewH - gy);
-    const g = x.createLinearGradient(0, gy, 0, v.viewH); g.addColorStop(0, 'rgba(255,230,200,.05)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
-    x.fillStyle = g; x.fillRect(0, gy, v.viewW, v.viewH - gy);
+    const bottom=v.y(at.h-N(p,'depthBelowGround')),left=v.sx(at.x),right=v.sx(at.x+N(p,'width'));
+    x.beginPath();x.rect(left,gy,right-left,bottom-gy);x.clip();
+    x.fillStyle = S(p, 'concrete'); x.fillRect(left, gy, right-left, bottom-gy);
+    const g = x.createLinearGradient(0, gy, 0, v.y(at.h-54)); g.addColorStop(0, 'rgba(255,230,200,.05)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
+    x.fillStyle = g; x.fillRect(left, gy, right-left, bottom-gy);
     x.fillStyle = 'rgba(255,217,165,.14)'; x.fillRect(0, gy, v.viewW, 1);
-    const J = N(p, 'joint');
-    for (let wx = Math.floor(v.cam / J) * J; wx < v.cam + v.viewW + J; wx += J) { const sx = Math.round(v.sx(wx)); x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(sx, gy + 1, 1, v.viewH - gy); }
+    const J = N(p, 'jointSpacing');
+    for (let wx = Math.floor(v.cam / J) * J; wx < v.cam + v.viewW + J; wx += J) { const sx = Math.round(v.sx(wx)); x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(sx, gy + 1, 1, bottom-gy-1); }
     x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(0, gy + 26, v.viewW, 1);
     for (let wx = Math.floor(v.cam / 37) * 37; wx < v.cam + v.viewW + 37; wx += 37) { const q = hash(wx * 0.31); if (q > 0.35) continue; x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(Math.round(v.sx(wx)), gy + 4 + Math.round(q * 40), 10 + Math.round(q * 30), 2); }
     if (p.walkway !== false) { x.fillStyle = 'rgba(216,160,58,.45)'; for (let wx = Math.floor(v.cam / 30) * 30; wx < v.cam + v.viewW + 30; wx += 30) x.fillRect(Math.round(v.sx(wx)), gy + 20, 18, 2); }
@@ -1068,3 +1103,24 @@ export const shiftKitElements: AssetDefinition[] = [farShore, ship, crane, quay,
 
 // Local state (printed, released, complete) does not require a source-scene controller.
 for(const e of shiftKitElements)if(['parcel','release','reader','printer','board'].includes(e.type.slice(6)))e.libraryUse='reusable';
+
+
+// A band has authored elevations but no physical left/right edge to resize.
+farShore.spatial={...viewportElevationControls('maxTowerHeight'),fields:['maxTowerHeight','minTowerHeight','spireX'],validate:p=>{if(N(p,'minTowerHeight')>N(p,'maxTowerHeight'))throw Error('Minimum tower height must not exceed maximum tower height');},handles(p,c){
+ const maximum=viewportElevationControls('maxTowerHeight').handles(p,c),minimum=viewportElevationControls('minTowerHeight').handles({...p,minTowerHeight:N(p,'minTowerHeight')*.4},c).map(h=>({...h,label:'Minimum tower height limit',edit:(d:{x:number;h:number})=>({props:{minTowerHeight:N(p,'minTowerHeight')+d.h/.4}})}));
+ const at=c?.placement??{x:0,h:0},x=N(p,'spireX');
+ return[...maximum,...minimum,{id:'spire',label:'Spire position',fields:['spireX'],cursor:'ew-resize',point:c?{x:c.view.sx(x,N(p,'parallax')*.8)-at.x,h:-c.view.y(at.h)-at.h}:{x,h:0},...(c?{space:'screen' as const}:{}),edit:d=>({props:{spireX:x+d.x}})}];
+}};
+quay.spatial={fields:['edgeY','depthBelowGround'],handles:(p,c)=>{
+ const top=viewportElevationControls('edgeY').handles(p,c),bottom=viewportElevationControls('depthBelowGround').handles({...p,depthBelowGround:-N(p,'depthBelowGround')},c).map(h=>({...h,label:'Quay bottom',edit:(d:{x:number;h:number})=>({props:{depthBelowGround:N(p,'depthBelowGround')-d.h}})}));return[...top,...bottom];
+}};
+fogBank.spatial=viewportElevationControls('height');
+crane.spatial={fields:['trolleyX','dropLength'],handles:p=>{
+ if(N(p,'boomUp')>.15)return[];const g=GANTRIES[(S(p,'gantry') in GANTRIES?S(p,'gantry'):'sts1') as keyof typeof GANTRIES],tx=clamp(N(p,'trolleyX'),g.boom.x0+20,g.boom.x1-20);
+ return[{id:'spreader',label:'Spreader bottom',fields:['dropLength'],cursor:'ns-resize',point:{x:tx,h:g.boom.low-N(p,'dropLength')},edit:d=>({props:{dropLength:N(p,'dropLength')-d.h}})},...(tx===N(p,'trolleyX')?[{id:'trolley',label:'Trolley position',fields:['trolleyX'],cursor:'ew-resize',point:{x:tx,h:g.boom.low},edit:(d:{x:number;h:number})=>({props:{trolleyX:N(p,'trolleyX')+d.x}})}]:[])];
+}};
+crane.derived=p=>{const g=GANTRIES[(S(p,'gantry') in GANTRIES?S(p,'gantry'):'sts1') as keyof typeof GANTRIES];return{effectiveTrolleyX:{label:'Effective trolley X (limited to boom)',value:clamp(N(p,'trolleyX'),g.boom.x0+20,g.boom.x1-20),unit:'world units'}};};
+stackBlock.spatial=conditionalControls(axisControl('columnGap','x',0,'Next column start',{offset:p=>p.box==='20ft'?66:128}),p=>N(p,'columns')>1);
+const clampControls=translatedControls(axisControl('wheelOffsetX','x',6,'Wheel clamp position'),(_p,c)=>({x:c?(Number(c.state?.trolleyX??c.placement.x)-Number(c.state?.restX??c.placement.x))/(c.placement.scale*c.placement.facing):0,h:0}));
+clampEl.spatial={...clampControls,handles:(p,c)=>c?.state?.released===true?[]:clampControls.handles(p,c)};
+reader.spatial={fields:['roofHeight','roofReach'],handles:p=>p.shelter===false?[]:[...axisControl('roofHeight','h',0,'Shelter roof',{offset:4}).handles(p),{id:'shelter-end',label:'Shelter reach',fields:['roofReach'],cursor:'ew-resize',point:{x:(p.side==='right'?-1:1)*(N(p,'roofReach')+4),h:N(p,'roofHeight')+1},edit:d=>({props:{roofReach:N(p,'roofReach')+(p.side==='right'?-1:1)*d.x}})}]};

@@ -6,7 +6,7 @@ import {presentationActorSlots} from './scene-presentation';
 import type {SceneDocument} from './scene-document';
 /**
  * The atrium (scene.json `stage.atrium`): adaptive storeys, a gallery slab and an escalator, measured from two
- * artwork roles. `room` carries the atrium's own parameters (ceil, fascia, slab, rail, far0, step, storey) and
+ * artwork roles. `room` carries the atrium's own parameters (ceil, fascia, slab, rail, far0, stepSpacing, floorHeight) and
  * `escalator` its position and size; the scene's width is the manifest's. Registered because the storey count
  * follows the view's height (the one calculation the artwork cannot state); everything else is the roles.
  *
@@ -21,7 +21,7 @@ const widthOf=(source:SceneDocument,rows:readonly Resolved[])=>{const w=source.m
 export function atriumFrame(view:View,roles:Readonly<Record<string,Resolved>>,rows:readonly Resolved[],source:SceneDocument,a:SceneAtrium):AtriumFrame{
  const room=roles[a.room],escalator=roles[a.escalator];
  if(!room||!escalator)throw new Error('Atrium requires the artwork roles '+a.room+' and '+a.escalator);
- const s=room.props,layout:MallLayout={width:widthOf(source,rows),ceil:Number(s.ceil),fascia:Number(s.fascia),slab:Number(s.slab),rail:Number(s.rail),far0:Number(s.far0),step:Number(s.step),storey:Number(s.storey),escalator:{x:escalator.placement.x,h:escalator.placement.h,w:Number(escalator.props.width)*escalator.placement.scale*escalator.placement.facing}};
+ const s=room.props,layout:MallLayout={width:widthOf(source,rows),ceil:Number(s.ceil),fascia:Number(s.fascia),slab:Number(s.slab),rail:Number(s.rail),far0:Number(s.far0),step:Number(s.stepSpacing),storey:Number(s.floorHeight),escalator:{x:escalator.placement.x,h:escalator.placement.h,w:Number(escalator.props.width)*escalator.placement.scale*escalator.placement.facing}};
  const count=Math.max(2,Math.floor((view.gy-layout.far0-30)/layout.step));
  return{layout,levels:Array.from({length:count},(_,i)=>layout.far0+i*layout.step)};
 }

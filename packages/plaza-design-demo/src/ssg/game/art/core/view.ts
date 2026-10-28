@@ -7,6 +7,8 @@
 import { lightAt, type Light } from '../../world/light';
 import { createLightingFrame, type LightingFrame } from '../atmosphere/lighting';
 export interface View {
+  rendering?:import('../../world/render-settings').ResolvedRenderSettings;
+  weatherSource?:import('../../world/weather').WeatherSource;
   /** Explicit frame inputs. World controllers replace them before painting. */
   lighting: Light;
   illumination: LightingFrame;

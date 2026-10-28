@@ -169,7 +169,7 @@ function evaluate(v:ValueExpr,env:ValueEnv):Value|undefined|typeof SKIP{
  if('engine' in v)return env.engine?.hover??'';
  if('signal' in v)return env.signals?env.signals.read(v.signal):-1e9;
  if('world' in v){
-  if(v.world==='ticker')return TICKER.map(l=>l==='WEATHER'?screenLine():l).join('   ·   ');
+  if(v.world==='ticker')return TICKER.map(l=>l==='WEATHER'?screenLine(undefined,env.view?.weatherSource):l).join('   ·   ');
   const l=env.view?.lighting;if(!l)return SKIP;return Math.min(1,l.night*.9+(1-l.daylight)*.1);
  }
  if('shared' in v){

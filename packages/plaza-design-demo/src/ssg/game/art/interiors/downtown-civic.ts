@@ -1,3 +1,8 @@
+import {colorField} from '../core/fields';
+import {seconds} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,distance,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
+import {floorLayout,floorDiagnostics} from '../buildings/layout';
+import {rectangleControls,combineControls,axisControl,repeatedWidthControls,conditionalControls,fixedGeometry} from '../core/spatial';
 /**
  * INTERIOR KIT, Downtown civic: the city's official face (Tommi, 2026-10-22: Act I walks through Downtown).
  * Three places and the night the city comes looking:
@@ -31,6 +36,7 @@ import { text as paintText } from '../core/primitives';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
 import { drawCar } from '../vehicles/vehicles';
 import { bodyText } from '../vehicles/kit';
+const fixedNativeGeometry=fixedGeometry("This downtown civic component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 type X = CanvasRenderingContext2D;
 
@@ -38,8 +44,8 @@ type X = CanvasRenderingContext2D;
 
 const RED = '255,42,68', GOLD = '216,180,90', TUBE = '236,248,242', AMBER = '255,176,70', GO = '110,230,150', CYAN = '0,230,230', EXIT = '70,230,130';
 const HOURS = ['open', 'closed', 'alarm', 'cut'] as const;
-const hoursField = (): Field => select('Hours (closed: tubes out; alarm: washed red; cut: no power, battery lamps only)', HOURS, 'open');
-const colourField = (label: string, value: string): Field => ({ kind: 'color', label, default: value });
+const hoursField = (): Field => appearanceChoice(select('Hours (closed: tubes out; alarm: washed red; cut: no power, battery lamps only)', HOURS, 'open'));
+const colourField = colorField;
 const hexOr = (v: unknown, d: string) => isHex(v) ? String(v) : d;
 /** Two #rrggbb colours mixed (k 0: a, 1: b), as #rrggbb. */
 const mixHex = (a: string, b: string, k: number) => { const c = (h: string, i: number) => parseInt(h.slice(i, i + 2), 16), q = Math.max(0, Math.min(1, k));
@@ -120,13 +126,14 @@ function clock(x: X, cx: number, h: number, min: number) {
 }
 
 export const roomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.room', label: 'Registry room, cut open (civic kit: hall, office, corridor, records, server, plant)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 400, 40, 4000, 1, 'units'), height: num('Wall height', 92, 50, 300, 1, 'units'), kind: select('Room', ROOM_KINDS, 'hall'), hours: hoursField(),
-    wall: colour('Wall', 'The room’s own'), tubes: num('Tubes that work', 0.9, 0, 1, 0.05), flicker: num('Tubes that flicker', 0.12, 0, 1, 0.05),
-    tubeEvery: num('A tube every', 60, 24, 400, 1, 'units'), dado: bool('Painted dado and bump rail', true), clock: num('Wall clock from the left (-1: none)', -1, -1, 4000, 1, 'units'),
-    exit: num('Exit sign from the left (-1: none)', -1, -1, 4000, 1, 'units'), exitDir: select('Exit sign points', ['right', 'left'], 'right'),
-    cameras: num('Ceiling cameras', 1, 0, 12), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 400, 40, 4000, 1, 'units')), height: shapeLength(num('Wall height', 92, 50, 300, 1, 'units')), kind: appearanceChoice(select('Room', ROOM_KINDS, 'hall')), hours: hoursField(),
+    wall: appearanceStructure(colour('Wall', 'The room’s own')), tubes: appearanceRatio(num('Tubes that work', 0.9, 0, 1, 0.05)), flicker: appearanceRatio(num('Tubes that flicker', 0.12, 0, 1, 0.05)),
+    tubeEvery: shapePosition(num('A tube every', 60, 24, 400, 1, 'units')), dado: appearanceBoolean(bool('Painted dado and bump rail', true)), clock: semantic(num('Wall clock from the left (-1: none)', -1, -1, 4000, 1, 'units'),{"group":"Motion","quantity":"position","unit":"world units","space":"local"}),
+    exit: shapePosition(num('Exit sign from the left (-1: none)', -1, -1, 4000, 1, 'units')), exitDir: appearanceChoice(select('Exit sign points', ['right', 'left'], 'right')),
+    cameras: shapeLength(num('Ceiling cameras', 1, 0, 12)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(Number(p.width), Number(p.height)),
@@ -185,11 +192,11 @@ export const roomElement = piece({
 
 // ---------------------------------------------------------------- the public hall
 
-export const ticketMachineElement = piece({
+export const ticketMachineElement = piece({spatial:fixedNativeGeometry,
   type: 'civic.ticket-machine', label: 'Ticket machine: take a number (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    label: text('Sign on its post (empty: none)', 'TAKE A NUMBER'), paper: select('Paper', ['ok', 'low', 'out'], 'ok'), litter: num('Tickets dropped on the floor', 0.6, 0, 1, 0.05),
-    tell: bool('Usable (cyan tell)', true), hours: hoursField(), seed: num('Seed', 1, 0, 1000000),
+    label: appearanceText(text('Sign on its post (empty: none)', 'TAKE A NUMBER')), paper: appearanceChoice(select('Paper', ['ok', 'low', 'out'], 'ok')), litter: appearanceRatio(num('Tickets dropped on the floor', 0.6, 0, 1, 0.05)),
+    tell: appearanceBoolean(bool('Usable (cyan tell)', true)), hours: hoursField(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: () => ({ w: 24, tall: 80 }),
   bounds: () => ({ x: -20, h: 80, w: 64, tall: 82 }),
@@ -219,11 +226,12 @@ export const ticketMachineElement = piece({
 });
 
 export const numberDisplayElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.number-display', label: 'Now serving display (civic kit: queue numbers, the wait)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 124, 60, 600, 1, 'units'), height: num('Height', 26, 18, 80, 1, 'units'), prefix: text('Number prefix', 'A'), start: num('First number', 17, 0, 999),
-    step: num('Next number every (frames)', 1400, 60, 60000, 10), counters: num('Counters it calls to', 4, 1, 20), open: text('Counters open (comma list; empty: all)', '3'),
-    wait: text('Line under it', 'ESTIMATED WAIT 4 H 10 MIN'), rods: num('Rods up to the ceiling (0: on the wall)', 0, 0, 400, 1, 'units'), hours: hoursField(),
+    width: shapeLength(num('Width', 124, 60, 600, 1, 'units')), height: shapeLength(num('Height', 26, 18, 80, 1, 'units')), prefix: appearanceText(text('Number prefix', 'A')), start: shapePosition(num('First number', 17, 0, 999)),
+    stepDuration:seconds("Number interval",23.333333333333332,{"min":1,"max":1000,"step":0.16666666666666666}), counters: generationCount(num('Counters it calls to', 4, 1, 20)), open: appearanceText(text('Counters open (comma list; empty: all)', '3')),
+    wait: appearanceText(text('Line under it', 'ESTIMATED WAIT 4 H 10 MIN')), rods: shapeLength(num('Rods up to the ceiling (0: on the wall)', 0, 0, 400, 1, 'units')), hours: hoursField(),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.rods) }),
   bounds: p => box(Number(p.width), Number(p.height) + Number(p.rods)),
@@ -234,7 +242,7 @@ export const numberDisplayElement = piece({
     R(x, -1, -1, W + 2, H + 2, '#30363a'); R(x, 0, 0, W, H, '#0b0d0e');
     if (!on) { if (p.hours !== 'cut') T(x, p.hours === 'alarm' ? '- - -' : 'SERVICE CLOSED', W / 2, H / 2, rgba(AMBER, 0.35), 7, '700'); return; }
     const open = String(p.open ?? '').split(',').map(s => parseInt(s, 10)).filter(n => n > 0), counters = Number(p.counters);
-    const step = Number(p.step), k = Math.floor(t / step), n = Number(p.start) + k, fresh = t - k * step < 90;
+    const step = (Number(p.stepDuration)*60), k = Math.floor(t / step), n = Number(p.start) + k, fresh = t - k * step < 90;
     const counter = open.length ? open[k % open.length] : (k % counters) + 1;
     const blink = !fresh || Math.floor(t / 10) % 2 === 0;
     T(x, 'NOW SERVING', 6, H - 7, 'rgba(232,226,210,.75)', 6, '600', 'left');
@@ -255,16 +263,17 @@ export const numberDisplayElement = piece({
 });
 
 export const chairsElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'civic.chairs', label: 'Linked plastic chairs on a beam (civic kit: the waiting room)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    count: num('Seats', 8, 1, 40), seat: num('Seat width', 20, 10, 40, 1, 'units'), height: num('Seat height (sit people here)', 10, 6, 20, 1, 'units'),
-    colour: colourField('Plastic', '#4c6472'), broken: num('Seats broken or taped off', 0.1, 0, 1, 0.05), legEvery: num('Legs every N seats', 3, 1, 10), hours: hoursField(), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Seats', 8, 1, 40)), seat: shapeLength(num('Seat width', 20, 10, 40, 1, 'units')), height: shapeLength(num('Seat height (sit people here)', 10, 6, 20, 1, 'units')),
+    paintColor: appearanceColor(colourField('Plastic', '#4c6472')), broken: appearanceRatio(num('Seats broken or taped off', 0.1, 0, 1, 0.05)), legEvery: shapePosition(num('Legs every N seats', 3, 1, 10)), hours: hoursField(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.count) * Number(p.seat), tall: Number(p.height) + 16 }),
   bounds: p => box(Number(p.count) * Number(p.seat), Number(p.height) + 16),
   anchors: p => ({ ...origin(), seat: { x: Number(p.seat) / 2, h: Number(p.height), role: 'surface' } }),
   paint(x, p, o) {
-    const n = Number(p.count), s = Number(p.seat), H = Number(p.height), col = hexOr(p.colour, '#4c6472'), seed = Number(p.seed), W = n * s;
+    const n = Number(p.count), s = Number(p.seat), H = Number(p.height), col = hexOr(p.paintColor, '#4c6472'), seed = Number(p.seed), W = n * s;
     R(x, 0, H - 4, W, 2, '#2a3034'); R(x, 0, H - 2, W, 1, 'rgba(255,255,255,.15)');
     for (let i = 0; i <= n; i += Number(p.legEvery)) { const lx = Math.min(W - 3, i * s); R(x, lx, 0, 2, H - 4, '#2a3034'); R(x, lx - 2, 0, 6, 1, '#1d2225'); }
     for (let i = 0; i < n; i++) {
@@ -288,15 +297,15 @@ export const chairsElement = piece({
 export const countersElement = piece({
   type: 'civic.counters', label: 'Service counters behind glass (civic kit: one window open)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    windows: num('Windows', 4, 1, 16), bay: num('Window width', 50, 30, 120, 1, 'units'), counter: num('Counter height', 30, 20, 44, 1, 'units'),
-    glass: num('Glass up to', 74, 50, 140, 1, 'units'), open: text('Windows open (comma list)', '3'), label: text('Fascia (empty: none)', 'COUNTERS 1–4'),
-    line: bool('Wait-behind line on the floor', true), part: select('Draws (back: the staff side, to put clerks between)', ['all', 'back', 'front'], 'all'), hours: hoursField(), seed: num('Seed', 1, 0, 1000000),
+    windows: generationCount(num('Windows', 4, 1, 16)), windowWidth: shapeLength(num('Window width', 50, 30, 120, 1, 'units')), counterHeight: shapePosition(num('Counter height', 30, 20, 44, 1, 'units')),
+    glassTopY: shapePosition(num('Glass up to', 74, 50, 140, 1, 'units')), open: appearanceText(text('Windows open (comma list)', '3')), label: appearanceText(text('Fascia (empty: none)', 'COUNTERS 1–4')),
+    line: appearanceBoolean(bool('Wait-behind line on the floor', true)), part: appearanceChoice(select('Draws (back: the staff side, to put clerks between)', ['all', 'back', 'front'], 'all')), hours: hoursField(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.windows) * Number(p.bay), tall: Number(p.glass) + 26 }),
-  bounds: p => box(Number(p.windows) * Number(p.bay), Number(p.glass) + 26),
-  anchors: p => ({ ...origin(), ...Object.fromEntries(Array.from({ length: Number(p.windows) }, (_, i) => ['window' + (i + 1), { x: (i + 0.5) * Number(p.bay), h: 0, role: 'mount' as const }])) }),
+  size: p => ({ w: Number(p.windows) * Number(p.windowWidth), tall: Number(p.glassTopY) + 26 }),
+  bounds: p => box(Number(p.windows) * Number(p.windowWidth), Number(p.glassTopY) + 26),
+  anchors: p => ({ ...origin(), ...Object.fromEntries(Array.from({ length: Number(p.windows) }, (_, i) => ['window' + (i + 1), { x: (i + 0.5) * Number(p.windowWidth), h: 0, role: 'mount' as const }])) }),
   paint(x, p, o) {
-    const n = Number(p.windows), B = Number(p.bay), C = Number(p.counter), G = Number(p.glass), W = n * B, t = o.t, seed = Number(p.seed);
+    const n = Number(p.windows), B = Number(p.windowWidth), C = Number(p.counterHeight), G = Number(p.glassTopY), W = n * B, t = o.t, seed = Number(p.seed);
     const open = new Set(String(p.open ?? '').split(',').map(s => parseInt(s, 10)).filter(k => k > 0)), staffed = p.hours === 'open';
     const back = p.part !== 'front', front = p.part !== 'back';
     for (let i = 0; i < n; i++) {
@@ -320,7 +329,7 @@ export const countersElement = piece({
       x.fillStyle = 'rgba(240,250,255,.12)'; x.beginPath(); x.moveTo(bx + 8, y(G - 2)); x.lineTo(bx + 18, y(G - 2)); x.lineTo(bx + 6, y(C + 6)); x.lineTo(bx + 3, y(C + 6)); x.closePath(); x.fill();
       for (let a = 0; a < 6; a++) R(x, bx + B / 2 - 5 + (a % 3) * 4, C + 18 + Math.floor(a / 3) * 3, 1, 1, 'rgba(30,34,38,.6)');
       R(x, bx + B / 2 - 9, C, 18, 2, '#1a1d20');
-      // the counter: laminate, a lit top edge, the window's number on a card
+      // the counterHeight: laminate, a lit top edge, the window's number on a card
       R(x, bx, 0, B, C, '#8b949a'); R(x, bx, C - 3, B, 3, '#d2d6d8'); R(x, bx, C - 4, B, 1, 'rgba(0,0,0,.25)'); R(x, bx, 0, B, 4, '#3b4146');
       R(x, bx + B / 2 - 6, C - 16, 12, 9, '#eceeef'); T(x, String(i + 1), bx + B / 2, C - 11.5, 'rgba(40,46,52,.95)', 7, '700');
       // over the window: its number lit when it is open
@@ -339,10 +348,11 @@ export const countersElement = piece({
 });
 
 export const boothsElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.booths', label: 'Privacy booths (civic kit: frosted panels, a terminal inside)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    count: num('Booths', 2, 1, 12), width: num('Booth width', 34, 24, 80, 1, 'units'), height: num('Panel height', 70, 50, 120, 1, 'units'),
-    occupied: text('Booths in use (comma list)', '1'), label: text('Plate (number appended)', 'BOOTH'), hours: hoursField(), seed: num('Seed', 1, 0, 1000000),
+    count: generationCount(num('Booths', 2, 1, 12)), width: shapeLength(num('Booth width', 34, 24, 80, 1, 'units')), height: shapeLength(num('Panel height', 70, 50, 120, 1, 'units')),
+    occupied: appearanceText(text('Booths in use (comma list)', '1')), label: appearanceText(text('Plate (number appended)', 'BOOTH')), hours: hoursField(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.count) * (Number(p.width) + 3) + 3, tall: Number(p.height) + 12 }),
   bounds: p => box(Number(p.count) * (Number(p.width) + 3) + 3, Number(p.height) + 12),
@@ -395,12 +405,13 @@ function holdPage(x: X, mode: string, W: number, H: number, t: number, p: Proper
 }
 
 export const holdScreenElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.hold-screen', label: 'Registry screen: please hold, appointments, Premium (civic kit)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 110, 50, 600, 1, 'units'), height: num('Height', 46, 26, 300, 1, 'units'), mode: select('Shows', HOLD_MODES, 'hold'),
-    alternate: select('Takes turns with', ['none', ...HOLD_MODES], 'premium'), period: num('Page time (frames)', 600, 60, 20000, 10),
-    position: num('Queue position', 214, 1, 99999), appointment: text('Appointment line', 'IN 90 DAYS'), rec: bool('REC light', true),
-    rods: num('Rods up to the ceiling (0: on the wall)', 0, 0, 400, 1, 'units'), hours: hoursField(),
+    width: shapeLength(num('Width', 110, 50, 600, 1, 'units')), height: shapeLength(num('Height', 46, 26, 300, 1, 'units')), mode: appearanceChoice(select('Shows', HOLD_MODES, 'hold')),
+    alternate: appearanceChoice(select('Takes turns with', ['none', ...HOLD_MODES], 'premium')), pageDuration:seconds("Page duration",10,{"min":1,"max":333.3333333333333,"step":0.16666666666666666}),
+    position: semantic(num('Queue position', 214, 1, 99999),{"group":"Appearance","quantity":"index","unit":"integer"}), appointment: appearanceText(text('Appointment line', 'IN 90 DAYS')), rec: appearanceBoolean(bool('REC light', true)),
+    rods: shapeLength(num('Rods up to the ceiling (0: on the wall)', 0, 0, 400, 1, 'units')), hours: hoursField(),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.rods) }),
   bounds: p => box(Number(p.width), Number(p.height) + Number(p.rods)),
@@ -409,7 +420,7 @@ export const holdScreenElement = piece({
     const W = Number(p.width), H = Number(p.height), t = o.t, rods = Number(p.rods);
     if (rods > 0) for (const rx of [10, W - 11]) R(x, rx, H, 1, rods + 2, '#4d5459');
     R(x, -3, -3, W + 6, H + 6, '#1a1d20'); R(x, -3, H + 2, W + 6, 1, 'rgba(255,255,255,.15)');
-    const alt = String(p.alternate), page = alt !== 'none' && Math.floor(t / Number(p.period)) % 2 === 1 ? alt : String(p.mode);
+    const alt = String(p.alternate), page = alt !== 'none' && Math.floor(t / (Number(p.pageDuration)*60)) % 2 === 1 ? alt : String(p.mode);
     if (p.hours === 'cut') R(x, 0, 0, W, H, '#07090a'); else holdPage(x, p.hours === 'open' ? page : 'closed', W, H, t, p);
     if (p.rec !== false && p.hours !== 'cut' && Math.floor(t / 40) % 2 === 0) R(x, W - 5, -2, 2, 1, rgba(RED, 0.95));
     if (p.hours === 'open') o.light?.(W / 2, H / 2, W, H, page === 'premium' ? GOLD : '220,230,236', 'screen');
@@ -425,11 +436,12 @@ const POSTERS: Record<string, { bg: string; ink: string; head?: string; lines: s
   custom: { bg: '#e9ebe8', ink: 'rgba(40,46,52,.95)', head: '', lines: [] },
 };
 export const posterElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.poster', label: 'Registry poster in a frame (civic kit: Premium, notices)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
-    kind: select('Poster', Object.keys(POSTERS), 'premium'), width: num('Width', 46, 20, 300, 1, 'units'), height: num('Height', 62, 20, 300, 1, 'units'),
-    lines: text('Lines (custom; split by /)', 'NOTICE/PLEASE HOLD'), header: text('Red header (custom; empty: none)', ''), frame: bool('Steel frame', true),
-    faded: num('Faded', 0, 0, 1, 0.05), hours: hoursField(),
+    kind: appearanceChoice(select('Poster', Object.keys(POSTERS), 'premium')), width: shapeLength(num('Width', 46, 20, 300, 1, 'units')), height: shapeLength(num('Height', 62, 20, 300, 1, 'units')),
+    lines: appearanceText(text('Lines (custom; split by /)', 'NOTICE/PLEASE HOLD')), header: appearanceText(text('Red header (custom; empty: none)', '')), frame: appearanceBoolean(bool('Steel frame', true)),
+    faded: appearanceRatio(num('Faded', 0, 0, 1, 0.05)), hours: hoursField(),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(Number(p.width), Number(p.height)),
@@ -450,10 +462,11 @@ export const posterElement = piece({
 });
 
 export const queueRailElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'civic.queue-rail', label: 'Belt barrier posts (civic kit: queue here)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    posts: num('Posts', 4, 2, 30), spacing: num('Spacing', 28, 10, 120, 1, 'units'), height: num('Height', 30, 18, 44, 1, 'units'),
-    belt: colourField('Belt', '#45607a'), sign: text('Sign on the first post (empty: none)', 'QUEUE HERE'), slack: bool('One belt unhooked and hanging', true), hours: hoursField(),
+    posts: generationCount(num('Posts', 4, 2, 30)), spacing: shapeLength(num('Spacing', 28, 10, 120, 1, 'units')), height: shapeLength(num('Height', 30, 18, 44, 1, 'units')),
+    belt: appearanceColor(colourField('Belt', '#45607a')), sign: appearanceText(text('Sign on the first post (empty: none)', 'QUEUE HERE')), slack: appearanceBoolean(bool('One belt unhooked and hanging', true)), hours: hoursField(),
   },
   size: p => ({ w: (Number(p.posts) - 1) * Number(p.spacing) + 8, tall: Number(p.height) + 14 }),
   bounds: p => box((Number(p.posts) - 1) * Number(p.spacing) + 8, Number(p.height) + 14, -4),
@@ -475,11 +488,12 @@ export const queueRailElement = piece({
 
 const DOOR_KINDS = ['staff', 'fire', 'plain', 'cage'] as const;
 export const staffDoorElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.staff-door', label: 'Door with a card reader (civic kit: staff only, fire exit, records cage)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    kind: select('Door', DOOR_KINDS, 'staff'), width: num('Width', 26, 18, 60, 1, 'units'), height: num('Height', 56, 46, 90, 1, 'units'),
-    plate: text('Plate over it (empty: none)', 'STAFF ONLY'), state: select('State', ['closed', 'open', 'forced'], 'closed'),
-    reader: bool('Card reader', true), tell: bool('Usable (cyan tell on the reader)', false), hours: hoursField(),
+    kind: appearanceChoice(select('Door', DOOR_KINDS, 'staff')), width: shapeLength(num('Width', 26, 18, 60, 1, 'units')), height: shapeLength(num('Height', 56, 46, 90, 1, 'units')),
+    plate: appearanceText(text('Plate over it (empty: none)', 'STAFF ONLY')), state: appearanceChoice(select('State', ['closed', 'open', 'forced'], 'closed')),
+    reader: appearanceBoolean(bool('Card reader', true)), tell: appearanceBoolean(bool('Usable (cyan tell on the reader)', false)), hours: hoursField(),
   },
   size: p => ({ w: Number(p.width) + 14, tall: Number(p.height) + 14 }),
   bounds: p => box(Number(p.width) + 14, Number(p.height) + 14, -3),
@@ -515,14 +529,14 @@ export const staffDoorElement = piece({
 export const terminalBankElement = piece({
   type: 'civic.terminal-bank', label: 'Terminal bank: desks, monitors, partitions (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    desks: num('Desks', 4, 1, 20), desk: num('Desk width', 52, 36, 100, 1, 'units'), partitions: bool('Fabric partitions behind', true),
-    tell: num('Usable terminal (cyan tell; 0: none)', 0, 0, 20), people: text('Desks with a chair pulled out (comma list)', '2'), hours: hoursField(), seed: num('Seed', 1, 0, 1000000),
+    desks: generationCount(num('Desks', 4, 1, 20)), deskWidth: shapeLength(num('Desk width', 52, 36, 100, 1, 'units')), partitions: appearanceBoolean(bool('Fabric partitions behind', true)),
+    highlightedIndex: semantic(num('Usable terminal (cyan tell; 0: none)', 0, 0, 20),{"group":"Appearance","quantity":"index","unit":"integer"}), people: appearanceText(text('Desks with a chair pulled out (comma list)', '2')), hours: hoursField(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.desks) * Number(p.desk), tall: 56 }),
-  bounds: p => box(Number(p.desks) * Number(p.desk), 56),
-  anchors: p => ({ ...origin(), ...Object.fromEntries(Array.from({ length: Number(p.desks) }, (_, i) => ['desk' + (i + 1), { x: (i + 0.3) * Number(p.desk), h: 0, role: 'mount' as const }])) }),
+  size: p => ({ w: Number(p.desks) * Number(p.deskWidth), tall: 56 }),
+  bounds: p => box(Number(p.desks) * Number(p.deskWidth), 56),
+  anchors: p => ({ ...origin(), ...Object.fromEntries(Array.from({ length: Number(p.desks) }, (_, i) => ['desk' + (i + 1), { x: (i + 0.3) * Number(p.deskWidth), h: 0, role: 'mount' as const }])) }),
   paint(x, p, o) {
-    const n = Number(p.desks), D = Number(p.desk), seed = Number(p.seed), t = o.t, hours = String(p.hours), tell = Number(p.tell);
+    const n = Number(p.desks), D = Number(p.deskWidth), seed = Number(p.seed), t = o.t, hours = String(p.hours), tell = Number(p.highlightedIndex);
     const pulled = new Set(String(p.people ?? '').split(',').map(s => parseInt(s, 10)));
     for (let i = 0; i < n; i++) {
       const dx = i * D, cx = dx + D * 0.58, s = seed * 41 + i;
@@ -551,17 +565,18 @@ export const terminalBankElement = piece({
 });
 
 export const recordsElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'civic.records', label: 'Records stacks: mobile shelving, archive boxes (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    units: num('Shelving units', 5, 1, 30), unit: num('Unit width', 30, 16, 80, 1, 'units'), height: num('Height', 64, 30, 200, 1, 'units'),
-    fill: num('Boxes on the shelves', 0.85, 0, 1, 0.05), aisle: num('Open aisle before unit (0: none)', 3, 0, 30), labels: bool('Box labels', true),
-    hours: hoursField(), seed: num('Seed', 1, 0, 1000000),
+    units: generationCount(num('Shelving units', 5, 1, 30)), unit: shapeLength(num('Unit width', 30, 16, 80, 1, 'units')), height: shapeLength(num('Height', 64, 30, 200, 1, 'units')),
+    fill: appearanceRatio(num('Boxes on the shelves', 0.85, 0, 1, 0.05)), openAisleIndex: semantic(num('Open aisle before unit (0: none)', 3, 0, 30),{"group":"Generation","quantity":"index","unit":"integer"}), labels: appearanceBoolean(bool('Box labels', true)),
+    hours: hoursField(), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.units) * Number(p.unit) + (Number(p.aisle) > 0 ? 22 : 0), tall: Number(p.height) }),
-  bounds: p => box(Number(p.units) * Number(p.unit) + (Number(p.aisle) > 0 ? 22 : 0), Number(p.height)),
+  size: p => ({ w: Number(p.units) * Number(p.unit) + (Number(p.openAisleIndex) > 0 ? 22 : 0), tall: Number(p.height) }),
+  bounds: p => box(Number(p.units) * Number(p.unit) + (Number(p.openAisleIndex) > 0 ? 22 : 0), Number(p.height)),
   anchors: () => origin(),
   paint(x, p, o) {
-    const n = Number(p.units), U = Number(p.unit), H = Number(p.height), seed = Number(p.seed), aisle = Number(p.aisle), fill = Number(p.fill);
+    const n = Number(p.units), U = Number(p.unit), H = Number(p.height), seed = Number(p.seed), aisle = Number(p.openAisleIndex), fill = Number(p.fill);
     const W = n * U + (aisle > 0 ? 22 : 0);
     R(x, 0, 0, W, 1, '#3a3f43'); R(x, 0, -2, W, 1, '#2a2e31');
     let ux = 0;
@@ -596,11 +611,12 @@ export const recordsElement = piece({
 
 const NODE_STATES = ['idle', 'verifying', 'tripped', 'backup'] as const;
 export const nodeElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'civic.node', label: 'Local verification node: server cabinets and the red watchdog (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    cabinets: num('Cabinets', 4, 1, 16), height: num('Height', 66, 40, 140, 1, 'units'), state: select('State', NODE_STATES, 'idle'),
-    label: text('Plate (gold on black; empty: none)', 'LOCAL VERIFICATION NODE · DT-07'), tell: bool('Service port (cyan tell)', true),
-    cables: num('Cables up to the ceiling', 26, 0, 300, 1, 'units'), watchdog: bool('Watchdog eye on top', true), seed: num('Seed', 1, 0, 1000000),
+    cabinets: generationCount(num('Cabinets', 4, 1, 16)), height: shapeLength(num('Height', 66, 40, 140, 1, 'units')), state: appearanceChoice(select('State', NODE_STATES, 'idle')),
+    label: appearanceText(text('Plate (gold on black; empty: none)', 'LOCAL VERIFICATION NODE · DT-07')), tell: appearanceBoolean(bool('Service port (cyan tell)', true)),
+    cables: shapeLength(num('Cables up to the ceiling', 26, 0, 300, 1, 'units')), watchdog: appearanceBoolean(bool('Watchdog eye on top', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.cabinets) * 24, tall: Number(p.height) + Math.max(30, Number(p.cables)) }),
   bounds: p => box(Number(p.cabinets) * 24, Number(p.height) + Math.max(30, Number(p.cables))),
@@ -650,14 +666,14 @@ export const nodeElement = piece({
 export const alarmElement = piece({
   type: 'civic.alarm', label: 'Alarm: beacon, keypad panel or bell box (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['beacon', 'panel', 'bell'], 'beacon'), state: select('State', ['off', 'armed', 'tripped'], 'armed'),
-    reach: num('Light reach', 1, 0, 3, 0.05), phase: num('Phase', 0, 0, 1000),
+    kind: appearanceChoice(select('Kind', ['beacon', 'panel', 'bell'], 'beacon')), state: appearanceChoice(select('State', ['off', 'armed', 'tripped'], 'armed')),
+    reachScale: semantic(num('Light reach multiplier', 1, 0, 3, 0.05),{group:'Appearance',quantity:'factor',unit:'factor'}), timeOffset:seconds("Time offset",0,{"min":0,"max":16.666666666666668,"step":0.016666666666666666}),
   },
-  size: () => ({ w: 24, tall: 30 }), reach: p => 90 * Number(p.reach),
+  size: () => ({ w: 24, tall: 30 }), reach: p => 90 * Number(p.reachScale),
   bounds: p => p.kind === 'panel' ? box(20, 26) : { x: -10, h: 20, w: 20, tall: 22 },
   anchors: () => origin(),
   paint(x, p, o) {
-    const state = String(p.state), t = o.t + Number(p.phase), on = state === 'tripped', kind = String(p.kind);
+    const state = String(p.state), t = o.t + (Number(p.timeOffset)*60), on = state === 'tripped', kind = String(p.kind);
     if (kind === 'panel') {
       R(x, 0, 0, 20, 26, '#d4d8d9'); R(x, 0, 0, 1, 26, 'rgba(255,255,255,.6)'); R(x, 19, 0, 1, 26, 'rgba(0,0,0,.25)');
       R(x, 3, 16, 14, 7, '#14301e'); T(x, on ? 'ALARM' : state === 'armed' ? 'SET' : 'OFF', 10, 19.5, on ? (Math.floor(t / 8) % 2 ? 'rgba(255,90,100,1)' : 'rgba(120,20,30,1)') : rgba(GO, 0.9), 5, '700');
@@ -670,13 +686,13 @@ export const alarmElement = piece({
       x.fillStyle = '#7a1d24'; x.fillRect(-9, y(18), 18, 18); x.fillStyle = '#b8262f'; x.fillRect(-8, y(17), 16, 16);
       T(x, 'ALARM', 0, 7, 'rgba(250,240,235,.9)', 5, '700');
       R(x, -4, 18, 8, 3, on && Math.floor(t / 5) % 2 ? 'rgba(255,240,220,1)' : 'rgba(200,190,170,.5)');
-      if (on) o.glow?.(0, 20, { kind: 'neon', col: '255,220,200', r: 50 * Number(p.reach), a: Math.floor(t / 5) % 2 ? 0.8 : 0.1 });
+      if (on) o.glow?.(0, 20, { kind: 'neon', col: '255,220,200', r: 50 * Number(p.reachScale), a: Math.floor(t / 5) % 2 ? 0.8 : 0.1 });
       return;
     }
     // the beacon: a base on the wall, a red dome with a turning reflector
     R(x, -5, 0, 10, 3, '#2a2e31'); R(x, -4, 3, 8, 7, on ? '#ff2a44' : '#5a1820'); R(x, -3, 9, 6, 1, 'rgba(255,255,255,.3)');
     if (!on) { if (state === 'armed' && Math.floor(t / 90) % 2) R(x, -1, 5, 2, 2, 'rgba(255,120,130,.9)'); return; }
-    const a = t * 0.12, c = Math.cos(a), L = 70 * Number(p.reach);
+    const a = t * 0.12, c = Math.cos(a), L = 70 * Number(p.reachScale);
     R(x, Math.round(c * 3) - 1, 4, 2, 5, 'rgba(255,240,240,1)');
     // two beams swinging round
     for (const side of [1, -1]) {
@@ -692,29 +708,30 @@ export const alarmElement = piece({
 
 export const registryFrontElement = piece({
   type: 'civic.registry-front', label: 'Registry service point front (civic kit: grey-white panels, glazing, the seal)', category: 'architecture', libraryUse: 'reusable',
+  spatial:rectangleControls({width:'width',height:'height'}),derived:floorDiagnostics(40),validateProperties:p=>{floorLayout(p,40);},
   fields: {
-    width: num('Width', 720, 160, 4000, 1, 'units'), ground: num('Ground floor height', 96, 70, 200, 1, 'units'), floors: num('Floors above', 2, 0, 20),
-    storey: num('Floor height', 80, 60, 160, 1, 'units'), wall: colour('Panels', 'Registry grey'), door: num('Entrance from the left', 40, 0, 4000, 1, 'units'),
-    doorWidth: num('Entrance width', 40, 26, 120, 1, 'units'), staffDoor: num('Staff door from the left (-1: none)', 650, -1, 4000, 1, 'units'),
-    name: text('Name on the fascia', 'REGISTRY SERVICE POINT'), branch: text('Branch', 'DOWNTOWN 07'), hours: text('Opening hours (lines split by /)', 'MON–SAT/08:00–16:00/BY NUMBER ONLY'),
-    contractor: text('Contractor plate (gold on black)', 'PLAZA HOLDINGS · UNDER CONTRACT'), closed: bool('After hours (shutters down)', false),
-    lit: num('Office windows lit', 0.6, 0, 1, 0.05), queue: num('Heads seen through the glass', 0.6, 0, 1, 0.05), cameras: num('Cameras on brackets', 3, 0, 12),
-    watchdog: bool('Watchdog eye over the entrance', true), entrance: select('Entrance', ['bay', 'flush'], 'bay'),
-    relief: num('Seal relief over the entrance (radius; 0: none)', 26, 0, 80, 1, 'units'), plaque: text('Bronze plaque by the doors (empty: none)', 'REGISTRY OF PERSONS'),
-    recess: num('Recessed granite bay from the left (-1: none)', -1, -1, 4000, 1, 'units'), recessWidth: num('Granite bay width', 160, 40, 2000, 1, 'units'),
-    tower: num('Stair tower from the left (-1: none)', -1, -1, 4000, 1, 'units'), power: select('Power (cut: street lights and signs off)', ['on', 'cut'], 'on'),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 720, 160, 4000, 1, 'units')), groundFloorHeight: shapeLength(distance('Ground floor height',96,{min:70,max:200})), height: shapeLength(distance('Height',296,{min:0,max:3500})),
+    floorHeight: shapeLength(distance('Floor height',80,{min:60,max:160})), wall: appearanceStructure(colour('Panels', 'Registry grey')), door: shapePosition(num('Entrance from the left', 40, 0, 4000, 1, 'units')),
+    doorWidth: shapeLength(num('Entrance width', 40, 26, 120, 1, 'units')), staffDoor: shapePosition(num('Staff door from the left (-1: none)', 650, -1, 4000, 1, 'units')),
+    name: appearanceText(text('Name on the fascia', 'REGISTRY SERVICE POINT')), branch: appearanceText(text('Branch', 'DOWNTOWN 07')), hours: appearanceText(text('Opening hours (lines split by /)', 'MON–SAT/08:00–16:00/BY NUMBER ONLY')),
+    contractor: appearanceText(text('Contractor plate (gold on black)', 'PLAZA HOLDINGS · UNDER CONTRACT')), closed: appearanceBoolean(bool('After hours (shutters down)', false)),
+    lit: appearanceRatio(num('Office windows lit', 0.6, 0, 1, 0.05)), queue: appearanceRatio(num('Heads seen through the glass', 0.6, 0, 1, 0.05)), cameras: generationCount(num('Cameras on brackets', 3, 0, 12)),
+    watchdog: appearanceBoolean(bool('Watchdog eye over the entrance', true)), entrance: appearanceChoice(select('Entrance', ['bay', 'flush'], 'bay')),
+    relief: shapeLength(num('Seal relief over the entrance (radius; 0: none)', 26, 0, 80, 1, 'units')), plaque: appearanceText(text('Bronze plaque by the doors (empty: none)', 'REGISTRY OF PERSONS')),
+    recess: shapePosition(num('Recessed granite bay from the left (-1: none)', -1, -1, 4000, 1, 'units')), recessWidth: shapeLength(num('Granite bay width', 160, 40, 2000, 1, 'units')),
+    tower: shapePosition(num('Stair tower from the left (-1: none)', -1, -1, 4000, 1, 'units')), power: appearanceChoice(select('Power (cut: street lights and signs off)', ['on', 'cut'], 'on')),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.width), tall: Number(p.ground) + Number(p.floors) * Number(p.storey) + 40 }),
-  bounds: p => { const tall = Number(p.ground) + Number(p.floors) * Number(p.storey) + 40; return { x: -8, h: tall, w: Number(p.width) + 16, tall: tall + 2 }; },
+  size: p => ({ w: Number(p.width), tall: Number(p.height) }),
+  bounds: p => { const tall = Number(p.height); return { x: -8, h: tall, w: Number(p.width) + 16, tall: tall + 2 }; },
   anchors: p => {
-    const G = Number(p.ground), S = Number(p.storey), F = Number(p.floors);
+    const G = Number(p.groundFloorHeight), S = Number(p.floorHeight), F = floorLayout(p,40).floorCount;
     return { ...origin(), door: { x: Number(p.door) + Number(p.doorWidth) / 2, h: 0, role: 'entrance' }, roof: { x: Number(p.width) / 2, h: G + F * S, role: 'surface' },
       ...(Number(p.staffDoor) >= 0 ? { staff: { x: Number(p.staffDoor) + 13, h: 0, role: 'entrance' as const } } : {}),
       ...Object.fromEntries(Array.from({ length: F }, (_, i) => ['storey' + (i + 1), { x: 0, h: G + i * S, role: 'mount' as const }])) };
   },
   paint(x, p, o) {
-    const W = Number(p.width), G = Number(p.ground), F = Number(p.floors), S = Number(p.storey), top = G + F * S, seed = Number(p.seed), t = o.t, closed = p.closed === true;
+    const W = Number(p.width), G = Number(p.groundFloorHeight), F = floorLayout(p,40).floorCount, S = Number(p.floorHeight), top = floorLayout(p,40).wallTop, seed = Number(p.seed), t = o.t, closed = p.closed === true;
     // the panels as the street sees them: pale by day, a cool grey under the sodium lamps at night
     const day = Math.max(0, Math.min(1, o.lighting.daylight)), wall = mixHex('#4f575c', hexOr(p.wall, '#8f979c'), day);
     const door = Number(p.door), dw = Number(p.doorWidth), staff = Number(p.staffDoor), cut = p.power === 'cut', bay = p.entrance !== 'flush';
@@ -851,19 +868,20 @@ export const registryFrontElement = piece({
 // ---------------------------------------------------------------- the substation
 
 export const transformerElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.transformer', label: 'Transformer in its bund (civic kit: fins, bushings, conservator)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    width: num('Tank width', 80, 30, 300, 1, 'units'), height: num('Tank height', 56, 24, 200, 1, 'units'), bushings: num('HV bushings', 3, 0, 6),
-    fins: select('Cooling fins', ['both', 'left', 'right', 'none'], 'both'), conservator: bool('Conservator tank on top', true),
-    label: text('Stencil on the tank', 'T2'), voltage: text('Danger plate (empty: none)', '11 000 V'), state: select('State', ['on', 'hum', 'fault', 'dead'], 'hum'),
-    paint: colourField('Paint', '#66746a'), bund: bool('Concrete bund and gravel', true), power: select('Power (cut: dead, lamps out)', ['on', 'cut'], 'on'),
-    gauge: bool('Lit oil-temperature gauge and warning lamp', true), tell: bool('Usable (cyan tell on its control box)', false), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Tank width', 80, 30, 300, 1, 'units')), height: shapeLength(num('Tank height', 56, 24, 200, 1, 'units')), bushings: generationCount(num('HV bushings', 3, 0, 6)),
+    fins: appearanceChoice(select('Cooling fins', ['both', 'left', 'right', 'none'], 'both')), conservator: appearanceBoolean(bool('Conservator tank on top', true)),
+    label: appearanceText(text('Stencil on the tank', 'T2')), voltage: appearanceText(text('Danger plate (empty: none)', '11 000 V')), state: appearanceChoice(select('State', ['on', 'hum', 'fault', 'dead'], 'hum')),
+    paintColor: appearanceColor(colourField('Paint', '#66746a')), bund: appearanceBoolean(bool('Concrete bund and gravel', true)), power: appearanceChoice(select('Power (cut: dead, lamps out)', ['on', 'cut'], 'on')),
+    gauge: appearanceBoolean(bool('Lit oil-temperature gauge and warning lamp', true)), tell: appearanceBoolean(bool('Usable (cyan tell on its control box)', false)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width) + 40, tall: Number(p.height) + 46 }),
   bounds: p => ({ x: -20, h: Number(p.height) + 46, w: Number(p.width) + 40, tall: Number(p.height) + 48 }),
   anchors: p => ({ ...origin(), top: { x: Number(p.width) / 2, h: Number(p.height) + 34, role: 'mount' } }),
   paint(x, p, o) {
-    const W = Number(p.width), H = Number(p.height), t = o.t, seed = Number(p.seed), col = hexOr(p.paint, '#66746a'), cut = p.power === 'cut', state = cut ? 'dead' : String(p.state);
+    const W = Number(p.width), H = Number(p.height), t = o.t, seed = Number(p.seed), col = hexOr(p.paintColor, '#66746a'), cut = p.power === 'cut', state = cut ? 'dead' : String(p.state);
     if (p.bund !== false) { R(x, -18, 0, W + 36, 6, '#4b4d48'); R(x, -18, 6, W + 36, 1, 'rgba(255,255,255,.15)'); for (let i = 0; i < W / 3; i++) R(x, -14 + hash(seed + i) * (W + 28), 6 + hash(i + seed * 2) * 2, 2, 1, 'rgba(160,155,140,.4)'); }
     R(x, -2, 6, W + 4, 4, '#4f5650');
     const fin = String(p.fins);
@@ -913,18 +931,19 @@ export const transformerElement = piece({
 });
 
 export const busbarElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.busbar', label: 'Busbar gantry: lattice portal, insulator strings, lines (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    width: num('Span', 140, 40, 600, 1, 'units'), height: num('Height', 120, 50, 400, 1, 'units'), phases: num('Phases', 3, 1, 6),
-    down: num('Droppers down to (0: none)', 90, 0, 400, 1, 'units'), out: select('Lines leave', ['both', 'left', 'right', 'none'], 'right'),
-    outLength: num('Line length', 260, 0, 2000, 1, 'units'), outDrop: num('Lines fall by', 20, -200, 200, 1, 'units'), plate: text('Plate on the leg (empty: none)', 'DANGER · KEEP OFF'),
-    power: select('Power (on: a faint corona on the insulators)', ['on', 'cut'], 'on'),
+    width: shapeLength(num('Span', 140, 40, 600, 1, 'units')), height: shapeLength(num('Height', 120, 50, 400, 1, 'units')), phaseCount: generationCount(num('Phases', 3, 1, 6)),
+    down: shapeLength(num('Droppers down to (0: none)', 90, 0, 400, 1, 'units')), out: appearanceChoice(select('Lines leave', ['both', 'left', 'right', 'none'], 'right')),
+    outLength: shapeLength(num('Line length', 260, 0, 2000, 1, 'units')), outDrop: shapeLength(num('Lines fall by', 20, -200, 200, 1, 'units')), plate: appearanceText(text('Plate on the leg (empty: none)', 'DANGER · KEEP OFF')),
+    power: appearanceChoice(select('Power (on: a faint corona on the insulators)', ['on', 'cut'], 'on')),
   },
   size: p => ({ w: Number(p.width) + 8, tall: Number(p.height) + 10 }), reach: p => Number(p.outLength),
   bounds: p => box(Number(p.width) + 8, Number(p.height) + 10),
   anchors: p => ({ ...origin(), beam: { x: Number(p.width) / 2, h: Number(p.height), role: 'mount' } }),
   paint(x, p, o) {
-    const W = Number(p.width), H = Number(p.height), n = Number(p.phases), down = Number(p.down), L = Number(p.outLength), drop = Number(p.outDrop);
+    const W = Number(p.width), H = Number(p.height), n = Number(p.phaseCount), down = Number(p.down), L = Number(p.outLength), drop = Number(p.outDrop);
     const steel = '#8b949a', dark = '#5b6267';
     const leg = (lx: number) => { R(x, lx, 0, 1, H, steel); R(x, lx + 7, 0, 1, H, steel); x.strokeStyle = dark; x.lineWidth = 1; x.beginPath(); for (let h = 0; h < H; h += 10) { x.moveTo(lx + 0.5, y(h)); x.lineTo(lx + 7.5, y(h + 10)); x.moveTo(lx + 7.5, y(h)); x.lineTo(lx + 0.5, y(h + 10)); } x.stroke(); R(x, lx - 3, 0, 14, 3, '#4b4d48'); };
     leg(0); leg(W);
@@ -949,14 +968,15 @@ export const busbarElement = piece({
 });
 
 export const controlHutElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.control-hut', label: 'Substation control hut (civic kit: block walls, steel door, louvres)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 150, 60, 800, 1, 'units'), height: num('Height', 80, 60, 200, 1, 'units'), wall: colourField('Block wall', '#6b685d'),
-    door: num('Door from the left', 18, 0, 800, 1, 'units'), label: text('Plate over the door', 'SUBSTATION DT-4'), vents: num('Louvred vents', 2, 0, 10),
-    window: num('Barred window from the left (-1: none)', 110, -1, 800, 1, 'units'), window2: num('Second window from the left (-1: none)', -1, -1, 800, 1, 'units'),
-    lit: bool('Light on inside', true), power: select('Power (cut: battery lamp only)', ['on', 'cut'], 'on'),
-    breaker: num('Main breaker cabinet from the hut’s left (negative: beside it; -999: none)', -999, -999, 800, 1, 'units'), breakerLabel: text('Breaker plate', 'MAIN BREAKER'),
-    breakerTell: bool('Breaker usable (cyan tell)', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 150, 60, 800, 1, 'units')), height: shapeLength(num('Height', 80, 60, 200, 1, 'units')), wall: appearanceColor(colourField('Block wall', '#6b685d')),
+    door: shapePosition(num('Door from the left', 18, 0, 800, 1, 'units')), label: appearanceText(text('Plate over the door', 'SUBSTATION DT-4')), vents: generationCount(num('Louvred vents', 2, 0, 10)),
+    window: shapePosition(num('Barred window from the left (-1: none)', 110, -1, 800, 1, 'units')), window2: shapePosition(num('Second window from the left (-1: none)', -1, -1, 800, 1, 'units')),
+    lit: appearanceBoolean(bool('Light on inside', true)), power: appearanceChoice(select('Power (cut: battery lamp only)', ['on', 'cut'], 'on')),
+    breaker: shapePosition(num('Main breaker cabinet from the hut’s left (negative: beside it; -999: none)', -999, -999, 800, 1, 'units')), breakerLabel: appearanceText(text('Breaker plate', 'MAIN BREAKER')),
+    breakerTell: appearanceBoolean(bool('Breaker usable (cyan tell)', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 8 }),
   bounds: p => { const b = Number(p.breaker), has = b > -999, l = Math.min(-4, has ? b - 30 : -4), r = Math.max(Number(p.width) + 4, has ? b + 34 : 0); return { x: l, h: Number(p.height) + 8, w: r - l, tall: Number(p.height) + 8 }; },
@@ -1001,17 +1021,18 @@ export const controlHutElement = piece({
 });
 
 export const controlPanelsElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'civic.control-panels', label: 'Switchgear and mimic board (civic kit: the control room)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    cabinets: num('Switchgear cabinets', 5, 1, 20), height: num('Height', 58, 30, 120, 1, 'units'), state: select('State', ['normal', 'alarm'], 'normal'),
-    mimic: bool('Mimic diagram along the top', true), desk: bool('Desk with logbook and kettle', true), tell: num('Usable cabinet (cyan tell; 0: none)', 3, 0, 20),
-    power: select('Power (cut: meters at rest, lamps out)', ['on', 'cut'], 'on'), seed: num('Seed', 1, 0, 1000000),
+    cabinets: generationCount(num('Switchgear cabinets', 5, 1, 20)), height: shapeLength(num('Height', 58, 30, 120, 1, 'units')), state: appearanceChoice(select('State', ['normal', 'alarm'], 'normal')),
+    mimic: appearanceBoolean(bool('Mimic diagram along the top', true)), desk: appearanceBoolean(bool('Desk with logbook and kettle', true)), highlightedIndex: semantic(num('Usable cabinet (cyan tell; 0: none)', 3, 0, 20),{"group":"Appearance","quantity":"index","unit":"integer"}),
+    power: appearanceChoice(select('Power (cut: meters at rest, lamps out)', ['on', 'cut'], 'on')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.cabinets) * 26 + (p.desk !== false ? 50 : 0), tall: Number(p.height) + 4 }),
   bounds: p => box(Number(p.cabinets) * 26 + (p.desk !== false ? 50 : 0), Number(p.height) + 4),
   anchors: () => origin(),
   paint(x, p, o) {
-    const n = Number(p.cabinets), H = Number(p.height), t = o.t, cut = p.power === 'cut', alarm = p.state === 'alarm' && !cut, seed = Number(p.seed), tell = Number(p.tell);
+    const n = Number(p.cabinets), H = Number(p.height), t = o.t, cut = p.power === 'cut', alarm = p.state === 'alarm' && !cut, seed = Number(p.seed), tell = Number(p.highlightedIndex);
     for (let i = 0; i < n; i++) {
       const cx = i * 26, s = seed * 19 + i;
       R(x, cx, 0, 25, H, '#8a9488'); R(x, cx, 0, 1, H, 'rgba(255,255,255,.3)'); R(x, cx + 24, 0, 1, H, 'rgba(0,0,0,.3)'); R(x, cx, H * 0.45, 25, 1, 'rgba(0,0,0,.25)');
@@ -1041,12 +1062,13 @@ export const controlPanelsElement = piece({
 });
 
 export const cableTrayElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.cable-tray', label: 'Cable tray on posts or brackets (civic kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    width: num('Length', 300, 20, 4000, 1, 'units'), height: num('Height above its foot', 40, 0, 600, 1, 'units'), mount: select('Held by', ['posts', 'brackets', 'hangers'], 'posts'),
-    every: num('A support every', 60, 20, 400, 1, 'units'), cables: num('Cables', 5, 1, 12), drops: select('Cables drop at', ['both', 'left', 'right', 'none'], 'right'),
-    pillar: select('Feeder pillar at', ['none', 'left', 'right'], 'none'), pillarKind: select('Pillar', ['feeder', 'breaker'], 'feeder'), pillarLabel: text('Pillar plate', 'FEEDER 3 · REGISTRY BLOCK'), tell: bool('Pillar usable (cyan tell)', true),
-    power: select('Power (cut: the pillar lamp red)', ['on', 'cut'], 'on'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Length', 300, 20, 4000, 1, 'units')), height: shapeLength(num('Height above its foot', 40, 0, 600, 1, 'units')), mount: appearanceChoice(select('Held by', ['posts', 'brackets', 'hangers'], 'posts')),
+    every: shapePosition(num('A support every', 60, 20, 400, 1, 'units')), cables: generationCount(num('Cables', 5, 1, 12)), drops: appearanceChoice(select('Cables drop at', ['both', 'left', 'right', 'none'], 'right')),
+    pillar: appearanceChoice(select('Feeder pillar at', ['none', 'left', 'right'], 'none')), pillarKind: appearanceChoice(select('Pillar', ['feeder', 'breaker'], 'feeder')), pillarLabel: appearanceText(text('Pillar plate', 'FEEDER 3 · REGISTRY BLOCK')), tell: appearanceBoolean(bool('Pillar usable (cyan tell)', true)),
+    power: appearanceChoice(select('Power (cut: the pillar lamp red)', ['on', 'cut'], 'on')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + 30 }),
   bounds: p => box(Number(p.width) + (p.pillar === 'right' ? 36 : 0) + (p.pillar === 'left' ? 32 : 0), Math.max(Number(p.height) + 8, p.pillar !== 'none' ? 52 : 0), p.pillar === 'left' ? -32 : 0),
@@ -1085,17 +1107,18 @@ export const cableTrayElement = piece({
 });
 
 export const catwalkElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.catwalk', label: 'Maintenance catwalk: grating, handrail, legs (civic kit; walk it with a level floor)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Length', 240, 20, 4000, 1, 'units'), height: num('Deck height', 64, 10, 600, 1, 'units'), legs: num('A leg every', 80, 30, 400, 1, 'units'),
-    rail: num('Handrail height', 24, 0, 40, 1, 'units'), toe: bool('Hazard-striped toe board', true), steel: colourField('Steel', '#7c858b'),
+    width: shapeLength(num('Length', 240, 20, 4000, 1, 'units')), height: shapeLength(num('Deck height', 64, 10, 600, 1, 'units')), legSpacing: shapeLength(num('A leg every', 80, 30, 400, 1, 'units')),
+    rail: shapeLength(num('Handrail height', 24, 0, 40, 1, 'units')), toe: appearanceBoolean(bool('Hazard-striped toe board', true)), steel: appearanceColor(colourField('Steel', '#7c858b')),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) + Number(p.rail) + 2 }),
   bounds: p => box(Number(p.width), Number(p.height) + Number(p.rail) + 2),
   anchors: p => ({ ...origin(), deck: { x: 0, h: Number(p.height), role: 'surface' }, end: { x: Number(p.width), h: Number(p.height), role: 'surface' } }),
   paint(x, p) {
     const W = Number(p.width), H = Number(p.height), rail = Number(p.rail), steel = hexOr(p.steel, '#7c858b');
-    for (let k = 4; k < W; k += Number(p.legs)) { R(x, k, 0, 3, H - 4, '#4b5257'); R(x, k + 3, 0, 1, H - 4, 'rgba(0,0,0,.4)'); R(x, k - 2, 0, 7, 2, '#3a3f43'); x.strokeStyle = '#4b5257'; x.beginPath(); x.moveTo(k + 3, y(H - 14)); x.lineTo(k + 18, y(H - 4)); x.stroke(); }
+    for (let k = 4; k < W; k += Number(p.legSpacing)) { R(x, k, 0, 3, H - 4, '#4b5257'); R(x, k + 3, 0, 1, H - 4, 'rgba(0,0,0,.4)'); R(x, k - 2, 0, 7, 2, '#3a3f43'); x.strokeStyle = '#4b5257'; x.beginPath(); x.moveTo(k + 3, y(H - 14)); x.lineTo(k + 18, y(H - 4)); x.stroke(); }
     R(x, 0, H - 4, W, 4, '#262b2f'); for (let k = 0; k < W; k += 3) R(x, k, H - 4, 1, 3, 'rgba(160,170,176,.35)');
     R(x, 0, H - 1, W, 1, steel);
     if (p.toe !== false) for (let k = 0; k < W; k += 8) R(x, k, H - 4, 4, 2, 'rgba(230,190,40,.7)');
@@ -1105,18 +1128,18 @@ export const catwalkElement = piece({
 
 // ---------------------------------------------------------------- the sweep
 
-export const registryVanElement = piece({
+export const registryVanElement = piece({spatial:fixedNativeGeometry,
   type: 'civic.registry-van', label: 'Registry van (civic kit: livery, light bar, doors open)', category: 'vehicles', libraryUse: 'reusable',
   fields: {
-    face: select('Faces', ['right', 'left'], 'right'), paint: colourField('Paint', '#c3c8cb'), beacons: bool('Light bar flashing', true),
-    rear: bool('Rear doors open (the cage inside)', false), side: bool('Side door open', false), lights: bool('Headlights', true),
-    decal: text('Decal lines (split by /)', 'REGISTRY/PERSONS IN TRANSIT'), fleetNo: text('Fleet number', 'R-114'), flood: bool('Roof floodlight on', false), phase: num('Phase', 0, 0, 1000),
+    face: appearanceChoice(select('Faces', ['right', 'left'], 'right')), paintColor: appearanceColor(colourField('Paint', '#c3c8cb')), beacons: appearanceBoolean(bool('Light bar flashing', true)),
+    rear: appearanceBoolean(bool('Rear doors open (the cage inside)', false)), side: appearanceBoolean(bool('Side door open', false)), lights: appearanceBoolean(bool('Headlights', true)),
+    decal: appearanceText(text('Decal lines (split by /)', 'REGISTRY/PERSONS IN TRANSIT')), fleetNo: appearanceText(text('Fleet number', 'R-114')), flood: appearanceBoolean(bool('Roof floodlight on', false)), timeOffset:seconds("Time offset",0,{"min":0,"max":16.666666666666668,"step":0.016666666666666666}),
   },
   size: () => ({ w: 160, tall: 70 }), reach: p => p.flood === true ? 160 : 40,
   bounds: () => ({ x: -82, h: 70, w: 164, tall: 72 }),
   anchors: () => ({ ...origin(), rear: { x: -70, h: 0, role: 'mount' }, front: { x: 70, h: 0, role: 'mount' } }),
   paint(x, p, o) {
-    const face: 1 | -1 = p.face === 'left' ? -1 : 1, t = o.t + Number(p.phase), paint = hexOr(p.paint, '#c3c8cb');
+    const face: 1 | -1 = p.face === 'left' ? -1 : 1, t = o.t + (Number(p.timeOffset)*60), paint = hexOr(p.paintColor, '#c3c8cb');
     const decal = String(p.decal ?? '').split('/').map(s => s.trim()).filter(Boolean), fleet = String(p.fleetNo ?? '');
     if (p.rear === true) {
       // the rear doors swung wide; inside, a bench and a steel cage
@@ -1145,17 +1168,18 @@ export const registryVanElement = piece({
 });
 
 export const floodlightElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'civic.floodlight', label: 'Floodlight: trailer tower, pole or tripod (civic kit: the sweep)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['tower', 'pole', 'tripod'], 'tower'), height: num('Lamp height', 110, 20, 400, 1, 'units'), heads: num('Lamp heads', 3, 1, 8),
-    aim: select('Points', ['right', 'left', 'down'], 'right'), reach: num('Where the beam lands (units out)', 120, 0, 800, 1, 'units'), spread: num('Pool width', 90, 10, 600, 1, 'units'),
-    strength: num('Strength', 0.8, 0, 1, 0.05), on: bool('On', true), colour: colourField('Light', '#e8f0ff'), seed: num('Seed', 1, 0, 1000000),
+    kind: appearanceChoice(select('Kind', ['tower', 'pole', 'tripod'], 'tower')), height: shapeLength(num('Lamp height', 110, 20, 400, 1, 'units')), heads: generationCount(num('Lamp heads', 3, 1, 8)),
+    aim: appearanceChoice(select('Points', ['right', 'left', 'down'], 'right')), reach: shapeLength(num('Where the beam lands (units out)', 120, 0, 800, 1, 'units')), spread: shapeLength(num('Pool width', 90, 10, 600, 1, 'units')),
+    strength: appearanceRatio(num('Strength', 0.8, 0, 1, 0.05)), on: appearanceBoolean(bool('On', true)), lightColor: appearanceColor(colourField('Light', '#e8f0ff')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: () => ({ w: 60, tall: 120 }), reach: p => Number(p.reach) + Number(p.spread),
   bounds: p => ({ x: -26, h: Number(p.height) + 8, w: 52, tall: Number(p.height) + 10 }),
   anchors: p => ({ ...origin(), head: { x: 0, h: Number(p.height), role: 'mount' } }),
   paint(x, p, o) {
-    const H = Number(p.height), kind = String(p.kind), n = Number(p.heads), on = p.on !== false, k = Number(p.strength), col = isHex(p.colour) ? rgbOf(String(p.colour)) : '232,240,255';
+    const H = Number(p.height), kind = String(p.kind), n = Number(p.heads), on = p.on !== false, k = Number(p.strength), col = isHex(p.lightColor) ? rgbOf(String(p.lightColor)) : '232,240,255';
     const dir = p.aim === 'left' ? -1 : p.aim === 'down' ? 0 : 1, land = dir * Number(p.reach), spread = Number(p.spread);
     if (on && k > 0) {
       // the beam to the ground and the pool where it lands
@@ -1183,11 +1207,11 @@ export const floodlightElement = piece({
 export const checkpointElement = piece({
   type: 'civic.checkpoint', label: 'ID checkpoint: folding table, scanner, barrier, cones (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    table: bool('Folding table with a scanner', true), barrier: num('Barrier width (0: none)', 56, 0, 300, 1, 'units'), text: text('Barrier boards (split by /)', 'IDENTITY CHECK/HAVE YOUR ID READY'),
-    cones: num('Cones', 3, 0, 12), scanning: bool('Scanner sweeping', true),
+    table: appearanceBoolean(bool('Folding table with a scanner', true)), barrierWidth: shapeLength(num('Barrier width (0: none)', 56, 0, 300, 1, 'units')), text: appearanceText(text('Barrier boards (split by /)', 'IDENTITY CHECK/HAVE YOUR ID READY')),
+    cones: generationCount(num('Cones', 3, 0, 12)), scanning: appearanceBoolean(bool('Scanner sweeping', true)),
   },
-  size: p => ({ w: 50 + Number(p.barrier) + Number(p.cones) * 14, tall: 40 }),
-  bounds: p => box(50 + Number(p.barrier) + Number(p.cones) * 14, 40),
+  size: p => ({ w: 50 + Number(p.barrierWidth) + Number(p.cones) * 14, tall: 40 }),
+  bounds: p => box(50 + Number(p.barrierWidth) + Number(p.cones) * 14, 40),
   anchors: () => origin(),
   paint(x, p, o) {
     const t = o.t; let at = 0;
@@ -1199,7 +1223,7 @@ export const checkpointElement = piece({
       if (p.scanning !== false) { const k = (Math.sin(t * 0.08) + 1) / 2; x.fillStyle = rgba(RED, 0.25); x.beginPath(); x.moveTo(28, y(36)); x.lineTo(46, y(30 + k * 10)); x.lineTo(46, y(26 + k * 10)); x.closePath(); x.fill(); R(x, 27, 36, 2, 1, rgba(RED, 1)); }
       at = 50;
     }
-    const bw = Number(p.barrier);
+    const bw = Number(p.barrierWidth);
     if (bw > 0) {
       const lines = String(p.text ?? '').split('/').filter(Boolean);
       R(x, at + 2, 0, 3, 30, '#5b6267'); R(x, at + bw - 5, 0, 3, 30, '#5b6267');
@@ -1226,15 +1250,15 @@ const POLICE_BLUE = '80,120,255';
 export const policeLampElement = piece({
   type: 'civic.police-lamp', label: 'Police lamp: blue lantern on a bracket (civic kit: the precinct)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
-    text: text('Letters on the face', 'POLICE'), mount: select('Mount', ['wall', 'pole'], 'wall'), drop: num('Pole height (pole)', 120, 40, 300, 1, 'units'),
-    colour: colourField('Lamp', '#5078ff'), on: bool('Lit', true),
+    text: appearanceText(text('Letters on the face', 'POLICE')), mount: appearanceChoice(select('Mount', ['wall', 'pole'], 'wall')), poleHeight: shapeLength(num('Pole height (pole)', 120, 40, 300, 1, 'units')),
+    lightColor: appearanceColor(colourField('Lamp', '#5078ff')), on: appearanceBoolean(bool('Lit', true)),
   },
   size: () => ({ w: 40, tall: 30 }), reach: () => 50,
-  bounds: p => p.mount === 'pole' ? { x: -20, h: Number(p.drop) + 22, w: 40, tall: Number(p.drop) + 22 } : { x: -20, h: 22, w: 40, tall: 30 },
+  bounds: p => p.mount === 'pole' ? { x: -20, h: Number(p.poleHeight) + 22, w: 40, tall: Number(p.poleHeight) + 22 } : { x: -20, h: 22, w: 40, tall: 30 },
   anchors: () => origin(),
   paint(x, p, o) {
-    const col = isHex(p.colour) ? rgbOf(String(p.colour)) : POLICE_BLUE, on = p.on !== false, word = String(p.text ?? 'POLICE'), pole = p.mount === 'pole';
-    const base = pole ? Number(p.drop) : 0, w = Math.max(30, Math.ceil(textW(x, word, 7, '700')) + 8);
+    const col = isHex(p.lightColor) ? rgbOf(String(p.lightColor)) : POLICE_BLUE, on = p.on !== false, word = String(p.text ?? 'POLICE'), pole = p.mount === 'pole';
+    const base = pole ? Number(p.poleHeight) : 0, w = Math.max(30, Math.ceil(textW(x, word, 7, '700')) + 8);
     if (pole) { R(x, -4, 0, 8, 3, '#2a2e31'); R(x, -1, 3, 3, base - 3, '#3b4045'); }
     else { R(x, -2, base - 8, 4, 8, '#2a2e31'); R(x, -1, base - 2, 2, 4, '#1a1c1e'); }
     // the lantern: a black cap, the glass face with the word, a finial
@@ -1253,12 +1277,13 @@ const CELL_WALL = '#5a625c', CELL_DADO = '#3c4440';
  * two so people stand between the wall and the bars (back on the backdrop, front over the people in the playfield).
  */
 export const holdingCellElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.holding-cell', label: 'Holding cells: block wall, steel bench, bars (civic kit: the precinct)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    cells: num('Cells', 2, 1, 6), width: num('Cell width', 90, 50, 200, 1, 'units'), height: num('Height', 72, 50, 140, 1, 'units'),
-    bench: num('Bench height (sit people here)', 14, 8, 24, 1, 'units'), part: select('Draws (back: wall and bench; front: the bars over the people)', ['all', 'back', 'front'], 'all'),
-    open: text('Cell doors open (comma list)', ''), labels: text('Cell plates (split by /)', 'H1/H2/H3/H4/H5/H6'),
-    notice: text('Notice by the door (empty: none)', 'AWAITING REGISTRY COLLECTION'), lit: num('Cell lights on', 1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    cells: generationCount(num('Cells', 2, 1, 6)), width: shapeLength(num('Cell width', 90, 50, 200, 1, 'units')), height: shapeLength(num('Height', 72, 50, 140, 1, 'units')),
+    bench: shapeLength(num('Bench height (sit people here)', 14, 8, 24, 1, 'units')), part: appearanceChoice(select('Draws (back: wall and bench; front: the bars over the people)', ['all', 'back', 'front'], 'all')),
+    open: appearanceText(text('Cell doors open (comma list)', '')), labels: appearanceText(text('Cell plates (split by /)', 'H1/H2/H3/H4/H5/H6')),
+    notice: appearanceText(text('Notice by the door (empty: none)', 'AWAITING REGISTRY COLLECTION')), lit: appearanceRatio(num('Cell lights on', 1, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.cells) * (Number(p.width) + 4) + 4, tall: Number(p.height) + 12 }),
   bounds: p => box(Number(p.cells) * (Number(p.width) + 4) + 4, Number(p.height) + 12),
@@ -1318,12 +1343,13 @@ export const holdingCellElement = piece({
 
 /** A precinct's wanted board: mugshot cards in rows under WANTED and UNREGISTERED, the collected ones struck red, one card with no face. */
 export const wantedBoardElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'civic.wanted-board', label: 'Wanted and unregistered board: mugshot cards (civic kit: the precinct)', category: 'sign kit', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 96, 40, 400, 1, 'units'), height: num('Height', 50, 30, 200, 1, 'units'),
-    left: text('Left header (empty: none)', 'WANTED'), right: text('Right header (empty: none)', 'UNREGISTERED'),
-    cards: num('Cards', 14, 0, 60), collected: num('Share struck as collected', 0.4, 0, 1, 0.05), blank: num('Card with no face (0: none)', 9, 0, 60),
-    footer: text('Strip along the bottom (empty: none)', 'REPORT SIGHTINGS'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 96, 40, 400, 1, 'units')), height: shapeLength(num('Height', 50, 30, 200, 1, 'units')),
+    left: appearanceText(text('Left header (empty: none)', 'WANTED')), right: appearanceText(text('Right header (empty: none)', 'UNREGISTERED')),
+    cards: generationCount(num('Cards', 14, 0, 60)), collected: appearanceRatio(num('Share struck as collected', 0.4, 0, 1, 0.05)), blank: semantic(num('Card with no face (0: none)', 9, 0, 60),{"group":"Appearance","quantity":"index","unit":"integer"}),
+    footer: appearanceText(text('Strip along the bottom (empty: none)', 'REPORT SIGHTINGS')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => box(Number(p.width) + 4, Number(p.height) + 2, -2),
@@ -1359,11 +1385,12 @@ export const wantedBoardElement = piece({
 
 /** The Registry's corner in someone else's building: a grey-white desk with the seal, a screen for the visitor, an ID scanner, the gold plate. */
 export const liaisonDeskElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'civic.liaison-desk', label: 'Registry liaison desk: seal, visitor screen, ID scanner, gold plate (civic kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 64, 44, 160, 1, 'units'), plate: text('Plate on the wall (empty: none)', 'REGISTRY LIAISON'), sub: text('Line under it (empty: none)', 'PLAZA HOLDINGS · UNDER CONTRACT'),
-    plateAt: num('Plate height', 66, 40, 200, 1, 'units'), screen: select('Visitor screen', ['seal', 'verifying', 'not found', 'off'], 'verifying'),
-    tent: text('Card on the desk (empty: none)', 'PREMIUM FIRST'), tell: bool('Usable (cyan tell on the scanner)', false), hours: hoursField(),
+    width: shapeLength(num('Width', 64, 44, 160, 1, 'units')), plate: appearanceText(text('Plate on the wall (empty: none)', 'REGISTRY LIAISON')), sub: appearanceText(text('Line under it (empty: none)', 'PLAZA HOLDINGS · UNDER CONTRACT')),
+    plateAt: shapeLength(num('Plate height', 66, 40, 200, 1, 'units')), screen: appearanceChoice(select('Visitor screen', ['seal', 'verifying', 'not found', 'off'], 'verifying')),
+    tent: appearanceText(text('Card on the desk (empty: none)', 'PREMIUM FIRST')), tell: appearanceBoolean(bool('Usable (cyan tell on the scanner)', false)), hours: hoursField(),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.plateAt) + 10 }),
   bounds: p => box(Number(p.width), Number(p.plateAt) + 10),
@@ -1400,3 +1427,9 @@ export const downtownCivicElements: AssetDefinition[] = [
   registryVanElement, floodlightElement, checkpointElement,
   policeLampElement, holdingCellElement, wantedBoardElement, liaisonDeskElement,
 ];
+
+countersElement.spatial=combineControls(repeatedWidthControls('windowWidth','windows',undefined,'counterHeight'),axisControl('counterHeight','h',p=>Number(p.windows)*Number(p.windowWidth)/2,'Counter elevation'),axisControl('glassTopY','h',p=>Number(p.windows)*Number(p.windowWidth)/2,'Glass upper edge'));
+terminalBankElement.spatial=repeatedWidthControls('deskWidth','desks',undefined,22);
+alarmElement.spatial=fixedGeometry('The alarm housing is fixed geometry. Light reach multiplier scales its animated beam and glow; it is not a physical body dimension.');
+checkpointElement.spatial=axisControl('barrierWidth','x',22,'Barrier right endpoint',{offset:p=>p.table!==false?50:0});
+policeLampElement.spatial=conditionalControls(axisControl('poleHeight','h',0,'Pole upper endpoint'),p=>p.mount==='pole');

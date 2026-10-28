@@ -1,10 +1,13 @@
+import {type FieldSemantics,validateFieldSemantics,fieldValueValid} from './fields';
 /** Serializable artwork contracts. Controllers supply visual state; drawing never owns saves. */
 import type { View } from './view';
 import type { Light } from "../../world/light";
 import type { Weather } from "../../world/weather";
 import {mobileInstances} from './mobility';
-import {withCanvasTransform,transformRect,copyTransform} from './geometry';
+import {withCanvasTransform,transformRect,copyTransform,projectedBounds} from './geometry';
 import {prepareArtwork,type CapturedArtwork,type ArtworkPresentation} from './presentation';
+import {measureArtwork} from './measure';
+import {validateSpatialContract,type SpatialContract,type DerivedProperty} from './spatial';
 
 export type Value = null | boolean | number | string | Value[] | { [key: string]: Value };
 export type Properties = Record<string, Value>;
@@ -20,7 +23,11 @@ export const LAYERS: readonly Layer[] = ['distance', 'backdrop', 'set', 'playfie
 export type LayerSlot = 'behind-player' | 'over-player' | 'foreground';
 /** The single playfield row the player (and engine-drawn walkers) occupies in a layered composition. */
 export const PLAYER_ROW = 'scene.player';
+export interface ArtworkPropertySource {scene:string;instance:string;property:string}
 export interface Field {
+  semantics?:FieldSemantics;
+  /** Prepared dimensions/elevations replace a local fallback. Zero is absent unless explicitly admitted (e.g. an elevation with a -1 unset sentinel). Source bindings remain authoritative. */
+  stateOverride?:{state:string;space:'local'|'world';allowZero?:boolean};
   kind: 'number' | 'string' | 'boolean' | 'color' | 'select' | 'json';
   label: string;
   default: Value;
@@ -40,6 +47,9 @@ export interface Field {
  * the string "auto", shown as a checkbox with that label.
  */
 export type FieldEditor =
+  | {kind:'contextual';section:string;label:string}
+  | { kind:'tuple';items:Field[];empty?:string;auto?:string }
+  | { kind:'array';item:Field;auto?:string;addLabel?:string;maxItems?:number;minItems?:number }
   | { kind: 'list'; item: Record<string, Field>; auto?: string; addLabel?: string; next?: (rows: Properties[]) => Properties }
   | { kind: 'set'; options: readonly string[]; auto?: string }
   /** An optional colour: "" (shown as a checkbox labelled `empty`) or a #rrggbb colour. */
@@ -69,6 +79,8 @@ export interface Environment {
   state: Readonly<Record<string, Properties>>;
   /** Scene adapters resolve these named, typed sources; documents store only their stable names. */
   bindings?: Readonly<Record<string, Value>>;
+  /** Direct authored-property provenance from the existing binding compiler; never saved values. */
+  bindingSources?:Readonly<Record<string,ArtworkPropertySource>>;
   visibility?: Readonly<Record<string, boolean>>;
   opacity?: Readonly<Record<string, number>>;
   clips?: Readonly<Record<string, Readonly<Record<string, string>>>>;
@@ -89,10 +101,16 @@ export interface AnimationClip {
   sample(seconds: number, props: Readonly<Properties>, state: Readonly<Properties>, channel: string): Value;
 }
 export interface AssetDefinition {
+  spatial?:SpatialContract;
+  /** Pure diagnostics derived from authored inputs; never another saved property copy. */
+  derived?:(props:Readonly<Properties>)=>Readonly<Record<string,DerivedProperty>>;
   type: string; version: 1; label: string; category: string;
+  /** Initial authoring layer; instances retain their editable authored layer. */
+  defaultLayer?:Layer;
   /** Registered artwork in the shared frame's sky pass; ordinary composition rows use world. */
   framePhase?:'sky';
   fields: Record<string, Field>;
+  validateProperties?:(props:Readonly<Properties>)=>void;
   visualFields?: Record<string, Field>;
   /** Whether this primitive travels independently of its source chunk. Attachment children follow it. */
   mobility?:(props:Readonly<Properties>)=>boolean;
@@ -111,6 +129,12 @@ export interface AssetDefinition {
   role?: 'group' | 'player';
   /** One reason a piece is not drawn or picked this frame; absent means eligible. */
   hiddenReason?:(props:Properties,state:Properties,context:BoundsContext)=>string|undefined;
+  /** Generators select their configured region, independent of current particles or viewport culling. */
+  selection?: 'region';
+  /** Explain authored drawing restrictions without hiding the generator's editable region. */
+  drawingNote?:(props:Properties,state:Properties)=>string|undefined;
+  /** Authored drawing window for editor explanation/handles; does not replace selection geometry. */
+  drawingWindow?:(props:Properties,state:Properties,context:BoundsContext)=>{bounds:Bounds;from:string;to:string};
   bounds(props: Properties, state: Properties, context?: BoundsContext): Bounds;
   /** Entire source-camera travel envelope relative to placement (including depth), for lifetime; bounds is the live hit rectangle. */
   travelBounds?: AssetDefinition['bounds'];
@@ -147,8 +171,19 @@ function serializable(value: unknown, path = 'composition', stack = new Set<obje
 }
 export class ArtRegistry {
   private elements = new Map<string, AssetDefinition>();
+  constructor(private readonly options:{requireSemantics?:boolean}={}){}
   register(element: AssetDefinition) {
     if (this.elements.has(element.type)) throw new Error(`Duplicate artwork type: ${element.type}`);
+    for(const[key,field]of Object.entries(element.fields))validateFieldSemantics(field,element.type+'.'+key,this.options.requireSemantics);
+    for(const[key,field]of Object.entries(element.fields))if(field.stateOverride){const input=element.visualFields?.[field.stateOverride.state];
+      if(field.kind!=='number'||!['length','position'].includes(field.semantics?.quantity??'')||field.semantics?.unit!=='world units'||field.semantics?.space!=='local'||input?.kind!=='number'||!['local','world'].includes(field.stateOverride.space)||field.stateOverride.allowZero!==undefined&&typeof field.stateOverride.allowZero!=='boolean')throw Error(element.type+'.'+key+': a spatial override requires a numeric local length/position and declared numeric visual input');
+    }
+    validateSpatialContract(element.spatial,element.fields,element.type);
+    if(this.options.requireSemantics){const defaults=this.fields(element.type,{},element.fields);element.validateProperties?.(defaults);
+      const children=(field:Field,path:string)=>{const editor=field.editor,fields=editor?.kind==='list'?editor.item:editor?.kind==='array'?{item:editor.item}:editor?.kind==='tuple'?Object.fromEntries(editor.items.map((f,i)=>[String(i),f])):{};this.fields(path,{},fields);for(const[key,child]of Object.entries(fields))children(child,path+'.'+key);};
+      for(const[key,field]of Object.entries(element.fields))children(field,element.type+'.'+key);
+      if(!element.spatial)throw Error(element.type+': declare supported spatial controls or an explicit fixed-geometry reason');
+    }
     for (const field of Object.values({ ...element.fields, ...element.visualFields })) if (field.kind === 'json' && !field.validate) throw new Error(`${element.type}: structured JSON fields require validation`);
     for (const [name, clip] of Object.entries(element.animationClips ?? {})) if (!name || !finite(clip.duration) || clip.duration <= 0 || typeof clip.loop !== 'boolean' || typeof clip.sample !== 'function') throw new Error(`${element.type}.${name}: invalid animation clip`);
     // Scalar inputs on standalone artwork are presentation properties. Explicit opt-outs
@@ -159,7 +194,7 @@ export class ArtRegistry {
   get(type: string) { const e = this.elements.get(type); if (!e) throw new Error(`Unknown artwork type: ${type}`); return e; }
   catalog() { return [...this.elements.values()]; }
   properties(type: string, props: Properties): Properties {
-    return this.fields(type, props, this.get(type).fields);
+    const e=this.get(type),result=this.fields(type,props,e.fields);e.validateProperties?.(result);e.spatial?.validate?.(result);return result;
   }
   visualProperties(type: string, state: Properties): Properties {
     const e = this.get(type), result = this.fields(type, state, e.visualFields ?? {});
@@ -170,12 +205,20 @@ export class ArtRegistry {
     for (const key of Object.keys(props)) if (!owns(fields, key)) throw new Error(`${type}.${key}: unknown property`);
     for (const [key, field] of Object.entries(fields)) {
       const v = owns(props, key) ? props[key] : field.default;
-      const valid = field.kind === 'json' ? true : field.kind === 'number' ? finite(v) && (field.min === undefined || v >= field.min) && (field.max === undefined || v <= field.max)
-        : field.kind === 'boolean' ? typeof v === 'boolean' : field.kind === 'select' ? field.options?.includes(v as string | number)
-        : typeof v === 'string' && (field.kind !== 'color' || /^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/i.test(v));
-      if (!valid) throw new Error(`${type}.${key}: invalid ${field.kind} value`);
+      const valid = fieldValueValid(field,v);
+      if (!valid) throw new Error(`${type}.${key}: invalid ${field.kind} value${field.kind==='number'&&field.semantics?.unit==='integer'&&!Number.isInteger(v)?' (expected a whole number)':''}`);
       if (field.kind === 'json') serializable(v, `${type}.${key}`);
       field.validate?.(v);
+      // Typed nested controls describe supplied values too, not just the add-row defaults.
+      // Missing optional components retain the native kernel's own default; never materialize
+      // another copy of those defaults into an authored JSON array/object.
+      const editor=field.editor;
+      if(Array.isArray(v)&&editor?.kind==='list')for(const [i,row]of v.entries()){
+        if(!object(row))throw Error(`${type}.${key}[${i}]: expected an object row`);
+        for(const [name,child]of Object.entries(editor.item))if(owns(row,name))this.fields(`${type}.${key}[${i}]`,{[name]:row[name]},{[name]:child});
+      }
+      if(Array.isArray(v)&&editor?.kind==='array')for(const [i,value]of v.entries())this.fields(`${type}.${key}[${i}]`,{item:value},{item:editor.item});
+      if(Array.isArray(v)&&editor?.kind==='tuple')for(const [i,value]of v.entries()){const child=editor.items[i];if(!child)throw Error(`${type}.${key}: unexpected tuple component`);this.fields(`${type}.${key}[${i}]`,{item:value},{item:child});}
       // primitives are their own copy; only structured values need the isolating clone
       result[key] = v !== null && typeof v === 'object' ? structuredClone(v) : v;
     }
@@ -236,7 +279,8 @@ export class ArtRegistry {
   }
 }
 
-export interface Resolved { instance: AssetInstance; placement: Required<Placement>; props: Properties; state: Properties; element: AssetDefinition }
+export interface PropertyOverride {state:string;binding?:string;source?:ArtworkPropertySource}
+export interface Resolved { propertyOverrides?:Readonly<Record<string,PropertyOverride>>; instance: AssetInstance; placement: Required<Placement>; props: Properties; state: Properties; element: AssetDefinition }
 /** An optional selection resolves only those rows and their attachment ancestors. */
 export function resolveComposition(registry: ArtRegistry, doc: ChunkDocument, env: Environment, selection?:readonly string[]): Resolved[] {
   const all = new Map<string, AssetInstance>(), parents = new Map<string, string>();
@@ -246,7 +290,7 @@ export function resolveComposition(registry: ArtRegistry, doc: ChunkDocument, en
   const resolve = (id: string): Resolved => {
     const had = resolved.get(id); if (had) return had;
     const n = all.get(id);if(!n)throw new Error('Missing composition instance: '+id);
-    const p = n.placement, e = registry.get(n.type), props = registry.properties(n.type, n.props);
+    const p = n.placement, e = registry.get(n.type), authoredProps = registry.properties(n.type, n.props);
     const bound: Properties = {};
     for (const [key, source] of Object.entries(n.bindings ?? {})) {
       if (!env.bindings || !owns(env.bindings, source)) throw new Error(`${id}.${key}: unresolved visual binding ${source}`);
@@ -260,7 +304,7 @@ export function resolveComposition(registry: ArtRegistry, doc: ChunkDocument, en
       const time = env.sequenceTime ?? env.view.t / 60;
       if (!finite(time)) throw new Error(`${id}: invalid animation time`);
       const phase = clip.loop ? ((time % clip.duration) + clip.duration) % clip.duration : Math.max(0, Math.min(clip.duration, time));
-      state = registry.visualProperties(n.type, { ...state, [channel]: clip.sample(phase, props, state, channel) });
+      state = registry.visualProperties(n.type, { ...state, [channel]: clip.sample(phase, authoredProps, state, channel) });
     }
     let placement = { x: p.x, h: p.h, scale: p.scale ?? 1, facing: p.facing ?? 1, parallax: p.parallax ?? 1 };
     const target = n.attach?.instance ?? parents.get(id);
@@ -271,7 +315,12 @@ export function resolveComposition(registry: ArtRegistry, doc: ChunkDocument, en
       placement = { x: o.x + (a.x + p.x) * o.scale * o.facing, h: o.h + (a.h + p.h) * o.scale,
         scale: o.scale * placement.scale, facing: o.facing * placement.facing as 1 | -1, parallax: p.parallax ?? o.parallax };
     }
-    const r = { instance: n, placement, props, state, element: e }; resolved.set(id, r); return r;
+    let props=authoredProps;const propertyOverrides:Record<string,PropertyOverride>={};
+    for(const[key,field]of Object.entries(e.fields)){const link=field.stateOverride,value=link&&state[link.state];if(!link||typeof value!=='number'||!(value>0||link.allowZero&&value===0))continue;
+      const explicit=owns(env.state[n.id]??{},link.state)||owns(env.clips?.[n.id]??{},link.state),binding=explicit?undefined:n.bindings?.[link.state],source=binding?env.bindingSources?.[binding]:undefined;
+      if(props===authoredProps)props={...authoredProps};props[key]=value/(link.space==='world'?placement.scale:1);propertyOverrides[key]={state:link.state,...(binding?{binding}:{}),...(source?{source}:{})};
+    }
+    const r:Resolved = { instance: n, placement, props, state, element: e,...(Object.keys(propertyOverrides).length?{propertyOverrides}:{}) }; resolved.set(id, r); return r;
   };
   const rank = (n: AssetInstance) => n.layer === undefined ? 0 : LAYERS.indexOf(n.layer);
   return [...(selection??all.keys())].map(resolve).sort((a, b) => rank(a.instance) - rank(b.instance) || a.instance.order - b.instance.order);
@@ -357,7 +406,7 @@ let captureArtwork:((a:CapturedArtwork)=>void)|undefined,captureHelper:typeof ca
 let paintOrdinal=0,flushingSlot:LayerSlot|undefined;
 const closedSlots=new Set<LayerSlot>();
 function captureRecord(ctx:CanvasRenderingContext2D,prepared:ArtworkPresentation,slot:LayerSlot,paintOrder:number):CapturedArtwork{
- const matrix=copyTransform(ctx.getTransform());return {...prepared,bounds:transformRect(prepared.bounds,matrix),clip:prepared.clip?transformRect(prepared.clip,matrix):undefined,slot,canvasTransform:matrix,paintOrder};
+ const matrix=copyTransform(ctx.getTransform()),r=prepared.row,window=r.element.drawingWindow?.(r.props,r.state,{view:prepared.view,placement:r.placement});return {...prepared,framingBounds:transformRect(prepared.bounds,matrix),drawingWindow:window?{...window,bounds:transformRect(projectedBounds(prepared.view,r.placement,window.bounds),matrix)}:undefined,bounds:transformRect(prepared.bounds,matrix),clip:prepared.clip?transformRect(prepared.clip,matrix):undefined,slot,canvasTransform:matrix,paintOrder};
 }
 export function endLayeredFrame(){captureArtwork=undefined;captureHelper=undefined;flushingSlot=undefined;closedSlots.clear();collectingFrame=false;presentationSnapshots=new WeakMap();for(const rows of Object.values(commands))rows.clear();}
 export function beginLayeredFrame(capture?:typeof captureArtwork,helpers?:typeof captureHelper){endLayeredFrame();captureArtwork=capture;captureHelper=helpers;collectingFrame=true;paintOrdinal=0;}
@@ -378,7 +427,19 @@ export function slotHasContent(doc: Readonly<ChunkDocument>, slot: LayerSlot): b
 function paint(ctx:CanvasRenderingContext2D,env:Environment,rows:ArtworkPresentation[],passOf:(r:Resolved)=>Pass,near:boolean,slot:LayerSlot,capture=true){
   for(const prepared of rows){
     const r=prepared.row,opacity=prepared.opacity;
-    if(capture&&captureArtwork){const record=captureRecord(ctx,prepared,slot,paintOrdinal++);record.repaint=target=>paint(target,env,[prepared],passOf,near,slot,false);captureArtwork(record);}
+    if(capture&&captureArtwork){
+      const record=captureRecord(ctx,prepared,slot,paintOrdinal++);
+      if(r.element.selection==='region'){
+        record.drawingBounds=measureArtwork(target=>paint(target,env,[prepared],passOf,near,slot,false),ctx);
+        record.boundsSource='region';
+      }else{
+        record.bounds=measureArtwork(target=>paint(target,env,[prepared],passOf,near,slot,false),ctx);
+        record.boundsSource='drawing';
+      }
+      record.pickable=record.visible&&record.bounds.width>0&&record.bounds.height>0;
+      record.pickReason=record.pickable?undefined:record.reason??'No visible drawing';
+      captureArtwork(record);continue;
+    }
     if(!prepared.visible)continue;
     const pass = passOf(r), p = r.placement, v = env.view;
     const clip=prepared.clip;
@@ -406,3 +467,5 @@ function paint(ctx:CanvasRenderingContext2D,env:Environment,rows:ArtworkPresenta
     } finally { if (clip) ctx.restore(); }
   }
 }
+
+export function propertyIsLinked(row:Resolved,key:string){return !!row.propertyOverrides?.[key];}

@@ -36,14 +36,14 @@
       "props": {
         "parallax": 0.08,
         "seed": 7,
-        "tall": 105,
-        "low": 18,
+        "maxTowerHeight": 105,
+        "minTowerHeight": 18,
         "lit": 0.4,
         "haze": 0.85,
         "spireX": 980,
-        "spireSize": 0.72,
         "traffic": true,
-        "water": true
+        "water": true,
+        "spireScale": 0.72
       },
       "placement": {
         "x": 0,
@@ -58,12 +58,12 @@
       "props": {
         "gantry": "sts1",
         "boomUp": 1,
-        "trolley": -60,
-        "hang": 40,
+        "trolleyX": -60,
+        "dropLength": 40,
         "load": false,
-        "loadPaint": 2,
         "floods": 0.3,
-        "phase": 0
+        "phaseAngle": 0,
+        "loadPaletteIndex": 2
       },
       "placement": {
         "x": 1300,
@@ -78,10 +78,10 @@
       "id": "fog",
       "type": "shift.fog",
       "props": {
-        "top": 80,
+        "height": 80,
         "density": 0.3,
-        "drift": 0.06,
-        "parallax": 0.6
+        "parallax": 0.6,
+        "velocityX": 3.5999999999999996
       },
       "placement": {
         "x": 0,
@@ -96,7 +96,6 @@
       "props": {
         "width": 1440,
         "concrete": "#26241f",
-        "joint": 96,
         "walkway": true,
         "puddles": [
           {
@@ -119,7 +118,8 @@
             "x": 1080,
             "color": "255,232,196"
           }
-        ]
+        ],
+        "jointSpacing": 96
       },
       "placement": {
         "x": 0,
@@ -228,11 +228,11 @@
       "type": "vehicle.car",
       "props": {
         "length": 533,
-        "ceiling": 62,
-        "roof": 12,
+        "ceilingHeight": 62,
+        "roofHeight": 12,
         "doors": 4,
         "doorWidth": 36,
-        "doorHeight": 54,
+        "maxDoorHeight": 54,
         "cab": "left",
         "plate": "CAR 1",
         "ads": "REGISTRY PREMIUM · FASTER CHECKS|NULLROUTE LOGISTICS|YOUR SCORE TRAVELS WITH YOU"
@@ -267,11 +267,11 @@
       "type": "vehicle.car",
       "props": {
         "length": 533,
-        "ceiling": 62,
-        "roof": 12,
+        "ceilingHeight": 62,
+        "roofHeight": 12,
         "doors": 4,
         "doorWidth": 36,
-        "doorHeight": 54,
+        "maxDoorHeight": 54,
         "cab": "right",
         "plate": "CAR 2",
         "ads": "LINE 0 · ON TIME 61%|SPIRE RESIDENCES · BY INVITATION|REPORT UNREGISTERED PERSONS",
@@ -386,7 +386,7 @@
       "props": {
         "name": "HARBOR",
         "rods": 20,
-        "alpha": 0.92
+        "textOpacity": 0.92
       },
       "placement": {
         "x": 1340,
@@ -411,9 +411,11 @@
         "title": "DEPARTURES",
         "text": "",
         "color": "255,170,60",
-        "period": 260,
-        "phase": 0,
-        "seed": 2
+        "seed": 2,
+        "timeOffset": 0,
+        "highlightPhaseAngle": 0,
+        "statusIndexOffset": 0,
+        "pageDuration": 4.333333333333333
       },
       "placement": {
         "x": 773,
@@ -427,7 +429,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 4,
-        "place": 20,
+        "placeWidth": 20,
         "style": "bench"
       },
       "placement": {
@@ -446,7 +448,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 4,
-        "place": 20,
+        "placeWidth": 20,
         "style": "bench"
       },
       "placement": {
@@ -465,7 +467,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 4,
-        "place": 20,
+        "placeWidth": 20,
         "style": "bench"
       },
       "placement": {
@@ -484,7 +486,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 1,
-        "place": 20,
+        "placeWidth": 20,
         "style": "priority"
       },
       "placement": {
@@ -503,7 +505,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 1,
-        "place": 20,
+        "placeWidth": 20,
         "style": "priority"
       },
       "placement": {
@@ -522,7 +524,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 4,
-        "place": 20,
+        "placeWidth": 20,
         "style": "bench"
       },
       "placement": {
@@ -541,7 +543,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 4,
-        "place": 20,
+        "placeWidth": 20,
         "style": "bench"
       },
       "placement": {
@@ -560,7 +562,7 @@
       "type": "vehicle.seat",
       "props": {
         "places": 4,
-        "place": 20,
+        "placeWidth": 20,
         "style": "bench"
       },
       "placement": {
@@ -579,13 +581,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7701,
         "act": "read",
         "archetype": "office",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 332,
@@ -600,13 +602,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7702,
         "act": "doze",
         "archetype": "student",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 372,
@@ -621,13 +623,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7703,
         "act": "phone",
         "archetype": "elder",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 487,
@@ -642,13 +644,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7704,
         "act": "sit",
         "archetype": "dockworker",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 622,
@@ -663,13 +665,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7705,
         "act": "read",
         "archetype": "reader",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 642,
@@ -684,13 +686,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7706,
         "act": "doze",
         "archetype": "sleeper",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 805,
@@ -705,13 +707,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7707,
         "act": "talk",
         "archetype": "courier",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 945,
@@ -726,13 +728,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7708,
         "act": "phone",
         "archetype": "commuter",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1020,
@@ -747,13 +749,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7709,
         "act": "read",
         "archetype": "punk",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1155,
@@ -768,13 +770,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7710,
         "act": "doze",
         "archetype": "teen",
         "sitting": "side",
-        "seat": 14
+        "seat": 14,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1195,
@@ -789,11 +791,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7711,
         "act": "phone",
-        "archetype": "technician"
+        "archetype": "technician",
+        "depthBand": "play"
       },
       "placement": {
         "x": 550,
@@ -808,11 +810,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7712,
         "act": "stand",
-        "archetype": "clerk"
+        "archetype": "clerk",
+        "depthBand": "play"
       },
       "placement": {
         "x": 710,
@@ -827,11 +829,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7713,
         "act": "read",
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 993,
@@ -846,11 +848,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7714,
         "act": "phone",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1143,
@@ -865,12 +867,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7715,
         "act": "walk",
         "archetype": "teen",
-        "range": 90
+        "range": 90,
+        "depthBand": "play"
       },
       "placement": {
         "x": 730,
@@ -885,7 +887,7 @@
       "props": {
         "building": "line0",
         "ghost": 0.12,
-        "revealSpeed": 0.08
+        "revealRate": 4.8
       },
       "placement": {
         "x": 230,
@@ -899,11 +901,11 @@
           "type": "vehicle.car-shell",
           "props": {
             "length": 533,
-            "ceiling": 62,
-            "roof": 12,
+            "ceilingHeight": 62,
+            "roofHeight": 12,
             "doors": 4,
             "doorWidth": 36,
-            "doorHeight": 54,
+            "maxDoorHeight": 54,
             "cab": "left",
             "number": "0-2031",
             "destination": "LINE 0 · DOWNTOWN"
@@ -934,11 +936,11 @@
           "type": "vehicle.car-shell",
           "props": {
             "length": 533,
-            "ceiling": 62,
-            "roof": 12,
+            "ceilingHeight": 62,
+            "roofHeight": 12,
             "doors": 4,
             "doorWidth": 36,
-            "doorHeight": 54,
+            "maxDoorHeight": 54,
             "cab": "right",
             "number": "0-2032",
             "destination": "LINE 0 · DOWNTOWN"
@@ -1101,11 +1103,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7716,
         "act": "stand",
-        "archetype": "elder"
+        "archetype": "elder",
+        "depthBand": "play"
       },
       "placement": {
         "x": 380,
@@ -1120,11 +1122,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7717,
         "act": "phone",
-        "archetype": "office"
+        "archetype": "office",
+        "depthBand": "play"
       },
       "placement": {
         "x": 480,
@@ -1139,12 +1141,12 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7718,
         "act": "walk",
         "archetype": "dockworker",
-        "range": 120
+        "range": 120,
+        "depthBand": "play"
       },
       "placement": {
         "x": 843,
@@ -1159,11 +1161,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7719,
         "act": "wait",
-        "archetype": "commuter"
+        "archetype": "commuter",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1073,
@@ -1178,11 +1180,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "harbor",
         "seed": 7720,
         "act": "stand",
-        "archetype": "courier"
+        "archetype": "courier",
+        "depthBand": "play"
       },
       "placement": {
         "x": 1233,
@@ -1350,10 +1352,10 @@
       "id": "label",
       "type": "metro.scale-ruler",
       "props": {
-        "span": 0,
+        "length": 0,
         "bar": false,
         "numbers": false,
-        "size": 9,
+        "fontSize": 9,
         "title": "LINE 0 · THE WALKABLE 2-CAR TRAIN AT A PLATFORM (consist kit: vehicle.car, car-shell, door, gangway, seat)",
         "note": "2 cars of 533 + a 20-unit gangway = 1,086 units; one fused deck at the platform’s height, 8 doors on the platform side|Vehicle source: art/proposals/train-two-car.vehicle.json (checked against this frame by check-train-consist-art)|A third car: one more gangway + car attached to car 2’s end (1,639 units)"
       },
@@ -1368,9 +1370,9 @@
       "id": "ruler-train",
       "type": "metro.scale-ruler",
       "props": {
-        "span": 1086,
+        "length": 1086,
         "title": "TRAIN: 2 CARS + 1 GANGWAY",
-        "size": 8
+        "fontSize": 8
       },
       "placement": {
         "x": 230,

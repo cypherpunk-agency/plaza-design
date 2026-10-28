@@ -1,4 +1,12 @@
+import {fixedGeometry} from '../core/spatial';
+import {seconds} from '../core/fields';
+import {velocity} from '../core/fields';
+import {contextualEditor} from '../core/fields';
+import {textField} from '../core/fields';
+import {numericFields} from '../core/fields';
+import {appearanceBoolean,appearanceChoice,appearanceRatio,appearanceStructure,appearanceText,semantic,shapeLength} from '../core/fields';
 import {boundsFromEdges} from '../core/geometry';
+import {endpointControls,rectangleControls} from '../core/spatial';
 /**
  * LEVEL KIT: what makes a scene more than one street line. Floors are walkable lines at a height;
  * stairs and escalators join two floors; a lift carries the player between the floors its shaft
@@ -12,9 +20,10 @@ import {boundsFromEdges} from '../core/geometry';
  */
 import type { AssetDefinition, Field, Properties } from '../core/composition';
 import type { View } from '../core/view';
+const fixedNativeGeometry=fixedGeometry("This level component follows its typed level/polygon or device configuration. Edit that configuration through the existing level controls; a single body-box resize would not preserve its geometry.");
 
-const num = (label: string, value: number, min: number, max: number, step = 1, unit?: string): Field => ({ kind: 'number', label, default: value, min, max, step, ...(unit ? { unit } : {}) });
-const text = (label: string, value = ''): Field => ({ kind: 'string', label, default: value });
+const num = numericFields({step:1});
+const text = textField;
 const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
 
 /** Concrete, steel and the warm rim light every set piece carries (ART-GUIDE Ã‚Â§3: nothing floats, edges read). */
@@ -26,11 +35,12 @@ const rect = (x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: nu
 
 /** A walkable line. `building` names whose floor it is (empty: outdoors, the street); `label` is what a lift shows. */
 export const floorElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width'}),
   type: 'level.floor', version: 1, label: 'Floor (walkable line)', category: 'scene', parts: [], libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 10, 10000, 1, 'units'), building: text('Building (empty: outdoors)'), label: text('Name on the lift panel'),
-    entry: { kind: 'select', label: 'Entered (a building floor at street height)', options: ['walk', 'door'], default: 'walk' },
-    indoor: { kind: 'boolean', label: 'Indoors (a tunnel, cellar or hall: no daylight while you stand here)', default: false },
+    width: shapeLength(num('Width', 300, 10, 10000, 1, 'units')), building: semantic(text('Building (empty: outdoors)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), label: appearanceText(text('Name on the lift panel')),
+    entry: appearanceChoice({ kind: 'select', label: 'Entered (a building floor at street height)', options: ['walk', 'door'], default: 'walk' }),
+    indoor: appearanceBoolean({ kind: 'boolean', label: 'Indoors (a tunnel, cellar or hall: no daylight while you stand here)', default: false }),
   },
   bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: 4 }),
   anchors: p => ({ ...origin(), end: { x: Number(p.width), h: 0, role: 'mount' } }),
@@ -39,8 +49,9 @@ export const floorElement: AssetDefinition = {
 
 /** Where the street meets a door-only building floor at the same height: Ã¢â€ â€˜ steps in, Ã¢â€ â€œ steps out. Walk-in floors need none. */
 export const doorElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width',originX:.5}),
   type: 'level.door', version: 1, label: 'Way into a building', category: 'scene', parts: [], libraryUse: 'reusable',
-  fields: { building: text('Building'), width: num('Width', 24, 8, 200, 1, 'units') },
+  fields: { building: semantic(text('Building'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), width: shapeLength(num('Width', 24, 8, 200, 1, 'units')) },
   bounds: p => ({ x: -Number(p.width) / 2, h: 0, w: Number(p.width), tall: 46 }),
   anchors: origin,
   draw() {},
@@ -48,20 +59,21 @@ export const doorElement: AssetDefinition = {
 
 /** Grouping handles: attach a building's facade to its shell and its rooms to its interior. */
 const handle = (type: string, label: string, fields: Record<string, Field> = {}): AssetDefinition => ({
-  type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: text('Building'), ...fields },
+  type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: semantic(text('Building'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), ...fields },
   bounds: () => ({ x: -6, h: 0, w: 12, tall: 12 }), anchors: origin, draw() {},
 });
-export const shellElement = handle('level.shell', 'Building shell (fades when inside)', { revealSpeed: num('Opens and closes (share per frame)', 0.07, 0.01, 1, 0.01), ghost: num('Wall left while inside', 0, 0, 1, 0.01) });
-export const interiorElement = handle('level.interior', 'Building interior (shown when inside)');
+export const shellElement = ({...handle('level.shell', 'Building shell (fades when inside)', { revealRate: semantic(num('Reveal response',4.2,.6,60,.6),{group:'Motion',quantity:'frequency',unit:'per second',description:'Response coefficient per second; higher values reveal or hide the shell faster.'}), ghost: appearanceRatio(num('Wall left while inside', 0, 0, 1, 0.01)) }),spatial:fixedNativeGeometry});
+export const interiorElement = ({...handle('level.interior', 'Building interior (shown when inside)'),spatial:fixedNativeGeometry});
 
 /** The inside face of a building's street door, in the look of its outside: shown only while the player is in that building. */
 export const ENTRANCE_STYLES = ['glass', 'shop', 'flat', 'service'] as const;
 export const entranceElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
   type: 'level.entrance', version: 1, label: 'Street door seen from inside', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
-    building: text('Building (shown while inside it)'), style: { kind: 'select', label: 'Style', options: [...ENTRANCE_STYLES], default: 'glass' },
-    width: num('Width', 28, 14, 120, 1, 'units'), height: num('Height', 46, 30, 120, 1, 'units'),
-    sign: { kind: 'select', label: 'Shop sign (read from inside)', options: ['CLOSED', 'PULL', 'none'], default: 'CLOSED' },
+    building: semantic(text('Building (shown while inside it)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), style: appearanceChoice({ kind: 'select', label: 'Style', options: [...ENTRANCE_STYLES], default: 'glass' }),
+    width: shapeLength(num('Width', 28, 14, 120, 1, 'units')), height: shapeLength(num('Height', 46, 30, 120, 1, 'units')),
+    sign: appearanceChoice({ kind: 'select', label: 'Shop sign (read from inside)', options: ['CLOSED', 'PULL', 'none'], default: 'CLOSED' }),
   },
   bounds: p => ({ x: -Number(p.width) / 2 - 3, h: Number(p.height) + 4, w: Number(p.width) + 6, tall: Number(p.height) + 4 }),
   anchors: origin,
@@ -210,13 +222,19 @@ function drawSwitchback(x: CanvasRenderingContext2D, v: View, run: number, rise:
 }
 
 export const stairsElement: AssetDefinition = {
+  spatial:{fields:['run','rise'],handles:p=>{
+    const shape=STAIR_STYLES[String(p.style)]?.draw??'flight';
+    if(shape==='flight'||shape==='ladder')return endpointControls('run','rise').handles(p);
+    const rise=rectangleControls({height:'rise'}).handles(p);
+    return shape==='rungs'?rise:[...rise,...rectangleControls({width:'run',originX:shape==='spiral'?.5:0}).handles(p)];
+  }},
   type: 'level.stairs', version: 1, label: 'Stairs between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
-    run: num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units'),
-    speed: num('Climbing speed (units per frame)', 1, 0.1, 4, 0.05), reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
-    style: { kind: 'select', label: 'Style (spiral, rungs and switchback: run is the width; climbed with Ã¢â€ â€˜/Ã¢â€ â€œ)', options: Object.keys(STAIR_STYLES), default: 'concrete' },
-    rail: { kind: 'select', label: 'Handrail', options: ['auto', ...Object.keys(RAILS)], default: 'auto' },
-    railInFront: { kind: 'boolean', label: 'Handrail in front of the player on the stair', default: true },
+    run: shapeLength(num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units')), rise: shapeLength(num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units')),
+    speed: velocity('Climbing speed',60,{min:6,max:240,step:3}), reach: shapeLength(num('Reach at either end', 10, 2, 60, 1, 'units')),
+    style: appearanceChoice({ kind: 'select', label: 'Style (spiral, rungs and switchback: run is the width; climbed with Ã¢â€ â€˜/Ã¢â€ â€œ)', options: Object.keys(STAIR_STYLES), default: 'concrete' }),
+    rail: appearanceChoice({ kind: 'select', label: 'Handrail', options: ['auto', ...Object.keys(RAILS)], default: 'auto' }),
+    railInFront: appearanceBoolean({ kind: 'boolean', label: 'Handrail in front of the player on the stair', default: true }),
   },
   visualFields: { near: num('The player is on or beside it (level)', 0, 0, 1, 1) },
   bounds: p => {
@@ -250,12 +268,13 @@ function drawStairs(x: CanvasRenderingContext2D, v: View, p: Properties, part: S
 }
 
 export const escalatorElement: AssetDefinition = {
+  spatial:endpointControls('run','rise'),
   type: 'level.escalator', version: 1, label: 'Escalator between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
-    run: num('Run (to the top, negative: leftwards)', 150, -2000, 2000, 1, 'units'), rise: num('Rise (to the top floor)', 90, -2000, 2000, 1, 'units'),
-    direction: { kind: 'select', label: 'Runs', options: ['up', 'down'], default: 'up' }, speed: num('Speed', 0.6, 0.1, 3, 0.05),
-    reach: num('Reach at either end', 10, 2, 60, 1, 'units'),
-    style: { kind: 'select', label: 'Style', options: ['standard', 'glass'], default: 'standard' },
+    run: shapeLength(num('Run (to the top, negative: leftwards)', 150, -2000, 2000, 1, 'units')), rise: shapeLength(num('Rise (to the top floor)', 90, -2000, 2000, 1, 'units')),
+    direction: appearanceChoice({ kind: 'select', label: 'Runs', options: ['up', 'down'], default: 'up' }), speed: velocity('Speed',36,{min:6,max:180,step:3}),
+    reach: shapeLength(num('Reach at either end', 10, 2, 60, 1, 'units')),
+    style: appearanceChoice({ kind: 'select', label: 'Style', options: ['standard', 'glass'], default: 'standard' }),
   },
   bounds: p => { const r = Number(p.run), h = Number(p.rise); return boundsFromEdges({left:Math.min(0,r)-14,right:Math.max(0,r)+14,bottom:Math.min(0,h)-14,top:Math.max(0,h)+32}); },
   anchors: p => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
@@ -265,7 +284,7 @@ export const escalatorElement: AssetDefinition = {
     x.fillStyle = glass ? '#2c3037' : C.dark;
     x.beginPath(); x.moveTo(v.sx(-14 * dir), v.y(0)); x.lineTo(v.sx(0), v.y(0)); x.lineTo(v.sx(run), v.y(rise)); x.lineTo(v.sx(run + 14 * dir), v.y(rise));
     x.lineTo(v.sx(run + 14 * dir), v.y(rise - 14)); x.lineTo(v.sx(run), v.y(rise - 14)); x.lineTo(v.sx(0), v.y(-14)); x.lineTo(v.sx(-14 * dir), v.y(-14)); x.closePath(); x.fill();
-    drawFlight(x, v, run, rise, (v.t * Number(p.speed) / 40) * (up ? 1 : -1));
+    drawFlight(x, v, run, rise, (v.t * (Number(p.speed)/60) / 40) * (up ? 1 : -1));
     // glass balustrade and the black rubber handrail, lit comb plates at both ends
     // glass-sided (Spire): the balustrade is clear down to the truss, with a lit steel skirt and a bright top rail
     x.fillStyle = glass ? 'rgba(170,215,235,.24)' : C.glass;
@@ -285,10 +304,11 @@ export const escalatorElement: AssetDefinition = {
  * its stops, speed and wiring live in the scene's devices; the doors follow its trips.
  */
 export const elevatorElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
   type: 'level.elevator', version: 1, label: 'Lift between floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { height: num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units'), width: num('Car width', 34, 20, 120, 1, 'units'), device: text('Car: the Circuit mover that moves it (device.part)'),
-    doorMs: num('Doors open in', 280, 40, 3000, 10, 'ms'),
-    style: { kind: 'select', label: 'Style (broken: out of order, never called)', options: [...LIFT_STYLES], default: 'goods' } },
+  fields: { height: shapeLength(num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units')), width: shapeLength(num('Car width', 34, 20, 120, 1, 'units')), device: semantic(text('Car: the Circuit mover that moves it (device.part)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}),
+    doorDuration:seconds('Door opening duration',.28,{min:.04,max:3,step:.01}),
+    style: appearanceChoice({ kind: 'select', label: 'Style (broken: out of order, never called)', options: [...LIFT_STYLES], default: 'goods' }) },
   visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
   bounds: p => boundsFromEdges({left:-Number(p.width)/2-4,right:Number(p.width)/2+4,bottom:-4,top:Number(p.height)+54}),
   anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),
@@ -363,9 +383,9 @@ function drawLiftStyle(x: CanvasRenderingContext2D, v: View, style: string, w: n
 }
 
 /** A call button beside a lift's doors on one floor: press E at the lift to call it; the button lights while the car is on its way here. */
-export const liftButtonElement: AssetDefinition = {
+export const liftButtonElement: AssetDefinition = {spatial:fixedNativeGeometry,
   type: 'level.lift-button', version: 1, label: 'Lift call button', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { lift: text('Lift (its instance id)') },
+  fields: { lift: appearanceText(text('Lift (its instance id)')) },
   visualFields: { lit: num('Lit (called here)', 0, 0, 1, 1) },
   bounds: () => ({ x: -5, h: 35, w: 10, tall: 15 }),
   anchors: origin,
@@ -392,17 +412,18 @@ const hidden = () => false;
 /** The shape only (null, or one plain condition object); its vocabulary is checked with the pending sources (world/access.ts). */
 const barrierWhen = (v: unknown) => { if (v !== null && (!v || typeof v !== 'object' || Array.isArray(v) || !Object.keys(v).length || Object.keys(v).length > 2)) throw new Error('level.barrier.when: null or one condition object'); };
 export const barrierElement: AssetDefinition = {
+  spatial:rectangleControls({width:'width',originX:.5}),
   type: 'level.barrier', version: 1, label: 'Barrier (turnstile, gate, locked door)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
   fields: {
-    style: { kind: 'select', label: 'Style', options: [...BARRIER_STYLES], default: 'turnstile' },
-    width: num('Passage width', 24, 10, 200, 1, 'units'),
-    key: { ...text('Opens for: key chip carried (keyring id; empty: none)'), showIf: hidden },
-    flag: { ...text('Opens once: flag set (empty: none)'), showIf: hidden },
-    when: { kind: 'json', label: 'Opens while: condition (null: always)', default: null, showIf: hidden, validate: barrierWhen },
-    refuse: text('Refuses with', 'ACCESS DENIED.'),
-    closes: { kind: 'boolean', label: 'Shuts again behind the player (asks its rule each time)', default: false },
+    style: appearanceChoice({ kind: 'select', label: 'Style', options: [...BARRIER_STYLES], default: 'turnstile' }),
+    width: shapeLength(num('Passage width', 24, 10, 200, 1, 'units')),
+    key: { ...semantic(text('Opens for: key chip carried (keyring id; empty: none)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), showIf: hidden },
+    flag: { ...semantic(text('Opens once: flag set (empty: none)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), showIf: hidden },
+    when: contextualEditor(appearanceStructure({ kind: 'json', label: 'Opens while: condition (null: always)', default: null, showIf: hidden, validate: barrierWhen }),'access','Edit access condition'),
+    refuse: appearanceText(text('Refuses with', 'ACCESS DENIED.')),
+    closes: appearanceBoolean({ kind: 'boolean', label: 'Shuts again behind the player (asks its rule each time)', default: false }),
   },
-  visualFields: { open: num('Open', 0, 0, 1, 0.01), near: num('Near cabinet over the player', 0, 0, 1, 1) },
+  visualFields: { open: appearanceRatio(num('Open', 0, 0, 1, 0.01)), near: num('Near cabinet over the player', 0, 0, 1, 1) },
   bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 58, w: Number(p.width) + 20, tall: 58 }),
   anchors: origin,
   draw: (x, v, p, s) => {

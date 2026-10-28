@@ -57,10 +57,10 @@
       "id": "spire",
       "type": "landmark.spire",
       "props": {
-        "size": 0.8,
-        "fill": "#0a0812",
         "edge": 0.06,
-        "traffic": false
+        "traffic": false,
+        "generatorScale": 0.8,
+        "fillColor": "#0a0812"
       },
       "placement": {
         "x": 1000,
@@ -75,11 +75,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 92,
-        "floors": 1,
         "seed": 601,
         "goods": "tea",
         "board": "TEA",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 146
       },
       "placement": {
         "x": 0,
@@ -93,12 +93,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 104,
-        "floors": 2,
         "seed": 602,
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 196
       },
       "placement": {
         "x": 92,
@@ -112,11 +112,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 104,
-        "floors": 1,
         "seed": 603,
         "goods": "lanterns",
         "board": "LANTERNS",
-        "lanterns": 2
+        "lanterns": 2,
+        "height": 146
       },
       "placement": {
         "x": 196,
@@ -230,13 +230,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 966,
         "archetype": "elder",
         "act": "stand",
-        "hair": "scarf"
+        "hair": "scarf",
+        "depthBand": "play"
       },
       "placement": {
         "x": 404,
@@ -251,11 +251,11 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 977,
-        "act": "sweep"
+        "act": "sweep",
+        "depthBand": "play"
       },
       "placement": {
         "x": 716,
@@ -269,9 +269,9 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
         "act": "walk",
-        "range": 40
+        "range": 40,
+        "depthBand": "play"
       },
       "placement": {
         "x": 580,
@@ -285,8 +285,8 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 664,
@@ -300,8 +300,8 @@
       "type": "character.resident",
       "props": {
         "kind": "pigeon",
-        "depth": "play",
-        "act": "stand"
+        "act": "stand",
+        "depthBand": "play"
       },
       "placement": {
         "x": 700,
@@ -333,11 +333,11 @@
       "type": "building.shophouse",
       "props": {
         "width": 80,
-        "floors": 1,
         "seed": 604,
         "goods": "pottery",
         "board": "",
-        "lanterns": 1
+        "lanterns": 1,
+        "height": 146
       },
       "placement": {
         "x": 1090,
@@ -351,12 +351,12 @@
       "type": "building.shophouse",
       "props": {
         "width": 70,
-        "floors": 1,
         "seed": 605,
         "goods": "home",
         "board": "",
         "lanterns": 0,
-        "shutters": "closed"
+        "shutters": "closed",
+        "height": 146
       },
       "placement": {
         "x": 1170,
@@ -438,13 +438,13 @@
         "width": 660,
         "height": 14,
         "railing": 28,
-        "pillars": 80,
         "gate": 312,
         "gateWidth": 40,
         "gateOpen": 0.8,
         "lanterns": true,
         "letters": "ST. AGNES",
-        "seed": 9
+        "seed": 9,
+        "pillarSpacing": 80
       },
       "placement": {
         "x": 300,
@@ -478,13 +478,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 985,
         "archetype": "vendor",
         "act": "sit",
-        "sitting": "side"
+        "sitting": "side",
+        "depthBand": "play"
       },
       "placement": {
         "x": 532,
@@ -498,13 +498,13 @@
       "type": "character.resident",
       "props": {
         "kind": "human",
-        "depth": "play",
         "district": "oldq",
         "tech": "no",
         "seed": 991,
         "archetype": "elder",
         "act": "walk",
-        "range": -480
+        "range": -480,
+        "depthBand": "play"
       },
       "placement": {
         "x": 1060,

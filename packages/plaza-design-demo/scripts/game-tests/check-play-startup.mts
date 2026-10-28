@@ -26,4 +26,22 @@ fetchMode='fail';button('Play');await flush();assert.equal(startup().phase,'fail
 fetchMode='normal';button('Play');await flush();const cloneFail=frame()!;cloneFail.contentWindow.fail=true;message(cloneFail,'ready');assert.equal(startup().phase,'failed');assert.equal(alert(),'Snapshot clone failed');assert.equal(frame(),undefined);assert.equal(timers.size,0);
 button('Play');await flush();const navFail=frame()!;navFail.onerror!();assert.equal(startup().phase,'failed');assert.match(alert(),/navigation error/);assert.equal(frame(),navFail,'navigation failure does not silently restart');assert.equal(timers.size,0);button('Stop');
 fetchMode='pending';button('Play');dispose();for(const resolve of pendingFonts.splice(0))resolve();await flush();assert.equal(host.children.length,0);assert.equal(listeners.size,0);assert.equal(timers.size,0);
-console.log('Play startup lifecycle PASS: src before insertion; unchanged opaque sandbox; staged waits; one-shot handshake; stale/superseded messages and load/error callbacks ignored; font/clone/navigation/runtime failures; Stop/reset/dispose cleanup; no automatic retry or source mutation.');
+// In-place Play puts only the fitted game in the stage; controls live in the existing inspector.
+fetchMode='normal';const stage=new Node('stage'),settings=new Node('inspector');let exits=0;
+const stageDispose=exported.mountPlayWorkbench(stage,{documents:docs,authoring,playSettings:settings,stopPlay:()=>{exits++;}},{scene:'capsule'});
+assert.equal(stage.children.length,1);assert.equal((stage.children[0] as any).className,'play-viewport');
+assert(!stage.walk().some(n=>n.tag==='button'||n.tag==='p'),'Controls/status must not consume game viewport height');
+assert(settings.walk().some(n=>n.attrs['aria-label']==='Play startup'),'Startup errors remain inspectable beside the game');
+settings.walk().find(n=>n.tag==='button'&&n.textContent==='Play')!.onclick!();await flush();
+const embedded=stage.walk().find(n=>n.tag==='iframe')!;assert(embedded);assert.equal(embedded.attrs.sandbox,'allow-scripts');
+settings.walk().find(n=>n.tag==='button'&&n.textContent==='Stop')!.onclick!();assert.equal(exits,1,'Inspector Stop returns to the editor owner');
+message(embedded,'quit');assert.equal(exits,2,'Native quit returns to editing through the same owner');
+stageDispose();assert.equal(stage.children.length,0);assert.equal(settings.children.length,0);assert.equal(listeners.size,0);assert.equal(timers.size,0);
+const authoredFixture=fixture as typeof fixture&{sequence?:{id:string;time:number}};authoredFixture.sequence={id:'authored-start',time:3};
+for(const [mode,sequence,expected]of [['preview',{id:'glide',time:17},{id:'glide',time:17}],['preview',undefined,undefined],['checkpoint',{id:'glide',time:17},{id:'authored-start',time:3}]]as const){
+ const host=new Node('stage'),settings=new Node('settings'),dispose=exported.mountPlayWorkbench(host,{documents:docs,authoring,playSettings:settings,playStart:{mode,sequence,viewport:{width:960,height:540,scale:1}}},{scene:'capsule'});
+ settings.walk().find(n=>n.tag==='button'&&n.textContent==='Play')!.onclick!();await flush();const f=host.walk().find(n=>n.tag==='iframe')!;message(f,'ready');const sent=f.contentWindow.messages[0].value;
+ assert.deepEqual(structuredClone(sent.fixture.sequence),expected);assert.deepEqual(sent.viewport,{width:960,height:540,scale:1});assert.deepEqual(authoredFixture.sequence,{id:'authored-start',time:3},'Choosing a preview starting point never edits the saved checkpoint');dispose();
+}
+delete authoredFixture.sequence;assert.equal(listeners.size,0);assert.equal(timers.size,0);
+console.log('Play startup lifecycle PASS: handshake, waits, failures, stale messages, isolated frame cleanup and in-place stage/inspector separation.');

@@ -21,7 +21,7 @@ const value=(v:unknown)=>v as Value;
 const roleRow=(roles:Readonly<Record<string,Resolved>>,role:string)=>{const r=roles[role];if(!r)throw Error('Harbor requires artwork role '+role);return r;};
 export function harborLayoutOf(roles:Readonly<Record<string,Resolved>>,width:number):HarborLayout{
  const get=(role:string)=>roleRow(roles,role),x=(role:string)=>get(role).placement.x,arch=get('arch'),hut=get('hut'),bonded=get('bonded');
- return{width,hut:{x:x('hut'),w:Number(hut.props.width),h:Number(hut.props.height)},notice:x('notice'),arch:{x0:x('arch'),x1:x('arch')+Number(arch.props.width),h:Number(arch.props.height)},podium:x('podium'),manifest:x('manifest'),callBox:x('call-box'),cranes:[0,1].map(i=>({x:x('crane'+i),id:String(get('crane'+i).props.gantry) as 'sts1'|'sts2'|'sts3',phase:Number(get('crane'+i).props.phase)})),fish:{x:x('fish'),w:Number(get('fish').props.width)},drinks:{x:x('drinks'),w:Number(get('drinks').props.width)},den:x('den'),fence:{x0:x('bonded'),x1:x('bonded')+Number(bonded.props.width),gate:x('bonded-gate')},ghost:x('ghost'),berth:x('berth'),rails:x('rails'),beacon:x('beacon'),metro:x('metro'),terminal:x('terminal'),taxi:x('taxi'),ferry:x('ferry')};
+ return{width,hut:{x:x('hut'),w:Number(hut.props.width),h:Number(hut.props.height)},notice:x('notice'),arch:{x0:x('arch'),x1:x('arch')+Number(arch.props.width),h:Number(arch.props.height)},podium:x('podium'),manifest:x('manifest'),callBox:x('call-box'),cranes:[0,1].map(i=>({x:x('crane'+i),id:String(get('crane'+i).props.gantry) as 'sts1'|'sts2'|'sts3',phase:Number(get('crane'+i).props.phaseAngle)*Math.PI/180})),fish:{x:x('fish'),w:Number(get('fish').props.width)},drinks:{x:x('drinks'),w:Number(get('drinks').props.width)},den:x('den'),fence:{x0:x('bonded'),x1:x('bonded')+Number(bonded.props.width),gate:x('bonded-gate')},ghost:x('ghost'),berth:x('berth'),rails:x('rails'),beacon:x('beacon'),metro:x('metro'),terminal:x('terminal'),taxi:x('taxi'),ferry:x('ferry')};
 }
 const flatten=(nodes:AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...flatten(n.children??[])]);
 /** The pier's layout from its composition and scene documents (the vehicle workbench draws the pier with it). */
@@ -32,19 +32,19 @@ export function harborLayout(composition:unknown,scene:SceneDocument):HarborLayo
  return harborLayoutOf(geometry.artwork,geometry.width);
 }
 /** The established tea visit and forklift shuttle, a pure snapshot of time. */
-export function harborVisual(layout:HarborLayout,t:number,craneCall:number,bribed:boolean,forklift:{x:number;travel:number}):HarborVisual{
+export function harborVisual(layout:HarborLayout,t:number,craneCall:number,bribed:boolean,forklift:{x:number;travel:number},weatherSource?:import('../../../world/weather').WeatherSource):HarborVisual{
  const cranes:CraneVisual[]=layout.cranes.map((c,ci)=>{let twx=c.x-40+Math.sin(t*.004+c.phase)*150,hang=128+Math.round(Math.sin(t*.01+c.phase)*6),carry=true;const u=t-craneCall,CALL=820;if(ci===0&&u>=0&&u<CALL){const k=u<160?u/160:u<CALL-160?1:(CALL-u)/160,ease=k*k*(3-2*k);twx=twx+(layout.callBox+14-twx)*ease;const dn=u<160?0:u<360?(u-160)/200:u<470?1:u<660?1-(u-470)/190:0;hang=Math.round(hang+(14-hang)*dn*dn*(3-2*dn));carry=false;}return{twx,hang,carry,u};});
  const u=t%1500,k=u<500?u/500:u<750?1:u<1250?1-(u-750)/500:0;
- return{cranes,forklift:{x:forklift.x+forklift.travel*k*k*(3-2*k),dir:u<500||u>=1250?1:-1},bribed,weatherLine:screenLine('harbor')};
+ return{cranes,forklift:{x:forklift.x+forklift.travel*k*k*(3-2*k),dir:u<500||u>=1250?1:-1},bribed,weatherLine:screenLine('harbor',weatherSource)};
 }
 const provider=(ctx:BindingContext):Record<string,Value>=>{
  const {view,rows,roles,source,actors}=ctx,get=(role:string)=>roleRow(roles,role);
  const width=typeof source.manifest!.width==='number'?source.manifest!.width:Number(rows.find(r=>r.instance.id===(source.manifest!.width as {instance:string}).instance)!.props[(source.manifest!.width as {property:string}).property]);
  const L=harborLayoutOf(roles,width),fork=get('forklift'),attached=(row:Resolved,role:string)=>row.instance.attach?.instance===get(role).instance.id;
- const vis=harborVisual(L,view.t,ctx.signals?ctx.signals.read('craneCall'):harborSignals.craneCall,presentationFlag(source.presentation,view.flags,'bribed'),{x:fork.placement.x,travel:Number(fork.props.travel)});
+ const vis=harborVisual(L,view.t,ctx.signals?ctx.signals.read('craneCall'):harborSignals.craneCall,presentationFlag(source.presentation,view.flags,'bribed'),{x:fork.placement.x,travel:Number(fork.props.travel)},view.weatherSource);
  const out:Record<string,Value>={};
  out.archVisible=onScreen(view,view.sx(L.arch.x0)-20,view.sx(L.arch.x1)-view.sx(L.arch.x0)+60);out.bondedVisible=onScreen(view,view.sx(L.fence.x0)-20,view.sx(L.fence.x1)-view.sx(L.fence.x0)+40);out.layout=value(L);out.visual=value(vis);out.stackOrigins=[0,1,2,3].map(i=>get('stack'+i).placement.x);out.forkliftOrigin=fork.placement.x;
- out.loads=[0,1].map(i=>{const p=get('crane'+i+'-load').props;return{w:Number(p.width),p:Number(p.paint),seed:Number(p.seed),code:String(p.code),label:String(p.label)};});
+ out.loads=[0,1].map(i=>{const p=get('crane'+i+'-load').props;return{w:Number(p.width),p:Number(p.paletteIndex),seed:Number(p.seed),code:String(p.code),label:String(p.label)};});
  const actorRole=(role:ScenePresentationActorRole)=>presentationActor(source.presentation,role),denGuests=new Set(presentationActors(source.presentation,'denGuests'));
  for(const row of rows.filter(r=>r.instance.type==='character.prepared')){
   const id=String(row.props.actor),actor=actors[id];if(!actor)throw new Error('Missing harbor actor '+id);let at={...row.placement},override:Parameters<typeof prepareCharacter>[2],clip:Value=null,visible=true;

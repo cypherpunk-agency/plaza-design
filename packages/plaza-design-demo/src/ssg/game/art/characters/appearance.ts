@@ -1,5 +1,6 @@
 /** Pure character artwork and baked sprites. World scheduling/dialogue remain in characters.ts. */
 import type { View } from '../core/view';
+import {registerBitmapBounds} from '../core/measure';
 import type { Character, Body, Hair, Garb, Extra, Critter, Look, Act, Ready, Frame, Beam } from "../../runtime/characters";
 import { castShadow } from '../atmosphere/lighting';
 import { ARCHETYPES, EVERYDAY, archetypeOf, type Archetype, type ArchetypeId, type Facial } from './archetypes';
@@ -1192,10 +1193,12 @@ function bake(key: string, make: () => [Grid, Meta], ps: number, flip: boolean, 
   c.width = W * ps + 2; c.height = H * ps + 2;
   const x = c.getContext('2d')!;
   const at = (col: number) => (flip ? 2 * CX - col : col);
+  let left=c.width,top=c.height,right=0,bottom=0;
   // the rim: the silhouette one unit bigger all round, then the pixels on it
   x.fillStyle = RIM;
   if (rim) for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) if (g[r * W + col]) x.fillRect(at(col) * ps, (H - 1 - r) * ps, ps + 2, ps + 2);
-  for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) { const v = g[r * W + col]; if (v) { x.fillStyle = v; x.fillRect(1 + at(col) * ps, 1 + (H - 1 - r) * ps, ps, ps); } }
+  for (let r = 0; r < H; r++) for (let col = 0; col < W; col++) { const v = g[r * W + col]; if (v) { const px=at(col)*ps,py=(H-1-r)*ps;left=Math.min(left,px+(rim?0:1));top=Math.min(top,py+(rim?0:1));right=Math.max(right,px+ps+(rim?2:1));bottom=Math.max(bottom,py+ps+(rim?2:1));x.fillStyle = v; x.fillRect(1 + px, 1 + py, ps, ps); } }
+  registerBitmapBounds(c,{x:Math.max(0,left),y:Math.max(0,top),width:Math.max(0,Math.min(c.width,right)-Math.max(0,left)),height:Math.max(0,Math.min(c.height,bottom)-Math.max(0,top))});
   if (dim > 0) { x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(6,3,2,' + dim + ')'; x.fillRect(0, 0, c.width, c.height); }
   const fl = (p: Cell | undefined): Cell | undefined => p && [at(p[0]), p[1]];
   b = { c, meta: flip ? { ...meta, hand: fl(meta.hand)!, mouth: fl(meta.mouth)!, eye: fl(meta.eye), wrist: fl(meta.wrist), ear: fl(meta.ear) } : meta };

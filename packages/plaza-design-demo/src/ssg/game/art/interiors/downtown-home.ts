@@ -1,3 +1,6 @@
+import {fixedGeometry} from '../core/spatial';
+import {rectangleControls,combineControls,axisControl,conditionalControls} from '../core/spatial';
+import {appearanceBoolean,appearanceChoice,appearanceRatio,appearanceStructure,appearanceText,generationCount,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
 /**
  * INTERIOR KIT, downtown-home: the hero's home ground in Downtown, cut open (Tommi, 2026-10-22: Act I walks
  * the hero through many Downtown places). Three places use it:
@@ -19,6 +22,7 @@ import { rng, text as paintText } from '../core/primitives';
 import { windowLit } from '../../world/light';
 import { neonPlate } from '../signage/kit';
 import { piece, num, select, bool, text, colour, isHex, rgbOf, hash, rgba, y, type Paint } from '../buildings/types';
+const fixedNativeGeometry=fixedGeometry("This downtown home component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
 
 type X = CanvasRenderingContext2D;
 
@@ -133,15 +137,16 @@ const ROOM_WALL: Record<string, [string, string, number]> = {
 
 /** One Downtown room seen cut open: its back wall, floor, ceiling light and what age has done to it. */
 export const dtRoomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-room', label: 'Downtown room, cut open (kit: lobby, corridor, stairwell, service, storeroom, kitchen)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 200, 20, 2000, 1, 'units'), height: num('Height (floor to ceiling)', 80, 30, 300, 1, 'units'),
-    kind: select('Kind', ROOM_KINDS), wall: colour('Wall colour', 'The kind’s own'), dado: colour('Dado colour (lower wall)', 'The kind’s own'),
-    floor: select('Floor', FLOORS), light: select('Light', LIGHT_KINDS), lights: num('Ceiling lights', 1, 0, 8),
-    peel: num('Peeling paint', 0.3, 0, 1, 0.05), grime: num('Grime', 0.4, 0, 1, 0.05), pipes: bool('Pipes along the ceiling', false),
-    window: select('Window', ['none', 'left', 'middle', 'right']), blinds: num('Blinds down', 0.4, 0, 1, 0.05),
-    cut: select('Cut wall (section)', ['none', 'left', 'right', 'both']),
-    label: text('Floor painted on the wall (empty: none)', ''), labelFrom: num('Floor label from the left', 12, 0, 2000, 1, 'units'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 200, 20, 2000, 1, 'units')), height: shapeLength(num('Height (floor to ceiling)', 80, 30, 300, 1, 'units')),
+    kind: appearanceChoice(select('Kind', ROOM_KINDS)), wall: appearanceStructure(colour('Wall colour', 'The kind’s own')), dado: appearanceStructure(colour('Dado colour (lower wall)', 'The kind’s own')),
+    floor: appearanceChoice(select('Floor', FLOORS)), light: appearanceChoice(select('Light', LIGHT_KINDS)), lights: shapeLength(num('Ceiling lights', 1, 0, 8)),
+    peel: appearanceRatio(num('Peeling paint', 0.3, 0, 1, 0.05)), grime: appearanceRatio(num('Grime', 0.4, 0, 1, 0.05)), pipes: appearanceBoolean(bool('Pipes along the ceiling', false)),
+    window: appearanceChoice(select('Window', ['none', 'left', 'middle', 'right'])), blinds: appearanceRatio(num('Blinds down', 0.4, 0, 1, 0.05)),
+    cut: appearanceChoice(select('Cut wall (section)', ['none', 'left', 'right', 'both'])),
+    label: appearanceText(text('Floor painted on the wall (empty: none)', '')), labelFrom: shapePosition(num('Floor label from the left', 12, 0, 2000, 1, 'units')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -190,13 +195,13 @@ const seed = (p: Properties) => Number(p.seed ?? 1);
 export const conciergeElement = piece({
   type: 'interior.dt-concierge', label: 'CONCIERGE panel (kit: the building’s door system)', category: 'electronics', libraryUse: 'reusable',
   fields: {
-    mount: select('Mount', ['wall', 'desk']), mood: select('State', ['idle', 'refusing', 'standby', 'broken']),
-    name: text('Nameplate', 'CONCIERGE'), line: text('Line on its screen (empty: none)', 'PLEASE PRESENT ID'),
-    conduit: num('Conduit up to the ceiling', 30, 0, 200, 1, 'units'), camera: bool('Camera on top', true), slot: bool('Card slot and reader', true),
-    tell: bool('Cyan tell (usable)', true), seed: num('Seed', 1, 0, 1000000),
+    mount: appearanceChoice(select('Mount', ['wall', 'desk'])), mood: appearanceChoice(select('State', ['idle', 'refusing', 'standby', 'broken'])),
+    name: appearanceText(text('Nameplate', 'CONCIERGE')), line: appearanceText(text('Line on its screen (empty: none)', 'PLEASE PRESENT ID')),
+    conduitLength: shapeLength(num('Conduit up to the ceiling', 30, 0, 200, 1, 'units')), camera: appearanceBoolean(bool('Camera on top', true)), slot: appearanceBoolean(bool('Card slot and reader', true)),
+    tell: appearanceBoolean(bool('Cyan tell (usable)', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: () => ({ w: 44, tall: 110 }),
-  bounds: p => ({ x: 0, h: 74 + Number(p.conduit), w: 44, tall: 74 + Number(p.conduit) }),
+  bounds: p => ({ x: 0, h: 74 + Number(p.conduitLength), w: 44, tall: 74 + Number(p.conduitLength) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' }, screen: { x: 22, h: 52, role: 'mount' } }),
   paint(x, p, o) {
     const mood = String(p.mood), desk = p.mount === 'desk', t = o.t, base = desk ? 24 : 30, sw = 30, st = 26, l = 7;
@@ -206,7 +211,7 @@ export const conciergeElement = piece({
       // a laminate desk nobody sits behind, the unit on a stand where the receptionist was
       R(x, 0, 0, 44, 22, '#2e2a24'); R(x, 0, 22, 44, 2, '#4a443a'); R(x, 0, 23, 44, 1, 'rgba(255,230,190,.3)'); R(x, 4, 4, 36, 14, 'rgba(0,0,0,.2)');
       R(x, 20, 24, 4, 4, '#1a1a1a');
-    } else conduit(x, 21, base + st + 10, base + st + 10 + Number(p.conduit));
+    } else conduit(x, 21, base + st + 10, base + st + 10 + Number(p.conduitLength));
     // housing: a grey steel box, a speaker grille under the screen
     R(x, l - 2, base - 2, sw + 4, st + 16, '#1c1e20'); R(x, l - 1, base - 1, sw + 2, st + 14, '#3a3e42'); R(x, l - 1, base + st + 12, sw + 2, 1, 'rgba(255,255,255,.18)');
     for (let k = 0; k < 4; k++) R(x, l + 9 + k * 3, base + 1, 2, 4, '#15171a');
@@ -234,15 +239,15 @@ export const conciergeElement = piece({
 export const mailboxesElement = piece({
   type: 'interior.dt-mailboxes', label: 'Mailbox bank (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    columns: num('Columns (flats a floor)', 5, 1, 16), rows: num('Rows (floors)', 7, 1, 14), from: num('Bottom row height', 14, 0, 60, 1, 'units'),
-    metal: select('Metal', ['steel', 'brass', 'green']), stuffed: num('Stuffed with flyers', 0.3, 0, 1, 0.05), taped: num('Taped shut', 1, 0, 10),
-    parcels: num('Parcels on top', 2, 0, 6), floor: num('Flyers on the floor', 4, 0, 20), seed: num('Seed', 1, 0, 1000000),
+    columns: generationCount(num('Columns (flats a floor)', 5, 1, 16)), rows: generationCount(num('Rows (floors)', 7, 1, 14)), bottomY: shapePosition(num('Bottom row height', 14, 0, 60, 1, 'units')),
+    metal: appearanceChoice(select('Metal', ['steel', 'brass', 'green'])), stuffed: appearanceRatio(num('Stuffed with flyers', 0.3, 0, 1, 0.05)), taped: generationCount(num('Taped shut', 1, 0, 10)),
+    parcels: generationCount(num('Parcels on top', 2, 0, 6)), floor: semantic(num('Flyers on the floor', 4, 0, 20),{"group":"Appearance","quantity":"index","unit":"integer"}), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
-  size: p => ({ w: Number(p.columns) * 8 + 4, tall: Number(p.from) + Number(p.rows) * 7 + 14 }),
-  bounds: p => ({ x: 0, h: Number(p.from) + Number(p.rows) * 7 + 14, w: Number(p.columns) * 8 + 4, tall: Number(p.from) + Number(p.rows) * 7 + 14 }),
-  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: (Number(p.columns) * 8 + 4) / 2, h: Number(p.from) + Number(p.rows) * 7 + 4, role: 'surface' } }),
+  size: p => ({ w: Number(p.columns) * 8 + 4, tall: Number(p.bottomY) + Number(p.rows) * 7 + 14 }),
+  bounds: p => ({ x: 0, h: Number(p.bottomY) + Number(p.rows) * 7 + 14, w: Number(p.columns) * 8 + 4, tall: Number(p.bottomY) + Number(p.rows) * 7 + 14 }),
+  anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: (Number(p.columns) * 8 + 4) / 2, h: Number(p.bottomY) + Number(p.rows) * 7 + 4, role: 'surface' } }),
   paint(x, p, o) {
-    const C = Number(p.columns), Rw = Number(p.rows), f = Number(p.from), s = Number(p.seed), r = rng(s * 71 + 3), W = C * 8 + 4, top = f + Rw * 7 + 4;
+    const C = Number(p.columns), Rw = Number(p.rows), f = Number(p.bottomY), s = Number(p.seed), r = rng(s * 71 + 3), W = C * 8 + 4, top = f + Rw * 7 + 4;
     const face = p.metal === 'brass' ? '#6a5a32' : p.metal === 'green' ? '#2f4a3c' : '#4a4e52', dark = '#1a1c1e';
     R(x, 0, f - 2, W, Rw * 7 + 6, dark); R(x, 0, top, W, 1, 'rgba(255,255,255,.2)');
     let taped = Number(p.taped);
@@ -259,12 +264,13 @@ export const mailboxesElement = piece({
 
 /** A notice board: a readable headline and a sheaf of smaller notices pinned round it. */
 export const noticeBoardElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-notices', label: 'Notice board (kit)', category: 'signage', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 60, 20, 300, 1, 'units'), height: num('Height', 34, 12, 120, 1, 'units'), from: num('Bottom edge height', 20, 0, 120, 1, 'units'),
-    style: select('Style', ['cork', 'glass case', 'bare wall']), header: text('Header (red, empty: none)', 'NOTICE'),
-    headline: text('Headline', 'LIFT OUT OF ORDER'), second: text('Second notice (empty: none)', 'RENT IS DUE ON THE 1ST'),
-    papers: num('Other notices', 6, 0, 30), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 60, 20, 300, 1, 'units')), height: shapeLength(num('Height', 34, 12, 120, 1, 'units')), from: shapeLength(num('Bottom edge height', 20, 0, 120, 1, 'units')),
+    style: appearanceChoice(select('Style', ['cork', 'glass case', 'bare wall'])), header: appearanceText(text('Header (red, empty: none)', 'NOTICE')),
+    headline: appearanceText(text('Headline', 'LIFT OUT OF ORDER')), second: appearanceText(text('Second notice (empty: none)', 'RENT IS DUE ON THE 1ST')),
+    papers: generationCount(num('Other notices', 6, 0, 30)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.from) + Number(p.height), w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
@@ -285,12 +291,13 @@ export const noticeBoardElement = piece({
 
 /** The emergency exit: a steel door with a push bar, the green running man over it, the alarm sticker. */
 export const fireExitElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-fire-exit', label: 'Emergency exit door with push bar (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Door width', 26, 18, 60, 1, 'units'), height: num('Door height', 52, 44, 90, 1, 'units'), open: num('Open', 0, 0, 1, 0.05),
-    hinge: select('Hinge side', ['right', 'left']), sign: select('Sign over the door', ['lit', 'unlit', 'none']), signText: text('Sign', 'EXIT'),
-    sticker: text('Sticker on the door (empty: none)', 'ALARM WILL SOUND'), propped: bool('Propped with a wedge', false),
-    leaf: colour('Door colour', '#5a1e16'), outside: select('What is outside', ['yard', 'street', 'dark']),
+    width: shapeLength(num('Door width', 26, 18, 60, 1, 'units')), height: shapeLength(num('Door height', 52, 44, 90, 1, 'units')), open: appearanceRatio(num('Open', 0, 0, 1, 0.05)),
+    hinge: appearanceChoice(select('Hinge side', ['right', 'left'])), sign: appearanceChoice(select('Sign over the door', ['lit', 'unlit', 'none'])), signText: appearanceText(text('Sign', 'EXIT')),
+    sticker: appearanceText(text('Sticker on the door (empty: none)', 'ALARM WILL SOUND')), propped: appearanceBoolean(bool('Propped with a wedge', false)),
+    leaf: appearanceStructure(colour('Door colour', '#5a1e16')), outside: appearanceChoice(select('What is outside', ['yard', 'street', 'dark'])),
   },
   size: p => ({ w: Number(p.width) + 8, tall: Number(p.height) + 22 }),
   bounds: p => ({ x: -4, h: Number(p.height) + 22, w: Number(p.width) + 8, tall: Number(p.height) + 22 }),
@@ -328,12 +335,13 @@ export const fireExitElement = piece({
 
 /** A service door or hatch with its latch box: steel, stencilled, a hasp, the box's cyan LED (it can be persuaded). */
 export const serviceLatchElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-service-latch', label: 'Service door with a latch box (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['door', 'hatch']), state: select('State', ['locked', 'unlatched', 'open', 'forced']),
-    width: num('Width', 24, 16, 60, 1, 'units'), height: num('Height', 50, 20, 90, 1, 'units'), stencil: text('Stencil', 'SERVICE'),
-    plate: text('Plate (empty: none)', 'NO ENTRY'), lamp: bool('Cage lamp over it', true), tell: bool('Cyan tell on the latch box', true),
-    leaf: colour('Steel colour', '#3a4044'),
+    kind: appearanceChoice(select('Kind', ['door', 'hatch'])), state: appearanceChoice(select('State', ['locked', 'unlatched', 'open', 'forced'])),
+    width: shapeLength(num('Width', 24, 16, 60, 1, 'units')), height: shapeLength(num('Height', 50, 20, 90, 1, 'units')), stencil: appearanceText(text('Stencil', 'SERVICE')),
+    plate: appearanceText(text('Plate (empty: none)', 'NO ENTRY')), lamp: appearanceBoolean(bool('Cage lamp over it', true)), tell: appearanceBoolean(bool('Cyan tell on the latch box', true)),
+    leaf: appearanceStructure(colour('Steel colour', '#3a4044')),
   },
   size: p => ({ w: Number(p.width) + 16, tall: Number(p.height) + 16 }),
   bounds: p => ({ x: -2, h: Number(p.height) + 16, w: Number(p.width) + 18, tall: Number(p.height) + 16 }),
@@ -376,13 +384,14 @@ const FLAT_KINDS = ['capsule', 'studio', 'family', 'hoarder', 'empty', 'sealed',
 
 /** One micro-flat seen cut open: what a life fits in, by kind; a door to the corridor behind, its lock, its light. */
 export const microFlatElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-flat', label: 'Micro-flat, cut open (kit: capsule, studio, family, hoarder, empty, sealed, hideout)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 70, 36, 300, 1, 'units'), height: num('Height (floor to ceiling)', 68, 40, 200, 1, 'units'),
-    kind: select('Kind', FLAT_KINDS), number: text('Flat number', '7B'), door: select('Door to the corridor', ['left', 'right', 'none']),
-    lock: select('Lock', ['smart', 'keys', 'refusing', 'none']), lit: num('Room light', 1, 0, 1, 0.05), window: bool('Window', true),
-    wall: colour('Wall colour', 'Seeded'), partition: bool('Partition on the left', true), plate: bool('Brass number plate on the door', false),
-    curtain: colour('Curtain colour (quiet)', 'Seeded'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 70, 36, 300, 1, 'units')), height: shapeLength(num('Height (floor to ceiling)', 68, 40, 200, 1, 'units')),
+    kind: appearanceChoice(select('Kind', FLAT_KINDS)), number: appearanceText(text('Flat number', '7B')), door: appearanceChoice(select('Door to the corridor', ['left', 'right', 'none'])),
+    lock: appearanceChoice(select('Lock', ['smart', 'keys', 'refusing', 'none'])), lit: appearanceRatio(num('Room light', 1, 0, 1, 0.05)), window: semantic(bool('Window', true),{group:'Appearance',quantity:'boolean',unit:'boolean'}),
+    wall: appearanceStructure(colour('Wall colour', 'Seeded')), partition: appearanceBoolean(bool('Partition on the left', true)), plate: appearanceBoolean(bool('Brass number plate on the door', false)),
+    curtain: appearanceStructure(colour('Curtain colour (quiet)', 'Seeded')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -476,12 +485,12 @@ export const microFlatElement = piece({
 });
 
 /** A flat's front door on a landing: number, lock, the light under it, shoes and a mat; or Moth's, which is hiding. */
-export const flatDoorElement = piece({
+export const flatDoorElement = piece({spatial:fixedNativeGeometry,
   type: 'interior.dt-flat-door', label: 'Flat door on a landing (kit: plain, smart lock, steel gate, hiding)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    number: text('Number', '4C'), kind: select('Kind', ['plain', 'smart lock', 'steel gate', 'hiding']), leaf: colour('Door colour', 'Seeded'),
-    shoes: num('Pairs of shoes outside', 2, 0, 6), mat: bool('Doormat', true), under: num('Light under the door', 0.6, 0, 1, 0.05),
-    camera: select('Camera over the door', ['none', 'watching', 'taped over']), locks: num('Extra locks', 0, 0, 5), seed: num('Seed', 1, 0, 1000000),
+    number: appearanceText(text('Number', '4C')), kind: appearanceChoice(select('Kind', ['plain', 'smart lock', 'steel gate', 'hiding'])), leaf: appearanceStructure(colour('Door colour', 'Seeded')),
+    shoes: generationCount(num('Pairs of shoes outside', 2, 0, 6)), mat: appearanceBoolean(bool('Doormat', true)), under: appearanceRatio(num('Light under the door', 0.6, 0, 1, 0.05)),
+    camera: appearanceChoice(select('Camera over the door', ['none', 'watching', 'taped over'])), locks: generationCount(num('Extra locks', 0, 0, 5)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: () => ({ w: 40, tall: 68 }),
   bounds: () => ({ x: -4, h: 68, w: 48, tall: 68 }),
@@ -516,9 +525,9 @@ export const flatDoorElement = piece({
 });
 
 /** A bicycle against the wall or chained to the rail: a commuter's, a cargo bike with its box, a kid's. */
-export const bikeElement = piece({
+export const bikeElement = piece({spatial:fixedNativeGeometry,
   type: 'interior.dt-bike', label: 'Bicycle (kit)', category: 'props', libraryUse: 'reusable',
-  fields: { kind: select('Kind', ['commuter', 'cargo', 'kids']), frame: colour('Frame colour', 'Seeded'), chained: bool('Chained', true), flat: bool('Flat tyre', false), seed: num('Seed', 1, 0, 1000000) },
+  fields: { kind: appearanceChoice(select('Kind', ['commuter', 'cargo', 'kids'])), frame: appearanceStructure(colour('Frame colour', 'Seeded')), chained: appearanceBoolean(bool('Chained', true)), flat: appearanceBoolean(bool('Flat tyre', false)), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: p.kind === 'cargo' ? 46 : p.kind === 'kids' ? 22 : 32, tall: 22 }),
   bounds: p => ({ x: 0, h: 22, w: p.kind === 'cargo' ? 46 : p.kind === 'kids' ? 22 : 32, tall: 22 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
@@ -538,11 +547,12 @@ export const bikeElement = piece({
 
 /** The top of a stairwell: the roof slab with a wired-glass skylight in it, the sky through it, its light falling down the well. */
 export const skylightElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-skylight', label: 'Skylight over a stairwell (kit)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 140, 30, 600, 1, 'units'), opening: num('Glass width', 60, 10, 400, 1, 'units'), from: num('Glass from the left', 40, 0, 600, 1, 'units'),
-    thickness: num('Roof thickness', 10, 4, 30, 1, 'units'), shaft: num('Light shaft length', 220, 0, 800, 1, 'units'),
-    dirt: num('Dirt and leaves on it', 0.4, 0, 1, 0.05), broken: bool('A pane broken (pigeons)', false), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 140, 30, 600, 1, 'units')), opening: shapeLength(num('Glass width', 60, 10, 400, 1, 'units')), from: shapePosition(num('Glass from the left', 40, 0, 600, 1, 'units')),
+    thickness: shapeLength(num('Roof thickness', 10, 4, 30, 1, 'units')), shaft: shapeLength(num('Light shaft length', 220, 0, 800, 1, 'units')),
+    dirt: appearanceRatio(num('Dirt and leaves on it', 0.4, 0, 1, 0.05)), broken: appearanceBoolean(bool('A pane broken (pigeons)', false)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.thickness) + 16 }),
   bounds: p => ({ x: 0, h: Number(p.thickness) + 16, w: Number(p.width), tall: Number(p.thickness) + 16 }),
@@ -568,12 +578,13 @@ export const skylightElement = piece({
 
 /** The courtyard behind the building: neighbours' back walls, washing on pulley lines between them, bins, a drain, puddles. */
 export const courtyardElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-courtyard', label: 'Back courtyard with washing lines (kit)', category: 'environment', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 240, 60, 1200, 1, 'units'), height: num('Back wall height', 320, 60, 900, 1, 'units'), wall: colour('Back wall colour', '#3a2620'),
-    lines: num('Washing lines', 4, 0, 12), lowest: num('Lowest line height', 90, 40, 400, 1, 'units'), spacing: num('Line spacing', 52, 20, 120, 1, 'units'),
-    washing: num('Washing on the lines', 0.7, 0, 1, 0.05), pole: bool('Laundry pole on the right', true),
-    bins: num('Bins', 3, 0, 8), binsFrom: num('Bins from the left', 12, 0, 1200, 1, 'units'), puddles: bool('Puddles', true), lamp: bool('Cage lamp on the back wall', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 240, 60, 1200, 1, 'units')), height: shapeLength(num('Back wall height', 320, 60, 900, 1, 'units')), wall: appearanceStructure(colour('Back wall colour', '#3a2620')),
+    lines: generationCount(num('Washing lines', 4, 0, 12)), lowest: shapeLength(num('Lowest line height', 90, 40, 400, 1, 'units')), spacing: shapeLength(num('Line spacing', 52, 20, 120, 1, 'units')),
+    washing: appearanceRatio(num('Washing on the lines', 0.7, 0, 1, 0.05)), pole: appearanceBoolean(bool('Laundry pole on the right', true)),
+    bins: generationCount(num('Bins', 3, 0, 8)), binsFrom: shapePosition(num('Bins from the left', 12, 0, 1200, 1, 'units')), puddles: appearanceBoolean(bool('Puddles', true)), lamp: appearanceBoolean(bool('Cage lamp on the back wall', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -629,10 +640,11 @@ export const courtyardElement = piece({
 
 /** The areaway: a concrete pit by the back wall with steps down to the basement door, a railing round its top. */
 export const areawayElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-areaway', label: 'Areaway: cellar steps down by a wall (kit; pair with a level.stairs)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 90, 30, 300, 1, 'units'), depth: num('Depth', 80, 20, 200, 1, 'units'), railing: num('Railing height', 18, 0, 40, 1, 'units'),
-    gate: bool('Gate in the railing', true), rubbish: num('Rubbish at the bottom', 0.5, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 90, 30, 300, 1, 'units')), depth: shapeLength(num('Depth', 80, 20, 200, 1, 'units')), railing: shapeLength(num('Railing height', 18, 0, 40, 1, 'units')),
+    gate: appearanceBoolean(bool('Gate in the railing', true)), rubbish: appearanceRatio(num('Rubbish at the bottom', 0.5, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.railing) + 4 }),
   bounds: p => ({ x: 0, h: Number(p.railing) + 4, w: Number(p.width), tall: Number(p.railing) + Number(p.depth) + 4 }),
@@ -658,8 +670,9 @@ export const areawayElement = piece({
 
 /** A parcel: cardboard, tape, a printed label, a sticker; left where it should not be. */
 export const parcelElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-parcel', label: 'Parcel (kit)', category: 'props', libraryUse: 'reusable',
-  fields: { width: num('Width', 16, 6, 60, 1, 'units'), height: num('Height', 11, 4, 40, 1, 'units'), wrap: select('Wrapping', ['cardboard', 'grey mailer', 'black bag']), sticker: select('Sticker', ['none', 'fragile', 'red', 'cyan']), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 16, 6, 60, 1, 'units')), height: shapeLength(num('Height', 11, 4, 40, 1, 'units')), wrap: appearanceChoice(select('Wrapping', ['cardboard', 'grey mailer', 'black bag'])), sticker: appearanceChoice(select('Sticker', ['none', 'fragile', 'red', 'cyan'])), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, top: { x: Number(p.width) / 2, h: Number(p.height), role: 'surface' } }),
@@ -676,11 +689,12 @@ export const parcelElement = piece({
 
 /** The building's service room: meters, a water heater, the riser pipes, CONCIERGE's cabinet humming, bins and a mop. */
 export const servicePlantElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-service-plant', label: 'Basement plant: meters, heater, CONCIERGE cabinet (kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 200, 60, 800, 1, 'units'), meters: num('Electricity meters', 8, 0, 24), heater: bool('Water heater', true),
-    cabinet: select('Server cabinet', ['CONCIERGE', 'plain', 'none']), cabinetFrom: num('Cabinet from the left', 120, 0, 800, 1, 'units'),
-    bins: num('Bins', 2, 0, 6), mop: bool('Mop and bucket', true), tell: bool('Cyan tell on the cabinet', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 200, 60, 800, 1, 'units')), meters: generationCount(num('Electricity meters', 8, 0, 24)), heater: appearanceBoolean(bool('Water heater', true)),
+    cabinet: appearanceChoice(select('Server cabinet', ['CONCIERGE', 'plain', 'none'])), cabinetFrom: shapePosition(num('Cabinet from the left', 120, 0, 800, 1, 'units')),
+    bins: generationCount(num('Bins', 2, 0, 6)), mop: appearanceBoolean(bool('Mop and bucket', true)), tell: appearanceBoolean(bool('Cyan tell on the cabinet', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 70 }),
   bounds: p => ({ x: 0, h: 70, w: Number(p.width), tall: 70 }),
@@ -719,12 +733,13 @@ export const servicePlantElement = piece({
 
 /** The noodle kitchen's fittings: steel counters, stock pots steaming on burners, the hood and its duct, bowls, ladles, sacks, the strip curtain to the back. */
 export const noodleKitchenElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-noodle-kitchen', label: 'Noodle kitchen fittings (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 140, 60, 600, 1, 'units'), height: num('Room height', 90, 50, 200, 1, 'units'), pots: num('Stock pots', 3, 0, 6),
-    burners: num('Burners lit', 1, 0, 1, 0.05), steam: num('Steam', 0.8, 0, 1, 0.05), hood: bool('Extractor hood and duct', true),
-    curtain: select('Strip curtain doorway', ['right', 'left', 'none']), slips: num('Order slips on the rail', 5, 0, 12), sacks: num('Flour sacks', 2, 0, 6),
-    seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 140, 60, 600, 1, 'units')), height: shapeLength(num('Room height', 90, 50, 200, 1, 'units')), pots: generationCount(num('Stock pots', 3, 0, 6)),
+    burners: appearanceRatio(num('Burners lit', 1, 0, 1, 0.05)), steam: appearanceRatio(num('Steam', 0.8, 0, 1, 0.05)), hood: appearanceBoolean(bool('Extractor hood and duct', true)),
+    curtain: appearanceChoice(select('Strip curtain doorway', ['right', 'left', 'none'])), slips: generationCount(num('Order slips on the rail', 5, 0, 12)), sacks: generationCount(num('Flour sacks', 2, 0, 6)),
+    seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -774,15 +789,15 @@ export const noodleKitchenElement = piece({
 export const docChairElement = piece({
   type: 'interior.dt-doc-chair', label: 'Treatment chair, lamp and tray (kit: ripperdoc)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    recline: num('Recline', 0.6, 0, 1, 0.05), upholstery: colour('Upholstery', '#2a5a5a'), lamp: select('Surgical lamp', ['ceiling arm', 'floor stand', 'none']),
-    lampOn: num('Lamp on', 1, 0, 1, 0.05), ceiling: num('Ceiling height (for the arm)', 86, 50, 200, 1, 'units'), tray: bool('Instrument tray with implants', true),
-    monitor: bool('Vitals monitor', true), straps: bool('Straps', true), sheeting: bool('Plastic sheeting behind', true), seed: num('Seed', 1, 0, 1000000),
+    recline: appearanceRatio(num('Recline', 0.6, 0, 1, 0.05)), upholstery: appearanceStructure(colour('Upholstery', '#2a5a5a')), lamp: appearanceChoice(select('Surgical lamp', ['ceiling arm', 'floor stand', 'none'])),
+    lampOn: appearanceRatio(num('Lamp on', 1, 0, 1, 0.05)), ceilingHeight: shapePosition(num('Ceiling height (for the arm)', 86, 50, 200, 1, 'units')), tray: appearanceBoolean(bool('Instrument tray with implants', true)),
+    monitor: appearanceBoolean(bool('Vitals monitor', true)), straps: appearanceBoolean(bool('Straps', true)), sheeting: appearanceBoolean(bool('Plastic sheeting behind', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: () => ({ w: 80, tall: 86 }),
-  bounds: p => ({ x: -10, h: Number(p.ceiling), w: 96, tall: Number(p.ceiling) }),
+  bounds: p => ({ x: -10, h: Number(p.ceilingHeight), w: 96, tall: Number(p.ceilingHeight) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' }, seat: { x: 30, h: 22, role: 'surface' } }),
   paint(x, p, o) {
-    const rec = Number(p.recline), up = hexOr(p.upholstery, '#2a5a5a'), t = o.t, C = Number(p.ceiling), on = Number(p.lampOn);
+    const rec = Number(p.recline), up = hexOr(p.upholstery, '#2a5a5a'), t = o.t, C = Number(p.ceilingHeight), on = Number(p.lampOn);
     if (p.sheeting !== false) {
       // clean where it matters: heavy plastic stapled to a batten under the ceiling, a rectangle of white floor
       R(x, -6, 0, 88, C - 2, 'rgba(225,235,235,.16)'); R(x, -6, C - 4, 88, 2, '#6a5a44');
@@ -829,10 +844,11 @@ export const docChairElement = piece({
 
 /** A glass-door fridge of parts: implants in labelled bags, jars, a padlock and chain, the compressor's hum. */
 export const partsFridgeElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-parts-fridge', label: 'Fridge of parts (kit: ripperdoc)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 26, 14, 80, 1, 'units'), height: num('Height', 56, 24, 100, 1, 'units'), contents: select('Contents', ['implants', 'jars', 'drinks', 'mixed']),
-    lit: num('Inside light', 1, 0, 1, 0.05), chain: bool('Padlock and chain', true), label: text('Label on the door (empty: none)', 'NO FOOD'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 26, 14, 80, 1, 'units')), height: shapeLength(num('Height', 56, 24, 100, 1, 'units')), contents: appearanceChoice(select('Contents', ['implants', 'jars', 'drinks', 'mixed'])),
+    lit: appearanceRatio(num('Inside light', 1, 0, 1, 0.05)), chain: appearanceBoolean(bool('Padlock and chain', true)), label: appearanceText(text('Label on the door (empty: none)', 'NO FOOD')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -860,10 +876,11 @@ export const partsFridgeElement = piece({
 
 /** A privacy screen: a hospital folding screen on castors, or a roller shutter half down; between the chair and the door. */
 export const privacyScreenElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-privacy-screen', label: 'Privacy screen or shutter (kit)', category: 'furniture', libraryUse: 'reusable',
   fields: {
-    kind: select('Kind', ['folding', 'roller shutter']), width: num('Width', 36, 12, 200, 1, 'units'), height: num('Height', 48, 20, 200, 1, 'units'),
-    closed: num('Closed', 0.8, 0, 1, 0.05), fabric: colour('Fabric', '#bfd0c8'), seed: num('Seed', 1, 0, 1000000),
+    kind: appearanceChoice(select('Kind', ['folding', 'roller shutter'])), width: shapeLength(num('Width', 36, 12, 200, 1, 'units')), height: shapeLength(num('Height', 48, 20, 200, 1, 'units')),
+    closed: appearanceRatio(num('Closed', 0.8, 0, 1, 0.05)), fabric: appearanceStructure(colour('Fabric', '#bfd0c8')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -889,7 +906,7 @@ export const privacyScreenElement = piece({
 /** A camp cot with a blanket and a pillow, a crate beside it with a bottle and a lamp: someone sleeps here between patients. */
 export const cotElement = piece({
   type: 'interior.dt-cot', label: 'Camp cot with crate (kit)', category: 'furniture', libraryUse: 'reusable',
-  fields: { length: num('Length', 46, 30, 80, 1, 'units'), blanket: colour('Blanket', '#6a5a3a'), crate: bool('Crate with bottle and lamp', true), lamp: num('Lamp on', 0.6, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000) },
+  fields: { length: shapeLength(num('Length', 46, 30, 80, 1, 'units')), blanket: appearanceStructure(colour('Blanket', '#6a5a3a')), crate: appearanceBoolean(bool('Crate with bottle and lamp', true)), lamp: appearanceRatio(num('Lamp on', 0.6, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.length) + 16, tall: 20 }),
   bounds: p => ({ x: 0, h: 20, w: Number(p.length) + 16, tall: 20 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' }, bed: { x: 20, h: 12, role: 'surface' } }),
@@ -907,8 +924,9 @@ export const cotElement = piece({
 
 /** A storeroom's shelving: steel racks of boxed stock (noodles, cleaning supplies), a few things that are not stock. */
 export const stockShelvesElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-shelves', label: 'Storeroom shelving (kit)', category: 'furniture', libraryUse: 'reusable',
-  fields: { width: num('Width', 40, 14, 300, 1, 'units'), height: num('Height', 70, 20, 200, 1, 'units'), shelves: num('Shelves', 4, 1, 10), fill: num('Fill', 0.8, 0, 1, 0.05), stock: select('Stock', ['noodles', 'medical', 'cleaning', 'mixed']), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 40, 14, 300, 1, 'units')), height: shapeLength(num('Height', 70, 20, 200, 1, 'units')), shelves: generationCount(num('Shelves', 4, 1, 10)), fill: appearanceRatio(num('Fill', 0.8, 0, 1, 0.05)), stock: appearanceChoice(select('Stock', ['noodles', 'medical', 'cleaning', 'mixed'])), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
@@ -933,8 +951,9 @@ export const stockShelvesElement = piece({
 
 /** Sacks, crates and drums of dry goods stacked against a cellar wall: rice, flour, cooking oil. */
 export const drySacksElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-dry-goods', label: 'Dry goods: sacks, crates, oil drums (kit)', category: 'props', libraryUse: 'reusable',
-  fields: { width: num('Width', 60, 16, 300, 1, 'units'), sacks: num('Sacks', 6, 0, 30), crates: num('Crates', 3, 0, 12), drums: num('Oil drums', 1, 0, 6), print: select('Print on the sacks', ['red', 'blue', 'green']), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 60, 16, 300, 1, 'units')), sacks: generationCount(num('Sacks', 6, 0, 30)), crates: generationCount(num('Crates', 3, 0, 12)), drums: generationCount(num('Oil drums', 1, 0, 6)), print: appearanceChoice(select('Print on the sacks', ['red', 'blue', 'green'])), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: 40 }),
   bounds: p => ({ x: 0, h: 40, w: Number(p.width), tall: 40 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
@@ -950,10 +969,11 @@ export const drySacksElement = piece({
 
 /** A bundle of cables: along the ceiling in sagging loops, ties every so often, then down the wall to the floor. */
 export const cableRunElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-cables', label: 'Cable bundles along a ceiling and down a wall (kit)', category: 'electronics', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 160, 20, 1200, 1, 'units'), height: num('Ceiling height', 90, 20, 400, 1, 'units'), cables: num('Cables', 6, 1, 20), sag: num('Sag', 10, 0, 40, 1, 'units'),
-    drops: num('Drops to the floor', 2, 0, 10), colours: select('Colours', ['black', 'mixed', 'neon']), lit: num('Glowing cables', 0.2, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 160, 20, 1200, 1, 'units')), height: shapeLength(num('Ceiling height', 90, 20, 400, 1, 'units')), cables: generationCount(num('Cables', 6, 1, 20)), sag: shapeLength(num('Sag', 10, 0, 40, 1, 'units')),
+    drops: generationCount(num('Drops to the floor', 2, 0, 10)), colours: appearanceChoice(select('Colours', ['black', 'mixed', 'neon'])), lit: appearanceRatio(num('Glowing cables', 0.2, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -983,18 +1003,19 @@ export const cableRunElement = piece({
 const SCAN_KINDS = ['brain', 'body', 'spine', 'waveform'] as const;
 /** A diagnostic screen: a brain scan with a slice moving through it, a body map with its implants marked, a spine, a waveform. */
 export const diagnosticElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-diagnostic', label: 'Diagnostic screen: brain scan, body map, waveform (kit)', category: 'electronics', libraryUse: 'reusable',
   fields: {
-    kind: select('Shows', SCAN_KINDS), width: num('Width', 30, 12, 160, 1, 'units'), height: num('Height', 22, 8, 120, 1, 'units'), from: num('Bottom edge height', 40, 0, 300, 1, 'units'),
-    mount: select('Mount', ['wall', 'arm from the ceiling', 'stand']), ceiling: num('Ceiling height (arm)', 90, 20, 400, 1, 'units'),
-    colour: select('Colour', ['cyan', 'magenta', 'green', 'amber']), glitch: num('Glitch', 0.1, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000),
+    kind: appearanceChoice(select('Shows', SCAN_KINDS)), width: shapeLength(num('Width', 30, 12, 160, 1, 'units')), height: shapeLength(num('Height', 22, 8, 120, 1, 'units')), from: shapeLength(num('Bottom edge height', 40, 0, 300, 1, 'units')),
+    mount: appearanceChoice(select('Mount', ['wall', 'arm from the ceiling', 'stand'])), ceiling: shapeLength(num('Ceiling height (arm)', 90, 20, 400, 1, 'units')),
+    colorChoice: appearanceChoice(select('Colour', ['cyan', 'magenta', 'green', 'amber'])), glitch: appearanceRatio(num('Glitch', 0.1, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
   bounds: p => { const tall = p.mount === 'arm from the ceiling' ? Number(p.ceiling) : Number(p.from) + Number(p.height); return { x: 0, h: tall, w: Number(p.width), tall }; },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   paint(x, p, o) {
     const w = Number(p.width), H = Number(p.height), f = Number(p.from), t = o.t, s = Number(p.seed), kind = String(p.kind);
-    const col = p.colour === 'magenta' ? '255,60,200' : p.colour === 'green' ? '80,255,140' : p.colour === 'amber' ? '255,180,60' : '0,230,255';
+    const col = p.colorChoice === 'magenta' ? '255,60,200' : p.colorChoice === 'green' ? '80,255,140' : p.colorChoice === 'amber' ? '255,180,60' : '0,230,255';
     if (p.mount === 'arm from the ceiling') { const C = Number(p.ceiling); R(x, w / 2 - 1, f + H, 2, Math.max(0, C - f - H), '#4a4e52'); R(x, w / 2 - 4, C - 2, 8, 2, '#2a2c2e'); }
     else if (p.mount === 'stand') { R(x, w / 2 - 1, 0, 2, f, '#4a4e52'); R(x, w / 2 - 7, 0, 14, 2, '#2a2c2e'); }
     R(x, -1, f - 1, w + 2, H + 2, '#0a0b0c'); R(x, 0, f, w, H, '#03080a'); R(x, 0, f, w, H, rgba(col, 0.08));
@@ -1028,8 +1049,9 @@ export const diagnosticElement = piece({
 
 /** A shelf of specimen jars: implants and grafts floating in tinted fluid, lit from below. */
 export const jarShelfElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-jars', label: 'Shelf of implant jars (kit: ripperdoc)', category: 'props', libraryUse: 'reusable',
-  fields: { width: num('Width', 40, 10, 200, 1, 'units'), from: num('Shelf height', 46, 0, 200, 1, 'units'), jars: num('Jars', 5, 1, 20), fluid: select('Fluid', ['amber', 'cyan', 'green', 'magenta', 'mixed']), glow: num('Glow', 0.7, 0, 1, 0.05), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 40, 10, 200, 1, 'units')), from: shapeLength(num('Shelf height', 46, 0, 200, 1, 'units')), jars: generationCount(num('Jars', 5, 1, 20)), fluid: appearanceChoice(select('Fluid', ['amber', 'cyan', 'green', 'magenta', 'mixed'])), glow: appearanceRatio(num('Glow', 0.7, 0, 1, 0.05)), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: Number(p.from) + 14 }),
   bounds: p => ({ x: 0, h: Number(p.from) + 14, w: Number(p.width), tall: 22 }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
@@ -1053,12 +1075,13 @@ export const jarShelfElement = piece({
 const STRIP: Record<string, string> = { cyan: '0,230,255', magenta: '255,50,200', white: '220,235,255', amber: '255,170,60' };
 /** The clean room: black glass panels, LED strips in two colours, a lit grating floor, frosted cooling pipes on the ceiling. */
 export const labRoomElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-lab-room', label: 'Cyber lab room, cut open (kit: panels, LED strips, grating, cooling pipes)', category: 'architecture', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 300, 40, 2000, 1, 'units'), height: num('Height (floor to ceiling)', 120, 40, 400, 1, 'units'), panel: colour('Panel colour', '#0c0e14'),
-    stripA: select('Strip colour A', Object.keys(STRIP)), stripB: select('Strip colour B', ['magenta', 'cyan', 'white', 'amber']),
-    strips: num('LED strips', 3, 0, 8), grating: bool('Lit grating floor', true), pipes: num('Cooling pipes on the ceiling', 3, 0, 8), frost: num('Frost on the pipes', 0.5, 0, 1, 0.05),
-    cut: select('Cut wall (section)', ['none', 'left', 'right', 'both']), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 300, 40, 2000, 1, 'units')), height: shapeLength(num('Height (floor to ceiling)', 120, 40, 400, 1, 'units')), panel: appearanceStructure(colour('Panel colour', '#0c0e14')),
+    stripA: appearanceChoice(select('Strip colour A', Object.keys(STRIP))), stripB: appearanceChoice(select('Strip colour B', ['magenta', 'cyan', 'white', 'amber'])),
+    strips: generationCount(num('LED strips', 3, 0, 8)), grating: appearanceBoolean(bool('Lit grating floor', true)), pipes: shapeLength(num('Cooling pipes on the ceiling', 3, 0, 8)), frost: appearanceRatio(num('Frost on the pipes', 0.5, 0, 1, 0.05)),
+    cut: appearanceChoice(select('Cut wall (section)', ['none', 'left', 'right', 'both'])), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
@@ -1085,10 +1108,11 @@ export const labRoomElement = piece({
 
 /** The surgical rig: a ceiling gantry with a carriage and articulated arms (laser, drill, suture, manipulator) over the cradle. */
 export const surgicalGantryElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-surgical-gantry', label: 'Surgical rig on a ceiling gantry, articulated arms (kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    width: num('Rail length', 120, 30, 600, 1, 'units'), ceiling: num('Ceiling height', 120, 50, 400, 1, 'units'), reach: num('Arm reach down', 60, 10, 300, 1, 'units'),
-    arms: num('Arms', 4, 1, 6), active: num('Working', 1, 0, 1, 0.05), laser: select('Laser colour', ['magenta', 'cyan', 'red']), body: colour('Body colour', '#c8ccd2'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Rail length', 120, 30, 600, 1, 'units')), ceiling: shapeLength(num('Ceiling height', 120, 50, 400, 1, 'units')), reach: shapeLength(num('Arm reach down', 60, 10, 300, 1, 'units')),
+    arms: generationCount(num('Arms', 4, 1, 6)), active: appearanceRatio(num('Working', 1, 0, 1, 0.05)), laser: appearanceChoice(select('Laser colour', ['magenta', 'cyan', 'red'])), body: appearanceStructure(colour('Body colour', '#c8ccd2')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.ceiling) }),
   bounds: p => ({ x: 0, h: Number(p.ceiling), w: Number(p.width), tall: Number(p.reach) + 20 }),
@@ -1114,17 +1138,18 @@ export const surgicalGantryElement = piece({
 
 /** Racks of neural hardware: glowing modules in rows, status lights chasing, coolant lines up into the ceiling. */
 export const neuralRackElement = piece({
+  spatial:rectangleControls({height:'height'}),
   type: 'interior.dt-neural-rack', label: 'Racks of glowing neural hardware (kit)', category: 'electronics', libraryUse: 'reusable',
   fields: {
-    racks: num('Racks', 2, 1, 8), height: num('Height', 90, 30, 300, 1, 'units'), colour: select('Module light', ['cyan', 'magenta', 'mixed', 'amber']),
-    glass: bool('Glass doors', true), coolant: bool('Coolant lines to the ceiling', true), ceiling: num('Ceiling height (coolant)', 120, 30, 400, 1, 'units'), seed: num('Seed', 1, 0, 1000000),
+    racks: generationCount(num('Racks', 2, 1, 8)), height: shapeLength(num('Height', 90, 30, 300, 1, 'units')), colorChoice: appearanceChoice(select('Module light', ['cyan', 'magenta', 'mixed', 'amber'])),
+    glass: appearanceBoolean(bool('Glass doors', true)), coolant: appearanceBoolean(bool('Coolant lines to the ceiling', true)), ceiling: shapeLength(num('Ceiling height (coolant)', 120, 30, 400, 1, 'units')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.racks) * 26, tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.ceiling), w: Number(p.racks) * 26, tall: Number(p.ceiling) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   paint(x, p, o) {
     const n = Number(p.racks), H = Number(p.height), t = o.t, s = Number(p.seed), r = rng(s * 17 + 1);
-    const cols = p.colour === 'cyan' ? ['0,230,255'] : p.colour === 'magenta' ? ['255,50,200'] : p.colour === 'amber' ? ['255,170,60'] : ['0,230,255', '255,50,200'];
+    const cols = p.colorChoice === 'cyan' ? ['0,230,255'] : p.colorChoice === 'magenta' ? ['255,50,200'] : p.colorChoice === 'amber' ? ['255,170,60'] : ['0,230,255', '255,50,200'];
     for (let k = 0; k < n; k++) {
       const l = k * 26; R(x, l, 0, 24, H, '#08090c'); R(x, l, H - 1, 24, 1, 'rgba(255,255,255,.25)'); R(x, l, 0, 1, H, 'rgba(255,255,255,.12)');
       for (let u = 6; u < H - 8; u += 7) {
@@ -1143,18 +1168,18 @@ export const neuralRackElement = piece({
 export const transferCradleElement = piece({
   type: 'interior.dt-transfer-cradle', label: 'Mind-transfer cradle (kit)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    length: num('Length', 60, 40, 140, 1, 'units'), ring: bool('Halo ring', true), lid: num('Lid open', 0.7, 0, 1, 0.05), glow: select('Glow', ['cyan', 'magenta']),
-    active: num('Transfer running', 0.5, 0, 1, 0.05), loom: num('Cable loom to the left', 40, 0, 300, 1, 'units'), seed: num('Seed', 1, 0, 1000000),
+    length: shapeLength(num('Length', 60, 40, 140, 1, 'units')), ring: appearanceBoolean(bool('Halo ring', true)), lid: appearanceRatio(num('Lid open', 0.7, 0, 1, 0.05)), glow: appearanceChoice(select('Glow', ['cyan', 'magenta'])),
+    active: appearanceRatio(num('Transfer running', 0.5, 0, 1, 0.05)), loomLength: shapeLength(num('Cable loom to the left', 40, 0, 300, 1, 'units')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.length), tall: 50 }),
-  bounds: p => ({ x: -Number(p.loom), h: 56, w: Number(p.length) + Number(p.loom), tall: 56 }),
+  bounds: p => ({ x: -Number(p.loomLength), h: 56, w: Number(p.length) + Number(p.loomLength), tall: 56 }),
   anchors: p => ({ origin: { x: 0, h: 0, role: 'origin' }, bed: { x: Number(p.length) / 2, h: 20, role: 'surface' } }),
   paint(x, p, o) {
     const L = Number(p.length), t = o.t, act = Number(p.active), c = p.glow === 'magenta' ? '255,50,200' : '0,230,255', c2 = p.glow === 'magenta' ? '0,230,255' : '255,50,200';
     R(x, 6, 0, L - 12, 12, '#1a1c22'); R(x, 6, 11, L - 12, 1, 'rgba(255,255,255,.2)'); R(x, 8, 1, L - 16, 2, rgba(c, 0.75)); o.light?.(L / 2, 2, L - 16, 2, c, 'screen');
     R(x, 2, 12, L - 4, 6, '#d8dce2'); R(x, 4, 18, L - 8, 3, '#2a3a4a'); R(x, L - 14, 21, 10, 3, '#2a3a4a');
     const hx = L - 6; R(x, hx - 6, 20, 12, 10, '#3a3e44'); for (let k = 0; k < 5; k++) R(x, hx - 5 + k * 2, 28, 1, 4, rgba(c, 0.5 + 0.5 * Math.sin(t / 6 + k)));
-    x.save(); x.lineWidth = 2; for (let k = 0; k < 4; k++) { x.strokeStyle = k % 2 ? '#14161a' : rgba(c2, 0.65); x.beginPath(); x.moveTo(hx - 4 + k * 2, y(22)); x.bezierCurveTo(hx + 10, y(10 - k), -Number(p.loom) * 0.4, y(40 + k * 3), -Number(p.loom), y(0)); x.stroke(); } x.restore();
+    x.save(); x.lineWidth = 2; for (let k = 0; k < 4; k++) { x.strokeStyle = k % 2 ? '#14161a' : rgba(c2, 0.65); x.beginPath(); x.moveTo(hx - 4 + k * 2, y(22)); x.bezierCurveTo(hx + 10, y(10 - k), -Number(p.loomLength) * 0.4, y(40 + k * 3), -Number(p.loomLength), y(0)); x.stroke(); } x.restore();
     const lid = Number(p.lid); x.save(); x.translate(4, y(21)); x.rotate(-lid * 1.1); x.fillStyle = rgba('180,220,255', 0.16); x.fillRect(0, -6, L - 8, 6); x.fillStyle = 'rgba(220,240,255,.5)'; x.fillRect(0, -6, L - 8, 1); x.restore();
     if (p.ring !== false) {
       const rx = Math.round(L * 0.62), rh = 32, sp = t / 10;
@@ -1169,10 +1194,11 @@ export const transferCradleElement = piece({
 
 /** A charging frame: a steel cage with clamps holding a robot body off the floor, a charge bar, the umbilical. Place the body (a DLV-9) in it. */
 export const robotFrameElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-robot-frame', label: 'Charging frame for a robot body (kit; put a DLV-9 in it)', category: 'machinery', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 34, 16, 120, 1, 'units'), height: num('Height', 56, 20, 200, 1, 'units'), lift: num('Body held at', 18, 0, 120, 1, 'units'),
-    charge: num('Charge', 0.6, 0, 1, 0.05), status: select('Status light', ['cyan', 'amber', 'magenta', 'green']), label: text('Plate (empty: none)', 'DLV-9'), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 34, 16, 120, 1, 'units')), height: shapeLength(num('Height', 56, 20, 200, 1, 'units')), lift: shapeLength(num('Body held at', 18, 0, 120, 1, 'units')),
+    charge: appearanceRatio(num('Charge', 0.6, 0, 1, 0.05)), status: appearanceChoice(select('Status light', ['cyan', 'amber', 'magenta', 'green'])), label: appearanceText(text('Plate (empty: none)', 'DLV-9')), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.height) + 12, w: Number(p.width), tall: Number(p.height) + 12 }),
@@ -1191,13 +1217,14 @@ export const robotFrameElement = piece({
 
 /** Cold fog rolling along a floor, thickest at the foot, drifting. */
 export const floorFogElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-fog', label: 'Floor fog (kit)', category: 'atmosphere', libraryUse: 'reusable',
-  fields: { width: num('Width', 300, 20, 2000, 1, 'units'), depth: num('Depth', 18, 4, 80, 1, 'units'), density: num('Density', 0.5, 0, 1, 0.05), colour: select('Colour', ['cyan', 'magenta', 'white']), seed: num('Seed', 1, 0, 1000000) },
+  fields: { width: shapeLength(num('Width', 300, 20, 2000, 1, 'units')), depth: shapeLength(num('Depth', 18, 4, 80, 1, 'units')), density: semantic(num('Density', 0.5, 0, 1, 0.05),{"group":"Generation","quantity":"ratio","unit":"ratio"}), colorChoice: appearanceChoice(select('Colour', ['cyan', 'magenta', 'white'])), seed: generationSeed(num('Seed', 1, 0, 1000000)) },
   size: p => ({ w: Number(p.width), tall: Number(p.depth) }),
   bounds: p => ({ x: 0, h: Number(p.depth), w: Number(p.width), tall: Number(p.depth) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   paint(x, p, o) {
-    const w = Number(p.width), D = Number(p.depth), a = Number(p.density), s = Number(p.seed), c = p.colour === 'magenta' ? '255,140,230' : p.colour === 'white' ? '230,236,245' : '170,235,255';
+    const w = Number(p.width), D = Number(p.depth), a = Number(p.density), s = Number(p.seed), c = p.colorChoice === 'magenta' ? '255,140,230' : p.colorChoice === 'white' ? '230,236,245' : '170,235,255';
     x.save(); x.beginPath(); x.rect(0, y(D + 8), w, D + 8); x.clip();
     const g = x.createLinearGradient(0, y(D), 0, 0); g.addColorStop(0, rgba(c, 0)); g.addColorStop(1, rgba(c, 0.24 * a)); x.fillStyle = g; x.fillRect(0, y(D), w, D);
     for (let k = 0; k < Math.round(w / 14); k++) {
@@ -1212,11 +1239,12 @@ export const floorFogElement = piece({
 
 /** A wall of pinned paper: printouts, photos, a map of the block, red string between pins; a long list with names struck out. */
 export const pinWallElement = piece({
+  spatial:rectangleControls({width:'width',height:'height'}),
   type: 'interior.dt-pinwall', label: 'Pinned wall: printouts, photos, a map, red string (kit: Moth’s hideout)', category: 'props', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 44, 16, 300, 1, 'units'), height: num('Height', 30, 10, 200, 1, 'units'), from: num('Bottom edge height', 24, 0, 200, 1, 'units'),
-    sheets: num('Sheets and photos', 9, 0, 40), strings: num('Red strings', 5, 0, 30), map: bool('Map of the block', true), list: bool('A long list, names struck out', true),
-    gaps: num('Pins left where sheets were taken', 3, 0, 20), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 44, 16, 300, 1, 'units')), height: shapeLength(num('Height', 30, 10, 200, 1, 'units')), from: shapeLength(num('Bottom edge height', 24, 0, 200, 1, 'units')),
+    sheets: generationCount(num('Sheets and photos', 9, 0, 40)), strings: generationCount(num('Red strings', 5, 0, 30)), map: appearanceBoolean(bool('Map of the block', true)), list: appearanceBoolean(bool('A long list, names struck out', true)),
+    gaps: generationCount(num('Pins left where sheets were taken', 3, 0, 20)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
   bounds: p => ({ x: 0, h: Number(p.from) + Number(p.height), w: Number(p.width), tall: Number(p.from) + Number(p.height) }),
@@ -1255,11 +1283,12 @@ export const pinWallElement = piece({
 
 /** What someone leaves when they go in a hurry: a chair pushed back, papers on the floor, a cold mug, a clean patch where a bag stood, an empty bowl. */
 export const leftBehindElement = piece({
+  spatial:rectangleControls({width:'width'}),
   type: 'interior.dt-left-behind', label: 'Left in a hurry: chair, papers, mug, the patch where a bag stood (kit)', category: 'props', libraryUse: 'reusable',
   fields: {
-    width: num('Width', 60, 20, 300, 1, 'units'), chair: select('Chair', ['pushed back', 'tipped over', 'none'], 'pushed back'), chairAt: num('Chair from the left', 8, 0, 300, 1, 'units'),
-    papers: num('Papers on the floor', 7, 0, 40), mug: bool('Mug left on the floor', true), boxes: num('Takeaway boxes', 2, 0, 10),
-    bag: num('Clean patch where a bag stood, from the left (-1: none)', 40, -1, 300, 1, 'units'), bowl: bool('Pet bowl, empty', true), drawer: bool('A crate tipped out', true), seed: num('Seed', 1, 0, 1000000),
+    width: shapeLength(num('Width', 60, 20, 300, 1, 'units')), chair: appearanceChoice(select('Chair', ['pushed back', 'tipped over', 'none'], 'pushed back')), chairAt: shapePosition(num('Chair from the left', 8, 0, 300, 1, 'units')),
+    papers: generationCount(num('Papers on the floor', 7, 0, 40)), mug: appearanceBoolean(bool('Mug left on the floor', true)), boxes: generationCount(num('Takeaway boxes', 2, 0, 10)),
+    bag: shapePosition(num('Clean patch where a bag stood, from the left (-1: none)', 40, -1, 300, 1, 'units')), bowl: appearanceBoolean(bool('Pet bowl, empty', true)), drawer: appearanceBoolean(bool('A crate tipped out', true)), seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
   size: p => ({ w: Number(p.width), tall: 20 }),
   bounds: p => ({ x: 0, h: 20, w: Number(p.width), tall: 20 }),
@@ -1285,3 +1314,9 @@ export const downtownHomeInteriors: AssetDefinition[] = [dtRoomElement, concierg
   noodleKitchenElement, docChairElement, partsFridgeElement, privacyScreenElement, cotElement, stockShelvesElement,
   drySacksElement, cableRunElement, diagnosticElement, jarShelfElement, labRoomElement, surgicalGantryElement, neuralRackElement, transferCradleElement, robotFrameElement, floorFogElement,
   pinWallElement, leftBehindElement];
+
+conciergeElement.spatial=conditionalControls(axisControl('conduitLength','h',21,'Conduit upper endpoint',{offset:66}),p=>p.mount==='wall');
+mailboxesElement.spatial=axisControl('bottomY','h',p=>(Number(p.columns)*8+4)/2,'Bottom row elevation');
+docChairElement.spatial=conditionalControls(axisControl('ceilingHeight','h',60,'Ceiling arm / sheeting elevation'),p=>p.sheeting!==false||p.lamp==='ceiling arm');
+cotElement.spatial=rectangleControls({width:'length',baseline:12});
+transferCradleElement.spatial=combineControls(rectangleControls({width:'length',baseline:20}),axisControl('loomLength','x',0,'Cable loom endpoint',{direction:-1}));

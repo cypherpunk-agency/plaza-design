@@ -28,15 +28,15 @@ function frame(director?: FrameDirector,backdrop?:BackdropDocument,joinedVision?
 const play = JSON.stringify(frame());
 assert.deepEqual(calls, ['sky', 'actors', 'prompts', 'bubbles'], 'play runs every pass');
 assert.equal(JSON.stringify(frame({})), play, 'an empty director is play');
-assert.equal(JSON.stringify(frame({ passes: {} })), play, 'no passes switched off is play');
+assert.equal(JSON.stringify(frame({ rendering:{id:'fixture-direction',rendering:{}} })), play, 'no passes switched off is play');
 frame(undefined,undefined,true);
 assert.deepEqual(calls.filter(c=>c.startsWith('main:')||c.startsWith('joined:')),['main:all','joined:world','joined:devices'],'a joined vehicle owner receives the existing hack-vision passes');
-frame({passes:{vision:false}},undefined,true);
+frame({rendering:{id:'fixture-direction',rendering:{vision:false}}},undefined,true);
 assert.deepEqual(calls.filter(c=>c.startsWith('main:')||c.startsWith('joined:')),['main:all','joined:all'],'the frame director can suppress joined-owner hack vision');
 frame(undefined,undefined,false);
 assert.deepEqual(calls.filter(c=>c.startsWith('main:')||c.startsWith('joined:')),['main:all','joined:all'],'ordinary joined rendering remains unchanged');
 
-frame({ passes: { sky: false, actors: false, prompts: false, bubbles: false } });
+frame({ rendering:{id:'fixture-direction',rendering:{ sky: false, actors: false, prompts: false, bubbles: false }} });
 assert.deepEqual(calls, [], 'switched-off passes do not run');
 
 const directed = frame({ camera: { x: 250, h: 6 } });
@@ -55,10 +55,10 @@ const tail = over.slice(over.findLastIndex(c => c[0] === 'save'));
 assert.deepEqual(tail.filter(c => c[0] === 'fillRect'), [['fillRect', 0, 0, 400, 240], ['fillRect', 0, 0, 400, 20], ['fillRect', 0, 210, 400, 30], ['fillRect', 0, 19, 400, 1], ['fillRect', 0, 210, 400, 1]], 'fade, then letterbox bars with their edges');
 assert.deepEqual(tail.filter(c => c[0] === 'fillText'), [['fillText', 'DOWNTOWN', 200, 120], ['fillText', 'A', 10, 50], ['fillText', 'B', 10, 68]], 'cards last: centred by default, else at x/y, one line per row');
 
-const fromTimeline = directorFromTimeline({ camera: { x: 12, h: 3, zoom: 1.5 }, fades: [{ id: 'f', color: '#102030', opacity: 0.25 }], text: [{ id: 't', from: 0, to: 2, text: 'HARBOR', x: 40, h: -100 }], state: { sky: { clock: 1100 }, rain: { amount: 0.5 } } }, { passes: { prompts: false }, overlays: { letterbox: { top: 1, bottom: 2 } } });
-assert.deepEqual(fromTimeline, { camera: { x: 12, h: 3, zoom: 1.5 }, clock: { minute: 1100 }, passes: { prompts: false }, overlays: { fades: [{ color: '#102030', opacity: 0.25 }], cards: [{ text: 'HARBOR', opacity: 1, x: 40, y: 100 }], letterbox: { top: 1, bottom: 2 } } }, 'a timeline frame becomes the director');
+const fromTimeline = directorFromTimeline({ camera: { x: 12, h: 3, zoom: 1.5 }, fades: [{ id: 'f', color: '#102030', opacity: 0.25 }], text: [{ id: 't', from: 0, to: 2, text: 'HARBOR', x: 40, h: -100 }], state: { sky: { clock: 1100 }, rain: { amount: 0.5 } } }, { rendering:{id:'fixture-direction',rendering:{ prompts: false }}, overlays: { letterbox: { top: 1, bottom: 2 } } });
+assert.deepEqual(fromTimeline, { camera: { x: 12, h: 3, zoom: 1.5 }, clock: { minute: 1100 }, rendering:{id:'fixture-direction',rendering:{ prompts: false }}, overlays: { fades: [{ color: '#102030', opacity: 0.25 }], cards: [{ text: 'HARBOR', opacity: 1, x: 40, y: 100 }], letterbox: { top: 1, bottom: 2 } } }, 'a timeline frame becomes the director');
 assert.equal(directorFromTimeline({ camera: { x: 0, h: 0, zoom: 1 }, fades: [], text: [], state: { sky: { clock: -1 } } }).clock, undefined, 'clock -1: the view\'s own light');
-const backdrop:BackdropDocument={version:1,scene:'backdrop-fixture',instances:[{id:'sky',type:'environment.sky-traffic',props:{ships:[{kind:'freighter',ps:1,y:60,speed:.1,offset:800,flip:false,depth:.4}]},placement:{x:70,h:0},layer:'distance',order:0}]};
+const backdrop:BackdropDocument={version:1,scene:'backdrop-fixture',instances:[{id:'sky',type:'environment.sky-traffic',props:{ships:[{kind:'freighter',pixelSize:1,screenY:60,velocityX:6,startOffset:800,direction:1,parallax:.4}]},placement:{x:70,h:0},layer:'distance',order:0}]};
 assert.equal(frame({},backdrop).filter(c=>JSON.stringify(c)==='["translate",70,0]').length,1,'an authored backdrop fleet paints once in the shared sky pass');
-assert.equal(frame({passes:{sky:false}},backdrop).filter(c=>JSON.stringify(c)==='["translate",70,0]').length,0,'a disabled sky pass cannot paint the fleet through the world backdrop pass');
+assert.equal(frame({rendering:{id:'fixture-direction',rendering:{sky:false}}},backdrop).filter(c=>JSON.stringify(c)==='["translate",70,0]').length,0,'a disabled sky pass cannot paint the fleet through the world backdrop pass');
 console.log('Frame director PASS: absent or empty is play; passes, camera, zoom, clock, scale and overlays configure the one frame; timelines map onto it.');

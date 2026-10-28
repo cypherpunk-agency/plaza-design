@@ -314,7 +314,7 @@
       "props": {
         "index": 0,
         "gantry": "sts1",
-        "phase": 0
+        "phaseAngle": 0
       },
       "placement": {
         "x": 780,
@@ -437,10 +437,10 @@
       "props": {
         "index": 0,
         "width": 128,
-        "paint": 0,
         "seed": 13,
         "code": "NRLU 118 0207",
-        "label": "IN TRANSIT"
+        "label": "IN TRANSIT",
+        "paletteIndex": 0
       },
       "placement": {
         "x": -64,
@@ -494,7 +494,7 @@
       "props": {
         "index": 1,
         "gantry": "sts3",
-        "phase": 2.1
+        "phaseAngle": 120.32113697747289
       },
       "placement": {
         "x": 1880,
@@ -617,10 +617,10 @@
       "props": {
         "index": 1,
         "width": 128,
-        "paint": 2,
         "seed": 14,
         "code": "KSNU 909 1200",
-        "label": "IN TRANSIT"
+        "label": "IN TRANSIT",
+        "paletteIndex": 2
       },
       "placement": {
         "x": -64,
@@ -689,11 +689,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 0,
         "seed": 1,
         "code": "MRDU 118 2207",
         "label": "MERIDIAN BULK",
-        "cullStack": 0
+        "cullStack": 0,
+        "paletteIndex": 0
       },
       "placement": {
         "x": 0,
@@ -721,11 +721,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 5,
         "seed": 2,
         "code": "PLZU 300 1981",
         "label": "PLAZA HOLDINGS FREIGHT",
-        "cullStack": 0
+        "cullStack": 0,
+        "paletteIndex": 5
       },
       "placement": {
         "x": -6,
@@ -753,11 +753,11 @@
       "props": {
         "width": 66,
         "height": 58,
-        "paint": 3,
         "seed": 3,
         "code": "TDLU 771",
         "label": "",
-        "cullStack": 0
+        "cullStack": 0,
+        "paletteIndex": 3
       },
       "placement": {
         "x": 28,
@@ -800,11 +800,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 2,
         "seed": 4,
         "code": "KSNU 552 9014",
         "label": "CONTENTS: UNDECLARED",
-        "cullStack": 1
+        "cullStack": 1,
+        "paletteIndex": 2
       },
       "placement": {
         "x": 0,
@@ -832,11 +832,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 1,
         "seed": 5,
         "code": "NRLU 220 3310",
         "label": "NULLROUTE LOGISTICS",
-        "cullStack": 1
+        "cullStack": 1,
+        "paletteIndex": 1
       },
       "placement": {
         "x": 5,
@@ -879,11 +879,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 6,
         "seed": 6,
         "code": "NRLU 404 0415",
         "label": "NULLROUTE LOGISTICS",
-        "cullStack": 2
+        "cullStack": 2,
+        "paletteIndex": 6
       },
       "placement": {
         "x": 0,
@@ -911,11 +911,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 4,
         "seed": 7,
         "code": "HLXU 090 6620",
         "label": "THIS SIDE UP",
-        "cullStack": 2
+        "cullStack": 2,
+        "paletteIndex": 4
       },
       "placement": {
         "x": -4,
@@ -943,11 +943,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 7,
         "seed": 8,
         "code": "CSQU 314 1592",
         "label": "HOLD FOR CUSTOMS",
-        "cullStack": 2
+        "cullStack": 2,
+        "paletteIndex": 7
       },
       "placement": {
         "x": 3,
@@ -990,11 +990,11 @@
       "props": {
         "width": 66,
         "height": 58,
-        "paint": 2,
         "seed": 9,
         "code": "BRNU 007",
         "label": "",
-        "cullStack": 3
+        "cullStack": 3,
+        "paletteIndex": 2
       },
       "placement": {
         "x": 0,
@@ -1022,11 +1022,11 @@
       "props": {
         "width": 66,
         "height": 58,
-        "paint": 0,
         "seed": 10,
         "code": "MRDU 440",
         "label": "",
-        "cullStack": 3
+        "cullStack": 3,
+        "paletteIndex": 0
       },
       "placement": {
         "x": 3,
@@ -1095,11 +1095,11 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 3,
         "seed": 12,
         "code": "TDLU 771 0890",
         "label": "MERIDIAN BULK",
-        "cullRegion": "arch"
+        "cullRegion": "arch",
+        "paletteIndex": 3
       },
       "placement": {
         "x": 11,
@@ -1475,10 +1475,10 @@
       "props": {
         "width": 128,
         "height": 58,
-        "paint": 5,
         "seed": 11,
         "code": "PLZU 610 0002",
-        "cullRegion": "bonded"
+        "cullRegion": "bonded",
+        "paletteIndex": 5
       },
       "placement": {
         "x": 0,
@@ -1508,10 +1508,10 @@
       "props": {
         "width": 66,
         "height": 58,
-        "paint": 3,
         "seed": 15,
         "code": "TDLU 112",
-        "cullRegion": "bonded"
+        "cullRegion": "bonded",
+        "paletteIndex": 3
       },
       "placement": {
         "x": 12,

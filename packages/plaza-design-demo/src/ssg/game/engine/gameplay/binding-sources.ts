@@ -1,4 +1,4 @@
-import type {Resolved,Value,ChunkDocument,AssetInstance} from '../../art/core/composition';
+import type {Resolved,Value,ChunkDocument,AssetInstance,ArtworkPropertySource} from '../../art/core/composition';
 import type {View} from '../../art/core/view';
 import {art} from '../../art';
 import {prepareCharacter,type Character,type PreparedCharacter} from '../../runtime/characters';
@@ -120,6 +120,24 @@ export function bindingValues(doc:ChunkDocument,ctx:BindingContext,rules:StageAc
   if(offscreen||owner)pose={visible:false,character:pose.character};
   if(poseUsed)out['actor.'+id+'.pose']=pose as unknown as Value;
   if(clipUsed){const w=window;if(w){const s=span(w),hh=Number(w.props.height)*w.placement.scale;out['actor.'+id+'.clip']=[s.left,view.y(w.placement.h+hh),s.width,hh];}else out['actor.'+id+'.clip']=null;}
+ }
+ return out;
+}
+
+/** Direct property links come from the same stage expressions used by bindingValues. */
+export function bindingPropertySources(doc:ChunkDocument,source:SceneDocument,roles:Readonly<Record<string,Resolved>>):Record<string,ArtworkPropertySource>{
+ const out:Record<string,ArtworkPropertySource>={},nodes=flatten(doc.instances),byId=new Map(nodes.map(n=>[n.id,n]));
+ for(const[name,expr]of Object.entries(source.stage?.values??{})){
+  if(!expr||typeof expr!=='object'||Array.isArray(expr)||!('get'in expr))continue;
+  const row='role'in expr?roles[expr.role]:'instance'in expr?byId.get(expr.instance):undefined;
+  const instance=row&&'instance'in row?row.instance.id:row&&'id'in row?row.id:undefined;
+  const property=expr.get==='width'||expr.get==='height'?expr.get:expr.get==='x'||expr.get==='h'?'placement.'+expr.get:expr.get.startsWith('prop:')?expr.get.slice(5):undefined;
+  if(instance&&property)out['scene.'+name]={scene:doc.scene,instance,property};
+ }
+ for(const node of nodes)for(const[key,field]of Object.entries(art.get(node.type).fields)){
+  const binding=field.stateOverride&&node.bindings?.[field.stateOverride.state],from=binding&&out[binding];
+  if(from&&from.instance===node.id&&from.property===key)throw Error(node.id+'.'+key+': remove the self binding and use its authored dimension directly.');
+  if(from){const producer=byId.get(from.instance),field=producer&&art.get(producer.type).fields[from.property];if(field?.stateOverride&&producer?.bindings?.[field.stateOverride.state])throw Error(node.id+'.'+key+': bind to the original authored dimension, not another linked fallback.');}
  }
  return out;
 }

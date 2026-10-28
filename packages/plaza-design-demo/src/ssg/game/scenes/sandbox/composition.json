@@ -7,7 +7,7 @@
       "type": "sandbox.background",
       "props": {
         "width": 3740,
-        "ceiling": 170
+        "height": 170
       },
       "placement": {
         "x": 0,
@@ -24,7 +24,7 @@
       "type": "sandbox.hall",
       "props": {
         "width": 3740,
-        "ceiling": 170
+        "height": 170
       },
       "placement": {
         "x": 0,
@@ -964,7 +964,7 @@
       "props": {
         "width": 150,
         "text": "ALL TESTS ARE LOGGED   ·   ALL TESTERS ARE TESTED   ·   RESULTS ARE PROPERTY OF THE REGISTRY   ·   BAY 3 · DEVICES UNDER TEST: 37",
-        "speed": 0.35
+        "scrollSpeed": 21.0
       },
       "placement": {
         "x": 175,
@@ -981,7 +981,7 @@
       "type": "sandbox.camera",
       "props": {
         "direction": 1,
-        "phase": 3
+        "blinkTimeOffset": 0.05
       },
       "placement": {
         "x": 270,
@@ -2016,7 +2016,7 @@
       "type": "sandbox.camera",
       "props": {
         "direction": -1,
-        "phase": 11
+        "blinkTimeOffset": 0.18333333333333332
       },
       "placement": {
         "x": 1960,
@@ -2033,7 +2033,7 @@
       "type": "sandbox.camera",
       "props": {
         "direction": -1,
-        "phase": 5
+        "blinkTimeOffset": 0.08333333333333333
       },
       "placement": {
         "x": 3190,
