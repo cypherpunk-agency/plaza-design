@@ -68,5 +68,4 @@ export const frameStyles = `.scene-composer .tool-panel>section.framed,.scene-co
 .scene-composer .frame-sections button[aria-pressed=true]{border-left-color:var(--select);background:var(--raised);color:var(--select)}
 .scene-composer .one-section .frame-section:not(.frame-current){display:none}
 .scene-composer .one-section details.frame-current>summary{font-size:14px;color:var(--ink)}
-@media(max-width:760px){.scene-composer .frame,.scene-composer .frame.no-nav,.scene-composer .frame.no-inspector{grid-template-columns:1fr;height:auto}.scene-composer .frame>.frame-nav,.scene-composer .frame>.frame-inspector{border:0;border-bottom:1px solid var(--separator)}}
 `;
