@@ -10,7 +10,7 @@ export function drawHelperPreview(canvas: HTMLCanvasElement, type: string) {
   const ctx = canvas.getContext('2d')!, x = canvas.width / 2, y = canvas.height / 2;
   ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.save();
   const light = /\.(light|caster)$/.test(type), player = type === 'scene.player';
-  ctx.strokeStyle = '#72dbca'; ctx.fillStyle = '#72dbca'; ctx.lineWidth = 3;
+  ctx.strokeStyle = '#aaaaaa'; ctx.fillStyle = '#aaaaaa'; ctx.lineWidth = 3;
   if (light) {
     const glow = ctx.createRadialGradient(x, y, 2, x, y, 74);
     glow.addColorStop(0, '#ffd9a5'); glow.addColorStop(1, 'rgba(255,217,165,0)');

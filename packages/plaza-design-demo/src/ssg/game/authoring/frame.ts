@@ -53,9 +53,9 @@ export const frameStyles = `.scene-composer .tool-panel>section.framed,.scene-co
 .scene-composer .frame.no-inspector{grid-template-columns:var(--left-w,240px) minmax(0,1fr)}.scene-composer .frame.no-inspector>.frame-inspector{display:none}
 .scene-composer .frame.no-nav.no-inspector{grid-template-columns:minmax(0,1fr)}
 .scene-composer .frame>.frame-nav,.scene-composer .frame>.frame-inspector{min-height:0;overflow:auto;padding:10px 12px;background:var(--panel)}
-.scene-composer .frame>.frame-nav{border-right:1px solid var(--line)}.scene-composer .frame>.frame-inspector{border-left:1px solid var(--line)}
+.scene-composer .frame>.frame-nav{border-right:1px solid var(--separator)}.scene-composer .frame>.frame-inspector{border-left:1px solid var(--separator)}
 .scene-composer .frame>.frame-stage{min-width:0;min-height:0;overflow:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
-.scene-composer .frame-stage canvas{max-width:100%;height:auto;align-self:center;background:#05080c;border:1px solid var(--line)}
+.scene-composer .frame-stage canvas{max-width:100%;height:auto;align-self:center;background:var(--stage);border:1px solid var(--separator)}
 .scene-composer .frame-nav h2,.scene-composer .frame-inspector h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
 .scene-composer .frame-inspector label{display:flex;flex-direction:column;align-items:stretch;gap:3px;margin:0 0 8px!important}
 .scene-composer .frame-inspector label>input:not([type=checkbox]),.scene-composer .frame-inspector label>select{width:100%!important;min-width:0!important}
@@ -65,8 +65,8 @@ export const frameStyles = `.scene-composer .tool-panel>section.framed,.scene-co
 .scene-composer .frame-sections{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
 .scene-composer .frame-sections button{display:block;width:100%;text-align:left;margin:0;border:0;border-left:2px solid transparent;border-radius:0;background:none;padding:5px 8px;font:12px/1.4 system-ui,sans-serif;color:var(--ink);white-space:normal}
 .scene-composer .frame-sections button:hover{background:var(--raised)}
-.scene-composer .frame-sections button[aria-pressed=true]{border-left-color:var(--accent);background:var(--raised);color:var(--accent)}
+.scene-composer .frame-sections button[aria-pressed=true]{border-left-color:var(--select);background:var(--raised);color:var(--select)}
 .scene-composer .one-section .frame-section:not(.frame-current){display:none}
 .scene-composer .one-section details.frame-current>summary{font-size:14px;color:var(--ink)}
-@media(max-width:760px){.scene-composer .frame,.scene-composer .frame.no-nav,.scene-composer .frame.no-inspector{grid-template-columns:1fr;height:auto}.scene-composer .frame>.frame-nav,.scene-composer .frame>.frame-inspector{border:0;border-bottom:1px solid var(--line)}}
+@media(max-width:760px){.scene-composer .frame,.scene-composer .frame.no-nav,.scene-composer .frame.no-inspector{grid-template-columns:1fr;height:auto}.scene-composer .frame>.frame-nav,.scene-composer .frame>.frame-inspector{border:0;border-bottom:1px solid var(--separator)}}
 `;

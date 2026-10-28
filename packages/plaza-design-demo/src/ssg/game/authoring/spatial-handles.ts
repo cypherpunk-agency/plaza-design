@@ -9,7 +9,7 @@ export function mountSpatialHandles(parent:HTMLElement,canvas:HTMLCanvasElement)
   host.hidden=!visible;const keep=new Set<string>(),frame=parent.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
   for(const handle of visible?handles??[]:[]){
    const key=JSON.stringify([handle.instance,handle.id]);keep.add(key);let button=buttons.get(key);
-   if(!button){button=document.createElement('button');button.type='button';button.className='spatial-handle';Object.assign(button.style,{position:'absolute',width:'10px',height:'10px',minWidth:'0',minHeight:'0',boxSizing:'border-box',margin:'0',padding:'0',border:'1px solid #72dbca',borderRadius:'1px',background:'#101722',pointerEvents:'auto',transform:'translate(-50%,-50%)'});
+   if(!button){button=document.createElement('button');button.type='button';button.className='spatial-handle';Object.assign(button.style,{position:'absolute',width:'10px',height:'10px',minWidth:'0',minHeight:'0',boxSizing:'border-box',margin:'0',padding:'0',border:'1px solid #5aa2ff',borderRadius:'1px',background:'#161616',pointerEvents:'auto',transform:'translate(-50%,-50%)'});
     button.onpointerdown=event=>canvas.onpointerdown?.call(canvas,event);
     button.onkeydown=event=>{if(event.key==='Escape')canvas.onkeydown?.call(canvas,event);};
     host.append(button);buttons.set(key,button);
