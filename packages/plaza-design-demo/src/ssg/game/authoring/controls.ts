@@ -6,6 +6,37 @@ const message=(e:unknown)=>e instanceof Error?e.message:String(e);
 export const element = <K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; };
 export const button = (text: string, action: () => void, title?: string) => { const node = element('button', '', text); node.type = 'button'; node.onclick = action; if (title) node.title = title; return node; };
 export const select = (values: { value: string; label: string }[], value: string, onChange: (v: string) => void) => { const node = element('select'); for (const item of values) { const option = element('option', '', item.label); option.value = item.value; node.append(option); } node.value = value; node.onchange = () => onChange(node.value); return node; };
+/** Option lists longer than this get a search field. Native type-ahead alone does not find words inside labels. */
+const SEARCHABLE_OPTIONS = 15;
+/** Adds a search field to every select in scope with more than 15 options; filtering only hides options, so values and change handlers stay as they are. */
+export function enhanceLongSelects(scope: ParentNode) {
+  for (const node of scope.querySelectorAll<HTMLSelectElement>('select:not([data-searchable])')) {
+    if (node.closest('header') || node.multiple || node.options.length <= SEARCHABLE_OPTIONS) continue;
+    node.dataset.searchable = '';
+    const search = element('input', 'select-search'); search.type = 'search'; search.placeholder = `Search ${node.options.length}`; search.setAttribute('aria-label', `Search ${node.getAttribute('aria-label') ?? 'options'}`);
+    const filter = () => {
+      const query = search.value.trim().toLowerCase(); let first: HTMLOptionElement | undefined;
+      for (const option of node.options) { const shown = !query || option.text.toLowerCase().includes(query) || option.value.toLowerCase().includes(query); option.hidden = !shown; if (shown && !option.disabled && !first) first = option; }
+      for (const group of node.querySelectorAll('optgroup')) group.hidden = ![...group.children].some(option => !(option as HTMLOptionElement).hidden);
+      return first;
+    };
+    search.oninput = () => { filter(); };
+    search.onkeydown = event => {
+      if (event.key === 'Enter') { event.preventDefault(); const first = filter(); if (first && first.value !== node.value) { node.value = first.value; node.dispatchEvent(new Event('change')); } }
+      else if (event.key === 'Escape' && search.value) { event.stopPropagation(); search.value = ''; filter(); }
+    };
+    const wrap = element('span', 'searchable-select'); node.replaceWith(wrap); wrap.append(search, node);
+  }
+}
+/** Explanations longer than a line that come before a panel's first field or section move into one "About this" fold at its end. Warnings, errors and status lines stay. */
+export function demoteLeadingNotes(scope: HTMLElement) {
+  const first = [...scope.querySelectorAll('input,select,textarea,summary')].find(item => !item.closest('.about-notes,.inspector-head,.inspector-tabs')); if (!first) return;
+  const notes = [...scope.querySelectorAll<HTMLElement>('p')].filter(note => (note.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING) && !note.closest('.about-notes,.inspector-head,.inspector-warning,[role=alert],[role=status]') && !note.matches('.error,.inspector-error,.field-problem') && !note.querySelector('button,input,select,textarea') && (note.textContent ?? '').trim().length > 60);
+  if (!notes.length) return;
+  let about = scope.querySelector<HTMLDetailsElement>(':scope > details.about-notes');
+  if (!about) { about = element('details', 'about-notes'); about.append(element('summary', '', 'ⓘ About this')); }
+  scope.append(about); for (const note of notes) about.append(note);
+}
 export const label = (text: string, control: HTMLElement) => { const structured=control.className.split(' ').includes('structured-field'),node = element(structured?'div':'label');if(structured){node.setAttribute('role','group');node.setAttribute('aria-label',text);}node.append(element('span', '', text), control); return node; };
 
 export function createFieldControls(notice:(message:string,error?:boolean)=>void,openSection?:(section:string)=>void,selectionScope:()=>string=()=> ''){

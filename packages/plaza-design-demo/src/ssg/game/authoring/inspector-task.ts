@@ -16,6 +16,6 @@ export function inspectorTask(task:InspectorTask,close:()=>void){
  host.append(element('h2','',task.title),body,error,actions);
  try{const commit=task.build(body,form),apply=button(task.action??'Apply',()=>form.run(()=>{
   error.textContent='';const result=commit();if(result instanceof Promise){apply.disabled=true;void result.then(close,e=>{apply.disabled=false;report(e);});}else close();
- }));actions.append(button('Cancel',close),apply);}catch(e){report(e);actions.append(button('Back to selection',close));}
+ }));apply.className='primary';actions.append(element('span','draft-label','Draft · not applied'),button('Cancel',close),apply);}catch(e){report(e);actions.append(button('Back to selection',close));}
  return host;
 }

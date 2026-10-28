@@ -26,11 +26,12 @@ export function createInspector(){
     const head = element('div', 'inspector-head');
     if (node) {
       const art = options.registry.get(node.type), actions = element('div', 'row');
-      head.append(element('h2', '', node.id), element('p', 'muted', `${art.label} · ${node.type}`));
-      actions.append(button('Duplicate', options.duplicate), button('Delete', options.remove, 'Delete this artwork (Delete)'), button('Deselect', options.deselect, 'Back to the scene’s own settings (Esc)'));
-      head.append(actions);
-    } else head.append(element('h2', '', options.sceneName || 'Scene'), element('p', 'muted', 'Nothing selected, so these are the scene’s own settings. Click artwork in the preview or the outline to inspect it.'));
-    if(options.sharedSource)head.append(element('p','muted','Editing '+options.sceneName+'; these changes also appear in the game.'),button('Open source scene',()=>options.openSource()));
+      const identity = element('div', 'identity'), icon = (text: string, name: string, action: () => void, title: string) => { const item = button(text, action, title); item.className = 'icon'; item.setAttribute('aria-label', name); return item; };
+      identity.append(element('h2', '', node.id), element('div', 'kind', `${art.label} · ${node.type}`));
+      actions.className = 'identity-actions'; actions.append(icon('⧉', 'Duplicate', options.duplicate, 'Duplicate (Ctrl D)'), icon('⌫', 'Delete', options.remove, 'Delete this artwork (Delete)'), icon('×', 'Deselect', options.deselect, 'Back to the chunk’s own settings (Esc)'));
+      head.append(identity, actions);
+    } else { const identity = element('div', 'identity'); identity.append(element('h2', '', options.sceneName || 'Scene'), element('div', 'kind', 'Chunk · its own settings. Select artwork to inspect it.')); head.append(identity); }
+    if(options.sharedSource){const shared=element('div','kind');shared.append('Shared source · changes also appear in the game · ',button('Open source',()=>options.openSource()));head.append(shared);}
     right.append(head);
     if(node&&options.resolved){updateResolved=mountResolvedInspector(right,options.resolved,()=>{inspectorTab='appearance';options.refresh();},resolvedState,options.visibility);updateResolved();}
     let sections: InspectorSection[] = [];
