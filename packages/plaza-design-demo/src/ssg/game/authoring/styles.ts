@@ -10,7 +10,7 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer *{box-sizing:border-box}
 .scene-composer button,.scene-composer input,.scene-composer select,.scene-composer textarea{font:inherit;color:inherit;background:var(--field);border:1px solid var(--control-line);border-radius:3px;padding:4px 8px;min-width:0;min-height:26px}
 .scene-composer button{cursor:pointer;background:var(--raised);white-space:nowrap;min-height:28px}.scene-composer button:hover:not(:disabled){background:var(--raised-hover);border-color:var(--muted)}.scene-composer button:disabled{opacity:.6;cursor:default}
-.scene-composer button.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink);font-weight:600}.scene-composer button.primary:disabled{background:var(--raised);border-color:var(--separator);color:var(--muted);opacity:1}
+.scene-composer button.primary{background:var(--primary);border-color:var(--primary);color:var(--primary-ink);font-weight:600}.scene-composer button.primary:disabled{background:var(--raised);border-color:var(--control-line);color:var(--muted);opacity:1}
 .scene-composer input[type=checkbox]{min-height:0;width:16px;height:16px;accent-color:var(--select)}
 .scene-composer :focus-visible{outline:2px solid var(--select);outline-offset:1px}
 .scene-composer h2{font:600 12px/16px var(--sans);text-transform:none;letter-spacing:0;color:var(--ink);margin:16px 0 8px}.scene-composer aside>h2:first-child{margin-top:4px}
