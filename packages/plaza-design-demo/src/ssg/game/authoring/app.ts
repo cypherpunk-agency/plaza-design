@@ -16,7 +16,7 @@ import {validationSnapshot} from './validation-snapshot';
 import {keyframeControl,keyframeState,setKeyAtPlayhead} from './keyframe-control';
 import {createViewMemory,viewMatchesLocation} from './view-memory';
 import {preparedChunkStatus,type ChunkStatus} from '../runtime/chunk-status';
-import {chunkStatusBadge,renderChunkStatus,renderRuntimeChunks} from './chunk-status';
+import {renderChunkStatus,renderRuntimeChunks} from './chunk-status';
 import {renderWorldDirectionAuthoring} from './world-direction-authoring';
 import {renderSequenceCommandsAuthoring} from './sequence-commands-authoring';
 import {clippingControls,peopleControls} from './mobile-controls';
@@ -42,7 +42,7 @@ import {evaluateTimeline,timelineArtwork,targetComposition,type TimelineProgram,
 import { composerStyles } from './styles';
 import { createFrame, frameStyles, sectionNavigator } from './frame';
 
-import {mountAssetBrowser,type AssetBrowserSession,type AssetEntry,type AssetPreset} from './asset-browser';
+import {mountAssetBrowser,ARTWORK_DRAG,type AssetBrowserSession,type AssetEntry,type AssetPreset} from './asset-browser';
 import { createThumbnails } from './asset-thumbnails';
 import { PRESETS_DOCUMENT, presetId, presetProps, presetsFor, type KitPreset, type KitPresets } from './kit-presets';
 
@@ -158,6 +158,13 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let tidyQueued = false;
   const tidy = new MutationObserver(() => { if (tidyQueued) return; tidyQueued = true; queueMicrotask(() => { tidyQueued = false; tidy.disconnect(); try { enhanceLongSelects(root); demoteLeadingNotes(right); for (const panel of root.querySelectorAll<HTMLElement>('.inspector-body,.inspector-mount,.inspector-task')) demoteLeadingNotes(panel); } finally { tidy.observe(root, { childList: true, subtree: true }); } }); });
   tidy.observe(root, { childList: true, subtree: true });
+  stageWrap.addEventListener('dragover', event => { if (event.dataTransfer?.types.includes(ARTWORK_DRAG) && playHost.hidden) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; stageWrap.dataset.dropping = ''; } });
+  stageWrap.addEventListener('dragleave', () => { delete stageWrap.dataset.dropping; });
+  stageWrap.addEventListener('drop', event => {
+    delete stageWrap.dataset.dropping; const raw = event.dataTransfer?.getData(ARTWORK_DRAG); if (!raw) return; event.preventDefault();
+    const { kit, preset } = JSON.parse(raw) as { kit: string; preset?: string }, saved = preset ? presetsFor(presetsDoc(), kit).find(p => p.id === preset) : undefined;
+    void addAtView(kit, saved?.props, saved?.children, event.clientX);
+  });
   workspace.addEventListener('pointermove', event => { const target = event.target as Node; pointerRegion = left.contains(target) ? 'left' : right.contains(target) ? 'right' : timelineHost.contains(target) ? 'timeline' : 'center'; }); host.append(root);
   /** The panel named in the URL at startup; the URL is only rewritten once it has been opened. */
   // An editor link: `#characters` opens a panel; `#scene=downtown-next&compare=downtown&panel=characters` also opens a scene.
@@ -168,7 +175,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
 
   /** Editor-only framing: persisted as a workspace preference, never authored source or a game save. */
   let boundaryFor='';
-  const sequenceNav={zoom:1,x:0,y:0};let cameraPreview=false,followCamera=false,showObjectOutlines=false,showSceneBounds=true,showChunkStatus=true,renderWindow=performance.now(),renderFps=0,statusUpdatedAt=0;
+  const sequenceNav={zoom:1,x:0,y:0};let cameraPreview=false,followCamera=false,showObjectOutlines=false,showSceneBounds=true,showChunkStatus=false,renderWindow=performance.now(),renderFps=0,statusUpdatedAt=0;
   try{showObjectOutlines=localStorage.getItem('access-denied.editor.object-outlines')==='true';}catch{/* optional preview preference */}
 
 
@@ -581,7 +588,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     const importButton = button('Import JSON', () => file.click()); importButton.disabled = activeDocument()?.kind === 'world'; menuItems.append(importButton, file);
   }
   function updateCrumb() {
-    const scene = sceneId(), node = editorSelection.instance;
+    const scene = sceneId(), node = editorSelection.instance && selected() ? editorSelection.instance : '';
     crumb.textContent = !scene ? '' : [sceneName(scene), editorSelection.chunk && !node ? 'chunk' : '', node].filter(Boolean).join(' › ');
   }
   function refreshOptions() {
@@ -691,19 +698,22 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   let leftTab: 'outline' | 'library' = 'outline';
   function leftDockHead() {
     const head = element('div', 'dock-head'); head.setAttribute('role', 'tablist'); head.setAttribute('aria-label', 'Left dock');
-    for (const [id, text] of [['outline', 'Outline'], ['library', 'Library']] as const) { const tab = button(text, () => { leftTab = id; outlineVersion = ''; outlineSnapshot = undefined; refreshLeft(); }); tab.setAttribute('role', 'tab'); tab.setAttribute('aria-selected', String(leftTab === id)); head.append(tab); }
+    for (const [id, text] of [['outline', 'Outline'], ['library', 'Library']] as const) { const tab = button(text, () => { if (leftTab === 'library' && id !== 'library') { cleanupDockLibrary?.(); cleanupDockLibrary = undefined; } leftTab = id; outlineVersion = ''; outlineSnapshot = undefined; outlineView = ''; left.replaceChildren(); refreshLeft(); }); tab.setAttribute('role', 'tab'); tab.setAttribute('aria-selected', String(leftTab === id)); head.append(tab); }
     return head;
   }
   /** Library entries open as panels in the Layout workspace; ◂ Scene returns to the scene. */
+  let cleanupDockLibrary: void | (() => void);
   function renderLibraryDock() {
-    const list = element('ul', 'library-list');
-    for (const item of panels.filter(p => p.group === 'library')) { const row = element('li'), open = button(item.label, () => openPanel(item.details), item.title); row.append(open, element('small', '', item.title)); list.append(row); }
-    return list;
+    cleanupDockLibrary?.(); cleanupDockLibrary = undefined;
+    const body = element('div', 'library-dock'), browser = element('div', 'library-browser'), list = element('ul', 'library-list');
+    if (config.assetPreview && current()?.kind === 'composition') { body.append(element('div', 'library-hint', 'Drag a piece into the scene, or double-click to add it in view.'), browser); cleanupDockLibrary = mountArtwork(browser, sceneId(), entry => void addAtView(entry.id), (kit, settings, children) => void addAtView(kit.id, settings, children)); }
+    for (const item of panels.filter(p => p.group === 'library')) { const row = element('li'), open = button(item.label, () => openPanel(item.details), item.title); row.append(open); list.append(row); }
+    body.append(element('h3', '', 'Library screens'), list); return body;
   }
   function refreshLeft() {
     workbenches.forEach(item=>refreshWorkbench(item,true));refreshLibrary();refreshMap();
     if(root.dataset.tool!=='scene'){layoutDirty=true;return;}
-    if(leftTab==='library'){outlineVersion='';outlineSnapshot=undefined;left.replaceChildren(leftDockHead(),renderLibraryDock());return;}
+    if(leftTab==='library'){if(left.querySelector('.library-dock')&&outlineView===currentId)return;outlineVersion='';outlineSnapshot=undefined;outlineView=currentId;left.replaceChildren(leftDockHead(),renderLibraryDock());return;}
     if(outlineSnapshot===model.sourceVersion&&outlineView===currentId){updateOutlineSelection();return;}
     outlineSnapshot=model.sourceVersion;outlineView=currentId;
     const docs=documentsForView(),sources=workspaceId?[...new Map([...(currentTimeline()?outlineDocuments(viewCompositionDocument(),docs):[]),...workspaceDocuments(workspaceId,docs),...workspaceDocuments(workspaceId,docs,worldState()?.checkpoint?.membership)].map(d=>[d.id,d])).values()]:outlineDocuments(viewCompositionDocument(),docs,config.joinedScenes?.(viewScene(),docs).map(r=>r.zone)??[]);outlineSceneOwners.clear();for(const source of sources)outlineSceneOwners.set((source.value as ChunkDocument).scene,source.id);
@@ -716,7 +726,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     if(navigable()){
       const camera=button('Camera',()=>selectTimeline({kind:'camera'}),'Inspect the authored game camera');camera.setAttribute('aria-label','Camera in outline');
       left.append(camera);updates.push(()=>camera.setAttribute('aria-pressed',String(cameraSelected())));
-      left.append(element('p','outline-context',workspaceId?'Composition members · prepared for editing, independently of runtime residency.':'The sequence and its referenced chunks. Selection does not change this list.'));
+      
       const tools=element('div','layer-tools'),search=element('input'),sort=element('div','segmented');sort.setAttribute('role','group');sort.setAttribute('aria-label','Arrange the outline');search.type='search';search.placeholder='Filter all sources';search.value=layerQuery;search.setAttribute('aria-label','Filter the outline');search.oninput=()=>{layerQuery=search.value;filters.forEach(render=>render());};
       for(const mode of ['kind','order']as const){const pick=button(mode==='kind'?'Kind':'Order',()=>{layerSort=mode;for(const child of sort.children)child.setAttribute('aria-pressed',String((child as HTMLElement).dataset.mode===mode));filters.forEach(render=>render());});pick.dataset.mode=mode;pick.setAttribute('aria-pressed',String(layerSort===mode));sort.append(pick);}tools.append(search,sort);left.append(tools);
     }
@@ -724,8 +734,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       const group=element('details','outline-source'),composition=source.value as ChunkDocument;
       group.dataset.document=source.id;group.open=outlineSourceOpen.get(source.id)??false;
       const summary=element('summary','',source.id===viewCompositionDocument()?.id?(currentTimeline()&&sources.length>1?'Sequence controls':sceneName(composition.scene)):source.id.startsWith('backdrop-')?'Shared backdrop · '+source.id.slice(9):sceneName(composition.scene));summary.title=source.id;
-      if(!source.id.startsWith('backdrop-')&&!composition.scene.startsWith('sequence-'))summary.append(chunkStatusBadge(preparedChunkStatus(composition.scene,sceneName(composition.scene)),()=>inspectChunk(composition.scene)));
-      if(workspaceId){const focus=button('Focus',()=>{},'Frame this chunk without leaving the composition');focus.onclick=event=>{event.preventDefault();event.stopPropagation();const region=painting.result?.regions?.find(r=>r.document===source.id);if(region){stopFollowing();sequenceNav.x+=(region.x+region.width/2-canvas.width/2)/(painting.result?.workspaceScale??1);editorSelection.world=undefined;editorSelection.document=source.id;editorSelection.instance='';editorSelection.chunk=composition.scene;refreshRight();refreshViewportTools();void draw();}};summary.append(focus);}
+      
+      if(workspaceId){summary.title=source.id+' · double-click to frame this chunk';summary.ondblclick=event=>{event.preventDefault();event.stopPropagation();const region=painting.result?.regions?.find(r=>r.document===source.id);if(region){stopFollowing();sequenceNav.x+=(region.x+region.width/2-canvas.width/2)/(painting.result?.workspaceScale??1);editorSelection.world=undefined;editorSelection.document=source.id;editorSelection.instance='';editorSelection.chunk=composition.scene;refreshRight();refreshViewportTools();void draw();}};}
       const container=element('div');group.append(summary,container);left.append(group);
       group.ontoggle=()=>{if(!layerQuery.trim()){outlineSourceOpen.set(source.id,group.open);saveFolds();}};
       const handle=renderOutlineDocument(source,container);filters.push(()=>{handle.filter();if(layerQuery.trim())group.open=true;else group.open=outlineSourceOpen.get(source.id)??false;});
@@ -1018,14 +1028,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const presetsDoc = () => documentsForView().find(d => d.id === PRESETS_DOCUMENT)?.value as KitPresets | undefined;
   /** A people-kit preset is a human, an animal or a robot by its body kind; other presets share their kit's kind. */
   const presetFamily = (preset: KitPreset, kit: AssetEntry) => kit.id !== 'character.resident' ? kit.family : preset.props.kind === undefined || preset.props.kind === 'human' ? 'Human' : ['cat', 'pigeon', 'gull', 'crab'].includes(String(preset.props.kind)) ? 'Animal' : 'Robot';
-  async function addAtView(type: string, settings?: Properties,children?:AssetInstance[]) { const token = perfBegin('editor.add'); try {
+  async function addAtView(type: string, settings?: Properties,children?:AssetInstance[],clientX?:number) { const token = perfBegin('editor.add'); try {
     const doc = compositionDocument(); if (!doc || current()?.kind !== 'composition') { notice('Open a chunk to add assets.', true); return; }
     let x = 0;
     try {
       // Draw the new piece once off-screen at x = 0, then move it by its measured distance to the centre of the view.
       const draft = model.draftAdd(doc.id, type, settings,children), probe = element('canvas'); probe.width = canvas.width; probe.height = canvas.height;
       const result = await config.preview.render(probe, previewRequest(draft.composition, false)), box = result.bounds.find(b => b.id === draft.instanceId);
-      if (box && result.deltaToLocal) { const rect = canvas.getBoundingClientRect(), view = stage.getBoundingClientRect(), centre = ((Math.max(rect.left, view.left) + Math.min(rect.right, view.right)) / 2 - rect.left) * canvas.width / Math.max(1, rect.width); x = result.deltaToLocal(draft.instanceId, centre - (box.x + box.width / 2), 0).x; }
+      if (box && result.deltaToLocal) { const rect = canvas.getBoundingClientRect(), view = stage.getBoundingClientRect(), centre = ((clientX ?? (Math.max(rect.left, view.left) + Math.min(rect.right, view.right)) / 2) - rect.left) * canvas.width / Math.max(1, rect.width); x = result.deltaToLocal(draft.instanceId, centre - (box.x + box.width / 2), 0).x; }
     } catch { x = 0; }
     x = snap ? Math.round(x / snap) * snap : Math.round(x);
     let added = false; run(() => { editorSelection.instance = model.add(doc.id, type, { x, h: 0 }, settings,children); inspector.appearance(); added = true; });

@@ -342,4 +342,12 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer details.about-notes{margin-top:14px;border-top:1px solid var(--separator);padding-top:8px}.scene-composer details.about-notes>summary{color:var(--muted);font-weight:500}.scene-composer details.about-notes p{color:var(--muted);font-size:12px}
 .scene-composer .inspector-task-actions{position:sticky;bottom:-10px;align-items:center;background:var(--panel);border-top:1px solid var(--separator);padding:10px 0;margin-top:14px}.scene-composer .draft-label{margin-right:auto;color:var(--draft);font-weight:600;font-size:12px}
 .scene-composer p.provenance{margin:-2px 0 8px;font-size:11px;line-height:14px;color:var(--muted)}.scene-composer p.provenance.inherited{font-style:italic}.scene-composer p.provenance.override{color:var(--changed)}
+/* Outline rows show their eye only on hover, focus, or when the row is hidden. */
+.scene-composer .hierarchy li .eye{opacity:0}.scene-composer .hierarchy li:hover .eye,.scene-composer .hierarchy li:focus-within .eye,.scene-composer .hierarchy .eye[data-off=true]{opacity:1}
+.scene-composer .outline-source>summary[title*=double-click]{cursor:pointer}
+/* Library dock: the artwork browser in one column, then the larger library screens. */
+.scene-composer .library-dock .asset-browser-grid,.scene-composer .library-dock .asset-browser-grid:has(.asset-grid),.scene-composer .library-dock .asset-browser-grid.with-districts{grid-template-columns:1fr;gap:8px}
+.scene-composer .library-dock .asset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.scene-composer .library-dock canvas.asset-thumb{height:64px}.scene-composer .library-dock .asset-card[draggable=true]{cursor:grab}
+.scene-composer .library-hint{font-size:11px;color:var(--faint);margin:0 0 6px}
+.scene-composer .stage-wrap[data-dropping]::after{box-shadow:inset 0 0 0 2px var(--select)}
 `;

@@ -5,6 +5,8 @@ import type {EditorDocument} from './contracts';
 
 import { helperArtwork } from './asset-examples';
 
+/** Drag payload of a library card: its kit and optional preset. The scene adds it where it is dropped. */
+export const ARTWORK_DRAG = 'application/x-composer-artwork';
 export interface AssetUsage { document: string; scene: string; instance: string; parent?: string; path: string[]; node: AssetInstance }
 /** `family` is the broad kind (layer-roles.ts); the registered category remains a tag. */
 /**
@@ -218,7 +220,7 @@ export function mountAssetBrowser(host: HTMLElement, options: AssetBrowserOption
     list.classList.toggle('asset-grid', !!options.thumbnail);
     const card = (entry: AssetEntry, preset?: AssetPreset) => {
       const key = cardKey(entry, preset), pick = button('', () => inspect(entry, preset)); pick.dataset.asset = key;
-      if (options.useInScene) pick.ondblclick = () => preset ? options.presets!.add(entry, preset) : options.useInScene!.run(entry);
+      if (options.useInScene) { pick.ondblclick = () => preset ? options.presets!.add(entry, preset) : options.useInScene!.run(entry); pick.draggable = true; pick.ondragstart = event => { event.dataTransfer?.setData(ARTWORK_DRAG, JSON.stringify({ kit: entry.id, preset: preset?.id })); if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy'; }; }
       pick.title = preset ? `${entry.id} · preset ${preset.id}${preset.note ? ': ' + preset.note : ''}` : `${entry.id} · ${entry.preview}`;
       pick.setAttribute('aria-pressed', String(entry.id === session.selected && (preset?.id ?? undefined) === session.preset));
       // A tag only where it tells something: presets, pieces that need their scene, cutscene parts. Plain reusable pieces carry none.
