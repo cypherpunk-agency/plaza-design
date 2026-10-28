@@ -21,12 +21,12 @@ per-browser view preferences, never source.
 ## Window layout
 
 ```
-┌ header 44 ─ brand · workspace tabs · scene toolbar · Play · Search · undo/redo · Save · ⋯ ┐
-├ panel strip 36 (workspace panels; context of the open chunk) ──────────────────────────────┤
-├ left dock 256 ┬ scene preview + overlays ─────────────────────────┬ right dock 300 ┤
-│ tabs: Outline │                                                   │ Inspector      │
-│ Library       ├ timeline: folded strip / 240 open ────────────────┤                │
-├───────────────┴ status bar 24 ─ mode chip · context · crumb · dock toggles · save state ┤
+┌ header 44 ─ brand · workspace tabs · chunk switcher ＋ · [ Search… Ctrl K ] · ↶ ↷ · save state · Save · More ┐
+├ panel strip 36 (workspace panels; context of the open chunk) ───────────────────────────────────────────────┤
+├ left dock 256 ┬ scene toolbar 38 ─ Add · Live motion · Snap · checkpoint · ▶ Play ┬ right dock 300 ┤
+│ Outline       │ scene preview + overlays                                           │ Inspector      │
+│ Library       ├ bottom strip 30 (Layout): ▴ Timeline · Errors  /  timeline (Animate) ┤ (boxed sections)│
+├───────────────┴ status bar 24 ─ mode chip · crumb · context · error chip · dock toggles · save state ┤
 ```
 
 - Left dock default 256, right dock default 300; Animate defaults to 220 and 280 so the scene
@@ -167,8 +167,9 @@ Status and badges appear only for exceptions. A chunk that is fine shows no badg
 
 ## Scene overlays
 
-- Scene toolbar in the header: Add, Animate, sequence picker (when there is more than one),
-  Snap, checkpoint and play starting point, then ▶ Play. There are no Select/Move tools: the
+- Scene toolbar as its own row above the scene: Add, Live motion (ambient people, lights and
+  signs; "Play sequence" when a sequence is open, hidden in sequence editing where the timeline
+  owns playback), sequence picker, Snap, checkpoint and play starting point, then ▶ Play. There are no Select/Move tools: the
   editor has no tool modes, so clicking selects and dragging moves. The selection breadcrumb
   sits in the status bar.
 - Inside the scene: **Preview only** bar top-right; zoom, percentage and Frame `F` bottom-left;

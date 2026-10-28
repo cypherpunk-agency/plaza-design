@@ -111,13 +111,14 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const errorList = element('div', 'error-list'); errorList.hidden = true; errorList.setAttribute('role', 'dialog'); errorList.setAttribute('aria-label', 'Editor errors');
   const errorLog: { text: string; where: string; detail: string; count: number }[] = [];
   function renderErrors() {
-    const head = element('div', 'error-list-head'), copyAll = button('Copy', () => void navigator.clipboard?.writeText(errorLog.map(row => `${row.where} ×${row.count}: ${row.detail}`).join('\n\n')), 'Copy all errors with details'), clear = button('Clear', () => { errorLog.length = 0; errorChip.hidden = true; errorList.hidden = true; }, 'Clear the error list');
+    const head = element('div', 'error-list-head'), copyAll = button('Copy', () => void navigator.clipboard?.writeText(errorLog.map(row => `${row.where} ×${row.count}: ${row.detail}`).join('\n\n')), 'Copy all errors with details'), clear = button('Clear', () => { errorLog.length = 0; errorChip.hidden = true; errorList.hidden = true; errorsTab.textContent = 'Errors'; errorsTab.classList.remove('has-errors'); }, 'Clear the error list');
     head.append(element('strong', '', 'Editor errors'), element('span', 'status-spacer'), copyAll, clear);
     errorList.replaceChildren(head, ...errorLog.map(row => { const item = element('details', 'error-row'), summary = element('summary', '', `${row.where}${row.count > 1 ? ` ×${row.count}` : ''} · ${row.text}`); item.append(summary, element('pre', '', row.detail)); return item; }));
   }
   function reportError(error: unknown, where: string) {
     const text = message(error), detail = error instanceof Error && error.stack ? error.stack : text, row = errorLog.find(item => item.text === text && item.where === where);
     if (row) row.count++; else { errorLog.push({ text, where, detail, count: 1 }); if (errorLog.length > 20) errorLog.shift(); console.error(error); }
+    errorsTab.textContent = `Errors ${errorLog.length}`; errorsTab.classList.add('has-errors');
     errorChip.hidden = false; errorChip.textContent = `! ${errorLog.length === 1 ? 'Error' : `${errorLog.length} errors`} · ${text}`; errorChip.title = `${where}: ${text} (click for details)`;
     if (!errorList.hidden) renderErrors();
   }
@@ -141,6 +142,11 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   /** Ctrl+Space maximises the region under the pointer and restores it again. */
   let pointerRegion = 'center';
   function toggleMaximized() { const next = root.dataset.maximized ? undefined : pointerRegion; if (next) root.dataset.maximized = next; else delete root.dataset.maximized; writeDock({ max: next }); void draw(); }
+  const documentSwitch = element('div', 'document-switch');
+  const searchField = button('', () => searchUi.open(), 'Search objects, commands, settings and library (Ctrl K)'); searchField.className = 'search-field'; searchField.append(element('span', '', 'Search objects, commands, settings…'), element('kbd', '', 'Ctrl K'));
+  /** Layout's folded bottom dock: the timeline and the editor's errors. */
+  const bottomStrip = element('div', 'bottom-strip'), timelineTab = button('▴ Timeline', () => openWorkspace('animate'), 'Open the timeline (Animate workspace)'), errorsTab = button('Errors', () => { errorList.hidden = !errorList.hidden; if (!errorList.hidden) renderErrors(); }, 'Show editor errors');
+  bottomStrip.append(timelineTab, errorsTab);
   const options = element('div', 'preview-options'), stageWrap = element('div', 'stage-wrap'), stage = element('div', 'preview-stage'), canvas = element('canvas'), previewError = element('div', 'preview-error');
   const joinedLayer = element('div', 'joined-tags'); joinedLayer.setAttribute('aria-label', 'Joined scenes');
   const viewportTools = element('div', 'viewport-tools'), hoverBox = element('div', 'hover-box'), selectionBox = element('div', 'hover-box selection-box'); selectionBox.hidden = true; viewportTools.setAttribute('role', 'group'); viewportTools.setAttribute('aria-label', 'Preview zoom'); hoverBox.hidden = true;
@@ -171,7 +177,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   const playHost = element('div', 'stage-play'); playHost.hidden = true; playHost.setAttribute('aria-label', 'Play session');
   const playSettings = element('section', 'play-settings');
   const compareCanvas = element('canvas'); compareCanvas.hidden = true; compareCanvas.className = 'compare'; compareCanvas.setAttribute('aria-label', 'Comparison preview, read-only');
-  stage.append(canvas, compareCanvas); const renderStatus=element('output','render-status');renderStatus.setAttribute('aria-label','Preview render rate');stageWrap.append(stage,playHost,joinedLayer,hoverBox,selectionBox,modeBanner,previewBar,viewportTools,viewMenus,pickList,picker,previewError,renderStatus); center.append(stageWrap, timelineHost); workspace.append(center, left, right, ...panelHandles(), ...dockStrips()); header.append(tools); statusBar.append(modeChip, crumb, contextLine, status, element('span','status-spacer'), errorChip, dockToggles, saveState); root.append(header, workspace, statusBar, errorList);
+  stage.append(canvas, compareCanvas); const renderStatus=element('output','render-status');renderStatus.setAttribute('aria-label','Preview render rate');stageWrap.append(stage,playHost,joinedLayer,hoverBox,selectionBox,modeBanner,previewBar,viewportTools,viewMenus,pickList,picker,previewError,renderStatus); center.append(options, stageWrap, timelineHost, bottomStrip); workspace.append(center, left, right, ...panelHandles(), ...dockStrips()); header.append(tools); statusBar.append(modeChip, crumb, contextLine, status, element('span','status-spacer'), errorChip, dockToggles, saveState); root.append(header, workspace, statusBar, errorList);
   /** Ctrl K: objects in the open composition, editor commands, settings with their location, and library pieces. */
   const searchUi = mountCommandSearch(root, () => withViewDocuments(collectSearch));
   function frameSelection() { const doc = compositionDocument(); if (editorSelection.instance && doc) void focusArtwork(editorSelection.document || doc.id, editorSelection.instance); else fit(); }
@@ -200,6 +206,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     for (const item of panels) list.push({ group: 'Settings', label: item.label, where: `${groups.find(g => g.id === item.group)?.label ?? ''} › ${item.label}`, run: () => openPanel(item.details) });
     for (const control of config.environmentControls ?? []) list.push({ group: 'Settings', label: control.label, where: control.quick ? 'Scene › Preview bar' : 'Scene › Show menu', run: () => { if (control.quick) previewBar.querySelector<HTMLElement>(`[aria-label="${control.label}"]`)?.focus(); else showMenu.menu.open = true; } });
     const node = selected(); if (node) { let fields: [string, Field][] = []; try { fields = Object.entries(config.registry.get(node.type).fields); } catch { /* unknown type */ } for (const [key, field] of fields) list.push({ group: 'Settings', label: field.label, where: `Inspector › ${field.semantics?.group ?? 'Properties'} · ${node.id}`, run: () => focusField(key, field.label) }); }
+    for (const doc of documentsForView()) if (doc.kind === 'composition' && !doc.id.startsWith('authored.')) list.push({ group: 'Commands', label: `Open ${sceneName((doc.value as ChunkDocument).scene)}`, where: 'Chunk', run: () => openDocument(doc.id) });
+    for (const row of compositionWorkspaces(documentsForView())) list.push({ group: 'Commands', label: `Open ${row.name}`, where: 'Composition', run: () => openComposition(row.id) });
     if (current()?.kind === 'composition') for (const definition of config.registry.catalog()) if (definition.libraryUse === 'reusable') list.push({ group: 'Library', label: definition.label, where: definition.type, run: () => void addAtView(definition.type) });
     return list;
   }
@@ -592,7 +600,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   function openComposition(id:string){const workspace=compositionWorkspaces(documentsForView()).find(w=>w.id===id);if(!workspace){notice('Unknown composition '+id,true);return;}const source=workspace.chunks[0]??documentsForView().find(d=>d.id===currentId&&d.kind==='composition')??documentsForView().find(d=>d.kind==='composition');if(!source)return;if(!root.dataset.stagePanel)showLayout();openDocument(source.id,id);}
   function openScene(scene: string, compare?: string) { const doc = documentsForView().find(d => d.kind === 'composition' && (d.value as ChunkDocument).scene === scene); if (doc) { if (!root.dataset.stagePanel) showLayout(); openDocument(doc.id); if (compare) { compareId = compare; refreshOptions(); void draw(); } } else notice(`Chunk ${scene} has no editable source in this session.`, true); }
   function refreshHeader() {
-    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED')); brand.title = config.api ? 'Local composer' : 'Public editor'; header.replaceChildren(brand, tools, options, element('span', 'header-spacer'));
+    const brand = element('div', 'brand'); brand.append(element('strong', '', 'ACCESS DENIED')); brand.title = config.api ? 'Local composer' : 'Public editor'; header.replaceChildren(brand, tools, documentSwitch, searchField, element('span', 'header-spacer'));
     const actions = element('div', 'actions'), menu = element('details', 'menu'), menuItems = element('div', 'menu-items'); menu.append(element('summary', '', 'More'), menuItems);
     const docs = documentsForView(), chooser = element('select', 'document-picker'); chooser.setAttribute('aria-label', 'Composition or chunk');
     const unsaved = (doc: EditorDocument) => model.dirty(doc.id) || doc.kind === 'composition' && (config.sceneDocuments?.((doc.value as ChunkDocument).scene,docs) ?? []).some(id => model.dirty(id));
@@ -620,12 +628,12 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
       for (const doc of list) optgroup.append(option(doc));
       chooser.append(optgroup);
     }
-    chooser.value = workspaceId?'@composition/'+workspaceId:currentId; chooser.onchange = () => chooser.value.startsWith('@composition/')?openComposition(chooser.value.slice(13)):openDocument(chooser.value); sceneContext.replaceChildren(chooser);
-    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ Chunk', openNewScene, blocked || 'Create a new chunk source and open it here'); add.className = 'new-scene structure'; add.disabled = !!blocked; sceneContext.append(add); }
-    if (current()?.kind === 'composition') { const composition = button('＋ Composition', () => openMountPicker(worldControls(), true), 'Start a new composition'); composition.classList.add('structure'); sceneContext.append(composition); if (workspaceId) { const mount = button('＋ Mount', () => openMountPicker(worldControls()), 'Mount a chunk or group into this composition'); mount.classList.add('structure'); sceneContext.append(mount); } }
+    chooser.value = workspaceId?'@composition/'+workspaceId:currentId; chooser.onchange = () => chooser.value.startsWith('@composition/')?openComposition(chooser.value.slice(13)):openDocument(chooser.value); sceneContext.replaceChildren(); const newMenu = element('details', 'menu new-menu'), newItems = element('div', 'menu-items'); newMenu.append(element('summary', '', '＋'), newItems); newMenu.querySelector('summary')!.title = 'New chunk or composition'; documentSwitch.replaceChildren(chooser, newMenu);
+    if (config.newScene) { const blocked = config.newScene.blocked(authoringApi()), add = button('＋ Chunk', openNewScene, blocked || 'Create a new chunk source and open it here'); add.className = 'new-scene'; add.textContent = 'New chunk…'; add.disabled = !!blocked; newItems.append(add); }
+    if (current()?.kind === 'composition') { const composition = button('New composition…', () => openMountPicker(worldControls(), true), 'Start a new composition'); newItems.append(composition); if (workspaceId) { const mount = button('Mount chunk or group…', () => openMountPicker(worldControls()), 'Mount a chunk or group into this composition'); newItems.append(mount); } }
     const dirty = element('span', 'state ' + (model.dirty() ? 'dirty' : 'muted'), model.dirty() ? 'Unsaved changes' : config.api ? 'Saved' : 'Published snapshot'); header.append(actions);
     const saveButton = button(saving ? 'Saving…' : config.api ? 'Save' : 'Download edits', () => void save(), config.api ? 'Save to source (Ctrl S)' : 'Download your edits as a file'); saveButton.className = 'primary'; saveButton.disabled = saving || !model.dirty();
-    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; const discard=button('Discard all changes',()=>{stopPlay();playing=false;animating=false;editorSelection.chunk=undefined;editorSelection.timeline=undefined;editorSelection.instance='';editorSelection.document='';run(()=>model.discard());},'Restore the last loaded or saved snapshot; Undo can recover discarded edits');discard.disabled=saving||!model.dirty();const search=button('⌕ Search',()=>searchUi.open(),'Search objects, commands, settings and library (Ctrl K)');search.className='search-button';actions.append(search,undo,redo,dirty,saveButton,menu);
+    const undo = button('Undo', () => run(() => model.undo()), model.undoLabel), redo = button('Redo', () => run(() => model.redo())); undo.disabled = !model.canUndo; redo.disabled = !model.canRedo; const discard=button('Discard all changes',()=>{stopPlay();playing=false;animating=false;editorSelection.chunk=undefined;editorSelection.timeline=undefined;editorSelection.instance='';editorSelection.document='';run(()=>model.discard());},'Restore the last loaded or saved snapshot; Undo can recover discarded edits');discard.disabled=saving||!model.dirty();undo.textContent='↶';undo.className='icon';undo.setAttribute('aria-label','Undo');redo.textContent='↷';redo.className='icon';redo.setAttribute('aria-label','Redo');actions.append(undo,redo,dirty,saveButton,menu);
     menuItems.append(discard,button(config.api ? 'Reload source' : 'Reset edits', () => void requestReload()),button('Reset layout', resetLayout, 'Restore default dock sizes and open docks in every workspace'));
     // A geometry gesture cannot change composition membership, checkpoints or toolbar choices.
     // Update its status/history without recompiling all of those unrelated menus on release.
@@ -658,7 +666,7 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
     previewBar.hidden = !composition; updateCrumb();
     if (composition) {
       const add = button('＋ Add', () => openPicker(), 'Add artwork where you are looking (A)'); add.disabled=!!workspaceId&&!workspaceDocuments(workspaceId,documentsForView()).length; cluster('Assets').append(add);
-      const animation = cluster('Ambient animation'), toggle = button((sequence()?playing:animating) ? '❚❚ Pause' : '▶ Animate', toggleAnimation, (sequence()?playing:animating) ? 'Pause (Space)' : 'Run ambient animation, such as people, lights and signs, without playing the game (Space). Home returns to the first frame.');
+      const animation = cluster('Ambient animation'), toggle = button((sequence()?playing:animating) ? '❚❚ Pause' : sequence() ? '▶ Play sequence' : '▶ Live motion', toggleAnimation, (sequence()?playing:animating) ? 'Pause (Space)' : 'Run ambient animation, such as people, lights and signs, without playing the game (Space). Home returns to the first frame.');
       toggle.setAttribute('aria-pressed', String(sequence()?playing:animating)); ambientLabel = element('span', 'time', `${time.toFixed(1)} s`);
       animation.append(toggle,ambientLabel,...(!currentTimeline()?[speedControl()]:[]));
       const choices = sequenceChoices();

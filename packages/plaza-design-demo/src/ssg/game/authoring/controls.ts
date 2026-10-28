@@ -11,7 +11,7 @@ const SEARCHABLE_OPTIONS = 15;
 /** Adds a search field to every select in scope with more than 15 options; filtering only hides options, so values and change handlers stay as they are. */
 export function enhanceLongSelects(scope: ParentNode) {
   for (const node of scope.querySelectorAll<HTMLSelectElement>('select:not([data-searchable])')) {
-    if (node.closest('header') || node.multiple || node.options.length <= SEARCHABLE_OPTIONS) continue;
+    if (node.closest('header,.preview-options') || node.multiple || node.options.length <= SEARCHABLE_OPTIONS) continue;
     node.dataset.searchable = '';
     const search = element('input', 'select-search'); search.type = 'search'; search.placeholder = `Search ${node.options.length}`; search.setAttribute('aria-label', `Search ${node.getAttribute('aria-label') ?? 'options'}`);
     const filter = () => {

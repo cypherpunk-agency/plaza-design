@@ -377,4 +377,27 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .error-list{position:fixed;right:12px;bottom:32px;z-index:50;width:560px;max-height:60vh;overflow:auto;padding:8px;background:var(--panel);border:1px solid var(--error);border-radius:6px;box-shadow:0 10px 30px #0009}
 .scene-composer .error-list[hidden]{display:none}.scene-composer .error-list-head{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .scene-composer .error-row summary{cursor:pointer;color:var(--error);font-size:12px;padding:4px 0}.scene-composer .error-row pre{margin:4px 0 8px;padding:8px;max-height:200px;overflow:auto;background:var(--field);border-radius:3px;font:11px/1.4 var(--mono);color:var(--muted);white-space:pre-wrap}
+/* Header: chunk switcher and a real search field; the scene toolbar is its own row above the scene. */
+.scene-composer .document-switch{display:flex;align-items:center;gap:2px;margin-left:12px;flex:none}
+.scene-composer .document-switch select{width:220px;min-height:0;height:28px}
+.scene-composer .new-menu>summary{height:28px;width:28px;padding:0;display:flex;align-items:center;justify-content:center}
+.scene-composer button.search-field{flex:0 1 360px;min-width:180px;height:28px;min-height:0;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--field);border-color:var(--control-line);color:var(--muted);font-weight:400}
+.scene-composer button.search-field kbd{font:11px var(--mono);color:var(--faint);border:1px solid var(--separator);border-radius:3px;padding:0 4px}
+.scene-composer .actions>button.icon{width:28px;padding:0;justify-content:center;font-size:14px}
+.scene-composer .preview-column>.preview-options{flex:none;height:38px;margin:0;padding:0 8px;border:0;border-bottom:1px solid var(--separator);background:var(--panel)}
+.scene-composer .preview-column>.preview-options[hidden]{display:none}
+/* Layout's folded bottom dock: Timeline opens Animate; Errors lists editor errors. */
+.scene-composer .bottom-strip{flex:none;height:30px;display:flex;align-items:center;gap:2px;padding:0 4px;border-top:1px solid var(--separator);background:var(--panel)}
+.scene-composer .bottom-strip button{min-height:0;height:30px;border:0;border-radius:0;background:none;color:var(--muted);font-size:12px;padding:0 12px}
+.scene-composer .bottom-strip button:hover{color:var(--ink)}.scene-composer .bottom-strip button.has-errors{color:var(--error)}
+.scene-composer[data-workspace=animate] .bottom-strip,.scene-composer[data-mode] .bottom-strip,.scene-composer:not([data-tool=scene]) .bottom-strip{display:none}
+/* Inspector sections are boxed panels, as in Blender: a header row with a fold marker, fields inside. */
+.scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details{margin:6px 0;padding:0 8px 6px;border:1px solid var(--separator);border-radius:4px;background:color-mix(in srgb,var(--panel),white 3%)}
+.scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details>summary{list-style:none;display:flex;align-items:center;gap:6px;height:28px;margin:0 -8px;padding:0 8px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer}
+.scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details>summary::-webkit-details-marker{display:none}
+.scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details>summary::before{content:'▸';width:10px;color:var(--muted);font-size:10px}
+.scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details[open]>summary::before{content:'▾'}
+.scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details[open]>summary{border-bottom:1px solid var(--separator);margin-bottom:6px}
+/* While a sequence is open the timeline owns playback, so the toolbar's motion controls step aside. */
+.scene-composer[data-mode=sequence] .preview-options .toolbar-group[aria-label='Ambient animation']{display:none}
 `;
