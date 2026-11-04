@@ -8,21 +8,31 @@ import {gameSourceIdentity} from './scene-system/source-identity.mts';
  * dist-homepage/ — exactly the tree that .github/workflows/deploy-homepage.yml
  * publishes:
  *
- *   index.html     body rendered by src/ssg/render.tsx, all CSS + JS inlined
- *   fonts/*.woff2  IBM Plex Mono, served same-origin
- *   og-image.png   social preview (repo root)
+ *   index.html                small shell: meta + body rendered by src/ssg/render.tsx
+ *   assets/home-<hash>.css    plaza.css + page styles, minified
+ *   assets/home-<hash>.js     plaza.ts + game + init code, minified
+ *   assets/*.{br,gz}          precompressed copies for Caddy's `precompressed`
+ *   fonts/*.woff2             IBM Plex Mono, served same-origin
+ *   og-image.png              social preview (repo root)
+ *   health.txt                tiny file for uptime checks
+ *
+ * index.html is served no-cache and stays a few KB, so revalidations and uptime
+ * probes are cheap. Everything under assets/ is content-hashed and immutable:
+ * the server caches /assets/* for a year. Unhashed files keep their names.
  *
  * The page must load nothing cross-origin. The server CSP is default-src 'self'
  * with no font-src, so fonts can be neither Google Fonts nor data: URIs — they
- * ship as files next to index.html. Inline <style>/<script> is allowed.
+ * ship as files under /fonts/.
  *
  * Run with: pnpm --filter plaza-design-demo generate-demos
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as zlib from 'zlib';
+import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
-import { build } from 'esbuild';
+import { build, transform } from 'esbuild';
 import { renderStaticHTML, getDefaultMeta, demoStyles, initScript } from '../src/ssg/render';
 import { BEACH, CAPSULE, DOWNTOWN, ENGINE, LAUNDROMAT, LOGIC, MOTH, NET, YARD } from "../src/ssg/game/data/index";
 import { checkGame } from '../src/ssg/game/data/check';
@@ -42,6 +52,7 @@ const DEMO_DIR = path.resolve(__dirname, '..');
 const REPO_ROOT = path.resolve(DEMO_DIR, '../..');
 const CORE_DIR = path.resolve(DEMO_DIR, '../plaza-design-core');
 const OUT_DIR = path.join(DEMO_DIR, 'dist-homepage');
+const ASSETS = 'assets';
 
 /**
  * Bundle plaza.css (resolving every @import) and emit the fonts it references
@@ -55,6 +66,7 @@ async function bundleCSS(): Promise<string> {
     outdir: OUT_DIR,
     loader: { '.woff2': 'file' },
     assetNames: 'fonts/[name]',
+    publicPath: '/',
     logLevel: 'warning',
   });
 
@@ -67,8 +79,8 @@ async function bundleCSS(): Promise<string> {
       fs.writeFileSync(file.path, file.contents);
     }
   }
-  // Asset URLs come out relative to OUT_DIR ("./fonts/..."), i.e. the site
-  // root once the CSS is inlined into index.html.
+  // publicPath makes font URLs root-absolute ("/fonts/..."), so they resolve
+  // from the stylesheet under /assets/.
   return css;
 }
 
@@ -94,12 +106,30 @@ ${initScript}`,
     write: false,
     format: 'iife',
     target: 'es2020',
+    minify: true,
+    legalComments: 'none',
     logLevel: 'warning',
   });
   return result.outputFiles[0].text;
 }
 
-function generateHTML(bodyContent: string, css: string, js: string): string {
+/**
+ * Write one content-hashed asset plus .br and .gz copies; returns its URL path.
+ */
+function writeAsset(name: string, ext: string, content: string): string {
+  const bytes = Buffer.from(content, 'utf-8');
+  const file = `${name}-${createHash('sha256').update(bytes).digest('hex').slice(0, 16)}.${ext}`;
+  const dir = path.join(OUT_DIR, ASSETS);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, file), bytes);
+  fs.writeFileSync(path.join(dir, file + '.br'), zlib.brotliCompressSync(bytes, {
+    params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 11, [zlib.constants.BROTLI_PARAM_SIZE_HINT]: bytes.length },
+  }));
+  fs.writeFileSync(path.join(dir, file + '.gz'), zlib.gzipSync(bytes, { level: 9 }));
+  return `/${ASSETS}/${file}`;
+}
+
+function generateHTML(bodyContent: string, cssHref: string, jsSrc: string): string {
   const meta = getDefaultMeta();
 
   return `<!DOCTYPE html>
@@ -121,17 +151,12 @@ function generateHTML(bodyContent: string, css: string, js: string): string {
   <meta name="twitter:description" content="${meta.description}">
   <meta name="twitter:image" content="${meta.ogImage}">
 
-  <style>
-${css}
-${demoStyles}
-  </style>
+  <link rel="stylesheet" href="${cssHref}">
 </head>
 <body class="bg-black overflow-hidden">
   ${bodyContent}
 
-  <script>
-${js}
-  </script>
+  <script src="${jsSrc}"></script>
 </body>
 </html>
 `;
@@ -167,9 +192,11 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   const [css, js] = await Promise.all([bundleCSS(), bundleJS()]);
-  const html = generateHTML(renderStaticHTML(), css, js).replace('<head>',`<head><meta name="game-source" content="${gameSourceIdentity(path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../src/ssg/game'))}">`);
+  const styles = (await transform(css + '\n' + demoStyles, { loader: 'css', minify: true, logLevel: 'warning' })).code;
+  const html = generateHTML(renderStaticHTML(), writeAsset('home', 'css', styles), writeAsset('home', 'js', js)).replace('<head>',`<head><meta name="game-source" content="${gameSourceIdentity(path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../src/ssg/game'))}">`);
   fs.writeFileSync(path.join(OUT_DIR, 'index.html'), html, 'utf-8');
   fs.copyFileSync(path.join(REPO_ROOT, 'og-image.png'), path.join(OUT_DIR, 'og-image.png'));
+  fs.writeFileSync(path.join(OUT_DIR, 'health.txt'), 'ok\n');
   const editor = await buildPublicEditor(OUT_DIR);
   console.log(`  Public editor: ${editor.documentCount} documents, ${editor.sourceCount} source references`);
 
