@@ -19,28 +19,30 @@ Filesystem security tests need permission to create temporary junctions on Windo
 ## Browser pixels
 
 ```sh
-pnpm test:game:visuals
+pnpm test:game:visuals              # headless compare, exits 1 on any difference
+pnpm test:game:visuals --accept     # replace this platform's approved images
+pnpm test:game:visuals --serve      # old manual mode: print a URL to open in your own browser
+pnpm test:game:visuals --intro-only # intro raster lifecycle checks only
 ```
 
-Open the printed loopback URL in a Chromium browser and wait for `COMPARE 60/60`. It renders
-24 scene views (all 19 scene compositions by day, Downtown/Harbor/Mall/Beach at night in rain,
-and Sandbox with hack vision and reduced motion) using the current native preview and bundled
-IBM Plex Mono fonts, at 640x360, and compares them with the PNGs in `fixtures/visuals/`. The
-other 36 results are sky-group checks that compare two drawing paths with each other and need
-no stored image. `fixtures/visuals/harborShift-day.png` is not compared by any sample. Pixel equality is strict;
-font rasterization/browser/platform differences may need investigation. The page reports differing
-pixel counts and saves disposable results. It never updates expected images in compare mode.
+It starts its own headless Chrome (installed Chrome or Chromium; set `CHROME_PATH` if it is not
+found), renders every registered scene composition plus four night/rain views and one
+reduced-motion/hack view at 640x360 with the bundled IBM Plex Mono fonts, compares them with the
+approved PNGs, and prints `COMPARE 60/60` (the 24 views plus 36 sky-group checks). A run takes
+a few seconds. Failed views are listed with their differing pixel count and bounds, and their
+rendered pixels are written to `.game-test-output/visuals/actual/` next to `results.json`.
 
-For an intentional appearance change, inspect the change and run:
+Pixel equality is strict. Text and curve antialiasing differ between operating systems (the same
+scene differs by a few thousand edge pixels between Windows and Linux), so approved images are
+kept per platform under `fixtures/visuals/<platform>/` (`linux`, `win32`, `darwin`;
+`GAME_VISUAL_PLATFORM` overrides). Headless rendering on one machine is deterministic.
+`linux/` was accepted headless; `win32/` holds the older images accepted in a headed browser
+and may need one `--accept` on Windows after confirming that any differences are antialiasing only.
 
-```sh
-pnpm test:game:visuals --accept
-```
-
-That explicit mode writes PNG expectations under `fixtures/visuals/`; review those image changes
-in Git. Stop the server with Ctrl+C, restart without `--accept`, and rerun comparison. Do not
-accept a failed image merely to make a check green. Expectations are current approved rendering,
-not an executable older renderer. Test inputs live alongside the current browser fixture.
+For an intentional appearance change, inspect the change (`--serve`, or the `actual/` PNGs) and
+run `--accept` on each platform you use, then review the image changes in Git. Do not accept a
+failed image merely to make a check green. Expectations are current approved rendering, not an
+executable older renderer.
 
 Rendering command/order, lighting isolation, layers, animation and saved pending source are also
 covered by contract checks. Pixel snapshots do not establish campaign playability or UX appeal.
