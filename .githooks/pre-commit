@@ -1,0 +1,4 @@
+#!/bin/sh
+# Formats staged code with Prettier before each commit (see lint-staged in package.json).
+# Enabled by `pnpm install` (the prepare script sets core.hooksPath to .githooks).
+exec pnpm exec lint-staged

@@ -7,9 +7,17 @@
     "build": "pnpm -r build",
     "build:design-demo": "pnpm --filter plaza-design-demo build",
     "build:cms-demo": "pnpm --filter plaza-cms-demo build",
-    "build:homepage": "pnpm --filter plaza-design-demo generate-demos"
+    "build:homepage": "pnpm --filter plaza-design-demo generate-demos",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "lint-staged": "^17.6.1",
+    "prettier": "^3.10.1",
     "typescript": "~5.6.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,mts,cts,js,mjs,cjs,jsx,css}": "prettier --write"
   }
 }

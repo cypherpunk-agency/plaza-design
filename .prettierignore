@@ -1,0 +1,23 @@
+# Prettier formats code (TS/JS/CSS). Data, docs and generated output keep their own formats:
+# JSON sources are written by the editor and tools, Markdown is hand-edited prose.
+*.json
+*.md
+*.yml
+*.yaml
+*.html
+*.svg
+pnpm-lock.yaml
+
+# Build and local output
+dist/
+dist-homepage/
+build/
+coverage/
+.game-test-output/
+.performance/
+.authoring-history/
+.scene-system/
+
+# Prototypes and agent checkouts
+experiments/
+.claude/
