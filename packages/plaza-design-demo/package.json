@@ -10,7 +10,8 @@
     "compose-scenes": "tsx scripts/scene-system/compose.mts",
     "generate-demos": "tsx scripts/generate-demos.tsx",
     "test:game": "tsx scripts/game-tests/run.mts",
-    "test:game:visuals": "tsx scripts/game-tests/visuals.mts"
+    "test:game:visuals": "tsx scripts/game-tests/visuals.mts",
+    "test:game:prologue": "node scripts/opening-playthrough/run.mjs"
   },
   "dependencies": {
     "plaza-cms": "workspace:*",

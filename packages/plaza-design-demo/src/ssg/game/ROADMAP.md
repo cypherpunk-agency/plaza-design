@@ -54,13 +54,16 @@ history. Do not restart a completed track because an intentionally contextual pr
    - Adopt Prettier, enforced by a **local pre-commit hook, not CI**. Land the one-time reformat
      when no other branches are open and add it to `.git-blame-ignore-revs`.
 2. **Testing, authorized 2026-11-21. CI stays build-and-deploy only.**
-   - Headless pixel check: drive the existing `pnpm test:game:visuals` page with Playwright so
-     nobody has to open a browser.
-   - Prologue smoke run: a headless script from New Game to home that checks the scene and story
-     phase at each step. It replaces `scripts/opening-playthrough/`, which targets the old
-     train opening.
-   - Review whether `check-scene-batch` (about 170 s, most of the suite's time) needs its full
-     per-scene add/remove/history/save/revalidate cycle.
+   - Done 2026-11-21: `pnpm test:game:visuals` runs headless and exits non-zero on a difference;
+     approved images are kept per platform (`fixtures/visuals/<platform>/`) because text
+     antialiasing differs between operating systems. `win32/` may need one `--accept` on Windows.
+   - Done 2026-11-21: `pnpm test:game:prologue` plays New Game through the night shift, commute,
+     Downtown and home to the first morning, asserting scene, story phase and goal at each beat
+     (`scripts/opening-playthrough/`, which no longer targets the old train opening).
+   - Open: `check-scene-batch` (about 170 s, most of the suite's time). About 125 s of it is 19
+     single-scene removals plus 19 single undos, each revalidating every source document. Batching
+     those into one grouped edit and one undo would keep the coverage at about 50 s. Waiting on
+     the user's decision.
 3. **Editor phase 7, authorized 2026-11-21.** 7a Logic rules and 7b Conversation graph matter
    most for Act I, which is mostly rules and dialogue; 7c World and 7d Review follow. The
    [notes](./docs/design/EDITOR-PHASE-7-NOTES.md) hold the mockup intent and open questions.
@@ -107,8 +110,10 @@ saves are supported; historic save compatibility is excluded.
 ## Verification
 
 - `pnpm test:game` runs the node contract checks; see [scripts/game-tests/README.md](../../../scripts/game-tests/README.md).
-- `pnpm test:game:visuals` compares 24 scene renders and 36 sky-group cases against approved
-  images. It currently needs a browser opened by hand (see Next work).
+- `pnpm test:game:visuals` renders 24 scene views headless and compares them (plus 36 sky-group
+  cases) with this platform's approved images; a few seconds.
+- `pnpm test:game:prologue` plays the prologue from New Game to the first morning headless and
+  fails at the first beat that does not arrive; about five minutes.
 - `tsc -b` from `packages/plaza-design-demo` and `pnpm build:homepage` are the build checks.
 - CI builds and deploys only. Keep heavier checks local.
 

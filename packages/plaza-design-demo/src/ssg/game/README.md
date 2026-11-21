@@ -195,5 +195,7 @@ or prior output is required. See the handbook for visual checks and expected-ima
 `pnpm build:homepage` checks game data and produces the playable page.
 `pnpm build:design-demo` runs TypeScript checking and builds the React showcase.
 Neither build proves that a story route is playable from beginning to end. CI builds and deploys
-only; keep test runs local. A headless pixel check and a prologue smoke run were approved on
-2026-11-21 (see ROADMAP); other playthrough or regression-suite work still needs the user's OK.
+only; keep test runs local. `pnpm test:game:visuals` (headless pixel check, seconds) and
+`pnpm test:game:prologue` (headless New Game to first morning, about five minutes; see
+[its README](../../../scripts/opening-playthrough/README.md)) run locally. Other playthrough or
+regression-suite work still needs the user's OK.

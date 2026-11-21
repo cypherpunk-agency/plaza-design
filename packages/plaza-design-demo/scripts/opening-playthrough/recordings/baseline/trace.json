@@ -1,9 +1,9 @@
 [
  {
   "n": 1,
-  "name": "title-sunrise",
-  "note": "the sun is coming up out of the sea",
-  "shot": "01-title-sunrise.png",
+  "name": "title-menu",
+  "note": "the settled shot with the main menu",
+  "shot": "01-title-menu.png",
   "here": "downtown",
   "phase": "free",
   "flags": {},
@@ -33,7 +33,6 @@
    "exit:library",
    "exit:yard",
    "exit:capsule",
-   "exit:metro",
    "exit:moth",
    "exit:taxi",
    "exit:map",
@@ -57,140 +56,28 @@
  },
  {
   "n": 2,
-  "name": "title-menu",
-  "note": "the settled shot with the main menu",
-  "shot": "02-title-menu.png",
-  "here": "downtown",
-  "phase": "free",
-  "flags": {},
-  "clock": {
-   "day": 1,
-   "min": 580,
-   "text": "09:40",
-   "pinned": null
-  },
-  "bubble": null,
-  "prompt": null,
-  "goal": "tell the fixer your name",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 720,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": ""
- },
- {
-  "n": 3,
-  "name": "glide-starts",
-  "note": "the glide from the coast to Downtown and LINE 0 (not a still: the scene is the title)",
-  "shot": "03-glide-starts.png",
-  "here": "downtown",
-  "phase": "free",
-  "flags": {},
-  "clock": {
-   "day": 1,
-   "min": 580,
-   "text": "09:40",
-   "pinned": null
-  },
-  "bubble": null,
-  "prompt": null,
-  "goal": "tell the fixer your name",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 720,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": ""
- },
- {
-  "n": 4,
-  "name": "train-arrival",
-  "note": "opening:home, car 3, 05:41",
-  "shot": "04-train-arrival.png",
-  "here": "train",
-  "phase": "home",
+  "name": "harbor-arrival",
+  "note": "landed at Harbor Station, dusk",
+  "shot": "02-harbor-arrival.png",
+  "here": "harbor-station",
+  "phase": "prologue",
   "flags": {
-   "opening:home": true,
-   "opening:said:home:train": true,
-   "seen:train": true
+   "prologue:started": true,
+   "scene:harbor-station": true,
+   "seen:harbor-station": true
   },
   "clock": {
    "day": 1,
-   "min": 341,
-   "text": "05:41",
-   "pinned": 341
+   "min": 1140,
+   "text": "19:00",
+   "pinned": 1140
   },
   "bubble": {
    "name": "YOU",
-   "text": "End of shift. Fourteen parcels, zero complaints, one sore back."
+   "text": "Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end."
   },
   "prompt": null,
-  "goal": "get off at DOWNTOWN",
+  "goal": "Walk east to the supervisor in Shed 3 · E to talk",
   "hint": "",
   "gate": null,
   "card": null,
@@ -200,162 +87,188 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 780,
+   "x": 200,
    "y": 0
   },
   "targets": [
-   "exit:line",
-   "train",
-   "read:staff",
-   "read:ad",
-   "read:gangway",
-   "read:suit",
-   "read:courier",
-   "read:elder",
-   "read:punk"
+   "lift",
+   "service"
   ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.",
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.",
   "said": [
-   "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.",
-   "YOU: Downtown is next. Then bed.",
-   "YOU: ← → walk. E talks to people."
+   "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end."
   ]
  },
  {
-  "n": 5,
-  "name": "train-brake-popup",
-  "note": "the car device popup: story chips",
-  "shot": "05-train-brake-popup.png",
-  "here": "train",
-  "phase": "home",
+  "n": 3,
+  "name": "checkout-turnstile-in",
+  "note": "down the stairs, east along the quay, at the staff gate",
+  "shot": "03-checkout-turnstile-in.png",
+  "here": "harbor-checkout",
+  "phase": "prologue",
   "flags": {
-   "opening:home": true,
-   "opening:said:home:train": true,
-   "seen:train": true
+   "prologue:started": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-station": true
   },
   "clock": {
    "day": 1,
-   "min": 341,
-   "text": "05:41",
-   "pinned": 341
+   "min": 1140,
+   "text": "19:00",
+   "pinned": 1140
   },
   "bubble": null,
   "prompt": {
-   "id": "train",
-   "label": "[E] USE"
+   "id": "barrier:harbor-checkout/turnstile",
+   "label": "[E] TURNSTILE"
   },
-  "goal": "get off at DOWNTOWN",
-  "hint": "",
+  "goal": "Walk east to the supervisor in Shed 3 · E to talk",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
   "gate": null,
   "card": null,
   "acknowledging": null,
-  "popup": true,
+  "popup": false,
   "captions": [],
-  "chips": [
-   "read the brake plate",
-   "pull the brake"
-  ],
+  "chips": [],
   "pings": 0,
   "player": {
-   "x": 1140,
+   "x": 283.7,
    "y": 0
   },
   "targets": [
-   "exit:line",
-   "train",
-   "read:staff",
-   "read:ad",
-   "read:gangway",
-   "read:suit",
-   "read:courier",
-   "read:elder",
-   "read:punk"
+   "barrier:harbor-checkout/turnstile"
   ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.",
-  "chipsSeen": [
-   "read the brake plate",
-   "pull the brake"
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end."
+ },
+ {
+  "n": 4,
+  "name": "shed-arrival",
+  "note": "Shed 3, the supervisor in his booth",
+  "shot": "04-shed-arrival.png",
+  "here": "harbor-shed",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1140,
+   "text": "19:00",
+   "pinned": 1140
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:boss",
+   "label": "[E] TALK TO SUPERVISOR"
+  },
+  "goal": "Walk east to the supervisor in Shed 3 · E to talk",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 641.8,
+   "y": 0
+  },
+  "targets": [
+   "use:boss",
+   "use:coffee"
+  ],
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth."
+ },
+ {
+  "n": 5,
+  "name": "shift-briefing",
+  "note": "the supervisor hands over the work tag",
+  "shot": "05-shift-briefing.png",
+  "here": "harbor-shed",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1146.1,
+   "text": "19:06",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:boss",
+   "label": "[E] TALK TO SUPERVISOR"
+  },
+  "goal": "Pick up the blue parcel at DISPATCH",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 641.8,
+   "y": 0
+  },
+  "targets": [
+   "use:boss",
+   "use:parcel",
+   "use:coffee"
+  ],
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tag",
+  "said": [
+   "SUPERVISOR: You are on transport. Here is your work tag.",
+   "SUPERVISOR: Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.",
+   "SUPERVISOR: The Registry pays for completed movements. Try to have some."
   ]
  },
  {
   "n": 6,
-  "name": "train-brake-plate",
-  "note": "chip: read the brake plate",
-  "shot": "06-train-brake-plate.png",
-  "here": "train",
-  "phase": "home",
+  "name": "shift-parcel",
+  "note": "dispatch: the blue parcel",
+  "shot": "06-shift-parcel.png",
+  "here": "harbor-shed",
+  "phase": "prologue",
   "flags": {
-   "opening:home": true,
-   "opening:said:home:train": true,
-   "seen:train": true
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
   },
   "clock": {
    "day": 1,
-   "min": 341,
-   "text": "05:41",
-   "pinned": 341
+   "min": 1154.62,
+   "text": "19:14",
+   "pinned": null
   },
   "bubble": null,
-  "prompt": {
-   "id": "train",
-   "label": "[E] USE"
-  },
-  "goal": "get off at DOWNTOWN",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "EMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE."
-  ],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 1140,
-   "y": 0
-  },
-  "targets": [
-   "exit:line",
-   "train",
-   "read:staff",
-   "read:ad",
-   "read:gangway",
-   "read:suit",
-   "read:courier",
-   "read:elder",
-   "read:punk"
-  ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE."
- },
- {
-  "n": 7,
-  "name": "train-talk-suit",
-  "note": "a stranger in the car (phase lines home train/suit)",
-  "shot": "07-train-talk-suit.png",
-  "here": "train",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:train": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 341,
-   "text": "05:41",
-   "pinned": 341
-  },
-  "bubble": {
-   "name": "MAN IN A SUIT",
-   "text": "Morning shift?"
-  },
-  "prompt": {
-   "id": "read:suit",
-   "label": "[E] TALK"
-  },
-  "goal": "get off at DOWNTOWN",
-  "hint": "",
+  "prompt": null,
+  "goal": "Bring the blue parcel west to Mara at RECEIVING",
+  "hint": "+ blue parcel",
   "gate": null,
   "card": null,
   "acknowledging": null,
@@ -364,50 +277,152 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 223.7,
+   "x": 458.6,
    "y": 0
   },
   "targets": [
-   "exit:line",
-   "train",
-   "read:staff",
-   "read:ad",
-   "read:gangway",
-   "read:suit",
-   "read:courier",
-   "read:elder",
-   "read:punk"
+   "use:boss",
+   "use:coffee"
   ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.",
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcel",
   "said": [
-   "MAN IN A SUIT: Morning shift?",
-   "MAN IN A SUIT: Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
+   "DISPATCH: You pick up the blue parcel. RECEIVING · MARA.",
+   "DISPATCH: Carry it west, back across the yard to the receiving counter."
+  ]
+ },
+ {
+  "n": 7,
+  "name": "shift-mara",
+  "note": "receiving: the handover chip",
+  "shot": "07-shift-mara.png",
+  "here": "harbor-yard",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1173.04,
+   "text": "19:33",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:mara",
+   "label": "[E] TALK TO MARA"
+  },
+  "goal": "Take the empty case from the receiving counter",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1118.7,
+   "y": 0
+  },
+  "targets": [
+   "use:mara",
+   "use:case"
+  ],
+  "term": "st along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?",
+  "said": [
+   "MARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.",
+   "MARA: Could you take the empty case on my counter back to CASE RETURNS in the shed?"
+  ],
+  "chipsSeen": [
+   "give Mara the blue parcel",
+   "talk to mara"
   ]
  },
  {
   "n": 8,
-  "name": "train-doors-open",
-  "note": "the car stands at DOWNTOWN with its doors open",
-  "shot": "08-train-doors-open.png",
-  "here": "train",
-  "phase": "home",
+  "name": "shift-case",
+  "note": "the empty case from the receiving counter",
+  "shot": "08-shift-case.png",
+  "here": "harbor-yard",
+  "phase": "prologue",
   "flags": {
-   "opening:home": true,
-   "opening:said:home:train": true,
-   "seen:train": true
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
   },
   "clock": {
    "day": 1,
-   "min": 341,
-   "text": "05:41",
-   "pinned": 341
+   "min": 1176.51,
+   "text": "19:36",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
-   "id": "exit:out",
-   "label": "[E] STEP OUT · DOWNTOWN"
+   "id": "use:mara",
+   "label": "[E] TALK TO MARA"
   },
-  "goal": "get off at DOWNTOWN",
+  "goal": "Return the empty case to CASE RETURNS in the shed",
+  "hint": "+ empty transport case",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1101.8,
+   "y": 0
+  },
+  "targets": [
+   "use:mara"
+  ],
+  "term": " at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport case",
+  "said": [
+   "EMPTY CASE: You take the empty transport case."
+  ]
+ },
+ {
+  "n": 9,
+  "name": "shift-rack",
+  "note": "case returns in the shed",
+  "shot": "09-shift-rack.png",
+  "here": "harbor-shed",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1190.38,
+   "text": "19:50",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:rack",
+   "label": "[E] CASE RETURNS"
+  },
+  "goal": "Report back to the supervisor",
   "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
   "gate": null,
   "card": null,
@@ -417,13 +432,476 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 777.4,
+   "x": 267.6,
    "y": 0
   },
   "targets": [
-   "exit:line",
-   "exit:out",
-   "exit:out2",
+   "use:boss",
+   "use:rack",
+   "use:coffee"
+  ],
+  "term": "ervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.",
+  "said": [
+   "CASE RACK: The case settles into the rack. RETURN REGISTERED.",
+   "CASE RACK: The supervisor has one last job."
+  ],
+  "chipsSeen": [
+   "put the empty case in the rack",
+   "case returns"
+  ]
+ },
+ {
+  "n": 10,
+  "name": "shift-last-job",
+  "note": "the supervisor: trolley T4",
+  "shot": "10-shift-last-job.png",
+  "here": "harbor-shed",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1203.78,
+   "text": "20:03",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:boss",
+   "label": "[E] TALK TO SUPERVISOR"
+  },
+  "goal": "Move trolley T4 to LOADING BAY 2 in the yard",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 639.2,
+   "y": 0
+  },
+  "targets": [
+   "use:boss",
+   "use:rack",
+   "use:coffee"
+  ],
+  "term": "he yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.",
+  "said": [
+   "SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.",
+   "SUPERVISOR: They are very particular about other people doing their work."
+  ]
+ },
+ {
+  "n": 11,
+  "name": "shift-trolley-clamped",
+  "note": "the trolley will not roll",
+  "shot": "11-shift-trolley-clamped.png",
+  "here": "harbor-yard",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1231.22,
+   "text": "20:31",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:trolley",
+   "label": "[E] PUSH TROLLEY"
+  },
+  "goal": "Release the red wheel clamp beside the trolley",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 757.4,
+   "y": 0
+  },
+  "targets": [
+   "use:mara",
+   "use:trolley",
+   "use:clamp"
+  ],
+  "term": "ARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.",
+  "said": [
+   "LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.",
+   "LOADING TROLLEY: A release handle sits just beside it."
+  ]
+ },
+ {
+  "n": 12,
+  "name": "shift-clamp",
+  "note": "the clamp opens",
+  "shot": "12-shift-clamp.png",
+  "here": "harbor-yard",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1235.87,
+   "text": "20:35",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": null,
+  "goal": "Push the released trolley into the loading bay",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 717.2,
+   "y": 0
+  },
+  "targets": [
+   "use:mara",
+   "use:trolley"
+  ],
+  "term": "RA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.",
+  "said": [
+   "WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green."
+  ]
+ },
+ {
+  "n": 13,
+  "name": "shift-trolley-parked",
+  "note": "the trolley rolls into LOADING BAY 2",
+  "shot": "13-shift-trolley-parked.png",
+  "here": "harbor-yard",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1242.72,
+   "text": "20:42",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": null,
+  "goal": "Return your work tag at CHECKOUT",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 758.7,
+   "y": 0
+  },
+  "targets": [
+   "use:mara"
+  ],
+  "term": "PTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.",
+  "said": [
+   "LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.",
+   "LOADING TROLLEY: LOADING POSITION CONFIRMED. You can check out at the gate."
+  ]
+ },
+ {
+  "n": 14,
+  "name": "checkout",
+  "note": "tag returned, shift closed, tokens credited",
+  "shot": "14-checkout.png",
+  "here": "harbor-checkout",
+  "phase": "prologue",
+  "flags": {
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 2,
+   "min": 370,
+   "text": "06:10",
+   "pinned": 370
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:checkout",
+   "label": "[E] CHECK OUT"
+  },
+  "goal": "Read your wage statement",
+  "hint": "+3 tokens",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 339.6,
+   "y": 0
+  },
+  "targets": [
+   "use:checkout",
+   "use:statement"
+  ],
+  "term": "The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.",
+  "said": [
+   "CHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.",
+   "CHECKOUT: Three tokens credited. Your wage statement is ready to read."
+  ],
+  "chipsSeen": [
+   "return work tag and check out",
+   "check out"
+  ]
+ },
+ {
+  "n": 15,
+  "name": "wage-statement",
+  "note": "net pay; the morning train is next",
+  "shot": "15-wage-statement.png",
+  "here": "harbor-checkout",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 2,
+   "min": 370,
+   "text": "06:10",
+   "pinned": 370
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "use:statement",
+   "label": "[E] READ STATEMENT"
+  },
+  "goal": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train.",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 400.7,
+   "y": 0
+  },
+  "targets": [
+   "use:checkout",
+   "use:statement"
+  ],
+  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.",
+  "said": [
+   "WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.",
+   "WAGE STATEMENT: STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.",
+   "WAGE STATEMENT: Shift complete. The morning train is next: back west along the quay and up to the platform."
+  ]
+ },
+ {
+  "n": 16,
+  "name": "platform-boarding",
+  "note": "the morning service stands at Harbor Station",
+  "shot": "16-platform-boarding.png",
+  "here": "harbor-station",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true
+  },
+  "clock": {
+   "day": 2,
+   "min": 370,
+   "text": "06:10",
+   "pinned": 370
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "vehicle:harbor-station/service",
+   "label": "[E] STEP ABOARD"
+  },
+  "goal": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train.",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 84.5,
+   "y": 0
+  },
+  "targets": [
+   "lift",
+   "service",
+   "vehicle:harbor-station/service"
+  ],
+  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform."
+ },
+ {
+  "n": 17,
+  "name": "ride-tunnel",
+  "note": "on board, in the tunnel zones",
+  "shot": "17-ride-tunnel.png",
+  "here": "line-harbor-1",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true
+  },
+  "clock": {
+   "day": 2,
+   "min": 370,
+   "text": "06:10",
+   "pinned": 370
+  },
+  "bubble": null,
+  "prompt": null,
+  "goal": null,
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 1651.4,
+   "y": 180
+  },
+  "targets": [],
+  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform."
+ },
+ {
+  "n": 18,
+  "name": "ride-downtown-metro",
+  "note": "the service stands at Downtown Metro",
+  "shot": "18-ride-downtown-metro.png",
+  "here": "metro",
+  "phase": "home",
+  "flags": {
+   "opening:home": true,
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
+  },
+  "clock": {
+   "day": 2,
+   "min": 372,
+   "text": "06:12",
+   "pinned": 372
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "vehicle:harbor-station/service",
+   "label": "[E] STEP OFF"
+  },
+  "goal": "go home",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 764.5,
+   "y": 0
+  },
+  "targets": [
+   "exit:citymap",
+   "read:board",
+   "read:map",
+   "read:screen",
+   "read:regular",
+   "read:poster",
    "train",
    "read:staff",
    "read:ad",
@@ -431,37 +909,48 @@
    "read:suit",
    "read:courier",
    "read:elder",
-   "read:punk"
+   "read:punk",
+   "vehicle:harbor-station/service"
   ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop."
+  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform."
  },
  {
-  "n": 9,
+  "n": 19,
   "name": "metro-arrival",
-  "note": "metro platform, 05:48",
-  "shot": "09-metro-arrival.png",
+  "note": "off the train, underground",
+  "shot": "19-metro-arrival.png",
   "here": "metro",
   "phase": "home",
   "flags": {
    "opening:home": true,
    "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "seen:metro": true,
-   "seen:train": true
+   "prologue:started": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
   },
   "clock": {
-   "day": 1,
-   "min": 348,
-   "text": "05:48",
-   "pinned": 348
+   "day": 2,
+   "min": 372,
+   "text": "06:12",
+   "pinned": 372
   },
   "bubble": {
    "name": "YOU",
    "text": "Downtown. The exit is at the far end, by the stairs."
   },
   "prompt": {
-   "id": "exit:train",
-   "label": "[E] BOARD · LINE 0 > GALLERIA"
+   "id": "vehicle:harbor-station/service",
+   "label": "[E] STEP ABOARD"
   },
   "goal": "go home",
   "hint": "",
@@ -473,277 +962,74 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 365,
+   "x": 764.5,
    "y": 0
   },
   "targets": [
-   "exit:downtown",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
    "exit:citymap",
    "read:board",
    "read:map",
    "read:screen",
    "read:regular",
-   "read:poster"
+   "read:poster",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk",
+   "vehicle:harbor-station/service"
   ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.",
+  "term": "d around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.",
   "said": [
    "YOU: Downtown. The exit is at the far end, by the stairs."
   ]
  },
  {
-  "n": 10,
-  "name": "metro-talk-regular",
-  "note": "phase lines home metro/regular",
-  "shot": "10-metro-talk-regular.png",
-  "here": "metro",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 348,
-   "text": "05:48",
-   "pinned": 348
-  },
-  "bubble": {
-   "name": "MAN WITH A PAPER",
-   "text": "Morning paper. The Registry retired 1,204 records overnight."
-  },
-  "prompt": {
-   "id": "read:regular",
-   "label": "[E] TALK"
-  },
-  "goal": "go home",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 935.6,
-   "y": 0
-  },
-  "targets": [
-   "exit:downtown",
-   "exit:citymap",
-   "read:board",
-   "read:map",
-   "read:screen",
-   "read:regular",
-   "read:poster"
-  ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.",
-  "said": [
-   "MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.",
-   "MAN WITH A PAPER: Retired. Lucky records. I have been asking for that for years."
-  ]
- },
- {
-  "n": 11,
-  "name": "metro-at-turnstile",
-  "note": "standing at the exit gate",
-  "shot": "11-metro-at-turnstile.png",
-  "here": "metro",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 348,
-   "text": "05:48",
-   "pinned": 348
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "exit:downtown",
-   "label": "[E] STAIRS DOWN · DOWNTOWN"
-  },
-  "goal": "go home",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 33.6,
-   "y": 0
-  },
-  "targets": [
-   "exit:downtown",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:citymap",
-   "read:board",
-   "read:map",
-   "read:screen",
-   "read:regular",
-   "read:poster"
-  ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years."
- },
- {
-  "n": 12,
-  "name": "turnstile-verifying",
-  "note": "the checkpoint is verifying (the beat is timed in clock frames)",
-  "shot": "12-turnstile-verifying.png",
-  "here": "metro",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 348,
-   "text": "05:48",
-   "pinned": 348
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "exit:downtown",
-   "label": "[E] STAIRS DOWN · DOWNTOWN"
-  },
-  "goal": "go home",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": "TURNSTILE: verifying",
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 33.6,
-   "y": 0
-  },
-  "targets": [
-   "exit:downtown",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:train",
-   "exit:citymap",
-   "read:board",
-   "read:map",
-   "read:screen",
-   "read:regular",
-   "read:poster"
-  ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years."
- },
- {
-  "n": 13,
-  "name": "turnstile-ok",
-  "note": "the checkpoint says ok; the street opens next",
-  "shot": "13-turnstile-ok.png",
-  "here": "metro",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 348,
-   "text": "05:48",
-   "pinned": 348
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "exit:downtown",
-   "label": "[E] STAIRS DOWN · DOWNTOWN"
-  },
-  "goal": "go home",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": "TURNSTILE: verifying… … ok.",
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 33.6,
-   "y": 0
-  },
-  "targets": [
-   "exit:downtown",
-   "exit:citymap",
-   "read:board",
-   "read:map",
-   "read:screen",
-   "read:regular",
-   "read:poster"
-  ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years."
- },
- {
-  "n": 14,
-  "name": "downtown-before-arrival",
-  "note": "opening:street, Downtown before, 05:52",
-  "shot": "14-downtown-before-arrival.png",
+  "n": 20,
+  "name": "downtown-arrival",
+  "note": "up the west stairs to the street, morning",
+  "shot": "20-downtown-arrival.png",
   "here": "downtown",
   "phase": "home",
   "flags": {
    "opening:home": true,
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
-   "opening:said:home:train": true,
    "opening:street": true,
+   "prologue:started": true,
    "scene:downtown": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
    "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
   },
   "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
+   "day": 2,
+   "min": 374,
+   "text": "06:14",
+   "pinned": 374
   },
   "bubble": {
    "name": "YOU",
-   "text": "Ten to six. The street is still warm from the night."
+   "text": "Morning. The street is still warm from the night."
   },
   "prompt": {
-   "id": "exit:metro",
-   "label": "[E] METRO"
+   "id": "down:metro/stairs-west",
+   "label": "[↓] DOWNSTAIRS"
   },
-  "goal": "tell the fixer your name",
+  "goal": "go home (7B)",
   "hint": "",
   "gate": null,
   "card": null,
@@ -753,7 +1039,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 1440,
+   "x": 1436.1,
    "y": 0
   },
   "targets": [
@@ -761,7 +1047,6 @@
    "exit:library",
    "exit:yard",
    "exit:capsule",
-   "exit:metro",
    "exit:moth",
    "exit:taxi",
    "exit:map",
@@ -779,487 +1064,63 @@
    "relay",
    "fence",
    "scan",
-   "read:plaque"
+   "read:plaque",
+   "train",
+   "read:staff",
+   "read:ad",
+   "read:gangway",
+   "read:suit",
+   "read:courier",
+   "read:elder",
+   "read:punk",
+   "down:metro/stairs-west"
   ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.",
+  "term": "p opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.",
   "said": [
-   "YOU: Ten to six. The street is still warm from the night.",
+   "YOU: Morning. The street is still warm from the night.",
    "YOU: Home is the capsule tower, past the metro stairs."
   ]
  },
  {
-  "n": 15,
-  "name": "downtown-talk-umbrella",
-  "note": "phase lines home downtown/umbrella",
-  "shot": "15-downtown-talk-umbrella.png",
-  "here": "downtown",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:downtown": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
-  },
-  "bubble": {
-   "name": "UMBRELLA",
-   "text": "Rain's late today. Like everybody."
-  },
-  "prompt": {
-   "id": "use:umbrella",
-   "label": "[E] TALK"
-  },
-  "goal": "tell the fixer your name",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 601.7,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": "YOU: End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.",
-  "said": [
-   "UMBRELLA: Rain's late today. Like everybody."
-  ]
- },
- {
-  "n": 16,
-  "name": "downtown-shop-closed",
-  "note": "phase exit rule home downtown/shop",
-  "shot": "16-downtown-shop-closed.png",
-  "here": "downtown",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:downtown": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
-  },
-  "bubble": {
-   "name": "SHOP",
-   "text": "OPENS 07:00."
-  },
-  "prompt": {
-   "id": "exit:shop",
-   "label": "[E] CORNER SHOP"
-  },
-  "goal": "tell the fixer your name",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 244.3,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": ": End of shift. Fourteen parcels, zero complaints, one sore back.Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.",
-  "said": [
-   "SHOP: OPENS 07:00.",
-   "SHOP: DELIVERIES ROUND THE BACK."
-  ]
- },
- {
-  "n": 17,
-  "name": "downtown-moth-door",
-  "note": "phase exit rule home downtown/moth",
-  "shot": "17-downtown-moth-door.png",
-  "here": "downtown",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:downtown": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
-  },
-  "bubble": {
-   "name": "DOOR",
-   "text": "RESIDENTS ONLY. PRESENT KEY CHIP."
-  },
-  "prompt": {
-   "id": "exit:moth",
-   "label": "[E] FLAT 4C · MOTH"
-  },
-  "goal": "tell the fixer your name",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 1494.6,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": ".Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.",
-  "said": [
-   "DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.",
-   "DOOR: FLAT 4C · RESIDENT: MOTH."
-  ]
- },
- {
-  "n": 18,
-  "name": "downtown-gate-popup",
-  "note": "the market gate popup: story chips",
-  "shot": "18-downtown-gate-popup.png",
-  "here": "downtown",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:downtown": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "gate",
-   "label": "[E] USE"
-  },
-  "goal": "tell the fixer your name",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": true,
-  "captions": [],
-  "chips": [
-   "push the gate",
-   "read the counter"
-  ],
-  "pings": 0,
-  "player": {
-   "x": 72.7,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": ".Downtown is next. Then bed.← → walk. E talks to people.> cat plateEMERGENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.",
-  "chipsSeen": [
-   "push the gate",
-   "read the counter"
-  ]
- },
- {
-  "n": 19,
-  "name": "downtown-gate-chip",
-  "note": "chip: push the gate (a caption over the gate)",
-  "shot": "19-downtown-gate-chip.png",
-  "here": "downtown",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:downtown": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "gate",
-   "label": "[E] USE"
-  },
-  "goal": "tell the fixer your name",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "NEON MARKET GATE: closed. market hours 07:00 to 02:00."
-  ],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 72.7,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": "GENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00."
- },
- {
-  "n": 20,
-  "name": "downtown-at-tower",
-  "note": "at the capsule tower door",
-  "shot": "20-downtown-at-tower.png",
-  "here": "downtown",
-  "phase": "home",
-  "flags": {
-   "opening:home": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:downtown": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "exit:capsule",
-   "label": "[E] HOME · CAPSULE 7B"
-  },
-  "goal": "tell the fixer your name",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 1229.5,
-   "y": 0
-  },
-  "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:metro",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
-  ],
-  "term": "GENCY BRAKE. EMERGENCIES MUST BE REGISTERED 48 HOURS IN ADVANCE.MAN IN A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00."
- },
- {
   "n": 21,
-  "name": "concierge-acknowledges",
-  "note": "",
-  "shot": "21-concierge-acknowledges.png",
+  "name": "concierge",
+  "note": "the capsule tower lets you in",
+  "shot": "21-concierge.png",
   "here": "downtown",
   "phase": "home",
   "flags": {
    "opening:home": true,
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
-   "opening:said:home:train": true,
    "opening:street": true,
+   "prologue:started": true,
    "scene:downtown": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
    "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
   },
   "clock": {
-   "day": 1,
-   "min": 352,
-   "text": "05:52",
-   "pinned": 352
+   "day": 2,
+   "min": 374,
+   "text": "06:14",
+   "pinned": 374
   },
   "bubble": null,
   "prompt": {
    "id": "exit:capsule",
    "label": "[E] HOME · CAPSULE 7B"
   },
-  "goal": "tell the fixer your name",
+  "goal": "go home (7B)",
   "hint": "",
   "gate": null,
   "card": null,
@@ -1271,7 +1132,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 1229.5,
+   "x": 1232.1,
    "y": 0
   },
   "targets": [
@@ -1279,7 +1140,6 @@
    "exit:library",
    "exit:yard",
    "exit:capsule",
-   "exit:metro",
    "exit:moth",
    "exit:taxi",
    "exit:map",
@@ -1299,13 +1159,13 @@
    "scan",
    "read:plaque"
   ],
-  "term": "A SUIT: Morning shift?Me too. Mine started yesterday. The meeting keeps getting moved to the next stop.YOU: Downtown. The exit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down."
+  "term": "freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down."
  },
  {
   "n": 22,
-  "name": "flat-arrival",
-  "note": "opening:flat, the flat at dawn, 06:04",
-  "shot": "22-flat-arrival.png",
+  "name": "capsule-arrival",
+  "note": "home: kettle, blinds, bed",
+  "shot": "22-capsule-arrival.png",
   "here": "capsule",
   "phase": "flat",
   "flags": {
@@ -1314,20 +1174,30 @@
    "opening:said:flat:capsule": true,
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
-   "opening:said:home:train": true,
    "opening:street": true,
+   "prologue:started": true,
    "scene:capsule": true,
    "scene:downtown": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
    "seen:capsule": true,
    "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
   },
   "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
+   "day": 2,
+   "min": 380,
+   "text": "06:20",
+   "pinned": 380
   },
   "bubble": {
    "name": "YOU",
@@ -1362,7 +1232,7 @@
    "story:bed",
    "pixel"
   ],
-  "term": "xit is at the far end, by the stairs.MAN WITH A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.",
+  "term": "CKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.",
   "said": [
    "YOU: Home. Four walls, one window, one cat.",
    "YOU: Kettle, blinds, bed. In that order, if I am lucky.",
@@ -1371,9 +1241,9 @@
  },
  {
   "n": 23,
-  "name": "flat-door-bed-first",
-  "note": "phase exit rule flat capsule/door",
-  "shot": "23-flat-door-bed-first.png",
+  "name": "sleep-card",
+  "note": "the rest card over the capsule",
+  "shot": "23-sleep-card.png",
   "here": "capsule",
   "phase": "flat",
   "flags": {
@@ -1382,40 +1252,51 @@
    "opening:said:flat:capsule": true,
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
-   "opening:said:home:train": true,
    "opening:street": true,
+   "prologue:started": true,
    "scene:capsule": true,
    "scene:downtown": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
    "seen:capsule": true,
    "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
   },
   "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
+   "day": 2,
+   "min": 380,
+   "text": "06:20",
+   "pinned": 380
   },
-  "bubble": {
-   "name": "YOU",
-   "text": "Bed first. The city will still be there."
-  },
+  "bubble": null,
   "prompt": {
-   "id": "door",
-   "label": "[E] DOOR"
+   "id": "story:bed",
+   "label": "[E] SLEEP"
   },
   "goal": "get some sleep",
   "hint": "",
   "gate": null,
-  "card": null,
+  "card": {
+   "stage": "card",
+   "text": "06:20",
+   "label": "CAPSULE 7B"
+  },
   "acknowledging": null,
   "popup": false,
   "captions": [],
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 37.8,
+   "x": 499.2,
    "y": 0
   },
   "targets": [
@@ -1430,389 +1311,13 @@
    "story:bed",
    "pixel"
   ],
-  "term": " A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there."
+  "term": "CKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it."
  },
  {
   "n": 24,
-  "name": "flat-kettle-popup",
-  "note": "kettle popup",
-  "shot": "24-flat-kettle-popup.png",
-  "here": "capsule",
-  "phase": "flat",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "kettle",
-   "label": "[E] USE"
-  },
-  "goal": "get some sleep",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": true,
-  "captions": [],
-  "chips": [
-   "boil"
-  ],
-  "pings": 0,
-  "player": {
-   "x": 184.7,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "story:bed",
-   "pixel"
-  ],
-  "term": " A PAPER: Morning paper. The Registry retired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.",
-  "chipsSeen": [
-   "boil"
-  ]
- },
- {
-  "n": 25,
-  "name": "flat-kettle-boiled",
-  "note": "chip: boil (device verb)",
-  "shot": "25-flat-kettle-boiled.png",
-  "here": "capsule",
-  "phase": "flat",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "kettle",
-   "label": "[E] USE"
-  },
-  "goal": "get some sleep",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "KETTLE: boiled. 100°C."
-  ],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 184.7,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "story:bed",
-   "pixel"
-  ],
-  "term": "ired 1,204 records overnight.Retired. Lucky records. I have been asking for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C."
- },
- {
-  "n": 26,
-  "name": "flat-blinds-open",
-  "note": "chip: open the blinds (state change sun)",
-  "shot": "26-flat-blinds-open.png",
-  "here": "capsule",
-  "phase": "flat",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "blinds",
-   "label": "[E] USE"
-  },
-  "goal": "get some sleep",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "KETTLE: boiled. 100°C.",
-   "the blinds roll up. dawn, the colour of weak tea."
-  ],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 260.1,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "story:bed",
-   "pixel"
-  ],
-  "term": "king for that for years.YOU: Ten to six. The street is still warm from the night.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea."
- },
- {
-  "n": 27,
-  "name": "flat-idle-ping",
-  "note": "stood still at the bed until the attention ping showed: true",
-  "shot": "27-flat-idle-ping.png",
-  "here": "capsule",
-  "phase": "flat",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "story:bed",
-   "label": "[E] SLEEP"
-  },
-  "goal": "get some sleep",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 499.2,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "story:bed",
-   "pixel"
-  ],
-  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.",
-  "pingShown": true,
-  "pingAfterS": 20
- },
- {
-  "n": 28,
-  "name": "flat-bed-prompt",
-  "note": "the bed prompt (an opening-only target)",
-  "shot": "28-flat-bed-prompt.png",
-  "here": "capsule",
-  "phase": "flat",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "story:bed",
-   "label": "[E] SLEEP"
-  },
-  "goal": "get some sleep",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 499.2,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "story:bed",
-   "pixel"
-  ],
-  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off."
- },
- {
-  "n": 29,
-  "name": "sleep-card-from",
-  "note": "the card: from",
-  "shot": "29-sleep-card-from.png",
-  "here": "capsule",
-  "phase": "flat",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "story:bed",
-   "label": "[E] SLEEP"
-  },
-  "goal": "get some sleep",
-  "hint": "",
-  "gate": null,
-  "card": {
-   "stage": "card",
-   "text": "06:04",
-   "label": "CAPSULE 7B"
-  },
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 499.2,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "story:bed",
-   "pixel"
-  ],
-  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off."
- },
- {
-  "n": 30,
-  "name": "sleep-card-to",
-  "note": "the card: to",
-  "shot": "30-sleep-card-to.png",
+  "name": "morning-deleted",
+  "note": "the morning is established; the prologue ends here",
+  "shot": "24-morning-deleted.png",
   "here": "capsule",
   "phase": "deleted",
   "flags": {
@@ -1821,82 +1326,28 @@
    "opening:said:flat:capsule": true,
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
-   "opening:said:home:train": true,
    "opening:slept": true,
    "opening:street": true,
+   "prologue:started": true,
    "scene:capsule": true,
    "scene:downtown": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
    "seen:capsule": true,
    "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
   },
   "clock": {
-   "day": 1,
-   "min": 364,
-   "text": "06:04",
-   "pinned": 364
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "pixel",
-   "label": "[E] PET PIXEL"
-  },
-  "goal": "get out",
-  "hint": "",
-  "gate": null,
-  "card": {
-   "stage": "card",
-   "text": "09:40",
-   "label": "CAPSULE 7B"
-  },
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 466,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "pixel"
-  ],
-  "term": "ght.Home is the capsule tower, past the metro stairs.UMBRELLA: Rain's late today. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off."
- },
- {
-  "n": 31,
-  "name": "morning-wakes",
-  "note": "opening:slept; deleted; 09:40; the player says what is wrong",
-  "shot": "31-morning-wakes.png",
-  "here": "capsule",
-  "phase": "deleted",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
+   "day": 2,
    "min": 580,
    "text": "09:40",
    "pinned": 580
@@ -1933,470 +1384,10 @@
    "router",
    "pixel"
   ],
-  "term": "ay. Like everybody.SHOP: OPENS 07:00.DELIVERIES ROUND THE BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.",
+  "term": "Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.",
   "said": [
    "YOU: Morning. The light is wrong.",
    "YOU: Cold. Like the flat forgot who it is heating."
   ]
- },
- {
-  "n": 32,
-  "name": "morning-door-denied",
-  "note": "chip: try the door (fail 1)",
-  "shot": "32-morning-door-denied.png",
-  "here": "capsule",
-  "phase": "deleted",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 580,
-   "text": "09:40",
-   "pinned": 580
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "lock",
-   "label": "[E] USE"
-  },
-  "goal": "get out",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "DOOR: rent: pending. identity: not found."
-  ],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 77.4,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "pixel"
-  ],
-  "term": "BACK.DOOR: RESIDENTS ONLY. PRESENT KEY CHIP.FLAT 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.> use bolt --openDOOR: rent: pending. identity: not found."
- },
- {
-  "n": 33,
-  "name": "morning-kettle-denied",
-  "note": "chip: boil (fail 2)",
-  "shot": "33-morning-kettle-denied.png",
-  "here": "capsule",
-  "phase": "deleted",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 580,
-   "text": "09:40",
-   "pinned": 580
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "kettle",
-   "label": "[E] USE"
-  },
-  "goal": "get out",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "DOOR: rent: pending. identity: not found.",
-   "KETTLE: no account. no water."
-  ],
-  "chips": [],
-  "pings": 1,
-  "player": {
-   "x": 184,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "pixel"
-  ],
-  "term": " 4C · RESIDENT: MOTH.> use lock --openNEON MARKET GATE: closed. market hours 07:00 to 02:00.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Bed first. The city will still be there.> use kettle --boilKETTLE: boiled. 100°C.> use motor --openthe blinds roll up. dawn, the colour of weak tea.Pixel follows the sun to the floor and lies down in it. the router cools off.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.> use bolt --openDOOR: rent: pending. identity: not found.> use kettle --boilKETTLE: no account. no water."
- },
- {
-  "n": 34,
-  "name": "uplink-moth-message",
-  "note": "Moth writes; uplink.so arrives",
-  "shot": "34-uplink-moth-message.png",
-  "here": "capsule",
-  "phase": "uplinked",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "opening:uplink": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 582.44,
-   "text": "09:42",
-   "pinned": null
-  },
-  "bubble": {
-   "name": "MOTH › YOU",
-   "text": "they took you off the list. not a glitch. don't call anyone."
-  },
-  "prompt": {
-   "id": "kettle",
-   "label": "[E] USE"
-  },
-  "goal": "jack in to your PC",
-  "hint": "+ uplink.so",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [
-   "KETTLE: no account. no water."
-  ],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 184,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "rest:bed",
-   "pixel"
-  ],
-  "term": " the flat forgot who it is heating.> use bolt --openDOOR: rent: pending. identity: not found.> use kettle --boilKETTLE: no account. no water.moth> they took you off the list. not a glitch. don't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.so",
-  "said": [
-   "MOTH › YOU: they took you off the list. not a glitch. don't call anyone.",
-   "MOTH › YOU: here's a way back in. jack in to your PC.",
-   "MOTH › YOU: → uplink.so",
-   "MOTH › YOU: uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.",
-   "YOU: uplink.so. Moth wrote this. I can tell by the comments.",
-   "YOU: H: see how things work. B: the board. E at the PC, then ⌁ jack in."
-  ]
- },
- {
-  "n": 35,
-  "name": "uplinked",
-  "note": "opening:uplink; the clock is released",
-  "shot": "35-uplinked.png",
-  "here": "capsule",
-  "phase": "uplinked",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "opening:uplink": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 585.27,
-   "text": "09:45",
-   "pinned": null
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "kettle",
-   "label": "[E] USE"
-  },
-  "goal": "jack in to your PC",
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 184,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "rest:bed",
-   "pixel"
-  ],
-  "term": "ount. no water.moth> they took you off the list. not a glitch. don't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in."
- },
- {
-  "n": 36,
-  "name": "uplinked-pc-popup",
-  "note": "HOME-PC popup",
-  "shot": "36-uplinked-pc-popup.png",
-  "here": "capsule",
-  "phase": "uplinked",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "opening:uplink": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 586.72,
-   "text": "09:46",
-   "pinned": null
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "pc",
-   "label": "[E] USE"
-  },
-  "goal": "jack in to your PC",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": true,
-  "captions": [],
-  "chips": [
-   "check mail",
-   "jack in",
-   "hack it"
-  ],
-  "pings": 0,
-  "player": {
-   "x": 349,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "rest:bed",
-   "pixel"
-  ],
-  "term": "ount. no water.moth> they took you off the list. not a glitch. don't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in.",
-  "chipsSeen": [
-   "check mail",
-   "jack in",
-   "hack it"
-  ]
- },
- {
-  "n": 37,
-  "name": "jacked-in",
-  "note": "jacked in to HOME-PC: opening:jacked, hacking is yours",
-  "shot": "37-jacked-in.png",
-  "here": "capsule",
-  "phase": "free",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:jacked": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "opening:uplink": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 587.62,
-   "text": "09:47",
-   "pinned": null
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "pc",
-   "label": "[E] USE"
-  },
-  "goal": "get the router online, and keep it on",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 349,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "rest:bed",
-   "pixel"
-  ],
-  "term": "on't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in.> login pcYour computer. Its fan has been sighing since Tuesday.",
-  "jackChip": "jack in"
- },
- {
-  "n": 38,
-  "name": "jacked-settled",
-  "note": "a moment later",
-  "shot": "38-jacked-settled.png",
-  "here": "capsule",
-  "phase": "free",
-  "flags": {
-   "opening:flat": true,
-   "opening:home": true,
-   "opening:jacked": true,
-   "opening:said:flat:capsule": true,
-   "opening:said:home:downtown": true,
-   "opening:said:home:metro": true,
-   "opening:said:home:train": true,
-   "opening:slept": true,
-   "opening:street": true,
-   "opening:uplink": true,
-   "scene:capsule": true,
-   "scene:downtown": true,
-   "seen:capsule": true,
-   "seen:downtown": true,
-   "seen:metro": true,
-   "seen:train": true
-  },
-  "clock": {
-   "day": 1,
-   "min": 588.42,
-   "text": "09:48",
-   "pinned": null
-  },
-  "bubble": null,
-  "prompt": {
-   "id": "pc",
-   "label": "[E] USE"
-  },
-  "goal": "get the router online, and keep it on",
-  "hint": "",
-  "gate": null,
-  "card": null,
-  "acknowledging": null,
-  "popup": false,
-  "captions": [],
-  "chips": [],
-  "pings": 0,
-  "player": {
-   "x": 349,
-   "y": 0
-  },
-  "targets": [
-   "door",
-   "lock",
-   "fridge",
-   "kettle",
-   "blinds",
-   "pc",
-   "plug",
-   "router",
-   "rest:bed",
-   "pixel"
-  ],
-  "term": "on't call anyone.moth> here's a way back in. jack in to your PC.moth> → uplink.somoth> uplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.[deck] uplink.so received. hack vision: H · the board: BMOTH › YOU: they took you off the list. not a glitch. don't call anyone.here's a way back in. jack in to your PC.→ uplink.souplink gets you in. to find anything, you want scan.so. the library on your street still lends it. don't ask nicely.+ uplink.soYOU: uplink.so. Moth wrote this. I can tell by the comments.H: see how things work. B: the board. E at the PC, then ⌁ jack in.> login pcYour computer. Its fan has been sighing since Tuesday."
  }
 ]

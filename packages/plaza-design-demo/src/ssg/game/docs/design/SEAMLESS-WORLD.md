@@ -795,7 +795,7 @@ Each step keeps `scene-parity`, saves, `city-locks`, `all-scene-world-routes`, `
 - `vehicles`;
 - `people-flow`: including the save round-trip.
 
-The opening-playthrough recording is re-recorded only with Tommi's go-ahead.
+`scripts/opening-playthrough/` is now the prologue smoke run (`pnpm test:game:prologue`, 2026-11-21); re-record its baseline when the prologue changes on purpose.
 
 Each engine step ships with its editor support in the same step. A step is not done until Tommi can author
 its feature in the editor and Save it (the "features configurable in editor" rule).
