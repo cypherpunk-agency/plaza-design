@@ -31,7 +31,9 @@ export function WindowFrame({ children }: WindowFrameProps) {
     <>
       <span>
         <span>INITIATING CONNECTION...</span>
-        <span style={{ color: 'rgba(80, 200, 120, 0.7)', marginLeft: '10px' }}>PROTOCOL ONLINE</span>
+        <span style={{ color: 'rgba(80, 200, 120, 0.7)', marginLeft: '10px' }}>
+          PROTOCOL ONLINE
+        </span>
       </span>
       <span style={{ color: 'rgba(255,122,0,0.75)' }}>
         NODES: <span id="node-count">{nodeCount}</span> ACTIVE
@@ -41,11 +43,17 @@ export function WindowFrame({ children }: WindowFrameProps) {
 
   const footer = (
     <>
-      <span className="footer-timestamp"><span id="clock">{clock}</span></span>
+      <span className="footer-timestamp">
+        <span id="clock">{clock}</span>
+      </span>
       <span className="footer-terminal">TERMINAL</span>
       <span className="footer-prompt">&gt;</span>
-      <span className="footer-input-area"><span className="footer-not-auth">[ NOT AUTHENTICATED ]</span></span>
-      <button className="footer-send-btn footer-send-btn--disabled" disabled>▶ SEND</button>
+      <span className="footer-input-area">
+        <span className="footer-not-auth">[ NOT AUTHENTICATED ]</span>
+      </span>
+      <button className="footer-send-btn footer-send-btn--disabled" disabled>
+        ▶ SEND
+      </button>
     </>
   );
 

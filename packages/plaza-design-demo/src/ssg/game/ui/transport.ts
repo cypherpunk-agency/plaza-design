@@ -1,4 +1,4 @@
-import {source as defaultCitySource} from '../world/city';
+import { source as defaultCitySource } from '../world/city';
 import { gameStorage } from '../runtime/storage';
 /**
  * Sudo's time control (`?sudo` only): a thin transport bar along the bottom edge while a timed
@@ -19,11 +19,22 @@ import { gameStorage } from '../runtime/storage';
  * day, time of day, speed and a weather override.
  */
 
-import { city, CLOCK_SPEEDS, hm } from "../world/clock";
-import { moonName, moonPhase } from "../world/light";
-import { anyOverride, isWeather, overrideOf, setOverride, WEATHER_KINDS, weatherNow, type Climate } from "../world/weather";
+import { city, CLOCK_SPEEDS, hm } from '../world/clock';
+import { moonName, moonPhase } from '../world/light';
+import {
+  anyOverride,
+  isWeather,
+  overrideOf,
+  setOverride,
+  WEATHER_KINDS,
+  weatherNow,
+  type Climate,
+} from '../world/weather';
 
-export interface Beat { at: number; name: string }
+export interface Beat {
+  at: number;
+  name: string;
+}
 
 export interface Timeline {
   /** Changes when the timeline does (the title's sunrise becomes the glide): the bar starts playing again. */
@@ -43,7 +54,9 @@ const FOLD_KEY = 'access-denied-sudo-transport';
 
 /** m:ss.s */
 export const timecode = (s: number) => {
-  const t = Math.max(0, Math.round(s * 10) / 10), m = Math.floor(t / 60), r = t - m * 60;
+  const t = Math.max(0, Math.round(s * 10) / 10),
+    m = Math.floor(t / 60),
+    r = t - m * 60;
   return m + ':' + (r < 10 ? '0' : '') + r.toFixed(1);
 };
 
@@ -52,7 +65,16 @@ export class Transport {
   private speed = 2;
   private tl: Timeline | null = null;
   private root: HTMLDivElement;
-  private els: { play: HTMLButtonElement; speed: HTMLButtonElement; time: HTMLElement; beat: HTMLElement; track: HTMLElement; fill: HTMLElement; ticks: HTMLElement; fold: HTMLButtonElement };
+  private els: {
+    play: HTMLButtonElement;
+    speed: HTMLButtonElement;
+    time: HTMLElement;
+    beat: HTMLElement;
+    track: HTMLElement;
+    fill: HTMLElement;
+    ticks: HTMLElement;
+    fold: HTMLButtonElement;
+  };
   private shown = { time: '', beat: '', pos: -1, play: '', speed: '' };
   private dragging = false;
 
@@ -75,8 +97,14 @@ export class Transport {
       '</div>';
     const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
     this.els = {
-      play: q('.st-play'), speed: q('.st-speed'), time: q('.st-time'), beat: q('.st-beat'),
-      track: q('.st-track'), fill: q('.st-fill'), ticks: q('.st-ticks'), fold: q('.st-fold'),
+      play: q('.st-play'),
+      speed: q('.st-speed'),
+      time: q('.st-time'),
+      beat: q('.st-beat'),
+      track: q('.st-track'),
+      fill: q('.st-fill'),
+      ticks: q('.st-ticks'),
+      fold: q('.st-fold'),
     };
     // buttons never take focus (Space would press them as well as reach the game)
     root.addEventListener('mousedown', (e) => e.preventDefault());
@@ -93,9 +121,17 @@ export class Transport {
     });
     this.els.fold.addEventListener('click', () => {
       const folded = root.classList.toggle('st-folded');
-      try { gameStorage.setItem(FOLD_KEY, folded ? '1' : ''); } catch { /* no storage */ }
+      try {
+        gameStorage.setItem(FOLD_KEY, folded ? '1' : '');
+      } catch {
+        /* no storage */
+      }
     });
-    try { if (gameStorage.getItem(FOLD_KEY)) root.classList.add('st-folded'); } catch { /* no storage */ }
+    try {
+      if (gameStorage.getItem(FOLD_KEY)) root.classList.add('st-folded');
+    } catch {
+      /* no storage */
+    }
     const track = this.els.track;
     const seekAt = (e: PointerEvent) => {
       if (!this.tl) return;
@@ -103,20 +139,35 @@ export class Transport {
       this.tl.seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * this.tl.duration);
       this.sync();
     };
-    track.addEventListener('pointerdown', (e) => { e.preventDefault(); this.dragging = true; track.setPointerCapture(e.pointerId); seekAt(e); });
-    track.addEventListener('pointermove', (e) => { if (this.dragging) seekAt(e); });
-    const lift = (e: PointerEvent) => { this.dragging = false; if (track.hasPointerCapture(e.pointerId)) track.releasePointerCapture(e.pointerId); };
+    track.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this.dragging = true;
+      track.setPointerCapture(e.pointerId);
+      seekAt(e);
+    });
+    track.addEventListener('pointermove', (e) => {
+      if (this.dragging) seekAt(e);
+    });
+    const lift = (e: PointerEvent) => {
+      this.dragging = false;
+      if (track.hasPointerCapture(e.pointerId)) track.releasePointerCapture(e.pointerId);
+    };
     track.addEventListener('pointerup', lift);
     track.addEventListener('pointercancel', lift);
     host.appendChild(root);
   }
 
   /** How fast time runs this frame: 0 paused (or held by a drag), else the speed. */
-  get rate() { return this.playing && !this.dragging ? SPEEDS[this.speed] : 0; }
+  get rate() {
+    return this.playing && !this.dragging ? SPEEDS[this.speed] : 0;
+  }
 
   /** What plays now (null: nothing, the bar hides). A new timeline plays from where it is. */
   attach(tl: Timeline | null) {
-    if (tl?.id === this.tl?.id && tl?.label === this.tl?.label) { this.tl = tl; return; }
+    if (tl?.id === this.tl?.id && tl?.label === this.tl?.label) {
+      this.tl = tl;
+      return;
+    }
     this.tl = tl;
     this.root.hidden = !tl;
     this.dragging = false;
@@ -138,14 +189,22 @@ export class Transport {
   key(e: KeyboardEvent, menuUp: boolean): boolean {
     if (!this.tl || e.ctrlKey || e.metaKey || e.altKey) return false;
     const k = e.key;
-    if (k === ' ' && !menuUp) { if (!e.repeat) this.toggle(); }
-    else if (k === ',' || k === '<') this.step(-STEP);
+    if (k === ' ' && !menuUp) {
+      if (!e.repeat) this.toggle();
+    } else if (k === ',' || k === '<') this.step(-STEP);
     else if (k === '.' || k === '>') this.step(STEP);
-    else if (k === '[') { if (!e.repeat) this.setSpeed(this.speed - 1); }
-    else if (k === ']') { if (!e.repeat) this.setSpeed(this.speed + 1); }
-    else if (k === 'Home' || k === '0') { if (!e.repeat) this.restart(); }
-    else if (/^[1-9]$/.test(k)) { if (!e.repeat) { const b = this.tl.beats[Number(k) - 1]; if (b) this.tl.seek(b.at); } }
-    else return false;
+    else if (k === '[') {
+      if (!e.repeat) this.setSpeed(this.speed - 1);
+    } else if (k === ']') {
+      if (!e.repeat) this.setSpeed(this.speed + 1);
+    } else if (k === 'Home' || k === '0') {
+      if (!e.repeat) this.restart();
+    } else if (/^[1-9]$/.test(k)) {
+      if (!e.repeat) {
+        const b = this.tl.beats[Number(k) - 1];
+        if (b) this.tl.seek(b.at);
+      }
+    } else return false;
     e.preventDefault();
     this.sync();
     return true;
@@ -155,7 +214,9 @@ export class Transport {
   sync() {
     const tl = this.tl;
     if (!tl) return;
-    const t = tl.time(), d = tl.duration, s = this.shown;
+    const t = tl.time(),
+      d = tl.duration,
+      s = this.shown;
     const time = timecode(t) + ' / ' + timecode(d);
     let beat = '';
     for (const b of tl.beats) if (t >= b.at) beat = b.name;
@@ -165,8 +226,14 @@ export class Transport {
     const speed = SPEEDS[this.speed] + '×';
     if (time !== s.time) this.els.time.textContent = s.time = time;
     if (beat !== s.beat) this.els.beat.textContent = s.beat = beat;
-    if (pos !== s.pos) { this.els.fill.style.width = (s.pos = pos) + '%'; this.els.track.setAttribute('aria-valuetext', time); }
-    if (play !== s.play) { this.els.play.textContent = s.play = play; this.els.play.setAttribute('aria-pressed', String(!this.playing)); }
+    if (pos !== s.pos) {
+      this.els.fill.style.width = (s.pos = pos) + '%';
+      this.els.track.setAttribute('aria-valuetext', time);
+    }
+    if (play !== s.play) {
+      this.els.play.textContent = s.play = play;
+      this.els.play.setAttribute('aria-pressed', String(!this.playing));
+    }
     if (speed !== s.speed) this.els.speed.textContent = s.speed = speed;
   }
 
@@ -181,9 +248,13 @@ export class Transport {
     this.tl.seek(this.tl.time() + d);
   }
 
-  private restart() { this.tl?.seek(0); }
+  private restart() {
+    this.tl?.seek(0);
+  }
 
-  private setSpeed(i: number) { this.speed = Math.max(0, Math.min(SPEEDS.length - 1, i)); }
+  private setSpeed(i: number) {
+    this.speed = Math.max(0, Math.min(SPEEDS.length - 1, i));
+  }
 }
 
 // ---------- the city clock (sudo, in a scene) ----------
@@ -200,11 +271,24 @@ const CLOCK_FOLD_KEY = 'access-denied-sudo-clock';
  */
 export class ClockBar {
   private root: HTMLDivElement;
-  private els: { day: HTMLElement; time: HTMLElement; slider: HTMLInputElement; speed: HTMLButtonElement; where: HTMLSelectElement; kind: HTMLSelectElement; now: HTMLElement };
+  private els: {
+    day: HTMLElement;
+    time: HTMLElement;
+    slider: HTMLInputElement;
+    speed: HTMLButtonElement;
+    where: HTMLSelectElement;
+    kind: HTMLSelectElement;
+    now: HTMLElement;
+  };
   private shown = { day: '', time: '', slider: -1, speed: '', now: '', kind: '' };
   private sliding = false;
 
-  constructor(host: HTMLElement, private here: () => Climate | null, private changed: () => void,private weatherSource:()=>import('../world/weather').WeatherSource=()=>defaultCitySource) {
+  constructor(
+    host: HTMLElement,
+    private here: () => Climate | null,
+    private changed: () => void,
+    private weatherSource: () => import('../world/weather').WeatherSource = () => defaultCitySource,
+  ) {
     const root = (this.root = document.createElement('div'));
     root.id = 'sudo-clock';
     root.hidden = true;
@@ -220,15 +304,33 @@ export class ClockBar {
       '<input class="sc-slider" type="range" min="0" max="1439" step="1" aria-label="Time of day">' +
       '<span class="st-time sc-time"></span>' +
       '<button type="button" class="st-b st-speed" data-do="speed" title="Clock speed: stop, 1×, 10×, 60×" aria-label="Clock speed"></button>' +
-      '<select class="sc-where" aria-label="Weather override: where" title="Weather override: where">' + opt('here', 'HERE') + opt('city', 'CITY') +
-      Object.entries(this.weatherSource().CLIMATES).map(([c,climate]) => opt(c, climate.name)).join('') + '</select>' +
-      '<select class="sc-kind" aria-label="Weather override: what" title="Weather override: what">' + opt('', 'AUTO') + WEATHER_KINDS.map((k) => opt(k, k.toUpperCase())).join('') + '</select>' +
+      '<select class="sc-where" aria-label="Weather override: where" title="Weather override: where">' +
+      opt('here', 'HERE') +
+      opt('city', 'CITY') +
+      Object.entries(this.weatherSource().CLIMATES)
+        .map(([c, climate]) => opt(c, climate.name))
+        .join('') +
+      '</select>' +
+      '<select class="sc-kind" aria-label="Weather override: what" title="Weather override: what">' +
+      opt('', 'AUTO') +
+      WEATHER_KINDS.map((k) => opt(k, k.toUpperCase())).join('') +
+      '</select>' +
       '<span class="st-beat sc-now"></span>' +
       '</div>';
     const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
-    this.els = { day: q('.sc-day'), time: q('.sc-time'), slider: q('.sc-slider'), speed: q('.st-speed'), where: q('.sc-where'), kind: q('.sc-kind'), now: q('.sc-now') };
+    this.els = {
+      day: q('.sc-day'),
+      time: q('.sc-time'),
+      slider: q('.sc-slider'),
+      speed: q('.st-speed'),
+      where: q('.sc-where'),
+      kind: q('.sc-kind'),
+      now: q('.sc-now'),
+    };
     // buttons never take focus (the game's keys stay the game's); the slider and the menus give it back after a change
-    root.addEventListener('mousedown', (e) => { if (!(e.target as HTMLElement).closest('select, input')) e.preventDefault(); });
+    root.addEventListener('mousedown', (e) => {
+      if (!(e.target as HTMLElement).closest('select, input')) e.preventDefault();
+    });
     const blur = () => (document.activeElement as HTMLElement | null)?.blur?.();
     root.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-do]');
@@ -236,53 +338,99 @@ export class ClockBar {
       const d = b.dataset.do;
       if (d === 'day-') city.setTime(city.day - 1, city.min);
       else if (d === 'day+') city.setTime(city.day + 1, city.min);
-      else if (d === 'speed') city.speed = CLOCK_SPEEDS[(CLOCK_SPEEDS.indexOf(city.speed) + 1) % CLOCK_SPEEDS.length];
+      else if (d === 'speed')
+        city.speed = CLOCK_SPEEDS[(CLOCK_SPEEDS.indexOf(city.speed) + 1) % CLOCK_SPEEDS.length];
       this.changed();
       this.sync();
     });
     const s = this.els.slider;
-    s.addEventListener('input', () => { this.sliding = true; city.setTime(city.day, Number(s.value)); this.changed(); this.sync(); });
-    s.addEventListener('change', () => { this.sliding = false; blur(); });
-    this.els.where.addEventListener('change', () => { this.syncKind(); blur(); });
+    s.addEventListener('input', () => {
+      this.sliding = true;
+      city.setTime(city.day, Number(s.value));
+      this.changed();
+      this.sync();
+    });
+    s.addEventListener('change', () => {
+      this.sliding = false;
+      blur();
+    });
+    this.els.where.addEventListener('change', () => {
+      this.syncKind();
+      blur();
+    });
     this.els.kind.addEventListener('change', () => {
       const k = this.els.kind.value;
       setOverride(this.where(), k && isWeather(k) ? k : null);
-      this.changed(); this.sync(); blur();
+      this.changed();
+      this.sync();
+      blur();
     });
     q('.st-fold').addEventListener('click', () => {
       const folded = root.classList.toggle('st-folded');
-      try { gameStorage.setItem(CLOCK_FOLD_KEY, folded ? '1' : '0'); } catch { /* no storage */ }
+      try {
+        gameStorage.setItem(CLOCK_FOLD_KEY, folded ? '1' : '0');
+      } catch {
+        /* no storage */
+      }
     });
-    try { if (gameStorage.getItem(CLOCK_FOLD_KEY) !== '0') root.classList.add('st-folded'); } catch { root.classList.add('st-folded'); }
+    try {
+      if (gameStorage.getItem(CLOCK_FOLD_KEY) !== '0') root.classList.add('st-folded');
+    } catch {
+      root.classList.add('st-folded');
+    }
     host.appendChild(root);
   }
 
   /** In a scene with nothing timed playing: the bar shows; otherwise it hides. */
-  show(on: boolean) { if (this.root.hidden === on) this.root.hidden = !on; if (on) this.sync(); }
+  show(on: boolean) {
+    if (this.root.hidden === on) this.root.hidden = !on;
+    if (on) this.sync();
+  }
 
   /** Where the override goes: the scene's climate (HERE), the city, or a named climate. */
   private where(): Climate | 'city' {
     const v = this.els.where.value;
-    return v === 'here' ? this.here() ?? 'downtown' : (v as Climate | 'city');
+    return v === 'here' ? (this.here() ?? 'downtown') : (v as Climate | 'city');
   }
 
-  private syncKind() { this.els.kind.value = overrideOf(this.where()) ?? ''; this.shown.kind = this.els.kind.value; }
+  private syncKind() {
+    this.els.kind.value = overrideOf(this.where()) ?? '';
+    this.shown.kind = this.els.kind.value;
+  }
 
   /** Bring the bar up to date (every frame while shown; writes the DOM only on change). */
   sync() {
     if (this.root.hidden) return;
-    const s = this.shown, e = this.els;
-    const day = 'DAY ' + city.day, time = hm(city.min) + (city.pinned !== null ? ' PINNED' : '');
+    const s = this.shown,
+      e = this.els;
+    const day = 'DAY ' + city.day,
+      time = hm(city.min) + (city.pinned !== null ? ' PINNED' : '');
     const speed = city.speed ? city.speed + '×' : '■';
-    const here = this.here(), w = weatherNow(here,this.weatherSource());
+    const here = this.here(),
+      w = weatherNow(here, this.weatherSource());
     // the weather here, and tonight's moon (light.ts: phases by the day count)
-    const now = (here ? this.weatherSource().CLIMATES[here].name : '-') + ' · ' + w.kind.toUpperCase() + (anyOverride() ? ' · SET' : '') + ' · ' + moonName(moonPhase(city.day));
+    const now =
+      (here ? this.weatherSource().CLIMATES[here].name : '-') +
+      ' · ' +
+      w.kind.toUpperCase() +
+      (anyOverride() ? ' · SET' : '') +
+      ' · ' +
+      moonName(moonPhase(city.day));
     if (day !== s.day) e.day.textContent = s.day = day;
     if (time !== s.time) e.time.textContent = s.time = time;
-    if (speed !== s.speed) { e.speed.textContent = s.speed = speed; e.speed.setAttribute('aria-label', 'Clock speed: ' + (city.speed ? city.speed + ' times' : 'stopped')); }
+    if (speed !== s.speed) {
+      e.speed.textContent = s.speed = speed;
+      e.speed.setAttribute(
+        'aria-label',
+        'Clock speed: ' + (city.speed ? city.speed + ' times' : 'stopped'),
+      );
+    }
     if (now !== s.now) e.now.textContent = s.now = now;
     const m = Math.floor(city.min);
-    if (!this.sliding && m !== s.slider) { e.slider.value = String((s.slider = m)); e.slider.setAttribute('aria-valuetext', hm(m)); }
+    if (!this.sliding && m !== s.slider) {
+      e.slider.value = String((s.slider = m));
+      e.slider.setAttribute('aria-valuetext', hm(m));
+    }
     if ((overrideOf(this.where()) ?? '') !== s.kind) this.syncKind();
   }
 }

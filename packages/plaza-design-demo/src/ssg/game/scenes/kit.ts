@@ -1,6 +1,6 @@
-import type {CompiledCompanion} from '../engine/gameplay/scene-companion';
-import type {CityModel} from '../world/city';
-import type {LineSystem} from '../world/transport/line';
+import type { CompiledCompanion } from '../engine/gameplay/scene-companion';
+import type { CityModel } from '../world/city';
+import type { LineSystem } from '../world/transport/line';
 /**
  * The scene definition (`SceneDef`), and shared shapes and drawing for every
  * scene. A scene is one walkable screen: mostly data (positions, sizes, texts
@@ -17,16 +17,16 @@ import type {LineSystem} from '../world/transport/line';
  * market.ts and shop.ts are the reference scenes that use all three.
  */
 
-import type { Character } from "../runtime/characters";
-import type { GameplayDefinition,GameplayState } from '../engine/gameplay/types';
+import type { Character } from '../runtime/characters';
+import type { GameplayDefinition, GameplayState } from '../engine/gameplay/types';
 import type { GameplaySession } from '../engine/gameplay/session';
-import type { Perch } from "../runtime/companion";
+import type { Perch } from '../runtime/companion';
 import type { SceneData } from '../data/types';
 import type { PlayerServices } from '../runtime/player';
-import type { EngineDraw, Line, SceneModel, SceneRules, SceneTarget } from "../engine/index";
+import type { EngineDraw, Line, SceneModel, SceneRules, SceneTarget } from '../engine/index';
 import type { PanelFn } from '../engine/panels';
-import type { WeatherKind } from "../world/weather";
-import type { Caster, SceneLight, Shade } from "../art/atmosphere/lighting";
+import type { WeatherKind } from '../world/weather';
+import type { Caster, SceneLight, Shade } from '../art/atmosphere/lighting';
 import type { Environment, Value } from '../art/core/composition';
 
 /** What a scene's draw functions get from the engine, refreshed every frame. */
@@ -78,10 +78,26 @@ export interface SceneExit {
 }
 
 /** A bench, a bar stool or a bed: E there offers "wait until…" (clock.ts WAITS). */
-export interface SceneRest { id: string; x: number; kind: 'bench' | 'stool' | 'bed'; promptH?: number; h?: number;floorH?:number }
+export interface SceneRest {
+  id: string;
+  x: number;
+  kind: 'bench' | 'stool' | 'bed';
+  promptH?: number;
+  h?: number;
+  floorH?: number;
+}
 
 /** Something to read (or a person who says a line) with E. */
-export interface SceneReadable { id: string; x: number; name: string; pages: string[]; label?: string; h?: number; promptH?: number;floorH?:number }
+export interface SceneReadable {
+  id: string;
+  x: number;
+  name: string;
+  pages: string[];
+  label?: string;
+  h?: number;
+  promptH?: number;
+  floorH?: number;
+}
 
 /**
  * Something to DO in a place with E (buy, haggle, pay for a fortune): `use` runs when the player
@@ -89,15 +105,21 @@ export interface SceneReadable { id: string; x: number; name: string; pages: str
  */
 export interface SceneUse {
   /** Compiler-derived standing floor for an interaction attached to a moving car. Not authored or saved. */
-  floorH?:number;
-  targetOrder?:'before-devices'|'after-devices';
+  floorH?: number;
+  targetOrder?: 'before-devices' | 'after-devices';
   /** Optional prompt wording when the shared quote is nonzero. */
-  pricedLabel?:string;
-  conversationPresentation?:'bubble'|'panel';
-  speakerKind?:'character'|'device'|'system';
-  eligibility?: (flags:Readonly<Record<string,boolean>>,gameplay?:GameplaySession)=>import('../engine/gameplay/access').AccessResult;
+  pricedLabel?: string;
+  conversationPresentation?: 'bubble' | 'panel';
+  speakerKind?: 'character' | 'device' | 'system';
+  eligibility?: (
+    flags: Readonly<Record<string, boolean>>,
+    gameplay?: GameplaySession,
+  ) => import('../engine/gameplay/access').AccessResult;
   /** Omit interactions outside their authored story stage (flags and saved state: pass the scene's gameplay state). */
-  available?: (flags: Readonly<Record<string, boolean>>, state?: import('../engine/gameplay/types').GameplayState) => boolean;
+  available?: (
+    flags: Readonly<Record<string, boolean>>,
+    state?: import('../engine/gameplay/types').GameplayState,
+  ) => boolean;
   id: string;
   x: number;
   /** The E prompt ("[E] BUY FISH"); a `price` is added to it ("· 1 TOKEN · YOU HAVE 7"). */
@@ -110,7 +132,8 @@ export interface SceneUse {
    * What it costs now, in tokens (0 or none: nothing to pay this time; the florist charges only once
    * you ask). Tokens show only where you pay (Tommi, 2026-10-15): on the prompt and the popup.
    */
-  price?: number | ((flags: Readonly<Record<string, boolean>>,gameplay?:GameplaySession) => number);
+  price?:
+    number | ((flags: Readonly<Record<string, boolean>>, gameplay?: GameplaySession) => number);
   /** Its words in the popup, when it opens one (what you carry is offered): default the label, lower case. */
   act?: string;
   /**
@@ -123,13 +146,18 @@ export interface SceneUse {
 }
 
 /** What a use says: lines in its own name, or another speaker's. */
-export type SceneSaid = string[] | { name: string; pages: string[];conversation?:string };
+export type SceneSaid = string[] | { name: string; pages: string[]; conversation?: string };
 
 /** Something you carry, used on a scene's use (the tea at the crane's call box). */
-export interface SceneItemUse { item: ItemId; label: string; use: (c: UseCtx) => SceneSaid }
+export interface SceneItemUse {
+  item: ItemId;
+  label: string;
+  use: (c: UseCtx) => SceneSaid;
+}
 
 /** "1 TOKEN · YOU HAVE 7": a price where you pay (prompts upper case; popups lower it). */
-export const priceTag = (n: number, have: number) => n + ' TOKEN' + (n === 1 ? '' : 'S') + ' · YOU HAVE ' + have;
+export const priceTag = (n: number, have: number) =>
+  n + ' TOKEN' + (n === 1 ? '' : 'S') + ' · YOU HAVE ' + have;
 
 /** What a scene's `use` gets: the player's tokens and flags, and a way to pay. */
 export interface UseCtx {
@@ -184,39 +212,57 @@ export type ItemId = keyof typeof ITEMS;
  */
 /** Registered scene artwork passes, shared by shipping Game and isolated editor Play/preview. */
 export interface SceneArtworkFrame {
-  city?:(ctx:CanvasRenderingContext2D,view:View)=>void;
-  street?:(ctx:CanvasRenderingContext2D,view:View,rain:number,lit:boolean)=>void;
-  reflections?:[number,string][];
+  city?: (ctx: CanvasRenderingContext2D, view: View) => void;
+  street?: (ctx: CanvasRenderingContext2D, view: View, rain: number, lit: boolean) => void;
+  reflections?: [number, string][];
 }
 export interface SceneDef {
-  rendering?:import('../world/render-settings').RenderSettings;
-  drawSkyArtwork?:(context:CanvasRenderingContext2D,view:View)=>void;
-  peopleFlows?:readonly import('../engine/people').PeopleSource[];
-  artworkFrame?:SceneArtworkFrame;
+  rendering?: import('../world/render-settings').RenderSettings;
+  drawSkyArtwork?: (context: CanvasRenderingContext2D, view: View) => void;
+  peopleFlows?: readonly import('../engine/people').PeopleSource[];
+  artworkFrame?: SceneArtworkFrame;
   /** Pure registered dockworker presentation, reading the current source's flag roles (and saved state: the save's gameplay values). */
-  dockworkerCarry?:(flags:Readonly<Record<string,boolean>>,values?:import('../engine/gameplay/types').StateValues)=>'parcel'|'case'|null;
-  readonly nativeTargetBindings?:import('../engine/gameplay/native-targets').NativeTargetBindings;
-  readonly presentationTargets?:readonly string[];
+  dockworkerCarry?: (
+    flags: Readonly<Record<string, boolean>>,
+    values?: import('../engine/gameplay/types').StateValues,
+  ) => 'parcel' | 'case' | null;
+  readonly nativeTargetBindings?: import('../engine/gameplay/native-targets').NativeTargetBindings;
+  readonly presentationTargets?: readonly string[];
   /** Bind world controllers once per game; source definitions remain immutable. */
-  bindWorld?(services:{city:CityModel;metro:LineSystem}):SceneDef;
+  bindWorld?(services: { city: CityModel; metro: LineSystem }): SceneDef;
   /** Registered cosmetic event binding; receives the same frame clock as artwork. */
-  gameplayEvent?:(event:Readonly<import('../engine/gameplay/types').GameplayEvent>,frame:number)=>void;
+  gameplayEvent?: (
+    event: Readonly<import('../engine/gameplay/types').GameplayEvent>,
+    frame: number,
+  ) => void;
   /** Validated shared commands, events and conversations; independent of artwork/device documents. */
   gameplay?: GameplayDefinition;
   /** Story objective for scenes without hacking goals. */
-  attention?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{x:number;gentle?:boolean}|null;
+  attention?: (
+    flags: Readonly<Record<string, boolean>>,
+    state?: GameplayState,
+  ) => { x: number; gentle?: boolean } | null;
   /** The story's day (scene `timeDay`); undefined: the clock's own day. */
-  storyDay?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number|undefined;
+  storyDay?: (
+    flags: Readonly<Record<string, boolean>>,
+    state?: GameplayState,
+  ) => number | undefined;
   /** The minute the story pins the clock to (scene `time`); undefined: it runs (see `storyRun`). */
-  storyMinute?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>number|undefined;
+  storyMinute?: (
+    flags: Readonly<Record<string, boolean>>,
+    state?: GameplayState,
+  ) => number | undefined;
   /** While the story clock runs (a scene `time` row with `rate`): how fast, and the minute it holds at. */
-  storyRun?: (flags:Readonly<Record<string,boolean>>,state?:GameplayState)=>{rate:number;until?:number}|undefined;
+  storyRun?: (
+    flags: Readonly<Record<string, boolean>>,
+    state?: GameplayState,
+  ) => { rate: number; until?: number } | undefined;
   /** What this scene says and does in each story phase (scene.json `phases`; story/story-rules.ts). The game loop reads `phases[phase]`; nothing else decides it. */
-  phases?:Readonly<Record<string,import('../story/story-rules').ScenePhase>>;
+  phases?: Readonly<Record<string, import('../story/story-rules').ScenePhase>>;
   /** The room's light cue (scene.json `wash`; story-rules.ts `washTone`). */
-  wash?:readonly import('../story/story-rules').WashRule[];
-  objectives?:readonly import('../engine/gameplay/objectives').ObjectiveDefinition[];
-  objective?: (flags: Readonly<Record<string, boolean>>,state?:GameplayState) => string;
+  wash?: readonly import('../story/story-rules').WashRule[];
+  objectives?: readonly import('../engine/gameplay/objectives').ObjectiveDefinition[];
+  objective?: (flags: Readonly<Record<string, boolean>>, state?: GameplayState) => string;
   id: string;
   /** Shown in the HUD. */
   name: string;
@@ -228,12 +274,12 @@ export interface SceneDef {
   /** The people who live here (characters.ts). The scene draws them; the engine makes [E] TALK targets for those with `id` and `talk`. */
   people?: Character[];
   /** Scene actor artwork in its authored order, before companion/player drawing. */
-  drawActors?:(ctx:CanvasRenderingContext2D,view:View)=>void;
+  drawActors?: (ctx: CanvasRenderingContext2D, view: View) => void;
   /** Read-only visibility of set/playfield rows overhanging a joined zone's logical window. */
-  artworkVisible?:(view:View,model?:SceneModel)=>boolean;
+  artworkVisible?: (view: View, model?: SceneModel) => boolean;
   /** Registered source, shared by bounds and mobile membership; not a second saved model. */
-  artwork?:import('../art/core/composition').ChunkDocument;
-  mobileExtent?:{from:number;to:number};
+  artwork?: import('../art/core/composition').ChunkDocument;
+  mobileExtent?: { from: number; to: number };
   /** Things to do here with E (buy, haggle). */
   uses?: SceneUse[];
   /**
@@ -242,7 +288,13 @@ export interface SceneDef {
    * district's weather (weather.ts, sets/weather.ts): it is outdoors (rain, fog, smog, heat, puddles);
    * `covers`, roofs it doesn't rain under (a platform's canopy): world x from/to and the underside's height.
    */
-  ambient?: { sky?: boolean; city?: boolean; street?: boolean; weather?: boolean; covers?: { from: number; to: number; under: number }[] };
+  ambient?: {
+    sky?: boolean;
+    city?: boolean;
+    street?: boolean;
+    weather?: boolean;
+    covers?: { from: number; to: number; under: number }[];
+  };
 
   // ---------- light (TIME.md "Light"; ART-GUIDE §8; light.ts, sets/sky.ts, sets/lighting.ts) ----------
 
@@ -261,7 +313,7 @@ export interface SceneDef {
   /** The horizon's height over the ground (world units) for the engine's sky (`ambient.sky`); default 0. */
   horizon?: number;
   /** Zone origin in an independent world backdrop's coordinates (not artwork owned by this zone). */
-  backdrop?: {id:string;x:number;h?:number};
+  backdrop?: { id: string; x: number; h?: number };
   /** Light sources on the light layer (sets/lighting.ts `SceneLight`): lamps, windows, neon, screens. */
   lights?: SceneLight[];
   /** Key props that cast a shadow (people, robots and animals cast theirs anyway). */
@@ -289,7 +341,7 @@ export interface SceneDef {
   /** The companion's mode in this scene (engine/gameplay/companion.json; the field keeps its first name): 'home' where it lives (`perch`: where it wants to be), 'along' where it follows you once it does. */
   pixel?: 'home' | 'along';
   perch?: (m: SceneModel) => Perch;
-  companion?:CompiledCompanion;
+  companion?: CompiledCompanion;
   /** The deck's `reset <scene id> --yes` starts this scene over (stage.resettable): what to call it, what the deck asks and what it answers. */
   resettable?: { label: string; confirm: string; done: string };
   /** Only under sudo: the scene is not a resume destination and its reset is not offered (stage.sudoOnly). */

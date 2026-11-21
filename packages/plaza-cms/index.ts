@@ -7,7 +7,7 @@ export type {
   MenuFolder,
   MenuNode,
   Frontmatter,
-  ContentEntry
+  ContentEntry,
 } from './types';
 
 // Utilities

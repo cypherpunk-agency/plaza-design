@@ -1,13 +1,16 @@
 /* base.css - Plaza Design System Base Styles */
 /* Reset, body defaults, scrollbars */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -31,8 +34,13 @@ body {
   scrollbar-color: rgba(var(--color-primary-500-rgb), 0.15) transparent;
 }
 
-*::-webkit-scrollbar { width: 6px; height: 6px; }
-*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
 *::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 3px;
@@ -43,4 +51,6 @@ body {
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(var(--color-primary-500-rgb), 0.25);
 }
-*::-webkit-scrollbar-corner { background: transparent; }
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}

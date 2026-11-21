@@ -14,21 +14,44 @@
  *   so the real run is never touched.
  */
 
-import { DISTRICTS, HARBOR_FLAG, heardFlag, LINES_PLANNED, lineKnownFlag, mappedFlag } from '../world/city';
-import { CUTSCENES } from "../story/cutscenes/index";
-import { KEYRING, LOGIC, NET } from "../data/index";
-import type { Save } from "../runtime/save";
-import { SCENES, sceneTitle, type ItemId, type SceneId } from "../scenes/index";
-import { OPENING_LEVELS } from "../story/opening";
+import {
+  DISTRICTS,
+  HARBOR_FLAG,
+  heardFlag,
+  LINES_PLANNED,
+  lineKnownFlag,
+  mappedFlag,
+} from '../world/city';
+import { CUTSCENES } from '../story/cutscenes/index';
+import { KEYRING, LOGIC, NET } from '../data/index';
+import type { Save } from '../runtime/save';
+import { SCENES, sceneTitle, type ItemId, type SceneId } from '../scenes/index';
+import { OPENING_LEVELS } from '../story/opening';
 
-export { SUDO } from "../runtime/mode";
+export { SUDO } from '../runtime/mode';
 
-export interface Level { id: string; name: string; note: string }
+export interface Level {
+  id: string;
+  name: string;
+  note: string;
+}
 
 /** `?sudo&locked`: test the harbor lock (P14 unsolved, no maglev pass) with everything else unlocked. */
-const LOCKED = (() => { try { return new URLSearchParams(location.search).has('locked'); } catch { return false; } })();
+const LOCKED = (() => {
+  try {
+    return new URLSearchParams(location.search).has('locked');
+  } catch {
+    return false;
+  }
+})();
 /** `?sudo&noscan`: test the net before the library (no scan.so: LINKs only connect to what they know, no NET) with everything else unlocked. */
-const NOSCAN = (() => { try { return new URLSearchParams(location.search).has('noscan'); } catch { return false; } })();
+const NOSCAN = (() => {
+  try {
+    return new URLSearchParams(location.search).has('noscan');
+  } catch {
+    return false;
+  }
+})();
 
 /**
  * Story levels that start somewhere particular, not at a scene's spawn: `start` sets the world up
@@ -37,15 +60,22 @@ const NOSCAN = (() => { try { return new URLSearchParams(location.search).has('n
  */
 /** What a level may ask of the world: board the metro car at a station, with its doors open this many frames more. */
 export type LevelWorld = { board: (station: string, left: number) => void };
-const STORY: Record<string, { name: string; start: (world:LevelWorld) => SceneId }> = {
+const STORY: Record<string, { name: string; start: (world: LevelWorld) => SceneId }> = {
   // P16, the first hacking job: the library's reading room (add &noscan to play it without scan.so already owned)
   p16: { name: 'P16 · LONG OVERDUE (THE LIBRARY)', start: () => 'library' },
-  p14: { name: "P14 · THE STOP THAT ISN'T ON THE MAP", start: world => { world.board('galleria', 240); return 'train'; } },
+  p14: {
+    name: "P14 · THE STOP THAT ISN'T ON THE MAP",
+    start: (world) => {
+      world.board('galleria', 240);
+      return 'train';
+    },
+  },
   // P15, the end of Act I: the stacks at the gate booth (the scene keeps its progress; its watchdog starts on PORT AUTHORITY)
   p15: { name: 'P15 · NRLU 404 0451 (ACT I FINALE)', start: () => 'stacks' },
 };
 /** A story level's start (null: not one, `id` is a scene or cutscene). */
-export const startLevel = (id: string,world:LevelWorld): SceneId | null => STORY[id]?.start(world) ?? null;
+export const startLevel = (id: string, world: LevelWorld): SceneId | null =>
+  STORY[id]?.start(world) ?? null;
 
 /** Every place the game can start in, in the order you'd meet them. */
 export function levels(): Level[] {
@@ -57,8 +87,14 @@ export function levels(): Level[] {
     // the opening (opening.ts): hacking stays locked while you play it, sudo or not, until Moth's uplink.so
     ...OPENING_LEVELS.map((l) => ({ id: l.id, name: l.name, note: 'LEVEL' })),
     ...Object.entries(STORY).map(([id, l]) => ({ id, name: l.name, note: 'LEVEL' })),
-    ...Object.values(CUTSCENES).map((c) => ({ id: c.id, name: c.id.toUpperCase(), note: 'CUTSCENE' })),
-    ...Object.entries(SCENES).filter(([id]) => id !== 'sandbox').map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
+    ...Object.values(CUTSCENES).map((c) => ({
+      id: c.id,
+      name: c.id.toUpperCase(),
+      note: 'CUTSCENE',
+    })),
+    ...Object.entries(SCENES)
+      .filter(([id]) => id !== 'sandbox')
+      .map(([id, s]) => ({ id, name: sceneTitle(s), note: 'SCENE' })),
   ];
 }
 
@@ -80,11 +116,16 @@ export function unlockAll(s: Save) {
   for (const id of Object.keys(SCENES)) s.flags['seen:' + id] = true;
   // the whole city on the map: all nine districts heard of and on record (the Spire, the Undercity,
   // the Old Quarter and the Skyport too), and the lines not run yet (LINE 1, bus 7, the ferry) drawn on its METRO layer
-  for (const d of DISTRICTS) { s.flags[heardFlag(d.id)] = true; s.flags[mappedFlag(d.id)] = true; }
+  for (const d of DISTRICTS) {
+    s.flags[heardFlag(d.id)] = true;
+    s.flags[mappedFlag(d.id)] = true;
+  }
   for (const l of LINES_PLANNED) s.flags[lineKnownFlag(l.id)] = true;
   s.flags.end = true; // the market gate stands open
   // the harbor open (P14); `?sudo&locked` tests the lock instead: harbor shut, and no maglev pass
-  if (LOCKED) { delete s.flags[HARBOR_FLAG]; delete s.items['maglev.pass']; }
-  else s.flags[HARBOR_FLAG] = true;
+  if (LOCKED) {
+    delete s.flags[HARBOR_FLAG];
+    delete s.items['maglev.pass'];
+  } else s.flags[HARBOR_FLAG] = true;
   return s;
 }

@@ -1,15 +1,92 @@
-import stacksDefaults from './stacks-defaults.json';import downtownDefaults from './downtown-defaults.json';import type {SceneData} from '../../data/types';
-import {downtownVisualProblems,type DowntownVisualBindings} from './downtown-visual';
-export interface StacksController {kind:'stacks';version:1;scannerDevice:string;/** The trolley's mover (`device.noun` in devices.json): its stops, its `regular`, `reefer` and `return` paths and their times are that part's. */mover:string;state:Record<'boxAt'|'departed'|'box'|'loaded'|'found',string>}
-export interface DowntownController {kind:'downtown';version:1;devices:Record<'gate'|'vehicle',string>;state:{at:string};/** The van's mover (`device.noun` in devices.json): its stops, paths, speed and the time it waits are that part's, not the controller's. */mover:string;visual?:DowntownVisualBindings}
-export const stacksController=(data:Pick<SceneData,'controller'>):StacksController=>(data.controller??stacksDefaults)as StacksController;
-export const downtownController=(data:Pick<SceneData,'controller'>):DowntownController=>(data.controller??downtownDefaults)as DowntownController;
-export function motionControllerProblems(data:SceneData,reads:readonly string[]=[]):string[]{
- const errs:string[]=[],c=data.controller?.kind==='stacks'?stacksController(data):downtownController(data),defaults=data.controller?.kind==='stacks'?stacksDefaults:downtownDefaults,object=(v:unknown)=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
- const shape=(v:unknown,expected:object)=>{if(!object(v)||Object.keys(v as object).sort().join()!==Object.keys(expected).sort().join())errs.push('motion controller fields');};shape(c.kind==='downtown'?Object.fromEntries(Object.entries(c).filter(([k])=>k!=='visual')):c,defaults);if(!object(c))return errs;if(c.kind!==data.id||c.version!==1)errs.push('motion controller kind/version');shape(c.state,defaults.state);if(errs.length)return errs;
- const state=(role:string,ref:string,type:string)=>{if(typeof ref!=='string'||typeof data.state[ref]!==type)errs.push('motion state '+role);};
- const device=(ref:string,spot=false)=>{const d=data.devices.find(d=>d.id===ref);if(!d||spot&&!d.layout?.spot)errs.push('motion device '+ref);};
- if(c.kind==='stacks'){device(c.scannerDevice);const[md,mn]=typeof c.mover==='string'?[c.mover.slice(0,c.mover.indexOf('.')),c.mover.slice(c.mover.indexOf('.')+1)]:['',''],mover=data.devices.find(d=>d.id===md)?.nouns.find(n=>n.id===mn)?.mover;if(!mover||['regular','reefer','return'].some(p=>!mover.paths?.[p]))errs.push('motion mover '+String(c.mover));for(const[k,v]of Object.entries(c.state))state(k,v,k==='departed'||k==='found'?'boolean':k==='loaded'?'number':'string');if(!data.camera?.crates.some(k=>k.id===data.state[c.state.box]))errs.push('motion cargo crate');}
- else if(c.kind==='downtown'){shape(c.devices,downtownDefaults.devices);if(object(c.devices))for(const ref of Object.values(c.devices))device(ref,true);state('at',c.state.at,'string');const[md,mn]=typeof c.mover==='string'?[c.mover.slice(0,c.mover.indexOf('.')),c.mover.slice(c.mover.indexOf('.')+1)]:['',''],mover=data.devices.find(d=>d.id===md)?.nouns.find(n=>n.id===mn)?.mover;if(!mover||md!==c.devices.vehicle||!mover.paths?.inward||!mover.paths?.outward)errs.push('motion mover '+String(c.mover));else if(mover.set!==undefined&&mover.set!==c.state.at)errs.push('motion mover state');}
- if(c.kind==='downtown')errs.push(...downtownVisualProblems(data,c.visual,reads));return errs;
+import stacksDefaults from './stacks-defaults.json';
+import downtownDefaults from './downtown-defaults.json';
+import type { SceneData } from '../../data/types';
+import { downtownVisualProblems, type DowntownVisualBindings } from './downtown-visual';
+export interface StacksController {
+  kind: 'stacks';
+  version: 1;
+  scannerDevice: string;
+  /** The trolley's mover (`device.noun` in devices.json): its stops, its `regular`, `reefer` and `return` paths and their times are that part's. */ mover: string;
+  state: Record<'boxAt' | 'departed' | 'box' | 'loaded' | 'found', string>;
+}
+export interface DowntownController {
+  kind: 'downtown';
+  version: 1;
+  devices: Record<'gate' | 'vehicle', string>;
+  state: { at: string };
+  /** The van's mover (`device.noun` in devices.json): its stops, paths, speed and the time it waits are that part's, not the controller's. */ mover: string;
+  visual?: DowntownVisualBindings;
+}
+export const stacksController = (data: Pick<SceneData, 'controller'>): StacksController =>
+  (data.controller ?? stacksDefaults) as StacksController;
+export const downtownController = (data: Pick<SceneData, 'controller'>): DowntownController =>
+  (data.controller ?? downtownDefaults) as DowntownController;
+export function motionControllerProblems(data: SceneData, reads: readonly string[] = []): string[] {
+  const errs: string[] = [],
+    c = data.controller?.kind === 'stacks' ? stacksController(data) : downtownController(data),
+    defaults = data.controller?.kind === 'stacks' ? stacksDefaults : downtownDefaults,
+    object = (v: unknown) =>
+      !!v &&
+      typeof v === 'object' &&
+      !Array.isArray(v) &&
+      Object.getPrototypeOf(v) === Object.prototype;
+  const shape = (v: unknown, expected: object) => {
+    if (
+      !object(v) ||
+      Object.keys(v as object)
+        .sort()
+        .join() !== Object.keys(expected).sort().join()
+    )
+      errs.push('motion controller fields');
+  };
+  shape(
+    c.kind === 'downtown'
+      ? Object.fromEntries(Object.entries(c).filter(([k]) => k !== 'visual'))
+      : c,
+    defaults,
+  );
+  if (!object(c)) return errs;
+  if (c.kind !== data.id || c.version !== 1) errs.push('motion controller kind/version');
+  shape(c.state, defaults.state);
+  if (errs.length) return errs;
+  const state = (role: string, ref: string, type: string) => {
+    if (typeof ref !== 'string' || typeof data.state[ref] !== type)
+      errs.push('motion state ' + role);
+  };
+  const device = (ref: string, spot = false) => {
+    const d = data.devices.find((d) => d.id === ref);
+    if (!d || (spot && !d.layout?.spot)) errs.push('motion device ' + ref);
+  };
+  if (c.kind === 'stacks') {
+    device(c.scannerDevice);
+    const [md, mn] =
+        typeof c.mover === 'string'
+          ? [c.mover.slice(0, c.mover.indexOf('.')), c.mover.slice(c.mover.indexOf('.') + 1)]
+          : ['', ''],
+      mover = data.devices.find((d) => d.id === md)?.nouns.find((n) => n.id === mn)?.mover;
+    if (!mover || ['regular', 'reefer', 'return'].some((p) => !mover.paths?.[p]))
+      errs.push('motion mover ' + String(c.mover));
+    for (const [k, v] of Object.entries(c.state))
+      state(
+        k,
+        v,
+        k === 'departed' || k === 'found' ? 'boolean' : k === 'loaded' ? 'number' : 'string',
+      );
+    if (!data.camera?.crates.some((k) => k.id === data.state[c.state.box]))
+      errs.push('motion cargo crate');
+  } else if (c.kind === 'downtown') {
+    shape(c.devices, downtownDefaults.devices);
+    if (object(c.devices)) for (const ref of Object.values(c.devices)) device(ref, true);
+    state('at', c.state.at, 'string');
+    const [md, mn] =
+        typeof c.mover === 'string'
+          ? [c.mover.slice(0, c.mover.indexOf('.')), c.mover.slice(c.mover.indexOf('.') + 1)]
+          : ['', ''],
+      mover = data.devices.find((d) => d.id === md)?.nouns.find((n) => n.id === mn)?.mover;
+    if (!mover || md !== c.devices.vehicle || !mover.paths?.inward || !mover.paths?.outward)
+      errs.push('motion mover ' + String(c.mover));
+    else if (mover.set !== undefined && mover.set !== c.state.at) errs.push('motion mover state');
+  }
+  if (c.kind === 'downtown') errs.push(...downtownVisualProblems(data, c.visual, reads));
+  return errs;
 }

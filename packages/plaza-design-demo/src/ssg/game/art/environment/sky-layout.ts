@@ -1,11 +1,25 @@
-import {FOV,type Body} from '../../world/light';
-import type {View} from '../core/view';
-const PAR=0.02;
+import { FOV, type Body } from '../../world/light';
+import type { View } from '../core/view';
+const PAR = 0.02;
 /** A body's screen position: x from its azimuth relative to the view, y from its height over `horizon` (screen y). */
-export function skyPos(v: View, b: Body, relDeg: number, horizon: number, top = 0):{x:number;y:number;in:boolean} {
-  if(v.cameraFrame){const f=v.cameraFrame,p=skyPos(f.view,b,relDeg,horizon-f.y,top);return{...p,x:p.x+f.x,y:p.y+f.y};}
+export function skyPos(
+  v: View,
+  b: Body,
+  relDeg: number,
+  horizon: number,
+  top = 0,
+): { x: number; y: number; in: boolean } {
+  if (v.cameraFrame) {
+    const f = v.cameraFrame,
+      p = skyPos(f.view, b, relDeg, horizon - f.y, top);
+    return { ...p, x: p.x + f.x, y: p.y + f.y };
+  }
   const span = Math.max(40, horizon - top);
-  return { x: v.viewW / 2 + (relDeg / FOV) * (v.viewW / 2) - v.cam * PAR, y: horizon - b.el * span * 0.86, in: Math.abs(relDeg) < FOV + 12 };
+  return {
+    x: v.viewW / 2 + (relDeg / FOV) * (v.viewW / 2) - v.cam * PAR,
+    y: horizon - b.el * span * 0.86,
+    in: Math.abs(relDeg) < FOV + 12,
+  };
 }
 
 export interface SkyOpts {

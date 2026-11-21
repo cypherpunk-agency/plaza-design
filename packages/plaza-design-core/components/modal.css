@@ -79,11 +79,7 @@
   justify-content: space-between;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--color-border-default);
-  background: linear-gradient(
-    90deg,
-    rgba(var(--color-primary-500-rgb), 0.1) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, rgba(var(--color-primary-500-rgb), 0.1) 0%, transparent 100%);
 }
 
 .plaza-modal__title {
@@ -169,11 +165,7 @@
 }
 
 .plaza-modal--danger .plaza-modal__header {
-  background: linear-gradient(
-    90deg,
-    rgba(var(--color-error-rgb), 0.15) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, rgba(var(--color-error-rgb), 0.15) 0%, transparent 100%);
   border-bottom-color: rgba(var(--color-error-rgb), 0.5);
 }
 
@@ -192,11 +184,7 @@
 }
 
 .plaza-modal--success .plaza-modal__header {
-  background: linear-gradient(
-    90deg,
-    rgba(var(--color-success-rgb), 0.15) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, rgba(var(--color-success-rgb), 0.15) 0%, transparent 100%);
   border-bottom-color: rgba(var(--color-success-rgb), 0.5);
 }
 

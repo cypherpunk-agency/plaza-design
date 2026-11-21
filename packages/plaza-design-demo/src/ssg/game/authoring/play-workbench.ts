@@ -1,113 +1,797 @@
-import {liveSources} from './validation-snapshot';
-import {chooseProfile} from '../runtime/play-profile';
-import {renderStartingStateControls} from './starting-state-controls';
-import type {NetData} from '../data';
-import {PlayStartup,playStartupWaitingMessage} from './play-startup';
-import {validatePendingFixtures} from './pending-fixtures';
-import {deviceSceneIds,deviceDocumentId} from './device-sources';
-import {nativeGameplayScene} from './native-gameplay-scenes';
+import { liveSources } from './validation-snapshot';
+import { chooseProfile } from '../runtime/play-profile';
+import { renderStartingStateControls } from './starting-state-controls';
+import type { NetData } from '../data';
+import { PlayStartup, playStartupWaitingMessage } from './play-startup';
+import { validatePendingFixtures } from './pending-fixtures';
+import { deviceSceneIds, deviceDocumentId } from './device-sources';
+import { nativeGameplayScene } from './native-gameplay-scenes';
 import demoCoverage from '../demo/coverage.json';
-import type {WorkbenchContext,WorkbenchHandle} from './contracts';
-import type {PrivateStorageSnapshot} from '../runtime/storage';
-import {TypedForm} from './typed-form';
-import {validatePlayFixtures,playScenes,defaultPlayFixture,type PlayScene,type PlayFixture} from '../world/checkpoints';
-import {NATIVE_SCENES} from '../scenes';
-import {gameplayScenes} from './gameplay-scenes';
-import {createFrame} from './frame';
-declare const EDITOR_PLAY_ENTRY:string;
+import type { WorkbenchContext, WorkbenchHandle } from './contracts';
+import type { PrivateStorageSnapshot } from '../runtime/storage';
+import { TypedForm } from './typed-form';
+import {
+  validatePlayFixtures,
+  playScenes,
+  defaultPlayFixture,
+  type PlayScene,
+  type PlayFixture,
+} from '../world/checkpoints';
+import { NATIVE_SCENES } from '../scenes';
+import { gameplayScenes } from './gameplay-scenes';
+import { createFrame } from './frame';
+declare const EDITOR_PLAY_ENTRY: string;
 
 /** Source edits stay in ComposerModel; each run owns a disposable opaque-origin realm. */
-export function mountPlayWorkbench(host:HTMLElement,context:WorkbenchContext,selection:{profile?:string;fixture?:string;device?:string;settingsOpen?:boolean;scene?:string;debugOpen?:boolean}={},district=false,manifest=false,about?:string):WorkbenchHandle {
- if(context.checkpoint){selection.fixture=context.checkpoint;selection.scene=(context.documents.find(d=>d.id==='play-fixtures')?.value as import('../world/checkpoints').PlayFixtures)?.fixtures.find(f=>f.id===context.checkpoint)?.scene??selection.scene;}
- const api=context.authoring!,controls=document.createElement('section'),toolbar=document.createElement('div'),viewport=document.createElement('div'),status=document.createElement('p'),error=document.createElement('p'),inspect=document.createElement('pre'),devices=document.createElement('div'),engine=document.createElement('pre'),startupView=document.createElement('pre');
- viewport.className='play-viewport';
- if(!context.playSettings)viewport.style.cssText='width:100%;aspect-ratio:16/9;max-height:calc(100vh - 220px);min-height:300px;background:#05080c';controls.style.marginTop='12px';
- for(const pre of [inspect,engine,startupView])pre.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto';
- startupView.setAttribute('aria-label','Play startup');inspect.setAttribute('aria-label','Play state');engine.setAttribute('aria-label','Device diagnostics');status.setAttribute('role','status');error.setAttribute('role','alert');error.className='error';
- status.textContent='Play the pending scene. Arrows/A/D move, E interacts, H hacks, B opens the board, Esc pauses. Saves remain private.';
- const startNote=document.createElement('p');startNote.className='muted';
- if(context.playStart)startNote.textContent=context.playStart.mode==='checkpoint'?'Starting from the checkpoint\u2019s saved placement, sequence and time.':'Starting from the current preview '+(context.playStart.sequence?context.playStart.sequence.id+' at '+context.playStart.sequence.time.toFixed(3)+' s':'in base editing')+'. World state comes from the selected checkpoint; editor navigation is not saved game progress.';
- const mobileSummary=document.createElement('section');mobileSummary.setAttribute('aria-label','Live mobile locations');controls.append(mobileSummary);
- const debug=document.createElement('details'),debugTitle=document.createElement('summary');debugTitle.textContent='Debug · player state and device diagnostics (JSON)';debug.className='debug-drawer';debug.open=selection.debugOpen??false;debug.ontoggle=()=>{selection.debugOpen=debug.open;if(debug.open)diagnostics();};debug.append(debugTitle,devices,inspect,engine,startupView);
- // Labs show Play in the editor frame (settings on the right); Scene Play fills the Scene stage as it is.
- if(about!==undefined){const note=document.createElement('p');note.className='muted';note.textContent=about;createFrame(host,{stage:[toolbar,status,error,viewport],inspector:[note,controls,debug]},'Play');controls.style.marginTop='0';}
- else if(context.playSettings){const title=document.createElement('h2');title.textContent='Play session';context.playSettings.replaceChildren(title,toolbar,status,error,controls,debug);host.replaceChildren(viewport);}
- else host.replaceChildren(toolbar,status,error,viewport,controls,debug);
- let frame:HTMLIFrameElement|undefined,generation=0,disposed=false,timer:ReturnType<typeof setTimeout>|undefined,pending:unknown,last:any,deviceSignature='',startup:PlayStartup|undefined;
- const startupDiagnostics=()=>{const snapshot=startup?.snapshot();startupView.textContent=snapshot?JSON.stringify(snapshot,null,2):'';if(snapshot?.waiting)status.textContent=playStartupWaitingMessage(snapshot);};
- const form=new TypedForm(e=>error.textContent=e instanceof Error?e.message:String(e));
- const currentDocuments=()=>liveSources(context);
- const validateFixtures=(value:unknown)=>{const snapshot=currentDocuments();return Object.keys(NATIVE_SCENES).every(id=>snapshot.has(id))?validatePendingFixtures(value,snapshot):validatePlayFixtures(value);};
- const fixtureTemplate=(scene:PlayScene)=>defaultPlayFixture(scene,(api.get('network').value as NetData).scanProgram);
- // Validation reads every document, so it runs once per source version; callers get their own copy to change.
- let validated:{view:readonly unknown[];value:ReturnType<typeof validateFixtures>}|undefined;
- const documents=()=>{const view=api.snapshot?.();if(!view||validated?.view!==view){const value=validateFixtures(api.get('play-fixtures').value);if(!view)return value;validated={view,value};}return structuredClone(validated.value);};
- // Play starts from the chosen checkpoint. With none chosen, the editor's Play starts a temporary run in the open
- // chunk from default world values; nothing is written to source until "Save as checkpoint".
- let useTemporary=!!context.playStart&&!context.checkpoint&&!district&&!manifest,temporary:PlayFixture|undefined;
- const temporaryStart=()=>{if(!temporary&&selection.scene&&(playScenes as readonly string[]).includes(selection.scene)){temporary=fixtureTemplate(selection.scene as PlayScene);temporary.id='temporary-start';temporary.name='Temporary start';}return temporary;};
- const fixture=():PlayFixture|undefined=>{if(useTemporary)return temporaryStart();const doc=documents(),pool=!district&&selection.scene?doc.fixtures.filter(f=>f.scene===selection.scene):doc.fixtures;return pool.find(f=>f.id===selection.fixture)??pool[0];};
- if(manifest&&fixture()?.scene!=='shop'){const doc=documents(),shop=doc.fixtures.find(f=>f.scene==='shop');if(shop)selection.fixture=shop.id;else{const fresh=fixtureTemplate('shop');selection.fixture=fresh.id;queueMicrotask(()=>{if(!disposed){const next=documents();next.fixtures.push(fresh);api.edit('play-fixtures','Add manifest starting fixture',validateFixtures(next));}});}}
- if(district&&!['library','shop','sandbox','vehicle-lab','vehicle-routes'].includes(fixture()!.scene)){const doc=documents(),existing=doc.fixtures.find(f=>f.scene==='library')??doc.fixtures.find(f=>f.scene==='shop');if(existing)selection.fixture=existing.id;else{if(doc.fixtures.length>=32)throw new Error('Delete a duplicate fixture to add the demo starting state');const fresh=fixtureTemplate('library');selection.fixture=fresh.id;queueMicrotask(()=>{if(!disposed){const next=documents();if(!next.fixtures.some(f=>f.id===fresh.id)){next.fixtures.push(fresh);api.edit('play-fixtures','Add demo starting fixture',validateFixtures(next));}}});}}
- if(fixture())selection.fixture=fixture()!.id;
- const stop=()=>{context.onResidency?.(undefined);generation++;clearTimeout(timer);if(frame){frame.onload=null;frame.onerror=null;}startup?.stop();startupDiagnostics();frame?.remove();frame=undefined;pending=undefined;status.textContent='Stopped. Pending source edits are preserved.';};
- const edit=(label:string,change:(f:PlayFixture)=>void)=>{const doc=documents(),row=doc.fixtures.find(f=>f.id===selection.fixture)!,previous=row.scene;change(row);const validated=validateFixtures(doc);if(selection.scene&&row.scene!==previous)selection.scene=row.scene;api.edit('play-fixtures',label,validated);};
- /** The scene's default starting state (the same one "Create starting state" adds). */
- /** Keeps the temporary start as a real checkpoint (one validated, undoable edit) and selects it. */
- function saveTemporary(){const doc=documents(),fresh=structuredClone(temporary!),base=fixtureTemplate(fresh.scene as PlayScene).id;let id=base,n=1;while(doc.fixtures.some(row=>row.id===id))id=base+'-'+n++;fresh.id=id;fresh.name=fresh.scene+' · start';doc.fixtures.push(fresh);api.edit('play-fixtures','Save Play start as checkpoint',validateFixtures(doc));useTemporary=false;selection.fixture=id;fixtureControls();}
- function addDefaultFixture(){const doc=documents(),fresh=fixtureTemplate(selection.scene as PlayScene);let n=1;while(doc.fixtures.some(row=>row.id===fresh.id))fresh.id=fixtureTemplate(selection.scene as PlayScene).id+'-'+n++;doc.fixtures.push(fresh);selection.fixture=fresh.id;api.edit('play-fixtures','Add scene Play fixture',validateFixtures(doc));}
- function fixtureControls(){controls.replaceChildren(mobileSummary,...(startNote.textContent?[startNote]:[]));const f=fixture(),all=documents();
-  if(useTemporary&&f){const note=document.createElement('p');note.textContent='Temporary start in '+f.scene+' with default world values. Nothing is saved; choose a checkpoint in the toolbar to start from one.';controls.append(note);form.button(controls,'Save as checkpoint',saveTemporary,all.fixtures.length>=32);return;}
-  if(f)context.onCheckpoint?.(f.id);if(!f){const note=document.createElement('p');note.textContent='This scene has no starting state yet.';controls.append(note);form.button(controls,'Create starting state',addDefaultFixture,all.fixtures.length>=32);return;}if(district){const link=document.createElement('a');link.href='/?demo';link.target='_blank';link.rel='noopener';link.textContent='Open persistent Test District (separate demo saves)';controls.append(link);const coverage=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Demo mechanics and scenarios';coverage.append(summary);for(const feature of demoCoverage.features){const row=document.createElement('p');row.textContent=feature.id+' — '+feature.minimal+'. Failure: '+feature.failure+'. Combined: '+feature.combined+'.';coverage.append(row);}controls.append(coverage);}
-  if(manifest||district||!selection.scene)form.select(controls,'Play scene',manifest?['shop']:district?['library','shop','sandbox','vehicle-lab','vehicle-routes']:[...playScenes],f.scene,scene=>{stop();const doc=documents();let next=doc.fixtures.find(f=>f.scene===scene);if(!next){if(doc.fixtures.length>=32)throw new Error('Delete a duplicate fixture before adding another scene');next=fixtureTemplate(scene as PlayScene);let n=1;while(doc.fixtures.some(f=>f.id===next!.id))next.id=fixtureTemplate(scene as PlayScene).id+'-'+n++;doc.fixtures.push(next);selection.fixture=next.id;api.edit('play-fixtures','Add scene Play fixture',validateFixtures(doc));}selection.fixture=next.id;fixtureControls();});
-  const profiles=(api.get('play-profiles').value as import('../runtime/play-profiles').PlayProfiles),available=profiles.profiles.filter(p=>p.world===(district||manifest?'testDistrict':'campaign'));
-  if(available.length){
-   if(!available.some(p=>p.id===selection.profile))selection.profile=chooseProfile(profiles,{search:'',frame:'access-denied-editor-play'+(f.scene.startsWith('harbor-')?'':f.scene==='sandbox'?':sandbox':':normal'),restricted:district||manifest},true).id;
-   const picker=document.createElement('select');for(const p of available){const option=document.createElement('option');option.value=p.id;option.textContent=p.label;picker.append(option);}picker.value=selection.profile!;
-   picker.onchange=()=>form.run(()=>{stop();selection.profile=picker.value;fixtureControls();});form.field(controls,'Run configuration',picker);
+export function mountPlayWorkbench(
+  host: HTMLElement,
+  context: WorkbenchContext,
+  selection: {
+    profile?: string;
+    fixture?: string;
+    device?: string;
+    settingsOpen?: boolean;
+    scene?: string;
+    debugOpen?: boolean;
+  } = {},
+  district = false,
+  manifest = false,
+  about?: string,
+): WorkbenchHandle {
+  if (context.checkpoint) {
+    selection.fixture = context.checkpoint;
+    selection.scene =
+      (
+        context.documents.find((d) => d.id === 'play-fixtures')
+          ?.value as import('../world/checkpoints').PlayFixtures
+      )?.fixtures.find((f) => f.id === context.checkpoint)?.scene ?? selection.scene;
   }
-  form.select(controls,'Checkpoint',all.fixtures.filter(row=>row.scene===f.scene).map(row=>row.id),f.id,id=>{stop();selection.fixture=id;fixtureControls();});
-  form.button(controls,'Duplicate checkpoint',()=>{const doc=documents();let i=1;while(doc.fixtures.some(f=>f.id==='fixture-'+i))i++;const copy=structuredClone(f);copy.id='fixture-'+i;copy.name+=' copy';doc.fixtures.push(copy);selection.fixture=copy.id;api.edit('play-fixtures','Duplicate Play fixture',validateFixtures(doc));},all.fixtures.length>=32);
-  const configurations=(api.get('play-profiles').value as import('../runtime/play-profiles').PlayProfiles).profiles.filter(p=>p.checkpoint===f.id);
-  form.button(controls,'Delete checkpoint',()=>{const doc=documents();doc.fixtures=doc.fixtures.filter(row=>row.id!==f.id);selection.fixture=doc.fixtures.find(row=>row.scene===f.scene)!.id;api.edit('play-fixtures','Delete Play fixture',validateFixtures(doc));},configurations.length>0||all.fixtures.filter(row=>row.scene===f.scene).length<=1);
-  if(configurations.length){const note=document.createElement('p');note.textContent='Starts '+configurations.map(p=>p.label).join(', ')+'. Rebind those configurations before deleting this checkpoint.';controls.append(note);}
-  const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Starting state · '+f.name;details.open=selection.settingsOpen??false;details.append(summary);controls.append(details);
-  // The starting-state form is large; it is built when first opened rather than on every Play start.
-  let built=false;const build=()=>{if(built)return;built=true;renderStartingStateControls(details,context,f,form,edit,e=>{error.textContent=e instanceof Error?e.message:String(e);});};
-  details.ontoggle=()=>{selection.settingsOpen=details.open;if(details.open)build();};if(details.open)build();
-
- }
- function diagnostics(){if(!last)return;context.onResidency?.(last.residency?.chunks);
-  mobileSummary.replaceChildren();const mobileRows=(last.mobiles??[]).flatMap((m:any)=>[...m.vehicles.map((v:any)=>[v.id,v.zone,m.source,m.hosted?'chunk visible':'chunk unloaded']),...m.people.map((p:any)=>[p.key,p.zone??last.scene,m.source,m.hosted?'chunk visible':'chunk unloaded'])]);
-  if(mobileRows.length){const title=document.createElement('h4');title.textContent='Live mobile locations';const table=document.createElement('table');for(const cells of [['Entity','Current chunk','Source','Scenery'],...mobileRows]){const row=document.createElement('tr');for(const text of cells){const cell=document.createElement('td');cell.textContent=String(text);row.append(cell);}table.append(row);}mobileSummary.append(title,table);}
-  const summary=(name:string,headers:string[],rows:unknown[][])=>{if(!rows.length)return;const title=document.createElement('h4'),table=document.createElement('table');title.textContent=name;for(const cells of[headers,...rows]){const row=document.createElement('tr');for(const value of cells){const cell=document.createElement('td');cell.textContent=String(value??'—');row.append(cell);}table.append(row);}mobileSummary.append(title,table);};
-  summary('Live triggers',['Trigger','Condition','Mode','Completed','Activations','Last result','Command'],(last.engine?.gameplay?.triggers??[]).map((t:any)=>[t.id,t.active?'true':'false',t.mode,t.completed?'yes':'no',t.activationCount,t.last?.result,t.command]));
-  summary('Spatial regions',['Region','Watching','Across','Other axis','Armed','Inside'],(last.engine?.zones??[]).map((z:any)=>[z.key,z.watch,z.from+' … '+z.to,z.within?.join(' … '),z.armed?'yes':'no',z.inside===null?'not observed':z.inside?'yes':'no']));
-  const world=last.worldComposition;
-  if(world?.pending?.length){const note=document.createElement('p');note.textContent='Pending world edit: '+world.pending.map((e:any)=>e.composition).join(', ')+(world.blockers?.length?' · '+world.blockers.map((b:any)=>b.chunk+': '+b.reason).join('; '):' · awaiting lifecycle commit');mobileSummary.append(note);}
-  // The raw state and engine dumps live in the folded debug drawer; they are serialised only while it is open.
-  if(!debug.open)return;const {engine:runtime,...state}=last;inspect.textContent=JSON.stringify(state,null,2);if(!runtime){engine.textContent='';return;}
-  const ids=runtime.devices.map((d:any)=>d.id),signature=ids.join('|');if(signature!==deviceSignature){deviceSignature=signature;devices.replaceChildren();if(!ids.includes(selection.device))selection.device=ids[0];form.select(devices,'Inspect device',['',...ids],selection.device??'',id=>{selection.device=id;diagnostics();});}
-  const selected=selection.device,recent=runtime.recent.filter((r:any)=>!selected||r.context.dev===selected);engine.textContent=JSON.stringify({device:runtime.devices.find((d:any)=>d.id===selected)??null,state:runtime.state,goals:runtime.goals,links:runtime.links.filter((l:any)=>!selected||l.from.startsWith(selected+'.')||l.to.startsWith(selected+'.')),live:runtime.live,time:runtime.time,clocks:runtime.clocks,locks:runtime.locks,trace:runtime.trace,watchdog:runtime.watchdog,failedConditions:recent.filter((r:any)=>r.phase==='condition'&&r.detail.matches===false),recent},null,2);
- }
- const start=async(memory?:PrivateStorageSnapshot)=>{stop();if(!fixture()){error.textContent='Create a starting state before playing this scene.';return;}const run=generation;error.textContent='';startup=new PlayStartup({attempt:run,scene:fixture()!.scene,entry:new URL(EDITOR_PLAY_ENTRY,location.href).href});startupDiagnostics();status.textContent='Loading game fonts for isolated Play…';timer=setTimeout(()=>{if(!disposed&&run===generation&&startup){startup.wait();startupDiagnostics();status.textContent=playStartupWaitingMessage(startup.snapshot());}},15000);inspect.textContent=engine.textContent='';last=undefined;deviceSignature='';devices.replaceChildren();try{
-  const f=structuredClone(fixture()!);
-  if(context.playStart?.mode==='preview'){if(context.playStart.sequence)f.sequence={...context.playStart.sequence};else delete f.sequence;}
-  const live=liveSources(context),snapshot=structuredClone(context.documents.map(doc=>({...doc,value:live.get(doc.id)}))),composition=snapshot.find(doc=>doc.kind==='composition'&&(doc.value as {scene?:string}).scene===f.scene)?.value,authored=gameplayScenes.find(s=>s.id===f.scene)??nativeGameplayScene(f.scene),gameplay=authored?api.get(authored.gameplayId).value:undefined,sceneDocument=authored&&'prefix'in authored?api.get(authored.prefix+'-scene').value:undefined;
-  const fonts=await Promise.all([400,500,600,700].map(async weight=>{const r=await fetch(`/fonts/ibm-plex-mono-latin-${weight}-normal.woff2`,{credentials:'omit'});if(!r.ok)throw new Error('Game font unavailable');return {weight,bytes:await r.arrayBuffer()};}));if(disposed||run!==generation)return;startup.fontsReady();startupDiagnostics();
-  if(manifest&&f.scene!=='shop')throw new Error('Manifest pilot uses its isolated shop role');
-  frame=document.createElement('iframe');frame.name='access-denied-editor-play'+(f.scene.startsWith('harbor-')?'':f.scene==='sandbox'?':sandbox':':normal');frame.title=f.scene+' play session';frame.setAttribute('sandbox','allow-scripts');frame.style.cssText='width:100%;height:100%;border:0;display:block';frame.loading='eager';const frameURL=new URL(EDITOR_PLAY_ENTRY,location.href);if(new URLSearchParams(location.search).has('perf'))frameURL.searchParams.set('perf','');pending={viewport:context.playStart?.viewport,camera:context.playStart?.mode==='preview'&&!f.sequence?context.playStart.camera:undefined,profile:selection.profile,sourceDocuments:snapshot.filter(d=>!d.id.startsWith('authored.')).map(d=>({id:d.id,value:d.value})),deviceSource:deviceSceneIds.includes(f.scene)?api.get(deviceDocumentId(f.scene)).value:undefined,metroSource:api.get('metro-source').value,citySource:api.get('city-source').value,botReactions:api.get('bot-reactions').value,fixture:f,composition:manifest?api.get('demo-manifest').value:composition,gameplay:manifest?api.get('demo-manifest-gameplay').value:gameplay,sceneDocument:manifest?api.get('demo-manifest-scene').value:sceneDocument,manifest,memory,fonts,...(district?{district:true}:{})};const current=frame;current.onload=()=>{if(disposed||run!==generation||frame!==current)return;startup?.loaded();startupDiagnostics();};current.onerror=()=>{if(disposed||run!==generation||frame!==current)return;clearTimeout(timer);startup?.fail('The isolated frame reported a navigation error.');startupDiagnostics();error.textContent='The isolated frame reported a navigation error. Stop returns to editing.';};startup.navigate();startupDiagnostics();status.textContent='Loading isolated frame; waiting for the game runtime…';current.src=frameURL.href;viewport.append(current);
- }catch(e){if(run===generation){clearTimeout(timer);startup?.fail(e);startupDiagnostics();error.textContent=e instanceof Error?e.message:String(e);}}};
- const receive=(event:MessageEvent)=>{if(!frame||event.source!==frame.contentWindow||event.data?.channel!=='editor-play')return;const{type,value}=event.data;if(type==='startup'){if(startup?.probe(value))startupDiagnostics();}else if(type==='ready'){if(!startup?.runtimeReady())return;startupDiagnostics();try{frame.contentWindow!.postMessage({channel:'editor-play',type:'start',value:pending},'*');startup.startSent();startupDiagnostics();status.textContent='Runtime ready; starting the pending game snapshot…';}catch(e){clearTimeout(timer);startup.fail(e);startupDiagnostics();stop();error.textContent=e instanceof Error?e.message:String(e);}}else if(type==='running'||type==='state'){if(!startup?.running())return;startupDiagnostics();clearTimeout(timer);status.textContent='Playing pending '+value.scene+' snapshot · Stop returns to editing.';last=value;diagnostics();}else if(type==='restart')void start(value.memory);else if(type==='quit')(context.stopPlay??stop)();else if(type==='error'){startup?.fail(value);startupDiagnostics();stop();error.textContent=String(value);}};
- window.addEventListener('message',receive);fixtureControls();for(const[label,action]of [['Play',()=>void start()],['Stop',context.stopPlay??stop],['Reset play',()=>void start()]] as const)form.button(toolbar,label,action);
- // Play on a playable scene with no starting state yet adds the default one first (after mount, so the edit reaches this
- // retained mount), then starts. The 32-fixture limit still applies: then the Create button explains it.
- const needsFixture=!useTemporary&&!fixture()&&!!selection.scene&&!manifest&&!district&&documents().fixtures.length<32;
- if(needsFixture)queueMicrotask(()=>{if(disposed||fixture())return;try{addDefaultFixture();}catch(e){error.textContent=e instanceof Error?e.message:String(e);return;}fixtureControls();if(context.autostart)void start();});
- else if(context.autostart)void start();
- const handle=(()=>{disposed=true;stop();window.removeEventListener('message',receive);host.replaceChildren();context.playSettings?.replaceChildren();host.classList?.remove('framed');}) as WorkbenchHandle;
- // The Scene stage retains this mount while source/history changes. Refresh its controls,
- // and let the next explicit Play take a fresh source snapshot without replacing a running game.
- handle.refresh=()=>{if(disposed)return;const selected=fixture();if(selected){selection.fixture=selected.id;error.textContent='';}fixtureControls();};
- return handle;
+  const api = context.authoring!,
+    controls = document.createElement('section'),
+    toolbar = document.createElement('div'),
+    viewport = document.createElement('div'),
+    status = document.createElement('p'),
+    error = document.createElement('p'),
+    inspect = document.createElement('pre'),
+    devices = document.createElement('div'),
+    engine = document.createElement('pre'),
+    startupView = document.createElement('pre');
+  viewport.className = 'play-viewport';
+  if (!context.playSettings)
+    viewport.style.cssText =
+      'width:100%;aspect-ratio:16/9;max-height:calc(100vh - 220px);min-height:300px;background:#05080c';
+  controls.style.marginTop = '12px';
+  for (const pre of [inspect, engine, startupView])
+    pre.style.cssText =
+      'white-space:pre-wrap;overflow-wrap:anywhere;max-height:340px;overflow:auto';
+  startupView.setAttribute('aria-label', 'Play startup');
+  inspect.setAttribute('aria-label', 'Play state');
+  engine.setAttribute('aria-label', 'Device diagnostics');
+  status.setAttribute('role', 'status');
+  error.setAttribute('role', 'alert');
+  error.className = 'error';
+  status.textContent =
+    'Play the pending scene. Arrows/A/D move, E interacts, H hacks, B opens the board, Esc pauses. Saves remain private.';
+  const startNote = document.createElement('p');
+  startNote.className = 'muted';
+  if (context.playStart)
+    startNote.textContent =
+      context.playStart.mode === 'checkpoint'
+        ? 'Starting from the checkpoint\u2019s saved placement, sequence and time.'
+        : 'Starting from the current preview ' +
+          (context.playStart.sequence
+            ? context.playStart.sequence.id +
+              ' at ' +
+              context.playStart.sequence.time.toFixed(3) +
+              ' s'
+            : 'in base editing') +
+          '. World state comes from the selected checkpoint; editor navigation is not saved game progress.';
+  const mobileSummary = document.createElement('section');
+  mobileSummary.setAttribute('aria-label', 'Live mobile locations');
+  controls.append(mobileSummary);
+  const debug = document.createElement('details'),
+    debugTitle = document.createElement('summary');
+  debugTitle.textContent = 'Debug · player state and device diagnostics (JSON)';
+  debug.className = 'debug-drawer';
+  debug.open = selection.debugOpen ?? false;
+  debug.ontoggle = () => {
+    selection.debugOpen = debug.open;
+    if (debug.open) diagnostics();
+  };
+  debug.append(debugTitle, devices, inspect, engine, startupView);
+  // Labs show Play in the editor frame (settings on the right); Scene Play fills the Scene stage as it is.
+  if (about !== undefined) {
+    const note = document.createElement('p');
+    note.className = 'muted';
+    note.textContent = about;
+    createFrame(
+      host,
+      { stage: [toolbar, status, error, viewport], inspector: [note, controls, debug] },
+      'Play',
+    );
+    controls.style.marginTop = '0';
+  } else if (context.playSettings) {
+    const title = document.createElement('h2');
+    title.textContent = 'Play session';
+    context.playSettings.replaceChildren(title, toolbar, status, error, controls, debug);
+    host.replaceChildren(viewport);
+  } else host.replaceChildren(toolbar, status, error, viewport, controls, debug);
+  let frame: HTMLIFrameElement | undefined,
+    generation = 0,
+    disposed = false,
+    timer: ReturnType<typeof setTimeout> | undefined,
+    pending: unknown,
+    last: any,
+    deviceSignature = '',
+    startup: PlayStartup | undefined;
+  const startupDiagnostics = () => {
+    const snapshot = startup?.snapshot();
+    startupView.textContent = snapshot ? JSON.stringify(snapshot, null, 2) : '';
+    if (snapshot?.waiting) status.textContent = playStartupWaitingMessage(snapshot);
+  };
+  const form = new TypedForm(
+    (e) => (error.textContent = e instanceof Error ? e.message : String(e)),
+  );
+  const currentDocuments = () => liveSources(context);
+  const validateFixtures = (value: unknown) => {
+    const snapshot = currentDocuments();
+    return Object.keys(NATIVE_SCENES).every((id) => snapshot.has(id))
+      ? validatePendingFixtures(value, snapshot)
+      : validatePlayFixtures(value);
+  };
+  const fixtureTemplate = (scene: PlayScene) =>
+    defaultPlayFixture(scene, (api.get('network').value as NetData).scanProgram);
+  // Validation reads every document, so it runs once per source version; callers get their own copy to change.
+  let validated:
+    { view: readonly unknown[]; value: ReturnType<typeof validateFixtures> } | undefined;
+  const documents = () => {
+    const view = api.snapshot?.();
+    if (!view || validated?.view !== view) {
+      const value = validateFixtures(api.get('play-fixtures').value);
+      if (!view) return value;
+      validated = { view, value };
+    }
+    return structuredClone(validated.value);
+  };
+  // Play starts from the chosen checkpoint. With none chosen, the editor's Play starts a temporary run in the open
+  // chunk from default world values; nothing is written to source until "Save as checkpoint".
+  let useTemporary = !!context.playStart && !context.checkpoint && !district && !manifest,
+    temporary: PlayFixture | undefined;
+  const temporaryStart = () => {
+    if (
+      !temporary &&
+      selection.scene &&
+      (playScenes as readonly string[]).includes(selection.scene)
+    ) {
+      temporary = fixtureTemplate(selection.scene as PlayScene);
+      temporary.id = 'temporary-start';
+      temporary.name = 'Temporary start';
+    }
+    return temporary;
+  };
+  const fixture = (): PlayFixture | undefined => {
+    if (useTemporary) return temporaryStart();
+    const doc = documents(),
+      pool =
+        !district && selection.scene
+          ? doc.fixtures.filter((f) => f.scene === selection.scene)
+          : doc.fixtures;
+    return pool.find((f) => f.id === selection.fixture) ?? pool[0];
+  };
+  if (manifest && fixture()?.scene !== 'shop') {
+    const doc = documents(),
+      shop = doc.fixtures.find((f) => f.scene === 'shop');
+    if (shop) selection.fixture = shop.id;
+    else {
+      const fresh = fixtureTemplate('shop');
+      selection.fixture = fresh.id;
+      queueMicrotask(() => {
+        if (!disposed) {
+          const next = documents();
+          next.fixtures.push(fresh);
+          api.edit('play-fixtures', 'Add manifest starting fixture', validateFixtures(next));
+        }
+      });
+    }
+  }
+  if (
+    district &&
+    !['library', 'shop', 'sandbox', 'vehicle-lab', 'vehicle-routes'].includes(fixture()!.scene)
+  ) {
+    const doc = documents(),
+      existing =
+        doc.fixtures.find((f) => f.scene === 'library') ??
+        doc.fixtures.find((f) => f.scene === 'shop');
+    if (existing) selection.fixture = existing.id;
+    else {
+      if (doc.fixtures.length >= 32)
+        throw new Error('Delete a duplicate fixture to add the demo starting state');
+      const fresh = fixtureTemplate('library');
+      selection.fixture = fresh.id;
+      queueMicrotask(() => {
+        if (!disposed) {
+          const next = documents();
+          if (!next.fixtures.some((f) => f.id === fresh.id)) {
+            next.fixtures.push(fresh);
+            api.edit('play-fixtures', 'Add demo starting fixture', validateFixtures(next));
+          }
+        }
+      });
+    }
+  }
+  if (fixture()) selection.fixture = fixture()!.id;
+  const stop = () => {
+    context.onResidency?.(undefined);
+    generation++;
+    clearTimeout(timer);
+    if (frame) {
+      frame.onload = null;
+      frame.onerror = null;
+    }
+    startup?.stop();
+    startupDiagnostics();
+    frame?.remove();
+    frame = undefined;
+    pending = undefined;
+    status.textContent = 'Stopped. Pending source edits are preserved.';
+  };
+  const edit = (label: string, change: (f: PlayFixture) => void) => {
+    const doc = documents(),
+      row = doc.fixtures.find((f) => f.id === selection.fixture)!,
+      previous = row.scene;
+    change(row);
+    const validated = validateFixtures(doc);
+    if (selection.scene && row.scene !== previous) selection.scene = row.scene;
+    api.edit('play-fixtures', label, validated);
+  };
+  /** The scene's default starting state (the same one "Create starting state" adds). */
+  /** Keeps the temporary start as a real checkpoint (one validated, undoable edit) and selects it. */
+  function saveTemporary() {
+    const doc = documents(),
+      fresh = structuredClone(temporary!),
+      base = fixtureTemplate(fresh.scene as PlayScene).id;
+    let id = base,
+      n = 1;
+    while (doc.fixtures.some((row) => row.id === id)) id = base + '-' + n++;
+    fresh.id = id;
+    fresh.name = fresh.scene + ' · start';
+    doc.fixtures.push(fresh);
+    api.edit('play-fixtures', 'Save Play start as checkpoint', validateFixtures(doc));
+    useTemporary = false;
+    selection.fixture = id;
+    fixtureControls();
+  }
+  function addDefaultFixture() {
+    const doc = documents(),
+      fresh = fixtureTemplate(selection.scene as PlayScene);
+    let n = 1;
+    while (doc.fixtures.some((row) => row.id === fresh.id))
+      fresh.id = fixtureTemplate(selection.scene as PlayScene).id + '-' + n++;
+    doc.fixtures.push(fresh);
+    selection.fixture = fresh.id;
+    api.edit('play-fixtures', 'Add scene Play fixture', validateFixtures(doc));
+  }
+  function fixtureControls() {
+    controls.replaceChildren(mobileSummary, ...(startNote.textContent ? [startNote] : []));
+    const f = fixture(),
+      all = documents();
+    if (useTemporary && f) {
+      const note = document.createElement('p');
+      note.textContent =
+        'Temporary start in ' +
+        f.scene +
+        ' with default world values. Nothing is saved; choose a checkpoint in the toolbar to start from one.';
+      controls.append(note);
+      form.button(controls, 'Save as checkpoint', saveTemporary, all.fixtures.length >= 32);
+      return;
+    }
+    if (f) context.onCheckpoint?.(f.id);
+    if (!f) {
+      const note = document.createElement('p');
+      note.textContent = 'This scene has no starting state yet.';
+      controls.append(note);
+      form.button(controls, 'Create starting state', addDefaultFixture, all.fixtures.length >= 32);
+      return;
+    }
+    if (district) {
+      const link = document.createElement('a');
+      link.href = '/?demo';
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = 'Open persistent Test District (separate demo saves)';
+      controls.append(link);
+      const coverage = document.createElement('details'),
+        summary = document.createElement('summary');
+      summary.textContent = 'Demo mechanics and scenarios';
+      coverage.append(summary);
+      for (const feature of demoCoverage.features) {
+        const row = document.createElement('p');
+        row.textContent =
+          feature.id +
+          ' — ' +
+          feature.minimal +
+          '. Failure: ' +
+          feature.failure +
+          '. Combined: ' +
+          feature.combined +
+          '.';
+        coverage.append(row);
+      }
+      controls.append(coverage);
+    }
+    if (manifest || district || !selection.scene)
+      form.select(
+        controls,
+        'Play scene',
+        manifest
+          ? ['shop']
+          : district
+            ? ['library', 'shop', 'sandbox', 'vehicle-lab', 'vehicle-routes']
+            : [...playScenes],
+        f.scene,
+        (scene) => {
+          stop();
+          const doc = documents();
+          let next = doc.fixtures.find((f) => f.scene === scene);
+          if (!next) {
+            if (doc.fixtures.length >= 32)
+              throw new Error('Delete a duplicate fixture before adding another scene');
+            next = fixtureTemplate(scene as PlayScene);
+            let n = 1;
+            while (doc.fixtures.some((f) => f.id === next!.id))
+              next.id = fixtureTemplate(scene as PlayScene).id + '-' + n++;
+            doc.fixtures.push(next);
+            selection.fixture = next.id;
+            api.edit('play-fixtures', 'Add scene Play fixture', validateFixtures(doc));
+          }
+          selection.fixture = next.id;
+          fixtureControls();
+        },
+      );
+    const profiles = api.get('play-profiles')
+        .value as import('../runtime/play-profiles').PlayProfiles,
+      available = profiles.profiles.filter(
+        (p) => p.world === (district || manifest ? 'testDistrict' : 'campaign'),
+      );
+    if (available.length) {
+      if (!available.some((p) => p.id === selection.profile))
+        selection.profile = chooseProfile(
+          profiles,
+          {
+            search: '',
+            frame:
+              'access-denied-editor-play' +
+              (f.scene.startsWith('harbor-') ? '' : f.scene === 'sandbox' ? ':sandbox' : ':normal'),
+            restricted: district || manifest,
+          },
+          true,
+        ).id;
+      const picker = document.createElement('select');
+      for (const p of available) {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = p.label;
+        picker.append(option);
+      }
+      picker.value = selection.profile!;
+      picker.onchange = () =>
+        form.run(() => {
+          stop();
+          selection.profile = picker.value;
+          fixtureControls();
+        });
+      form.field(controls, 'Run configuration', picker);
+    }
+    form.select(
+      controls,
+      'Checkpoint',
+      all.fixtures.filter((row) => row.scene === f.scene).map((row) => row.id),
+      f.id,
+      (id) => {
+        stop();
+        selection.fixture = id;
+        fixtureControls();
+      },
+    );
+    form.button(
+      controls,
+      'Duplicate checkpoint',
+      () => {
+        const doc = documents();
+        let i = 1;
+        while (doc.fixtures.some((f) => f.id === 'fixture-' + i)) i++;
+        const copy = structuredClone(f);
+        copy.id = 'fixture-' + i;
+        copy.name += ' copy';
+        doc.fixtures.push(copy);
+        selection.fixture = copy.id;
+        api.edit('play-fixtures', 'Duplicate Play fixture', validateFixtures(doc));
+      },
+      all.fixtures.length >= 32,
+    );
+    const configurations = (
+      api.get('play-profiles').value as import('../runtime/play-profiles').PlayProfiles
+    ).profiles.filter((p) => p.checkpoint === f.id);
+    form.button(
+      controls,
+      'Delete checkpoint',
+      () => {
+        const doc = documents();
+        doc.fixtures = doc.fixtures.filter((row) => row.id !== f.id);
+        selection.fixture = doc.fixtures.find((row) => row.scene === f.scene)!.id;
+        api.edit('play-fixtures', 'Delete Play fixture', validateFixtures(doc));
+      },
+      configurations.length > 0 || all.fixtures.filter((row) => row.scene === f.scene).length <= 1,
+    );
+    if (configurations.length) {
+      const note = document.createElement('p');
+      note.textContent =
+        'Starts ' +
+        configurations.map((p) => p.label).join(', ') +
+        '. Rebind those configurations before deleting this checkpoint.';
+      controls.append(note);
+    }
+    const details = document.createElement('details'),
+      summary = document.createElement('summary');
+    summary.textContent = 'Starting state · ' + f.name;
+    details.open = selection.settingsOpen ?? false;
+    details.append(summary);
+    controls.append(details);
+    // The starting-state form is large; it is built when first opened rather than on every Play start.
+    let built = false;
+    const build = () => {
+      if (built) return;
+      built = true;
+      renderStartingStateControls(details, context, f, form, edit, (e) => {
+        error.textContent = e instanceof Error ? e.message : String(e);
+      });
+    };
+    details.ontoggle = () => {
+      selection.settingsOpen = details.open;
+      if (details.open) build();
+    };
+    if (details.open) build();
+  }
+  function diagnostics() {
+    if (!last) return;
+    context.onResidency?.(last.residency?.chunks);
+    mobileSummary.replaceChildren();
+    const mobileRows = (last.mobiles ?? []).flatMap((m: any) => [
+      ...m.vehicles.map((v: any) => [
+        v.id,
+        v.zone,
+        m.source,
+        m.hosted ? 'chunk visible' : 'chunk unloaded',
+      ]),
+      ...m.people.map((p: any) => [
+        p.key,
+        p.zone ?? last.scene,
+        m.source,
+        m.hosted ? 'chunk visible' : 'chunk unloaded',
+      ]),
+    ]);
+    if (mobileRows.length) {
+      const title = document.createElement('h4');
+      title.textContent = 'Live mobile locations';
+      const table = document.createElement('table');
+      for (const cells of [['Entity', 'Current chunk', 'Source', 'Scenery'], ...mobileRows]) {
+        const row = document.createElement('tr');
+        for (const text of cells) {
+          const cell = document.createElement('td');
+          cell.textContent = String(text);
+          row.append(cell);
+        }
+        table.append(row);
+      }
+      mobileSummary.append(title, table);
+    }
+    const summary = (name: string, headers: string[], rows: unknown[][]) => {
+      if (!rows.length) return;
+      const title = document.createElement('h4'),
+        table = document.createElement('table');
+      title.textContent = name;
+      for (const cells of [headers, ...rows]) {
+        const row = document.createElement('tr');
+        for (const value of cells) {
+          const cell = document.createElement('td');
+          cell.textContent = String(value ?? '—');
+          row.append(cell);
+        }
+        table.append(row);
+      }
+      mobileSummary.append(title, table);
+    };
+    summary(
+      'Live triggers',
+      ['Trigger', 'Condition', 'Mode', 'Completed', 'Activations', 'Last result', 'Command'],
+      (last.engine?.gameplay?.triggers ?? []).map((t: any) => [
+        t.id,
+        t.active ? 'true' : 'false',
+        t.mode,
+        t.completed ? 'yes' : 'no',
+        t.activationCount,
+        t.last?.result,
+        t.command,
+      ]),
+    );
+    summary(
+      'Spatial regions',
+      ['Region', 'Watching', 'Across', 'Other axis', 'Armed', 'Inside'],
+      (last.engine?.zones ?? []).map((z: any) => [
+        z.key,
+        z.watch,
+        z.from + ' … ' + z.to,
+        z.within?.join(' … '),
+        z.armed ? 'yes' : 'no',
+        z.inside === null ? 'not observed' : z.inside ? 'yes' : 'no',
+      ]),
+    );
+    const world = last.worldComposition;
+    if (world?.pending?.length) {
+      const note = document.createElement('p');
+      note.textContent =
+        'Pending world edit: ' +
+        world.pending.map((e: any) => e.composition).join(', ') +
+        (world.blockers?.length
+          ? ' · ' + world.blockers.map((b: any) => b.chunk + ': ' + b.reason).join('; ')
+          : ' · awaiting lifecycle commit');
+      mobileSummary.append(note);
+    }
+    // The raw state and engine dumps live in the folded debug drawer; they are serialised only while it is open.
+    if (!debug.open) return;
+    const { engine: runtime, ...state } = last;
+    inspect.textContent = JSON.stringify(state, null, 2);
+    if (!runtime) {
+      engine.textContent = '';
+      return;
+    }
+    const ids = runtime.devices.map((d: any) => d.id),
+      signature = ids.join('|');
+    if (signature !== deviceSignature) {
+      deviceSignature = signature;
+      devices.replaceChildren();
+      if (!ids.includes(selection.device)) selection.device = ids[0];
+      form.select(devices, 'Inspect device', ['', ...ids], selection.device ?? '', (id) => {
+        selection.device = id;
+        diagnostics();
+      });
+    }
+    const selected = selection.device,
+      recent = runtime.recent.filter((r: any) => !selected || r.context.dev === selected);
+    engine.textContent = JSON.stringify(
+      {
+        device: runtime.devices.find((d: any) => d.id === selected) ?? null,
+        state: runtime.state,
+        goals: runtime.goals,
+        links: runtime.links.filter(
+          (l: any) =>
+            !selected || l.from.startsWith(selected + '.') || l.to.startsWith(selected + '.'),
+        ),
+        live: runtime.live,
+        time: runtime.time,
+        clocks: runtime.clocks,
+        locks: runtime.locks,
+        trace: runtime.trace,
+        watchdog: runtime.watchdog,
+        failedConditions: recent.filter(
+          (r: any) => r.phase === 'condition' && r.detail.matches === false,
+        ),
+        recent,
+      },
+      null,
+      2,
+    );
+  }
+  const start = async (memory?: PrivateStorageSnapshot) => {
+    stop();
+    if (!fixture()) {
+      error.textContent = 'Create a starting state before playing this scene.';
+      return;
+    }
+    const run = generation;
+    error.textContent = '';
+    startup = new PlayStartup({
+      attempt: run,
+      scene: fixture()!.scene,
+      entry: new URL(EDITOR_PLAY_ENTRY, location.href).href,
+    });
+    startupDiagnostics();
+    status.textContent = 'Loading game fonts for isolated Play…';
+    timer = setTimeout(() => {
+      if (!disposed && run === generation && startup) {
+        startup.wait();
+        startupDiagnostics();
+        status.textContent = playStartupWaitingMessage(startup.snapshot());
+      }
+    }, 15000);
+    inspect.textContent = engine.textContent = '';
+    last = undefined;
+    deviceSignature = '';
+    devices.replaceChildren();
+    try {
+      const f = structuredClone(fixture()!);
+      if (context.playStart?.mode === 'preview') {
+        if (context.playStart.sequence) f.sequence = { ...context.playStart.sequence };
+        else delete f.sequence;
+      }
+      const live = liveSources(context),
+        snapshot = structuredClone(
+          context.documents.map((doc) => ({ ...doc, value: live.get(doc.id) })),
+        ),
+        composition = snapshot.find(
+          (doc) =>
+            doc.kind === 'composition' && (doc.value as { scene?: string }).scene === f.scene,
+        )?.value,
+        authored = gameplayScenes.find((s) => s.id === f.scene) ?? nativeGameplayScene(f.scene),
+        gameplay = authored ? api.get(authored.gameplayId).value : undefined,
+        sceneDocument =
+          authored && 'prefix' in authored ? api.get(authored.prefix + '-scene').value : undefined;
+      const fonts = await Promise.all(
+        [400, 500, 600, 700].map(async (weight) => {
+          const r = await fetch(`/fonts/ibm-plex-mono-latin-${weight}-normal.woff2`, {
+            credentials: 'omit',
+          });
+          if (!r.ok) throw new Error('Game font unavailable');
+          return { weight, bytes: await r.arrayBuffer() };
+        }),
+      );
+      if (disposed || run !== generation) return;
+      startup.fontsReady();
+      startupDiagnostics();
+      if (manifest && f.scene !== 'shop')
+        throw new Error('Manifest pilot uses its isolated shop role');
+      frame = document.createElement('iframe');
+      frame.name =
+        'access-denied-editor-play' +
+        (f.scene.startsWith('harbor-') ? '' : f.scene === 'sandbox' ? ':sandbox' : ':normal');
+      frame.title = f.scene + ' play session';
+      frame.setAttribute('sandbox', 'allow-scripts');
+      frame.style.cssText = 'width:100%;height:100%;border:0;display:block';
+      frame.loading = 'eager';
+      const frameURL = new URL(EDITOR_PLAY_ENTRY, location.href);
+      if (new URLSearchParams(location.search).has('perf')) frameURL.searchParams.set('perf', '');
+      pending = {
+        viewport: context.playStart?.viewport,
+        camera:
+          context.playStart?.mode === 'preview' && !f.sequence
+            ? context.playStart.camera
+            : undefined,
+        profile: selection.profile,
+        sourceDocuments: snapshot
+          .filter((d) => !d.id.startsWith('authored.'))
+          .map((d) => ({ id: d.id, value: d.value })),
+        deviceSource: deviceSceneIds.includes(f.scene)
+          ? api.get(deviceDocumentId(f.scene)).value
+          : undefined,
+        metroSource: api.get('metro-source').value,
+        citySource: api.get('city-source').value,
+        botReactions: api.get('bot-reactions').value,
+        fixture: f,
+        composition: manifest ? api.get('demo-manifest').value : composition,
+        gameplay: manifest ? api.get('demo-manifest-gameplay').value : gameplay,
+        sceneDocument: manifest ? api.get('demo-manifest-scene').value : sceneDocument,
+        manifest,
+        memory,
+        fonts,
+        ...(district ? { district: true } : {}),
+      };
+      const current = frame;
+      current.onload = () => {
+        if (disposed || run !== generation || frame !== current) return;
+        startup?.loaded();
+        startupDiagnostics();
+      };
+      current.onerror = () => {
+        if (disposed || run !== generation || frame !== current) return;
+        clearTimeout(timer);
+        startup?.fail('The isolated frame reported a navigation error.');
+        startupDiagnostics();
+        error.textContent =
+          'The isolated frame reported a navigation error. Stop returns to editing.';
+      };
+      startup.navigate();
+      startupDiagnostics();
+      status.textContent = 'Loading isolated frame; waiting for the game runtime…';
+      current.src = frameURL.href;
+      viewport.append(current);
+    } catch (e) {
+      if (run === generation) {
+        clearTimeout(timer);
+        startup?.fail(e);
+        startupDiagnostics();
+        error.textContent = e instanceof Error ? e.message : String(e);
+      }
+    }
+  };
+  const receive = (event: MessageEvent) => {
+    if (!frame || event.source !== frame.contentWindow || event.data?.channel !== 'editor-play')
+      return;
+    const { type, value } = event.data;
+    if (type === 'startup') {
+      if (startup?.probe(value)) startupDiagnostics();
+    } else if (type === 'ready') {
+      if (!startup?.runtimeReady()) return;
+      startupDiagnostics();
+      try {
+        frame.contentWindow!.postMessage(
+          { channel: 'editor-play', type: 'start', value: pending },
+          '*',
+        );
+        startup.startSent();
+        startupDiagnostics();
+        status.textContent = 'Runtime ready; starting the pending game snapshot…';
+      } catch (e) {
+        clearTimeout(timer);
+        startup.fail(e);
+        startupDiagnostics();
+        stop();
+        error.textContent = e instanceof Error ? e.message : String(e);
+      }
+    } else if (type === 'running' || type === 'state') {
+      if (!startup?.running()) return;
+      startupDiagnostics();
+      clearTimeout(timer);
+      status.textContent =
+        'Playing pending ' + value.scene + ' snapshot · Stop returns to editing.';
+      last = value;
+      diagnostics();
+    } else if (type === 'restart') void start(value.memory);
+    else if (type === 'quit') (context.stopPlay ?? stop)();
+    else if (type === 'error') {
+      startup?.fail(value);
+      startupDiagnostics();
+      stop();
+      error.textContent = String(value);
+    }
+  };
+  window.addEventListener('message', receive);
+  fixtureControls();
+  for (const [label, action] of [
+    ['Play', () => void start()],
+    ['Stop', context.stopPlay ?? stop],
+    ['Reset play', () => void start()],
+  ] as const)
+    form.button(toolbar, label, action);
+  // Play on a playable scene with no starting state yet adds the default one first (after mount, so the edit reaches this
+  // retained mount), then starts. The 32-fixture limit still applies: then the Create button explains it.
+  const needsFixture =
+    !useTemporary &&
+    !fixture() &&
+    !!selection.scene &&
+    !manifest &&
+    !district &&
+    documents().fixtures.length < 32;
+  if (needsFixture)
+    queueMicrotask(() => {
+      if (disposed || fixture()) return;
+      try {
+        addDefaultFixture();
+      } catch (e) {
+        error.textContent = e instanceof Error ? e.message : String(e);
+        return;
+      }
+      fixtureControls();
+      if (context.autostart) void start();
+    });
+  else if (context.autostart) void start();
+  const handle = (() => {
+    disposed = true;
+    stop();
+    window.removeEventListener('message', receive);
+    host.replaceChildren();
+    context.playSettings?.replaceChildren();
+    host.classList?.remove('framed');
+  }) as WorkbenchHandle;
+  // The Scene stage retains this mount while source/history changes. Refresh its controls,
+  // and let the next explicit Play take a fresh source snapshot without replacing a running game.
+  handle.refresh = () => {
+    if (disposed) return;
+    const selected = fixture();
+    if (selected) {
+      selection.fixture = selected.id;
+      error.textContent = '';
+    }
+    fixtureControls();
+  };
+  return handle;
 }

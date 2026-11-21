@@ -15,15 +15,11 @@ export function ContentLayout({
   content,
   currentPath,
   onNavigate,
-  className
+  className,
 }: ContentLayoutProps) {
   return (
     <div className={`plaza-content-layout ${className || ''}`}>
-      <ContentNav
-        menu={menu}
-        currentPath={currentPath}
-        onNavigate={onNavigate}
-      />
+      <ContentNav menu={menu} currentPath={currentPath} onNavigate={onNavigate} />
       <main className="plaza-content-main">
         <MarkdownRenderer content={content} />
       </main>

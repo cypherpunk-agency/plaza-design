@@ -1,12 +1,32 @@
-import {colorField} from '../core/fields';
-import {fixedGeometry} from '../core/spatial';
-import {choiceField,booleanField} from '../core/fields';
-import {positionListEditor} from '../core/fields';
-import {textField} from '../core/fields';
-import {numericFields} from '../core/fields';
-import {rectangleControls,combineControls,drawingWindowControls,depthControl,viewportElevationControls,worldElevationControl,axisControl,conditionalControls} from '../core/spatial';
-import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
-import {screenBounds} from '../assemblies/static-bounds';
+import { colorField } from '../core/fields';
+import { fixedGeometry } from '../core/spatial';
+import { choiceField, booleanField } from '../core/fields';
+import { positionListEditor } from '../core/fields';
+import { textField } from '../core/fields';
+import { numericFields } from '../core/fields';
+import {
+  rectangleControls,
+  combineControls,
+  drawingWindowControls,
+  depthControl,
+  viewportElevationControls,
+  worldElevationControl,
+  axisControl,
+  conditionalControls,
+} from '../core/spatial';
+import {
+  appearanceBoolean,
+  appearanceChoice,
+  appearanceColor,
+  appearanceRatio,
+  appearanceStructure,
+  appearanceText,
+  generationSeed,
+  semantic,
+  shapeLength,
+  shapePosition,
+} from '../core/fields';
+import { screenBounds } from '../assemblies/static-bounds';
 /**
  * COAST AND SHORE KIT: the shore seen side on, in the coast's coarse pixels (art/core/pixels.ts, three world
  * units each). It began as the title glide's hand-drawn panorama (Tommi reviewed it, 2026-10-15/22) and is a kit
@@ -34,198 +54,518 @@ import {screenBounds} from '../assemblies/static-bounds';
  * piece mirrored (the west beach), its text still readable.
  */
 import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
-import { inPixels, SHORE, STRIP_K, R, hash, lerp, mixHex, smooth, ART, type Pixels } from '../core/pixels';
+import {
+  inPixels,
+  SHORE,
+  STRIP_K,
+  R,
+  hash,
+  lerp,
+  mixHex,
+  smooth,
+  ART,
+  type Pixels,
+} from '../core/pixels';
 import { text } from '../core/primitives';
 import { drawStringLights } from '../assemblies/beach-bar';
 import { placed } from '../core/view';
 import { drawPalm } from './palm';
 import { drawSea } from './sea';
 import { sunsetSun } from './sunset-sky';
-const fixedNativeGeometry=fixedGeometry("This screen wipe follows the camera and authored fade state. It is an overlay, not a world object with physical resize edges.");
+const fixedNativeGeometry = fixedGeometry(
+  'This screen wipe follows the camera and authored fade state. It is an overlay, not a world object with physical resize edges.',
+);
 
 const S = 1 / ART;
-export const PAPER = '255,217,165', ORANGE = '255,136,0', RED = '255,42,68', DAWN = '255,150,90';
-const num = numericFields({min:-1e6,max:1e6,step:1});
+export const PAPER = '255,217,165',
+  ORANGE = '255,136,0',
+  RED = '255,42,68',
+  DAWN = '255,150,90';
+const num = numericFields({ min: -1e6, max: 1e6, step: 1 });
 const str = textField;
 const color = colorField;
 const n = (p: Properties, k: string) => Number(p[k]);
 const s = (p: Properties, k: string) => String(p[k]);
-const list = (label: string, value: Value, check: (row: Record<string, unknown>) => boolean, what: string): Field => ({ kind: 'json', label, default: value,
-  validate: v => { if (!Array.isArray(v) || v.length > 200 || !v.every(r => !!r && typeof r === 'object' && !Array.isArray(r) && check(r as Record<string, unknown>))) throw new Error(label + ': ' + what); } });
+const list = (
+  label: string,
+  value: Value,
+  check: (row: Record<string, unknown>) => boolean,
+  what: string,
+): Field => ({
+  kind: 'json',
+  label,
+  default: value,
+  validate: (v) => {
+    if (
+      !Array.isArray(v) ||
+      v.length > 200 ||
+      !v.every(
+        (r) =>
+          !!r && typeof r === 'object' && !Array.isArray(r) && check(r as Record<string, unknown>),
+      )
+    )
+      throw new Error(label + ': ' + what);
+  },
+});
 const fin = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 
 /** The strip's depth lines on screen (pixels), for a piece standing at `h0`. */
 export function stripLines(P: Pixels, h0 = 0) {
-  return { GY: P.y(h0), BACK: P.y(h0 + SHORE.back), MID: P.y(h0 + SHORE.mid), BEACH: P.y(h0 + SHORE.beach), PIER: P.y(h0 + SHORE.pier), ROAD0: P.y(h0 + SHORE.road0), ROAD1: P.y(h0 + SHORE.road1), FAR_LANE: P.y(h0 + SHORE.farLane), NEAR_LANE: P.y(h0 + SHORE.nearLane), k: STRIP_K };
+  return {
+    GY: P.y(h0),
+    BACK: P.y(h0 + SHORE.back),
+    MID: P.y(h0 + SHORE.mid),
+    BEACH: P.y(h0 + SHORE.beach),
+    PIER: P.y(h0 + SHORE.pier),
+    ROAD0: P.y(h0 + SHORE.road0),
+    ROAD1: P.y(h0 + SHORE.road1),
+    FAR_LANE: P.y(h0 + SHORE.farLane),
+    NEAR_LANE: P.y(h0 + SHORE.nearLane),
+    k: STRIP_K,
+  };
 }
 export type StripLines = ReturnType<typeof stripLines>;
 
-interface Def { spatial?:AssetDefinition['spatial'];validateProperties?:AssetDefinition['validateProperties'];drawingWindow?:AssetDefinition['drawingWindow']; drawingNote?:AssetDefinition['drawingNote']; selection?:AssetDefinition['selection']; type: string; label: string; fields: Record<string, Field>; bounds: AssetDefinition['bounds']; draw: (P: Pixels, p: Properties, h0: number) => void; visual?: Record<string, Field>; parts?: AssetDefinition['parts'] }
+interface Def {
+  spatial?: AssetDefinition['spatial'];
+  validateProperties?: AssetDefinition['validateProperties'];
+  drawingWindow?: AssetDefinition['drawingWindow'];
+  drawingNote?: AssetDefinition['drawingNote'];
+  selection?: AssetDefinition['selection'];
+  type: string;
+  label: string;
+  fields: Record<string, Field>;
+  bounds: AssetDefinition['bounds'];
+  draw: (P: Pixels, p: Properties, h0: number) => void;
+  visual?: Record<string, Field>;
+  parts?: AssetDefinition['parts'];
+}
 const kit = (d: Def): AssetDefinition => ({
-  spatial:d.spatial,validateProperties:d.validateProperties,drawingWindow:d.drawingWindow,drawingNote:d.drawingNote,selection:d.selection,type: d.type, version: 1, label: d.label, category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: d.parts ?? ['backdrop'], fields: d.fields,
+  spatial: d.spatial,
+  validateProperties: d.validateProperties,
+  drawingWindow: d.drawingWindow,
+  drawingNote: d.drawingNote,
+  selection: d.selection,
+  type: d.type,
+  version: 1,
+  label: d.label,
+  category: 'coast',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: d.parts ?? ['backdrop'],
+  fields: d.fields,
   ...(d.visual ? { visualFields: d.visual } : {}),
-  bounds: d.bounds, anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
-  draw(ctx, view, props, _state, _pass, at) { inPixels(ctx, view, at, P => d.draw(P, props, at.h)); },
+  bounds: d.bounds,
+  anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
+  draw(ctx, view, props, _state, _pass, at) {
+    inPixels(ctx, view, at, (P) => d.draw(P, props, at.h));
+  },
 });
 
 // ---------- the ground strip ----------
 
-export const GROUND_KINDS = ['sand', 'inlet', 'rocks', 'gravel', 'quay', 'bridge', 'plaza', 'street', 'road'] as const;
-type GroundKind = typeof GROUND_KINDS[number];
-interface Segment { kind: GroundKind; from: number; to: number }
+export const GROUND_KINDS = [
+  'sand',
+  'inlet',
+  'rocks',
+  'gravel',
+  'quay',
+  'bridge',
+  'plaza',
+  'street',
+  'road',
+] as const;
+type GroundKind = (typeof GROUND_KINDS)[number];
+interface Segment {
+  kind: GroundKind;
+  from: number;
+  to: number;
+}
 
 /** A span of the strip on screen (pixels) for the segment from..to (world units east of the anchor), or null. */
 function spanOf(P: Pixels, from: number, to: number): [number, number] | null {
-  const [v0, v1] = P.span(), a = Math.max(v0 - 2, Math.floor(P.u(from * S))), b = Math.min(v1 + 2, Math.ceil(P.u(to * S)));
+  const [v0, v1] = P.span(),
+    a = Math.max(v0 - 2, Math.floor(P.u(from * S))),
+    b = Math.min(v1 + 2, Math.ceil(P.u(to * S)));
   return b > a ? [a, b] : null;
 }
 
 function groundSegment(P: Pixels, L: StripLines, seg: Segment, O: number, p: Properties) {
   // Material geometry and pattern depth belong to the piece, never the editor viewport.
-  const x = P.x, GY = L.GY, bottom = GY + Number(p.depthBelowGround ?? 384) * S, warm = P.warm, H = GY + 54 * S;
-  const sp = spanOf(P, seg.from, seg.to); if (!sp) return;
+  const x = P.x,
+    GY = L.GY,
+    bottom = GY + Number(p.depthBelowGround ?? 384) * S,
+    warm = P.warm,
+    H = GY + 54 * S;
+  const sp = spanOf(P, seg.from, seg.to);
+  if (!sp) return;
   const [a, b] = sp;
-  const fill = (top: string, low: string, from = GY) => { const gr = x.createLinearGradient(0, from, 0, H); gr.addColorStop(0, top); gr.addColorStop(1, low); x.fillStyle = gr; x.fillRect(a, from, b - a, bottom - from); };
+  const fill = (top: string, low: string, from = GY) => {
+    const gr = x.createLinearGradient(0, from, 0, H);
+    gr.addColorStop(0, top);
+    gr.addColorStop(1, low);
+    x.fillStyle = gr;
+    x.fillRect(a, from, b - a, bottom - from);
+  };
   switch (seg.kind) {
     case 'sand': {
       // warm at dawn, wet at the waterline, the surf washing in
       fill(mixHex('#2a1424', '#5a2a3a', warm), '#2a1424');
-      const wash = P.still ? 0.5 : (Math.sin(P.t * 1.8) + 1) / 2, reach = R(2 + wash * 7);
-      x.fillStyle = 'rgba(190,110,150,' + (0.35 * lerp(0.4, 1, warm)).toFixed(3) + ')'; x.fillRect(a, GY, b - a, reach + 2);
+      const wash = P.still ? 0.5 : (Math.sin(P.t * 1.8) + 1) / 2,
+        reach = R(2 + wash * 7);
+      x.fillStyle = 'rgba(190,110,150,' + (0.35 * lerp(0.4, 1, warm)).toFixed(3) + ')';
+      x.fillRect(a, GY, b - a, reach + 2);
       for (let px = a - (((a % 4) + 4) % 4); px < b; px += 4) {
-        const wx = R(px - O), k = hash(Math.floor((px - O) / 4) * 3.1), dy = R(reach + (k - 0.5) * 3);
-        x.fillStyle = 'rgba(255,236,226,' + ((0.3 + k * 0.45) * lerp(0.4, 1, warm)).toFixed(2) + ')'; x.fillRect(px, GY + dy, 3, 1);
+        const wx = R(px - O),
+          k = hash(Math.floor((px - O) / 4) * 3.1),
+          dy = R(reach + (k - 0.5) * 3);
+        x.fillStyle =
+          'rgba(255,236,226,' + ((0.3 + k * 0.45) * lerp(0.4, 1, warm)).toFixed(2) + ')';
+        x.fillRect(px, GY + dy, 3, 1);
         if (k > 0.65) x.fillRect(px + 1, GY + dy - 2, 2, 1);
-        if (hash(wx * 0.37) > 0.93) { x.fillStyle = 'rgba(30,10,20,.35)'; x.fillRect(px, GY + 12 + R(hash(wx) * (H - GY - 14)), 2, 1); }
+        if (hash(wx * 0.37) > 0.93) {
+          x.fillStyle = 'rgba(30,10,20,.35)';
+          x.fillRect(px, GY + 12 + R(hash(wx) * (H - GY - 14)), 2, 1);
+        }
       }
-      const br = P.still ? 0.5 : (P.t * 0.5) % 1; x.fillStyle = 'rgba(255,240,230,' + (0.55 * Math.sin(br * Math.PI) * lerp(0.4, 1, warm)).toFixed(2) + ')'; x.fillRect(a, GY - 3 + R(br * 3), b - a, 1);
+      const br = P.still ? 0.5 : (P.t * 0.5) % 1;
+      x.fillStyle =
+        'rgba(255,240,230,' + (0.55 * Math.sin(br * Math.PI) * lerp(0.4, 1, warm)).toFixed(2) + ')';
+      x.fillRect(a, GY - 3 + R(br * 3), b - a, 1);
       return;
     }
     case 'inlet': {
       // open water in the strip, deeper toward the camera, the swell coming in from the bay
-      const wg = x.createLinearGradient(0, GY, 0, H); wg.addColorStop(0, mixHex('#2a1438', '#6a2a5a', warm)); wg.addColorStop(1, mixHex('#0c0418', '#1e0c2a', warm));
-      x.fillStyle = wg; x.fillRect(a, GY, b - a, bottom - GY);
+      const wg = x.createLinearGradient(0, GY, 0, H);
+      wg.addColorStop(0, mixHex('#2a1438', '#6a2a5a', warm));
+      wg.addColorStop(1, mixHex('#0c0418', '#1e0c2a', warm));
+      x.fillStyle = wg;
+      x.fillRect(a, GY, b - a, bottom - GY);
       for (let i = 0; i < 30; i++) {
-        const row = i % 6, py = GY + 3 + row * (H - GY) / 6, len = 6 + row * 3, drift = P.still ? 0 : P.f * (0.12 + row * 0.04);
+        const row = i % 6,
+          py = GY + 3 + (row * (H - GY)) / 6,
+          len = 6 + row * 3,
+          drift = P.still ? 0 : P.f * (0.12 + row * 0.04);
         const px = a + ((((i * 47 + drift + O) % (b - a + 30)) + (b - a + 30)) % (b - a + 30)) - 15;
-        x.fillStyle = 'rgba(255,190,200,' + (0.1 + row * 0.03).toFixed(2) + ')'; x.fillRect(R(px), R(py), len, 1);
+        x.fillStyle = 'rgba(255,190,200,' + (0.1 + row * 0.03).toFixed(2) + ')';
+        x.fillRect(R(px), R(py), len, 1);
       }
       // the sun's path crossing it, and the footbridge's shadow
-      const sun = sunsetSun(P.view, P.lighting, 0).x / ART, sunX = P.facing < 0 ? 2 * P.ax - sun : sun;
-      x.fillStyle = 'rgba(255,170,90,' + (0.18 * warm).toFixed(2) + ')'; x.fillRect(R(Math.max(a, sunX - 10)), GY + 2, R(Math.max(0, Math.min(b, sunX + 10) - Math.max(a, sunX - 10))), H - GY);
-      x.fillStyle = 'rgba(10,4,16,.45)'; x.fillRect(a, L.MID + 2, b - a, 3);
+      const sun = sunsetSun(P.view, P.lighting, 0).x / ART,
+        sunX = P.facing < 0 ? 2 * P.ax - sun : sun;
+      x.fillStyle = 'rgba(255,170,90,' + (0.18 * warm).toFixed(2) + ')';
+      x.fillRect(
+        R(Math.max(a, sunX - 10)),
+        GY + 2,
+        R(Math.max(0, Math.min(b, sunX + 10) - Math.max(a, sunX - 10))),
+        H - GY,
+      );
+      x.fillStyle = 'rgba(10,4,16,.45)';
+      x.fillRect(a, L.MID + 2, b - a, 3);
       return;
     }
     case 'rocks': {
       // big dark blocks from the sand down into the water
-      const count = Math.max(1, Math.round((seg.to - seg.from) * S / 6));
+      const count = Math.max(1, Math.round(((seg.to - seg.from) * S) / 6));
       for (let i = 0; i < count; i++) {
-        const sx = P.u(seg.from * S + 4 + i * 6), d = R(i * 3.2 * L.k);
-        x.fillStyle = mixHex('#1a0e16', '#33202a', warm * (0.6 + hash(i) * 0.4)); x.beginPath(); x.moveTo(sx - 8, bottom); x.lineTo(sx - 8, GY + d - 2); x.lineTo(sx - 3, GY + d - 6 - R(hash(i + 4) * 4)); x.lineTo(sx + 5, GY + d - 4); x.lineTo(sx + 8, bottom); x.closePath(); x.fill();
-        x.fillStyle = 'rgba(' + DAWN + ',' + (0.25 * warm).toFixed(2) + ')'; x.fillRect(R(sx - 3), GY + d - 6 - R(hash(i + 4) * 4), 6, 1);
+        const sx = P.u(seg.from * S + 4 + i * 6),
+          d = R(i * 3.2 * L.k);
+        x.fillStyle = mixHex('#1a0e16', '#33202a', warm * (0.6 + hash(i) * 0.4));
+        x.beginPath();
+        x.moveTo(sx - 8, bottom);
+        x.lineTo(sx - 8, GY + d - 2);
+        x.lineTo(sx - 3, GY + d - 6 - R(hash(i + 4) * 4));
+        x.lineTo(sx + 5, GY + d - 4);
+        x.lineTo(sx + 8, bottom);
+        x.closePath();
+        x.fill();
+        x.fillStyle = 'rgba(' + DAWN + ',' + (0.25 * warm).toFixed(2) + ')';
+        x.fillRect(R(sx - 3), GY + d - 6 - R(hash(i + 4) * 4), 6, 1);
       }
       return;
     }
     case 'gravel': {
       fill('#2a2026', '#120c10');
-      for (let px = a - (((a % 3) + 3) % 3); px < b; px += 3) { const k = hash(Math.floor((px - O) / 3) * 1.7); if (k > 0.55) { x.fillStyle = 'rgba(150,120,120,' + (0.1 + (k - 0.55) * 0.5).toFixed(2) + ')'; x.fillRect(px, GY + 4 + R(hash(px - O) * (H - GY - 6)), 2, 1); } if (k > 0.93) { x.fillStyle = 'rgba(60,80,40,.6)'; x.fillRect(px, L.BACK + 1, 1, 3); x.fillRect(px + 1, L.BACK, 1, 4); } }
-      x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(a, L.MID + 6, b - a, 1); x.fillRect(a, L.MID + 12, b - a, 1);
+      for (let px = a - (((a % 3) + 3) % 3); px < b; px += 3) {
+        const k = hash(Math.floor((px - O) / 3) * 1.7);
+        if (k > 0.55) {
+          x.fillStyle = 'rgba(150,120,120,' + (0.1 + (k - 0.55) * 0.5).toFixed(2) + ')';
+          x.fillRect(px, GY + 4 + R(hash(px - O) * (H - GY - 6)), 2, 1);
+        }
+        if (k > 0.93) {
+          x.fillStyle = 'rgba(60,80,40,.6)';
+          x.fillRect(px, L.BACK + 1, 1, 3);
+          x.fillRect(px + 1, L.BACK, 1, 4);
+        }
+      }
+      x.fillStyle = 'rgba(0,0,0,.25)';
+      x.fillRect(a, L.MID + 6, b - a, 1);
+      x.fillRect(a, L.MID + 12, b - a, 1);
       return;
     }
     case 'quay': {
       // concrete, its coping along the water, the cranes' rails, bollards, the apron's painted lanes
       fill('#2e2228', '#120c10');
-      x.fillStyle = '#4a3a40'; x.fillRect(a, GY, b - a, 2); x.fillStyle = 'rgba(' + ORANGE + ',.55)'; x.fillRect(a, GY, b - a, 1);
-      x.fillStyle = 'rgba(200,180,170,.25)'; x.fillRect(a, L.BACK - 1, b - a, 1); x.fillRect(a, L.BACK + 2, b - a, 1);
-      for (let u = seg.from * S + 20; u < seg.to * S; u += 46) { const sx = P.u(u); if (sx < a - 4 || sx > b + 4) continue; x.fillStyle = '#16100e'; x.fillRect(R(sx), GY - 3, 4, 4); x.fillStyle = 'rgba(' + ORANGE + ',.5)'; x.fillRect(R(sx), GY - 3, 4, 1); }
-      x.fillStyle = 'rgba(255,200,60,.22)'; for (let px = a; px < b; px++) if ((((px - O) % 18) + 18) % 18 < 8) x.fillRect(px, L.FAR_LANE - 2, 1, 1);
+      x.fillStyle = '#4a3a40';
+      x.fillRect(a, GY, b - a, 2);
+      x.fillStyle = 'rgba(' + ORANGE + ',.55)';
+      x.fillRect(a, GY, b - a, 1);
+      x.fillStyle = 'rgba(200,180,170,.25)';
+      x.fillRect(a, L.BACK - 1, b - a, 1);
+      x.fillRect(a, L.BACK + 2, b - a, 1);
+      for (let u = seg.from * S + 20; u < seg.to * S; u += 46) {
+        const sx = P.u(u);
+        if (sx < a - 4 || sx > b + 4) continue;
+        x.fillStyle = '#16100e';
+        x.fillRect(R(sx), GY - 3, 4, 4);
+        x.fillStyle = 'rgba(' + ORANGE + ',.5)';
+        x.fillRect(R(sx), GY - 3, 4, 1);
+      }
+      x.fillStyle = 'rgba(255,200,60,.22)';
+      for (let px = a; px < b; px++)
+        if ((((px - O) % 18) + 18) % 18 < 8) x.fillRect(px, L.FAR_LANE - 2, 1, 1);
       return;
     }
     case 'bridge': {
       // the walkway and deck, the girder's face, the bay under it
       const deckBot = L.ROAD1 + R(4 * L.k);
-      const wg = x.createLinearGradient(0, deckBot, 0, H); wg.addColorStop(0, mixHex('#1a0828', '#3a1446', warm)); wg.addColorStop(1, '#0c0414');
-      x.fillStyle = wg; x.fillRect(a, deckBot, b - a, bottom - deckBot);
-      for (let i = 0; i < 26; i++) { const px = a + ((i * 53 + (P.still ? 0 : P.f * 0.2) + O * 0.6) % (b - a + 40) + (b - a + 40)) % (b - a + 40) - 20, py = deckBot + 3 + (i * 7) % Math.max(4, H - deckBot - 2); x.fillStyle = 'rgba(255,190,200,' + (0.08 + (i % 3) * 0.04).toFixed(2) + ')'; x.fillRect(R(px), R(py), 4 + (i % 4) * 2, 1); }
-      x.fillStyle = '#2a1e2c'; x.fillRect(a, GY, b - a, L.ROAD0 - GY);
-      x.fillStyle = '#1a1220'; x.fillRect(a, L.ROAD1, b - a, deckBot - L.ROAD1);
-      x.fillStyle = 'rgba(' + ORANGE + ',.4)'; x.fillRect(a, deckBot - 1, b - a, 1);
-      for (let u = seg.from * S + 8; u < seg.to * S; u += 30) { const sx = P.u(u); if (sx < a || sx > b) continue; x.fillStyle = 'rgba(255,214,150,.5)'; x.fillRect(R(sx), deckBot - 3, 2, 1); x.fillStyle = 'rgba(255,214,150,.1)'; x.fillRect(R(sx), deckBot + 2, 2, 8); }
+      const wg = x.createLinearGradient(0, deckBot, 0, H);
+      wg.addColorStop(0, mixHex('#1a0828', '#3a1446', warm));
+      wg.addColorStop(1, '#0c0414');
+      x.fillStyle = wg;
+      x.fillRect(a, deckBot, b - a, bottom - deckBot);
+      for (let i = 0; i < 26; i++) {
+        const px =
+            a +
+            ((((i * 53 + (P.still ? 0 : P.f * 0.2) + O * 0.6) % (b - a + 40)) + (b - a + 40)) %
+              (b - a + 40)) -
+            20,
+          py = deckBot + 3 + ((i * 7) % Math.max(4, H - deckBot - 2));
+        x.fillStyle = 'rgba(255,190,200,' + (0.08 + (i % 3) * 0.04).toFixed(2) + ')';
+        x.fillRect(R(px), R(py), 4 + (i % 4) * 2, 1);
+      }
+      x.fillStyle = '#2a1e2c';
+      x.fillRect(a, GY, b - a, L.ROAD0 - GY);
+      x.fillStyle = '#1a1220';
+      x.fillRect(a, L.ROAD1, b - a, deckBot - L.ROAD1);
+      x.fillStyle = 'rgba(' + ORANGE + ',.4)';
+      x.fillRect(a, deckBot - 1, b - a, 1);
+      for (let u = seg.from * S + 8; u < seg.to * S; u += 30) {
+        const sx = P.u(u);
+        if (sx < a || sx > b) continue;
+        x.fillStyle = 'rgba(255,214,150,.5)';
+        x.fillRect(R(sx), deckBot - 3, 2, 1);
+        x.fillStyle = 'rgba(255,214,150,.1)';
+        x.fillRect(R(sx), deckBot + 2, 2, 8);
+      }
       return;
     }
     case 'plaza': {
       fill('#3a2c3c', '#1a121c');
-      x.fillStyle = 'rgba(255,217,165,.08)'; for (let u = seg.from * S; u < seg.to * S; u += 12) { const sx = P.u(u); if (sx > a && sx < b) x.fillRect(R(sx), GY, 1, L.ROAD0 - GY); }
-      x.fillRect(a, GY + R(6 * L.k), b - a, 1); x.fillRect(a, GY + R(12 * L.k), b - a, 1);
+      x.fillStyle = 'rgba(255,217,165,.08)';
+      for (let u = seg.from * S; u < seg.to * S; u += 12) {
+        const sx = P.u(u);
+        if (sx > a && sx < b) x.fillRect(R(sx), GY, 1, L.ROAD0 - GY);
+      }
+      x.fillRect(a, GY + R(6 * L.k), b - a, 1);
+      x.fillRect(a, GY + R(12 * L.k), b - a, 1);
       return;
     }
     case 'street': {
       // the street's surface, its joints, the steps up to the plaza at its east end (`steps`)
-      const gr = x.createLinearGradient(0, GY, 0, H); gr.addColorStop(0, '#241a22'); gr.addColorStop(1, '#0e0a0e');
-      x.fillStyle = gr; x.fillRect(a, GY, b - a, bottom - GY);
-      x.fillStyle = 'rgba(255,217,165,.07)'; for (let px = a - ((((a - O) % 9) + 9) % 9); px < b; px += 9) x.fillRect(R(px), GY, 1, L.ROAD0 - GY);
-      if (p.steps === true) { const s0 = P.u(seg.to * S); if (P.onScreen(s0, s0, 30)) for (let k = 0; k < 4; k++) { x.fillStyle = k % 2 ? '#3a2c3c' : '#2e2232'; x.fillRect(R(s0) - 6, GY + k * 3, 14, 3); x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(R(s0) - 6, GY + k * 3, 14, 1); } }
+      const gr = x.createLinearGradient(0, GY, 0, H);
+      gr.addColorStop(0, '#241a22');
+      gr.addColorStop(1, '#0e0a0e');
+      x.fillStyle = gr;
+      x.fillRect(a, GY, b - a, bottom - GY);
+      x.fillStyle = 'rgba(255,217,165,.07)';
+      for (let px = a - ((((a - O) % 9) + 9) % 9); px < b; px += 9)
+        x.fillRect(R(px), GY, 1, L.ROAD0 - GY);
+      if (p.steps === true) {
+        const s0 = P.u(seg.to * S);
+        if (P.onScreen(s0, s0, 30))
+          for (let k = 0; k < 4; k++) {
+            x.fillStyle = k % 2 ? '#3a2c3c' : '#2e2232';
+            x.fillRect(R(s0) - 6, GY + k * 3, 14, 3);
+            x.fillStyle = 'rgba(255,217,165,.25)';
+            x.fillRect(R(s0) - 6, GY + k * 3, 14, 1);
+          }
+      }
       // the wet street: every sign's colour lying in it, broken up
       const wet = n(p, 'wet');
-      if (wet > 0) for (const g of (p.glows as unknown as { x: number; w: number; col: string; a: number }[])) {
-        const gx = P.u(g.x * S), gw = Math.max(3, g.w * S * 0.6);
-        if (gx < a - 20 || gx > b + 20) continue;
-        for (let r = 0; r < 7; r++) { const py = GY + 2 + r * 4 + (r > 3 ? 6 : 0), wob = P.still ? 0 : Math.sin(P.t * 2 + r + gx) * 1.2; x.fillStyle = 'rgba(' + g.col + ',' + (0.2 * wet * g.a * (1 - r / 8)).toFixed(3) + ')'; x.fillRect(R(gx - gw / 2 + wob), R(py), R(gw * (1 - r * 0.07)), 1); }
-      }
+      if (wet > 0)
+        for (const g of p.glows as unknown as { x: number; w: number; col: string; a: number }[]) {
+          const gx = P.u(g.x * S),
+            gw = Math.max(3, g.w * S * 0.6);
+          if (gx < a - 20 || gx > b + 20) continue;
+          for (let r = 0; r < 7; r++) {
+            const py = GY + 2 + r * 4 + (r > 3 ? 6 : 0),
+              wob = P.still ? 0 : Math.sin(P.t * 2 + r + gx) * 1.2;
+            x.fillStyle = 'rgba(' + g.col + ',' + (0.2 * wet * g.a * (1 - r / 8)).toFixed(3) + ')';
+            x.fillRect(R(gx - gw / 2 + wob), R(py), R(gw * (1 - r * 0.07)), 1);
+          }
+        }
       return;
     }
     case 'road': {
-      x.fillStyle = '#151014'; x.fillRect(a, L.ROAD0, b - a, L.ROAD1 - L.ROAD0);
-      x.fillStyle = 'rgba(255,217,165,.18)'; x.fillRect(a, L.ROAD0, b - a, 1);
-      const mid = R((L.ROAD0 + L.ROAD1) / 2), wet = n(p, 'wet');
+      x.fillStyle = '#151014';
+      x.fillRect(a, L.ROAD0, b - a, L.ROAD1 - L.ROAD0);
+      x.fillStyle = 'rgba(255,217,165,.18)';
+      x.fillRect(a, L.ROAD0, b - a, 1);
+      const mid = R((L.ROAD0 + L.ROAD1) / 2),
+        wet = n(p, 'wet');
       x.fillStyle = 'rgba(255,217,165,' + (wet > 0 ? 0.45 : 0.35) + ')';
       for (let px = a; px < b; px++) if ((((px - O) % 14) + 14) % 14 < 6) x.fillRect(px, mid, 1, 1);
-      if (wet > 0) { x.fillStyle = 'rgba(160,170,220,' + (0.08 * wet).toFixed(3) + ')'; x.fillRect(a, L.ROAD0 + 1, b - a, L.ROAD1 - L.ROAD0 - 1); }
+      if (wet > 0) {
+        x.fillStyle = 'rgba(160,170,220,' + (0.08 * wet).toFixed(3) + ')';
+        x.fillRect(a, L.ROAD0 + 1, b - a, L.ROAD1 - L.ROAD0 - 1);
+      }
       // the crossings at the side streets
-      for (const cx of p.crossings as number[]) { const sx = P.u(cx * S); if (!P.onScreen(sx, sx, 30)) continue; x.fillStyle = 'rgba(255,217,165,.22)'; for (let k = 0; k < 6; k++) x.fillRect(R(sx) - 14 + k * 5, L.ROAD0 + 2, 3, L.ROAD1 - L.ROAD0 - 3); }
+      for (const cx of p.crossings as number[]) {
+        const sx = P.u(cx * S);
+        if (!P.onScreen(sx, sx, 30)) continue;
+        x.fillStyle = 'rgba(255,217,165,.22)';
+        for (let k = 0; k < 6; k++)
+          x.fillRect(R(sx) - 14 + k * 5, L.ROAD0 + 2, 3, L.ROAD1 - L.ROAD0 - 3);
+      }
       return;
     }
   }
 }
 
 export const groundElement = kit({
-  spatial:depthControl('depthBelowGround',0,p=>{const rows=p.segments as unknown as Segment[];return (Math.min(0,...rows.map(r=>r.from))+Math.max(0,...rows.map(r=>r.to)))/2;}),
-  type: 'coast.ground', label: 'Shore strip: sand, water, rocks, quay, bridge, plaza, street, road (coast kit)',
+  spatial: depthControl('depthBelowGround', 0, (p) => {
+    const rows = p.segments as unknown as Segment[];
+    return (Math.min(0, ...rows.map((r) => r.from)) + Math.max(0, ...rows.map((r) => r.to))) / 2;
+  }),
+  type: 'coast.ground',
+  label: 'Shore strip: sand, water, rocks, quay, bridge, plaza, street, road (coast kit)',
   fields: {
     depthBelowGround: shapeLength(num('Depth below ground', 384, 150, 6000, 1, 'units')),
-    segments: ({...appearanceStructure(list('Segments, drawn in order (kind, from, to: world units east of the piece)', [{ kind: 'sand', from: 0, to: 1200 }], r => GROUND_KINDS.includes(r.kind as GroundKind) && fin(r.from) && fin(r.to) && Number(r.to) > Number(r.from), 'expected { kind, from, to } rows')),editor:{kind:'list',item:{kind:appearanceChoice(choiceField('Material',GROUND_KINDS,'sand')),from:shapePosition(numericFields({value:0})('Start X')),to:shapePosition(numericFields({value:1200})('End X'))}}}),
+    segments: {
+      ...appearanceStructure(
+        list(
+          'Segments, drawn in order (kind, from, to: world units east of the piece)',
+          [{ kind: 'sand', from: 0, to: 1200 }],
+          (r) =>
+            GROUND_KINDS.includes(r.kind as GroundKind) &&
+            fin(r.from) &&
+            fin(r.to) &&
+            Number(r.to) > Number(r.from),
+          'expected { kind, from, to } rows',
+        ),
+      ),
+      editor: {
+        kind: 'list',
+        item: {
+          kind: appearanceChoice(choiceField('Material', GROUND_KINDS, 'sand')),
+          from: shapePosition(numericFields({ value: 0 })('Start X')),
+          to: shapePosition(numericFields({ value: 1200 })('End X')),
+        },
+      },
+    },
     origin: shapePosition(num('Pattern origin (world units east of the piece)', 0)),
     wet: appearanceRatio(num('Wet street (rain sheen, sign colours lying in it)', 0, 0, 1, 0.05)),
-    steps: appearanceBoolean({ kind: 'boolean', label: 'Steps up to the plaza at the street’s east end', default: false }),
-    glows: ({...appearanceStructure(list('Sign colours in the wet street (x, w: world units; col "r,g,b"; a)', [], r => fin(r.x) && fin(r.w) && typeof r.col === 'string' && fin(r.a), 'expected { x, w, col, a } rows')),editor:{kind:'list',item:{x:shapePosition(numericFields({value:0})('X')),w:shapeLength(numericFields({value:120,min:0})('Width')),col:semantic(textField('Color RGB','255,136,0'),{group:'Appearance',quantity:'color',unit:'RGB'}),a:appearanceRatio(numericFields({value:.2,min:0,max:1,step:.01})('Opacity'))}}}),
-    crossings: positionListEditor(appearanceStructure({ kind: 'json', label: 'Road crossings (world x east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || !v.every(fin)) throw new Error('Road crossings: expected numbers'); } }),'Crossing X'),
+    steps: appearanceBoolean({
+      kind: 'boolean',
+      label: 'Steps up to the plaza at the street’s east end',
+      default: false,
+    }),
+    glows: {
+      ...appearanceStructure(
+        list(
+          'Sign colours in the wet street (x, w: world units; col "r,g,b"; a)',
+          [],
+          (r) => fin(r.x) && fin(r.w) && typeof r.col === 'string' && fin(r.a),
+          'expected { x, w, col, a } rows',
+        ),
+      ),
+      editor: {
+        kind: 'list',
+        item: {
+          x: shapePosition(numericFields({ value: 0 })('X')),
+          w: shapeLength(numericFields({ value: 120, min: 0 })('Width')),
+          col: semantic(textField('Color RGB', '255,136,0'), {
+            group: 'Appearance',
+            quantity: 'color',
+            unit: 'RGB',
+          }),
+          a: appearanceRatio(numericFields({ value: 0.2, min: 0, max: 1, step: 0.01 })('Opacity')),
+        },
+      },
+    },
+    crossings: positionListEditor(
+      appearanceStructure({
+        kind: 'json',
+        label: 'Road crossings (world x east of the piece)',
+        default: [],
+        validate: (v) => {
+          if (!Array.isArray(v) || !v.every(fin))
+            throw new Error('Road crossings: expected numbers');
+        },
+      }),
+      'Crossing X',
+    ),
   },
-  bounds: p => { const seg = p.segments as unknown as Segment[], a = Math.min(0, ...seg.map(q => q.from)), b = Math.max(0, ...seg.map(q => q.to)); return { x: a, h: 12, w: b - a, tall: Number(p.depthBelowGround ?? 384) + 12 }; },
+  bounds: (p) => {
+    const seg = p.segments as unknown as Segment[],
+      a = Math.min(0, ...seg.map((q) => q.from)),
+      b = Math.max(0, ...seg.map((q) => q.to));
+    return { x: a, h: 12, w: b - a, tall: Number(p.depthBelowGround ?? 384) + 12 };
+  },
   draw(P, p, h0) {
-    const L = stripLines(P, h0), O = P.u(n(p, 'origin') * S);
-    const [a,b]=P.span();P.x.save();P.x.beginPath();P.x.rect(a,L.GY-4,b-a,Number(p.depthBelowGround??384)*S+4);P.x.clip();
-    try { for (const seg of p.segments as unknown as Segment[]) groundSegment(P, L, seg, O, p); }
-    finally { P.x.restore(); }
+    const L = stripLines(P, h0),
+      O = P.u(n(p, 'origin') * S);
+    const [a, b] = P.span();
+    P.x.save();
+    P.x.beginPath();
+    P.x.rect(a, L.GY - 4, b - a, Number(p.depthBelowGround ?? 384) * S + 4);
+    P.x.clip();
+    try {
+      for (const seg of p.segments as unknown as Segment[]) groundSegment(P, L, seg, O, p);
+    } finally {
+      P.x.restore();
+    }
   },
 });
 
 /** A wall into the water where the strip changes: the inlet's sea wall (the port's side) or a bridge abutment. */
 export const wallElement = kit({
-  spatial:depthControl('depthBelowGround'),
-  type: 'coast.wall', label: 'Sea wall or bridge abutment (coast kit)',
-  fields: { kind: appearanceChoice({ kind: 'select', label: 'Kind', options: ['sea-wall', 'abutment'], default: 'sea-wall' }), depthBelowGround: shapeLength(num('Depth below ground', 384, 150, 6000, 1, 'units')) },
-  bounds: p => ({ x: -24, h: 12, w: 48, tall: Number(p.depthBelowGround ?? 384) + 12 }),
+  spatial: depthControl('depthBelowGround'),
+  type: 'coast.wall',
+  label: 'Sea wall or bridge abutment (coast kit)',
+  fields: {
+    kind: appearanceChoice({
+      kind: 'select',
+      label: 'Kind',
+      options: ['sea-wall', 'abutment'],
+      default: 'sea-wall',
+    }),
+    depthBelowGround: shapeLength(num('Depth below ground', 384, 150, 6000, 1, 'units')),
+  },
+  bounds: (p) => ({ x: -24, h: 12, w: 48, tall: Number(p.depthBelowGround ?? 384) + 12 }),
   draw(P, p, h0) {
-    const x = P.x, GY = P.y(h0), bottom = GY + Number(p.depthBelowGround ?? 384) * S, sx = P.ax;
+    const x = P.x,
+      GY = P.y(h0),
+      bottom = GY + Number(p.depthBelowGround ?? 384) * S,
+      sx = P.ax;
     if (!P.onScreen(sx, sx, 30)) return;
     if (p.kind === 'sea-wall') {
-      x.fillStyle = '#3a2c32'; x.fillRect(R(sx) - 2, GY - 4, 10, bottom - GY);
-      x.fillStyle = 'rgba(' + ORANGE + ',.5)'; x.fillRect(R(sx) - 2, GY - 4, 10, 1); x.fillRect(R(sx) - 2, GY - 4, 1, bottom - GY);
-      x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = GY + 4; h < bottom; h += 5) x.fillRect(R(sx) - 1, h, 8, 1);
+      x.fillStyle = '#3a2c32';
+      x.fillRect(R(sx) - 2, GY - 4, 10, bottom - GY);
+      x.fillStyle = 'rgba(' + ORANGE + ',.5)';
+      x.fillRect(R(sx) - 2, GY - 4, 10, 1);
+      x.fillRect(R(sx) - 2, GY - 4, 1, bottom - GY);
+      x.fillStyle = 'rgba(0,0,0,.3)';
+      for (let h = GY + 4; h < bottom; h += 5) x.fillRect(R(sx) - 1, h, 8, 1);
     } else {
-      x.fillStyle = '#2e2228'; x.fillRect(R(sx) - 8, GY, 16, bottom - GY);
-      x.fillStyle = 'rgba(' + ORANGE + ',.45)'; x.fillRect(R(sx) - 8, GY, 1, bottom - GY); x.fillRect(R(sx) + 7, GY, 1, bottom - GY);
-      x.fillStyle = 'rgba(0,0,0,.3)'; for (let h = GY + 6; h < bottom; h += 6) x.fillRect(R(sx) - 7, h, 14, 1);
+      x.fillStyle = '#2e2228';
+      x.fillRect(R(sx) - 8, GY, 16, bottom - GY);
+      x.fillStyle = 'rgba(' + ORANGE + ',.45)';
+      x.fillRect(R(sx) - 8, GY, 1, bottom - GY);
+      x.fillRect(R(sx) + 7, GY, 1, bottom - GY);
+      x.fillStyle = 'rgba(0,0,0,.3)';
+      for (let h = GY + 6; h < bottom; h += 6) x.fillRect(R(sx) - 7, h, 14, 1);
     }
   },
 });
@@ -238,115 +578,271 @@ export const wallElement = kit({
  * stairs down to the sand east of the land end, the lantern at the seaward end. Black against the sun.
  */
 export const pierElement = kit({
-  spatial:rectangleControls({width:'length',originX:1,baseline:SHORE.pier}),
-  type: 'coast.pier', label: 'Timber pier: piles, deck, railing, kiosk, lamps, lantern (coast kit)',
+  spatial: rectangleControls({ width: 'length', originX: 1, baseline: SHORE.pier }),
+  type: 'coast.pier',
+  label: 'Timber pier: piles, deck, railing, kiosk, lamps, lantern (coast kit)',
   fields: {
-    length: shapeLength(num('Length', 720, 60, 6000, 3, 'units')), fillColor: appearanceColor(color('Timber silhouette', '#0a0310')), kiosk: appearanceText(str('Kiosk sign (empty: no kiosk)', 'BAIT · ICE · TEA')),
-    lamp: appearanceColor(str('Lamp colour', 'rgba(255,220,160,.95)'),"CSS color"), lantern: appearanceColor(str('Lantern colour', 'rgba(255,232,190,.95)'),"CSS color"), sag: shapeLength(num('String light sag', 6, 0, 100)), lights: appearanceBoolean({ kind: 'boolean', label: 'String lights between the lamps', default: true }),
+    length: shapeLength(num('Length', 720, 60, 6000, 3, 'units')),
+    fillColor: appearanceColor(color('Timber silhouette', '#0a0310')),
+    kiosk: appearanceText(str('Kiosk sign (empty: no kiosk)', 'BAIT · ICE · TEA')),
+    lamp: appearanceColor(str('Lamp colour', 'rgba(255,220,160,.95)'), 'CSS color'),
+    lantern: appearanceColor(str('Lantern colour', 'rgba(255,232,190,.95)'), 'CSS color'),
+    sag: shapeLength(num('String light sag', 6, 0, 100)),
+    lights: appearanceBoolean({
+      kind: 'boolean',
+      label: 'String lights between the lamps',
+      default: true,
+    }),
   },
-  bounds: p => ({ x: -n(p, 'length'), h: 160, w: n(p, 'length') + 72, tall: 250 }),
+  bounds: (p) => ({ x: -n(p, 'length'), h: 160, w: n(p, 'length') + 72, tall: 250 }),
   draw(P, p, h0) {
-    const x = P.x, len = R(n(p, 'length') * S), L = stripLines(P, h0), deck = L.PIER, GY = L.GY;
-    const a = R(P.u(-len)), b = R(P.ax);
+    const x = P.x,
+      len = R(n(p, 'length') * S),
+      L = stripLines(P, h0),
+      deck = L.PIER,
+      GY = L.GY;
+    const a = R(P.u(-len)),
+      b = R(P.ax);
     if (!P.onScreen(a - 10, b + 30, 40)) return;
-    const ink = s(p, 'fillColor'), rim = 'rgba(' + DAWN + ',' + (0.55 * P.warm).toFixed(2) + ')';
+    const ink = s(p, 'fillColor'),
+      rim = 'rgba(' + DAWN + ',' + (0.55 * P.warm).toFixed(2) + ')';
     // the piles into the water, their cross-bracing, their reflections
     for (let u = -6; u >= -len; u -= 16) {
-      const sx = R(P.u(u)); x.fillStyle = ink; x.fillRect(sx, deck, 3, GY - deck + 1);
-      x.fillStyle = 'rgba(10,3,16,.45)'; x.fillRect(sx, GY + 1, 3, 5);
-      if (u - 16 >= -len) { const s2 = R(P.u(u - 16)); x.strokeStyle = 'rgba(10,3,16,.8)'; x.lineWidth = 0.8; x.beginPath(); x.moveTo(sx, deck + 3); x.lineTo(s2 + 2, GY - 2); x.moveTo(sx + 2, GY - 2); x.lineTo(s2, deck + 3); x.stroke(); }
+      const sx = R(P.u(u));
+      x.fillStyle = ink;
+      x.fillRect(sx, deck, 3, GY - deck + 1);
+      x.fillStyle = 'rgba(10,3,16,.45)';
+      x.fillRect(sx, GY + 1, 3, 5);
+      if (u - 16 >= -len) {
+        const s2 = R(P.u(u - 16));
+        x.strokeStyle = 'rgba(10,3,16,.8)';
+        x.lineWidth = 0.8;
+        x.beginPath();
+        x.moveTo(sx, deck + 3);
+        x.lineTo(s2 + 2, GY - 2);
+        x.moveTo(sx + 2, GY - 2);
+        x.lineTo(s2, deck + 3);
+        x.stroke();
+      }
     }
     // the deck: a thick beam, planks catching the light
-    x.fillStyle = ink; x.fillRect(a, deck - 2, b - a, 5);
-    x.fillStyle = rim; x.fillRect(a, deck - 2, b - a, 1);
-    x.fillStyle = 'rgba(255,190,120,.12)'; for (let sx = a; sx < b; sx += 3) x.fillRect(sx, deck - 1, 1, 1);
+    x.fillStyle = ink;
+    x.fillRect(a, deck - 2, b - a, 5);
+    x.fillStyle = rim;
+    x.fillRect(a, deck - 2, b - a, 1);
+    x.fillStyle = 'rgba(255,190,120,.12)';
+    for (let sx = a; sx < b; sx += 3) x.fillRect(sx, deck - 1, 1, 1);
     // the railing
-    x.fillStyle = ink; x.fillRect(a, deck - 9, b - a, 1); x.fillRect(a, deck - 5, b - a, 1);
+    x.fillStyle = ink;
+    x.fillRect(a, deck - 9, b - a, 1);
+    x.fillRect(a, deck - 5, b - a, 1);
     for (let u = 0; u >= -len; u -= 8) x.fillRect(R(P.u(u)), deck - 9, 1, 9);
-    x.fillStyle = rim; x.fillRect(a, deck - 10, b - a, 1);
+    x.fillStyle = rim;
+    x.fillRect(a, deck - 10, b - a, 1);
     // stairs from the deck down to the sand at the land end, their handrail
-    x.fillStyle = ink; for (let i = 0; i < 7; i++) x.fillRect(b - 2 + i * 3, deck + R(i * (L.BEACH - deck) / 7), 5, 2);
-    x.fillRect(b + 20, deck, 1, L.BEACH - deck); x.strokeStyle = ink; x.lineWidth = 1; x.beginPath(); x.moveTo(b, deck - 9); x.lineTo(b + 21, L.BEACH - 9); x.stroke();
+    x.fillStyle = ink;
+    for (let i = 0; i < 7; i++)
+      x.fillRect(b - 2 + i * 3, deck + R((i * (L.BEACH - deck)) / 7), 5, 2);
+    x.fillRect(b + 20, deck, 1, L.BEACH - deck);
+    x.strokeStyle = ink;
+    x.lineWidth = 1;
+    x.beginPath();
+    x.moveTo(b, deck - 9);
+    x.lineTo(b + 21, L.BEACH - 9);
+    x.stroke();
     // the kiosk at the land end: a hut with a lit hatch and a plate
     if (s(p, 'kiosk')) {
       const k = R(P.u(-26));
-      x.fillStyle = '#1a0c18'; x.fillRect(k - 10, deck - 22, 20, 20); x.fillRect(k - 12, deck - 25, 24, 3);
-      x.fillStyle = 'rgba(255,200,130,.75)'; x.fillRect(k - 7, deck - 18, 14, 6);
-      x.fillStyle = '#0d0705'; x.fillRect(k - 11, deck - 31, 22, 6); x.strokeStyle = 'rgba(' + ORANGE + ',.6)'; x.lineWidth = 0.6; x.strokeRect(k - 10.5, deck - 30.5, 21, 5);
+      x.fillStyle = '#1a0c18';
+      x.fillRect(k - 10, deck - 22, 20, 20);
+      x.fillRect(k - 12, deck - 25, 24, 3);
+      x.fillStyle = 'rgba(255,200,130,.75)';
+      x.fillRect(k - 7, deck - 18, 14, 6);
+      x.fillStyle = '#0d0705';
+      x.fillRect(k - 11, deck - 31, 22, 6);
+      x.strokeStyle = 'rgba(' + ORANGE + ',.6)';
+      x.lineWidth = 0.6;
+      x.strokeRect(k - 10.5, deck - 30.5, 21, 5);
       text(x, s(p, 'kiosk'), k, deck - 28, 'rgba(' + PAPER + ',.85)', 2.4, '600');
     }
     // benches along it
-    for (const u of [-70, -150]) { if (-u > len) continue; const sx = R(P.u(u)); x.fillStyle = ink; x.fillRect(sx - 6, deck - 5, 12, 1); x.fillRect(sx - 5, deck - 4, 1, 4); x.fillRect(sx + 4, deck - 4, 1, 4); x.fillRect(sx - 6, deck - 8, 1, 3); }
+    for (const u of [-70, -150]) {
+      if (-u > len) continue;
+      const sx = R(P.u(u));
+      x.fillStyle = ink;
+      x.fillRect(sx - 6, deck - 5, 12, 1);
+      x.fillRect(sx - 5, deck - 4, 1, 4);
+      x.fillRect(sx + 4, deck - 4, 1, 4);
+      x.fillRect(sx - 6, deck - 8, 1, 3);
+    }
     // lamps along it, their glow, string lights between them
-    const posts = [-50, -120, -190].filter(u => -u < len);
+    const posts = [-50, -120, -190].filter((u) => -u < len);
     for (const u of posts) {
-      const sx = R(P.u(u)); x.fillStyle = ink; x.fillRect(sx, deck - 28, 1, 28); x.fillRect(sx - 2, deck - 29, 5, 1);
-      x.fillStyle = s(p, 'lamp'); x.fillRect(sx - 1, deck - 28, 3, 2);
-      const g = x.createRadialGradient(sx, deck - 26, 0, sx, deck - 26, 16); g.addColorStop(0, 'rgba(255,210,150,.25)'); g.addColorStop(1, 'rgba(255,210,150,0)'); x.fillStyle = g; x.fillRect(sx - 16, deck - 42, 32, 32);
-      x.fillStyle = 'rgba(255,200,140,.18)'; x.fillRect(sx - 3, GY + 1, 7, 2);
+      const sx = R(P.u(u));
+      x.fillStyle = ink;
+      x.fillRect(sx, deck - 28, 1, 28);
+      x.fillRect(sx - 2, deck - 29, 5, 1);
+      x.fillStyle = s(p, 'lamp');
+      x.fillRect(sx - 1, deck - 28, 3, 2);
+      const g = x.createRadialGradient(sx, deck - 26, 0, sx, deck - 26, 16);
+      g.addColorStop(0, 'rgba(255,210,150,.25)');
+      g.addColorStop(1, 'rgba(255,210,150,0)');
+      x.fillStyle = g;
+      x.fillRect(sx - 16, deck - 42, 32, 32);
+      x.fillStyle = 'rgba(255,200,140,.18)';
+      x.fillRect(sx - 3, GY + 1, 7, 2);
     }
-    if (p.lights !== false) for (let i = 0; i + 1 < posts.length; i++) {
-      const s0 = P.u(posts[i + 1]), s1 = P.u(posts[i]);
-      placed(x, R(s0), deck, S, () => drawStringLights(x, 0, 78, (s1 - s0) / S, 78, P.f, { sag: n(p, 'sag'), phaseAngle:i,paletteOffset:i,still:P.still }));
-    }
+    if (p.lights !== false)
+      for (let i = 0; i + 1 < posts.length; i++) {
+        const s0 = P.u(posts[i + 1]),
+          s1 = P.u(posts[i]);
+        placed(x, R(s0), deck, S, () =>
+          drawStringLights(x, 0, 78, (s1 - s0) / S, 78, P.f, {
+            sag: n(p, 'sag'),
+            phaseAngle: i,
+            paletteOffset: i,
+            still: P.still,
+          }),
+        );
+      }
     // the lantern on its mast at the seaward end: a warm white, the pier's own
     const e = R(P.u(-len + 2));
-    x.fillStyle = ink; x.fillRect(e, deck - 34, 2, 34); x.fillRect(e - 2, deck - 36, 6, 2);
-    x.fillStyle = s(p, 'lantern'); x.fillRect(e - 1, deck - 41, 4, 5);
-    const gg = x.createRadialGradient(e + 1, deck - 39, 0, e + 1, deck - 39, 14); gg.addColorStop(0, 'rgba(255,220,170,.3)'); gg.addColorStop(1, 'rgba(255,220,170,0)'); x.fillStyle = gg; x.fillRect(e - 14, deck - 54, 30, 30);
+    x.fillStyle = ink;
+    x.fillRect(e, deck - 34, 2, 34);
+    x.fillRect(e - 2, deck - 36, 6, 2);
+    x.fillStyle = s(p, 'lantern');
+    x.fillRect(e - 1, deck - 41, 4, 5);
+    const gg = x.createRadialGradient(e + 1, deck - 39, 0, e + 1, deck - 39, 14);
+    gg.addColorStop(0, 'rgba(255,220,170,.3)');
+    gg.addColorStop(1, 'rgba(255,220,170,0)');
+    x.fillStyle = gg;
+    x.fillRect(e - 14, deck - 54, 30, 30);
   },
 });
 
 /** A steel truss walkway over an inlet at the ground line, from the anchor `length` west; lamps at both ends, a moored dinghy. */
 export const footbridgeElement = kit({
-  spatial:rectangleControls({width:'length',originX:1,baseline:SHORE.mid}),
-  type: 'coast.footbridge', label: 'Footbridge over an inlet, lamps, a moored dinghy (coast kit)',
-  fields: { length: shapeLength(num('Span', 480, 60, 3000, 3, 'units')), dinghy: appearanceBoolean({ kind: 'boolean', label: 'Moored dinghy', default: true }) },
-  bounds: p => ({ x: -n(p, 'length'), h: 60, w: n(p, 'length'), tall: 230 }),
+  spatial: rectangleControls({ width: 'length', originX: 1, baseline: SHORE.mid }),
+  type: 'coast.footbridge',
+  label: 'Footbridge over an inlet, lamps, a moored dinghy (coast kit)',
+  fields: {
+    length: shapeLength(num('Span', 480, 60, 3000, 3, 'units')),
+    dinghy: appearanceBoolean({ kind: 'boolean', label: 'Moored dinghy', default: true }),
+  },
+  bounds: (p) => ({ x: -n(p, 'length'), h: 60, w: n(p, 'length'), tall: 230 }),
   draw(P, p, h0) {
-    const x = P.x, len = R(n(p, 'length') * S), L = stripLines(P, h0);
-    const a = R(P.u(-len)), b = R(P.ax), d = L.MID + 1, ink = '#120a14';
+    const x = P.x,
+      len = R(n(p, 'length') * S),
+      L = stripLines(P, h0);
+    const a = R(P.u(-len)),
+      b = R(P.ax),
+      d = L.MID + 1,
+      ink = '#120a14';
     if (!P.onScreen(a, b, 40)) return;
-    x.fillStyle = ink; x.fillRect(a, d, b - a, 3); x.fillRect(a, d - 9, b - a, 1); x.fillRect(a, d - 5, b - a, 1);
+    x.fillStyle = ink;
+    x.fillRect(a, d, b - a, 3);
+    x.fillRect(a, d - 9, b - a, 1);
+    x.fillRect(a, d - 5, b - a, 1);
     for (let u = 0; u >= -len; u -= 7) x.fillRect(R(P.u(u)), d - 9, 1, 9);
-    x.strokeStyle = 'rgba(18,10,20,.9)'; x.lineWidth = 0.8; x.beginPath();
-    for (let u = 0; u > -len; u -= 20) { const s0 = P.u(u), s1 = P.u(u - 20); x.moveTo(s0, d + 3); x.lineTo((s0 + s1) / 2, d + 9); x.lineTo(s1, d + 3); }
-    x.moveTo(a, d + 9); x.lineTo(b, d + 9); x.stroke();
-    x.fillStyle = 'rgba(' + DAWN + ',' + (0.4 * P.warm).toFixed(2) + ')'; x.fillRect(a, d - 10, b - a, 1);
+    x.strokeStyle = 'rgba(18,10,20,.9)';
+    x.lineWidth = 0.8;
+    x.beginPath();
+    for (let u = 0; u > -len; u -= 20) {
+      const s0 = P.u(u),
+        s1 = P.u(u - 20);
+      x.moveTo(s0, d + 3);
+      x.lineTo((s0 + s1) / 2, d + 9);
+      x.lineTo(s1, d + 3);
+    }
+    x.moveTo(a, d + 9);
+    x.lineTo(b, d + 9);
+    x.stroke();
+    x.fillStyle = 'rgba(' + DAWN + ',' + (0.4 * P.warm).toFixed(2) + ')';
+    x.fillRect(a, d - 10, b - a, 1);
     // the back rail on the far side of the deck (the sea side)
-    x.fillStyle = 'rgba(18,10,20,.7)'; x.fillRect(a, L.BACK - 6, b - a, 1); for (let u = 0; u >= -len; u -= 14) x.fillRect(R(P.u(u)), L.BACK - 6, 1, 6);
-    for (const u of [-6, -len + 6]) { const sx = R(P.u(u)); x.fillStyle = ink; x.fillRect(sx, d - 26, 1, 26); x.fillStyle = 'rgba(255,220,160,.9)'; x.fillRect(sx - 1, d - 27, 3, 2); }
+    x.fillStyle = 'rgba(18,10,20,.7)';
+    x.fillRect(a, L.BACK - 6, b - a, 1);
+    for (let u = 0; u >= -len; u -= 14) x.fillRect(R(P.u(u)), L.BACK - 6, 1, 6);
+    for (const u of [-6, -len + 6]) {
+      const sx = R(P.u(u));
+      x.fillStyle = ink;
+      x.fillRect(sx, d - 26, 1, 26);
+      x.fillStyle = 'rgba(255,220,160,.9)';
+      x.fillRect(sx - 1, d - 27, 3, 2);
+    }
     if (p.dinghy !== false) {
-      const sx = R(P.u(-30)), bob = P.still ? 0 : R(Math.sin(P.t * 1.3) * 0.8), dy = L.ROAD1 - 2 + bob;
-      x.fillStyle = '#2a1820'; x.beginPath(); x.moveTo(sx - 12, dy); x.lineTo(sx + 12, dy); x.lineTo(sx + 9, dy + 4); x.lineTo(sx - 10, dy + 4); x.closePath(); x.fill();
-      x.fillStyle = 'rgba(200,190,170,.6)'; x.fillRect(sx - 12, dy, 24, 1);
-      x.strokeStyle = 'rgba(200,190,170,.35)'; x.lineWidth = 0.5; x.beginPath(); x.moveTo(sx - 12, dy); x.lineTo(sx - 26, d + 2); x.stroke();
+      const sx = R(P.u(-30)),
+        bob = P.still ? 0 : R(Math.sin(P.t * 1.3) * 0.8),
+        dy = L.ROAD1 - 2 + bob;
+      x.fillStyle = '#2a1820';
+      x.beginPath();
+      x.moveTo(sx - 12, dy);
+      x.lineTo(sx + 12, dy);
+      x.lineTo(sx + 9, dy + 4);
+      x.lineTo(sx - 10, dy + 4);
+      x.closePath();
+      x.fill();
+      x.fillStyle = 'rgba(200,190,170,.6)';
+      x.fillRect(sx - 12, dy, 24, 1);
+      x.strokeStyle = 'rgba(200,190,170,.35)';
+      x.lineWidth = 0.5;
+      x.beginPath();
+      x.moveTo(sx - 12, dy);
+      x.lineTo(sx - 26, d + 2);
+      x.stroke();
     }
   },
 });
 
 /** The lifeguard's hut on stilts, off duty: shutter down, the flag; the NO SWIMMING sign on its post `sign` units west. */
 export const lifeguardElement = kit({
-  type: 'coast.lifeguard', label: 'Lifeguard hut on stilts, flag, NO SWIMMING post (coast kit)',
-  fields: { signOffset: shapeLength(num('Sign post (units west of the hut; 0: none)', 132, 0, 1200)), text: appearanceText(str('Sign', 'NO SWIMMING')) },
-  bounds: p => {const left=Number(p.signOffset)>0?Math.min(-45,-Number(p.signOffset)-36):-45;return{x:left,h:190,w:48-left,tall:190};},
+  type: 'coast.lifeguard',
+  label: 'Lifeguard hut on stilts, flag, NO SWIMMING post (coast kit)',
+  fields: {
+    signOffset: shapeLength(num('Sign post (units west of the hut; 0: none)', 132, 0, 1200)),
+    text: appearanceText(str('Sign', 'NO SWIMMING')),
+  },
+  bounds: (p) => {
+    const left = Number(p.signOffset) > 0 ? Math.min(-45, -Number(p.signOffset) - 36) : -45;
+    return { x: left, h: 190, w: 48 - left, tall: 190 };
+  },
   draw(P, p, h0) {
-    const x = P.x, L = stripLines(P, h0), sx = P.ax;
+    const x = P.x,
+      L = stripLines(P, h0),
+      sx = P.ax;
     if (P.onScreen(sx, sx, 40)) {
-      const b = L.BACK + 6, ink = '#140812';
-      x.fillStyle = ink; x.fillRect(R(sx) - 8, b - 26, 2, 26); x.fillRect(R(sx) + 7, b - 26, 2, 26); x.fillRect(R(sx) - 9, b - 16, 19, 1);
-      x.fillRect(R(sx) - 11, b - 38, 23, 12); x.beginPath(); x.moveTo(R(sx) - 13, b - 38); x.lineTo(R(sx), b - 45); x.lineTo(R(sx) + 13, b - 38); x.fill();
-      x.fillStyle = 'rgba(' + DAWN + ',' + (0.35 * P.warm).toFixed(2) + ')'; x.fillRect(R(sx) - 11, b - 38, 23, 1);
-      x.fillStyle = 'rgba(80,60,60,.8)'; x.fillRect(R(sx) - 8, b - 35, 17, 7);
-      x.fillStyle = ink; x.fillRect(R(sx) + 9, b - 58, 1, 20);
+      const b = L.BACK + 6,
+        ink = '#140812';
+      x.fillStyle = ink;
+      x.fillRect(R(sx) - 8, b - 26, 2, 26);
+      x.fillRect(R(sx) + 7, b - 26, 2, 26);
+      x.fillRect(R(sx) - 9, b - 16, 19, 1);
+      x.fillRect(R(sx) - 11, b - 38, 23, 12);
+      x.beginPath();
+      x.moveTo(R(sx) - 13, b - 38);
+      x.lineTo(R(sx), b - 45);
+      x.lineTo(R(sx) + 13, b - 38);
+      x.fill();
+      x.fillStyle = 'rgba(' + DAWN + ',' + (0.35 * P.warm).toFixed(2) + ')';
+      x.fillRect(R(sx) - 11, b - 38, 23, 1);
+      x.fillStyle = 'rgba(80,60,60,.8)';
+      x.fillRect(R(sx) - 8, b - 35, 17, 7);
+      x.fillStyle = ink;
+      x.fillRect(R(sx) + 9, b - 58, 1, 20);
       const wave = P.still ? 0 : Math.sin(P.f * 0.08) * 1;
-      x.fillStyle = '#c8302a'; x.fillRect(R(sx) + 10, b - 58 + wave, 6, 4);
+      x.fillStyle = '#c8302a';
+      x.fillRect(R(sx) + 10, b - 58 + wave, 6, 4);
     }
     const off = n(p, 'signOffset') * S;
     if (off > 0) {
-      const ps = P.u(-off); if (!P.onScreen(ps, ps, 20)) return;
-      x.fillStyle = '#140812'; x.fillRect(R(ps), L.BACK - 14, 1, 16);
-      x.fillStyle = '#e8e0d0'; x.fillRect(R(ps) - 12, L.BACK - 22, 25, 9); x.fillStyle = '#c8302a'; x.fillRect(R(ps) - 12, L.BACK - 22, 25, 2);
+      const ps = P.u(-off);
+      if (!P.onScreen(ps, ps, 20)) return;
+      x.fillStyle = '#140812';
+      x.fillRect(R(ps), L.BACK - 14, 1, 16);
+      x.fillStyle = '#e8e0d0';
+      x.fillRect(R(ps) - 12, L.BACK - 22, 25, 9);
+      x.fillStyle = '#c8302a';
+      x.fillRect(R(ps) - 12, L.BACK - 22, 25, 2);
       text(x, s(p, 'text'), R(ps) + 0.5, L.BACK - 16.5, 'rgba(30,10,10,.9)', 2.6, '600');
     }
   },
@@ -356,25 +852,50 @@ export const lifeguardElement = kit({
 
 /** The mole out in the bay: rough blocks along the water from the anchor `length` west, the swell breaking white, the light tower at its seaward end. */
 export const breakwaterElement = kit({
-  spatial:rectangleControls({width:'length',originX:1,baseline:'water'}),
-  type: 'coast.breakwater', label: 'Breakwater with its light tower (coast kit, distance)',
+  spatial: rectangleControls({ width: 'length', originX: 1, baseline: 'water' }),
+  type: 'coast.breakwater',
+  label: 'Breakwater with its light tower (coast kit, distance)',
   fields: {
-    length: shapeLength(num('Length (in its own depth)', 497, 30, 6000, 1, 'units')), water: shapePosition(num('Height on the water (over the ground line)', 85, -400, 600)) },
-  bounds: p => ({ x: -n(p, 'length'), h: n(p, 'water') + 70, w: n(p, 'length'), tall: 80 }),
+    length: shapeLength(num('Length (in its own depth)', 497, 30, 6000, 1, 'units')),
+    water: shapePosition(num('Height on the water (over the ground line)', 85, -400, 600)),
+  },
+  bounds: (p) => ({ x: -n(p, 'length'), h: n(p, 'water') + 70, w: n(p, 'length'), tall: 80 }),
   draw(P, p) {
-    const x = P.x, len = n(p, 'length') * S, a = P.u(-len), b = P.ax;
+    const x = P.x,
+      len = n(p, 'length') * S,
+      a = P.u(-len),
+      b = P.ax;
     if (!P.onScreen(a - 20, b + 20)) return;
-    const yb = R(P.y(n(p, 'water'))), O = P.ax;
+    const yb = R(P.y(n(p, 'water'))),
+      O = P.ax;
     x.fillStyle = mixHex('#140a16', '#2a1828', P.warm);
-    x.beginPath(); x.moveTo(a, yb + 3); for (let sx = a; sx <= b; sx += 4) x.lineTo(sx, yb - 3 - (hash(R(sx - O) * 0.3) > 0.5 ? 1 : 0)); x.lineTo(b + 6, yb + 4); x.closePath(); x.fill();
-    x.fillStyle = 'rgba(' + DAWN + ',' + (0.3 * P.warm).toFixed(2) + ')'; x.fillRect(R(a), yb - 3, R(b - a), 1);
+    x.beginPath();
+    x.moveTo(a, yb + 3);
+    for (let sx = a; sx <= b; sx += 4) x.lineTo(sx, yb - 3 - (hash(R(sx - O) * 0.3) > 0.5 ? 1 : 0));
+    x.lineTo(b + 6, yb + 4);
+    x.closePath();
+    x.fill();
+    x.fillStyle = 'rgba(' + DAWN + ',' + (0.3 * P.warm).toFixed(2) + ')';
+    x.fillRect(R(a), yb - 3, R(b - a), 1);
     const br = P.still ? 0.5 : (Math.sin(P.t * 1.1) + 1) / 2;
-    x.fillStyle = 'rgba(255,240,230,' + (0.25 + br * 0.3).toFixed(2) + ')'; for (let sx = a; sx < b; sx += 7) if (hash(R(sx - O)) > 0.4) x.fillRect(R(sx), yb + 2 + R(hash(sx) * 2), 3, 1);
+    x.fillStyle = 'rgba(255,240,230,' + (0.25 + br * 0.3).toFixed(2) + ')';
+    for (let sx = a; sx < b; sx += 7)
+      if (hash(R(sx - O)) > 0.4) x.fillRect(R(sx), yb + 2 + R(hash(sx) * 2), 3, 1);
     const lx = R(a + 3);
-    for (let k = 0; k < 4; k++) { x.fillStyle = k % 2 ? '#d8d0c4' : '#a82a2a'; x.fillRect(lx, yb - 7 - k * 3, 3, 3); }
+    for (let k = 0; k < 4; k++) {
+      x.fillStyle = k % 2 ? '#d8d0c4' : '#a82a2a';
+      x.fillRect(lx, yb - 7 - k * 3, 3, 3);
+    }
     const on = P.still || Math.floor(P.f / 45) % 3 === 0;
-    x.fillStyle = on ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.3)'; x.fillRect(lx - 1, yb - 21, 5, 3);
-    if (on) { const g = x.createRadialGradient(lx + 1.5, yb - 20, 0, lx + 1.5, yb - 20, 14); g.addColorStop(0, 'rgba(' + RED + ',.35)'); g.addColorStop(1, 'rgba(' + RED + ',0)'); x.fillStyle = g; x.fillRect(lx - 14, yb - 34, 30, 30); }
+    x.fillStyle = on ? 'rgba(' + RED + ',1)' : 'rgba(' + RED + ',.3)';
+    x.fillRect(lx - 1, yb - 21, 5, 3);
+    if (on) {
+      const g = x.createRadialGradient(lx + 1.5, yb - 20, 0, lx + 1.5, yb - 20, 14);
+      g.addColorStop(0, 'rgba(' + RED + ',.35)');
+      g.addColorStop(1, 'rgba(' + RED + ',0)');
+      x.fillStyle = g;
+      x.fillRect(lx - 14, yb - 34, 30, 30);
+    }
   },
 });
 
@@ -383,76 +904,251 @@ export const breakwaterElement = kit({
  * and height, taller toward the west end (`rise` per unit), a few lit windows. In its own depth (place it with a
  * small parallax). `town` from..to (units west of the anchor): where the city's haze lies over it.
  */
-const farShoreWindow=(view:Pixels['view'],p:Properties)=>({left:view.sx(n(p,'drawingMinX'),1),right:view.sx(n(p,'drawingMaxX'),1)});
+const farShoreWindow = (view: Pixels['view'], p: Properties) => ({
+  left: view.sx(n(p, 'drawingMinX'), 1),
+  right: view.sx(n(p, 'drawingMaxX'), 1),
+});
 export const farShoreElement = kit({
-  type: 'coast.far-shore', selection:'region',
-  spatial:combineControls(rectangleControls({width:'width',originX:1,baseline:'horizon'}),drawingWindowControls('drawingMinX','drawingMaxX','horizon')),
-  validateProperties:p=>{if(n(p,'drawingMaxX')<=n(p,'drawingMinX'))throw Error('Drawing window east boundary must be after its west boundary.');},
-  drawingWindow:(p,_s,c)=>{const w=farShoreWindow(c.view,p);return{bounds:screenBounds(c,{x:w.left,y:0,w:w.right-w.left,h:c.view.viewH},{x:0,h:0,w:0,tall:0}),from:'drawingMinX',to:'drawingMaxX'};},
-  drawingNote:p=>`Drawing is restricted to world X ${n(p,'drawingMinX')}–${n(p,'drawingMaxX')}. The selection shows the full skyline area. Change Drawing window minimum/maximum X or drag its boundary handles.`, label: 'Far shore: a low city along the horizon (coast kit, distance)',
-  fields: {
-    drawingMinX:semantic(num('Drawing window minimum X',-1e6,-1e7,1e7),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"world"}),drawingMaxX:semantic(num('Drawing window maximum X',1e6,-1e7,1e7),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"world"}),
-    width: shapeLength(num('Width to the west', 1566, 30, 40000, 1, 'units')), seed: generationSeed(num('Seed', 17, 0, 1e6)), horizon: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)),
-    spacing: shapeLength(num('Block spacing (world units across the far shore)', 144, 4, 2000)), rise: shapeLength(num('Taller toward the west, from (units west)', 378, 0, 40000)), hiddenNearAnchorDistance: semantic(num('Hidden east of (units west of the anchor; 0: none)', 0, 0, 40000),{"group":"Visibility & Drawing","quantity":"length","unit":"world units","space":"local"}),
+  type: 'coast.far-shore',
+  selection: 'region',
+  spatial: combineControls(
+    rectangleControls({ width: 'width', originX: 1, baseline: 'horizon' }),
+    drawingWindowControls('drawingMinX', 'drawingMaxX', 'horizon'),
+  ),
+  validateProperties: (p) => {
+    if (n(p, 'drawingMaxX') <= n(p, 'drawingMinX'))
+      throw Error('Drawing window east boundary must be after its west boundary.');
   },
-  bounds:p=>{const top=30+Math.max(0,n(p,'width')-n(p,'rise'))*.005/(n(p,'spacing')/3/130);return{x:-n(p,'width')-48,h:n(p,'horizon')+top,w:n(p,'width')+48,tall:top+3};},
+  drawingWindow: (p, _s, c) => {
+    const w = farShoreWindow(c.view, p);
+    return {
+      bounds: screenBounds(
+        c,
+        { x: w.left, y: 0, w: w.right - w.left, h: c.view.viewH },
+        { x: 0, h: 0, w: 0, tall: 0 },
+      ),
+      from: 'drawingMinX',
+      to: 'drawingMaxX',
+    };
+  },
+  drawingNote: (p) =>
+    `Drawing is restricted to world X ${n(p, 'drawingMinX')}–${n(p, 'drawingMaxX')}. The selection shows the full skyline area. Change Drawing window minimum/maximum X or drag its boundary handles.`,
+  label: 'Far shore: a low city along the horizon (coast kit, distance)',
+  fields: {
+    drawingMinX: semantic(num('Drawing window minimum X', -1e6, -1e7, 1e7), {
+      group: 'Visibility & Drawing',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'world',
+    }),
+    drawingMaxX: semantic(num('Drawing window maximum X', 1e6, -1e7, 1e7), {
+      group: 'Visibility & Drawing',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'world',
+    }),
+    width: shapeLength(num('Width to the west', 1566, 30, 40000, 1, 'units')),
+    seed: generationSeed(num('Seed', 17, 0, 1e6)),
+    horizon: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)),
+    spacing: shapeLength(num('Block spacing (world units across the far shore)', 144, 4, 2000)),
+    rise: shapeLength(num('Taller toward the west, from (units west)', 378, 0, 40000)),
+    hiddenNearAnchorDistance: semantic(
+      num('Hidden east of (units west of the anchor; 0: none)', 0, 0, 40000),
+      { group: 'Visibility & Drawing', quantity: 'length', unit: 'world units', space: 'local' },
+    ),
+  },
+  bounds: (p) => {
+    const top =
+      30 + (Math.max(0, n(p, 'width') - n(p, 'rise')) * 0.005) / (n(p, 'spacing') / 3 / 130);
+    return {
+      x: -n(p, 'width') - 48,
+      h: n(p, 'horizon') + top,
+      w: n(p, 'width') + 48,
+      tall: top + 3,
+    };
+  },
   draw(P, p) {
-    const x = P.x, rng = seeded(n(p, 'seed')), len = n(p, 'width') * S, base = P.y(n(p, 'horizon')), rise = n(p, 'rise') * S, clip = n(p, 'hiddenNearAnchorDistance') * S;
+    const x = P.x,
+      rng = seeded(n(p, 'seed')),
+      len = n(p, 'width') * S,
+      base = P.y(n(p, 'horizon')),
+      rise = n(p, 'rise') * S,
+      clip = n(p, 'hiddenNearAnchorDistance') * S;
     // laid out as the original row: 40 + r·90 apart in the shore's own units (`spacing` scales it)
-    const unit = n(p, 'spacing') * S / 130;
-    x.save();x.beginPath();const window=farShoreWindow(P.view,p),lo=Math.max(0,window.left/ART),hi=Math.min(P.W,window.right/ART);x.rect(lo,0,Math.max(0,hi-lo),P.H);x.clip();
+    const unit = (n(p, 'spacing') * S) / 130;
+    x.save();
+    x.beginPath();
+    const window = farShoreWindow(P.view, p),
+      lo = Math.max(0, window.left / ART),
+      hi = Math.min(P.W, window.right / ART);
+    x.rect(lo, 0, Math.max(0, hi - lo), P.H);
+    x.clip();
     for (let u = 0; u < len; u += (40 + rng() * 90) * unit) {
-      const h = 3 + rng() * 7 + Math.max(0, u - rise) * 0.005 / unit, w = 4 + rng() * 12, r = rng();
+      const h = 3 + rng() * 7 + (Math.max(0, u - rise) * 0.005) / unit,
+        w = 4 + rng() * 12,
+        r = rng();
       if (clip > 0 && u < clip) continue;
-      const sx = P.u(-u); if (!P.onScreen(sx - w, sx)) continue;
-      x.fillStyle = mixHex('#140a1e', '#3a1640', P.warm); x.fillRect(R(sx - w), R(base - h), R(w), R(h) + 1);
-      if (r > 0.55) { x.fillStyle = 'rgba(255,160,90,.4)'; x.fillRect(R(sx - w + 2), R(base - h + 2), 1, 1); }
+      const sx = P.u(-u);
+      if (!P.onScreen(sx - w, sx)) continue;
+      x.fillStyle = mixHex('#140a1e', '#3a1640', P.warm);
+      x.fillRect(R(sx - w), R(base - h), R(w), R(h) + 1);
+      if (r > 0.55) {
+        x.fillStyle = 'rgba(255,160,90,.4)';
+        x.fillRect(R(sx - w + 2), R(base - h + 2), 1, 1);
+      }
     }
     x.restore();
   },
 });
-function seeded(seed: number) { let v = seed; return () => (v = (v * 9301 + 49297) % 233280) / 233280; }
+function seeded(seed: number) {
+  let v = seed;
+  return () => (v = (v * 9301 + 49297) % 233280) / 233280;
+}
 
 /** Boats far out on the sea: hulls on the water, a sail or a little wheelhouse with a lit window, bobbing. */
 export const boatsElement = kit({
-  type: 'coast.boats', selection:'region', label: 'Boats far out on the sea, silhouettes (coast kit, distance)',
+  type: 'coast.boats',
+  selection: 'region',
+  label: 'Boats far out on the sea, silhouettes (coast kit, distance)',
   fields: {
-    boats: ({...appearanceStructure(list('Boats (x: units east of the piece, len: pixels, mast: 1 sail / 0 wheelhouse, flip)', [{ x: 0, len: 22, mast: 0 }], r => fin(r.x) && fin(r.len) && (r.mast === 0 || r.mast === 1), 'expected { x, len, mast } rows')),editor:{kind:'list',item:{x:shapePosition(numericFields({value:0})('X')),len:semantic(numericFields({value:22,min:1,step:1})('Length'),{group:'Shape / Area',quantity:'length',unit:'artwork pixels',space:'artwork'}),mast:appearanceChoice(choiceField('Mast',[0,1],0)),flip:appearanceBoolean(booleanField('Face left'))}}}),
-    waterLevel: semantic(num('Water level (world elevation)', 180, -400, 1200),{group:'Shape / Area',quantity:'position',unit:'world units',space:'world'}),
+    boats: {
+      ...appearanceStructure(
+        list(
+          'Boats (x: units east of the piece, len: pixels, mast: 1 sail / 0 wheelhouse, flip)',
+          [{ x: 0, len: 22, mast: 0 }],
+          (r) => fin(r.x) && fin(r.len) && (r.mast === 0 || r.mast === 1),
+          'expected { x, len, mast } rows',
+        ),
+      ),
+      editor: {
+        kind: 'list',
+        item: {
+          x: shapePosition(numericFields({ value: 0 })('X')),
+          len: semantic(numericFields({ value: 22, min: 1, step: 1 })('Length'), {
+            group: 'Shape / Area',
+            quantity: 'length',
+            unit: 'artwork pixels',
+            space: 'artwork',
+          }),
+          mast: appearanceChoice(choiceField('Mast', [0, 1], 0)),
+          flip: appearanceBoolean(booleanField('Face left')),
+        },
+      },
+    },
+    waterLevel: semantic(num('Water level (world elevation)', 180, -400, 1200), {
+      group: 'Shape / Area',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'world',
+    }),
   },
-  bounds: (p,_s,c) => { const boats=p.boats as unknown as {x:number;len:number;mast:number;flip?:boolean}[];
-    const extent=(b:typeof boats[number])=>Math.max(b.len,b.mast?b.len/2+7:9)*ART;
-    const left=Math.min(0,...boats.map(b=>b.x-(b.flip?extent(b):0)))-3,right=Math.max(0,...boats.map(b=>b.x+(b.flip?0:extent(b))))+3;
-    return{x:left,h:n(p,'waterLevel')-(c?.placement.h??0)+40,w:right-left,tall:54}; },
+  bounds: (p, _s, c) => {
+    const boats = p.boats as unknown as { x: number; len: number; mast: number; flip?: boolean }[];
+    const extent = (b: (typeof boats)[number]) => Math.max(b.len, b.mast ? b.len / 2 + 7 : 9) * ART;
+    const left = Math.min(0, ...boats.map((b) => b.x - (b.flip ? extent(b) : 0))) - 3,
+      right = Math.max(0, ...boats.map((b) => b.x + (b.flip ? 0 : extent(b)))) + 3;
+    return {
+      x: left,
+      h: n(p, 'waterLevel') - (c?.placement.h ?? 0) + 40,
+      w: right - left,
+      tall: 54,
+    };
+  },
   draw(P, p) {
-    const x = P.x, by = R(P.y(n(p, 'waterLevel')));
-    for (const boat of p.boats as unknown as { x: number; len: number; mast: number; flip?: boolean }[]) {
-      const len = boat.len, sx = P.u(boat.x * S) - (boat.flip ? len : 0);
+    const x = P.x,
+      by = R(P.y(n(p, 'waterLevel')));
+    for (const boat of p.boats as unknown as {
+      x: number;
+      len: number;
+      mast: number;
+      flip?: boolean;
+    }[]) {
+      const len = boat.len,
+        sx = P.u(boat.x * S) - (boat.flip ? len : 0);
       if (!P.onScreen(sx - len, sx + len)) continue;
       const bob = P.still ? 0 : R(Math.sin(P.t * 1.4 + boat.x) * 0.6);
-      x.save(); if (boat.flip) { x.translate(2 * R(sx) + len, 0); x.scale(-1, 1); }
-      x.fillStyle = '#12061a'; x.fillRect(R(sx), by + bob, len, 2); x.fillRect(R(sx) + 2, by + 2 + bob, len - 4, 1);
-      if (boat.mast) { x.fillRect(R(sx + len / 2), by - 12 + bob, 1, 12); x.beginPath(); x.moveTo(sx + len / 2 + 1, by - 11 + bob); x.lineTo(sx + len / 2 + 7, by - 1 + bob); x.lineTo(sx + len / 2 + 1, by - 1 + bob); x.fill(); }
-      else { x.fillRect(R(sx + 3), by - 3 + bob, 6, 3); x.fillStyle = 'rgba(255,217,165,.5)'; x.fillRect(R(sx + 4), by - 2 + bob, 1, 1); }
+      x.save();
+      if (boat.flip) {
+        x.translate(2 * R(sx) + len, 0);
+        x.scale(-1, 1);
+      }
+      x.fillStyle = '#12061a';
+      x.fillRect(R(sx), by + bob, len, 2);
+      x.fillRect(R(sx) + 2, by + 2 + bob, len - 4, 1);
+      if (boat.mast) {
+        x.fillRect(R(sx + len / 2), by - 12 + bob, 1, 12);
+        x.beginPath();
+        x.moveTo(sx + len / 2 + 1, by - 11 + bob);
+        x.lineTo(sx + len / 2 + 7, by - 1 + bob);
+        x.lineTo(sx + len / 2 + 1, by - 1 + bob);
+        x.fill();
+      } else {
+        x.fillRect(R(sx + 3), by - 3 + bob, 6, 3);
+        x.fillStyle = 'rgba(255,217,165,.5)';
+        x.fillRect(R(sx + 4), by - 2 + bob, 1, 1);
+      }
       x.restore();
     }
   },
 });
 
 /** Something big and dark passing close to the camera at the bottom of the view: a palm, a post with a lit sign, a lamp, a signal pole. Place it with a parallax over 1. */
-export const wipeElement = kit({spatial:fixedNativeGeometry,
-  type: 'coast.wipe', label: 'Foreground wipe: a palm, a post, a lamp or a signal close to the camera (coast kit)', parts: ['foreground'],
-  fields: { kind: appearanceChoice({ kind: 'select', label: 'Kind', options: ['palm', 'post', 'lamp', 'signal'], default: 'palm' }), ink: appearanceColor(color('Silhouette', '#040106')) },
+export const wipeElement = kit({
+  spatial: fixedNativeGeometry,
+  type: 'coast.wipe',
+  label: 'Foreground wipe: a palm, a post, a lamp or a signal close to the camera (coast kit)',
+  parts: ['foreground'],
+  fields: {
+    kind: appearanceChoice({
+      kind: 'select',
+      label: 'Kind',
+      options: ['palm', 'post', 'lamp', 'signal'],
+      default: 'palm',
+    }),
+    ink: appearanceColor(color('Silhouette', '#040106')),
+  },
   bounds: () => ({ x: -60, h: 700, w: 120, tall: 900 }),
   draw(P, p) {
-    const x = P.x, sx = P.ax, ink = s(p, 'ink'), kind = s(p, 'kind'), H = P.H;
+    const x = P.x,
+      sx = P.ax,
+      ink = s(p, 'ink'),
+      kind = s(p, 'kind'),
+      H = P.H;
     if (!P.onScreen(sx, sx, 120)) return;
-    if (kind === 'palm') { placed(x, R(sx), H + 30, 1, () => drawPalm(x, { h: H * 1.15, lean: 30, seed: 21, t: P.f, still: P.still, fill: ink, rim: DAWN, side: -1 })); return; }
+    if (kind === 'palm') {
+      placed(x, R(sx), H + 30, 1, () =>
+        drawPalm(x, {
+          h: H * 1.15,
+          lean: 30,
+          seed: 21,
+          t: P.f,
+          still: P.still,
+          fill: ink,
+          rim: DAWN,
+          side: -1,
+        }),
+      );
+      return;
+    }
     const w = kind === 'post' ? 12 : 6;
-    x.fillStyle = ink; x.fillRect(R(sx), -10, w, H + 100);
-    if (kind === 'post') { x.fillRect(R(sx) - 30, 30, 42, 5); x.fillStyle = 'rgba(255,230,180,.85)'; x.fillRect(R(sx) - 28, 35, 14, 2); x.fillStyle = 'rgba(' + ORANGE + ',.25)'; x.fillRect(R(sx) + w - 1, 0, 1, H); }
-    else if (kind === 'lamp') { x.fillRect(R(sx) - 18, 44, 24, 4); x.fillStyle = 'rgba(255,230,180,.85)'; x.fillRect(R(sx) - 16, 48, 8, 2); }
-    else { x.fillRect(R(sx) - 4, 50, 14, 30); const go = P.still || Math.floor(P.f / 150) % 2 === 0; x.fillStyle = go ? 'rgba(60,255,140,.9)' : 'rgba(255,42,68,.9)'; x.fillRect(R(sx) - 1, go ? 70 : 54, 8, 6); }
+    x.fillStyle = ink;
+    x.fillRect(R(sx), -10, w, H + 100);
+    if (kind === 'post') {
+      x.fillRect(R(sx) - 30, 30, 42, 5);
+      x.fillStyle = 'rgba(255,230,180,.85)';
+      x.fillRect(R(sx) - 28, 35, 14, 2);
+      x.fillStyle = 'rgba(' + ORANGE + ',.25)';
+      x.fillRect(R(sx) + w - 1, 0, 1, H);
+    } else if (kind === 'lamp') {
+      x.fillRect(R(sx) - 18, 44, 24, 4);
+      x.fillStyle = 'rgba(255,230,180,.85)';
+      x.fillRect(R(sx) - 16, 48, 8, 2);
+    } else {
+      x.fillRect(R(sx) - 4, 50, 14, 30);
+      const go = P.still || Math.floor(P.f / 150) % 2 === 0;
+      x.fillStyle = go ? 'rgba(60,255,140,.9)' : 'rgba(255,42,68,.9)';
+      x.fillRect(R(sx) - 1, go ? 70 : 54, 8, 6);
+    }
   },
 });
 
@@ -464,52 +1160,195 @@ export const wipeElement = kit({spatial:fixedNativeGeometry,
  * distance layer; its own depth (`parallax` of the placement) moves the swell as the camera does.
  */
 export const seaElement: AssetDefinition = {
-  spatial:viewportElevationControls('horizon','bottom'),
-  validateProperties:p=>{if(n(p,'bottom')>n(p,'horizon'))throw Error('Sea near edge must not be above its horizon');},
-  type: 'environment.sea', selection:'region', version: 1, label: 'Open sea: mirror, swell and the sun’s path (coast kit)', category: 'coast', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
-  fields: { horizon: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)), bottom: shapePosition(num('Near edge (over the ground line)', 0, -600, 1200)), haze: appearanceRatio(num('City haze over it', 0, 0, 1, 0.05)) },
-  bounds:(p,_s,c)=>{const b={x:0,h:n(p,'horizon'),w:4000,tall:n(p,'horizon')-n(p,'bottom')};return c?screenBounds(c,{x:0,y:c.view.y(c.placement.h+b.h),w:c.view.viewW,h:Math.max(12,c.view.y(c.placement.h+n(p,'bottom'))-c.view.y(c.placement.h+b.h))+6},b):b;},
+  spatial: viewportElevationControls('horizon', 'bottom'),
+  validateProperties: (p) => {
+    if (n(p, 'bottom') > n(p, 'horizon'))
+      throw Error('Sea near edge must not be above its horizon');
+  },
+  type: 'environment.sea',
+  selection: 'region',
+  version: 1,
+  label: 'Open sea: mirror, swell and the sun’s path (coast kit)',
+  category: 'coast',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
+  fields: {
+    horizon: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)),
+    bottom: shapePosition(num('Near edge (over the ground line)', 0, -600, 1200)),
+    haze: appearanceRatio(num('City haze over it', 0, 0, 1, 0.05)),
+  },
+  bounds: (p, _s, c) => {
+    const b = { x: 0, h: n(p, 'horizon'), w: 4000, tall: n(p, 'horizon') - n(p, 'bottom') };
+    return c
+      ? screenBounds(
+          c,
+          {
+            x: 0,
+            y: c.view.y(c.placement.h + b.h),
+            w: c.view.viewW,
+            h:
+              Math.max(
+                12,
+                c.view.y(c.placement.h + n(p, 'bottom')) - c.view.y(c.placement.h + b.h),
+              ) + 6,
+          },
+          b,
+        )
+      : b;
+  },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, v, p, _s, _pass, at) {
-    const top = R(v.y(at.h + n(p, 'horizon')) / ART), bot = v.y(at.h + n(p, 'bottom')) / ART, l = v.lighting;
-    const sun = sunsetSun(v, l, v.y(at.h + n(p, 'horizon'))), depth = sun.r > 0 ? (sun.y - v.y(at.h + n(p, 'horizon'))) / sun.r : 0;
-    const refl = smooth(0, 0.45, 1 - depth), warm = lerp(0.35, 1, smooth(-0.17, 0, l.sun.el));
-    ctx.save(); ctx.scale(ART, ART);
-    try { drawSea(ctx, { W: v.viewW / ART, top, bottom: Math.max(top + 4, bot + 2), sunX: sun.x / ART, sunR: sun.r / ART, refl: refl * (1 - n(p, 'haze') * 0.8), t: v.t, warm, haze: n(p, 'haze') * 0.6, shift: -v.sx(0, at.parallax) / ART * 0.4 / Math.max(0.01, at.parallax) }); }
-    finally { ctx.restore(); }
+    const top = R(v.y(at.h + n(p, 'horizon')) / ART),
+      bot = v.y(at.h + n(p, 'bottom')) / ART,
+      l = v.lighting;
+    const sun = sunsetSun(v, l, v.y(at.h + n(p, 'horizon'))),
+      depth = sun.r > 0 ? (sun.y - v.y(at.h + n(p, 'horizon'))) / sun.r : 0;
+    const refl = smooth(0, 0.45, 1 - depth),
+      warm = lerp(0.35, 1, smooth(-0.17, 0, l.sun.el));
+    ctx.save();
+    ctx.scale(ART, ART);
+    try {
+      drawSea(ctx, {
+        W: v.viewW / ART,
+        top,
+        bottom: Math.max(top + 4, bot + 2),
+        sunX: sun.x / ART,
+        sunR: sun.r / ART,
+        refl: refl * (1 - n(p, 'haze') * 0.8),
+        t: v.t,
+        warm,
+        haze: n(p, 'haze') * 0.6,
+        shift: ((-v.sx(0, at.parallax) / ART) * 0.4) / Math.max(0.01, at.parallax),
+      });
+    } finally {
+      ctx.restore();
+    }
   },
 };
 
 /** A far landmark's shadow and its red light lying on the water under it (the Spire across the bay). */
 export const reflectionElement = kit({
-  spatial:combineControls(worldElevationControl('horizon'),worldElevationControl('depth')),
-  validateProperties:p=>{if(n(p,'depth')>n(p,'horizon'))throw Error('Reflection near edge must not be above its horizon');},
-  type: 'environment.reflection', selection:'region', label: 'Landmark reflection on the water: dark shape, red light (coast kit, distance)',
-  fields: { generatorScale: semantic(num('Landmark size (its scale)', 1.49, 0.1, 10, 0.01),{"group":"Appearance","quantity":"factor","unit":"factor"}), horizon: semantic(num('Horizon (world elevation)', 189, -400, 1200),{group:'Shape / Area',quantity:'position',unit:'world units',space:'world'}), depth: semantic(num('Near edge (world elevation)', 0, -600, 1200),{group:'Shape / Area',quantity:'position',unit:'world units',space:'world'}) },
-  bounds: p => ({ x: -100 * n(p, 'generatorScale'), h: n(p, 'horizon'), w: 200 * n(p, 'generatorScale'), tall: n(p, 'horizon') - n(p, 'depth') }),
+  spatial: combineControls(worldElevationControl('horizon'), worldElevationControl('depth')),
+  validateProperties: (p) => {
+    if (n(p, 'depth') > n(p, 'horizon'))
+      throw Error('Reflection near edge must not be above its horizon');
+  },
+  type: 'environment.reflection',
+  selection: 'region',
+  label: 'Landmark reflection on the water: dark shape, red light (coast kit, distance)',
+  fields: {
+    generatorScale: semantic(num('Landmark size (its scale)', 1.49, 0.1, 10, 0.01), {
+      group: 'Appearance',
+      quantity: 'factor',
+      unit: 'factor',
+    }),
+    horizon: semantic(num('Horizon (world elevation)', 189, -400, 1200), {
+      group: 'Shape / Area',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'world',
+    }),
+    depth: semantic(num('Near edge (world elevation)', 0, -600, 1200), {
+      group: 'Shape / Area',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'world',
+    }),
+  },
+  bounds: (p) => ({
+    x: -100 * n(p, 'generatorScale'),
+    h: n(p, 'horizon'),
+    w: 200 * n(p, 'generatorScale'),
+    tall: n(p, 'horizon') - n(p, 'depth'),
+  }),
   draw(P, p) {
-    const x = P.x, sx = P.ax, spS = n(p, 'generatorScale') * S, top = R(P.y(n(p, 'horizon'))), bot = P.y(n(p, 'depth'));
+    const x = P.x,
+      sx = P.ax,
+      spS = n(p, 'generatorScale') * S,
+      top = R(P.y(n(p, 'horizon'))),
+      bot = P.y(n(p, 'depth'));
     if (!P.onScreen(sx, sx, 60)) return;
-    x.fillStyle = 'rgba(8,3,14,.35)'; x.fillRect(R(sx - 16 * spS * 2), top + 1, R(64 * spS * 2), R((bot - top) * 0.45));
-    for (let i = 0; i < 6; i++) { x.fillStyle = 'rgba(' + RED + ',' + (0.12 * (1 - i / 6)).toFixed(3) + ')'; x.fillRect(R(sx - 2 + (P.still ? 0 : Math.sin(P.t * 2 + i) * 1.5)), top + 2 + i * 3, 3, 1); }
+    x.fillStyle = 'rgba(8,3,14,.35)';
+    x.fillRect(R(sx - 16 * spS * 2), top + 1, R(64 * spS * 2), R((bot - top) * 0.45));
+    for (let i = 0; i < 6; i++) {
+      x.fillStyle = 'rgba(' + RED + ',' + (0.12 * (1 - i / 6)).toFixed(3) + ')';
+      x.fillRect(R(sx - 2 + (P.still ? 0 : Math.sin(P.t * 2 + i) * 1.5)), top + 2 + i * 3, 3, 1);
+    }
   },
 });
 
 /** Low bay bridge: railing, end signals and widely spaced lamps, in the shared world's pixels. */
 export const bridgeElement = kit({
-  spatial:rectangleControls({width:'length',baseline:SHORE.back}),
-  type: 'coast.bridge', label: 'Bay bridge rail, signals and lamps (coast kit)',
-  fields: {length:shapeLength(num('Length',1380,120,12000)),paintColor:appearanceColor({kind:'color',label:'Rail',default:'#3a2a3a'})},
-  bounds:p=>({x:0,h:150,w:n(p,'length'),tall:150}),
-  draw(P,p,h){const x=P.x,len=n(p,'length')/ART,a=P.ax,b=P.u(len),gy=P.y(h),L=stripLines(P,h);
-    x.fillStyle=String(p.paintColor);x.fillRect(R(a),R(gy-5),R(b-a),1);
-    for(let u=0;u<len;u+=10){const s=R(P.u(u));if(P.onScreen(s,s,2))x.fillRect(s,R(gy-5),1,5);}
-    for(const u of [14,len-14]){const s=R(P.u(u)),top=gy-46;if(!P.onScreen(s,s,20))continue;x.fillStyle='#1e1222';x.fillRect(s-3,R(top),6,46);x.fillRect(s-5,R(top),10,3);x.fillStyle='rgba(255,136,0,.35)';x.fillRect(s+2,R(top),1,46);x.fillStyle=P.still||Math.floor(P.f/20)%2?'rgba(255,42,68,1)':'rgba(255,42,68,.3)';x.fillRect(s-1,R(top-3),3,3);}
-    for(let u=80;u<len-40;u+=115){const s=R(P.u(u)),top=L.BACK-36;if(!P.onScreen(s,s,30))continue;x.fillStyle='#0e080c';x.fillRect(s,R(top),2,R(L.BACK-top));x.fillRect(s-6,R(top),8,2);x.fillStyle='rgba(255,220,160,.95)';x.fillRect(s-6,R(top+2),4,1);const glow=x.createRadialGradient(s-4,top+3,1,s-4,top+3,22);glow.addColorStop(0,'rgba(255,210,150,.18)');glow.addColorStop(1,'rgba(255,210,150,0)');x.fillStyle=glow;x.fillRect(s-26,top-18,44,44);}
+  spatial: rectangleControls({ width: 'length', baseline: SHORE.back }),
+  type: 'coast.bridge',
+  label: 'Bay bridge rail, signals and lamps (coast kit)',
+  fields: {
+    length: shapeLength(num('Length', 1380, 120, 12000)),
+    paintColor: appearanceColor({ kind: 'color', label: 'Rail', default: '#3a2a3a' }),
+  },
+  bounds: (p) => ({ x: 0, h: 150, w: n(p, 'length'), tall: 150 }),
+  draw(P, p, h) {
+    const x = P.x,
+      len = n(p, 'length') / ART,
+      a = P.ax,
+      b = P.u(len),
+      gy = P.y(h),
+      L = stripLines(P, h);
+    x.fillStyle = String(p.paintColor);
+    x.fillRect(R(a), R(gy - 5), R(b - a), 1);
+    for (let u = 0; u < len; u += 10) {
+      const s = R(P.u(u));
+      if (P.onScreen(s, s, 2)) x.fillRect(s, R(gy - 5), 1, 5);
+    }
+    for (const u of [14, len - 14]) {
+      const s = R(P.u(u)),
+        top = gy - 46;
+      if (!P.onScreen(s, s, 20)) continue;
+      x.fillStyle = '#1e1222';
+      x.fillRect(s - 3, R(top), 6, 46);
+      x.fillRect(s - 5, R(top), 10, 3);
+      x.fillStyle = 'rgba(255,136,0,.35)';
+      x.fillRect(s + 2, R(top), 1, 46);
+      x.fillStyle =
+        P.still || Math.floor(P.f / 20) % 2 ? 'rgba(255,42,68,1)' : 'rgba(255,42,68,.3)';
+      x.fillRect(s - 1, R(top - 3), 3, 3);
+    }
+    for (let u = 80; u < len - 40; u += 115) {
+      const s = R(P.u(u)),
+        top = L.BACK - 36;
+      if (!P.onScreen(s, s, 30)) continue;
+      x.fillStyle = '#0e080c';
+      x.fillRect(s, R(top), 2, R(L.BACK - top));
+      x.fillRect(s - 6, R(top), 8, 2);
+      x.fillStyle = 'rgba(255,220,160,.95)';
+      x.fillRect(s - 6, R(top + 2), 4, 1);
+      const glow = x.createRadialGradient(s - 4, top + 3, 1, s - 4, top + 3, 22);
+      glow.addColorStop(0, 'rgba(255,210,150,.18)');
+      glow.addColorStop(1, 'rgba(255,210,150,0)');
+      x.fillStyle = glow;
+      x.fillRect(s - 26, top - 18, 44, 44);
+    }
   },
 });
 
-export const coastElements: AssetDefinition[] = [groundElement, bridgeElement, wallElement, pierElement, footbridgeElement, lifeguardElement, breakwaterElement, farShoreElement, boatsElement, wipeElement, seaElement, reflectionElement];
+export const coastElements: AssetDefinition[] = [
+  groundElement,
+  bridgeElement,
+  wallElement,
+  pierElement,
+  footbridgeElement,
+  lifeguardElement,
+  breakwaterElement,
+  farShoreElement,
+  boatsElement,
+  wipeElement,
+  seaElement,
+  reflectionElement,
+];
 
-lifeguardElement.spatial=conditionalControls(axisControl('signOffset','x',54,'Sign position to west',{direction:-1}),p=>Number(p.signOffset)>0);
-boatsElement.spatial=worldElevationControl('waterLevel');
+lifeguardElement.spatial = conditionalControls(
+  axisControl('signOffset', 'x', 54, 'Sign position to west', { direction: -1 }),
+  (p) => Number(p.signOffset) > 0,
+);
+boatsElement.spatial = worldElevationControl('waterLevel');

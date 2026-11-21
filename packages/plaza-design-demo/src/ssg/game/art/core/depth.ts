@@ -14,19 +14,65 @@
  * and Market's foreground walkers (near). Those scenes map onto bands without a pixel changing.
  */
 export type DepthBand = 'far' | 'back' | 'play' | 'near';
-export interface DepthSpec { label: string; ps: number; scale: number; parallax: number; dim: number; note: string }
+export interface DepthSpec {
+  label: string;
+  ps: number;
+  scale: number;
+  parallax: number;
+  dim: number;
+  note: string;
+}
 export const DEPTH_BANDS: Readonly<Record<DepthBand, DepthSpec>> = {
-  far: { label: 'Far', ps: 2, scale: 2 / 3, parallax: 0.55, dim: 0.55, note: 'across the square; scrolls slowly' },
-  back: { label: 'Back', ps: 2, scale: 2 / 3, parallax: 0.9, dim: 0.5, note: 'behind the play band' },
-  play: { label: 'Play', ps: 3, scale: 1, parallax: 1, dim: 0, note: 'the player’s band; everything you can use' },
-  near: { label: 'Near', ps: 5, scale: 5 / 3, parallax: 1.3, dim: 0.78, note: 'in front of the play band; a dark silhouette' },
+  far: {
+    label: 'Far',
+    ps: 2,
+    scale: 2 / 3,
+    parallax: 0.55,
+    dim: 0.55,
+    note: 'across the square; scrolls slowly',
+  },
+  back: {
+    label: 'Back',
+    ps: 2,
+    scale: 2 / 3,
+    parallax: 0.9,
+    dim: 0.5,
+    note: 'behind the play band',
+  },
+  play: {
+    label: 'Play',
+    ps: 3,
+    scale: 1,
+    parallax: 1,
+    dim: 0,
+    note: 'the player’s band; everything you can use',
+  },
+  near: {
+    label: 'Near',
+    ps: 5,
+    scale: 5 / 3,
+    parallax: 1.3,
+    dim: 0.78,
+    note: 'in front of the play band; a dark silhouette',
+  },
 };
 export const DEPTH_ORDER: readonly DepthBand[] = ['far', 'back', 'play', 'near'];
-export const isDepthBand = (value: unknown): value is DepthBand => typeof value === 'string' && Object.prototype.hasOwnProperty.call(DEPTH_BANDS, value);
+export const isDepthBand = (value: unknown): value is DepthBand =>
+  typeof value === 'string' && Object.prototype.hasOwnProperty.call(DEPTH_BANDS, value);
 
 /** The band whose values these are (missing values are the play band's), or 'custom'. */
-export function depthOf(values: { ps?: number; parallax?: number; dim?: number }): DepthBand | 'custom' {
-  const ps = values.ps ?? 3, parallax = values.parallax ?? 1, dim = values.dim ?? 0;
-  for (const band of DEPTH_ORDER) { const d = DEPTH_BANDS[band]; if (d.ps === ps && Math.abs(d.parallax - parallax) < 1e-6 && Math.abs(d.dim - dim) < 1e-6) return band; }
+export function depthOf(values: {
+  ps?: number;
+  parallax?: number;
+  dim?: number;
+}): DepthBand | 'custom' {
+  const ps = values.ps ?? 3,
+    parallax = values.parallax ?? 1,
+    dim = values.dim ?? 0;
+  for (const band of DEPTH_ORDER) {
+    const d = DEPTH_BANDS[band];
+    if (d.ps === ps && Math.abs(d.parallax - parallax) < 1e-6 && Math.abs(d.dim - dim) < 1e-6)
+      return band;
+  }
   return 'custom';
 }

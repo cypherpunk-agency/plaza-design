@@ -11,7 +11,13 @@ export class ShiftGuidance {
   private target: Attention = null;
   private blocked = true;
 
-  constructor(host: HTMLElement, private reduced: boolean, private ping: (x: number | null) => void, private attention: (flags: Flags) => Attention, private objective: (flags: Flags) => string) {
+  constructor(
+    host: HTMLElement,
+    private reduced: boolean,
+    private ping: (x: number | null) => void,
+    private attention: (flags: Flags) => Attention,
+    private objective: (flags: Flags) => string,
+  ) {
     this.live.className = 'shift-task-live';
     this.live.setAttribute('role', 'status');
     this.live.setAttribute('aria-live', 'polite');
@@ -19,22 +25,44 @@ export class ShiftGuidance {
     host.append(this.live);
   }
 
-  hide() { this.blocked = true; this.ping(null); }
+  hide() {
+    this.blocked = true;
+    this.ping(null);
+  }
 
-  update(flags: Readonly<Record<string, boolean>>, dt: number, busy: boolean, moving: boolean, px: number) {
-    const goal = this.objective(flags), target=this.attention(flags);
-    if (goal !== this.goal || target?.x!==this.target?.x || !!target?.gentle!==!!this.target?.gentle) {
-      this.goal = goal; this.age = 0; this.idle = 0; this.settled = false;
+  update(
+    flags: Readonly<Record<string, boolean>>,
+    dt: number,
+    busy: boolean,
+    moving: boolean,
+    px: number,
+  ) {
+    const goal = this.objective(flags),
+      target = this.attention(flags);
+    if (
+      goal !== this.goal ||
+      target?.x !== this.target?.x ||
+      !!target?.gentle !== !!this.target?.gentle
+    ) {
+      this.goal = goal;
+      this.age = 0;
+      this.idle = 0;
+      this.settled = false;
       this.target = target;
       this.ping(null);
     }
     this.blocked = busy;
-    if (busy) { this.idle = 0; this.ping(null); return; }
+    if (busy) {
+      this.idle = 0;
+      this.ping(null);
+      return;
+    }
     if (this.age === 0) this.live.textContent = goal;
     this.age += dt;
     if (!this.settled && this.age >= 2.65) {
       this.settled = true;
-      if (this.target && !this.target.gentle && Math.abs(px - this.target.x) > 40) this.ping(this.target.x);
+      if (this.target && !this.target.gentle && Math.abs(px - this.target.x) > 40)
+        this.ping(this.target.x);
     }
     if (!this.settled || !this.target) return;
     if (moving || Math.abs(px - this.target.x) <= 40) {
@@ -42,25 +70,28 @@ export class ShiftGuidance {
       if (Math.abs(px - this.target.x) <= 40) this.ping(null);
     } else {
       this.idle += dt;
-      if (this.idle >= (this.target.gentle ? 30 : 20)) { this.ping(this.target.x); this.idle = 0; }
+      if (this.idle >= (this.target.gentle ? 30 : 20)) {
+        this.ping(this.target.x);
+        this.idle = 0;
+      }
     }
   }
 
   /** Coordinates share the HUD's canvas space, so the text lands on its exact old baseline. */
   draw(x: CanvasRenderingContext2D, width: number, height: number, dockY: number) {
     if (this.blocked || !this.goal) return;
-    const travel = Math.min(1, Math.max(0, (this.age - 2) / .65));
-    const ease = this.reduced ? (travel >= .5 ? 1 : 0) : travel * travel * (3 - 2 * travel);
+    const travel = Math.min(1, Math.max(0, (this.age - 2) / 0.65));
+    const ease = this.reduced ? (travel >= 0.5 ? 1 : 0) : travel * travel * (3 - 2 * travel);
     const text = 'GOAL ' + this.goal;
     x.save();
     x.font = '600 11px "IBM Plex Mono", monospace';
-    const centreSize = Math.min(11, 11 * (width - 16) / Math.max(1, x.measureText(text).width));
+    const centreSize = Math.min(11, (11 * (width - 16)) / Math.max(1, x.measureText(text).width));
     x.font = `600 ${centreSize + (8 - centreSize) * ease}px "IBM Plex Mono", monospace`;
     x.textAlign = 'left';
     x.fillStyle = 'rgba(255,61,242,.9)';
     if (this.reduced && travel > 0 && travel < 1) x.globalAlpha *= Math.abs(travel * 2 - 1);
     const centreX = Math.max(8, (width - x.measureText(text).width) / 2);
-    const centreY = Math.max(dockY, height * .3);
+    const centreY = Math.max(dockY, height * 0.3);
     x.fillText(text, centreX + (8 - centreX) * ease, centreY + (dockY - centreY) * ease);
     x.restore();
   }

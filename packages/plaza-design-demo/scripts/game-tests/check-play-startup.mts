@@ -1,63 +1,506 @@
-import {defaultPlayFixture} from '../../src/ssg/game/world/checkpoints';import {liveSources} from '../../src/ssg/game/authoring/validation-snapshot';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import ts from 'typescript';import {PlayStartup,playStartupWaitingMessage} from '../../src/ssg/game/authoring/play-startup';
+import { defaultPlayFixture } from '../../src/ssg/game/world/checkpoints';
+import { liveSources } from '../../src/ssg/game/authoring/validation-snapshot';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+import { PlayStartup, playStartupWaitingMessage } from '../../src/ssg/game/authoring/play-startup';
 // Execute the real mount lifecycle with a small DOM/clock boundary; game/compiler imports are not invoked.
-const file='src/ssg/game/authoring/play-workbench.ts',source=fs.readFileSync(file,'utf8'),sf=ts.createSourceFile(file,source,ts.ScriptTarget.Latest,true);let text=source;for(const n of [...sf.statements].reverse())if(ts.isImportDeclaration(n))text=text.slice(0,n.getStart(sf))+text.slice(n.end);
-class Node {children:Node[]=[];parent?:Node;attrs:Record<string,string>={};textContent='';style:any={};onclick?:()=>void;onload?:()=>void;onerror?:()=>void;src='';contentWindow={messages:[] as any[],fail:false,postMessage:(value:any)=>{if(this.contentWindow.fail)throw new Error('Snapshot clone failed');this.contentWindow.messages.push(value);}};removed=false;
- constructor(public tag:string){}setAttribute(k:string,v:string){this.attrs[k]=v;}append(...nodes:Node[]){for(const n of nodes){if(n.tag==='iframe')assert(n.src,'final iframe URL must be assigned before insertion');n.parent=this;this.children.push(n);}}replaceChildren(...nodes:Node[]){this.children=[];this.append(...nodes);}remove(){this.removed=true;if(this.parent)this.parent.children=this.parent.children.filter(n=>n!==this);}walk():Node[]{return[this,...this.children.flatMap(n=>n.walk())];}}
-class Form {constructor(..._args:any[]){}button(host:Node,label:string,click:()=>void){const b=new Node('button');b.textContent=label;b.onclick=click;host.append(b);}section(host:Node,label:string){const n=new Node('section');n.textContent=label;host.append(n);return n;}select(..._args:any[]){}text(..._args:any[]){}number(..._args:any[]){}decimal(..._args:any[]){}check(..._args:any[]){} }
-let validations=0,now=0,serial=0,fetchMode:'normal'|'pending'|'fail'='normal',pendingFonts:(()=>void)[]=[];const timers=new Map<number,{at:number;fn:()=>void}>(),listeners=new Set<(event:any)=>void>();
-const fixture={id:'capsule-start',name:'Capsule start',scene:'capsule',flags:{},items:{},tokens:0,modules:[],programs:[],keyring:[],state:{},day:1,minute:580,seed:3,weather:'forecast',clock:'fixed',spawn:null};
-const docs:any[]=[{id:'play-profiles',kind:'source',value:{profiles:[]}},{id:'play-fixtures',kind:'fixtures',value:{version:1,fixtures:[fixture]}},{id:'capsule',kind:'composition',value:{scene:'capsule',instances:[]}},{id:'capsule-scene',kind:'scene',value:{}},{id:'capsule-gameplay',kind:'gameplay',value:{}},...['city-source','metro-source','bot-reactions'].map(id=>({id,kind:'source',value:{}}))];
-const globals:any={liveSources,defaultPlayFixture,renderStartingStateControls:()=>{},PlayStartup:class extends PlayStartup{constructor(identity:any){super(identity,()=>now);}},playStartupWaitingMessage,TypedForm:Form,document:{createElement:(tag:string)=>new Node(tag)},window:{addEventListener:(type:string,fn:any)=>{if(type==='message')listeners.add(fn);},removeEventListener:(type:string,fn:any)=>{if(type==='message')listeners.delete(fn);}},location:{href:'http://localhost/editor/',search:''},EDITOR_PLAY_ENTRY:'./play-test.html',URL,URLSearchParams,structuredClone,Error,console,setTimeout:(fn:()=>void,ms:number)=>{const id=++serial;timers.set(id,{fn,at:now+ms});return id;},clearTimeout:(id:number)=>timers.delete(id),queueMicrotask,
- fetch:async()=>{if(fetchMode==='pending')await new Promise<void>(resolve=>pendingFonts.push(resolve));return{ok:fetchMode!=='fail',arrayBuffer:async()=>new ArrayBuffer(1)};},createPendingCity:()=>({LINE:['galleria','harbor'],stationAt:()=>null}),validatePendingFixtures:(v:any)=>(validations++,v),validatePlayFixtures:(v:any)=>(validations++,v),validateMetroSource:()=>({timetable:{loop:9000}}),NATIVE_SCENES:{capsule:{},yard:{}},SCENES:{},ITEMS:{},WEATHER_KINDS:[],pendingRegistry:()=>({capsule:{}}),checkpointControls:()=>{},pendingFixtureVocabulary:()=>assert.fail('Lifecycle fixture intentionally omits the complete registry'),fixtureStateDeclarations:()=>({}),fixtureFlags:[],fixtureModules:[],fixturePrograms:[],fixtureKeys:[],playScenes:['capsule'],gameplayScenes:[{id:'capsule',prefix:'capsule',gameplayId:'capsule-gameplay'}],nativeGameplayScene:()=>undefined,deviceSceneIds:[]};
-const exported:any={};vm.runInNewContext(ts.transpileModule(text,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText,{exports:exported,...globals});
-const host=new Node('host'),authoring={get:(id:string)=>docs.find(d=>d.id===id)!,edit:()=>assert.fail('Play may not edit source')},dispose=exported.mountPlayWorkbench(host,{documents:docs,authoring},{scene:'capsule'});
-const all=()=>host.walk(),button=(label:string)=>{const b=all().find(n=>n.tag==='button'&&n.textContent===label);assert(b,'Missing '+label);b.onclick!();},frame=()=>all().find(n=>n.tag==='iframe'),startup=()=>JSON.parse(all().find(n=>n.attrs['aria-label']==='Play startup')!.textContent),state=()=>all().find(n=>n.attrs['aria-label']==='Play state')!.textContent,alert=()=>all().find(n=>n.attrs.role==='alert')!.textContent;
-const flush=async()=>{for(let i=0;i<20;i++)await Promise.resolve();},message=(from:Node,type:string,value:any={scene:'capsule'})=>{for(const fn of listeners)fn({source:from.contentWindow,data:{channel:'editor-play',type,value}});},advance=(ms:number)=>{now+=ms;for(const[id,t]of [...timers])if(t.at<=now){timers.delete(id);t.fn();}};
-button('Play');await flush();const first=frame()!;assert(first);assert.equal(first.attrs.sandbox,'allow-scripts');assert.equal((first as any).loading,'eager');assert.equal(startup().phase,'navigating');assert.equal(timers.size,1);
-advance(15000);assert.equal(startup().waitingFor,'document-load');assert.equal(frame(),first,'waiting never replaces an attempt');assert.equal(first.contentWindow.messages.length,0);
-message(new Node('iframe'),'startup',{stage:'parser-started'});assert.equal(startup().waitingFor,'document-load');message(first,'startup',{stage:'parser-started'});assert.equal(startup().waitingFor,'runtime-script');const observed=startup();message(first,'startup',{stage:'invented-stage'});message(first,'startup',{stage:'runtime-evaluating',detail:{bad:true}});assert.deepEqual(startup(),observed);message(first,'startup',{stage:'runtime-evaluating'});first.onload!();assert.equal(startup().phase,'loading-runtime');assert.equal(startup().waitingFor,'runtime-ready');message(first,'ready');message(first,'ready');assert.equal(first.contentWindow.messages.length,1,'duplicate ready cannot resend snapshot');assert.equal(startup().waitingFor,'running');const drawer=all().find(n=>n.className==='debug-drawer') as any;drawer.open=true;drawer.ontoggle();message(first,'running',{scene:'capsule',player:{x:10}});assert.equal(startup().phase,'running');assert.equal(timers.size,0);assert.match(state(),/"x": 10/);
-const staleLoad=first.onload!,staleError=first.onerror!;button('Stop');const stopped=startup();assert(first.removed);assert.equal(first.onload,null);assert.equal(first.onerror,null);assert.equal(frame(),undefined);message(first,'startup',{stage:'parser-started'});message(first,'ready');message(first,'running',{scene:'wrong'});message(first,'error','stale failure');staleLoad();staleError();assert.deepEqual(startup(),stopped);assert.equal(alert(),'');assert.equal(timers.size,0);
-// Missing runtime acknowledgement and missing running acknowledgement remain distinguishable.
-button('Play');await flush();const second=frame()!;second.onload!();advance(15000);assert.equal(startup().waitingFor,'runtime-ready');assert.equal(frame(),second);message(second,'ready');assert.equal(startup().waitingFor,'running');button('Reset play');await flush();const third=frame()!;assert.notEqual(third,second);message(second,'error','superseded failure');message(second,'ready');message(second,'running',{scene:'wrong'});assert.equal(alert(),'');assert.equal(startup().phase,'navigating');message(third,'state',{scene:'wrong'});assert.equal(startup().phase,'navigating','state before start is not accepted');message(third,'ready');third.onload!();assert.equal(startup().phase,'starting-game','late load event cannot regress the handshake');advance(15000);assert.equal(startup().waitingFor,'running');assert.equal(frame(),third);message(third,'error','Native import failed');assert.equal(startup().phase,'failed');assert.equal(alert(),'Native import failed');assert.equal(frame(),undefined);assert.equal(timers.size,0);
-// Stop/disposal while fonts are pending cannot later insert an orphan frame.
-fetchMode='pending';button('Play');advance(15000);assert.equal(startup().waitingFor,'fonts');button('Stop');for(const resolve of pendingFonts.splice(0))resolve();await flush();assert.equal(frame(),undefined);assert.equal(startup().phase,'stopped');assert.equal(timers.size,0);
-button('Play');button('Reset play');for(const resolve of pendingFonts.splice(0))resolve();await flush();assert(frame());assert.equal(all().filter(n=>n.tag==='iframe').length,1);button('Stop');
-fetchMode='fail';button('Play');await flush();assert.equal(startup().phase,'failed');assert.match(alert(),/font/);assert.equal(frame(),undefined);assert.equal(timers.size,0);
-fetchMode='normal';button('Play');await flush();const cloneFail=frame()!;cloneFail.contentWindow.fail=true;message(cloneFail,'ready');assert.equal(startup().phase,'failed');assert.equal(alert(),'Snapshot clone failed');assert.equal(frame(),undefined);assert.equal(timers.size,0);
-button('Play');await flush();const navFail=frame()!;navFail.onerror!();assert.equal(startup().phase,'failed');assert.match(alert(),/navigation error/);assert.equal(frame(),navFail,'navigation failure does not silently restart');assert.equal(timers.size,0);button('Stop');
-fetchMode='pending';button('Play');dispose();for(const resolve of pendingFonts.splice(0))resolve();await flush();assert.equal(host.children.length,0);assert.equal(listeners.size,0);assert.equal(timers.size,0);
-// In-place Play puts only the fitted game in the stage; controls live in the existing inspector.
-fetchMode='normal';const stage=new Node('stage'),settings=new Node('inspector');let exits=0;
-const stageDispose=exported.mountPlayWorkbench(stage,{documents:docs,authoring,playSettings:settings,stopPlay:()=>{exits++;}},{scene:'capsule'});
-assert.equal(stage.children.length,1);assert.equal((stage.children[0] as any).className,'play-viewport');
-assert(!stage.walk().some(n=>n.tag==='button'||n.tag==='p'),'Controls/status must not consume game viewport height');
-assert(settings.walk().some(n=>n.attrs['aria-label']==='Play startup'),'Startup errors remain inspectable beside the game');
-settings.walk().find(n=>n.tag==='button'&&n.textContent==='Play')!.onclick!();await flush();
-const embedded=stage.walk().find(n=>n.tag==='iframe')!;assert(embedded);assert.equal(embedded.attrs.sandbox,'allow-scripts');
-settings.walk().find(n=>n.tag==='button'&&n.textContent==='Stop')!.onclick!();assert.equal(exits,1,'Inspector Stop returns to the editor owner');
-message(embedded,'quit');assert.equal(exits,2,'Native quit returns to editing through the same owner');
-stageDispose();assert.equal(stage.children.length,0);assert.equal(settings.children.length,0);assert.equal(listeners.size,0);assert.equal(timers.size,0);
-const authoredFixture=fixture as typeof fixture&{sequence?:{id:string;time:number}};authoredFixture.sequence={id:'authored-start',time:3};
-for(const [mode,sequence,expected]of [['preview',{id:'glide',time:17},{id:'glide',time:17}],['preview',undefined,undefined],['checkpoint',{id:'glide',time:17},{id:'authored-start',time:3}]]as const){
- const host=new Node('stage'),settings=new Node('settings'),dispose=exported.mountPlayWorkbench(host,{documents:docs,authoring,checkpoint:'capsule-start',playSettings:settings,playStart:{mode,sequence,viewport:{width:960,height:540,scale:1}}},{scene:'capsule'});
- settings.walk().find(n=>n.tag==='button'&&n.textContent==='Play')!.onclick!();await flush();const f=host.walk().find(n=>n.tag==='iframe')!;message(f,'ready');const sent=f.contentWindow.messages[0].value;
- assert.deepEqual(structuredClone(sent.fixture.sequence),expected);assert.deepEqual(sent.viewport,{width:960,height:540,scale:1});assert.deepEqual(authoredFixture.sequence,{id:'authored-start',time:3},'Choosing a preview starting point never edits the saved checkpoint');dispose();
+const file = 'src/ssg/game/authoring/play-workbench.ts',
+  source = fs.readFileSync(file, 'utf8'),
+  sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+let text = source;
+for (const n of [...sf.statements].reverse())
+  if (ts.isImportDeclaration(n)) text = text.slice(0, n.getStart(sf)) + text.slice(n.end);
+class Node {
+  children: Node[] = [];
+  parent?: Node;
+  attrs: Record<string, string> = {};
+  textContent = '';
+  style: any = {};
+  onclick?: () => void;
+  onload?: () => void;
+  onerror?: () => void;
+  src = '';
+  contentWindow = {
+    messages: [] as any[],
+    fail: false,
+    postMessage: (value: any) => {
+      if (this.contentWindow.fail) throw new Error('Snapshot clone failed');
+      this.contentWindow.messages.push(value);
+    },
+  };
+  removed = false;
+  constructor(public tag: string) {}
+  setAttribute(k: string, v: string) {
+    this.attrs[k] = v;
+  }
+  append(...nodes: Node[]) {
+    for (const n of nodes) {
+      if (n.tag === 'iframe') assert(n.src, 'final iframe URL must be assigned before insertion');
+      n.parent = this;
+      this.children.push(n);
+    }
+  }
+  replaceChildren(...nodes: Node[]) {
+    this.children = [];
+    this.append(...nodes);
+  }
+  remove() {
+    this.removed = true;
+    if (this.parent) this.parent.children = this.parent.children.filter((n) => n !== this);
+  }
+  walk(): Node[] {
+    return [this, ...this.children.flatMap((n) => n.walk())];
+  }
 }
-delete authoredFixture.sequence;assert.equal(listeners.size,0);assert.equal(timers.size,0);
+class Form {
+  constructor(..._args: any[]) {}
+  button(host: Node, label: string, click: () => void) {
+    const b = new Node('button');
+    b.textContent = label;
+    b.onclick = click;
+    host.append(b);
+  }
+  section(host: Node, label: string) {
+    const n = new Node('section');
+    n.textContent = label;
+    host.append(n);
+    return n;
+  }
+  select(..._args: any[]) {}
+  text(..._args: any[]) {}
+  number(..._args: any[]) {}
+  decimal(..._args: any[]) {}
+  check(..._args: any[]) {}
+}
+let validations = 0,
+  now = 0,
+  serial = 0,
+  fetchMode: 'normal' | 'pending' | 'fail' = 'normal',
+  pendingFonts: (() => void)[] = [];
+const timers = new Map<number, { at: number; fn: () => void }>(),
+  listeners = new Set<(event: any) => void>();
+const fixture = {
+  id: 'capsule-start',
+  name: 'Capsule start',
+  scene: 'capsule',
+  flags: {},
+  items: {},
+  tokens: 0,
+  modules: [],
+  programs: [],
+  keyring: [],
+  state: {},
+  day: 1,
+  minute: 580,
+  seed: 3,
+  weather: 'forecast',
+  clock: 'fixed',
+  spawn: null,
+};
+const docs: any[] = [
+  { id: 'play-profiles', kind: 'source', value: { profiles: [] } },
+  { id: 'play-fixtures', kind: 'fixtures', value: { version: 1, fixtures: [fixture] } },
+  { id: 'capsule', kind: 'composition', value: { scene: 'capsule', instances: [] } },
+  { id: 'capsule-scene', kind: 'scene', value: {} },
+  { id: 'capsule-gameplay', kind: 'gameplay', value: {} },
+  ...['city-source', 'metro-source', 'bot-reactions'].map((id) => ({
+    id,
+    kind: 'source',
+    value: {},
+  })),
+];
+const globals: any = {
+  liveSources,
+  defaultPlayFixture,
+  renderStartingStateControls: () => {},
+  PlayStartup: class extends PlayStartup {
+    constructor(identity: any) {
+      super(identity, () => now);
+    }
+  },
+  playStartupWaitingMessage,
+  TypedForm: Form,
+  document: { createElement: (tag: string) => new Node(tag) },
+  window: {
+    addEventListener: (type: string, fn: any) => {
+      if (type === 'message') listeners.add(fn);
+    },
+    removeEventListener: (type: string, fn: any) => {
+      if (type === 'message') listeners.delete(fn);
+    },
+  },
+  location: { href: 'http://localhost/editor/', search: '' },
+  EDITOR_PLAY_ENTRY: './play-test.html',
+  URL,
+  URLSearchParams,
+  structuredClone,
+  Error,
+  console,
+  setTimeout: (fn: () => void, ms: number) => {
+    const id = ++serial;
+    timers.set(id, { fn, at: now + ms });
+    return id;
+  },
+  clearTimeout: (id: number) => timers.delete(id),
+  queueMicrotask,
+  fetch: async () => {
+    if (fetchMode === 'pending') await new Promise<void>((resolve) => pendingFonts.push(resolve));
+    return { ok: fetchMode !== 'fail', arrayBuffer: async () => new ArrayBuffer(1) };
+  },
+  createPendingCity: () => ({ LINE: ['galleria', 'harbor'], stationAt: () => null }),
+  validatePendingFixtures: (v: any) => (validations++, v),
+  validatePlayFixtures: (v: any) => (validations++, v),
+  validateMetroSource: () => ({ timetable: { loop: 9000 } }),
+  NATIVE_SCENES: { capsule: {}, yard: {} },
+  SCENES: {},
+  ITEMS: {},
+  WEATHER_KINDS: [],
+  pendingRegistry: () => ({ capsule: {} }),
+  checkpointControls: () => {},
+  pendingFixtureVocabulary: () =>
+    assert.fail('Lifecycle fixture intentionally omits the complete registry'),
+  fixtureStateDeclarations: () => ({}),
+  fixtureFlags: [],
+  fixtureModules: [],
+  fixturePrograms: [],
+  fixtureKeys: [],
+  playScenes: ['capsule'],
+  gameplayScenes: [{ id: 'capsule', prefix: 'capsule', gameplayId: 'capsule-gameplay' }],
+  nativeGameplayScene: () => undefined,
+  deviceSceneIds: [],
+};
+const exported: any = {};
+vm.runInNewContext(
+  ts.transpileModule(text, {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+  }).outputText,
+  { exports: exported, ...globals },
+);
+const host = new Node('host'),
+  authoring = {
+    get: (id: string) => docs.find((d) => d.id === id)!,
+    edit: () => assert.fail('Play may not edit source'),
+  },
+  dispose = exported.mountPlayWorkbench(host, { documents: docs, authoring }, { scene: 'capsule' });
+const all = () => host.walk(),
+  button = (label: string) => {
+    const b = all().find((n) => n.tag === 'button' && n.textContent === label);
+    assert(b, 'Missing ' + label);
+    b.onclick!();
+  },
+  frame = () => all().find((n) => n.tag === 'iframe'),
+  startup = () =>
+    JSON.parse(all().find((n) => n.attrs['aria-label'] === 'Play startup')!.textContent),
+  state = () => all().find((n) => n.attrs['aria-label'] === 'Play state')!.textContent,
+  alert = () => all().find((n) => n.attrs.role === 'alert')!.textContent;
+const flush = async () => {
+    for (let i = 0; i < 20; i++) await Promise.resolve();
+  },
+  message = (from: Node, type: string, value: any = { scene: 'capsule' }) => {
+    for (const fn of listeners)
+      fn({ source: from.contentWindow, data: { channel: 'editor-play', type, value } });
+  },
+  advance = (ms: number) => {
+    now += ms;
+    for (const [id, t] of [...timers])
+      if (t.at <= now) {
+        timers.delete(id);
+        t.fn();
+      }
+  };
+button('Play');
+await flush();
+const first = frame()!;
+assert(first);
+assert.equal(first.attrs.sandbox, 'allow-scripts');
+assert.equal((first as any).loading, 'eager');
+assert.equal(startup().phase, 'navigating');
+assert.equal(timers.size, 1);
+advance(15000);
+assert.equal(startup().waitingFor, 'document-load');
+assert.equal(frame(), first, 'waiting never replaces an attempt');
+assert.equal(first.contentWindow.messages.length, 0);
+message(new Node('iframe'), 'startup', { stage: 'parser-started' });
+assert.equal(startup().waitingFor, 'document-load');
+message(first, 'startup', { stage: 'parser-started' });
+assert.equal(startup().waitingFor, 'runtime-script');
+const observed = startup();
+message(first, 'startup', { stage: 'invented-stage' });
+message(first, 'startup', { stage: 'runtime-evaluating', detail: { bad: true } });
+assert.deepEqual(startup(), observed);
+message(first, 'startup', { stage: 'runtime-evaluating' });
+first.onload!();
+assert.equal(startup().phase, 'loading-runtime');
+assert.equal(startup().waitingFor, 'runtime-ready');
+message(first, 'ready');
+message(first, 'ready');
+assert.equal(first.contentWindow.messages.length, 1, 'duplicate ready cannot resend snapshot');
+assert.equal(startup().waitingFor, 'running');
+const drawer = all().find((n) => n.className === 'debug-drawer') as any;
+drawer.open = true;
+drawer.ontoggle();
+message(first, 'running', { scene: 'capsule', player: { x: 10 } });
+assert.equal(startup().phase, 'running');
+assert.equal(timers.size, 0);
+assert.match(state(), /"x": 10/);
+const staleLoad = first.onload!,
+  staleError = first.onerror!;
+button('Stop');
+const stopped = startup();
+assert(first.removed);
+assert.equal(first.onload, null);
+assert.equal(first.onerror, null);
+assert.equal(frame(), undefined);
+message(first, 'startup', { stage: 'parser-started' });
+message(first, 'ready');
+message(first, 'running', { scene: 'wrong' });
+message(first, 'error', 'stale failure');
+staleLoad();
+staleError();
+assert.deepEqual(startup(), stopped);
+assert.equal(alert(), '');
+assert.equal(timers.size, 0);
+// Missing runtime acknowledgement and missing running acknowledgement remain distinguishable.
+button('Play');
+await flush();
+const second = frame()!;
+second.onload!();
+advance(15000);
+assert.equal(startup().waitingFor, 'runtime-ready');
+assert.equal(frame(), second);
+message(second, 'ready');
+assert.equal(startup().waitingFor, 'running');
+button('Reset play');
+await flush();
+const third = frame()!;
+assert.notEqual(third, second);
+message(second, 'error', 'superseded failure');
+message(second, 'ready');
+message(second, 'running', { scene: 'wrong' });
+assert.equal(alert(), '');
+assert.equal(startup().phase, 'navigating');
+message(third, 'state', { scene: 'wrong' });
+assert.equal(startup().phase, 'navigating', 'state before start is not accepted');
+message(third, 'ready');
+third.onload!();
+assert.equal(startup().phase, 'starting-game', 'late load event cannot regress the handshake');
+advance(15000);
+assert.equal(startup().waitingFor, 'running');
+assert.equal(frame(), third);
+message(third, 'error', 'Native import failed');
+assert.equal(startup().phase, 'failed');
+assert.equal(alert(), 'Native import failed');
+assert.equal(frame(), undefined);
+assert.equal(timers.size, 0);
+// Stop/disposal while fonts are pending cannot later insert an orphan frame.
+fetchMode = 'pending';
+button('Play');
+advance(15000);
+assert.equal(startup().waitingFor, 'fonts');
+button('Stop');
+for (const resolve of pendingFonts.splice(0)) resolve();
+await flush();
+assert.equal(frame(), undefined);
+assert.equal(startup().phase, 'stopped');
+assert.equal(timers.size, 0);
+button('Play');
+button('Reset play');
+for (const resolve of pendingFonts.splice(0)) resolve();
+await flush();
+assert(frame());
+assert.equal(all().filter((n) => n.tag === 'iframe').length, 1);
+button('Stop');
+fetchMode = 'fail';
+button('Play');
+await flush();
+assert.equal(startup().phase, 'failed');
+assert.match(alert(), /font/);
+assert.equal(frame(), undefined);
+assert.equal(timers.size, 0);
+fetchMode = 'normal';
+button('Play');
+await flush();
+const cloneFail = frame()!;
+cloneFail.contentWindow.fail = true;
+message(cloneFail, 'ready');
+assert.equal(startup().phase, 'failed');
+assert.equal(alert(), 'Snapshot clone failed');
+assert.equal(frame(), undefined);
+assert.equal(timers.size, 0);
+button('Play');
+await flush();
+const navFail = frame()!;
+navFail.onerror!();
+assert.equal(startup().phase, 'failed');
+assert.match(alert(), /navigation error/);
+assert.equal(frame(), navFail, 'navigation failure does not silently restart');
+assert.equal(timers.size, 0);
+button('Stop');
+fetchMode = 'pending';
+button('Play');
+dispose();
+for (const resolve of pendingFonts.splice(0)) resolve();
+await flush();
+assert.equal(host.children.length, 0);
+assert.equal(listeners.size, 0);
+assert.equal(timers.size, 0);
+// In-place Play puts only the fitted game in the stage; controls live in the existing inspector.
+fetchMode = 'normal';
+const stage = new Node('stage'),
+  settings = new Node('inspector');
+let exits = 0;
+const stageDispose = exported.mountPlayWorkbench(
+  stage,
+  {
+    documents: docs,
+    authoring,
+    playSettings: settings,
+    stopPlay: () => {
+      exits++;
+    },
+  },
+  { scene: 'capsule' },
+);
+assert.equal(stage.children.length, 1);
+assert.equal((stage.children[0] as any).className, 'play-viewport');
+assert(
+  !stage.walk().some((n) => n.tag === 'button' || n.tag === 'p'),
+  'Controls/status must not consume game viewport height',
+);
+assert(
+  settings.walk().some((n) => n.attrs['aria-label'] === 'Play startup'),
+  'Startup errors remain inspectable beside the game',
+);
+settings.walk().find((n) => n.tag === 'button' && n.textContent === 'Play')!.onclick!();
+await flush();
+const embedded = stage.walk().find((n) => n.tag === 'iframe')!;
+assert(embedded);
+assert.equal(embedded.attrs.sandbox, 'allow-scripts');
+settings.walk().find((n) => n.tag === 'button' && n.textContent === 'Stop')!.onclick!();
+assert.equal(exits, 1, 'Inspector Stop returns to the editor owner');
+message(embedded, 'quit');
+assert.equal(exits, 2, 'Native quit returns to editing through the same owner');
+stageDispose();
+assert.equal(stage.children.length, 0);
+assert.equal(settings.children.length, 0);
+assert.equal(listeners.size, 0);
+assert.equal(timers.size, 0);
+const authoredFixture = fixture as typeof fixture & { sequence?: { id: string; time: number } };
+authoredFixture.sequence = { id: 'authored-start', time: 3 };
+for (const [mode, sequence, expected] of [
+  ['preview', { id: 'glide', time: 17 }, { id: 'glide', time: 17 }],
+  ['preview', undefined, undefined],
+  ['checkpoint', { id: 'glide', time: 17 }, { id: 'authored-start', time: 3 }],
+] as const) {
+  const host = new Node('stage'),
+    settings = new Node('settings'),
+    dispose = exported.mountPlayWorkbench(
+      host,
+      {
+        documents: docs,
+        authoring,
+        checkpoint: 'capsule-start',
+        playSettings: settings,
+        playStart: { mode, sequence, viewport: { width: 960, height: 540, scale: 1 } },
+      },
+      { scene: 'capsule' },
+    );
+  settings.walk().find((n) => n.tag === 'button' && n.textContent === 'Play')!.onclick!();
+  await flush();
+  const f = host.walk().find((n) => n.tag === 'iframe')!;
+  message(f, 'ready');
+  const sent = f.contentWindow.messages[0].value;
+  assert.deepEqual(structuredClone(sent.fixture.sequence), expected);
+  assert.deepEqual(sent.viewport, { width: 960, height: 540, scale: 1 });
+  assert.deepEqual(
+    authoredFixture.sequence,
+    { id: 'authored-start', time: 3 },
+    'Choosing a preview starting point never edits the saved checkpoint',
+  );
+  dispose();
+}
+delete authoredFixture.sequence;
+assert.equal(listeners.size, 0);
+assert.equal(timers.size, 0);
 // Work budget (Play once took 5.6 s): one start validates starting states at most once per source version and
 // reads documents from the shared snapshot, so the number of reads does not grow with the number of documents.
-{const many=[...docs,...Array.from({length:50},(_,i)=>({id:'extra-'+i,kind:'source',value:{}}))],view=Object.freeze([...many]);let reads=0;
- const counted={snapshot:()=>view,get:(id:string)=>{reads++;return many.find(d=>d.id===id)!;},edit:()=>assert.fail('Play may not edit source')},box=new Node('budget');
- const d=exported.mountPlayWorkbench(box,{documents:many,authoring:counted},{scene:'capsule'});validations=0;reads=0;
- box.walk().find(n=>n.tag==='button'&&n.textContent==='Play')!.onclick!();await flush();assert(box.walk().some(n=>n.tag==='iframe'));
- assert(validations<=1,`Play start validated starting states ${validations} times; validate once per source version`);
- assert(reads<10,`Play start made ${reads} document reads for ${many.length} documents; read from the snapshot instead of per-document get()`);d();}
+{
+  const many = [
+      ...docs,
+      ...Array.from({ length: 50 }, (_, i) => ({ id: 'extra-' + i, kind: 'source', value: {} })),
+    ],
+    view = Object.freeze([...many]);
+  let reads = 0;
+  const counted = {
+      snapshot: () => view,
+      get: (id: string) => {
+        reads++;
+        return many.find((d) => d.id === id)!;
+      },
+      edit: () => assert.fail('Play may not edit source'),
+    },
+    box = new Node('budget');
+  const d = exported.mountPlayWorkbench(
+    box,
+    { documents: many, authoring: counted },
+    { scene: 'capsule' },
+  );
+  validations = 0;
+  reads = 0;
+  box.walk().find((n) => n.tag === 'button' && n.textContent === 'Play')!.onclick!();
+  await flush();
+  assert(box.walk().some((n) => n.tag === 'iframe'));
+  assert(
+    validations <= 1,
+    `Play start validated starting states ${validations} times; validate once per source version`,
+  );
+  assert(
+    reads < 10,
+    `Play start made ${reads} document reads for ${many.length} documents; read from the snapshot instead of per-document get()`,
+  );
+  d();
+}
 // With no checkpoint chosen, editor Play starts a temporary run in the open chunk and writes nothing to source;
 // "Save as checkpoint" keeps it with one validated edit.
-{let edits=0;const box=new Node('temporary'),panel=new Node('settings'),saving={get:(id:string)=>id==='network'?{id,value:{scanProgram:'scan.so'}}:authoring.get(id),edit:(id:string)=>{assert.equal(id,'play-fixtures');edits++;}};
- const d=exported.mountPlayWorkbench(box,{documents:docs,authoring:saving,playSettings:panel,playStart:{mode:'checkpoint',viewport:{width:960,height:540,scale:1}}},{scene:'capsule'});await flush();
- assert.equal(edits,0,'Play without a checkpoint never edits source');
- panel.walk().find(n=>n.tag==='button'&&n.textContent==='Play')!.onclick!();await flush();const f=box.walk().find(n=>n.tag==='iframe')!;message(f,'ready');
- const sent=f.contentWindow.messages[0].value;assert.equal(sent.fixture.id,'temporary-start');assert.equal(sent.fixture.scene,'capsule');assert.equal(edits,0);
- panel.walk().find(n=>n.tag==='button'&&n.textContent==='Save as checkpoint')!.onclick!();assert.equal(edits,1,'Save as checkpoint is one edit');d();}
-console.log('Play startup lifecycle PASS: handshake, waits, failures, stale messages, isolated frame cleanup, in-place stage/inspector separation and the start work budget.');
+{
+  let edits = 0;
+  const box = new Node('temporary'),
+    panel = new Node('settings'),
+    saving = {
+      get: (id: string) =>
+        id === 'network' ? { id, value: { scanProgram: 'scan.so' } } : authoring.get(id),
+      edit: (id: string) => {
+        assert.equal(id, 'play-fixtures');
+        edits++;
+      },
+    };
+  const d = exported.mountPlayWorkbench(
+    box,
+    {
+      documents: docs,
+      authoring: saving,
+      playSettings: panel,
+      playStart: { mode: 'checkpoint', viewport: { width: 960, height: 540, scale: 1 } },
+    },
+    { scene: 'capsule' },
+  );
+  await flush();
+  assert.equal(edits, 0, 'Play without a checkpoint never edits source');
+  panel.walk().find((n) => n.tag === 'button' && n.textContent === 'Play')!.onclick!();
+  await flush();
+  const f = box.walk().find((n) => n.tag === 'iframe')!;
+  message(f, 'ready');
+  const sent = f.contentWindow.messages[0].value;
+  assert.equal(sent.fixture.id, 'temporary-start');
+  assert.equal(sent.fixture.scene, 'capsule');
+  assert.equal(edits, 0);
+  panel.walk().find((n) => n.tag === 'button' && n.textContent === 'Save as checkpoint')!
+    .onclick!();
+  assert.equal(edits, 1, 'Save as checkpoint is one edit');
+  d();
+}
+console.log(
+  'Play startup lifecycle PASS: handshake, waits, failures, stale messages, isolated frame cleanup, in-place stage/inspector separation and the start work budget.',
+);

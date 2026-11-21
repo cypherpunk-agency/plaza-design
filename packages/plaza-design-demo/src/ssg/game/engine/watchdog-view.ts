@@ -27,25 +27,43 @@ const DOG = [
 
 function sprite(): SVGSVGElement {
   const svg = document.createElementNS(NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 11 7'); svg.setAttribute('class', 'wd-dog'); svg.setAttribute('aria-hidden', 'true');
-  DOG.forEach((row, y) => row.split('').forEach((ch, x) => {
-    if (ch === '.') return;
-    const r = document.createElementNS(NS, 'rect');
-    r.setAttribute('x', String(x)); r.setAttribute('y', String(y)); r.setAttribute('width', '1'); r.setAttribute('height', '1');
-    r.setAttribute('class', ch === 'E' ? 'eye' : 'fur');
-    svg.appendChild(r);
-  }));
+  svg.setAttribute('viewBox', '0 0 11 7');
+  svg.setAttribute('class', 'wd-dog');
+  svg.setAttribute('aria-hidden', 'true');
+  DOG.forEach((row, y) =>
+    row.split('').forEach((ch, x) => {
+      if (ch === '.') return;
+      const r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', String(x));
+      r.setAttribute('y', String(y));
+      r.setAttribute('width', '1');
+      r.setAttribute('height', '1');
+      r.setAttribute('class', ch === 'E' ? 'eye' : 'fur');
+      svg.appendChild(r);
+    }),
+  );
   return svg;
 }
 
 type P = { x: number; y: number };
 
 /** Draw (or move) the watchdogs on this stage. `mode`: the schematic's (the badge shows on the board only). */
-export function drawWatchdogs(stage: HTMLElement, m: SceneModel, mode: 'device' | 'board' | 'vision') {
+export function drawWatchdogs(
+  stage: HTMLElement,
+  m: SceneModel,
+  mode: 'device' | 'board' | 'vision',
+) {
   let layer = stage.querySelector<HTMLDivElement>(':scope > .wd-layer');
   const dogs = m.dogs.any ? m.watchdogs() : [];
-  if (!dogs.length) { layer?.remove(); return; }
-  if (!layer) { layer = document.createElement('div'); layer.className = 'wd-layer'; stage.appendChild(layer); }
+  if (!dogs.length) {
+    layer?.remove();
+    return;
+  }
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.className = 'wd-layer';
+    stage.appendChild(layer);
+  }
   const s = stage.getBoundingClientRect();
   /** Against the top left corner of a device's core on this stage (clear of the nouns), or null when it is not drawn. */
   const at = (dev: string): P | null => {
@@ -58,28 +76,52 @@ export function drawWatchdogs(stage: HTMLElement, m: SceneModel, mode: 'device' 
   for (const d of dogs) {
     let el = layer.querySelector<HTMLDivElement>(`.wd[data-dog="${d.id}"]`);
     if (!el) {
-      el = document.createElement('div'); el.className = 'wd'; el.dataset.dog = d.id;
+      el = document.createElement('div');
+      el.className = 'wd';
+      el.dataset.dog = d.id;
       el.append(sprite(), Object.assign(document.createElement('span'), { className: 'wd-t' }));
       layer.appendChild(el);
     }
     const sec = Math.max(1, Math.ceil(d.left / 1000));
-    let p: P | null = null, flip = false;
+    let p: P | null = null,
+      flip = false;
     if (d.at) p = at(d.at);
     else {
-      const a = at(d.from), b = at(d.to);
-      if (a && b) { p = { x: a.x + (b.x - a.x) * d.progress, y: a.y + (b.y - a.y) * d.progress }; flip = b.x < a.x; }
+      const a = at(d.from),
+        b = at(d.to);
+      if (a && b) {
+        p = { x: a.x + (b.x - a.x) * d.progress, y: a.y + (b.y - a.y) * d.progress };
+        flip = b.x < a.x;
+      }
     }
     el.hidden = !p;
-    if (p) { el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; }
-    el.classList.toggle('walk', !d.at); el.classList.toggle('flip', flip);
+    if (p) {
+      el.style.left = p.x + 'px';
+      el.style.top = p.y + 'px';
+    }
+    el.classList.toggle('walk', !d.at);
+    el.classList.toggle('flip', flip);
     el.querySelector('.wd-t')!.textContent = sec + ' s';
     el.title = d.name;
     const name = (id: string) => m.devices.get(id)?.name ?? m.nodeName(id);
-    badges.push(d.at ? m.label('watchdog.badge.at', { name: d.name, at: name(d.at), sec }) : m.label('watchdog.badge.walk', { name: d.name, to: name(d.to), sec }));
+    badges.push(
+      d.at
+        ? m.label('watchdog.badge.at', { name: d.name, at: name(d.at), sec })
+        : m.label('watchdog.badge.walk', { name: d.name, to: name(d.to), sec }),
+    );
   }
-  layer.querySelectorAll<HTMLElement>('.wd').forEach((e) => { if (!dogs.some((d) => d.id === e.dataset.dog)) e.remove(); });
+  layer.querySelectorAll<HTMLElement>('.wd').forEach((e) => {
+    if (!dogs.some((d) => d.id === e.dataset.dog)) e.remove();
+  });
   let badge = layer.querySelector<HTMLDivElement>('.wd-badge');
-  if (mode !== 'board') { badge?.remove(); return; }
-  if (!badge) { badge = document.createElement('div'); badge.className = 'wd-badge'; layer.appendChild(badge); }
+  if (mode !== 'board') {
+    badge?.remove();
+    return;
+  }
+  if (!badge) {
+    badge = document.createElement('div');
+    badge.className = 'wd-badge';
+    layer.appendChild(badge);
+  }
   badge.textContent = badges.join(' · ');
 }

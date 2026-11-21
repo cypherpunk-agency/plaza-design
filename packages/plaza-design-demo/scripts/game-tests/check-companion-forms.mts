@@ -1,10 +1,170 @@
-import assert from 'node:assert/strict';import {renderSceneCompanion} from '../../src/ssg/game/authoring/scene-companion-authoring';import {TypedForm} from '../../src/ssg/game/authoring/typed-form';const capsuleGeometry=(c:any)=>compositionRows(c);const capsuleScene=(c:any,state:any,options:any,scene:any,gameplay:any)=>sceneSourceDefinition('capsule',FOLDER_SOURCES.capsule,{composition:c,state,options,scene,gameplay});import {COMPANION_GAMEPLAY,withCompanionConversations} from '../../src/ssg/game/engine/gameplay/companion-conversations';import {SceneModel} from '../../src/ssg/game/engine/model';import {deviceRules} from '../../src/ssg/game/authoring/device-sources';import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';import {SCENES} from '../../src/ssg/game/scenes';
-import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';import {gameplayScene} from '../../src/ssg/game/authoring/gameplay-scenes';import {validateGameplay} from '../../src/ssg/game/engine/gameplay/validation';import {SCENE_MECHANISMS} from '../../src/ssg/game/engine/gameplay/scene-mechanisms';import {sceneSourceDefinition,compositionRows} from '../../src/ssg/game/engine/gameplay/folder-scene';const capsuleComposition=FOLDER_SOURCES.capsule.composition as any,content={scene:FOLDER_SOURCES.capsule.scene as any,gameplay:validateGameplay(FOLDER_SOURCES.capsule.gameplay),validateScene:(s:any,g:any=content.gameplay,c?:any)=>gameplayScene('capsule').validateScene(s,g,c),validateGameplay},CAPSULE_RULES=SCENE_MECHANISMS.thermal.rulesShape!();
-class Element{children:Element[]=[];attributes:Record<string,string>={};value='';checked=false;textContent='';onchange?:()=>void;onclick?:()=>void;append(...n:Element[]){this.children.push(...n);}setAttribute(k:string,v:string){this.attributes[k]=v;}}
-Object.defineProperty(globalThis,'document',{configurable:true,value:{createElement:()=>new Element()}});let source=structuredClone(content.scene),composition=structuredClone(capsuleComposition),host:Element;const errors:unknown[]=[];
-const validate=(s:SceneDocument)=>withCompanionConversations(capsuleScene(composition,{},{},content.validateScene(s,content.gameplay),content.gameplay));const refresh=()=>{host=new Element();renderSceneCompanion(new TypedForm(e=>errors.push(e)),host as unknown as HTMLElement,source,capsuleGeometry(composition),['pixelAt'],Object.keys(COMPANION_GAMEPLAY.conversations),content.gameplay,(label,change)=>{const s=structuredClone(source);change(s);validate(s);source=s;},refresh);};const all=(e:Element):Element[]=>[e,...e.children.flatMap(all)],field=(n:string)=>{const e=all(host).find(e=>e.attributes['aria-label']===n);assert(e,'field '+n);return e;},change=(n:string,v:string|boolean)=>{const e=field(n);if(typeof v==='boolean')e.checked=v;else e.value=v;e.onchange!();},click=(n:string)=>{const e=all(host).find(e=>e.textContent===n&&e.onclick);assert(e,'button '+n);e.onclick!();};
-refresh();change('Companion home bed instance','desk');change('Companion home bed horizontal offset','12');change('Companion home bed height offset','17');change('Companion home bed rest','sun');composition.instances=composition.instances.filter(n=>n.id!=='pixel-bed');let s=validate(source),m=new SceneModel({say:()=>{},open:()=>{},changed:()=>{}},s.data!,deviceRules(s));m.set('pixelAt','bed');const desk=capsuleGeometry(composition).find(r=>r.instance.id==='desk')!;assert.deepEqual(s.perch!(m),{x:desk.placement.x+12,h:desk.placement.h+17,rest:'sun'});
-change('Companion mode','along');change('Override shared follow availability',true);change('Companion follow availability type','tokens');change('Companion follow availability tokens','2');assert.deepEqual(validate(source).companion!.when,{tokensAtLeast:2});click('Add companion warm perch');change('Companion warm perch-1 instance','desk');change('Companion warm perch-1 height offset','19');change('Companion warm perch-1 rest','sit');change('Companion warm perch-1 ID','deskWarm');assert.equal(validate(source).companion!.warm![0].h,desk.placement.h+19);click('Remove companion warm deskWarm');assert.deepEqual(validate(source).companion!.warm,[]);
-change('Companion pet prompt','[E] GREET');change('Companion pet sun','companion.pet.idle.0');change('Companion pet idle 1','companion.pet.sun');click('Add pet sleep');assert.equal(source.companion!.pet!.conversations.sleep.length,3);click('Remove pet sleep 3');change('Companion pet interaction',false);assert.equal(validate(source).companion!.pet,undefined);change('Companion pet interaction',true);change('Companion home mapping',false);assert.equal(validate(source).perch,undefined);change('Companion mode','home');assert(source.companion!.home);change('Companion default perch','home');click('Add companion home perch');change('Companion default perch','perch-1');click('Remove companion home home');assert.equal(source.companion!.home!.perches.length,1);
-const before=structuredClone(source);change('Companion home state','missing');assert.equal(errors.length,1);assert.deepEqual(source,before);change('Companion pet moving','missing');assert.equal(errors.length,2);assert.deepEqual(source,before);click('Remove companion home perch-1');assert.equal(errors.length,3);assert.deepEqual(source,before);change('Companion mode','off');change('Companion home mapping',false);change('Companion pet interaction',false);s=validate(source);assert.equal(s.pixel,undefined);assert.equal(s.perch,undefined);assert.equal(s.companion!.pet,undefined);
-const legacy=structuredClone(content.scene);delete legacy.companion;assert.equal(content.validateScene(legacy,content.gameplay).companion,undefined,'Removed optional companion source stays absent');assert.equal(SCENES.capsule.pixel,'home');console.log('Companion typed forms PASS: mode/unlock, home state/default/perch CRUD/rebinding/removal of original marker, warm CRUD/offset/rest, shared pet graph recurrence/prompt and atomic invalid-source rejection.');
+import assert from 'node:assert/strict';
+import { renderSceneCompanion } from '../../src/ssg/game/authoring/scene-companion-authoring';
+import { TypedForm } from '../../src/ssg/game/authoring/typed-form';
+const capsuleGeometry = (c: any) => compositionRows(c);
+const capsuleScene = (c: any, state: any, options: any, scene: any, gameplay: any) =>
+  sceneSourceDefinition('capsule', FOLDER_SOURCES.capsule, {
+    composition: c,
+    state,
+    options,
+    scene,
+    gameplay,
+  });
+import {
+  COMPANION_GAMEPLAY,
+  withCompanionConversations,
+} from '../../src/ssg/game/engine/gameplay/companion-conversations';
+import { SceneModel } from '../../src/ssg/game/engine/model';
+import { deviceRules } from '../../src/ssg/game/authoring/device-sources';
+import type { SceneDocument } from '../../src/ssg/game/engine/gameplay/scene-document';
+import { SCENES } from '../../src/ssg/game/scenes';
+import { FOLDER_SOURCES } from '../../src/ssg/game/scenes/folder-scenes';
+import { gameplayScene } from '../../src/ssg/game/authoring/gameplay-scenes';
+import { validateGameplay } from '../../src/ssg/game/engine/gameplay/validation';
+import { SCENE_MECHANISMS } from '../../src/ssg/game/engine/gameplay/scene-mechanisms';
+import {
+  sceneSourceDefinition,
+  compositionRows,
+} from '../../src/ssg/game/engine/gameplay/folder-scene';
+const capsuleComposition = FOLDER_SOURCES.capsule.composition as any,
+  content = {
+    scene: FOLDER_SOURCES.capsule.scene as any,
+    gameplay: validateGameplay(FOLDER_SOURCES.capsule.gameplay),
+    validateScene: (s: any, g: any = content.gameplay, c?: any) =>
+      gameplayScene('capsule').validateScene(s, g, c),
+    validateGameplay,
+  },
+  CAPSULE_RULES = SCENE_MECHANISMS.thermal.rulesShape!();
+class Element {
+  children: Element[] = [];
+  attributes: Record<string, string> = {};
+  value = '';
+  checked = false;
+  textContent = '';
+  onchange?: () => void;
+  onclick?: () => void;
+  append(...n: Element[]) {
+    this.children.push(...n);
+  }
+  setAttribute(k: string, v: string) {
+    this.attributes[k] = v;
+  }
+}
+Object.defineProperty(globalThis, 'document', {
+  configurable: true,
+  value: { createElement: () => new Element() },
+});
+let source = structuredClone(content.scene),
+  composition = structuredClone(capsuleComposition),
+  host: Element;
+const errors: unknown[] = [];
+const validate = (s: SceneDocument) =>
+  withCompanionConversations(
+    capsuleScene(composition, {}, {}, content.validateScene(s, content.gameplay), content.gameplay),
+  );
+const refresh = () => {
+  host = new Element();
+  renderSceneCompanion(
+    new TypedForm((e) => errors.push(e)),
+    host as unknown as HTMLElement,
+    source,
+    capsuleGeometry(composition),
+    ['pixelAt'],
+    Object.keys(COMPANION_GAMEPLAY.conversations),
+    content.gameplay,
+    (label, change) => {
+      const s = structuredClone(source);
+      change(s);
+      validate(s);
+      source = s;
+    },
+    refresh,
+  );
+};
+const all = (e: Element): Element[] => [e, ...e.children.flatMap(all)],
+  field = (n: string) => {
+    const e = all(host).find((e) => e.attributes['aria-label'] === n);
+    assert(e, 'field ' + n);
+    return e;
+  },
+  change = (n: string, v: string | boolean) => {
+    const e = field(n);
+    if (typeof v === 'boolean') e.checked = v;
+    else e.value = v;
+    e.onchange!();
+  },
+  click = (n: string) => {
+    const e = all(host).find((e) => e.textContent === n && e.onclick);
+    assert(e, 'button ' + n);
+    e.onclick!();
+  };
+refresh();
+change('Companion home bed instance', 'desk');
+change('Companion home bed horizontal offset', '12');
+change('Companion home bed height offset', '17');
+change('Companion home bed rest', 'sun');
+composition.instances = composition.instances.filter((n) => n.id !== 'pixel-bed');
+let s = validate(source),
+  m = new SceneModel({ say: () => {}, open: () => {}, changed: () => {} }, s.data!, deviceRules(s));
+m.set('pixelAt', 'bed');
+const desk = capsuleGeometry(composition).find((r) => r.instance.id === 'desk')!;
+assert.deepEqual(s.perch!(m), { x: desk.placement.x + 12, h: desk.placement.h + 17, rest: 'sun' });
+change('Companion mode', 'along');
+change('Override shared follow availability', true);
+change('Companion follow availability type', 'tokens');
+change('Companion follow availability tokens', '2');
+assert.deepEqual(validate(source).companion!.when, { tokensAtLeast: 2 });
+click('Add companion warm perch');
+change('Companion warm perch-1 instance', 'desk');
+change('Companion warm perch-1 height offset', '19');
+change('Companion warm perch-1 rest', 'sit');
+change('Companion warm perch-1 ID', 'deskWarm');
+assert.equal(validate(source).companion!.warm![0].h, desk.placement.h + 19);
+click('Remove companion warm deskWarm');
+assert.deepEqual(validate(source).companion!.warm, []);
+change('Companion pet prompt', '[E] GREET');
+change('Companion pet sun', 'companion.pet.idle.0');
+change('Companion pet idle 1', 'companion.pet.sun');
+click('Add pet sleep');
+assert.equal(source.companion!.pet!.conversations.sleep.length, 3);
+click('Remove pet sleep 3');
+change('Companion pet interaction', false);
+assert.equal(validate(source).companion!.pet, undefined);
+change('Companion pet interaction', true);
+change('Companion home mapping', false);
+assert.equal(validate(source).perch, undefined);
+change('Companion mode', 'home');
+assert(source.companion!.home);
+change('Companion default perch', 'home');
+click('Add companion home perch');
+change('Companion default perch', 'perch-1');
+click('Remove companion home home');
+assert.equal(source.companion!.home!.perches.length, 1);
+const before = structuredClone(source);
+change('Companion home state', 'missing');
+assert.equal(errors.length, 1);
+assert.deepEqual(source, before);
+change('Companion pet moving', 'missing');
+assert.equal(errors.length, 2);
+assert.deepEqual(source, before);
+click('Remove companion home perch-1');
+assert.equal(errors.length, 3);
+assert.deepEqual(source, before);
+change('Companion mode', 'off');
+change('Companion home mapping', false);
+change('Companion pet interaction', false);
+s = validate(source);
+assert.equal(s.pixel, undefined);
+assert.equal(s.perch, undefined);
+assert.equal(s.companion!.pet, undefined);
+const legacy = structuredClone(content.scene);
+delete legacy.companion;
+assert.equal(
+  content.validateScene(legacy, content.gameplay).companion,
+  undefined,
+  'Removed optional companion source stays absent',
+);
+assert.equal(SCENES.capsule.pixel, 'home');
+console.log(
+  'Companion typed forms PASS: mode/unlock, home state/default/perch CRUD/rebinding/removal of original marker, warm CRUD/offset/rest, shared pet graph recurrence/prompt and atomic invalid-source rejection.',
+);

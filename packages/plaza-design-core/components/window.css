@@ -3,11 +3,12 @@
 
 .plaza-window {
   border: var(--border-thin) solid var(--color-border-default);
-  background: rgba(var(--color-bg-overlay-rgb), 0.10);
+  background: rgba(var(--color-bg-overlay-rgb), 0.1);
   position: relative;
   box-shadow:
     0 0 0 1px var(--color-border-muted),
-    0 0 20px rgba(var(--color-primary-500-rgb), calc(var(--glow-intensity-subtle) * var(--enable-glow)));
+    0 0 20px
+      rgba(var(--color-primary-500-rgb), calc(var(--glow-intensity-subtle) * var(--enable-glow)));
 }
 
 /* Primary Window - demands attention, main focus area */
@@ -15,7 +16,8 @@
   border: var(--border-medium) solid var(--color-border-strong);
   box-shadow:
     0 0 0 1px var(--color-border-default),
-    0 0 30px rgba(var(--color-primary-500-rgb), calc(var(--glow-intensity-medium) * var(--enable-glow)));
+    0 0 30px
+      rgba(var(--color-primary-500-rgb), calc(var(--glow-intensity-medium) * var(--enable-glow)));
 }
 
 /* Decorative Window - atmosphere only, ambient info */
@@ -50,7 +52,7 @@
   color: rgba(var(--color-text-body-rgb), 0.72);
   background: linear-gradient(
     to right,
-    rgba(var(--color-primary-500-rgb), 0.10),
+    rgba(var(--color-primary-500-rgb), 0.1),
     transparent 40%,
     rgba(var(--color-accent-400-rgb), 0.08)
   );

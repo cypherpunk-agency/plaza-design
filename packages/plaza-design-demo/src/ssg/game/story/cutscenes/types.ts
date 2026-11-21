@@ -26,7 +26,7 @@ export interface CutsceneData {
   /** The scene it hands over to by default: 'downtown', 'yard', 'capsule' or a scene id. */
   next: string;
   /** Full authored destination; next remains the compatibility scene alias. */
-  handoff?:import('../../art/core/timeline').Handoff;
+  handoff?: import('../../art/core/timeline').Handoff;
   cards: TextCard[];
   /** Named moments in the picture, for sudo's time control (transport.ts); without them the cards are the beats. */
   beats?: { at: number; name: string }[];
@@ -35,16 +35,22 @@ export interface CutsceneData {
 export interface Cutscene extends CutsceneData {
   id: string;
   /** Direction of resident world models keeps the normal engine tick running. */
-  liveWorld?:boolean;
+  liveWorld?: boolean;
   /** JSON compositions own their exact transition envelope; custom pictures retain the default. */
   ownsFade?: boolean;
   /** Existing cutscene player owns animation advancement; painting only reads prepared pictures. */
-  advance?: (time:number) => void;
-  seek?: (time:number) => void;
-  prepare?: (context:CanvasRenderingContext2D,view:CutView,time:number) => void;
+  advance?: (time: number) => void;
+  seek?: (time: number) => void;
+  prepare?: (context: CanvasRenderingContext2D, view: CutView, time: number) => void;
   /**
    * Draw the frame at `t` seconds through the one frame (runtime/render-scene.ts renderWorldFrame) at `scale`, adding
    * `director` (the player's letterbox and default fade) to the sequence's own direction.
    */
-  render: (x: CanvasRenderingContext2D, view: CutView, t: number, scale: number, director: import('../../runtime/frame').FrameDirector) => void;
+  render: (
+    x: CanvasRenderingContext2D,
+    view: CutView,
+    t: number,
+    scale: number,
+    director: import('../../runtime/frame').FrameDirector,
+  ) => void;
 }

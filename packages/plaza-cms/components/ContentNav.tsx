@@ -8,9 +8,9 @@ interface ContentNavProps {
   currentPath: string;
   onNavigate: (path: string) => void;
   className?: string;
-  storageKey?: string;  // For localStorage persistence
+  storageKey?: string; // For localStorage persistence
   variant?: NavVariant; // Visual style variant
-  basePath?: string;    // Base path for URLs (e.g., '/guide')
+  basePath?: string; // Base path for URLs (e.g., '/guide')
   useHashUrls?: boolean; // Use hash URLs (#path) vs path URLs (/base/path)
   collapsible?: boolean; // Enable collapsible sections (default: true for windowed, false for borderless)
 }
@@ -32,7 +32,7 @@ export function ContentNav({
   variant = 'windowed',
   basePath = '',
   useHashUrls = true,
-  collapsible
+  collapsible,
 }: ContentNavProps) {
   const { isCollapsed, toggle } = useCollapsedSections(storageKey);
   const isBorderless = variant === 'borderless';
@@ -97,36 +97,25 @@ export function ContentNav({
       return (
         <div key={folder.id} className="plaza-nav-section">
           <div className="plaza-nav-section-title">{folder.title}</div>
-          <div className="plaza-nav-section-items">
-            {folder.children.map(renderNode)}
-          </div>
+          <div className="plaza-nav-section-items">{folder.children.map(renderNode)}</div>
         </div>
       );
     }
 
     // Collapsible: clickable headers with toggle
     return (
-      <div
-        key={folder.id}
-        className={`plaza-nav-section ${collapsed ? 'collapsed' : ''}`}
-      >
+      <div key={folder.id} className={`plaza-nav-section ${collapsed ? 'collapsed' : ''}`}>
         <button
           className="plaza-nav-section-header"
           onClick={() => toggle(folder.id)}
           aria-expanded={!collapsed}
         >
-          <span className="plaza-nav-collapse-icon">
-            {collapsed ? '▶' : '▼'}
-          </span>
+          <span className="plaza-nav-collapse-icon">{collapsed ? '▶' : '▼'}</span>
           <span className="plaza-nav-section-title">{folder.title}</span>
-          {!isBorderless && (
-            <span className="plaza-nav-item-count">{countItems(folder)}</span>
-          )}
+          {!isBorderless && <span className="plaza-nav-item-count">{countItems(folder)}</span>}
         </button>
         {!collapsed && (
-          <div className="plaza-nav-section-items">
-            {folder.children.map(renderNode)}
-          </div>
+          <div className="plaza-nav-section-items">{folder.children.map(renderNode)}</div>
         )}
       </div>
     );
@@ -143,9 +132,7 @@ export function ContentNav({
     <nav className={`plaza-content-nav ${variantClass} ${className || ''}`}>
       {menu.title && <h2 className="plaza-nav-title">{menu.title}</h2>}
       {menu.subtitle && <p className="plaza-nav-subtitle">{menu.subtitle}</p>}
-      <div className="plaza-nav-sections">
-        {menu.sections.map(renderNode)}
-      </div>
+      <div className="plaza-nav-sections">{menu.sections.map(renderNode)}</div>
     </nav>
   );
 }

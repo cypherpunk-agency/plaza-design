@@ -19,15 +19,15 @@
  * confirmation that went through, red for what throws progress away.
  */
 
-import { sound } from "../runtime/audio";
-import type { Save } from "../runtime/save";
-import { readSlot, resumeInto, SLOT_COUNT, slotLine, writeSlot } from "../runtime/slots";
+import { sound } from '../runtime/audio';
+import type { Save } from '../runtime/save';
+import { readSlot, resumeInto, SLOT_COUNT, slotLine, writeSlot } from '../runtime/slots';
 
 export interface MenuHooks {
   /** The current save, settled and written (the menu copies it into a slot). */
   save(): Save;
   /** Settled persistence copy, without changing the live save used by the menu. */
-  saveSnapshot?():Save;
+  saveSnapshot?(): Save;
   /** Where the player is, for a slot: id to load into, name to show. */
   scene(): { id: string; name: string };
   /** NEW GAME, confirmed: the opening's glide, then a fresh save on the train home. */
@@ -54,7 +54,13 @@ export interface DeckData {
   /** The current goal, the latest hint shown, and goals done in this place. */
   jobs(): { now: string | null; hint: string | null; done: string[] };
   /** What you hold: tokens, items (name, count), key chips, modules, programs. */
-  carry(): { tokens: number; items: [string, number][]; keys: string[]; modules: string[]; programs: string[] };
+  carry(): {
+    tokens: number;
+    items: [string, number][];
+    keys: string[];
+    modules: string[];
+    programs: string[];
+  };
   /** Groups of keys and what they do (only the ones that are yours now). */
   controls(): [string, [string, string][]][];
   /** TERM (touch): close the deck and open the terminal. */
@@ -64,9 +70,20 @@ export interface DeckData {
 type Tone = 'go' | 'ok' | 'bad' | 'dim';
 /** Milliseconds after the title menu comes up in which choosing does nothing. */
 const POP_GRACE = 450;
-interface Item { label: string; meta?: string; tone?: Tone; run: () => void }
+interface Item {
+  label: string;
+  meta?: string;
+  tone?: Tone;
+  run: () => void;
+}
 type TabId = 'jobs' | 'carry' | 'controls' | 'system' | 'term';
-const TAB_LABELS: Record<TabId, string> = { jobs: 'JOBS', carry: 'CARRY', controls: 'CONTROLS', system: 'SYSTEM', term: 'TERM' };
+const TAB_LABELS: Record<TabId, string> = {
+  jobs: 'JOBS',
+  carry: 'CARRY',
+  controls: 'CONTROLS',
+  system: 'SYSTEM',
+  term: 'TERM',
+};
 
 export class Menu {
   open = false;
@@ -88,13 +105,29 @@ export class Menu {
   private title = false;
   /** When the title menu came up (`POP_GRACE`). */
   private poppedAt = 0;
-  private pendingGeneration=0;
-  private fadeTimer?:ReturnType<typeof setTimeout>;
-  private loadTimer?:ReturnType<typeof setTimeout>;
-  private cancelPending(){this.pendingGeneration++;clearTimeout(this.fadeTimer);clearTimeout(this.loadTimer);this.fadeTimer=this.loadTimer=undefined;this.root.classList.remove('gm-fade');}
-  private reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
+  private pendingGeneration = 0;
+  private fadeTimer?: ReturnType<typeof setTimeout>;
+  private loadTimer?: ReturnType<typeof setTimeout>;
+  private cancelPending() {
+    this.pendingGeneration++;
+    clearTimeout(this.fadeTimer);
+    clearTimeout(this.loadTimer);
+    this.fadeTimer = this.loadTimer = undefined;
+    this.root.classList.remove('gm-fade');
+  }
+  private reduced = (() => {
+    try {
+      return matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  })();
 
-  constructor(host: HTMLElement, private hooks: MenuHooks, touch: boolean) {
+  constructor(
+    host: HTMLElement,
+    private hooks: MenuHooks,
+    touch: boolean,
+  ) {
     const root = (this.root = document.createElement('div'));
     root.id = 'game-menu';
     root.hidden = true;
@@ -132,9 +165,16 @@ export class Menu {
       this.activate();
     });
     // Tapping the dimmed game around the panel resumes.
-    root.addEventListener('pointerdown', (e) => { if (e.target === root) { e.preventDefault(); this.escape(); } });
+    root.addEventListener('pointerdown', (e) => {
+      if (e.target === root) {
+        e.preventDefault();
+        this.escape();
+      }
+    });
     // Keys are handled on keydown (game.ts forwards them); keep the focused button from clicking again on keyup.
-    root.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') e.preventDefault(); });
+    root.addEventListener('keyup', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') e.preventDefault();
+    });
     host.appendChild(root);
   }
 
@@ -151,8 +191,11 @@ export class Menu {
     this.root.classList.add('gm-on');
     sound.open();
     this.heading.textContent = 'DECK';
-    this.keysEl.textContent = this.touch ? 'TAP TO CHOOSE' : '← → TABS · ↑↓ MOVE · ENTER SELECT · ESC BACK';
-    const last = this.hooks.save().deckTab as TabId | undefined, tabs = this.tabs();
+    this.keysEl.textContent = this.touch
+      ? 'TAP TO CHOOSE'
+      : '← → TABS · ↑↓ MOVE · ENTER SELECT · ESC BACK';
+    const last = this.hooks.save().deckTab as TabId | undefined,
+      tabs = this.tabs();
     this.openTab(last && tabs.includes(last) && last !== 'term' ? last : tabs[0], false);
   }
 
@@ -163,7 +206,10 @@ export class Menu {
     this.root.classList.remove('gm-fade', 'gm-pop');
     this.root.classList.add('gm-title-screen');
     this.poppedAt = performance.now();
-    if (pop) { void this.root.offsetWidth; this.root.classList.add('gm-pop'); }
+    if (pop) {
+      void this.root.offsetWidth;
+      this.root.classList.add('gm-pop');
+    }
     this.open = true;
     this.root.hidden = false;
     document.documentElement.classList.add('game-menu');
@@ -176,12 +222,19 @@ export class Menu {
 
   /** NEW GAME on the title: `then` runs at once (the shot starts moving) while the menu fades away. */
   private fadeOut(then: () => void) {
-    this.cancelPending();const generation=this.pendingGeneration;
+    this.cancelPending();
+    const generation = this.pendingGeneration;
     this.items = [];
     this.back = () => {};
     this.root.classList.add('gm-fade');
     then();
-    if(generation===this.pendingGeneration)this.fadeTimer=setTimeout(()=>{if(generation===this.pendingGeneration)this.hide();},this.reduced?0:900);
+    if (generation === this.pendingGeneration)
+      this.fadeTimer = setTimeout(
+        () => {
+          if (generation === this.pendingGeneration) this.hide();
+        },
+        this.reduced ? 0 : 900,
+      );
   }
 
   hide() {
@@ -198,12 +251,17 @@ export class Menu {
   /** A key while the menu is open (game.ts forwards every keydown). */
   key(e: KeyboardEvent) {
     const k = e.key;
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Tab', 'Escape'].includes(k)) e.preventDefault();
+    if (
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Enter', 'Tab', 'Escape'].includes(k)
+    )
+      e.preventDefault();
     if (k === 'ArrowUp' || k === 'w' || k === 'W' || (k === 'Tab' && e.shiftKey)) this.move(-1);
     else if (k === 'ArrowDown' || k === 's' || k === 'S' || k === 'Tab') this.move(1);
     else if (e.repeat) return;
-    else if (!this.title && !this.back && (k === 'ArrowLeft' || k === 'ArrowRight')) this.stepTab(k === 'ArrowLeft' ? -1 : 1);
-    else if (!this.title && !this.back && /^[1-9]$/.test(k) && this.tabs()[+k - 1]) this.openTab(this.tabs()[+k - 1]);
+    else if (!this.title && !this.back && (k === 'ArrowLeft' || k === 'ArrowRight'))
+      this.stepTab(k === 'ArrowLeft' ? -1 : 1);
+    else if (!this.title && !this.back && /^[1-9]$/.test(k) && this.tabs()[+k - 1])
+      this.openTab(this.tabs()[+k - 1]);
     else if (k === 'Enter' || k === ' ' || k === 'e' || k === 'E') this.activate();
     else if (k === 'Escape') this.escape();
   }
@@ -214,12 +272,22 @@ export class Menu {
   private tabs(): TabId[] {
     const d = this.hooks.deck;
     if (!d) return ['system'];
-    return ['jobs', 'carry', 'controls', 'system', ...(this.touch && d.terminal ? ['term' as const] : [])];
+    return [
+      'jobs',
+      'carry',
+      'controls',
+      'system',
+      ...(this.touch && d.terminal ? ['term' as const] : []),
+    ];
   }
 
   /** Show a tab of the deck on its first screen, and remember it for the next Esc. */
   private openTab(id: TabId, click = true) {
-    if (id === 'term') { this.hide(); this.hooks.deck?.terminal?.(); return; }
+    if (id === 'term') {
+      this.hide();
+      this.hooks.deck?.terminal?.();
+      return;
+    }
     if (click && id !== this.tab) sound.tick();
     this.tab = id;
     this.hooks.save().deckTab = id;
@@ -235,7 +303,10 @@ export class Menu {
       b.textContent = (this.touch ? '' : i + 1 + ' ') + TAB_LABELS[t];
       this.tabsEl.appendChild(b);
     });
-    if (id === 'system') { this.main(0); return; }
+    if (id === 'system') {
+      this.main(0);
+      return;
+    }
     // an information tab: nothing to select, Esc resumes
     this.show_(this.hooks.scene().name + ' · PAUSED', [], 0, null);
     this.page.hidden = false;
@@ -246,7 +317,8 @@ export class Menu {
   }
 
   private stepTab(d: number) {
-    const tabs: TabId[] = this.tabs().filter((t) => t !== 'term'), i = tabs.indexOf(this.tab);
+    const tabs: TabId[] = this.tabs().filter((t) => t !== 'term'),
+      i = tabs.indexOf(this.tab);
     this.openTab(tabs[(i + d + tabs.length) % tabs.length]);
   }
 
@@ -261,7 +333,8 @@ export class Menu {
       row.className = 'gm-row' + (cls ? ' ' + cls : '');
       if (typeof l === 'string') row.textContent = l;
       else {
-        const a = document.createElement('span'), b = document.createElement('span');
+        const a = document.createElement('span'),
+          b = document.createElement('span');
         a.textContent = l[0];
         b.textContent = l[1];
         b.className = 'gm-row-meta';
@@ -281,9 +354,14 @@ export class Menu {
   private carryPage() {
     const c = this.hooks.deck!.carry();
     this.block('TOKENS', [String(c.tokens)], 'gm-tokens');
-    this.block('ITEMS', c.items.length ? c.items.map(([n, k]): [string, string] => [n, '× ' + k]) : ['NOTHING.'], c.items.length ? '' : 'gm-done');
+    this.block(
+      'ITEMS',
+      c.items.length ? c.items.map(([n, k]): [string, string] => [n, '× ' + k]) : ['NOTHING.'],
+      c.items.length ? '' : 'gm-done',
+    );
     if (c.keys.length) this.block('KEYRING', c.keys, 'gm-chip');
-    if (c.modules.length || c.programs.length) this.block('MODULES · PROGRAMS', [[...c.modules, ...c.programs].join(' · ')], 'gm-chip');
+    if (c.modules.length || c.programs.length)
+      this.block('MODULES · PROGRAMS', [[...c.modules, ...c.programs].join(' · ')], 'gm-chip');
   }
 
   private controlsPage() {
@@ -294,41 +372,114 @@ export class Menu {
 
   private main(sel: number) {
     const sudo = !!this.hooks.levels;
-    const tag = this.title ? "A CITY THAT DECIDED YOU AREN'T THERE" + (sudo ? ' · SUDO' : '') : this.hooks.scene().name + ' · PAUSED' + (sudo ? ' · SUDO' : '');
+    const tag = this.title
+      ? "A CITY THAT DECIDED YOU AREN'T THERE" + (sudo ? ' · SUDO' : '')
+      : this.hooks.scene().name + ' · PAUSED' + (sudo ? ' · SUDO' : '');
     this.show_(tag, this.mainItems(), sel, null);
   }
 
   /** The main screen's items: the title's, or the pause menu's. LEVELS only in sudo. */
   private mainItems(): Item[] {
-    const levels: Item[] = this.hooks.levels ? [{ label: 'LEVELS', tone: 'go', run: () => this.levels(0) }] : [];
-    const sound_: Item = { label: 'SOUND: ' + (sound.enabled ? 'ON' : 'OFF'), run: () => this.toggleSound() };
-    const quit: Item = { label: 'QUIT TO HOMEPAGE', run: () => { this.hide(); this.hooks.quit(); } };
+    const levels: Item[] = this.hooks.levels
+      ? [{ label: 'LEVELS', tone: 'go', run: () => this.levels(0) }]
+      : [];
+    const sound_: Item = {
+      label: 'SOUND: ' + (sound.enabled ? 'ON' : 'OFF'),
+      run: () => this.toggleSound(),
+    };
+    const quit: Item = {
+      label: 'QUIT TO HOMEPAGE',
+      run: () => {
+        this.hide();
+        this.hooks.quit();
+      },
+    };
     if (this.title) {
-      const saved = this.hooks.hasSave(), start = () => this.fadeOut(() => this.hooks.newGame());
+      const saved = this.hooks.hasSave(),
+        start = () => this.fadeOut(() => this.hooks.newGame());
       return [
-        { label: 'NEW GAME', tone: 'go', run: () => (saved ? this.confirm('START OVER? THE SAVED RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', start, this.backTo('NEW GAME')) : start()) },
+        {
+          label: 'NEW GAME',
+          tone: 'go',
+          run: () =>
+            saved
+              ? this.confirm(
+                  'START OVER? THE SAVED RUN IS LOST. SLOTS STAY.',
+                  'YES, NEW GAME',
+                  'bad',
+                  start,
+                  this.backTo('NEW GAME'),
+                )
+              : start(),
+        },
         saved
-          ? { label: 'CONTINUE', run: () => { this.hide(); this.hooks.continueGame(); } }
-          : { label: 'CONTINUE', meta: 'NO SAVED RUN YET', tone: 'dim', run: () => { sound.denied(); this.say('NOTHING TO CONTINUE YET.', 'dim'); } },
+          ? {
+              label: 'CONTINUE',
+              run: () => {
+                this.hide();
+                this.hooks.continueGame();
+              },
+            }
+          : {
+              label: 'CONTINUE',
+              meta: 'NO SAVED RUN YET',
+              tone: 'dim',
+              run: () => {
+                sound.denied();
+                this.say('NOTHING TO CONTINUE YET.', 'dim');
+              },
+            },
         ...levels,
         { label: 'LOAD GAME', run: () => this.slots('load', 0) },
-        sound_, quit,
+        sound_,
+        quit,
       ];
     }
     return [
       { label: 'RESUME', run: () => this.hide() },
-      ...(this.hooks.map ? [{ label: 'MAP', run: () => { this.hide(); this.hooks.map!(); } }] : []),
+      ...(this.hooks.map
+        ? [
+            {
+              label: 'MAP',
+              run: () => {
+                this.hide();
+                this.hooks.map!();
+              },
+            },
+          ]
+        : []),
       ...levels,
       { label: 'SAVE GAME', run: () => this.slots('save', 0) },
       { label: 'LOAD GAME', run: () => this.slots('load', 0) },
-      { label: 'NEW GAME', tone: 'bad', run: () => this.confirm('START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.', 'YES, NEW GAME', 'bad', () => { this.hide(); this.hooks.newGame(); }, this.backTo('NEW GAME')) },
-      sound_, quit,
+      {
+        label: 'NEW GAME',
+        tone: 'bad',
+        run: () =>
+          this.confirm(
+            'START OVER? THE CURRENT RUN IS LOST. SLOTS STAY.',
+            'YES, NEW GAME',
+            'bad',
+            () => {
+              this.hide();
+              this.hooks.newGame();
+            },
+            this.backTo('NEW GAME'),
+          ),
+      },
+      sound_,
+      quit,
     ];
   }
 
   /** Back to the main screen, on the item with this label. */
   private backTo(label: string) {
-    return () => this.main(Math.max(0, this.mainItems().findIndex((i) => i.label === label)));
+    return () =>
+      this.main(
+        Math.max(
+          0,
+          this.mainItems().findIndex((i) => i.label === label),
+        ),
+      );
   }
 
   /** Sudo: every level; picking one goes straight there. */
@@ -337,7 +488,10 @@ export class Menu {
     const items: Item[] = this.hooks.levels!().map((l) => ({
       label: l.name,
       meta: l.id === here ? 'HERE' : l.note,
-      run: () => { this.hide(); this.hooks.enter?.(l.id); },
+      run: () => {
+        this.hide();
+        this.hooks.enter?.(l.id);
+      },
     }));
     items.push({ label: 'BACK', run: this.backTo('LEVELS') });
     this.show_('LEVELS · SUDO', items, sel, this.backTo('LEVELS'));
@@ -355,18 +509,36 @@ export class Menu {
           const back = () => this.slots(mode, n - 1);
           if (mode === 'save') {
             if (!slot) this.store(n);
-            else this.confirm('OVERWRITE SLOT ' + n + '?', 'YES, OVERWRITE', 'bad', () => this.store(n), back);
+            else
+              this.confirm(
+                'OVERWRITE SLOT ' + n + '?',
+                'YES, OVERWRITE',
+                'bad',
+                () => this.store(n),
+                back,
+              );
           } else if (!slot) {
             sound.denied();
             this.say('SLOT ' + n + ' IS EMPTY. NOTHING TO LOAD.', 'dim');
           } else {
-            this.confirm('LOAD SLOT ' + n + '? UNSAVED PROGRESS IS LOST.', 'YES, LOAD', 'ok', () => {
-              this.say('LOADING SLOT ' + n + ' …', 'ok');
-              this.items = [];
-              this.list.textContent = '';
-              this.back = () => {}; // nothing to go back to while the page reloads
-              const generation=this.pendingGeneration;this.loadTimer=setTimeout(()=>{if(generation!==this.pendingGeneration||!this.open)return;this.loadTimer=undefined;resumeInto(slot);},250);
-            }, back);
+            this.confirm(
+              'LOAD SLOT ' + n + '? UNSAVED PROGRESS IS LOST.',
+              'YES, LOAD',
+              'ok',
+              () => {
+                this.say('LOADING SLOT ' + n + ' …', 'ok');
+                this.items = [];
+                this.list.textContent = '';
+                this.back = () => {}; // nothing to go back to while the page reloads
+                const generation = this.pendingGeneration;
+                this.loadTimer = setTimeout(() => {
+                  if (generation !== this.pendingGeneration || !this.open) return;
+                  this.loadTimer = undefined;
+                  resumeInto(slot);
+                }, 250);
+              },
+              back,
+            );
           }
         },
       });
@@ -379,17 +551,29 @@ export class Menu {
 
   private store(n: number) {
     const z = this.hooks.scene();
-    const ok = writeSlot(n, this.hooks.saveSnapshot?.()??this.hooks.save(), z.id, z.name);
-    if (ok) sound.granted(); else sound.denied();
-    this.slots('save', n - 1, ok ? ['SAVED TO SLOT ' + n + '.', 'ok'] : ['SAVE FAILED: THIS BROWSER BLOCKS STORAGE.', 'bad']);
+    const ok = writeSlot(n, this.hooks.saveSnapshot?.() ?? this.hooks.save(), z.id, z.name);
+    if (ok) sound.granted();
+    else sound.denied();
+    this.slots(
+      'save',
+      n - 1,
+      ok
+        ? ['SAVED TO SLOT ' + n + '.', 'ok']
+        : ['SAVE FAILED: THIS BROWSER BLOCKS STORAGE.', 'bad'],
+    );
   }
 
   /** A yes/no question above two answers; the selection starts on NO. */
   private confirm(question: string, yes: string, tone: Tone, run: () => void, back: () => void) {
-    this.show_(question, [
-      { label: 'NO', run: back },
-      { label: yes, tone, run },
-    ], 0, back);
+    this.show_(
+      question,
+      [
+        { label: 'NO', run: back },
+        { label: yes, tone, run },
+      ],
+      0,
+      back,
+    );
     this.sub.className = 'gm-sub gm-ask gm-' + (tone === 'bad' ? 'bad' : 'go');
   }
 

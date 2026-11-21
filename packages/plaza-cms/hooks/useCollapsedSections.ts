@@ -25,15 +25,18 @@ export function useCollapsedSections(storageKey: string) {
   }, [storageKey, collapsed]);
 
   const toggle = useCallback((sectionId: string) => {
-    setCollapsed(prev => ({
+    setCollapsed((prev) => ({
       ...prev,
-      [sectionId]: !prev[sectionId]
+      [sectionId]: !prev[sectionId],
     }));
   }, []);
 
-  const isCollapsed = useCallback((sectionId: string) => {
-    return collapsed[sectionId] ?? false;
-  }, [collapsed]);
+  const isCollapsed = useCallback(
+    (sectionId: string) => {
+      return collapsed[sectionId] ?? false;
+    },
+    [collapsed],
+  );
 
   return { collapsed, toggle, isCollapsed };
 }

@@ -70,7 +70,12 @@ export function SidePanel({ side }: SidePanelProps) {
               {route.disabled ? (
                 <span className="route-disabled">{route.path}</span>
               ) : (
-                <a href={route.href} target="_blank" rel="noopener noreferrer" className="route-link">
+                <a
+                  href={route.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="route-link"
+                >
                   {route.path}
                 </a>
               )}
@@ -82,7 +87,9 @@ export function SidePanel({ side }: SidePanelProps) {
         <div className="plaza-side-panel__block">
           <div className="plaza-side-panel__header">keys</div>
           {keys.map((k, i) => (
-            <div key={i}><span className="text-ambient-amber">{k.key}</span> {k.action}</div>
+            <div key={i}>
+              <span className="text-ambient-amber">{k.key}</span> {k.action}
+            </div>
           ))}
         </div>
 
@@ -101,7 +108,8 @@ export function SidePanel({ side }: SidePanelProps) {
         <div className="plaza-side-panel__header">processes</div>
         {netLog.map((entry: NetLogEntry, i: number) => (
           <div key={i}>
-            <span className="text-ambient-amber">{entry.verb}</span>.{entry.chan}... {entry.code} ({entry.ms}ms)
+            <span className="text-ambient-amber">{entry.verb}</span>.{entry.chan}... {entry.code} (
+            {entry.ms}ms)
           </div>
         ))}
       </div>

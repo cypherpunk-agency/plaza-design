@@ -5,45 +5,120 @@ import { validationSnapshot } from '../../src/ssg/game/authoring/validation-snap
 import { pendingRegistry } from '../../src/ssg/game/authoring/pending-registry';
 import { pendingNetworkContext } from '../../src/ssg/game/authoring/pending-network';
 import { pendingScene } from '../../src/ssg/game/authoring/pending-scene';
-import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
+import { ComposerModel } from '../../src/ssg/game/authoring/composer-model';
 import { art } from '../../src/ssg/game/art';
-const rows = sourceDocuments.map(d => ({ id: d.id, value: JSON.parse(fs.readFileSync('src/ssg/game/' + d.file, 'utf8')) }));
-const before = JSON.stringify(rows), snapshot = validationSnapshot(rows), network = pendingNetworkContext(snapshot);
+const rows = sourceDocuments.map((d) => ({
+  id: d.id,
+  value: JSON.parse(fs.readFileSync('src/ssg/game/' + d.file, 'utf8')),
+}));
+const before = JSON.stringify(rows),
+  snapshot = validationSnapshot(rows),
+  network = pendingNetworkContext(snapshot);
 assert.equal(validationSnapshot(rows), snapshot);
 const registry = pendingRegistry(snapshot);
 assert.equal(pendingRegistry(snapshot), registry);
 // Editing an auxiliary proposal does not rebuild the unchanged game registry.
-const proposalRows=rows.map(d=>d.id==='downtown-next'?{...d,value:structuredClone(d.value)}:d);
-assert.notEqual(proposalRows.find(d=>d.id==='downtown-next')!.value,rows.find(d=>d.id==='downtown-next')!.value);
-assert.equal(pendingRegistry(validationSnapshot(proposalRows)),registry);
-for(const id of ['world-compositions','authored-scenes','network']){
- const changed=rows.map(d=>d.id===id?{...d,value:{...d.value,version:0}}:d);
- assert.throws(()=>pendingRegistry(validationSnapshot(changed)),id+' must invalidate and reject before reuse');
+const proposalRows = rows.map((d) =>
+  d.id === 'downtown-next' ? { ...d, value: structuredClone(d.value) } : d,
+);
+assert.notEqual(
+  proposalRows.find((d) => d.id === 'downtown-next')!.value,
+  rows.find((d) => d.id === 'downtown-next')!.value,
+);
+assert.equal(pendingRegistry(validationSnapshot(proposalRows)), registry);
+for (const id of ['world-compositions', 'authored-scenes', 'network']) {
+  const changed = rows.map((d) => (d.id === id ? { ...d, value: { ...d.value, version: 0 } } : d));
+  assert.throws(
+    () => pendingRegistry(validationSnapshot(changed)),
+    id + ' must invalidate and reject before reuse',
+  );
 }
-const mutable=new Map(rows.map(d=>[d.id,d.value]));assert.notEqual(pendingRegistry(mutable),registry,'Mutable/unmarked maps never use immutable derivation reuse');
-const inputs = { gameplay: snapshot.get('downtown-gameplay'), sceneDocument: snapshot.get('downtown-scene'), devices: snapshot.get('downtown-devices') };
+const mutable = new Map(rows.map((d) => [d.id, d.value]));
+assert.notEqual(
+  pendingRegistry(mutable),
+  registry,
+  'Mutable/unmarked maps never use immutable derivation reuse',
+);
+const inputs = {
+  gameplay: snapshot.get('downtown-gameplay'),
+  sceneDocument: snapshot.get('downtown-scene'),
+  devices: snapshot.get('downtown-devices'),
+};
 const scene = pendingScene('downtown', snapshot.get('downtown'), inputs, network);
 assert.equal(pendingScene('downtown', snapshot.get('downtown'), inputs, network), scene);
 // A changed input must be checked, even while other inputs retain their identities.
 const broken = structuredClone(snapshot.get('downtown')) as any;
 broken.instances.push(structuredClone(broken.instances[0]));
 assert.throws(() => pendingScene('downtown', broken, inputs, network));
-const changed = structuredClone(rows), gameplay = changed.find(d => d.id === 'downtown-gameplay')!;
+const changed = structuredClone(rows),
+  gameplay = changed.find((d) => d.id === 'downtown-gameplay')!;
 gameplay.value.commands = {};
-assert.throws(() => pendingRegistry(validationSnapshot(changed)), 'a new prospective edit must not inherit an old validation result');
+assert.throws(
+  () => pendingRegistry(validationSnapshot(changed)),
+  'a new prospective edit must not inherit an old validation result',
+);
 const fresh = validationSnapshot([...rows]);
-assert.notEqual(pendingNetworkContext(fresh), network, 'validation derivations must not survive into another edit pass');
+assert.notEqual(
+  pendingNetworkContext(fresh),
+  network,
+  'validation derivations must not survive into another edit pass',
+);
 assert.equal(JSON.stringify(rows), before, 'validation must not modify source snapshots');
 let calls = 0;
-const model = new ComposerModel(art, {}, (_doc, docs) => { calls++; assert.equal((docs.find(d => d.id === 'rules')!.value as any).ok, true); }, [], undefined,
-  docs => [docs.find(d => d.id === 'rules')!.value]);
-model.load([{ id: 'proposal', kind: 'composition', revision: 'test', value: { version: 1, scene: 'proposal', instances: [{ id: 'sign', type: 'sign.plate', props: {}, placement: { x: 0, h: 0 }, order: 0, layer: 'backdrop' }] } }, { id: 'rules', kind: 'gameplay', revision: 'test', value: { ok: true } }]);
+const model = new ComposerModel(
+  art,
+  {},
+  (_doc, docs) => {
+    calls++;
+    assert.equal((docs.find((d) => d.id === 'rules')!.value as any).ok, true);
+  },
+  [],
+  undefined,
+  (docs) => [docs.find((d) => d.id === 'rules')!.value],
+);
+model.load([
+  {
+    id: 'proposal',
+    kind: 'composition',
+    revision: 'test',
+    value: {
+      version: 1,
+      scene: 'proposal',
+      instances: [
+        {
+          id: 'sign',
+          type: 'sign.plate',
+          props: {},
+          placement: { x: 0, h: 0 },
+          order: 0,
+          layer: 'backdrop',
+        },
+      ],
+    },
+  },
+  { id: 'rules', kind: 'gameplay', revision: 'test', value: { ok: true } },
+]);
 const initialCalls = calls;
-model.updateInstance('proposal', 'sign', 'Move sign', n => { n.placement.x = 12; });
+model.updateInstance('proposal', 'sign', 'Move sign', (n) => {
+  n.placement.x = 12;
+});
 assert.equal(calls, initialCalls, 'unchanged declared semantic inputs may reuse successful checks');
-assert.throws(() => model.updateInstance('proposal', 'sign', 'Invalid position', n => { n.placement.x = NaN; }), 'composition checks always run');
-assert.throws(() => model.edit('rules', 'Invalid rules', () => ({ ok: false })), 'changed semantic inputs must still reject atomically');
+assert.throws(
+  () =>
+    model.updateInstance('proposal', 'sign', 'Invalid position', (n) => {
+      n.placement.x = NaN;
+    }),
+  'composition checks always run',
+);
+assert.throws(
+  () => model.edit('rules', 'Invalid rules', () => ({ ok: false })),
+  'changed semantic inputs must still reject atomically',
+);
 assert.equal((model.get('rules').value as any).ok, true);
-model.undo(); assert.equal((model.get('proposal').value as any).instances[0].placement.x, 0);
-model.redo(); assert.equal((model.get('proposal').value as any).instances[0].placement.x, 12);
-console.log('Editor validation reuse preserves fresh-edit invalidation and rejects invalid compositions/commands.');
+model.undo();
+assert.equal((model.get('proposal').value as any).instances[0].placement.x, 0);
+model.redo();
+assert.equal((model.get('proposal').value as any).instances[0].placement.x, 12);
+console.log(
+  'Editor validation reuse preserves fresh-edit invalidation and rejects invalid compositions/commands.',
+);

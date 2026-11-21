@@ -1,5 +1,5 @@
-import type {RegisteredSceneController} from '../engine/controllers';
-import type {NativeObservations} from '../engine/native-observations';
+import type { RegisteredSceneController } from '../engine/controllers';
+import type { NativeObservations } from '../engine/native-observations';
 /**
  * The shape of a scene's data file (see GAME-DATA.md).
  *
@@ -24,12 +24,39 @@ export const LAYERS: readonly Layer[] = ['hardware', 'software', 'data'];
  * What a part does. Some functions have engine behaviour when the part carries their settings
  * block: gate (`guard`), time (`clock`), connect (`link`), record (`log`), act (`mover`), sense (`zone`).
  */
-export type PartFunction = 'sense' | 'act' | 'hold' | 'program' | 'time' | 'gate' | 'connect' | 'record' | 'talk' | 'logic';
-export const PART_FUNCTIONS: readonly PartFunction[] = ['sense', 'act', 'hold', 'program', 'time', 'gate', 'connect', 'record', 'talk', 'logic'];
+export type PartFunction =
+  'sense' | 'act' | 'hold' | 'program' | 'time' | 'gate' | 'connect' | 'record' | 'talk' | 'logic';
+export const PART_FUNCTIONS: readonly PartFunction[] = [
+  'sense',
+  'act',
+  'hold',
+  'program',
+  'time',
+  'gate',
+  'connect',
+  'record',
+  'talk',
+  'logic',
+];
 /** The settings block each engine behaviour needs, and the one function it may sit on. */
-export const BEHAVIOUR_FUNCTION = { guard: 'gate', clock: 'time', link: 'connect', log: 'record', mover: 'act', zone: 'sense' } as const satisfies Record<string, PartFunction>;
+export const BEHAVIOUR_FUNCTION = {
+  guard: 'gate',
+  clock: 'time',
+  link: 'connect',
+  log: 'record',
+  mover: 'act',
+  zone: 'sense',
+} as const satisfies Record<string, PartFunction>;
 /** Parts whose verbs shared gameplay commands may bind: everything but characters and parts with engine behaviour. */
-export const nativeBindable = (n: { function: PartFunction; guard?: unknown; link?: unknown; clock?: unknown; log?: unknown; mover?: unknown; zone?: unknown }) => n.function !== 'talk' && !n.guard && !n.link && !n.clock && !n.log && !n.mover && !n.zone;
+export const nativeBindable = (n: {
+  function: PartFunction;
+  guard?: unknown;
+  link?: unknown;
+  clock?: unknown;
+  log?: unknown;
+  mover?: unknown;
+  zone?: unknown;
+}) => n.function !== 'talk' && !n.guard && !n.link && !n.clock && !n.log && !n.mover && !n.zone;
 export type Tone = 'ok' | 'err' | 'dim';
 export type Value = string | number | boolean | null;
 export type Dir = 'up' | 'down' | 'left' | 'right';
@@ -54,25 +81,34 @@ export type Cond = string;
  * crossing midnight when `to` is earlier ("22:00" to "04:00"). `days`: only on these days ("odd",
  * "even" or day numbers); a window that crosses midnight belongs to the day it started.
  */
-export interface TimeWindow { from: string; to: string; days?: ('odd' | 'even' | number)[] }
+export interface TimeWindow {
+  from: string;
+  to: string;
+  days?: ('odd' | 'even' | number)[];
+}
 
 /** One step. Each has exactly one of command / input / set / open / emit / goal / effect / give / take / trace / unseal. */
 export type Action = { if?: Cond; when?: TimeWindow } & (
-  | {command:string} // sole noun.on case step; actual interaction/signal permission, never system
-  | {input:string}
-  | { set: string; to: Value }   // change a state key (strings are templates)
+  | { command: string } // sole noun.on case step; actual interaction/signal permission, never system
+  | { input: string }
+  | { set: string; to: Value } // change a state key (strings are templates)
   | { open: string; with?: string } // open a panel; talk requires an explicit validated `with` graph
-  | { emit: string }             // raise one of this noun's events
-  | { goal: string }             // tick a goal
-  | { effect: string }           // run a named effect implemented in code
+  | { emit: string } // raise one of this noun's events
+  | { goal: string } // tick a goal
+  | { effect: string } // run a named effect implemented in code
   | { give: string; count?: number } // hand the player a keyring item, a module (`switch.so`), or `tokens` (with `count`)
   | { take: string; count?: number } // take an item the player carries (scenes/kit.ts ITEMS: `soap`), `count` of them (default 1)
-  | { trace: number }            // raise (or, negative, lower) this device's trace, in %
-  | { unseal: string }           // open a sealed sector of this device (or `device/sector`)
+  | { trace: number } // raise (or, negative, lower) this device's trace, in %
+  | { unseal: string } // open a sealed sector of this device (or `device/sector`)
 );
 
 /** What a verb does. In a list, the first case whose `if` holds (and whose `when` is now) runs. */
-export interface Case { if?: Cond; when?: TimeWindow; do?: Action[]; say?: LineRef }
+export interface Case {
+  if?: Cond;
+  when?: TimeWindow;
+  do?: Action[];
+  say?: LineRef;
+}
 
 /** A status line part: plain text, or text chosen by a condition. */
 export type StatusPart = string | { if: Cond; then?: string; else?: string };
@@ -131,14 +167,22 @@ export interface LogData {
  * `scan.so` (an address book: the home PC knows CONCIERGE, the card reader the catalog).
  * `when`: the link works only while this holds (a router that is off scans nothing).
  */
-export interface LinkData { reach?: string[]; known?: string[]; when?: Cond }
+export interface LinkData {
+  reach?: string[];
+  known?: string[];
+  when?: Cond;
+}
 
 // ---------- lock toys (scene/toys/): one per lock type ----------
 
 export type ToyKind = 'rings' | 'cipher' | 'cryptex' | 'morse';
 
 /** One shield ring, outermost first: degrees per second (negative: the other way), its gap, where the gap starts (0 = the port, at the top). */
-export interface RingData { speed: number; gap: number; start?: number }
+export interface RingData {
+  speed: number;
+  gap: number;
+  start?: number;
+}
 /** Shield rings: lock each ring while its gap is at the port, outermost first. A miss reverses that ring and speeds it up. */
 export interface RingsToyData {
   rings: RingData[];
@@ -179,7 +223,10 @@ export type Num = number | string;
  * from its artwork (a gantry's `slot`); or a `spot`, the standing place of a device (`edge`: its `left`
  * or `right` side, default its middle), moved on by `plus`.
  */
-export type Coord = number | { place: string; plus?: Num } | { spot: string; edge?: 'left' | 'center' | 'right'; plus?: Num };
+export type Coord =
+  | number
+  | { place: string; plus?: Num }
+  | { spot: string; edge?: 'left' | 'center' | 'right'; plus?: Num };
 /** Where a mover stops: a place on its axis, or a point on both axes (`x` across the scene, `h` up it). */
 export type MoverStop = Coord | { x?: Coord; h?: Coord };
 /** How a leg eases between its ends: a named curve, or a timing table `[[time, progress], ...]` (both 0 to 1). */
@@ -196,13 +243,33 @@ export type MoverCue = 'open' | 'close';
  * (`noun:path`) sends another mover of the same device along one of its paths as the leg begins (the
  * train's doors close as it pulls out). `cue` plays a sound as the leg ends.
  */
-export interface MoverLeg { to?: string; ms?: Num; share?: number; speed?: Num; minMs?: Num; ease?: MoverEase; load?: string; event?: string; ahead?: Num; drives?: string; cue?: MoverCue }
+export interface MoverLeg {
+  to?: string;
+  ms?: Num;
+  share?: number;
+  speed?: Num;
+  minMs?: Num;
+  ease?: MoverEase;
+  load?: string;
+  event?: string;
+  ahead?: Num;
+  drives?: string;
+  cue?: MoverCue;
+}
 /** A choice inside a path: when the condition (`lock=open`) holds when it is reached, the `then` steps follow, else the `else` steps. */
-export interface MoverChoice { if: string; then: MoverStep[]; else?: MoverStep[] }
+export interface MoverChoice {
+  if: string;
+  then: MoverStep[];
+  else?: MoverStep[];
+}
 /** The last step of a path: when the trip ends, this named path of the same mover goes on from where it stands, at the same instant (a route that goes round). */
-export interface MoverRun { run: string }
+export interface MoverRun {
+  run: string;
+}
 /** The first step of a path: the trip begins from this stop, wherever the mover was (a train that comes in from the harbor). */
-export interface MoverFrom { from: string }
+export interface MoverFrom {
+  from: string;
+}
 export type MoverStep = MoverLeg | MoverChoice | MoverRun | MoverFrom;
 /**
  * A mover's emergency stop (`SceneModel.brake`): from its speed at the moment it is pulled it slows at
@@ -211,7 +278,13 @@ export type MoverStep = MoverLeg | MoverChoice | MoverRun | MoverFrom;
  * in `then` for where it stopped runs (`track`, or the name of the snap stop): a hold, then the trip goes
  * on. The braking leg is labelled `load` and raises `event` when the mover is at rest.
  */
-export interface MoverBrake { decel: Num; snap?: { stop: string; window: Num; minAhead?: Num }[]; then: Record<string, string>; load?: string; event?: string }
+export interface MoverBrake {
+  decel: Num;
+  snap?: { stop: string; window: Num; minAhead?: Num }[];
+  then: Record<string, string>;
+  load?: string;
+  event?: string;
+}
 /**
  * A mover (on an act part): it travels between named stops (engine/movers.ts). Engine verbs:
  * `go <stop>` for each stop, and `return` (none when `wired` is false). Events it may raise: `started`,
@@ -342,7 +415,11 @@ export type SealData =
   | { sequence: string[]; withinMs?: number; signal?: boolean }
   | { if: Cond };
 
-export interface SectorData { id: string; label?: string; seal: SealData }
+export interface SectorData {
+  id: string;
+  label?: string;
+  seal: SealData;
+}
 
 /** Where a device stands in the world (world units, as the scene draws) and on the board. */
 export interface LayoutData {
@@ -400,14 +477,23 @@ export interface DeviceData {
 }
 
 /** One everyday action: a noun's verb, with the popup's label (default: the verb). `{tokens}` in the label: what you have. */
-export interface EverydayData { noun: string; verb: string; label?: string }
+export interface EverydayData {
+  noun: string;
+  verb: string;
+  label?: string;
+}
 
 /**
  * Something you carry, used on this thing: `item` (an ITEMS id), the popup's `label` ("pour in
  * soap"), and what happens, as a verb's cases on `noun` (its lines come from there; `emit` raises
  * that noun's events). A `take` step uses the item up; without one you keep it (a pass you show).
  */
-export interface ItemUseData { item: string; noun: string; label: string; on: Case | Case[] }
+export interface ItemUseData {
+  item: string;
+  noun: string;
+  label: string;
+  on: Case | Case[];
+}
 
 /**
  * A cable present when the scene starts: event → noun + verb. Cuttable like any
@@ -415,7 +501,13 @@ export interface ItemUseData { item: string; noun: string; label: string; on: Ca
  * the player's cuts by `id` (default `from>to`), so a cable added to the data
  * later still shows up in an older save.
  */
-export interface CableData { id?: string; from: string; to: string; verb: string; fixed?: boolean }
+export interface CableData {
+  id?: string;
+  from: string;
+  to: string;
+  verb: string;
+  fixed?: boolean;
+}
 
 /** Crafting (not used by any scene right now; kept so the format can say it). */
 export interface RecipeData {
@@ -426,7 +518,14 @@ export interface RecipeData {
   say: LineRef;
 }
 
-export interface CrateData { id: string; x: number; y: number; w: number; h: number; label: string }
+export interface CrateData {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label: string;
+}
 
 export interface DialogueNode {
   if?: Cond;
@@ -450,7 +549,10 @@ export interface DialogueData {
 }
 
 /** An objective, in order. (No authored hints yet: the hint lane exists, see ui/hints.ts and GAME-DATA.md, "Decided".) */
-export interface GoalData { id: string; text: string }
+export interface GoalData {
+  id: string;
+  text: string;
+}
 
 /** What a `rule` chip does to a fragment dropped on it (or it on a fragment). Joining two fragments needs no rule. */
 export type RuleOp = 'reverse' | 'upper' | 'lower';
@@ -483,16 +585,27 @@ export interface KeyItem {
 }
 
 /** A part of a scene mechanism's Circuit device: the signals a cable may start from and the actions it may send. */
-export interface MechanismPart { id: string; layer: Layer; function: PartFunction; verbs: string[]; events: string[] }
+export interface MechanismPart {
+  id: string;
+  layer: Layer;
+  function: PartFunction;
+  verbs: string[];
+  events: string[];
+}
 /**
  * A registered scene mechanism as a Circuit device (engine/gameplay/mechanism-parts.ts): cables may
  * start or end on its parts. Derived from the scene's `stage.mechanisms` and carried by its rules
  * (`SceneRules.mechanisms`), never by the device document: it is not authored, takes no layout and is
  * not a physical device (no hack-vision node).
  */
-export interface MechanismDevice { id: string; name: string; label: string; parts: MechanismPart[] }
+export interface MechanismDevice {
+  id: string;
+  name: string;
+  label: string;
+  parts: MechanismPart[];
+}
 export interface SceneData {
-  controller?:RegisteredSceneController;
+  controller?: RegisteredSceneController;
   /** Native read-only projections and idempotent live-tick goal observations. */
   observations?: NativeObservations;
   id: string;
@@ -511,7 +624,11 @@ export interface SceneData {
   /** A workbench that turns two parts into a logic part. Later. */
   bench?: { parts: string[]; recipes: RecipeData[] };
   /** The yard's CAM-1 feed (read by the yard's camera panel). */
-  camera?: { crates: CrateData[]; actions?:Partial<Record<'inspectOwned'|'tagOwned',string>>; bindings?:import('../engine/controllers/camera-bindings').CameraBindings };
+  camera?: {
+    crates: CrateData[];
+    actions?: Partial<Record<'inspectOwned' | 'tagOwned', string>>;
+    bindings?: import('../engine/controllers/camera-bindings').CameraBindings;
+  };
   dialogue: Record<string, DialogueData>;
   goals: GoalData[];
   /** Lines and labels the code asks for by key. The engine's own (engine.json) can be overridden here. */
@@ -541,14 +658,24 @@ export interface LogicModule {
   part: DeviceData;
 }
 
-export interface LogicData { modules: LogicModule[] }
+export interface LogicData {
+  modules: LogicModule[];
+}
 
 /**
  * The shared net (net.json): nodes any scene's LINK may reach, the cables
  * pre-wired between them (they appear when a node they touch is connected),
  * and keyring items found on them.
  */
-export interface NetData { nodes: DeviceData[]; cables: CableData[]; keyring: KeyItem[]; watchdog?: WatchdogData; networks: NetworkData[]; programs: ProgramData[]; scanProgram: string | null }
+export interface NetData {
+  nodes: DeviceData[];
+  cables: CableData[];
+  keyring: KeyItem[];
+  watchdog?: WatchdogData;
+  networks: NetworkData[];
+  programs: ProgramData[];
+  scanProgram: string | null;
+}
 
 /**
  * A network (NET.md): a group of machines with its own access rule. Any one rule in `from` is
@@ -571,17 +698,31 @@ export type AccessRule = { port: string } | { net: string } | { controlled: stri
  * A machine on a network: a device or node of a scene file (`in`: the scenes whose file has it,
  * `net` for net.json). `node`: its Registry label (`0x2F`), when it is a node you can take control of.
  */
-export interface MachineData { id: string; in: string[]; node?: string }
+export interface MachineData {
+  id: string;
+  in: string[];
+  node?: string;
+}
 
 /** A program (NET.md): a `.so` you earn and keep (`save.programs`), handed out by a `give` step. */
-export interface ProgramData { id: string; name: string; look: string; foundIn: string }
+export interface ProgramData {
+  id: string;
+  name: string;
+  look: string;
+  foundIn: string;
+}
 
 /** The engine's own wording (engine.json): guard, seal, trace, net and wiring lines. A scene may override any. */
-export interface EngineData { texts: Record<string, string | LineData> }
+export interface EngineData {
+  texts: Record<string, string | LineData>;
+}
 
 // ---------- saves ----------
 
-export interface Pt { x: number; y: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 /**
  * A scene's progress inside the game's save (`save.scenes.<scene id>`).
@@ -590,12 +731,25 @@ export interface Pt { x: number; y: number }
  * does not wipe them; so are clocks and the watchdog's place on its route.
  */
 /** A current mover checkpoint. Vehicle services retain a source path step, never executable saved steps. */
-export interface MoverSave {at:string;to?:string;pos?:number;path?:{name:string;step:number;nested?:number[];elapsed:number;from:{x:number;h:number};lastTo?:string;halt?:string}}
+export interface MoverSave {
+  at: string;
+  to?: string;
+  pos?: number;
+  path?: {
+    name: string;
+    step: number;
+    nested?: number[];
+    elapsed: number;
+    from: { x: number; h: number };
+    lastTo?: string;
+    halt?: string;
+  };
+}
 export interface SceneSave {
   /** Once-only condition activations, not an observation to replay when a checkpoint loads. */
-  triggers?:string[];
+  triggers?: string[];
   /** Current short-lived passenger memory, with its expiry stamp. */
-  people?:import('../engine/people').PeopleState;
+  people?: import('../engine/people').PeopleState;
   /** Goal ids reached. */
   goals: string[];
   /** Every cable: `from` device.noun:event, `to` device.noun, the verb it carries. Pre-wired ones you cut are missing. */
@@ -604,7 +758,12 @@ export interface SceneSave {
    * Logic parts: id (`timer1`), part kind (`timer`), its own state (a switch's `on`), and where it
    * floats in the world in hack vision (`at`: x along the scene, h above the ground, world units).
    */
-  logic: { id: string; kind: string; state?: Record<string, Value>; at?: { x: number; h: number } }[];
+  logic: {
+    id: string;
+    kind: string;
+    state?: Record<string, Value>;
+    at?: { x: number; h: number };
+  }[];
   /** Devices' and nodes' own `state`, by device id (logic parts keep theirs in `logic`). */
   local?: Record<string, Record<string, Value>>;
   /** Sectors opened: `device/sector`. */
@@ -632,11 +791,18 @@ export interface SceneSave {
    * `vision`: where the player put things in hack vision, in world units: by device id, its core's
    * offset from its default spot over the device; by `device.noun`, the noun's offset from its core.
    */
-  board?: { known: string[]; pos: Record<string, Pt>; offsets: Record<string, Pt>; vision?: Record<string, Pt> };
+  board?: {
+    known: string[];
+    pos: Record<string, Pt>;
+    offsets: Record<string, Pt>;
+    vision?: Record<string, Pt>;
+  };
 }
 
 /** A transient engine checkpoint; root storage owns scalar blocks separately. */
-export interface SceneSnapshot extends SceneSave {state:Record<string,Value>}
+export interface SceneSnapshot extends SceneSave {
+  state: Record<string, Value>;
+}
 
 /**
  * JSON imports type their strings as `string`, not 'SENSE' | 'ACT' | ….
@@ -644,10 +810,15 @@ export interface SceneSnapshot extends SceneSave {state:Record<string,Value>}
  * type-check still catches a missing field or a number where a list belongs;
  * the build-time check (check.ts) catches the rest.
  */
-export type Loose<T> =
-  T extends string ? string
-  : T extends number | boolean | null | undefined ? T
-  : T extends readonly (infer U)[] ? Loose<U>[]
-  // records: JSON typing fills keys missing from sibling objects with `undefined`
-  : T extends object ? (string extends keyof T ? { [k: string]: Loose<T[string & keyof T]> | undefined } : { [K in keyof T]: Loose<T[K]> })
-  : T;
+export type Loose<T> = T extends string
+  ? string
+  : T extends number | boolean | null | undefined
+    ? T
+    : T extends readonly (infer U)[]
+      ? Loose<U>[]
+      : // records: JSON typing fills keys missing from sibling objects with `undefined`
+        T extends object
+        ? string extends keyof T
+          ? { [k: string]: Loose<T[string & keyof T]> | undefined }
+          : { [K in keyof T]: Loose<T[K]> }
+        : T;

@@ -7,6 +7,24 @@
  * `new SceneHost(…, def, rules)`. See GAME-DATA.md.
  */
 
-export { emptyData, NO_RULES, SceneHost, type DrawLayer, type DrawView, type EngineDraw, type SceneStore, type SceneTarget } from './host';
-export { CITY, CITY_KEYS, SceneModel, type Device, type Line, type Link, type Noun, type Spot } from './model';
+export {
+  emptyData,
+  NO_RULES,
+  SceneHost,
+  type DrawLayer,
+  type DrawView,
+  type EngineDraw,
+  type SceneStore,
+  type SceneTarget,
+} from './host';
+export {
+  CITY,
+  CITY_KEYS,
+  SceneModel,
+  type Device,
+  type Line,
+  type Link,
+  type Noun,
+  type Spot,
+} from './model';
 export type { Effect, World, SceneRules } from './rules';

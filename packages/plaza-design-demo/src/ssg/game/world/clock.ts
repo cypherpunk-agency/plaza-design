@@ -21,7 +21,7 @@
  * conditions and the weather read it (`city`).
  */
 
-import type { TimeWindow } from "../data/types";
+import type { TimeWindow } from '../data/types';
 
 /** Game minutes per real second: 1 game hour = 2 real minutes (TIME.md; a first guess, tune here). */
 export const CLOCK_RATE = 0.5;
@@ -34,7 +34,12 @@ export const TRAVEL = { quick: 15, taxi: 10 };
 export const CLOCK_SPEEDS = [0, 1, 10, 60];
 
 /** What "wait until…" offers. `at`: a time of day (minutes); `hour`: the next full hour. */
-export interface WaitTo { id: string; label: string; at?: number; hour?: true }
+export interface WaitTo {
+  id: string;
+  label: string;
+  at?: number;
+  hour?: true;
+}
 export const WAITS: WaitTo[] = [
   { id: 'hour', label: 'next hour', hour: true },
   { id: 'dusk', label: 'dusk · 19:00', at: 19 * 60 },
@@ -44,11 +49,18 @@ export const WAITS: WaitTo[] = [
 /** The wait's fade and time card (frames: fade out, the card, fade in). The opening's sleep has its own (opening.ts SLEEP). */
 export const WAIT_CARD = { out: 36, card: 96, in: 36 };
 
-export interface ClockSave { day: number; min: number; seed: number }
+export interface ClockSave {
+  day: number;
+  min: number;
+  seed: number;
+}
 
 const pad = (n: number) => (n < 10 ? '0' : '') + n;
 /** 21:40 */
-export const hm = (min: number) => { const m = ((Math.floor(min) % DAY_MIN) + DAY_MIN) % DAY_MIN; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); };
+export const hm = (min: number) => {
+  const m = ((Math.floor(min) % DAY_MIN) + DAY_MIN) % DAY_MIN;
+  return pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+};
 /** DAY 3 · 21:40 */
 export const stamp = (day: number, min: number) => 'DAY ' + day + ' · ' + hm(min);
 /** "06:00" → 360; null when it is not a time of day. */
@@ -56,13 +68,15 @@ export function parseHM(s: unknown): number | null {
   if (typeof s !== 'string') return null;
   const m = /^(\d{1,2}):(\d{2})$/.exec(s);
   if (!m) return null;
-  const h = Number(m[1]), mm = Number(m[2]);
+  const h = Number(m[1]),
+    mm = Number(m[2]);
   return h < 24 && mm < 60 ? h * 60 + mm : null;
 }
 
 /** Is `min` of `day` inside the window? */
 export function inWindow(w: TimeWindow, day: number, min: number): boolean {
-  const a = parseHM(w.from), b = parseHM(w.to);
+  const a = parseHM(w.from),
+    b = parseHM(w.to);
   if (a === null || b === null) return false;
   const m = Math.floor(min);
   const inside = a <= b ? m >= a && m < b : m >= a || m < b;
@@ -75,21 +89,34 @@ export function inWindow(w: TimeWindow, day: number, min: number): boolean {
 
 /** What is wrong with a time window (the build's check), or null. */
 export function windowProblem(w: unknown): string | null {
-  if (!w || typeof w !== 'object' || Array.isArray(w)) return 'a time window is { "from": "HH:MM", "to": "HH:MM", "days"?: [...] }';
+  if (!w || typeof w !== 'object' || Array.isArray(w))
+    return 'a time window is { "from": "HH:MM", "to": "HH:MM", "days"?: [...] }';
   const o = w as Record<string, unknown>;
   const extra = Object.keys(o).filter((k) => !['from', 'to', 'days'].includes(k));
   if (extra.length) return `unknown key "${extra[0]}" (from, to, days)`;
-  if (parseHM(o.from) === null) return `from "${String(o.from)}" is not a time of day (HH:MM, 00:00–23:59)`;
-  if (parseHM(o.to) === null) return `to "${String(o.to)}" is not a time of day (HH:MM, 00:00–23:59)`;
+  if (parseHM(o.from) === null)
+    return `from "${String(o.from)}" is not a time of day (HH:MM, 00:00–23:59)`;
+  if (parseHM(o.to) === null)
+    return `to "${String(o.to)}" is not a time of day (HH:MM, 00:00–23:59)`;
   if (o.from === o.to) return 'from and to are the same: the window is empty';
-  if (o.days !== undefined && (!Array.isArray(o.days) || !o.days.length || o.days.some((d) => d !== 'odd' && d !== 'even' && !(Number.isInteger(d) && (d as number) > 0)))) {
+  if (
+    o.days !== undefined &&
+    (!Array.isArray(o.days) ||
+      !o.days.length ||
+      o.days.some(
+        (d) => d !== 'odd' && d !== 'even' && !(Number.isInteger(d) && (d as number) > 0),
+      ))
+  ) {
     return 'days is a list of "odd", "even" or day numbers (1, 2, …)';
   }
   return null;
 }
 
 /** Minutes from `min` to the next `at` (a time of day); a whole day when it is that time now. */
-export const until = (min: number, at: number) => { const d = (((at - Math.floor(min)) % DAY_MIN) + DAY_MIN) % DAY_MIN; return d || DAY_MIN; };
+export const until = (min: number, at: number) => {
+  const d = (((at - Math.floor(min)) % DAY_MIN) + DAY_MIN) % DAY_MIN;
+  return d || DAY_MIN;
+};
 
 /** The city clock. One instance (`city`); the game binds the save's clock to it. */
 export class CityClock {
@@ -104,30 +131,66 @@ export class CityClock {
   private runEnd: number | undefined;
   run(rate = 1, until?: number) {
     if (rate !== this.pace || until !== this.runUntil) {
-      this.pace = rate; this.runUntil = until;
-      this.runEnd = until === undefined ? undefined : this.abs + ((until - this.min + DAY_MIN) % DAY_MIN);
+      this.pace = rate;
+      this.runUntil = until;
+      this.runEnd =
+        until === undefined ? undefined : this.abs + ((until - this.min + DAY_MIN) % DAY_MIN);
     }
     this.release();
   }
 
   /** Use this save's clock (it is written in place: storing the save stores the clock). */
-  bind(s: ClockSave) { this.s = s; this.resetRun(); }
-  resetRun() { this.pace = 1; this.runUntil = undefined; this.runEnd = undefined; }
+  bind(s: ClockSave) {
+    this.s = s;
+    this.resetRun();
+  }
+  resetRun() {
+    this.pace = 1;
+    this.runUntil = undefined;
+    this.runEnd = undefined;
+  }
   /** Synchronous preview scope; restore the original save reference and controller settings. */
   withSnapshot<T>(snapshot: ClockSave, render: () => T): T {
-    const previous = this.s, pinned = this.pinned, speed = this.speed, pace = this.pace, runUntil = this.runUntil, runEnd = this.runEnd;
+    const previous = this.s,
+      pinned = this.pinned,
+      speed = this.speed,
+      pace = this.pace,
+      runUntil = this.runUntil,
+      runEnd = this.runEnd;
     this.s = { ...snapshot };
-    try { return render(); }
-    finally { this.s = previous; this.pinned = pinned; this.speed = speed; this.pace = pace; this.runUntil = runUntil; this.runEnd = runEnd; }
+    try {
+      return render();
+    } finally {
+      this.s = previous;
+      this.pinned = pinned;
+      this.speed = speed;
+      this.pace = pace;
+      this.runUntil = runUntil;
+      this.runEnd = runEnd;
+    }
   }
-  get day() { return this.s.day; }
-  get min() { return this.s.min; }
-  get seed() { return this.s.seed; }
+  get day() {
+    return this.s.day;
+  }
+  get min() {
+    return this.s.min;
+  }
+  get seed() {
+    return this.s.seed;
+  }
   /** Minutes since day 1, 00:00. */
-  get abs() { return (this.s.day - 1) * DAY_MIN + this.s.min; }
-  get hour() { return Math.floor(this.s.min / 60); }
-  get text() { return hm(this.s.min); }
-  get stamp() { return stamp(this.s.day, this.s.min); }
+  get abs() {
+    return (this.s.day - 1) * DAY_MIN + this.s.min;
+  }
+  get hour() {
+    return Math.floor(this.s.min / 60);
+  }
+  get text() {
+    return hm(this.s.min);
+  }
+  get stamp() {
+    return stamp(this.s.day, this.s.min);
+  }
 
   /** Real seconds pass in a scene: the clock runs (unless pinned or stopped). */
   tick(realSec: number) {
@@ -143,21 +206,33 @@ export class CityClock {
   }
 
   /** Hold the clock at a minute of today (a story beat). */
-  pin(min: number) { this.pinned = min; this.s.min = min; }
+  pin(min: number) {
+    this.pinned = min;
+    this.s.min = min;
+  }
   /** Let it run again, from `from` if given (else from where it was held). */
-  release(from?: number) { if (from !== undefined) this.s.min = from; this.pinned = null; }
+  release(from?: number) {
+    if (from !== undefined) this.s.min = from;
+    this.pinned = null;
+  }
 
   /** Sudo: go to this day and minute (a pin stays a pin, at the new minute). */
   setTime(day: number, min: number) {
-    this.set((Math.max(1, Math.round(day)) - 1) * DAY_MIN + Math.max(0, Math.min(DAY_MIN - 1e-6, min)));
+    this.set(
+      (Math.max(1, Math.round(day)) - 1) * DAY_MIN + Math.max(0, Math.min(DAY_MIN - 1e-6, min)),
+    );
     if (this.pinned !== null) this.pinned = this.s.min;
   }
 
   /** Is it inside this window now? */
-  within(w: TimeWindow) { return inWindow(w, this.s.day, this.s.min); }
+  within(w: TimeWindow) {
+    return inWindow(w, this.s.day, this.s.min);
+  }
 
   /** Minutes of waiting to reach a "wait until…" choice. */
-  waitFor(w: WaitTo) { return w.hour ? 60 - (this.s.min % 60) : until(this.s.min, w.at!); }
+  waitFor(w: WaitTo) {
+    return w.hour ? 60 - (this.s.min % 60) : until(this.s.min, w.at!);
+  }
 
   private set(abs: number) {
     const a = Math.max(0, abs);
@@ -170,7 +245,10 @@ export class CityClock {
 export const city = new CityClock();
 
 /** A new save's clock: day 1, 09:40, a fresh weather seed. */
-export const newClock = (): ClockSave => ({ ...CLOCK_START, seed: 1 + Math.floor(Math.random() * 0x7ffffff) });
+export const newClock = (): ClockSave => ({
+  ...CLOCK_START,
+  seed: 1 + Math.floor(Math.random() * 0x7ffffff),
+});
 /** A stored clock, anything missing or broken filled in (old saves: day 1, 09:40, seed 1). */
 export function fixClock(c: unknown): ClockSave {
   const o = (c && typeof c === 'object' ? c : {}) as Partial<ClockSave>;

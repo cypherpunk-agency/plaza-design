@@ -57,7 +57,9 @@ export function getAvailableThemes() {
  */
 export function setTheme(themeName) {
   if (!themeRegistry.hasOwnProperty(themeName) && themeName !== 'neon') {
-    console.warn(`Theme '${themeName}' not found. Available themes: ${getAvailableThemes().join(', ')}`);
+    console.warn(
+      `Theme '${themeName}' not found. Available themes: ${getAvailableThemes().join(', ')}`,
+    );
     return;
   }
 
@@ -69,9 +71,11 @@ export function setTheme(themeName) {
   localStorage.setItem(STORAGE_KEY, themeName);
 
   // Dispatch event for canvas and other listeners
-  window.dispatchEvent(new CustomEvent('plaza-theme-change', {
-    detail: { theme: themeName }
-  }));
+  window.dispatchEvent(
+    new CustomEvent('plaza-theme-change', {
+      detail: { theme: themeName },
+    }),
+  );
 }
 
 /**
@@ -115,8 +119,10 @@ export function getCanvasColors() {
     sunGlow: style.getPropertyValue('--canvas-sun-glow').trim() || 'rgba(255, 136, 0, 0.6)',
     horizonGlow: style.getPropertyValue('--canvas-horizon-glow').trim() || 'rgba(255, 136, 0, 0.4)',
     ambient: style.getPropertyValue('--canvas-ambient').trim() || 'rgba(255, 136, 0, 0.25)',
-    ambientSecondary: style.getPropertyValue('--canvas-ambient-secondary').trim() || 'rgba(255, 136, 0, 0.08)',
-    ambientTertiary: style.getPropertyValue('--canvas-ambient-tertiary').trim() || 'rgba(255, 100, 0, 0.03)',
+    ambientSecondary:
+      style.getPropertyValue('--canvas-ambient-secondary').trim() || 'rgba(255, 136, 0, 0.08)',
+    ambientTertiary:
+      style.getPropertyValue('--canvas-ambient-tertiary').trim() || 'rgba(255, 100, 0, 0.03)',
   };
 }
 
@@ -191,7 +197,9 @@ function generateThemeCSS(name, theme) {
   --color-accent-400-rgb: ${hexToRgb(theme.accent?.[400]) || '57, 230, 255'};
   --color-accent-500-rgb: ${hexToRgb(theme.accent?.[500]) || '6, 182, 212'};
 
-  ${theme.canvas ? `
+  ${
+    theme.canvas
+      ? `
   --canvas-grid: ${theme.canvas.grid || 'rgba(255, 100, 0, 0.35)'};
   --canvas-sun-core: ${theme.canvas.sunCore || 'rgba(255, 200, 100, 0.8)'};
   --canvas-sun-glow: ${theme.canvas.sunGlow || 'rgba(255, 136, 0, 0.6)'};
@@ -199,7 +207,9 @@ function generateThemeCSS(name, theme) {
   --canvas-ambient: ${theme.canvas.ambient || 'rgba(255, 136, 0, 0.25)'};
   --canvas-ambient-secondary: ${theme.canvas.ambientSecondary || 'rgba(255, 136, 0, 0.08)'};
   --canvas-ambient-tertiary: ${theme.canvas.ambientTertiary || 'rgba(255, 100, 0, 0.03)'};
-  ` : ''}
+  `
+      : ''
+  }
 }`;
 }
 
@@ -434,7 +444,9 @@ export function generateStatus() {
 export function generateHexData(length = 500) {
   let hex = '';
   for (let i = 0; i < length; i++) {
-    hex += Math.floor(Math.random() * 16).toString(16).toUpperCase();
+    hex += Math.floor(Math.random() * 16)
+      .toString(16)
+      .toUpperCase();
     // Occasionally add spaces or newlines for visual variety
     if (i > 0 && i % 32 === 0) hex += '\n';
     else if (i > 0 && i % 8 === 0 && Math.random() > 0.7) hex += ' ';
@@ -455,7 +467,7 @@ export function generateHexData(length = 500) {
 function adjustAlpha(rgbaColor, newAlpha) {
   const match = rgbaColor.match(/rgba?\(([^)]+)\)/);
   if (!match) return rgbaColor;
-  const parts = match[1].split(',').map(s => s.trim());
+  const parts = match[1].split(',').map((s) => s.trim());
   return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${newAlpha})`;
 }
 
@@ -467,7 +479,7 @@ function adjustAlpha(rgbaColor, newAlpha) {
 function extractRgb(rgbaColor) {
   const match = rgbaColor.match(/rgba?\(([^)]+)\)/);
   if (!match) return '255, 100, 0';
-  const parts = match[1].split(',').map(s => s.trim());
+  const parts = match[1].split(',').map((s) => s.trim());
   return `${parts[0]}, ${parts[1]}, ${parts[2]}`;
 }
 
@@ -513,10 +525,7 @@ export function initGridCanvas(canvasId) {
     const centerX = w / 2;
 
     // Ambient glow at horizon - using theme colors
-    const ambientGlow = ctx.createRadialGradient(
-      centerX, horizonY, 0,
-      centerX, horizonY, w * 0.5
-    );
+    const ambientGlow = ctx.createRadialGradient(centerX, horizonY, 0, centerX, horizonY, w * 0.5);
     ambientGlow.addColorStop(0, colors.ambient);
     ambientGlow.addColorStop(0.3, colors.ambientSecondary);
     ambientGlow.addColorStop(0.6, colors.ambientTertiary);
@@ -527,8 +536,12 @@ export function initGridCanvas(canvasId) {
     // Sun semicircle with breathing animation - using theme colors
     const sunRadius = 60 + Math.sin(time * 0.015) * 8;
     const sunGradient = ctx.createRadialGradient(
-      centerX, horizonY, 0,
-      centerX, horizonY, sunRadius * 2
+      centerX,
+      horizonY,
+      0,
+      centerX,
+      horizonY,
+      sunRadius * 2,
     );
     sunGradient.addColorStop(0, colors.sunCore);
     sunGradient.addColorStop(0.3, colors.sunGlow);
@@ -696,7 +709,7 @@ const telemetryState = {
   latency: 45,
   packetLoss: 0.12,
   memResident: 512,
-  cpuLoad: 8
+  cpuLoad: 8,
 };
 
 // Network log state - ms values drift
@@ -707,8 +720,8 @@ const netLogState = {
     { verb: 'ROUTE', chan: 'RPC', code: '204', ms: 32 },
     { verb: 'HANDSHAKE', chan: 'MESH', code: '200', ms: 156 },
     { verb: 'ATTEST', chan: 'L2', code: '206', ms: 91 },
-    { verb: 'SYNC', chan: 'P2P', code: '200', ms: 67 }
-  ]
+    { verb: 'SYNC', chan: 'P2P', code: '200', ms: 67 },
+  ],
 };
 
 // Node count state
@@ -740,7 +753,10 @@ export function renderTelemetry(elementId) {
   // Adjust values relative to previous (living system feel)
   telemetryState.peerCount = adjustValue(telemetryState.peerCount, 12, 64, 3);
   telemetryState.latency = adjustValue(telemetryState.latency, 18, 140, 8);
-  telemetryState.packetLoss = Math.max(0, Math.min(0.9, telemetryState.packetLoss + (Math.random() - 0.5) * 0.1));
+  telemetryState.packetLoss = Math.max(
+    0,
+    Math.min(0.9, telemetryState.packetLoss + (Math.random() - 0.5) * 0.1),
+  );
   telemetryState.memResident = adjustValue(telemetryState.memResident, 256, 1024, 20);
   telemetryState.cpuLoad = adjustValue(telemetryState.cpuLoad, 3, 17, 2);
 
@@ -757,7 +773,10 @@ export function renderRoutes(elementId, links = []) {
   if (!el) return;
 
   const linkRows = links
-    .map(({ label, href }) => `<div class="text-ambient-cyan"><a href="${href}" target="_blank" rel="noopener" class="route-link">${label}</a></div>`)
+    .map(
+      ({ label, href }) =>
+        `<div class="text-ambient-cyan"><a href="${href}" target="_blank" rel="noopener" class="route-link">${label}</a></div>`,
+    )
     .join('');
   el.innerHTML = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">routes</div><div class="text-ambient-cyan"><span class="route-disabled">/enter</span></div>${linkRows}</div>`;
 }
@@ -782,12 +801,12 @@ export function renderNetLog(elementId) {
   if (!el) return;
 
   // Adjust ms values relative to previous (living system feel)
-  netLogState.entries.forEach(entry => {
+  netLogState.entries.forEach((entry) => {
     entry.ms = adjustValue(entry.ms, 9, 220, 15);
   });
 
   let html = `<div class="plaza-side-panel__block"><div class="plaza-side-panel__header">processes</div>`;
-  netLogState.entries.forEach(entry => {
+  netLogState.entries.forEach((entry) => {
     html += `<div><span class="text-ambient-amber">${entry.verb}</span>.${entry.chan}... ${entry.code} (${entry.ms}ms)</div>`;
   });
   html += `</div>`;
@@ -897,7 +916,7 @@ export function initPlazaDemo(config = {}) {
   // Return cleanup function
   return {
     cleanup: () => {
-      intervals.forEach(id => {
+      intervals.forEach((id) => {
         if (id !== -1) clearInterval(id);
       });
       if (gridController) {

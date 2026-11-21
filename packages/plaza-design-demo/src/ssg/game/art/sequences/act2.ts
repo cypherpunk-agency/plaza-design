@@ -7,79 +7,155 @@
  * piece (`sequence.act2.*`, cinematics.ts) drawn by the one frame.
  */
 
-import { drawSpire } from "../architecture/spire";
-import { placed } from "../core/view";
-import { drawBoat } from "../vehicles/boats";
-import type { CutView } from "../core/view";
+import { drawSpire } from '../architecture/spire';
+import { placed } from '../core/view';
+import { drawBoat } from '../vehicles/boats';
+import type { CutView } from '../core/view';
 
-const PAPER = '255,217,165', ORANGE = '255,136,0', RED = '255,42,68', GREEN = '34,197,94';
-const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
-const RIPPLES = (() => { const r = rng(5); return Array.from({ length: 120 }, () => [r(), r(), 0.3 + r()]); })();
-const CITY = (() => { const r = rng(9); return Array.from({ length: 40 }, () => [r(), 0.04 + r() * 0.12, 0.015 + r() * 0.03]); })();
+const PAPER = '255,217,165',
+  ORANGE = '255,136,0',
+  RED = '255,42,68',
+  GREEN = '34,197,94';
+const rng = (seed: number) => {
+  let s = seed;
+  return () => (s = (s * 9301 + 49297) % 233280) / 233280;
+};
+const RIPPLES = (() => {
+  const r = rng(5);
+  return Array.from({ length: 120 }, () => [r(), r(), 0.3 + r()]);
+})();
+const CITY = (() => {
+  const r = rng(9);
+  return Array.from({ length: 40 }, () => [r(), 0.04 + r() * 0.12, 0.015 + r() * 0.03]);
+})();
 
 /** Fade in from `a` over `d` seconds. */
 const fade = (t: number, a: number, d = 0.8) => Math.max(0, Math.min(1, (t - a) / d));
 
 export type Act2Part = 'sky' | 'city' | 'spire' | 'water' | 'ferry' | 'titles';
-export interface Act2Options { ferryProgress?: number; sky?:{top:string;horizon:string};water?:string;ferryPaint?:string;spire?:{windows:number;edge:number;glow:boolean};titles?: { actOne: string; found: string; actTwo: string; subtitle: string }; alpha?: { one: number; found: number; two: number; subtitle: number } }
+export interface Act2Options {
+  ferryProgress?: number;
+  sky?: { top: string; horizon: string };
+  water?: string;
+  ferryPaint?: string;
+  spire?: { windows: number; edge: number; glow: boolean };
+  titles?: { actOne: string; found: string; actTwo: string; subtitle: string };
+  alpha?: { one: number; found: number; two: number; subtitle: number };
+}
 /** Draw one part of the picture at `t` seconds into a `duration`-second card. */
-export function drawAct2Part(x: CanvasRenderingContext2D, v: CutView, part: Act2Part, t: number, duration: number, options: Act2Options = {}) {
-  const W = v.viewW, H = v.viewH, top = v.barTop, bottom = H - v.barBottom, hz = Math.round(top + (bottom - top) * 0.62);
+export function drawAct2Part(
+  x: CanvasRenderingContext2D,
+  v: CutView,
+  part: Act2Part,
+  t: number,
+  duration: number,
+  options: Act2Options = {},
+) {
+  const W = v.viewW,
+    H = v.viewH,
+    top = v.barTop,
+    bottom = H - v.barBottom,
+    hz = Math.round(top + (bottom - top) * 0.62);
   const a = v.reduced ? 6 : t;
-  const sx = Math.round(W * 0.74), unit = (hz - top) / 92;
+  const sx = Math.round(W * 0.74),
+    unit = (hz - top) / 92;
   if (part === 'sky') {
-  // sky, low orange from the city behind
-  const sky = x.createLinearGradient(0, top, 0, hz);
-  sky.addColorStop(0, options.sky?.top??'#02030a'); sky.addColorStop(1, options.sky?.horizon??'#170803');
-  x.fillStyle = sky; x.fillRect(0, top, W, hz - top);
+    // sky, low orange from the city behind
+    const sky = x.createLinearGradient(0, top, 0, hz);
+    sky.addColorStop(0, options.sky?.top ?? '#02030a');
+    sky.addColorStop(1, options.sky?.horizon ?? '#170803');
+    x.fillStyle = sky;
+    x.fillRect(0, top, W, hz - top);
   } else if (part === 'city') {
-  // the far city low on the horizon, left
-  for (const [cx, ch, cw] of CITY) {
-    const px = cx * W * 0.7, bh = ch * (bottom - top), bw = cw * W;
-    x.fillStyle = '#050201'; x.fillRect(Math.round(px), Math.round(hz - bh), Math.round(bw), Math.round(bh));
-  }
+    // the far city low on the horizon, left
+    for (const [cx, ch, cw] of CITY) {
+      const px = cx * W * 0.7,
+        bh = ch * (bottom - top),
+        bw = cw * W;
+      x.fillStyle = '#050201';
+      x.fillRect(Math.round(px), Math.round(hz - bh), Math.round(bw), Math.round(bh));
+    }
   } else if (part === 'spire') {
-  // the Spire: its foot in the bay, the deck, its towers, the antenna on the tallest
-  // the set piece (sets/spire.ts), scaled so its light sits about 81 units of sky up
-  placed(x, sx, hz, (unit * 81) / 302, () => drawSpire(x, { t: a * 60, glow: options.spire?.glow??true, windows: options.spire?.windows??1.6, edge: options.spire?.edge??0.18 }));
+    // the Spire: its foot in the bay, the deck, its towers, the antenna on the tallest
+    // the set piece (sets/spire.ts), scaled so its light sits about 81 units of sky up
+    placed(x, sx, hz, (unit * 81) / 302, () =>
+      drawSpire(x, {
+        t: a * 60,
+        glow: options.spire?.glow ?? true,
+        windows: options.spire?.windows ?? 1.6,
+        edge: options.spire?.edge ?? 0.18,
+      }),
+    );
   } else if (part === 'water') {
-  // the water
-  x.fillStyle = options.water??'#01040a'; x.fillRect(0, hz, W, bottom - hz);
-  x.fillStyle = 'rgba(' + ORANGE + ',.12)'; x.fillRect(0, hz, W, 1);
-  for (const [rx, ry, sp] of RIPPLES) {
-    const py = hz + 2 + ry * (bottom - hz - 4), k = (py - hz) / (bottom - hz);
-    const px = ((rx * W + a * 6 * sp * (0.3 + k)) % (W + 40)) - 20;
-    x.fillStyle = 'rgba(170,210,255,' + (0.04 + 0.08 * k) + ')'; x.fillRect(Math.round(px), Math.round(py), Math.round(4 + 14 * k), 1);
-  }
-  for (let i = 0; i < 8; i++) { x.fillStyle = 'rgba(' + RED + ',' + 0.07 * (1 - i / 8) + ')'; x.fillRect(sx - 3 + Math.sin(a * 2 + i) * 2, hz + 3 + i * 5, 6, 1); }
+    // the water
+    x.fillStyle = options.water ?? '#01040a';
+    x.fillRect(0, hz, W, bottom - hz);
+    x.fillStyle = 'rgba(' + ORANGE + ',.12)';
+    x.fillRect(0, hz, W, 1);
+    for (const [rx, ry, sp] of RIPPLES) {
+      const py = hz + 2 + ry * (bottom - hz - 4),
+        k = (py - hz) / (bottom - hz);
+      const px = ((rx * W + a * 6 * sp * (0.3 + k)) % (W + 40)) - 20;
+      x.fillStyle = 'rgba(170,210,255,' + (0.04 + 0.08 * k) + ')';
+      x.fillRect(Math.round(px), Math.round(py), Math.round(4 + 14 * k), 1);
+    }
+    for (let i = 0; i < 8; i++) {
+      x.fillStyle = 'rgba(' + RED + ',' + 0.07 * (1 - i / 8) + ')';
+      x.fillRect(sx - 3 + Math.sin(a * 2 + i) * 2, hz + 3 + i * 5, 6, 1);
+    }
   } else if (part === 'ferry') {
-  // NIGHT FERRY 7, pulling out across the bay towards open water, its lights on the water
-  const u = options.ferryProgress ?? Math.min(1, a / duration), fx = Math.round(W * (0.2 + 0.36 * u)), fy = Math.round(hz + (bottom - hz) * 0.28), fl = Math.max(26, Math.round(W * 0.07));
-  placed(x, fx, fy, fl / 96, () => drawBoat(x, 'ferry', { t: a * 60, paint: options.ferryPaint ?? '#0a0504', nav: true, wake: true, reflection: true }));
+    // NIGHT FERRY 7, pulling out across the bay towards open water, its lights on the water
+    const u = options.ferryProgress ?? Math.min(1, a / duration),
+      fx = Math.round(W * (0.2 + 0.36 * u)),
+      fy = Math.round(hz + (bottom - hz) * 0.28),
+      fl = Math.max(26, Math.round(W * 0.07));
+    placed(x, fx, fy, fl / 96, () =>
+      drawBoat(x, 'ferry', {
+        t: a * 60,
+        paint: options.ferryPaint ?? '#0a0504',
+        nav: true,
+        wake: true,
+        reflection: true,
+      }),
+    );
   } else if (part === 'titles') {
-  // the title, set over the picture: ACT I closes, ACT II opens
-  x.save();
-  x.textAlign = 'center'; x.textBaseline = 'middle';
-  const small = Math.max(9, Math.round(H / 34)), big = Math.max(26, Math.round(H / 8));
-  const ty = top + (hz - top) * 0.32;
-  const one = options.alpha?.one ?? fade(t, 0.8) * (1 - fade(t, 5.4, 0.7));
-  if (one > 0) {
-    x.globalAlpha = one;
-    x.font = '600 ' + small + 'px "IBM Plex Mono", monospace';
-    x.fillStyle = 'rgba(' + PAPER + ',.85)'; x.fillText('ACT I · WHERE IS MOTH?', W / 2, ty);
-    const f = options.alpha?.found ?? fade(t, 2.6, 0.4);
-    if (f > 0) { x.globalAlpha = one * f; x.fillStyle = 'rgba(' + GREEN + ',.95)'; x.fillText(options.titles?.found ?? 'FOUND.', W / 2, ty + small * 1.6); }
-  }
-  const two = options.alpha?.two ?? fade(t, 6, 1.2);
-  if (two > 0) {
-    x.globalAlpha = two;
-    x.font = '700 ' + big + 'px "IBM Plex Mono", monospace';
-    x.shadowColor = 'rgba(' + ORANGE + ',.8)'; x.shadowBlur = 14;
-    x.fillStyle = 'rgba(' + ORANGE + ',.95)'; x.fillText(options.titles?.actTwo ?? 'ACT II', W / 2, ty);
-    x.shadowBlur = 0;
-    const f = options.alpha?.subtitle ?? fade(t, 7.6, 1);
-    if (f > 0) { x.globalAlpha = two * f; x.font = '600 ' + small + 'px "IBM Plex Mono", monospace'; x.fillStyle = 'rgba(' + PAPER + ',.9)'; x.fillText(options.titles?.subtitle ?? 'SEVEN FRAGMENTS', W / 2, ty + big * 0.75); }
-  }
-  x.restore();
+    // the title, set over the picture: ACT I closes, ACT II opens
+    x.save();
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    const small = Math.max(9, Math.round(H / 34)),
+      big = Math.max(26, Math.round(H / 8));
+    const ty = top + (hz - top) * 0.32;
+    const one = options.alpha?.one ?? fade(t, 0.8) * (1 - fade(t, 5.4, 0.7));
+    if (one > 0) {
+      x.globalAlpha = one;
+      x.font = '600 ' + small + 'px "IBM Plex Mono", monospace';
+      x.fillStyle = 'rgba(' + PAPER + ',.85)';
+      x.fillText('ACT I · WHERE IS MOTH?', W / 2, ty);
+      const f = options.alpha?.found ?? fade(t, 2.6, 0.4);
+      if (f > 0) {
+        x.globalAlpha = one * f;
+        x.fillStyle = 'rgba(' + GREEN + ',.95)';
+        x.fillText(options.titles?.found ?? 'FOUND.', W / 2, ty + small * 1.6);
+      }
+    }
+    const two = options.alpha?.two ?? fade(t, 6, 1.2);
+    if (two > 0) {
+      x.globalAlpha = two;
+      x.font = '700 ' + big + 'px "IBM Plex Mono", monospace';
+      x.shadowColor = 'rgba(' + ORANGE + ',.8)';
+      x.shadowBlur = 14;
+      x.fillStyle = 'rgba(' + ORANGE + ',.95)';
+      x.fillText(options.titles?.actTwo ?? 'ACT II', W / 2, ty);
+      x.shadowBlur = 0;
+      const f = options.alpha?.subtitle ?? fade(t, 7.6, 1);
+      if (f > 0) {
+        x.globalAlpha = two * f;
+        x.font = '600 ' + small + 'px "IBM Plex Mono", monospace';
+        x.fillStyle = 'rgba(' + PAPER + ',.9)';
+        x.fillText(options.titles?.subtitle ?? 'SEVEN FRAGMENTS', W / 2, ty + big * 0.75);
+      }
+    }
+    x.restore();
   }
 }

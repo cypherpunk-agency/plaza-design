@@ -3,38 +3,164 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import authored from '../../src/ssg/game/scenes/authored.json';
-import {art,type ChunkDocument} from '../../src/ssg/game/art';
-import {frameView} from '../../src/ssg/game/art/core/view';
-import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
-import {sceneCatalogueProjection} from '../../src/ssg/game/authoring/scene-catalogue-projection';
-import {createSceneRegistry,type SceneCatalogue} from '../../src/ssg/game/engine/gameplay/scene-catalogue';
-import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
-import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
-const sourceId='authored-scenes',id='authored.harbor-station';
-const source={version:1,scenes:[structuredClone(authored.scenes.find(s=>s.scene.id==='harbor-station')!)]} as unknown as SceneCatalogue;
-const descriptor={id:sourceId,file:'scenes/authored.json',kind:'scene' as const,validate:(value:unknown)=>{createSceneRegistry({},value);return value;}};
-const dir=path.resolve('../../.game-test-output/sky-authoring');fs.mkdirSync(dir,{recursive:true});const root=fs.mkdtempSync(path.join(dir,'run-')),file=path.join(root,descriptor.file);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,JSON.stringify(source));
-const store=new AuthoringStore({root,documents:[descriptor]}),initial=store.list();
-const make=()=>{const model=new ComposerModel(art,{},d=>{if(d.id===sourceId)descriptor.validate(d.value);},[sceneCatalogueProjection]);model.load(initial);return model;};
-const model=make(),document=()=>model.get(id).value as ChunkDocument;
-const cloudDraft=model.draftAdd(id,'environment.cloud-layer');
-assert.equal(cloudDraft.composition.instances.find(n=>n.id===cloudDraft.instanceId)!.layer,'distance');
-const beforeCloud=model.list();model.edit(id,'Add cloud layer',()=>cloudDraft.composition);
-model.updateInstance(id,cloudDraft.instanceId,'Configure clouds',n=>{n.props={...n.props,altitude:620,spacing:900,minX:-2000,maxX:14000};});
-assert.equal((model.get(id).value as ChunkDocument).instances.find(n=>n.id===cloudDraft.instanceId)!.props.altitude,620);
-model.undo();model.undo();assert.deepEqual(model.list(),beforeCloud,'Cloud creation and typed changes use normal history');
-const draft=model.draftAdd(id,'environment.sky-traffic');assert.equal(draft.composition.instances.find(n=>n.id===draft.instanceId)!.layer,'distance','the actual Add path places sky art in its supported layer');
-const initialState=model.list();assert.throws(()=>model.updateInstance(id,'sky-traffic','Put sky in foreground',n=>{n.layer='foreground';}),/distance layer/);assert.deepEqual(model.list(),initialState,'unsupported phase/layer edit rejects atomically');
-model.edit(id,'Configure sky traffic',value=>{const doc=structuredClone(value) as ChunkDocument,row=doc.instances.find(n=>n.type==='environment.sky-traffic')!;row.props={...row.props,ships:[{kind:'freighter',pixelSize:2,screenY:66,velocityX:9,startOffset:800,direction:-1,parallax:.4}]};row.placement={x:30,h:15};const copy=structuredClone(row);copy.id='sky-copy';copy.placement.x=110;doc.instances.push(copy);return doc;});
-assert.equal(document().instances.filter(n=>n.type==='environment.sky-traffic').length,2);
-model.undo();assert.equal(document().instances.filter(n=>n.type==='environment.sky-traffic').length,1);model.redo();
-const pending=model.list();assert.throws(()=>model.edit(id,'Invalid fleet',value=>{const doc=structuredClone(value) as ChunkDocument;doc.instances.find(n=>n.type==='environment.sky-traffic')!.props.ships=[{kind:'invalid'}];return doc;}));assert.deepEqual(model.list(),pending,'invalid grouped source edit is atomic');
-const receiver=make();receiver.importDocuments(readDocumentBundle(JSON.stringify(createDocumentBundle(model.edits(),model.list())),receiver.list()));
-store.save(receiver.edits());assert.deepEqual(store.read(sourceId).value,model.get(sourceId).value);
-const scene=createSceneRegistry({},store.read(sourceId).value)['harbor-station'];
-const ops:unknown[]=[],ctx=new Proxy({} as Record<string,unknown>,{get(o,k:string){if(k in o)return o[k];return(...args:unknown[])=>ops.push([k,...args]);},set(o,k:string,v){o[k]=v;ops.push([k,v]);return true;}}) as CanvasRenderingContext2D;
-scene.drawSkyArtwork!(ctx,{...frameView(137),viewW:640,viewH:360});
-assert(ops.some(row=>JSON.stringify(row)==='["translate",30,-15]'),'saved placement reaches the native sky pass');
-assert(ops.some(row=>JSON.stringify(row)==='["translate",110,-15]'),'native pass paints the duplicate');
-assert.equal(ops.filter(row=>(row as unknown[])[0]==='scale').length,2,'only the two authored ships paint; default fleet is absent');
-console.log('Sky traffic authoring PASS: move, duplicate, validated fleet, history, atomic rejection, bundle, protected Save and native scene drawing.');
+import { art, type ChunkDocument } from '../../src/ssg/game/art';
+import { frameView } from '../../src/ssg/game/art/core/view';
+import { ComposerModel } from '../../src/ssg/game/authoring/composer-model';
+import { sceneCatalogueProjection } from '../../src/ssg/game/authoring/scene-catalogue-projection';
+import {
+  createSceneRegistry,
+  type SceneCatalogue,
+} from '../../src/ssg/game/engine/gameplay/scene-catalogue';
+import {
+  createDocumentBundle,
+  readDocumentBundle,
+} from '../../src/ssg/game/authoring/document-bundle';
+import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
+const sourceId = 'authored-scenes',
+  id = 'authored.harbor-station';
+const source = {
+  version: 1,
+  scenes: [structuredClone(authored.scenes.find((s) => s.scene.id === 'harbor-station')!)],
+} as unknown as SceneCatalogue;
+const descriptor = {
+  id: sourceId,
+  file: 'scenes/authored.json',
+  kind: 'scene' as const,
+  validate: (value: unknown) => {
+    createSceneRegistry({}, value);
+    return value;
+  },
+};
+const dir = path.resolve('../../.game-test-output/sky-authoring');
+fs.mkdirSync(dir, { recursive: true });
+const root = fs.mkdtempSync(path.join(dir, 'run-')),
+  file = path.join(root, descriptor.file);
+fs.mkdirSync(path.dirname(file), { recursive: true });
+fs.writeFileSync(file, JSON.stringify(source));
+const store = new AuthoringStore({ root, documents: [descriptor] }),
+  initial = store.list();
+const make = () => {
+  const model = new ComposerModel(
+    art,
+    {},
+    (d) => {
+      if (d.id === sourceId) descriptor.validate(d.value);
+    },
+    [sceneCatalogueProjection],
+  );
+  model.load(initial);
+  return model;
+};
+const model = make(),
+  document = () => model.get(id).value as ChunkDocument;
+const cloudDraft = model.draftAdd(id, 'environment.cloud-layer');
+assert.equal(
+  cloudDraft.composition.instances.find((n) => n.id === cloudDraft.instanceId)!.layer,
+  'distance',
+);
+const beforeCloud = model.list();
+model.edit(id, 'Add cloud layer', () => cloudDraft.composition);
+model.updateInstance(id, cloudDraft.instanceId, 'Configure clouds', (n) => {
+  n.props = { ...n.props, altitude: 620, spacing: 900, minX: -2000, maxX: 14000 };
+});
+assert.equal(
+  (model.get(id).value as ChunkDocument).instances.find((n) => n.id === cloudDraft.instanceId)!
+    .props.altitude,
+  620,
+);
+model.undo();
+model.undo();
+assert.deepEqual(model.list(), beforeCloud, 'Cloud creation and typed changes use normal history');
+const draft = model.draftAdd(id, 'environment.sky-traffic');
+assert.equal(
+  draft.composition.instances.find((n) => n.id === draft.instanceId)!.layer,
+  'distance',
+  'the actual Add path places sky art in its supported layer',
+);
+const initialState = model.list();
+assert.throws(
+  () =>
+    model.updateInstance(id, 'sky-traffic', 'Put sky in foreground', (n) => {
+      n.layer = 'foreground';
+    }),
+  /distance layer/,
+);
+assert.deepEqual(model.list(), initialState, 'unsupported phase/layer edit rejects atomically');
+model.edit(id, 'Configure sky traffic', (value) => {
+  const doc = structuredClone(value) as ChunkDocument,
+    row = doc.instances.find((n) => n.type === 'environment.sky-traffic')!;
+  row.props = {
+    ...row.props,
+    ships: [
+      {
+        kind: 'freighter',
+        pixelSize: 2,
+        screenY: 66,
+        velocityX: 9,
+        startOffset: 800,
+        direction: -1,
+        parallax: 0.4,
+      },
+    ],
+  };
+  row.placement = { x: 30, h: 15 };
+  const copy = structuredClone(row);
+  copy.id = 'sky-copy';
+  copy.placement.x = 110;
+  doc.instances.push(copy);
+  return doc;
+});
+assert.equal(document().instances.filter((n) => n.type === 'environment.sky-traffic').length, 2);
+model.undo();
+assert.equal(document().instances.filter((n) => n.type === 'environment.sky-traffic').length, 1);
+model.redo();
+const pending = model.list();
+assert.throws(() =>
+  model.edit(id, 'Invalid fleet', (value) => {
+    const doc = structuredClone(value) as ChunkDocument;
+    doc.instances.find((n) => n.type === 'environment.sky-traffic')!.props.ships = [
+      { kind: 'invalid' },
+    ];
+    return doc;
+  }),
+);
+assert.deepEqual(model.list(), pending, 'invalid grouped source edit is atomic');
+const receiver = make();
+receiver.importDocuments(
+  readDocumentBundle(
+    JSON.stringify(createDocumentBundle(model.edits(), model.list())),
+    receiver.list(),
+  ),
+);
+store.save(receiver.edits());
+assert.deepEqual(store.read(sourceId).value, model.get(sourceId).value);
+const scene = createSceneRegistry({}, store.read(sourceId).value)['harbor-station'];
+const ops: unknown[] = [],
+  ctx = new Proxy({} as Record<string, unknown>, {
+    get(o, k: string) {
+      if (k in o) return o[k];
+      return (...args: unknown[]) => ops.push([k, ...args]);
+    },
+    set(o, k: string, v) {
+      o[k] = v;
+      ops.push([k, v]);
+      return true;
+    },
+  }) as CanvasRenderingContext2D;
+scene.drawSkyArtwork!(ctx, { ...frameView(137), viewW: 640, viewH: 360 });
+assert(
+  ops.some((row) => JSON.stringify(row) === '["translate",30,-15]'),
+  'saved placement reaches the native sky pass',
+);
+assert(
+  ops.some((row) => JSON.stringify(row) === '["translate",110,-15]'),
+  'native pass paints the duplicate',
+);
+assert.equal(
+  ops.filter((row) => (row as unknown[])[0] === 'scale').length,
+  2,
+  'only the two authored ships paint; default fleet is absent',
+);
+console.log(
+  'Sky traffic authoring PASS: move, duplicate, validated fleet, history, atomic rejection, bundle, protected Save and native scene drawing.',
+);

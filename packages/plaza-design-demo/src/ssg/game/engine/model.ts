@@ -1,12 +1,22 @@
-import {emptyPeople,stepPeople,restorePeople,type PeopleSource} from './people';
-import type {LevelSource} from './level';
-import {formatNativeText} from './text';
-import {wireConnectEligibility,captureDomains,reduceWireConnect,reduceWireCut,reduceTraceAdd,reduceTraceKick,type SceneDomains,type DomainNotice,type GameplayDomainTransaction} from './scene-domains';
-import {registryLabels} from './gameplay/rewards';
-import {compileCheckpoint} from './gameplay/checkpoint';
-import type {GameplayDefinition} from './gameplay/types';
-import {mintFeedback,mintFeedbackCause,type FeedbackReceipt} from './feedback-receipt';
-import {readObservation} from './native-observations';
+import { emptyPeople, stepPeople, restorePeople, type PeopleSource } from './people';
+import type { LevelSource } from './level';
+import { formatNativeText } from './text';
+import {
+  wireConnectEligibility,
+  captureDomains,
+  reduceWireConnect,
+  reduceWireCut,
+  reduceTraceAdd,
+  reduceTraceKick,
+  type SceneDomains,
+  type DomainNotice,
+  type GameplayDomainTransaction,
+} from './scene-domains';
+import { registryLabels } from './gameplay/rewards';
+import { compileCheckpoint } from './gameplay/checkpoint';
+import type { GameplayDefinition } from './gameplay/types';
+import { mintFeedback, mintFeedbackCause, type FeedbackReceipt } from './feedback-receipt';
+import { readObservation } from './native-observations';
 /**
  * A scene's rules, for any scene file: devices made of nouns, nouns with verbs,
  * events on nouns, and cables that say "when this noun does X, that noun does Y".
@@ -24,9 +34,34 @@ import {readObservation} from './native-observations';
  * Pure apart from timers: node can run it (see `now`).
  */
 
-import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from "../data/index";
+import { ENGINE, KEYRING, LOGIC, NET, START_MODULES } from '../data/index';
 import type {
-  Action, CableData, Case, Coord, DeviceData, KeyItem, Layer, LineData, LineRef, LogicData, MachineData, MechanismDevice, MoverCue, NetData, NetworkData, NounData, PartFunction, ProgramData, SectorData, StatusPart, TimeWindow, Value, WatchdogData, SceneData, SceneSave, SceneSnapshot,
+  Action,
+  CableData,
+  Case,
+  Coord,
+  DeviceData,
+  KeyItem,
+  Layer,
+  LineData,
+  LineRef,
+  LogicData,
+  MachineData,
+  MechanismDevice,
+  MoverCue,
+  NetData,
+  NetworkData,
+  NounData,
+  PartFunction,
+  ProgramData,
+  SectorData,
+  StatusPart,
+  TimeWindow,
+  Value,
+  WatchdogData,
+  SceneData,
+  SceneSave,
+  SceneSnapshot,
 } from '../data/types';
 import { ENGINE_EFFECTS, type Vars, type World, type SceneRules } from './rules';
 // [the net] networks and what you reach from where you are plugged in (NET.md)
@@ -43,9 +78,23 @@ import { SceneTime } from './time';
  * `log`), plus two the engine makes: a seal (the input of a sector sealed with a sequence) and
  * the watch (the watchdog's noun on each device of its route).
  */
-export type NounBehaviour = 'guard' | 'link' | 'clock' | 'log' | 'mover' | 'zone' | 'seal' | 'watch';
+export type NounBehaviour =
+  'guard' | 'link' | 'clock' | 'log' | 'mover' | 'zone' | 'seal' | 'watch';
 /** A data noun's behaviour: the settings block it carries, if any. */
-export const behaviourOf = (n: NounData): NounBehaviour | undefined => n.guard ? 'guard' : n.link ? 'link' : n.clock ? 'clock' : n.log ? 'log' : n.mover ? 'mover' : n.zone ? 'zone' : undefined;
+export const behaviourOf = (n: NounData): NounBehaviour | undefined =>
+  n.guard
+    ? 'guard'
+    : n.link
+      ? 'link'
+      : n.clock
+        ? 'clock'
+        : n.log
+          ? 'log'
+          : n.mover
+            ? 'mover'
+            : n.zone
+              ? 'zone'
+              : undefined;
 
 /**
  * The city, as every scene's conditions see it (TIME.md): the game plugs it in (game.ts). `read`:
@@ -53,7 +102,10 @@ export const behaviourOf = (n: NounData): NounBehaviour | undefined => n.guard ?
  * Unplugged (the build's check, tests): no city keys, and every window holds.
  */
 export const CITY_KEYS = ['weather', 'hour', 'day'] as const;
-export const CITY: { read?: (key: string, scene: string) => Value | undefined; when?: (w: TimeWindow) => boolean } = {};
+export const CITY: {
+  read?: (key: string, scene: string) => Value | undefined;
+  when?: (w: TimeWindow) => boolean;
+} = {};
 const now = (w: TimeWindow | undefined) => !w || !CITY.when || CITY.when(w);
 export type Line = [cmd: string, reply: string, tone?: 'ok' | 'err' | 'dim'];
 
@@ -91,13 +143,31 @@ export interface Device {
  * A cable: when `from` (device.noun:event) fires, `to` (device.noun) does `verb`.
  * A pre-wired one carries its data id (`wired`), and may be `fixed` (uncuttable).
  */
-export interface Link { from: string; to: string; verb: string; fixed?: boolean; wired?: string }
+export interface Link {
+  from: string;
+  to: string;
+  verb: string;
+  fixed?: boolean;
+  wired?: string;
+}
 
 /** Where a verb is running: which device and noun, and whether a cable sent it. */
-export interface Ctx { dev: string; noun: string; verb: string; bySignal: boolean }
+export interface Ctx {
+  dev: string;
+  noun: string;
+  verb: string;
+  bySignal: boolean;
+}
 
 /** A device standing in the world, from its `layout.spot`: centre x, size, and how high its bottom sits (0: on the street). */
-export interface Spot { id: string; x: number; w: number; h: number; y: number;floorH?:number }
+export interface Spot {
+  id: string;
+  x: number;
+  w: number;
+  h: number;
+  y: number;
+  floorH?: number;
+}
 
 export interface SceneHooks {
   /** Optional read-only diagnostic events. Exceptions are isolated from engine execution. */
@@ -107,8 +177,8 @@ export interface SceneHooks {
    * (or whose effect names itself), or another speaker an effect names (the companion's). The host
    * puts it as a caption over that thing; without `from` it goes to the terminal only.
    */
-  say: (line: Line, from?: string, receipt?:FeedbackReceipt) => void;
-  feedbackScope?:string;
+  say: (line: Line, from?: string, receipt?: FeedbackReceipt) => void;
+  feedbackScope?: string;
   /** Open a panel: `talk` (arg: the dialogue), or one of the scene's own (`camera`). */
   open: (panel: string, arg?: string) => void;
   changed: () => void;
@@ -140,26 +210,40 @@ export interface SceneHooks {
   /** The programs the player owns (`scan.so`). Default: the model keeps its own list. */
   programs?: () => string[];
   /** The player now owns this program (and save). */
-  program?: (id: string, receipt?:FeedbackReceipt) => void;
+  program?: (id: string, receipt?: FeedbackReceipt) => void;
   /** The nodes the player controls, by Registry label (`0x2F`): access points onto their networks. */
   controlled?: () => string[];
 }
 
-export interface SceneTrace { phase: 'trigger' | 'condition' | 'action' | 'result'; context: Ctx; detail: unknown }
+export interface SceneTrace {
+  phase: 'trigger' | 'condition' | 'action' | 'result';
+  context: Ctx;
+  detail: unknown;
+}
 
 const list = <T>(x: T | T[]) => (Array.isArray(x) ? x : [x]);
 /** "crane.job.log" → ["crane", "job.log"]: noun ids may contain dots. */
-const split = (key: string) => { const i = key.indexOf('.'); return [key.slice(0, i), key.slice(i + 1)]; };
+const split = (key: string) => {
+  const i = key.indexOf('.');
+  return [key.slice(0, i), key.slice(i + 1)];
+};
 /** Passwords forgive case, spaces, dashes and underscores. */
 const norm = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, '');
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
 const secs = (ms: number) => Math.max(1, Math.ceil(ms / 1000));
 /** "a,join(b,c)" → ["a", "join(b,c)"]: commas inside a made fragment's recipe stay with it. */
 const splitArgs = (s: string) => {
-  const out: string[] = []; let depth = 0, cur = '';
+  const out: string[] = [];
+  let depth = 0,
+    cur = '';
   for (const ch of s) {
-    if (ch === ',' && !depth) { out.push(cur); cur = ''; continue; }
-    if (ch === '(') depth++; else if (ch === ')') depth--;
+    if (ch === ',' && !depth) {
+      out.push(cur);
+      cur = '';
+      continue;
+    }
+    if (ch === '(') depth++;
+    else if (ch === ')') depth--;
     cur += ch;
   }
   out.push(cur);
@@ -187,19 +271,23 @@ export const WATCH_NOUN = 'watchdog';
 export const wiredId = (c: CableData) => c.id ?? c.from + '>' + c.to;
 
 export class SceneModel {
-  peopleSources:readonly PeopleSource[]=[];
-  peopleLevel?:LevelSource;
-  people=emptyPeople();
-  playerSeat?:{vehicle:string;seat:string};
-  occupiedSeats(vehicle:string){return Object.values(this.people.riders).filter(r=>r.person.vehicle===vehicle&&!r.out&&r.seat).map(r=>r.seat!);}
+  peopleSources: readonly PeopleSource[] = [];
+  peopleLevel?: LevelSource;
+  people = emptyPeople();
+  playerSeat?: { vehicle: string; seat: string };
+  occupiedSeats(vehicle: string) {
+    return Object.values(this.people.riders)
+      .filter((r) => r.person.vehicle === vehicle && !r.out && r.seat)
+      .map((r) => r.seat!);
+  }
   /** The scene's state keys. Starting values come from the scene's `state`. */
   state: Record<string, Value> = {};
   /** Numbers effects keep while things are in flight (a slide's start). Not saved; cleared by reset. */
   scratch: Record<string, number> = {};
   /** Completed once-only trigger IDs; observations remain transient and rebase on restore. */
-  triggerHistory=new Set<string>();
-  triggerStatus:Record<string,{count:number;time:number;result:string}>={};
-  gameplayInspect?:()=>unknown;
+  triggerHistory = new Set<string>();
+  triggerStatus: Record<string, { count: number; time: number; result: string }> = {};
+  gameplayInspect?: () => unknown;
   links: Link[] = [];
   /** Cables currently carrying a signal, for the glow. */
   live = new Set<Link>();
@@ -228,10 +316,65 @@ export class SceneModel {
   /** Devices the player is looking into right now (the host sets it: a device's schematic). */
   viewing = new Set<string>();
   private time = new SceneTime();
-  private inspecting=false;
-  private recent:Readonly<SceneTrace>[]=[];
-  enableInspection(){this.inspecting=true;}
-  inspect(){return structuredClone({movers:[...this.devices.values()].flatMap(d=>d.data.nouns.filter(n=>n.mover).map(n=>{const key=d.id+'.'+n.id;return{key,point:this.movers.place(key),position:this.movers.position(key),path:this.movers.lastRun(key)};})),zones:this.zones.inspect(),gameplay:this.gameplayInspect?.(),state:{...this.state},goals:[...this.goals],links:this.links,live:[...this.live],trace:Object.fromEntries(this.trace),locks:[...this.locks].map(([key])=>({key,remainingMs:this.lockLeft(key)})),time:this.time.inspect(),clocks:[...this.devices.values()].flatMap(d=>d.nouns.filter(n=>n.behaviour==='clock').map(n=>({key:d.id+'.'+n.id,next:this.clocks.next(d.id+'.'+n.id)}))),watchdog:this.watchdogs(),recent:this.recent,devices:[...this.devices.values()].map(d=>({id:d.id,name:d.name,status:d.status(),nouns:d.nouns.map(n=>({id:n.id,layer:n.layer,function:n.function,verbs:n.verbs,eligibility:Object.fromEntries(n.verbs.map(verb=>[verb,{manual:this.eligibility(d.id,n.id,verb),signal:this.eligibility(d.id,n.id,verb,true)}])),events:n.events??[]}))}))});}
+  private inspecting = false;
+  private recent: Readonly<SceneTrace>[] = [];
+  enableInspection() {
+    this.inspecting = true;
+  }
+  inspect() {
+    return structuredClone({
+      movers: [...this.devices.values()].flatMap((d) =>
+        d.data.nouns
+          .filter((n) => n.mover)
+          .map((n) => {
+            const key = d.id + '.' + n.id;
+            return {
+              key,
+              point: this.movers.place(key),
+              position: this.movers.position(key),
+              path: this.movers.lastRun(key),
+            };
+          }),
+      ),
+      zones: this.zones.inspect(),
+      gameplay: this.gameplayInspect?.(),
+      state: { ...this.state },
+      goals: [...this.goals],
+      links: this.links,
+      live: [...this.live],
+      trace: Object.fromEntries(this.trace),
+      locks: [...this.locks].map(([key]) => ({ key, remainingMs: this.lockLeft(key) })),
+      time: this.time.inspect(),
+      clocks: [...this.devices.values()].flatMap((d) =>
+        d.nouns
+          .filter((n) => n.behaviour === 'clock')
+          .map((n) => ({ key: d.id + '.' + n.id, next: this.clocks.next(d.id + '.' + n.id) })),
+      ),
+      watchdog: this.watchdogs(),
+      recent: this.recent,
+      devices: [...this.devices.values()].map((d) => ({
+        id: d.id,
+        name: d.name,
+        status: d.status(),
+        nouns: d.nouns.map((n) => ({
+          id: n.id,
+          layer: n.layer,
+          function: n.function,
+          verbs: n.verbs,
+          eligibility: Object.fromEntries(
+            n.verbs.map((verb) => [
+              verb,
+              {
+                manual: this.eligibility(d.id, n.id, verb),
+                signal: this.eligibility(d.id, n.id, verb, true),
+              },
+            ]),
+          ),
+          events: n.events ?? [],
+        })),
+      })),
+    });
+  }
 
   /** Scene time: held while paused. A focused check can swap it. */
   now: () => number = () => this.time.now();
@@ -254,7 +397,7 @@ export class SceneModel {
   /** The net's networks and the programs there are (net.json). */
   readonly nets: NetworkData[];
   private programList: ProgramData[];
-  private scanProgram: string|null;
+  private scanProgram: string | null;
   readonly texts: Record<string, string | LineData>;
   /** Per-device state (a SWITCH's on/off), keyed by device id. */
   private local = new Map<string, Record<string, Value>>();
@@ -272,14 +415,27 @@ export class SceneModel {
   /** Bumped by reset and restore: timers started before it never fire. */
   private epoch = 0;
 
-  private checkpointProgram?:ReturnType<typeof compileCheckpoint>;
-  private checkpointReady=false;
+  private checkpointProgram?: ReturnType<typeof compileCheckpoint>;
+  private checkpointReady = false;
   /** Bind the same source once; standalone engine fixtures may attach it after construction. */
-  installGameplaySource(source:GameplayDefinition){if(this.checkpointReady)return;this.checkpointProgram=compileCheckpoint(source,this.data.id);this.checkpointReady=true;}
+  installGameplaySource(source: GameplayDefinition) {
+    if (this.checkpointReady) return;
+    this.checkpointProgram = compileCheckpoint(source, this.data.id);
+    this.checkpointReady = true;
+  }
 
   /** The scene's rules; a scene without any (folder scenes with no mechanism) has none to run. */
   readonly rules: SceneRules;
-  constructor(private hooks: SceneHooks, readonly data: SceneData, rules: SceneRules | undefined, readonly logic: LogicData = LOGIC, net: NetData = NET, keyring:ReadonlyMap<string,KeyItem> = KEYRING, ownedState?:Record<string,Value>,gameplay?:GameplayDefinition) {
+  constructor(
+    private hooks: SceneHooks,
+    readonly data: SceneData,
+    rules: SceneRules | undefined,
+    readonly logic: LogicData = LOGIC,
+    net: NetData = NET,
+    keyring: ReadonlyMap<string, KeyItem> = KEYRING,
+    ownedState?: Record<string, Value>,
+    gameplay?: GameplayDefinition,
+  ) {
     this.rules = rules ?? { effects: {} };
     this.texts = { ...ENGINE.texts, ...data.texts };
     this.nets = net.networks ?? [];
@@ -288,14 +444,28 @@ export class SceneModel {
     for (const n of [...net.nodes, ...(data.nodes ?? [])]) this.nodeData.set(n.id, n);
     this.prewired = [...data.cables, ...net.cables];
     for (const m of this.rules.mechanisms ?? []) this.mechanisms.set(m.id, this.mechanismDevice(m));
-    this.keys = new Map([...keyring, ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const)]);
-    this.dogs = new Watchdogs([data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w), () => this.now());
+    this.keys = new Map([
+      ...keyring,
+      ...[...net.keyring, ...(data.keyring ?? [])].map((k) => [k.id, k] as const),
+    ]);
+    this.dogs = new Watchdogs(
+      [data.watchdog, net.watchdog].filter((w): w is WatchdogData => !!w),
+      () => this.now(),
+    );
     this.clocks = new Clocks(() => this.now());
-    this.movers = new Movers({ now: () => this.now(), num: (n) => this.num(n), coord: (c, axis) => this.coord(c, axis), test: (cond) => this.cond(cond), read: (key, dev) => this.read(key, this.ctx(dev)) });
-    if(gameplay)this.installGameplaySource(gameplay);
-    const initial={...ownedState};if(ownedState)this.state=ownedState;
+    this.movers = new Movers({
+      now: () => this.now(),
+      num: (n) => this.num(n),
+      coord: (c, axis) => this.coord(c, axis),
+      test: (cond) => this.cond(cond),
+      read: (key, dev) => this.read(key, this.ctx(dev)),
+    });
+    if (gameplay) this.installGameplaySource(gameplay);
+    const initial = { ...ownedState };
+    if (ownedState) this.state = ownedState;
     this.init();
-    for(const key of Object.keys(this.data.state))if(Object.prototype.hasOwnProperty.call(initial,key))this.state[key]=initial[key];
+    for (const key of Object.keys(this.data.state))
+      if (Object.prototype.hasOwnProperty.call(initial, key)) this.state[key] = initial[key];
     this.syncMovers();
   }
 
@@ -321,23 +491,44 @@ export class SceneModel {
     return spot.x + (c.edge === 'left' ? -spot.w / 2 : c.edge === 'right' ? spot.w / 2 : 0) + plus;
   }
   /** Movers that write a state key stand where the key says (a saved game's state), and a key left on `moving` by a trip that never finished names the stop they are at. */
-  private syncMovers() { for (const w of this.movers.sync((dev, key) => this.read(key, this.ctx(dev)))) this.write(w.key, w.value, w.dev); }
+  private syncMovers() {
+    for (const w of this.movers.sync((dev, key) => this.read(key, this.ctx(dev))))
+      this.write(w.key, w.value, w.dev);
+  }
 
   /** Back to how the scene file starts it: its own cables, no parts, no goals, nothing opened. */
   private init() {
     this.epoch++;
-    this.reservations=new WeakMap();
-    this.recent=[];
-    this.time.clear();this.people=emptyPeople();
-    this.clocks.clear(); this.movers.clear(); this.zones.clear(); this.dogs.reset(); this.cuts.clear(); this.spans.clear();
-    for (const m of [this.devices, this.local, this.placed, this.touched, this.fails, this.seq, this.trace, this.locks, this.net, this.logicAt]) m.clear();
+    this.reservations = new WeakMap();
+    this.recent = [];
+    this.time.clear();
+    this.people = emptyPeople();
+    this.clocks.clear();
+    this.movers.clear();
+    this.zones.clear();
+    this.dogs.reset();
+    this.cuts.clear();
+    this.spans.clear();
+    for (const m of [
+      this.devices,
+      this.local,
+      this.placed,
+      this.touched,
+      this.fails,
+      this.seq,
+      this.trace,
+      this.locks,
+      this.net,
+      this.logicAt,
+    ])
+      m.clear();
     for (const s of [this.live, this.goals, this.opened, this.passed, this.viewing]) s.clear();
     this.scratch = {};
     this.triggerHistory.clear();
-    this.triggerStatus={};
+    this.triggerStatus = {};
     this.derivedSeen.clear();
-    for(const key of Object.keys(this.state))delete this.state[key];
-    Object.assign(this.state,this.data.state);
+    for (const key of Object.keys(this.state)) delete this.state[key];
+    Object.assign(this.state, this.data.state);
     this.data.devices.forEach((d) => this.devices.set(d.id, this.build(d, d.id)));
     this.links = [];
     this.wire();
@@ -353,7 +544,12 @@ export class SceneModel {
     const here = (key: string) => this.devices.has(dev(key)) || this.mechanisms.has(dev(key));
     for (const c of this.prewired) {
       if (node && dev(c.from) !== node && dev(c.to) !== node) continue;
-      if (!here(c.from) || !here(c.to) || this.links.some((l) => l.from === c.from && l.to === c.to)) continue;
+      if (
+        !here(c.from) ||
+        !here(c.to) ||
+        this.links.some((l) => l.from === c.from && l.to === c.to)
+      )
+        continue;
       if (this.cuts.has(wiredId(c)) && !c.fixed) continue;
       this.links.push(this.wiredLink(c));
     }
@@ -365,41 +561,74 @@ export class SceneModel {
   }
 
   /** Hold scene clocks and pending signals/actions together. Lockouts still expire on wall time. */
-  setPaused(on: boolean) { this.time.pause(on); }
+  setPaused(on: boolean) {
+    this.time.pause(on);
+  }
   /** UI residency can change without replacing the existing mobile Circuit or its clock. */
-  setHooks(hooks:SceneHooks){this.hooks=hooks;}
+  setHooks(hooks: SceneHooks) {
+    this.hooks = hooks;
+  }
 
   /**
    * The model is no longer relevant (not merely its UI unloaded): what is in flight (delayed signals, deadlines, handoffs) is dropped,
    * as on a page reload, and nothing scheduled before now runs later. Persistent state stays in the save.
    */
-  dispose() { this.epoch++; this.time.clear(); this.time.pause(true); }
+  dispose() {
+    this.epoch++;
+    this.time.clear();
+    this.time.pause(true);
+  }
 
   /** Delayed scene action: pauses with the scene, cancelled by reset or restore. */
-  later(ms: number, fn: () => void, detail?:unknown,canceled?:()=>void) {
+  later(ms: number, fn: () => void, detail?: unknown, canceled?: () => void) {
     const e = this.epoch;
-    return this.time.later(ms, () => { if (e === this.epoch) this.withCue(fn,true); },detail,canceled);
+    return this.time.later(
+      ms,
+      () => {
+        if (e === this.epoch) this.withCue(fn, true);
+      },
+      detail,
+      canceled,
+    );
   }
 
   /** A scene state key (for effects and the scene). */
-  get(key: string): Value { return this.state[key]; }
-  set(key: string, v: Value) { if(this.gameplayQueryIds?.has(key))throw Error('Gameplay query is read-only: '+key);if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);this.state[key] = v; }
+  get(key: string): Value {
+    return this.state[key];
+  }
+  set(key: string, v: Value) {
+    if (this.gameplayQueryIds?.has(key)) throw Error('Gameplay query is read-only: ' + key);
+    if (Object.prototype.hasOwnProperty.call(this.data.observations?.aliases ?? {}, key))
+      throw Error('Observation alias is read-only: ' + key);
+    this.state[key] = v;
+  }
   /** A state key, a derived value (`gateOpen`) or `signal`, as conditions read them. */
-  value(key: string): Value | undefined { return this.read(key, this.ctx('')); }
-  noun(key: string) { const [d, n] = split(key); return (this.devices.get(d) ?? this.mechanisms.get(d))?.nouns.find((x) => x.id === n); }
+  value(key: string): Value | undefined {
+    return this.read(key, this.ctx(''));
+  }
+  noun(key: string) {
+    const [d, n] = split(key);
+    return (this.devices.get(d) ?? this.mechanisms.get(d))?.nouns.find((x) => x.id === n);
+  }
   /**
    * Devices standing in the world (their `layout.spot`); logic parts and net nodes live on the board only.
    * A device that moves (the scene's `rules.place`) stands where its code says, or is gone for now (null).
    */
   spots(): Spot[] {
     const out: Spot[] = [];
-    const offsets=this.attachmentOffsets()?.devices;
+    const offsets = this.attachmentOffsets()?.devices;
     for (const d of this.devices.values()) {
       if (d.logic || d.node || !d.data.layout?.spot) continue;
-      const {presence,...box}=d.data.layout.spot;
-      if(presence!==undefined&&this.gameplayQuery?.(presence)!==true)continue;
-      const offset=offsets?.[d.id];
-      const home: Spot = { id: d.id, ...box, x:box.x+(offset?.dx??0),y:(box.y??0)+(offset?.dh??0),...(offset?.floorH!==undefined?{floorH:offset.floorH}:{}) };
+      const { presence, ...box } = d.data.layout.spot;
+      if (presence !== undefined && this.gameplayQuery?.(presence) !== true) continue;
+      const offset = offsets?.[d.id];
+      const home: Spot = {
+        id: d.id,
+        ...box,
+        x: box.x + (offset?.dx ?? 0),
+        y: (box.y ?? 0) + (offset?.dh ?? 0),
+        ...(offset?.floorH !== undefined ? { floorH: offset.floorH } : {}),
+      };
       const s = this.rules.place ? this.rules.place(this, home) : home;
       if (s) out.push(s);
     }
@@ -407,82 +636,183 @@ export class SceneModel {
   }
 
   /** Read-only live manifest geometry, calculated from the existing Circuit movers. */
-  attachmentOffsets(){return this.rules.attachmentOffsets?.(this);}
+  attachmentOffsets() {
+    return this.rules.attachmentOffsets?.(this);
+  }
 
   // ---------- doing things ----------
 
   /** Who is speaking right now: the device whose verb (or guess, or item) is running. */
   private speaker: string | null = null;
   /** Say a line, as the speaker (or as `from`, when an effect names who reacted). */
-  private cue:string|undefined;
-  private reservations=new WeakMap<Line,FeedbackReceipt>();
-  private reserved:Line[]|undefined;
-  private withCue<T>(fn:()=>T,fresh=false):T {
-    if(this.cue&&!fresh)return fn();
-    const before=this.cue,reserved=this.reserved;this.cue=mintFeedbackCause();this.reserved=[];
-    try{return fn();}finally{for(const l of this.reserved)this.reservations.delete(l);this.cue=before;this.reserved=reserved;}
+  private cue: string | undefined;
+  private reservations = new WeakMap<Line, FeedbackReceipt>();
+  private reserved: Line[] | undefined;
+  private withCue<T>(fn: () => T, fresh = false): T {
+    if (this.cue && !fresh) return fn();
+    const before = this.cue,
+      reserved = this.reserved;
+    this.cue = mintFeedbackCause();
+    this.reserved = [];
+    try {
+      return fn();
+    } finally {
+      for (const l of this.reserved) this.reservations.delete(l);
+      this.cue = before;
+      this.reserved = reserved;
+    }
   }
   /** Reserve the next delivery of this exact line, allowing a controller cue before its reply. */
-  receipt(l:Line,from:string|null=this.speaker):FeedbackReceipt {
-    let r=this.reservations.get(l);if(r)return r;
-    r=mintFeedback(this.hooks.feedbackScope??this.data.id,from??'system',l[2]==='err'?'error':l[2]==='ok'?'success':'info',this.cue);
-    this.reservations.set(l,r);this.reserved?.push(l);return r;
+  receipt(l: Line, from: string | null = this.speaker): FeedbackReceipt {
+    let r = this.reservations.get(l);
+    if (r) return r;
+    r = mintFeedback(
+      this.hooks.feedbackScope ?? this.data.id,
+      from ?? 'system',
+      l[2] === 'err' ? 'error' : l[2] === 'ok' ? 'success' : 'info',
+      this.cue,
+    );
+    this.reservations.set(l, r);
+    this.reserved?.push(l);
+    return r;
   }
-  takeReceipt(l:Line,from:string|null=this.speaker):FeedbackReceipt {const r=this.receipt(l,from);this.reservations.delete(l);return r;}
-  private sayLine(l: Line, from: string | null = this.speaker) {const receipt=this.takeReceipt(l,from);this.hooks.say(l, from ?? undefined,receipt);return receipt;}
+  takeReceipt(l: Line, from: string | null = this.speaker): FeedbackReceipt {
+    const r = this.receipt(l, from);
+    this.reservations.delete(l);
+    return r;
+  }
+  private sayLine(l: Line, from: string | null = this.speaker) {
+    const receipt = this.takeReceipt(l, from);
+    this.hooks.say(l, from ?? undefined, receipt);
+    return receipt;
+  }
   /** Run `fn` with `dev` as the speaker: what it says comes from that device. */
   private as<T>(dev: string | null, fn: () => T): T {
     const before = this.speaker;
     this.speaker = dev;
-    try { return this.withCue(fn); } finally { this.speaker = before; }
+    try {
+      return this.withCue(fn);
+    } finally {
+      this.speaker = before;
+    }
   }
 
   private observe(phase: SceneTrace['phase'], context: Ctx, detail: unknown) {
-    if (!this.hooks.observe&&!this.inspecting) return;
+    if (!this.hooks.observe && !this.inspecting) return;
     try {
-      const freeze = (v: unknown): unknown => { if (v && typeof v === 'object') { Object.values(v).forEach(freeze); Object.freeze(v); } return v; };
-      const event=freeze(JSON.parse(JSON.stringify({phase,context,detail}))) as SceneTrace;if(this.inspecting){this.recent.push(event);if(this.recent.length>128)this.recent.shift();}this.hooks.observe?.(event);
-    } catch { /* Diagnostics must never alter gameplay, including observer failures. */ }
+      const freeze = (v: unknown): unknown => {
+        if (v && typeof v === 'object') {
+          Object.values(v).forEach(freeze);
+          Object.freeze(v);
+        }
+        return v;
+      };
+      const event = freeze(JSON.parse(JSON.stringify({ phase, context, detail }))) as SceneTrace;
+      if (this.inspecting) {
+        this.recent.push(event);
+        if (this.recent.length > 128) this.recent.shift();
+      }
+      this.hooks.observe?.(event);
+    } catch {
+      /* Diagnostics must never alter gameplay, including observer failures. */
+    }
   }
   /** Scoped shared operation adapter; absent for unmigrated verbs. */
-  gameplay?: (context:Ctx)=>{result:import('./gameplay/types').GameplayResult;line:Line|null}|undefined;
-  gameplayStep?:(context:Ctx,id:string,preview:boolean)=>import('./gameplay/types').GameplayResult;
-  gameplayEligibility?:(context:Ctx)=>import('./gameplay/types').GameplayResult|undefined;
-  gameplayQueryIds?:ReadonlySet<string>;
-  gameplayQuery?:(id:string)=>Value|undefined;
-  gameplayResponse?:(ref:string,commit:boolean)=>Vars|undefined;
-  gameplayTick?:(dt:number,cause:(run:()=>void)=>void,phase:'beforeNative'|'afterNative')=>void;
+  gameplay?: (
+    context: Ctx,
+  ) => { result: import('./gameplay/types').GameplayResult; line: Line | null } | undefined;
+  gameplayStep?: (
+    context: Ctx,
+    id: string,
+    preview: boolean,
+  ) => import('./gameplay/types').GameplayResult;
+  gameplayEligibility?: (context: Ctx) => import('./gameplay/types').GameplayResult | undefined;
+  gameplayQueryIds?: ReadonlySet<string>;
+  gameplayQuery?: (id: string) => Value | undefined;
+  gameplayResponse?: (ref: string, commit: boolean) => Vars | undefined;
+  gameplayTick?: (
+    dt: number,
+    cause: (run: () => void) => void,
+    phase: 'beforeNative' | 'afterNative',
+  ) => void;
   /** Registered panel inputs dispatch ordinary shared commands; panels own only hit testing. */
-  gameplayInput?:(id:string,origin:import('./gameplay/native-inputs').NativeInputOrigin)=>import('./gameplay/types').GameplayResult;
-  input(id:string):import('./gameplay/types').GameplayResult{
-    if(!this.rules.inputs?.includes(id))return{ok:false,reason:'forbidden'};
-    const result:import('./gameplay/types').GameplayResult=this.gameplayInput?.(id,{kind:'physical'})??{ok:false,reason:'unknown-command'};
+  gameplayInput?: (
+    id: string,
+    origin: import('./gameplay/native-inputs').NativeInputOrigin,
+  ) => import('./gameplay/types').GameplayResult;
+  input(id: string): import('./gameplay/types').GameplayResult {
+    if (!this.rules.inputs?.includes(id)) return { ok: false, reason: 'forbidden' };
+    const result: import('./gameplay/types').GameplayResult = this.gameplayInput?.(id, {
+      kind: 'physical',
+    }) ?? { ok: false, reason: 'unknown-command' };
     // the milestone happened whatever the source made of it: cables from the mechanism's `milestones` part carry it on
-    this.emitMechanism('milestones',id);
+    this.emitMechanism('milestones', id);
     return result;
   }
-  gameplayCommand?:(id:string)=>import('./gameplay/types').GameplayResult;
-  runCommand(id:string):import('./gameplay/types').GameplayResult{return this.gameplayCommand?.(id)??{ok:false,reason:'unknown-command'};}
+  gameplayCommand?: (id: string) => import('./gameplay/types').GameplayResult;
+  runCommand(id: string): import('./gameplay/types').GameplayResult {
+    return this.gameplayCommand?.(id) ?? { ok: false, reason: 'unknown-command' };
+  }
   /** Native committed device replies retain the existing receipt, caption and history owner. */
-  reply(line:Line,from:string){return this.sayLine(line,from);}
+  reply(line: Line, from: string) {
+    return this.sayLine(line, from);
+  }
   /** Pure reach/permission preflight. Signals intentionally bypass manual locks and sectors. */
-  eligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
-    const native=this.nativeEligibility(dev,noun,verb,bySignal);if(!native.ok)return native;
-    const c={dev,noun,verb,bySignal},shared=this.gameplayEligibility?.(c);if(shared)return shared;const selected=this.selectCase(this.nounData(dev,noun)?.on?.[verb]??this.nounData(dev,noun)?.on?.['*'],c),step=selected?.do?.find(a=>'command'in a);if(step&&'command'in step)return selected?.do?.length===1?this.gameplayStep?.(c,step.command,true)??{ok:false,reason:'unknown-command'}:{ok:false,reason:'forbidden'};return native;
+  eligibility(
+    dev: string,
+    noun: string,
+    verb: string,
+    bySignal = false,
+  ): import('./gameplay/types').Eligibility {
+    const native = this.nativeEligibility(dev, noun, verb, bySignal);
+    if (!native.ok) return native;
+    const c = { dev, noun, verb, bySignal },
+      shared = this.gameplayEligibility?.(c);
+    if (shared) return shared;
+    const selected = this.selectCase(
+        this.nounData(dev, noun)?.on?.[verb] ?? this.nounData(dev, noun)?.on?.['*'],
+        c,
+      ),
+      step = selected?.do?.find((a) => 'command' in a);
+    if (step && 'command' in step)
+      return selected?.do?.length === 1
+        ? (this.gameplayStep?.(c, step.command, true) ?? { ok: false, reason: 'unknown-command' })
+        : { ok: false, reason: 'forbidden' };
+    return native;
   }
-  nativeEligibility(dev:string,noun:string,verb:string,bySignal=false):import('./gameplay/types').Eligibility{
-    const n=this.noun(dev+'.'+noun);if(!n)return{ok:false,reason:'unknown-noun'};
-    if(!n.verbs.includes(verb))return{ok:false,reason:'unknown-verb'};
-    return this.nativeAvailability(dev,n,bySignal);
+  nativeEligibility(
+    dev: string,
+    noun: string,
+    verb: string,
+    bySignal = false,
+  ): import('./gameplay/types').Eligibility {
+    const n = this.noun(dev + '.' + noun);
+    if (!n) return { ok: false, reason: 'unknown-noun' };
+    if (!n.verbs.includes(verb)) return { ok: false, reason: 'unknown-verb' };
+    return this.nativeAvailability(dev, n, bySignal);
   }
-  private nativeAvailability(dev:string,n:NonNullable<ReturnType<SceneModel['noun']>>,bySignal=false):import('./gameplay/types').Eligibility{
-    if(n.behaviour!=='watch'&&this.frozen(dev))return{ok:false,reason:'watchdog'};
-    if(!bySignal&&this.lockLeft(dev))return{ok:false,reason:'lockout'};
-    if(!bySignal&&n.sector&&this.sealed(dev,n.sector))return{ok:false,reason:'sealed'};
-    return{ok:true};
+  private nativeAvailability(
+    dev: string,
+    n: NonNullable<ReturnType<SceneModel['noun']>>,
+    bySignal = false,
+  ): import('./gameplay/types').Eligibility {
+    if (n.behaviour !== 'watch' && this.frozen(dev)) return { ok: false, reason: 'watchdog' };
+    if (!bySignal && this.lockLeft(dev)) return { ok: false, reason: 'lockout' };
+    if (!bySignal && n.sector && this.sealed(dev, n.sector)) return { ok: false, reason: 'sealed' };
+    return { ok: true };
   }
-  wireEligibility(from:string,to:string,verb:string):{ok:true}|{ok:false;reason:string}{
-    const result=wireConnectEligibility(this.links,from,to,this.domainEndpoints(from,to,verb));return result.ok?{ok:true}:{ok:false,reason:result.reason};
+  wireEligibility(
+    from: string,
+    to: string,
+    verb: string,
+  ): { ok: true } | { ok: false; reason: string } {
+    const result = wireConnectEligibility(
+      this.links,
+      from,
+      to,
+      this.domainEndpoints(from, to, verb),
+    );
+    return result.ok ? { ok: true } : { ok: false, reason: result.reason };
   }
   act(dev: string, noun: string, verb: string, bySignal = false) {
     const context = { dev, noun, verb, bySignal };
@@ -495,18 +825,56 @@ export class SceneModel {
   private actAs(dev: string, noun: string, verb: string, bySignal: boolean) {
     const n = this.noun(dev + '.' + noun);
     // [watchdog] a frozen device refuses every verb, and a signal into it is dropped (its own watchdog noun still answers)
-    if (n && n.behaviour !== 'watch' && this.frozen(dev)) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'watchdog available',matches:false});this.sayLine(this.frozenLine(dev, noun, verb, bySignal)); this.changed(); return; }
-    if (!bySignal) {
-      const d = this.devices.get(dev), left = this.lockLeft(dev);
-      if (d && left) { this.observe('condition',{dev,noun,verb,bySignal},{condition:'device lock expired',matches:false,remainingMs:left});this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
-      this.touched.set(dev, this.now());
-      if (n?.sector && this.sealed(dev, n.sector)) { this.sayLine(this.trySeal(dev, n.sector)); this.changed(); return; }
+    if (n && n.behaviour !== 'watch' && this.frozen(dev)) {
+      this.observe(
+        'condition',
+        { dev, noun, verb, bySignal },
+        { condition: 'watchdog available', matches: false },
+      );
+      this.sayLine(this.frozenLine(dev, noun, verb, bySignal));
+      this.changed();
+      return;
     }
-    if(!n?.verbs.includes(verb)){this.observe('condition',{dev,noun,verb,bySignal},{condition:'known verb',matches:false});return;}
-    const shared=this.gameplay?.({dev,noun,verb,bySignal});
-    if(shared)this.observe('action',{dev,noun,verb,bySignal},{shared:true,result:shared.result});
+    if (!bySignal) {
+      const d = this.devices.get(dev),
+        left = this.lockLeft(dev);
+      if (d && left) {
+        this.observe(
+          'condition',
+          { dev, noun, verb, bySignal },
+          { condition: 'device lock expired', matches: false, remainingMs: left },
+        );
+        this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) }));
+        this.changed();
+        return;
+      }
+      this.touched.set(dev, this.now());
+      if (n?.sector && this.sealed(dev, n.sector)) {
+        this.sayLine(this.trySeal(dev, n.sector));
+        this.changed();
+        return;
+      }
+    }
+    if (!n?.verbs.includes(verb)) {
+      this.observe(
+        'condition',
+        { dev, noun, verb, bySignal },
+        { condition: 'known verb', matches: false },
+      );
+      return;
+    }
+    const shared = this.gameplay?.({ dev, noun, verb, bySignal });
+    if (shared)
+      this.observe(
+        'action',
+        { dev, noun, verb, bySignal },
+        { shared: true, result: shared.result },
+      );
     const line = shared ? shared.line : n.run(verb, bySignal);
-    if (line){this.sayLine(line);this.observe('result',{dev,noun,verb,bySignal},{response:line});}
+    if (line) {
+      this.sayLine(line);
+      this.observe('result', { dev, noun, verb, bySignal }, { response: line });
+    }
     this.changed();
   }
 
@@ -515,13 +883,24 @@ export class SceneModel {
    * its popup. Only while you hold it; a frozen or locked-out device refuses, as for a verb. Its
    * cases run as that noun's verb would (lines, `emit`); a `take` step uses the item up.
    */
-  offer(dev: string, i: number) { this.as(dev, () => this.offerAs(dev, i)); }
+  offer(dev: string, i: number) {
+    this.as(dev, () => this.offerAs(dev, i));
+  }
   private offerAs(dev: string, i: number) {
-    const d = this.devices.get(dev), u = d?.data.items?.[i];
+    const d = this.devices.get(dev),
+      u = d?.data.items?.[i];
     if (!d || !u || this.carry(u.item) <= 0) return;
-    if (this.frozen(dev)) { this.sayLine(this.frozenLine(dev, u.noun, u.label, false)); this.changed(); return; }
+    if (this.frozen(dev)) {
+      this.sayLine(this.frozenLine(dev, u.noun, u.label, false));
+      this.changed();
+      return;
+    }
     const left = this.lockLeft(dev);
-    if (left) { this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) })); this.changed(); return; }
+    if (left) {
+      this.sayLine(this.line('trace.locked', { device: d.name, sec: secs(left) }));
+      this.changed();
+      return;
+    }
     this.touched.set(dev, this.now());
     const line = this.runCases(u.on, { dev, noun: u.noun, verb: u.label, bySignal: false });
     if (line) this.sayLine(line);
@@ -529,25 +908,55 @@ export class SceneModel {
   }
 
   /** A popup label with `{tokens}` (what you have now) and the state filled in. */
-  labelOf(dev: string, text: string) { return this.fmt(text, this.ctx(dev), { tokens: this.hooks.tokens ? this.hooks.tokens(0) : this.ownTokens }); }
+  labelOf(dev: string, text: string) {
+    return this.fmt(text, this.ctx(dev), {
+      tokens: this.hooks.tokens ? this.hooks.tokens(0) : this.ownTokens,
+    });
+  }
 
   /** Tell the view; open any sector whose `if` seal holds now. */
-  changed() { this.checkSeals(); this.hooks.changed(); }
+  changed() {
+    this.checkSeals();
+    this.hooks.changed();
+  }
 
-  goal(id: string) { if (this.goals.has(id)) return; this.goals.add(id); this.changed(); }
+  goal(id: string) {
+    if (this.goals.has(id)) return;
+    this.goals.add(id);
+    this.changed();
+  }
 
   /** Does a data condition hold right now (scene state only)? For panels. */
-  cond(c: string) { return this.test(c, this.ctx('')); }
+  cond(c: string) {
+    return this.test(c, this.ctx(''));
+  }
   /** Run data actions outside any noun (dialogue choices). */
-  apply(actions: Action[],say:(line:Line)=>void=(l)=>this.sayLine(l)) { this.withCue(()=>{actions.forEach((a) => { const l = this.doAction(a, this.ctx('')); if (l) say(l); }); this.changed();}); }
+  apply(actions: Action[], say: (line: Line) => void = (l) => this.sayLine(l)) {
+    this.withCue(() => {
+      actions.forEach((a) => {
+        const l = this.doAction(a, this.ctx(''));
+        if (l) say(l);
+      });
+      this.changed();
+    });
+  }
   /** A label from the texts, with `{vars}` filled in. */
-  label(key: string, vars?: Vars) { const t = this.texts[key]; return typeof t === 'string' ? this.fmt(t, this.ctx(''), vars) : '[' + key + ']'; }
+  label(key: string, vars?: Vars) {
+    const t = this.texts[key];
+    return typeof t === 'string' ? this.fmt(t, this.ctx(''), vars) : '[' + key + ']';
+  }
   /** A terminal line from the texts. */
-  line(ref: LineRef, vars?: Vars) { return this.lineIn(ref, this.ctx(''), vars); }
+  line(ref: LineRef, vars?: Vars) {
+    return this.lineIn(ref, this.ctx(''), vars);
+  }
   /** Explicit outcome delivery; unlike line(), this may enter a bound shared conversation. */
-  response(ref:LineRef,vars?:Vars){return this.lineIn(ref,this.ctx(''),vars,true);}
+  response(ref: LineRef, vars?: Vars) {
+    return this.lineIn(ref, this.ctx(''), vars, true);
+  }
   /** Committed shared source replies keep the action's existing native formatter context. */
-  responseFor(ref:LineRef,context:Ctx,vars?:Vars){return this.lineIn(ref,context,vars,true);}
+  responseFor(ref: LineRef, context: Ctx, vars?: Vars) {
+    return this.lineIn(ref, context, vars, true);
+  }
 
   // ---------- events and cables ----------
 
@@ -555,43 +964,94 @@ export class SceneModel {
     const out = this.links.filter((l) => l.from === key);
     // [watchdog] nothing leaves a frozen device (but the watchdog's own arrives / leaves do)
     const [dev, ev] = split(key);
-    if (out.length && !ev.startsWith(WATCH_NOUN + ':') && this.frozen(dev)) { this.sayLine(this.line('watchdog.mute', { device: this.devices.get(dev)?.name ?? dev, event: ev.replace(':', ' ') }), dev); return; }
+    if (out.length && !ev.startsWith(WATCH_NOUN + ':') && this.frozen(dev)) {
+      this.sayLine(
+        this.line('watchdog.mute', {
+          device: this.devices.get(dev)?.name ?? dev,
+          event: ev.replace(':', ' '),
+        }),
+        dev,
+      );
+      return;
+    }
     out.forEach((l) => this.live.add(l));
     this.hooks.changed();
-    this.later(500, () => { out.forEach((l) => this.live.delete(l)); this.hooks.changed(); });
-    out.forEach((l) => this.later(150, () => { const [d, n] = split(l.to); this.act(d, n, l.verb, true); },{kind:'signal',from:key,to:l.to,verb:l.verb}));
+    this.later(500, () => {
+      out.forEach((l) => this.live.delete(l));
+      this.hooks.changed();
+    });
+    out.forEach((l) =>
+      this.later(
+        150,
+        () => {
+          const [d, n] = split(l.to);
+          this.act(d, n, l.verb, true);
+        },
+        { kind: 'signal', from: key, to: l.to, verb: l.verb },
+      ),
+    );
   }
 
   connect(from: string, to: string, verb: string): Line {
-    const result=reduceWireConnect(this.captureDomainState(),from,to,verb,this.domainEndpoints(from,to,verb));
-    if(!result.ok){if(result.reason==='fixed'){const fixed=result.link!;return this.line('wire.fixed',{from:fixed.from,to:fixed.to,verb:fixed.verb});}return['wire '+from+' '+to,'CONNECTION REFUSED: '+result.reason+'.','err'];}
-    this.applyDomainState(result.state);this.changed();
+    const result = reduceWireConnect(
+      this.captureDomainState(),
+      from,
+      to,
+      verb,
+      this.domainEndpoints(from, to, verb),
+    );
+    if (!result.ok) {
+      if (result.reason === 'fixed') {
+        const fixed = result.link!;
+        return this.line('wire.fixed', { from: fixed.from, to: fixed.to, verb: fixed.verb });
+      }
+      return ['wire ' + from + ' ' + to, 'CONNECTION REFUSED: ' + result.reason + '.', 'err'];
+    }
+    this.applyDomainState(result.state);
+    this.changed();
     return this.line('wire.connect', {
-      from, to, verb, verbCmd: verb.replace(/\s/g, ''),
-      event: split(from)[1].replace(':', ' '), toNoun: split(to)[1],
+      from,
+      to,
+      verb,
+      verbCmd: verb.replace(/\s/g, ''),
+      event: split(from)[1].replace(':', ' '),
+      toNoun: split(to)[1],
     });
   }
 
   /** Cut a cable, the player's or a pre-wired one. */
   cut(link: Link): Line {
-    const result=reduceWireCut(this.captureDomainState(),link);
-    if(!result.ok)return this.line('wire.fixed',{from:link.from,to:link.to,verb:link.verb});
-    this.applyDomainState(result.state);this.changed();
+    const result = reduceWireCut(this.captureDomainState(), link);
+    if (!result.ok)
+      return this.line('wire.fixed', { from: link.from, to: link.to, verb: link.verb });
+    this.applyDomainState(result.state);
+    this.changed();
     return this.line('wire.cut', { from: link.from, to: link.to });
   }
 
   // ---------- logic parts on the board ----------
 
   /** Modules the player owns. */
-  modules(): string[] { return this.hooks.modules?.() ?? [...START_MODULES, ...this.ownModules]; }
+  modules(): string[] {
+    return this.hooks.modules?.() ?? [...START_MODULES, ...this.ownModules];
+  }
   /** The programs the player owns (scan.so). */
-  programs(): string[] { return this.hooks.programs?.() ?? this.ownPrograms; }
+  programs(): string[] {
+    return this.hooks.programs?.() ?? this.ownPrograms;
+  }
   /** scan.so: LINKs scan, and connect beyond what they already know. */
-  get canScan() { return ownsScanner(this.programs(),this.scanProgram); }
+  get canScan() {
+    return ownsScanner(this.programs(), this.scanProgram);
+  }
   /** The module that places a part kind (`timer` → timer.so's entry). */
-  module(kind: string) { return this.logic.modules.find((m) => m.part.id === kind); }
+  module(kind: string) {
+    return this.logic.modules.find((m) => m.part.id === kind);
+  }
   /** Does the player own the module for this part kind? */
-  owns(kind: string) { const m = this.module(kind); return !!m && this.modules().includes(m.id); }
+  owns(kind: string) {
+    const m = this.module(kind);
+    return !!m && this.modules().includes(m.id);
+  }
 
   /**
    * Place a logic part from a module the player owns. Returns its id
@@ -606,9 +1066,14 @@ export class SceneModel {
 
   private place(kind: string, want?: string): string {
     const t = this.module(kind)!.part;
-    let n = this.placed.get(kind) ?? 0, id: string;
-    if (want) { id = want; n = Math.max(n, parseInt(want.slice(kind.length), 10) || 0); }
-    else do id = kind + ++n; while (this.devices.has(id));
+    let n = this.placed.get(kind) ?? 0,
+      id: string;
+    if (want) {
+      id = want;
+      n = Math.max(n, parseInt(want.slice(kind.length), 10) || 0);
+    } else
+      do id = kind + ++n;
+      while (this.devices.has(id));
     this.placed.set(kind, n);
     this.devices.set(id, this.build(t, id, 'logic'));
     return id;
@@ -617,18 +1082,35 @@ export class SceneModel {
   /** Remove a placed logic part and every cable touching it. The scene's own devices stay. */
   removeDevice(id: string): void {
     if (!this.devices.get(id)?.logic) return;
-    this.devices.delete(id); this.local.delete(id); this.logicAt.delete(id); this.clocks.remove(id); this.movers.remove(id); this.zones.remove(id);
+    this.devices.delete(id);
+    this.local.delete(id);
+    this.logicAt.delete(id);
+    this.clocks.remove(id);
+    this.movers.remove(id);
+    this.zones.remove(id);
     const on = (key: string) => split(key)[0] === id;
-    this.links = this.links.filter((l) => { const hit = on(l.from) || on(l.to); if (hit) this.live.delete(l); return !hit; });
+    this.links = this.links.filter((l) => {
+      const hit = on(l.from) || on(l.to);
+      if (hit) this.live.delete(l);
+      return !hit;
+    });
     this.changed();
   }
 
   // ---------- the keyring ----------
 
-  keyring(): string[] { return this.hooks.keyring?.() ?? this.ownKeyring; }
+  keyring(): string[] {
+    return this.hooks.keyring?.() ?? this.ownKeyring;
+  }
   /** Keyring items the player holds, as data (unknown ids, from an older save, are skipped). */
-  items(): KeyItem[] { return this.keyring().map((id) => this.item(id)).filter((k): k is KeyItem => !!k); }
-  fragments() { return this.items().filter((k) => k.kind === 'fragment'); }
+  items(): KeyItem[] {
+    return this.keyring()
+      .map((id) => this.item(id))
+      .filter((k): k is KeyItem => !!k);
+  }
+  fragments() {
+    return this.items().filter((k) => k.kind === 'fragment');
+  }
 
   /**
    * A keyring item by id: one from the data, or one made on the keyring,
@@ -643,9 +1125,11 @@ export class SceneModel {
     const args = splitArgs(m[2]).map((a) => this.item(a));
     if (args.some((a) => a?.kind !== 'fragment')) return undefined;
     const [a, b] = args as KeyItem[];
-    if (m[1] === 'join' && b) return { id, kind: 'fragment', label: a.label + ' + ' + b.label, text: a.text! + b.text! };
+    if (m[1] === 'join' && b)
+      return { id, kind: 'fragment', label: a.label + ' + ' + b.label, text: a.text! + b.text! };
     const op = RULES[m[1]];
-    if (op && !b) return { id, kind: 'fragment', label: a.label + ' ' + op.tag, text: op.fn(a.text!) };
+    if (op && !b)
+      return { id, kind: 'fragment', label: a.label + ' ' + op.tag, text: op.fn(a.text!) };
     return undefined;
   }
 
@@ -666,25 +1150,40 @@ export class SceneModel {
     if (prog) {
       const vars = { program: id, name: prog.name, look: prog.look };
       if (this.programs().includes(id)) return this.line('give.program.have', vars);
-      const line=this.line('give.program', vars),receipt=this.receipt(line);
-      if (this.hooks.program) this.hooks.program(id,receipt); else this.ownPrograms.push(id);
+      const line = this.line('give.program', vars),
+        receipt = this.receipt(line);
+      if (this.hooks.program) this.hooks.program(id, receipt);
+      else this.ownPrograms.push(id);
       return line;
     }
     const mod = this.logic.modules.find((x) => x.id === id);
     if (mod) {
       const vars = { module: id, name: mod.part.name };
       if (this.modules().includes(id)) return this.line('give.module.have', vars);
-      if (this.hooks.grant) this.hooks.grant(id); else this.ownModules.push(id);
+      if (this.hooks.grant) this.hooks.grant(id);
+      else this.ownModules.push(id);
       return this.line('give.module', vars);
     }
     const k = this.item(id);
     if (!k || this.keyring().includes(id)) return null;
-    if (this.hooks.give) this.hooks.give(id); else this.ownKeyring.push(id);
-    return this.line(k.kind === 'fragment' ? 'keyring.fragment' : 'keyring.' + k.kind, { label: k.label, text: k.text ?? '' });
+    if (this.hooks.give) this.hooks.give(id);
+    else this.ownKeyring.push(id);
+    return this.line(k.kind === 'fragment' ? 'keyring.fragment' : 'keyring.' + k.kind, {
+      label: k.label,
+      text: k.text ?? '',
+    });
   }
 
   /** Feedback for an already committed shared grant. No resource or storage mutation. */
-  presentKeyGrant(id:string){const k=this.item(id);if(!k)return;const line=this.line(k.kind==='fragment'?'keyring.fragment':'keyring.'+k.kind,{label:k.label,text:k.text??''});return this.sayLine(line);}
+  presentKeyGrant(id: string) {
+    const k = this.item(id);
+    if (!k) return;
+    const line = this.line(k.kind === 'fragment' ? 'keyring.fragment' : 'keyring.' + k.kind, {
+      label: k.label,
+      text: k.text ?? '',
+    });
+    return this.sayLine(line);
+  }
 
   /**
    * Spend `n` noodle tokens (a scene effect that sells something: the beach's sunbed meter).
@@ -693,7 +1192,8 @@ export class SceneModel {
   pay(n: number): boolean {
     const have = this.hooks.tokens ? this.hooks.tokens(0) : this.ownTokens;
     if (have < n) return false;
-    if (this.hooks.tokens) this.hooks.tokens(-n); else this.ownTokens -= n;
+    if (this.hooks.tokens) this.hooks.tokens(-n);
+    else this.ownTokens -= n;
     return true;
   }
 
@@ -709,10 +1209,15 @@ export class SceneModel {
   }
 
   /** Set a save flag (a story beat only the code sees: a level done). */
-  flag(name: string) { if (this.hooks.flag) this.hooks.flag(name); else this.ownFlags.add(name); }
+  flag(name: string) {
+    if (this.hooks.flag) this.hooks.flag(name);
+    else this.ownFlags.add(name);
+  }
 
   /** Was this keyring chip made on the keyring (so it may be thrown away)? The data's own are evidence: they stay. */
-  isMade(id: string) { return !this.keys.has(id) && !!this.item(id); }
+  isMade(id: string) {
+    return !this.keys.has(id) && !!this.item(id);
+  }
 
   /**
    * One keyring chip dropped on another: a recipe in the data (a fragment
@@ -720,16 +1225,22 @@ export class SceneModel {
    * fragments joined, the dragged one first. Says what came of it.
    */
   combine(a: string, b: string) {
-    const A = this.item(a), B = this.item(b), ring = this.keyring();
+    const A = this.item(a),
+      B = this.item(b),
+      ring = this.keyring();
     if (!A || !B || a === b || !ring.includes(a) || !ring.includes(b)) return;
-    const recipe = [...this.keys.values()].find((k) => k.from && ((k.from[0] === a && k.from[1] === b) || (k.from[0] === b && k.from[1] === a)));
+    const recipe = [...this.keys.values()].find(
+      (k) =>
+        k.from && ((k.from[0] === a && k.from[1] === b) || (k.from[0] === b && k.from[1] === a)),
+    );
     let made: string | null = null;
     if (recipe) made = recipe.id;
     else if (A.kind === 'fragment' && B.kind === 'rule') made = B.rule + '(' + a + ')';
     else if (A.kind === 'rule' && B.kind === 'fragment') made = A.rule + '(' + b + ')';
     else if (A.kind === 'fragment' && B.kind === 'fragment') made = 'join(' + a + ',' + b + ')';
     const k = made ? this.item(made) : undefined;
-    if (!made || !k || (k.text ?? '').length > MAX_FRAGMENT) this.sayLine(this.line('keyring.nocombine', { a: A.label, b: B.label }));
+    if (!made || !k || (k.text ?? '').length > MAX_FRAGMENT)
+      this.sayLine(this.line('keyring.nocombine', { a: A.label, b: B.label }));
     else if (ring.includes(made)) this.sayLine(this.line('keyring.have', { label: k.label }));
     else this.sayLine(this.give(made)!);
     this.changed();
@@ -738,7 +1249,8 @@ export class SceneModel {
   /** Throw away a fragment made on the keyring (the data's own stay: they are evidence). */
   discard(id: string) {
     if (this.keys.has(id) || !this.item(id)) return;
-    const ring = this.keyring(), i = ring.indexOf(id);
+    const ring = this.keyring(),
+      i = ring.indexOf(id);
     if (i >= 0) ring.splice(i, 1);
     this.hooks.drop?.(id);
     this.changed();
@@ -748,16 +1260,21 @@ export class SceneModel {
    * A keyring chip dropped on a noun: on a GUARD, try it as the password;
    * on a sealed noun, try it as the sector's key. Says what happened.
    */
-  useItem(id: string, key: string) { this.as(split(key)[0], () => this.useItemAs(id, key)); }
+  useItem(id: string, key: string) {
+    this.as(split(key)[0], () => this.useItemAs(id, key));
+  }
   private useItemAs(id: string, key: string) {
-    const [dev, nid] = split(key), n = this.noun(key), k = this.item(id);
+    const [dev, nid] = split(key),
+      n = this.noun(key),
+      k = this.item(id);
     if (!n || !k || !this.keyring().includes(id)) return;
     let l: Line | null = null;
     if (n.sector && this.sealed(dev, n.sector)) l = this.trySeal(dev, n.sector, id);
     else if (this.frozen(dev)) l = this.frozenLine(dev, nid, 'login', false);
     else if (n.behaviour === 'guard') {
       this.touched.set(dev, this.now());
-      if (this.nounData(dev, nid)?.guard?.toy) l = this.line('toy.hands', { noun: nid, verb: this.toyVerb });
+      if (this.nounData(dev, nid)?.guard?.toy)
+        l = this.line('toy.hands', { noun: nid, verb: this.toyVerb });
       else if (k.kind === 'fragment') this.check(dev, nid, k.text ?? '');
       else l = this.line('guard.notfragment', { noun: nid, label: k.label });
     }
@@ -768,20 +1285,30 @@ export class SceneModel {
   // ---------- guards ----------
 
   /** The keyboard, last resort: type a guess at a GUARD. */
-  guess(dev: string, noun: string, text: string) { this.as(dev, () => this.guessAs(dev, noun, text)); }
+  guess(dev: string, noun: string, text: string) {
+    this.as(dev, () => this.guessAs(dev, noun, text));
+  }
   private guessAs(dev: string, noun: string, text: string) {
-    if (this.frozen(dev)) { this.sayLine(this.frozenLine(dev, noun, 'login', false)); this.changed(); return; }
+    if (this.frozen(dev)) {
+      this.sayLine(this.frozenLine(dev, noun, 'login', false));
+      this.changed();
+      return;
+    }
     this.touched.set(dev, this.now());
     this.check(dev, noun, text);
     this.changed();
   }
 
   /** The verb that opens the keyboard on a GUARD (the schematic shows an input instead of running it). */
-  get typeVerb() { return this.label('guard.type'); }
+  get typeVerb() {
+    return this.label('guard.type');
+  }
 
   /** Try a password on a guard, and say how it went (then any sector it opens, then any kick its trace causes). */
   private check(dev: string, noun: string, text: string, bySignal = false) {
-    const key = dev + '.' + noun, g = this.nounData(dev, noun)?.guard, vars: Vars = { noun, guess: text };
+    const key = dev + '.' + noun,
+      g = this.nounData(dev, noun)?.guard,
+      vars: Vars = { noun, guess: text };
     const say = (k: string, more?: Vars) => this.sayLine(this.response(k, { ...vars, ...more }));
     if (!g) return;
     if (this.passed.has(key)) return say('guard.passed');
@@ -794,24 +1321,38 @@ export class SceneModel {
 
   /** A guard opens: its line, its steps, its `opened` event, the sectors it seals. */
   private pass(dev: string, noun: string) {
-    const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, c = this.ctx(dev, noun);
-    this.passed.add(key); this.fails.delete(key);
-    this.sayLine(this.lineIn(g.say ?? 'guard.ok', c, { noun },true));
-    (g.do ?? []).forEach((a) => { const l = this.doAction(a, c, {kind:'guard',device:dev,noun}); if (l) this.sayLine(l); });
+    const key = dev + '.' + noun,
+      g = this.nounData(dev, noun)!.guard!,
+      c = this.ctx(dev, noun);
+    this.passed.add(key);
+    this.fails.delete(key);
+    this.sayLine(this.lineIn(g.say ?? 'guard.ok', c, { noun }, true));
+    (g.do ?? []).forEach((a) => {
+      const l = this.doAction(a, c, { kind: 'guard', device: dev, noun });
+      if (l) this.sayLine(l);
+    });
     if (this.nounData(dev, noun)!.events?.includes('opened')) this.emit(key + ':opened');
-    (this.devices.get(dev)?.data.sectors ?? []).filter((s) => 'guard' in s.seal && s.seal.guard === noun)
-      .forEach((s) => { const l = this.unseal(dev, s.id); if (l) this.sayLine(l); });
+    (this.devices.get(dev)?.data.sectors ?? [])
+      .filter((s) => 'guard' in s.seal && s.seal.guard === noun)
+      .forEach((s) => {
+        const l = this.unseal(dev, s.id);
+        if (l) this.sayLine(l);
+      });
   }
 
   /** A wrong guess (or a wrong answer on a toy): a near-miss line, tries, the lock, trace. */
   private fail(dev: string, noun: string, text: string) {
-    const key = dev + '.' + noun, g = this.nounData(dev, noun)!.guard!, vars: Vars = { noun, guess: text };
+    const key = dev + '.' + noun,
+      g = this.nounData(dev, noun)!.guard!,
+      vars: Vars = { noun, guess: text };
     const say = (k: string, more?: Vars) => this.sayLine(this.response(k, { ...vars, ...more }));
-    const fails = (this.fails.get(key) ?? 0) + 1, tries = g.tries ?? 1, lockMs = g.lockMs ?? GUARD_LOCK_MS;
+    const fails = (this.fails.get(key) ?? 0) + 1,
+      tries = g.tries ?? 1,
+      lockMs = g.lockMs ?? GUARD_LOCK_MS;
     this.fails.set(key, fails);
     // a near miss gets its own reply (still a wrong guess)
     const near = Object.entries(g.near ?? {}).find(([k]) => norm(k) === norm(text));
-    if (near) this.sayLine(this.lineIn(near[1], this.ctx(dev, noun), vars,true));
+    if (near) this.sayLine(this.lineIn(near[1], this.ctx(dev, noun), vars, true));
     if (lockMs > 0 && fails >= tries) {
       this.fails.delete(key);
       this.lock(key, lockMs);
@@ -821,23 +1362,35 @@ export class SceneModel {
   }
 
   /** Milliseconds left on a lockout (a device id, or a guard's `dev.noun`); 0 when free. */
-  lockLeft(key: string) { const until = this.locks.get(key); return until ? Math.max(0, until - this.wall()) : 0; }
+  lockLeft(key: string) {
+    const until = this.locks.get(key);
+    return until ? Math.max(0, until - this.wall()) : 0;
+  }
   /** How long the running lockout lasts in all, ms (for a countdown bar). */
-  lockSpan(key: string) { return this.spans.get(key) ?? this.lockLeft(key); }
+  lockSpan(key: string) {
+    return this.spans.get(key) ?? this.lockLeft(key);
+  }
   private lock(key: string, ms: number) {
-    this.locks.set(key, this.wall() + ms); this.spans.set(key, ms);
+    this.locks.set(key, this.wall() + ms);
+    this.spans.set(key, ms);
     this.later(ms + 50, () => this.changed());
   }
 
   // ---------- lock toys (scene/toys/): a GUARD with `toy` opens with hands, not passwords ----------
 
   /** The verb that opens a toy guard's panel. */
-  get toyVerb() { return this.label('toy.verb'); }
+  get toyVerb() {
+    return this.label('toy.verb');
+  }
   /** A GUARD's data by `device.noun` (the toy panel reads its parameters). */
-  guardOf(key: string) { const [d, n] = split(key); return this.nounData(d, n)?.guard; }
+  guardOf(key: string) {
+    const [d, n] = split(key);
+    return this.nounData(d, n)?.guard;
+  }
   /** Can the toy be played right now? Null if so, else the line that says why not. */
   toyBlocked(key: string): Line | null {
-    const [dev, noun] = split(key), vars = { noun };
+    const [dev, noun] = split(key),
+      vars = { noun };
     if (this.passed.has(key)) return this.line('guard.passed', vars);
     if (this.frozen(dev)) return this.frozenLine(dev, noun, this.toyVerb, false);
     const left = this.lockLeft(key) || this.lockLeft(dev);
@@ -862,9 +1415,13 @@ export class SceneModel {
 
   // ---------- sealed sectors ----------
 
-  sector(dev: string, id: string): SectorData | undefined { return this.devices.get(dev)?.data.sectors?.find((s) => s.id === id); }
+  sector(dev: string, id: string): SectorData | undefined {
+    return this.devices.get(dev)?.data.sectors?.find((s) => s.id === id);
+  }
   /** Is this sector of this device still sealed? */
-  sealed(dev: string, sector: string) { return !!this.sector(dev, sector) && !this.opened.has(dev + '/' + sector); }
+  sealed(dev: string, sector: string) {
+    return !!this.sector(dev, sector) && !this.opened.has(dev + '/' + sector);
+  }
 
   /** Open a sector. Returns the line to say, or null if it was open already. */
   unseal(dev: string, sector: string): Line | null {
@@ -877,11 +1434,13 @@ export class SceneModel {
 
   /** Tapping a sealed noun, or dropping a key chip on it: what the seal says, and opens it if the key fits. */
   trySeal(dev: string, sector: string, item?: string): Line {
-    const s = this.sector(dev, sector)!, name = s.label ?? s.id, seal = s.seal;
+    const s = this.sector(dev, sector)!,
+      name = s.label ?? s.id,
+      seal = s.seal;
     if (!this.sealed(dev, sector)) return this.line('seal.done', { sector: name });
     if ('key' in seal) {
       const use = item ?? (this.keyring().includes(seal.key) ? seal.key : null);
-      const label = use ? this.keys.get(use)?.label ?? use : '';
+      const label = use ? (this.keys.get(use)?.label ?? use) : '';
       if (!use) return this.line('seal.key', { sector: name });
       if (use !== seal.key) return this.line('seal.key.wrong', { sector: name, label });
       const ok = this.line('seal.key.ok', { sector: name, label });
@@ -896,10 +1455,13 @@ export class SceneModel {
   /** A sector sealed with a sequence: its seal noun heard `verb`. */
   private sealStep(dev: string, s: SectorData, verb: string, bySignal: boolean): Line {
     const seal = s.seal as { sequence: string[]; withinMs?: number; signal?: boolean };
-    const key = dev + '/' + s.id, vars: Vars = { sector: s.label ?? s.id, verb, via: bySignal ? 'signal → ' : '' };
+    const key = dev + '/' + s.id,
+      vars: Vars = { sector: s.label ?? s.id, verb, via: bySignal ? 'signal → ' : '' };
     if (this.opened.has(key)) return this.line('seal.done', vars);
     if (seal.signal && !bySignal) return this.line('seal.signal', vars);
-    const now = this.now(), p = this.seq.get(key) ?? { i: 0, t: 0 }, want = seal.sequence;
+    const now = this.now(),
+      p = this.seq.get(key) ?? { i: 0, t: 0 },
+      want = seal.sequence;
     const inTime = p.i === 0 || !seal.withinMs || now - p.t <= seal.withinMs;
     if (verb === want[p.i] && inTime) {
       const next = { i: p.i + 1, t: now };
@@ -917,7 +1479,12 @@ export class SceneModel {
     this.sealing = true;
     for (const d of this.devices.values()) {
       for (const s of d.data.sectors ?? []) {
-        if (!('if' in s.seal) || this.opened.has(d.id + '/' + s.id) || !this.test(s.seal.if, this.ctx(d.id))) continue;
+        if (
+          !('if' in s.seal) ||
+          this.opened.has(d.id + '/' + s.id) ||
+          !this.test(s.seal.if, this.ctx(d.id))
+        )
+          continue;
         const l = this.unseal(d.id, s.id);
         if (l) this.sayLine(l);
       }
@@ -928,22 +1495,32 @@ export class SceneModel {
   // ---------- trace ----------
 
   /** Trace on a device, 0–100. */
-  traceOf(dev: string) { return this.trace.get(dev) ?? 0; }
+  traceOf(dev: string) {
+    return this.trace.get(dev) ?? 0;
+  }
   /** Does this device keep a log of you (so the schematic shows its meter)? */
-  logged(dev: string) { return this.logsOf(dev).length > 0; }
-  private logsOf(dev: string) { return (this.devices.get(dev)?.data.nouns ?? []).filter((n) => n.log); }
+  logged(dev: string) {
+    return this.logsOf(dev).length > 0;
+  }
+  private logsOf(dev: string) {
+    return (this.devices.get(dev)?.data.nouns ?? []).filter((n) => n.log);
+  }
 
   /** A log records while its `when` holds and its cable to the archive is still there. */
   recording(dev: string, n: NounData) {
     const log = n.log!;
     if (log.when && !this.test(log.when, this.ctx(dev))) return false;
-    return !log.archive || this.links.some((l) => l.from.startsWith(dev + '.' + n.id + ':') && l.to === log.archive);
+    return (
+      !log.archive ||
+      this.links.some((l) => l.from.startsWith(dev + '.' + n.id + ':') && l.to === log.archive)
+    );
   }
 
   /** Inside: the device's schematic is open, or you used one of its verbs a moment ago. */
   inside(dev: string) {
     if (this.viewing.has(dev)) return true;
-    const t = this.touched.get(dev), linger = Math.max(0, ...this.logsOf(dev).map((n) => n.log!.linger ?? LOG_LINGER_MS));
+    const t = this.touched.get(dev),
+      linger = Math.max(0, ...this.logsOf(dev).map((n) => n.log!.linger ?? LOG_LINGER_MS));
     return t !== undefined && this.now() - t < linger;
   }
 
@@ -955,39 +1532,73 @@ export class SceneModel {
    */
   tick(dt: number, live = true): boolean {
     // a mover that follows a state key sets off at the time the key changed (between frames the scene's time stands still), whatever the frame
-    for (const f of this.movers.followers()) { const v = this.read(f.state, this.ctx(f.dev)); if (typeof v === 'string' && this.movers.hasStop(f.key, v)) this.moveTo(f.dev, f.noun, v); }
+    for (const f of this.movers.followers()) {
+      const v = this.read(f.state, this.ctx(f.dev));
+      if (typeof v === 'string' && this.movers.hasStop(f.key, v)) this.moveTo(f.dev, f.noun, v);
+    }
     // the frame moves scene time on (`dt` ms): delayed signals, deadlines and movers follow it
     this.time.advance(dt);
-    if (live) { this.gameplayTick?.(dt,run=>this.withCue(run,true),'beforeNative');this.rules.tick?.(this.world(this.ctx('')), dt);this.gameplayTick?.(dt,run=>this.withCue(run,true),'afterNative');this.tickMechanisms(); }
+    if (live) {
+      this.gameplayTick?.(dt, (run) => this.withCue(run, true), 'beforeNative');
+      this.rules.tick?.(this.world(this.ctx('')), dt);
+      this.gameplayTick?.(dt, (run) => this.withCue(run, true), 'afterNative');
+      this.tickMechanisms();
+    }
     let moved = false;
     for (const d of this.devices.values()) {
-      const logs = this.logsOf(d.id), before = this.traceOf(d.id);
+      const logs = this.logsOf(d.id),
+        before = this.traceOf(d.id);
       if (!logs.length && !before) continue;
       if (this.lockLeft(d.id)) continue;
       const rec = logs.filter((n) => this.recording(d.id, n));
       let t = before;
-      if (rec.length && this.inside(d.id)) t += rec.reduce((s, n) => s + n.log!.rate, 0) * dt / 1000;
-      else t -= (logs.length ? Math.max(...logs.map((n) => n.log!.fall ?? n.log!.rate / 2)) : BARE_FALL) * dt / 1000;
+      if (rec.length && this.inside(d.id))
+        t += (rec.reduce((s, n) => s + n.log!.rate, 0) * dt) / 1000;
+      else
+        t -=
+          ((logs.length
+            ? Math.max(...logs.map((n) => n.log!.fall ?? n.log!.rate / 2))
+            : BARE_FALL) *
+            dt) /
+          1000;
       t = clamp(t);
-      if (t !== before) { this.trace.set(d.id, t); moved = true; }
+      if (t !== before) {
+        this.trace.set(d.id, t);
+        moved = true;
+      }
       if (t >= 100) this.kick(d.id);
     }
-    for (const [k, until] of this.locks) if (until <= this.wall()) { this.locks.delete(k); this.spans.delete(k); moved = true; }
+    for (const [k, until] of this.locks)
+      if (until <= this.wall()) {
+        this.locks.delete(k);
+        this.spans.delete(k);
+        moved = true;
+      }
     // [watchdog, clocks] they move on the same tick; while a watchdog walks, its sprite and countdown need redrawing
     if (this.tickEngine()) moved = true;
-    if(this.peopleSources.length&&this.peopleLevel)stepPeople(this.people,this.peopleSources,this.peopleLevel,this);
+    if (this.peopleSources.length && this.peopleLevel)
+      stepPeople(this.people, this.peopleSources, this.peopleLevel, this);
     return moved || this.dogs.any;
   }
 
   /** The watchdogs step along their routes (raising arrives / leaves), the clocks beat. True when something happened. */
   private tickEngine(): boolean {
-    const steps = this.dogs.tick(), beats = this.clocks.tick(), arrivals = this.movers.tick();
-    const crossings = this.zones.tick((watch, track) => watch === 'player' ? this.player ?? undefined : track === 'stop' ? this.movers.stopPoint(watch) : this.movers.place(watch));
+    const steps = this.dogs.tick(),
+      beats = this.clocks.tick(),
+      arrivals = this.movers.tick();
+    const crossings = this.zones.tick((watch, track) =>
+      watch === 'player'
+        ? (this.player ?? undefined)
+        : track === 'stop'
+          ? this.movers.stopPoint(watch)
+          : this.movers.place(watch),
+    );
     for (const s of steps) {
       const dev = s.arrives ?? s.leaves!;
       if (!this.devices.has(dev)) continue;
       // a sequence seal on a device the watchdog reaches forgets what it heard
-      if (s.arrives) for (const k of [...this.seq.keys()]) if (k.startsWith(dev + '/')) this.seq.delete(k);
+      if (s.arrives)
+        for (const k of [...this.seq.keys()]) if (k.startsWith(dev + '/')) this.seq.delete(k);
       this.emit(dev + '.' + WATCH_NOUN + ':' + (s.arrives ? 'arrives' : 'leaves'));
     }
     for (const b of beats) {
@@ -995,7 +1606,10 @@ export class SceneModel {
       this.raise(b.dev, b.noun, b.event);
     }
     for (const a of arrivals) {
-      if (a.event === 'cue') { this.hooks.cue?.(a.cue!); continue; }
+      if (a.event === 'cue') {
+        this.hooks.cue?.(a.cue!);
+        continue;
+      }
       const v = a.event === 'started' ? a.value : a.stop;
       if (a.set && v !== undefined) this.write(a.set, v, a.dev);
       this.raise(a.dev, a.noun, a.event);
@@ -1006,33 +1620,62 @@ export class SceneModel {
       this.raise(z.dev, z.noun, z.event);
       this.milestone(z.dev, z.noun, z.event);
     }
-    if (steps.length || beats.some((b) => b.set) || arrivals.length || crossings.length) this.changed();
-    return steps.length > 0 || beats.length > 0 || arrivals.length > 0 || crossings.length > 0 || this.movers.anyMoving();
+    if (steps.length || beats.some((b) => b.set) || arrivals.length || crossings.length)
+      this.changed();
+    return (
+      steps.length > 0 ||
+      beats.length > 0 ||
+      arrivals.length > 0 ||
+      crossings.length > 0 ||
+      this.movers.anyMoving()
+    );
   }
 
   // ---------- the watchdog (scene/watchdog.ts) ----------
 
   /** Is the watchdog sitting on this device (so it is frozen)? */
-  frozen(dev: string) { return this.dogs.any && this.dogs.on(dev) !== null; }
+  frozen(dev: string) {
+    return this.dogs.any && this.dogs.on(dev) !== null;
+  }
   /** Where every watchdog is, for the board. */
-  watchdogs(): DogView[] { return this.dogs.view((d) => d.name ?? this.label('watchdog.name')); }
+  watchdogs(): DogView[] {
+    return this.dogs.view((d) => d.name ?? this.label('watchdog.name'));
+  }
   private frozenLine(dev: string, noun: string, verb: string, bySignal: boolean): Line {
-    return this.line(bySignal ? 'watchdog.drop' : 'watchdog.frozen', { device: this.devices.get(dev)?.name ?? dev, noun, verb, via: bySignal ? 'signal → ' : '' });
+    return this.line(bySignal ? 'watchdog.drop' : 'watchdog.frozen', {
+      device: this.devices.get(dev)?.name ?? dev,
+      noun,
+      verb,
+      via: bySignal ? 'signal → ' : '',
+    });
   }
   private runWatch(c: Ctx): Line | null {
     const v = this.watchdogs().find((d) => d.at === c.dev || d.from === c.dev || d.to === c.dev);
     if (!v) return null;
-    const vars = { name: v.name, sec: secs(v.left), at: this.devices.get(v.at ?? '')?.name ?? v.at ?? '', to: this.nodeName(v.to) };
-    return this.line(v.at === c.dev ? 'watchdog.here' : v.at ? 'watchdog.away' : 'watchdog.walking', vars);
+    const vars = {
+      name: v.name,
+      sec: secs(v.left),
+      at: this.devices.get(v.at ?? '')?.name ?? v.at ?? '',
+      to: this.nodeName(v.to),
+    };
+    return this.line(
+      v.at === c.dev ? 'watchdog.here' : v.at ? 'watchdog.away' : 'watchdog.walking',
+      vars,
+    );
   }
 
   // ---------- clocks (scene/clock.ts) ----------
 
   private runClock(n: NounData, c: Ctx): Line | null {
-    const key = c.dev + '.' + n.id, via = c.bySignal ? 'signal → ' : '';
+    const key = c.dev + '.' + n.id,
+      via = c.bySignal ? 'signal → ' : '';
     if (c.verb === 'start' || c.verb === 'stop') {
       const changed = this.clocks.run(key, c.verb === 'start');
-      return this.line(changed ? 'clock.' + c.verb : 'clock.already', { via, noun: n.id, verb: c.verb });
+      return this.line(changed ? 'clock.' + c.verb : 'clock.already', {
+        via,
+        noun: n.id,
+        verb: c.verb,
+      });
     }
     return this.perform(n, c);
   }
@@ -1040,11 +1683,22 @@ export class SceneModel {
   // ---------- movers and zones (engine/movers.ts, engine/zones.ts) ----------
 
   private runMover(n: NounData, c: Ctx): Line | null {
-    const key = c.dev + '.' + n.id, via = c.bySignal ? 'signal → ' : '';
-    const stop = c.verb === 'return' ? this.movers.home(key) : c.verb.startsWith('go ') ? c.verb.slice(3) : undefined;
+    const key = c.dev + '.' + n.id,
+      via = c.bySignal ? 'signal → ' : '';
+    const stop =
+      c.verb === 'return'
+        ? this.movers.home(key)
+        : c.verb.startsWith('go ')
+          ? c.verb.slice(3)
+          : undefined;
     if (stop === undefined) return this.perform(n, c);
     const r = this.moveTo(c.dev, n.id, stop);
-    return this.line(r === 'started' ? 'mover.go' : 'mover.already', { via, noun: n.id, verb: c.verb, stop });
+    return this.line(r === 'started' ? 'mover.go' : 'mover.already', {
+      via,
+      noun: n.id,
+      verb: c.verb,
+      stop,
+    });
   }
 
   /**
@@ -1052,7 +1706,8 @@ export class SceneModel {
    * does not move. Raises `started` and writes `moving` like the verb does.
    */
   moveTo(dev: string, noun: string, stop: string): 'started' | 'already' | 'unknown' {
-    const key = dev + '.' + noun, n = this.nounData(dev, noun);
+    const key = dev + '.' + noun,
+      n = this.nounData(dev, noun);
     if (!n?.mover || this.frozen(dev)) return 'unknown';
     const r = this.movers.go(key, stop);
     if (r === 'started') this.setOff(n, dev);
@@ -1064,7 +1719,12 @@ export class SceneModel {
    * for a trip with legs (a crane's lift, a van's drive). Raises `started` and writes `moving` like a verb.
    * The effect has already passed its own device's freeze, so a mover on another device goes regardless.
    */
-  runPath(dev: string, noun: string, path: string, opts?: { from?: string; ahead?: number }): 'started' | 'unknown' {
+  runPath(
+    dev: string,
+    noun: string,
+    path: string,
+    opts?: { from?: string; ahead?: number },
+  ): 'started' | 'unknown' {
     const n = this.nounData(dev, noun);
     if (!n?.mover) return 'unknown';
     const r = this.movers.runPath(dev + '.' + noun, path, opts);
@@ -1106,99 +1766,239 @@ export class SceneModel {
   private runZone(n: NounData, c: Ctx): Line | null {
     if (c.verb !== 'arm' && c.verb !== 'disarm') return this.perform(n, c);
     const changed = this.zones.arm(c.dev + '.' + n.id, c.verb === 'arm');
-    return this.line(changed ? 'zone.' + c.verb : 'zone.already', { via: c.bySignal ? 'signal → ' : '', noun: n.id, verb: c.verb });
+    return this.line(changed ? 'zone.' + c.verb : 'zone.already', {
+      via: c.bySignal ? 'signal → ' : '',
+      noun: n.id,
+      verb: c.verb,
+    });
   }
 
   /** Raise (or lower) a device's trace; a full one kicks. */
   addTrace(dev: string, by: number) {
-    const result=reduceTraceAdd(this.captureDomainState(),dev,by,this.traceDomainMeta(dev));
-    if(!result.ok)return;this.applyDomainState(result.state);result.notices.forEach(n=>this.notifyDomain(n));
+    const result = reduceTraceAdd(this.captureDomainState(), dev, by, this.traceDomainMeta(dev));
+    if (!result.ok) return;
+    this.applyDomainState(result.state);
+    result.notices.forEach((n) => this.notifyDomain(n));
   }
 
   private kick(dev: string) {
-    const meta=this.traceDomainMeta(dev),result=reduceTraceKick(this.captureDomainState(),dev,meta.span,meta.wallNow);
-    if(!result.ok)return;this.applyDomainState(result.state);result.notices.forEach(n=>this.notifyDomain(n));
+    const meta = this.traceDomainMeta(dev),
+      result = reduceTraceKick(this.captureDomainState(), dev, meta.span, meta.wallNow);
+    if (!result.ok) return;
+    this.applyDomainState(result.state);
+    result.notices.forEach((n) => this.notifyDomain(n));
   }
-  private captureDomainState():SceneDomains{return captureDomains({links:this.links,live:this.live,cuts:this.cuts,trace:this.trace,locks:this.locks,spans:this.spans,viewing:this.viewing,touched:this.touched});}
-  private applyDomainState(state:SceneDomains){this.links=state.links;this.live=state.live;this.cuts=state.cuts;this.trace=state.trace;this.locks=state.locks;this.spans=state.spans;this.viewing=state.viewing;this.touched=state.touched;}
-  private traceDomainMeta(dev:string){return{exists:this.devices.has(dev),span:Math.max(0,...this.logsOf(dev).map(n=>n.log!.lockMs??LOG_LOCK_MS))||LOG_LOCK_MS,wallNow:this.wall()};}
-  private domainEndpoints(from:string,to:string,verb:string){const i=from.lastIndexOf(':'),n=this.noun(from.slice(0,i));return{event:i>0&&!!n?.events?.includes(from.slice(i+1)),verb:!!this.noun(to)?.verbs.includes(verb)};}
-  private notifyDomain(notice:DomainNotice){
-    if(notice.kind==='mover'){
+  private captureDomainState(): SceneDomains {
+    return captureDomains({
+      links: this.links,
+      live: this.live,
+      cuts: this.cuts,
+      trace: this.trace,
+      locks: this.locks,
+      spans: this.spans,
+      viewing: this.viewing,
+      touched: this.touched,
+    });
+  }
+  private applyDomainState(state: SceneDomains) {
+    this.links = state.links;
+    this.live = state.live;
+    this.cuts = state.cuts;
+    this.trace = state.trace;
+    this.locks = state.locks;
+    this.spans = state.spans;
+    this.viewing = state.viewing;
+    this.touched = state.touched;
+  }
+  private traceDomainMeta(dev: string) {
+    return {
+      exists: this.devices.has(dev),
+      span:
+        Math.max(0, ...this.logsOf(dev).map((n) => n.log!.lockMs ?? LOG_LOCK_MS)) || LOG_LOCK_MS,
+      wallNow: this.wall(),
+    };
+  }
+  private domainEndpoints(from: string, to: string, verb: string) {
+    const i = from.lastIndexOf(':'),
+      n = this.noun(from.slice(0, i));
+    return {
+      event: i > 0 && !!n?.events?.includes(from.slice(i + 1)),
+      verb: !!this.noun(to)?.verbs.includes(verb),
+    };
+  }
+  private notifyDomain(notice: DomainNotice) {
+    if (notice.kind === 'mover') {
       // Physical start signals execute on the existing scene clock, after the transaction releases.
       // A native milestone can then invoke a system command without reentrant dispatch.
-      this.later(0,()=>{const noun=this.nounData(notice.device,notice.noun);if(noun?.mover)this.setOff(noun,notice.device);});return;
+      this.later(0, () => {
+        const noun = this.nounData(notice.device, notice.noun);
+        if (noun?.mover) this.setOff(noun, notice.device);
+      });
+      return;
     }
-    this.later(notice.span+50,()=>this.changed());
-    this.sayLine(this.line('trace.kick',{device:this.devices.get(notice.device)!.name,sec:secs(notice.span)}),notice.device);
+    this.later(notice.span + 50, () => this.changed());
+    this.sayLine(
+      this.line('trace.kick', {
+        device: this.devices.get(notice.device)!.name,
+        sec: secs(notice.span),
+      }),
+      notice.device,
+    );
     this.hooks.kick?.(notice.device);
   }
   /** One temporary draft for a synchronous shared command transaction, never another saved owner. */
-  beginDomainTransaction():GameplayDomainTransaction{
-    let draft=this.captureDomainState(),notices:DomainNotice[]=[];
-    const motions:{device:string;noun:string;path:string}[]=[];
-    return{
-      context:()=>({cables:draft.links}),
-      reduce:(action,delta)=>{
-        if('mover'in action){const move=action.mover,n=this.noun(move.device+'.'+move.noun),data=this.nounData(move.device,move.noun);if(!n||!data?.mover?.paths?.[move.path])return{ok:false,reason:'resources'};const allowed=this.nativeAvailability(move.device,n);if(!allowed.ok)return allowed;motions.push(move);notices.push({kind:'mover',device:move.device,noun:move.noun});return{ok:true};}
-        const result='wire'in action?action.wire.op==='connect'?reduceWireConnect(draft,action.wire.from,action.wire.to,action.wire.verb,this.domainEndpoints(action.wire.from,action.wire.to,action.wire.verb)):(()=>{const link=draft.links.find(l=>l.from===action.wire.from&&l.to===action.wire.to);return link?reduceWireCut(draft,link):{ok:false as const,reason:'resources' as const};})():reduceTraceAdd(draft,action.trace.device,delta!,this.traceDomainMeta(action.trace.device));
-        if(!result.ok)return{ok:false,reason:result.reason};draft=result.state;notices.push(...result.notices);return{ok:true};
+  beginDomainTransaction(): GameplayDomainTransaction {
+    let draft = this.captureDomainState(),
+      notices: DomainNotice[] = [];
+    const motions: { device: string; noun: string; path: string }[] = [];
+    return {
+      context: () => ({ cables: draft.links }),
+      reduce: (action, delta) => {
+        if ('mover' in action) {
+          const move = action.mover,
+            n = this.noun(move.device + '.' + move.noun),
+            data = this.nounData(move.device, move.noun);
+          if (!n || !data?.mover?.paths?.[move.path]) return { ok: false, reason: 'resources' };
+          const allowed = this.nativeAvailability(move.device, n);
+          if (!allowed.ok) return allowed;
+          motions.push(move);
+          notices.push({ kind: 'mover', device: move.device, noun: move.noun });
+          return { ok: true };
+        }
+        const result =
+          'wire' in action
+            ? action.wire.op === 'connect'
+              ? reduceWireConnect(
+                  draft,
+                  action.wire.from,
+                  action.wire.to,
+                  action.wire.verb,
+                  this.domainEndpoints(action.wire.from, action.wire.to, action.wire.verb),
+                )
+              : (() => {
+                  const link = draft.links.find(
+                    (l) => l.from === action.wire.from && l.to === action.wire.to,
+                  );
+                  return link
+                    ? reduceWireCut(draft, link)
+                    : { ok: false as const, reason: 'resources' as const };
+                })()
+            : reduceTraceAdd(
+                draft,
+                action.trace.device,
+                delta!,
+                this.traceDomainMeta(action.trace.device),
+              );
+        if (!result.ok) return { ok: false, reason: result.reason };
+        draft = result.state;
+        notices.push(...result.notices);
+        return { ok: true };
       },
-      authorizeRoute:c=>{const native=this.nativeEligibility(c.dev,c.noun,c.verb,c.bySignal);if(!native.ok)return native;return !c.bySignal&&(draft.locks.get(c.dev)??0)>this.wall()?{ok:false,reason:'lockout'}:{ok:true};},
-      commit:()=>{this.applyDomainState(draft);for(const m of motions)this.movers.runPath(m.device+'.'+m.noun,m.path);},takeNotices:()=>{const out=notices;notices=[];return out;},notify:n=>this.withCue(()=>this.notifyDomain(n),true),refresh:()=>this.changed(),
+      authorizeRoute: (c) => {
+        const native = this.nativeEligibility(c.dev, c.noun, c.verb, c.bySignal);
+        if (!native.ok) return native;
+        return !c.bySignal && (draft.locks.get(c.dev) ?? 0) > this.wall()
+          ? { ok: false, reason: 'lockout' }
+          : { ok: true };
+      },
+      commit: () => {
+        this.applyDomainState(draft);
+        for (const m of motions) this.movers.runPath(m.device + '.' + m.noun, m.path);
+      },
+      takeNotices: () => {
+        const out = notices;
+        notices = [];
+        return out;
+      },
+      notify: (n) => this.withCue(() => this.notifyDomain(n), true),
+      refresh: () => this.changed(),
     };
   }
 
   // ---------- the net ----------
 
-  nodeName(id: string) { return this.nodeData.get(id)?.name ?? this.devices.get(id)?.name ?? id; }
+  nodeName(id: string) {
+    return this.nodeData.get(id)?.name ?? this.devices.get(id)?.name ?? id;
+  }
   /** Nodes seen on a scan but not connected: silhouettes on the board, with the LINK device that reaches them. */
   ghosts(): { id: string; name: string; link: string }[] {
-    return [...this.net].filter(([, s]) => s === 'seen').map(([id]) => {
-      const link = [...this.devices.values()].find((d) => d.data.nouns.some((n) => n.link && this.reachOf(n, d.id).includes(id)));
-      return { id, name: this.nodeName(id), link: link?.name ?? 'the net map (N)' };
-    });
+    return [...this.net]
+      .filter(([, s]) => s === 'seen')
+      .map(([id]) => {
+        const link = [...this.devices.values()].find((d) =>
+          d.data.nouns.some((n) => n.link && this.reachOf(n, d.id).includes(id)),
+        );
+        return { id, name: this.nodeName(id), link: link?.name ?? 'the net map (N)' };
+      });
   }
 
   /** The player's controlled nodes (their Registry labels). */
-  registryLabels(){return registryLabels({networks:this.nets});}
-  controlled(): string[] { return this.hooks.controlled?.() ?? []; }
+  registryLabels() {
+    return registryLabels({ networks: this.nets });
+  }
+  controlled(): string[] {
+    return this.hooks.controlled?.() ?? [];
+  }
   /** A LINK's port: `scene:device.noun`, as networks name it. */
-  private port(dev: string, noun: string) { return this.data.id + ':' + dev + '.' + noun; }
+  private port(dev: string, noun: string) {
+    return this.data.id + ':' + dev + '.' + noun;
+  }
   /** A machine of a network that is a node this scene can bring onto the board (its own, or net.json's). */
-  private nodeHere = (m: MachineData) => this.nodeData.has(m.id) && (m.in.includes(this.data.id) || m.in.includes('net'));
+  private nodeHere = (m: MachineData) =>
+    this.nodeData.has(m.id) && (m.in.includes(this.data.id) || m.in.includes('net'));
   /** A machine standing in this scene (a device in the world): a controlled one here is an access point. */
-  private standing = (m: MachineData) => m.in.includes(this.data.id) && this.devices.has(m.id) && !this.nodeData.has(m.id) && !!this.devices.get(m.id)!.data.layout?.spot;
+  private standing = (m: MachineData) =>
+    m.in.includes(this.data.id) &&
+    this.devices.has(m.id) &&
+    !this.nodeData.has(m.id) &&
+    !!this.devices.get(m.id)!.data.layout?.spot;
 
   /**
    * The nodes a LINK reaches: its own `reach` and `known`, and the nodes of the networks its port
    * leads to (net.json `networks`); in sudo mode every node there is (but itself).
    */
   private reachOf(n: NounData, dev: string): string[] {
-    if (this.hooks.sudo?.()) return [...this.nodeData.keys()].filter((id) => !this.nodeData.get(id)!.nouns.includes(n));
+    if (this.hooks.sudo?.())
+      return [...this.nodeData.keys()].filter((id) => !this.nodeData.get(id)!.nouns.includes(n));
     const out = new Set([...(n.link!.reach ?? []), ...(n.link!.known ?? [])]);
-    const nets = reachNets(this.nets, { ports: [this.port(dev, n.id)], controlled: this.controlled() });
-    machinesOf(this.nets, nets).filter(this.nodeHere).forEach((m) => out.add(m.id));
+    const nets = reachNets(this.nets, {
+      ports: [this.port(dev, n.id)],
+      controlled: this.controlled(),
+    });
+    machinesOf(this.nets, nets)
+      .filter(this.nodeHere)
+      .forEach((m) => out.add(m.id));
     out.delete(dev);
     return [...out];
   }
 
   private runLink(n: NounData, c: Ctx): Line | null {
-    const reach = this.reachOf(n, c.dev).filter((id) => this.nodeData.has(id)), via = c.bySignal ? 'signal → ' : '';
+    const reach = this.reachOf(n, c.dev).filter((id) => this.nodeData.has(id)),
+      via = c.bySignal ? 'signal → ' : '';
     const id = c.verb.startsWith('connect ') ? c.verb.slice(8) : '';
     // a link that is down (its `when` does not hold) neither scans nor connects
     if ((c.verb === 'scan' || id) && n.link!.when && !this.test(n.link!.when, c)) {
-      return this.line('net.down', { via, verb: c.verb, name: this.devices.get(c.dev)?.name ?? c.dev });
+      return this.line('net.down', {
+        via,
+        verb: c.verb,
+        name: this.devices.get(c.dev)?.name ?? c.dev,
+      });
     }
     // [programs] without scan.so a port only connects to the nodes it already knows
     const known = n.link!.known ?? [];
     if ((c.verb === 'scan' || (id && !known.includes(id))) && !this.canScan) {
-      return this.line(known.length ? 'net.noscan' : 'net.noscan.none', { via, verb: c.verb, scanProgram:this.scanProgram??'scanner' });
+      return this.line(known.length ? 'net.noscan' : 'net.noscan.none', {
+        via,
+        verb: c.verb,
+        scanProgram: this.scanProgram ?? 'scanner',
+      });
     }
     if (c.verb === 'scan') {
       const fresh = reach.filter((x) => !this.net.has(x));
       fresh.forEach((x) => this.net.set(x, 'seen'));
-      return fresh.length ? this.line('net.scan', { via, names: fresh.map((x) => this.nodeName(x)).join(', ') }) : this.line('net.scan.none', { via });
+      return fresh.length
+        ? this.line('net.scan', { via, names: fresh.map((x) => this.nodeName(x)).join(', ') })
+        : this.line('net.scan.none', { via });
     }
     if (id && reach.includes(id)) {
       const vars = { via, node: id, name: this.nodeName(id) };
@@ -1214,38 +2014,56 @@ export class SceneModel {
   /** The LINKs you are plugged in at here: every one on the board that is up (its `when` holds, its sector open). */
   ports(): { dev: string; noun: string; key: string }[] {
     const out: { dev: string; noun: string; key: string }[] = [];
-    for (const d of this.devices.values()) for (const n of d.data.nouns) {
-      if (!n.link) continue;
-      if (n.sector && this.sealed(d.id, n.sector)) continue;
-      if (n.link.when && !this.test(n.link.when, this.ctx(d.id, n.id))) continue;
-      out.push({ dev: d.id, noun: n.id, key: this.port(d.id, n.id) });
-    }
+    for (const d of this.devices.values())
+      for (const n of d.data.nouns) {
+        if (!n.link) continue;
+        if (n.sector && this.sealed(d.id, n.sector)) continue;
+        if (n.link.when && !this.test(n.link.when, this.ctx(d.id, n.id))) continue;
+        out.push({ dev: d.id, noun: n.id, key: this.port(d.id, n.id) });
+      }
     return out;
   }
 
   /** The networks you reach from here: through the ports here, and your controlled nodes standing here. */
   netsHere(): Set<string> {
-    return reachNets(this.nets, { ports: this.ports().map((p) => p.key), controlled: this.controlled(), standing: this.standing });
+    return reachNets(this.nets, {
+      ports: this.ports().map((p) => p.key),
+      controlled: this.controlled(),
+      standing: this.standing,
+    });
   }
 
   /** The nodes you can bring onto this board from here: those of the networks you reach, and what the ports here know. */
   nodesHere(): string[] {
-    const out = new Set(machinesOf(this.nets, this.netsHere()).filter(this.nodeHere).map((m) => m.id));
+    const out = new Set(
+      machinesOf(this.nets, this.netsHere())
+        .filter(this.nodeHere)
+        .map((m) => m.id),
+    );
     for (const p of this.ports()) {
       const l = this.nounData(p.dev, p.noun)!.link!;
-      [...(l.reach ?? []), ...(l.known ?? [])].forEach((id) => { if (this.nodeData.has(id)) out.add(id); });
+      [...(l.reach ?? []), ...(l.known ?? [])].forEach((id) => {
+        if (this.nodeData.has(id)) out.add(id);
+      });
     }
     return [...out];
   }
 
   /** The deck's `scan`, or opening the net map: every node you reach from here shows on the board. Needs scan.so. */
   scanHere(): Line {
-    if (!this.canScan) return this.line('net.noscan.none', { via: '', verb: 'scan',scanProgram:this.scanProgram??'scanner' });
+    if (!this.canScan)
+      return this.line('net.noscan.none', {
+        via: '',
+        verb: 'scan',
+        scanProgram: this.scanProgram ?? 'scanner',
+      });
     if (!this.ports().length && !this.netsHere().size) return this.line('net.unplugged');
     const fresh = this.nodesHere().filter((x) => !this.net.has(x));
     fresh.forEach((x) => this.net.set(x, 'seen'));
     this.changed();
-    return fresh.length ? this.line('net.scan', { via: '', names: fresh.map((x) => this.nodeName(x)).join(', ') }) : this.line('net.scan.none', { via: '' });
+    return fresh.length
+      ? this.line('net.scan', { via: '', names: fresh.map((x) => this.nodeName(x)).join(', ') })
+      : this.line('net.scan.none', { via: '' });
   }
 
   /**
@@ -1255,9 +2073,16 @@ export class SceneModel {
    */
   plugIn(id: string, place?: (m: MachineData) => string): Line {
     const vars = { via: '', node: id, name: this.nodeName(id) };
-    const known = this.ports().some((p) => (this.nounData(p.dev, p.noun)!.link!.known ?? []).includes(id));
+    const known = this.ports().some((p) =>
+      (this.nounData(p.dev, p.noun)!.link!.known ?? []).includes(id),
+    );
     if (this.devices.has(id) && !this.devices.get(id)!.node) return this.line('net.here', vars);
-    if (!known && !this.canScan) return this.line('net.noscan.none', { via: '', verb: 'connect',scanProgram:this.scanProgram??'scanner' });
+    if (!known && !this.canScan)
+      return this.line('net.noscan.none', {
+        via: '',
+        verb: 'connect',
+        scanProgram: this.scanProgram ?? 'scanner',
+      });
     if (this.nodesHere().includes(id)) {
       if (this.net.get(id) === 'connected') return this.line('net.connected', vars);
       this.join(id);
@@ -1266,7 +2091,8 @@ export class SceneModel {
     }
     const net = this.nets.find((n) => n.machines.some((m) => m.id === id));
     const m = net?.machines.find((x) => x.id === id);
-    if (net && m && this.netsHere().has(net.id) && place) return this.line('net.elsewhere', { ...vars, place: place(m) });
+    if (net && m && this.netsHere().has(net.id) && place)
+      return this.line('net.elsewhere', { ...vars, place: place(m) });
     return this.line('net.unreached', { ...vars, need: net?.need ?? 'somewhere else' });
   }
 
@@ -1284,15 +2110,31 @@ export class SceneModel {
   snapshot(): SceneSnapshot {
     let state: Record<string, Value> = {};
     for (const k of Object.keys(this.data.state)) state[k] = this.state[k];
-    if(this.checkpointProgram)state=this.checkpointProgram.settle(state);
+    if (this.checkpointProgram) state = this.checkpointProgram.settle(state);
     const devs = [...this.devices.values()];
-    const logic = devs.filter((d) => d.logic).map((d) => {
-      const kind = d.id.replace(/\d+$/, ''), own = this.local.get(d.id), at = this.logicAt.get(d.id);
-      return { id: d.id, kind, ...(own ? { state: { ...own } } : {}), ...(at ? { at: { x: at.x, h: at.h } } : {}) };
-    });
-    const z: SceneSnapshot = { state, goals: [...this.goals], links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })), logic };
-    if(this.triggerHistory.size)z.triggers=[...this.triggerHistory];
-    const local = devs.filter((d) => !d.logic && this.local.has(d.id)).map((d) => [d.id, { ...this.local.get(d.id)! }]);
+    const logic = devs
+      .filter((d) => d.logic)
+      .map((d) => {
+        const kind = d.id.replace(/\d+$/, ''),
+          own = this.local.get(d.id),
+          at = this.logicAt.get(d.id);
+        return {
+          id: d.id,
+          kind,
+          ...(own ? { state: { ...own } } : {}),
+          ...(at ? { at: { x: at.x, h: at.h } } : {}),
+        };
+      });
+    const z: SceneSnapshot = {
+      state,
+      goals: [...this.goals],
+      links: this.links.map((l) => ({ from: l.from, to: l.to, verb: l.verb })),
+      logic,
+    };
+    if (this.triggerHistory.size) z.triggers = [...this.triggerHistory];
+    const local = devs
+      .filter((d) => !d.logic && this.local.has(d.id))
+      .map((d) => [d.id, { ...this.local.get(d.id)! }]);
     if (local.length) z.local = Object.fromEntries(local);
     if (this.opened.size) z.open = [...this.opened];
     if (this.passed.size) z.passed = [...this.passed];
@@ -1302,18 +2144,30 @@ export class SceneModel {
     }
     // [save details] cuts of pre-wired cables, trace, lockouts (wall clock), clocks, the watchdog's place
     if (this.cuts.size) z.cut = [...this.cuts];
-    const trace = [...this.trace].filter(([, v]) => v > 0).map(([k, v]) => [k, Math.round(v * 10) / 10] as const);
+    const trace = [...this.trace]
+      .filter(([, v]) => v > 0)
+      .map(([k, v]) => [k, Math.round(v * 10) / 10] as const);
     if (trace.length) z.trace = Object.fromEntries(trace);
-    const locks = [...this.locks].filter(([k]) => this.lockLeft(k) > 0).map(([k, until]) => [k, Math.round(until)] as const);
+    const locks = [...this.locks]
+      .filter(([k]) => this.lockLeft(k) > 0)
+      .map(([k, until]) => [k, Math.round(until)] as const);
     if (locks.length) z.locks = Object.fromEntries(locks);
     const clocks = this.clocks.snapshot();
     if (Object.keys(clocks).length) z.clocks = clocks;
-    const movers = this.movers.snapshot(new Set((this.peopleLevel?.vehicles??[]).flatMap(v=>[v.source.mover,...('mover'in v.source.doors?[v.source.doors.mover]:[])])));
+    const movers = this.movers.snapshot(
+      new Set(
+        (this.peopleLevel?.vehicles ?? []).flatMap((v) => [
+          v.source.mover,
+          ...('mover' in v.source.doors ? [v.source.doors.mover] : []),
+        ]),
+      ),
+    );
     if (Object.keys(movers).length) z.movers = movers;
     const zones = this.zones.snapshot();
     if (Object.keys(zones).length) z.zones = zones;
     if (this.dogs.any) z.watchdog = this.dogs.snapshot();
-    if(this.peopleSources.length)z.people={...structuredClone(this.people),wall:this.wall()};
+    if (this.peopleSources.length)
+      z.people = { ...structuredClone(this.people), wall: this.wall() };
     return z;
   }
 
@@ -1323,32 +2177,58 @@ export class SceneModel {
    * Placed parts come back even if their module is no longer owned.
    */
   restore(s: SceneSnapshot) {
-    let restored={...this.data.state};for(const[k,v]of Object.entries(s.state??{}))if(k in this.data.state)restored[k]=v;
-    if(this.checkpointProgram)restored=this.checkpointProgram.settle(restored);
+    let restored = { ...this.data.state };
+    for (const [k, v] of Object.entries(s.state ?? {})) if (k in this.data.state) restored[k] = v;
+    if (this.checkpointProgram) restored = this.checkpointProgram.settle(restored);
     this.init();
-    for(const id of Array.isArray(s.triggers)?s.triggers:[])if(typeof id==='string'&&id.length<=128)this.triggerHistory.add(id);
-    Object.assign(this.state,restored);
+    for (const id of Array.isArray(s.triggers) ? s.triggers : [])
+      if (typeof id === 'string' && id.length <= 128) this.triggerHistory.add(id);
+    Object.assign(this.state, restored);
     const goalIds = new Set(this.data.goals.map((g) => g.id));
-    (s.goals ?? []).forEach((g) => { if (goalIds.has(g)) this.goals.add(g); });
-    (s.net?.seen ?? []).forEach((id) => { if (this.nodeData.has(id)) this.net.set(id, 'seen'); });
-    (s.net?.connected ?? []).forEach((id) => { if (this.nodeData.has(id)) this.join(id); });
+    (s.goals ?? []).forEach((g) => {
+      if (goalIds.has(g)) this.goals.add(g);
+    });
+    (s.net?.seen ?? []).forEach((id) => {
+      if (this.nodeData.has(id)) this.net.set(id, 'seen');
+    });
+    (s.net?.connected ?? []).forEach((id) => {
+      if (this.nodeData.has(id)) this.join(id);
+    });
     for (const [id, st] of Object.entries(s.local ?? {})) {
       const own = this.local.get(id);
-      if (own && !this.devices.get(id)?.logic) for (const [k, v] of Object.entries(st ?? {})) if (k in own) own[k] = v;
+      if (own && !this.devices.get(id)?.logic)
+        for (const [k, v] of Object.entries(st ?? {})) if (k in own) own[k] = v;
     }
     for (const p of s.logic ?? []) {
-      if (!this.module(p.kind) || !p.id.startsWith(p.kind) || !/^\d+$/.test(p.id.slice(p.kind.length)) || this.devices.has(p.id)) continue;
+      if (
+        !this.module(p.kind) ||
+        !p.id.startsWith(p.kind) ||
+        !/^\d+$/.test(p.id.slice(p.kind.length)) ||
+        this.devices.has(p.id)
+      )
+        continue;
       this.place(p.kind, p.id);
       const own = this.local.get(p.id);
       if (own && p.state) for (const [k, v] of Object.entries(p.state)) if (k in own) own[k] = v;
-      if (p.at && Number.isFinite(p.at.x) && Number.isFinite(p.at.h)) this.logicAt.set(p.id, { x: p.at.x, h: p.at.h });
+      if (p.at && Number.isFinite(p.at.x) && Number.isFinite(p.at.h))
+        this.logicAt.set(p.id, { x: p.at.x, h: p.at.h });
     }
-    (s.open ?? []).forEach((key) => { const [d, sec] = key.split('/'); if (this.sector(d, sec)) this.opened.add(key); });
-    (s.passed ?? []).forEach((key) => { const [d, n] = split(key); if (this.nounData(d, n)?.guard) this.passed.add(key); });
-    this.links = (s.links ?? []).filter((l) => {
-      const [from, ev] = l.from.split(':'), a = this.noun(from), b = this.noun(l.to);
-      return !!a && !!b && !!a.events?.includes(ev) && b.verbs.includes(l.verb);
-    }).map((l) => ({ from: l.from, to: l.to, verb: l.verb }));
+    (s.open ?? []).forEach((key) => {
+      const [d, sec] = key.split('/');
+      if (this.sector(d, sec)) this.opened.add(key);
+    });
+    (s.passed ?? []).forEach((key) => {
+      const [d, n] = split(key);
+      if (this.nounData(d, n)?.guard) this.passed.add(key);
+    });
+    this.links = (s.links ?? [])
+      .filter((l) => {
+        const [from, ev] = l.from.split(':'),
+          a = this.noun(from),
+          b = this.noun(l.to);
+        return !!a && !!b && !!a.events?.includes(ev) && b.verbs.includes(l.verb);
+      })
+      .map((l) => ({ from: l.from, to: l.to, verb: l.verb }));
     this.restoreEngine(s);
     this.hooks.changed();
   }
@@ -1360,39 +2240,61 @@ export class SceneModel {
    * lockouts, clocks and the watchdog come back where they were.
    */
   private restoreEngine(s: SceneSave) {
-    (s.cut ?? []).forEach((id) => { if (typeof id === 'string') this.cuts.add(id); });
-    const here = (key: string) => { const d = split(key.split(':')[0])[0]; return this.devices.has(d) || this.mechanisms.has(d); };
+    (s.cut ?? []).forEach((id) => {
+      if (typeof id === 'string') this.cuts.add(id);
+    });
+    const here = (key: string) => {
+      const d = split(key.split(':')[0])[0];
+      return this.devices.has(d) || this.mechanisms.has(d);
+    };
     for (const c of this.prewired) {
       if (!here(c.from) || !here(c.to)) continue;
       const had = this.links.findIndex((l) => l.from === c.from && l.to === c.to);
-      if (had >= 0) { this.links[had] = c.fixed ? this.wiredLink(c) : { ...this.links[had], wired: wiredId(c) }; continue; }
+      if (had >= 0) {
+        this.links[had] = c.fixed ? this.wiredLink(c) : { ...this.links[had], wired: wiredId(c) };
+        continue;
+      }
       if (c.fixed || !this.cuts.has(wiredId(c))) this.links.push(this.wiredLink(c));
     }
-    for (const [dev, v] of Object.entries(s.trace ?? {})) if (this.devices.has(dev) && typeof v === 'number') this.trace.set(dev, clamp(v));
+    for (const [dev, v] of Object.entries(s.trace ?? {}))
+      if (this.devices.has(dev) && typeof v === 'number') this.trace.set(dev, clamp(v));
     for (const [key, until] of Object.entries(s.locks ?? {})) {
       const left = typeof until === 'number' ? until - this.wall() : 0;
       const [dev, noun] = split(key);
-      if (left > 0 && this.devices.has(key.includes('.') ? dev : key) && (!key.includes('.') || this.nounData(dev, noun)?.guard)) this.lock(key, left);
+      if (
+        left > 0 &&
+        this.devices.has(key.includes('.') ? dev : key) &&
+        (!key.includes('.') || this.nounData(dev, noun)?.guard)
+      )
+        this.lock(key, left);
     }
     this.clocks.restore(s.clocks);
     this.syncMovers();
     for (const w of this.movers.restore(s.movers)) this.write(w.key, w.value, w.dev);
     this.zones.restore(s.zones);
     this.dogs.restore(s.watchdog);
-    this.people=restorePeople(s.people,this.now(),this.wall());
+    this.people = restorePeople(s.people, this.now(), this.wall());
   }
 
   /** Start the scene over (the terminal's `reset yard`). The keyring is the player's, so it stays. */
-  reset() { this.init(); this.hooks.changed(); }
+  reset() {
+    this.init();
+    this.hooks.changed();
+  }
 
   // ---------- data → live devices ----------
 
-  private nounData(dev: string, noun: string) { return this.devices.get(dev)?.data.nouns.find((n) => n.id === noun); }
+  private nounData(dev: string, noun: string) {
+    return this.devices.get(dev)?.data.nouns.find((n) => n.id === noun);
+  }
 
   private build(d: DeviceData, id: string, as?: 'logic' | 'node'): Device {
     if (d.state) this.local.set(id, { ...d.state });
     const dev: Device = {
-      id, name: d.name, look: d.look, data: d,
+      id,
+      name: d.name,
+      look: d.look,
+      data: d,
       status: () => this.status(d.status, this.ctx(id)),
       nouns: d.nouns.map((n) => this.nounOf(n, id)),
     };
@@ -1400,17 +2302,35 @@ export class SceneModel {
     for (const s of d.sectors ?? []) {
       if (!('sequence' in s.seal)) continue;
       const verbs = s.seal.sequence.filter((v, i, a) => a.indexOf(v) === i);
-      dev.nouns.push({ id: s.id, layer: 'software', function: 'gate', behaviour: 'seal', verbs, run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal) });
+      dev.nouns.push({
+        id: s.id,
+        layer: 'software',
+        function: 'gate',
+        behaviour: 'seal',
+        verbs,
+        run: (verb, bySignal) => this.sealStep(id, s, verb, bySignal),
+      });
     }
     // [watchdog] a device on a watchdog's route carries its noun: read it, wire from arrives / leaves
     if (this.dogs.routes().has(id)) {
-      dev.nouns.push({ id: WATCH_NOUN, layer: 'software', function: 'record', behaviour: 'watch', verbs: ['read'], events: ['arrives', 'leaves'], run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }) });
+      dev.nouns.push({
+        id: WATCH_NOUN,
+        layer: 'software',
+        function: 'record',
+        behaviour: 'watch',
+        verbs: ['read'],
+        events: ['arrives', 'leaves'],
+        run: (verb, bySignal) => this.runWatch({ dev: id, noun: WATCH_NOUN, verb, bySignal }),
+      });
     }
     // [clocks, movers, zones] its clocks start beating, its movers stand at their first stop, its zones watch
     this.clocks.add(id, d.nouns);
     this.movers.add(id, d.nouns);
     this.zones.add(id, d.nouns, (c, axis) => this.coord(c, axis));
-    if (as === 'logic') { dev.crafted = true; dev.logic = true; }
+    if (as === 'logic') {
+      dev.crafted = true;
+      dev.logic = true;
+    }
     if (as === 'node') dev.node = true;
     return dev;
   }
@@ -1422,9 +2342,17 @@ export class SceneModel {
   private mechanismDevice(m: MechanismDevice): Device {
     const data: DeviceData = { id: m.id, name: m.label, look: '', status: '', nouns: [] };
     return {
-      id: m.id, name: m.label, look: '', data, status: () => '',
+      id: m.id,
+      name: m.label,
+      look: '',
+      data,
+      status: () => '',
       nouns: m.parts.map((p) => ({
-        id: p.id, layer: p.layer, function: p.function, verbs: [...p.verbs], events: [...p.events],
+        id: p.id,
+        layer: p.layer,
+        function: p.function,
+        verbs: [...p.verbs],
+        events: [...p.events],
         run: (verb, bySignal) => {
           const effect = p.id === 'effects' ? this.rules.effects[verb] : undefined;
           if (!effect) return null;
@@ -1439,30 +2367,47 @@ export class SceneModel {
   private emitMechanism(part: string, event: string) {
     for (const m of this.mechanisms.values()) {
       const key = m.id + '.' + part + ':' + event;
-      if (m.nouns.some((n) => n.id === part && n.events?.includes(event)) && this.links.some((l) => l.from === key)) this.emit(key);
+      if (
+        m.nouns.some((n) => n.id === part && n.events?.includes(event)) &&
+        this.links.some((l) => l.from === key)
+      )
+        this.emit(key);
     }
   }
   /** A derived value a cable listens to raises `changed` when it differs from the last tick (the first sight only notes it). */
   private tickMechanisms() {
     if (!this.mechanisms.size || !this.links.length) return;
-    const derived = this.rules.derived ?? {}, seen = new Set<string>();
+    const derived = this.rules.derived ?? {},
+      seen = new Set<string>();
     for (const l of [...this.links]) {
       const i = l.from.lastIndexOf(':');
       if (i < 0 || l.from.slice(i + 1) !== 'changed') continue;
       const [dev, part] = split(l.from.slice(0, i));
       if (!this.mechanisms.has(dev) || !(part in derived) || seen.has(l.from)) continue;
       seen.add(l.from);
-      const now = derived[part](this), key = dev + '.' + part;
-      if (!this.derivedSeen.has(key)) { this.derivedSeen.set(key, now); continue; }
-      if (this.derivedSeen.get(key) !== now) { this.derivedSeen.set(key, now); this.emit(l.from); }
+      const now = derived[part](this),
+        key = dev + '.' + part;
+      if (!this.derivedSeen.has(key)) {
+        this.derivedSeen.set(key, now);
+        continue;
+      }
+      if (this.derivedSeen.get(key) !== now) {
+        this.derivedSeen.set(key, now);
+        this.emit(l.from);
+      }
     }
   }
 
   private nounOf(n: NounData, dev: string): Noun {
     const m = this;
     const noun: Noun = {
-      id: n.id, layer: n.layer, function: n.function, behaviour: behaviourOf(n),
-      get verbs() { return m.verbsOf(n, dev); },
+      id: n.id,
+      layer: n.layer,
+      function: n.function,
+      behaviour: behaviourOf(n),
+      get verbs() {
+        return m.verbsOf(n, dev);
+      },
       run: (verb, bySignal) => {
         const c: Ctx = { dev, noun: n.id, verb, bySignal };
         if (n.guard) return this.runGuard(n, c);
@@ -1484,14 +2429,25 @@ export class SceneModel {
     const own = n.verbs ?? [];
     if (n.guard?.toy) return [this.toyVerb, ...own.filter((v) => v !== this.toyVerb)];
     if (n.clock) return ['start', 'stop', ...own.filter((v) => v !== 'start' && v !== 'stop')];
-    if (n.mover) { const engine = moverVerbs(n.mover); return [...engine, ...own.filter((v) => !engine.includes(v))]; }
-    if (n.zone) return [...ZONE_VERBS, ...own.filter((v) => !(ZONE_VERBS as readonly string[]).includes(v))];
+    if (n.mover) {
+      const engine = moverVerbs(n.mover);
+      return [...engine, ...own.filter((v) => !engine.includes(v))];
+    }
+    if (n.zone)
+      return [...ZONE_VERBS, ...own.filter((v) => !(ZONE_VERBS as readonly string[]).includes(v))];
     if (n.guard) return [...this.fragments().map((f) => 'try ' + f.label), this.typeVerb, ...own];
     if (n.link) {
       // what it knows it connects to straight away (no scan.so needed); what a scan found besides
-      const reach = this.reachOf(n, dev), known = (n.link.known ?? []).filter((id) => reach.includes(id) && this.net.get(id) !== 'connected');
+      const reach = this.reachOf(n, dev),
+        known = (n.link.known ?? []).filter(
+          (id) => reach.includes(id) && this.net.get(id) !== 'connected',
+        );
       const seen = reach.filter((id) => this.net.get(id) === 'seen' && !known.includes(id));
-      return ['scan', ...[...known, ...seen].map((id) => 'connect ' + id), ...own.filter((v) => v !== 'scan')];
+      return [
+        'scan',
+        ...[...known, ...seen].map((id) => 'connect ' + id),
+        ...own.filter((v) => v !== 'scan'),
+      ];
     }
     return own;
   }
@@ -1500,7 +2456,8 @@ export class SceneModel {
     // [lock toys] probe opens the toy, full screen; signals cannot play it
     if (n.guard!.toy && c.verb === this.toyVerb) {
       const key = c.dev + '.' + n.id;
-      if (c.bySignal && !this.passed.has(key)) return this.line('guard.signal', { noun: n.id, via: 'signal → ' });
+      if (c.bySignal && !this.passed.has(key))
+        return this.line('guard.signal', { noun: n.id, via: 'signal → ' });
       const no = this.toyBlocked(key);
       if (no) return no;
       this.hooks.open('toy', key);
@@ -1509,64 +2466,107 @@ export class SceneModel {
     if (c.verb === this.typeVerb) return null;
     if (c.verb.startsWith('try ')) {
       const f = this.fragments().find((k) => 'try ' + k.label === c.verb);
-      if (f) { this.check(c.dev, n.id, f.text ?? '', c.bySignal); return null; }
+      if (f) {
+        this.check(c.dev, n.id, f.text ?? '', c.bySignal);
+        return null;
+      }
       if (!this.fragments().length) return this.line('guard.empty', { noun: n.id });
     }
     return this.perform(n, c);
   }
 
   /** Run a verb: the first case whose `if` holds does its steps and says its line. */
-  private perform(n: NounData, c: Ctx): Line | null { return this.runCases(n.on?.[c.verb] ?? n.on?.['*'], c,true); }
+  private perform(n: NounData, c: Ctx): Line | null {
+    return this.runCases(n.on?.[c.verb] ?? n.on?.['*'], c, true);
+  }
 
   /** The first case whose `if` holds (and whose `when` is now): its steps, then its line. */
-  private selectCase(cases:Case|Case[]|undefined,c:Ctx,observe=false):Case|undefined{
-    for(const row of cases?list<Case>(cases):[]){const matches=!((row.if&&!this.test(row.if,c))||!now(row.when));if(observe)this.observe('condition',c,{condition:row.if??null,matches});if(matches)return row;}
-  }
-  private runCases(cases: Case | Case[] | undefined, c: Ctx,commands=false): Line | null {
-    const k=this.selectCase(cases,c,true);if(!k)return null;
-    const command=k.do?.find(a=>'command'in a);
-    if(command&&'command'in command){
-      const result=!commands||k.do?.length!==1||Object.keys(command).join()!=='command'?{ok:false as const,reason:'forbidden' as const}:this.gameplayStep?.(c,command.command,false)??{ok:false as const,reason:'unknown-command' as const};
-      this.observe('result',c,{action:command,state:this.state,result});
-      if(!result.ok)return[(c.bySignal?'signal → ':'')+'use '+c.noun+' --'+c.verb,'ACTION REFUSED: '+result.reason+'.','err'];
-      return k.say===undefined?null:this.lineIn(k.say,c,undefined,true);
+  private selectCase(cases: Case | Case[] | undefined, c: Ctx, observe = false): Case | undefined {
+    for (const row of cases ? list<Case>(cases) : []) {
+      const matches = !((row.if && !this.test(row.if, c)) || !now(row.when));
+      if (observe) this.observe('condition', c, { condition: row.if ?? null, matches });
+      if (matches) return row;
     }
-    let out:Line|null=null;const keep=(line:Line|null)=>{if(!line)return;if(out)this.sayLine(out);out=line;};
-    for(const action of k.do??[])keep(this.doAction(action,c));if(k.say!==undefined)keep(this.lineIn(k.say,c,undefined,true));return out;
+  }
+  private runCases(cases: Case | Case[] | undefined, c: Ctx, commands = false): Line | null {
+    const k = this.selectCase(cases, c, true);
+    if (!k) return null;
+    const command = k.do?.find((a) => 'command' in a);
+    if (command && 'command' in command) {
+      const result =
+        !commands || k.do?.length !== 1 || Object.keys(command).join() !== 'command'
+          ? { ok: false as const, reason: 'forbidden' as const }
+          : (this.gameplayStep?.(c, command.command, false) ?? {
+              ok: false as const,
+              reason: 'unknown-command' as const,
+            });
+      this.observe('result', c, { action: command, state: this.state, result });
+      if (!result.ok)
+        return [
+          (c.bySignal ? 'signal → ' : '') + 'use ' + c.noun + ' --' + c.verb,
+          'ACTION REFUSED: ' + result.reason + '.',
+          'err',
+        ];
+      return k.say === undefined ? null : this.lineIn(k.say, c, undefined, true);
+    }
+    let out: Line | null = null;
+    const keep = (line: Line | null) => {
+      if (!line) return;
+      if (out) this.sayLine(out);
+      out = line;
+    };
+    for (const action of k.do ?? []) keep(this.doAction(action, c));
+    if (k.say !== undefined) keep(this.lineIn(k.say, c, undefined, true));
+    return out;
   }
 
-  private doAction(a: Action, c: Ctx,origin?:import('./gameplay/native-inputs').NativeInputOrigin): Line | null {
-    const result = this.executeAction(a, c,origin);
+  private doAction(
+    a: Action,
+    c: Ctx,
+    origin?: import('./gameplay/native-inputs').NativeInputOrigin,
+  ): Line | null {
+    const result = this.executeAction(a, c, origin);
     this.observe('result', c, { action: a, state: this.state, response: result });
     return result;
   }
 
-  private executeAction(a: Action, c: Ctx,origin?:import('./gameplay/native-inputs').NativeInputOrigin): Line | null {
+  private executeAction(
+    a: Action,
+    c: Ctx,
+    origin?: import('./gameplay/native-inputs').NativeInputOrigin,
+  ): Line | null {
     const matches = !((a.if && !this.test(a.if, c)) || !now(a.when));
     this.observe('action', c, { action: a, matches });
     if (!matches) return null;
-    if ('input'in a){if(origin?.kind==='guard')this.gameplayInput?.(a.input,origin);}
-    else if ('set' in a) this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
+    if ('input' in a) {
+      if (origin?.kind === 'guard') this.gameplayInput?.(a.input, origin);
+    } else if ('set' in a)
+      this.write(a.set, typeof a.to === 'string' ? this.fmt(a.to, c) : a.to, c.dev);
     else if ('open' in a) this.hooks.open(a.open, a.with);
     else if ('emit' in a) this.emit(c.dev + '.' + c.noun + ':' + a.emit);
     else if ('goal' in a) this.goal(a.goal);
-    else if ('effect' in a) return (this.rules.effects[a.effect] ?? ENGINE_EFFECTS[a.effect])(this.world(c), c) ?? null;
+    else if ('effect' in a)
+      return (this.rules.effects[a.effect] ?? ENGINE_EFFECTS[a.effect])(this.world(c), c) ?? null;
     else if ('give' in a) return this.give(a.give, a.count);
     else if ('take' in a) this.carry(a.take, -(a.count ?? 1));
     else if ('trace' in a) this.addTrace(c.dev, a.trace);
-    else if ('unseal' in a) { const [d, s] = a.unseal.includes('/') ? a.unseal.split('/') : [c.dev, a.unseal]; return this.unseal(d, s); }
+    else if ('unseal' in a) {
+      const [d, s] = a.unseal.includes('/') ? a.unseal.split('/') : [c.dev, a.unseal];
+      return this.unseal(d, s);
+    }
     return null;
   }
 
-
   private world(c: Ctx): World {
     return {
-      m: this, data: this.data, input:id=>this.input(id),
+      m: this,
+      data: this.data,
+      input: (id) => this.input(id),
       line: (key, vars) => this.lineIn(key, c, vars),
       has: (key) => key in this.texts,
       // an effect speaks for its own device, unless it names who reacted (`w.say(line, 'router')`)
       say: (l, from) => this.sayLine(l, from ?? (c.dev || this.speaker)),
-      receipt: (l,from)=>this.receipt(l,from??(c.dev||this.speaker)),
+      receipt: (l, from) => this.receipt(l, from ?? (c.dev || this.speaker)),
       changed: () => this.changed(),
       goal: (g) => this.goal(g),
       tune: (key) => this.data.tuning[key],
@@ -1576,44 +2576,63 @@ export class SceneModel {
 
   /** The verb whose `set` put the state where it is now (or the verb equal to it). */
   private currentVerb(n: NounData, dev: string): string | null {
-    const c = this.ctx(dev), now = this.read(n.current!, c);
-    return this.verbsOf(n, dev).find((v) => {
-      const first = list<Case>(n.on?.[v] ?? n.on?.['*'] ?? [])[0];
-      const set = first?.do?.find((a) => 'set' in a && a.set === n.current && !a.if);
-      if (!set || !('set' in set)) return v === now;
-      return (typeof set.to === 'string' ? this.fmt(set.to, { ...c, verb: v }) : set.to) === now;
-    }) ?? null;
+    const c = this.ctx(dev),
+      now = this.read(n.current!, c);
+    return (
+      this.verbsOf(n, dev).find((v) => {
+        const first = list<Case>(n.on?.[v] ?? n.on?.['*'] ?? [])[0];
+        const set = first?.do?.find((a) => 'set' in a && a.set === n.current && !a.if);
+        if (!set || !('set' in set)) return v === now;
+        return (typeof set.to === 'string' ? this.fmt(set.to, { ...c, verb: v }) : set.to) === now;
+      }) ?? null
+    );
   }
 
   private status(s: string | StatusPart[], c: Ctx) {
-    return list(s).map((p) => this.fmt(typeof p === 'string' ? p : (this.test(p.if, c) ? p.then : p.else) ?? '', c)).join('');
+    return list(s)
+      .map((p) =>
+        this.fmt(typeof p === 'string' ? p : ((this.test(p.if, c) ? p.then : p.else) ?? ''), c),
+      )
+      .join('');
   }
 
   // ---------- state, conditions, templates ----------
 
-  private ctx(dev: string, noun = ''): Ctx { return { dev, noun, verb: '', bySignal: false }; }
+  private ctx(dev: string, noun = ''): Ctx {
+    return { dev, noun, verb: '', bySignal: false };
+  }
 
   private read(key: string, c: Ctx): Value | undefined {
     const own = this.local.get(c.dev);
     if (own && key in own) return own[key];
     if (key === 'signal') return c.bySignal;
-    const query=this.gameplayQuery?.(key);if(query!==undefined)return query;
+    const query = this.gameplayQuery?.(key);
+    if (query !== undefined) return query;
     const derived = this.rules.derived?.[key];
     if (derived) return derived(this);
-    const observed=Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key)?this.data.observations!.aliases[key]:undefined;
-    if(observed)return readObservation(observed,this);
+    const observed = Object.prototype.hasOwnProperty.call(
+      this.data.observations?.aliases ?? {},
+      key,
+    )
+      ? this.data.observations!.aliases[key]
+      : undefined;
+    if (observed) return readObservation(observed, this);
     if (key in this.state) return this.state[key];
     // the city's keys (weather, hour, day): a scene's own state of the same name wins
-    if (CITY.read && (CITY_KEYS as readonly string[]).includes(key)) return CITY.read(key, this.data.id);
+    if (CITY.read && (CITY_KEYS as readonly string[]).includes(key))
+      return CITY.read(key, this.data.id);
     return undefined;
   }
 
   /** Is this time window now (true without one)? For dialogue variants. */
-  within(w?: TimeWindow) { return now(w); }
+  within(w?: TimeWindow) {
+    return now(w);
+  }
 
   private write(key: string, v: Value, dev = '') {
-    if(this.gameplayQueryIds?.has(key))throw Error('Gameplay query is read-only: '+key);
-    if(Object.prototype.hasOwnProperty.call(this.data.observations?.aliases??{},key))throw Error('Observation alias is read-only: '+key);
+    if (this.gameplayQueryIds?.has(key)) throw Error('Gameplay query is read-only: ' + key);
+    if (Object.prototype.hasOwnProperty.call(this.data.observations?.aliases ?? {}, key))
+      throw Error('Observation alias is read-only: ' + key);
     const own = this.local.get(dev);
     if (own && key in own) own[key] = v;
     else this.state[key] = v;
@@ -1631,7 +2650,10 @@ export class SceneModel {
   private fmt(s: string, c: Ctx, vars?: Vars) {
     return formatNativeText(s, (k: string) => {
       // Explicit shared query reads never fall through to native context/vars.
-      if (k.startsWith('query:')) { const v=this.gameplayQuery?.(k.slice(6)); return v; }
+      if (k.startsWith('query:')) {
+        const v = this.gameplayQuery?.(k.slice(6));
+        return v;
+      }
       if (vars && k in vars) return String(vars[k]);
       if (k === 'verb') return c.verb;
       if (k === 'via') return c.bySignal ? 'signal → ' : '';
@@ -1640,10 +2662,13 @@ export class SceneModel {
     });
   }
 
-  private lineIn(ref: LineRef, c: Ctx, vars?: Vars,commit=false): Line {
+  private lineIn(ref: LineRef, c: Ctx, vars?: Vars, commit = false): Line {
     const raw = typeof ref === 'string' ? this.texts[ref] : ref;
     if (!Array.isArray(raw)) return ['', '[missing text ' + ref + ']', 'err'];
-    if(typeof ref==='string'){const response=this.gameplayResponse?.(ref,commit);if(response)vars={...vars,...response};}
+    if (typeof ref === 'string') {
+      const response = this.gameplayResponse?.(ref, commit);
+      if (response) vars = { ...vars, ...response };
+    }
     const l: Line = [this.fmt(raw[0], c, vars), this.fmt(raw[1], c, vars)];
     if (raw.length > 2) l.push(raw[2]);
     return l;

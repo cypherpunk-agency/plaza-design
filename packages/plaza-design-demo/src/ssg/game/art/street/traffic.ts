@@ -1,7 +1,19 @@
-import {rangeControls} from '../core/spatial';
-import {positionListEditor,choiceField,generationSeed,tupleArrayEditor,appearanceRatio} from '../core/fields';
-import {numericFields} from '../core/fields';
-import {appearanceBoolean,appearanceChoice,appearanceStructure,semantic,shapePosition} from '../core/fields';
+import { rangeControls } from '../core/spatial';
+import {
+  positionListEditor,
+  choiceField,
+  generationSeed,
+  tupleArrayEditor,
+  appearanceRatio,
+} from '../core/fields';
+import { numericFields } from '../core/fields';
+import {
+  appearanceBoolean,
+  appearanceChoice,
+  appearanceStructure,
+  semantic,
+  shapePosition,
+} from '../core/fields';
 /**
  * STREET KIT: road traffic (Tommi, 2026-10-15 and 2026-10-22: where do the cars come from and go; cars must not
  * appear or vanish; the lane behind must not draw over the lane in front). From the title glide, now a kit piece
@@ -29,7 +41,7 @@ import { placed } from '../core/view';
 import { routeAt, routeLength, type RouteLeg, type VehicleRoute } from '../../world/vehicles';
 
 const S = 1 / ART;
-const num = numericFields({min:-1e7,max:1e7,step:1});
+const num = numericFields({ min: -1e7, max: 1e7, step: 1 });
 const fin = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 const n = (p: Properties, k: string) => Number(p[k]);
 
@@ -37,84 +49,229 @@ const n = (p: Properties, k: string) => Number(p[k]);
 export const MOUTH = 26;
 const ZONE = 'street-traffic';
 type LaneId = 'far' | 'near';
-const DEFAULT_ENDS: [number, number][] = [[-1, 0.2], [0, 0.12], [1, 0.14], [2, 0.14], [3, 0.14], [4, 0.08]];
+const DEFAULT_ENDS: [number, number][] = [
+  [-1, 0.2],
+  [0, 0.12],
+  [1, 0.14],
+  [2, 0.14],
+  [3, 0.14],
+  [4, 0.08],
+];
 const PAINTS = ['#8a2a2a', '#2a4a6a', '#c8c0b0', '#3a3a3a', '#6a5a2a', '#e8e0d0', '#4a2a4a'];
 const TRUCK_PAINTS = ['#c8c0b0', '#8a2a2a', '#3a5a3a', '#2a3a5a'];
 const KINDS = ['sedan', 'hatch', 'cab', 'van', 'sedan', 'bus', 'hatch', 'cab'] as const;
-const LOADS: Crate[] = [{ ...BOX40, p: 2, seed: 71 }, { ...BOX40, p: 5, seed: 72 }, { ...BOX40, p: 0, seed: 73 }, { ...BOX40, p: 6, seed: 74 }];
-const h01 = (k: number) => { let h = (k * 374761393) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
-const at = <T>(list: readonly T[], k: number) => list[((k % list.length) + list.length) % list.length];
+const LOADS: Crate[] = [
+  { ...BOX40, p: 2, seed: 71 },
+  { ...BOX40, p: 5, seed: 72 },
+  { ...BOX40, p: 0, seed: 73 },
+  { ...BOX40, p: 6, seed: 74 },
+];
+const h01 = (k: number) => {
+  let h = (k * 374761393) | 0;
+  h = (h ^ (h >>> 13)) * 1274126177;
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+};
+const at = <T>(list: readonly T[], k: number) =>
+  list[((k % list.length) + list.length) % list.length];
 
 /** The street in route units: X runs west in pixels (the route's own frame), from the piece's anchor. */
-interface Street { mouths: number[]; gate: number; road: number; quay: number; portal: number; ends: [number, number][] }
+interface Street {
+  mouths: number[];
+  gate: number;
+  road: number;
+  quay: number;
+  portal: number;
+  ends: [number, number][];
+}
 const streetOf = (p: Properties): Street => ({
-  mouths: (p.mouths as number[]).map(m => -m * S), gate: -n(p, 'gateX') * S, road: -n(p, 'gateX') * S + 20, quay: -n(p, 'quayX') * S, portal: -n(p, 'portalX') * S,
-  ends: (p.ends as unknown as [number, number][]),
+  mouths: (p.mouths as number[]).map((m) => -m * S),
+  gate: -n(p, 'gateX') * S,
+  road: -n(p, 'gateX') * S + 20,
+  quay: -n(p, 'quayX') * S,
+  portal: -n(p, 'portalX') * S,
+  ends: p.ends as unknown as [number, number][],
 });
 
 function endsOf(st: Street, k: number, seed: number): { near: number; far: number } | null {
-  let v = h01(k * 7 + seed), near: number | null = null;
-  for (const [i, pr] of st.ends) { if (v < pr) { near = i; break; } v -= pr; }
+  let v = h01(k * 7 + seed),
+    near: number | null = null;
+  for (const [i, pr] of st.ends) {
+    if (v < pr) {
+      near = i;
+      break;
+    }
+    v -= pr;
+  }
   if (near === null) return null;
-  const PORTAL = st.mouths.length, options = [...st.mouths.map((_, i) => i), PORTAL].filter(i => i > near!), weight = (i: number) => i === st.mouths.length - 1 || i === PORTAL ? 3 : 1;
+  const PORTAL = st.mouths.length,
+    options = [...st.mouths.map((_, i) => i), PORTAL].filter((i) => i > near!),
+    weight = (i: number) => (i === st.mouths.length - 1 || i === PORTAL ? 3 : 1);
   let w = h01(k * 13 + seed * 5 + 3) * options.reduce((s, i) => s + weight(i), 0);
-  for (const i of options) { w -= weight(i); if (w < 0) return { near, far: i }; }
+  for (const i of options) {
+    w -= weight(i);
+    if (w < 0) return { near, far: i };
+  }
   return { near, far: options[options.length - 1] };
 }
 function mouthIn(e: number, u: 1 | -1, hb: number, half: number, facing: 1 | -1): RouteLeg[] {
-  const hm = Math.round(hb / 2), z = ZONE;
+  const hm = Math.round(hb / 2),
+    z = ZONE;
   return [
-    { zone: z, from: { x: e - u * (MOUTH + half + 6), h: hb }, to: { x: e - u * 12, h: hb }, facing },
+    {
+      zone: z,
+      from: { x: e - u * (MOUTH + half + 6), h: hb },
+      to: { x: e - u * 12, h: hb },
+      facing,
+    },
     { zone: z, from: { x: e - u * 12, h: hb }, via: { x: e, h: hb }, to: { x: e, h: hm }, facing },
     { zone: z, from: { x: e, h: hm }, via: { x: e, h: 0 }, to: { x: e + u * 24, h: 0 }, facing },
   ];
 }
 function mouthOut(e: number, u: 1 | -1, hb: number, half: number, facing: 1 | -1): RouteLeg[] {
-  const hm = Math.round(hb / 2), z = ZONE;
+  const hm = Math.round(hb / 2),
+    z = ZONE;
   return [
     { zone: z, from: { x: e - u * 24, h: 0 }, via: { x: e, h: 0 }, to: { x: e, h: hm }, facing },
     { zone: z, from: { x: e, h: hm }, via: { x: e, h: hb }, to: { x: e + u * 12, h: hb }, facing },
-    { zone: z, from: { x: e + u * 12, h: hb }, to: { x: e + u * (MOUTH + half + 6), h: hb }, facing },
+    {
+      zone: z,
+      from: { x: e + u * 12, h: hb },
+      to: { x: e + u * (MOUTH + half + 6), h: hb },
+      facing,
+    },
   ];
 }
-interface TrafficRoute { route: VehicleRoute; total: number; entry: number; laneX: number; mouths: (number | null)[]; portal: boolean }
+interface TrafficRoute {
+  route: VehicleRoute;
+  total: number;
+  entry: number;
+  laneX: number;
+  mouths: (number | null)[];
+  portal: boolean;
+}
 const ROUTES = new Map<string, TrafficRoute>();
-function trafficRoute(st: Street, from: number, to: number, u: 1 | -1, hb: number, half: number): TrafficRoute {
-  const key = [st.mouths.join(','), st.gate, st.portal, st.quay, from, to, u, hb, half].join('|'), hit = ROUTES.get(key);
+function trafficRoute(
+  st: Street,
+  from: number,
+  to: number,
+  u: 1 | -1,
+  hb: number,
+  half: number,
+): TrafficRoute {
+  const key = [st.mouths.join(','), st.gate, st.portal, st.quay, from, to, u, hb, half].join('|'),
+    hit = ROUTES.get(key);
   if (hit) return hit;
-  const PORTAL = st.mouths.length, facing = (-u) as 1 | -1, X = (i: number) => i < 0 ? st.road : i === PORTAL ? st.portal : st.mouths[i];
-  const pre = from < 0 || from === PORTAL ? [] : mouthIn(X(from), u, hb, half, facing), post = to < 0 || to === PORTAL ? [] : mouthOut(X(to), u, hb, half, facing);
-  const laneX = from < 0 ? st.quay : from === PORTAL ? X(from) - u * (half + 2) : X(from) + u * 24, endX = to < 0 ? st.quay : to === PORTAL ? X(to) + u * (half + 2) : X(to) - u * 24;
+  const PORTAL = st.mouths.length,
+    facing = -u as 1 | -1,
+    X = (i: number) => (i < 0 ? st.road : i === PORTAL ? st.portal : st.mouths[i]);
+  const pre = from < 0 || from === PORTAL ? [] : mouthIn(X(from), u, hb, half, facing),
+    post = to < 0 || to === PORTAL ? [] : mouthOut(X(to), u, hb, half, facing);
+  const laneX = from < 0 ? st.quay : from === PORTAL ? X(from) - u * (half + 2) : X(from) + u * 24,
+    endX = to < 0 ? st.quay : to === PORTAL ? X(to) + u * (half + 2) : X(to) - u * 24;
   const lane: RouteLeg = { zone: ZONE, from: { x: laneX, h: 0 }, to: { x: endX, h: 0 }, facing };
-  const legs = [...pre, lane, ...post], route: VehicleRoute = { legs };
-  const out: TrafficRoute = { route, total: routeLength(route), entry: pre.length ? routeLength({ legs: pre }) : 0, laneX, mouths: [...pre.map(() => X(from)), null, ...post.map(() => X(to))], portal: from === PORTAL || to === PORTAL };
+  const legs = [...pre, lane, ...post],
+    route: VehicleRoute = { legs };
+  const out: TrafficRoute = {
+    route,
+    total: routeLength(route),
+    entry: pre.length ? routeLength({ legs: pre }) : 0,
+    laneX,
+    mouths: [...pre.map(() => X(from)), null, ...post.map(() => X(to))],
+    portal: from === PORTAL || to === PORTAL,
+  };
   if (ROUTES.size > 512) ROUTES.clear();
   ROUTES.set(key, out);
   return out;
 }
 
-export interface TrafficVehicle { id: string; lane: LaneId; k: number; kind: CarKind | 'truck'; face: 1 | -1; s: number; total: number; X: number; sx: number; y: number; half: number; mouth: number | null; portal: boolean; pass: 'street' | 'road'; paint: string; box: Crate | null }
+export interface TrafficVehicle {
+  id: string;
+  lane: LaneId;
+  k: number;
+  kind: CarKind | 'truck';
+  face: 1 | -1;
+  s: number;
+  total: number;
+  X: number;
+  sx: number;
+  y: number;
+  half: number;
+  mouth: number | null;
+  portal: boolean;
+  pass: 'street' | 'road';
+  paint: string;
+  box: Crate | null;
+}
 
 /** Every vehicle near the view this frame, in draw order (far to near, east to west at one depth). Pure: a function of the frame clock and the street. */
 export function trafficPlan(P: Pixels, p: Properties, h0: number): TrafficVehicle[] {
-  const st = streetOf(p), lanes = [{lane:p.lane as LaneId,dir:Number(p.direction) as 1|-1,v:n(p,'velocityX')/ART/60,gap:n(p,'spacing')/ART,seed:n(p,'seed')}], f = P.still ? 0 : P.f, out: TrafficVehicle[] = [];
-  const back = P.y(h0 + SHORE.back), mid = P.y(h0 + SHORE.mid), far = P.y(h0 + SHORE.farLane), near = P.y(h0 + SHORE.nearLane);
-  const [v0, v1] = P.span(), Xe = -(v1 - P.ax) - 520, Xw = -(v0 - P.ax) + 520;
+  const st = streetOf(p),
+    lanes = [
+      {
+        lane: p.lane as LaneId,
+        dir: Number(p.direction) as 1 | -1,
+        v: n(p, 'velocityX') / ART / 60,
+        gap: n(p, 'spacing') / ART,
+        seed: n(p, 'seed'),
+      },
+    ],
+    f = P.still ? 0 : P.f,
+    out: TrafficVehicle[] = [];
+  const back = P.y(h0 + SHORE.back),
+    mid = P.y(h0 + SHORE.mid),
+    far = P.y(h0 + SHORE.farLane),
+    near = P.y(h0 + SHORE.nearLane);
+  const [v0, v1] = P.span(),
+    Xe = -(v1 - P.ax) - 520,
+    Xw = -(v0 - P.ax) + 520;
   for (const ln of lanes) {
-    const ly = ln.lane === 'far' ? far : near, u = (-ln.dir) as 1 | -1, off = f * ln.v * u, hb = ly - (back - 4);
+    const ly = ln.lane === 'far' ? far : near,
+      u = -ln.dir as 1 | -1,
+      off = f * ln.v * u,
+      hb = ly - (back - 4);
     for (let k = Math.floor((Xe - off) / ln.gap); k <= Math.ceil((Xw - off) / ln.gap); k++) {
-      const ends = endsOf(st, k, ln.seed); if (!ends) continue;
+      const ends = endsOf(st, k, ln.seed);
+      if (!ends) continue;
       // Side-facing artwork cannot convincingly turn toward the viewer. Keep
       // those bends outside the visible corridor unless explicitly authored.
-      const near = p.sideStreets === true ? ends.near : -1, farEnd = p.sideStreets === true ? ends.far : st.mouths.length;
+      const near = p.sideStreets === true ? ends.near : -1,
+        farEnd = p.sideStreets === true ? ends.far : st.mouths.length;
       const [from, to] = u > 0 ? [near, farEnd] : [farEnd, near];
-      const gate = ends.near < 0, kind: CarKind | 'truck' = gate ? 'truck' : KINDS[Math.floor(h01(k + ln.seed * 3) * 8)];
-      const half = R(SIZE[kind] * S / 2), r = trafficRoute(st, from, to, u, hb, half);
-      const X = k * ln.gap + off, s = r.entry + u * (X - r.laneX);
+      const gate = ends.near < 0,
+        kind: CarKind | 'truck' = gate ? 'truck' : KINDS[Math.floor(h01(k + ln.seed * 3) * 8)];
+      const half = R((SIZE[kind] * S) / 2),
+        r = trafficRoute(st, from, to, u, hb, half);
+      const X = k * ln.gap + off,
+        s = r.entry + u * (X - r.laneX);
       if (s <= 0 || s >= r.total) continue;
-      const q = routeAt(r.route, s), sx = P.u(-q.x), y = ly - q.h, mouth = r.mouths[q.leg];
-      out.push({ id: ln.lane + '#' + k, lane: ln.lane, k, kind, face: ln.dir, s, total: r.total, X: q.x, sx, y, half, mouth, portal: r.portal, pass: mouth !== null && y < mid ? 'street' : 'road',
-        paint: gate ? at(TRUCK_PAINTS, k) : kind === 'cab' ? '#d8b040' : kind === 'bus' ? '#3a5a6a' : at(PAINTS, k), box: gate && h01(k * 3 + 1) < 0.75 ? at(LOADS, k) : null });
+      const q = routeAt(r.route, s),
+        sx = P.u(-q.x),
+        y = ly - q.h,
+        mouth = r.mouths[q.leg];
+      out.push({
+        id: ln.lane + '#' + k,
+        lane: ln.lane,
+        k,
+        kind,
+        face: ln.dir,
+        s,
+        total: r.total,
+        X: q.x,
+        sx,
+        y,
+        half,
+        mouth,
+        portal: r.portal,
+        pass: mouth !== null && y < mid ? 'street' : 'road',
+        paint: gate
+          ? at(TRUCK_PAINTS, k)
+          : kind === 'cab'
+            ? '#d8b040'
+            : kind === 'bus'
+              ? '#3a5a6a'
+              : at(PAINTS, k),
+        box: gate && h01(k * 3 + 1) < 0.75 ? at(LOADS, k) : null,
+      });
     }
   }
   out.sort((a, b) => a.y - b.y || b.sx - a.sx);
@@ -122,46 +279,154 @@ export function trafficPlan(P: Pixels, p: Properties, h0: number): TrafficVehicl
 }
 
 function drawVehicle(P: Pixels, p: Properties, h0: number, v: TrafficVehicle) {
-  const x = P.x, lit = p.lights !== false || P.warm < 0.6, st = streetOf(p);
+  const x = P.x,
+    lit = p.lights !== false || P.warm < 0.6,
+    st = streetOf(p);
   x.save();
-  if (v.portal) { x.beginPath(); x.rect(R(P.u(-st.portal)), -4000, P.W + 8000, 8000); x.clip(); }
-  if (v.mouth !== null) { const m = R(P.u(-v.mouth)), line = P.y(h0 + SHORE.back) + 2; x.beginPath(); x.rect(m - MOUTH, -4000, 2 * MOUTH, 8000); x.rect(-4000, line, P.W + 8000, 8000); x.clip(); }
+  if (v.portal) {
+    x.beginPath();
+    x.rect(R(P.u(-st.portal)), -4000, P.W + 8000, 8000);
+    x.clip();
+  }
+  if (v.mouth !== null) {
+    const m = R(P.u(-v.mouth)),
+      line = P.y(h0 + SHORE.back) + 2;
+    x.beginPath();
+    x.rect(m - MOUTH, -4000, 2 * MOUTH, 8000);
+    x.rect(-4000, line, P.W + 8000, 8000);
+    x.clip();
+  }
   placed(x, R(v.sx), R(v.y), S, () => {
-    if (v.kind === 'truck') drawTruck(x, { t: P.f, paint: v.paint, box: v.box, face: v.face, lights: lit, still: P.still });
-    else drawCar(x, { t: P.f, paint: v.paint, kind: v.kind, face: v.face, lights: lit, still: P.still, route: String(p.route) });
+    if (v.kind === 'truck')
+      drawTruck(x, {
+        t: P.f,
+        paint: v.paint,
+        box: v.box,
+        face: v.face,
+        lights: lit,
+        still: P.still,
+      });
+    else
+      drawCar(x, {
+        t: P.f,
+        paint: v.paint,
+        kind: v.kind,
+        face: v.face,
+        lights: lit,
+        still: P.still,
+        route: String(p.route),
+      });
   });
   x.restore();
 }
 
 export const trafficElement: AssetDefinition = {
-  type: 'street.traffic', selection:'region', mobility:()=>true, version: 1, label: 'Road traffic lane', category: 'vehicles', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'street.traffic',
+  selection: 'region',
+  mobility: () => true,
+  version: 1,
+  label: 'Road traffic lane',
+  category: 'vehicles',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: {
-    sideStreets: semantic({ kind: 'boolean', label: 'Use visible side-street turns', default: false },{"group":"Visibility & Drawing","quantity":"boolean","unit":"boolean"}),
-    mouths: positionListEditor(appearanceStructure({ kind: 'json', label: 'Side streets, east to west (units east of the piece)', default: [], validate: v => { if (!Array.isArray(v) || v.length > 20 || !v.every(fin)) throw new Error('Side streets: expected numbers'); } }),'Side street X'),
-    gateX: shapePosition(num('Truck gate (units east of the piece; trucks come and go there)', 0)), quayX: shapePosition(num('Trucks run on to (units east of the piece)', 2000)), portalX: shapePosition(num('The street’s west portal (units east of the piece)', -6000)),
-    lane:appearanceChoice(choiceField('Lane',['far','near'],'far')),
-    direction:semantic(choiceField('Direction',[1,-1],1),{group:'Motion',quantity:'choice',unit:'choice'}),
-    velocityX:semantic(numericFields({value:189,min:0,max:18000,step:1})('Speed'),{group:'Motion',quantity:'speed',unit:'world units / second',space:'local'}),
-    spacing:semantic(numericFields({value:528,min:63,step:1})('Spacing'),{group:'Generation',quantity:'length',unit:'world units',space:'local'}),
-    seed:generationSeed(numericFields({value:29,min:0,step:1})('Seed')),
-    ends: tupleArrayEditor(appearanceStructure({ kind: 'json', label: 'Near ends and their chance (end -1: the gate; 0..: a side street)', default: DEFAULT_ENDS as never, validate: v => { if (!Array.isArray(v) || !v.every(e => Array.isArray(e) && e.length === 2 && e.every(fin))) throw new Error('Ends: expected [end, chance] pairs'); } }),'Near end',[semantic(numericFields({value:-1,min:-1,step:1})('End index (-1: gate)'),{group:'Generation',quantity:'index',unit:'integer'}),appearanceRatio(numericFields({value:.2,min:0,max:1,step:.01})('Probability'))]),
-    pass: appearanceChoice({ kind: 'select', label: 'Draws', options: ['road', 'street'], default: 'road' }), drawingMinX: shapePosition(num('Only vehicles from (units east of the piece)', -1e7)), drawingMaxX: shapePosition(num('to', 1e7)),
-    lights: appearanceBoolean({ kind: 'boolean', label: 'Headlights on', default: true }), route: semantic({ kind: 'string', label: 'Bus route', default: '7' },{"group":"Motion","quantity":"text","unit":"text"}),
+    sideStreets: semantic(
+      { kind: 'boolean', label: 'Use visible side-street turns', default: false },
+      { group: 'Visibility & Drawing', quantity: 'boolean', unit: 'boolean' },
+    ),
+    mouths: positionListEditor(
+      appearanceStructure({
+        kind: 'json',
+        label: 'Side streets, east to west (units east of the piece)',
+        default: [],
+        validate: (v) => {
+          if (!Array.isArray(v) || v.length > 20 || !v.every(fin))
+            throw new Error('Side streets: expected numbers');
+        },
+      }),
+      'Side street X',
+    ),
+    gateX: shapePosition(num('Truck gate (units east of the piece; trucks come and go there)', 0)),
+    quayX: shapePosition(num('Trucks run on to (units east of the piece)', 2000)),
+    portalX: shapePosition(num('The street’s west portal (units east of the piece)', -6000)),
+    lane: appearanceChoice(choiceField('Lane', ['far', 'near'], 'far')),
+    direction: semantic(choiceField('Direction', [1, -1], 1), {
+      group: 'Motion',
+      quantity: 'choice',
+      unit: 'choice',
+    }),
+    velocityX: semantic(numericFields({ value: 189, min: 0, max: 18000, step: 1 })('Speed'), {
+      group: 'Motion',
+      quantity: 'speed',
+      unit: 'world units / second',
+      space: 'local',
+    }),
+    spacing: semantic(numericFields({ value: 528, min: 63, step: 1 })('Spacing'), {
+      group: 'Generation',
+      quantity: 'length',
+      unit: 'world units',
+      space: 'local',
+    }),
+    seed: generationSeed(numericFields({ value: 29, min: 0, step: 1 })('Seed')),
+    ends: tupleArrayEditor(
+      appearanceStructure({
+        kind: 'json',
+        label: 'Near ends and their chance (end -1: the gate; 0..: a side street)',
+        default: DEFAULT_ENDS as never,
+        validate: (v) => {
+          if (
+            !Array.isArray(v) ||
+            !v.every((e) => Array.isArray(e) && e.length === 2 && e.every(fin))
+          )
+            throw new Error('Ends: expected [end, chance] pairs');
+        },
+      }),
+      'Near end',
+      [
+        semantic(numericFields({ value: -1, min: -1, step: 1 })('End index (-1: gate)'), {
+          group: 'Generation',
+          quantity: 'index',
+          unit: 'integer',
+        }),
+        appearanceRatio(numericFields({ value: 0.2, min: 0, max: 1, step: 0.01 })('Probability')),
+      ],
+    ),
+    pass: appearanceChoice({
+      kind: 'select',
+      label: 'Draws',
+      options: ['road', 'street'],
+      default: 'road',
+    }),
+    drawingMinX: shapePosition(num('Only vehicles from (units east of the piece)', -1e7)),
+    drawingMaxX: shapePosition(num('to', 1e7)),
+    lights: appearanceBoolean({ kind: 'boolean', label: 'Headlights on', default: true }),
+    route: semantic(
+      { kind: 'string', label: 'Bus route', default: '7' },
+      { group: 'Motion', quantity: 'text', unit: 'text' },
+    ),
   },
-  spatial:rangeControls('portalX','quayX',p=>p.lane==='near'?SHORE.nearLane:SHORE.farLane),
-  bounds: p => {
+  spatial: rangeControls('portalX', 'quayX', (p) =>
+    p.lane === 'near' ? SHORE.nearLane : SHORE.farLane,
+  ),
+  bounds: (p) => {
     // The ownership window selects whole vehicles by their centre; it never clips their body.
     // Include their overhang so the native world retains this source across a chunk edge.
-    const ends=[...(p.mouths as number[]),n(p,'gateX'),n(p,'quayX'),n(p,'portalX')];
-    const from=Math.max(Math.min(...ends),n(p,'drawingMinX')),to=Math.min(Math.max(...ends),n(p,'drawingMaxX')),pad=SIZE.truck;
-    return{x:from-pad,h:160,w:Math.max(0,to-from)+2*pad,tall:320};
+    const ends = [...(p.mouths as number[]), n(p, 'gateX'), n(p, 'quayX'), n(p, 'portalX')];
+    const from = Math.max(Math.min(...ends), n(p, 'drawingMinX')),
+      to = Math.min(Math.max(...ends), n(p, 'drawingMaxX')),
+      pad = SIZE.truck;
+    return { x: from - pad, h: 160, w: Math.max(0, to - from) + 2 * pad, tall: 320 };
   },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
   draw(ctx, v, p, _s, _pass, at) {
-    inPixels(ctx, v, at, P => {
-      const a = n(p, 'drawingMinX') * S, b = n(p, 'drawingMaxX') * S, pass = String(p.pass);
+    inPixels(ctx, v, at, (P) => {
+      const a = n(p, 'drawingMinX') * S,
+        b = n(p, 'drawingMaxX') * S,
+        pass = String(p.pass);
       for (const veh of trafficPlan(P, p, at.h)) {
-        const local = -veh.X; if (local < a || local >= b || veh.pass !== pass) continue;
+        const local = -veh.X;
+        if (local < a || local >= b || veh.pass !== pass) continue;
         if (veh.sx + veh.half < -60 || veh.sx - veh.half > P.W + 60) continue;
         drawVehicle(P, p, at.h, veh);
       }

@@ -79,14 +79,8 @@ export function Modal({
       role="dialog"
       aria-modal="true"
     >
-      <Window
-        className={`plaza-modal ${className}`.trim()}
-        header={header}
-        footer={footer}
-      >
-        <div className="plaza-modal__content">
-          {children}
-        </div>
+      <Window className={`plaza-modal ${className}`.trim()} header={header} footer={footer}>
+        <div className="plaza-modal__content">{children}</div>
       </Window>
     </div>
   );

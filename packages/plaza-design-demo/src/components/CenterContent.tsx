@@ -62,9 +62,7 @@ export function CenterContent() {
         </span>
       </p>
       <div className="flex gap-4 justify-center flex-wrap" style={{ marginTop: '46px' }}>
-        <button className="plaza-btn plaza-btn--tease">
-          enter
-        </button>
+        <button className="plaza-btn plaza-btn--tease">enter</button>
       </div>
     </div>
   );

@@ -24,13 +24,19 @@ export { encode, Morse } from './morse';
 export { Rings } from './rings';
 
 const TOYS: Record<ToyKind, (kit: PanelKit, key: string) => void> = {
-  rings: ringsPanel, cipher: cipherPanel, cryptex: cryptexPanel, morse: morsePanel,
+  rings: ringsPanel,
+  cipher: cipherPanel,
+  cryptex: cryptexPanel,
+  morse: morsePanel,
 };
 
 /** The engine's `toy` panel: `arg` is the guard (`device.noun`). */
 export const toyPanel: PanelFn = (kit, arg) => {
   const toy = arg ? kit.m.guardOf(arg)?.toy : undefined;
-  if (!arg || !toy || !TOYS[toy]) { kit.close(); return; }
+  if (!arg || !toy || !TOYS[toy]) {
+    kit.close();
+    return;
+  }
   TOYS[toy](kit, arg);
 };
 

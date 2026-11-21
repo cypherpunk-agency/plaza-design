@@ -10,7 +10,7 @@ import { gameStorage } from '../runtime/storage';
  * seconds, so a visitor without JavaScript is never stuck behind it.
  */
 
-import { resumePending } from "../runtime/slots";
+import { resumePending } from '../runtime/slots';
 
 const LINES = [
   'REGISTRY BIOS v4.2 · (c) THE REGISTRY',
@@ -25,17 +25,35 @@ function visits(): number {
     const n = Number(gameStorage.getItem('ad-visits') || '0') + 1;
     gameStorage.setItem('ad-visits', String(n));
     return n;
-  } catch { return 1; }
+  } catch {
+    return 1;
+  }
 }
 
 export function runBoot(): Promise<void> {
   const el = document.getElementById('crt-boot');
-  const reduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } })();
+  const reduced = (() => {
+    try {
+      return matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      return false;
+    }
+  })();
   const n = visits();
   if (!el) return Promise.resolve();
   // `?play`, or back from a LOAD GAME reload (slots.ts): straight into the game.
-  const play = (() => { try { return new URLSearchParams(location.search).has('play'); } catch { return false; } })() || resumePending();
-  if (reduced || play) { el.remove(); return Promise.resolve(); }
+  const play =
+    (() => {
+      try {
+        return new URLSearchParams(location.search).has('play');
+      } catch {
+        return false;
+      }
+    })() || resumePending();
+  if (reduced || play) {
+    el.remove();
+    return Promise.resolve();
+  }
 
   // First visit: the whole boot. Next few: a shortened one. After that: a flicker.
   const lines = n === 1 ? LINES : n <= 4 ? LINES.slice(3) : [];
@@ -52,14 +70,28 @@ export function runBoot(): Promise<void> {
       el.classList.add('crt-off');
       window.removeEventListener('keydown', finish, true);
       window.removeEventListener('pointerdown', finish, true);
-      setTimeout(() => { el.remove(); resolve(); }, 380);
+      setTimeout(() => {
+        el.remove();
+        resolve();
+      }, 380);
     };
     window.addEventListener('keydown', finish, true);
     window.addEventListener('pointerdown', finish, true);
 
     el.classList.add('crt-on');
     const start = 450;
-    lines.forEach((line, i) => timers.push(window.setTimeout(() => { text.textContent += (i ? '\n' : '') + line; }, start + i * lineMs)));
-    timers.push(window.setTimeout(finish, start + lines.length * lineMs + (lines.length ? 500 : 150)));
+    lines.forEach((line, i) =>
+      timers.push(
+        window.setTimeout(
+          () => {
+            text.textContent += (i ? '\n' : '') + line;
+          },
+          start + i * lineMs,
+        ),
+      ),
+    );
+    timers.push(
+      window.setTimeout(finish, start + lines.length * lineMs + (lines.length ? 500 : 150)),
+    );
   });
 }

@@ -1,37 +1,152 @@
-import {mountWorldMember} from '../../src/ssg/game/authoring/world-members';
-import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
-import {SCENES} from '../../src/ssg/game/scenes';
+import { mountWorldMember } from '../../src/ssg/game/authoring/world-members';
+import { createSequenceValidationContext } from '../../src/ssg/game/art/core/sequence-context';
+import { SCENES } from '../../src/ssg/game/scenes';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {Element} from './rules-harness.mts';
-import {renderWorldMemberInspector} from '../../src/ssg/game/authoring/world-workspace-controls';
-import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
-import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
-import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
-import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
-import {validateWorldCompositions} from '../../src/ssg/game/world/compositions';
-import {art} from '../../src/ssg/game/art';
-import {compileGameWorld} from '../../src/ssg/game/world/compiled-world';
-import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
-const scratch=path.resolve('../../.game-test-output/world-composition-authoring');fs.mkdirSync(scratch,{recursive:true});const root=fs.mkdtempSync(path.join(scratch,'run-'));
-for(const d of sourceDocuments){const to=path.join(root,d.file);fs.mkdirSync(path.dirname(to),{recursive:true});fs.copyFileSync(path.join('src/ssg/game',d.file),to);}
-const store=new AuthoringStore({root,documents:sourceDocuments,validateAll:validateSourceDocuments}),initial=store.list();
-const validate=(d:any)=>{if(d.id==='world-compositions')validateWorldCompositions(d.value);};
-const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
-const model=new ComposerModel(art,context,validate);model.load(initial);let handle:any;
-const api={get:(id:string)=>model.get(id),edit:(id:string,label:string,value:any)=>{model.edit(id,label,()=>value);handle?.refresh?.();}};
-const host=new Element(),address={composition:'boundary-example',member:'street'};const port={root:host as any,registry:art,documents:()=>model.inspectDocuments(),composition:()=>address.composition,selection:()=>address,select(){},openChunk(){},apply(label:string,source:any){model.edit('world-compositions',label,()=>source);},changed(){render();}};function render(){host.replaceChildren();renderWorldMemberInspector(host as any,port,address);}render();handle=()=>host.replaceChildren();
-const all=(e:Element):Element[]=>[e,...e.children.flatMap(all)];
-const change=(name:string,value:string)=>{const el=all(host).find(e=>e.attributes['aria-label']===name);assert(el,name);el.value=value;el.onchange!();};
-change('Group name','Boundary inspection');change('Member X','100');
-const mount=mountWorldMember(validateWorldCompositions(model.get('world-compositions').value),'boundary-example',{chunk:'galleriaStation'},{x:1500,h:0});model.edit('world-compositions','Mount registered native chunk',()=>mount.source);assert.equal(mount.address.member,'galleriastation');assert.equal(mount.source.compositions['boundary-example'].members.at(-1)!.chunk,'galleriaStation','Mounting preserves existing native source identity');
-const pending=structuredClone(model.get('world-compositions').value) as any;assert.equal(pending.compositions['boundary-example'].members[0].placement.x,100);
-model.undo();assert(!(model.get('world-compositions').value as any).compositions['boundary-example'].members.some((m:any)=>m.chunk==='galleriaStation'));model.redo();assert.equal((model.get('world-compositions').value as any).compositions['boundary-example'].members[0].placement.x,100);
-const receiver=new ComposerModel(art,context,validate);receiver.load(initial);receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));assert.deepEqual(receiver.get('world-compositions').value,pending);
-const values=()=>new Map(model.list().map(d=>[d.id,d.value]));validateSourceDocuments(values());assert(compileGameWorld(pendingRegistry(values()),values()).seams.some(s=>s.a.zone==='boundary-west'),'private native sources compile the pending layout');
-const doc=store.read('world-compositions'),file=path.join(root,'world/compositions.json'),bytes=fs.readFileSync(file,'utf8');
-const bad=structuredClone(pending);bad.groups['boundary-street'].members[1].placement.x=321;
-assert.throws(()=>store.save([{id:doc.id,revision:doc.revision,value:bad}]),/anchors do not meet/);assert.equal(fs.readFileSync(file,'utf8'),bytes);
-const result=store.save(model.edits());model.confirmSaved(result.documents);assert(!model.dirty());assert.deepEqual(new AuthoringStore({root,documents:sourceDocuments,validateAll:validateSourceDocuments}).read('world-compositions').value,pending);
-handle();console.log('World composition authoring: typed fields, history, bundle, prospective rejection, protected Save/reload and native pending source compilation PASS');
+import { Element } from './rules-harness.mts';
+import { renderWorldMemberInspector } from '../../src/ssg/game/authoring/world-workspace-controls';
+import {
+  sourceDocuments,
+  validateSourceDocuments,
+} from '../../src/ssg/game/authoring/source-documents';
+import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
+import { ComposerModel } from '../../src/ssg/game/authoring/composer-model';
+import {
+  createDocumentBundle,
+  readDocumentBundle,
+} from '../../src/ssg/game/authoring/document-bundle';
+import { validateWorldCompositions } from '../../src/ssg/game/world/compositions';
+import { art } from '../../src/ssg/game/art';
+import { compileGameWorld } from '../../src/ssg/game/world/compiled-world';
+import { pendingRegistry } from '../../src/ssg/game/authoring/pending-registry';
+const scratch = path.resolve('../../.game-test-output/world-composition-authoring');
+fs.mkdirSync(scratch, { recursive: true });
+const root = fs.mkdtempSync(path.join(scratch, 'run-'));
+for (const d of sourceDocuments) {
+  const to = path.join(root, d.file);
+  fs.mkdirSync(path.dirname(to), { recursive: true });
+  fs.copyFileSync(path.join('src/ssg/game', d.file), to);
+}
+const store = new AuthoringStore({
+    root,
+    documents: sourceDocuments,
+    validateAll: validateSourceDocuments,
+  }),
+  initial = store.list();
+const validate = (d: any) => {
+  if (d.id === 'world-compositions') validateWorldCompositions(d.value);
+};
+const context = createSequenceValidationContext(
+  art,
+  {},
+  Object.fromEntries(Object.entries(SCENES).map(([id, s]) => [id, s.exits.map((e) => e.id)])),
+);
+const model = new ComposerModel(art, context, validate);
+model.load(initial);
+let handle: any;
+const api = {
+  get: (id: string) => model.get(id),
+  edit: (id: string, label: string, value: any) => {
+    model.edit(id, label, () => value);
+    handle?.refresh?.();
+  },
+};
+const host = new Element(),
+  address = { composition: 'boundary-example', member: 'street' };
+const port = {
+  root: host as any,
+  registry: art,
+  documents: () => model.inspectDocuments(),
+  composition: () => address.composition,
+  selection: () => address,
+  select() {},
+  openChunk() {},
+  apply(label: string, source: any) {
+    model.edit('world-compositions', label, () => source);
+  },
+  changed() {
+    render();
+  },
+};
+function render() {
+  host.replaceChildren();
+  renderWorldMemberInspector(host as any, port, address);
+}
+render();
+handle = () => host.replaceChildren();
+const all = (e: Element): Element[] => [e, ...e.children.flatMap(all)];
+const change = (name: string, value: string) => {
+  const el = all(host).find((e) => e.attributes['aria-label'] === name);
+  assert(el, name);
+  el.value = value;
+  el.onchange!();
+};
+change('Group name', 'Boundary inspection');
+change('Member X', '100');
+const mount = mountWorldMember(
+  validateWorldCompositions(model.get('world-compositions').value),
+  'boundary-example',
+  { chunk: 'galleriaStation' },
+  { x: 1500, h: 0 },
+);
+model.edit('world-compositions', 'Mount registered native chunk', () => mount.source);
+assert.equal(mount.address.member, 'galleriastation');
+assert.equal(
+  mount.source.compositions['boundary-example'].members.at(-1)!.chunk,
+  'galleriaStation',
+  'Mounting preserves existing native source identity',
+);
+const pending = structuredClone(model.get('world-compositions').value) as any;
+assert.equal(pending.compositions['boundary-example'].members[0].placement.x, 100);
+model.undo();
+assert(
+  !(model.get('world-compositions').value as any).compositions['boundary-example'].members.some(
+    (m: any) => m.chunk === 'galleriaStation',
+  ),
+);
+model.redo();
+assert.equal(
+  (model.get('world-compositions').value as any).compositions['boundary-example'].members[0]
+    .placement.x,
+  100,
+);
+const receiver = new ComposerModel(art, context, validate);
+receiver.load(initial);
+receiver.importDocuments(
+  readDocumentBundle(createDocumentBundle(model.edits(), model.list()), receiver.list()),
+);
+assert.deepEqual(receiver.get('world-compositions').value, pending);
+const values = () => new Map(model.list().map((d) => [d.id, d.value]));
+validateSourceDocuments(values());
+assert(
+  compileGameWorld(pendingRegistry(values()), values()).seams.some(
+    (s) => s.a.zone === 'boundary-west',
+  ),
+  'private native sources compile the pending layout',
+);
+const doc = store.read('world-compositions'),
+  file = path.join(root, 'world/compositions.json'),
+  bytes = fs.readFileSync(file, 'utf8');
+const bad = structuredClone(pending);
+bad.groups['boundary-street'].members[1].placement.x = 321;
+assert.throws(
+  () => store.save([{ id: doc.id, revision: doc.revision, value: bad }]),
+  /anchors do not meet/,
+);
+assert.equal(fs.readFileSync(file, 'utf8'), bytes);
+const result = store.save(model.edits());
+model.confirmSaved(result.documents);
+assert(!model.dirty());
+assert.deepEqual(
+  new AuthoringStore({
+    root,
+    documents: sourceDocuments,
+    validateAll: validateSourceDocuments,
+  }).read('world-compositions').value,
+  pending,
+);
+handle();
+console.log(
+  'World composition authoring: typed fields, history, bundle, prospective rejection, protected Save/reload and native pending source compilation PASS',
+);

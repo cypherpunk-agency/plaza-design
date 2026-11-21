@@ -24,24 +24,33 @@ export interface Plug {
 
 /** The networks reached from a plug, in the order they were reached. */
 export function reachNets(nets: readonly NetworkData[], plug: Plug): Set<string> {
-  const ports = new Set(plug.ports), out = new Set<string>();
+  const ports = new Set(plug.ports),
+    out = new Set<string>();
   const holds = (r: AccessRule) => {
     if ('port' in r) return ports.has(r.port);
     if ('net' in r) return out.has(r.net);
     if (!plug.controlled.includes(r.controlled)) return false;
-    return nets.some((n) => n.machines.some((m) => m.node === r.controlled && (out.has(n.id) || !!plug.standing?.(m))));
+    return nets.some((n) =>
+      n.machines.some((m) => m.node === r.controlled && (out.has(n.id) || !!plug.standing?.(m))),
+    );
   };
   for (let grew = true; grew;) {
     grew = false;
-    for (const n of nets) if (!out.has(n.id) && n.from.some(holds)) { out.add(n.id); grew = true; }
+    for (const n of nets)
+      if (!out.has(n.id) && n.from.some(holds)) {
+        out.add(n.id);
+        grew = true;
+      }
   }
   return out;
 }
 
 /** The machines of some networks (once each, by `in`+`id`). */
 export function machinesOf(nets: readonly NetworkData[], ids: Iterable<string>): MachineData[] {
-  const want = new Set(ids), out: MachineData[] = [];
-  for (const n of nets) if (want.has(n.id)) for (const m of n.machines) if (!out.includes(m)) out.push(m);
+  const want = new Set(ids),
+    out: MachineData[] = [];
+  for (const n of nets)
+    if (want.has(n.id)) for (const m of n.machines) if (!out.includes(m)) out.push(m);
   return out;
 }
 
@@ -51,18 +60,33 @@ export const networkOf = (nets: readonly NetworkData[], scene: string, id: strin
 
 /** Networks one step from these (by a `net` rule either way, or a controlled node on them): the net map shows them as rumours. */
 export function nextTo(nets: readonly NetworkData[], ids: Iterable<string>): Set<string> {
-  const have = new Set(ids), out = new Set<string>();
+  const have = new Set(ids),
+    out = new Set<string>();
   for (const n of nets) {
     if (have.has(n.id)) continue;
-    const near = n.from.some((r) => ('net' in r && have.has(r.net))
-      || ('controlled' in r && nets.some((o) => have.has(o.id) && o.machines.some((m) => m.node === r.controlled)))
-      // a port on a machine of a network you know (FRIENDNET's link home)
-      || ('port' in r && nets.some((o) => have.has(o.id) && o.machines.some((m) => r.port.startsWith(m.in.find((s) => r.port.startsWith(s + ':')) + ':' + m.id + '.')))))
-      || nets.some((o) => have.has(o.id) && o.from.some((r) => 'net' in r && r.net === n.id));
+    const near =
+      n.from.some(
+        (r) =>
+          ('net' in r && have.has(r.net)) ||
+          ('controlled' in r &&
+            nets.some((o) => have.has(o.id) && o.machines.some((m) => m.node === r.controlled))) ||
+          // a port on a machine of a network you know (FRIENDNET's link home)
+          ('port' in r &&
+            nets.some(
+              (o) =>
+                have.has(o.id) &&
+                o.machines.some((m) =>
+                  r.port.startsWith(
+                    m.in.find((s) => r.port.startsWith(s + ':')) + ':' + m.id + '.',
+                  ),
+                ),
+            )),
+      ) || nets.some((o) => have.has(o.id) && o.from.some((r) => 'net' in r && r.net === n.id));
     if (near) out.add(n.id);
   }
   return out;
 }
 
 /** Capability comes from the source binding and ordinary program ownership, never a file-name convention. */
-export const ownsScanner = (owned:readonly string[],program:string|null):boolean => program!==null&&owned.includes(program);
+export const ownsScanner = (owned: readonly string[], program: string | null): boolean =>
+  program !== null && owned.includes(program);

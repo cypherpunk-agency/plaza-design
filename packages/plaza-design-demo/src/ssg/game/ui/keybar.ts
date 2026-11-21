@@ -21,5 +21,7 @@ export class KeyBar {
   }
 
   /** The scene's own buttons (HACK, BOARD; in hack vision EXIT, BOARD, LOGIC, UNFOLD) sit in the strip. */
-  adopt(el: HTMLElement | null) { if (el && el.parentElement !== this.actions) this.actions.appendChild(el); }
+  adopt(el: HTMLElement | null) {
+    if (el && el.parentElement !== this.actions) this.actions.appendChild(el);
+  }
 }

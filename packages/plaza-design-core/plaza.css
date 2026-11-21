@@ -32,13 +32,21 @@
    RESPONSIVE UTILITIES
    ======================================== */
 @media (max-width: 1024px) {
-  .lg\:hidden { display: none; }
-  .lg\:block { display: block; }
+  .lg\:hidden {
+    display: none;
+  }
+  .lg\:block {
+    display: block;
+  }
 }
 
 @media (max-width: 768px) {
-  .md\:hidden { display: none; }
-  .md\:flex { display: flex; }
+  .md\:hidden {
+    display: none;
+  }
+  .md\:flex {
+    display: flex;
+  }
 
   .plaza-side-panel {
     display: none;
@@ -50,8 +58,12 @@
 }
 
 @media (max-width: 640px) {
-  .sm\:hidden { display: none; }
-  .sm\:flex-col { flex-direction: column; }
+  .sm\:hidden {
+    display: none;
+  }
+  .sm\:flex-col {
+    flex-direction: column;
+  }
 
   :root {
     --text-4xl: 32px;

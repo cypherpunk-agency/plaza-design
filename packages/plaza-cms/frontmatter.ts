@@ -12,7 +12,7 @@ export function parseFrontmatter(markdown: string): {
   }
 
   const metadata: Frontmatter = {};
-  match[1].split('\n').forEach(line => {
+  match[1].split('\n').forEach((line) => {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.slice(0, colonIndex).trim();

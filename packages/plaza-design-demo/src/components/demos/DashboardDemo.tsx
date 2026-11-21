@@ -6,7 +6,7 @@ import {
   getNodeCount,
   formatClock,
   TelemetryData,
-  NetLogEntry
+  NetLogEntry,
 } from '../../plaza';
 import './DashboardDemo.css';
 
@@ -114,7 +114,9 @@ export function DashboardDemo() {
                   <div key={idx} className="netlog-entry">
                     <span className="netlog-entry__verb">{entry.verb}</span>
                     <span className="netlog-entry__chan">{entry.chan}</span>
-                    <span className={`netlog-entry__code ${entry.code === 200 ? 'text-success' : 'text-accent-400'}`}>
+                    <span
+                      className={`netlog-entry__code ${entry.code === 200 ? 'text-success' : 'text-accent-400'}`}
+                    >
                       {entry.code}
                     </span>
                     <span className="netlog-entry__ms">{entry.ms}ms</span>
@@ -224,7 +226,7 @@ function TelemetryItem({ label, value }: { label: string; value: string | number
 function StatusItem({
   label,
   status,
-  variant
+  variant,
 }: {
   label: string;
   status: string;
@@ -233,7 +235,7 @@ function StatusItem({
   const variantClass = {
     success: 'text-success',
     warning: 'text-warning',
-    error: 'text-error'
+    error: 'text-error',
   }[variant];
 
   return (

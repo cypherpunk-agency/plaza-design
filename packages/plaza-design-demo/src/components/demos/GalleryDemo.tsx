@@ -32,16 +32,15 @@ export function GalleryDemo() {
         <h1 className="text-2xl font-semibold text-primary-400 uppercase tracking-widest">
           Component Gallery
         </h1>
-        <p className="text-gray-500 mt-2">
-          Visual reference for all Plaza design kit components
-        </p>
+        <p className="text-gray-500 mt-2">Visual reference for all Plaza design kit components</p>
       </header>
 
       {/* HIERARCHY SECTION - The Core Principle */}
       <section className="gallery-section gallery-section--highlight">
         <h2 className="gallery-section__title">Interactive vs Decorative</h2>
         <p className="gallery-section__desc">
-          The most important design decision: <strong>2px borders for interactive</strong>, <strong>1px borders for decorative</strong>.
+          The most important design decision: <strong>2px borders for interactive</strong>,{' '}
+          <strong>1px borders for decorative</strong>.
         </p>
 
         <div className="hierarchy-comparison">
@@ -109,7 +108,9 @@ export function GalleryDemo() {
 
           <div className="gallery-item">
             <span className="gallery-item__label">Disabled</span>
-            <button className="plaza-btn" disabled>LOCKED</button>
+            <button className="plaza-btn" disabled>
+              LOCKED
+            </button>
           </div>
         </div>
       </section>
@@ -177,13 +178,23 @@ export function GalleryDemo() {
           <div className="gallery-form-row">
             <div className="plaza-form-group">
               <label className="plaza-label">Error State</label>
-              <input type="text" className="plaza-input plaza-input--error" value="Invalid input" readOnly />
+              <input
+                type="text"
+                className="plaza-input plaza-input--error"
+                value="Invalid input"
+                readOnly
+              />
               <span className="plaza-error-message">This field is required</span>
             </div>
 
             <div className="plaza-form-group">
               <label className="plaza-label">Success State</label>
-              <input type="text" className="plaza-input plaza-input--success" value="Valid input" readOnly />
+              <input
+                type="text"
+                className="plaza-input plaza-input--success"
+                value="Valid input"
+                readOnly
+              />
             </div>
           </div>
 
@@ -199,7 +210,11 @@ export function GalleryDemo() {
 
             <div className="plaza-form-group">
               <label className="plaza-label">Textarea</label>
-              <textarea className="plaza-textarea" placeholder="Enter message..." rows={3}></textarea>
+              <textarea
+                className="plaza-textarea"
+                placeholder="Enter message..."
+                rows={3}
+              ></textarea>
             </div>
           </div>
 
@@ -267,18 +282,36 @@ export function GalleryDemo() {
           <div className="plaza-side-panel__block">
             <div className="plaza-side-panel__header">TELEMETRY</div>
             <div className="block-content">
-              <div><span className="text-gray-500">PEER_COUNT:</span> <span className="text-ambient-cyan">47</span></div>
-              <div><span className="text-gray-500">LATENCY:</span> <span className="text-ambient-cyan">32ms</span></div>
-              <div><span className="text-gray-500">STATUS:</span> <span className="text-dim-green">ONLINE</span></div>
+              <div>
+                <span className="text-gray-500">PEER_COUNT:</span>{' '}
+                <span className="text-ambient-cyan">47</span>
+              </div>
+              <div>
+                <span className="text-gray-500">LATENCY:</span>{' '}
+                <span className="text-ambient-cyan">32ms</span>
+              </div>
+              <div>
+                <span className="text-gray-500">STATUS:</span>{' '}
+                <span className="text-dim-green">ONLINE</span>
+              </div>
             </div>
           </div>
 
           <div className="plaza-side-panel__block">
             <div className="plaza-side-panel__header">PROCESSES</div>
             <div className="block-content">
-              <div><span className="text-ambient-amber">SYNC</span>.L1... <span className="text-gray-500">200</span></div>
-              <div><span className="text-ambient-amber">VERIFY</span>.P2P... <span className="text-gray-500">200</span></div>
-              <div><span className="text-ambient-amber">ROUTE</span>.RPC... <span className="text-dim-red">500</span></div>
+              <div>
+                <span className="text-ambient-amber">SYNC</span>.L1...{' '}
+                <span className="text-gray-500">200</span>
+              </div>
+              <div>
+                <span className="text-ambient-amber">VERIFY</span>.P2P...{' '}
+                <span className="text-gray-500">200</span>
+              </div>
+              <div>
+                <span className="text-ambient-amber">ROUTE</span>.RPC...{' '}
+                <span className="text-dim-red">500</span>
+              </div>
             </div>
           </div>
         </div>
@@ -355,8 +388,8 @@ export function GalleryDemo() {
 
             <div className="plaza-window-content" style={{ padding: '2rem' }}>
               <p className="text-gray-400">
-                Window content area. This component provides a consistent framing
-                for terminal-style interfaces.
+                Window content area. This component provides a consistent framing for terminal-style
+                interfaces.
               </p>
             </div>
 
@@ -367,7 +400,9 @@ export function GalleryDemo() {
               <span className="footer-input-area">
                 <span className="footer-not-auth">[ NOT AUTHENTICATED ]</span>
               </span>
-              <button className="footer-send-btn footer-send-btn--disabled" disabled>[SEND]</button>
+              <button className="footer-send-btn footer-send-btn--disabled" disabled>
+                [SEND]
+              </button>
             </div>
           </div>
         </div>
@@ -383,9 +418,7 @@ export function GalleryDemo() {
         <div className="gallery-grid gallery-grid--effects">
           <div className="gallery-item">
             <span className="gallery-item__label">Neon Glow</span>
-            <span className="text-2xl text-shadow-neon text-primary-500 font-bold">
-              GLOW
-            </span>
+            <span className="text-2xl text-shadow-neon text-primary-500 font-bold">GLOW</span>
           </div>
 
           <div className="gallery-item">
@@ -468,14 +501,12 @@ export function GalleryDemo() {
       {/* Links Section */}
       <section className="gallery-section">
         <h2 className="gallery-section__title">Links</h2>
-        <p className="gallery-section__desc">
-          Navigation links with hover glow states.
-        </p>
+        <p className="gallery-section__desc">Navigation links with hover glow states.</p>
 
         <div className="gallery-grid">
           <div className="gallery-item">
             <span className="gallery-item__label">Route Link</span>
-            <a href="#" className="route-link" onClick={e => e.preventDefault()}>
+            <a href="#" className="route-link" onClick={(e) => e.preventDefault()}>
               /dashboard
             </a>
           </div>
@@ -547,13 +578,19 @@ export function GalleryDemo() {
         <div className="plaza-modal-overlay" onClick={() => setShowModal(false)}>
           <div
             className={`plaza-modal plaza-modal--sm ${modalVariant === 'danger' ? 'plaza-modal--danger' : ''} ${modalVariant === 'success' ? 'plaza-modal--success' : ''}`}
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="plaza-modal__header">
               <h2 className="plaza-modal__title">
-                {modalVariant === 'danger' ? 'CONFIRM DELETE' : modalVariant === 'success' ? 'SUCCESS' : 'CONFIRM ACTION'}
+                {modalVariant === 'danger'
+                  ? 'CONFIRM DELETE'
+                  : modalVariant === 'success'
+                    ? 'SUCCESS'
+                    : 'CONFIRM ACTION'}
               </h2>
-              <button className="plaza-modal__close" onClick={() => setShowModal(false)}>×</button>
+              <button className="plaza-modal__close" onClick={() => setShowModal(false)}>
+                ×
+              </button>
             </div>
             <div className="plaza-modal__body">
               <p>
@@ -565,7 +602,10 @@ export function GalleryDemo() {
               </p>
             </div>
             <div className="plaza-modal__footer">
-              <button className="plaza-btn plaza-btn--secondary plaza-btn--sm" onClick={() => setShowModal(false)}>
+              <button
+                className="plaza-btn plaza-btn--secondary plaza-btn--sm"
+                onClick={() => setShowModal(false)}
+              >
                 {modalVariant === 'success' ? 'CLOSE' : 'CANCEL'}
               </button>
               {modalVariant !== 'success' && (

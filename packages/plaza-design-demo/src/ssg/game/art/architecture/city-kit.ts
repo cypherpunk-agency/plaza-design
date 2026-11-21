@@ -1,12 +1,30 @@
-import {colorField} from '../core/fields';
-import {fixedGeometry} from '../core/spatial';
-import {choiceField,depthFactor} from '../core/fields';
-import {tupleArrayEditor,positionListEditor} from '../core/fields';
-import {textField,booleanField} from '../core/fields';
-import {seconds} from '../core/fields';
-import {numericFields} from '../core/fields';
-import {appearanceBoolean,appearanceChoice,appearanceColor,appearanceRatio,appearanceStructure,appearanceText,generationSeed,semantic,shapeLength,shapePosition} from '../core/fields';
-import {rectangleControls,rangeControls,combineControls,viewportElevationControls,atDepthControls,axisControl} from '../core/spatial';
+import { colorField } from '../core/fields';
+import { fixedGeometry } from '../core/spatial';
+import { choiceField, depthFactor } from '../core/fields';
+import { tupleArrayEditor, positionListEditor } from '../core/fields';
+import { textField, booleanField } from '../core/fields';
+import { seconds } from '../core/fields';
+import { numericFields } from '../core/fields';
+import {
+  appearanceBoolean,
+  appearanceChoice,
+  appearanceColor,
+  appearanceRatio,
+  appearanceStructure,
+  appearanceText,
+  generationSeed,
+  semantic,
+  shapeLength,
+  shapePosition,
+} from '../core/fields';
+import {
+  rectangleControls,
+  rangeControls,
+  combineControls,
+  viewportElevationControls,
+  atDepthControls,
+  axisControl,
+} from '../core/spatial';
 /**
  * CITY KIT: Downtown's big pieces as placeable artwork, from the title glide's panorama (Tommi reviewed it,
  * 2026-10-15/22) for any scene or zone:
@@ -27,8 +45,8 @@ import {rectangleControls,rangeControls,combineControls,viewportElevationControl
  */
 import type { AssetDefinition, Field, Properties, Value } from '../core/composition';
 import type { View } from '../core/view';
-import {floorLayout} from '../buildings/layout';
-import {screenBounds} from '../assemblies/static-bounds';
+import { floorLayout } from '../buildings/layout';
+import { screenBounds } from '../assemblies/static-bounds';
 import { inPixels, SHORE, R, hash, mixHex, warmth, ART, type Pixels } from '../core/pixels';
 import { sign, text } from '../core/primitives';
 import { drawTower, towerRow, type Tower, type TowerSign } from './downtown-towers';
@@ -37,27 +55,48 @@ import { drawGalleriaDome } from './galleria-dome';
 import { hiddenTowers, type PlacedTower } from './tower-occlusion';
 import { drawCraft } from '../vehicles/air-traffic';
 import { placed } from '../core/view';
-const fixedNativeGeometry=fixedGeometry("This city kit component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.");
+const fixedNativeGeometry = fixedGeometry(
+  'This city kit component has no independently authored size. Its native kernel and prepared source layout determine its geometry. Edit the source layout or Transform rather than stretching its body.',
+);
 
 const S = 1 / ART;
 const STOREY = 85;
-const num = numericFields({min:-1e6,max:1e6,step:1});
+const num = numericFields({ min: -1e6, max: 1e6, step: 1 });
 const str = textField;
 const color = colorField;
 const bool = booleanField;
 const n = (p: Properties, k: string) => Number(p[k]);
 const fin = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
-const ORANGE = '255,136,0', PAPER = '255,217,165', RED = '255,42,68';
+const ORANGE = '255,136,0',
+  PAPER = '255,217,165',
+  RED = '255,42,68';
 
 export function validateTowerSigns(value: Value) {
-  if (!Array.isArray(value) || value.length > 30) throw new Error('Tower signs: expected at most 30 signs');
+  if (!Array.isArray(value) || value.length > 30)
+    throw new Error('Tower signs: expected at most 30 signs');
   for (const sign of value as unknown as TowerSign[]) {
-    if (!sign || !['plate', 'blade', 'stack', 'ticker', 'holo', 'billboard'].includes(sign.kind) || typeof sign.text !== 'string' || sign.text.length > 4096 || !/^\d{1,3},\d{1,3},\d{1,3}$/.test(sign.col) || !fin(sign.h) || sign.at !== undefined && (!fin(sign.at) || sign.at < 0 || sign.at > 1) || sign.dead !== undefined && (!Number.isInteger(sign.dead) || sign.dead < -1)) throw new Error('Invalid tower sign');
-    if (Object.keys(sign).some(key => !['kind', 'text', 'col', 'h', 'at', 'dead'].includes(key))) throw new Error('Unknown tower sign field');
+    if (
+      !sign ||
+      !['plate', 'blade', 'stack', 'ticker', 'holo', 'billboard'].includes(sign.kind) ||
+      typeof sign.text !== 'string' ||
+      sign.text.length > 4096 ||
+      !/^\d{1,3},\d{1,3},\d{1,3}$/.test(sign.col) ||
+      !fin(sign.h) ||
+      (sign.at !== undefined && (!fin(sign.at) || sign.at < 0 || sign.at > 1)) ||
+      (sign.dead !== undefined && (!Number.isInteger(sign.dead) || sign.dead < -1))
+    )
+      throw new Error('Invalid tower sign');
+    if (Object.keys(sign).some((key) => !['kind', 'text', 'col', 'h', 'at', 'dead'].includes(key)))
+      throw new Error('Unknown tower sign field');
   }
 }
-const jsonList = (label: string, value: Value, check: (v: Value) => void): Field => ({ kind: 'json', label, default: value, validate: check });
+const jsonList = (label: string, value: Value, check: (v: Value) => void): Field => ({
+  kind: 'json',
+  label,
+  default: value,
+  validate: check,
+});
 
 // ---------- a tower ----------
 
@@ -65,135 +104,453 @@ const SKINS = ['concrete', 'glass', 'capsule', 'panel', 'brick'];
 const CROWNS = ['flat', 'spire', 'stepped', 'slant', 'antenna', 'halo', 'pyramid'];
 const GEARS = ['tank', 'antenna', 'dish', 'ac', 'garden', 'pad', 'billboard'];
 export function towerOf(p: Properties): Tower {
-  return { w: n(p, 'width'), h: n(p, 'height'), seed: n(p, 'seed'), roof: String(p.roof) as Tower['roof'], skin: String(p.skin) as Tower['skin'], crown: String(p.crown) as Tower['crown'],
-    gear: p.gear as unknown as Tower['gear'], steps: p.steps as unknown as Tower['steps'], balconies: p.balconies === true, grime: n(p, 'grime'), shop: p.shop === true, signs: p.signs as unknown as TowerSign[] };
+  return {
+    w: n(p, 'width'),
+    h: n(p, 'height'),
+    seed: n(p, 'seed'),
+    roof: String(p.roof) as Tower['roof'],
+    skin: String(p.skin) as Tower['skin'],
+    crown: String(p.crown) as Tower['crown'],
+    gear: p.gear as unknown as Tower['gear'],
+    steps: p.steps as unknown as Tower['steps'],
+    balconies: p.balconies === true,
+    grime: n(p, 'grime'),
+    shop: p.shop === true,
+    signs: p.signs as unknown as TowerSign[],
+  };
 }
 const towerCache = new WeakMap<object, Tower>();
-const towerFor = (p: Properties) => { let t = towerCache.get(p); if (!t) { t = towerOf(p); towerCache.set(p, t); } return t; };
+const towerFor = (p: Properties) => {
+  let t = towerCache.get(p);
+  if (!t) {
+    t = towerOf(p);
+    towerCache.set(p, t);
+  }
+  return t;
+};
 
 export const towerElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width',height:'height'}),
-  type: 'architecture.tower', version: 1, label: 'Downtown tower: skin, setbacks, crown, roof gear, signs (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  spatial: rectangleControls({ width: 'width', height: 'height' }),
+  type: 'architecture.tower',
+  version: 1,
+  label: 'Downtown tower: skin, setbacks, crown, roof gear, signs (city kit)',
+  category: 'architecture',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: {
-    width: shapeLength(num('Width', 600, 20, 4000, 1, 'units')), height: shapeLength(num('Height', 1500, 20, 20000, 1, 'units')), seed: generationSeed(num('Seed', 1, 0, 1e9)),
-    skin: appearanceChoice({ kind: 'select', label: 'Skin', options: SKINS, default: 'concrete' }), crown: appearanceChoice({ kind: 'select', label: 'Crown', options: CROWNS, default: 'flat' }),
-    roof: appearanceChoice({ kind: 'select', label: 'Old roof', options: ['mast', 'tank', 'boxes', 'none'], default: 'none' }),
-    gear: ({...appearanceStructure(jsonList('Roof gear', [], v => { if (!Array.isArray(v) || !v.every(g => GEARS.includes(g as string))) throw new Error('Roof gear: expected ' + GEARS.join(', ')); })),editor:{kind:'set',options:GEARS}}),
-    steps: tupleArrayEditor(appearanceStructure(jsonList('Setbacks [at height fraction, inset fraction]', [], v => { if (!Array.isArray(v) || !v.every(s => Array.isArray(s) && s.length === 2 && s.every(fin))) throw new Error('Setbacks: expected [fraction, inset] pairs'); })),'Setback',[appearanceRatio(numericFields({value:.5,min:0,max:1,step:.01})('Height fraction')),appearanceRatio(numericFields({value:.1,min:0,max:1,step:.01})('Inset fraction'))]),
-    balconies: appearanceBoolean(bool('Balconies', false)), grime: appearanceRatio(num('Age (grime)', 0.3, 0, 1, 0.01)), shop: appearanceBoolean(bool('Lit shopfront at the foot', true)),
-    signs: ({...appearanceStructure(jsonList('Signs', [], validateTowerSigns)),editor:{kind:'list',item:{kind:appearanceChoice(choiceField('Kind',['plate','blade','stack','ticker','holo','billboard'],'plate')),text:appearanceText(textField('Text','REGISTRY')),col:semantic(textField('Color RGB','255,136,0'),{group:'Appearance',quantity:'color',unit:'RGB'}),h:shapePosition(numericFields({value:120})('Height')),at:appearanceRatio(numericFields({value:.5,min:0,max:1,step:.01})('Horizontal fraction')),dead:semantic(numericFields({value:-1,min:-1,step:1})('Unlit letter index'),{group:'Appearance',quantity:'index',unit:'integer'})}}}),
-    fillColor: appearanceColor(color('Body at night', '#120a14')), lit: appearanceColor(color('Body in the sun', '#1e1222')), warmth: appearanceRatio(num('How much the sun warms it', 0.5, 0, 1, 0.05)),
-    edge: appearanceRatio(num('Rim light', 0.35, 0, 1, 0.01)), windows: appearanceRatio(num('Lit windows', 0.14, 0, 1, 0.01)), glow: semantic(num('Window glow', 0.8, 0, 2, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}), floorHeight: shapeLength(num('Storey', STOREY, 4, 200)), below: shapeLength(num('Drawn on below the foot', 2, 0, 2000)),
+    width: shapeLength(num('Width', 600, 20, 4000, 1, 'units')),
+    height: shapeLength(num('Height', 1500, 20, 20000, 1, 'units')),
+    seed: generationSeed(num('Seed', 1, 0, 1e9)),
+    skin: appearanceChoice({ kind: 'select', label: 'Skin', options: SKINS, default: 'concrete' }),
+    crown: appearanceChoice({ kind: 'select', label: 'Crown', options: CROWNS, default: 'flat' }),
+    roof: appearanceChoice({
+      kind: 'select',
+      label: 'Old roof',
+      options: ['mast', 'tank', 'boxes', 'none'],
+      default: 'none',
+    }),
+    gear: {
+      ...appearanceStructure(
+        jsonList('Roof gear', [], (v) => {
+          if (!Array.isArray(v) || !v.every((g) => GEARS.includes(g as string)))
+            throw new Error('Roof gear: expected ' + GEARS.join(', '));
+        }),
+      ),
+      editor: { kind: 'set', options: GEARS },
+    },
+    steps: tupleArrayEditor(
+      appearanceStructure(
+        jsonList('Setbacks [at height fraction, inset fraction]', [], (v) => {
+          if (
+            !Array.isArray(v) ||
+            !v.every((s) => Array.isArray(s) && s.length === 2 && s.every(fin))
+          )
+            throw new Error('Setbacks: expected [fraction, inset] pairs');
+        }),
+      ),
+      'Setback',
+      [
+        appearanceRatio(
+          numericFields({ value: 0.5, min: 0, max: 1, step: 0.01 })('Height fraction'),
+        ),
+        appearanceRatio(
+          numericFields({ value: 0.1, min: 0, max: 1, step: 0.01 })('Inset fraction'),
+        ),
+      ],
+    ),
+    balconies: appearanceBoolean(bool('Balconies', false)),
+    grime: appearanceRatio(num('Age (grime)', 0.3, 0, 1, 0.01)),
+    shop: appearanceBoolean(bool('Lit shopfront at the foot', true)),
+    signs: {
+      ...appearanceStructure(jsonList('Signs', [], validateTowerSigns)),
+      editor: {
+        kind: 'list',
+        item: {
+          kind: appearanceChoice(
+            choiceField(
+              'Kind',
+              ['plate', 'blade', 'stack', 'ticker', 'holo', 'billboard'],
+              'plate',
+            ),
+          ),
+          text: appearanceText(textField('Text', 'REGISTRY')),
+          col: semantic(textField('Color RGB', '255,136,0'), {
+            group: 'Appearance',
+            quantity: 'color',
+            unit: 'RGB',
+          }),
+          h: shapePosition(numericFields({ value: 120 })('Height')),
+          at: appearanceRatio(
+            numericFields({ value: 0.5, min: 0, max: 1, step: 0.01 })('Horizontal fraction'),
+          ),
+          dead: semantic(numericFields({ value: -1, min: -1, step: 1 })('Unlit letter index'), {
+            group: 'Appearance',
+            quantity: 'index',
+            unit: 'integer',
+          }),
+        },
+      },
+    },
+    fillColor: appearanceColor(color('Body at night', '#120a14')),
+    lit: appearanceColor(color('Body in the sun', '#1e1222')),
+    warmth: appearanceRatio(num('How much the sun warms it', 0.5, 0, 1, 0.05)),
+    edge: appearanceRatio(num('Rim light', 0.35, 0, 1, 0.01)),
+    windows: appearanceRatio(num('Lit windows', 0.14, 0, 1, 0.01)),
+    glow: semantic(num('Window glow', 0.8, 0, 2, 0.05), {
+      group: 'Appearance',
+      quantity: 'factor',
+      unit: 'factor',
+    }),
+    floorHeight: shapeLength(num('Storey', STOREY, 4, 200)),
+    below: shapeLength(num('Drawn on below the foot', 2, 0, 2000)),
   },
-  bounds: p => ({ x: 0, h: n(p, 'height'), w: n(p, 'width'), tall: n(p, 'height') }),
+  bounds: (p) => ({ x: 0, h: n(p, 'height'), w: n(p, 'width'), tall: n(p, 'height') }),
   anchors: origin,
   draw(x, v, p, _s, _pass, at) {
-    const sx = v.sx(at.x, at.parallax), w = n(p, 'width') * at.scale;
+    const sx = v.sx(at.x, at.parallax),
+      w = n(p, 'width') * at.scale;
     if (sx > v.viewW + 4 * ART || sx + w < -4 * ART) return;
-    x.save(); x.translate(sx, v.y(at.h));
-    try { drawTower(x, towerFor(p), { t: v.t, fill: mixHex(String(p.fillColor), String(p.lit), warmth(v.lighting) * n(p, 'warmth')), edge: n(p, 'edge'), lit: n(p, 'windows'), glow: n(p, 'glow'), below: n(p, 'below'), storey: n(p, 'floorHeight') }); }
-    finally { x.restore(); }
+    x.save();
+    x.translate(sx, v.y(at.h));
+    try {
+      drawTower(x, towerFor(p), {
+        t: v.t,
+        fill: mixHex(String(p.fillColor), String(p.lit), warmth(v.lighting) * n(p, 'warmth')),
+        edge: n(p, 'edge'),
+        lit: n(p, 'windows'),
+        glow: n(p, 'glow'),
+        below: n(p, 'below'),
+        storey: n(p, 'floorHeight'),
+      });
+    } finally {
+      x.restore();
+    }
   },
 };
 
 // ---------- skyline rows ----------
 
-interface Row { parallax: number; x: number; seed: number; length: number; haze: number }
-interface RowTower { tower: Tower; X: number }
+interface Row {
+  parallax: number;
+  x: number;
+  seed: number;
+  length: number;
+  haze: number;
+}
+interface RowTower {
+  tower: Tower;
+  X: number;
+}
 const rowCache = new Map<string, RowTower[]>();
 /** A row's towers laid out once: sparse and lower at its east start, dense and tall toward its west end. `X` is the tower's west distance from the start, in the row's depth-1 units (pixels). */
 function rowTowers(row: Row): RowTower[] {
-  const key = [row.parallax, row.seed, row.length].join('|'); let hit = rowCache.get(key); if (hit) return hit;
-  const p = row.parallax, towers: RowTower[] = [], seed = row.seed, Xb = row.length * S;
+  const key = [row.parallax, row.seed, row.length].join('|');
+  let hit = rowCache.get(key);
+  if (hit) return hit;
+  const p = row.parallax,
+    towers: RowTower[] = [],
+    seed = row.seed,
+    Xb = row.length * S;
   const base = towerRow(seed, 120, [260, 760], [1500, 4800], [], { storey: STOREY, gap: [0, 1] });
-  let X = 0, i = 0;
+  let X = 0,
+    i = 0;
   const lerp = (a: number, b: number, f: number) => a + (b - a) * f;
   while (X < Xb && i < base.length) {
-    const b = base[i++], k = X / Xb, w = b.w * S * p, tall = lerp(0.55, 1.25, k);
-    if (hash(seed + i) < lerp(0.55, 0.02, k)) { X += w * 1.2; continue; }
+    const b = base[i++],
+      k = X / Xb,
+      w = b.w * S * p,
+      tall = lerp(0.55, 1.25, k);
+    if (hash(seed + i) < lerp(0.55, 0.02, k)) {
+      X += w * 1.2;
+      continue;
+    }
     towers.push({ tower: { ...b, h: Math.round(b.h * tall) }, X });
     X += w + lerp(60, 2, k) * p * 3 * hash(i + seed);
   }
-  rowCache.set(key, towers); return towers;
+  rowCache.set(key, towers);
+  return towers;
 }
 export const skylineRowsElement: AssetDefinition = {
-  type: 'architecture.skyline-rows', version: 1, label: 'Skyline rows behind the street, far to near (city kit, distance)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'architecture.skyline-rows',
+  version: 1,
+  label: 'Skyline rows behind the street, far to near (city kit, distance)',
+  category: 'architecture',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: {
-    rows: ({...semantic(jsonList('Rows, far to near (parallax, x: its east start, seed, length west, haze)', [{ parallax: 0.14, x: 0, seed: 300, length: 6000, haze: 0.75 }], v => { if (!Array.isArray(v) || v.length > 8 || !v.every(r => !!r && typeof r === 'object' && ['parallax', 'x', 'seed', 'length', 'haze'].every(k => fin((r as Record<string, unknown>)[k])))) throw new Error('Rows: expected { parallax, x, seed, length, haze } rows'); }),{"group":"Generation","quantity":"structured","unit":"structured"}),editor:{kind:'list',item:{parallax:depthFactor(numericFields({value:.14,min:.01,max:2,step:.01})('Parallax')),x:shapePosition(numericFields({value:0})('East start X')),seed:generationSeed(numericFields({value:300,min:0,step:1})('Seed')),length:shapeLength(numericFields({value:6000,min:1,step:1})('Length to west')),haze:appearanceRatio(numericFields({value:.75,min:0,max:1,step:.01})('Haze'))}}}),
-    horizonY: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)), drawingMinX: semantic(num('Shown from (west edge, depth 1; units east of the piece)', -1e6),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"local"}), drawingMaxX: semantic(num('Shown to (east edge, depth 1)', 1e6),{"group":"Visibility & Drawing","quantity":"position","unit":"world units","space":"local"}),
-    fillColor: appearanceColor(color('Body at night', '#0c0710')), lit: appearanceColor(color('Body in the sun', '#1c1024')), hazeNight: appearanceColor(color('Haze at night', '#1e1024')), hazeLit: appearanceColor(color('Haze in the sun', '#3a1c34')), town: appearanceRatio(num('City haze', 1, 0, 1, 0.05)),
+    rows: {
+      ...semantic(
+        jsonList(
+          'Rows, far to near (parallax, x: its east start, seed, length west, haze)',
+          [{ parallax: 0.14, x: 0, seed: 300, length: 6000, haze: 0.75 }],
+          (v) => {
+            if (
+              !Array.isArray(v) ||
+              v.length > 8 ||
+              !v.every(
+                (r) =>
+                  !!r &&
+                  typeof r === 'object' &&
+                  ['parallax', 'x', 'seed', 'length', 'haze'].every((k) =>
+                    fin((r as Record<string, unknown>)[k]),
+                  ),
+              )
+            )
+              throw new Error('Rows: expected { parallax, x, seed, length, haze } rows');
+          },
+        ),
+        { group: 'Generation', quantity: 'structured', unit: 'structured' },
+      ),
+      editor: {
+        kind: 'list',
+        item: {
+          parallax: depthFactor(
+            numericFields({ value: 0.14, min: 0.01, max: 2, step: 0.01 })('Parallax'),
+          ),
+          x: shapePosition(numericFields({ value: 0 })('East start X')),
+          seed: generationSeed(numericFields({ value: 300, min: 0, step: 1 })('Seed')),
+          length: shapeLength(numericFields({ value: 6000, min: 1, step: 1 })('Length to west')),
+          haze: appearanceRatio(numericFields({ value: 0.75, min: 0, max: 1, step: 0.01 })('Haze')),
+        },
+      },
+    },
+    horizonY: shapePosition(num('Horizon (over the ground line)', 189, -400, 1200)),
+    drawingMinX: semantic(num('Shown from (west edge, depth 1; units east of the piece)', -1e6), {
+      group: 'Visibility & Drawing',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'local',
+    }),
+    drawingMaxX: semantic(num('Shown to (east edge, depth 1)', 1e6), {
+      group: 'Visibility & Drawing',
+      quantity: 'position',
+      unit: 'world units',
+      space: 'local',
+    }),
+    fillColor: appearanceColor(color('Body at night', '#0c0710')),
+    lit: appearanceColor(color('Body in the sun', '#1c1024')),
+    hazeNight: appearanceColor(color('Haze at night', '#1e1024')),
+    hazeLit: appearanceColor(color('Haze in the sun', '#3a1c34')),
+    town: appearanceRatio(num('City haze', 1, 0, 1, 0.05)),
   },
-  bounds: p => ({ x: n(p, 'drawingMinX') < -1e5 ? 0 : n(p, 'drawingMinX'), h: 2000, w: 4000, tall: 2000 }),
+  bounds: (p) => ({
+    x: n(p, 'drawingMinX') < -1e5 ? 0 : n(p, 'drawingMinX'),
+    h: 2000,
+    w: 4000,
+    tall: 2000,
+  }),
   anchors: origin,
   draw(x, v, p, _s, _pass, at) {
-    const W = v.viewW, warm = warmth(v.lighting), town = n(p, 'town'), hz = v.y(at.h + n(p, 'horizonY')), gy = v.y(at.h);
-    const a = Math.max(-40, v.sx(at.x + n(p, 'drawingMinX'))), b = Math.min(W + 40, v.sx(at.x + n(p, 'drawingMaxX')));
+    const W = v.viewW,
+      warm = warmth(v.lighting),
+      town = n(p, 'town'),
+      hz = v.y(at.h + n(p, 'horizonY')),
+      gy = v.y(at.h);
+    const a = Math.max(-40, v.sx(at.x + n(p, 'drawingMinX'))),
+      b = Math.min(W + 40, v.sx(at.x + n(p, 'drawingMaxX')));
     if (b <= a) return;
     const items: PlacedTower[] = [];
     for (const row of p.rows as unknown as Row[]) {
-      const sc = row.parallax, base = R((hz + (gy - hz) * row.parallax * 0.9) / ART) * ART, ax = v.sx(at.x + row.x, row.parallax) / ART;
-      const look = { t: v.t, fill: mixHex(String(p.fillColor), String(p.lit), warm * (1 - town * 0.4)), edge: 0.14, lit: 0.1 + row.parallax * 0.12, glow: 0.45 + row.parallax * 0.4, below: 200, storey: STOREY, haze: row.haze * 0.55, hazeCol: mixHex(String(p.hazeNight), String(p.hazeLit), warm * (1 - town * 0.5)) };
+      const sc = row.parallax,
+        base = R((hz + (gy - hz) * row.parallax * 0.9) / ART) * ART,
+        ax = v.sx(at.x + row.x, row.parallax) / ART;
+      const look = {
+        t: v.t,
+        fill: mixHex(String(p.fillColor), String(p.lit), warm * (1 - town * 0.4)),
+        edge: 0.14,
+        lit: 0.1 + row.parallax * 0.12,
+        glow: 0.45 + row.parallax * 0.4,
+        below: 200,
+        storey: STOREY,
+        haze: row.haze * 0.55,
+        hazeCol: mixHex(String(p.hazeNight), String(p.hazeLit), warm * (1 - town * 0.5)),
+      };
       for (const t of rowTowers(row)) {
         const s = (ax - row.parallax * t.X) * ART;
         if (s > W + 4 * ART || s + t.tower.w * sc < -4 * ART) continue;
         items.push({ tower: t.tower, tx: R(s / ART) * ART, ty: base, sc, look });
       }
     }
-    x.save(); x.beginPath(); x.rect(a, -4000, b - a, v.viewH + 8000); x.clip();
+    x.save();
+    x.beginPath();
+    x.rect(a, -4000, b - a, v.viewH + 8000);
+    x.clip();
     try {
       const hidden = hiddenTowers(x, items, true);
-      items.forEach((it, i) => { if (hidden.has(i)) return; placed(x, it.tx, it.ty, it.sc, () => drawTower(x, it.tower, it.look)); });
-    } finally { x.restore(); }
+      items.forEach((it, i) => {
+        if (hidden.has(i)) return;
+        placed(x, it.tx, it.ty, it.sc, () => drawTower(x, it.tower, it.look));
+      });
+    } finally {
+      x.restore();
+    }
   },
 };
 
 // ---------- THE RING ----------
 
 export const ringElement: AssetDefinition = {
-  spatial:rangeControls('startX','endX',p=>Number(p.baseY)+RING.rail),
-  validateProperties:p=>{if(Number(p.endX)<=Number(p.startX))throw Error('Ring end must be after its start');},
-  type: 'architecture.ring', version: 1, label: 'THE RING overhead: columns, deck and lamps (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  spatial: rangeControls('startX', 'endX', (p) => Number(p.baseY) + RING.rail),
+  validateProperties: (p) => {
+    if (Number(p.endX) <= Number(p.startX)) throw Error('Ring end must be after its start');
+  },
+  type: 'architecture.ring',
+  version: 1,
+  label: 'THE RING overhead: columns, deck and lamps (city kit)',
+  category: 'architecture',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: {
-    startX: shapePosition(num('From (units east of the piece)', 0)), endX: shapePosition(num('To', 3000)), gridOriginX: shapePosition(num('Column grid origin (units east of the piece)', 0)),
-    part:appearanceChoice({kind:'select',label:'Road structure',options:['all','structure','front'],default:'all'}),
-    gantries: positionListEditor(appearanceStructure(jsonList('Sign gantries (units east of the piece)', [], v => { if (!Array.isArray(v) || !v.every(fin)) throw new Error('Gantries: expected numbers'); })),'Gantry X'),
-    lamps: appearanceBoolean(bool('Lamps on', true)), fillColor: appearanceColor(color('Concrete at night', '#18121a')), lit: appearanceColor(color('Concrete in the sun', '#241a24')), baseY: shapePosition(num('Columns stand on (over the ground line)', SHORE.back, -400, 400)),
+    startX: shapePosition(num('From (units east of the piece)', 0)),
+    endX: shapePosition(num('To', 3000)),
+    gridOriginX: shapePosition(num('Column grid origin (units east of the piece)', 0)),
+    part: appearanceChoice({
+      kind: 'select',
+      label: 'Road structure',
+      options: ['all', 'structure', 'front'],
+      default: 'all',
+    }),
+    gantries: positionListEditor(
+      appearanceStructure(
+        jsonList('Sign gantries (units east of the piece)', [], (v) => {
+          if (!Array.isArray(v) || !v.every(fin)) throw new Error('Gantries: expected numbers');
+        }),
+      ),
+      'Gantry X',
+    ),
+    lamps: appearanceBoolean(bool('Lamps on', true)),
+    fillColor: appearanceColor(color('Concrete at night', '#18121a')),
+    lit: appearanceColor(color('Concrete in the sun', '#241a24')),
+    baseY: shapePosition(num('Columns stand on (over the ground line)', SHORE.back, -400, 400)),
     curve: appearanceBoolean(bool('East end curves away inland', false)),
   },
-  bounds: p => ({ x: n(p, 'startX'), h: RING.rail + 160, w: n(p, 'endX') - n(p, 'startX'), tall: RING.rail + 160 }),
+  bounds: (p) => ({
+    x: n(p, 'startX'),
+    h: RING.rail + 160,
+    w: n(p, 'endX') - n(p, 'startX'),
+    tall: RING.rail + 160,
+  }),
   anchors: origin,
   draw(x, v, p, _s, _pass, at) {
-    const o0 = v.sx(at.x + n(p, 'gridOriginX'), at.parallax), base = v.y(at.h + n(p, 'baseY')), fx = (s: number) => s - o0;
-    const a = Math.max(fx(-60 * ART), n(p, 'startX') - n(p, 'gridOriginX')), b = Math.min(fx(v.viewW + 60 * ART), n(p, 'endX') - n(p, 'gridOriginX'));
+    const o0 = v.sx(at.x + n(p, 'gridOriginX'), at.parallax),
+      base = v.y(at.h + n(p, 'baseY')),
+      fx = (s: number) => s - o0;
+    const a = Math.max(fx(-60 * ART), n(p, 'startX') - n(p, 'gridOriginX')),
+      b = Math.min(fx(v.viewW + 60 * ART), n(p, 'endX') - n(p, 'gridOriginX'));
     const warm = warmth(v.lighting);
     if (b > a) {
-      x.save(); x.translate(o0, base);
+      x.save();
+      x.translate(o0, base);
       try {
-        drawRing(x, a, b, { t: v.t, fill: mixHex(String(p.fillColor), String(p.lit), warm * 0.4), gantries: (p.gantries as number[]).map(g => g - n(p, 'gridOriginX')), lamps: p.lamps !== false,part:p.part as 'all'|'structure'|'front',ownership:{from:n(p, 'startX')-n(p, 'gridOriginX'),to:n(p, 'endX')-n(p, 'gridOriginX')} });
-      } finally { x.restore(); }
-    }
-    if (p.curve === true&&p.part!=='structure') inPixels(x, v, { ...at, x: at.x + n(p, 'endX') }, P => {
-      // the deck curving away inland, smaller and hazier
-      const e = P.ax, back = P.y(at.h + n(p, 'baseY'));
-      if (e < -40 || e > P.W + 200) return;
-      for (let i = 1; i <= 7; i++) {
-        const k = Math.pow(0.8, i), w = 40 * k, sx = e + i * 22 * Math.pow(0.86, i), under = back - (RING.under * S) - i * 6;
-        x.fillStyle = mixHex('#18121a', '#3a2440', i / 8); x.fillRect(R(sx), R(under - 18 * k), R(w), R(18 * k));
-        x.fillStyle = 'rgba(255,190,110,' + (0.4 * k).toFixed(2) + ')'; x.fillRect(R(sx), R(under), R(w), 1);
+        drawRing(x, a, b, {
+          t: v.t,
+          fill: mixHex(String(p.fillColor), String(p.lit), warm * 0.4),
+          gantries: (p.gantries as number[]).map((g) => g - n(p, 'gridOriginX')),
+          lamps: p.lamps !== false,
+          part: p.part as 'all' | 'structure' | 'front',
+          ownership: {
+            from: n(p, 'startX') - n(p, 'gridOriginX'),
+            to: n(p, 'endX') - n(p, 'gridOriginX'),
+          },
+        });
+      } finally {
+        x.restore();
       }
-    });
+    }
+    if (p.curve === true && p.part !== 'structure')
+      inPixels(x, v, { ...at, x: at.x + n(p, 'endX') }, (P) => {
+        // the deck curving away inland, smaller and hazier
+        const e = P.ax,
+          back = P.y(at.h + n(p, 'baseY'));
+        if (e < -40 || e > P.W + 200) return;
+        for (let i = 1; i <= 7; i++) {
+          const k = Math.pow(0.8, i),
+            w = 40 * k,
+            sx = e + i * 22 * Math.pow(0.86, i),
+            under = back - RING.under * S - i * 6;
+          x.fillStyle = mixHex('#18121a', '#3a2440', i / 8);
+          x.fillRect(R(sx), R(under - 18 * k), R(w), R(18 * k));
+          x.fillStyle = 'rgba(255,190,110,' + (0.4 * k).toFixed(2) + ')';
+          x.fillRect(R(sx), R(under), R(w), 1);
+        }
+      });
   },
 };
 
-
 /** Independent lanes use whole-vehicle ownership; road barriers and real portals remain scenery. */
-export const ringTrafficElement:AssetDefinition={
- spatial:rangeControls('startX','endX',p=>Number(p.baseY)+RING.rail),
- validateProperties:p=>{if(Number(p.endX)<=Number(p.startX))throw Error('Lane end must be after its start');},
- type:'vehicle.ring-traffic', selection:'region',version:1,label:'Ring traffic lane',category:'vehicles',coordinates:'world',libraryUse:'reusable',mobility:()=>true,parts:['backdrop'],
- fields:{...Object.fromEntries(['startX','endX','gridOriginX','baseY'].map(k=>[k,ringElement.fields[k]])),lane:appearanceChoice({kind:'select',label:'Lane',default:'far',options:['far','near']})},
- bounds:p=>({x:n(p, 'startX')-500,h:RING.rail+160,w:n(p, 'endX')-n(p, 'startX')+1000,tall:RING.rail+160}),anchors:origin,
- draw(ctx,v,p,_s,_pass,at){const grid=n(p, 'gridOriginX'),x=v.sx(at.x+grid,at.parallax),a=Math.max(-x-500,n(p, 'startX')-grid-500),b=Math.min(v.viewW-x+500,n(p, 'endX')-grid+500);if(b<=a)return;ctx.save();ctx.translate(x,v.y(at.h+n(p, 'baseY')));try{ringTraffic(ctx,a,b,v.t,false,true,{from:n(p, 'startX')-grid,to:n(p, 'endX')-grid,lane:p.lane as 'far'|'near'});}finally{ctx.restore();}},
+export const ringTrafficElement: AssetDefinition = {
+  spatial: rangeControls('startX', 'endX', (p) => Number(p.baseY) + RING.rail),
+  validateProperties: (p) => {
+    if (Number(p.endX) <= Number(p.startX)) throw Error('Lane end must be after its start');
+  },
+  type: 'vehicle.ring-traffic',
+  selection: 'region',
+  version: 1,
+  label: 'Ring traffic lane',
+  category: 'vehicles',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  mobility: () => true,
+  parts: ['backdrop'],
+  fields: {
+    ...Object.fromEntries(
+      ['startX', 'endX', 'gridOriginX', 'baseY'].map((k) => [k, ringElement.fields[k]]),
+    ),
+    lane: appearanceChoice({
+      kind: 'select',
+      label: 'Lane',
+      default: 'far',
+      options: ['far', 'near'],
+    }),
+  },
+  bounds: (p) => ({
+    x: n(p, 'startX') - 500,
+    h: RING.rail + 160,
+    w: n(p, 'endX') - n(p, 'startX') + 1000,
+    tall: RING.rail + 160,
+  }),
+  anchors: origin,
+  draw(ctx, v, p, _s, _pass, at) {
+    const grid = n(p, 'gridOriginX'),
+      x = v.sx(at.x + grid, at.parallax),
+      a = Math.max(-x - 500, n(p, 'startX') - grid - 500),
+      b = Math.min(v.viewW - x + 500, n(p, 'endX') - grid + 500);
+    if (b <= a) return;
+    ctx.save();
+    ctx.translate(x, v.y(at.h + n(p, 'baseY')));
+    try {
+      ringTraffic(ctx, a, b, v.t, false, true, {
+        from: n(p, 'startX') - grid,
+        to: n(p, 'endX') - grid,
+        lane: p.lane as 'far' | 'near',
+      });
+    } finally {
+      ctx.restore();
+    }
+  },
 };
 
 // ---------- a block the roads run through ----------
@@ -205,70 +562,167 @@ export const ringTrafficElement:AssetDefinition={
  */
 /** The old facade's first baseline is 30% into its first complete floor band.
  * Retain that band datum and reserve six units below the roof. */
-export function throughBlockLayout(p:Readonly<Properties>){
- const bottomY=Number(p.bottomY),height=Number(p.height),floorHeight=Number(p.floorHeight),roofY=bottomY+height;
- if(!Number.isFinite(roofY)||roofY<900||roofY>6000)throw Error('Through-block roof Y must stay between 900 and 6000 world units');
- const groundFloorHeight=SHORE.back+RING.rail+100+18-.3*floorHeight-bottomY;
- return{...floorLayout({...p,groundFloorHeight,parapetHeight:0},6),bottomY,roofY};
+export function throughBlockLayout(p: Readonly<Properties>) {
+  const bottomY = Number(p.bottomY),
+    height = Number(p.height),
+    floorHeight = Number(p.floorHeight),
+    roofY = bottomY + height;
+  if (!Number.isFinite(roofY) || roofY < 900 || roofY > 6000)
+    throw Error('Through-block roof Y must stay between 900 and 6000 world units');
+  const groundFloorHeight = SHORE.back + RING.rail + 100 + 18 - 0.3 * floorHeight - bottomY;
+  return { ...floorLayout({ ...p, groundFloorHeight, parapetHeight: 0 }, 6), bottomY, roofY };
 }
 
 export const throughBlockElement: AssetDefinition = {
-  type: 'architecture.through-block', version: 1, label: 'Block the Ring runs through: portals, storeys, plates (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  type: 'architecture.through-block',
+  version: 1,
+  label: 'Block the Ring runs through: portals, storeys, plates (city kit)',
+  category: 'architecture',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: {
-    width: shapeLength(num('Width', 240, 30, 4000, 3, 'units')), entry: appearanceChoice({ kind: 'select', label: 'Traffic comes in from', options: ['east', 'west'], default: 'east' }), street: appearanceBoolean(bool('The street runs through it too', true)),
-    height: shapeLength(num('Building height',2900,1,12000,1,'units')), floorHeight:shapeLength(num('Floor height',STOREY,4,200)),
-    bottomY: shapePosition(num('Bottom Y (over the ground line; below the view: the sea wall)', -1500, -6000, 400)), name: appearanceText(str('Plate between the portals (empty: none)', 'WEST GATE')), code: appearanceText(str('Stencil over the Ring’s portal', 'R4 · W')),
+    width: shapeLength(num('Width', 240, 30, 4000, 3, 'units')),
+    entry: appearanceChoice({
+      kind: 'select',
+      label: 'Traffic comes in from',
+      options: ['east', 'west'],
+      default: 'east',
+    }),
+    street: appearanceBoolean(bool('The street runs through it too', true)),
+    height: shapeLength(num('Building height', 2900, 1, 12000, 1, 'units')),
+    floorHeight: shapeLength(num('Floor height', STOREY, 4, 200)),
+    bottomY: shapePosition(
+      num('Bottom Y (over the ground line; below the view: the sea wall)', -1500, -6000, 400),
+    ),
+    name: appearanceText(str('Plate between the portals (empty: none)', 'WEST GATE')),
+    code: appearanceText(str('Stencil over the Ring’s portal', 'R4 · W')),
     lit: appearanceRatio(num('Lit windows', 0.6, 0, 1, 0.05)),
   },
-  spatial:rectangleControls({width:'width',height:'height',baseline:'bottomY'}),
-  validateProperties:p=>{throughBlockLayout(p);},
-  derived:p=>{const l=throughBlockLayout(p);return{floorCount:{label:'Complete upper floors',value:l.floorCount},remainder:{label:'Space below roof',value:l.remainder,unit:'world units'},roofY:{label:'Roof Y',value:l.roofY,unit:'world units'}};},
-  bounds: p => {const l=throughBlockLayout(p);return{x:0,h:l.roofY,w:n(p,'width'),tall:l.height};},
-  anchors:p=>{const l=throughBlockLayout(p);return{...origin(),roof:{x:Number(p.width)/2,h:l.roofY,role:'surface'},foot:{x:0,h:l.bottomY,role:'mount'}};},
+  spatial: rectangleControls({ width: 'width', height: 'height', baseline: 'bottomY' }),
+  validateProperties: (p) => {
+    throughBlockLayout(p);
+  },
+  derived: (p) => {
+    const l = throughBlockLayout(p);
+    return {
+      floorCount: { label: 'Complete upper floors', value: l.floorCount },
+      remainder: { label: 'Space below roof', value: l.remainder, unit: 'world units' },
+      roofY: { label: 'Roof Y', value: l.roofY, unit: 'world units' },
+    };
+  },
+  bounds: (p) => {
+    const l = throughBlockLayout(p);
+    return { x: 0, h: l.roofY, w: n(p, 'width'), tall: l.height };
+  },
+  anchors: (p) => {
+    const l = throughBlockLayout(p);
+    return {
+      ...origin(),
+      roof: { x: Number(p.width) / 2, h: l.roofY, role: 'surface' },
+      foot: { x: 0, h: l.bottomY, role: 'mount' },
+    };
+  },
   draw(ctx, v, p, _s, _pass, at) {
-    const layout=throughBlockLayout(p);
-    inPixels(ctx, v, at, P => {
-      const x = P.x, a = Math.floor(P.ax), b = Math.ceil(P.u(n(p, 'width') * S)), back = P.y(at.h + SHORE.back), road0 = P.y(at.h + SHORE.road0), road1 = P.y(at.h + SHORE.road1);
+    const layout = throughBlockLayout(p);
+    inPixels(ctx, v, at, (P) => {
+      const x = P.x,
+        a = Math.floor(P.ax),
+        b = Math.ceil(P.u(n(p, 'width') * S)),
+        back = P.y(at.h + SHORE.back),
+        road0 = P.y(at.h + SHORE.road0),
+        road1 = P.y(at.h + SHORE.road1);
       if (b < -4 || a > P.W + 4) return;
-      const foot = P.y(at.h + n(p, 'bottomY')), roof=P.y(at.h+layout.roofY), entry = String(p.entry), warm = P.warm;
-      const ringY = (h: number) => back - h * S, jamb = 5, rim = 'rgba(255,150,90,' + (0.35 * warm + 0.1).toFixed(2) + ')';
-      const wall = mixHex('#1a1016', '#2a1c24', warm * 0.5), dark = 'rgba(6,3,8,.74)';
-      x.fillStyle = wall; x.fillRect(a, roof, b - a, foot - roof);
-      x.fillStyle = rim; x.fillRect(a, roof, 1, foot - roof);
-      x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(b - 2, roof, 2, foot - roof);
-      x.fillStyle = '#0d070f';x.fillRect(a,roof,b-a,2);x.fillStyle=rim;x.fillRect(a,roof,b-a,1);
-      const st = layout.floorHeight * S, top = ringY(RING.rail + 100);
-      for (let k = 0, fy = top - 6; k<layout.floorCount; k++, fy -= st) {
-        x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(a + 1, R(fy), b - a - 3, 1);
+      const foot = P.y(at.h + n(p, 'bottomY')),
+        roof = P.y(at.h + layout.roofY),
+        entry = String(p.entry),
+        warm = P.warm;
+      const ringY = (h: number) => back - h * S,
+        jamb = 5,
+        rim = 'rgba(255,150,90,' + (0.35 * warm + 0.1).toFixed(2) + ')';
+      const wall = mixHex('#1a1016', '#2a1c24', warm * 0.5),
+        dark = 'rgba(6,3,8,.74)';
+      x.fillStyle = wall;
+      x.fillRect(a, roof, b - a, foot - roof);
+      x.fillStyle = rim;
+      x.fillRect(a, roof, 1, foot - roof);
+      x.fillStyle = 'rgba(0,0,0,.45)';
+      x.fillRect(b - 2, roof, 2, foot - roof);
+      x.fillStyle = '#0d070f';
+      x.fillRect(a, roof, b - a, 2);
+      x.fillStyle = rim;
+      x.fillRect(a, roof, b - a, 1);
+      const st = layout.floorHeight * S,
+        top = ringY(RING.rail + 100);
+      for (let k = 0, fy = top - 6; k < layout.floorCount; k++, fy -= st) {
+        x.fillStyle = 'rgba(0,0,0,.3)';
+        x.fillRect(a + 1, R(fy), b - a - 3, 1);
         for (let bx = a + 6, i = 0; bx + 4 < b - 4; bx += 9, i++) {
           const on = hash(k * 31 + i * 7 + 5) < n(p, 'lit');
-          x.fillStyle = on ? 'rgba(255,200,140,.55)' : 'rgba(10,6,12,.8)'; x.fillRect(bx, R(fy - st * 0.7), 4, R(st * 0.45));
+          x.fillStyle = on ? 'rgba(255,200,140,.55)' : 'rgba(10,6,12,.8)';
+          x.fillRect(bx, R(fy - st * 0.7), 4, R(st * 0.45));
         }
       }
       const portal = (y0: number, y1: number, lamps: number, deck: [number, number]) => {
-        const p0 = entry === 'east' ? a + jamb + 2 : a + jamb, p1 = entry === 'east' ? b - jamb : b - jamb - 2, j = entry === 'east' ? p1 : a;
-        x.fillStyle = dark; x.fillRect(p0, R(y0), p1 - p0, R(y1 - y0));
-        x.fillStyle = 'rgba(46,32,40,.55)'; x.fillRect(p0, R(deck[0]), p1 - p0, R(deck[1] - deck[0]));
-        x.fillStyle = 'rgba(255,190,120,.22)'; x.fillRect(p0, R(deck[0]), p1 - p0, 1);
-        for (let lx = p1 - 6; lx > p0 + 2; lx -= 12) { x.fillStyle = 'rgba(255,214,150,' + lamps + ')'; x.fillRect(lx - 2, R(y0) + 1, 4, 1); }
-        const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(255,190,120,.10)'); g.addColorStop(1, 'rgba(255,190,120,0)'); x.fillStyle = g; x.fillRect(p0, R(y0), p1 - p0, R(y1 - y0));
-        x.fillStyle = wall; x.fillRect(j, R(y0) - 3, jamb, R(y1 - y0) + 3); x.fillRect(p0 - 2, R(y0) - 4, p1 - p0 + 4, 4);
-        x.fillStyle = rim; x.fillRect(Math.min(p0 - 2, j), R(y0) - 4, p1 - p0 + 2 + jamb, 1);
-        x.fillStyle = 'rgba(255,217,165,.18)'; x.fillRect(entry === 'east' ? p1 : p0 - 1, R(y0), 1, R(y1 - y0));
+        const p0 = entry === 'east' ? a + jamb + 2 : a + jamb,
+          p1 = entry === 'east' ? b - jamb : b - jamb - 2,
+          j = entry === 'east' ? p1 : a;
+        x.fillStyle = dark;
+        x.fillRect(p0, R(y0), p1 - p0, R(y1 - y0));
+        x.fillStyle = 'rgba(46,32,40,.55)';
+        x.fillRect(p0, R(deck[0]), p1 - p0, R(deck[1] - deck[0]));
+        x.fillStyle = 'rgba(255,190,120,.22)';
+        x.fillRect(p0, R(deck[0]), p1 - p0, 1);
+        for (let lx = p1 - 6; lx > p0 + 2; lx -= 12) {
+          x.fillStyle = 'rgba(255,214,150,' + lamps + ')';
+          x.fillRect(lx - 2, R(y0) + 1, 4, 1);
+        }
+        const g = x.createLinearGradient(0, y0, 0, y1);
+        g.addColorStop(0, 'rgba(255,190,120,.10)');
+        g.addColorStop(1, 'rgba(255,190,120,0)');
+        x.fillStyle = g;
+        x.fillRect(p0, R(y0), p1 - p0, R(y1 - y0));
+        x.fillStyle = wall;
+        x.fillRect(j, R(y0) - 3, jamb, R(y1 - y0) + 3);
+        x.fillRect(p0 - 2, R(y0) - 4, p1 - p0 + 4, 4);
+        x.fillStyle = rim;
+        x.fillRect(Math.min(p0 - 2, j), R(y0) - 4, p1 - p0 + 2 + jamb, 1);
+        x.fillStyle = 'rgba(255,217,165,.18)';
+        x.fillRect(entry === 'east' ? p1 : p0 - 1, R(y0), 1, R(y1 - y0));
       };
-      portal(ringY(RING.rail + 80), ringY(RING.under - 8), 0.8, [ringY(RING.road), ringY(RING.under)]);
+      portal(ringY(RING.rail + 80), ringY(RING.under - 8), 0.8, [
+        ringY(RING.road),
+        ringY(RING.under),
+      ]);
       if (p.street === true) portal(back - 40, road1 + 2, 0.7, [road0, road1]);
       const mid = R((a + b) / 2);
       if (String(p.name)) {
         const py = R((ringY(RING.under - 8) + back - 44) / 2);
-        x.fillStyle = '#0d0705'; x.fillRect(mid - 18, py - 5, 36, 10); x.strokeStyle = 'rgba(255,136,0,.6)'; x.lineWidth = 1; x.strokeRect(mid - 17.5, py - 4.5, 35, 9);
+        x.fillStyle = '#0d0705';
+        x.fillRect(mid - 18, py - 5, 36, 10);
+        x.strokeStyle = 'rgba(255,136,0,.6)';
+        x.lineWidth = 1;
+        x.strokeRect(mid - 17.5, py - 4.5, 35, 9);
         text(x, String(p.name), mid, py + 0.5, 'rgba(255,217,165,.85)', 3.6, '600');
       }
-      if (String(p.code)) text(x, String(p.code), mid, R(ringY(RING.rail + 80)) - 9, 'rgba(255,217,165,.35)', 4, '600');
+      if (String(p.code))
+        text(
+          x,
+          String(p.code),
+          mid,
+          R(ringY(RING.rail + 80)) - 9,
+          'rgba(255,217,165,.35)',
+          4,
+          '600',
+        );
       if (p.street === true) {
         // the footing under the road: the sea wall's coping carried across
-        x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(a + 1, road1 + 3, b - a - 3, 2);
-        for (let h = road1 + 9; h < foot; h += 6) { x.fillStyle = 'rgba(0,0,0,.2)'; x.fillRect(a + 1, h, b - a - 3, 1); }
+        x.fillStyle = 'rgba(0,0,0,.35)';
+        x.fillRect(a + 1, road1 + 3, b - a - 3, 2);
+        for (let h = road1 + 9; h < foot; h += 6) {
+          x.fillStyle = 'rgba(0,0,0,.2)';
+          x.fillRect(a + 1, h, b - a - 3, 1);
+        }
       }
     });
   },
@@ -276,20 +730,41 @@ export const throughBlockElement: AssetDefinition = {
 
 // ---------- a side street ----------
 
-export const sideStreetElement: AssetDefinition = {spatial:fixedNativeGeometry,
-  type: 'street.side-street', version: 1, label: 'Side street’s mouth: the lit lane going back, a corner lamp (city kit)', category: 'environment', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+export const sideStreetElement: AssetDefinition = {
+  spatial: fixedNativeGeometry,
+  type: 'street.side-street',
+  version: 1,
+  label: 'Side street’s mouth: the lit lane going back, a corner lamp (city kit)',
+  category: 'environment',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: { seed: generationSeed(num('Seed (which windows are lit)', 3420, 0, 1e9)) },
   bounds: () => ({ x: -78, h: 1200, w: 156, tall: 1200 }),
   anchors: origin,
   draw(ctx, v, p, _s, _pass, at) {
-    inPixels(ctx, v, at, P => {
-      const x = P.x, sx = P.ax, back = P.y(at.h + SHORE.back), seed = n(p, 'seed');
+    inPixels(ctx, v, at, (P) => {
+      const x = P.x,
+        sx = P.ax,
+        back = P.y(at.h + SHORE.back),
+        seed = n(p, 'seed');
       if (!P.onScreen(sx, sx, 40)) return;
-      const top = 0, g = x.createLinearGradient(0, top, 0, back); g.addColorStop(0, 'rgba(40,20,40,.6)'); g.addColorStop(1, 'rgba(80,40,50,.7)');
-      x.fillStyle = '#08050a'; x.fillRect(R(sx) - 26, top - 200, 52, back - top + 200);
-      x.fillStyle = g; x.fillRect(R(sx) - 10, top - 200, 20, back - top + 200);
-      for (let k = 0; k < 14; k++) { const h = back - 6 - k * 9; if (hash(seed + k) <= 0.5) continue; x.fillStyle = 'rgba(255,190,120,.45)'; x.fillRect(R(sx) - 18 + (k % 2) * 30, h, 3, 3); }
-      x.fillStyle = 'rgba(255,214,150,.35)'; x.fillRect(R(sx) - 4, back - 22, 8, 2);
+      const top = 0,
+        g = x.createLinearGradient(0, top, 0, back);
+      g.addColorStop(0, 'rgba(40,20,40,.6)');
+      g.addColorStop(1, 'rgba(80,40,50,.7)');
+      x.fillStyle = '#08050a';
+      x.fillRect(R(sx) - 26, top - 200, 52, back - top + 200);
+      x.fillStyle = g;
+      x.fillRect(R(sx) - 10, top - 200, 20, back - top + 200);
+      for (let k = 0; k < 14; k++) {
+        const h = back - 6 - k * 9;
+        if (hash(seed + k) <= 0.5) continue;
+        x.fillStyle = 'rgba(255,190,120,.45)';
+        x.fillRect(R(sx) - 18 + (k % 2) * 30, h, 3, 3);
+      }
+      x.fillStyle = 'rgba(255,214,150,.35)';
+      x.fillRect(R(sx) - 4, back - 22, 8, 2);
     });
   },
 };
@@ -303,74 +778,211 @@ const ADS = ['VERIFIED CUSTOMERS ONLY', 'SCORE 600+ · FREE PARKING', 'IDENTITY 
  * dome on top (galleria-dome.ts); the public taxi pad `pad` units west of it, a sky taxi landing, waiting and leaving.
  */
 export const galleriaElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width'}),
-  type: 'building.galleria', version: 1, label: 'The Galleria: plinth, windows, ID gate, terrace, taxi pad, glazed dome (city kit)', category: 'architecture', coordinates: 'world', libraryUse: 'reusable', parts: ['backdrop'],
+  spatial: rectangleControls({ width: 'width' }),
+  type: 'building.galleria',
+  version: 1,
+  label: 'The Galleria: plinth, windows, ID gate, terrace, taxi pad, glazed dome (city kit)',
+  category: 'architecture',
+  coordinates: 'world',
+  libraryUse: 'reusable',
+  parts: ['backdrop'],
   fields: {
-    width: shapeLength(num('Width', 690, 120, 6000, 3, 'units')), name: appearanceText(str('Neon name', 'GALLERIA')), advert: appearanceText(str('Ad screen (empty: the Registry’s rotation)', '')),
-    plinth: appearanceColor(color('Plinth', '#2a1830')), dome: appearanceColor(color('Dome in the sun', '#3a2440')), domeNight: appearanceColor(color('Dome at night', '#1a0e1e')), domeLit: semantic(num('Dome glow', 1.5, 0, 4, 0.05),{"group":"Appearance","quantity":"factor","unit":"factor"}),
-    window: appearanceText(str('Window light', 'rgba(255,200,140,.55)')), door: appearanceText(str('Entrance light', 'rgba(255,230,190,.65)')),
-    pad: shapeLength(num('Taxi pad (units east of the anchor; 0: none)', 792, 0, 8000)), padSign: appearanceText(str('Taxi pad sign', 'TAXI · PUBLIC')), taxiCycleDuration:seconds("Taxi cycle duration",25,{"min":1,"max":1666.6666666666667,"step":0.016666666666666666}),
-    planters: positionListEditor(appearanceStructure(jsonList('Planters (units east of the anchor)', [-120, 810], v => { if (!Array.isArray(v) || !v.every(fin)) throw new Error('Planters: expected numbers'); })),'Planter X'),
+    width: shapeLength(num('Width', 690, 120, 6000, 3, 'units')),
+    name: appearanceText(str('Neon name', 'GALLERIA')),
+    advert: appearanceText(str('Ad screen (empty: the Registry’s rotation)', '')),
+    plinth: appearanceColor(color('Plinth', '#2a1830')),
+    dome: appearanceColor(color('Dome in the sun', '#3a2440')),
+    domeNight: appearanceColor(color('Dome at night', '#1a0e1e')),
+    domeLit: semantic(num('Dome glow', 1.5, 0, 4, 0.05), {
+      group: 'Appearance',
+      quantity: 'factor',
+      unit: 'factor',
+    }),
+    window: appearanceText(str('Window light', 'rgba(255,200,140,.55)')),
+    door: appearanceText(str('Entrance light', 'rgba(255,230,190,.65)')),
+    pad: shapeLength(num('Taxi pad (units east of the anchor; 0: none)', 792, 0, 8000)),
+    padSign: appearanceText(str('Taxi pad sign', 'TAXI · PUBLIC')),
+    taxiCycleDuration: seconds('Taxi cycle duration', 25, {
+      min: 1,
+      max: 1666.6666666666667,
+      step: 0.016666666666666666,
+    }),
+    planters: positionListEditor(
+      appearanceStructure(
+        jsonList('Planters (units east of the anchor)', [-120, 810], (v) => {
+          if (!Array.isArray(v) || !v.every(fin)) throw new Error('Planters: expected numbers');
+        }),
+      ),
+      'Planter X',
+    ),
   },
-  bounds: p => ({ x: -120, h: 520, w: Math.max(n(p, 'width'), n(p, 'pad') + 80) + 120, tall: 520 }),
+  bounds: (p) => ({
+    x: -120,
+    h: 520,
+    w: Math.max(n(p, 'width'), n(p, 'pad') + 80) + 120,
+    tall: 520,
+  }),
   anchors: origin,
   draw(ctx, v, p, _s, _pass, at) {
-    inPixels(ctx, v, at, P => galleria(P, p, at.h));
+    inPixels(ctx, v, at, (P) => galleria(P, p, at.h));
   },
 };
 function galleria(P: Pixels, p: Properties, h0: number) {
-  const x = P.x, back = P.y(h0 + SHORE.back), a = R(P.ax), b = R(P.u(n(p, 'width') * S)), top = back - 58, w = b - a, warm = P.warm;
+  const x = P.x,
+    back = P.y(h0 + SHORE.back),
+    a = R(P.ax),
+    b = R(P.u(n(p, 'width') * S)),
+    top = back - 58,
+    w = b - a,
+    warm = P.warm;
   if (!P.onScreen(a - 160, b + 160)) return;
   const pad = n(p, 'pad') * S;
-  placed(x, R((a + b) / 2), top - 6, 1.25, () => drawGalleriaDome(x, { fill: mixHex(String(p.domeNight), String(p.dome), warm), lit: n(p, 'domeLit'), label: false, glazed: true, warm, t: P.f, still: P.still }));
-  x.fillStyle = String(p.plinth); x.fillRect(a, top, w, back - top + 1);
-  x.fillStyle = 'rgba(255,190,110,.55)'; x.fillRect(a, top, w, 1);
-  x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(a, top - 6, w, 1); for (let i = a; i < b; i += 6) x.fillRect(i, top - 6, 1, 6);
+  placed(x, R((a + b) / 2), top - 6, 1.25, () =>
+    drawGalleriaDome(x, {
+      fill: mixHex(String(p.domeNight), String(p.dome), warm),
+      lit: n(p, 'domeLit'),
+      label: false,
+      glazed: true,
+      warm,
+      t: P.f,
+      still: P.still,
+    }),
+  );
+  x.fillStyle = String(p.plinth);
+  x.fillRect(a, top, w, back - top + 1);
+  x.fillStyle = 'rgba(255,190,110,.55)';
+  x.fillRect(a, top, w, 1);
+  x.fillStyle = 'rgba(255,217,165,.25)';
+  x.fillRect(a, top - 6, w, 1);
+  for (let i = a; i < b; i += 6) x.fillRect(i, top - 6, 1, 6);
   if (pad > 0) taxiPad(P, p, back, R(P.u(pad)));
   for (let i = 0; i < 9; i++) {
     if (i === 4) continue;
-    const wx = a + 6 + i * ((w - 12) / 9), wy = top + 18;
-    x.fillStyle = String(p.window); x.fillRect(R(wx), wy, 18, 22);
-    x.fillStyle = 'rgba(' + ORANGE + ',.5)'; x.fillRect(R(wx), wy - 2, 18, 1);
-    x.fillStyle = 'rgba(40,16,40,.6)'; x.fillRect(R(wx) + 4 + (i % 3) * 3, wy + 8, 3, 14); x.fillRect(R(wx) + 4 + (i % 3) * 3, wy + 5, 3, 3);
-    if (i % 2) { x.fillStyle = 'rgba(40,16,40,.5)'; x.fillRect(R(wx) + 11, wy + 10, 4, 12); }
+    const wx = a + 6 + i * ((w - 12) / 9),
+      wy = top + 18;
+    x.fillStyle = String(p.window);
+    x.fillRect(R(wx), wy, 18, 22);
+    x.fillStyle = 'rgba(' + ORANGE + ',.5)';
+    x.fillRect(R(wx), wy - 2, 18, 1);
+    x.fillStyle = 'rgba(40,16,40,.6)';
+    x.fillRect(R(wx) + 4 + (i % 3) * 3, wy + 8, 3, 14);
+    x.fillRect(R(wx) + 4 + (i % 3) * 3, wy + 5, 3, 3);
+    if (i % 2) {
+      x.fillStyle = 'rgba(40,16,40,.5)';
+      x.fillRect(R(wx) + 11, wy + 10, 4, 12);
+    }
   }
   const dx = R(a + w / 2 - 12);
-  x.fillStyle = String(p.door); x.fillRect(dx, top + 16, 24, back - top - 16);
-  x.fillStyle = 'rgba(40,20,30,.6)'; x.fillRect(dx + 11, top + 16, 2, back - top - 16);
-  x.fillStyle = '#1a1018'; x.fillRect(dx - 6, back - 18, 4, 18);
-  x.fillStyle = P.still || Math.floor(P.f / 30) % 3 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)'; x.fillRect(dx - 5, back - 16, 2, 2);
-  placed(x, R(a + w / 2), top + 8, S, () => sign(x, P.f, String(p.name), 0, 0, '255,190,110', { size: 13, phase: 40 }));
+  x.fillStyle = String(p.door);
+  x.fillRect(dx, top + 16, 24, back - top - 16);
+  x.fillStyle = 'rgba(40,20,30,.6)';
+  x.fillRect(dx + 11, top + 16, 2, back - top - 16);
+  x.fillStyle = '#1a1018';
+  x.fillRect(dx - 6, back - 18, 4, 18);
+  x.fillStyle =
+    P.still || Math.floor(P.f / 30) % 3 ? 'rgba(' + RED + ',.95)' : 'rgba(' + RED + ',.3)';
+  x.fillRect(dx - 5, back - 16, 2, 2);
+  placed(x, R(a + w / 2), top + 8, S, () =>
+    sign(x, P.f, String(p.name), 0, 0, '255,190,110', { size: 13, phase: 40 }),
+  );
   const m = P.still ? 0 : Math.floor(P.f / 200) % ADS.length;
-  x.fillStyle = '#0c0610'; x.fillRect(a + 4, top + 4, 50, 10); x.strokeStyle = 'rgba(' + ORANGE + ',.45)'; x.lineWidth = 1; x.strokeRect(a + 4.5, top + 4.5, 49, 9);
+  x.fillStyle = '#0c0610';
+  x.fillRect(a + 4, top + 4, 50, 10);
+  x.strokeStyle = 'rgba(' + ORANGE + ',.45)';
+  x.lineWidth = 1;
+  x.strokeRect(a + 4.5, top + 4.5, 49, 9);
   text(x, String(p.advert) || ADS[m], a + 29, top + 9.5, 'rgba(' + PAPER + ',.85)', 3.4, '600');
-  for (const u of p.planters as number[]) { const sx = R(P.u(u * S)); if (!P.onScreen(sx, sx, 20)) continue; x.fillStyle = '#3a2c3c'; x.fillRect(sx - 6, back - 6, 12, 6); x.fillStyle = '#1e2a1a'; x.beginPath(); x.arc(sx, back - 12, 7, 0, 7); x.fill(); x.fillStyle = '#2a3a22'; x.fillRect(sx, back - 6, 1, 4); }
+  for (const u of p.planters as number[]) {
+    const sx = R(P.u(u * S));
+    if (!P.onScreen(sx, sx, 20)) continue;
+    x.fillStyle = '#3a2c3c';
+    x.fillRect(sx - 6, back - 6, 12, 6);
+    x.fillStyle = '#1e2a1a';
+    x.beginPath();
+    x.arc(sx, back - 12, 7, 0, 7);
+    x.fill();
+    x.fillStyle = '#2a3a22';
+    x.fillRect(sx, back - 6, 1, 4);
+  }
 }
 function taxiPad(P: Pixels, p: Properties, back: number, sx: number) {
   const x = P.x;
   if (!P.onScreen(sx, sx, 140)) return;
-  const top = back - 70, on = P.still || Math.floor(P.f / 30) % 2 === 0;
-  x.fillStyle = '#1a1018'; x.fillRect(sx - 3, top, 6, back - top); x.fillRect(sx - 22, top, 44, 4);
-  x.fillStyle = 'rgba(255,217,165,.25)'; x.fillRect(sx - 22, top, 44, 1);
-  x.fillStyle = on ? 'rgba(255,190,60,.95)' : 'rgba(255,190,60,.35)'; for (let k = 0; k < 5; k++) x.fillRect(sx - 22 + k * 10, top - 1, 3, 1);
-  x.fillStyle = '#0d0705'; x.fillRect(sx - 14, top + 8, 28, 8); x.strokeStyle = 'rgba(255,190,60,.6)'; x.lineWidth = 1; x.strokeRect(sx - 13.5, top + 8.5, 27, 7);
+  const top = back - 70,
+    on = P.still || Math.floor(P.f / 30) % 2 === 0;
+  x.fillStyle = '#1a1018';
+  x.fillRect(sx - 3, top, 6, back - top);
+  x.fillRect(sx - 22, top, 44, 4);
+  x.fillStyle = 'rgba(255,217,165,.25)';
+  x.fillRect(sx - 22, top, 44, 1);
+  x.fillStyle = on ? 'rgba(255,190,60,.95)' : 'rgba(255,190,60,.35)';
+  for (let k = 0; k < 5; k++) x.fillRect(sx - 22 + k * 10, top - 1, 3, 1);
+  x.fillStyle = '#0d0705';
+  x.fillRect(sx - 14, top + 8, 28, 8);
+  x.strokeStyle = 'rgba(255,190,60,.6)';
+  x.lineWidth = 1;
+  x.strokeRect(sx - 13.5, top + 8.5, 27, 7);
   text(x, String(p.padSign), sx, top + 12, 'rgba(255,190,60,.9)', 2.8, '600');
   // the taxi's cycle: in from the west, down onto the pad, a wait, up and away east
-  const period = (n(p,'taxiCycleDuration')*60), cyc = P.still ? 0.45 : (P.f % period) / period, ease = (q: number) => q * q * (3 - 2 * q);
-  let dx = 0, dy = 0;
-  if (cyc < 0.3) { const k = ease(cyc / 0.3); dx = -160 * (1 - k); dy = -70 * (1 - k); }
-  else if (cyc < 0.62) { dx = 0; dy = 0; }
-  else if (cyc < 0.95) { const k = ease((cyc - 0.62) / 0.33); dx = 200 * k; dy = -90 * k * k; }
-  else return;
-  placed(x, R(sx + dx), R(top - 6 + dy), S, () => drawCraft(x, 'taxi', { t: P.f, face: 1, still: P.still, scale: S }));
+  const period = n(p, 'taxiCycleDuration') * 60,
+    cyc = P.still ? 0.45 : (P.f % period) / period,
+    ease = (q: number) => q * q * (3 - 2 * q);
+  let dx = 0,
+    dy = 0;
+  if (cyc < 0.3) {
+    const k = ease(cyc / 0.3);
+    dx = -160 * (1 - k);
+    dy = -70 * (1 - k);
+  } else if (cyc < 0.62) {
+    dx = 0;
+    dy = 0;
+  } else if (cyc < 0.95) {
+    const k = ease((cyc - 0.62) / 0.33);
+    dx = 200 * k;
+    dy = -90 * k * k;
+  } else return;
+  placed(x, R(sx + dx), R(top - 6 + dy), S, () =>
+    drawCraft(x, 'taxi', { t: P.f, face: 1, still: P.still, scale: S }),
+  );
 }
 
-export const cityKitElements: AssetDefinition[] = [towerElement, skylineRowsElement, ringElement, ringTrafficElement, throughBlockElement, sideStreetElement, galleriaElement];
+export const cityKitElements: AssetDefinition[] = [
+  towerElement,
+  skylineRowsElement,
+  ringElement,
+  ringTrafficElement,
+  throughBlockElement,
+  sideStreetElement,
+  galleriaElement,
+];
 export type { View };
 
-skylineRowsElement.spatial=combineControls(atDepthControls(rangeControls('drawingMinX','drawingMaxX','horizonY'),1,'world'),viewportElevationControls('horizonY'));
-skylineRowsElement.validateProperties=p=>{if(Number(p.drawingMaxX)<=Number(p.drawingMinX))throw Error('Skyline drawing end must follow its start');};
-skylineRowsElement.drawingWindow=(p,_s,c)=>{const left=c.view.sx(c.placement.x+Number(p.drawingMinX)),right=c.view.sx(c.placement.x+Number(p.drawingMaxX));return{bounds:screenBounds(c,{x:left,y:0,w:Math.max(0,right-left),h:c.view.viewH},{x:0,h:0,w:0,tall:0}),from:'drawingMinX',to:'drawingMaxX'};};
-skylineRowsElement.drawingNote=()=>"Rows define the generated skyline. Drawing min/max X only clip its output; Horizon Y sets the shared depth reference.";
-ringElement.spatial=combineControls(rangeControls('startX','endX',p=>Number(p.baseY)+RING.rail),axisControl('gridOriginX','x','baseY','Grid origin'),axisControl('baseY','h',p=>(Number(p.startX)+Number(p.endX))/2,'Road base'));
-ringTrafficElement.spatial=rangeControls('startX','endX',p=>Number(p.baseY)+RING.rail);
+skylineRowsElement.spatial = combineControls(
+  atDepthControls(rangeControls('drawingMinX', 'drawingMaxX', 'horizonY'), 1, 'world'),
+  viewportElevationControls('horizonY'),
+);
+skylineRowsElement.validateProperties = (p) => {
+  if (Number(p.drawingMaxX) <= Number(p.drawingMinX))
+    throw Error('Skyline drawing end must follow its start');
+};
+skylineRowsElement.drawingWindow = (p, _s, c) => {
+  const left = c.view.sx(c.placement.x + Number(p.drawingMinX)),
+    right = c.view.sx(c.placement.x + Number(p.drawingMaxX));
+  return {
+    bounds: screenBounds(
+      c,
+      { x: left, y: 0, w: Math.max(0, right - left), h: c.view.viewH },
+      { x: 0, h: 0, w: 0, tall: 0 },
+    ),
+    from: 'drawingMinX',
+    to: 'drawingMaxX',
+  };
+};
+skylineRowsElement.drawingNote = () =>
+  'Rows define the generated skyline. Drawing min/max X only clip its output; Horizon Y sets the shared depth reference.';
+ringElement.spatial = combineControls(
+  rangeControls('startX', 'endX', (p) => Number(p.baseY) + RING.rail),
+  axisControl('gridOriginX', 'x', 'baseY', 'Grid origin'),
+  axisControl('baseY', 'h', (p) => (Number(p.startX) + Number(p.endX)) / 2, 'Road base'),
+);
+ringTrafficElement.spatial = rangeControls('startX', 'endX', (p) => Number(p.baseY) + RING.rail);

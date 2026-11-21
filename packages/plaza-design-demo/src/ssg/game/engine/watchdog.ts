@@ -27,9 +27,19 @@ export interface DogView {
 }
 
 /** A step on the route: the dog left one stop, or reached one. */
-export interface DogStep { dog: string; leaves?: string; arrives?: string }
+export interface DogStep {
+  dog: string;
+  leaves?: string;
+  arrives?: string;
+}
 
-interface Dog { id: string; data: WatchdogData; t0: number; stop: number; walking: boolean }
+interface Dog {
+  id: string;
+  data: WatchdogData;
+  t0: number;
+  stop: number;
+  walking: boolean;
+}
 
 const DEFAULT_ID = 'watchdog';
 export const dogId = (d: WatchdogData) => d.id ?? DEFAULT_ID;
@@ -37,15 +47,28 @@ export const dogId = (d: WatchdogData) => d.id ?? DEFAULT_ID;
 export class Watchdogs {
   private dogs: Dog[] = [];
 
-  constructor(private list: WatchdogData[], private now: () => number) { this.reset(); }
+  constructor(
+    private list: WatchdogData[],
+    private now: () => number,
+  ) {
+    this.reset();
+  }
 
   /** Every dog back to its first stop, sitting. */
   reset() {
     const t = this.now();
-    this.dogs = this.list.map((data) => ({ id: dogId(data), data, t0: t, stop: 0, walking: false }));
+    this.dogs = this.list.map((data) => ({
+      id: dogId(data),
+      data,
+      t0: t,
+      stop: 0,
+      walking: false,
+    }));
   }
 
-  get any() { return this.dogs.length > 0; }
+  get any() {
+    return this.dogs.length > 0;
+  }
 
   /** Every device any route visits, with the dog's id. */
   routes(): Map<string, string> {
@@ -56,9 +79,12 @@ export class Watchdogs {
 
   /** Where in its loop a dog is at time `t`. */
   private phase(d: Dog, t: number) {
-    const { dwellMs, moveMs, route } = d.data, leg = dwellMs + moveMs, loop = leg * route.length;
+    const { dwellMs, moveMs, route } = d.data,
+      leg = dwellMs + moveMs,
+      loop = leg * route.length;
     const pos = loop > 0 ? (((t - d.t0) % loop) + loop) % loop : 0;
-    const stop = Math.min(route.length - 1, Math.floor(pos / leg)), into = pos - stop * leg;
+    const stop = Math.min(route.length - 1, Math.floor(pos / leg)),
+      into = pos - stop * leg;
     return into < dwellMs
       ? { stop, walking: false, progress: 0, left: dwellMs - into }
       : { stop, walking: true, progress: moveMs ? (into - dwellMs) / moveMs : 1, left: leg - into };
@@ -69,7 +95,8 @@ export class Watchdogs {
    * (after a long pause only the last leave and arrive of each dog).
    */
   tick(): DogStep[] {
-    const t = this.now(), out: DogStep[] = [];
+    const t = this.now(),
+      out: DogStep[] = [];
     for (const d of this.dogs) {
       const p = this.phase(d, t);
       if (p.stop === d.stop && p.walking === d.walking) continue;
@@ -78,7 +105,8 @@ export class Watchdogs {
       // walking: a stop it passed during a long pause raised nothing, it never sat there for anyone to see)
       if (!d.walking) out.push({ dog: d.id, leaves: route[d.stop] });
       if (!p.walking) out.push({ dog: d.id, arrives: route[p.stop] });
-      d.stop = p.stop; d.walking = p.walking;
+      d.stop = p.stop;
+      d.walking = p.walking;
     }
     return out;
   }
@@ -93,15 +121,27 @@ export class Watchdogs {
   view(name: (d: WatchdogData) => string): DogView[] {
     const t = this.now();
     return this.dogs.map((d) => {
-      const p = this.phase(d, t), r = d.data.route, from = r[d.stop], to = r[(d.stop + 1) % r.length];
+      const p = this.phase(d, t),
+        r = d.data.route,
+        from = r[d.stop],
+        to = r[(d.stop + 1) % r.length];
       // as of the last tick, so the sprite and the freeze agree
-      return { id: d.id, name: name(d.data), at: d.walking ? null : from, from, to, progress: d.walking ? p.progress : 0, left: p.left };
+      return {
+        id: d.id,
+        name: name(d.data),
+        at: d.walking ? null : from,
+        from,
+        to,
+        progress: d.walking ? p.progress : 0,
+        left: p.left,
+      };
     });
   }
 
   /** For the save: ms into each dog's loop. */
   snapshot(): Record<string, number> {
-    const t = this.now(), out: Record<string, number> = {};
+    const t = this.now(),
+      out: Record<string, number> = {};
     for (const d of this.dogs) {
       const loop = (d.data.dwellMs + d.data.moveMs) * d.data.route.length;
       out[d.id] = loop > 0 ? Math.round((t - d.t0) % loop) : 0;
@@ -117,7 +157,8 @@ export class Watchdogs {
       if (typeof ms !== 'number' || !isFinite(ms) || ms < 0) continue;
       d.t0 = t - ms;
       const p = this.phase(d, t);
-      d.stop = p.stop; d.walking = p.walking;
+      d.stop = p.stop;
+      d.walking = p.walking;
     }
   }
 }

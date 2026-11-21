@@ -96,8 +96,8 @@ export const guideMenu: Menu = {
 // Flat menu (for simple navigation without folders)
 const allItems: MenuItem[] = [
   indexItem,
-  ...designGuideFolder.children as MenuItem[],
-  ...devGuideFolder.children as MenuItem[],
+  ...(designGuideFolder.children as MenuItem[]),
+  ...(devGuideFolder.children as MenuItem[]),
 ];
 
 export const guideFlatMenu: Menu = {

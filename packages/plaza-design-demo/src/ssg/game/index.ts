@@ -1,4 +1,4 @@
-import {demoContent} from './demo';
+import { demoContent } from './demo';
 import { touchControls } from './ui/touch-controls';
 /**
  * ACCESS DENIED: hooks the game into the landing page.
@@ -22,12 +22,12 @@ import { touchControls } from './ui/touch-controls';
  * shortcuts check it and stay quiet.
  */
 
-import { sound } from "./runtime/audio";
-import { runBoot } from "./ui/boot";
-import { Game } from "./runtime/game";
-import { SCENES,isSceneId } from "./scenes/index";
-import { isCutsceneId } from "./story/cutscenes/index";
-import { takeResume } from "./runtime/slots";
+import { sound } from './runtime/audio';
+import { runBoot } from './ui/boot';
+import { Game } from './runtime/game';
+import { SCENES, isSceneId } from './scenes/index';
+import { isCutsceneId } from './story/cutscenes/index';
+import { takeResume } from './runtime/slots';
 import { SUDO } from './runtime/mode';
 import { playProfile, reservedScene, urlAsksForPlay } from './runtime/play-profile';
 import { applyProfileChrome } from './runtime/profile-chrome';
@@ -35,22 +35,57 @@ import { applyProfileChrome } from './runtime/profile-chrome';
 export { runBoot };
 
 /** `?play` (or `?sudo`, sudo.ts) in the URL skips the boot and the Konami code: straight into the game. */
-export const playParam = () => { try { return urlAsksForPlay(location.search); } catch { return false; } };
+export const playParam = () => {
+  try {
+    return urlAsksForPlay(location.search);
+  } catch {
+    return false;
+  }
+};
 /** `?play=yard` starts in the fixer's back yard, `?play=harbor` on the harbor pier: any scene. */
 const playScene = () => {
-  try { if(!playProfile().start.urlScene)return undefined;return sceneParam(new URLSearchParams(location.search).get('play') ?? '', true); } catch { return undefined; }
+  try {
+    if (!playProfile().start.urlScene) return undefined;
+    return sceneParam(new URLSearchParams(location.search).get('play') ?? '', true);
+  } catch {
+    return undefined;
+  }
 };
 /**
  * A scene (or cutscene) id the game can start in; anything unknown is undefined: the game decides. The sandbox only with `?sudo`.
  * The home scene (Downtown) is a scene like any other when the URL names it (`named`); a LOAD GAME resume to it lets the game decide
  * (it continues the save, with its resume entrance).
  */
-const sceneParam = (z: string, named = false) => ((isSceneId(z) && (named || z !== playProfile().home) && (!SCENES[z].sudoOnly || SUDO) && !reservedScene(z)) || isCutsceneId(z) ? z : undefined);
+const sceneParam = (z: string, named = false) =>
+  (isSceneId(z) &&
+    (named || z !== playProfile().home) &&
+    (!SCENES[z].sudoOnly || SUDO) &&
+    !reservedScene(z)) ||
+  isCutsceneId(z)
+    ? z
+    : undefined;
 
-const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+const KONAMI = [
+  'arrowup',
+  'arrowup',
+  'arrowdown',
+  'arrowdown',
+  'arrowleft',
+  'arrowright',
+  'arrowleft',
+  'arrowright',
+  'b',
+  'a',
+];
 const SWIPES = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'tap', 'tap'];
 
-const isTouch = () => { try { return matchMedia('(pointer: coarse)').matches; } catch { return false; } };
+const isTouch = () => {
+  try {
+    return matchMedia('(pointer: coarse)').matches;
+  } catch {
+    return false;
+  }
+};
 
 export interface AccessDeniedOpts {
   /** The landing page's background scene, paused while the game runs. */
@@ -90,16 +125,38 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
     cta.classList.remove('is-granted');
     html.classList.add('game-mode');
     opts.scene.stop();
-    game ??= new Game({
-      windowEl, header, footer, inputHost,
-      onExit: exit,
-      setNodes: (n) => { if (nodes) nodes.textContent = String(n); },
-      setScene: (text) => { if (sceneLabel) sceneLabel.textContent = text; },
-    },playProfile().world==='testDistrict'?demoContent():{});
-    if (isTouch() && !controls) { controls = true; touchControls(windowEl); }
+    game ??= new Game(
+      {
+        windowEl,
+        header,
+        footer,
+        inputHost,
+        onExit: exit,
+        setNodes: (n) => {
+          if (nodes) nodes.textContent = String(n);
+        },
+        setScene: (text) => {
+          if (sceneLabel) sceneLabel.textContent = text;
+        },
+      },
+      playProfile().world === 'testDistrict' ? demoContent() : {},
+    );
+    if (isTouch() && !controls) {
+      controls = true;
+      touchControls(windowEl);
+    }
     // launching (the Konami code, `?play` or `?sudo` with no scene named): the title screen first (title/)
-    const named = (() => { try { return !!new URLSearchParams(location.search).get('play'); } catch { return false; } })();
-    game.start(resumeScene !== undefined ? sceneParam(resumeScene) : playScene(), resumeScene === undefined && !named&&playProfile().start.title);
+    const named = (() => {
+      try {
+        return !!new URLSearchParams(location.search).get('play');
+      } catch {
+        return false;
+      }
+    })();
+    game.start(
+      resumeScene !== undefined ? sceneParam(resumeScene) : playScene(),
+      resumeScene === undefined && !named && playProfile().start.title,
+    );
   };
 
   // Back from a LOAD GAME reload: the slot's save is in place, straight into its scene.
@@ -117,22 +174,53 @@ export function initAccessDenied(opts: AccessDeniedOpts) {
   };
 
   // The Konami code as swipes on touch screens; the last two "B A" are taps.
-  let swipe = 0, sx = 0, sy = 0;
-  window.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; }, { passive: true });
-  window.addEventListener('touchend', (e) => {
-    if (html.classList.contains('game-mode') || entering) return;
-    const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-    const move = Math.abs(dx) < 24 && Math.abs(dy) < 24 ? 'tap' : Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-    swipe = move === SWIPES[swipe] ? swipe + 1 : move === SWIPES[0] ? 1 : 0;
-    if (swipe === SWIPES.length) { swipe = 0; grant(); }
-  }, { passive: true });
+  let swipe = 0,
+    sx = 0,
+    sy = 0;
+  window.addEventListener(
+    'touchstart',
+    (e) => {
+      const t = e.touches[0];
+      sx = t.clientX;
+      sy = t.clientY;
+    },
+    { passive: true },
+  );
+  window.addEventListener(
+    'touchend',
+    (e) => {
+      if (html.classList.contains('game-mode') || entering) return;
+      const t = e.changedTouches[0],
+        dx = t.clientX - sx,
+        dy = t.clientY - sy;
+      const move =
+        Math.abs(dx) < 24 && Math.abs(dy) < 24
+          ? 'tap'
+          : Math.abs(dx) > Math.abs(dy)
+            ? dx > 0
+              ? 'right'
+              : 'left'
+            : dy > 0
+              ? 'down'
+              : 'up';
+      swipe = move === SWIPES[swipe] ? swipe + 1 : move === SWIPES[0] ? 1 : 0;
+      if (swipe === SWIPES.length) {
+        swipe = 0;
+        grant();
+      }
+    },
+    { passive: true },
+  );
 
   window.addEventListener('keydown', (e) => {
     if (html.classList.contains('game-mode')) return;
     const target = e.target as HTMLElement | null;
     if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
     const key = e.key.toLowerCase();
-    if (key === 'm') { sound.toggle(); return; }
+    if (key === 'm') {
+      sound.toggle();
+      return;
+    }
     progress = key === KONAMI[progress] ? progress + 1 : key === KONAMI[0] ? 1 : 0;
     if (progress === KONAMI.length && !entering) grant();
   });

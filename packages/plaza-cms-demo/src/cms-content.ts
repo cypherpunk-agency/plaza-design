@@ -42,7 +42,7 @@ const menuItems: MenuItem[] = Object.entries(topLevelContent).map(([id, content]
     type: 'file' as const,
     id,
     path: id,
-    label: metadata.title as string || fileToLabel(id),
+    label: (metadata.title as string) || fileToLabel(id),
     order: (metadata.order as number) ?? order ?? 999,
   };
 });

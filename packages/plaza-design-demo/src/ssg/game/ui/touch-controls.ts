@@ -1,7 +1,8 @@
 import { can } from '../runtime/play-profile';
 
 /** Sends a key to the game, the same way a keyboard would. */
-const sendKey = (key: string, type: 'keydown' | 'keyup') => window.dispatchEvent(new KeyboardEvent(type, { key }));
+const sendKey = (key: string, type: 'keydown' | 'keyup') =>
+  window.dispatchEvent(new KeyboardEvent(type, { key }));
 
 /**
  * On-screen controls for touch screens: they press the same keys a keyboard does. One bar along the
@@ -29,8 +30,17 @@ export function touchControls(host: HTMLElement) {
   if (!can('deck')) without('[data-key="Enter"]');
   bar.querySelectorAll<HTMLButtonElement>('button').forEach((b) => {
     const key = b.dataset.key!;
-    const down = (e: Event) => { e.preventDefault(); b.classList.add('down'); sendKey(key, 'keydown'); };
-    const up = (e: Event) => { e.preventDefault(); if (!b.classList.contains('down')) return; b.classList.remove('down'); sendKey(key, 'keyup'); };
+    const down = (e: Event) => {
+      e.preventDefault();
+      b.classList.add('down');
+      sendKey(key, 'keydown');
+    };
+    const up = (e: Event) => {
+      e.preventDefault();
+      if (!b.classList.contains('down')) return;
+      b.classList.remove('down');
+      sendKey(key, 'keyup');
+    };
     b.addEventListener('pointerdown', down);
     b.addEventListener('pointerup', up);
     b.addEventListener('pointercancel', up);
@@ -38,13 +48,20 @@ export function touchControls(host: HTMLElement) {
     b.addEventListener('contextmenu', (e) => e.preventDefault());
   });
   // the page losing focus lets go of every held button (a held ▲ must not keep climbing)
-  const release = () => bar.querySelectorAll<HTMLButtonElement>('button.down').forEach((b) => { b.classList.remove('down'); sendKey(b.dataset.key!, 'keyup'); });
+  const release = () =>
+    bar.querySelectorAll<HTMLButtonElement>('button.down').forEach((b) => {
+      b.classList.remove('down');
+      sendKey(b.dataset.key!, 'keyup');
+    });
   window.addEventListener('blur', release);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) release(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) release();
+  });
   host.appendChild(bar);
 
   const rotate = document.createElement('div');
   rotate.id = 'rotate';
-  rotate.innerHTML = '<div><div class="rotate-title">ROTATE YOUR DEVICE</div><div class="rotate-note">Downtown runs in landscape.</div></div>';
+  rotate.innerHTML =
+    '<div><div class="rotate-title">ROTATE YOUR DEVICE</div><div class="rotate-note">Downtown runs in landscape.</div></div>';
   document.body.appendChild(rotate);
 }

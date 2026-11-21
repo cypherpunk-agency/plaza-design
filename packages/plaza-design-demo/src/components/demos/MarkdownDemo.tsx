@@ -122,11 +122,7 @@ export function MarkdownDemo() {
               );
             }
 
-            return (
-              <code {...props}>
-                {children}
-              </code>
-            );
+            return <code {...props}>{children}</code>;
           },
         }}
       >

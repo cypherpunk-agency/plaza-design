@@ -29,7 +29,8 @@ const posts: Post[] = [
     title: 'RFC: New Validator Selection Algorithm',
     author: '0xA3F2...8C91',
     timestamp: '2h ago',
-    content: 'Proposing a new weighted random selection for validators that considers stake age and previous performance metrics...',
+    content:
+      'Proposing a new weighted random selection for validators that considers stake age and previous performance metrics...',
     upvotes: 47,
     downvotes: 3,
     commentCount: 23,
@@ -40,7 +41,8 @@ const posts: Post[] = [
     title: 'Bug Report: Memory leak in sync module',
     author: '0xB7E1...4D22',
     timestamp: '5h ago',
-    content: 'Found a memory leak when syncing large blocks. Memory grows unbounded after ~10k blocks. Reproduced on v0.9.2.',
+    content:
+      'Found a memory leak when syncing large blocks. Memory grows unbounded after ~10k blocks. Reproduced on v0.9.2.',
     upvotes: 31,
     downvotes: 0,
     commentCount: 15,
@@ -51,7 +53,8 @@ const posts: Post[] = [
     title: 'Discussion: Reducing block time to 3s',
     author: '0xC9D4...7F33',
     timestamp: '1d ago',
-    content: 'With recent optimizations, we could potentially reduce block time. What are the trade-offs we should consider?',
+    content:
+      'With recent optimizations, we could potentially reduce block time. What are the trade-offs we should consider?',
     upvotes: 89,
     downvotes: 12,
     commentCount: 67,
@@ -63,7 +66,8 @@ const comments: Comment[] = [
   {
     id: 1,
     author: '0xD2E5...1A44',
-    content: 'Great proposal! Have you considered the impact on smaller validators? They might struggle with the new requirements.',
+    content:
+      'Great proposal! Have you considered the impact on smaller validators? They might struggle with the new requirements.',
     timestamp: '1h ago',
     upvotes: 12,
     downvotes: 1,
@@ -71,7 +75,8 @@ const comments: Comment[] = [
       {
         id: 2,
         author: '0xA3F2...8C91',
-        content: 'Good point. We could add a grace period for validators below a certain stake threshold.',
+        content:
+          'Good point. We could add a grace period for validators below a certain stake threshold.',
         timestamp: '45m ago',
         upvotes: 8,
         downvotes: 0,
@@ -79,7 +84,8 @@ const comments: Comment[] = [
       {
         id: 3,
         author: '0xE6F7...2B55',
-        content: 'I think the grace period should be at least 30 days to give small validators time to adjust.',
+        content:
+          'I think the grace period should be at least 30 days to give small validators time to adjust.',
         timestamp: '30m ago',
         upvotes: 5,
         downvotes: 2,
@@ -89,7 +95,8 @@ const comments: Comment[] = [
   {
     id: 4,
     author: '0xF8G9...3C66',
-    content: 'What about the impact on network security? More frequent rotations could increase attack surface.',
+    content:
+      'What about the impact on network security? More frequent rotations could increase attack surface.',
     timestamp: '30m ago',
     upvotes: 6,
     downvotes: 0,
@@ -102,9 +109,9 @@ export function ForumDemo() {
 
   const handleVote = (type: 'post' | 'comment', id: number, direction: 'up' | 'down') => {
     const key = `${type}-${id}`;
-    setUserVotes(prev => ({
+    setUserVotes((prev) => ({
       ...prev,
-      [key]: prev[key] === direction ? null : direction
+      [key]: prev[key] === direction ? null : direction,
     }));
   };
 
@@ -118,9 +125,7 @@ export function ForumDemo() {
         <h1 className="text-2xl font-semibold text-primary-400 uppercase tracking-widest">
           Forum / HackerNews
         </h1>
-        <p className="text-gray-500 mt-2">
-          Threaded discussions with voting and nested comments
-        </p>
+        <p className="text-gray-500 mt-2">Threaded discussions with voting and nested comments</p>
       </header>
 
       <div className="forum-layout">
@@ -141,14 +146,20 @@ export function ForumDemo() {
                 <div className="post-card__votes">
                   <button
                     className={`vote-btn vote-btn--up ${getVoteState('post', post.id) === 'up' ? 'vote-btn--active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); handleVote('post', post.id, 'up'); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleVote('post', post.id, 'up');
+                    }}
                   >
                     ^
                   </button>
                   <span className="vote-count">{post.upvotes - post.downvotes}</span>
                   <button
                     className={`vote-btn vote-btn--down ${getVoteState('post', post.id) === 'down' ? 'vote-btn--active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); handleVote('post', post.id, 'down'); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleVote('post', post.id, 'down');
+                    }}
                   >
                     v
                   </button>
@@ -162,8 +173,10 @@ export function ForumDemo() {
                     <span className="text-gray-500">{post.commentCount} comments</span>
                   </div>
                   <div className="post-card__tags">
-                    {post.tags.map(tag => (
-                      <span key={tag} className="post-tag">{tag}</span>
+                    {post.tags.map((tag) => (
+                      <span key={tag} className="post-tag">
+                        {tag}
+                      </span>
                     ))}
                   </div>
                 </div>

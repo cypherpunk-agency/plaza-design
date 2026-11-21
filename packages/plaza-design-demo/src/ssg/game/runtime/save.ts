@@ -1,28 +1,34 @@
-import {perfBegin,perfEnd} from './diagnostics/performance';
+import { perfBegin, perfEnd } from './diagnostics/performance';
 import { gameStorage } from './storage';
 /** Extracted save responsibilities; function bodies and stored identifiers are preserved. */
 import type { SceneSave } from '../data/types';
-import { type ClockSave, newClock, fixClock } from "../world/clock";
+import { type ClockSave, newClock, fixClock } from '../world/clock';
 import { START_MODULES } from '../data/index';
-import { saveKey,startCheckpoint } from './play-profile';
-import {fixtureSave,fixtureStateMetadata,fixtureFlags,fixturePrograms,fixtureKeys,type PlayFixtureVocabulary} from '../world/checkpoints';
-import {SCENES} from '../scenes';
-import type {SceneDef} from '../scenes/kit';
-
+import { saveKey, startCheckpoint } from './play-profile';
+import {
+  fixtureSave,
+  fixtureStateMetadata,
+  fixtureFlags,
+  fixturePrograms,
+  fixtureKeys,
+  type PlayFixtureVocabulary,
+} from '../world/checkpoints';
+import { SCENES } from '../scenes';
+import type { SceneDef } from '../scenes/kit';
 
 // ---------- save state ----------
 
 export interface Save {
   /** Current world-composition membership; no copied chunk content or instance state. */
-  worldMembership?:import('../world/compositions').WorldMembership;
+  worldMembership?: import('../world/compositions').WorldMembership;
   /** One validated pending composition batch. Commands do not replay when a saved batch resumes. */
-  worldEdit?:import('../world/compositions').CompositionEdit[];
+  worldEdit?: import('../world/compositions').CompositionEdit[];
   /** Receipts for the current authored direction activation, never an instruction to replay on load. */
-  sequenceActions?:import('./sequence-commands').SequenceCommandRun;
+  sequenceActions?: import('./sequence-commands').SequenceCommandRun;
   /** Current place aboard a physical service; restored after its scene model. */
-  vehicle?:import('../engine/level-vehicles').VehicleSave;
+  vehicle?: import('../engine/level-vehicles').VehicleSave;
   /** Common scalar owner blocks shared by gameplay commands and scene models. */
-  gameplay?:import('../engine/gameplay/types').StateValues;
+  gameplay?: import('../engine/gameplay/types').StateValues;
   /** Last scene for Continue; absent in older v3 saves. Validated against SCENES on resume. */
   scene?: string;
   handle: string;
@@ -58,23 +64,30 @@ export interface Save {
   clock: ClockSave;
 }
 
-
 /** A fresh run resolves its starting values from the selected configuration checkpoint. */
 
-export interface SaveStartContext {scenes?:Readonly<Record<string,SceneDef>>;vocabulary?:PlayFixtureVocabulary}
-export function newSave(context:SaveStartContext={}): Save {
-  const scenes=context.scenes??SCENES,vocabulary=context.vocabulary??{flags:new Set(fixtureFlags),programs:new Set(fixturePrograms),keyring:new Set(fixtureKeys),states:fixtureStateMetadata(scenes)};
-  const save=fixtureSave(startCheckpoint(),Object.keys(scenes),vocabulary);
-  save.clock.seed=newClock().seed;
+export interface SaveStartContext {
+  scenes?: Readonly<Record<string, SceneDef>>;
+  vocabulary?: PlayFixtureVocabulary;
+}
+export function newSave(context: SaveStartContext = {}): Save {
+  const scenes = context.scenes ?? SCENES,
+    vocabulary = context.vocabulary ?? {
+      flags: new Set(fixtureFlags),
+      programs: new Set(fixturePrograms),
+      keyring: new Set(fixtureKeys),
+      states: fixtureStateMetadata(scenes),
+    };
+  const save = fixtureSave(startCheckpoint(), Object.keys(scenes), vocabulary);
+  save.clock.seed = newClock().seed;
   // The game records a resume location when it actually enters a chunk, not when a starting
   // template is constructed. No visited/discovery receipt is manufactured here.
   delete save.scene;
   return save;
 }
 
-
 /** A stored save, with anything missing filled in from a new game. */
-export function loadSave(context:SaveStartContext={}): Save {
+export function loadSave(context: SaveStartContext = {}): Save {
   try {
     const raw = gameStorage.getItem(saveKey());
     if (raw) {
@@ -82,32 +95,72 @@ export function loadSave(context:SaveStartContext={}): Save {
       if (!Array.isArray(s.modules)) s.modules = [...START_MODULES];
       if (!s.scenes || typeof s.scenes !== 'object') s.scenes = {};
       if (!Array.isArray(s.keyring)) s.keyring = [];
-      for (const k of ['controlled', 'programs', 'nets'] as const) if (!Array.isArray(s[k])) s[k] = [];
+      for (const k of ['controlled', 'programs', 'nets'] as const)
+        if (!Array.isArray(s[k])) s[k] = [];
       if (!s.items || typeof s.items !== 'object' || Array.isArray(s.items)) s.items = {};
-      s.items = Object.fromEntries(Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0));
+      s.items = Object.fromEntries(
+        Object.entries(s.items).filter(([, n]) => Number.isInteger(n) && n > 0),
+      );
       // a save from before the city clock (TIME.md): day 1, 09:40
-      if(!s.gameplay||typeof s.gameplay!=='object'||Array.isArray(s.gameplay))s.gameplay={};
-      const safe=(k:string)=>!['__proto__','constructor','prototype'].includes(k);
-      s.gameplay=Object.fromEntries(Object.entries(s.gameplay).filter(([owner,block])=>safe(owner)&&block&&typeof block==='object'&&!Array.isArray(block)).map(([owner,block])=>[owner,Object.fromEntries(Object.entries(block).filter(([k,v])=>safe(k)&&(v===null||typeof v==='boolean'||typeof v==='string'&&v.length<=2000||typeof v==='number'&&Number.isFinite(v)&&Math.abs(v)<=Number.MAX_SAFE_INTEGER)))]));
+      if (!s.gameplay || typeof s.gameplay !== 'object' || Array.isArray(s.gameplay))
+        s.gameplay = {};
+      const safe = (k: string) => !['__proto__', 'constructor', 'prototype'].includes(k);
+      s.gameplay = Object.fromEntries(
+        Object.entries(s.gameplay)
+          .filter(
+            ([owner, block]) =>
+              safe(owner) && block && typeof block === 'object' && !Array.isArray(block),
+          )
+          .map(([owner, block]) => [
+            owner,
+            Object.fromEntries(
+              Object.entries(block).filter(
+                ([k, v]) =>
+                  safe(k) &&
+                  (v === null ||
+                    typeof v === 'boolean' ||
+                    (typeof v === 'string' && v.length <= 2000) ||
+                    (typeof v === 'number' &&
+                      Number.isFinite(v) &&
+                      Math.abs(v) <= Number.MAX_SAFE_INTEGER)),
+              ),
+            ),
+          ]),
+      );
       s.clock = fixClock(JSON.parse(raw).clock);
       return s;
     }
-  } catch { /* private window or blocked storage: start fresh */ }
+  } catch {
+    /* private window or blocked storage: start fresh */
+  }
   return newSave(context);
 }
-
 
 /** Every module the player owns, legs.so first. */
 export const ownedModules = (s: Save) => [...(s.jump ? ['legs.so'] : []), ...s.modules];
 
-
-export function storeSave(s: Save,prepare?:(save:Save)=>Save) {
-  const total=perfBegin('save.total');
-  try {let span=perfBegin('save.stringify');let raw:string;try{raw=JSON.stringify(prepare?prepare(s):s);}finally{perfEnd(span);}
-    span=perfBegin('save.write');try{gameStorage.setItem(saveKey(),raw);}finally{perfEnd(span);}
-  } catch { /* not persisted */ }finally{perfEnd(total);}
+export function storeSave(s: Save, prepare?: (save: Save) => Save) {
+  const total = perfBegin('save.total');
+  try {
+    let span = perfBegin('save.stringify');
+    let raw: string;
+    try {
+      raw = JSON.stringify(prepare ? prepare(s) : s);
+    } finally {
+      perfEnd(span);
+    }
+    span = perfBegin('save.write');
+    try {
+      gameStorage.setItem(saveKey(), raw);
+    } finally {
+      perfEnd(span);
+    }
+  } catch {
+    /* not persisted */
+  } finally {
+    perfEnd(total);
+  }
 }
-
 
 export const BASE_NODES = 42;
 

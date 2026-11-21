@@ -1,5 +1,5 @@
 import type { View } from './view';
-import { windowLit } from "../../world/light";
+import { windowLit } from '../../world/light';
 
 /** The player sprite is 14 rows of 3 px: the unit of scale for every scene. */
 export const PLAYER_H = 42;
@@ -7,27 +7,66 @@ export const PLAYER_H = 42;
 export const DOOR_H = 52;
 export const STOREY = 76;
 
-export const O = '255,136,0', RUST = '194,65,12', C = '0,255,255', PAPER = '255,217,165', RED = '255,42,68', GREEN = '34,197,94';
+export const O = '255,136,0',
+  RUST = '194,65,12',
+  C = '0,255,255',
+  PAPER = '255,217,165',
+  RED = '255,42,68',
+  GREEN = '34,197,94';
 
 /** Small seeded random, so a scene looks the same on every visit. */
-export const rng = (seed: number) => { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; };
+export const rng = (seed: number) => {
+  let s = seed;
+  return () => (s = (s * 9301 + 49297) % 233280) / 233280;
+};
 
-export const mono = (size: number, weight = '') => (weight ? weight + ' ' : '') + size + 'px "IBM Plex Mono", monospace';
+export const mono = (size: number, weight = '') =>
+  (weight ? weight + ' ' : '') + size + 'px "IBM Plex Mono", monospace';
 
-export function text(x: CanvasRenderingContext2D, s: string, cx: number, cy: number, col: string, size = 7, weight = '', align: CanvasTextAlign = 'center') {
-  x.save(); x.font = mono(size, weight); x.textAlign = align; x.textBaseline = 'middle'; x.fillStyle = col; x.fillText(s, cx, cy); x.restore();
+export function text(
+  x: CanvasRenderingContext2D,
+  s: string,
+  cx: number,
+  cy: number,
+  col: string,
+  size = 7,
+  weight = '',
+  align: CanvasTextAlign = 'center',
+) {
+  x.save();
+  x.font = mono(size, weight);
+  x.textAlign = align;
+  x.textBaseline = 'middle';
+  x.fillStyle = col;
+  x.fillText(s, cx, cy);
+  x.restore();
 }
 
 /** A filled box with a 1px outline inside it. */
-export function box(x: CanvasRenderingContext2D, sx: number, top: number, w: number, h: number, fill: string, stroke?: string) {
-  x.fillStyle = fill; x.fillRect(sx, top, w, h);
-  if (stroke) { x.strokeStyle = stroke; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, w - 1, h - 1); }
+export function box(
+  x: CanvasRenderingContext2D,
+  sx: number,
+  top: number,
+  w: number,
+  h: number,
+  fill: string,
+  stroke?: string,
+) {
+  x.fillStyle = fill;
+  x.fillRect(sx, top, w, h);
+  if (stroke) {
+    x.strokeStyle = stroke;
+    x.lineWidth = 1;
+    x.strokeRect(sx + 0.5, top + 0.5, w - 1, h - 1);
+  }
 }
 
 export const onScreen = (v: View, sx: number, w: number) => sx + w > -4 && sx < v.viewW + 4;
 
 export interface NeonOptions {
-  size?: number; dead?: number; phase?: number;
+  size?: number;
+  dead?: number;
+  phase?: number;
   /** Letters top to bottom from `cy` (a blade), `size + 2` apart. */
   vertical?: boolean;
   /** Only this letter lit (a test sweep); `null`/undefined: all lit, normal flicker. */
@@ -38,29 +77,72 @@ export interface NeonOptions {
 /** Neon letters with a glow, like the street's signs. Always put a plate or bracket behind them. */
 /** Set (true) by a context that turns text back on a flipped canvas (the opening's mirrored west beach): letter-by-letter signs then also keep their reading order. */
 export const READABLE_MIRROR = Symbol('readable mirror');
-export function neon(x: CanvasRenderingContext2D, t: number, s: string, cx: number, cy: number, col: string, opt: NeonOptions = {}) {
-  const size = opt.size ?? 9, dead = opt.dead ?? -1, bright = !!opt.bright, lit = opt.lit ?? null;
-  const flick = lit === null && (t + (opt.phase ?? 0)) % (bright ? 240 : 300) > (bright ? 232 : 293) && Math.floor(t) % 4 < 2;
+export function neon(
+  x: CanvasRenderingContext2D,
+  t: number,
+  s: string,
+  cx: number,
+  cy: number,
+  col: string,
+  opt: NeonOptions = {},
+) {
+  const size = opt.size ?? 9,
+    dead = opt.dead ?? -1,
+    bright = !!opt.bright,
+    lit = opt.lit ?? null;
+  const flick =
+    lit === null &&
+    (t + (opt.phase ?? 0)) % (bright ? 240 : 300) > (bright ? 232 : 293) &&
+    Math.floor(t) % 4 < 2;
   x.save();
-  x.font = mono(size, '600'); x.textAlign = 'center'; x.textBaseline = 'middle';
-  const chars = [...s], readable = READABLE_MIRROR in x && x.getTransform().a < 0;
+  x.font = mono(size, '600');
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  const chars = [...s],
+    readable = READABLE_MIRROR in x && x.getTransform().a < 0;
   chars.forEach((ch, i) => {
     const off = flick || i === dead || (lit !== null && i !== lit);
     x.fillStyle = 'rgba(' + col + ',' + (off ? (bright ? 0.13 : 0.15) : 0.95) + ')';
-    x.shadowColor = 'rgba(' + col + (bright ? ',.9)' : ',.85)'); x.shadowBlur = off ? 0 : bright ? 8 : 7;
+    x.shadowColor = 'rgba(' + col + (bright ? ',.9)' : ',.85)');
+    x.shadowBlur = off ? 0 : bright ? 8 : 7;
     if (opt.vertical) x.fillText(ch, cx, cy + i * (size + 2));
-    else x.fillText(ch, cx + ((readable ? chars.length - 1 - i : i) - (chars.length - 1) / 2) * size * 0.64, cy);
+    else
+      x.fillText(
+        ch,
+        cx + ((readable ? chars.length - 1 - i : i) - (chars.length - 1) / 2) * size * 0.64,
+        cy,
+      );
   });
   x.restore();
 }
 
 /** A neon sign on its backing plate, with the glow it throws on the wall around it. */
-export function sign(x: CanvasRenderingContext2D, t: number, s: string, cx: number, cy: number, col: string, opt: { size?: number; dead?: number; phase?: number; plate?: string } = {}) {
-  const size = opt.size ?? 9, w = Math.round(s.length * size * 0.64 + 12), h = size + 8;
+export function sign(
+  x: CanvasRenderingContext2D,
+  t: number,
+  s: string,
+  cx: number,
+  cy: number,
+  col: string,
+  opt: { size?: number; dead?: number; phase?: number; plate?: string } = {},
+) {
+  const size = opt.size ?? 9,
+    w = Math.round(s.length * size * 0.64 + 12),
+    h = size + 8;
   const g = x.createRadialGradient(cx, cy, 2, cx, cy, w * 0.7);
-  g.addColorStop(0, 'rgba(' + col + ',.12)'); g.addColorStop(1, 'rgba(' + col + ',0)');
-  x.fillStyle = g; x.fillRect(cx - w, cy - w * 0.5, w * 2, w);
-  box(x, Math.round(cx - w / 2), Math.round(cy - h / 2), w, h, opt.plate ?? '#0d0705', 'rgba(' + col + ',.35)');
+  g.addColorStop(0, 'rgba(' + col + ',.12)');
+  g.addColorStop(1, 'rgba(' + col + ',0)');
+  x.fillStyle = g;
+  x.fillRect(cx - w, cy - w * 0.5, w * 2, w);
+  box(
+    x,
+    Math.round(cx - w / 2),
+    Math.round(cy - h / 2),
+    w,
+    h,
+    opt.plate ?? '#0d0705',
+    'rgba(' + col + ',.35)',
+  );
   neon(x, t, s, cx, cy + 0.5, col, opt);
 }
 
@@ -69,59 +151,132 @@ export function tell(x: CanvasRenderingContext2D, t: number, cx: number, cy: num
   const on = Math.sin(t * 0.05 + phase) > -0.3;
   x.save();
   x.fillStyle = 'rgba(' + C + ',' + (on ? 0.95 : 0.3) + ')';
-  if (on) { x.shadowColor = 'rgba(' + C + ',.9)'; x.shadowBlur = 5; }
+  if (on) {
+    x.shadowColor = 'rgba(' + C + ',.9)';
+    x.shadowBlur = 5;
+  }
   x.fillRect(Math.round(cx) - 1, Math.round(cy) - 1, 3, 2);
   x.restore();
 }
 
-export interface PaperLine { text: string; ink?: string; size?: number; weight?: string }
+export interface PaperLine {
+  text: string;
+  ink?: string;
+  size?: number;
+  weight?: string;
+}
 export interface PaperSignOptions {
   lines: (string | PaperLine)[];
   /** 'board': a dark board, orange edge, paper letters (default). 'paper': official paper, dark ink. */
   style?: 'board' | 'paper';
-  fill?: string; edge?: string; ink?: string; size?: number; weight?: string;
+  fill?: string;
+  edge?: string;
+  ink?: string;
+  size?: number;
+  weight?: string;
   /** Line pitch (default 9) and the first line's centre below the top (default: lines centred). */
-  lineH?: number; first?: number;
+  lineH?: number;
+  first?: number;
   /** A red band across the top with its own light letters (an official notice). */
-  header?: string; headerFill?: string; headerInk?: string; headerH?: number;
+  header?: string;
+  headerFill?: string;
+  headerInk?: string;
+  headerH?: number;
   /** A lighter paper sheet inside the board's edge. */
   inset?: boolean;
   /** The cyan tell (ART-GUIDE §7) at `tellAt` [dx from cx, dy from top]; false or absent: none. */
-  tell?: number | false; tellAt?: [number, number];
+  tell?: number | false;
+  tellAt?: [number, number];
 }
 /** A printed sign: a dark board with paper letters, or official paper with dark ink and a red header. Screen coordinates. */
-export function paperSign(x: CanvasRenderingContext2D, t: number, cx: number, top: number, w: number, h: number, o: PaperSignOptions) {
+export function paperSign(
+  x: CanvasRenderingContext2D,
+  t: number,
+  cx: number,
+  top: number,
+  w: number,
+  h: number,
+  o: PaperSignOptions,
+) {
   const paper = o.style === 'paper';
-  box(x, cx - w / 2, top, w, h, o.fill ?? (paper ? '#e0d4b8' : '#1a120b'), o.edge ?? (paper ? 'rgba(40,30,20,.9)' : 'rgba(' + O + ',.7)'));
+  box(
+    x,
+    cx - w / 2,
+    top,
+    w,
+    h,
+    o.fill ?? (paper ? '#e0d4b8' : '#1a120b'),
+    o.edge ?? (paper ? 'rgba(40,30,20,.9)' : 'rgba(' + O + ',.7)'),
+  );
   if (o.inset) box(x, cx - w / 2 + 3, top + 3, w - 6, h - 6, 'rgba(' + PAPER + ',.16)');
-  let body = top, bodyH = h;
+  let body = top,
+    bodyH = h;
   if (o.header !== undefined) {
     const hh = o.headerH ?? 9;
-    x.fillStyle = o.headerFill ?? 'rgba(' + RED + ',.85)'; x.fillRect(cx - w / 2, top, w, hh);
-    text(x, o.header, cx, top + Math.round(hh * 0.78), o.headerInk ?? 'rgba(250,240,225,.95)', 7, '700');
-    body = top + hh; bodyH = h - hh;
+    x.fillStyle = o.headerFill ?? 'rgba(' + RED + ',.85)';
+    x.fillRect(cx - w / 2, top, w, hh);
+    text(
+      x,
+      o.header,
+      cx,
+      top + Math.round(hh * 0.78),
+      o.headerInk ?? 'rgba(250,240,225,.95)',
+      7,
+      '700',
+    );
+    body = top + hh;
+    bodyH = h - hh;
   }
-  const pitch = o.lineH ?? 9, first = o.first ?? (bodyH - (o.lines.length - 1) * pitch) / 2;
-  const ink = o.ink ?? (paper ? 'rgba(30,18,8,.95)' : 'rgba(' + PAPER + ',.9)'), weight = o.weight ?? (paper ? '700' : '600');
+  const pitch = o.lineH ?? 9,
+    first = o.first ?? (bodyH - (o.lines.length - 1) * pitch) / 2;
+  const ink = o.ink ?? (paper ? 'rgba(30,18,8,.95)' : 'rgba(' + PAPER + ',.9)'),
+    weight = o.weight ?? (paper ? '700' : '600');
   o.lines.forEach((l, i) => {
     const line = typeof l === 'string' ? { text: l } : l;
-    text(x, line.text, cx, body + first + i * pitch, line.ink ?? ink, line.size ?? o.size ?? 7, line.weight ?? weight);
+    text(
+      x,
+      line.text,
+      cx,
+      body + first + i * pitch,
+      line.ink ?? ink,
+      line.size ?? o.size ?? 7,
+      line.weight ?? weight,
+    );
   });
-  if (o.tell !== undefined && o.tell !== false) { const [dx, dy] = o.tellAt ?? [w / 2 - 5, h - 4]; tell(x, t, cx + dx, top + dy, o.tell); }
+  if (o.tell !== undefined && o.tell !== false) {
+    const [dx, dy] = o.tellAt ?? [w / 2 - 5, h - 4];
+    tell(x, t, cx + dx, top + dy, o.tell);
+  }
 }
 
 /** A paper notice on a board, with a cyan LED so it reads as something to read. */
-export function notice(x: CanvasRenderingContext2D, t: number, cx: number, top: number, w: number, h: number, lines: string[], phase = 0) {
+export function notice(
+  x: CanvasRenderingContext2D,
+  t: number,
+  cx: number,
+  top: number,
+  w: number,
+  h: number,
+  lines: string[],
+  phase = 0,
+) {
   paperSign(x, t, cx, top, w, h, { lines, inset: true, first: 9, tell: phase });
 }
 
 /** The way back to Downtown at a scene's left edge: a door in the wall with a cyan plate. */
-export function exitDoor(x: CanvasRenderingContext2D, v: View, wx: number, wall: string, label = '< DOWNTOWN') {
+export function exitDoor(
+  x: CanvasRenderingContext2D,
+  v: View,
+  wx: number,
+  wall: string,
+  label = '< DOWNTOWN',
+) {
   const sx = v.sx(wx);
   if (!onScreen(v, sx - 30, 60)) return;
   box(x, sx - 14, v.y(DOOR_H + 4), 28, DOOR_H + 4, '#020100', 'rgba(' + O + ',.75)');
   box(x, sx - 11, v.y(DOOR_H), 22, DOOR_H, wall, 'rgba(' + O + ',.45)');
-  x.fillStyle = 'rgba(' + C + ',.85)'; x.fillRect(sx + 6, v.y(28), 2, 6);
+  x.fillStyle = 'rgba(' + C + ',.85)';
+  x.fillRect(sx + 6, v.y(28), 2, 6);
   box(x, sx - 30, v.y(DOOR_H + 18), 60, 12, '#04100f', 'rgba(' + C + ',.6)');
   text(x, label, sx - 2, v.y(DOOR_H + 12), 'rgba(' + C + ',.95)', 7, '600');
   tell(x, v.t, sx + 26, v.y(DOOR_H + 12));
@@ -132,9 +287,22 @@ export function exitDoor(x: CanvasRenderingContext2D, v: View, wx: number, wall:
  * `step` swings the legs for walkers. `rim` is a lighter edge so a figure never
  * vanishes into a dark wall.
  */
-export function figure(x: CanvasRenderingContext2D, cx: number, base: number, h: number, fill: string, step = 0, rim?: string) {
-  const u = h / 14, top = base - h, c = Math.round(cx);
-  const hw = Math.round(u * 1.7), sw = Math.round(u * 3), lw = Math.max(1, Math.round(u * 1.2)), sp = Math.round(step * u);
+export function figure(
+  x: CanvasRenderingContext2D,
+  cx: number,
+  base: number,
+  h: number,
+  fill: string,
+  step = 0,
+  rim?: string,
+) {
+  const u = h / 14,
+    top = base - h,
+    c = Math.round(cx);
+  const hw = Math.round(u * 1.7),
+    sw = Math.round(u * 3),
+    lw = Math.max(1, Math.round(u * 1.2)),
+    sp = Math.round(step * u);
   x.fillStyle = fill;
   x.fillRect(c - hw, Math.round(top), hw * 2, Math.round(u * 3.4));
   x.fillRect(c - sw, Math.round(top + u * 3.6), sw * 2, Math.round(u * 5.6));
@@ -148,12 +316,27 @@ export function figure(x: CanvasRenderingContext2D, cx: number, base: number, h:
 }
 
 /** A row of buildings for the far or middle band, laid out once. */
-export interface Tower { x: number; w: number; h: number; lit: number[] }
-export function towers(seed: number, span: number, w: [number, number], h: [number, number], lit: number): Tower[] {
-  const r = rng(seed), list: Tower[] = [];
+export interface Tower {
+  x: number;
+  w: number;
+  h: number;
+  lit: number[];
+}
+export function towers(
+  seed: number,
+  span: number,
+  w: [number, number],
+  h: [number, number],
+  lit: number,
+): Tower[] {
+  const r = rng(seed),
+    list: Tower[] = [];
   for (let wx = -40; wx < span;) {
-    const tw = Math.round(w[0] + r() * (w[1] - w[0])), th = Math.round(h[0] + r() * (h[1] - h[0])), cells: number[] = [];
-    for (let yy = 6; yy < th - 6; yy += 7) for (let xx = 4; xx < tw - 4; xx += 6) if (r() < lit) cells.push(xx, yy);
+    const tw = Math.round(w[0] + r() * (w[1] - w[0])),
+      th = Math.round(h[0] + r() * (h[1] - h[0])),
+      cells: number[] = [];
+    for (let yy = 6; yy < th - 6; yy += 7)
+      for (let xx = 4; xx < tw - 4; xx += 6) if (r() < lit) cells.push(xx, yy);
     list.push({ x: wx, w: tw, h: th, lit: cells });
     wx += tw + 2 + Math.round(r() * 8);
   }
@@ -165,31 +348,60 @@ export function towers(seed: number, span: number, w: [number, number], h: [numb
  * `grow` adds height to every tower (for taller views), repeating its windows downward, so a
  * tall screen sees more storeys rather than a stretched row.
  */
-export function drawTowers(x: CanvasRenderingContext2D, v: View, list: Tower[], parallax: number, base: number, alpha: number, fill = '#040200', win = 2, grow = 0) {
+export function drawTowers(
+  x: CanvasRenderingContext2D,
+  v: View,
+  list: Tower[],
+  parallax: number,
+  base: number,
+  alpha: number,
+  fill = '#040200',
+  win = 2,
+  grow = 0,
+) {
   for (const b of list) {
-    const sx = v.sx(b.x, parallax), h = b.h + grow, top = base - h;
+    const sx = v.sx(b.x, parallax),
+      h = b.h + grow,
+      top = base - h;
     if (!onScreen(v, sx, b.w) || base < 0) continue;
-    x.fillStyle = fill; x.fillRect(sx, top, b.w, h);
-    x.strokeStyle = 'rgba(' + RUST + ',' + alpha + ')'; x.lineWidth = 1; x.strokeRect(sx + 0.5, top + 0.5, b.w - 1, h);
+    x.fillStyle = fill;
+    x.fillRect(sx, top, b.w, h);
+    x.strokeStyle = 'rgba(' + RUST + ',' + alpha + ')';
+    x.lineWidth = 1;
+    x.strokeRect(sx + 0.5, top + 0.5, b.w - 1, h);
     x.fillStyle = 'rgba(' + O + ',' + (alpha * 0.9 + 0.05) + ')';
     for (let k = 0; k * b.h < h; k++) {
       const off = top + k * b.h;
       if (off > v.viewH || off + b.h < 0) continue;
       // the windows follow the city's clock (light.ts windowLit): on one by one at dusk, some off after midnight
-      for (let i = 0; i < b.lit.length; i += 2) if (b.lit[i + 1] + k * b.h < h - 4 && windowLit(b.x * 31 + i + k * 7, v.lighting)) x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
+      for (let i = 0; i < b.lit.length; i += 2)
+        if (b.lit[i + 1] + k * b.h < h - 4 && windowLit(b.x * 31 + i + k * 7, v.lighting))
+          x.fillRect(sx + b.lit[i], off + b.lit[i + 1], win, win);
     }
   }
 }
 
 /** A wet floor: the play band's ground line and faint streaks below it. */
 export function wetFloor(x: CanvasRenderingContext2D, v: View, fill = '#030201') {
-  x.fillStyle = fill; x.fillRect(0, v.gy, v.viewW, v.viewH - v.gy);
-  x.fillStyle = 'rgba(' + O + ',.55)'; x.fillRect(0, v.gy, v.viewW, 1);
-  for (let i = 0; i < 5; i++) { x.fillStyle = 'rgba(255,100,0,' + (0.12 - i * 0.022) + ')'; x.fillRect(0, v.gy + 6 + i * i * 2 + i * 4, v.viewW, 1); }
+  x.fillStyle = fill;
+  x.fillRect(0, v.gy, v.viewW, v.viewH - v.gy);
+  x.fillStyle = 'rgba(' + O + ',.55)';
+  x.fillRect(0, v.gy, v.viewW, 1);
+  for (let i = 0; i < 5; i++) {
+    x.fillStyle = 'rgba(255,100,0,' + (0.12 - i * 0.022) + ')';
+    x.fillRect(0, v.gy + 6 + i * i * 2 + i * 4, v.viewW, 1);
+  }
 }
 
 /** A light's reflection in the wet floor, straight below it. */
-export function reflect(x: CanvasRenderingContext2D, v: View, sx: number, col: string, strength = 1, w = 12) {
+export function reflect(
+  x: CanvasRenderingContext2D,
+  v: View,
+  sx: number,
+  col: string,
+  strength = 1,
+  w = 12,
+) {
   if (!onScreen(v, sx - w, w * 2)) return;
   for (let i = 0; i < 9; i++) {
     const wob = Math.sin(v.t * 0.05 + i + sx * 0.1) * 1.5;

@@ -16,16 +16,19 @@
  * queries `controlled2F`, `controlled31` and `controlledTV` (booleans), which `check` insists on.
  */
 
-import {downtownController} from '../../controllers/motion';
-import type {Spot,SceneModel} from '../../model';
-import type {Effect,World,SceneRules} from '../../rules';
-import type {PlayerServices} from '../../../runtime/player';
-import type {SceneMechanism} from '../scene-mechanisms';
+import { downtownController } from '../../controllers/motion';
+import type { Spot, SceneModel } from '../../model';
+import type { Effect, World, SceneRules } from '../../rules';
+import type { PlayerServices } from '../../../runtime/player';
+import type { SceneMechanism } from '../scene-mechanisms';
 
 /** Where DLV-9 rests: by the dumpster (its `layout.spot`), outside the market gate, or inside the market (out of the world). */
 export type DlvAt = 'home' | 'gate' | 'market' | 'driving';
 
-const split = (key: string): [string, string] => { const i = key.indexOf('.'); return [key.slice(0, i), key.slice(i + 1)]; };
+const split = (key: string): [string, string] => {
+  const i = key.indexOf('.');
+  return [key.slice(0, i), key.slice(i + 1)];
+};
 
 /** DLV-9's x right now (null: inside the market): read from its mover. */
 export function dlvX(m: SceneModel): number | null {
@@ -37,14 +40,19 @@ export function dlvX(m: SceneModel): number | null {
 /** Send the van along one of its paths; the mover, its zone and the milestones do the rest. */
 function drive(w: World, path: 'inward' | 'outward') {
   const [dev, noun] = split(downtownController(w.data).mover);
-  if (w.m.runPath(dev, noun, path) !== 'started') throw new Error('DLV-9 has no mover path ' + path);
+  if (w.m.runPath(dev, noun, path) !== 'started')
+    throw new Error('DLV-9 has no mover path ' + path);
 }
 
 function effects(): Record<string, Effect> {
   return {
     /** Physical route endpoints; source Case lists own access and refusal policy. */
-    'dlv.inward': (w) => { drive(w, 'inward'); },
-    'dlv.outward': (w) => { drive(w, 'outward'); },
+    'dlv.inward': (w) => {
+      drive(w, 'inward');
+    },
+    'dlv.outward': (w) => {
+      drive(w, 'outward');
+    },
   };
 }
 
@@ -53,7 +61,12 @@ export function downtownRules(p: PlayerServices): SceneRules {
   const s = () => p.save();
   return {
     effects: effects(),
-    inputs: ['downtown.dlv.scanned', 'downtown.dlv.door', 'downtown.dlv.through', 'downtown.dlv.back'],
+    inputs: [
+      'downtown.dlv.scanned',
+      'downtown.dlv.door',
+      'downtown.dlv.through',
+      'downtown.dlv.back',
+    ],
     derived: {
       handle: () => s().handle || 'ghost',
       named: () => !!s().handle,
@@ -69,7 +82,7 @@ export function downtownRules(p: PlayerServices): SceneRules {
       return x === null ? null : { ...home, x };
     },
     needs: {
-      devices:[],
+      devices: [],
       state: [],
       // shell.ts (the deck's keyboard)
       texts: { 'login.none': 'line', 'login.baduser': 'line' },
@@ -80,16 +93,28 @@ export function downtownRules(p: PlayerServices): SceneRules {
 /** The rules' contract does not depend on whose save it is. */
 const SHAPE = downtownRules({
   save: () => ({ handle: '', tokens: 0, jump: false, controlled: [], flags: {} }),
-  persist: () => {}, nodes: () => 42, granted: () => {}, end: () => {},
+  persist: () => {},
+  nodes: () => 42,
+  granted: () => {},
+  end: () => {},
 });
 
-export const vehicleRun:SceneMechanism={
-  face:{function:'act',controller:'downtown'},
-  label:'DLV-9 delivery run (market gate, scanner, door)',requires:[],world:false,
-  rulesShape:()=>SHAPE,
+export const vehicleRun: SceneMechanism = {
+  face: { function: 'act', controller: 'downtown' },
+  label: 'DLV-9 delivery run (market gate, scanner, door)',
+  requires: [],
+  world: false,
+  rulesShape: () => SHAPE,
   /** The picture reads these select queries as plain booleans. */
-  check:({gameplay})=>{
-    for(const id of ['controlled2F','controlled31','controlledTV']){const q=gameplay.queries?.[id];if(q?.kind!=='select'||q.cases.some(row=>!('literal'in row.value)||typeof row.value.literal!=='boolean'))throw new Error('Downtown presentation requires boolean select query '+id);}
+  check: ({ gameplay }) => {
+    for (const id of ['controlled2F', 'controlled31', 'controlledTV']) {
+      const q = gameplay.queries?.[id];
+      if (
+        q?.kind !== 'select' ||
+        q.cases.some((row) => !('literal' in row.value) || typeof row.value.literal !== 'boolean')
+      )
+        throw new Error('Downtown presentation requires boolean select query ' + id);
+    }
   },
-  apply:()=>({rules:(player:PlayerServices)=>downtownRules(player)}),
+  apply: () => ({ rules: (player: PlayerServices) => downtownRules(player) }),
 };

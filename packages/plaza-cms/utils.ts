@@ -12,7 +12,7 @@ export function toTitleCase(name: string): string {
   return name
     .replace(/_/g, ' ')
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
 
@@ -27,14 +27,18 @@ export function fileToLabel(filename: string): string {
 export function rewriteMarkdownLinks(
   content: string,
   basePath: string,
-  resolvePath: (from: string, to: string) => string | null
+  resolvePath: (from: string, to: string) => string | null,
 ): string {
   const linkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
 
   return content.replace(linkRegex, (match, text, href) => {
     // Skip external links, anchors, and absolute paths
-    if (href.startsWith('http://') || href.startsWith('https://') ||
-        href.startsWith('#') || href.startsWith('/')) {
+    if (
+      href.startsWith('http://') ||
+      href.startsWith('https://') ||
+      href.startsWith('#') ||
+      href.startsWith('/')
+    ) {
       return match;
     }
 

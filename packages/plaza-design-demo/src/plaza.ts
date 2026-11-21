@@ -88,9 +88,11 @@ export function setTheme(themeName: string): void {
   localStorage.setItem(STORAGE_KEY, themeName);
 
   // Dispatch theme change event for canvas and other listeners
-  window.dispatchEvent(new CustomEvent('plaza-theme-change', {
-    detail: { theme: themeName }
-  }));
+  window.dispatchEvent(
+    new CustomEvent('plaza-theme-change', {
+      detail: { theme: themeName },
+    }),
+  );
 }
 
 /**
@@ -237,7 +239,7 @@ const telemetryState = {
   latency: 45,
   packetLoss: 0.12,
   memResident: 512,
-  cpuLoad: 8
+  cpuLoad: 8,
 };
 
 // Net log state with drifting ms values
@@ -248,8 +250,8 @@ const netLogState = {
     { verb: 'ROUTE', chan: 'RPC', code: 204, ms: 44 },
     { verb: 'HANDSHAKE', chan: 'MESH', code: 200, ms: 137 },
     { verb: 'ATTEST', chan: 'L2', code: 206, ms: 44 },
-    { verb: 'SYNC', chan: 'P2P', code: 200, ms: 21 }
-  ]
+    { verb: 'SYNC', chan: 'P2P', code: 200, ms: 21 },
+  ],
 };
 
 // Node count state
@@ -267,7 +269,10 @@ export function generateTelemetry(): TelemetryData {
   // Adjust values relative to previous (living system feel)
   telemetryState.peerCount = adjustValue(telemetryState.peerCount, 12, 64, 3);
   telemetryState.latency = adjustValue(telemetryState.latency, 18, 120, 8);
-  telemetryState.packetLoss = Math.max(0, Math.min(2, telemetryState.packetLoss + (Math.random() - 0.5) * 0.1));
+  telemetryState.packetLoss = Math.max(
+    0,
+    Math.min(2, telemetryState.packetLoss + (Math.random() - 0.5) * 0.1),
+  );
   telemetryState.memResident = adjustValue(telemetryState.memResident, 256, 1024, 32);
   telemetryState.cpuLoad = adjustValue(telemetryState.cpuLoad, 2, 45, 4);
 
@@ -283,7 +288,7 @@ export interface RouteItem {
 export function generateRoutes(): RouteItem[] {
   return [
     { path: '/enter', disabled: true },
-    { path: '/guide', disabled: false, href: '/guide/' }
+    { path: '/guide', disabled: false, href: '/guide/' },
   ];
 }
 
@@ -308,9 +313,9 @@ export interface NetLogEntry {
 
 export function generateNetLog(): NetLogEntry[] {
   // Drift the ms values
-  netLogState.entries = netLogState.entries.map(entry => ({
+  netLogState.entries = netLogState.entries.map((entry) => ({
     ...entry,
-    ms: adjustValue(entry.ms, 8, 200, 15)
+    ms: adjustValue(entry.ms, 8, 200, 15),
   }));
 
   return [...netLogState.entries];
@@ -324,14 +329,16 @@ export interface StatusData {
 export function generateStatus(): StatusData {
   return {
     updates: 'paused',
-    error: '500: connection reset'
+    error: '500: connection reset',
   };
 }
 
 export function generateHexData(length = 500): string {
   let hex = '';
   for (let i = 0; i < length; i++) {
-    hex += Math.floor(Math.random() * 16).toString(16).toUpperCase();
+    hex += Math.floor(Math.random() * 16)
+      .toString(16)
+      .toUpperCase();
     if (i > 0 && i % 32 === 0) hex += '\n';
     else if (i > 0 && i % 8 === 0 && Math.random() > 0.7) hex += ' ';
   }
@@ -405,7 +412,7 @@ export function initGridCanvas(canvas: HTMLCanvasElement | null): GridController
   const adjustAlpha = (rgba: string, newAlpha: number): string => {
     const match = rgba.match(/rgba?\(([^)]+)\)/);
     if (match) {
-      const parts = match[1].split(',').map(s => s.trim());
+      const parts = match[1].split(',').map((s) => s.trim());
       if (parts.length >= 3) {
         return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${newAlpha})`;
       }
@@ -438,10 +445,7 @@ export function initGridCanvas(canvas: HTMLCanvasElement | null): GridController
     const centerX = w / 2;
 
     // Ambient glow at horizon - uses theme colors
-    const ambientGlow = ctx.createRadialGradient(
-      centerX, horizonY, 0,
-      centerX, horizonY, w * 0.5
-    );
+    const ambientGlow = ctx.createRadialGradient(centerX, horizonY, 0, centerX, horizonY, w * 0.5);
     ambientGlow.addColorStop(0, colors.ambient);
     ambientGlow.addColorStop(0.3, adjustAlpha(colors.ambient, 0.08));
     ambientGlow.addColorStop(0.6, adjustAlpha(colors.ambient, 0.03));
@@ -452,8 +456,12 @@ export function initGridCanvas(canvas: HTMLCanvasElement | null): GridController
     // Sun with breathing animation
     const sunRadius = 60 + Math.sin(time * 0.015) * 8;
     const sunGradient = ctx.createRadialGradient(
-      centerX, horizonY, 0,
-      centerX, horizonY, sunRadius * 2
+      centerX,
+      horizonY,
+      0,
+      centerX,
+      horizonY,
+      sunRadius * 2,
     );
     sunGradient.addColorStop(0, adjustAlpha(colors.sunCore, 0.9));
     sunGradient.addColorStop(0.3, colors.sunGlow);

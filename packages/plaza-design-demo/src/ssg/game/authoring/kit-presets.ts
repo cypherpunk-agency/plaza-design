@@ -4,62 +4,116 @@
  * inspector saves, updates, renames and deletes them. A preset is only settings: placing one adds an
  * ordinary kit instance, so later kit improvements reach every piece made from it.
  */
-import type { ArtRegistry, Properties,AssetInstance } from '../art/core/composition';
+import type { ArtRegistry, Properties, AssetInstance } from '../art/core/composition';
 
-export interface KitPreset { id: string; label: string; kit: string; note?: string; props: Properties;children?:AssetInstance[] }
-export interface KitPresets { version: 1; presets: KitPreset[] }
+export interface KitPreset {
+  id: string;
+  label: string;
+  kit: string;
+  note?: string;
+  props: Properties;
+  children?: AssetInstance[];
+}
+export interface KitPresets {
+  version: 1;
+  presets: KitPreset[];
+}
 export const PRESETS_DOCUMENT = 'kit-presets';
 
-const fail = (s: string): never => { throw new Error('Kit presets: ' + s); };
-const plain = (v: unknown, what: string) => { if (!v || typeof v !== 'object' || Array.isArray(v)) fail(what + ' must be an object'); return v as Record<string, unknown>; };
+const fail = (s: string): never => {
+  throw new Error('Kit presets: ' + s);
+};
+const plain = (v: unknown, what: string) => {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) fail(what + ' must be an object');
+  return v as Record<string, unknown>;
+};
 
 /** Every preset names a reusable kit element, and its settings are valid for that element. */
 export function validatePresets(value: unknown, registry: ArtRegistry): KitPresets {
   const d = plain(value, 'document');
-  if (Object.keys(d).some(k => k !== 'version' && k !== 'presets')) fail('unknown field');
+  if (Object.keys(d).some((k) => k !== 'version' && k !== 'presets')) fail('unknown field');
   if (d.version !== 1) fail('version must be 1');
-  if (!Array.isArray(d.presets) || d.presets.length > 500) fail('presets must be a list (500 at most)');
+  if (!Array.isArray(d.presets) || d.presets.length > 500)
+    fail('presets must be a list (500 at most)');
   const ids = new Set<string>();
   for (const raw of d.presets as unknown[]) {
     const p = plain(raw, 'preset');
-    if (Object.keys(p).some(k => !['id', 'label', 'kit', 'note', 'props','children'].includes(k))) fail('unknown preset field');
-    if (typeof p.id !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(p.id)) fail(`preset id "${String(p.id)}" must be lower-case letters, digits and dashes`);
-    const id = p.id as string; if (ids.has(id)) fail(`two presets are called ${id}`); ids.add(id);
-    if (typeof p.label !== 'string' || !p.label.trim() || p.label.length > 80) fail(`${p.id}: name must be 1 to 80 characters`);
-    if (p.note !== undefined && (typeof p.note !== 'string' || p.note.length > 240)) fail(`${p.id}: note must be text (240 characters at most)`);
-    if (typeof p.kit !== 'string' || !registry.catalog().some(e => e.type === p.kit && e.libraryUse === 'reusable')) fail(`${p.id}: "${String(p.kit)}" is not a kit element`);
-    try { registry.properties(p.kit as string, plain(p.props, `${p.id} settings`) as Properties); } catch (e) { fail(`${p.id}: ${e instanceof Error ? e.message : String(e)}`); }
-    if(p.children!==undefined){
-      if(p.kit!=='assembly.group')fail(`${p.id}: only an ordinary group can contain an arrangement`);
-      validatePresetChildren(p.children,registry);
+    if (
+      Object.keys(p).some((k) => !['id', 'label', 'kit', 'note', 'props', 'children'].includes(k))
+    )
+      fail('unknown preset field');
+    if (typeof p.id !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(p.id))
+      fail(`preset id "${String(p.id)}" must be lower-case letters, digits and dashes`);
+    const id = p.id as string;
+    if (ids.has(id)) fail(`two presets are called ${id}`);
+    ids.add(id);
+    if (typeof p.label !== 'string' || !p.label.trim() || p.label.length > 80)
+      fail(`${p.id}: name must be 1 to 80 characters`);
+    if (p.note !== undefined && (typeof p.note !== 'string' || p.note.length > 240))
+      fail(`${p.id}: note must be text (240 characters at most)`);
+    if (
+      typeof p.kit !== 'string' ||
+      !registry.catalog().some((e) => e.type === p.kit && e.libraryUse === 'reusable')
+    )
+      fail(`${p.id}: "${String(p.kit)}" is not a kit element`);
+    try {
+      registry.properties(p.kit as string, plain(p.props, `${p.id} settings`) as Properties);
+    } catch (e) {
+      fail(`${p.id}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+    if (p.children !== undefined) {
+      if (p.kit !== 'assembly.group')
+        fail(`${p.id}: only an ordinary group can contain an arrangement`);
+      validatePresetChildren(p.children, registry);
     }
   }
   return structuredClone(value) as KitPresets;
 }
 
 /** An arrangement is an ordinary self-contained subtree, never a hidden scene/controller copy. */
-export function validatePresetChildren(value:unknown,registry:ArtRegistry):AssetInstance[]{
- if(!Array.isArray(value)||!value.length)fail('an arrangement needs children');
- const doc=registry.validate({version:1,scene:'preset-validation',instances:value});
- const all=(nodes:AssetInstance[]):AssetInstance[]=>nodes.flatMap(n=>[n,...all(n.children??[])]),nodes=all(doc.instances),ids=new Set(nodes.map(n=>n.id));
- for(const node of nodes){
-  if(registry.get(node.type).libraryUse!=='reusable'||Object.keys(node.bindings??{}).length)fail(node.id+': arrangements require reusable assets without live bindings');
-  if(node.attach&&!ids.has(node.attach.instance))fail(node.id+': attachment must stay inside the arrangement');
- }
- return structuredClone(doc.instances);
+export function validatePresetChildren(value: unknown, registry: ArtRegistry): AssetInstance[] {
+  if (!Array.isArray(value) || !value.length) fail('an arrangement needs children');
+  const doc = registry.validate({ version: 1, scene: 'preset-validation', instances: value });
+  const all = (nodes: AssetInstance[]): AssetInstance[] =>
+      nodes.flatMap((n) => [n, ...all(n.children ?? [])]),
+    nodes = all(doc.instances),
+    ids = new Set(nodes.map((n) => n.id));
+  for (const node of nodes) {
+    if (
+      registry.get(node.type).libraryUse !== 'reusable' ||
+      Object.keys(node.bindings ?? {}).length
+    )
+      fail(node.id + ': arrangements require reusable assets without live bindings');
+    if (node.attach && !ids.has(node.attach.instance))
+      fail(node.id + ': attachment must stay inside the arrangement');
+  }
+  return structuredClone(doc.instances);
 }
 
-export const presetsFor = (doc: KitPresets | undefined, kit: string) => (doc?.presets ?? []).filter(p => p.kit === kit);
+export const presetsFor = (doc: KitPresets | undefined, kit: string) =>
+  (doc?.presets ?? []).filter((p) => p.kit === kit);
 
 /** A free preset id from a name ("Night ferry" → night-ferry, night-ferry-2, …). */
 export function presetId(doc: KitPresets, label: string) {
-  const base = label.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 56) || 'preset';
-  let id = base, n = 2; while (doc.presets.some(p => p.id === id)) id = `${base}-${n++}`; return id;
+  const base =
+    label
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 56) || 'preset';
+  let id = base,
+    n = 2;
+  while (doc.presets.some((p) => p.id === id)) id = `${base}-${n++}`;
+  return id;
 }
 
 /** Only the settings that differ from the kit's defaults are kept, so presets stay readable and follow new defaults. */
 export function presetProps(registry: ArtRegistry, kit: string, props: Properties): Properties {
-  const fields = registry.get(kit).fields, out: Properties = {};
-  for (const [key, field] of Object.entries(fields)) if (props[key] !== undefined && JSON.stringify(props[key]) !== JSON.stringify(field.default)) out[key] = structuredClone(props[key]);
+  const fields = registry.get(kit).fields,
+    out: Properties = {};
+  for (const [key, field] of Object.entries(fields))
+    if (props[key] !== undefined && JSON.stringify(props[key]) !== JSON.stringify(field.default))
+      out[key] = structuredClone(props[key]);
   return out;
 }

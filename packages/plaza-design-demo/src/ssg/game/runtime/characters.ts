@@ -1,10 +1,28 @@
-import {streetSpriteHeadHeight} from '../art/characters/presentation';
-import {actorPresentation} from '../art/characters/presentation';
-import {actorAppearanceSeed} from '../engine/gameplay/actor-identity';
+import { streetSpriteHeadHeight } from '../art/characters/presentation';
+import { actorPresentation } from '../art/characters/presentation';
+import { actorAppearanceSeed } from '../engine/gameplay/actor-identity';
 import botSource from '../engine/gameplay/bot-reactions.json';
-import { drawCharacterFrame, BODIES, type Full, rnd, pick, lookFrom, type Legs, type Arms, CRITTERS, type Bot, type BotLook, BOT, type BotFull, botFrom, botKind, faceAt, psOf } from "../art/characters/appearance";
-export { lookFrom, shade, drawPortrait } from "../art/characters/appearance";
-export type { Bot, Face, BotLook } from "../art/characters/appearance";
+import {
+  drawCharacterFrame,
+  BODIES,
+  type Full,
+  rnd,
+  pick,
+  lookFrom,
+  type Legs,
+  type Arms,
+  CRITTERS,
+  type Bot,
+  type BotLook,
+  BOT,
+  type BotFull,
+  botFrom,
+  botKind,
+  faceAt,
+  psOf,
+} from '../art/characters/appearance';
+export { lookFrom, shade, drawPortrait } from '../art/characters/appearance';
+export type { Bot, Face, BotLook } from '../art/characters/appearance';
 /**
  * PEOPLE KIT: the city's people (and its cats, pigeons and robots), built from parts.
  *
@@ -69,21 +87,27 @@ export type { Bot, Face, BotLook } from "../art/characters/appearance";
  * - `crowd()` makes about one in five a robot doing a crowd job (`bots` to change the share, 0 for none).
  */
 
-import type { View } from "../scenes/kit";
-import { city } from "../world/clock";
-import type { TimeWindow } from "../data/types";
-import type { BODY_KINDS, HAIR_KINDS, GARB_KINDS, EXTRA_KINDS } from "../art/characters/parts";
-import type { ArchetypeId, Facial } from "../art/characters/archetypes";
-import { peopleRevision, seatedView, sittingView, type SitPose } from "../art/characters/people-style";
+import type { View } from '../scenes/kit';
+import { city } from '../world/clock';
+import type { TimeWindow } from '../data/types';
+import type { BODY_KINDS, HAIR_KINDS, GARB_KINDS, EXTRA_KINDS } from '../art/characters/parts';
+import type { ArchetypeId, Facial } from '../art/characters/archetypes';
+import {
+  peopleRevision,
+  seatedView,
+  sittingView,
+  type SitPose,
+} from '../art/characters/people-style';
 
 /** Parts (art/characters/parts.ts lists them once). */
-export type Body = typeof BODY_KINDS[number];
-export type Hair = typeof HAIR_KINDS[number];
-export type Garb = typeof GARB_KINDS[number];
-export type Extra = typeof EXTRA_KINDS[number];
-export type { Facial } from "../art/characters/archetypes";
+export type Body = (typeof BODY_KINDS)[number];
+export type Hair = (typeof HAIR_KINDS)[number];
+export type Garb = (typeof GARB_KINDS)[number];
+export type Extra = (typeof EXTRA_KINDS)[number];
+export type { Facial } from '../art/characters/archetypes';
 /** Pixel-frame animals and old robots. `drone` is drawn with the robot kit's scan drone (`scandrone`); `robogull` is a gull-shaped Registry drone. */
-export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier' | 'crab' | 'robogull';
+export type Critter =
+  'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier' | 'crab' | 'robogull';
 /**
  * What a person does. In place: stand (shifts weight, looks around), sit (on whatever is at `h`),
  * lean (legs crossed, arms folded), smoke, phone, haggle (gestures; pair two facing each other),
@@ -109,9 +133,44 @@ export type Critter = 'cat' | 'pigeon' | 'gull' | 'cleaner' | 'drone' | 'courier
  * wall), charge (cabled to a wall socket), glitch (twitches), blink (the screen face changes mood),
  * slump (the derelict: a flicker, a twitch).
  */
-export type Act = 'stand' | 'walk' | 'run' | 'talk' | 'sit' | 'lie' | 'lean' | 'smoke' | 'phone' | 'haggle' | 'argue' | 'sweep' | 'queue' | 'sleep' | 'dance' | 'vend' | 'steal' | 'scan'
-  | 'read' | 'doze' | 'wait' | 'dig' | 'fly'
-  | 'carry' | 'roll' | 'patrol' | 'serve' | 'crawl' | 'hover' | 'direct' | 'play' | 'weld' | 'scrub' | 'charge' | 'glitch' | 'blink' | 'slump';
+export type Act =
+  | 'stand'
+  | 'walk'
+  | 'run'
+  | 'talk'
+  | 'sit'
+  | 'lie'
+  | 'lean'
+  | 'smoke'
+  | 'phone'
+  | 'haggle'
+  | 'argue'
+  | 'sweep'
+  | 'queue'
+  | 'sleep'
+  | 'dance'
+  | 'vend'
+  | 'steal'
+  | 'scan'
+  | 'read'
+  | 'doze'
+  | 'wait'
+  | 'dig'
+  | 'fly'
+  | 'carry'
+  | 'roll'
+  | 'patrol'
+  | 'serve'
+  | 'crawl'
+  | 'hover'
+  | 'direct'
+  | 'play'
+  | 'weld'
+  | 'scrub'
+  | 'charge'
+  | 'glitch'
+  | 'blink'
+  | 'slump';
 
 export interface Look {
   /** A named look (art/characters/archetypes.ts): fixes its defining parts; the seed varies the rest. */
@@ -122,14 +181,22 @@ export interface Look {
   style?: 'muted' | 'vivid';
   /** Shows visible tech (one or two pieces). Default: the archetype's chance. */
   kitted?: boolean;
-  body?: Body; hair?: Hair; garb?: Garb; extras?: Extra[]; facial?: Facial;
+  body?: Body;
+  hair?: Hair;
+  garb?: Garb;
+  extras?: Extra[];
+  facial?: Facial;
   /** Colours (hex): skin, hair, top, bottom (trousers, skirt), acc (hat, bag, umbrella, visor). */
-  skin?: string; hairCol?: string; top?: string; bottom?: string; acc?: string;
+  skin?: string;
+  hairCol?: string;
+  top?: string;
+  bottom?: string;
+  acc?: string;
 }
 
 export interface Character {
   /** The named gameplay graph used by this character, also the sole talkability marker. */
-  conversation?:string;
+  conversation?: string;
   /** Needed for talk (the engine's target id). */
   id?: string;
   seed?: number;
@@ -183,9 +250,14 @@ export interface Character {
 /** A scan beam: a cone from the lens down to `foot` (world height, default the ground). */
 export interface Beam {
   /** 'r,g,b' (default the Registry's red). */
-  rgb?: string; alpha?: number; foot?: number;
+  rgb?: string;
+  alpha?: number;
+  foot?: number;
   /** Half width of the cone at its foot, and how far (px) and how fast it sweeps; `lean` shifts the foot. */
-  spread?: number; sweep?: number; rate?: number; lean?: number;
+  spread?: number;
+  sweep?: number;
+  rate?: number;
+  lean?: number;
   /** The bright scan line bouncing over the foot. */
   line?: boolean;
 }
@@ -193,7 +265,17 @@ export interface Beam {
 // ---------- behaviour ----------
 
 /** `rev`: the people-style revision the look was dressed for (a switch change re-dresses everyone). */
-export interface Ready { full?: Full; critter?: Critter; bot?: BotFull; key: string; ph: number; seed: number; a: number; b: number; rev: number }
+export interface Ready {
+  full?: Full;
+  critter?: Critter;
+  bot?: BotFull;
+  key: string;
+  ph: number;
+  seed: number;
+  a: number;
+  b: number;
+  rev: number;
+}
 const READY = new WeakMap<Character, Ready>();
 let looks = 0;
 
@@ -201,13 +283,23 @@ function ready(p: Character): Ready {
   let R = READY.get(p);
   if (R && R.rev === peopleRevision()) return R;
   const seed = p.seed ?? actorAppearanceSeed(p) ?? Math.round(p.x * 7 + 3);
-  const crit = typeof p.look === 'string' && p.look in CRITTERS ? p.look as Critter : undefined;
+  const crit = typeof p.look === 'string' && p.look in CRITTERS ? (p.look as Critter) : undefined;
   // a critter drawn with a robot body (the old drone is the kit's scan drone) keeps its critter name, voice and heights
-  const alias = crit ? CRITTERS[crit].bot : undefined, bk = alias?.bot ?? botKind(p.look);
+  const alias = crit ? CRITTERS[crit].bot : undefined,
+    bk = alias?.bot ?? botKind(p.look);
   const [a, b] = Array.isArray(p.range) ? p.range : [p.x, p.x + (p.range ?? 0)];
   R = {
-    critter: crit, bot: bk ? botFrom(seed, bk, alias ?? (typeof p.look === 'object' ? p.look as BotLook : {})) : undefined,
-    full: crit || bk ? undefined : lookFrom(seed, (p.look as Look) ?? {}), key: 'L' + looks++, ph: (seed * 97) % 997, seed, a, b, rev: peopleRevision(),
+    critter: crit,
+    bot: bk
+      ? botFrom(seed, bk, alias ?? (typeof p.look === 'object' ? (p.look as BotLook) : {}))
+      : undefined,
+    full: crit || bk ? undefined : lookFrom(seed, (p.look as Look) ?? {}),
+    key: 'L' + looks++,
+    ph: (seed * 97) % 997,
+    seed,
+    a,
+    b,
+    rev: peopleRevision(),
   };
   READY.set(p, R);
   return R;
@@ -217,17 +309,60 @@ function ready(p: Character): Ready {
 function walkAt(p: Character, R: Ready, t: number, speed: number, pause: number) {
   const len = Math.abs(R.b - R.a);
   if (len < 1) return { x: R.a, face: p.facing ?? 1, moving: false, end: 0, since: Infinity };
-  const run = len / speed, period = 2 * (run + pause), u = (t + R.ph * 3) % period, dir = R.b > R.a ? 1 : -1;
+  const run = len / speed,
+    period = 2 * (run + pause),
+    u = (t + R.ph * 3) % period,
+    dir = R.b > R.a ? 1 : -1;
   if (u < pause) return { x: R.a, face: dir as 1 | -1, moving: false, end: -1, since: u };
-  if (u < pause + run) return { x: R.a + dir * (u - pause) * speed, face: dir as 1 | -1, moving: true, end: 0 };
-  if (u < 2 * pause + run) return { x: R.b, face: -dir as 1 | -1, moving: false, end: 1, since: u - pause - run };
-  return { x: R.b - dir * (u - 2 * pause - run) * speed, face: -dir as 1 | -1, moving: true, end: 0 };
+  if (u < pause + run)
+    return { x: R.a + dir * (u - pause) * speed, face: dir as 1 | -1, moving: true, end: 0 };
+  if (u < 2 * pause + run)
+    return { x: R.b, face: -dir as 1 | -1, moving: false, end: 1, since: u - pause - run };
+  return {
+    x: R.b - dir * (u - 2 * pause - run) * speed,
+    face: -dir as 1 | -1,
+    moving: true,
+    end: 0,
+  };
 }
 
-const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = { human: 0.32, cat: 0.45, pigeon: 0.12, gull: 0.14, cleaner: 0.22, drone: 0.35, courier: 0.55, crab: 0.2, robogull: 0.4 };
-const MOVERS: Act[] = ['walk', 'run', 'sweep', 'steal', 'scan', 'carry', 'roll', 'patrol', 'serve', 'crawl', 'hover', 'fly'];
+const DEFAULT_SPEED: Partial<Record<Critter | 'human', number>> = {
+  human: 0.32,
+  cat: 0.45,
+  pigeon: 0.12,
+  gull: 0.14,
+  cleaner: 0.22,
+  drone: 0.35,
+  courier: 0.55,
+  crab: 0.2,
+  robogull: 0.4,
+};
+const MOVERS: Act[] = [
+  'walk',
+  'run',
+  'sweep',
+  'steal',
+  'scan',
+  'carry',
+  'roll',
+  'patrol',
+  'serve',
+  'crawl',
+  'hover',
+  'fly',
+];
 /** How long a mover waits at each end, by act. */
-const PAUSE: Partial<Record<Act, number>> = { run: 40, sweep: 160, carry: 110, roll: 130, patrol: 170, serve: 150, crawl: 220, hover: 90, fly: 30 };
+const PAUSE: Partial<Record<Act, number>> = {
+  run: 40,
+  sweep: 160,
+  carry: 110,
+  roll: 130,
+  patrol: 170,
+  serve: 150,
+  crawl: 220,
+  hover: 90,
+  fly: 30,
+};
 /** Runners cover ground this many times faster than they walk. */
 const RUN = 2.6;
 /** Frames a walker spends pivoting (legs crossed, still facing the old way) when it turns at an end. */
@@ -238,15 +373,56 @@ const TURN = 8;
  * body's idle) and existing scenes keep them; the editor offers these. Keys: 'human', a critter or a robot kind.
  */
 export const KIT_ACTS: Record<string, readonly Act[]> = {
-  human: ['stand', 'walk', 'run', 'talk', 'sit', 'lie', 'lean', 'smoke', 'phone', 'haggle', 'argue', 'sweep', 'queue', 'sleep', 'dance', 'vend', 'steal', 'read', 'doze', 'wait'],
-  cat: ['stand', 'walk', 'sit'], pigeon: ['stand', 'walk'], gull: ['stand', 'walk', 'fly'], crab: ['stand', 'walk', 'dig'],
-  cleaner: ['stand', 'walk'], drone: ['stand', 'hover', 'scan'], courier: ['stand', 'walk'], robogull: ['stand', 'fly', 'scan'],
-  android: ['stand', 'walk', 'carry'], valet: ['stand', 'walk'], marshal: ['stand', 'walk', 'direct'],
-  servbot: ['stand', 'walk', 'carry', 'vend', 'blink', 'charge', 'glitch'], sweeper: ['stand', 'walk', 'sweep'], busker: ['stand', 'walk', 'play'],
-  waiter: ['stand', 'walk', 'serve'], loader: ['stand', 'walk', 'carry'], porter: ['stand', 'walk'], mech: ['stand', 'patrol'],
-  litterbot: ['stand', 'roll', 'sweep'], deliverybot: ['stand', 'roll'], adbot: ['stand', 'roll', 'blink'],
-  crawler: ['stand', 'crawl', 'weld', 'scrub'], wreck: ['slump', 'glitch'], minidrone: ['stand', 'hover'], cargodrone: ['stand', 'hover'], flyerdrone: ['stand', 'hover'],
-  scandrone: ['stand', 'hover', 'scan'], djbot: ['stand', 'play'],
+  human: [
+    'stand',
+    'walk',
+    'run',
+    'talk',
+    'sit',
+    'lie',
+    'lean',
+    'smoke',
+    'phone',
+    'haggle',
+    'argue',
+    'sweep',
+    'queue',
+    'sleep',
+    'dance',
+    'vend',
+    'steal',
+    'read',
+    'doze',
+    'wait',
+  ],
+  cat: ['stand', 'walk', 'sit'],
+  pigeon: ['stand', 'walk'],
+  gull: ['stand', 'walk', 'fly'],
+  crab: ['stand', 'walk', 'dig'],
+  cleaner: ['stand', 'walk'],
+  drone: ['stand', 'hover', 'scan'],
+  courier: ['stand', 'walk'],
+  robogull: ['stand', 'fly', 'scan'],
+  android: ['stand', 'walk', 'carry'],
+  valet: ['stand', 'walk'],
+  marshal: ['stand', 'walk', 'direct'],
+  servbot: ['stand', 'walk', 'carry', 'vend', 'blink', 'charge', 'glitch'],
+  sweeper: ['stand', 'walk', 'sweep'],
+  busker: ['stand', 'walk', 'play'],
+  waiter: ['stand', 'walk', 'serve'],
+  loader: ['stand', 'walk', 'carry'],
+  porter: ['stand', 'walk'],
+  mech: ['stand', 'patrol'],
+  litterbot: ['stand', 'roll', 'sweep'],
+  deliverybot: ['stand', 'roll'],
+  adbot: ['stand', 'roll', 'blink'],
+  crawler: ['stand', 'crawl', 'weld', 'scrub'],
+  wreck: ['slump', 'glitch'],
+  minidrone: ['stand', 'hover'],
+  cargodrone: ['stand', 'hover'],
+  flyerdrone: ['stand', 'hover'],
+  scandrone: ['stand', 'hover', 'scan'],
+  djbot: ['stand', 'play'],
 };
 /** Which KIT_ACTS row a look belongs to. */
 export function kitFamily(look: Character['look']): string {
@@ -257,15 +433,35 @@ export function kitFamily(look: Character['look']): string {
 
 /** Who is speaking right now: the x of the open speech bubble, or null. Standing people there gesture (talk). */
 let speakerX: number | null = null;
-export function setSpeaker(x: number | null) { speakerX = x; }
+export function setSpeaker(x: number | null) {
+  speakerX = x;
+}
 /** Acts that switch to the talk pose while their person is speaking; movers and sitters keep theirs. */
-const TALKERS: readonly Act[] = ['stand', 'talk', 'smoke', 'phone', 'queue', 'haggle', 'vend', 'lean'];
+const TALKERS: readonly Act[] = [
+  'stand',
+  'talk',
+  'smoke',
+  'phone',
+  'queue',
+  'haggle',
+  'vend',
+  'lean',
+];
 
 /**
  * `shin`: a sitter's lap row (pixels) when a `seat` height sets it; `lift`: world units the sprite is raised
  * (dangling feet on a stool, a body on a cot). Both absent: the kit's own heights.
  */
-export interface Frame { x: number; face: 1 | -1; legs: Legs | string; arms: Arms; bob: number; moving: boolean; shin?: number; lift?: number }
+export interface Frame {
+  x: number;
+  face: 1 | -1;
+  legs: Legs | string;
+  arms: Arms;
+  bob: number;
+  moving: boolean;
+  shin?: number;
+  lift?: number;
+}
 
 /** `drive`: a controller owns the position (p.x) and says whether the body moves; no range walking. */
 function frameOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
@@ -276,77 +472,301 @@ function frameOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
   // sitting on a bench or a seat that faces the camera: the person's own sitView, else the people-style switch
   // (`mixed`: their own pose, changing now and then)
   if (f.legs === 'sit') {
-    const sw = seatedView(), view = p.sitView ?? (sw === 'mixed' ? sittingView(R.seed, t) : sw);
+    const sw = seatedView(),
+      view = p.sitView ?? (sw === 'mixed' ? sittingView(R.seed, t) : sw);
     if (view !== 'side') f.legs = view === 'front' ? 'sitFront' : 'sit3q';
   }
   // a seat height: the lap on h + seat, the shins as long as that allows, then the feet dangle
   if (p.seat !== undefined && p.seat > 0) {
     if (f.legs === 'rest') f.lift = p.seat;
     else if (f.legs === 'sit' || f.legs === 'sitFront' || f.legs === 'sit3q') {
-      const ps = psOf(p), shin = seatShin(BODIES[R.full!.body].leg, p.seat, ps);
-      f.shin = shin; f.lift = p.seat - shin * ps;
+      const ps = psOf(p),
+        shin = seatShin(BODIES[R.full!.body].leg, p.seat, ps);
+      f.shin = shin;
+      f.lift = p.seat - shin * ps;
     }
   }
   return f;
 }
 /** A sitter's lap row (pixels) for a seat `seat` world units up: as close as whole pixels allow, at most the leg length. */
-export const seatShin = (leg: number, seat: number, ps: number) => Math.max(1, Math.min(leg, Math.round(seat / ps)));
+export const seatShin = (leg: number, seat: number, ps: number) =>
+  Math.max(1, Math.min(leg, Math.round(seat / ps)));
 function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
-  const act = p.act ?? 'stand', ph = R.ph, tt = t + ph;
-  let x = p.x, face: 1 | -1 = p.facing ?? 1, moving = drive ?? false, end = 0, since = Infinity;
-  if (drive !== undefined) { /* the controller placed it */ }
-  else if (p.follow) {
+  const act = p.act ?? 'stand',
+    ph = R.ph,
+    tt = t + ph;
+  let x = p.x,
+    face: 1 | -1 = p.facing ?? 1,
+    moving = drive ?? false,
+    end = 0,
+    since = Infinity;
+  if (drive !== undefined) {
+    /* the controller placed it */
+  } else if (p.follow) {
     const F = frameOf(p.follow, ready(p.follow), t);
-    x = F.x - F.face * (p.gap ?? 18); face = F.face; moving = F.moving;
+    x = F.x - F.face * (p.gap ?? 18);
+    face = F.face;
+    moving = F.moving;
   } else if (MOVERS.includes(act) && R.a !== R.b) {
-    const sp = (p.speed ?? (R.critter ? DEFAULT_SPEED[R.critter] : R.bot ? BOT[R.bot.kind].speed : DEFAULT_SPEED.human) ?? 0.3) * (act === 'run' ? RUN : 1);
-    const w = act === 'steal' ? stealAt(R, t, sp) : walkAt(p, R, t, sp, PAUSE[act] ?? (R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90)));
-    ({ x, face, moving, end } = w); since = 'since' in w && typeof w.since === 'number' ? w.since : Infinity;
+    const sp =
+      (p.speed ??
+        (R.critter
+          ? DEFAULT_SPEED[R.critter]
+          : R.bot
+            ? BOT[R.bot.kind].speed
+            : DEFAULT_SPEED.human) ??
+        0.3) * (act === 'run' ? RUN : 1);
+    const w =
+      act === 'steal'
+        ? stealAt(R, t, sp)
+        : walkAt(
+            p,
+            R,
+            t,
+            sp,
+            PAUSE[act] ?? (R.critter === 'pigeon' || R.critter === 'gull' ? 200 : 70 + (ph % 90)),
+          );
+    ({ x, face, moving, end } = w);
+    since = 'since' in w && typeof w.since === 'number' ? w.since : Infinity;
   }
   if (R.bot) return botFrame(p, R, t, x, face, moving, end);
-  const step = Math.floor(tt / (act === 'steal' && moving && face !== (R.b > R.a ? 1 : -1) ? 5 : 9)) % 2 ? 'stepA' : 'stepB';
+  const step =
+    Math.floor(tt / (act === 'steal' && moving && face !== (R.b > R.a ? 1 : -1) ? 5 : 9)) % 2
+      ? 'stepA'
+      : 'stepB';
   if (R.critter) {
     const c = R.critter;
-    if (c === 'cat') return { x, face, legs: moving ? (Math.floor(tt / 8) % 2 ? 'walkA' : 'walkB') : tt % 500 < 60 ? 'sitB' : 'sitA', arms: 'down', bob: 0, moving };
-    if ((c === 'gull' || c === 'robogull') && (act === 'fly' || act === 'scan' || c === 'robogull' && moving)) return { x, face, legs: Math.floor(tt / 7) % 2 ? 'flyA' : 'flyB', arms: 'down', bob: 0, moving };
-    if (c === 'crab') return { x, face, legs: moving ? (Math.floor(tt / 5) % 2 ? 'walkA' : 'walkB') : act === 'dig' ? (Math.floor(tt / 12) % 2 ? 'digA' : 'digB') : 'standA', arms: 'down', bob: 0, moving };
-    if (c === 'pigeon' || c === 'gull' || c === 'robogull') return { x, face: moving ? face : (Math.floor(tt / 170) % 2 ? 1 : -1), legs: moving ? (Math.floor(tt / 6) % 2 ? 'walkA' : 'walkB') : tt % 90 < 25 ? 'standB' : 'standA', arms: 'down', bob: 0, moving };
+    if (c === 'cat')
+      return {
+        x,
+        face,
+        legs: moving
+          ? Math.floor(tt / 8) % 2
+            ? 'walkA'
+            : 'walkB'
+          : tt % 500 < 60
+            ? 'sitB'
+            : 'sitA',
+        arms: 'down',
+        bob: 0,
+        moving,
+      };
+    if (
+      (c === 'gull' || c === 'robogull') &&
+      (act === 'fly' || act === 'scan' || (c === 'robogull' && moving))
+    )
+      return {
+        x,
+        face,
+        legs: Math.floor(tt / 7) % 2 ? 'flyA' : 'flyB',
+        arms: 'down',
+        bob: 0,
+        moving,
+      };
+    if (c === 'crab')
+      return {
+        x,
+        face,
+        legs: moving
+          ? Math.floor(tt / 5) % 2
+            ? 'walkA'
+            : 'walkB'
+          : act === 'dig'
+            ? Math.floor(tt / 12) % 2
+              ? 'digA'
+              : 'digB'
+            : 'standA',
+        arms: 'down',
+        bob: 0,
+        moving,
+      };
+    if (c === 'pigeon' || c === 'gull' || c === 'robogull')
+      return {
+        x,
+        face: moving ? face : Math.floor(tt / 170) % 2 ? 1 : -1,
+        legs: moving
+          ? Math.floor(tt / 6) % 2
+            ? 'walkA'
+            : 'walkB'
+          : tt % 90 < 25
+            ? 'standB'
+            : 'standA',
+        arms: 'down',
+        bob: 0,
+        moving,
+      };
     const spin = Math.floor(tt / 8) % 2 ? 'walkA' : 'walkB';
-    return { x, face, legs: c === 'courier' && !moving ? 'walkA' : spin, arms: 'down', bob: 0, moving };
+    return {
+      x,
+      face,
+      legs: c === 'courier' && !moving ? 'walkA' : spin,
+      arms: 'down',
+      bob: 0,
+      moving,
+    };
   }
   const slow = (n: number) => Math.floor(tt / n);
   const shift: Legs = tt % 420 < 210 ? 'stand' : 'shift';
   // pivot at the end of a walk: a few frames with crossed legs, still facing the way they came
-  if ((act === 'walk' || act === 'run') && !moving && since < TURN) return { x, face: -face as 1 | -1, legs: 'cross', arms: 'down', bob: 0, moving };
-  if (speakerX !== null && Math.abs(x - speakerX) < 3 && TALKERS.includes(act)) return talkFrame(x, face, tt, shift, moving);
+  if ((act === 'walk' || act === 'run') && !moving && since < TURN)
+    return { x, face: -face as 1 | -1, legs: 'cross', arms: 'down', bob: 0, moving };
+  if (speakerX !== null && Math.abs(x - speakerX) < 3 && TALKERS.includes(act))
+    return talkFrame(x, face, tt, shift, moving);
   switch (act) {
-    case 'walk': return { x, face, legs: moving ? step : shift, arms: 'down', bob: moving && step === 'stepA' ? 1 : 0, moving };
-    case 'run': { const k = slow(4) % 2; return { x, face, legs: moving ? (k ? 'wide' : 'stepB') : shift, arms: moving ? (k ? 'out' : 'hip') : 'down', bob: moving && k ? 1 : 0, moving }; }
-    case 'talk': return talkFrame(x, face, tt, shift, moving);
-    case 'sweep': return { x, face, legs: moving ? step : 'stand', arms: slow(12) % 2 ? 'broomA' : 'broomB', bob: 0, moving };
-    case 'steal': return { x, face, legs: moving ? step : 'stand', arms: !moving && end === 1 ? (slow(14) % 2 ? 'reach' : 'out') : 'down', bob: 0, moving };
-    case 'sit': { const u = tt % 360; return { x, face, legs: 'sit', arms: R.full?.extras.includes('phone') ? 'phone' : u < 70 ? 'raise' : u < 110 ? 'out' : 'down', bob: 0, moving }; }
-    case 'lean': return { x, face, legs: 'cross', arms: 'fold', bob: 0, moving };
-    case 'smoke': { const u = tt % 280; return { x, face, legs: shift, arms: u < 50 ? 'raise' : 'hip', bob: 0, moving }; }
-    case 'phone': return { x, face, legs: shift, arms: 'phone', bob: 0, moving };
-    case 'haggle': return { x, face, legs: shift, arms: (['out', 'down', 'point', 'out', 'hip', 'down'] as Arms[])[slow(34) % 6], bob: 0, moving };
-    case 'argue': { const k = slow(13); return { x, face, legs: k % 5 === 0 ? 'wide' : 'stand', arms: (['point', 'out', 'up', 'out', 'point', 'hip'] as Arms[])[k % 6], bob: k % 7 === 0 ? 1 : 0, moving }; }
-    case 'queue': return { x, face, legs: shift, arms: R.full?.extras.includes('phone') ? 'phone' : slow(300) % 2 ? 'fold' : 'down', bob: 0, moving };
-    case 'sleep': return { x, face, legs: 'lie', arms: 'down', bob: 0, moving };
+    case 'walk':
+      return {
+        x,
+        face,
+        legs: moving ? step : shift,
+        arms: 'down',
+        bob: moving && step === 'stepA' ? 1 : 0,
+        moving,
+      };
+    case 'run': {
+      const k = slow(4) % 2;
+      return {
+        x,
+        face,
+        legs: moving ? (k ? 'wide' : 'stepB') : shift,
+        arms: moving ? (k ? 'out' : 'hip') : 'down',
+        bob: moving && k ? 1 : 0,
+        moving,
+      };
+    }
+    case 'talk':
+      return talkFrame(x, face, tt, shift, moving);
+    case 'sweep':
+      return {
+        x,
+        face,
+        legs: moving ? step : 'stand',
+        arms: slow(12) % 2 ? 'broomA' : 'broomB',
+        bob: 0,
+        moving,
+      };
+    case 'steal':
+      return {
+        x,
+        face,
+        legs: moving ? step : 'stand',
+        arms: !moving && end === 1 ? (slow(14) % 2 ? 'reach' : 'out') : 'down',
+        bob: 0,
+        moving,
+      };
+    case 'sit': {
+      const u = tt % 360;
+      return {
+        x,
+        face,
+        legs: 'sit',
+        arms: R.full?.extras.includes('phone')
+          ? 'phone'
+          : u < 70
+            ? 'raise'
+            : u < 110
+              ? 'out'
+              : 'down',
+        bob: 0,
+        moving,
+      };
+    }
+    case 'lean':
+      return { x, face, legs: 'cross', arms: 'fold', bob: 0, moving };
+    case 'smoke': {
+      const u = tt % 280;
+      return { x, face, legs: shift, arms: u < 50 ? 'raise' : 'hip', bob: 0, moving };
+    }
+    case 'phone':
+      return { x, face, legs: shift, arms: 'phone', bob: 0, moving };
+    case 'haggle':
+      return {
+        x,
+        face,
+        legs: shift,
+        arms: (['out', 'down', 'point', 'out', 'hip', 'down'] as Arms[])[slow(34) % 6],
+        bob: 0,
+        moving,
+      };
+    case 'argue': {
+      const k = slow(13);
+      return {
+        x,
+        face,
+        legs: k % 5 === 0 ? 'wide' : 'stand',
+        arms: (['point', 'out', 'up', 'out', 'point', 'hip'] as Arms[])[k % 6],
+        bob: k % 7 === 0 ? 1 : 0,
+        moving,
+      };
+    }
+    case 'queue':
+      return {
+        x,
+        face,
+        legs: shift,
+        arms: R.full?.extras.includes('phone') ? 'phone' : slow(300) % 2 ? 'fold' : 'down',
+        bob: 0,
+        moving,
+      };
+    case 'sleep':
+      return { x, face, legs: 'lie', arms: 'down', bob: 0, moving };
     // on the back, head toward `facing`; awake, they blink now and then and fold their hands for a while
-    case 'lie': return { x, face, legs: 'rest', arms: p.asleep || tt % 260 < 8 ? 'nod' : slow(600) % 2 ? 'fold' : 'down', bob: 0, moving };
-    case 'dance': { const k = slow(16); return { x, face: k % 8 < 4 ? face : (-face as 1 | -1), legs: (['wide', 'stepA', 'wide', 'stepB'] as Legs[])[k % 4], arms: (['up', 'out', 'up', 'point'] as Arms[])[k % 4], bob: k % 2, moving }; }
-    case 'vend': { const u = tt % 420; return { x, face, legs: 'stand', arms: u < 60 ? 'out' : u < 120 ? 'down' : u < 170 ? 'hip' : 'down', bob: 0, moving }; }
-    case 'read': return { x, face, legs: shift, arms: 'paper', bob: 0, moving };
-    case 'doze': return { x, face, legs: 'stand', arms: 'nod', bob: Math.sin(tt * 0.02) > 0.6 ? -1 : 0, moving };
+    case 'lie':
+      return {
+        x,
+        face,
+        legs: 'rest',
+        arms: p.asleep || tt % 260 < 8 ? 'nod' : slow(600) % 2 ? 'fold' : 'down',
+        bob: 0,
+        moving,
+      };
+    case 'dance': {
+      const k = slow(16);
+      return {
+        x,
+        face: k % 8 < 4 ? face : (-face as 1 | -1),
+        legs: (['wide', 'stepA', 'wide', 'stepB'] as Legs[])[k % 4],
+        arms: (['up', 'out', 'up', 'point'] as Arms[])[k % 4],
+        bob: k % 2,
+        moving,
+      };
+    }
+    case 'vend': {
+      const u = tt % 420;
+      return {
+        x,
+        face,
+        legs: 'stand',
+        arms: u < 60 ? 'out' : u < 120 ? 'down' : u < 170 ? 'hip' : 'down',
+        bob: 0,
+        moving,
+      };
+    }
+    case 'read':
+      return { x, face, legs: shift, arms: 'paper', bob: 0, moving };
+    case 'doze':
+      return {
+        x,
+        face,
+        legs: 'stand',
+        arms: 'nod',
+        bob: Math.sin(tt * 0.02) > 0.6 ? -1 : 0,
+        moving,
+      };
     case 'wait': {
       // facing the camera: weight from foot to foot, arms folded for a while, a glance aside now and then
       const u = tt % 900;
-      return { x, face: u > 820 ? -face as 1 | -1 : face, legs: u > 700 ? 'front3q' : 'front', arms: R.full?.extras.includes('phone') ? 'phone' : slow(330) % 2 ? 'fold' : 'down', bob: 0, moving };
+      return {
+        x,
+        face: u > 820 ? (-face as 1 | -1) : face,
+        legs: u > 700 ? 'front3q' : 'front',
+        arms: R.full?.extras.includes('phone') ? 'phone' : slow(330) % 2 ? 'fold' : 'down',
+        bob: 0,
+        moving,
+      };
     }
     default: {
       // stand: shifts weight, and now and then looks the other way
-      const look = tt % 700 > 640 ? -face as 1 | -1 : face;
+      const look = tt % 700 > 640 ? (-face as 1 | -1) : face;
       return { x, face: look, legs: shift, arms: 'down', bob: 0, moving };
     }
   }
@@ -355,76 +775,199 @@ function poseOf(p: Character, R: Ready, t: number, drive?: boolean): Frame {
 /** Talking: slow hand gestures and a small nod, weight shifting as usual. */
 function talkFrame(x: number, face: 1 | -1, tt: number, shift: Legs, moving: boolean): Frame {
   const k = Math.floor(tt / 26);
-  return { x, face, legs: shift, arms: (['out', 'down', 'point', 'down', 'hip', 'out'] as Arms[])[k % 6], bob: tt % 48 < 6 ? 1 : 0, moving };
+  return {
+    x,
+    face,
+    legs: shift,
+    arms: (['out', 'down', 'point', 'down', 'hip', 'out'] as Arms[])[k % 6],
+    bob: tt % 48 < 6 ? 1 : 0,
+    moving,
+  };
 }
 
 /** A robot's pose (legs, wheels, rotors) and state (arms, load, screen face) for its job. */
-function botFrame(p: Character, R: Ready, t: number, x: number, face: 1 | -1, moving: boolean, end: number): Frame {
-  const B = R.bot!, S = BOT[B.kind], act = p.act ?? 'stand', tt = t + R.ph, slow = (n: number) => Math.floor(tt / n) % 2;
-  const legged = S.shape === 'android' || S.shape === 'loader' || S.shape === 'mech' || (S.shape === 'box' && B.v === 2);
+function botFrame(
+  p: Character,
+  R: Ready,
+  t: number,
+  x: number,
+  face: 1 | -1,
+  moving: boolean,
+  end: number,
+): Frame {
+  const B = R.bot!,
+    S = BOT[B.kind],
+    act = p.act ?? 'stand',
+    tt = t + R.ph,
+    slow = (n: number) => Math.floor(tt / n) % 2;
+  const legged =
+    S.shape === 'android' ||
+    S.shape === 'loader' ||
+    S.shape === 'mech' ||
+    (S.shape === 'box' && B.v === 2);
   let pose = 'stand';
   if (S.fly) pose = slow(2) ? 'p0' : 'p1';
-  else if (S.shape === 'crawler') pose = moving || act === 'scrub' ? (slow(10) ? 'cA' : 'cB') : 'cA';
+  else if (S.shape === 'crawler')
+    pose = moving || act === 'scrub' ? (slow(10) ? 'cA' : 'cB') : 'cA';
   else if (S.shape === 'wreck') pose = tt % 520 < 40 ? 'twitch' : 'slump';
-  else if (moving) pose = legged ? (slow(S.shape === 'mech' ? 16 : S.shape === 'loader' ? 12 : 9) ? 'stepA' : 'stepB') : slow(5) ? 'r0' : 'r1';
+  else if (moving)
+    pose = legged
+      ? slow(S.shape === 'mech' ? 16 : S.shape === 'loader' ? 12 : 9)
+        ? 'stepA'
+        : 'stepB'
+      : slow(5)
+        ? 'r0'
+        : 'r1';
   const loaded = act !== 'carry' || (moving ? face === (R.b > R.a ? 1 : -1) : end !== 1);
   const fc = faceAt(B, act, tt);
   let st = '';
   switch (S.shape) {
     case 'android':
-      st = B.kind === 'valet' ? (B.v === 0 ? 'bags' : 'umb') : B.kind === 'marshal' ? (act === 'direct' ? (slow(110) ? 'stop' : 'go') : 'down') : (act === 'walk' || act === 'carry') && loaded ? 'carry' : 'down';
+      st =
+        B.kind === 'valet'
+          ? B.v === 0
+            ? 'bags'
+            : 'umb'
+          : B.kind === 'marshal'
+            ? act === 'direct'
+              ? slow(110)
+                ? 'stop'
+                : 'go'
+              : 'down'
+            : (act === 'walk' || act === 'carry') && loaded
+              ? 'carry'
+              : 'down';
       break;
     case 'box':
-      st = (B.kind === 'sweeper' ? (slow(12) ? 'broomA' : 'broomB') : B.kind === 'busker' ? (act === 'play' && slow(14) ? 'playB' : 'playA') : B.kind === 'djbot' ? (act === 'play' ? (slow(8) ? 'djA' : 'djB') : 'down')
-        : act === 'carry' ? (loaded ? 'box' : 'down') : act === 'vend' || act === 'blink' ? (tt % 420 < 60 ? 'out' : 'down') : 'down') + '|' + fc;
+      st =
+        (B.kind === 'sweeper'
+          ? slow(12)
+            ? 'broomA'
+            : 'broomB'
+          : B.kind === 'busker'
+            ? act === 'play' && slow(14)
+              ? 'playB'
+              : 'playA'
+            : B.kind === 'djbot'
+              ? act === 'play'
+                ? slow(8)
+                  ? 'djA'
+                  : 'djB'
+                : 'down'
+              : act === 'carry'
+                ? loaded
+                  ? 'box'
+                  : 'down'
+                : act === 'vend' || act === 'blink'
+                  ? tt % 420 < 60
+                    ? 'out'
+                    : 'down'
+                  : 'down') +
+        '|' +
+        fc;
       break;
-    case 'waiter': st = (moving || act !== 'serve' ? 'tray' : 'offer') + '|' + fc; break;
-    case 'ad': st = fc; break;
-    case 'loader': st = act === 'carry' && loaded ? 'load' : 'empty'; break;
-    case 'litter': st = moving ? 'tuck' : act === 'roll' || act === 'sweep' ? (tt % 120 < 50 ? 'reach' : 'lift') : 'tuck'; break;
-    case 'crawler': st = act === 'weld' ? 'weld' : act === 'scrub' ? (slow(8) ? 'scrubA' : 'scrubB') : 'none'; break;
-    case 'wreck': st = tt % 300 < 24 ? (slow(3) ? 'eyes' : 'off') : 'crack'; break;
+    case 'waiter':
+      st = (moving || act !== 'serve' ? 'tray' : 'offer') + '|' + fc;
+      break;
+    case 'ad':
+      st = fc;
+      break;
+    case 'loader':
+      st = act === 'carry' && loaded ? 'load' : 'empty';
+      break;
+    case 'litter':
+      st = moving
+        ? 'tuck'
+        : act === 'roll' || act === 'sweep'
+          ? tt % 120 < 50
+            ? 'reach'
+            : 'lift'
+          : 'tuck';
+      break;
+    case 'crawler':
+      st = act === 'weld' ? 'weld' : act === 'scrub' ? (slow(8) ? 'scrubA' : 'scrubB') : 'none';
+      break;
+    case 'wreck':
+      st = tt % 300 < 24 ? (slow(3) ? 'eyes' : 'off') : 'crack';
+      break;
   }
-  const bob = S.fly ? Math.round(Math.sin(tt * 0.05) * 2) : moving && pose === 'stepA' && S.shape === 'android' ? 1 : 0;
+  const bob = S.fly
+    ? Math.round(Math.sin(tt * 0.05) * 2)
+    : moving && pose === 'stepA' && S.shape === 'android'
+      ? 1
+      : 0;
   return { x, face, legs: pose, arms: st as Arms, bob, moving };
 }
 
 /** The kid's loop: sneak from a to b (the fruit), reach, then run back fast. */
 function stealAt(R: Ready, t: number, sp: number) {
-  const len = Math.abs(R.b - R.a), sneak = len / (sp * 0.6), grab = 70, run = len / (sp * 3), wait = 200;
-  const u = (t + R.ph) % (sneak + grab + run + wait), dir = R.b > R.a ? 1 : -1;
-  if (u < sneak) return { x: R.a + dir * (u / sneak) * len, face: dir as 1 | -1, moving: true, end: 0 };
+  const len = Math.abs(R.b - R.a),
+    sneak = len / (sp * 0.6),
+    grab = 70,
+    run = len / (sp * 3),
+    wait = 200;
+  const u = (t + R.ph) % (sneak + grab + run + wait),
+    dir = R.b > R.a ? 1 : -1;
+  if (u < sneak)
+    return { x: R.a + dir * (u / sneak) * len, face: dir as 1 | -1, moving: true, end: 0 };
   if (u < sneak + grab) return { x: R.b, face: dir as 1 | -1, moving: false, end: 1 };
-  if (u < sneak + grab + run) return { x: R.b - dir * ((u - sneak - grab) / run) * len, face: -dir as 1 | -1, moving: true, end: 0 };
+  if (u < sneak + grab + run)
+    return {
+      x: R.b - dir * ((u - sneak - grab) / run) * len,
+      face: -dir as 1 | -1,
+      moving: true,
+      end: 0,
+    };
   return { x: R.a, face: -dir as 1 | -1, moving: false, end: -1 };
 }
 
 /** Is this person here now (their `when` on the city clock)? */
 export const isHere = (p: Character) => !p.when || city.within(p.when);
 
-export type PreparedCharacter = { visible: false; character: Character } | {
-  visible: true; character: Character; ready: Ready; pixelSize: number; frame: Frame; height: number;
-};
+export type PreparedCharacter =
+  | { visible: false; character: Character }
+  | {
+      visible: true;
+      character: Character;
+      ready: Ready;
+      pixelSize: number;
+      frame: Frame;
+      height: number;
+    };
 
 /**
  * Resolve scheduling and pose once for an artwork binding; keep the original bake key. `moving`: a controller places
  * the body itself (a people flow): it stands at `override.x`, stepping when true (as `drawDriven`).
  */
-export function prepareCharacter(p: Character, t: number, override?: Partial<Pick<Character, 'act' | 'facing' | 'x' | 'h' | 'seat'>>, moving?: boolean): PreparedCharacter {
+export function prepareCharacter(
+  p: Character,
+  t: number,
+  override?: Partial<Pick<Character, 'act' | 'facing' | 'x' | 'h' | 'seat'>>,
+  moving?: boolean,
+): PreparedCharacter {
   const posed = override ? { ...p, ...override } : p;
   // Following affects pose evaluation, not appearance; omit that object link from the snapshot.
   const character = JSON.parse(JSON.stringify({ ...posed, follow: undefined })) as Character;
   if (!isHere(p)) return { visible: false, character };
-  const R = ready(p), f = frameOf(posed, R, t, moving);
-  const defaultHeight = R.critter ? CRITTERS[R.critter].h ?? 0 : 0;
-  return { visible: true, character, ready: JSON.parse(JSON.stringify(R)) as Ready,
-    pixelSize: psOf(p), frame: f, height: characterHeight(p) + ((posed.h ?? defaultHeight) - (p.h ?? defaultHeight)) };
+  const R = ready(p),
+    f = frameOf(posed, R, t, moving);
+  const defaultHeight = R.critter ? (CRITTERS[R.critter].h ?? 0) : 0;
+  return {
+    visible: true,
+    character,
+    ready: JSON.parse(JSON.stringify(R)) as Ready,
+    pixelSize: psOf(p),
+    frame: f,
+    height: characterHeight(p) + ((posed.h ?? defaultHeight) - (p.h ?? defaultHeight)),
+  };
 }
 
 /** One person, as they are at time v.t (nobody, outside their `when`). */
 export function drawCharacter(x: CanvasRenderingContext2D, v: View, p: Character) {
   if (!isHere(p)) return;
-  const R = ready(p), ps = psOf(p), f = frameOf(p, R, v.t);
+  const R = ready(p),
+    ps = psOf(p),
+    f = frameOf(p, R, v.t);
   drawCharacterFrame(x, v, p, R, ps, f, characterHeight(p));
 }
 
@@ -434,14 +977,35 @@ export function drawCharacter(x: CanvasRenderingContext2D, v: View, p: Character
  * height). Everything else (how it looks, steps, flaps, scans) is the kit's. Keep `p` itself stable (a
  * module constant): its appearance is baked once per Character object.
  */
-export interface Drive extends Partial<Pick<Character, 'x' | 'h' | 'facing' | 'act' | 'light' | 'beam'>> { moving?: boolean; air?: number }
+export interface Drive extends Partial<
+  Pick<Character, 'x' | 'h' | 'facing' | 'act' | 'light' | 'beam'>
+> {
+  moving?: boolean;
+  air?: number;
+}
 /** Draw a stable kit body where a controller puts it (see Drive). */
 export function drawDriven(x: CanvasRenderingContext2D, v: View, p: Character, d: Drive) {
   if (!isHere(p)) return;
-  const R = ready(p), fly = R.bot && !R.critter ? BOT[R.bot.kind].fly ?? 0 : 0, { moving, air, ...rest } = d;
-  const posed: Character = { ...p, ...rest, ...(air !== undefined ? { h: air - fly } : {}), range: undefined, follow: undefined };
+  const R = ready(p),
+    fly = R.bot && !R.critter ? (BOT[R.bot.kind].fly ?? 0) : 0,
+    { moving, air, ...rest } = d;
+  const posed: Character = {
+    ...p,
+    ...rest,
+    ...(air !== undefined ? { h: air - fly } : {}),
+    range: undefined,
+    follow: undefined,
+  };
   const f = frameOf(posed, R, v.t, moving ?? false);
-  drawCharacterFrame(x, v, posed, R, psOf(p), f, characterHeight(p) + ((posed.h ?? 0) - (p.h ?? 0)));
+  drawCharacterFrame(
+    x,
+    v,
+    posed,
+    R,
+    psOf(p),
+    f,
+    characterHeight(p) + ((posed.h ?? 0) - (p.h ?? 0)),
+  );
 }
 
 /** Draw a list of people, back to front in the order given. */
@@ -450,47 +1014,120 @@ export function drawCharacters(x: CanvasRenderingContext2D, v: View, list: reado
 }
 
 /** Where a person is now (walkers move). */
-export function characterX(p: Character, t: number) { if(actorPresentation(p))return p.x;return frameOf(p, ready(p), t).x; }
+export function characterX(p: Character, t: number) {
+  if (actorPresentation(p)) return p.x;
+  return frameOf(p, ready(p), t).x;
+}
 
 /** How tall a person is drawn, in world units (for prompts and bubbles). */
 export function characterHeight(p: Character) {
-  const recipe=actorPresentation(p);if(recipe)return(recipe.kind==='streetSprite'?streetSpriteHeadHeight(recipe):(recipe.sit?12:14)*(p.ps??3))+(p.h??0);
-  const R = ready(p), ps = psOf(p);
-  if (R.bot) { const S = BOT[R.bot.kind]; return S.top * ps + (R.critter ? p.h ?? CRITTERS[R.critter].h ?? 0 : (p.h ?? 0) + (S.fly ?? 0)); }
-  if (R.critter) return CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps + (p.h ?? CRITTERS[R.critter].h ?? 0);
-  const B = BODIES[R.full!.body], seat = p.seat !== undefined && p.seat > 0 ? p.seat : undefined;
+  const recipe = actorPresentation(p);
+  if (recipe)
+    return (
+      (recipe.kind === 'streetSprite'
+        ? streetSpriteHeadHeight(recipe)
+        : (recipe.sit ? 12 : 14) * (p.ps ?? 3)) + (p.h ?? 0)
+    );
+  const R = ready(p),
+    ps = psOf(p);
+  if (R.bot) {
+    const S = BOT[R.bot.kind];
+    return (
+      S.top * ps + (R.critter ? (p.h ?? CRITTERS[R.critter].h ?? 0) : (p.h ?? 0) + (S.fly ?? 0))
+    );
+  }
+  if (R.critter)
+    return (
+      CRITTERS[R.critter].frames[Object.keys(CRITTERS[R.critter].frames)[0]].length * ps +
+      (p.h ?? CRITTERS[R.critter].h ?? 0)
+    );
+  const B = BODIES[R.full!.body],
+    seat = p.seat !== undefined && p.seat > 0 ? p.seat : undefined;
   if (p.act === 'lie') return 5 * ps + (seat ?? 0) + (p.h ?? 0);
-  if (seat !== undefined && (p.act === 'sit' || p.seated)) return seat + (B.torso + B.head + 1) * ps + (p.h ?? 0);
+  if (seat !== undefined && (p.act === 'sit' || p.seated))
+    return seat + (B.torso + B.head + 1) * ps + (p.h ?? 0);
   return (B.leg + B.torso + B.head + 1) * ps + (p.h ?? 0);
 }
 
-const legacyRobotKinds=new Set(botSource.voices.filter(v=>v.id.startsWith('legacy.')).map(v=>v.id.slice(7)));
+const legacyRobotKinds = new Set(
+  botSource.voices.filter((v) => v.id.startsWith('legacy.')).map((v) => v.id.slice(7)),
+);
 /** Appearance identity only; dialogue text and progress belong to the shared gameplay source. */
-export function botProfile(p:Character):{voice:string;serial?:number}|null {
- const R=ready(p);return R.critter&&legacyRobotKinds.has(R.critter)?{voice:'legacy.'+R.critter}:R.bot?{voice:'robot.'+R.bot.kind,serial:100+((R.seed*37)%900)}:null;
+export function botProfile(p: Character): { voice: string; serial?: number } | null {
+  const R = ready(p);
+  return R.critter && legacyRobotKinds.has(R.critter)
+    ? { voice: 'legacy.' + R.critter }
+    : R.bot
+      ? { voice: 'robot.' + R.bot.kind, serial: 100 + ((R.seed * 37) % 900) }
+      : null;
 }
-export function isBot(p:Character){return botProfile(p)!==null;}
-
-
+export function isBot(p: Character) {
+  return botProfile(p) !== null;
+}
 
 /** The jobs a robot in a crowd does, each with its act. */
 const CROWD_JOBS: [Bot, Act][] = [
-  ['android', 'walk'], ['android', 'walk'], ['litterbot', 'roll'], ['deliverybot', 'roll'], ['loader', 'carry'], ['sweeper', 'sweep'],
-  ['adbot', 'roll'], ['minidrone', 'hover'], ['servbot', 'charge'], ['mech', 'patrol'], ['marshal', 'direct'], ['flyerdrone', 'hover'], ['deliverybot', 'roll'],
+  ['android', 'walk'],
+  ['android', 'walk'],
+  ['litterbot', 'roll'],
+  ['deliverybot', 'roll'],
+  ['loader', 'carry'],
+  ['sweeper', 'sweep'],
+  ['adbot', 'roll'],
+  ['minidrone', 'hover'],
+  ['servbot', 'charge'],
+  ['mech', 'patrol'],
+  ['marshal', 'direct'],
+  ['flyerdrone', 'hover'],
+  ['deliverybot', 'roll'],
 ];
 
 /**
  * A crowd of distinct ambient people between `from` and `to`: walkers, a few standing about, and
  * (`bots`, default 0.2) about one in five a robot doing its job. For back bands pass { ps: 2, dim: .5, parallax: .9 }.
  */
-export function crowd(seed: number, n: number, from: number, to: number, opt: { ps?: number; dim?: number; parallax?: number; h?: number; acts?: Act[]; bots?: number } = {}): Character[] {
-  const r = rnd(seed), acts = opt.acts ?? ['walk', 'walk', 'walk', 'stand', 'phone', 'walk', 'smoke'], share = opt.bots ?? 0.2;
+export function crowd(
+  seed: number,
+  n: number,
+  from: number,
+  to: number,
+  opt: {
+    ps?: number;
+    dim?: number;
+    parallax?: number;
+    h?: number;
+    acts?: Act[];
+    bots?: number;
+  } = {},
+): Character[] {
+  const r = rnd(seed),
+    acts = opt.acts ?? ['walk', 'walk', 'walk', 'stand', 'phone', 'walk', 'smoke'],
+    share = opt.bots ?? 0.2;
   // a foreground band gets no drones; an all-walking crowd gets only robots that move
-  const front = (opt.parallax ?? 1) > 1 || (opt.h ?? 0) < 0, onlyWalk = acts.every((a) => a === 'walk');
-  const jobs = CROWD_JOBS.filter(([k, a]) => !(front && BOT[k].fly) && !(onlyWalk && !MOVERS.includes(a)));
+  const front = (opt.parallax ?? 1) > 1 || (opt.h ?? 0) < 0,
+    onlyWalk = acts.every((a) => a === 'walk');
+  const jobs = CROWD_JOBS.filter(
+    ([k, a]) => !(front && BOT[k].fly) && !(onlyWalk && !MOVERS.includes(a)),
+  );
   return Array.from({ length: n }, (_, i) => {
-    const x = from + r() * (to - from), human = pick(r, acts), job = pick(r, jobs), bot = r() < share && !!job;
-    const act = bot ? job[1] : human, len = (r() < 0.5 ? -1 : 1) * (120 + r() * 300) * (act === 'patrol' || act === 'sweep' ? 0.5 : 1);
-    return { seed: seed * 31 + i * 7, look: bot ? job[0] : undefined, x, act, range: MOVERS.includes(act) ? len : 0, facing: r() < 0.5 ? 1 : -1, ps: opt.ps, dim: opt.dim, parallax: opt.parallax, h: opt.h };
+    const x = from + r() * (to - from),
+      human = pick(r, acts),
+      job = pick(r, jobs),
+      bot = r() < share && !!job;
+    const act = bot ? job[1] : human,
+      len =
+        (r() < 0.5 ? -1 : 1) * (120 + r() * 300) * (act === 'patrol' || act === 'sweep' ? 0.5 : 1);
+    return {
+      seed: seed * 31 + i * 7,
+      look: bot ? job[0] : undefined,
+      x,
+      act,
+      range: MOVERS.includes(act) ? len : 0,
+      facing: r() < 0.5 ? 1 : -1,
+      ps: opt.ps,
+      dim: opt.dim,
+      parallax: opt.parallax,
+      h: opt.h,
+    };
   });
 }

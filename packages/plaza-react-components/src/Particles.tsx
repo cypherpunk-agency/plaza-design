@@ -32,11 +32,7 @@ export function Particles({ count = 30, className = '' }: ParticlesProps) {
   return (
     <div className={`plaza-particles ${className}`.trim()}>
       {particles.map((p) => (
-        <div
-          key={p.id}
-          className={p.className}
-          style={p.style}
-        />
+        <div key={p.id} className={p.className} style={p.style} />
       ))}
     </div>
   );

@@ -11,7 +11,9 @@ export function StaticLandingPage() {
     <>
       {/* CRT boot, the first thing every visitor sees (game/boot.ts) */}
       <div id="crt-boot" aria-hidden="true">
-        <div className="crt-screen"><pre className="crt-text"></pre></div>
+        <div className="crt-screen">
+          <pre className="crt-text"></pre>
+        </div>
       </div>
 
       {/* City scene background (cityScene.ts) */}
@@ -32,7 +34,9 @@ export function StaticLandingPage() {
         <div className="plaza-window-header">
           <span>
             <span className="header-initiating">INITIATING CONNECTION...</span>
-            <span className="header-online" style={{ color: 'rgba(80, 200, 120, 0.7)' }}>PROTOCOL ONLINE</span>
+            <span className="header-online" style={{ color: 'rgba(80, 200, 120, 0.7)' }}>
+              PROTOCOL ONLINE
+            </span>
           </span>
           <span style={{ color: 'rgba(255,122,0,0.75)' }}>
             NODES: <span id="node-count">--</span> ACTIVE
@@ -46,12 +50,17 @@ export function StaticLandingPage() {
             <div id="telemetry"></div>
             <div id="routes"></div>
             <div id="keys"></div>
-            <div className="plaza-hex-scroll"><div id="hex-left"></div></div>
+            <div className="plaza-hex-scroll">
+              <div id="hex-left"></div>
+            </div>
           </div>
 
           {/* Center Content */}
           <div className="demo-center">
-            <h1 id="title" className="demo-title font-bold text-primary-500 text-shadow-neon uppercase tracking-wider">
+            <h1
+              id="title"
+              className="demo-title font-bold text-primary-500 text-shadow-neon uppercase tracking-wider"
+            >
               [CYPHERPUNK.AGENCY]
             </h1>
             <p className="demo-subtitle text-accent-400 tracking-widest uppercase mb-8">
@@ -63,8 +72,12 @@ export function StaticLandingPage() {
             <div className="flex gap-4 justify-center flex-wrap" style={{ marginTop: '46px' }}>
               <button id="cta" className="plaza-btn" type="button">
                 <span className="cta-label cta-enter">enter</span>
-                <span className="cta-label cta-denied" aria-hidden="true">[access denied]</span>
-                <span className="cta-label cta-granted" aria-hidden="true">[access granted]</span>
+                <span className="cta-label cta-denied" aria-hidden="true">
+                  [access denied]
+                </span>
+                <span className="cta-label cta-granted" aria-hidden="true">
+                  [access granted]
+                </span>
               </button>
             </div>
           </div>
@@ -73,17 +86,25 @@ export function StaticLandingPage() {
           <div className="plaza-side-panel plaza-side-panel--right">
             <div id="netlog"></div>
             <div id="status"></div>
-            <div className="plaza-hex-scroll"><div id="hex-right"></div></div>
+            <div className="plaza-hex-scroll">
+              <div id="hex-right"></div>
+            </div>
           </div>
         </div>
 
         {/* Footer Bar */}
         <div className="plaza-window-footer">
-          <span className="footer-timestamp"><span id="clock"></span></span>
+          <span className="footer-timestamp">
+            <span id="clock"></span>
+          </span>
           <span className="footer-terminal">TERMINAL</span>
           <span className="footer-prompt">&gt;</span>
-          <span className="footer-input-area"><span className="footer-not-auth">[ NOT AUTHENTICATED ]</span></span>
-          <button className="footer-send-btn footer-send-btn--disabled" disabled>&#9654; SEND</button>
+          <span className="footer-input-area">
+            <span className="footer-not-auth">[ NOT AUTHENTICATED ]</span>
+          </span>
+          <button className="footer-send-btn footer-send-btn--disabled" disabled>
+            &#9654; SEND
+          </button>
         </div>
       </div>
     </>

@@ -1,5 +1,5 @@
-import {PointerGesture} from './pointer-gesture';
-import type {Hints} from '../ui/hints';
+import { PointerGesture } from './pointer-gesture';
+import type { Hints } from '../ui/hints';
 import { gameStorage } from '../runtime/storage';
 /**
  * The schematic: a device in the middle, its nouns branching out. Tap a noun
@@ -54,29 +54,79 @@ import { drawWatchdogs } from './watchdog-view';
 const NS = 'http://www.w3.org/2000/svg';
 type P = { x: number; y: number };
 /** Where a device stands on screen for hack vision: its box centre and size, in stage px. */
-export interface Anchor { x: number; y: number; w: number; h: number }
+export interface Anchor {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 /**
  * Hack vision, in px: the gap between a device's frame and its core over it, half a core's
  * height, how far over the core the default row of nouns stands, the gap between them.
  */
-const LEAD = 10, CORE_HALF = 10, ROW_UP = 56, NOUN_GAP = 16;
+const LEAD = 10,
+  CORE_HALF = 10,
+  ROW_UP = 56,
+  NOUN_GAP = 16;
 /** Hack vision: circuits keep this far from each other and from the edges (px). */
 const ROOM = 6;
 /** Where the "unfold every circuit" setting is remembered. */
 const UNFOLD_KEY = 'access-denied-vision-unfold';
 /** Hack vision's row order by function, left to right; ties keep the data's order. */
-const RANK: Record<string, number> = { sense: 0, hold: 0, program: 0, act: 1, logic: 1, time: 2, gate: 2, connect: 2, record: 2, talk: 3 };
-const UNIT: Record<string, P> = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
+const RANK: Record<string, number> = {
+  sense: 0,
+  hold: 0,
+  program: 0,
+  act: 1,
+  logic: 1,
+  time: 2,
+  gate: 2,
+  connect: 2,
+  record: 2,
+  talk: 3,
+};
+const UNIT: Record<string, P> = {
+  up: { x: 0, y: -1 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+  right: { x: 1, y: 0 },
+};
 /** Where logic parts land on the board when nothing else says. */
-const BOARD_CRAFT: P[] = [{ x: 0.6, y: 0.78 }, { x: 0.84, y: 0.78 }, { x: 0.42, y: 0.6 }, { x: 0.72, y: 0.58 }];
+const BOARD_CRAFT: P[] = [
+  { x: 0.6, y: 0.78 },
+  { x: 0.84, y: 0.78 },
+  { x: 0.42, y: 0.6 },
+  { x: 0.72, y: 0.58 },
+];
 /** Where net nodes (and devices without `layout.board`) land: a row under the scene's own devices. */
-const BOARD_NET: P[] = [{ x: 0.5, y: 0.6 }, { x: 0.28, y: 0.62 }, { x: 0.72, y: 0.62 }, { x: 0.12, y: 0.66 }, { x: 0.88, y: 0.66 }];
+const BOARD_NET: P[] = [
+  { x: 0.5, y: 0.6 },
+  { x: 0.28, y: 0.62 },
+  { x: 0.72, y: 0.62 },
+  { x: 0.12, y: 0.66 },
+  { x: 0.88, y: 0.66 },
+];
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
-  const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e;
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
 }
-function readUnfold() { try { return gameStorage.getItem(UNFOLD_KEY) === '1'; } catch { return false; } }
-function writeUnfold(on: boolean) { try { gameStorage.setItem(UNFOLD_KEY, on ? '1' : '0'); } catch { /* private mode: not remembered */ } }
+function readUnfold() {
+  try {
+    return gameStorage.getItem(UNFOLD_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+function writeUnfold(on: boolean) {
+  try {
+    gameStorage.setItem(UNFOLD_KEY, on ? '1' : '0');
+  } catch {
+    /* private mode: not remembered */
+  }
+}
 
 export class Schematic {
   readonly root: HTMLDivElement;
@@ -90,8 +140,8 @@ export class Schematic {
   private hint: HTMLDivElement;
   private palette: HTMLDivElement;
   private ring: HTMLDivElement;
-  private hints?:Hints;
-  private hintBusy?:()=>boolean;
+  private hints?: Hints;
+  private hintBusy?: () => boolean;
   private mode: 'device' | 'board' | 'vision' = 'device';
   private dev = '';
   /** Devices you have opened or seen; shared between the overlay and hack vision. */
@@ -105,10 +155,15 @@ export class Schematic {
   /** The GUARD whose keyboard input is open, and what is typed so far (it survives a redraw). */
   private typing: string | null = null;
   private draft = '';
-  private gesture?:PointerGesture;
-  private focusTimers?:Map<string,number>;
-  private clearFocus(){for(const timer of this.focusTimers?.values()??[])clearTimeout(timer);this.focusTimers?.clear();}
-  private cancelGesture(){this.gesture?.cancel();}
+  private gesture?: PointerGesture;
+  private focusTimers?: Map<string, number>;
+  private clearFocus() {
+    for (const timer of this.focusTimers?.values() ?? []) clearTimeout(timer);
+    this.focusTimers?.clear();
+  }
+  private cancelGesture() {
+    this.gesture?.cancel();
+  }
   private offsets = new Map<string, P>();
   private boardPos = new Map<string, P>();
   private slots: { kind: string; btn: HTMLButtonElement }[] = [];
@@ -147,44 +202,69 @@ export class Schematic {
   /** Hack vision: a logic part is being dragged; `at` is where its centre should be, in stage px. */
   onMovePart: (id: string, at: P) => void = () => {};
 
-  constructor(host: HTMLElement, private m: SceneModel, private say: (l: Line) => void, opts: { vision?: boolean; known?: Set<string>; hints?:Hints; hintBusy?:()=>boolean } = {}) {
-    this.hints=opts.hints;this.hintBusy=opts.hintBusy;
+  constructor(
+    host: HTMLElement,
+    private m: SceneModel,
+    private say: (l: Line) => void,
+    opts: { vision?: boolean; known?: Set<string>; hints?: Hints; hintBusy?: () => boolean } = {},
+  ) {
+    this.hints = opts.hints;
+    this.hintBusy = opts.hintBusy;
     this.known = opts.known ?? new Set();
-    this.root = el('div'); this.root.hidden = true;
+    this.root = el('div');
+    this.root.hidden = true;
     const bar = el('div', 'hack-bar');
     this.title = el('span', 'hack-title');
-    this.modeBtn = el('button', 'hack-btn'); this.modeBtn.type = 'button';
-    this.modeBtn.addEventListener('click', () => (this.mode === 'board' ? this.openDevice(this.dev || [...this.known][0]) : this.openBoard()));
-    const close = el('button', 'hack-btn', m.label('ui.close')); close.type = 'button'; close.addEventListener('click', () => this.close());
+    this.modeBtn = el('button', 'hack-btn');
+    this.modeBtn.type = 'button';
+    this.modeBtn.addEventListener('click', () =>
+      this.mode === 'board' ? this.openDevice(this.dev || [...this.known][0]) : this.openBoard(),
+    );
+    const close = el('button', 'hack-btn', m.label('ui.close'));
+    close.type = 'button';
+    close.addEventListener('click', () => this.close());
     this.hint = el('div', 'hack-hint');
     bar.append(this.title, this.modeBtn, close, this.hint);
     this.status = el('div', 'hack-status');
     this.stage = el('div', 'hack-stage');
-    this.svg = document.createElementNS(NS, 'svg'); this.svg.setAttribute('class', 'hack-wires');
-    this.tags = document.createElementNS(NS, 'svg'); this.tags.setAttribute('class', 'hack-wires hack-tags');
-    this.palette = el('div', 'sch-palette'); this.palette.hidden = true;
+    this.svg = document.createElementNS(NS, 'svg');
+    this.svg.setAttribute('class', 'hack-wires');
+    this.tags = document.createElementNS(NS, 'svg');
+    this.tags.setAttribute('class', 'hack-wires hack-tags');
+    this.palette = el('div', 'sch-palette');
+    this.palette.hidden = true;
     this.palette.appendChild(el('span', '', 'LOGIC'));
     m.logic.modules.forEach((mod) => {
-      const b = el('button', 'hack-btn'); b.type = 'button';
-      b.addEventListener('click', () => { if (this.mode !== 'vision') this.addLogic(mod.part.id); });
-      b.addEventListener('pointerdown', (e) => { if (this.mode === 'vision' && !b.disabled) this.dragOut(e, mod.part.id); });
+      const b = el('button', 'hack-btn');
+      b.type = 'button';
+      b.addEventListener('click', () => {
+        if (this.mode !== 'vision') this.addLogic(mod.part.id);
+      });
+      b.addEventListener('pointerdown', (e) => {
+        if (this.mode === 'vision' && !b.disabled) this.dragOut(e, mod.part.id);
+      });
       this.palette.appendChild(b);
       this.slots.push({ kind: mod.part.id, btn: b });
     });
-    this.ring = el('div', 'sch-keyring'); this.ring.hidden = true;
+    this.ring = el('div', 'sch-keyring');
+    this.ring.hidden = true;
     this.stage.append(this.svg, this.palette, this.ring);
     // hack vision has no header: the HACK button outside says it is on, the status sits at the bottom
     if (opts.vision) {
       // the bottom dock, over the buttons: the help line, and the LOGIC drawer under it when open
-      this.mode = 'vision'; this.root.id = 'vision';
+      this.mode = 'vision';
+      this.root.id = 'vision';
       this.unfoldAll = readUnfold();
       this.palette.firstElementChild!.textContent = 'DRAG OUT ·';
       this.info = el('div', 'vis-info');
       this.palette.prepend(this.info);
-      const dock = this.dock = el('div', 'vis-dock');
+      const dock = (this.dock = el('div', 'vis-dock'));
       dock.append(this.status, this.palette);
-      const reset = this.resetBtn = el('button', 'hack-btn vis-reset', '⊙'); reset.type = 'button'; reset.hidden = true;
-      reset.title = 'back to the normal view (or double-tap empty space)'; reset.setAttribute('aria-label', 'reset the view');
+      const reset = (this.resetBtn = el('button', 'hack-btn vis-reset', '⊙'));
+      reset.type = 'button';
+      reset.hidden = true;
+      reset.title = 'back to the normal view (or double-tap empty space)';
+      reset.setAttribute('aria-label', 'reset the view');
       reset.addEventListener('click', () => this.onReset());
       this.root.append(this.stage, dock, reset);
       // a tap anywhere but the drawer (and the LOGIC buttons, which toggle it) closes it
@@ -196,44 +276,89 @@ export class Schematic {
       };
       window.addEventListener('pointerdown', outside, true);
       this.releases.push(() => window.removeEventListener('pointerdown', outside, true));
+    } else {
+      this.root.id = 'hack';
+      this.root.append(bar, this.status, this.stage);
     }
-    else { this.root.id = 'hack'; this.root.append(bar, this.status, this.stage); }
     host.appendChild(this.root);
     this.stage.addEventListener('pointerdown', (e) => {
-      if ((e.target as HTMLElement).closest('.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-part')) return;
-      if (this.armed || this.pending || this.chip) { this.armed = null; this.pending = null; this.chip = null; this.render(); }
+      if (
+        (e.target as HTMLElement).closest(
+          '.sch-core, .sch-noun, .port, .sch-chip, .sch-guess, .vis-part',
+        )
+      )
+        return;
+      if (this.armed || this.pending || this.chip) {
+        this.armed = null;
+        this.pending = null;
+        this.chip = null;
+        this.render();
+      }
     });
-    const resize = new ResizeObserver(() => { if (!this.root.hidden) this.render(); });
+    const resize = new ResizeObserver(() => {
+      if (!this.root.hidden) this.render();
+    });
     resize.observe(this.stage);
     this.releases.push(() => resize.disconnect());
   }
   /** What the constructor subscribed to outside its own nodes (a window listener, the resize observer). */
   private releases: (() => void)[] = [];
   /** The host is disposed: closed, unsubscribed, its focus flashes cleared, and off the page. */
-  dispose() { this.onClose = () => {}; this.close(); this.clearFocus(); for (const release of this.releases.splice(0)) release(); this.root.remove(); }
+  dispose() {
+    this.onClose = () => {};
+    this.close();
+    this.clearFocus();
+    for (const release of this.releases.splice(0)) release();
+    this.root.remove();
+  }
 
-  get isOpen() { return !this.root.hidden; }
+  get isOpen() {
+    return !this.root.hidden;
+  }
   /** The device you are looking into (for trace): one device's schematic, open. */
-  get viewing() { return this.isOpen && this.mode === 'device' ? this.dev : null; }
+  get viewing() {
+    return this.isOpen && this.mode === 'device' ? this.dev : null;
+  }
 
   /** A shared saved lesson is drawn in the existing board hint spot. */
-  presentHint(busy=false){const text=this.isOpen?this.hints?.boardHint(busy||!!this.hintBusy?.()):null;this.hint.textContent=text??'';this.hint.hidden=!text;}
-  private show() {this.root.hidden=false;this.presentHint();}
+  presentHint(busy = false) {
+    const text = this.isOpen ? this.hints?.boardHint(busy || !!this.hintBusy?.()) : null;
+    this.hint.textContent = text ?? '';
+    this.hint.hidden = !text;
+  }
+  private show() {
+    this.root.hidden = false;
+    this.presentHint();
+  }
   openDevice(id: string) {
-    this.cancelGesture?.();this.clearFocus();
-    this.known.add(id); this.mode = 'device'; this.dev = id;
-    this.show(); this.pending = null; this.armed = null; this.chip = null;
+    this.cancelGesture?.();
+    this.clearFocus();
+    this.known.add(id);
+    this.mode = 'device';
+    this.dev = id;
+    this.show();
+    this.pending = null;
+    this.armed = null;
+    this.chip = null;
     this.render();
   }
   openBoard() {
-    this.cancelGesture?.();this.clearFocus();
+    this.cancelGesture?.();
+    this.clearFocus();
     if (!this.known.size) return;
-    this.mode = 'board'; this.show(); this.render();
+    this.mode = 'board';
+    this.show();
+    this.render();
   }
   /** Hack vision (the vision instance only): every device on screen, wired in place. */
   openVision() {
-    this.cancelGesture?.();this.clearFocus();
-    this.root.hidden = false; this.armed = null; this.pending = null; this.chip = null; this.drawer = false;
+    this.cancelGesture?.();
+    this.clearFocus();
+    this.root.hidden = false;
+    this.armed = null;
+    this.pending = null;
+    this.chip = null;
+    this.drawer = false;
     this.presentHint();
     this.render();
   }
@@ -241,20 +366,36 @@ export class Schematic {
   see(next: Map<string, Anchor>) {
     const prev = this.anchors;
     const same = next.size === prev.size && [...next.keys()].every((id) => prev.has(id));
-    const moved = [...next].some(([id, a]) => { const b = prev.get(id); return !b || Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.w - b.w) + Math.abs(a.h - b.h) > 0.5; });
+    const moved = [...next].some(([id, a]) => {
+      const b = prev.get(id);
+      return (
+        !b ||
+        Math.abs(a.x - b.x) + Math.abs(a.y - b.y) + Math.abs(a.w - b.w) + Math.abs(a.h - b.h) > 0.5
+      );
+    });
     if (same && !moved) return;
     this.anchors = next;
     if (this.root.hidden) return;
     // a new zoom: what the player moved (kept in world units) stands somewhere else in px, so draw it again
     const zoom = Math.abs(this.unit - this.drawnUnit) > 1e-3;
-    if (!same || zoom) { this.drawnUnit = this.unit; this.render(); return; }
+    if (!same || zoom) {
+      this.drawnUnit = this.unit;
+      this.render();
+      return;
+    }
     // only the camera moved: shift the frames and the schematics and keep the DOM, so a gesture in progress survives
     this.stage.querySelectorAll<HTMLElement>('.vis-outline').forEach((f) => {
-      const a = next.get(f.dataset.frame!); if (!a) return;
-      f.style.left = a.x + 'px'; f.style.top = a.y + 'px'; f.style.width = a.w + 'px'; f.style.height = a.h + 'px';
+      const a = next.get(f.dataset.frame!);
+      if (!a) return;
+      f.style.left = a.x + 'px';
+      f.style.top = a.y + 'px';
+      f.style.width = a.w + 'px';
+      f.style.height = a.h + 'px';
     });
     this.stage.querySelectorAll<HTMLElement>('.sch.vis').forEach((g) => {
-      const c = this.visionCentre(g.dataset.dev!); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
+      const c = this.visionCentre(g.dataset.dev!);
+      g.style.left = c.x + 'px';
+      g.style.top = c.y + 'px';
     });
     this.arrange();
     this.lines();
@@ -264,8 +405,17 @@ export class Schematic {
    * in hand it unfolds it (to reach its nouns); a tap on nothing drops what is in hand.
    */
   poke(id: string | null) {
-    if (this.armed && id) { if (!this.isUnfolded(id)) this.fold(id); return; }
-    if (this.armed || this.pending || this.chip || !id) { this.armed = null; this.pending = null; this.chip = null; this.render(); return; }
+    if (this.armed && id) {
+      if (!this.isUnfolded(id)) this.fold(id);
+      return;
+    }
+    if (this.armed || this.pending || this.chip || !id) {
+      this.armed = null;
+      this.pending = null;
+      this.chip = null;
+      this.render();
+      return;
+    }
     this.fold(id);
   }
 
@@ -273,36 +423,60 @@ export class Schematic {
 
   /** `⌁ hack it` from a thing's popup: its nouns out, and a short flash on its core so the eye finds it. */
   focus(id: string) {
-    if (!this.isUnfolded(id)) this.fold(id); else this.render();
+    if (!this.isUnfolded(id)) this.fold(id);
+    else this.render();
     const core = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"] .sch-core`);
     if (!core) return;
     core.classList.add('focus');
-    const timers=this.focusTimers??=new Map();clearTimeout(timers.get(id));
-    const timer=window.setTimeout(()=>{if(timers.get(id)!==timer)return;timers.delete(id);this.stage.querySelector(`.sch.vis[data-dev="${id}"] .sch-core`)?.classList.remove('focus');},1400);timers.set(id,timer);
+    const timers = (this.focusTimers ??= new Map());
+    clearTimeout(timers.get(id));
+    const timer = window.setTimeout(() => {
+      if (timers.get(id) !== timer) return;
+      timers.delete(id);
+      this.stage.querySelector(`.sch.vis[data-dev="${id}"] .sch-core`)?.classList.remove('focus');
+    }, 1400);
+    timers.set(id, timer);
   }
 
   /** Hack vision: the LOGIC drawer open or shut (LOGIC, L). */
-  get drawerOpen() { return this.drawer; }
+  get drawerOpen() {
+    return this.drawer;
+  }
   setDrawer(on: boolean) {
     if (this.drawer === on) return;
-    this.drawer = on; this.render(); this.onDrawer();
+    this.drawer = on;
+    this.render();
+    this.onDrawer();
   }
   /** Hack vision: every circuit unfolded at once (UNFOLD, U), or each by hand. */
-  get allUnfolded() { return this.unfoldAll; }
-  toggleUnfoldAll() { this.setUnfoldAll(!this.unfoldAll); }
+  get allUnfolded() {
+    return this.unfoldAll;
+  }
+  toggleUnfoldAll() {
+    this.setUnfoldAll(!this.unfoldAll);
+  }
   /** Hack vision: the view is panned or zoomed, so the reset button (⊙) shows. */
-  showReset(on: boolean) { if (this.resetBtn && this.resetBtn.hidden === on) { this.resetBtn.hidden = !on; if (!this.root.hidden) this.arrange(); } }
+  showReset(on: boolean) {
+    if (this.resetBtn && this.resetBtn.hidden === on) {
+      this.resetBtn.hidden = !on;
+      if (!this.root.hidden) this.arrange();
+    }
+  }
 
-  private isUnfolded(id: string) { return this.unfoldAll ? !this.folded.has(id) : this.unfolded.has(id); }
+  private isUnfolded(id: string) {
+    return this.unfoldAll ? !this.folded.has(id) : this.unfolded.has(id);
+  }
   /** Show a device's nouns, or fold them back into its core. */
   private fold(id: string) {
     const set = this.unfoldAll ? this.folded : this.unfolded;
-    if (set.has(id)) set.delete(id); else set.add(id);
+    if (set.has(id)) set.delete(id);
+    else set.add(id);
     this.render();
   }
   /** The setting: every device's nouns out at once (for comparing them), or each by hand (as you left them). */
   private setUnfoldAll(on: boolean) {
-    this.unfoldAll = on; this.folded.clear();
+    this.unfoldAll = on;
+    this.folded.clear();
     writeUnfold(on);
     this.render();
   }
@@ -310,12 +484,20 @@ export class Schematic {
   /** A device's nouns in hack vision's default row, left to right: the data's `layout.row` first, then by function. */
   private row(d: Device) {
     const order = d.data.layout?.row ?? [];
-    const rank = (n: Noun) => { const i = order.indexOf(n.id); return i >= 0 ? i - order.length - 10 : RANK[n.function] ?? 2; };
-    return d.nouns.map((n, i) => ({ n, i })).sort((a, b) => rank(a.n) - rank(b.n) || a.i - b.i).map((x) => x.n);
+    const rank = (n: Noun) => {
+      const i = order.indexOf(n.id);
+      return i >= 0 ? i - order.length - 10 : (RANK[n.function] ?? 2);
+    };
+    return d.nouns
+      .map((n, i) => ({ n, i }))
+      .sort((a, b) => rank(a.n) - rank(b.n) || a.i - b.i)
+      .map((x) => x.n);
   }
 
   /** Did the player move this device's core or any of its nouns? Then overlap handling leaves it alone. */
-  private placedByHand(id: string) { return this.moved.has(id) || [...this.voff.keys()].some((k) => k.startsWith(id + '.')); }
+  private placedByHand(id: string) {
+    return this.moved.has(id) || [...this.voff.keys()].some((k) => k.startsWith(id + '.'));
+  }
 
   /**
    * Where a noun sits around its core in hack vision, in px. By default the nouns
@@ -323,11 +505,15 @@ export class Schematic {
    * where the player put it (kept in world units, so it holds at any zoom).
    */
   private visionOffset(dev: string, noun: string): P {
-    const u = this.unit || 1, own = this.voff.get(dev + '.' + noun);
+    const u = this.unit || 1,
+      own = this.voff.get(dev + '.' + noun);
     if (own) return { x: own.x * u, y: own.y * u };
-    const d = this.m.devices.get(dev)!, row = this.row(d);
-    const w = (n: Noun) => Math.max(46, 7 * Math.max(n.id.length, (n.events?.[0]?.length ?? 0) + 2) + 18);
-    const widths = row.map(w), total = widths.reduce((s, x) => s + x, 0) + NOUN_GAP * (row.length - 1);
+    const d = this.m.devices.get(dev)!,
+      row = this.row(d);
+    const w = (n: Noun) =>
+      Math.max(46, 7 * Math.max(n.id.length, (n.events?.[0]?.length ?? 0) + 2) + 18);
+    const widths = row.map(w),
+      total = widths.reduce((s, x) => s + x, 0) + NOUN_GAP * (row.length - 1);
     let x = -total / 2;
     for (let i = 0; i < row.length; i++) {
       if (row[i].id === noun) return { x: x + widths[i] / 2, y: -ROW_UP };
@@ -340,23 +526,33 @@ export class Schematic {
   private visionCentre(id: string): P {
     const a = this.anchors.get(id);
     if (!a) return { x: -999, y: -999 };
-    const o = this.moved.get(id), u = this.unit || 1;
+    const o = this.moved.get(id),
+      u = this.unit || 1;
     return { x: a.x + (o ? o.x * u : 0), y: a.y - a.h / 2 - LEAD - CORE_HALF + (o ? o.y * u : 0) };
   }
 
   /** The device's pink frame in the world, apart from its core (the core moves; the frame stays on the thing). */
   private frame(id: string) {
-    const d = this.m.devices.get(id)!, a = this.anchors.get(id)!;
-    const box = el('div', 'vis-outline' + (d.logic ? ' vis-part' : '')); box.dataset.frame = id;
-    box.style.left = a.x + 'px'; box.style.top = a.y + 'px'; box.style.width = a.w + 'px'; box.style.height = a.h + 'px';
+    const d = this.m.devices.get(id)!,
+      a = this.anchors.get(id)!;
+    const box = el('div', 'vis-outline' + (d.logic ? ' vis-part' : ''));
+    box.dataset.frame = id;
+    box.style.left = a.x + 'px';
+    box.style.top = a.y + 'px';
+    box.style.width = a.w + 'px';
+    box.style.height = a.h + 'px';
     if (d.logic) {
       // a logic part has no body in the world: this is it, a small module you can drag about
       box.appendChild(el('span', 'vis-glyph', d.name[0] + id.replace(/^\D+/, '')));
       box.title = d.name + ': ' + d.look + ' (drag to move it)';
-      const x = el('button', 'sch-x', '×'); x.type = 'button';
+      const x = el('button', 'sch-x', '×');
+      x.type = 'button';
       x.setAttribute('aria-label', 'remove ' + d.name);
       x.addEventListener('pointerdown', (e) => e.stopPropagation());
-      x.addEventListener('click', (e) => { e.stopPropagation(); this.removeLogic(id); });
+      x.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeLogic(id);
+      });
       box.appendChild(x);
       this.partGestures(box, id);
     }
@@ -370,25 +566,36 @@ export class Schematic {
    */
   private dragPiece(e: PointerEvent, id: string, tap: () => void) {
     this.cancelGesture?.();
-    const sx = e.clientX, sy = e.clientY, u = this.unit || 1;
+    const sx = e.clientX,
+      sy = e.clientY,
+      u = this.unit || 1;
     const group = () => this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`);
-    let base = this.moved.get(id) ?? { x: 0, y: 0 }, moving = false;
+    let base = this.moved.get(id) ?? { x: 0, y: 0 },
+      moving = false;
     const mv = (ev: PointerEvent) => {
       if (!moving) {
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 5) return;
-        moving = true; base = this.pin(id);
+        moving = true;
+        base = this.pin(id);
       }
       this.moved.set(id, { x: base.x + (ev.clientX - sx) / u, y: base.y + (ev.clientY - sy) / u });
       const g = group();
-      if (g) { const c = this.visionCentre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px'; }
+      if (g) {
+        const c = this.visionCentre(id);
+        g.style.left = c.x + 'px';
+        g.style.top = c.y + 'px';
+      }
       this.lines();
     };
     const up = () => {
-
-      if (!moving) { tap(); return; }
-      this.render(); this.onLayout();
+      if (!moving) {
+        tap();
+        return;
+      }
+      this.render();
+      this.onLayout();
     };
-    this.trackGesture(e,mv,up);
+    this.trackGesture(e, mv, up);
   }
 
   /**
@@ -396,14 +603,17 @@ export class Schematic {
    * nudge as its own position (so nothing jumps). Returns its offset (world units).
    */
   private pin(id: string): P {
-    const g = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`), u = this.unit || 1;
+    const g = this.stage.querySelector<HTMLElement>(`.sch.vis[data-dev="${id}"]`),
+      u = this.unit || 1;
     const base = this.moved.get(id) ?? { x: 0, y: 0 };
     if (!g?.style.translate) return base;
     const [dx, dy] = g.style.translate.split(' ').map((v) => parseFloat(v) || 0);
     g.style.translate = '';
     const p = { x: base.x + dx / u, y: base.y + (dy || 0) / u };
     this.moved.set(id, p);
-    const c = this.visionCentre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
+    const c = this.visionCentre(id);
+    g.style.left = c.x + 'px';
+    g.style.top = c.y + 'px';
     return p;
   }
 
@@ -418,67 +628,135 @@ export class Schematic {
     if (this.mode !== 'vision') return;
     const groups = [...this.stage.querySelectorAll<HTMLElement>('.sch.vis')];
     if (!groups.length) return;
-    groups.forEach((g) => { g.style.translate = ''; });
-    const s = this.stage.getBoundingClientRect(), W = s.width, H = s.height;
+    groups.forEach((g) => {
+      g.style.translate = '';
+    });
+    const s = this.stage.getBoundingClientRect(),
+      W = s.width,
+      H = s.height;
     type Box = { l: number; t: number; r: number; b: number };
-    const box = (e: Element): Box => { const q = e.getBoundingClientRect(); return { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top }; };
+    const box = (e: Element): Box => {
+      const q = e.getBoundingClientRect();
+      return { l: q.left - s.left, t: q.top - s.top, r: q.right - s.left, b: q.bottom - s.top };
+    };
     /** A device's whole schematic: its core, its nouns, their dots and open verbs. */
     const extent = (g: HTMLElement): Box => {
       const b: Box = { l: Infinity, t: Infinity, r: -Infinity, b: -Infinity };
       g.querySelectorAll('.sch-core, .sch-label, .port, .sch-verbs, .vis-st').forEach((e) => {
-        const q = box(e); b.l = Math.min(b.l, q.l); b.t = Math.min(b.t, q.t); b.r = Math.max(b.r, q.r); b.b = Math.max(b.b, q.b);
+        const q = box(e);
+        b.l = Math.min(b.l, q.l);
+        b.t = Math.min(b.t, q.t);
+        b.r = Math.max(b.r, q.r);
+        b.b = Math.max(b.b, q.b);
       });
       return b;
     };
     // the scene's buttons over the canvas (HACK, BOARD, …) lie over the stage too
     // (the game's key bar adopts them into its row of actions: then the whole row is in the way)
-    const row = this.bar?.parentElement?.classList.contains('kb-actions') ? this.bar.parentElement : this.bar;
+    const row = this.bar?.parentElement?.classList.contains('kb-actions')
+      ? this.bar.parentElement
+      : this.bar;
     const bar = row && this.bar && !this.bar.hidden && row.offsetParent ? box(row) : null;
     // the top of the free view: under the HUD's GOAL line (and the key bar's buttons, where they lie over the stage)
     const top0 = Math.max(ROOM, Math.min(H * 0.3, this.top));
     // the bottom of the free view: over the dock (the help line, the drawer), the reset button and the touch buttons
     const lows: Box[] = [];
-    const shown = (e: Element | null): e is HTMLElement => !!e && (e as HTMLElement).offsetParent !== null && !(e as HTMLElement).hidden;
-    [...(this.dock?.children ?? []), this.resetBtn, ...document.querySelectorAll('#touch .pad')].forEach((e) => { if (shown(e) && e.getBoundingClientRect().width) lows.push(box(e)); });
+    const shown = (e: Element | null): e is HTMLElement =>
+      !!e && (e as HTMLElement).offsetParent !== null && !(e as HTMLElement).hidden;
+    [
+      ...(this.dock?.children ?? []),
+      this.resetBtn,
+      ...document.querySelectorAll('#touch .pad'),
+    ].forEach((e) => {
+      if (shown(e) && e.getBoundingClientRect().width) lows.push(box(e));
+    });
     const mine = (g: HTMLElement) => this.placedByHand(g.dataset.dev!);
     const placed: Box[] = groups.filter(mine).map((g) => {
-      const b = extent(g), top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
+      const b = extent(g),
+        top = bar && b.l < bar.r && b.r > bar.l ? Math.max(ROOM, bar.b + ROOM) : ROOM;
       if (b.t >= top) return b;
       g.style.translate = '0px ' + (top - b.t) + 'px';
       return { ...b, t: top, b: b.b + top - b.t };
     });
     placed.push(...lows);
     if (bar) placed.push(bar);
-    const at = (b: Box, dx: number, dy: number): Box => ({ l: b.l + dx, t: b.t + dy, r: b.r + dx, b: b.b + dy });
-    const hit = (q: Box) => placed.find((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM);
-    const inside = (q: Box) => q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= top0 - 0.5 && q.b <= H - ROOM + 0.5;
+    const at = (b: Box, dx: number, dy: number): Box => ({
+      l: b.l + dx,
+      t: b.t + dy,
+      r: b.r + dx,
+      b: b.b + dy,
+    });
+    const hit = (q: Box) =>
+      placed.find(
+        (p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM,
+      );
+    const inside = (q: Box) =>
+      q.l >= ROOM - 0.5 && q.r <= W - ROOM + 0.5 && q.t >= top0 - 0.5 && q.b <= H - ROOM + 0.5;
     // the other devices' frames: a plate standing on one hides it, so that is worth moving for too
-    const frames = [...this.stage.querySelectorAll<HTMLElement>('.vis-outline')].map((f) => ({ id: f.dataset.frame, b: box(f) }));
-    const free = groups.filter((g) => !mine(g)).map((g) => ({ g, b: extent(g) })).sort((p, q) => p.b.l - q.b.l);
-    const hits = (q: Box) => placed.filter((p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM).length;
-    const clearOfBar = (q: Box) => !bar || !(q.l < bar.r && q.r > bar.l && q.t < bar.b + ROOM && q.b > bar.t);
+    const frames = [...this.stage.querySelectorAll<HTMLElement>('.vis-outline')].map((f) => ({
+      id: f.dataset.frame,
+      b: box(f),
+    }));
+    const free = groups
+      .filter((g) => !mine(g))
+      .map((g) => ({ g, b: extent(g) }))
+      .sort((p, q) => p.b.l - q.b.l);
+    const hits = (q: Box) =>
+      placed.filter(
+        (p) => q.l < p.r + ROOM && q.r > p.l - ROOM && q.t < p.b + ROOM && q.b > p.t - ROOM,
+      ).length;
+    const clearOfBar = (q: Box) =>
+      !bar || !(q.l < bar.r && q.r > bar.l && q.t < bar.b + ROOM && q.b > bar.t);
     for (const { g, b } of free) {
-      let dx = 0, dy = 0;
+      let dx = 0,
+        dy = 0;
       if (b.r > W - ROOM) dx = W - ROOM - b.r;
       if (b.l + dx < ROOM) dx = ROOM - b.l;
       // (only the top edge may push a card down, and never further than its own device)
       if (b.t < top0) dy = top0 - b.t;
-      const q0 = at(b, dx, dy), own = g.dataset.dev;
+      const q0 = at(b, dx, dy),
+        own = g.dataset.dev;
       const others = frames.filter((f) => f.id !== own);
-      const cover = (q: Box) => others.reduce((s, f) => s + Math.max(0, Math.min(q.r, f.b.r) - Math.max(q.l, f.b.l) - 2) * Math.max(0, Math.min(q.b, f.b.b) - Math.max(q.t, f.b.t) - 2), 0);
+      const cover = (q: Box) =>
+        others.reduce(
+          (s, f) =>
+            s +
+            Math.max(0, Math.min(q.r, f.b.r) - Math.max(q.l, f.b.l) - 2) *
+              Math.max(0, Math.min(q.b, f.b.b) - Math.max(q.t, f.b.t) - 2),
+          0,
+        );
       if (hit(q0) || cover(q0) > 0) {
         // beside or above whatever is in the way (another card, another device's frame), never down into the scene:
         // a full upper row overflows upwards, into a second row over it
         const obstacles = [...placed, ...others.map((f) => f.b)];
         const ups = obstacles.map((p) => p.t - ROOM - q0.b).filter((y) => y < 0);
-        const tries = [[0, 0], ...ups.map((y) => [0, y]), ...obstacles.flatMap((p) => [[p.l - ROOM - q0.r, 0], [p.r + ROOM - q0.l, 0]]),
-          ...obstacles.flatMap((p) => ups.flatMap((y) => [[p.l - ROOM - q0.r, y], [p.r + ROOM - q0.l, y]]))]
-          .filter(([x, y]) => y <= 0 && inside(at(q0, x, y)) && clearOfBar(at(q0, x, y)));
+        const tries = [
+          [0, 0],
+          ...ups.map((y) => [0, y]),
+          ...obstacles.flatMap((p) => [
+            [p.l - ROOM - q0.r, 0],
+            [p.r + ROOM - q0.l, 0],
+          ]),
+          ...obstacles.flatMap((p) =>
+            ups.flatMap((y) => [
+              [p.l - ROOM - q0.r, y],
+              [p.r + ROOM - q0.l, y],
+            ]),
+          ),
+        ].filter(([x, y]) => y <= 0 && inside(at(q0, x, y)) && clearOfBar(at(q0, x, y)));
         // no other card first; then covering as few devices as it can; then the nearest, sideways a little dearer than up
         const best = tries
-          .map(([x, y]) => ({ x, y, n: hits(at(q0, x, y)), d: Math.hypot(x * 1.4, y) + cover(at(q0, x, y)) * 0.5 }))
+          .map(([x, y]) => ({
+            x,
+            y,
+            n: hits(at(q0, x, y)),
+            d: Math.hypot(x * 1.4, y) + cover(at(q0, x, y)) * 0.5,
+          }))
           .sort((u, v) => u.n - v.n || u.d - v.d)[0];
-        if (best) { dx += best.x; dy += best.y; }
+        if (best) {
+          dx += best.x;
+          dy += best.y;
+        }
       }
       placed.push(at(b, dx, dy));
       if (dx || dy) g.style.translate = dx + 'px ' + dy + 'px';
@@ -489,41 +767,69 @@ export class Schematic {
   private partGestures(box: HTMLElement, id: string) {
     box.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.sch-x')) return;
-      e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
-      const sx = e.clientX, sy = e.clientY, a = this.anchors.get(id), start = { x: a?.x ?? 0, y: a?.y ?? 0 };
+      e.preventDefault();
+      e.stopPropagation();
+      this.cancelGesture?.();
+      const sx = e.clientX,
+        sy = e.clientY,
+        a = this.anchors.get(id),
+        start = { x: a?.x ?? 0, y: a?.y ?? 0 };
       let moved = false;
       const mv = (ev: PointerEvent) => {
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 5) moved = true;
-        if (moved) this.onMovePart(id, { x: start.x + ev.clientX - sx, y: start.y + ev.clientY - sy });
+        if (moved)
+          this.onMovePart(id, { x: start.x + ev.clientX - sx, y: start.y + ev.clientY - sy });
       };
       const up = () => {
-
-        if (!moved) this.fold(id); else this.onLayout();
+        if (!moved) this.fold(id);
+        else this.onLayout();
       };
-      this.trackGesture(e,mv,up);
+      this.trackGesture(e, mv, up);
     });
   }
 
   /** Where the player put things in hack vision, for the save: cores by device id, nouns by `device.noun` (world units). */
   pieces(): Record<string, Pt> {
     const r = (p: P) => ({ x: Math.round(p.x), y: Math.round(p.y) });
-    return Object.fromEntries([...[...this.moved].map(([k, p]) => [k, r(p)]), ...[...this.voff].map(([k, p]) => [k, r(p)])]);
+    return Object.fromEntries([
+      ...[...this.moved].map(([k, p]) => [k, r(p)]),
+      ...[...this.voff].map(([k, p]) => [k, r(p)]),
+    ]);
   }
   restorePieces(rec: Record<string, Pt> | undefined, keep: (id: string) => boolean) {
-    this.cancelGesture?.();this.clearFocus();
-    this.moved.clear(); this.voff.clear();
+    this.cancelGesture?.();
+    this.clearFocus();
+    this.moved.clear();
+    this.voff.clear();
     for (const [k, p] of Object.entries(rec ?? {})) {
       if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) continue;
-      const dot = k.indexOf('.'), dev = dot < 0 ? k : k.slice(0, dot);
+      const dot = k.indexOf('.'),
+        dev = dot < 0 ? k : k.slice(0, dot);
       if (!keep(dev)) continue;
       if (dot < 0) this.moved.set(k, { x: p.x, y: p.y });
       else if (this.m.noun(k)) this.voff.set(k, { x: p.x, y: p.y });
     }
     this.render();
   }
-  toggleBoard() { if (this.mode === 'board' && this.isOpen) this.openDevice(this.dev || [...this.known][0]); else this.openBoard(); }
-  close() { this.cancelGesture?.();this.clearFocus(); if (this.root.hidden) return; this.root.hidden = true; this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.onClose(); }
-  note(l: Line) { this.status.textContent = (l[0] ? '> ' + l[0] + '   ' : '') + l[1]; this.status.className = 'hack-status ' + (l[2] ?? ''); }
+  toggleBoard() {
+    if (this.mode === 'board' && this.isOpen) this.openDevice(this.dev || [...this.known][0]);
+    else this.openBoard();
+  }
+  close() {
+    this.cancelGesture?.();
+    this.clearFocus();
+    if (this.root.hidden) return;
+    this.root.hidden = true;
+    this.armed = null;
+    this.pending = null;
+    this.chip = null;
+    this.typing = null;
+    this.onClose();
+  }
+  note(l: Line) {
+    this.status.textContent = (l[0] ? '> ' + l[0] + '   ' : '') + l[1];
+    this.status.className = 'hack-status ' + (l[2] ?? '');
+  }
 
   /**
    * Trace moved: update the meters and lock countdowns in place (a full redraw
@@ -533,17 +839,23 @@ export class Schematic {
     if (this.root.hidden) return;
     const shown = new Set<string>();
     this.stage.querySelectorAll<HTMLElement>('.sch-trace').forEach((e) => {
-      const id = e.dataset.dev!, v = this.m.traceOf(id);
+      const id = e.dataset.dev!,
+        v = this.m.traceOf(id);
       shown.add(id);
       // [ui] trace says its number; a lockout turns the meter into its countdown
-      const lock = this.m.lockLeft(id), span = this.m.lockSpan(id);
+      const lock = this.m.lockLeft(id),
+        span = this.m.lockSpan(id);
       e.querySelector('i')!.style.width = (lock ? (lock / Math.max(1, span)) * 100 : v) + '%';
-      e.querySelector('b')!.textContent = lock ? this.m.label('lock.meter', { sec: Math.ceil(lock / 1000) }) : this.m.label('trace.meter', { pct: Math.round(v) });
+      e.querySelector('b')!.textContent = lock
+        ? this.m.label('lock.meter', { sec: Math.ceil(lock / 1000) })
+        : this.m.label('trace.meter', { pct: Math.round(v) });
       e.classList.toggle('hot', !lock && v >= 70);
       e.classList.toggle('lock', !!lock);
       e.title = 'trace ' + Math.round(v) + '%';
     });
-    this.stage.querySelectorAll<HTMLElement>('[data-lock]').forEach((e) => { e.textContent = this.lockText(e.dataset.lock!); });
+    this.stage.querySelectorAll<HTMLElement>('[data-lock]').forEach((e) => {
+      e.textContent = this.lockText(e.dataset.lock!);
+    });
     drawWatchdogs(this.stage, this.m, this.mode);
     const want = this.ids().filter((id) => this.metered(id));
     if (want.some((id) => !shown.has(id))) this.render();
@@ -553,22 +865,39 @@ export class Schematic {
 
   /** Where things sit, for the save: device positions (board) and noun offsets. */
   layout(): { pos: Record<string, Pt>; offsets: Record<string, Pt> } {
-    const obj = (m: Map<string, P>) => Object.fromEntries([...m].map(([k, p]) => [k, { x: p.x, y: p.y }]));
+    const obj = (m: Map<string, P>) =>
+      Object.fromEntries([...m].map(([k, p]) => [k, { x: p.x, y: p.y }]));
     return { pos: obj(this.boardPos), offsets: obj(this.offsets) };
   }
   restoreLayout(l: { pos?: Record<string, Pt>; offsets?: Record<string, Pt> }) {
-    this.cancelGesture?.();this.clearFocus();
-    const ok = (p: unknown): p is P => !!p && typeof (p as P).x === 'number' && typeof (p as P).y === 'number';
-    this.boardPos.clear(); this.offsets.clear();
-    for (const [k, p] of Object.entries(l.pos ?? {})) if (ok(p)) this.boardPos.set(k, { x: p.x, y: p.y });
-    for (const [k, p] of Object.entries(l.offsets ?? {})) if (ok(p)) this.offsets.set(k, { x: p.x, y: p.y });
+    this.cancelGesture?.();
+    this.clearFocus();
+    const ok = (p: unknown): p is P =>
+      !!p && typeof (p as P).x === 'number' && typeof (p as P).y === 'number';
+    this.boardPos.clear();
+    this.offsets.clear();
+    for (const [k, p] of Object.entries(l.pos ?? {}))
+      if (ok(p)) this.boardPos.set(k, { x: p.x, y: p.y });
+    for (const [k, p] of Object.entries(l.offsets ?? {}))
+      if (ok(p)) this.offsets.set(k, { x: p.x, y: p.y });
     this.render();
   }
   /** Forget where everything sat and which verbs were open (a scene reset). The shared `known` is the owner's to clear. */
   resetLayout() {
-    this.cancelGesture?.();this.clearFocus();
-    this.boardPos.clear(); this.offsets.clear(); this.open.clear(); this.unfolded.clear(); this.folded.clear(); this.moved.clear(); this.voff.clear();
-    this.armed = null; this.pending = null; this.chip = null; this.typing = null; this.dev = '';
+    this.cancelGesture?.();
+    this.clearFocus();
+    this.boardPos.clear();
+    this.offsets.clear();
+    this.open.clear();
+    this.unfolded.clear();
+    this.folded.clear();
+    this.moved.clear();
+    this.voff.clear();
+    this.armed = null;
+    this.pending = null;
+    this.chip = null;
+    this.typing = null;
+    this.dev = '';
     this.render();
   }
 
@@ -577,13 +906,20 @@ export class Schematic {
     const key = dev + '.' + noun;
     let o = this.offsets.get(key);
     if (!o) {
-      const d = this.m.devices.get(dev)!, l = d.data.layout;
-      const side = (id: string, j: number) => l?.dir?.[id] ?? (d.crafted || d.node || !l?.dir ? ['up', 'right', 'down', 'left'][j % 4] : 'up');
-      const mine = side(noun, i), u = UNIT[mine];
+      const d = this.m.devices.get(dev)!,
+        l = d.data.layout;
+      const side = (id: string, j: number) =>
+        l?.dir?.[id] ??
+        (d.crafted || d.node || !l?.dir ? ['up', 'right', 'down', 'left'][j % 4] : 'up');
+      const mine = side(noun, i),
+        u = UNIT[mine];
       o = { x: u.x * 104, y: u.y * 70 };
       // nouns on the same side fan out across it, instead of sitting on top of each other
-      const same = d.nouns.map((n, j) => side(n.id, j) === mine ? n.id : null).filter((id): id is string => !!id);
-      const k = same.indexOf(noun), spread = same.length > 1 ? k - (same.length - 1) / 2 : 0;
+      const same = d.nouns
+        .map((n, j) => (side(n.id, j) === mine ? n.id : null))
+        .filter((id): id is string => !!id);
+      const k = same.indexOf(noun),
+        spread = same.length > 1 ? k - (same.length - 1) / 2 : 0;
       if (u.x) o.y += spread * 44;
       else o.x += spread * 96;
       this.offsets.set(key, o);
@@ -598,15 +934,26 @@ export class Schematic {
       const crafted = [...this.m.devices.values()].filter((x) => x.crafted).map((x) => x.id);
       return { ...BOARD_CRAFT[crafted.indexOf(id) % BOARD_CRAFT.length] };
     }
-    const others = [...new Set([...this.m.net.keys(), ...[...this.m.devices.values()].filter((x) => !x.crafted && !x.data.layout?.board).map((x) => x.id)])];
+    const others = [
+      ...new Set([
+        ...this.m.net.keys(),
+        ...[...this.m.devices.values()]
+          .filter((x) => !x.crafted && !x.data.layout?.board)
+          .map((x) => x.id),
+      ]),
+    ];
     return { ...BOARD_NET[Math.max(0, others.indexOf(id)) % BOARD_NET.length] };
   }
   private centre(dev: string): P {
     if (this.mode === 'vision') return this.visionCentre(dev);
-    const W = this.stage.clientWidth, H = this.stage.clientHeight;
+    const W = this.stage.clientWidth,
+      H = this.stage.clientHeight;
     if (this.mode === 'device') return { x: W / 2, y: H / 2 };
     let p = this.boardPos.get(dev);
-    if (!p) { p = this.home(dev); this.boardPos.set(dev, p); }
+    if (!p) {
+      p = this.home(dev);
+      this.boardPos.set(dev, p);
+    }
     return { x: p.x * W, y: p.y * H };
   }
 
@@ -614,45 +961,68 @@ export class Schematic {
 
   /** The devices this mode shows. */
   private ids() {
-    return (this.mode === 'board' ? [...this.known] : this.mode === 'vision' ? [...this.anchors.keys()] : [this.dev]).filter((id) => this.m.devices.has(id));
+    return (
+      this.mode === 'board'
+        ? [...this.known]
+        : this.mode === 'vision'
+          ? [...this.anchors.keys()]
+          : [this.dev]
+    ).filter((id) => this.m.devices.has(id));
   }
   /** Shows a trace meter: it logs you, or carries trace, or has you locked out. */
-  private metered(id: string) { return this.m.logged(id) || this.m.traceOf(id) > 0 || this.m.lockLeft(id) > 0; }
-  private lockText(key: string) { const ms = this.m.lockLeft(key); return ms ? 'LOCKED · ' + Math.ceil(ms / 1000) + ' s' : ''; }
+  private metered(id: string) {
+    return this.m.logged(id) || this.m.traceOf(id) > 0 || this.m.lockLeft(id) > 0;
+  }
+  private lockText(key: string) {
+    const ms = this.m.lockLeft(key);
+    return ms ? 'LOCKED · ' + Math.ceil(ms / 1000) + ' s' : '';
+  }
 
   render() {
     if (this.root.hidden) return;
     const d = this.m.devices.get(this.dev);
-    this.title.textContent = this.mode === 'board' ? 'SCHEMATIC · ' + this.known.size + ' devices' : (d?.name ?? '') + ' · schematic';
+    this.title.textContent =
+      this.mode === 'board'
+        ? 'SCHEMATIC · ' + this.known.size + ' devices'
+        : (d?.name ?? '') + ' · schematic';
     this.modeBtn.textContent = this.mode === 'board' ? 'THIS DEVICE' : 'BOARD · B';
     this.palette.hidden = this.mode === 'vision' ? !this.drawer : this.mode !== 'board';
     if (this.info) this.info.textContent = this.drawerInfo();
     // (the help line steps aside while the drawer is open: the two would stack over the scene)
     this.dock?.classList.toggle('drawer', this.drawer);
-    if (!this.palette.hidden) this.slots.forEach(({ kind, btn }) => {
-      const mod = this.m.module(kind)!, owned = this.m.owns(kind);
-      btn.disabled = !owned; btn.classList.toggle('missing', !owned);
-      // hack vision's drawer keeps the slots you have not found yet out of sight
-      btn.hidden = this.mode === 'vision' && !owned;
-      btn.textContent = owned ? '+ ' + mod.part.name : '???';
-      btn.title = owned ? mod.id + ': ' + mod.part.look : 'a logic module: not found yet';
-    });
+    if (!this.palette.hidden)
+      this.slots.forEach(({ kind, btn }) => {
+        const mod = this.m.module(kind)!,
+          owned = this.m.owns(kind);
+        btn.disabled = !owned;
+        btn.classList.toggle('missing', !owned);
+        // hack vision's drawer keeps the slots you have not found yet out of sight
+        btn.hidden = this.mode === 'vision' && !owned;
+        btn.textContent = owned ? '+ ' + mod.part.name : '???';
+        btn.title = owned ? mod.id + ': ' + mod.part.look : 'a logic module: not found yet';
+      });
     this.keyring();
     this.stage.querySelectorAll('.sch').forEach((g) => g.remove());
     // things you placed or connected are yours: they are on the board from the start
-    [...this.m.devices.values()].filter((x) => x.crafted || x.node).forEach((x) => this.known.add(x.id));
+    [...this.m.devices.values()]
+      .filter((x) => x.crafted || x.node)
+      .forEach((x) => this.known.add(x.id));
     const ids = this.ids();
     // what you have seen in hack vision you can wire from the board
     if (this.mode === 'vision') ids.forEach((id) => this.known.add(id));
     this.stage.querySelectorAll('.vis-outline').forEach((f) => f.remove());
     if (this.mode === 'vision') ids.forEach((id) => this.stage.appendChild(this.frame(id)));
     ids.forEach((id) => this.stage.appendChild(this.group(id)));
-    if (this.mode === 'board') this.m.ghosts().forEach((n) => this.stage.appendChild(this.ghost(n)));
+    if (this.mode === 'board')
+      this.m.ghosts().forEach((n) => this.stage.appendChild(this.ghost(n)));
     this.arrange();
     this.lines();
     drawWatchdogs(this.stage, this.m, this.mode);
     const inp = this.stage.querySelector<HTMLInputElement>('.sch-guess input');
-    if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+    if (inp) {
+      inp.focus();
+      inp.setSelectionRange(inp.value.length, inp.value.length);
+    }
   }
 
   /** The keyring: a chip per item. Drag one onto a login or a sealed `???`; tap one while typing to type it. */
@@ -663,50 +1033,103 @@ export class Schematic {
     if (this.ring.hidden) return;
     this.ring.appendChild(el('span', '', this.m.label('keyring.title')));
     items.forEach((k) => {
-      const b = el('button', 'sch-chip ' + k.kind + (this.chip === k.id ? ' armed' : ''), k.label); b.type = 'button'; b.dataset.chip = k.id;
-      b.title = k.kind === 'fragment' ? k.label + ': "' + k.text + '"' : k.label + (k.kind === 'card' ? ' (a card: lock toys take it)' : ' (a key chip)');
+      const b = el('button', 'sch-chip ' + k.kind + (this.chip === k.id ? ' armed' : ''), k.label);
+      b.type = 'button';
+      b.dataset.chip = k.id;
+      b.title =
+        k.kind === 'fragment'
+          ? k.label + ': "' + k.text + '"'
+          : k.label + (k.kind === 'card' ? ' (a card: lock toys take it)' : ' (a key chip)');
       b.addEventListener('pointerdown', (e) => this.startChip(e, k.id));
       b.addEventListener('click', (e) => e.stopPropagation());
       this.ring.appendChild(b);
       // [ui] a fragment you made can be thrown away (the data's own are evidence: they stay)
       if (this.m.isMade(k.id)) {
-        const x = el('button', 'sch-chip-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'drop ' + k.label);
+        const x = el('button', 'sch-chip-x', '×');
+        x.type = 'button';
+        x.setAttribute('aria-label', 'drop ' + k.label);
         x.addEventListener('pointerdown', (e) => e.stopPropagation());
-        x.addEventListener('click', (e) => { e.stopPropagation(); if (this.chip === k.id) this.chip = null; this.m.discard(k.id); this.say(this.m.line('keyring.discard', { label: k.label })); });
+        x.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (this.chip === k.id) this.chip = null;
+          this.m.discard(k.id);
+          this.say(this.m.line('keyring.discard', { label: k.label }));
+        });
         this.ring.appendChild(x);
       }
     });
   }
 
   private group(id: string) {
-    const d = this.m.devices.get(id)!, locked = this.m.lockLeft(id) > 0, frozen = this.m.frozen(id);
-    const vision = this.mode === 'vision', out = !vision || this.isUnfolded(id);
-    const g = el('div', 'sch' + (d.crafted ? ' crafted' : '') + (d.node ? ' node' : '') + (locked ? ' locked' : '') + (frozen ? ' frozen' : '')
-      + (vision ? ' vis' + (this.placedByHand(id) ? ' moved' : '') + (out ? '' : ' folded') : '')); g.dataset.dev = id;
-    const c = this.centre(id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
+    const d = this.m.devices.get(id)!,
+      locked = this.m.lockLeft(id) > 0,
+      frozen = this.m.frozen(id);
+    const vision = this.mode === 'vision',
+      out = !vision || this.isUnfolded(id);
+    const g = el(
+      'div',
+      'sch' +
+        (d.crafted ? ' crafted' : '') +
+        (d.node ? ' node' : '') +
+        (locked ? ' locked' : '') +
+        (frozen ? ' frozen' : '') +
+        (vision ? ' vis' + (this.placedByHand(id) ? ' moved' : '') + (out ? '' : ' folded') : ''),
+    );
+    g.dataset.dev = id;
+    const c = this.centre(id);
+    g.style.left = c.x + 'px';
+    g.style.top = c.y + 'px';
     const core = el('div', 'sch-core');
     // [ui] the meter: a bar and its words (TRACE 42% / LOCKED · 7 s), kept current by meters()
     const meter = () => {
-      const t = el('div', 'sch-trace'), left = this.m.lockLeft(id); t.dataset.dev = id;
-      const bar = el('i'); bar.style.width = (left ? (left / Math.max(1, this.m.lockSpan(id))) * 100 : this.m.traceOf(id)) + '%';
+      const t = el('div', 'sch-trace'),
+        left = this.m.lockLeft(id);
+      t.dataset.dev = id;
+      const bar = el('i');
+      bar.style.width =
+        (left ? (left / Math.max(1, this.m.lockSpan(id))) * 100 : this.m.traceOf(id)) + '%';
       t.classList.toggle('lock', left > 0);
-      t.append(bar, el('b', '', left ? this.m.label('lock.meter', { sec: Math.ceil(left / 1000) }) : this.m.label('trace.meter', { pct: Math.round(this.m.traceOf(id)) })));
+      t.append(
+        bar,
+        el(
+          'b',
+          '',
+          left
+            ? this.m.label('lock.meter', { sec: Math.ceil(left / 1000) })
+            : this.m.label('trace.meter', { pct: Math.round(this.m.traceOf(id)) }),
+        ),
+      );
       return t;
     };
-    const st = el('div', 'sch-st', locked ? this.lockText(id) : frozen ? this.m.label('watchdog.name') + ' · FROZEN' : d.status());
+    const st = el(
+      'div',
+      'sch-st',
+      locked
+        ? this.lockText(id)
+        : frozen
+          ? this.m.label('watchdog.name') + ' · FROZEN'
+          : d.status(),
+    );
     if (locked) st.dataset.lock = id;
     // hack vision: the card is the name, one line; its status shows under it only while the device is open
     if (vision) {
       core.appendChild(el('div', 'sch-name', d.name));
-      if (out) { st.classList.add('vis-st'); g.appendChild(st); }
+      if (out) {
+        st.classList.add('vis-st');
+        g.appendChild(st);
+      }
     } else core.append(el('div', 'sch-name', d.name), st);
     if (this.metered(id)) core.appendChild(meter());
     // (in hack vision the part's body in the world carries the ×)
     if (d.logic && !vision) {
-      const x = el('button', 'sch-x', '×'); x.type = 'button';
+      const x = el('button', 'sch-x', '×');
+      x.type = 'button';
       x.setAttribute('aria-label', 'remove ' + d.name);
       x.addEventListener('pointerdown', (e) => e.stopPropagation());
-      x.addEventListener('click', (e) => { e.stopPropagation(); this.removeLogic(id); });
+      x.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeLogic(id);
+      });
       core.appendChild(x);
     }
     if (vision) {
@@ -715,25 +1138,46 @@ export class Schematic {
       core.title = d.name + ' · tap: ' + (out ? 'fold' : 'unfold') + ' · drag: move';
       core.addEventListener('pointerdown', (e) => {
         if (e.button > 0) return;
-        e.preventDefault(); e.stopPropagation();
-        this.dragPiece(e, id, () => { if (!(this.armed && out)) this.fold(id); });
+        e.preventDefault();
+        e.stopPropagation();
+        this.dragPiece(e, id, () => {
+          if (!(this.armed && out)) this.fold(id);
+        });
       });
     } else this.coreGestures(core, g, id, () => this.toggleAll(id));
     g.appendChild(core);
-    if (out) d.nouns.forEach((n, i) => {
-      const key = id + '.' + n.id, o = this.offset(id, n.id, i);
-      if (n.sector && this.m.sealed(id, n.sector)) { g.appendChild(this.sealedNoun(id, n.sector, key, o)); return; }
-      const choosing = this.pending?.to === key;
-      const target = !!this.armed || (!!this.chip && n.behaviour === 'guard');
-      const node = el('div', 'sch-noun' + (this.open.has(key) || choosing ? ' open' : '') + (choosing ? ' choosing' : '') + (target ? ' target' : '') + (n.behaviour === 'seal' ? ' seal' : '') + ' layer-' + n.layer);
-      node.dataset.target = key; node.style.left = o.x + 'px'; node.style.top = o.y + 'px';
-      const label = el('div', 'sch-label'); label.append(el('span', '', n.id), el('small', '', n.function));
-      node.appendChild(label);
-      (n.events ?? []).forEach((ev) => node.appendChild(this.eventDot(key + ':' + ev, ev)));
-      if (this.open.has(key) || choosing) node.appendChild(this.verbs(id, n.id, key, o, choosing));
-      this.nounGestures(node, key);
-      g.appendChild(node);
-    });
+    if (out)
+      d.nouns.forEach((n, i) => {
+        const key = id + '.' + n.id,
+          o = this.offset(id, n.id, i);
+        if (n.sector && this.m.sealed(id, n.sector)) {
+          g.appendChild(this.sealedNoun(id, n.sector, key, o));
+          return;
+        }
+        const choosing = this.pending?.to === key;
+        const target = !!this.armed || (!!this.chip && n.behaviour === 'guard');
+        const node = el(
+          'div',
+          'sch-noun' +
+            (this.open.has(key) || choosing ? ' open' : '') +
+            (choosing ? ' choosing' : '') +
+            (target ? ' target' : '') +
+            (n.behaviour === 'seal' ? ' seal' : '') +
+            ' layer-' +
+            n.layer,
+        );
+        node.dataset.target = key;
+        node.style.left = o.x + 'px';
+        node.style.top = o.y + 'px';
+        const label = el('div', 'sch-label');
+        label.append(el('span', '', n.id), el('small', '', n.function));
+        node.appendChild(label);
+        (n.events ?? []).forEach((ev) => node.appendChild(this.eventDot(key + ':' + ev, ev)));
+        if (this.open.has(key) || choosing)
+          node.appendChild(this.verbs(id, n.id, key, o, choosing));
+        this.nounGestures(node, key);
+        g.appendChild(node);
+      });
     return g;
   }
 
@@ -741,14 +1185,26 @@ export class Schematic {
   private sealedNoun(dev: string, sector: string, key: string, o: P | null) {
     const node = el('div', 'sch-noun sealed' + (this.chip ? ' target' : ''));
     node.dataset.sealed = key;
-    if (o) { node.style.left = o.x + 'px'; node.style.top = o.y + 'px'; }
+    if (o) {
+      node.style.left = o.x + 'px';
+      node.style.top = o.y + 'px';
+    }
     const s = this.m.sector(dev, sector)!;
-    const label = el('div', 'sch-label'); label.append(el('span', '', '???'), el('small', '', s.label ?? 'SEALED'));
+    const label = el('div', 'sch-label');
+    label.append(el('span', '', '???'), el('small', '', s.label ?? 'SEALED'));
     node.appendChild(label);
-    node.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); });
+    node.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
     node.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (this.chip) { const c = this.chip; this.chip = null; this.m.useItem(c, key); return; }
+      if (this.chip) {
+        const c = this.chip;
+        this.chip = null;
+        this.m.useItem(c, key);
+        return;
+      }
       this.say(this.m.trySeal(dev, sector));
       this.m.changed();
     });
@@ -757,40 +1213,77 @@ export class Schematic {
 
   /** A node seen on a scan, not connected yet: a silhouette you can move, not open. */
   private ghost(n: { id: string; name: string; link: string }) {
-    const g = el('div', 'sch ghost'); g.dataset.ghost = n.id;
-    const c = this.centre(n.id); g.style.left = c.x + 'px'; g.style.top = c.y + 'px';
+    const g = el('div', 'sch ghost');
+    g.dataset.ghost = n.id;
+    const c = this.centre(n.id);
+    g.style.left = c.x + 'px';
+    g.style.top = c.y + 'px';
     const core = el('div', 'sch-core');
     core.append(el('div', 'sch-name', n.name), el('div', 'sch-st', '? · not connected'));
-    this.coreGestures(core, g, n.id, () => this.note(this.m.line('net.ghost', { name: n.name, link: n.link })));
+    this.coreGestures(core, g, n.id, () =>
+      this.note(this.m.line('net.ghost', { name: n.name, link: n.link })),
+    );
     g.appendChild(core);
     return g;
   }
 
   private verbs(dev: string, noun: string, key: string, o: P, choosing: boolean) {
     // (in hack vision the nouns stand over or under their core: verbs open away from it, up or down)
-    const side = this.mode === 'vision' ? (o.y < 0 ? 'up' : 'down') : Math.abs(o.x) >= Math.abs(o.y) ? (o.x >= 0 ? 'right' : 'left') : (o.y >= 0 ? 'down' : 'up');
+    const side =
+      this.mode === 'vision'
+        ? o.y < 0
+          ? 'up'
+          : 'down'
+        : Math.abs(o.x) >= Math.abs(o.y)
+          ? o.x >= 0
+            ? 'right'
+            : 'left'
+          : o.y >= 0
+            ? 'down'
+            : 'up';
     const box = el('div', 'sch-verbs ' + side + (choosing ? ' choosing' : ''));
-    if (choosing) box.appendChild(el('span', 'sch-when', 'when ' + this.pending!.from.split('.')[1].replace(':', ' ') + ' →'));
+    if (choosing)
+      box.appendChild(
+        el('span', 'sch-when', 'when ' + this.pending!.from.split('.')[1].replace(':', ' ') + ' →'),
+      );
     const n = this.m.noun(key)!;
-    const cur = n.current?.() ?? null, guardLocked = n.behaviour === 'guard' && this.m.lockLeft(key) > 0;
+    const cur = n.current?.() ?? null,
+      guardLocked = n.behaviour === 'guard' && this.m.lockLeft(key) > 0;
     const typeVerb = n.behaviour === 'guard' ? this.m.typeVerb : null;
-    if (guardLocked && !choosing) { const t = el('span', 'sch-when', this.lockText(key)); t.dataset.lock = key; box.appendChild(t); }
+    if (guardLocked && !choosing) {
+      const t = el('span', 'sch-when', this.lockText(key));
+      t.dataset.lock = key;
+      box.appendChild(t);
+    }
     n.verbs.forEach((v) => {
-      if (v === typeVerb && this.typing === key && !choosing) { box.appendChild(this.guessBox(dev, noun)); return; }
-      const b = el('button', 'sch-verb' + (v === cur && !choosing ? ' cur' : '') + (v.startsWith('try ') && n.behaviour === 'guard' ? ' try' : ''), v); b.type = 'button';
+      if (v === typeVerb && this.typing === key && !choosing) {
+        box.appendChild(this.guessBox(dev, noun));
+        return;
+      }
+      const b = el(
+        'button',
+        'sch-verb' +
+          (v === cur && !choosing ? ' cur' : '') +
+          (v.startsWith('try ') && n.behaviour === 'guard' ? ' try' : ''),
+        v,
+      );
+      b.type = 'button';
       b.addEventListener('pointerdown', (e) => e.stopPropagation());
       b.addEventListener('click', (e) => {
         e.stopPropagation();
         if (choosing) {
-          const p = this.pending!; this.pending = null;
+          const p = this.pending!;
+          this.pending = null;
           // hack vision keeps circuits compact: the verbs picked for a cable fold away again
           if (this.mode === 'vision') this.open.delete(p.to);
-          const line=this.m.connect(p.from,p.to,v);
-          if(line[2]==='ok')this.hints?.done('ctl.wire');
+          const line = this.m.connect(p.from, p.to, v);
+          if (line[2] === 'ok') this.hints?.done('ctl.wire');
           this.say(line);
-        }
-        else if (v === typeVerb) { this.typing = key; this.draft = ''; this.render(); }
-        else this.m.act(dev, noun, v);
+        } else if (v === typeVerb) {
+          this.typing = key;
+          this.draft = '';
+          this.render();
+        } else this.m.act(dev, noun, v);
       });
       box.appendChild(b);
     });
@@ -800,16 +1293,28 @@ export class Schematic {
   /** The keyboard, last resort: a guess typed at a GUARD. Keys stay here (B or H must not leave the schematic). */
   private guessBox(dev: string, noun: string) {
     const box = el('label', 'sch-guess');
-    const inp = el('input'); inp.type = 'text'; inp.value = this.draft; inp.placeholder = this.m.label('guard.placeholder');
-    inp.setAttribute('aria-label', 'password for ' + noun); inp.autocomplete = 'off'; inp.spellcheck = false;
+    const inp = el('input');
+    inp.type = 'text';
+    inp.value = this.draft;
+    inp.placeholder = this.m.label('guard.placeholder');
+    inp.setAttribute('aria-label', 'password for ' + noun);
+    inp.autocomplete = 'off';
+    inp.spellcheck = false;
     inp.addEventListener('pointerdown', (e) => e.stopPropagation());
-    inp.addEventListener('input', () => { this.draft = inp.value; });
+    inp.addEventListener('input', () => {
+      this.draft = inp.value;
+    });
     inp.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      if (e.key === 'Escape') { this.typing = null; this.render(); return; }
+      if (e.key === 'Escape') {
+        this.typing = null;
+        this.render();
+        return;
+      }
       if (e.key !== 'Enter' || !inp.value.trim()) return;
       const text = inp.value.trim();
-      this.typing = null; this.draft = '';
+      this.typing = null;
+      this.draft = '';
       this.m.guess(dev, noun, text);
     });
     box.appendChild(inp);
@@ -817,7 +1322,9 @@ export class Schematic {
   }
 
   private eventDot(key: string, label: string) {
-    const b = el('button', 'port' + (this.armed === key ? ' armed' : '')); b.type = 'button'; b.dataset.port = key;
+    const b = el('button', 'port' + (this.armed === key ? ' armed' : ''));
+    b.type = 'button';
+    b.dataset.port = key;
     b.setAttribute('aria-label', 'event ' + key + ': drag onto another noun');
     b.append(el('span', '', label), el('i'));
     b.addEventListener('pointerdown', (e) => this.startWire(e, key));
@@ -825,12 +1332,23 @@ export class Schematic {
     return b;
   }
 
-  private pt(e: Element): P { const r = e.getBoundingClientRect(), s = this.stage.getBoundingClientRect(); return { x: r.left - s.left + r.width / 2, y: r.top - s.top + r.height / 2 }; }
+  private pt(e: Element): P {
+    const r = e.getBoundingClientRect(),
+      s = this.stage.getBoundingClientRect();
+    return { x: r.left - s.left + r.width / 2, y: r.top - s.top + r.height / 2 };
+  }
   private path(a: P, b: P, cls: string, curve = false) {
     const p = document.createElementNS(NS, 'path');
     const mx = (a.x + b.x) / 2;
-    p.setAttribute('d', curve ? `M${a.x},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x},${b.y}` : `M${a.x},${a.y} L${b.x},${b.y}`);
-    p.setAttribute('class', cls); this.svg.appendChild(p); return p;
+    p.setAttribute(
+      'd',
+      curve
+        ? `M${a.x},${a.y} C${mx},${a.y} ${mx},${b.y} ${b.x},${b.y}`
+        : `M${a.x},${a.y} L${b.x},${b.y}`,
+    );
+    p.setAttribute('class', cls);
+    this.svg.appendChild(p);
+    return p;
   }
 
   private lines() {
@@ -842,12 +1360,18 @@ export class Schematic {
       // each core stays tied to its device: a leader from the core to the nearest point of the frame
       const st = this.stage.getBoundingClientRect();
       this.stage.querySelectorAll<HTMLElement>('.sch.vis').forEach((g) => {
-        const core = g.querySelector('.sch-core'), frame = this.stage.querySelector(`[data-frame="${g.dataset.dev}"]`);
+        const core = g.querySelector('.sch-core'),
+          frame = this.stage.querySelector(`[data-frame="${g.dataset.dev}"]`);
         if (!core || !frame) return;
-        const c = core.getBoundingClientRect(), f = frame.getBoundingClientRect();
+        const c = core.getBoundingClientRect(),
+          f = frame.getBoundingClientRect();
         const a = { x: c.left - st.left + c.width / 2, y: c.top - st.top + c.height / 2 };
-        const l = f.left - st.left, t = f.top - st.top;
-        const p = { x: Math.max(l, Math.min(l + f.width, a.x)), y: Math.max(t, Math.min(t + f.height, a.y)) };
+        const l = f.left - st.left,
+          t = f.top - st.top;
+        const p = {
+          x: Math.max(l, Math.min(l + f.width, a.x)),
+          y: Math.max(t, Math.min(t + f.height, a.y)),
+        };
         if (Math.hypot(a.x - p.x, a.y - p.y) > 2) this.path(a, p, 'leader');
       });
     }
@@ -856,7 +1380,8 @@ export class Schematic {
       g.querySelectorAll('.sch-noun').forEach((n) => {
         const q = this.pt(n.querySelector('.sch-label')!);
         this.path(c, q, 'branch' + (n.classList.contains('sealed') ? ' sealed' : ''));
-        const v = n.querySelector('.sch-verbs'); if (v) this.path(q, this.pt(v), 'branch');
+        const v = n.querySelector('.sch-verbs');
+        if (v) this.path(q, this.pt(v), 'branch');
       });
     });
     this.m.links.forEach((l) => this.cable(l));
@@ -864,35 +1389,70 @@ export class Schematic {
 
   private cable(l: Link) {
     // in hack vision a folded circuit still shows its cables: they end at its name plate
-    const plate = (key: string) => (this.mode === 'vision' ? this.stage.querySelector(`[data-plate="${key.split('.')[0]}"]`) : null);
-    const a = this.stage.querySelector(`[data-port="${l.from}"] i`) ?? plate(l.from), b = this.stage.querySelector(`[data-target="${l.to}"] .sch-label`) ?? plate(l.to);
+    const plate = (key: string) =>
+      this.mode === 'vision'
+        ? this.stage.querySelector(`[data-plate="${key.split('.')[0]}"]`)
+        : null;
+    const a = this.stage.querySelector(`[data-port="${l.from}"] i`) ?? plate(l.from),
+      b = this.stage.querySelector(`[data-target="${l.to}"] .sch-label`) ?? plate(l.to);
     if (!a || !b || a === b) return;
-    const P1 = this.pt(a), P2 = this.pt(b);
+    const P1 = this.pt(a),
+      P2 = this.pt(b);
     // [fixed cables] a conduit: a wide solid casing under the line, and a tap only says it cannot be cut
     if (l.fixed) this.path(P1, P2, 'conduit', true);
     const hit = this.path(P1, P2, 'hit', true);
-    hit.addEventListener('click', (e) => { e.stopPropagation(); this.say(this.m.cut(l)); });
-    this.path(P1, P2, 'cable' + (this.m.live.has(l) ? ' live' : '') + (l.fixed ? ' fixed' : ''), true);
+    hit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.say(this.m.cut(l));
+    });
+    this.path(
+      P1,
+      P2,
+      'cable' + (this.m.live.has(l) ? ' live' : '') + (l.fixed ? ' fixed' : ''),
+      true,
+    );
     const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', String((P1.x + P2.x) / 2)); t.setAttribute('y', String((P1.y + P2.y) / 2 - 6));
-    t.setAttribute('text-anchor', 'middle'); t.setAttribute('class', 'verb'); t.textContent = l.verb;
+    t.setAttribute('x', String((P1.x + P2.x) / 2));
+    t.setAttribute('y', String((P1.y + P2.y) / 2 - 6));
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('class', 'verb');
+    t.textContent = l.verb;
     this.tags.appendChild(t);
     // clear of the names and cores it would sit on: a little higher, or under the cable, whichever is free
     const st = this.stage.getBoundingClientRect();
-    const boxes = [...this.stage.querySelectorAll('.sch-label, .sch-core, .sch-verbs')].map((e) => e.getBoundingClientRect());
-    const mx = (P1.x + P2.x) / 2, my = (P1.y + P2.y) / 2;
+    const boxes = [...this.stage.querySelectorAll('.sch-label, .sch-core, .sch-verbs')].map((e) =>
+      e.getBoundingClientRect(),
+    );
+    const mx = (P1.x + P2.x) / 2,
+      my = (P1.y + P2.y) / 2;
     for (const dy of [-6, -16, 14, -26, 24]) {
       t.setAttribute('y', String(my + dy));
-      const r = t.getBoundingClientRect(), l0 = r.left - st.left, t0 = r.top - st.top;
-      if (!boxes.some((b) => l0 < b.right - st.left && l0 + r.width > b.left - st.left && t0 < b.bottom - st.top && t0 + r.height > b.top - st.top)) break;
+      const r = t.getBoundingClientRect(),
+        l0 = r.left - st.left,
+        t0 = r.top - st.top;
+      if (
+        !boxes.some(
+          (b) =>
+            l0 < b.right - st.left &&
+            l0 + r.width > b.left - st.left &&
+            t0 < b.bottom - st.top &&
+            t0 + r.height > b.top - st.top,
+        )
+      )
+        break;
       if (dy === 24) t.setAttribute('y', String(my - 6));
     }
     t.setAttribute('x', String(mx));
   }
 
   /** Shared UI gesture lifetime; closing a layer never runs its pending tap/drop. */
-  private trackGesture(start:PointerEvent,move:(e:PointerEvent)=>void,finish:(e:PointerEvent)=>void,canceled:()=>void=()=>{}) {
-    (this.gesture??=new PointerGesture()).start(start,move,finish,canceled);
+  private trackGesture(
+    start: PointerEvent,
+    move: (e: PointerEvent) => void,
+    finish: (e: PointerEvent) => void,
+    canceled: () => void = () => {},
+  ) {
+    (this.gesture ??= new PointerGesture()).start(start, move, finish, canceled);
   }
 
   // ---------- gestures ----------
@@ -900,24 +1460,33 @@ export class Schematic {
   /** Device box (or a silhouette): drag it on the board, or tap it. */
   private coreGestures(core: HTMLElement, g: HTMLElement, id: string, tap: () => void) {
     core.addEventListener('pointerdown', (e) => {
-      e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
-      const sx = e.clientX, sy = e.clientY, start = this.boardPos.get(id) ?? { x: 0, y: 0 };
+      e.preventDefault();
+      e.stopPropagation();
+      this.cancelGesture?.();
+      const sx = e.clientX,
+        sy = e.clientY,
+        start = this.boardPos.get(id) ?? { x: 0, y: 0 };
       let moved = false;
       const mv = (ev: PointerEvent) => {
         if (this.mode !== 'board') return;
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 5) moved = true;
         if (!moved) return;
-        const W = this.stage.clientWidth, H = this.stage.clientHeight;
-        const p = { x: Math.max(0.04, Math.min(0.96, start.x + (ev.clientX - sx) / W)), y: Math.max(0.06, Math.min(0.94, start.y + (ev.clientY - sy) / H)) };
+        const W = this.stage.clientWidth,
+          H = this.stage.clientHeight;
+        const p = {
+          x: Math.max(0.04, Math.min(0.96, start.x + (ev.clientX - sx) / W)),
+          y: Math.max(0.06, Math.min(0.94, start.y + (ev.clientY - sy) / H)),
+        };
         this.boardPos.set(id, p);
-        g.style.left = p.x * W + 'px'; g.style.top = p.y * H + 'px';
+        g.style.left = p.x * W + 'px';
+        g.style.top = p.y * H + 'px';
         this.lines();
       };
       const up = () => {
-
-        if (!moved) tap(); else this.onLayout();
+        if (!moved) tap();
+        else this.onLayout();
       };
-      this.trackGesture(e,mv,up);
+      this.trackGesture(e, mv, up);
     });
   }
 
@@ -926,7 +1495,12 @@ export class Schematic {
    * world, so its other nouns' verbs fold away (they would cover each other).
    */
   private only(key: string) {
-    if (this.mode === 'vision') { const dev = key.split('.')[0] + '.'; [...this.open].forEach((k) => { if (k.startsWith(dev)) this.open.delete(k); }); }
+    if (this.mode === 'vision') {
+      const dev = key.split('.')[0] + '.';
+      [...this.open].forEach((k) => {
+        if (k.startsWith(dev)) this.open.delete(k);
+      });
+    }
     this.open.add(key);
     this.hints?.done('ctl.noun');
   }
@@ -934,10 +1508,12 @@ export class Schematic {
   /** Open every verb of a device, or close them all if they are all open. */
   private toggleAll(id: string) {
     const d = this.m.devices.get(id)!;
-    const keys = d.nouns.filter((n) => !n.sector || !this.m.sealed(id, n.sector)).map((n) => id + '.' + n.id);
+    const keys = d.nouns
+      .filter((n) => !n.sector || !this.m.sealed(id, n.sector))
+      .map((n) => id + '.' + n.id);
     const all = keys.every((k) => this.open.has(k));
     keys.forEach((k) => (all ? this.open.delete(k) : this.open.add(k)));
-    if(!all&&keys.length)this.hints?.done('ctl.noun');
+    if (!all && keys.length) this.hints?.done('ctl.noun');
     this.render();
   }
 
@@ -945,102 +1521,173 @@ export class Schematic {
   private nounGestures(node: HTMLElement, key: string) {
     node.addEventListener('pointerdown', (e) => {
       if ((e.target as HTMLElement).closest('.port, .sch-verb, .sch-guess')) return;
-      e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
+      e.preventDefault();
+      e.stopPropagation();
+      this.cancelGesture?.();
       const tap = () => {
-        if (this.armed) { this.propose(this.armed, key); return; }
-        if (this.chip) { const c = this.chip; this.chip = null; this.m.useItem(c, key); return; }
+        if (this.armed) {
+          this.propose(this.armed, key);
+          return;
+        }
+        if (this.chip) {
+          const c = this.chip;
+          this.chip = null;
+          this.m.useItem(c, key);
+          return;
+        }
         this.pending = null;
-        if (this.open.has(key)) this.open.delete(key); else this.only(key);
+        if (this.open.has(key)) this.open.delete(key);
+        else this.only(key);
         this.render();
       };
-      const vision = this.mode === 'vision', dev = key.split('.')[0], noun = key.slice(dev.length + 1);
-      const sx = e.clientX, sy = e.clientY;
-      let o0 = vision ? this.visionOffset(dev, noun) : { ...(this.offsets.get(key) ?? { x: 0, y: 0 }) };
+      const vision = this.mode === 'vision',
+        dev = key.split('.')[0],
+        noun = key.slice(dev.length + 1);
+      const sx = e.clientX,
+        sy = e.clientY;
+      let o0 = vision
+        ? this.visionOffset(dev, noun)
+        : { ...(this.offsets.get(key) ?? { x: 0, y: 0 }) };
       let moved = false;
       const mv = (ev: PointerEvent) => {
         if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 5) {
           moved = true;
           // hack vision: the device keeps the nudge the overlap handling gave it, so nothing jumps
-          if (vision) { this.pin(dev); o0 = this.visionOffset(dev, noun); }
+          if (vision) {
+            this.pin(dev);
+            o0 = this.visionOffset(dev, noun);
+          }
         }
         if (!moved) return;
         const o = { x: o0.x + ev.clientX - sx, y: o0.y + ev.clientY - sy };
-        if (vision) { const u = this.unit || 1; this.voff.set(key, { x: o.x / u, y: o.y / u }); this.stage.querySelector(`.sch.vis[data-dev="${dev}"]`)?.classList.add('moved'); }
-        else this.offsets.set(key, o);
-        node.style.left = o.x + 'px'; node.style.top = o.y + 'px';
+        if (vision) {
+          const u = this.unit || 1;
+          this.voff.set(key, { x: o.x / u, y: o.y / u });
+          this.stage.querySelector(`.sch.vis[data-dev="${dev}"]`)?.classList.add('moved');
+        } else this.offsets.set(key, o);
+        node.style.left = o.x + 'px';
+        node.style.top = o.y + 'px';
         this.lines();
       };
       const up = () => {
-
-        if (moved) { this.render(); this.onLayout(); return; }
+        if (moved) {
+          this.render();
+          this.onLayout();
+          return;
+        }
         tap();
       };
-      this.trackGesture(e,mv,up);
+      this.trackGesture(e, mv, up);
     });
   }
 
   private startWire(e: PointerEvent, key: string) {
-    e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
-    this.armed = key; this.pending = null; this.chip = null; this.render();
-    const sx = e.clientX, sy = e.clientY;
+    e.preventDefault();
+    e.stopPropagation();
+    this.cancelGesture?.();
+    this.armed = key;
+    this.pending = null;
+    this.chip = null;
+    this.render();
+    const sx = e.clientX,
+      sy = e.clientY;
     let temp: SVGPathElement | null = null;
     const mv = (ev: PointerEvent) => {
-      const from = this.stage.querySelector(`[data-port="${key}"] i`); if (!from) return;
+      const from = this.stage.querySelector(`[data-port="${key}"] i`);
+      if (!from) return;
       const s = this.stage.getBoundingClientRect();
-      temp?.remove(); temp = this.path(this.pt(from), { x: ev.clientX - s.left, y: ev.clientY - s.top }, 'temp', true);
+      temp?.remove();
+      temp = this.path(
+        this.pt(from),
+        { x: ev.clientX - s.left, y: ev.clientY - s.top },
+        'temp',
+        true,
+      );
     };
     const up = (ev: PointerEvent) => {
-
       temp?.remove();
       // only this layer's nouns: hack vision may lie under the board
-      const target = this.under(ev, '[data-target]'), plate = target ? null : this.under(ev, '[data-plate]');
+      const target = this.under(ev, '[data-target]'),
+        plate = target ? null : this.under(ev, '[data-plate]');
       if (target) this.propose(key, target.dataset.target!);
       else if (plate) {
         // onto a folded device's plate: unfold it, the cable stays in hand
         const id = plate.dataset.plate!;
         if (!this.isUnfolded(id)) this.fold(id);
         this.note(['', 'cable in hand. tap the noun it should reach.', 'dim']);
-      }
-      else if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 12) { this.armed = null; this.render(); }
-      else this.note(['', this.mode === 'device' ? 'cable in hand. tap a noun, or open the BOARD to reach other devices.' : 'cable in hand. tap the noun it should reach.', 'dim']);
+      } else if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 12) {
+        this.armed = null;
+        this.render();
+      } else
+        this.note([
+          '',
+          this.mode === 'device'
+            ? 'cable in hand. tap a noun, or open the BOARD to reach other devices.'
+            : 'cable in hand. tap the noun it should reach.',
+          'dim',
+        ]);
     };
-    this.trackGesture(e,mv,up,()=>{temp?.remove();this.armed=null;this.pending=null;});
+    this.trackGesture(e, mv, up, () => {
+      temp?.remove();
+      this.armed = null;
+      this.pending = null;
+    });
   }
 
   /** This layer's element under the pointer that matches (hack vision may lie under the board). */
   private under(ev: PointerEvent, sel: string) {
-    return document.elementsFromPoint(ev.clientX, ev.clientY).filter((x) => this.stage.contains(x))
-      .map((x) => x.closest(sel) as HTMLElement | null).find(Boolean);
+    return document
+      .elementsFromPoint(ev.clientX, ev.clientY)
+      .filter((x) => this.stage.contains(x))
+      .map((x) => x.closest(sel) as HTMLElement | null)
+      .find(Boolean);
   }
 
   /** A keyring chip: drag it onto a login or a sealed noun; tap it to type it (input open) or to hold it. */
   private startChip(e: PointerEvent, id: string) {
-    e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
-    const sx = e.clientX, sy = e.clientY, chip = e.currentTarget as HTMLElement;
+    e.preventDefault();
+    e.stopPropagation();
+    this.cancelGesture?.();
+    const sx = e.clientX,
+      sy = e.clientY,
+      chip = e.currentTarget as HTMLElement;
     let moved = false;
     const mv = (ev: PointerEvent) => {
       if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) moved = true;
-      if (moved) { chip.style.transform = `translate(${ev.clientX - sx}px, ${ev.clientY - sy}px)`; chip.classList.add('dragging'); }
+      if (moved) {
+        chip.style.transform = `translate(${ev.clientX - sx}px, ${ev.clientY - sy}px)`;
+        chip.classList.add('dragging');
+      }
     };
     const up = (ev: PointerEvent) => {
-
-      chip.style.transform = ''; chip.classList.remove('dragging');
+      chip.style.transform = '';
+      chip.classList.remove('dragging');
       if (moved) {
         // onto another chip: combine them; onto a login or a sealed ???: use it
         const t = this.under(ev, '[data-chip], [data-target], [data-sealed]');
         this.chip = null;
-        if (t?.dataset.chip) { if (t.dataset.chip !== id) this.m.combine(id, t.dataset.chip); else this.render(); }
-        else if (t) this.m.useItem(id, t.dataset.target ?? t.dataset.sealed!);
+        if (t?.dataset.chip) {
+          if (t.dataset.chip !== id) this.m.combine(id, t.dataset.chip);
+          else this.render();
+        } else if (t) this.m.useItem(id, t.dataset.target ?? t.dataset.sealed!);
         else this.render();
         return;
       }
       const k = this.m.items().find((x) => x.id === id);
-      if (this.typing && k?.text) { this.draft += k.text; this.render(); return; }
+      if (this.typing && k?.text) {
+        this.draft += k.text;
+        this.render();
+        return;
+      }
       this.chip = this.chip === id ? null : id;
-      if (this.chip) this.note(['', (k?.label ?? id) + ' in hand. tap a login, or a sealed ???.', 'dim']);
+      if (this.chip)
+        this.note(['', (k?.label ?? id) + ' in hand. tap a login, or a sealed ???.', 'dim']);
       this.render();
     };
-    this.trackGesture(e,mv,up,()=>{chip.style.transform='';chip.classList.remove('dragging');});
+    this.trackGesture(e, mv, up, () => {
+      chip.style.transform = '';
+      chip.classList.remove('dragging');
+    });
   }
 
   // ---------- logic parts ----------
@@ -1051,66 +1698,113 @@ export class Schematic {
    */
   private dragOut(e: PointerEvent, kind: string) {
     if (e.button > 0) return;
-    e.preventDefault(); e.stopPropagation();this.cancelGesture?.();
-    const sx = e.clientX, sy = e.clientY;
+    e.preventDefault();
+    e.stopPropagation();
+    this.cancelGesture?.();
+    const sx = e.clientX,
+      sy = e.clientY;
     let id: string | null = null;
-    const at = (ev: PointerEvent) => { const s = this.stage.getBoundingClientRect(); return { x: ev.clientX - s.left, y: ev.clientY - s.top }; };
+    const at = (ev: PointerEvent) => {
+      const s = this.stage.getBoundingClientRect();
+      return { x: ev.clientX - s.left, y: ev.clientY - s.top };
+    };
     const mv = (ev: PointerEvent) => {
       if (!id) {
         if (Math.hypot(ev.clientX - sx, ev.clientY - sy) <= 6) return;
-        this.drawer = false; this.onDrawer();
+        this.drawer = false;
+        this.onDrawer();
         id = this.addLogic(kind);
-        if (!id) { this.cancelGesture?.(); return; }
+        if (!id) {
+          this.cancelGesture?.();
+          return;
+        }
       }
       this.onMovePart(id, at(ev));
     };
     const up = () => {
-
-      if (id) { this.onLayout(); return; }
-      this.drawer = false; this.onDrawer();
+      if (id) {
+        this.onLayout();
+        return;
+      }
+      this.drawer = false;
+      this.onDrawer();
       this.addLogic(kind);
     };
-    this.trackGesture(e,mv,up);
+    this.trackGesture(e, mv, up);
   }
 
   /** + TIMER / + SWITCH: a new part on the board, next to the palette, its verbs open. */
   private addLogic(kind: string): string | null {
     const id = this.m.addLogic(kind);
-    if (!id) { this.say(['add ' + kind, (this.m.module(kind)?.id ?? kind) + ': module not found. not yet, anyway.', 'err']); this.render(); return null; }
+    if (!id) {
+      this.say([
+        'add ' + kind,
+        (this.m.module(kind)?.id ?? kind) + ': module not found. not yet, anyway.',
+        'err',
+      ]);
+      this.render();
+      return null;
+    }
     const n = [...this.m.devices.values()].filter((d) => d.logic).length - 1;
     this.known.add(id);
     this.boardPos.set(id, { x: 0.14 + 0.15 * (n % 5), y: n % 10 < 5 ? 0.72 : 0.56 });
     if (this.mode === 'vision') {
       // in hack vision it floats next to you, its circuit unfolded
-      if (this.unfoldAll) this.folded.delete(id); else this.unfolded.add(id);
+      if (this.unfoldAll) this.folded.delete(id);
+      else this.unfolded.add(id);
       this.onPlace(id);
       this.say(['add ' + kind, kind + ' placed. wire an event into it, and it out.', 'ok']);
     } else {
       this.m.devices.get(id)?.nouns.forEach((x) => this.open.add(id + '.' + x.id));
       this.say(['add ' + kind, kind + ' on the board. wire an event into it, and it out.', 'ok']);
     }
-    this.render(); this.onLayout();
+    this.render();
+    this.onLayout();
     return id;
   }
 
   private removeLogic(id: string) {
     const name = this.m.devices.get(id)?.name ?? id;
     this.m.removeDevice(id);
-    this.known.delete(id); this.boardPos.delete(id); this.unfolded.delete(id); this.folded.delete(id); this.moved.delete(id);
-    this.open.forEach((k) => { if (k.startsWith(id + '.')) this.open.delete(k); });
-    this.armed = null; this.pending = null;
+    this.known.delete(id);
+    this.boardPos.delete(id);
+    this.unfolded.delete(id);
+    this.folded.delete(id);
+    this.moved.delete(id);
+    this.open.forEach((k) => {
+      if (k.startsWith(id + '.')) this.open.delete(k);
+    });
+    this.armed = null;
+    this.pending = null;
     if (this.dev === id) this.dev = '';
     this.say(['rm ' + id, name.toLowerCase() + ' removed, and its cables with it.', 'dim']);
-    if (this.mode === 'device') { if (this.known.size) this.openBoard(); else this.close(); return; }
+    if (this.mode === 'device') {
+      if (this.known.size) this.openBoard();
+      else this.close();
+      return;
+    }
     this.render();
   }
 
   private propose(from: string, to: string) {
     this.armed = null;
-    if (from.split(':')[0] === to) { this.note(['', 'a noun cannot wire to itself. it tried.', 'dim']); this.render(); return; }
-    if (this.m.noun(to)?.behaviour === 'guard') { this.note(['', 'a login wants a person at the keyboard, not a cable.', 'err']); this.render(); return; }
-    this.pending = { from, to }; this.only(to);
-    this.note(['wire ' + from + ' → ' + to, 'pick what ' + to.split('.')[1] + ' should do when that happens.', 'dim']);
+    if (from.split(':')[0] === to) {
+      this.note(['', 'a noun cannot wire to itself. it tried.', 'dim']);
+      this.render();
+      return;
+    }
+    if (this.m.noun(to)?.behaviour === 'guard') {
+      this.note(['', 'a login wants a person at the keyboard, not a cable.', 'err']);
+      this.render();
+      return;
+    }
+    this.pending = { from, to };
+    this.only(to);
+    this.note([
+      'wire ' + from + ' → ' + to,
+      'pick what ' + to.split('.')[1] + ' should do when that happens.',
+      'dim',
+    ]);
     this.render();
   }
 }

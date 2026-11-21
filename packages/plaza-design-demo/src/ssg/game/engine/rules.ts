@@ -1,5 +1,5 @@
-import type {StateRequirement} from '../data/state-requirements';
-import type {FeedbackReceipt} from './feedback-receipt';
+import type { StateRequirement } from '../data/state-requirements';
+import type { FeedbackReceipt } from './feedback-receipt';
 /**
  * What a scene's code provides to the engine, next to its data file: the named
  * effects its data calls, the panels its view implements, values it computes,
@@ -8,7 +8,7 @@ import type {FeedbackReceipt} from './feedback-receipt';
  * Pure: no DOM, so the build-time check and node scripts can import it.
  */
 
-import { ENGINE } from "../data/index";
+import { ENGINE } from '../data/index';
 import type { CodeContract } from '../data/check';
 import type { Value, SceneData, PartFunction, MechanismDevice } from '../data/types';
 import type { Ctx, Line, Spot, SceneModel } from './model';
@@ -17,14 +17,14 @@ export type Vars = Record<string, string | number>;
 
 /** What an effect may touch. `emit` raises an event on the noun it runs for. */
 export interface World {
-  input(id:string):import('./gameplay/types').GameplayResult;
+  input(id: string): import('./gameplay/types').GameplayResult;
   m: SceneModel;
   data: SceneData;
   line(key: string, vars?: Vars): Line;
   has(key: string): boolean;
   /** Say a line; `from` names who reacted when it is not this effect's own device (`'router'`, the companion's speaker id). */
   say(l: Line, from?: string): FeedbackReceipt;
-  receipt(l:Line,from?:string):FeedbackReceipt;
+  receipt(l: Line, from?: string): FeedbackReceipt;
   changed(): void;
   goal(g: string): void;
   tune(key: string): number;
@@ -38,7 +38,7 @@ export interface SceneRules {
   /** The scene's registered mechanisms as Circuit devices (cable endpoints). Set by the mechanism registry, never by a rule set itself. */
   mechanisms?: MechanismDevice[];
   /** Finite mechanical milestones emitted by this native algorithm. */
-  inputs?:readonly string[];
+  inputs?: readonly string[];
   /** Named effects the data may run (`{ "effect": "crane.claw" }`), besides the engine's (`timer.wait`). */
   effects: Record<string, Effect>;
   /** Panels this scene's view implements, besides the engine's `talk`. */
@@ -46,11 +46,20 @@ export interface SceneRules {
   /** Read-only values computed in code, usable in conditions and templates (`gateOpen`). */
   derived?: Record<string, (m: SceneModel) => Value>;
   /** Scalar types of physical observations available to authored read-only queries. */
-  derivedTypes?:Readonly<Record<string,import('./gameplay/queries').NativeReadType>>;
+  derivedTypes?: Readonly<Record<string, import('./gameplay/queries').NativeReadType>>;
   /** Named places the code measured from the scene's artwork (a gantry's `slot`, a crane's slots): where a mover's stop or a zone's edge may say `{ "place": name }`. */
   places?: Readonly<Record<string, { x: number; h: number }>>;
   /** What the code relies on: state keys, goals it ticks, text keys it asks for. */
-  needs?: { devices?:readonly {id:string;spot?:true;nouns?:readonly {id:string;function?:PartFunction;events?:readonly string[]}[]}[]; state?: readonly StateRequirement[]; goals?: string[]; texts?: Record<string, 'line' | 'label'> };
+  needs?: {
+    devices?: readonly {
+      id: string;
+      spot?: true;
+      nouns?: readonly { id: string; function?: PartFunction; events?: readonly string[] }[];
+    }[];
+    state?: readonly StateRequirement[];
+    goals?: string[];
+    texts?: Record<string, 'line' | 'label'>;
+  };
   /** Extra checks only this scene's code knows (a crate the parcel sits in). One message per problem. */
   check?: (z: SceneData) => string[];
   /**
@@ -66,7 +75,9 @@ export interface SceneRules {
    */
   place?: (m: SceneModel, home: Spot) => Spot | null;
   /** Compiler-owned displacement of device/interaction artwork attached to moving vehicle frames. */
-  attachmentOffsets?: (m:SceneModel)=>import('./gameplay/moving-manifest-geometry').AttachmentOffsets;
+  attachmentOffsets?: (
+    m: SceneModel,
+  ) => import('./gameplay/moving-manifest-geometry').AttachmentOffsets;
 }
 
 /** The engine's own texts, by kind: every scene has them (engine.json), and may override them with the same kind. */
@@ -91,16 +102,20 @@ export const ENGINE_EFFECTS: Record<string, Effect> = {
 };
 
 /** What the build checks a scene file against: the scene's code plus the engine. */
-export function contractOf(r: SceneRules,routes:readonly {device:string;noun:string;verb:string}[] = [],queries:readonly string[]=[]): CodeContract {
+export function contractOf(
+  r: SceneRules,
+  routes: readonly { device: string; noun: string; verb: string }[] = [],
+  queries: readonly string[] = [],
+): CodeContract {
   return {
-    devices:r.needs?.devices,
-    nativeVerbs:routes.map(r=>r.device+'.'+r.noun+':'+r.verb),
+    devices: r.needs?.devices,
+    nativeVerbs: routes.map((r) => r.device + '.' + r.noun + ':' + r.verb),
     effects: [...Object.keys(ENGINE_EFFECTS), ...Object.keys(r.effects)],
     panels: [...ENGINE_PANELS, ...(r.panels ?? [])],
     state: r.needs?.state ?? [],
     inputs: [...(r.inputs ?? [])],
     ...(r.places ? { places: Object.keys(r.places) } : {}),
-    derived: [...new Set([...Object.keys(r.derived ?? {}),...queries])],
+    derived: [...new Set([...Object.keys(r.derived ?? {}), ...queries])],
     goals: r.needs?.goals ?? [],
     texts: { ...ENGINE_TEXTS, ...(r.needs?.texts ?? {}) },
     ...(r.mechanisms?.length ? { mechanisms: r.mechanisms } : {}),

@@ -14,9 +14,7 @@ export function MarkdownRenderer({ content, className, showTitle = false }: Mark
 
   return (
     <article className={`plaza ${className || ''}`}>
-      {showTitle && metadata.title && (
-        <h1 className="plaza-title">{metadata.title}</h1>
-      )}
+      {showTitle && metadata.title && <h1 className="plaza-title">{metadata.title}</h1>}
       <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
         {body}
       </ReactMarkdown>

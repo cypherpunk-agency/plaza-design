@@ -1,12 +1,20 @@
-import {fixedGeometry} from '../core/spatial';
-import {seconds} from '../core/fields';
-import {velocity} from '../core/fields';
-import {contextualEditor} from '../core/fields';
-import {textField} from '../core/fields';
-import {numericFields} from '../core/fields';
-import {appearanceBoolean,appearanceChoice,appearanceRatio,appearanceStructure,appearanceText,semantic,shapeLength} from '../core/fields';
-import {boundsFromEdges} from '../core/geometry';
-import {endpointControls,rectangleControls} from '../core/spatial';
+import { fixedGeometry } from '../core/spatial';
+import { seconds } from '../core/fields';
+import { velocity } from '../core/fields';
+import { contextualEditor } from '../core/fields';
+import { textField } from '../core/fields';
+import { numericFields } from '../core/fields';
+import {
+  appearanceBoolean,
+  appearanceChoice,
+  appearanceRatio,
+  appearanceStructure,
+  appearanceText,
+  semantic,
+  shapeLength,
+} from '../core/fields';
+import { boundsFromEdges } from '../core/geometry';
+import { endpointControls, rectangleControls } from '../core/spatial';
 /**
  * LEVEL KIT: what makes a scene more than one street line. Floors are walkable lines at a height;
  * stairs and escalators join two floors; a lift carries the player between the floors its shaft
@@ -20,246 +28,646 @@ import {endpointControls,rectangleControls} from '../core/spatial';
  */
 import type { AssetDefinition, Field, Properties } from '../core/composition';
 import type { View } from '../core/view';
-const fixedNativeGeometry=fixedGeometry("This level component follows its typed level/polygon or device configuration. Edit that configuration through the existing level controls; a single body-box resize would not preserve its geometry.");
+const fixedNativeGeometry = fixedGeometry(
+  'This level component follows its typed level/polygon or device configuration. Edit that configuration through the existing level controls; a single body-box resize would not preserve its geometry.',
+);
 
-const num = numericFields({step:1});
+const num = numericFields({ step: 1 });
 const text = textField;
 const origin = () => ({ origin: { x: 0, h: 0, role: 'origin' as const } });
 
 /** Concrete, steel and the warm rim light every set piece carries (ART-GUIDE Ã‚Â§3: nothing floats, edges read). */
-const C = { dark: '#16171b', mid: '#2a2c33', face: '#3b3e47', edge: '#5d616c', rim: 'rgba(255,190,120,.35)', rail: '#8a8f99', glass: 'rgba(120,170,190,.18)', lamp: '#ffd68a', go: '#7cff9a', stop: '#ff6a4a' };
-const rect = (x: CanvasRenderingContext2D, v: View, wx: number, h: number, w: number, tall: number, fill: string) => {
-  const a = v.sx(wx), b = v.sx(wx + w), top = v.y(h + tall), bottom = v.y(h);
-  x.fillStyle = fill; x.fillRect(Math.min(a, b), Math.min(top, bottom), Math.max(1, Math.abs(b - a)), Math.max(1, Math.abs(bottom - top)));
+const C = {
+  dark: '#16171b',
+  mid: '#2a2c33',
+  face: '#3b3e47',
+  edge: '#5d616c',
+  rim: 'rgba(255,190,120,.35)',
+  rail: '#8a8f99',
+  glass: 'rgba(120,170,190,.18)',
+  lamp: '#ffd68a',
+  go: '#7cff9a',
+  stop: '#ff6a4a',
+};
+const rect = (
+  x: CanvasRenderingContext2D,
+  v: View,
+  wx: number,
+  h: number,
+  w: number,
+  tall: number,
+  fill: string,
+) => {
+  const a = v.sx(wx),
+    b = v.sx(wx + w),
+    top = v.y(h + tall),
+    bottom = v.y(h);
+  x.fillStyle = fill;
+  x.fillRect(
+    Math.min(a, b),
+    Math.min(top, bottom),
+    Math.max(1, Math.abs(b - a)),
+    Math.max(1, Math.abs(bottom - top)),
+  );
 };
 
 /** A walkable line. `building` names whose floor it is (empty: outdoors, the street); `label` is what a lift shows. */
 export const floorElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width'}),
-  type: 'level.floor', version: 1, label: 'Floor (walkable line)', category: 'scene', parts: [], libraryUse: 'reusable',
+  spatial: rectangleControls({ width: 'width' }),
+  type: 'level.floor',
+  version: 1,
+  label: 'Floor (walkable line)',
+  category: 'scene',
+  parts: [],
+  libraryUse: 'reusable',
   fields: {
-    width: shapeLength(num('Width', 300, 10, 10000, 1, 'units')), building: semantic(text('Building (empty: outdoors)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), label: appearanceText(text('Name on the lift panel')),
-    entry: appearanceChoice({ kind: 'select', label: 'Entered (a building floor at street height)', options: ['walk', 'door'], default: 'walk' }),
-    indoor: appearanceBoolean({ kind: 'boolean', label: 'Indoors (a tunnel, cellar or hall: no daylight while you stand here)', default: false }),
+    width: shapeLength(num('Width', 300, 10, 10000, 1, 'units')),
+    building: semantic(text('Building (empty: outdoors)'), {
+      group: 'Appearance',
+      quantity: 'reference',
+      unit: 'identifier',
+    }),
+    label: appearanceText(text('Name on the lift panel')),
+    entry: appearanceChoice({
+      kind: 'select',
+      label: 'Entered (a building floor at street height)',
+      options: ['walk', 'door'],
+      default: 'walk',
+    }),
+    indoor: appearanceBoolean({
+      kind: 'boolean',
+      label: 'Indoors (a tunnel, cellar or hall: no daylight while you stand here)',
+      default: false,
+    }),
   },
-  bounds: p => ({ x: 0, h: 0, w: Number(p.width), tall: 4 }),
-  anchors: p => ({ ...origin(), end: { x: Number(p.width), h: 0, role: 'mount' } }),
+  bounds: (p) => ({ x: 0, h: 0, w: Number(p.width), tall: 4 }),
+  anchors: (p) => ({ ...origin(), end: { x: Number(p.width), h: 0, role: 'mount' } }),
   draw() {},
 };
 
 /** Where the street meets a door-only building floor at the same height: Ã¢â€ â€˜ steps in, Ã¢â€ â€œ steps out. Walk-in floors need none. */
 export const doorElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width',originX:.5}),
-  type: 'level.door', version: 1, label: 'Way into a building', category: 'scene', parts: [], libraryUse: 'reusable',
-  fields: { building: semantic(text('Building'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), width: shapeLength(num('Width', 24, 8, 200, 1, 'units')) },
-  bounds: p => ({ x: -Number(p.width) / 2, h: 0, w: Number(p.width), tall: 46 }),
+  spatial: rectangleControls({ width: 'width', originX: 0.5 }),
+  type: 'level.door',
+  version: 1,
+  label: 'Way into a building',
+  category: 'scene',
+  parts: [],
+  libraryUse: 'reusable',
+  fields: {
+    building: semantic(text('Building'), {
+      group: 'Appearance',
+      quantity: 'reference',
+      unit: 'identifier',
+    }),
+    width: shapeLength(num('Width', 24, 8, 200, 1, 'units')),
+  },
+  bounds: (p) => ({ x: -Number(p.width) / 2, h: 0, w: Number(p.width), tall: 46 }),
   anchors: origin,
   draw() {},
 };
 
 /** Grouping handles: attach a building's facade to its shell and its rooms to its interior. */
-const handle = (type: string, label: string, fields: Record<string, Field> = {}): AssetDefinition => ({
-  type, version: 1, label, category: 'scene', parts: [], libraryUse: 'reusable', fields: { building: semantic(text('Building'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), ...fields },
-  bounds: () => ({ x: -6, h: 0, w: 12, tall: 12 }), anchors: origin, draw() {},
+const handle = (
+  type: string,
+  label: string,
+  fields: Record<string, Field> = {},
+): AssetDefinition => ({
+  type,
+  version: 1,
+  label,
+  category: 'scene',
+  parts: [],
+  libraryUse: 'reusable',
+  fields: {
+    building: semantic(text('Building'), {
+      group: 'Appearance',
+      quantity: 'reference',
+      unit: 'identifier',
+    }),
+    ...fields,
+  },
+  bounds: () => ({ x: -6, h: 0, w: 12, tall: 12 }),
+  anchors: origin,
+  draw() {},
 });
-export const shellElement = ({...handle('level.shell', 'Building shell (fades when inside)', { revealRate: semantic(num('Reveal response',4.2,.6,60,.6),{group:'Motion',quantity:'frequency',unit:'per second',description:'Response coefficient per second; higher values reveal or hide the shell faster.'}), ghost: appearanceRatio(num('Wall left while inside', 0, 0, 1, 0.01)) }),spatial:fixedNativeGeometry});
-export const interiorElement = ({...handle('level.interior', 'Building interior (shown when inside)'),spatial:fixedNativeGeometry});
+export const shellElement = {
+  ...handle('level.shell', 'Building shell (fades when inside)', {
+    revealRate: semantic(num('Reveal response', 4.2, 0.6, 60, 0.6), {
+      group: 'Motion',
+      quantity: 'frequency',
+      unit: 'per second',
+      description:
+        'Response coefficient per second; higher values reveal or hide the shell faster.',
+    }),
+    ghost: appearanceRatio(num('Wall left while inside', 0, 0, 1, 0.01)),
+  }),
+  spatial: fixedNativeGeometry,
+};
+export const interiorElement = {
+  ...handle('level.interior', 'Building interior (shown when inside)'),
+  spatial: fixedNativeGeometry,
+};
 
 /** The inside face of a building's street door, in the look of its outside: shown only while the player is in that building. */
 export const ENTRANCE_STYLES = ['glass', 'shop', 'flat', 'service'] as const;
 export const entranceElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
-  type: 'level.entrance', version: 1, label: 'Street door seen from inside', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  spatial: rectangleControls({ width: 'width', height: 'height', originX: 0.5 }),
+  type: 'level.entrance',
+  version: 1,
+  label: 'Street door seen from inside',
+  category: 'architecture',
+  parts: ['backdrop'],
+  libraryUse: 'reusable',
   fields: {
-    building: semantic(text('Building (shown while inside it)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), style: appearanceChoice({ kind: 'select', label: 'Style', options: [...ENTRANCE_STYLES], default: 'glass' }),
-    width: shapeLength(num('Width', 28, 14, 120, 1, 'units')), height: shapeLength(num('Height', 46, 30, 120, 1, 'units')),
-    sign: appearanceChoice({ kind: 'select', label: 'Shop sign (read from inside)', options: ['CLOSED', 'PULL', 'none'], default: 'CLOSED' }),
+    building: semantic(text('Building (shown while inside it)'), {
+      group: 'Appearance',
+      quantity: 'reference',
+      unit: 'identifier',
+    }),
+    style: appearanceChoice({
+      kind: 'select',
+      label: 'Style',
+      options: [...ENTRANCE_STYLES],
+      default: 'glass',
+    }),
+    width: shapeLength(num('Width', 28, 14, 120, 1, 'units')),
+    height: shapeLength(num('Height', 46, 30, 120, 1, 'units')),
+    sign: appearanceChoice({
+      kind: 'select',
+      label: 'Shop sign (read from inside)',
+      options: ['CLOSED', 'PULL', 'none'],
+      default: 'CLOSED',
+    }),
   },
-  bounds: p => ({ x: -Number(p.width) / 2 - 3, h: Number(p.height) + 4, w: Number(p.width) + 6, tall: Number(p.height) + 4 }),
+  bounds: (p) => ({
+    x: -Number(p.width) / 2 - 3,
+    h: Number(p.height) + 4,
+    w: Number(p.width) + 6,
+    tall: Number(p.height) + 4,
+  }),
   anchors: origin,
   draw: (x, v, p) => {
-    const w = Number(p.width), t = Number(p.height), hw = w / 2, style = String(p.style ?? 'glass');
-    const frame = style === 'glass' ? '#7d8794' : style === 'shop' ? '#4a3222' : style === 'service' ? '#3a3d44' : '#2e2a26';
+    const w = Number(p.width),
+      t = Number(p.height),
+      hw = w / 2,
+      style = String(p.style ?? 'glass');
+    const frame =
+      style === 'glass'
+        ? '#7d8794'
+        : style === 'shop'
+          ? '#4a3222'
+          : style === 'service'
+            ? '#3a3d44'
+            : '#2e2a26';
     // the frame: a glass door shows the lobby through it, the others fill it
-    if (style === 'glass') { rect(x, v, -hw - 3, 0, 3, t + 3, frame); rect(x, v, hw, 0, 3, t + 3, frame); rect(x, v, -hw - 3, t, w + 6, 3, frame); }
-    else rect(x, v, -hw - 3, 0, w + 6, t + 3, frame);
+    if (style === 'glass') {
+      rect(x, v, -hw - 3, 0, 3, t + 3, frame);
+      rect(x, v, hw, 0, 3, t + 3, frame);
+      rect(x, v, -hw - 3, t, w + 6, 3, frame);
+    } else rect(x, v, -hw - 3, 0, w + 6, t + 3, frame);
     if (style === 'glass') {
       // two glass leaves, the street light through them, a push bar across both
-      rect(x, v, -hw, 0, w, t, 'rgba(150,200,220,.22)'); rect(x, v, -0.5, 0, 1, t, frame);
+      rect(x, v, -hw, 0, w, t, 'rgba(150,200,220,.22)');
+      rect(x, v, -0.5, 0, 1, t, frame);
       rect(x, v, -hw + 2, t * 0.55, w - 4, t * 0.4, 'rgba(255,220,170,.10)');
-      rect(x, v, -hw + 2, 20, w - 4, 2, '#c8ccd4'); rect(x, v, -hw + 2, 19, 1, 4, '#8a8f99'); rect(x, v, hw - 3, 19, 1, 4, '#8a8f99');
+      rect(x, v, -hw + 2, 20, w - 4, 2, '#c8ccd4');
+      rect(x, v, -hw + 2, 19, 1, 4, '#8a8f99');
+      rect(x, v, hw - 3, 19, 1, 4, '#8a8f99');
       rect(x, v, -hw, 0, w, 2, '#5d616c');
     } else if (style === 'shop') {
       // timber door, a pane in the top half, the bell on its bracket, the hanging sign seen from behind
-      rect(x, v, -hw, 0, w, t, '#6b4728'); rect(x, v, -hw + 3, t * 0.5, w - 6, t * 0.42, 'rgba(150,200,220,.25)');
-      rect(x, v, -hw + 3, 4, w - 6, t * 0.4, '#5a3b22'); rect(x, v, hw - 5, t * 0.42, 2, 3, '#c9a24a');
-      rect(x, v, hw - 4, t + 1, 3, 1, '#8a6a2a'); rect(x, v, hw - 4.5, t - 3, 4, 4, '#c9a24a');
+      rect(x, v, -hw, 0, w, t, '#6b4728');
+      rect(x, v, -hw + 3, t * 0.5, w - 6, t * 0.42, 'rgba(150,200,220,.25)');
+      rect(x, v, -hw + 3, 4, w - 6, t * 0.4, '#5a3b22');
+      rect(x, v, hw - 5, t * 0.42, 2, 3, '#c9a24a');
+      rect(x, v, hw - 4, t + 1, 3, 1, '#8a6a2a');
+      rect(x, v, hw - 4.5, t - 3, 4, 4, '#c9a24a');
       if (p.sign !== 'none') {
-        const sw = Math.min(w - 8, 20), sh = 7, sy = t * 0.62;
+        const sw = Math.min(w - 8, 20),
+          sh = 7,
+          sy = t * 0.62;
         rect(x, v, -sw / 2, sy, sw, sh, '#e8e2d0');
-        x.save(); x.translate(v.sx(0), v.y(sy + sh / 2)); x.scale(-1, 1); x.fillStyle = '#2a2622';
-        x.font = 'bold ' + Math.max(4, Math.round(sh * 0.7 * Math.abs(v.y(0) - v.y(1)))) + 'px monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
-        x.fillText(String(p.sign ?? 'CLOSED'), 0, 0.5); x.restore();
+        x.save();
+        x.translate(v.sx(0), v.y(sy + sh / 2));
+        x.scale(-1, 1);
+        x.fillStyle = '#2a2622';
+        x.font =
+          'bold ' + Math.max(4, Math.round(sh * 0.7 * Math.abs(v.y(0) - v.y(1)))) + 'px monospace';
+        x.textAlign = 'center';
+        x.textBaseline = 'middle';
+        x.fillText(String(p.sign ?? 'CLOSED'), 0, 0.5);
+        x.restore();
         rect(x, v, -1, sy + sh, 2, t * 0.92 - sy - sh, '#2a2622');
       }
     } else if (style === 'flat') {
       // a painted flat door: spy-hole, chain across to the frame, the handle and its lock
-      rect(x, v, -hw, 0, w, t, '#4e5a52'); rect(x, v, -hw + 2, 2, w - 4, t - 4, '#56635a');
+      rect(x, v, -hw, 0, w, t, '#4e5a52');
+      rect(x, v, -hw + 2, 2, w - 4, t - 4, '#56635a');
       rect(x, v, -0.75, t * 0.72, 1.5, 1.5, '#0c0d10');
-      rect(x, v, hw - 6, t * 0.48, 3, 2, '#c8ccd4'); rect(x, v, hw - 5, t * 0.4, 2, 2, '#8a8f99');
-      for (let i = 0; i < 5; i++) rect(x, v, hw - 6 + i * 1.6, t * 0.62 - i * 0.6, 1.2, 1.2, '#b0b4bc');
+      rect(x, v, hw - 6, t * 0.48, 3, 2, '#c8ccd4');
+      rect(x, v, hw - 5, t * 0.4, 2, 2, '#8a8f99');
+      for (let i = 0; i < 5; i++)
+        rect(x, v, hw - 6 + i * 1.6, t * 0.62 - i * 0.6, 1.2, 1.2, '#b0b4bc');
       rect(x, v, hw + 0.5, t * 0.6, 2, 3, '#8a8f99');
     } else {
       // steel service door: riveted edges, a kick plate, a panic bar, a small wired-glass light
       rect(x, v, -hw, 0, w, t, '#4a4e57');
-      for (let h = 4; h < t; h += 8) { rect(x, v, -hw + 1.5, h, 1, 1, '#6f7480'); rect(x, v, hw - 2.5, h, 1, 1, '#6f7480'); }
-      rect(x, v, -hw + 2, 0, w - 4, 7, '#5d616c'); rect(x, v, -hw + 3, 21, w - 6, 2, '#b8bcc4');
-      rect(x, v, -4, t * 0.68, 8, 9, 'rgba(150,200,220,.25)'); rect(x, v, -4, t * 0.68 + 4, 8, 0.6, '#6f7480');
+      for (let h = 4; h < t; h += 8) {
+        rect(x, v, -hw + 1.5, h, 1, 1, '#6f7480');
+        rect(x, v, hw - 2.5, h, 1, 1, '#6f7480');
+      }
+      rect(x, v, -hw + 2, 0, w - 4, 7, '#5d616c');
+      rect(x, v, -hw + 3, 21, w - 6, 2, '#b8bcc4');
+      rect(x, v, -4, t * 0.68, 8, 9, 'rgba(150,200,220,.25)');
+      rect(x, v, -4, t * 0.68 + 4, 8, 0.6, '#6f7480');
     }
   },
 };
-
 
 /** A stair's materials: the stringer under the steps, the treads and their nosing, the handrail and its warm rim. */
 type StairLook = { stringer: string; tread: string; nose: string; rail: string; rim: string };
 const LOOKS: Record<string, StairLook> = {
   concrete: { stringer: C.mid, tread: C.face, nose: C.edge, rail: C.rail, rim: C.rim },
-  timber: { stringer: '#3b2716', tread: '#7a5230', nose: '#a8763f', rail: '#6b4728', rim: 'rgba(255,190,120,.3)' },
-  stone: { stringer: '#111114', tread: '#2a2a31', nose: '#4a4a55', rail: '#c9a24a', rim: 'rgba(255,215,140,.45)' },
-  rust: { stringer: '#2c1a12', tread: '#6e3a20', nose: '#9a5630', rail: '#7a4326', rim: 'rgba(255,150,90,.3)' },
-  steel: { stringer: '#24272d', tread: '#4a4e57', nose: '#6f7480', rail: '#8a8f99', rim: 'rgba(200,220,255,.25)' },
+  timber: {
+    stringer: '#3b2716',
+    tread: '#7a5230',
+    nose: '#a8763f',
+    rail: '#6b4728',
+    rim: 'rgba(255,190,120,.3)',
+  },
+  stone: {
+    stringer: '#111114',
+    tread: '#2a2a31',
+    nose: '#4a4a55',
+    rail: '#c9a24a',
+    rim: 'rgba(255,215,140,.45)',
+  },
+  rust: {
+    stringer: '#2c1a12',
+    tread: '#6e3a20',
+    nose: '#9a5630',
+    rail: '#7a4326',
+    rim: 'rgba(255,150,90,.3)',
+  },
+  steel: {
+    stringer: '#24272d',
+    tread: '#4a4e57',
+    nose: '#6f7480',
+    rail: '#8a8f99',
+    rim: 'rgba(200,220,255,.25)',
+  },
 };
 /** Each stair style: its material and how it is drawn (engine/level.ts STAIR_SHAPES says how it is climbed). */
-export const STAIR_STYLES: Readonly<Record<string, { look: string; draw: 'flight' | 'ladder' | 'rungs' | 'spiral' | 'switchback' }>> = {
-  concrete: { look: 'concrete', draw: 'flight' }, timber: { look: 'timber', draw: 'flight' }, stone: { look: 'stone', draw: 'flight' },
-  ladder: { look: 'timber', draw: 'ladder' }, switchback: { look: 'timber', draw: 'switchback' }, spiral: { look: 'stone', draw: 'spiral' },
-  'steel-ladder': { look: 'steel', draw: 'rungs' }, 'rusty-spiral': { look: 'rust', draw: 'spiral' },
+export const STAIR_STYLES: Readonly<
+  Record<string, { look: string; draw: 'flight' | 'ladder' | 'rungs' | 'spiral' | 'switchback' }>
+> = {
+  concrete: { look: 'concrete', draw: 'flight' },
+  timber: { look: 'timber', draw: 'flight' },
+  stone: { look: 'stone', draw: 'flight' },
+  ladder: { look: 'timber', draw: 'ladder' },
+  switchback: { look: 'timber', draw: 'switchback' },
+  spiral: { look: 'stone', draw: 'spiral' },
+  'steel-ladder': { look: 'steel', draw: 'rungs' },
+  'rusty-spiral': { look: 'rust', draw: 'spiral' },
 };
 /** Lift looks: the goods lift, a caged goods lift, an old passenger lift with a brass gate, glass, a gold-door bank, broken, a bare service platform. */
-export const LIFT_STYLES = ['goods', 'cage', 'passenger-old', 'glass', 'gold', 'broken', 'service'] as const;
-const RAILS: Record<string, string> = { steel: C.rail, timber: '#6b4728', gold: '#c9a24a', none: '' };
+export const LIFT_STYLES = [
+  'goods',
+  'cage',
+  'passenger-old',
+  'glass',
+  'gold',
+  'broken',
+  'service',
+] as const;
+const RAILS: Record<string, string> = {
+  steel: C.rail,
+  timber: '#6b4728',
+  gold: '#c9a24a',
+  none: '',
+};
 /** A view moved by (dx, dh): a piece drawn from another origin (a switchback's upper flight). */
-const shifted = (v: View, dx: number, dh: number): View => ({ ...v, sx: (wx: number) => v.sx(wx + dx), y: (h: number) => v.y(h + dh) });
+const shifted = (v: View, dx: number, dh: number): View => ({
+  ...v,
+  sx: (wx: number) => v.sx(wx + dx),
+  y: (h: number) => v.y(h + dh),
+});
 
 /**
  * Which part of a stair to draw: all of it (at rest), its back (stringer, treads, a spiral's far side: behind the player)
  * or its near handrail and posts (over the player while they are on or beside it: `level.stairs` `drawNear`).
  */
 type StairPart = 'whole' | 'back' | 'near';
-const back = (part: StairPart) => part !== 'near', front = (part: StairPart) => part !== 'back';
+const back = (part: StairPart) => part !== 'near',
+  front = (part: StairPart) => part !== 'back';
 /** Steps from the foot (origin) to the top at (run, rise): a flight with a stringer and a handrail, in its material. */
-function drawFlight(x: CanvasRenderingContext2D, v: View, run: number, rise: number, moving: number | null, look: StairLook = LOOKS.concrete, rail = look.rail, part: StairPart = 'whole') {
-  const n = Math.max(2, Math.round(Math.abs(rise) / 8)), dx = run / n, dh = rise / n, dir = Math.sign(run) || 1;
+function drawFlight(
+  x: CanvasRenderingContext2D,
+  v: View,
+  run: number,
+  rise: number,
+  moving: number | null,
+  look: StairLook = LOOKS.concrete,
+  rail = look.rail,
+  part: StairPart = 'whole',
+) {
+  const n = Math.max(2, Math.round(Math.abs(rise) / 8)),
+    dx = run / n,
+    dh = rise / n,
+    dir = Math.sign(run) || 1;
   if (back(part)) {
-  // stringer under the steps (the side we see), with its underside following the slope
-  x.fillStyle = look.stringer;
-  x.beginPath(); x.moveTo(v.sx(0), v.y(0)); x.lineTo(v.sx(run), v.y(rise)); x.lineTo(v.sx(run), v.y(rise - 10)); x.lineTo(v.sx(0), v.y(-10)); x.closePath(); x.fill();
-  // an escalator's steps slide along the incline by a fraction of a step (`moving`)
-  const f = moving === null ? 0 : ((moving % 1) + 1) % 1;
-  for (let i = moving === null ? 0 : -1; i < n; i++) {
-    const k = Math.max(0, Math.min(n - 1, i + f)), sx = k * dx, sh = (k + 1) * dh;
-    rect(x, v, sx, sh - 2, dx, 2, look.nose);
-    rect(x, v, sx, sh - dh, dx, Math.max(1, dh - 2), look.tread);
-  }
+    // stringer under the steps (the side we see), with its underside following the slope
+    x.fillStyle = look.stringer;
+    x.beginPath();
+    x.moveTo(v.sx(0), v.y(0));
+    x.lineTo(v.sx(run), v.y(rise));
+    x.lineTo(v.sx(run), v.y(rise - 10));
+    x.lineTo(v.sx(0), v.y(-10));
+    x.closePath();
+    x.fill();
+    // an escalator's steps slide along the incline by a fraction of a step (`moving`)
+    const f = moving === null ? 0 : ((moving % 1) + 1) % 1;
+    for (let i = moving === null ? 0 : -1; i < n; i++) {
+      const k = Math.max(0, Math.min(n - 1, i + f)),
+        sx = k * dx,
+        sh = (k + 1) * dh;
+      rect(x, v, sx, sh - 2, dx, 2, look.nose);
+      rect(x, v, sx, sh - dh, dx, Math.max(1, dh - 2), look.tread);
+    }
   }
   void dir;
   if (!rail || !front(part)) return;
   // handrail on posts, a warm rim on top so the line reads against dark walls
-  x.strokeStyle = rail; x.lineWidth = 1;
-  x.beginPath(); x.moveTo(v.sx(0), v.y(30)); x.lineTo(v.sx(run), v.y(rise + 30)); x.stroke();
-  x.strokeStyle = look.rim; x.beginPath(); x.moveTo(v.sx(0), v.y(31)); x.lineTo(v.sx(run), v.y(rise + 31)); x.stroke();
+  x.strokeStyle = rail;
+  x.lineWidth = 1;
+  x.beginPath();
+  x.moveTo(v.sx(0), v.y(30));
+  x.lineTo(v.sx(run), v.y(rise + 30));
+  x.stroke();
+  x.strokeStyle = look.rim;
+  x.beginPath();
+  x.moveTo(v.sx(0), v.y(31));
+  x.lineTo(v.sx(run), v.y(rise + 31));
+  x.stroke();
   for (let i = 0; i <= n; i += 2) rect(x, v, i * dx, i * dh, 1, 30, rail);
 }
 
 /** A steep ladder-stair: one heavy stringer along the slope, plank treads, a single rail. */
-function drawLadderStair(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string, part: StairPart = 'whole') {
-  const n = Math.max(3, Math.round(Math.abs(rise) / 9)), dir = Math.sign(run) || 1;
+function drawLadderStair(
+  x: CanvasRenderingContext2D,
+  v: View,
+  run: number,
+  rise: number,
+  look: StairLook,
+  rail: string,
+  part: StairPart = 'whole',
+) {
+  const n = Math.max(3, Math.round(Math.abs(rise) / 9)),
+    dir = Math.sign(run) || 1;
   if (back(part)) {
-    x.strokeStyle = look.stringer; x.lineWidth = 3; x.beginPath(); x.moveTo(v.sx(0), v.y(-2)); x.lineTo(v.sx(run), v.y(rise - 2)); x.stroke();
-    for (let i = 1; i <= n; i++) { const k = i / n; rect(x, v, run * k - 4 * dir, rise * k - 2, 8 * dir, 2, look.tread); rect(x, v, run * k - 4 * dir, rise * k, 8 * dir, 1, look.nose); }
+    x.strokeStyle = look.stringer;
+    x.lineWidth = 3;
+    x.beginPath();
+    x.moveTo(v.sx(0), v.y(-2));
+    x.lineTo(v.sx(run), v.y(rise - 2));
+    x.stroke();
+    for (let i = 1; i <= n; i++) {
+      const k = i / n;
+      rect(x, v, run * k - 4 * dir, rise * k - 2, 8 * dir, 2, look.tread);
+      rect(x, v, run * k - 4 * dir, rise * k, 8 * dir, 1, look.nose);
+    }
   }
   if (!rail || !front(part)) return;
-  x.strokeStyle = rail; x.lineWidth = 1; x.beginPath(); x.moveTo(v.sx(0), v.y(28)); x.lineTo(v.sx(run), v.y(rise + 28)); x.stroke();
-  x.strokeStyle = look.rim; x.beginPath(); x.moveTo(v.sx(0), v.y(29)); x.lineTo(v.sx(run), v.y(rise + 29)); x.stroke();
+  x.strokeStyle = rail;
+  x.lineWidth = 1;
+  x.beginPath();
+  x.moveTo(v.sx(0), v.y(28));
+  x.lineTo(v.sx(run), v.y(rise + 28));
+  x.stroke();
+  x.strokeStyle = look.rim;
+  x.beginPath();
+  x.moveTo(v.sx(0), v.y(29));
+  x.lineTo(v.sx(run), v.y(rise + 29));
+  x.stroke();
   // posts down to the stringer at both ends and the middle, so the rail stands on the stair
   for (const k of [0, 0.5, 1]) rect(x, v, run * k, rise * k - 2, 1, 30, rail);
 }
 /** A vertical ladder: two rails, rungs, a safety cage of hoops above head height. */
 function drawRungs(x: CanvasRenderingContext2D, v: View, rise: number, look: StairLook) {
-  const top = rise + 34, lo = Math.min(0, rise), hi = Math.max(0, top);
-  rect(x, v, -7, lo, 2, hi - lo, look.stringer); rect(x, v, 5, lo, 2, hi - lo, look.stringer);
-  rect(x, v, -6, lo, 1, hi - lo, look.nose); rect(x, v, 6, lo, 1, hi - lo, look.nose);
+  const top = rise + 34,
+    lo = Math.min(0, rise),
+    hi = Math.max(0, top);
+  rect(x, v, -7, lo, 2, hi - lo, look.stringer);
+  rect(x, v, 5, lo, 2, hi - lo, look.stringer);
+  rect(x, v, -6, lo, 1, hi - lo, look.nose);
+  rect(x, v, 6, lo, 1, hi - lo, look.nose);
   for (let h = lo + 4; h < hi; h += 8) rect(x, v, -5, h, 10, 1.5, look.tread);
-  for (let h = lo + 40; h < hi - 4; h += 18) { rect(x, v, -10, h, 20, 1, look.rail); rect(x, v, -10, h, 1, 6, look.rail); rect(x, v, 9, h, 1, 6, look.rail); }
+  for (let h = lo + 40; h < hi - 4; h += 18) {
+    rect(x, v, -10, h, 20, 1, look.rail);
+    rect(x, v, -10, h, 1, 6, look.rail);
+    rect(x, v, 9, h, 1, 6, look.rail);
+  }
 }
 /** A spiral stair: a central column, wedge treads turning round it (the back ones darker), a rail winding with them. */
-function drawSpiral(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string, part: StairPart = 'whole') {
-  const r = Math.max(12, Math.abs(run) / 2 || 14), n = Math.max(6, Math.round(Math.abs(rise) / 7)), dh = rise / n;
-  const tread = (i: number, front: boolean) => { const a = i * 0.85, c = Math.cos(a), h = i * dh; if ((Math.sin(a) >= 0) !== front) return; const w = r * c; rect(x, v, Math.min(0, w) - 1, h - 3, Math.max(4, Math.abs(w) + 2), 3, front ? look.tread : look.stringer); if (front) rect(x, v, Math.min(0, w) - 1, h, Math.max(4, Math.abs(w) + 2), 1, look.nose); };
+function drawSpiral(
+  x: CanvasRenderingContext2D,
+  v: View,
+  run: number,
+  rise: number,
+  look: StairLook,
+  rail: string,
+  part: StairPart = 'whole',
+) {
+  const r = Math.max(12, Math.abs(run) / 2 || 14),
+    n = Math.max(6, Math.round(Math.abs(rise) / 7)),
+    dh = rise / n;
+  const tread = (i: number, front: boolean) => {
+    const a = i * 0.85,
+      c = Math.cos(a),
+      h = i * dh;
+    if (Math.sin(a) >= 0 !== front) return;
+    const w = r * c;
+    rect(
+      x,
+      v,
+      Math.min(0, w) - 1,
+      h - 3,
+      Math.max(4, Math.abs(w) + 2),
+      3,
+      front ? look.tread : look.stringer,
+    );
+    if (front) rect(x, v, Math.min(0, w) - 1, h, Math.max(4, Math.abs(w) + 2), 1, look.nose);
+  };
   if (back(part)) {
     for (let i = 1; i <= n; i++) tread(i, false);
-    rect(x, v, -2, Math.min(0, rise) - 2, 4, Math.abs(rise) + 34, look.stringer); rect(x, v, -1, Math.min(0, rise) - 2, 1, Math.abs(rise) + 34, look.nose);
+    rect(x, v, -2, Math.min(0, rise) - 2, 4, Math.abs(rise) + 34, look.stringer);
+    rect(x, v, -1, Math.min(0, rise) - 2, 1, Math.abs(rise) + 34, look.nose);
     for (let i = 1; i <= n; i++) tread(i, true);
   }
   if (!rail) return;
-  x.strokeStyle = rail; x.lineWidth = 1;
-  const at = (i: number) => { const k = i / 4, a = k * 0.85; return [v.sx(r * Math.cos(a)), v.y(k * dh + 26)] as const; };
-  if (part === 'whole') { x.beginPath(); for (let i = 0; i <= n * 4; i++) { const [px, py] = at(i); if (i) x.lineTo(px, py); else x.moveTo(px, py); } x.stroke(); return; }
+  x.strokeStyle = rail;
+  x.lineWidth = 1;
+  const at = (i: number) => {
+    const k = i / 4,
+      a = k * 0.85;
+    return [v.sx(r * Math.cos(a)), v.y(k * dh + 26)] as const;
+  };
+  if (part === 'whole') {
+    x.beginPath();
+    for (let i = 0; i <= n * 4; i++) {
+      const [px, py] = at(i);
+      if (i) x.lineTo(px, py);
+      else x.moveTo(px, py);
+    }
+    x.stroke();
+    return;
+  }
   // passing it: the rail's turns on the near side of the column go over the player, those behind it stay behind
   x.beginPath();
-  for (let i = 1; i <= n * 4; i++) { const mid = (i - 0.5) / 4 * 0.85; if ((Math.sin(mid) >= 0) !== (part === 'near')) continue; const [ax, ay] = at(i - 1), [bx, by] = at(i); x.moveTo(ax, ay); x.lineTo(bx, by); }
+  for (let i = 1; i <= n * 4; i++) {
+    const mid = ((i - 0.5) / 4) * 0.85;
+    if (Math.sin(mid) >= 0 !== (part === 'near')) continue;
+    const [ax, ay] = at(i - 1),
+      [bx, by] = at(i);
+    x.moveTo(ax, ay);
+    x.lineTo(bx, by);
+  }
   x.stroke();
 }
 /** A narrow switchback: a flight to a landing over its width, a second flight back above it (drawn behind). */
-function drawSwitchback(x: CanvasRenderingContext2D, v: View, run: number, rise: number, look: StairLook, rail: string, part: StairPart = 'whole') {
-  const half = rise / 2, dir = Math.sign(run) || 1, far: StairLook = { ...look, tread: look.stringer, nose: look.tread };
+function drawSwitchback(
+  x: CanvasRenderingContext2D,
+  v: View,
+  run: number,
+  rise: number,
+  look: StairLook,
+  rail: string,
+  part: StairPart = 'whole',
+) {
+  const half = rise / 2,
+    dir = Math.sign(run) || 1,
+    far: StairLook = { ...look, tread: look.stringer, nose: look.tread };
   // the upper flight runs behind, its rail with it; the near flight's rail is the one the player passes behind
   if (back(part)) {
-    x.save(); x.globalAlpha *= 0.85; drawFlight(x, shifted(v, run, half), -run, half, null, far, rail); x.restore();
-    rect(x, v, run - 2 * dir, half - 4, 16 * dir, 4, look.stringer); rect(x, v, run - 2 * dir, half, 16 * dir, 1, look.nose);
+    x.save();
+    x.globalAlpha *= 0.85;
+    drawFlight(x, shifted(v, run, half), -run, half, null, far, rail);
+    x.restore();
+    rect(x, v, run - 2 * dir, half - 4, 16 * dir, 4, look.stringer);
+    rect(x, v, run - 2 * dir, half, 16 * dir, 1, look.nose);
   }
   drawFlight(x, v, run, half, null, look, rail, part);
 }
 
 export const stairsElement: AssetDefinition = {
-  spatial:{fields:['run','rise'],handles:p=>{
-    const shape=STAIR_STYLES[String(p.style)]?.draw??'flight';
-    if(shape==='flight'||shape==='ladder')return endpointControls('run','rise').handles(p);
-    const rise=rectangleControls({height:'rise'}).handles(p);
-    return shape==='rungs'?rise:[...rise,...rectangleControls({width:'run',originX:shape==='spiral'?.5:0}).handles(p)];
-  }},
-  type: 'level.stairs', version: 1, label: 'Stairs between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  spatial: {
+    fields: ['run', 'rise'],
+    handles: (p) => {
+      const shape = STAIR_STYLES[String(p.style)]?.draw ?? 'flight';
+      if (shape === 'flight' || shape === 'ladder')
+        return endpointControls('run', 'rise').handles(p);
+      const rise = rectangleControls({ height: 'rise' }).handles(p);
+      return shape === 'rungs'
+        ? rise
+        : [
+            ...rise,
+            ...rectangleControls({ width: 'run', originX: shape === 'spiral' ? 0.5 : 0 }).handles(
+              p,
+            ),
+          ];
+    },
+  },
+  type: 'level.stairs',
+  version: 1,
+  label: 'Stairs between two floors',
+  category: 'architecture',
+  parts: ['backdrop'],
+  libraryUse: 'reusable',
   fields: {
-    run: shapeLength(num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units')), rise: shapeLength(num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units')),
-    speed: velocity('Climbing speed',60,{min:6,max:240,step:3}), reach: shapeLength(num('Reach at either end', 10, 2, 60, 1, 'units')),
-    style: appearanceChoice({ kind: 'select', label: 'Style (spiral, rungs and switchback: run is the width; climbed with Ã¢â€ â€˜/Ã¢â€ â€œ)', options: Object.keys(STAIR_STYLES), default: 'concrete' }),
-    rail: appearanceChoice({ kind: 'select', label: 'Handrail', options: ['auto', ...Object.keys(RAILS)], default: 'auto' }),
-    railInFront: appearanceBoolean({ kind: 'boolean', label: 'Handrail in front of the player on the stair', default: true }),
+    run: shapeLength(num('Run (to the top, negative: leftwards)', 120, -2000, 2000, 1, 'units')),
+    rise: shapeLength(num('Rise (to the top floor)', 76, -2000, 2000, 1, 'units')),
+    speed: velocity('Climbing speed', 60, { min: 6, max: 240, step: 3 }),
+    reach: shapeLength(num('Reach at either end', 10, 2, 60, 1, 'units')),
+    style: appearanceChoice({
+      kind: 'select',
+      label:
+        'Style (spiral, rungs and switchback: run is the width; climbed with Ã¢â€ â€˜/Ã¢â€ â€œ)',
+      options: Object.keys(STAIR_STYLES),
+      default: 'concrete',
+    }),
+    rail: appearanceChoice({
+      kind: 'select',
+      label: 'Handrail',
+      options: ['auto', ...Object.keys(RAILS)],
+      default: 'auto',
+    }),
+    railInFront: appearanceBoolean({
+      kind: 'boolean',
+      label: 'Handrail in front of the player on the stair',
+      default: true,
+    }),
   },
   visualFields: { near: num('The player is on or beside it (level)', 0, 0, 1, 1) },
-  bounds: p => {
-    const r=Number(p.run), h=Number(p.rise), shape=STAIR_STYLES[String(p.style)]?.draw??'flight';
+  bounds: (p) => {
+    const r = Number(p.run),
+      h = Number(p.rise),
+      shape = STAIR_STYLES[String(p.style)]?.draw ?? 'flight';
     // Bounds.h is the top, not the foot. Include rails above and stringers below either end.
-    if(shape==='rungs')return boundsFromEdges({left:-10,right:10,bottom:Math.min(0,h),top:Math.max(0,h)+34});
-    if(shape==='spiral'){
-      const radius=Math.max(12,Math.abs(r)/2||14)+2;
-      return boundsFromEdges({left:-radius,right:radius,bottom:Math.min(0,h)-4,top:Math.max(0,h)+34});
+    if (shape === 'rungs')
+      return boundsFromEdges({
+        left: -10,
+        right: 10,
+        bottom: Math.min(0, h),
+        top: Math.max(0, h) + 34,
+      });
+    if (shape === 'spiral') {
+      const radius = Math.max(12, Math.abs(r) / 2 || 14) + 2;
+      return boundsFromEdges({
+        left: -radius,
+        right: radius,
+        bottom: Math.min(0, h) - 4,
+        top: Math.max(0, h) + 34,
+      });
     }
-    const left=Math.min(0,r)-(shape==='switchback'&&r<0?14:4);
-    const right=Math.max(0,r)+(shape==='switchback'&&r>=0?14:4);
-    return boundsFromEdges({left,right,bottom:Math.min(0,h)-10,top:Math.max(0,h)+32});
+    const left = Math.min(0, r) - (shape === 'switchback' && r < 0 ? 14 : 4);
+    const right = Math.max(0, r) + (shape === 'switchback' && r >= 0 ? 14 : 4);
+    return boundsFromEdges({ left, right, bottom: Math.min(0, h) - 10, top: Math.max(0, h) + 32 });
   },
-  anchors: p => { const d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight'; return { ...origin(), top: { x: d === 'flight' || d === 'ladder' ? Number(p.run) : 0, h: Number(p.rise), role: 'mount' } }; },
+  anchors: (p) => {
+    const d = STAIR_STYLES[String(p.style)]?.draw ?? 'flight';
+    return {
+      ...origin(),
+      top: {
+        x: d === 'flight' || d === 'ladder' ? Number(p.run) : 0,
+        h: Number(p.rise),
+        role: 'mount',
+      },
+    };
+  },
   draw: (x, v, p, s) => drawStairs(x, v, p, nearRail(p, s) ? 'back' : 'whole'),
-  drawNear: (x, v, p, s) => { if (nearRail(p, s)) drawStairs(x, v, p, 'near'); },
+  drawNear: (x, v, p, s) => {
+    if (nearRail(p, s)) drawStairs(x, v, p, 'near');
+  },
 };
 /** Does this stair have a near handrail to draw over the player now (it has a rail, they are on or beside it: `near`)? Rungs have none. */
 function nearRail(p: Properties, s: Properties) {
   const style = STAIR_STYLES[String(p.style)] ?? STAIR_STYLES.concrete;
-  return Number(s.near ?? 0) > 0 && p.railInFront !== false && style.draw !== 'rungs' && !!(p.rail && p.rail !== 'auto' ? RAILS[String(p.rail)] ?? LOOKS[style.look].rail : LOOKS[style.look].rail);
+  return (
+    Number(s.near ?? 0) > 0 &&
+    p.railInFront !== false &&
+    style.draw !== 'rungs' &&
+    !!(p.rail && p.rail !== 'auto'
+      ? (RAILS[String(p.rail)] ?? LOOKS[style.look].rail)
+      : LOOKS[style.look].rail)
+  );
 }
 function drawStairs(x: CanvasRenderingContext2D, v: View, p: Properties, part: StairPart) {
-  const style = STAIR_STYLES[String(p.style)] ?? STAIR_STYLES.concrete, look = LOOKS[style.look], rail = p.rail && p.rail !== 'auto' ? RAILS[String(p.rail)] ?? look.rail : look.rail, run = Number(p.run), rise = Number(p.rise);
+  const style = STAIR_STYLES[String(p.style)] ?? STAIR_STYLES.concrete,
+    look = LOOKS[style.look],
+    rail = p.rail && p.rail !== 'auto' ? (RAILS[String(p.rail)] ?? look.rail) : look.rail,
+    run = Number(p.run),
+    rise = Number(p.rise);
   if (style.draw === 'ladder') drawLadderStair(x, v, run, rise, look, rail, part);
   else if (style.draw === 'rungs') drawRungs(x, v, rise, look);
   else if (style.draw === 'spiral') drawSpiral(x, v, run, rise, look, rail, part);
@@ -268,33 +676,99 @@ function drawStairs(x: CanvasRenderingContext2D, v: View, p: Properties, part: S
 }
 
 export const escalatorElement: AssetDefinition = {
-  spatial:endpointControls('run','rise'),
-  type: 'level.escalator', version: 1, label: 'Escalator between two floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  spatial: endpointControls('run', 'rise'),
+  type: 'level.escalator',
+  version: 1,
+  label: 'Escalator between two floors',
+  category: 'architecture',
+  parts: ['backdrop'],
+  libraryUse: 'reusable',
   fields: {
-    run: shapeLength(num('Run (to the top, negative: leftwards)', 150, -2000, 2000, 1, 'units')), rise: shapeLength(num('Rise (to the top floor)', 90, -2000, 2000, 1, 'units')),
-    direction: appearanceChoice({ kind: 'select', label: 'Runs', options: ['up', 'down'], default: 'up' }), speed: velocity('Speed',36,{min:6,max:180,step:3}),
+    run: shapeLength(num('Run (to the top, negative: leftwards)', 150, -2000, 2000, 1, 'units')),
+    rise: shapeLength(num('Rise (to the top floor)', 90, -2000, 2000, 1, 'units')),
+    direction: appearanceChoice({
+      kind: 'select',
+      label: 'Runs',
+      options: ['up', 'down'],
+      default: 'up',
+    }),
+    speed: velocity('Speed', 36, { min: 6, max: 180, step: 3 }),
     reach: shapeLength(num('Reach at either end', 10, 2, 60, 1, 'units')),
-    style: appearanceChoice({ kind: 'select', label: 'Style', options: ['standard', 'glass'], default: 'standard' }),
+    style: appearanceChoice({
+      kind: 'select',
+      label: 'Style',
+      options: ['standard', 'glass'],
+      default: 'standard',
+    }),
   },
-  bounds: p => { const r = Number(p.run), h = Number(p.rise); return boundsFromEdges({left:Math.min(0,r)-14,right:Math.max(0,r)+14,bottom:Math.min(0,h)-14,top:Math.max(0,h)+32}); },
-  anchors: p => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
+  bounds: (p) => {
+    const r = Number(p.run),
+      h = Number(p.rise);
+    return boundsFromEdges({
+      left: Math.min(0, r) - 14,
+      right: Math.max(0, r) + 14,
+      bottom: Math.min(0, h) - 14,
+      top: Math.max(0, h) + 32,
+    });
+  },
+  anchors: (p) => ({ ...origin(), top: { x: Number(p.run), h: Number(p.rise), role: 'mount' } }),
   draw: (x, v, p) => {
-    const run = Number(p.run), rise = Number(p.rise), dir = Math.sign(run) || 1, up = p.direction !== 'down', glass = p.style === 'glass';
+    const run = Number(p.run),
+      rise = Number(p.rise),
+      dir = Math.sign(run) || 1,
+      up = p.direction !== 'down',
+      glass = p.style === 'glass';
     // the truss: a deep steel box under the incline, with flat landings at both ends
     x.fillStyle = glass ? '#2c3037' : C.dark;
-    x.beginPath(); x.moveTo(v.sx(-14 * dir), v.y(0)); x.lineTo(v.sx(0), v.y(0)); x.lineTo(v.sx(run), v.y(rise)); x.lineTo(v.sx(run + 14 * dir), v.y(rise));
-    x.lineTo(v.sx(run + 14 * dir), v.y(rise - 14)); x.lineTo(v.sx(run), v.y(rise - 14)); x.lineTo(v.sx(0), v.y(-14)); x.lineTo(v.sx(-14 * dir), v.y(-14)); x.closePath(); x.fill();
-    drawFlight(x, v, run, rise, (v.t * (Number(p.speed)/60) / 40) * (up ? 1 : -1));
+    x.beginPath();
+    x.moveTo(v.sx(-14 * dir), v.y(0));
+    x.lineTo(v.sx(0), v.y(0));
+    x.lineTo(v.sx(run), v.y(rise));
+    x.lineTo(v.sx(run + 14 * dir), v.y(rise));
+    x.lineTo(v.sx(run + 14 * dir), v.y(rise - 14));
+    x.lineTo(v.sx(run), v.y(rise - 14));
+    x.lineTo(v.sx(0), v.y(-14));
+    x.lineTo(v.sx(-14 * dir), v.y(-14));
+    x.closePath();
+    x.fill();
+    drawFlight(x, v, run, rise, ((v.t * (Number(p.speed) / 60)) / 40) * (up ? 1 : -1));
     // glass balustrade and the black rubber handrail, lit comb plates at both ends
     // glass-sided (Spire): the balustrade is clear down to the truss, with a lit steel skirt and a bright top rail
     x.fillStyle = glass ? 'rgba(170,215,235,.24)' : C.glass;
     const low = glass ? -12 : 2;
-    x.beginPath(); x.moveTo(v.sx(0), v.y(low)); x.lineTo(v.sx(run), v.y(rise + low)); x.lineTo(v.sx(run), v.y(rise + 28)); x.lineTo(v.sx(0), v.y(28)); x.closePath(); x.fill();
-    if (glass) { x.strokeStyle = 'rgba(220,240,255,.55)'; x.lineWidth = 1; x.beginPath(); x.moveTo(v.sx(0), v.y(low)); x.lineTo(v.sx(run), v.y(rise + low)); x.stroke(); x.strokeStyle = '#c8ccd4'; x.beginPath(); x.moveTo(v.sx(0), v.y(29)); x.lineTo(v.sx(run), v.y(rise + 29)); x.stroke(); }
-    x.strokeStyle = '#0b0b0d'; x.lineWidth = 2; x.beginPath(); x.moveTo(v.sx(-10 * dir), v.y(28)); x.lineTo(v.sx(0), v.y(28)); x.lineTo(v.sx(run), v.y(rise + 28)); x.lineTo(v.sx(run + 10 * dir), v.y(rise + 28)); x.stroke();
-    rect(x, v, -12 * dir, 0, 8 * dir, 2, C.lamp); rect(x, v, run + 4 * dir, rise, 8 * dir, 2, C.lamp);
+    x.beginPath();
+    x.moveTo(v.sx(0), v.y(low));
+    x.lineTo(v.sx(run), v.y(rise + low));
+    x.lineTo(v.sx(run), v.y(rise + 28));
+    x.lineTo(v.sx(0), v.y(28));
+    x.closePath();
+    x.fill();
+    if (glass) {
+      x.strokeStyle = 'rgba(220,240,255,.55)';
+      x.lineWidth = 1;
+      x.beginPath();
+      x.moveTo(v.sx(0), v.y(low));
+      x.lineTo(v.sx(run), v.y(rise + low));
+      x.stroke();
+      x.strokeStyle = '#c8ccd4';
+      x.beginPath();
+      x.moveTo(v.sx(0), v.y(29));
+      x.lineTo(v.sx(run), v.y(rise + 29));
+      x.stroke();
+    }
+    x.strokeStyle = '#0b0b0d';
+    x.lineWidth = 2;
+    x.beginPath();
+    x.moveTo(v.sx(-10 * dir), v.y(28));
+    x.lineTo(v.sx(0), v.y(28));
+    x.lineTo(v.sx(run), v.y(rise + 28));
+    x.lineTo(v.sx(run + 10 * dir), v.y(rise + 28));
+    x.stroke();
+    rect(x, v, -12 * dir, 0, 8 * dir, 2, C.lamp);
+    rect(x, v, run + 4 * dir, rise, 8 * dir, 2, C.lamp);
     // a direction lamp at the foot: green where it takes you, red against it
-    rect(x, v, -14 * dir, 14, 3 * dir, 4, up ? C.go : C.stop); rect(x, v, run + 11 * dir, rise + 14, 3 * dir, 4, up ? C.stop : C.go);
+    rect(x, v, -14 * dir, 14, 3 * dir, 4, up ? C.go : C.stop);
+    rect(x, v, run + 11 * dir, rise + 14, 3 * dir, 4, up ? C.stop : C.go);
   },
 };
 
@@ -304,21 +778,57 @@ export const escalatorElement: AssetDefinition = {
  * its stops, speed and wiring live in the scene's devices; the doors follow its trips.
  */
 export const elevatorElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width',height:'height',originX:.5}),
-  type: 'level.elevator', version: 1, label: 'Lift between floors', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
-  fields: { height: shapeLength(num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units')), width: shapeLength(num('Car width', 34, 20, 120, 1, 'units')), device: semantic(text('Car: the Circuit mover that moves it (device.part)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}),
-    doorDuration:seconds('Door opening duration',.28,{min:.04,max:3,step:.01}),
-    style: appearanceChoice({ kind: 'select', label: 'Style (broken: out of order, never called)', options: [...LIFT_STYLES], default: 'goods' }) },
-  visualFields: { car: num('Car height over the bottom stop', 0, -100, 4000, 0.01), doors: num('Doors open', 0, 0, 1, 0.01) },
-  bounds: p => boundsFromEdges({left:-Number(p.width)/2-4,right:Number(p.width)/2+4,bottom:-4,top:Number(p.height)+54}),
-  anchors: p => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),
+  spatial: rectangleControls({ width: 'width', height: 'height', originX: 0.5 }),
+  type: 'level.elevator',
+  version: 1,
+  label: 'Lift between floors',
+  category: 'architecture',
+  parts: ['backdrop'],
+  libraryUse: 'reusable',
+  fields: {
+    height: shapeLength(num('Shaft height (bottom to top stop)', 280, 20, 4000, 1, 'units')),
+    width: shapeLength(num('Car width', 34, 20, 120, 1, 'units')),
+    device: semantic(text('Car: the Circuit mover that moves it (device.part)'), {
+      group: 'Appearance',
+      quantity: 'reference',
+      unit: 'identifier',
+    }),
+    doorDuration: seconds('Door opening duration', 0.28, { min: 0.04, max: 3, step: 0.01 }),
+    style: appearanceChoice({
+      kind: 'select',
+      label: 'Style (broken: out of order, never called)',
+      options: [...LIFT_STYLES],
+      default: 'goods',
+    }),
+  },
+  visualFields: {
+    car: num('Car height over the bottom stop', 0, -100, 4000, 0.01),
+    doors: num('Doors open', 0, 0, 1, 0.01),
+  },
+  bounds: (p) =>
+    boundsFromEdges({
+      left: -Number(p.width) / 2 - 4,
+      right: Number(p.width) / 2 + 4,
+      bottom: -4,
+      top: Number(p.height) + 54,
+    }),
+  anchors: (p) => ({ ...origin(), top: { x: 0, h: Number(p.height), role: 'mount' } }),
   draw: (x, v, p, s) => {
-    const w = Number(p.width), hw = w / 2, top = Number(p.height) + 52, car = Math.max(0, Math.min(Number(p.height), Number(s.car ?? 0))), open = Math.max(0, Math.min(1, Number(s.doors ?? 0)));
-    if (p.style && p.style !== 'goods') { drawLiftStyle(x, v, String(p.style), w, Number(p.height), car, open); return; }
+    const w = Number(p.width),
+      hw = w / 2,
+      top = Number(p.height) + 52,
+      car = Math.max(0, Math.min(Number(p.height), Number(s.car ?? 0))),
+      open = Math.max(0, Math.min(1, Number(s.doors ?? 0)));
+    if (p.style && p.style !== 'goods') {
+      drawLiftStyle(x, v, String(p.style), w, Number(p.height), car, open);
+      return;
+    }
     rect(x, v, -hw - 4, -4, w + 8, top + 4, C.dark);
-    rect(x, v, -hw - 4, -4, 2, top + 4, C.edge); rect(x, v, hw + 2, -4, 2, top + 4, C.edge);
+    rect(x, v, -hw - 4, -4, 2, top + 4, C.edge);
+    rect(x, v, hw + 2, -4, 2, top + 4, C.edge);
     // cables from the machine room to the car, the counterweight going the other way
-    rect(x, v, -2, car + 46, 1, top - car - 46, C.rail); rect(x, v, 1, car + 46, 1, top - car - 46, C.rail);
+    rect(x, v, -2, car + 46, 1, top - car - 46, C.rail);
+    rect(x, v, 1, car + 46, 1, top - car - 46, C.rail);
     rect(x, v, hw - 6, Number(p.height) - car + 8, 4, 22, C.mid);
     rect(x, v, -hw - 4, top - 6, w + 8, 6, C.mid);
     // the car: lit inside, a hairline frame, a handrail and the floor panel, two sliding doors
@@ -326,9 +836,15 @@ export const elevatorElement: AssetDefinition = {
     rect(x, v, -hw + 2, car + 2, w - 4, 42, '#a89a7c');
     rect(x, v, -hw + 3, car + 40, w - 6, 3, C.lamp);
     rect(x, v, -hw + 3, car + 2, w - 6, 2, '#6f6552');
-    if (w >= 44) { rect(x, v, -hw + 4, car + 17, w - 8, 1, C.rail); rect(x, v, hw - 8, car + 20, 3, 12, C.mid); for (let i = 0; i < 4; i++) rect(x, v, hw - 7.5, car + 22 + i * 2.5, 2, 1, open > 0.5 && i === 0 ? C.go : C.lamp); }
+    if (w >= 44) {
+      rect(x, v, -hw + 4, car + 17, w - 8, 1, C.rail);
+      rect(x, v, hw - 8, car + 20, 3, 12, C.mid);
+      for (let i = 0; i < 4; i++)
+        rect(x, v, hw - 7.5, car + 22 + i * 2.5, 2, 1, open > 0.5 && i === 0 ? C.go : C.lamp);
+    }
     const leaf = (w / 2 - 2) * (1 - open);
-    rect(x, v, -hw + 2, car + 2, leaf, 40, C.edge); rect(x, v, hw - 2 - leaf, car + 2, leaf, 40, C.edge);
+    rect(x, v, -hw + 2, car + 2, leaf, 40, C.edge);
+    rect(x, v, hw - 2 - leaf, car + 2, leaf, 40, C.edge);
     rect(x, v, -hw, car + 46, w, 2, C.rim);
     // floor indicator over the car
     rect(x, v, -3, car + 50, 6, 3, open > 0.5 ? C.go : C.lamp);
@@ -336,64 +852,159 @@ export const elevatorElement: AssetDefinition = {
 };
 
 /** Lift looks beyond the goods lift: a caged goods lift, an old passenger lift with a brass gate, glass, a gold-door bank, broken, a bare service platform. */
-function drawLiftStyle(x: CanvasRenderingContext2D, v: View, style: string, w: number, height: number, car: number, open: number) {
-  const hw = w / 2, top = height + 52, line = (x0: number, h0: number, x1: number, h1: number, c: string, lw = 1) => { x.strokeStyle = c; x.lineWidth = lw; x.beginPath(); x.moveTo(v.sx(x0), v.y(h0)); x.lineTo(v.sx(x1), v.y(h1)); x.stroke(); };
-  const shaft = style === 'glass' ? 'rgba(140,190,210,.12)' : style === 'passenger-old' ? '#24190f' : style === 'gold' ? '#141218' : C.dark;
+function drawLiftStyle(
+  x: CanvasRenderingContext2D,
+  v: View,
+  style: string,
+  w: number,
+  height: number,
+  car: number,
+  open: number,
+) {
+  const hw = w / 2,
+    top = height + 52,
+    line = (x0: number, h0: number, x1: number, h1: number, c: string, lw = 1) => {
+      x.strokeStyle = c;
+      x.lineWidth = lw;
+      x.beginPath();
+      x.moveTo(v.sx(x0), v.y(h0));
+      x.lineTo(v.sx(x1), v.y(h1));
+      x.stroke();
+    };
+  const shaft =
+    style === 'glass'
+      ? 'rgba(140,190,210,.12)'
+      : style === 'passenger-old'
+        ? '#24190f'
+        : style === 'gold'
+          ? '#141218'
+          : C.dark;
   rect(x, v, -hw - 4, -4, w + 8, top + 4, shaft);
-  const frame = style === 'passenger-old' ? '#b08a3c' : style === 'gold' ? '#c9a24a' : style === 'glass' ? '#7d8794' : style === 'broken' ? '#4a4c52' : C.edge;
-  rect(x, v, -hw - 4, -4, 2, top + 4, frame); rect(x, v, hw + 2, -4, 2, top + 4, frame);
+  const frame =
+    style === 'passenger-old'
+      ? '#b08a3c'
+      : style === 'gold'
+        ? '#c9a24a'
+        : style === 'glass'
+          ? '#7d8794'
+          : style === 'broken'
+            ? '#4a4c52'
+            : C.edge;
+  rect(x, v, -hw - 4, -4, 2, top + 4, frame);
+  rect(x, v, hw + 2, -4, 2, top + 4, frame);
   rect(x, v, -hw - 4, top - 6, w + 8, 6, style === 'gold' ? '#8a6a2a' : C.mid);
-  if (style === 'cage' || style === 'service') for (let h = 0; h < top - 30; h += 30) { line(-hw - 3, h, hw + 3, h + 30, C.mid); line(hw + 3, h, -hw - 3, h + 30, C.mid); }
+  if (style === 'cage' || style === 'service')
+    for (let h = 0; h < top - 30; h += 30) {
+      line(-hw - 3, h, hw + 3, h + 30, C.mid);
+      line(hw + 3, h, -hw - 3, h + 30, C.mid);
+    }
   if (style === 'glass') for (let h = 0; h < top; h += 40) rect(x, v, -hw - 4, h, w + 8, 1, frame);
   if (style === 'service') for (let h = 4; h < top - 8; h += 8) rect(x, v, hw - 1, h, 4, 1, C.rail);
-  if (style !== 'broken') { rect(x, v, -1, car + 46, 1, top - car - 46, C.rail); rect(x, v, 1, car + 46, 1, top - car - 46, C.rail); }
+  if (style !== 'broken') {
+    rect(x, v, -1, car + 46, 1, top - car - 46, C.rail);
+    rect(x, v, 1, car + 46, 1, top - car - 46, C.rail);
+  }
   if (style === 'service') {
     // an open platform: a deck, a guard rail at hip height, a hoist bar
-    rect(x, v, -hw, car - 2, w, 3, C.face); rect(x, v, -hw, car + 1, w, 1, C.edge);
-    rect(x, v, -hw, car + 1, 1, 22, C.rail); rect(x, v, hw - 1, car + 1, 1, 22, C.rail); rect(x, v, -hw, car + 22, w, 1, C.rail); rect(x, v, -hw, car + 44, w, 2, C.mid);
+    rect(x, v, -hw, car - 2, w, 3, C.face);
+    rect(x, v, -hw, car + 1, w, 1, C.edge);
+    rect(x, v, -hw, car + 1, 1, 22, C.rail);
+    rect(x, v, hw - 1, car + 1, 1, 22, C.rail);
+    rect(x, v, -hw, car + 22, w, 1, C.rail);
+    rect(x, v, -hw, car + 44, w, 2, C.mid);
     return;
   }
-  const inside = style === 'passenger-old' ? '#6e4a2a' : style === 'gold' ? '#c8b07a' : style === 'glass' ? 'rgba(200,230,245,.30)' : style === 'broken' ? '#3c3a36' : '#a89a7c';
+  const inside =
+    style === 'passenger-old'
+      ? '#6e4a2a'
+      : style === 'gold'
+        ? '#c8b07a'
+        : style === 'glass'
+          ? 'rgba(200,230,245,.30)'
+          : style === 'broken'
+            ? '#3c3a36'
+            : '#a89a7c';
   rect(x, v, -hw, car, w, 46, style === 'glass' ? 'rgba(120,170,190,.25)' : C.face);
   rect(x, v, -hw + 2, car + 2, w - 4, 42, inside);
   rect(x, v, -hw + 3, car + 40, w - 6, 3, style === 'broken' ? '#2a2826' : C.lamp);
-  if (style === 'glass') { rect(x, v, -hw, car, 1, 46, frame); rect(x, v, hw - 1, car, 1, 46, frame); }
+  if (style === 'glass') {
+    rect(x, v, -hw, car, 1, 46, frame);
+    rect(x, v, hw - 1, car, 1, 46, frame);
+  }
   if (style === 'cage' || style === 'passenger-old') {
     // a lattice gate folding back to the sides as it opens
-    const gate = (w - 4) * (1 - open), c = style === 'cage' ? C.rail : '#c9a24a';
-    for (let i = 0; i <= gate; i += 3) { line(-hw + 2 + i / 2, car + 2, -hw + 2 + i / 2 + 1.5, car + 42, c); line(hw - 2 - i / 2, car + 2, hw - 2 - i / 2 - 1.5, car + 42, c); }
+    const gate = (w - 4) * (1 - open),
+      c = style === 'cage' ? C.rail : '#c9a24a';
+    for (let i = 0; i <= gate; i += 3) {
+      line(-hw + 2 + i / 2, car + 2, -hw + 2 + i / 2 + 1.5, car + 42, c);
+      line(hw - 2 - i / 2, car + 2, hw - 2 - i / 2 - 1.5, car + 42, c);
+    }
     if (style === 'cage') for (let i = -hw; i <= hw; i += 4) rect(x, v, i, car + 44, 1, 2, C.rail);
   } else {
-    const shut = style === 'broken' ? 0.6 : 1 - open, leaf = (w / 2 - 2) * shut;
-    const door = style === 'gold' ? '#c9a24a' : style === 'glass' ? 'rgba(200,230,245,.40)' : style === 'broken' ? '#55575d' : C.edge;
-    rect(x, v, -hw + 2, car + 2, leaf, 40, door); rect(x, v, hw - 2 - leaf, car + 2, leaf, 40, door);
-    if (style === 'gold') { rect(x, v, -hw + 2 + leaf - 1, car + 2, 1, 40, '#8a6a2a'); rect(x, v, hw - 2 - leaf, car + 2, 1, 40, '#8a6a2a'); rect(x, v, -hw + 3, car + 30, Math.max(0, leaf - 2), 1, 'rgba(255,240,200,.5)'); }
+    const shut = style === 'broken' ? 0.6 : 1 - open,
+      leaf = (w / 2 - 2) * shut;
+    const door =
+      style === 'gold'
+        ? '#c9a24a'
+        : style === 'glass'
+          ? 'rgba(200,230,245,.40)'
+          : style === 'broken'
+            ? '#55575d'
+            : C.edge;
+    rect(x, v, -hw + 2, car + 2, leaf, 40, door);
+    rect(x, v, hw - 2 - leaf, car + 2, leaf, 40, door);
+    if (style === 'gold') {
+      rect(x, v, -hw + 2 + leaf - 1, car + 2, 1, 40, '#8a6a2a');
+      rect(x, v, hw - 2 - leaf, car + 2, 1, 40, '#8a6a2a');
+      rect(x, v, -hw + 3, car + 30, Math.max(0, leaf - 2), 1, 'rgba(255,240,200,.5)');
+    }
   }
   rect(x, v, -hw, car + 46, w, 2, style === 'broken' ? '#2a2826' : C.rim);
   if (style === 'passenger-old') {
     // the floor dial over the doors: a brass arc and a needle following the car
-    const k = height ? car / height : 0, a = Math.PI * (1 - k);
+    const k = height ? car / height : 0,
+      a = Math.PI * (1 - k);
     rect(x, v, -6, car + 50, 12, 1, '#b08a3c');
     line(0, car + 50, 6 * Math.cos(a), car + 50 + 6 * Math.sin(a), '#e8d6a0');
   } else if (style === 'broken') {
     // out of order: dark lamp, warning tape across the doors
-    for (let i = 0; i < 3; i++) { line(-hw, car + 10 + i * 12, hw, car + 18 + i * 12, '#d8c040', 2); line(-hw + 4, car + 10 + i * 12, hw - 4, car + 18 + i * 12, '#1a1a1a', 0.6); }
+    for (let i = 0; i < 3; i++) {
+      line(-hw, car + 10 + i * 12, hw, car + 18 + i * 12, '#d8c040', 2);
+      line(-hw + 4, car + 10 + i * 12, hw - 4, car + 18 + i * 12, '#1a1a1a', 0.6);
+    }
     rect(x, v, -3, car + 50, 6, 3, C.stop);
   } else rect(x, v, -3, car + 50, 6, 3, open > 0.5 ? C.go : C.lamp);
 }
 
 /** A call button beside a lift's doors on one floor: press E at the lift to call it; the button lights while the car is on its way here. */
-export const liftButtonElement: AssetDefinition = {spatial:fixedNativeGeometry,
-  type: 'level.lift-button', version: 1, label: 'Lift call button', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+export const liftButtonElement: AssetDefinition = {
+  spatial: fixedNativeGeometry,
+  type: 'level.lift-button',
+  version: 1,
+  label: 'Lift call button',
+  category: 'architecture',
+  parts: ['backdrop'],
+  libraryUse: 'reusable',
   fields: { lift: appearanceText(text('Lift (its instance id)')) },
   visualFields: { lit: num('Lit (called here)', 0, 0, 1, 1) },
   bounds: () => ({ x: -5, h: 35, w: 10, tall: 15 }),
   anchors: origin,
   draw: (x, v, _p, s) => {
     const lit = Number(s.lit ?? 0) > 0.5;
-    rect(x, v, -3, 22, 6, 11, C.mid); rect(x, v, -3, 22, 6, 1, C.edge); rect(x, v, -3, 32, 6, 1, C.rim);
-    rect(x, v, -1, 28, 2, 2, lit ? C.lamp : C.edge); rect(x, v, -1, 24, 2, 2, lit ? C.lamp : C.edge);
-    if (lit) { x.fillStyle = 'rgba(255,214,138,.25)'; x.fillRect(v.sx(-5), v.y(35), Math.max(1, v.sx(5) - v.sx(-5)), Math.max(1, v.y(20) - v.y(35))); }
+    rect(x, v, -3, 22, 6, 11, C.mid);
+    rect(x, v, -3, 22, 6, 1, C.edge);
+    rect(x, v, -3, 32, 6, 1, C.rim);
+    rect(x, v, -1, 28, 2, 2, lit ? C.lamp : C.edge);
+    rect(x, v, -1, 24, 2, 2, lit ? C.lamp : C.edge);
+    if (lit) {
+      x.fillStyle = 'rgba(255,214,138,.25)';
+      x.fillRect(
+        v.sx(-5),
+        v.y(35),
+        Math.max(1, v.sx(5) - v.sx(-5)),
+        Math.max(1, v.y(20) - v.y(35)),
+      );
+    }
   },
 };
 
@@ -410,31 +1021,91 @@ export const BARRIER_STYLES = ['turnstile', 'gate', 'door'] as const;
  */
 const hidden = () => false;
 /** The shape only (null, or one plain condition object); its vocabulary is checked with the pending sources (world/access.ts). */
-const barrierWhen = (v: unknown) => { if (v !== null && (!v || typeof v !== 'object' || Array.isArray(v) || !Object.keys(v).length || Object.keys(v).length > 2)) throw new Error('level.barrier.when: null or one condition object'); };
+const barrierWhen = (v: unknown) => {
+  if (
+    v !== null &&
+    (!v ||
+      typeof v !== 'object' ||
+      Array.isArray(v) ||
+      !Object.keys(v).length ||
+      Object.keys(v).length > 2)
+  )
+    throw new Error('level.barrier.when: null or one condition object');
+};
 export const barrierElement: AssetDefinition = {
-  spatial:rectangleControls({width:'width',originX:.5}),
-  type: 'level.barrier', version: 1, label: 'Barrier (turnstile, gate, locked door)', category: 'architecture', parts: ['backdrop'], libraryUse: 'reusable',
+  spatial: rectangleControls({ width: 'width', originX: 0.5 }),
+  type: 'level.barrier',
+  version: 1,
+  label: 'Barrier (turnstile, gate, locked door)',
+  category: 'architecture',
+  parts: ['backdrop'],
+  libraryUse: 'reusable',
   fields: {
-    style: appearanceChoice({ kind: 'select', label: 'Style', options: [...BARRIER_STYLES], default: 'turnstile' }),
+    style: appearanceChoice({
+      kind: 'select',
+      label: 'Style',
+      options: [...BARRIER_STYLES],
+      default: 'turnstile',
+    }),
     width: shapeLength(num('Passage width', 24, 10, 200, 1, 'units')),
-    key: { ...semantic(text('Opens for: key chip carried (keyring id; empty: none)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), showIf: hidden },
-    flag: { ...semantic(text('Opens once: flag set (empty: none)'),{"group":"Appearance","quantity":"reference","unit":"identifier"}), showIf: hidden },
-    when: contextualEditor(appearanceStructure({ kind: 'json', label: 'Opens while: condition (null: always)', default: null, showIf: hidden, validate: barrierWhen }),'access','Edit access condition'),
+    key: {
+      ...semantic(text('Opens for: key chip carried (keyring id; empty: none)'), {
+        group: 'Appearance',
+        quantity: 'reference',
+        unit: 'identifier',
+      }),
+      showIf: hidden,
+    },
+    flag: {
+      ...semantic(text('Opens once: flag set (empty: none)'), {
+        group: 'Appearance',
+        quantity: 'reference',
+        unit: 'identifier',
+      }),
+      showIf: hidden,
+    },
+    when: contextualEditor(
+      appearanceStructure({
+        kind: 'json',
+        label: 'Opens while: condition (null: always)',
+        default: null,
+        showIf: hidden,
+        validate: barrierWhen,
+      }),
+      'access',
+      'Edit access condition',
+    ),
     refuse: appearanceText(text('Refuses with', 'ACCESS DENIED.')),
-    closes: appearanceBoolean({ kind: 'boolean', label: 'Shuts again behind the player (asks its rule each time)', default: false }),
+    closes: appearanceBoolean({
+      kind: 'boolean',
+      label: 'Shuts again behind the player (asks its rule each time)',
+      default: false,
+    }),
   },
-  visualFields: { open: appearanceRatio(num('Open', 0, 0, 1, 0.01)), near: num('Near cabinet over the player', 0, 0, 1, 1) },
-  bounds: p => ({ x: -Number(p.width) / 2 - 10, h: 58, w: Number(p.width) + 20, tall: 58 }),
+  visualFields: {
+    open: appearanceRatio(num('Open', 0, 0, 1, 0.01)),
+    near: num('Near cabinet over the player', 0, 0, 1, 1),
+  },
+  bounds: (p) => ({ x: -Number(p.width) / 2 - 10, h: 58, w: Number(p.width) + 20, tall: 58 }),
   anchors: origin,
   draw: (x, v, p, s) => {
-    const w = Number(p.width), hw = w / 2, open = Math.max(0, Math.min(1, Number(s.open ?? 0))), style = String(p.style ?? 'turnstile'), lamp = open > 0.5 ? C.go : C.stop;
+    const w = Number(p.width),
+      hw = w / 2,
+      open = Math.max(0, Math.min(1, Number(s.open ?? 0))),
+      style = String(p.style ?? 'turnstile'),
+      lamp = open > 0.5 ? C.go : C.stop;
     if (style === 'gate') {
       // two posts and a barred leaf that slides into the right post as it opens
-      rect(x, v, -hw - 4, 0, 4, 48, C.mid); rect(x, v, hw, 0, 4, 48, C.mid);
-      rect(x, v, -hw - 4, 46, 4, 2, C.edge); rect(x, v, hw, 46, 4, 2, C.edge);
-      const leaf = w * (1 - open), left = hw - leaf;
+      rect(x, v, -hw - 4, 0, 4, 48, C.mid);
+      rect(x, v, hw, 0, 4, 48, C.mid);
+      rect(x, v, -hw - 4, 46, 4, 2, C.edge);
+      rect(x, v, hw, 46, 4, 2, C.edge);
+      const leaf = w * (1 - open),
+        left = hw - leaf;
       if (leaf > 0.5) {
-        rect(x, v, left, 4, leaf, 2, C.rail); rect(x, v, left, 40, leaf, 2, C.rail); rect(x, v, left, 22, leaf, 1, C.edge);
+        rect(x, v, left, 4, leaf, 2, C.rail);
+        rect(x, v, left, 40, leaf, 2, C.rail);
+        rect(x, v, left, 22, leaf, 1, C.edge);
         for (let i = left + 1; i < hw; i += 4) rect(x, v, i, 4, 1, 38, C.rail);
         rect(x, v, left, 41, leaf, 1, C.rim);
       }
@@ -443,31 +1114,65 @@ export const barrierElement: AssetDefinition = {
     }
     if (style === 'door') {
       // a steel door in its frame, swinging away (its leaf narrows), a card reader beside it
-      rect(x, v, -hw - 3, 0, 3, 52, C.edge); rect(x, v, hw, 0, 3, 52, C.edge); rect(x, v, -hw - 3, 49, w + 6, 3, C.edge);
+      rect(x, v, -hw - 3, 0, 3, 52, C.edge);
+      rect(x, v, hw, 0, 3, 52, C.edge);
+      rect(x, v, -hw - 3, 49, w + 6, 3, C.edge);
       rect(x, v, -hw, 0, w, 49, C.dark);
       const leaf = w * (1 - open * 0.85);
-      rect(x, v, -hw, 0, leaf, 49, '#4a4e57'); rect(x, v, -hw + 1, 0, Math.max(1, leaf - 2), 6, C.face);
+      rect(x, v, -hw, 0, leaf, 49, '#4a4e57');
+      rect(x, v, -hw + 1, 0, Math.max(1, leaf - 2), 6, C.face);
       if (leaf > 6) rect(x, v, -hw + leaf - 4, 22, 2, 4, C.rail);
       rect(x, v, -hw, 49, leaf, 1, C.rim);
-      rect(x, v, hw + 4, 24, 5, 8, C.mid); rect(x, v, hw + 5, 29, 3, 2, lamp);
+      rect(x, v, hw + 4, 24, 5, 8, C.mid);
+      rect(x, v, hw + 5, 29, 3, 2, lamp);
       return;
     }
     // turnstile: a waist-high cabinet each side, the arm across the passage dropping as it opens, a lamp on top
-    rect(x, v, -hw - 8, 0, 8, 34, C.mid); if (!s.near) rect(x, v, hw, 0, 8, 34, C.mid);
-    rect(x, v, -hw - 8, 32, 8, 2, C.edge); if (!s.near) rect(x, v, hw, 32, 8, 2, C.edge);
-    rect(x, v, -hw - 6, 26, 4, 3, C.face); rect(x, v, -hw - 5, 27, 2, 1, lamp);
+    rect(x, v, -hw - 8, 0, 8, 34, C.mid);
+    if (!s.near) rect(x, v, hw, 0, 8, 34, C.mid);
+    rect(x, v, -hw - 8, 32, 8, 2, C.edge);
+    if (!s.near) rect(x, v, hw, 32, 8, 2, C.edge);
+    rect(x, v, -hw - 6, 26, 4, 3, C.face);
+    rect(x, v, -hw - 5, 27, 2, 1, lamp);
     if (!s.near) rect(x, v, hw + 2, 34, 4, 2, lamp);
     // the arm hinges on the left cabinet: level when shut, hanging down when open
-    const a = open * Math.PI / 2, len = w - 1, hx = -hw, hh = 26;
-    x.strokeStyle = C.rail; x.lineWidth = 2; x.beginPath(); x.moveTo(v.sx(hx), v.y(hh)); x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh - Math.min(len, hh - 2) * Math.sin(a))); x.stroke();
-    x.strokeStyle = C.rim; x.lineWidth = 1; x.beginPath(); x.moveTo(v.sx(hx), v.y(hh + 1)); x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh + 1 - Math.min(len, hh - 2) * Math.sin(a))); x.stroke();
+    const a = (open * Math.PI) / 2,
+      len = w - 1,
+      hx = -hw,
+      hh = 26;
+    x.strokeStyle = C.rail;
+    x.lineWidth = 2;
+    x.beginPath();
+    x.moveTo(v.sx(hx), v.y(hh));
+    x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh - Math.min(len, hh - 2) * Math.sin(a)));
+    x.stroke();
+    x.strokeStyle = C.rim;
+    x.lineWidth = 1;
+    x.beginPath();
+    x.moveTo(v.sx(hx), v.y(hh + 1));
+    x.lineTo(v.sx(hx + len * Math.cos(a)), v.y(hh + 1 - Math.min(len, hh - 2) * Math.sin(a)));
+    x.stroke();
     rect(x, v, -hw - 1, hh - 2, 3, 4, C.edge);
   },
   drawNear(x, v, p, s) {
     if (p.style !== 'turnstile' || !s.near) return;
-    const hw = Number(p.width) / 2, lamp = Number(s.open ?? 0) > 0.5 ? C.go : C.stop;
-    rect(x, v, hw, 0, 8, 34, C.mid); rect(x, v, hw, 32, 8, 2, C.edge); rect(x, v, hw + 2, 34, 4, 2, lamp);
+    const hw = Number(p.width) / 2,
+      lamp = Number(s.open ?? 0) > 0.5 ? C.go : C.stop;
+    rect(x, v, hw, 0, 8, 34, C.mid);
+    rect(x, v, hw, 32, 8, 2, C.edge);
+    rect(x, v, hw + 2, 34, 4, 2, lamp);
   },
 };
 
-export const levelElements: AssetDefinition[] = [floorElement, doorElement, shellElement, interiorElement, entranceElement, stairsElement, escalatorElement, elevatorElement, liftButtonElement, barrierElement];
+export const levelElements: AssetDefinition[] = [
+  floorElement,
+  doorElement,
+  shellElement,
+  interiorElement,
+  entranceElement,
+  stairsElement,
+  escalatorElement,
+  elevatorElement,
+  liftButtonElement,
+  barrierElement,
+];

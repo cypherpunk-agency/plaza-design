@@ -35,7 +35,7 @@ function getCanvasColors(): CanvasColors {
 function adjustAlpha(rgba: string, newAlpha: number): string {
   const match = rgba.match(/rgba?\(([^)]+)\)/);
   if (match) {
-    const parts = match[1].split(',').map(s => s.trim());
+    const parts = match[1].split(',').map((s) => s.trim());
     if (parts.length >= 3) {
       return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${newAlpha})`;
     }
@@ -82,10 +82,7 @@ export function GridCanvas({ className = '', colors: customColors }: GridCanvasP
     const centerX = w / 2;
 
     // Ambient glow at horizon
-    const ambientGlow = ctx.createRadialGradient(
-      centerX, horizonY, 0,
-      centerX, horizonY, w * 0.5
-    );
+    const ambientGlow = ctx.createRadialGradient(centerX, horizonY, 0, centerX, horizonY, w * 0.5);
     ambientGlow.addColorStop(0, colors.ambient);
     ambientGlow.addColorStop(0.3, adjustAlpha(colors.ambient, 0.08));
     ambientGlow.addColorStop(0.6, adjustAlpha(colors.ambient, 0.03));
@@ -96,8 +93,12 @@ export function GridCanvas({ className = '', colors: customColors }: GridCanvasP
     // Sun with breathing animation
     const sunRadius = 60 + Math.sin(timeRef.current * 0.015) * 8;
     const sunGradient = ctx.createRadialGradient(
-      centerX, horizonY, 0,
-      centerX, horizonY, sunRadius * 2
+      centerX,
+      horizonY,
+      0,
+      centerX,
+      horizonY,
+      sunRadius * 2,
     );
     sunGradient.addColorStop(0, adjustAlpha(colors.sunCore, 0.9));
     sunGradient.addColorStop(0.3, colors.sunGlow);
@@ -194,10 +195,5 @@ export function GridCanvas({ className = '', colors: customColors }: GridCanvasP
     };
   }, [draw]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className={`plaza-grid-canvas ${className}`.trim()}
-    />
-  );
+  return <canvas ref={canvasRef} className={`plaza-grid-canvas ${className}`.trim()} />;
 }

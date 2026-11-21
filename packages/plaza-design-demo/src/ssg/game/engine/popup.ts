@@ -34,16 +34,30 @@
 
 /** One entry: an everyday action (cyan), or a hacking one (pink). `cur`: the state it is in now. `own`: it uses something you carry (dashed). */
 export interface PopupItem {
-  label: string; hack?: boolean; cur?: boolean; own?: boolean; run: () => void;
+  label: string;
+  hack?: boolean;
+  cur?: boolean;
+  own?: boolean;
+  run: () => void;
   /** A list's row: its short key before the label, and a tag after it (green when `cur`). */
-  key?: string; tag?: string;
+  key?: string;
+  tag?: string;
   /** The pointer is over it (a list reflects the host's state, so the host takes the hover as its choice). */
   point?: () => void;
 }
 /** How one `open` differs from the default: a placement of its own, and a list's ↑/↓ (the host moves its state) and starting selection. */
-export interface PopupOpts { placement?: PopupPlacement; step?: (dir: 1 | -1) => void; sel?: number }
+export interface PopupOpts {
+  placement?: PopupPlacement;
+  step?: (dir: 1 | -1) => void;
+  sel?: number;
+}
 /** Where the thing stands on screen: its box centre and size, in CSS px of the game view. */
-export interface PopupAnchor { x: number; y: number; w: number; h: number }
+export interface PopupAnchor {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 /** What placing the popup keeps in mind (CSS px of the game view). */
 export interface PopupRoom {
   /** Points the thing affects (cable partners, the player, Pixel): the popup opens on the side away from them. */
@@ -73,9 +87,15 @@ export type PopupPlacement = 'plate' | 'bottom' | 'top' | 'beside' | 'list';
 export const POPUP_PLACEMENT: PopupPlacement = 'plate';
 
 /** Space between the thing's frame and the popup, and from the edges of the view (px). */
-const GAP = 14, EDGE = 4;
+const GAP = 14,
+  EDGE = 4;
 export type Box = { l: number; t: number; r: number; b: number };
-const boxOf = (a: PopupAnchor): Box => ({ l: a.x - a.w / 2, t: a.y - a.h / 2, r: a.x + a.w / 2, b: a.y + a.h / 2 });
+const boxOf = (a: PopupAnchor): Box => ({
+  l: a.x - a.w / 2,
+  t: a.y - a.h / 2,
+  r: a.x + a.w / 2,
+  b: a.y + a.h / 2,
+});
 const meets = (p: Box, q: Box) => p.l < q.r && p.r > q.l && p.t < q.b && p.b > q.t;
 
 /** What a placement knows: the thing, the popup's measured size, the free view, what to keep clear of. CSS px of the game view. */
@@ -93,29 +113,54 @@ export interface PopupLayoutIn {
   prev: PopupLayout | null;
 }
 /** A line drawn between the popup's parts: cyan, or pink for the hacking entries'. */
-export interface PopupArm { pts: [number, number][]; hack?: boolean }
+export interface PopupArm {
+  pts: [number, number][];
+  hack?: boolean;
+}
 /**
  * What a placement returns: where the popup box goes, the ring round the thing (or none), the
  * connector's points; a placement that spreads the popup out (the plate) also says where the title
  * and each entry go (in the order of `parts.items`) and the arms joining them.
  */
-export interface PopupLayout { box: Box; ring: Box | null; wire: [number, number][]; parts?: { title: Box; items: Box[]; arms: PopupArm[] } }
+export interface PopupLayout {
+  box: Box;
+  ring: Box | null;
+  wire: [number, number][];
+  parts?: { title: Box; items: Box[]; arms: PopupArm[] };
+}
 export type PopupLayoutFn = (p: PopupLayoutIn) => PopupLayout;
 
 /** A row along the bottom or the top; on a touch screen the bottom row stands in the action buttons' place. */
-const rowLayout = (where: 'bottom' | 'top'): PopupLayoutFn => ({ anchor: a, size: { w, h }, view: { W, H, top }, pads, prev }) => {
-  let at = prev ? { l: prev.box.l, t: prev.box.t } : null;
-  if (!at) {
-    let l = Math.max(EDGE, Math.min(W - w - EDGE, a.x - w / 2)), t = where === 'top' ? top + EDGE : H - h - EDGE;
-    if (where === 'bottom' && pads) { t = pads.act.b - h; l = Math.max(pads.walk.r + 12, pads.act.r - w); }
-    at = { l, t };
-  }
-  const b = { l: at.l, t: at.t, r: at.l + w, b: at.t + h }, thing = boxOf(a), pad = 3;
-  const ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
-  const x = Math.max(b.l + 6, Math.min(b.r - 6, a.x));
-  const wire: [number, number][] = where === 'top' ? [[x, b.b], [a.x, ring.t]] : [[x, b.t], [a.x, ring.b]];
-  return { box: b, ring, wire };
-};
+const rowLayout =
+  (where: 'bottom' | 'top'): PopupLayoutFn =>
+  ({ anchor: a, size: { w, h }, view: { W, H, top }, pads, prev }) => {
+    let at = prev ? { l: prev.box.l, t: prev.box.t } : null;
+    if (!at) {
+      let l = Math.max(EDGE, Math.min(W - w - EDGE, a.x - w / 2)),
+        t = where === 'top' ? top + EDGE : H - h - EDGE;
+      if (where === 'bottom' && pads) {
+        t = pads.act.b - h;
+        l = Math.max(pads.walk.r + 12, pads.act.r - w);
+      }
+      at = { l, t };
+    }
+    const b = { l: at.l, t: at.t, r: at.l + w, b: at.t + h },
+      thing = boxOf(a),
+      pad = 3;
+    const ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
+    const x = Math.max(b.l + 6, Math.min(b.r - 6, a.x));
+    const wire: [number, number][] =
+      where === 'top'
+        ? [
+            [x, b.b],
+            [a.x, ring.t],
+          ]
+        : [
+            [x, b.t],
+            [a.x, ring.b],
+          ];
+    return { box: b, ring, wire };
+  };
 
 /**
  * Beside the thing, on the side away from what it affects: right, left or above, whichever fits in
@@ -123,22 +168,50 @@ const rowLayout = (where: 'bottom' | 'top'): PopupLayoutFn => ({ anchor: a, size
  * things on its side. None fits: the top of the view, under the HUD. A short line connects it.
  */
 const besideLayout: PopupLayoutFn = ({ anchor: a, size: { w, h }, view: { W, H }, room }) => {
-  const { avoid, keepClear, top } = room, thing = boxOf(a), clear = [thing, ...keepClear.map(boxOf)];
+  const { avoid, keepClear, top } = room,
+    thing = boxOf(a),
+    clear = [thing, ...keepClear.map(boxOf)];
   const y0 = Math.max(top + EDGE, Math.min(H - h - EDGE, a.y - h / 2));
   const sides: { b: Box; away: (p: { x: number; y: number }) => boolean }[] = [
     { b: { l: thing.r + GAP, t: y0, r: thing.r + GAP + w, b: y0 + h }, away: (p) => p.x > a.x },
     { b: { l: thing.l - GAP - w, t: y0, r: thing.l - GAP, b: y0 + h }, away: (p) => p.x < a.x },
-    { b: { l: a.x - w / 2, t: thing.t - GAP - h, r: a.x + w / 2, b: thing.t - GAP }, away: (p) => p.y < thing.t },
+    {
+      b: { l: a.x - w / 2, t: thing.t - GAP - h, r: a.x + w / 2, b: thing.t - GAP },
+      away: (p) => p.y < thing.t,
+    },
   ];
-  const fits = (b: Box) => b.l >= EDGE && b.r <= W - EDGE && b.t >= top + EDGE - 0.5 && b.b <= H - EDGE && !clear.some((c) => meets(b, c));
-  const best = sides.map((s, i) => {
-    // a side that would hold an affected thing is worst; one that merely faces them, next
-    const inside = avoid.filter((p) => p.x >= s.b.l && p.x <= s.b.r && p.y >= s.b.t && p.y <= s.b.b).length;
-    return { s, i, score: inside * 10 + avoid.filter(s.away).length };
-  }).filter((c) => fits(c.s.b)).sort((p, q) => p.score - q.score || p.i - q.i)[0];
-  const b = best ? best.s.b : (() => { const l = Math.max(EDGE, Math.min(W - w - EDGE, a.x - w / 2)); return { l, t: top + EDGE, r: l + w, b: top + EDGE + h }; })();
-  const px = Math.max(b.l, Math.min(b.r, a.x)), py = Math.max(b.t, Math.min(b.b, a.y));
-  return { box: b, ring: null, wire: [[px, py], [Math.max(thing.l, Math.min(thing.r, px)), Math.max(thing.t, Math.min(thing.b, py))]] };
+  const fits = (b: Box) =>
+    b.l >= EDGE &&
+    b.r <= W - EDGE &&
+    b.t >= top + EDGE - 0.5 &&
+    b.b <= H - EDGE &&
+    !clear.some((c) => meets(b, c));
+  const best = sides
+    .map((s, i) => {
+      // a side that would hold an affected thing is worst; one that merely faces them, next
+      const inside = avoid.filter(
+        (p) => p.x >= s.b.l && p.x <= s.b.r && p.y >= s.b.t && p.y <= s.b.b,
+      ).length;
+      return { s, i, score: inside * 10 + avoid.filter(s.away).length };
+    })
+    .filter((c) => fits(c.s.b))
+    .sort((p, q) => p.score - q.score || p.i - q.i)[0];
+  const b = best
+    ? best.s.b
+    : (() => {
+        const l = Math.max(EDGE, Math.min(W - w - EDGE, a.x - w / 2));
+        return { l, t: top + EDGE, r: l + w, b: top + EDGE + h };
+      })();
+  const px = Math.max(b.l, Math.min(b.r, a.x)),
+    py = Math.max(b.t, Math.min(b.b, a.y));
+  return {
+    box: b,
+    ring: null,
+    wire: [
+      [px, py],
+      [Math.max(thing.l, Math.min(thing.r, px)), Math.max(thing.t, Math.min(thing.b, py))],
+    ],
+  };
 };
 
 /**
@@ -147,21 +220,48 @@ const besideLayout: PopupLayoutFn = ({ anchor: a, size: { w, h }, view: { W, H }
  * bar, and moved off the walk arrows' and action buttons' boxes. A ring on the thing and a short line to the list.
  */
 const listLayout: PopupLayoutFn = ({ anchor: a, size: { w, h }, view: { W, H, top }, pads }) => {
-  const thing = boxOf(a), pad = 3, ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
-  const right = thing.r + GAP, left = thing.l - GAP - w;
-  const fitsRight = right + w <= W - EDGE, fitsLeft = left >= EDGE;
-  const l = fitsRight ? right : fitsLeft ? left : (W - thing.r > thing.l ? Math.min(right, W - w - EDGE) : Math.max(left, EDGE));
+  const thing = boxOf(a),
+    pad = 3,
+    ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
+  const right = thing.r + GAP,
+    left = thing.l - GAP - w;
+  const fitsRight = right + w <= W - EDGE,
+    fitsLeft = left >= EDGE;
+  const l = fitsRight
+    ? right
+    : fitsLeft
+      ? left
+      : W - thing.r > thing.l
+        ? Math.min(right, W - w - EDGE)
+        : Math.max(left, EDGE);
   let t = Math.max(top + EDGE, Math.min(H - h - EDGE, a.y - h / 2));
   // on a touch screen the list stays out of the walk arrows' and the action buttons' boxes (the view above the bar already is)
-  for (const p of pads ? [pads.walk, pads.act] : []) if (meets({ l, t, r: l + w, b: t + h }, p)) t = Math.max(top + EDGE, Math.min(t, p.t - EDGE - h));
-  const b = { l, t, r: l + w, b: t + h }, onRight = b.l >= thing.r;
+  for (const p of pads ? [pads.walk, pads.act] : [])
+    if (meets({ l, t, r: l + w, b: t + h }, p))
+      t = Math.max(top + EDGE, Math.min(t, p.t - EDGE - h));
+  const b = { l, t, r: l + w, b: t + h },
+    onRight = b.l >= thing.r;
   const y = Math.max(b.t + 6, Math.min(b.b - 6, a.y));
-  return { box: b, ring, wire: [[onRight ? b.l : b.r, y], [onRight ? ring.r : ring.l, y]] };
+  return {
+    box: b,
+    ring,
+    wire: [
+      [onRight ? b.l : b.r, y],
+      [onRight ? ring.r : ring.l, y],
+    ],
+  };
 };
 
 /** The plate: the gap between chips, the cyan arm from the plate to its nearest chip, the pink arm up to the hacking row (px). */
-const CHIP_GAP = 6, ARM = 16, RISE = 16;
-const union = (bs: Box[]): Box => ({ l: Math.min(...bs.map((b) => b.l)), t: Math.min(...bs.map((b) => b.t)), r: Math.max(...bs.map((b) => b.r)), b: Math.max(...bs.map((b) => b.b)) });
+const CHIP_GAP = 6,
+  ARM = 16,
+  RISE = 16;
+const union = (bs: Box[]): Box => ({
+  l: Math.min(...bs.map((b) => b.l)),
+  t: Math.min(...bs.map((b) => b.t)),
+  r: Math.max(...bs.map((b) => b.r)),
+  b: Math.max(...bs.map((b) => b.b)),
+});
 
 /**
  * The stalk from the plate down to its thing: straight, from the thing's top, while the plate is
@@ -169,11 +269,28 @@ const union = (bs: Box[]): Box => ({ l: Math.min(...bs.map((b) => b.l)), t: Math
  * middle, then across to its side (it bends once).
  */
 function stalk(plate: Box, thing: Box, ax: number): [number, number][] {
-  const l = Math.max(plate.l + 4, thing.l + 2), r = Math.min(plate.r - 4, thing.r - 2);
-  if (l <= r) { const x = Math.max(l, Math.min(r, ax)); return [[x, plate.b], [x, thing.t]]; }
-  const right = ax > plate.r, sx = right ? plate.r - 4 : plate.l + 4, my = (thing.t + thing.b) / 2;
-  if (plate.b >= my) return [[sx, plate.b], [right ? thing.l : thing.r, Math.max(thing.t, Math.min(thing.b, plate.b))]];
-  return [[sx, plate.b], [sx, my], [right ? thing.l : thing.r, my]];
+  const l = Math.max(plate.l + 4, thing.l + 2),
+    r = Math.min(plate.r - 4, thing.r - 2);
+  if (l <= r) {
+    const x = Math.max(l, Math.min(r, ax));
+    return [
+      [x, plate.b],
+      [x, thing.t],
+    ];
+  }
+  const right = ax > plate.r,
+    sx = right ? plate.r - 4 : plate.l + 4,
+    my = (thing.t + thing.b) / 2;
+  if (plate.b >= my)
+    return [
+      [sx, plate.b],
+      [right ? thing.l : thing.r, Math.max(thing.t, Math.min(thing.b, plate.b))],
+    ];
+  return [
+    [sx, plate.b],
+    [sx, my],
+    [right ? thing.l : thing.r, my],
+  ];
 }
 
 /**
@@ -188,7 +305,9 @@ function stalk(plate: Box, thing: Box, ax: number): [number, number][] {
  * bends its stalk once.
  */
 const plateLayout: PopupLayoutFn = ({ anchor: a, view: { W, H, top }, room, parts, prev }) => {
-  const thing = boxOf(a), pad = 3, ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
+  const thing = boxOf(a),
+    pad = 3,
+    ring = { l: thing.l - pad, t: thing.t - pad, r: thing.r + pad, b: thing.b + pad };
   const n = parts.items.length;
   // open already: everything stays where it is, only the stalk follows the thing (the camera moves)
   if (prev?.parts && prev.parts.items.length === n) {
@@ -196,48 +315,111 @@ const plateLayout: PopupLayoutFn = ({ anchor: a, view: { W, H, top }, room, part
     return { box: prev.box, ring, wire: stalk(title, ring, a.x), parts: { title, items, arms } };
   }
   const { w: pw, h: ph } = parts.title;
-  const all = parts.items.map((s, i) => ({ ...s, i })), every = all.filter((s) => !s.hack), hacks = all.filter((s) => s.hack);
-  const rowH = Math.max(ph, ...every.map((s) => s.h)), hackH = Math.max(0, ...hacks.map((s) => s.h));
+  const all = parts.items.map((s, i) => ({ ...s, i })),
+    every = all.filter((s) => !s.hack),
+    hacks = all.filter((s) => s.hack);
+  const rowH = Math.max(ph, ...every.map((s) => s.h)),
+    hackH = Math.max(0, ...hacks.map((s) => s.h));
   const above = hacks.length ? RISE + hackH : 0;
   // the row's middle: its bottom on the lane (and over the thing), its hacking row under the HUD, in the view
   let cy = Math.min(room.lane ?? Infinity, thing.t - GAP) - rowH / 2;
   cy = Math.max(cy, top + EDGE + Math.max(rowH / 2, ph / 2 + above));
   cy = Math.min(cy, H - EDGE - rowH / 2);
-  const span = (xs: { w: number }[]) => (xs.length ? ARM + xs.reduce((t, s) => t + s.w, 0) + CHIP_GAP * (xs.length - 1) : 0);
+  const span = (xs: { w: number }[]) =>
+    xs.length ? ARM + xs.reduce((t, s) => t + s.w, 0) + CHIP_GAP * (xs.length - 1) : 0;
   // every split of the row (k chips left, the rest right), the plate over the thing, slid only as far as the view makes it
-  const clear = room.keepClear.map(boxOf), pref = Math.ceil(every.length / 2), want = a.x - pw / 2;
+  const clear = room.keepClear.map(boxOf),
+    pref = Math.ceil(every.length / 2),
+    want = a.x - pw / 2;
   const best = Array.from({ length: every.length + 1 }, (_, k) => {
-    const lw = span(every.slice(0, k)), rw = span(every.slice(k));
+    const lw = span(every.slice(0, k)),
+      rw = span(every.slice(k));
     const pl = Math.max(EDGE + lw, Math.min(W - EDGE - rw - pw, want));
     const row: Box = { l: pl - lw, t: cy - rowH / 2, r: pl + pw + rw, b: cy + rowH / 2 };
     const out = Math.max(0, EDGE - row.l) + Math.max(0, row.r - (W - EDGE));
-    return { k, pl, score: (clear.some((c) => meets(row, c)) ? 1e6 : 0) + out * 1e3 + Math.abs(pl - want) * 2 + Math.abs(lw - rw) * 0.5 + (k === pref ? 0 : 1) };
+    return {
+      k,
+      pl,
+      score:
+        (clear.some((c) => meets(row, c)) ? 1e6 : 0) +
+        out * 1e3 +
+        Math.abs(pl - want) * 2 +
+        Math.abs(lw - rw) * 0.5 +
+        (k === pref ? 0 : 1),
+    };
   }).sort((p, q) => p.score - q.score)[0];
-  const pl = Math.max(EDGE, best.pl), title: Box = { l: pl, t: cy - ph / 2, r: pl + pw, b: cy + ph / 2 };
-  const items: Box[] = new Array(n), arms: PopupArm[] = [];
+  const pl = Math.max(EDGE, best.pl),
+    title: Box = { l: pl, t: cy - ph / 2, r: pl + pw, b: cy + ph / 2 };
+  const items: Box[] = new Array(n),
+    arms: PopupArm[] = [];
   // the left chips outward from the plate (so the first one is furthest out and reads first), then the right ones
   let x = title.l - ARM;
-  every.slice(0, best.k).reverse().forEach((s) => { items[s.i] = { l: x - s.w, t: cy - s.h / 2, r: x, b: cy + s.h / 2 }; x -= s.w + CHIP_GAP; });
-  if (best.k) arms.push({ pts: [[title.l, cy], [x + CHIP_GAP + 2, cy]] });
+  every
+    .slice(0, best.k)
+    .reverse()
+    .forEach((s) => {
+      items[s.i] = { l: x - s.w, t: cy - s.h / 2, r: x, b: cy + s.h / 2 };
+      x -= s.w + CHIP_GAP;
+    });
+  if (best.k)
+    arms.push({
+      pts: [
+        [title.l, cy],
+        [x + CHIP_GAP + 2, cy],
+      ],
+    });
   x = title.r + ARM;
-  every.slice(best.k).forEach((s) => { items[s.i] = { l: x, t: cy - s.h / 2, r: x + s.w, b: cy + s.h / 2 }; x += s.w + CHIP_GAP; });
-  if (every.length > best.k) arms.push({ pts: [[title.r, cy], [x - CHIP_GAP - 2, cy]] });
+  every.slice(best.k).forEach((s) => {
+    items[s.i] = { l: x, t: cy - s.h / 2, r: x + s.w, b: cy + s.h / 2 };
+    x += s.w + CHIP_GAP;
+  });
+  if (every.length > best.k)
+    arms.push({
+      pts: [
+        [title.r, cy],
+        [x - CHIP_GAP - 2, cy],
+      ],
+    });
   // the hacking row: centred over the plate, in the view; a pink arm up from the plate's middle
   if (hacks.length) {
-    const hw = hacks.reduce((t, s) => t + s.w, 0) + CHIP_GAP * (hacks.length - 1), mid = Math.round((title.l + title.r) / 2);
+    const hw = hacks.reduce((t, s) => t + s.w, 0) + CHIP_GAP * (hacks.length - 1),
+      mid = Math.round((title.l + title.r) / 2);
     let hx = Math.max(EDGE, Math.min(W - EDGE - hw, mid - hw / 2));
     const hb = title.t - RISE;
-    hacks.forEach((s) => { items[s.i] = { l: hx, t: hb - s.h, r: hx + s.w, b: hb }; hx += s.w + CHIP_GAP; });
-    arms.push({ pts: [[mid, title.t], [mid, hb]], hack: true });
+    hacks.forEach((s) => {
+      items[s.i] = { l: hx, t: hb - s.h, r: hx + s.w, b: hb };
+      hx += s.w + CHIP_GAP;
+    });
+    arms.push({
+      pts: [
+        [mid, title.t],
+        [mid, hb],
+      ],
+      hack: true,
+    });
   }
-  return { box: union([title, ...items]), ring, wire: stalk(title, ring, a.x), parts: { title, items, arms } };
+  return {
+    box: union([title, ...items]),
+    ring,
+    wire: stalk(title, ring, a.x),
+    parts: { title, items, arms },
+  };
 };
 
 /** Every placement, by name: a new one is one more entry here. */
-export const POPUP_LAYOUTS: Record<PopupPlacement, PopupLayoutFn> = { plate: plateLayout, bottom: rowLayout('bottom'), top: rowLayout('top'), beside: besideLayout, list: listLayout };
+export const POPUP_LAYOUTS: Record<PopupPlacement, PopupLayoutFn> = {
+  plate: plateLayout,
+  bottom: rowLayout('bottom'),
+  top: rowLayout('top'),
+  beside: besideLayout,
+  list: listLayout,
+};
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) {
-  const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e;
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
 }
 
 export class Popup {
@@ -273,19 +455,29 @@ export class Popup {
   placement: PopupPlacement;
   constructor(host: HTMLElement, placement: PopupPlacement = POPUP_PLACEMENT) {
     this.placement0 = this.placement = placement;
-    this.layer = el('div', 'thing-layer'); this.layer.hidden = true;
-    this.box = el('div', 'thing-pop'); this.box.setAttribute('role', 'menu');
+    this.layer = el('div', 'thing-layer');
+    this.layer.hidden = true;
+    this.box = el('div', 'thing-pop');
+    this.box.setAttribute('role', 'menu');
     this.title = el('div', 'thing-title');
     this.list = el('div', 'thing-list');
     this.box.append(this.title, this.list);
     // the rows close with ✕ as well as Esc or a tap elsewhere (drawn for them only)
-    const x = el('button', 'thing-item thing-x', '✕'); x.type = 'button'; x.tabIndex = -1; x.setAttribute('aria-label', 'close');
-    x.addEventListener('click', (e) => { e.stopPropagation(); this.close(); });
+    const x = el('button', 'thing-item thing-x', '✕');
+    x.type = 'button';
+    x.tabIndex = -1;
+    x.setAttribute('aria-label', 'close');
+    x.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.close();
+    });
     this.box.appendChild(x);
     this.ring = el('div', 'thing-ring');
     // the connector: a short line from the popup to its thing
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'thing-wire');
-    this.wire = document.createElementNS('http://www.w3.org/2000/svg', 'polyline'); this.wire.setAttribute('class', 'thing-stalk');
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'thing-wire');
+    this.wire = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    this.wire.setAttribute('class', 'thing-stalk');
     this.arms = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     svg.append(this.wire, this.arms);
     this.layer.append(svg, this.ring, this.box);
@@ -298,12 +490,23 @@ export class Popup {
     this.placement = placement;
     const row = placement === 'bottom' || placement === 'top';
     this.layer.className = 'thing-layer' + (placement === 'plate' ? ' plate' : '');
-    this.box.className = 'thing-pop' + (row ? ' row ' + placement : placement === 'plate' ? ' plate' : placement === 'list' ? ' list' : '');
+    this.box.className =
+      'thing-pop' +
+      (row
+        ? ' row ' + placement
+        : placement === 'plate'
+          ? ' plate'
+          : placement === 'list'
+            ? ' list'
+            : '');
     this.ring.hidden = placement === 'beside';
-    this.last = null; this.shown = '';
+    this.last = null;
+    this.shown = '';
   }
 
-  get isOpen() { return !this.layer.hidden; }
+  get isOpen() {
+    return !this.layer.hidden;
+  }
 
   /** While open, the boxes it takes (the plate and each chip, or the whole popup), CSS px of the game view: captions keep off them. */
   get boxes(): Box[] {
@@ -313,7 +516,15 @@ export class Popup {
   }
 
   /** Open for a device: its name, its entries, next to where it stands. */
-  open(dev: string, name: string, aria: string, items: PopupItem[], at: PopupAnchor | undefined, room?: PopupRoom, opts?: PopupOpts) {
+  open(
+    dev: string,
+    name: string,
+    aria: string,
+    items: PopupItem[],
+    at: PopupAnchor | undefined,
+    room?: PopupRoom,
+    opts?: PopupOpts,
+  ) {
     const again = this.dev === dev && this.isOpen;
     if (!again) this.last = null;
     const placement = opts?.placement ?? this.placement0;
@@ -329,7 +540,8 @@ export class Popup {
     if (this.layer.hidden) {
       this.layer.hidden = false;
       // a row takes the place of the touch actions (bottom) or of HACK/BOARD (top) while it is open
-      if (this.placement === 'bottom' || this.placement === 'top') document.documentElement.classList.add('thing-' + this.placement);
+      if (this.placement === 'bottom' || this.placement === 'top')
+        document.documentElement.classList.add('thing-' + this.placement);
       // a click anywhere else closes it (capture: before the canvas opens another thing's popup)
       window.addEventListener('pointerdown', this.outside, true);
     }
@@ -341,23 +553,48 @@ export class Popup {
     this.items = items;
     this.sel = Math.max(0, Math.min(this.sel, items.length - 1));
     // the same rows again: only what a tap runs has changed (the rows are not rebuilt under a finger)
-    const sig = items.map((it) => [it.label, it.key, it.tag, it.hack, it.cur, it.own].join('\u0001')).join('\u0002');
-    if (sig === this.shown && this.list.childElementCount === items.length) { this.select(this.sel); return; }
+    const sig = items
+      .map((it) => [it.label, it.key, it.tag, it.hack, it.cur, it.own].join('\u0001'))
+      .join('\u0002');
+    if (sig === this.shown && this.list.childElementCount === items.length) {
+      this.select(this.sel);
+      return;
+    }
     this.shown = sig;
     this.list.textContent = '';
     items.forEach((it, i) => {
-      const b = el('button', 'thing-item' + (it.hack ? ' hack' : '') + (it.cur ? ' cur' : '') + (it.own ? ' own' : '') + (i === this.sel ? ' sel' : ''));
+      const b = el(
+        'button',
+        'thing-item' +
+          (it.hack ? ' hack' : '') +
+          (it.cur ? ' cur' : '') +
+          (it.own ? ' own' : '') +
+          (i === this.sel ? ' sel' : ''),
+      );
       // the hacking entries' mark (⌁, missing from IBM Plex Mono) is drawn: a small jack plug
       const label = it.label.replace(/^⌁\s*/, '');
       if (label !== it.label) b.appendChild(el('span', 'thing-ico'));
       // a list's row: key, label, tag
       if (it.key !== undefined || it.tag !== undefined) {
         b.classList.add('row3');
-        b.append(el('span', 'thing-key', it.key ?? ''), el('span', 'thing-name', label), el('span', 'thing-tag', it.tag ?? ''));
+        b.append(
+          el('span', 'thing-key', it.key ?? ''),
+          el('span', 'thing-name', label),
+          el('span', 'thing-tag', it.tag ?? ''),
+        );
       } else b.appendChild(document.createTextNode(label));
-      b.type = 'button'; b.setAttribute('role', 'menuitem'); b.tabIndex = -1;
-      b.addEventListener('pointerenter', () => { this.select(i); this.items[i]?.point?.(); });
-      b.addEventListener('click', (e) => { e.stopPropagation(); this.sel = i; this.items[i]?.run(); });
+      b.type = 'button';
+      b.setAttribute('role', 'menuitem');
+      b.tabIndex = -1;
+      b.addEventListener('pointerenter', () => {
+        this.select(i);
+        this.items[i]?.point?.();
+      });
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.sel = i;
+        this.items[i]?.run();
+      });
       this.list.appendChild(b);
     });
   }
@@ -370,7 +607,8 @@ export class Popup {
 
   /** The free view's height: on a phone the touch buttons lie over the bottom of it. */
   private freeHeight() {
-    const pad = document.getElementById('touch'), top = this.layer.getBoundingClientRect().top;
+    const pad = document.getElementById('touch'),
+      top = this.layer.getBoundingClientRect().top;
     const padTop = pad?.offsetParent ? pad.getBoundingClientRect().top - top : Infinity;
     return Math.min(this.layer.clientHeight, padTop > 0 ? padTop : Infinity);
   }
@@ -380,7 +618,10 @@ export class Popup {
     const pads = document.querySelectorAll<HTMLElement>('#touch .pad');
     if (pads.length !== 2 || !pads[0].offsetParent) return null;
     const o = this.layer.getBoundingClientRect();
-    const rel = (e: HTMLElement): Box => { const r = e.getBoundingClientRect(); return { l: r.left - o.left, t: r.top - o.top, r: r.right - o.left, b: r.bottom - o.top }; };
+    const rel = (e: HTMLElement): Box => {
+      const r = e.getBoundingClientRect();
+      return { l: r.left - o.left, t: r.top - o.top, r: r.right - o.left, b: r.bottom - o.top };
+    };
     return { walk: rel(pads[0]), act: rel(pads[1]) };
   }
 
@@ -393,45 +634,79 @@ export class Popup {
     }
     const chips = [...this.list.children] as HTMLElement[];
     const lay = POPUP_LAYOUTS[this.placement]({
-      anchor: a, size: { w: this.box.offsetWidth, h: this.box.offsetHeight },
+      anchor: a,
+      size: { w: this.box.offsetWidth, h: this.box.offsetHeight },
       view: { W: this.layer.clientWidth, H: this.freeHeight(), top: this.room.top },
-      room: this.room, pads: this.pads(), prev: this.last,
+      room: this.room,
+      pads: this.pads(),
+      prev: this.last,
       parts: {
         title: { w: this.title.offsetWidth, h: this.title.offsetHeight },
-        items: chips.map((c, i) => ({ w: c.offsetWidth, h: c.offsetHeight, hack: !!this.items[i]?.hack })),
+        items: chips.map((c, i) => ({
+          w: c.offsetWidth,
+          h: c.offsetHeight,
+          hack: !!this.items[i]?.hack,
+        })),
       },
     });
     this.last = lay;
     // the plate's lines are 2 px (on whole pixels), the others 1 px (on half pixels)
     const half = lay.parts ? 0 : 0.5;
-    const px = (v: number) => Math.round(v) + 'px', pt = (pts: [number, number][]) => pts.map(([x, y]) => Math.round(x) + half + ',' + (Math.round(y) + half)).join(' ');
-    this.box.style.left = px(lay.box.l); this.box.style.top = px(lay.box.t);
+    const px = (v: number) => Math.round(v) + 'px',
+      pt = (pts: [number, number][]) =>
+        pts.map(([x, y]) => Math.round(x) + half + ',' + (Math.round(y) + half)).join(' ');
+    this.box.style.left = px(lay.box.l);
+    this.box.style.top = px(lay.box.t);
     if (lay.parts) {
       // spread out: each part where the placement says, inside the box
-      const at = (e: HTMLElement, b: Box) => { e.style.left = px(b.l - lay.box.l); e.style.top = px(b.t - lay.box.t); };
-      this.box.style.width = px(lay.box.r - lay.box.l); this.box.style.height = px(lay.box.b - lay.box.t);
+      const at = (e: HTMLElement, b: Box) => {
+        e.style.left = px(b.l - lay.box.l);
+        e.style.top = px(b.t - lay.box.t);
+      };
+      this.box.style.width = px(lay.box.r - lay.box.l);
+      this.box.style.height = px(lay.box.b - lay.box.t);
       at(this.title, lay.parts.title);
       lay.parts.items.forEach((b, i) => chips[i] && at(chips[i], b));
     }
     const arms = lay.parts?.arms ?? [];
     while (this.arms.childElementCount > arms.length) this.arms.lastElementChild!.remove();
-    while (this.arms.childElementCount < arms.length) this.arms.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'polyline'));
-    arms.forEach((arm, i) => { const l = this.arms.children[i]; l.setAttribute('points', pt(arm.pts)); l.setAttribute('class', arm.hack ? 'hack' : ''); });
+    while (this.arms.childElementCount < arms.length)
+      this.arms.appendChild(document.createElementNS('http://www.w3.org/2000/svg', 'polyline'));
+    arms.forEach((arm, i) => {
+      const l = this.arms.children[i];
+      l.setAttribute('points', pt(arm.pts));
+      l.setAttribute('class', arm.hack ? 'hack' : '');
+    });
     this.ring.hidden = !lay.ring;
-    if (lay.ring) Object.assign(this.ring.style, { left: lay.ring.l + 'px', top: lay.ring.t + 'px', width: lay.ring.r - lay.ring.l + 'px', height: lay.ring.b - lay.ring.t + 'px' });
+    if (lay.ring)
+      Object.assign(this.ring.style, {
+        left: lay.ring.l + 'px',
+        top: lay.ring.t + 'px',
+        width: lay.ring.r - lay.ring.l + 'px',
+        height: lay.ring.b - lay.ring.t + 'px',
+      });
     this.wire.setAttribute('points', pt(lay.wire));
   }
 
   close() {
     if (this.layer.hidden) return;
-    this.layer.hidden = true; this.dev = null; this.items = []; this.last = null; this.step = null; this.shown = '';
+    this.layer.hidden = true;
+    this.dev = null;
+    this.items = [];
+    this.last = null;
+    this.step = null;
+    this.shown = '';
     document.documentElement.classList.remove('thing-bottom', 'thing-top');
     window.removeEventListener('pointerdown', this.outside, true);
     this.onClose();
   }
 
   /** The host is disposed: closed (its window listener goes with it) and off the page. */
-  dispose() { this.onClose = () => {}; this.close(); this.layer.remove(); }
+  dispose() {
+    this.onClose = () => {};
+    this.close();
+    this.layer.remove();
+  }
 
   private select(i: number) {
     this.sel = i;
@@ -447,33 +722,78 @@ export class Popup {
    * to the hacking entries, down back to the everyday ones; the nearest entry that way, or stay.
    */
   private toward(k: string): number {
-    const bs = this.last?.parts?.items, me = bs?.[this.sel];
+    const bs = this.last?.parts?.items,
+      me = bs?.[this.sel];
     if (!bs || !me) return this.sel;
-    const mid = (b: Box) => ({ x: (b.l + b.r) / 2, y: (b.t + b.b) / 2 }), m = mid(me);
-    let best = this.sel, far = Infinity;
+    const mid = (b: Box) => ({ x: (b.l + b.r) / 2, y: (b.t + b.b) / 2 }),
+      m = mid(me);
+    let best = this.sel,
+      far = Infinity;
     bs.forEach((b, i) => {
       if (i === this.sel || !b) return;
-      const p = mid(b), dx = p.x - m.x, dy = p.y - m.y, row = Math.abs(dy) < 8;
-      const ok = k === 'ArrowLeft' ? row && dx < 0 : k === 'ArrowRight' ? row && dx > 0 : k === 'ArrowUp' ? dy < -8 : dy > 8;
+      const p = mid(b),
+        dx = p.x - m.x,
+        dy = p.y - m.y,
+        row = Math.abs(dy) < 8;
+      const ok =
+        k === 'ArrowLeft'
+          ? row && dx < 0
+          : k === 'ArrowRight'
+            ? row && dx > 0
+            : k === 'ArrowUp'
+              ? dy < -8
+              : dy > 8;
       const d = row ? Math.abs(dx) : Math.abs(dx) + Math.abs(dy) * 0.25;
-      if (ok && d < far) { far = d; best = i; }
+      if (ok && d < far) {
+        far = d;
+        best = i;
+      }
     });
     return best;
   }
 
   /** A key while it is open. True when the popup used it; false lets the game have it (walking away closes it). */
   key(e: KeyboardEvent): boolean {
-    const n = this.items.length, k = e.key;
-    if (k === 'Escape') { e.preventDefault(); this.close(); return true; }
+    const n = this.items.length,
+      k = e.key;
+    if (k === 'Escape') {
+      e.preventDefault();
+      this.close();
+      return true;
+    }
     // a list the host drives: ↑ ↓ (W S) go to the host (one step up or down the building, as without the list), ← → are not for walking here
     if (this.step) {
-      const dir = k === 'ArrowUp' || k === 'w' || k === 'W' ? 1 : k === 'ArrowDown' || k === 's' || k === 'S' ? -1 : 0;
-      if (dir) { e.preventDefault(); if (!e.repeat) this.step(dir); return true; }
-      if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); return true; }
+      const dir =
+        k === 'ArrowUp' || k === 'w' || k === 'W'
+          ? 1
+          : k === 'ArrowDown' || k === 's' || k === 'S'
+            ? -1
+            : 0;
+      if (dir) {
+        e.preventDefault();
+        if (!e.repeat) this.step(dir);
+        return true;
+      }
+      if (k === 'ArrowLeft' || k === 'ArrowRight') {
+        e.preventDefault();
+        return true;
+      }
     }
-    if (this.last?.parts && k.startsWith('Arrow')) { e.preventDefault(); if (n) this.select(this.toward(k)); return true; }
-    if (k === 'ArrowDown' || k === 'ArrowUp') { e.preventDefault(); if (n) this.select((this.sel + (k === 'ArrowDown' ? 1 : n - 1)) % n); return true; }
-    if (k === 'Enter' || k === 'e' || k === 'E' || k === ' ') { e.preventDefault(); if (!e.repeat) this.items[this.sel]?.run(); return true; }
+    if (this.last?.parts && k.startsWith('Arrow')) {
+      e.preventDefault();
+      if (n) this.select(this.toward(k));
+      return true;
+    }
+    if (k === 'ArrowDown' || k === 'ArrowUp') {
+      e.preventDefault();
+      if (n) this.select((this.sel + (k === 'ArrowDown' ? 1 : n - 1)) % n);
+      return true;
+    }
+    if (k === 'Enter' || k === 'e' || k === 'E' || k === ' ') {
+      e.preventDefault();
+      if (!e.repeat) this.items[this.sel]?.run();
+      return true;
+    }
     this.close();
     return false;
   }

@@ -36,18 +36,22 @@ export function DemoLayout() {
   }, []);
 
   // Combine sections: index (top), design guide, demos, dev guide
-  const fullMenu: Menu = useMemo(() => ({
-    title: guideMenu.title,
-    subtitle: guideMenu.subtitle,
-    sections: [indexItem, designGuideFolder, demosFolder, devGuideFolder],
-  }), []);
+  const fullMenu: Menu = useMemo(
+    () => ({
+      title: guideMenu.title,
+      subtitle: guideMenu.subtitle,
+      sections: [indexItem, designGuideFolder, demosFolder, devGuideFolder],
+    }),
+    [],
+  );
 
   useEffect(() => {
     const handleThemeChange = (e: CustomEvent<{ theme: string }>) => {
       setTheme(e.detail.theme);
     };
     window.addEventListener('plaza-theme-change', handleThemeChange as EventListener);
-    return () => window.removeEventListener('plaza-theme-change', handleThemeChange as EventListener);
+    return () =>
+      window.removeEventListener('plaza-theme-change', handleThemeChange as EventListener);
   }, []);
 
   // Get current path for active state detection

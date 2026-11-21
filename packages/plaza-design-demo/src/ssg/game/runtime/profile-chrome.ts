@@ -6,7 +6,8 @@ export function applyProfileChrome(html: HTMLElement) {
   if (chrome.pageClass) html.classList.add(chrome.pageClass);
   if (chrome.minimalHud) {
     const style = document.createElement('style');
-    style.textContent = '.game-mode .header-online,.game-mode .plaza-window-header>span:last-child,.game-mode .footer-timestamp{display:none}';
+    style.textContent =
+      '.game-mode .header-online,.game-mode .plaza-window-header>span:last-child,.game-mode .footer-timestamp{display:none}';
     document.head.append(style);
   }
 }

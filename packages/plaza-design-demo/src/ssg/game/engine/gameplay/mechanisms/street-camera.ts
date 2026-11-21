@@ -23,18 +23,24 @@ export const cam3Panel = cameraPanel({
   painter: 'downtown.street',
   texts: 'cam',
   buttons: [
-    zoomButton('cam.zoom', 'cam.zoom.out', (k, { m, say }) => say(m.line(k ? 'cam.zoom.' + k.id : 'cam.zoom.wall'))),
+    zoomButton('cam.zoom', 'cam.zoom.out', (k, { m, say }) =>
+      say(m.line(k ? 'cam.zoom.' + k.id : 'cam.zoom.wall')),
+    ),
     {
       label: 'cam.tag',
       press: ({ m, say, under, tag }) => {
         const k = under();
         if (!k) return say(m.line('cam.tag.none'));
         tag(k.id);
-        say(m.line(('cam.tag.' + k.id) in m.texts ? 'cam.tag.' + k.id : 'cam.tag.ok', { id: k.id }));
+        say(m.line('cam.tag.' + k.id in m.texts ? 'cam.tag.' + k.id : 'cam.tag.ok', { id: k.id }));
       },
     },
     // the same as the lens's `loop` verb: its `frame` event goes wherever it is wired
-    { label: 'cam.loop', when: (m) => !!m.data.camera?.bindings?.loop, press: ({ m }) => cameraLoop(m) },
+    {
+      label: 'cam.loop',
+      when: (m) => !!m.data.camera?.bindings?.loop,
+      press: ({ m }) => cameraLoop(m),
+    },
   ],
 });
 
@@ -44,22 +50,35 @@ const RULES: SceneRules = {
   panels: ['cam3'],
   needs: {
     texts: {
-      'cam.zoom': 'label', 'cam.tag': 'label', 'cam.loop': 'label', 'cam.hud': 'label', 'cam.on': 'label', 'cam.aim': 'label',
-      'cam.zoom.wall': 'line', 'cam.zoom.out': 'line', 'cam.tag.none': 'line', 'cam.tag.ok': 'line',
+      'cam.zoom': 'label',
+      'cam.tag': 'label',
+      'cam.loop': 'label',
+      'cam.hud': 'label',
+      'cam.on': 'label',
+      'cam.aim': 'label',
+      'cam.zoom.wall': 'line',
+      'cam.zoom.out': 'line',
+      'cam.tag.none': 'line',
+      'cam.tag.ok': 'line',
     },
   },
   /** CAM-3 needs things to look at, and a word for each. */
   check: (z: SceneData) => {
     const errs: string[] = [];
-    if (!z.camera?.crates.length) errs.push('camera: CAM-3 needs things under its crosshair ("crates")');
-    for (const c of z.camera?.crates ?? []) if (!(('cam.zoom.' + c.id) in z.texts)) errs.push(`texts: missing "cam.zoom.${c.id}" (what CAM-3 says zoomed onto ${c.id})`);
+    if (!z.camera?.crates.length)
+      errs.push('camera: CAM-3 needs things under its crosshair ("crates")');
+    for (const c of z.camera?.crates ?? [])
+      if (!('cam.zoom.' + c.id in z.texts))
+        errs.push(`texts: missing "cam.zoom.${c.id}" (what CAM-3 says zoomed onto ${c.id})`);
     return errs;
   },
 };
 
 export const streetCamera: SceneMechanism = {
-  face: {function: 'sense'},
-  label: 'CAM-3 (the street camera: aim, zoom, tag, loop)', requires: [], world: false,
+  face: { function: 'sense' },
+  label: 'CAM-3 (the street camera: aim, zoom, tag, loop)',
+  requires: [],
+  world: false,
   rulesShape: () => RULES,
   apply: () => ({ rules: RULES, panels: { cam3: cam3Panel } }),
 };

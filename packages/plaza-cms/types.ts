@@ -9,13 +9,13 @@ interface MenuItemBase {
 // Markdown file item - rendered by CMS
 export interface FileMenuItem extends MenuItemBase {
   type: 'file';
-  path: string;  // Content path for markdown
+  path: string; // Content path for markdown
 }
 
 // Component item - rendered by app
 export interface ComponentMenuItem extends MenuItemBase {
   type: 'component';
-  route: string;  // URL route
+  route: string; // URL route
 }
 
 // Union type for all menu items

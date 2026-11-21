@@ -1,10 +1,10 @@
-import {skyElement} from './environment/sky-element';
-import {cloudLayerElement} from './environment/cloud-layer';
-import {vehicleFrameElement} from './vehicles/frame';
-import {drinkElement} from './props/drink';
-import {skyTrafficElement} from './environment/sky-traffic-element';
-import {worldControlElement} from './sequences/world-control';
-import {preparedActorElement} from './characters/prepared-actor';
+import { skyElement } from './environment/sky-element';
+import { cloudLayerElement } from './environment/cloud-layer';
+import { vehicleFrameElement } from './vehicles/frame';
+import { drinkElement } from './props/drink';
+import { skyTrafficElement } from './environment/sky-traffic-element';
+import { worldControlElement } from './sequences/world-control';
+import { preparedActorElement } from './characters/prepared-actor';
 import { ArtRegistry } from './core/composition';
 import { stoolElement } from './furniture/stool';
 import { shelfElement } from './furniture/shelf';
@@ -17,8 +17,8 @@ import { capsuleElements } from './assemblies/capsule-elements';
 import { downtownElements } from './assemblies/downtown-elements';
 import { mothElements } from './assemblies/moth-elements';
 import { preparedCharacterElement } from './characters/prepared';
-import {residentElement} from './characters/resident';
-import {flockElement} from './characters/flock';
+import { residentElement } from './characters/resident';
+import { flockElement } from './characters/flock';
 import { roadVehicleElement } from './vehicles/road-vehicle';
 import { airVehicleElement } from './vehicles/air-vehicle';
 import { boatVehicleElement } from './vehicles/boats';
@@ -62,12 +62,64 @@ import { coastElements } from './environment/coast';
 import { cityKitElements } from './architecture/city-kit';
 import { line0KitElements } from './transit/line0-kit';
 import { trafficElement } from './street/traffic';
-import {trafficGeneratorElements} from './vehicles/traffic-generators';
+import { trafficGeneratorElements } from './vehicles/traffic-generators';
 import { beachKitElements } from './props/beach-kit';
 import { flowElement } from './characters/flow-element';
 export * from './core/composition';
-export const art = new ArtRegistry({requireSemantics:true}).register(vehicleFrameElement).register(worldControlElement).register(stoolElement).register(groupElement).register(playerRowElement).register(sceneBaseElement).register(residentElement).register(flockElement).register(roadVehicleElement).register(airVehicleElement).register(boatVehicleElement).register(railVehicleElement);
-for (const element of [...libraryElements, ...capsuleElements, ...downtownElements, ...mothElements, ...cinematicElements, ...stationElements, ...laundromatElements, ...beachElements, ...sandboxElements, ...dockworkElements, ...yardElements, ...warehouseElements, ...harborElements, ...terminalElements, ...metroElements, ...marketElements, ...mallElements, ...trainElements, ...shopElements, ...signKitElements, ...buildingElements, ...districtBuildingElements, siteElement, ...marketInteriors, ...oldqInteriors, ...spireInteriors, ...marketApproach, ...downtownCivicElements, ...downtownHomeInteriors, ...undercityElements, ...fringeElements, ...skyportElements, ...streetElements, spireElement, ...levelElements, ...interiorElements, preparedCharacterElement,preparedActorElement]) art.register(element);
+export const art = new ArtRegistry({ requireSemantics: true })
+  .register(vehicleFrameElement)
+  .register(worldControlElement)
+  .register(stoolElement)
+  .register(groupElement)
+  .register(playerRowElement)
+  .register(sceneBaseElement)
+  .register(residentElement)
+  .register(flockElement)
+  .register(roadVehicleElement)
+  .register(airVehicleElement)
+  .register(boatVehicleElement)
+  .register(railVehicleElement);
+for (const element of [
+  ...libraryElements,
+  ...capsuleElements,
+  ...downtownElements,
+  ...mothElements,
+  ...cinematicElements,
+  ...stationElements,
+  ...laundromatElements,
+  ...beachElements,
+  ...sandboxElements,
+  ...dockworkElements,
+  ...yardElements,
+  ...warehouseElements,
+  ...harborElements,
+  ...terminalElements,
+  ...metroElements,
+  ...marketElements,
+  ...mallElements,
+  ...trainElements,
+  ...shopElements,
+  ...signKitElements,
+  ...buildingElements,
+  ...districtBuildingElements,
+  siteElement,
+  ...marketInteriors,
+  ...oldqInteriors,
+  ...spireInteriors,
+  ...marketApproach,
+  ...downtownCivicElements,
+  ...downtownHomeInteriors,
+  ...undercityElements,
+  ...fringeElements,
+  ...skyportElements,
+  ...streetElements,
+  spireElement,
+  ...levelElements,
+  ...interiorElements,
+  preparedCharacterElement,
+  preparedActorElement,
+])
+  art.register(element);
 for (const element of downtownEveryday) art.register(element);
 for (const element of shiftKitElements) art.register(element);
 art.register(skyElement);
@@ -77,4 +129,13 @@ art.register(drinkElement);
 art.register(shelfElement);
 art.register(stripLightElement);
 for (const element of metroKitElements) art.register(element);
-for (const element of [...coastElements, ...cityKitElements, ...line0KitElements, trafficElement, ...trafficGeneratorElements, ...beachKitElements, flowElement]) art.register(element);
+for (const element of [
+  ...coastElements,
+  ...cityKitElements,
+  ...line0KitElements,
+  trafficElement,
+  ...trafficGeneratorElements,
+  ...beachKitElements,
+  flowElement,
+])
+  art.register(element);

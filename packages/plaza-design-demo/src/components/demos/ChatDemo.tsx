@@ -17,14 +17,56 @@ interface User {
 }
 
 const initialMessages: Message[] = [
-  { id: 1, author: 'SYSTEM', content: 'Channel #general initialized', timestamp: '14:20:00', isSystem: true },
-  { id: 2, author: '0xA3F2...8C91', content: 'anyone working on the new validator code?', timestamp: '14:22:15' },
-  { id: 3, author: '0xB7E1...4D22', content: 'yeah, im looking at the staking module rn', timestamp: '14:23:42' },
-  { id: 4, author: '0xA3F2...8C91', content: 'cool, let me know if you need help with the reward distribution', timestamp: '14:24:18' },
-  { id: 5, author: '0xC9D4...7F33', content: 'just pushed a fix for the slashing bug - check PR #847', timestamp: '14:26:05' },
-  { id: 6, author: 'SYSTEM', content: '0xD2E5...1A44 joined the channel', timestamp: '14:27:30', isSystem: true },
-  { id: 7, author: '0xD2E5...1A44', content: 'hey all, whats the status on testnet?', timestamp: '14:28:12' },
-  { id: 8, author: '0xB7E1...4D22', content: 'testnet is live, syncing at block 847,293', timestamp: '14:29:45' },
+  {
+    id: 1,
+    author: 'SYSTEM',
+    content: 'Channel #general initialized',
+    timestamp: '14:20:00',
+    isSystem: true,
+  },
+  {
+    id: 2,
+    author: '0xA3F2...8C91',
+    content: 'anyone working on the new validator code?',
+    timestamp: '14:22:15',
+  },
+  {
+    id: 3,
+    author: '0xB7E1...4D22',
+    content: 'yeah, im looking at the staking module rn',
+    timestamp: '14:23:42',
+  },
+  {
+    id: 4,
+    author: '0xA3F2...8C91',
+    content: 'cool, let me know if you need help with the reward distribution',
+    timestamp: '14:24:18',
+  },
+  {
+    id: 5,
+    author: '0xC9D4...7F33',
+    content: 'just pushed a fix for the slashing bug - check PR #847',
+    timestamp: '14:26:05',
+  },
+  {
+    id: 6,
+    author: 'SYSTEM',
+    content: '0xD2E5...1A44 joined the channel',
+    timestamp: '14:27:30',
+    isSystem: true,
+  },
+  {
+    id: 7,
+    author: '0xD2E5...1A44',
+    content: 'hey all, whats the status on testnet?',
+    timestamp: '14:28:12',
+  },
+  {
+    id: 8,
+    author: '0xB7E1...4D22',
+    content: 'testnet is live, syncing at block 847,293',
+    timestamp: '14:29:45',
+  },
 ];
 
 const users: User[] = [
@@ -106,7 +148,9 @@ export function ChatDemo() {
                   className={`chat-message ${msg.isSystem ? 'chat-message--system' : ''}`}
                 >
                   <span className="chat-message__time">{msg.timestamp}</span>
-                  <span className={`chat-message__author ${msg.isSystem ? 'text-gray-600' : 'text-accent-400'}`}>
+                  <span
+                    className={`chat-message__author ${msg.isSystem ? 'text-gray-600' : 'text-accent-400'}`}
+                  >
                     {msg.author}
                   </span>
                   <span className="chat-message__content">{msg.content}</span>
@@ -127,7 +171,9 @@ export function ChatDemo() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
               />
-              <button className="footer-send-btn" onClick={handleSend}>[SEND]</button>
+              <button className="footer-send-btn" onClick={handleSend}>
+                [SEND]
+              </button>
             </div>
           </div>
         </div>

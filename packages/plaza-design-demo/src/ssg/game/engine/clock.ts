@@ -15,17 +15,34 @@
 
 import type { ClockData, NounData } from '../data/types';
 
-interface Clock { key: string; dev: string; noun: string; data: ClockData; events: string[]; next: number; last: number; on: boolean; first: boolean }
+interface Clock {
+  key: string;
+  dev: string;
+  noun: string;
+  data: ClockData;
+  events: string[];
+  next: number;
+  last: number;
+  on: boolean;
+  first: boolean;
+}
 
 /** A beat: this clock (`dev.noun`) raises this event. */
-export interface Beat { dev: string; noun: string; event: string; set?: string }
+export interface Beat {
+  dev: string;
+  noun: string;
+  event: string;
+  set?: string;
+}
 
 export class Clocks {
   private clocks = new Map<string, Clock>();
 
   constructor(private now: () => number) {}
 
-  clear() { this.clocks.clear(); }
+  clear() {
+    this.clocks.clear();
+  }
 
   /** Add the clocks of a device that is here now (a scene device at the start, a node when it connects). */
   add(dev: string, nouns: NounData[]) {
@@ -33,25 +50,50 @@ export class Clocks {
       if (!n.clock) continue;
       const key = dev + '.' + n.id;
       if (this.clocks.has(key)) continue;
-      this.clocks.set(key, { key, dev, noun: n.id, data: n.clock, events: n.events ?? [], next: 0, last: this.now(), on: n.clock.start !== false, first: true });
+      this.clocks.set(key, {
+        key,
+        dev,
+        noun: n.id,
+        data: n.clock,
+        events: n.events ?? [],
+        next: 0,
+        last: this.now(),
+        on: n.clock.start !== false,
+        first: true,
+      });
     }
   }
 
   /** Drop the clocks of a device that is gone. */
-  remove(dev: string) { for (const [k, c] of this.clocks) if (c.dev === dev) this.clocks.delete(k); }
+  remove(dev: string) {
+    for (const [k, c] of this.clocks) if (c.dev === dev) this.clocks.delete(k);
+  }
 
-  private beat(c: Clock) { return c.first ? c.data.first ?? c.data.every : c.data.every; }
+  private beat(c: Clock) {
+    return c.first ? (c.data.first ?? c.data.every) : c.data.every;
+  }
 
   /** The beats due since the last tick, in order (after a long pause, at most one per clock: a schedule does not catch up). */
   tick(): Beat[] {
-    const t = this.now(), out: Beat[] = [];
+    const t = this.now(),
+      out: Beat[] = [];
     for (const c of this.clocks.values()) {
       if (!c.on || !c.events.length || t - c.last < this.beat(c)) continue;
       const late = t - c.last - this.beat(c);
-      out.push({ dev: c.dev, noun: c.noun, event: c.events[c.next % c.events.length], set: c.data.set });
-      c.next = (c.next + 1) % c.events.length; c.first = false;
+      out.push({
+        dev: c.dev,
+        noun: c.noun,
+        event: c.events[c.next % c.events.length],
+        set: c.data.set,
+      });
+      c.next = (c.next + 1) % c.events.length;
+      c.first = false;
       // a one-shot clock stops after its beat; `start` sets it going from the top
-      if (c.data.once) { c.on = false; c.first = true; continue; }
+      if (c.data.once) {
+        c.on = false;
+        c.first = true;
+        continue;
+      }
       // keep the rhythm unless it fell a whole beat behind (a tab in the background)
       c.last = late < c.data.every ? t - late : t;
     }
@@ -63,7 +105,10 @@ export class Clocks {
     const c = this.clocks.get(key);
     if (!c || c.on === on) return false;
     c.on = on;
-    if (on) { c.last = this.now(); c.first = !!c.data.once; }
+    if (on) {
+      c.last = this.now();
+      c.first = !!c.data.once;
+    }
     return true;
   }
 
@@ -71,16 +116,25 @@ export class Clocks {
   next(key: string): { event: string; ms: number } | null {
     const c = this.clocks.get(key);
     if (!c || !c.on || !c.events.length) return null;
-    return { event: c.events[c.next % c.events.length], ms: Math.max(0, this.beat(c) - (this.now() - c.last)) };
+    return {
+      event: c.events[c.next % c.events.length],
+      ms: Math.max(0, this.beat(c) - (this.now() - c.last)),
+    };
   }
 
-  isOn(key: string) { return this.clocks.get(key)?.on ?? false; }
+  isOn(key: string) {
+    return this.clocks.get(key)?.on ?? false;
+  }
 
   /** For the save: which event is next, how far into the beat, stopped or not. */
   snapshot(): Record<string, { next: number; ms: number; off?: boolean }> {
-    const t = this.now(), out: Record<string, { next: number; ms: number; off?: boolean }> = {};
+    const t = this.now(),
+      out: Record<string, { next: number; ms: number; off?: boolean }> = {};
     for (const c of this.clocks.values()) {
-      const s: { next: number; ms: number; off?: boolean } = { next: c.next, ms: c.on ? Math.round(Math.min(t - c.last, this.beat(c))) : 0 };
+      const s: { next: number; ms: number; off?: boolean } = {
+        next: c.next,
+        ms: c.on ? Math.round(Math.min(t - c.last, this.beat(c))) : 0,
+      };
       if (!c.on) s.off = true;
       out[c.key] = s;
     }
@@ -94,7 +148,8 @@ export class Clocks {
       const c = this.clocks.get(k);
       if (!c || !v || typeof v.next !== 'number' || typeof v.ms !== 'number') continue;
       c.next = c.events.length ? Math.max(0, Math.floor(v.next)) % c.events.length : 0;
-      c.on = !v.off; c.first = false;
+      c.on = !v.off;
+      c.first = false;
       c.last = t - Math.max(0, Math.min(v.ms, this.beat(c)));
     }
   }

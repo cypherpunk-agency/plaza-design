@@ -2,7 +2,7 @@
 /* Muted, professional. Same structure, desaturated palette. */
 /* Mood: Professional terminal. Corporate secure. Less expressive. */
 
-[data-theme="grayscale"] {
+[data-theme='grayscale'] {
   /* Primary - Cool Gray */
   --color-primary-300: #d1d5db;
   --color-primary-400: #9ca3af;

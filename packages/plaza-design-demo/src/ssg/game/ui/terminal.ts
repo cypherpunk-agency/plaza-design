@@ -62,7 +62,10 @@ export class Terminal {
       // Never let the phone keyboard open: the deck types for you.
       this.input.readOnly = true;
       this.input.inputMode = 'none';
-      this.input.addEventListener('pointerdown', (e) => { e.preventDefault(); this.focus(); });
+      this.input.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        this.focus();
+      });
       this.buildDeck();
     } else {
       this.input.addEventListener('focus', () => this.open());
@@ -70,14 +73,25 @@ export class Terminal {
     }
   }
 
-  onSubmit(fn: (line: string) => void) { this.submit = fn; }
-  onComplete(fn: (prefix: string) => string[]) { this.complete = fn; }
+  onSubmit(fn: (line: string) => void) {
+    this.submit = fn;
+  }
+  onComplete(fn: (prefix: string) => string[]) {
+    this.complete = fn;
+  }
   /** Touch deck: what to offer next, and which commands run on a single tap. */
-  onSuggest(fn: (line: string) => string[], runAlone: string[]) { this.suggestFn = fn; this.runAlone = runAlone; }
+  onSuggest(fn: (line: string) => string[], runAlone: string[]) {
+    this.suggestFn = fn;
+    this.runAlone = runAlone;
+  }
 
-  get isOpen() { return !this.panel.hidden; }
+  get isOpen() {
+    return !this.panel.hidden;
+  }
   /** True while the terminal should own the keys (the game then stands still). */
-  get focused() { return this.touch ? this.isOpen : document.activeElement === this.input; }
+  get focused() {
+    return this.touch ? this.isOpen : document.activeElement === this.input;
+  }
 
   open() {
     if (!this.panel.hidden) return;
@@ -92,29 +106,47 @@ export class Terminal {
     this.showKeys(false);
     this.onClose();
   }
-  focus() { this.open(); if (!this.touch) this.input.focus(); }
+  focus() {
+    this.open();
+    if (!this.touch) this.input.focus();
+  }
   /** Open with `text` already typed, the cursor after it (someone asked you something). */
   prefill(text: string) {
-    if (this.touch) { this.line = text; this.focus(); this.refresh(); return; }
+    if (this.touch) {
+      this.line = text;
+      this.focus();
+      this.refresh();
+      return;
+    }
     this.input.value = text;
     this.focus();
     this.input.setSelectionRange(text.length, text.length);
   }
 
-  print(text: string, kind: LineKind = 'out', notify=true,receipt?:import('../engine/feedback-receipt').FeedbackReceipt) {
+  print(
+    text: string,
+    kind: LineKind = 'out',
+    notify = true,
+    receipt?: import('../engine/feedback-receipt').FeedbackReceipt,
+  ) {
     for (const line of text.split('\n')) {
       const div = document.createElement('div');
       div.className = 'term-line term-' + kind;
       div.textContent = line;
-      if(receipt){div.setAttribute?.('data-feedback-id',receipt.id);div.setAttribute?.('data-feedback-source',receipt.source);}
+      if (receipt) {
+        div.setAttribute?.('data-feedback-id', receipt.id);
+        div.setAttribute?.('data-feedback-source', receipt.source);
+      }
       this.out.appendChild(div);
     }
     while (this.out.childElementCount > 200) this.out.firstElementChild?.remove();
-    if(notify)this.onLine?.(text, kind);
+    if (notify) this.onLine?.(text, kind);
     if (this.touch) this.refresh();
     this.scroll();
   }
-  clear() { this.out.textContent = ''; }
+  clear() {
+    this.out.textContent = '';
+  }
 
   private scroll() {
     this.out.scrollTop = this.out.scrollHeight;
@@ -123,7 +155,10 @@ export class Terminal {
 
   private run(line: string) {
     line = line.trim();
-    if (line) { this.history.push(line); this.hIndex = this.history.length; }
+    if (line) {
+      this.history.push(line);
+      this.hIndex = this.history.length;
+    }
     this.print('> ' + line, 'in');
     if (line) this.submit(line);
   }
@@ -163,7 +198,11 @@ export class Terminal {
     b.type = 'button';
     b.className = cls;
     b.textContent = label;
-    b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); onTap(); });
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onTap();
+    });
     return b;
   }
 
@@ -178,12 +217,20 @@ export class Terminal {
     for (const row of KEY_ROWS) {
       const r = document.createElement('div');
       r.className = 'deck-row';
-      for (const ch of row) r.appendChild(this.button(ch, 'deck-key', () => this.type(this.shift ? ch.toUpperCase() : ch)));
+      for (const ch of row)
+        r.appendChild(
+          this.button(ch, 'deck-key', () => this.type(this.shift ? ch.toUpperCase() : ch)),
+        );
       this.keysEl.appendChild(r);
     }
     const last = document.createElement('div');
     last.className = 'deck-row';
-    last.appendChild(this.button('SHIFT', 'deck-key deck-wide deck-shift', () => { this.shift = !this.shift; this.refreshShift(); }));
+    last.appendChild(
+      this.button('SHIFT', 'deck-key deck-wide deck-shift', () => {
+        this.shift = !this.shift;
+        this.refreshShift();
+      }),
+    );
     last.appendChild(this.button('SPACE', 'deck-key deck-space', () => this.type(' ')));
     last.appendChild(this.button('⌫', 'deck-key deck-wide', () => this.back()));
     last.appendChild(this.button('RUN', 'deck-key deck-wide deck-run', () => this.runLine()));
@@ -191,9 +238,20 @@ export class Terminal {
     this.panel.append(this.lineEl, this.chipsEl, this.keysEl);
   }
 
-  private type(text: string) { this.line += text; this.refresh(); }
-  private back() { this.line = this.line.slice(0, -1); this.refresh(); }
-  private runLine() { const line = this.line; this.line = ''; this.run(line); this.refresh(); }
+  private type(text: string) {
+    this.line += text;
+    this.refresh();
+  }
+  private back() {
+    this.line = this.line.slice(0, -1);
+    this.refresh();
+  }
+  private runLine() {
+    const line = this.line;
+    this.line = '';
+    this.run(line);
+    this.refresh();
+  }
   private showKeys(on: boolean) {
     if (!this.keysEl) return;
     this.keysEl.hidden = !on;
@@ -201,14 +259,22 @@ export class Terminal {
     requestAnimationFrame(() => this.scroll());
   }
   private refreshShift() {
-    this.keysEl?.querySelectorAll<HTMLButtonElement>('.deck-row:not(:last-child) .deck-key').forEach((b) => {
-      b.textContent = this.shift ? (b.textContent ?? '').toUpperCase() : (b.textContent ?? '').toLowerCase();
-    });
+    this.keysEl
+      ?.querySelectorAll<HTMLButtonElement>('.deck-row:not(:last-child) .deck-key')
+      .forEach((b) => {
+        b.textContent = this.shift
+          ? (b.textContent ?? '').toUpperCase()
+          : (b.textContent ?? '').toLowerCase();
+      });
     this.keysEl?.querySelector('.deck-shift')?.classList.toggle('on', this.shift);
   }
 
   private pick(word: string) {
-    if (!this.line.trim() && this.runAlone.includes(word)) { this.run(word); this.refresh(); return; }
+    if (!this.line.trim() && this.runAlone.includes(word)) {
+      this.run(word);
+      this.refresh();
+      return;
+    }
     if (this.line && !/\s$/.test(this.line)) this.line = this.line.replace(/\S+$/, '');
     this.line += word + ' ';
     this.refresh();
@@ -221,13 +287,26 @@ export class Terminal {
     this.chipsEl.textContent = '';
     const words = document.createElement('div');
     words.className = 'deck-suggest';
-    for (const word of this.suggestFn(this.line)) words.appendChild(this.button(word, 'deck-chip', () => this.pick(word)));
+    for (const word of this.suggestFn(this.line))
+      words.appendChild(this.button(word, 'deck-chip', () => this.pick(word)));
     this.chipsEl.appendChild(words);
     const tools = document.createElement('div');
     tools.className = 'deck-tools';
-    if (this.line) tools.appendChild(this.button('RUN', 'deck-chip deck-run', () => this.runLine()));
-    if (this.line) tools.appendChild(this.button('CLR', 'deck-chip', () => { this.line = ''; this.refresh(); }));
-    tools.appendChild(this.button(this.keysEl?.hidden ? 'ABC' : 'HIDE ABC', 'deck-chip', () => { this.showKeys(!!this.keysEl?.hidden); this.refresh(); }));
+    if (this.line)
+      tools.appendChild(this.button('RUN', 'deck-chip deck-run', () => this.runLine()));
+    if (this.line)
+      tools.appendChild(
+        this.button('CLR', 'deck-chip', () => {
+          this.line = '';
+          this.refresh();
+        }),
+      );
+    tools.appendChild(
+      this.button(this.keysEl?.hidden ? 'ABC' : 'HIDE ABC', 'deck-chip', () => {
+        this.showKeys(!!this.keysEl?.hidden);
+        this.refresh();
+      }),
+    );
     tools.appendChild(this.button('CLOSE', 'deck-chip deck-close', () => this.close()));
     this.chipsEl.appendChild(tools);
   }

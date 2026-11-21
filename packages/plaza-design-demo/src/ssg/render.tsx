@@ -1,4 +1,4 @@
-import { SHIFT_GUIDANCE_STYLES } from "./game/ui/shift-guidance";
+import { SHIFT_GUIDANCE_STYLES } from './game/ui/shift-guidance';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { StaticLandingPage } from './StaticLandingPage';
 import { ENGINE_STYLES } from './game/engine/styles';
@@ -25,7 +25,8 @@ export function renderStaticHTML(): string {
 export function getDefaultMeta(): MetaConfig {
   return {
     title: '[cypherpunk.agency]',
-    description: 'INITIATING CONNECTION... PROTOCOL ONLINE. Decentralized social evolution. Node 42 active. Access granted.',
+    description:
+      'INITIATING CONNECTION... PROTOCOL ONLINE. Decentralized social evolution. Node 42 active. Access granted.',
     ogImage: 'https://cypherpunk.agency/og-image.png',
     ogUrl: 'https://cypherpunk.agency/',
   };

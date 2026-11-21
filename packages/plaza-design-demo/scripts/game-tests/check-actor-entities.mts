@@ -1,116 +1,464 @@
-import type {GameplayDefinition} from '../../src/ssg/game/engine/gameplay/types';
-import {addManifestContent} from '../../src/ssg/game/engine/gameplay/manifest-content';
-import {manifestCompositionRows} from '../../src/ssg/game/engine/gameplay/manifest-geometry';
+import type { GameplayDefinition } from '../../src/ssg/game/engine/gameplay/types';
+import { addManifestContent } from '../../src/ssg/game/engine/gameplay/manifest-content';
+import { manifestCompositionRows } from '../../src/ssg/game/engine/gameplay/manifest-geometry';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {art,type ChunkDocument,type AssetInstance} from '../../src/ssg/game/art';
-import {SCENES} from '../../src/ssg/game/scenes';
-import {sceneSourceDefinition} from '../../src/ssg/game/engine/gameplay/folder-scene';
-import {FOLDER_SOURCES} from '../../src/ssg/game/scenes/folder-scenes';
-import {ComposerModel} from '../../src/ssg/game/authoring/composer-model';
-import {sourceDocuments,validateSourceDocuments} from '../../src/ssg/game/authoring/source-documents';
-import {createSequenceValidationContext} from '../../src/ssg/game/art/core/sequence-context';
-import {createDocumentBundle,readDocumentBundle} from '../../src/ssg/game/authoring/document-bundle';
-import {pendingRegistry} from '../../src/ssg/game/authoring/pending-registry';
-import {AuthoringStore} from '../../src/ssg/game/authoring/server/store';
-import type {SceneDocument} from '../../src/ssg/game/engine/gameplay/scene-document';
-import {actorRemovalImpact,addSceneActor,duplicateSceneActor,removeSceneActor,setActorDialogue,bindSceneActor} from '../../src/ssg/game/engine/gameplay/actor-content';
-import {actorReactionIdentity,actorAppearanceSeed} from '../../src/ssg/game/engine/gameplay/actor-identity';
+import { art, type ChunkDocument, type AssetInstance } from '../../src/ssg/game/art';
+import { SCENES } from '../../src/ssg/game/scenes';
+import { sceneSourceDefinition } from '../../src/ssg/game/engine/gameplay/folder-scene';
+import { FOLDER_SOURCES } from '../../src/ssg/game/scenes/folder-scenes';
+import { ComposerModel } from '../../src/ssg/game/authoring/composer-model';
+import {
+  sourceDocuments,
+  validateSourceDocuments,
+} from '../../src/ssg/game/authoring/source-documents';
+import { createSequenceValidationContext } from '../../src/ssg/game/art/core/sequence-context';
+import {
+  createDocumentBundle,
+  readDocumentBundle,
+} from '../../src/ssg/game/authoring/document-bundle';
+import { pendingRegistry } from '../../src/ssg/game/authoring/pending-registry';
+import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
+import type { SceneDocument } from '../../src/ssg/game/engine/gameplay/scene-document';
+import {
+  actorRemovalImpact,
+  addSceneActor,
+  duplicateSceneActor,
+  removeSceneActor,
+  setActorDialogue,
+  bindSceneActor,
+} from '../../src/ssg/game/engine/gameplay/actor-content';
+import {
+  actorReactionIdentity,
+  actorAppearanceSeed,
+} from '../../src/ssg/game/engine/gameplay/actor-identity';
 
-const root=path.resolve('src/ssg/game');
-const documents=sourceDocuments.map(d=>({id:d.id,kind:d.kind,revision:'fixture',value:JSON.parse(fs.readFileSync(path.join(root,d.file),'utf8'))}));
-const context=createSequenceValidationContext(art,{},Object.fromEntries(Object.entries(SCENES).map(([id,s])=>[id,s.exits.map(e=>e.id)])));
-const make=()=>{const m=new ComposerModel(art,context,(d,docs)=>{if(d.id==='warehouse-scene')validateSourceDocuments(new Map(docs.map(d=>[d.id,d.value])));});m.load(documents);return m;};
-const model=make(),prefix=(id:string)=>id;
+const root = path.resolve('src/ssg/game');
+const documents = sourceDocuments.map((d) => ({
+  id: d.id,
+  kind: d.kind,
+  revision: 'fixture',
+  value: JSON.parse(fs.readFileSync(path.join(root, d.file), 'utf8')),
+}));
+const context = createSequenceValidationContext(
+  art,
+  {},
+  Object.fromEntries(Object.entries(SCENES).map(([id, s]) => [id, s.exits.map((e) => e.id)])),
+);
+const make = () => {
+  const m = new ComposerModel(art, context, (d, docs) => {
+    if (d.id === 'warehouse-scene')
+      validateSourceDocuments(new Map(docs.map((d) => [d.id, d.value])));
+  });
+  m.load(documents);
+  return m;
+};
+const model = make(),
+  prefix = (id: string) => id;
 // No canonical actor is secretly required by a renderer after its source/dialogue/artwork is removed.
-const emptyDocuments=new Map(documents.map(d=>[d.id,structuredClone(d.value)]));
-for(const id of ['warehouse','shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown']){
- const source=emptyDocuments.get(prefix(id)+'-scene') as SceneDocument,composition=emptyDocuments.get(id) as ChunkDocument;
- const actorArtwork=new Set(source.actors!.map(a=>a.instance)),rows=manifestCompositionRows(composition);
- const detach=(nodes:AssetInstance[])=>{for(const n of nodes){if(!actorArtwork.has(n.id)&&n.attach&&actorArtwork.has(n.attach.instance)){const p=rows.find(r=>r.instance.id===n.id)!.placement;delete n.attach;n.placement={...n.placement,x:p.x,h:p.h};}detach(n.children??[]);}};detach(composition.instances);
- for(const actor of source.actors!)delete actor.follow;
- for(const actor of [...source.actors!])removeSceneActor(source,composition,actor.id);
+const emptyDocuments = new Map(documents.map((d) => [d.id, structuredClone(d.value)]));
+for (const id of [
+  'warehouse',
+  'shop',
+  'library',
+  'laundromat',
+  'sandbox',
+  'stacks',
+  'beach',
+  'mall',
+  'harbor',
+  'market',
+  'capsule',
+  'yard',
+  'moth',
+  'metro',
+  'galleriaStation',
+  'harborStation',
+  'train',
+  'downtown',
+]) {
+  const source = emptyDocuments.get(prefix(id) + '-scene') as SceneDocument,
+    composition = emptyDocuments.get(id) as ChunkDocument;
+  const actorArtwork = new Set(source.actors!.map((a) => a.instance)),
+    rows = manifestCompositionRows(composition);
+  const detach = (nodes: AssetInstance[]) => {
+    for (const n of nodes) {
+      if (!actorArtwork.has(n.id) && n.attach && actorArtwork.has(n.attach.instance)) {
+        const p = rows.find((r) => r.instance.id === n.id)!.placement;
+        delete n.attach;
+        n.placement = { ...n.placement, x: p.x, h: p.h };
+      }
+      detach(n.children ?? []);
+    }
+  };
+  detach(composition.instances);
+  for (const actor of source.actors!) delete actor.follow;
+  for (const actor of [...source.actors!]) removeSceneActor(source, composition, actor.id);
 }
-const emptyRegistry=pendingRegistry(emptyDocuments);
-assert.throws(()=>validateSourceDocuments(emptyDocuments),'actor removal must address actual opening line references');
+const emptyRegistry = pendingRegistry(emptyDocuments);
+assert.throws(
+  () => validateSourceDocuments(emptyDocuments),
+  'actor removal must address actual opening line references',
+);
 // a scene's phase lines (scene.json `phases[*].lines`) that answer for a removed person go with them
-for(const[scene,def]of Object.entries(emptyRegistry)){const doc=emptyDocuments.get(prefix(scene)+'-scene') as any;for(const phase of Object.values(doc?.phases??{}) as any[])for(const id of Object.keys(phase.lines??{})){const entities=[...def.people??[],...def.uses??[],...def.readables??[],...def.exits,...def.data?.devices??[],...def.data?.nodes??[]];if(!entities.some(e=>e.id===id))delete phase.lines[id];}}
+for (const [scene, def] of Object.entries(emptyRegistry)) {
+  const doc = emptyDocuments.get(prefix(scene) + '-scene') as any;
+  for (const phase of Object.values(doc?.phases ?? {}) as any[])
+    for (const id of Object.keys(phase.lines ?? {})) {
+      const entities = [
+        ...(def.people ?? []),
+        ...(def.uses ?? []),
+        ...(def.readables ?? []),
+        ...def.exits,
+        ...(def.data?.devices ?? []),
+        ...(def.data?.nodes ?? []),
+      ];
+      if (!entities.some((e) => e.id === id)) delete phase.lines[id];
+    }
+}
 // The separate review rooms still reference this shared campaign artwork. Full-source Save
 // must reject those dangling references; the native world itself has no required actor identity.
-assert.throws(()=>validateSourceDocuments(emptyDocuments),/Actor source\/artwork count mismatch/);
-for(const id of ['warehouse','shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'])assert.equal((emptyRegistry[id].people??[]).length,0);
-const mutate=(fn:(s:SceneDocument,c:ChunkDocument,g:GameplayDefinition)=>void,id='warehouse')=>{const s=model.get(prefix(id)+'-scene').value as SceneDocument,c=model.get(id).value as ChunkDocument,g=model.get(prefix(id)+'-gameplay').value as GameplayDefinition;fn(s,c,g);model.importDocuments([{id:prefix(id)+'-scene',value:s},{id,value:c},{id:prefix(id)+'-gameplay',value:g}]);};
-const native=()=>pendingRegistry(new Map(model.list().map(d=>[d.id,d.value]))).warehouse;
-const original=native(),originalMech=original.people!.find(a=>actorReactionIdentity(a)==='slot-3')!;
-assert.equal(actorAppearanceSeed(originalMech),3923);
-mutate((s,c,g)=>addSceneActor(s,c,'new-resident',{body:'tall',garb:'coat'},220,12,true,g));
-let created=native().people!.find(a=>a.id==='new-resident')!;
-assert.equal(created.x,220);assert.equal(created.h,12);assert.equal(created.name,'RESIDENT');assert.equal(actorReactionIdentity(created),'actor.new-resident');
-mutate((s,c)=>bindSceneActor(s,c,'new-resident','dock','origin',23,4));
-created=native().people!.find(a=>a.id==='new-resident')!;
-const bound={x:created.x,h:created.h};assert.notEqual(bound.x,220);
-mutate((s,c)=>bindSceneActor(s,c,'new-resident',''));
-created=native().people!.find(a=>a.id==='new-resident')!;assert.deepEqual({x:created.x,h:created.h},bound);
-mutate((s,c,g)=>duplicateSceneActor(s,c,'new-resident','resident-copy',g));
-const copy=native().people!.find(a=>a.id==='resident-copy')!;assert.equal(copy.x,bound.x+24);assert.deepEqual(copy.look,created.look);assert.equal(actorReactionIdentity(copy),'actor.resident-copy');
-mutate((s,c,g)=>duplicateSceneActor(s,c,'mech','mech-copy',g));
-const robot=native().people!.find(a=>actorReactionIdentity(a)==='actor.mech-copy')!;assert.equal(robot.seed,3923);assert.deepEqual(robot.look,originalMech.look);
-mutate((s,c)=>bindSceneActor(s,c,'mech','','origin',700,0));assert.equal(actorAppearanceSeed(native().people!.find(a=>actorReactionIdentity(a)==='slot-3')!),3923);
-mutate((s,_c,g)=>setActorDialogue(s,'mech',true,g));assert(native().people!.some(a=>a.id==='mech'&&a.name==='RESIDENT'));
-mutate((s,_c,g)=>setActorDialogue(s,'mech',false,g));assert(native().people!.some(a=>a.id==='mech'&&!a.name));
-mutate((s,c)=>removeSceneActor(s,c,'gull'));assert(!native().people!.some(a=>a.id==='gull'));
-mutate(s=>{s.actors!.find(a=>a.id==='resident-copy')!.follow='new-resident';});
-for(const id of ['shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown']){
- mutate((s,c,g)=>addSceneActor(s,c,'new-resident',{garb:'hivis'},260,0,true,g),id);
- mutate((s,c,g)=>{duplicateSceneActor(s,c,'new-resident','resident-copy',g);bindSceneActor(s,c,'new-resident',['capsule','moth'].includes(id)?'neighbors':id==='yard'?'sky':id==='shop'?'wall':id==='sandbox'?'hall':['stacks','beach','mall','harbor','market','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'].includes(id)?'scene':'room','origin',240,0);},id);
- const pending=pendingRegistry(new Map(model.list().map(d=>[d.id,d.value])))[id];
- if(id==='library'){const composition=model.get(id).value as ChunkDocument,created=composition.instances.find(n=>n.id==='actor-new-resident')!,copy=composition.instances.find(n=>n.id==='actor-resident-copy')!;assert.equal(created.layer,'playfield');assert.equal(copy.layer,'playfield');art.validate(composition);}
- assert(pending.people!.some(p=>p.id==='new-resident'));assert(pending.people!.some(p=>p.id==='resident-copy'));
- mutate((s,c)=>removeSceneActor(s,c,'resident-copy'),id);
- assert(!pendingRegistry(new Map(model.list().map(d=>[d.id,d.value])))[id].people!.some(p=>p.id==='resident-copy'));
+assert.throws(
+  () => validateSourceDocuments(emptyDocuments),
+  /Actor source\/artwork count mismatch/,
+);
+for (const id of [
+  'warehouse',
+  'shop',
+  'library',
+  'laundromat',
+  'sandbox',
+  'stacks',
+  'beach',
+  'mall',
+  'harbor',
+  'market',
+  'capsule',
+  'yard',
+  'moth',
+  'metro',
+  'galleriaStation',
+  'harborStation',
+  'train',
+  'downtown',
+])
+  assert.equal((emptyRegistry[id].people ?? []).length, 0);
+const mutate = (
+  fn: (s: SceneDocument, c: ChunkDocument, g: GameplayDefinition) => void,
+  id = 'warehouse',
+) => {
+  const s = model.get(prefix(id) + '-scene').value as SceneDocument,
+    c = model.get(id).value as ChunkDocument,
+    g = model.get(prefix(id) + '-gameplay').value as GameplayDefinition;
+  fn(s, c, g);
+  model.importDocuments([
+    { id: prefix(id) + '-scene', value: s },
+    { id, value: c },
+    { id: prefix(id) + '-gameplay', value: g },
+  ]);
+};
+const native = () => pendingRegistry(new Map(model.list().map((d) => [d.id, d.value]))).warehouse;
+const original = native(),
+  originalMech = original.people!.find((a) => actorReactionIdentity(a) === 'slot-3')!;
+assert.equal(actorAppearanceSeed(originalMech), 3923);
+mutate((s, c, g) =>
+  addSceneActor(s, c, 'new-resident', { body: 'tall', garb: 'coat' }, 220, 12, true, g),
+);
+let created = native().people!.find((a) => a.id === 'new-resident')!;
+assert.equal(created.x, 220);
+assert.equal(created.h, 12);
+assert.equal(created.name, 'RESIDENT');
+assert.equal(actorReactionIdentity(created), 'actor.new-resident');
+mutate((s, c) => bindSceneActor(s, c, 'new-resident', 'dock', 'origin', 23, 4));
+created = native().people!.find((a) => a.id === 'new-resident')!;
+const bound = { x: created.x, h: created.h };
+assert.notEqual(bound.x, 220);
+mutate((s, c) => bindSceneActor(s, c, 'new-resident', ''));
+created = native().people!.find((a) => a.id === 'new-resident')!;
+assert.deepEqual({ x: created.x, h: created.h }, bound);
+mutate((s, c, g) => duplicateSceneActor(s, c, 'new-resident', 'resident-copy', g));
+const copy = native().people!.find((a) => a.id === 'resident-copy')!;
+assert.equal(copy.x, bound.x + 24);
+assert.deepEqual(copy.look, created.look);
+assert.equal(actorReactionIdentity(copy), 'actor.resident-copy');
+mutate((s, c, g) => duplicateSceneActor(s, c, 'mech', 'mech-copy', g));
+const robot = native().people!.find((a) => actorReactionIdentity(a) === 'actor.mech-copy')!;
+assert.equal(robot.seed, 3923);
+assert.deepEqual(robot.look, originalMech.look);
+mutate((s, c) => bindSceneActor(s, c, 'mech', '', 'origin', 700, 0));
+assert.equal(
+  actorAppearanceSeed(native().people!.find((a) => actorReactionIdentity(a) === 'slot-3')!),
+  3923,
+);
+mutate((s, _c, g) => setActorDialogue(s, 'mech', true, g));
+assert(native().people!.some((a) => a.id === 'mech' && a.name === 'RESIDENT'));
+mutate((s, _c, g) => setActorDialogue(s, 'mech', false, g));
+assert(native().people!.some((a) => a.id === 'mech' && !a.name));
+mutate((s, c) => removeSceneActor(s, c, 'gull'));
+assert(!native().people!.some((a) => a.id === 'gull'));
+mutate((s) => {
+  s.actors!.find((a) => a.id === 'resident-copy')!.follow = 'new-resident';
+});
+for (const id of [
+  'shop',
+  'library',
+  'laundromat',
+  'sandbox',
+  'stacks',
+  'beach',
+  'mall',
+  'harbor',
+  'market',
+  'capsule',
+  'yard',
+  'moth',
+  'metro',
+  'galleriaStation',
+  'harborStation',
+  'train',
+  'downtown',
+]) {
+  mutate((s, c, g) => addSceneActor(s, c, 'new-resident', { garb: 'hivis' }, 260, 0, true, g), id);
+  mutate((s, c, g) => {
+    duplicateSceneActor(s, c, 'new-resident', 'resident-copy', g);
+    bindSceneActor(
+      s,
+      c,
+      'new-resident',
+      ['capsule', 'moth'].includes(id)
+        ? 'neighbors'
+        : id === 'yard'
+          ? 'sky'
+          : id === 'shop'
+            ? 'wall'
+            : id === 'sandbox'
+              ? 'hall'
+              : [
+                    'stacks',
+                    'beach',
+                    'mall',
+                    'harbor',
+                    'market',
+                    'capsule',
+                    'yard',
+                    'moth',
+                    'metro',
+                    'galleriaStation',
+                    'harborStation',
+                    'train',
+                    'downtown',
+                  ].includes(id)
+                ? 'scene'
+                : 'room',
+      'origin',
+      240,
+      0,
+    );
+  }, id);
+  const pending = pendingRegistry(new Map(model.list().map((d) => [d.id, d.value])))[id];
+  if (id === 'library') {
+    const composition = model.get(id).value as ChunkDocument,
+      created = composition.instances.find((n) => n.id === 'actor-new-resident')!,
+      copy = composition.instances.find((n) => n.id === 'actor-resident-copy')!;
+    assert.equal(created.layer, 'playfield');
+    assert.equal(copy.layer, 'playfield');
+    art.validate(composition);
+  }
+  assert(pending.people!.some((p) => p.id === 'new-resident'));
+  assert(pending.people!.some((p) => p.id === 'resident-copy'));
+  mutate((s, c) => removeSceneActor(s, c, 'resident-copy'), id);
+  assert(
+    !pendingRegistry(new Map(model.list().map((d) => [d.id, d.value])))[id].people!.some(
+      (p) => p.id === 'resident-copy',
+    ),
+  );
 }
 // Owned ordinary content is removed consistently; decorative attachments retain world placement.
-mutate((s,c,g)=>{addSceneActor(s,c,'dependency-owner',{},360,0,true,g);const actor=s.actors!.find(a=>a.id==='dependency-owner')!;
- for(const group of ['uses','readables','rests','exits']as const)addManifestContent(s,group,'owned-'+group,actor.instance);
- const decoration=structuredClone(c.instances.find(n=>n.type==='train.advert')!);decoration.id='owned-decoration';decoration.attach={instance:actor.instance,anchor:'origin'};decoration.placement={x:6,h:4};c.instances.push(decoration);
-},'train');
-validateSourceDocuments(new Map(model.list().map(d=>[d.id,d.value])));
-const ownedSource=model.get('train-scene').value as SceneDocument,ownedArt=model.get('train').value as ChunkDocument;
-const impact=actorRemovalImpact(ownedSource,ownedArt,'dependency-owner');assert.deepEqual(impact.content.map(r=>r.group).sort(),['exits','readables','rests','uses']);assert(impact.attachments.includes('owned-decoration'));
-const decorationBefore=manifestCompositionRows(ownedArt).find(r=>r.instance.id==='owned-decoration')!.placement;
-mutate((s,c)=>removeSceneActor(s,c,'dependency-owner'),'train');
-const removed=model.get('train-scene').value as SceneDocument,detached=model.get('train').value as ChunkDocument;
-for(const group of ['uses','readables','rests','exits']as const)assert(!removed[group]?.some(r=>r.id==='owned-'+group));
-assert.equal(detached.instances.find(n=>n.id==='owned-decoration')!.attach,undefined);assert.deepEqual(manifestCompositionRows(detached).find(r=>r.instance.id==='owned-decoration')!.placement,decorationBefore);
-validateSourceDocuments(new Map(model.list().map(d=>[d.id,d.value])));
-for(const structural of ['spawn','width']as const){const s=structuredClone(ownedSource),c=structuredClone(ownedArt),instance=s.actors!.find(a=>a.id==='dependency-owner')!.instance;if(structural==='spawn')s.manifest!.spawn=instance;else s.manifest!.width={instance,property:'width'};const unchanged=structuredClone([s,c]);assert.throws(()=>removeSceneActor(s,c,'dependency-owner'),/Rebind/);assert.deepEqual([s,c],unchanged,'structural owner blocks removal before mutation');}
-const before=structuredClone(model.edits());
-assert.throws(()=>mutate((s,c)=>removeSceneActor(s,c,'new-resident')),/follower/);assert.deepEqual(model.edits(),before);
-for(const invalid of [
- (s:SceneDocument,c:ChunkDocument)=>bindSceneActor(s,c,'new-resident','missing'),
- (s:SceneDocument,c:ChunkDocument)=>bindSceneActor(s,c,'new-resident',s.actors!.find(a=>a.id==='new-resident')!.instance),
- (s:SceneDocument,c:ChunkDocument)=>bindSceneActor(s,c,'new-resident','dock','missing'),
- (s:SceneDocument,c:ChunkDocument)=>{s.actors!.find(a=>a.id==='mech')!.reaction='invalid reaction!';},
- (s:SceneDocument,c:ChunkDocument)=>{c.instances=c.instances.filter(a=>a.id!==s.actors!.find(a=>a.id==='new-resident')!.instance);},
- (s:SceneDocument,c:ChunkDocument)=>addSceneActor(s,c,'new-resident',{}),
-]){assert.throws(()=>mutate(invalid));assert.deepEqual(model.edits(),before);}
-const receiver=make();receiver.importDocuments(readDocumentBundle(createDocumentBundle(model.edits(),model.list()),receiver.list()));
-const received=pendingRegistry(new Map(receiver.list().map(d=>[d.id,d.value]))).warehouse;assert.deepEqual(received.people,native().people);
-const scratch=path.resolve('../../.game-test-output/actor-entities');fs.mkdirSync(scratch,{recursive:true});const dir=fs.mkdtempSync(path.join(scratch,'run-'));
-for(const d of sourceDocuments){const dest=path.join(dir,d.file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.copyFileSync(path.join(root,d.file),dest);}
-const store=new AuthoringStore({root:dir,documents:sourceDocuments,validateAll:validateSourceDocuments});
-const originals=Object.fromEntries(model.edits().map(({id})=>[id,fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8')]));
-const initialRevisions=new Map(store.list().map(d=>[d.id,d.revision]));
-const saved=store.save(model.edits().map(e=>({...e,revision:initialRevisions.get(e.id)!})));
-const persisted=new Map(store.list().map(d=>[d.id,d.value]));
-const reloaded=sceneSourceDefinition('warehouse',FOLDER_SOURCES.warehouse,{composition:persisted.get('warehouse') as ChunkDocument,scene:persisted.get('warehouse-scene') as SceneDocument,gameplay:persisted.get('warehouse-gameplay') as GameplayDefinition});
-assert.deepEqual(reloaded.people,native().people);
-assert.equal(actorAppearanceSeed(reloaded.people!.find(a=>actorReactionIdentity(a)==='slot-3')!),3923);
-const savedRegistry=pendingRegistry(persisted);
-for(const id of ['shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'])assert(savedRegistry[id].people!.some(p=>p.id==='new-resident'));
-model.undo();model.redo();assert.deepEqual(model.edits(),before);
-store.undo(saved.transaction,Object.fromEntries(saved.documents.map(d=>[d.id,d.revision])));
-for(const[id,bytes]of Object.entries(originals))assert.equal(fs.readFileSync(path.join(dir,sourceDocuments.find(d=>d.id===id)!.file),'utf8'),bytes);
-fs.writeFileSync(path.join(dir,'evidence.json'),JSON.stringify({status:'PASS',scenes:['warehouse','shop','library','laundromat','sandbox','stacks','beach','mall','harbor','market','capsule','yard','moth','metro','galleriaStation','harborStation','train','downtown'],checks:['create','duplicate human and implicit-seed robot','remove named actor','conversation toggle','attach and detach','stable reaction and appearance','follower and dangling reference rejection','atomic history','bundle','protected Save','native reload','exact byte Undo']},null,2)+'\n');
-console.log('Actor entities PASS: nineteen-scene CRUD/binding/dialogue/identity, atomic rejection, history/bundle/protected Save/native reload/byte Undo. Evidence: '+dir);
+mutate((s, c, g) => {
+  addSceneActor(s, c, 'dependency-owner', {}, 360, 0, true, g);
+  const actor = s.actors!.find((a) => a.id === 'dependency-owner')!;
+  for (const group of ['uses', 'readables', 'rests', 'exits'] as const)
+    addManifestContent(s, group, 'owned-' + group, actor.instance);
+  const decoration = structuredClone(c.instances.find((n) => n.type === 'train.advert')!);
+  decoration.id = 'owned-decoration';
+  decoration.attach = { instance: actor.instance, anchor: 'origin' };
+  decoration.placement = { x: 6, h: 4 };
+  c.instances.push(decoration);
+}, 'train');
+validateSourceDocuments(new Map(model.list().map((d) => [d.id, d.value])));
+const ownedSource = model.get('train-scene').value as SceneDocument,
+  ownedArt = model.get('train').value as ChunkDocument;
+const impact = actorRemovalImpact(ownedSource, ownedArt, 'dependency-owner');
+assert.deepEqual(impact.content.map((r) => r.group).sort(), [
+  'exits',
+  'readables',
+  'rests',
+  'uses',
+]);
+assert(impact.attachments.includes('owned-decoration'));
+const decorationBefore = manifestCompositionRows(ownedArt).find(
+  (r) => r.instance.id === 'owned-decoration',
+)!.placement;
+mutate((s, c) => removeSceneActor(s, c, 'dependency-owner'), 'train');
+const removed = model.get('train-scene').value as SceneDocument,
+  detached = model.get('train').value as ChunkDocument;
+for (const group of ['uses', 'readables', 'rests', 'exits'] as const)
+  assert(!removed[group]?.some((r) => r.id === 'owned-' + group));
+assert.equal(detached.instances.find((n) => n.id === 'owned-decoration')!.attach, undefined);
+assert.deepEqual(
+  manifestCompositionRows(detached).find((r) => r.instance.id === 'owned-decoration')!.placement,
+  decorationBefore,
+);
+validateSourceDocuments(new Map(model.list().map((d) => [d.id, d.value])));
+for (const structural of ['spawn', 'width'] as const) {
+  const s = structuredClone(ownedSource),
+    c = structuredClone(ownedArt),
+    instance = s.actors!.find((a) => a.id === 'dependency-owner')!.instance;
+  if (structural === 'spawn') s.manifest!.spawn = instance;
+  else s.manifest!.width = { instance, property: 'width' };
+  const unchanged = structuredClone([s, c]);
+  assert.throws(() => removeSceneActor(s, c, 'dependency-owner'), /Rebind/);
+  assert.deepEqual([s, c], unchanged, 'structural owner blocks removal before mutation');
+}
+const before = structuredClone(model.edits());
+assert.throws(() => mutate((s, c) => removeSceneActor(s, c, 'new-resident')), /follower/);
+assert.deepEqual(model.edits(), before);
+for (const invalid of [
+  (s: SceneDocument, c: ChunkDocument) => bindSceneActor(s, c, 'new-resident', 'missing'),
+  (s: SceneDocument, c: ChunkDocument) =>
+    bindSceneActor(s, c, 'new-resident', s.actors!.find((a) => a.id === 'new-resident')!.instance),
+  (s: SceneDocument, c: ChunkDocument) => bindSceneActor(s, c, 'new-resident', 'dock', 'missing'),
+  (s: SceneDocument, c: ChunkDocument) => {
+    s.actors!.find((a) => a.id === 'mech')!.reaction = 'invalid reaction!';
+  },
+  (s: SceneDocument, c: ChunkDocument) => {
+    c.instances = c.instances.filter(
+      (a) => a.id !== s.actors!.find((a) => a.id === 'new-resident')!.instance,
+    );
+  },
+  (s: SceneDocument, c: ChunkDocument) => addSceneActor(s, c, 'new-resident', {}),
+]) {
+  assert.throws(() => mutate(invalid));
+  assert.deepEqual(model.edits(), before);
+}
+const receiver = make();
+receiver.importDocuments(
+  readDocumentBundle(createDocumentBundle(model.edits(), model.list()), receiver.list()),
+);
+const received = pendingRegistry(new Map(receiver.list().map((d) => [d.id, d.value]))).warehouse;
+assert.deepEqual(received.people, native().people);
+const scratch = path.resolve('../../.game-test-output/actor-entities');
+fs.mkdirSync(scratch, { recursive: true });
+const dir = fs.mkdtempSync(path.join(scratch, 'run-'));
+for (const d of sourceDocuments) {
+  const dest = path.join(dir, d.file);
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.copyFileSync(path.join(root, d.file), dest);
+}
+const store = new AuthoringStore({
+  root: dir,
+  documents: sourceDocuments,
+  validateAll: validateSourceDocuments,
+});
+const originals = Object.fromEntries(
+  model
+    .edits()
+    .map(({ id }) => [
+      id,
+      fs.readFileSync(path.join(dir, sourceDocuments.find((d) => d.id === id)!.file), 'utf8'),
+    ]),
+);
+const initialRevisions = new Map(store.list().map((d) => [d.id, d.revision]));
+const saved = store.save(
+  model.edits().map((e) => ({ ...e, revision: initialRevisions.get(e.id)! })),
+);
+const persisted = new Map(store.list().map((d) => [d.id, d.value]));
+const reloaded = sceneSourceDefinition('warehouse', FOLDER_SOURCES.warehouse, {
+  composition: persisted.get('warehouse') as ChunkDocument,
+  scene: persisted.get('warehouse-scene') as SceneDocument,
+  gameplay: persisted.get('warehouse-gameplay') as GameplayDefinition,
+});
+assert.deepEqual(reloaded.people, native().people);
+assert.equal(
+  actorAppearanceSeed(reloaded.people!.find((a) => actorReactionIdentity(a) === 'slot-3')!),
+  3923,
+);
+const savedRegistry = pendingRegistry(persisted);
+for (const id of [
+  'shop',
+  'library',
+  'laundromat',
+  'sandbox',
+  'stacks',
+  'beach',
+  'mall',
+  'harbor',
+  'market',
+  'capsule',
+  'yard',
+  'moth',
+  'metro',
+  'galleriaStation',
+  'harborStation',
+  'train',
+  'downtown',
+])
+  assert(savedRegistry[id].people!.some((p) => p.id === 'new-resident'));
+model.undo();
+model.redo();
+assert.deepEqual(model.edits(), before);
+store.undo(saved.transaction, Object.fromEntries(saved.documents.map((d) => [d.id, d.revision])));
+for (const [id, bytes] of Object.entries(originals))
+  assert.equal(
+    fs.readFileSync(path.join(dir, sourceDocuments.find((d) => d.id === id)!.file), 'utf8'),
+    bytes,
+  );
+fs.writeFileSync(
+  path.join(dir, 'evidence.json'),
+  JSON.stringify(
+    {
+      status: 'PASS',
+      scenes: [
+        'warehouse',
+        'shop',
+        'library',
+        'laundromat',
+        'sandbox',
+        'stacks',
+        'beach',
+        'mall',
+        'harbor',
+        'market',
+        'capsule',
+        'yard',
+        'moth',
+        'metro',
+        'galleriaStation',
+        'harborStation',
+        'train',
+        'downtown',
+      ],
+      checks: [
+        'create',
+        'duplicate human and implicit-seed robot',
+        'remove named actor',
+        'conversation toggle',
+        'attach and detach',
+        'stable reaction and appearance',
+        'follower and dangling reference rejection',
+        'atomic history',
+        'bundle',
+        'protected Save',
+        'native reload',
+        'exact byte Undo',
+      ],
+    },
+    null,
+    2,
+  ) + '\n',
+);
+console.log(
+  'Actor entities PASS: nineteen-scene CRUD/binding/dialogue/identity, atomic rejection, history/bundle/protected Save/native reload/byte Undo. Evidence: ' +
+    dir,
+);

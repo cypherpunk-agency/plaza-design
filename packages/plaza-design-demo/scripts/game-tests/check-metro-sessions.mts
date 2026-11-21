@@ -1,20 +1,134 @@
-import {SceneModel} from '../../src/ssg/game/engine/model';import {GameplaySession} from '../../src/ssg/game/engine/gameplay/session';import {attachNativeGameplay} from '../../src/ssg/game/engine/gameplay/native-bindings';import {fixtureGameplayPort,fixtureSceneRules} from './model-gameplay-fixture.mts';
+import { SceneModel } from '../../src/ssg/game/engine/model';
+import { GameplaySession } from '../../src/ssg/game/engine/gameplay/session';
+import { attachNativeGameplay } from '../../src/ssg/game/engine/gameplay/native-bindings';
+import { fixtureGameplayPort, fixtureSceneRules } from './model-gameplay-fixture.mts';
 import assert from 'node:assert/strict';
-import * as current from '../../src/ssg/game/world/transport/line';import {createCityModel} from '../../src/ssg/game/world/city';import source from '../../src/ssg/game/world/city.json';import {SCENES} from '../../src/ssg/game/scenes';import {frameView} from '../../src/ssg/game/art/core/view';import {startLevel} from '../../src/ssg/game/ui/sudo';import {boardRide} from '../../src/ssg/game/engine/gameplay/mechanisms/line-ride';
-import {advance,tickUntil} from './train-ride.mts';
-const model=createCityModel(source);
+import * as current from '../../src/ssg/game/world/transport/line';
+import { createCityModel } from '../../src/ssg/game/world/city';
+import source from '../../src/ssg/game/world/city.json';
+import { SCENES } from '../../src/ssg/game/scenes';
+import { frameView } from '../../src/ssg/game/art/core/view';
+import { startLevel } from '../../src/ssg/game/ui/sudo';
+import { boardRide } from '../../src/ssg/game/engine/gameplay/mechanisms/line-ride';
+import { advance, tickUntil } from './train-ride.mts';
+const model = createCityModel(source);
 // Games retain independent access state; no station clock or schedule exists.
-const a=current.createLineSystem(),b=current.createLineSystem();a.lineOpen.harbor=false;assert.equal(b.lineOpen.harbor,true);
+const a = current.createLineSystem(),
+  b = current.createLineSystem();
+a.lineOpen.harbor = false;
+assert.equal(b.lineOpen.harbor, true);
 // the pending route order and names reach the platform pictures and the actual TRAIN rules; two train models do not share a ride
-const edit=structuredClone(source);edit.LINE=['downtown','harbor','galleria'];edit.STATIONS.harbor.name='PENDING HARBOR';edit.STATIONS.downtown.name='PENDING DOWNTOWN';const city=createCityModel(edit),metro=current.createLineSystem(city);assert.equal(metro.nextStation('downtown'),'harbor');assert.equal(b.nextStation('downtown'),'galleria');
-const world={city,metro},trainScene=SCENES.train.bindWorld!(world);
-const build=(scene:any)=>new SceneModel({say(){},changed(){},open(){}},scene.data!,fixtureSceneRules(scene));
-const m=build(trainScene);m.setPaused(true);assert.equal(metro.rideView(m.movers).say,'PENDING DOWNTOWN');
-boardRide(m,'downtown',120);advance(m,1);assert.equal(metro.rideStop(m.movers),'downtown');tickUntil(m,()=>metro.ridePhase(m.movers)==='running');assert.equal(metro.rideView(m.movers).say,'NEXT: PENDING HARBOR');assert.equal(metro.rideNext(m.movers),'harbor');
-const other=build(SCENES.train.bindWorld!({city:model,metro:b}));other.setPaused(true);assert.equal(b.rideStop(other.movers),'downtown');assert.equal(b.ridePhase(other.movers),'dwell','another game\'s train stands where it started');
-for(const id of ['metro','galleriaStation','harborStation','train'] as const){const scene=SCENES[id].bindWorld!(world);assert.notEqual(scene,SCENES[id]);const view={...frameView(640),t:300,cam:0,viewW:640,viewH:360,gy:280,sx:(x:number)=>x,y:(h:number)=>280-h,flags:{'harbor:open':true}};
- if(id==='train'){let state:any={flags:{},items:{},tokens:0};const lines:any[]=[],tm=new SceneModel({say:line=>lines.push(line),changed(){},open(){}},scene.data!,fixtureSceneRules(scene));tm.setPaused(true);boardRide(tm,'downtown',120);tickUntil(tm,()=>metro.ridePhase(tm.movers)==='running');const engine={hover:null,m:tm} as any;scene.preparePresentation?.(view,engine);const env=scene.visualEnvironment!(view,engine);const session=new GameplaySession(scene.gameplay!,fixtureGameplayPort(scene.gameplay!,{read:()=>state,write:next=>{state=next;}},()=>tm));attachNativeGameplay(tm,session);try{assert.equal(tm.value('where'),'NEXT: PENDING HARBOR');const before=structuredClone(metro.rideView(tm.movers));tm.act('train','position','read');assert.equal(lines.length,1);assert(lines[0][1].includes('PENDING HARBOR'));assert.deepEqual(metro.rideView(tm.movers),before,'reading position never advances the ride');assert.deepEqual((env.bindings!['train.frame'] as any).visual.ride,metro.rideView(tm.movers));}finally{session.dispose();tm.reset();tm.setPaused(true);}}
- else{scene.preparePresentation?.(view, {hover:null} as any);const env=scene.visualEnvironment!(view,{hover:null} as any);if(id==='metro')assert(env.bindings!['station.pose.regular'],'Metro now has a bench rider rather than a departure-board placement');else assert.equal((env.bindings!['station.departure'] as any).destination,city.STATIONS[metro.nextStation(city.stationAt(id)!)].name);}}
+const edit = structuredClone(source);
+edit.LINE = ['downtown', 'harbor', 'galleria'];
+edit.STATIONS.harbor.name = 'PENDING HARBOR';
+edit.STATIONS.downtown.name = 'PENDING DOWNTOWN';
+const city = createCityModel(edit),
+  metro = current.createLineSystem(city);
+assert.equal(metro.nextStation('downtown'), 'harbor');
+assert.equal(b.nextStation('downtown'), 'galleria');
+const world = { city, metro },
+  trainScene = SCENES.train.bindWorld!(world);
+const build = (scene: any) =>
+  new SceneModel({ say() {}, changed() {}, open() {} }, scene.data!, fixtureSceneRules(scene));
+const m = build(trainScene);
+m.setPaused(true);
+assert.equal(metro.rideView(m.movers).say, 'PENDING DOWNTOWN');
+boardRide(m, 'downtown', 120);
+advance(m, 1);
+assert.equal(metro.rideStop(m.movers), 'downtown');
+tickUntil(m, () => metro.ridePhase(m.movers) === 'running');
+assert.equal(metro.rideView(m.movers).say, 'NEXT: PENDING HARBOR');
+assert.equal(metro.rideNext(m.movers), 'harbor');
+const other = build(SCENES.train.bindWorld!({ city: model, metro: b }));
+other.setPaused(true);
+assert.equal(b.rideStop(other.movers), 'downtown');
+assert.equal(b.ridePhase(other.movers), 'dwell', "another game's train stands where it started");
+for (const id of ['metro', 'galleriaStation', 'harborStation', 'train'] as const) {
+  const scene = SCENES[id].bindWorld!(world);
+  assert.notEqual(scene, SCENES[id]);
+  const view = {
+    ...frameView(640),
+    t: 300,
+    cam: 0,
+    viewW: 640,
+    viewH: 360,
+    gy: 280,
+    sx: (x: number) => x,
+    y: (h: number) => 280 - h,
+    flags: { 'harbor:open': true },
+  };
+  if (id === 'train') {
+    let state: any = { flags: {}, items: {}, tokens: 0 };
+    const lines: any[] = [],
+      tm = new SceneModel(
+        { say: (line) => lines.push(line), changed() {}, open() {} },
+        scene.data!,
+        fixtureSceneRules(scene),
+      );
+    tm.setPaused(true);
+    boardRide(tm, 'downtown', 120);
+    tickUntil(tm, () => metro.ridePhase(tm.movers) === 'running');
+    const engine = { hover: null, m: tm } as any;
+    scene.preparePresentation?.(view, engine);
+    const env = scene.visualEnvironment!(view, engine);
+    const session = new GameplaySession(
+      scene.gameplay!,
+      fixtureGameplayPort(
+        scene.gameplay!,
+        {
+          read: () => state,
+          write: (next) => {
+            state = next;
+          },
+        },
+        () => tm,
+      ),
+    );
+    attachNativeGameplay(tm, session);
+    try {
+      assert.equal(tm.value('where'), 'NEXT: PENDING HARBOR');
+      const before = structuredClone(metro.rideView(tm.movers));
+      tm.act('train', 'position', 'read');
+      assert.equal(lines.length, 1);
+      assert(lines[0][1].includes('PENDING HARBOR'));
+      assert.deepEqual(
+        metro.rideView(tm.movers),
+        before,
+        'reading position never advances the ride',
+      );
+      assert.deepEqual(
+        (env.bindings!['train.frame'] as any).visual.ride,
+        metro.rideView(tm.movers),
+      );
+    } finally {
+      session.dispose();
+      tm.reset();
+      tm.setPaused(true);
+    }
+  } else {
+    scene.preparePresentation?.(view, { hover: null } as any);
+    const env = scene.visualEnvironment!(view, { hover: null } as any);
+    if (id === 'metro')
+      assert(
+        env.bindings!['station.pose.regular'],
+        'Metro now has a bench rider rather than a departure-board placement',
+      );
+    else
+      assert.equal(
+        (env.bindings!['station.departure'] as any).destination,
+        city.STATIONS[metro.nextStation(city.stationAt(id)!)].name,
+      );
+  }
+}
 // P14's level boards the car at Galleria, by the car's own order
-const levelModel=build(SCENES.train.bindWorld!({city:model,metro:b}));levelModel.setPaused(true);assert.equal(startLevel('p14',{board:(station,left)=>boardRide(levelModel,station,left)}),'train');assert.equal(b.rideStop(levelModel.movers),'galleria');assert.equal(b.rideLeft(levelModel.movers),240);
-console.log('Metro sessions PASS: independent station access, pending route/name in platform/train visuals and actual TRAIN rules, one ride per train model, P14 boarding.');
+const levelModel = build(SCENES.train.bindWorld!({ city: model, metro: b }));
+levelModel.setPaused(true);
+assert.equal(
+  startLevel('p14', { board: (station, left) => boardRide(levelModel, station, left) }),
+  'train',
+);
+assert.equal(b.rideStop(levelModel.movers), 'galleria');
+assert.equal(b.rideLeft(levelModel.movers), 240);
+console.log(
+  'Metro sessions PASS: independent station access, pending route/name in platform/train visuals and actual TRAIN rules, one ride per train model, P14 boarding.',
+);

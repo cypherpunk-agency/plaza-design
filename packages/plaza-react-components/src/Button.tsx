@@ -20,10 +20,7 @@ export function Button({
   const sizeClass = size !== 'md' ? `plaza-btn--${size}` : '';
 
   return (
-    <button
-      className={`plaza-btn ${variantClass} ${sizeClass} ${className}`.trim()}
-      {...props}
-    >
+    <button className={`plaza-btn ${variantClass} ${sizeClass} ${className}`.trim()} {...props}>
       {children}
     </button>
   );

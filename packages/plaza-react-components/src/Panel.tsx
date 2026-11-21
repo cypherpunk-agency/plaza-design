@@ -12,11 +12,7 @@ export interface PanelProps {
  */
 export function Panel({ children, className = '', variant = 'default' }: PanelProps) {
   const variantClass = variant !== 'default' ? `plaza-panel--${variant}` : '';
-  return (
-    <div className={`plaza-panel ${variantClass} ${className}`.trim()}>
-      {children}
-    </div>
-  );
+  return <div className={`plaza-panel ${variantClass} ${className}`.trim()}>{children}</div>;
 }
 
 export interface PanelBlockProps {

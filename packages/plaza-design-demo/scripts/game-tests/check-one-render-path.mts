@@ -12,49 +12,110 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
-const here = path.dirname(fileURLToPath(import.meta.url)), game = path.resolve(here, '../../src/ssg/game');
+import { fileURLToPath } from 'node:url';
+const here = path.dirname(fileURLToPath(import.meta.url)),
+  game = path.resolve(here, '../../src/ssg/game');
 const FRAME = 'runtime/render-scene.ts';
 /** Where the frame's kernels are defined (not called). */
-const DEFINES = new Set(['art/core/canvas.ts', 'art/core/composition.ts', 'art/atmosphere/lighting.ts', 'art/atmosphere/weather.ts', 'art/atmosphere/hack-vision.ts']);
+const DEFINES = new Set([
+  'art/core/canvas.ts',
+  'art/core/composition.ts',
+  'art/atmosphere/lighting.ts',
+  'art/atmosphere/weather.ts',
+  'art/atmosphere/hack-vision.ts',
+]);
 /** Rule 3 exceptions that are not frames of the world, with why. */
 const NOT_FRAMES: Record<string, string> = {
-  'authoring/asset-preview.ts': 'one registered piece as an asset-browser thumbnail: no camera, zone, sky or passes',
+  'authoring/asset-preview.ts':
+    'one registered piece as an asset-browser thumbnail: no camera, zone, sky or passes',
 };
-const SECOND_PATHS = /\b(renderOpeningSequence|openingFrame|nativeOpeningFrame|renderCinematicPicture|renderCinematicTransition)\b/;
+const SECOND_PATHS =
+  /\b(renderOpeningSequence|openingFrame|nativeOpeningFrame|renderCinematicPicture|renderCinematicTransition)\b/;
 const CLEAR = /\b(clearWorld|beginLayeredFrame|flushLayeredSlot|flushLayeredDocs)\s*\(/;
-const PASSES = /\b(drawShade|drawCasters|drawLights|weatherFront|weatherMid|weatherSky|puddles|muteWorld)\s*\(/;
-const ASSEMBLES = /\bsetTransform\s*\(/, PAINTS = /\b(drawComposition|drawCompositionSlot)\s*\(|\.drawBackdrop\s*\(/, ONE = /\b(renderWorldFrame|renderSequenceFrame|renderZoneSequenceFrame)\s*\(/;
+const PASSES =
+  /\b(drawShade|drawCasters|drawLights|weatherFront|weatherMid|weatherSky|puddles|muteWorld)\s*\(/;
+const ASSEMBLES = /\bsetTransform\s*\(/,
+  PAINTS = /\b(drawComposition|drawCompositionSlot)\s*\(|\.drawBackdrop\s*\(/,
+  ONE = /\b(renderWorldFrame|renderSequenceFrame|renderZoneSequenceFrame)\s*\(/;
 
 /** Source without comments and string literals (template literal text too; their expressions stay). */
 function code(src: string) {
-  let out = '', i = 0;
+  let out = '',
+    i = 0;
   const n = src.length;
   while (i < n) {
-    const c = src[i], d = src[i + 1];
-    if (c === '/' && d === '/') { while (i < n && src[i] !== '\n') i++; continue; }
-    if (c === '/' && d === '*') { i = src.indexOf('*/', i + 2); i = i < 0 ? n : i + 2; continue; }
+    const c = src[i],
+      d = src[i + 1];
+    if (c === '/' && d === '/') {
+      while (i < n && src[i] !== '\n') i++;
+      continue;
+    }
+    if (c === '/' && d === '*') {
+      i = src.indexOf('*/', i + 2);
+      i = i < 0 ? n : i + 2;
+      continue;
+    }
     if (c === '"' || c === "'" || c === '`') {
       i++;
-      while (i < n && src[i] !== c) { if (src[i] === '\\') i++; else if (c === '`' && src[i] === '$' && src[i + 1] === '{') { let depth = 1; i += 2; const start = i; while (i < n && depth) { if (src[i] === '{') depth++; else if (src[i] === '}') depth--; i++; } out += ' ' + src.slice(start, i - 1) + ' '; continue; } i++; }
-      i++; out += '""'; continue;
+      while (i < n && src[i] !== c) {
+        if (src[i] === '\\') i++;
+        else if (c === '`' && src[i] === '$' && src[i + 1] === '{') {
+          let depth = 1;
+          i += 2;
+          const start = i;
+          while (i < n && depth) {
+            if (src[i] === '{') depth++;
+            else if (src[i] === '}') depth--;
+            i++;
+          }
+          out += ' ' + src.slice(start, i - 1) + ' ';
+          continue;
+        }
+        i++;
+      }
+      i++;
+      out += '""';
+      continue;
     }
-    out += c; i++;
+    out += c;
+    i++;
   }
   return out;
 }
 const files: string[] = [];
-const walk = (dir: string) => { for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p); else if (/\.tsx?$/.test(e.name) && !/\.d\.ts$/.test(e.name)) files.push(path.relative(game, p).split(path.sep).join('/')); } };
+const walk = (dir: string) => {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) walk(p);
+    else if (/\.tsx?$/.test(e.name) && !/\.d\.ts$/.test(e.name))
+      files.push(path.relative(game, p).split(path.sep).join('/'));
+  }
+};
 walk(game);
 const problems: string[] = [];
 for (const file of files.sort()) {
   if (file === FRAME) continue;
   const src = code(fs.readFileSync(path.join(game, file), 'utf8'));
   const defines = DEFINES.has(file);
-  if (!defines && CLEAR.test(src)) problems.push(`${file}: clears the canvas or orders the frame's slots (${src.match(CLEAR)![1]}): only ${FRAME} assembles a frame`);
-  if (!defines && PASSES.test(src)) problems.push(`${file}: calls a frame pass (${src.match(PASSES)![1]}): only ${FRAME} runs the passes; configure them with a FrameDirector`);
-  if (ASSEMBLES.test(src) && PAINTS.test(src) && !ONE.test(src) && !NOT_FRAMES[file]) problems.push(`${file}: sets the canvas transform and paints compositions without renderWorldFrame: draw the frame through it`);
-  if (SECOND_PATHS.test(src)) problems.push(`${file}: uses a removed frame path (${src.match(SECOND_PATHS)![1]})`);
+  if (!defines && CLEAR.test(src))
+    problems.push(
+      `${file}: clears the canvas or orders the frame's slots (${src.match(CLEAR)![1]}): only ${FRAME} assembles a frame`,
+    );
+  if (!defines && PASSES.test(src))
+    problems.push(
+      `${file}: calls a frame pass (${src.match(PASSES)![1]}): only ${FRAME} runs the passes; configure them with a FrameDirector`,
+    );
+  if (ASSEMBLES.test(src) && PAINTS.test(src) && !ONE.test(src) && !NOT_FRAMES[file])
+    problems.push(
+      `${file}: sets the canvas transform and paints compositions without renderWorldFrame: draw the frame through it`,
+    );
+  if (SECOND_PATHS.test(src))
+    problems.push(`${file}: uses a removed frame path (${src.match(SECOND_PATHS)![1]})`);
 }
-if (problems.length) { console.error('One render path FAIL:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('One render path PASS: only runtime/render-scene.ts assembles a frame; play, editor and every sequence use it; no temporary frame paths remain.');
+if (problems.length) {
+  console.error('One render path FAIL:\n  ' + problems.join('\n  '));
+  process.exit(1);
+}
+console.log(
+  'One render path PASS: only runtime/render-scene.ts assembles a frame; play, editor and every sequence use it; no temporary frame paths remain.',
+);
