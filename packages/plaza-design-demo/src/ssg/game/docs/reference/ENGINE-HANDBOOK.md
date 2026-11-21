@@ -636,8 +636,8 @@ model's tick. A second timeline (shift -> commute -> home) is authored in the sa
 | The attention (idle) ping | `ATTENTION.after` and a phase's `ping` (`attentionDue`, `attentionAim`) |
 | The scripted ride | a phase's `ride: {mover, path}`: the Train mover's `home` path (`train.car`), run on the model's tick when the scene is entered |
 | A goal hint (a program still missing) | `GOAL_HINTS` (`goalHint`) |
-| Contacts and the inbox's words | data/contacts.json (World data → Game settings → Contacts) |
-| The END card's words | story/end-card.json (World data → Game settings → Ending); opened by a handoff `presentation: "end"` |
+| Contacts and the inbox's words | data/contacts.json (World → Game settings → Contacts) |
+| The END card's words | story/end-card.json (World → Game settings → Ending); opened by a handoff `presentation: "end"` |
 
 **Cues** are the finite things a gate, an acknowledgment, a card or a trigger makes happen, run in order: `milestone` (a system command of
 `WORKFLOWS`; a refused one ends the list), `say` (spoken in chain after the other cues), `print` (deck lines), `sound`, `stage` (bring the
@@ -654,7 +654,7 @@ a tool for comparing a refactor with a recording, not a regression suite.
 
 ## Recipe: a way of playing (play profiles)
 
-The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: Game settings for the default run; Developer tools for test configurations) declares each way of playing; runtime/play-profile.ts picks the active one from the URL
+The loop never branches on "harbor shift" or "Test District". `runtime/play-profiles.json` (editor: Game settings for the default run; Review for test configurations) declares each way of playing; runtime/play-profile.ts picks the active one from the URL
 (`?demo`, `?play=harborShift`, else the default) or the editor Play frame, and the existing game loop, save and
 slot code read it: `can('map'|'mapKey'|'deck'|'jump'|'hack'|'sudo'|'review')`, `playProfile().start/routes/
 player/guidance/clock/chrome/checkpoint`, `saveKey()`, `resumeKey()`, `slotPrefix()`. A profile is data plus pure
@@ -686,7 +686,7 @@ source document the loop reads (private Play passes the pending one through `Gam
 | `engine/gameplay/companion.json` (selected chunk → Companion → Shared companion definition) | id, display name, painter, speaker, ordinary follow `when`, modes, popup avoidance, arrival greeting, physical follow tuning and default pet graph references | `companionHere()` uses normal gameplay conditions; scene sources select mode/perches and may override follow availability (`null` explicitly means always) |
 | `engine/gameplay/bot-reactions.json` + `bot-gameplay.json` (selected robot → Behaviour; Library → Conversations) | shared voice metadata and ordinary conversation graphs | `withBotConversations()` specializes reachable graph dependencies into the existing actor namespace; `ConversationSession` executes them |
 | `engine/gameplay/critter-reactions.json` + `critter-gameplay.json` (selected animal → Behaviour; Library → Conversations) | look/prompt/graph binding and ordinary conversation graphs, queries and session state | `critterReaction()` selects the binding; the existing global GameplaySession and ConversationSession execute it; Save excludes session values |
-| `demo/review-stations.json` (Developer tools → Review shortcuts) | review bookmarks (anchored on a use, device or person, with conversation conditions), navigator buttons, the remote-device example, the hint | `reviewStations()`, `reviewActions()`; the navigator only draws what it is given |
+| `demo/review-stations.json` (Review → Review shortcuts) | review bookmarks (anchored on a use, device or person, with conversation conditions), navigator buttons, the remote-device example, the hint | `reviewStations()`, `reviewActions()`; the navigator only draws what it is given |
 | `world/city.json` `LOCKS` (City map → Travel) | destination locks: `unlockedBy` world flag role, `destinations` (districts, stations, taxi stands), `reason` | `city.transportPermission/transportAccess/lockOpen`; taxi, map and `placeBlocked` |
 | `world/transport/metro.json` `locked` (City map → Travel → station lock) | station → lock id: LINE 0 does not stop there until the lock opens | `metro.syncLocks(world, flags)` each travel tick |
 

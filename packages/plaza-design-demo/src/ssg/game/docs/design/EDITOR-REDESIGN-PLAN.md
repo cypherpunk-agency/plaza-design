@@ -1,10 +1,28 @@
 # Editor redesign: migration plan
 
-Plan agreed in direction 2026-10-28; not yet started. Target rules: [Editor UI](../reference/EDITOR-UI.md).
-Phases 1–6 are governed by the [goal contract](./EDITOR-REDESIGN-GOAL.md); phase 7 is parked
-with [notes](./EDITOR-PHASE-7-NOTES.md).
-[ROADMAP.md](../../ROADMAP.md) owns priority. Each phase is a separate, reviewable change that
-leaves the editor fully usable; the user reviews each in the browser before the next starts.
+Target rules: [Editor UI](../reference/EDITOR-UI.md). [ROADMAP.md](../../ROADMAP.md) owns priority.
+
+## Status (2026-11-21)
+
+| Phase | Status | Commit |
+| --- | --- | --- |
+| 1 · Tokens and type | Done 2026-10-28 | `624fdd4` |
+| 2 · Shell: header, status bar, docks | Done 2026-10-28 | `b51c4ea` |
+| 3 · Scene toolbar and overlays | Done 2026-10-28 | `7bc185a` |
+| 4 · Inspector | Done 2026-10-28 | `50a3c1d` |
+| 5 · Outline and Library panel | Done 2026-10-28 | `96e44c1` |
+| 6 · Command search and shortcuts | Done 2026-10-28 | `e05473e` |
+| 7 · Workspace content | Authorized 2026-11-21; not started | see [phase 7 notes](./EDITOR-PHASE-7-NOTES.md) |
+
+Phases 1–6 ran under the [goal contract](./EDITOR-REDESIGN-GOAL.md). Follow-up commits the same
+day (`2b70e23`..`f83d976`) aligned the build with the mockups: scene toolbar row, header search
+field and chunk switcher, bottom strip with Timeline and Errors, boxed inspector sections,
+errors in the status bar, faster Play start, and Play from the chosen checkpoint. The current
+workspaces are **Layout, Animate, Logic, World, Review** plus the **Library** tab.
+[Editor UI](../reference/EDITOR-UI.md) describes the built shell.
+
+The phase descriptions below are kept as the record of what each phase set out to do. The
+"Why" measurements are the pre-redesign baseline.
 
 ## Why
 
@@ -116,7 +134,8 @@ no inspector shows explanatory paragraphs before its first control.
 
 ## Phase 7 · Workspace content
 
-Larger feature work, each its own change after the shell exists:
+Authorized 2026-11-21. Larger feature work, each part its own change. Mockup intent, existing
+sources and open questions are in the [phase 7 notes](./EDITOR-PHASE-7-NOTES.md).
 
 - Logic: sentence rule view (WHEN / IF / DO) over existing interaction and trigger sources,
   objective chain, dimmed scene strip.
@@ -133,5 +152,6 @@ Each follows the feature rule: every control edits and saves through ComposerMod
 - The public editor gets the same shell and workspaces; only the existing save/download
   difference remains.
 - Desktop only (1280×800 minimum); the narrow-screen layout is removed.
-- Work stays local until the whole goal passes; review stops after phases 1 and 2.
-- Which phase-7 workspace comes first is decided after the goal; see the phase 7 notes.
+- Phases 1–6 were reviewed after phases 1 and 2 and committed together on 2026-10-28.
+- Phase 7 order: 7a Logic and 7b Conversations matter most for building Act I (rules and
+  dialogue); 7c World and 7d Review follow. See the phase 7 notes.

@@ -1,5 +1,9 @@
 # Editor redesign: finite goal contract
 
+**Status: phases 1–6 committed 2026-10-28** (`624fdd4`..`e05473e`, with follow-ups to
+`f83d976`). This contract is kept as the record of the goal's gates; the
+[redesign plan](./EDITOR-REDESIGN-PLAN.md) holds current status.
+
 Authorized 2026-10-28. Covers phases 1–6 of the [redesign plan](./EDITOR-REDESIGN-PLAN.md),
 building to the rules in [Editor UI](../reference/EDITOR-UI.md). Phase 7 is outside this goal;
 its notes are at the end and in [EDITOR-PHASE-7-NOTES.md](./EDITOR-PHASE-7-NOTES.md).

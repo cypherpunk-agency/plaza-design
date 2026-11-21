@@ -35,9 +35,10 @@ The game is in `packages/plaza-design-demo/src/ssg/game/`, separate from the Rea
 the same package. Read its `README.md` and `CLAUDE.md` before game work. `pnpm dev` opens the
 showcase; the game runs from `dist-homepage/` after `pnpm build:homepage`.
 
-Game playthroughs and a regression-suite/CI expansion are pending discussion with the user.
-Do not start them as part of routine validation. Builds and focused checks of a requested fix
-are appropriate. Publishing is a separate action; do not infer it from a request to edit.
+CI builds and deploys only; the user does not want test load added to it. A headless pixel check
+and a prologue smoke run were approved on 2026-11-21 (see the game ROADMAP). Other playthroughs
+or regression-suite work still need the user's OK and are not part of routine validation. Builds
+and focused checks of a requested fix are appropriate. Publishing is a separate action; do not infer it from a request to edit.
 
 ## Custom Commands
 

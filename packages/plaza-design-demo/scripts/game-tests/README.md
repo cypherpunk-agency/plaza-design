@@ -22,9 +22,12 @@ Filesystem security tests need permission to create temporary junctions on Windo
 pnpm test:game:visuals
 ```
 
-Open the printed loopback URL in a Chromium browser and wait for `COMPARE 24/24`. It renders
-all 19 scene compositions plus four night/rain views and one reduced-motion/hack view using the
-current native preview and bundled IBM Plex Mono fonts, at 640x360. Pixel equality is strict;
+Open the printed loopback URL in a Chromium browser and wait for `COMPARE 60/60`. It renders
+24 scene views (all 19 scene compositions by day, Downtown/Harbor/Mall/Beach at night in rain,
+and Sandbox with hack vision and reduced motion) using the current native preview and bundled
+IBM Plex Mono fonts, at 640x360, and compares them with the PNGs in `fixtures/visuals/`. The
+other 36 results are sky-group checks that compare two drawing paths with each other and need
+no stored image. `fixtures/visuals/harborShift-day.png` is not compared by any sample. Pixel equality is strict;
 font rasterization/browser/platform differences may need investigation. The page reports differing
 pixel counts and saves disposable results. It never updates expected images in compare mode.
 

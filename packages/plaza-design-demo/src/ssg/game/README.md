@@ -138,7 +138,7 @@ See [shared gameplay](./docs/reference/GAMEPLAY-SYSTEM.md#test-district) for sys
 | `docs/` | Design concepts and current technical references |
 
 See [module organization](./docs/reference/MODULES.md) for logic ownership and dependency rules.
-All 20 registered scenes have composition adapters and typed source authoring. Opening, intro,
+All 19 folder scenes have composition adapters and typed source authoring. Opening, intro,
 Act II and taxi pictures also use composition documents. Game and editor share rendering.
 
 The enclosing `../render.tsx` supplies the static page and shared game styles.
@@ -194,6 +194,6 @@ or prior output is required. See the handbook for visual checks and expected-ima
 
 `pnpm build:homepage` checks game data and produces the playable page.
 `pnpm build:design-demo` runs TypeScript checking and builds the React showcase.
-Neither build proves that a story route is playable from beginning to end. Playthrough scope
-and regression-suite/CI work are pending discussion with the user; do not start them as an
-implicit part of routine work. Focused checks of a requested behavior change remain appropriate.
+Neither build proves that a story route is playable from beginning to end. CI builds and deploys
+only; keep test runs local. A headless pixel check and a prologue smoke run were approved on
+2026-11-21 (see ROADMAP); other playthrough or regression-suite work still needs the user's OK.

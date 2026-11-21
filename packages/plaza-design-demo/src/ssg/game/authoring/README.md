@@ -5,9 +5,9 @@ For the current feedback queue, direct local links and task instructions, use
 decisions from mechanics already verified and known work that is not ready for acceptance.
 
 Editor layout, colour, type and control rules: [Editor UI](../docs/reference/EDITOR-UI.md).
-The editor is moving to docked task workspaces in a neutral grey look; the
-[redesign plan](../docs/design/EDITOR-REDESIGN-PLAN.md) lists the phases. Until a phase lands,
-this guide describes the current screens.
+The editor uses docked task workspaces in a neutral grey look: **Layout, Animate, Logic, World,
+Review** and the **Library** tab ([redesign plan](../docs/design/EDITOR-REDESIGN-PLAN.md)).
+`Ctrl K` searches objects, commands, settings and library pieces.
 
 The header browser opens **Compositions** (named chunk arrangements) or individual chunk sources.
 For example, `/editor/#composition=boundary-example` opens all members of the Boundary example
@@ -33,7 +33,7 @@ The available contexts are:
   **Shared group rendering**. These override membership without changing the chunk source.
 - **Chunk:** its Scene → Environment → Chunk rendering controls edit base source values. Composition
   and sequence overrides can still supersede these during preview or play.
-- **District:** World data → City map → Districts → the district → Rendering or Climate.
+- **District:** World → City map → Districts → the district → Rendering or Climate.
   Place controls bind an optional separate climate, such as Beach, and expose that definition.
 
 Climate weights, fixed weather, report text and forecast seed salt are saved authoring data.
@@ -111,10 +111,10 @@ ordinary system commands. New rules start false and use rising activation; give 
 ID, select a command and author its condition. Device sensors/zones remain on the selected device.
 Save restoration establishes the trigger baseline rather than replaying it.
 
-**Developer tools** holds **Test configurations**, **Review shortcuts**, private test beds and
+The **Review** workspace holds **Test configurations**, **Review shortcuts**, private test beds and
 experimental labs. These configure testing and storage isolation; they do not mount world chunks.
 
-**World data → Game settings** groups Launch, Player, Guidance & time, Contacts and Ending.
+**World → Game settings** groups Launch, Player, Guidance & time, Contacts and Ending.
 These edit the default campaign configuration and the original story/contacts/ending sources.
 Player exposes abilities, body/name and person-kit appearance. Launch selects a **Starting
 checkpoint**; **Edit starting checkpoint** opens its **Starting state** inspector. That is the
@@ -131,7 +131,7 @@ Inside private Play, **Run configuration** chooses campaign capabilities/body/gu
 of the selected checkpoint. The default follows the existing frame policy; choose Full game when
 reviewing edits to Game settings. Test District offers only its own world configuration. Switching
 configuration stops the old isolated run; Play creates a new realm from pending sources.
-Test run overrides remain in Developer tools; the default campaign is not offered again in that picker.
+Test run overrides remain in the Review workspace; the default campaign is not offered again in that picker.
 **Library → Story logic** edits global system-command milestones, phase policies, cards and
 story triggers. Triggers use the same typed conditions as commands: compare registered story
 observations (phase, chunk, viewed device, bubble/popup, elapsed timestamp) or declared values.
@@ -140,7 +140,7 @@ invoke ordinary system-command milestones; attempts and readiness are ordinary s
 To change a chunk's goals, arrival, exits, barriers or room light in a phase,
 select that chunk and use **Story phases**. There is no separate global chunk-phase picker.
 
-**World data → World variables** browses authored scalar declarations across chunk sources and
+**World → World variables** browses authored scalar declarations across chunk sources and
 shared libraries. Filter by declaration, storage key or source, then select a variable. Its type,
 default, lifetime, bounds and optional storage binding use the same schema controls as gameplay.
 **New world variable** creates a shared declaration; chunks access its prefix through their
@@ -148,7 +148,7 @@ ordinary state-declaration controls. Usages list typed conditions/actions/templa
 checkpoint overrides, with Open context buttons where available. Equal local IDs in different
 sources remain distinct. A default or checkpoint value is not a readout of the live campaign save.
 
-**World data → City map** uses the game's map renderer with a source inspector beside it. Click a
+**World → City map** uses the game's map renderer with a source inspector beside it. Click a
 place or use its picker. **Place** edits its name, physical arrival, district membership, map point
 and discovery rule; **Districts** edits district geography; **Travel** edits fares, stations, taxi
 routes, locks and references to physical entry rules. **Map layout & discovery** contains broader
@@ -481,7 +481,7 @@ on empty space deselects. Middle or right drag pans (right also covers a pen's b
 finger pans on touch and two fingers zoom. Delete or Backspace deletes the selection; when attached
 artwork would go with it, the inspector lists it for confirmation first, and gameplay-bound pieces refuse with the reason.
 **＋ New chunk** in the workspace browser creates a source chunk. Choose a checkpoint for its
-starting situation; Play consumes pending edits in an isolated frame. **World data → City map**
+starting situation; Play consumes pending edits in an isolated frame. **World → City map**
 edits district geography, places, discovery and travel alongside the native map preview.
 
 **Chunk inspector → Connections** (`chunk-connections.ts`) edits the existing

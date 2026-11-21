@@ -1,8 +1,8 @@
 # Editor redesign phase 7: notes for later
 
-Not started; outside the [redesign goal](./EDITOR-REDESIGN-GOAL.md). Written 2026-10-28 so the
-work can resume without repeating the design discussion. Phase 7 fills four workspaces with new
-content once the shell from phases 1–6 exists. Each part should become its own goal, chosen by
+Authorized by the user on 2026-11-21; not started. Written 2026-10-28 so the work can resume
+without repeating the design discussion. Phase 7 fills four workspaces with new content; the
+shell from phases 1–6 shipped on 2026-10-28. Each part should become its own goal, chosen by
 the user. Rules: [Editor UI](../reference/EDITOR-UI.md). Mockups: the
 [layout canvas](https://claude.ai/artifact/2rJZRN6SeUisTKoTatZ9ZD), page "Chosen · A in neutral
 grey" (Logic, Conversation, World and Review boards).
@@ -108,5 +108,6 @@ Mockup copy (fixer lines, district names, state values) is placeholder, not game
 
 ## Order to propose
 
-Suggested: 7d Review first (it shortens every test loop), then 7a Logic, 7b Conversations,
-7c World. The user decides.
+Originally suggested: 7d Review first (it shortens every test loop), then 7a Logic,
+7b Conversations, 7c World. As of 2026-11-21, 7a Logic and 7b Conversations matter most because
+building Act I is mostly rules and dialogue. The user decides the final order.

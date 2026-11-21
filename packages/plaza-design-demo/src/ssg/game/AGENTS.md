@@ -90,7 +90,7 @@ asset-contract acceptance ledger records coverage and limitations;obsolete A1 pr
   The World variables browser indexes pending source declarations and typed references, not
   campaign storage. Reuse the shared schema controls and checkpoint key helper; do not create
   another variable store or infer references from arbitrary page/literal strings.
-  Game settings edits the default campaign configuration; Developer tools edits explicit test
+  Game settings edits the default campaign configuration; Test configurations (Review) edit explicit test
   overrides. Profiles reference starting checkpoints in world/checkpoints.json; do not add profile
   seed objects or duplicate start scene/entrance fields. Reuse Starting state controls in both
   the inspector and private Play. Validate pending references together, initialize from actual

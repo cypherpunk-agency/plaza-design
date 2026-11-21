@@ -1,8 +1,9 @@
 # Editor UI: layout, look and controls
 
 Current design rules for the composer (local editor and public editor). Chosen 2026-10-28:
-docked panels with task workspaces, in the **neutral grey** look. The
-[migration plan](../design/EDITOR-REDESIGN-PLAN.md) says how the existing editor moves there;
+docked panels with task workspaces, in the **neutral grey** look. Phases 1–6 of the
+[migration plan](../design/EDITOR-REDESIGN-PLAN.md) built this shell on 2026-10-28; phase 7
+(workspace content) is next;
 [ROADMAP.md](../../ROADMAP.md) owns priority. Mockups of every workspace live in the
 [layout mockup canvas](https://claude.ai/artifact/2rJZRN6SeUisTKoTatZ9ZD) (page "Chosen").
 
