@@ -64,7 +64,7 @@ const backward = report(29900, 1000);
 (backward.environment.final as any).playMs = 99;
 assert.equal(validateReport(backward, source).status, 'INVALID');
 const runner = fs.readFileSync(new URL('../performance/runner.ts', import.meta.url), 'utf8');
-assert.match(runner, /row.textContent.*saved.quality.status/);
+assert.match(runner, /row.textContent[\s\S]*saved.quality.status/);
 assert.match(runner, /Diagnostic archived, baseline ineligible/);
 assert.match(runner, /activePlayRatio.toFixed/);
 console.log(
