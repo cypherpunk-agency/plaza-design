@@ -1,0 +1,5 @@
+# Commits that only reformat code. Used by `git blame` (see `git config blame.ignoreRevsFile`)
+# and by GitHub blame views.
+
+# Format all code with Prettier
+5aca6fbb60fd806e93e4c4e9aafc064d7b74dcaf
