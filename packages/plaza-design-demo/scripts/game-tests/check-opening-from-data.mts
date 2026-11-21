@@ -20,6 +20,7 @@ import {
   sourceDocuments,
   validateSourceDocuments,
 } from '../../src/ssg/game/authoring/source-documents';
+import { gameSource as readGameSource } from './game-source.mts';
 
 const root = path.resolve('src/ssg/game'),
   read = (f: string) => fs.readFileSync(path.join(root, f), 'utf8'),
@@ -97,7 +98,7 @@ const root = path.resolve('src/ssg/game'),
 // ---- the loop holds no opening controller
 {
   const game =
-    read('runtime/game.ts') +
+    readGameSource() +
     read('runtime/story-transitions.ts') +
     read('runtime/interaction-routing.ts');
   for (const token of [

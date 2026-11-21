@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { Hints } from '../../src/ssg/game/ui/hints';
+import { gameClassSource } from './game-source.mts';
 const file = 'src/ssg/game/runtime/game.ts',
-  text = fs.readFileSync(file, 'utf8'),
+  text = gameClassSource(),
   tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true),
   game = tree.statements.find(
     (n) => ts.isClassDeclaration(n) && n.name?.text === 'Game',

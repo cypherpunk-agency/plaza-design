@@ -23,6 +23,7 @@ import {
 import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
 import { validatePendingCity, createPendingCity } from '../../src/ssg/game/authoring/pending-city';
 import { platformFrame } from '../../src/ssg/game/world/transport/platform-frame';
+import { gameSource as readGameSource } from './game-source.mts';
 
 // the shipped data is the old rule: only the harbor is locked, by the harbor flag, with the old refusal
 const flag = city.HARBOR_FLAG;
@@ -245,9 +246,7 @@ ui.click('Remove lock harbor-lock');
 assert.deepEqual(cityDoc(), used, 'a lock a station still names stays');
 assert.deepEqual(ui.optionValues('Station harbor lock'), ['', 'harbor-lock']);
 // no harbor ids in the access code or the loop
-const code =
-  fs.readFileSync('src/ssg/game/world/access.ts', 'utf8') +
-  fs.readFileSync('src/ssg/game/runtime/game.ts', 'utf8');
+const code = fs.readFileSync('src/ssg/game/world/access.ts', 'utf8') + readGameSource();
 assert(
   !/harborTransportPermission|lineOpen\.harbor|=== ?'harbor'|!== ?'harbor'/.test(code),
   'no harbor id in access.ts or game.ts',

@@ -11,6 +11,7 @@ import { HARBOR_SHED, HARBOR_GAMEPLAY } from './harbor-source-fixture.mts';
 import { validateSceneDocument } from '../../src/ssg/game/engine/gameplay/scene-document';
 import { mountGameplayAuthoring } from '../../src/ssg/game/authoring/gameplay-authoring';
 import { TypedForm } from '../../src/ssg/game/authoring/typed-form';
+import { gameFiles } from './game-source.mts';
 const stages = ['handle', 'till', 'box', 'install', 'relay', 'gate', 'done'];
 function at(goal: string) {
   const save = newSave(),
@@ -225,7 +226,7 @@ try {
 for (const name of [
   'engine/gameplay/folder-scene.ts',
   'engine/gameplay/declared-scene.ts',
-  'runtime/game.ts',
+  ...gameFiles(),
   'scenes/kit.ts',
 ])
   assert(!fs.readFileSync('src/ssg/game/' + name, 'utf8').includes('gameplayPort'));

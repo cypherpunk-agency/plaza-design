@@ -22,6 +22,7 @@ import { SCENES } from '../../src/ssg/game/scenes';
 import { Game } from '../../src/ssg/game/runtime/game';
 import { newSave } from '../../src/ssg/game/runtime/save';
 import { BOT_REACTIONS } from '../../src/ssg/game/engine/gameplay/bot-conversations';
+import { gameSource as readGameSource } from './game-source.mts';
 
 const rows = (content: any) => reviewStations(content).map((s) => [s.scene, s.id, s.label, s.x]);
 // the game's own scenes: the stations the old hard-coded rules produced, in the same order
@@ -294,8 +295,7 @@ store.undo(saved.transaction, Object.fromEntries(saved.documents.map((d) => [d.i
 assert.equal(fs.readFileSync(path.join(root, entry.file), 'utf8'), original);
 // game.ts and the navigator hold no review ids
 const gameSource =
-  fs.readFileSync('src/ssg/game/runtime/game.ts', 'utf8') +
-  fs.readFileSync('src/ssg/game/demo/review-navigator.ts', 'utf8');
+  readGameSource() + fs.readFileSync('src/ssg/game/demo/review-navigator.ts', 'utf8');
 assert(
   !/demo\.desk|workshop\.operator|'fan'|reviewJump\('devices'\)|Buy at counter|Hatch permissions/.test(
     gameSource,

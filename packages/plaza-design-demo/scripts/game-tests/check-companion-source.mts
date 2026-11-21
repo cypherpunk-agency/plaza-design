@@ -25,6 +25,7 @@ import { SCENES } from '../../src/ssg/game/scenes';
 import { newSave } from '../../src/ssg/game/runtime/save';
 import { BOT_REACTIONS } from '../../src/ssg/game/engine/gameplay/bot-conversations';
 import type { GameplayDefinition, GameplayState } from '../../src/ssg/game/engine/gameplay/types';
+import { gameSource as readGameSource } from './game-source.mts';
 
 // the shipped document says what the loop used to hard-code
 assert.deepEqual(
@@ -356,7 +357,7 @@ assert.equal(
 store.undo(saved.transaction, Object.fromEntries(saved.documents.map((d) => [d.id, d.revision])));
 assert.equal(fs.readFileSync(path.join(root, entry.file), 'utf8'), original, 'byte-exact undo');
 // game.ts holds no companion literals
-const gameSource = fs.readFileSync('src/ssg/game/runtime/game.ts', 'utf8');
+const gameSource = readGameSource();
 assert(
   !/'pixel'|"pixel"|flags\.pixel|greeting\.pixel|PET_CAT|PET_PIGEON/.test(gameSource),
   'no companion or critter literals in game.ts',

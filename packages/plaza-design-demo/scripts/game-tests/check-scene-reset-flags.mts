@@ -26,6 +26,7 @@ import {
 } from '../../src/ssg/game/authoring/source-documents';
 import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
 import { pendingRegistry } from '../../src/ssg/game/authoring/pending-registry';
+import { gameSource as readGameSource } from './game-source.mts';
 
 // the scene documents carry the flags the loop used to hard-code by scene id
 const flags = Object.entries(SCENES)
@@ -293,9 +294,7 @@ assert.throws(() =>
 store.undo(saved.transaction, Object.fromEntries(saved.documents.map((d) => [d.id, d.revision])));
 assert.equal(fs.readFileSync(path.join(root, entry.file), 'utf8'), original);
 // no scene ids for reset or resume in the loop or the deck
-const code =
-  fs.readFileSync('src/ssg/game/runtime/game.ts', 'utf8') +
-  fs.readFileSync('src/ssg/game/ui/terminal/commands.ts', 'utf8');
+const code = readGameSource() + fs.readFileSync('src/ssg/game/ui/terminal/commands.ts', 'utf8');
 assert(
   !/resetYard|resetSandbox|!== 'sandbox'|=== 'yard'|hostOf\('yard'\)|hostOf\('sandbox'\)/.test(
     code,

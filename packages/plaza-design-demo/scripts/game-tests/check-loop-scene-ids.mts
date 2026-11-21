@@ -27,6 +27,7 @@ import { art } from '../../src/ssg/game/art';
 import { sourceDocuments } from '../../src/ssg/game/authoring/source-documents';
 import { mountSceneAuthoring } from '../../src/ssg/game/authoring/scene-authoring';
 import { pendingRegistry } from '../../src/ssg/game/authoring/pending-registry';
+import { gameSource as readGameSource } from './game-source.mts';
 
 // ---- the deck's jack cable: drawn for whatever scene's schematic is open and stood at
 const frames: any[] = [];
@@ -85,7 +86,7 @@ host.model.spots = () => [{ id: 'box', x: 90, y: 0 }];
 PresentationFrame.drawCharacters(game.presentationFramePort);
 assert.equal(frames[4].face, -1, 'the player turns to the machine');
 AVATAR_PAINTERS[playProfile().player.avatar] = real;
-const gameSource = fs.readFileSync('src/ssg/game/runtime/game.ts', 'utf8');
+const gameSource = readGameSource();
 assert(!/here === 'downtown'|this\.downtown/.test(gameSource), 'no Downtown id for the jack');
 
 // ---- per-person prompt height

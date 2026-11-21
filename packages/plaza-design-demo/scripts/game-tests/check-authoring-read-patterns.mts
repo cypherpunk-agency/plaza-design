@@ -6,7 +6,9 @@ import path from 'node:path';
 // built from context.documents, or a get() copy per document, misses those caches and rebuilds the world each render.
 const dir = 'src/ssg/game/authoring',
   problems: string[] = [];
-for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.ts'))) {
+for (const name of fs
+  .readdirSync(dir, { recursive: true, encoding: 'utf8' })
+  .filter((f) => f.endsWith('.ts') && (!f.includes('/') || f.startsWith('app/')))) {
   if (name === 'validation-snapshot.ts') continue; // owns the one shared map
   const source = fs.readFileSync(path.join(dir, name), 'utf8');
   const at = (index: number) => `${name}:${source.slice(0, index).split('\n').length}`;

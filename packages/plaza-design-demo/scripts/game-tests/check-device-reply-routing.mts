@@ -11,10 +11,11 @@ import { Terminal } from '../../src/ssg/game/ui/terminal';
 import { Hints } from '../../src/ssg/game/ui/hints';
 import { FOLDER_SOURCES } from '../../src/ssg/game/scenes/folder-scenes';
 import { sceneSourceDefinition } from '../../src/ssg/game/engine/gameplay/folder-scene';
+import { gameClassSource } from './game-source.mts';
 const laundromatScene = () => sceneSourceDefinition('laundromat', FOLDER_SOURCES.laundromat);
 const harborScene = () => sceneSourceDefinition('harbor', FOLDER_SOURCES.harbor);
 // Reuse the actual Game callbacks: a sourced history write must not reenter notification forwarding.
-const text = fs.readFileSync('src/ssg/game/runtime/game.ts', 'utf8'),
+const text = gameClassSource(),
   tree = ts.createSourceFile('game.ts', text, ts.ScriptTarget.Latest, true),
   game = tree.statements.find(
     (n) => ts.isClassDeclaration(n) && n.name?.text === 'Game',

@@ -24,8 +24,9 @@ import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
 import { SceneModel } from '../../src/ssg/game/engine/model';
 import { deviceRules } from '../../src/ssg/game/authoring/device-sources';
 import { buildEventInspection } from '../../src/ssg/game/authoring/event-inspector-model';
+import { gameClassSource } from './game-source.mts';
 const gameFile = 'src/ssg/game/runtime/game.ts',
-  gameSource = ts.createSourceFile(gameFile, fs.readFileSync(gameFile, 'utf8'), 99, true),
+  gameSource = ts.createSourceFile(gameFile, gameClassSource(), 99, true),
   gameClass = gameSource.statements.find(
     (n) => ts.isClassDeclaration(n) && n.name?.text === 'Game',
   ) as ts.ClassDeclaration;
