@@ -381,7 +381,7 @@ viewers and world tools retain that common structure.
 
 - `contracts.ts` owns editor document, preview and extension contracts. Non-UI modules import these types directly.
 - `composer-model.ts` owns prospective document validation, grouped changes and undo/redo. There is one model; UI modules never maintain another copy of edited source.
-- `app.ts` mounts and coordinates the editor. `controls.ts` builds typed form fields; `temporal-inspector.ts` builds camera/keyframe controls using the existing command port; `timeline-view.ts` draws the editing grid.
+- `app.ts` mounts and coordinates the editor; its areas live in `app/` (chrome, navigation, persistence, workspaces, play, header, outline, inspector, appearance, timeline, viewport, world, editing) and share one context typed in `app/context.ts`. `controls.ts` builds typed form fields; `temporal-inspector.ts` builds camera/keyframe controls using the existing command port; `timeline-view.ts` draws the editing grid.
 - `viewport-input.ts` owns pointer/wheel/viewport-key listeners and transient gestures. Its disposer removes listeners and cancels transient state; a drag still commits one ComposerModel history transaction on release.
 - `selection.ts` resolves hit bounds and the source document/instance identity. One selection record owns the source document, instance and optional timeline selection. Inspector identity and mount keys include the source document, including identical local IDs in different sources.
 - `inspector.ts` owns regular inspector tabs and mounted section disposal. `temporal-inspector.ts` owns typed sequence/keyframe controls; both call the existing command port.
