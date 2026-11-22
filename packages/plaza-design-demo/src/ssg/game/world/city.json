@@ -133,7 +133,26 @@
       "entrance": "capsule",
       "at": "door",
       "scenes": [
-        "capsule"
+        "capsule",
+        "block7"
+      ]
+    },
+    {
+      "id": "registry",
+      "name": "REGISTRY SERVICE POINT",
+      "district": "downtown",
+      "entrance": "registry",
+      "scenes": [
+        "registry"
+      ]
+    },
+    {
+      "id": "kessel",
+      "name": "KESSEL'S ROOM",
+      "district": "downtown",
+      "entrance": "kessel",
+      "scenes": [
+        "kessel"
       ]
     },
     {
@@ -586,6 +605,14 @@
     "beach": [
       122,
       350
+    ],
+    "registry": [
+      470,
+      206
+    ],
+    "kessel": [
+      398,
+      248
     ]
   },
   "STATION_MAP": {
@@ -1055,7 +1082,8 @@
       "downtown"
     ],
     "capsule": [
-      "downtown"
+      "downtown",
+      "block7"
     ],
     "moth": [
       "downtown"
@@ -1081,6 +1109,12 @@
     ],
     "beach": [
       "harbor"
+    ],
+    "registry": [
+      "downtown"
+    ],
+    "kessel": [
+      "downtown"
     ]
   },
   "TRANSPORT": {

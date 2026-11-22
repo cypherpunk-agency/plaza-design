@@ -1,0 +1,10 @@
+{
+  "id": "registry",
+  "name": "Registry service point",
+  "tuning": {},
+  "devices": [],
+  "cables": [],
+  "dialogue": {},
+  "goals": [],
+  "texts": {}
+}

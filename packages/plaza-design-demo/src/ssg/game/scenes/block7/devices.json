@@ -1,0 +1,70 @@
+{
+  "id": "block7",
+  "name": "Capsule Block 7",
+  "tuning": {},
+  "devices": [
+    {
+      "id": "latch",
+      "name": "SERVICE LATCH",
+      "look": "The basement service door at the bottom of the areaway. A solenoid bolt, a lamp, a stencil that says SERVICE.",
+      "status": [
+        {
+          "if": "latchOpen",
+          "then": "unlatched",
+          "else": "locked · building side"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 750,
+          "y": -76,
+          "w": 20,
+          "h": 40
+        },
+        "board": {
+          "x": 0.56,
+          "y": 0.7
+        }
+      },
+      "nouns": [
+        {
+          "id": "bolt",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "open"
+          ],
+          "on": {
+            "open": [
+              {
+                "if": "latchOpen",
+                "say": [
+                  "{via}use bolt --open",
+                  "already open.",
+                  "dim"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "latchOpen",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}use bolt --open",
+                  "clunk. the solenoid lets go. the service door swings in on the dark.",
+                  "ok"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "cables": [],
+  "dialogue": {},
+  "goals": [],
+  "texts": {}
+}

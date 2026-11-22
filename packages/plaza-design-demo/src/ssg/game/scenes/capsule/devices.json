@@ -822,7 +822,8 @@
             "talk": {
               "do": [
                 {
-                  "open": "talk", "with": "concierge"
+                  "open": "talk",
+                  "with": "concierge"
                 }
               ]
             }
@@ -858,7 +859,7 @@
   "texts": {
     "goals.done": "done. the public library is down the street, past the noodle stall. Moth says it still lends scan.so.",
     "prompt.door": "[E] DOOR",
-    "prompt.out": "[E] DOWNTOWN",
+    "prompt.out": "[E] OUT · 7/F",
     "door.locked": [
       "open door",
       "locked. see panel.",

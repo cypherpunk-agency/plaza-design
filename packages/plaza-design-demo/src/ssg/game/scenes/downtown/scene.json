@@ -128,6 +128,30 @@
       "action": "map",
       "label": "[E] CITY MAP",
       "promptH": 92
+    },
+    {
+      "id": "block7",
+      "to": "block7",
+      "at": "street",
+      "label": "[E] BLOCK 7 · SIDE STREET",
+      "promptH": 84,
+      "requires": "act1:on"
+    },
+    {
+      "id": "registry",
+      "to": "registry",
+      "at": "street",
+      "label": "[E] REGISTRY OF PERSONS",
+      "promptH": 96,
+      "requires": "act1:on"
+    },
+    {
+      "id": "kessel",
+      "to": "kessel",
+      "at": "stall",
+      "label": "[E] KITCHEN · KESSEL",
+      "promptH": 70,
+      "requires": "act1:referred"
     }
   ],
   "readables": [
@@ -242,7 +266,10 @@
       "metro": "exit-metro",
       "moth": "exit-moth",
       "taxi": "exit-taxi",
-      "map": "exit-map"
+      "map": "exit-map",
+      "block7": "exit-block7",
+      "registry": "exit-registry",
+      "kessel": "exit-kessel"
     },
     "readables": {
       "plaque": {

@@ -11,7 +11,9 @@
     "downtown.progress.has.box",
     "downtown.progress.has.install",
     "downtown.progress.has.relay",
-    "downtown.progress.has.gate"
+    "downtown.progress.has.gate",
+    "act1:on",
+    "act1:referred"
   ],
   "items": [],
   "events": [

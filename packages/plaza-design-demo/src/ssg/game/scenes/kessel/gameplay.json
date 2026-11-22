@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:implant",
+    "act1:shutter",
+    "kessel:shutterOpen"
+  ],
+  "items": [],
+  "events": [],
+  "commands": {
+    "kessel.shutter.opened": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:shutter",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.kessel.cook": {
+      "entry": [
+        {
+          "node": "cook"
+        }
+      ],
+      "nodes": {
+        "cook": {
+          "speaker": "COOK",
+          "pages": [
+            "He's down the hatch, then down again. Mind the third rung. It has opinions."
+          ]
+        }
+      }
+    },
+    "talk.kessel.kessel": {
+      "entry": [
+        {
+          "node": "hello"
+        }
+      ],
+      "nodes": {
+        "hello": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "Mm. Not now. I'm between patients, and you are not one yet."
+          ]
+        }
+      }
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "kessel:shutterOpen": "shutterOpen"
+    },
+    "triggers": {
+      "watch": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "kessel:shutterOpen"
+            },
+            {
+              "not": {
+                "flag": "act1:shutter"
+              }
+            }
+          ]
+        },
+        "command": "kessel.shutter.opened"
+      }
+    }
+  },
+  "state": {
+    "kessel.shutterOpen": {
+      "owner": "kessel",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    }
+  }
+}

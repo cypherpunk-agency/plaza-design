@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:on",
+    "act1:latch",
+    "block7:latchOpen"
+  ],
+  "items": [],
+  "events": [],
+  "commands": {
+    "block7.latch.opened": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:latch",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.block7.neighbour": {
+      "entry": [
+        {
+          "when": {
+            "flag": "act1:on"
+          },
+          "node": "deleted"
+        },
+        {
+          "node": "usual"
+        }
+      ],
+      "nodes": {
+        "deleted": {
+          "speaker": "NEIGHBOUR · 7A",
+          "pages": [
+            "There you are, 7B. Your door was beeping all night.",
+            "I knocked. Then I thought, maybe they moved out and nobody told the door."
+          ]
+        },
+        "usual": {
+          "speaker": "NEIGHBOUR · 7A",
+          "pages": [
+            "Evening, 7B. Lift is out again. Character building, the notice says."
+          ]
+        }
+      }
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "block7:latchOpen": "latchOpen"
+    },
+    "triggers": {
+      "watch": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "block7:latchOpen"
+            },
+            {
+              "not": {
+                "flag": "act1:latch"
+              }
+            }
+          ]
+        },
+        "command": "block7.latch.opened"
+      }
+    }
+  },
+  "state": {
+    "block7.latchOpen": {
+      "owner": "block7",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    }
+  }
+}

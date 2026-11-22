@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "id": "kessel",
+  "name": "Noodle stall kitchen",
+  "intro": [],
+  "uses": [
+    {
+      "id": "kessel",
+      "name": "DR. KESSEL",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.kessel.kessel"
+        }
+      ]
+    },
+    {
+      "id": "cook",
+      "name": "COOK",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.kessel.cook"
+        }
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "theatre",
+      "name": "THE THEATRE",
+      "pages": [
+        "A cradle under a ring of lamps. Racks of something that breathes coolant. An empty robot frame on a stand.",
+        "A strip of tape on the frame: FOR EMERGENCIES. In Kessel's handwriting: ONLY."
+      ]
+    }
+  ],
+  "rests": [
+    {
+      "id": "stool",
+      "kind": "stool"
+    }
+  ],
+  "exits": [
+    {
+      "id": "stall",
+      "to": "downtown",
+      "at": "kessel",
+      "label": "[E] THE STALL",
+      "promptH": 60
+    },
+    {
+      "id": "west",
+      "to": "downtown",
+      "at": "kessel",
+      "label": "< DOWNTOWN",
+      "edge": "left"
+    },
+    {
+      "id": "east",
+      "to": "downtown",
+      "at": "kessel",
+      "label": "DOWNTOWN >",
+      "edge": "right"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 1200,
+    "spawn": "spawn",
+    "uses": {
+      "kessel": {
+        "instance": "use-kessel",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 62,
+        "promptAboveFloor": true
+      },
+      "cook": {
+        "instance": "use-cook",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 62,
+        "promptAboveFloor": true
+      }
+    },
+    "readables": {
+      "theatre": {
+        "instance": "read-theatre",
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    },
+    "rests": {
+      "stool": {
+        "instance": "rest-stool",
+        "promptH": 40
+      }
+    },
+    "exits": {
+      "stall": "exit-stall",
+      "west": "exit-west",
+      "east": "exit-east"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true,
+      "elevatedResponses": true
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80
+  },
+  "companion": {
+    "mode": "off"
+  },
+  "stage": {
+    "values": {
+      "shutterRaised": {
+        "if": {
+          "state": "kessel.shutterOpen"
+        },
+        "then": 1,
+        "else": 0
+      }
+    }
+  }
+}

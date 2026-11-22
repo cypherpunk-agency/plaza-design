@@ -4712,6 +4712,57 @@
       },
       "order": -100,
       "layer": "distance"
+    },
+    {
+      "id": "exit-block7",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 56,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "set",
+      "attach": {
+        "instance": "front-9",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-registry",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 50,
+        "h": 0
+      },
+      "order": 18,
+      "layer": "set",
+      "attach": {
+        "instance": "front-12",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-kessel",
+      "type": "downtown.marker",
+      "props": {
+        "role": "exit"
+      },
+      "placement": {
+        "x": 4,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "set",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      }
     }
   ]
 }

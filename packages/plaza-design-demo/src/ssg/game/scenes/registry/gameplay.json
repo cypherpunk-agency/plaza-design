@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:stall",
+    "act1:queued",
+    "registry:staff"
+  ],
+  "items": [],
+  "events": [
+    "registry.appointment.booked"
+  ],
+  "commands": {
+    "registry.take-ticket": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "state": "registry.ticket",
+          "set": true
+        }
+      ]
+    },
+    "registry.met-ines": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "state": "registry.metInes",
+          "set": true
+        }
+      ]
+    },
+    "registry.appointment": {
+      "sources": [
+        "interaction"
+      ],
+      "when": {
+        "all": [
+          {
+            "state": "registry.ticket",
+            "is": true
+          },
+          {
+            "state": "registry.metInes",
+            "is": true
+          },
+          {
+            "flag": "act1:queued",
+            "is": false
+          }
+        ]
+      },
+      "actions": [
+        {
+          "flag": "act1:queued",
+          "value": true
+        },
+        {
+          "emit": "registry.appointment.booked"
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.registry.ines": {
+      "entry": [
+        {
+          "when": {
+            "flag": "act1:queued"
+          },
+          "node": "after"
+        },
+        {
+          "when": {
+            "state": "registry.metInes",
+            "is": true
+          },
+          "node": "again"
+        },
+        {
+          "node": "meet"
+        }
+      ],
+      "nodes": {
+        "meet": {
+          "speaker": "INES VARGA",
+          "pages": [
+            "Two-fifteen? I'm two-fourteen. Every morning for three weeks, I'm two-fourteen.",
+            "They lost my daughter's school place. The system says she has no mother on file.",
+            "I have a mother on file. I am standing right here, being one.",
+            "Ines. Ines Varga. Since nobody in here will write it down."
+          ],
+          "onEnter": "registry.met-ines"
+        },
+        "again": {
+          "speaker": "INES VARGA",
+          "pages": [
+            "Sit with me. The chairs are the only thing in here that work.",
+            "When they call two-fourteen, I'll pretend I didn't hear. Then it's your turn."
+          ]
+        },
+        "after": {
+          "speaker": "INES VARGA",
+          "pages": [
+            "Ninety days? They gave me ninety days three weeks ago.",
+            "Every morning it's still ninety. See you tomorrow, two-fifteen."
+          ]
+        }
+      }
+    }
+  },
+  "state": {
+    "registry.ticket": {
+      "owner": "registry",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    },
+    "registry.metInes": {
+      "owner": "registry",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    }
+  }
+}

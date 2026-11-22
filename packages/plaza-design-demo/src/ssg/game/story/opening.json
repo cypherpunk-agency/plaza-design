@@ -35,6 +35,24 @@
         "capsule"
       ],
       "end": "sleep"
+    },
+    {
+      "id": "act1-ch1",
+      "name": "ACT I (NEW) \u00b7 CH 1 \u00b7 LOSS",
+      "flags": [
+        "prologue:started",
+        "opening:home",
+        "opening:flat",
+        "opening:slept",
+        "prologue:called",
+        "act1:on"
+      ],
+      "reset": [
+        "capsule",
+        "block7",
+        "registry",
+        "kessel"
+      ]
     }
   ],
   "PHASES": {

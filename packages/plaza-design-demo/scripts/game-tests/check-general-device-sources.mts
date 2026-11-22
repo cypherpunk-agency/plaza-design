@@ -23,7 +23,7 @@ import { sceneCatalogueProjection } from '../../src/ssg/game/authoring/scene-cat
 import { GameplaySession } from '../../src/ssg/game/engine/gameplay/session';
 import { attachNativeGameplay } from '../../src/ssg/game/engine/gameplay/native-bindings';
 import { fixtureGameplayPort } from './model-gameplay-fixture.mts';
-assert.equal(deviceSceneIds.length, 19);
+assert.equal(deviceSceneIds.length, 22);
 let cases = 0;
 for (const id of deviceSceneIds) {
   const input = nativeDeviceSources[id],

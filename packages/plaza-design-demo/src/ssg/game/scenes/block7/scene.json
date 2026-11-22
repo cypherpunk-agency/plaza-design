@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "id": "block7",
+  "name": "Capsule Block 7",
+  "intro": [],
+  "uses": [
+    {
+      "id": "concierge",
+      "name": "CONCIERGE",
+      "label": "[E] CONCIERGE",
+      "routes": [
+        {
+          "when": {
+            "flag": "act1:on"
+          },
+          "pages": [
+            "Hello. I am unable to verify you.",
+            "Please do not be alarmed. Please do not be anything, until you have been verified.",
+            "If you believe this is an error, the Registry service point is open from eight until six."
+          ]
+        },
+        {
+          "pages": [
+            "Good evening, resident. Your lift is on its way down. It is always on its way down."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mail",
+      "name": "MAILBOXES",
+      "label": "[E] MAILBOX 7B",
+      "routes": [
+        {
+          "when": {
+            "flag": "act1:on"
+          },
+          "pages": [
+            "7B: the slot is taped over. A printed sticker: RESIDENT NOT FOUND. RETURN TO SENDER."
+          ]
+        },
+        {
+          "pages": [
+            "7B: a pizza menu and a rent reminder. The reminder is polite. The menu is not."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neighbour",
+      "name": "NEIGHBOUR · 7A",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.block7.neighbour"
+        }
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "notices",
+      "name": "NOTICE CASE",
+      "pages": [
+        "LIFT OUT OF ORDER. NO SUBLETTING. BINS ARE COLLECTED ON THURSDAYS, EXCEPT WHEN THEY ARE NOT.",
+        "NOTICE: UNREGISTERED PERSONS ARE NOT PERMITTED ON THE PREMISES. — CONCIERGE, ON BEHALF OF THE MANAGEMENT"
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "7b",
+      "to": "capsule",
+      "at": "door",
+      "label": "[E] 7B · HOME",
+      "promptH": 60
+    },
+    {
+      "id": "street",
+      "to": "downtown",
+      "at": "block7",
+      "label": "< DOWNTOWN",
+      "edge": "left"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 1260,
+    "spawn": "spawn",
+    "uses": {
+      "concierge": {
+        "instance": "use-concierge",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 70,
+        "promptAboveFloor": true
+      },
+      "mail": {
+        "instance": "use-mail",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 60,
+        "promptAboveFloor": true
+      },
+      "neighbour": {
+        "instance": "use-neighbour",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 60,
+        "promptAboveFloor": true
+      }
+    },
+    "readables": {
+      "notices": {
+        "instance": "read-notices",
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    },
+    "rests": {},
+    "exits": {
+      "7b": "exit-7b",
+      "street": "exit-street"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true,
+      "elevatedResponses": true
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80
+  },
+  "companion": {
+    "mode": "off"
+  },
+  "stage": {
+    "values": {
+      "latchArt": {
+        "if": {
+          "state": "block7.latchOpen"
+        },
+        "then": 1,
+        "else": 0
+      }
+    }
+  }
+}

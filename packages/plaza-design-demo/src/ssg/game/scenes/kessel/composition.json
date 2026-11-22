@@ -1,0 +1,1988 @@
+{
+  "version": 1,
+  "scene": "kessel",
+  "instances": [
+    {
+      "id": "world-sky",
+      "type": "environment.sky",
+      "props": {
+        "horizon": 0
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -10000,
+      "layer": "distance",
+      "clip": "none"
+    },
+    {
+      "id": "skyline-far",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1800,
+        "seed": 41,
+        "parallax": 0.2,
+        "minHeight": 240,
+        "maxHeight": 460,
+        "haze": 0.6,
+        "lit": 0.4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 2,
+      "layer": "distance"
+    },
+    {
+      "id": "spire",
+      "type": "landmark.spire",
+      "props": {
+        "edge": 0.08,
+        "traffic": true,
+        "generatorScale": 0.7,
+        "fillColor": "#0a0610"
+      },
+      "placement": {
+        "x": 450,
+        "h": 60,
+        "parallax": 0.12
+      },
+      "order": 3,
+      "layer": "distance"
+    },
+    {
+      "id": "skyline-near",
+      "type": "building.row",
+      "props": {
+        "form": "towers",
+        "width": 1600,
+        "seed": 43,
+        "parallax": 0.45,
+        "minHeight": 180,
+        "maxHeight": 340,
+        "haze": 0.3,
+        "lit": 0.5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 4,
+      "layer": "distance"
+    },
+    {
+      "id": "ground",
+      "type": "level.ground-section",
+      "props": {
+        "width": 1200,
+        "depth": 400,
+        "seed": 4
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 5,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-a",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "skin": "brick",
+        "windows": "framed",
+        "roof": "cornice",
+        "escape": "right",
+        "density": 0.7,
+        "seed": 901,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 60,
+            "tenant": "pharmacy"
+          },
+          {
+            "kind": "door",
+            "from": 100,
+            "width": 24
+          }
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 6,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-b",
+      "type": "building.front",
+      "props": {
+        "width": 150,
+        "skin": "panel",
+        "windows": "framed",
+        "density": 0.6,
+        "seed": 902,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 10,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 50,
+            "width": 80,
+            "tenant": "repair"
+          }
+        ],
+        "height": 604,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 150,
+        "h": 0
+      },
+      "order": 7,
+      "layer": "backdrop"
+    },
+    {
+      "id": "alley",
+      "type": "building.alley",
+      "props": {
+        "width": 50,
+        "height": 480,
+        "light": "red",
+        "escape": "none",
+        "bins": true,
+        "steam": false,
+        "cables": true,
+        "yard": true,
+        "seed": 12,
+        "perspectiveAmount": 0.7
+      },
+      "placement": {
+        "x": 700,
+        "h": 0
+      },
+      "order": 8,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-c",
+      "type": "building.front",
+      "props": {
+        "width": 160,
+        "skin": "concrete",
+        "windows": "punched",
+        "roof": "stepped",
+        "density": 0.5,
+        "seed": 903,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 12,
+            "width": 60
+          },
+          {
+            "kind": "door",
+            "from": 110,
+            "width": 24
+          }
+        ],
+        "height": 538,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 750,
+        "h": 0
+      },
+      "order": 9,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-d",
+      "type": "building.front",
+      "props": {
+        "width": 120,
+        "skin": "brick",
+        "windows": "curtained",
+        "density": 0.6,
+        "seed": 904,
+        "bays": [
+          {
+            "kind": "glass",
+            "from": 10,
+            "width": 70,
+            "tenant": "bar"
+          }
+        ],
+        "height": 406,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 910,
+        "h": 0
+      },
+      "order": 10,
+      "layer": "backdrop"
+    },
+    {
+      "id": "front-e",
+      "type": "building.front",
+      "props": {
+        "width": 170,
+        "skin": "tenement",
+        "windows": "framed",
+        "escape": "left",
+        "density": 0.7,
+        "seed": 906,
+        "bays": [
+          {
+            "kind": "door",
+            "from": 14,
+            "width": 24
+          },
+          {
+            "kind": "glass",
+            "from": 60,
+            "width": 90,
+            "tenant": "laundry"
+          }
+        ],
+        "height": 472,
+        "groundFloorHeight": 76,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 1030,
+        "h": 0
+      },
+      "order": 11,
+      "layer": "backdrop"
+    },
+    {
+      "id": "street",
+      "type": "street.surface",
+      "props": {
+        "width": 1200,
+        "ground": "#050302",
+        "edge": "#ff8800",
+        "sheen": 0.7,
+        "kerb": true,
+        "seed": 7
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 12,
+      "layer": "backdrop"
+    },
+    {
+      "id": "lamp-0",
+      "type": "street.lamp",
+      "props": {
+        "style": "sodium",
+        "height": 120,
+        "count": 1,
+        "reach": 0.9,
+        "seed": 4
+      },
+      "placement": {
+        "x": 120,
+        "h": 0
+      },
+      "order": 13,
+      "layer": "backdrop"
+    },
+    {
+      "id": "noodle-stall",
+      "type": "downtown.stall",
+      "props": {
+        "width": 140,
+        "mask": []
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 14,
+      "layer": "backdrop"
+    },
+    {
+      "id": "stall-pool",
+      "type": "downtown.stall-pool",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 15,
+      "layer": "backdrop"
+    },
+    {
+      "id": "fixer",
+      "type": "downtown.fixer",
+      "props": {},
+      "placement": {
+        "x": 374,
+        "h": 0
+      },
+      "order": 16,
+      "layer": "playfield"
+    },
+    {
+      "id": "stall-counter",
+      "type": "downtown.counter",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 17,
+      "layer": "playfield",
+      "attach": {
+        "instance": "noodle-stall",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cash-only",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 34,
+        "height": 24,
+        "header": "NOTICE",
+        "lines": [
+          "CASH",
+          "ONLY"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 420,
+        "h": 62
+      },
+      "order": 18,
+      "layer": "backdrop"
+    },
+    {
+      "id": "annex-interior",
+      "type": "level.interior",
+      "props": {
+        "building": "annex"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 19,
+      "layer": "logic"
+    },
+    {
+      "id": "kitchen",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 160,
+        "height": 100,
+        "kind": "kitchen",
+        "floor": "tile",
+        "light": "tube",
+        "lights": 1,
+        "peel": 0.1,
+        "grime": 0.6,
+        "seed": 3
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 20,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "kitchen-fit",
+      "type": "interior.dt-noodle-kitchen",
+      "props": {
+        "width": 160,
+        "height": 100,
+        "pots": 3,
+        "burners": 1,
+        "steam": 0.9,
+        "hood": true,
+        "curtain": "right",
+        "slips": 6,
+        "sacks": 1,
+        "seed": 4
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 21,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "store",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 100,
+        "height": 100,
+        "kind": "storeroom",
+        "floor": "boards",
+        "light": "bulb",
+        "lights": 1,
+        "peel": 0.3,
+        "grime": 0.6,
+        "cut": "left",
+        "seed": 31
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 22,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "store-goods",
+      "type": "interior.dt-dry-goods",
+      "props": {
+        "width": 30,
+        "sacks": 4,
+        "crates": 1,
+        "drums": 0,
+        "print": "red",
+        "seed": 32
+      },
+      "placement": {
+        "x": 664,
+        "h": 0
+      },
+      "order": 23,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "kind": "storeroom",
+        "wall": "#4a4438",
+        "floor": "concrete",
+        "light": "bulb",
+        "lights": 2,
+        "peel": 0.35,
+        "grime": 0.6,
+        "pipes": true,
+        "seed": 41
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 24,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar-shelves",
+      "type": "interior.dt-shelves",
+      "props": {
+        "width": 54,
+        "height": 72,
+        "shelves": 4,
+        "fill": 0.9,
+        "stock": "noodles",
+        "seed": 42
+      },
+      "placement": {
+        "x": 10,
+        "h": 0
+      },
+      "order": 25,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar-goods",
+      "type": "interior.dt-dry-goods",
+      "props": {
+        "width": 110,
+        "sacks": 9,
+        "crates": 3,
+        "drums": 2,
+        "print": "red",
+        "seed": 43
+      },
+      "placement": {
+        "x": 72,
+        "h": 0
+      },
+      "order": 26,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar-shelves-2",
+      "type": "interior.dt-shelves",
+      "props": {
+        "width": 40,
+        "height": 60,
+        "shelves": 3,
+        "fill": 0.8,
+        "stock": "cleaning",
+        "seed": 44
+      },
+      "placement": {
+        "x": 192,
+        "h": 0
+      },
+      "order": 27,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar-door",
+      "type": "interior.dt-service-latch",
+      "props": {
+        "kind": "door",
+        "state": "unlatched",
+        "width": 26,
+        "height": 54,
+        "stencil": "",
+        "plate": "",
+        "lamp": false,
+        "tell": true,
+        "leaf": "#2a2e32"
+      },
+      "placement": {
+        "x": 270,
+        "h": 0
+      },
+      "order": 28,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar-camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "blinkTimeOffset": 0.11666666666666667
+      },
+      "placement": {
+        "x": 282,
+        "h": 70
+      },
+      "order": 29,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "clinic",
+      "type": "interior.dt-room",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "kind": "storeroom",
+        "floor": "concrete",
+        "light": "bulb",
+        "lights": 1,
+        "peel": 0.3,
+        "grime": 0.7,
+        "window": "none",
+        "seed": 5
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 30,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "clinic-cables",
+      "type": "interior.dt-cables",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "cables": 7,
+        "sag": 9,
+        "drops": 2,
+        "colours": "mixed",
+        "lit": 0.25,
+        "seed": 51
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 31,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "fridge",
+      "type": "interior.dt-parts-fridge",
+      "props": {
+        "width": 26,
+        "height": 58,
+        "contents": "mixed",
+        "lit": 1,
+        "chain": true,
+        "label": "NO FOOD",
+        "seed": 6
+      },
+      "placement": {
+        "x": 10,
+        "h": 0
+      },
+      "order": 32,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "shelves",
+      "type": "interior.dt-shelves",
+      "props": {
+        "width": 34,
+        "height": 74,
+        "shelves": 5,
+        "fill": 0.85,
+        "stock": "medical",
+        "seed": 7
+      },
+      "placement": {
+        "x": 40,
+        "h": 0
+      },
+      "order": 33,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "jars",
+      "type": "interior.dt-jars",
+      "props": {
+        "width": 50,
+        "from": 54,
+        "jars": 6,
+        "fluid": "mixed",
+        "glow": 0.8,
+        "seed": 52
+      },
+      "placement": {
+        "x": 80,
+        "h": 0
+      },
+      "order": 34,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cot",
+      "type": "interior.dt-cot",
+      "props": {
+        "length": 46,
+        "blanket": "#5a4a32",
+        "crate": true,
+        "lamp": 0.7,
+        "seed": 8
+      },
+      "placement": {
+        "x": 80,
+        "h": 0
+      },
+      "order": 35,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "screen",
+      "type": "interior.dt-privacy-screen",
+      "props": {
+        "kind": "roller shutter",
+        "width": 64,
+        "height": 66,
+        "closed": 1,
+        "fabric": "#bfd0c8",
+        "seed": 9
+      },
+      "placement": {
+        "x": 124,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      },
+      "bindings": {
+        "raised": "scene.shutterRaised"
+      }
+    },
+    {
+      "id": "chair",
+      "type": "interior.dt-doc-chair",
+      "props": {
+        "recline": 0.65,
+        "upholstery": "#2a5a5a",
+        "lamp": "ceiling arm",
+        "lampOn": 1,
+        "ceilingHeight": 90,
+        "tray": true,
+        "monitor": true,
+        "straps": true,
+        "sheeting": true,
+        "seed": 10
+      },
+      "placement": {
+        "x": 204,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "clinic-scan",
+      "type": "interior.dt-diagnostic",
+      "props": {
+        "kind": "body",
+        "width": 26,
+        "height": 26,
+        "from": 56,
+        "mount": "wall",
+        "glitch": 0.2,
+        "seed": 53,
+        "colorChoice": "cyan"
+      },
+      "placement": {
+        "x": 214,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lab",
+      "type": "interior.dt-lab-room",
+      "props": {
+        "width": 460,
+        "height": 130,
+        "panel": "#0a0c12",
+        "stripA": "cyan",
+        "stripB": "magenta",
+        "strips": 3,
+        "grating": true,
+        "pipes": 3,
+        "frost": 0.6,
+        "seed": 61
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 39,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lab-cables",
+      "type": "interior.dt-cables",
+      "props": {
+        "width": 460,
+        "height": 130,
+        "cables": 10,
+        "sag": 14,
+        "drops": 3,
+        "colours": "neon",
+        "lit": 0.4,
+        "seed": 62
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 40,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "racks-left",
+      "type": "interior.dt-neural-rack",
+      "props": {
+        "racks": 3,
+        "height": 96,
+        "glass": true,
+        "coolant": true,
+        "ceiling": 130,
+        "seed": 63,
+        "colorChoice": "mixed"
+      },
+      "placement": {
+        "x": 10,
+        "h": 0
+      },
+      "order": 41,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lab-scan",
+      "type": "interior.dt-diagnostic",
+      "props": {
+        "kind": "brain",
+        "width": 60,
+        "height": 34,
+        "from": 64,
+        "mount": "wall",
+        "glitch": 0.3,
+        "seed": 64,
+        "colorChoice": "magenta"
+      },
+      "placement": {
+        "x": 96,
+        "h": 0
+      },
+      "order": 42,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lab-wave",
+      "type": "interior.dt-diagnostic",
+      "props": {
+        "kind": "waveform",
+        "width": 30,
+        "height": 18,
+        "from": 40,
+        "mount": "stand",
+        "glitch": 0.1,
+        "seed": 65,
+        "colorChoice": "cyan"
+      },
+      "placement": {
+        "x": 104,
+        "h": 0
+      },
+      "order": 43,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cradle",
+      "type": "interior.dt-transfer-cradle",
+      "props": {
+        "length": 70,
+        "ring": true,
+        "lid": 0.7,
+        "glow": "cyan",
+        "active": 0.6,
+        "loomLength": 40,
+        "seed": 66
+      },
+      "placement": {
+        "x": 180,
+        "h": 0
+      },
+      "order": 44,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "gantry",
+      "type": "interior.dt-surgical-gantry",
+      "props": {
+        "width": 170,
+        "ceiling": 130,
+        "reach": 88,
+        "arms": 4,
+        "active": 1,
+        "laser": "magenta",
+        "body": "#c8ccd2",
+        "seed": 67
+      },
+      "placement": {
+        "x": 130,
+        "h": 0
+      },
+      "order": 45,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "frame",
+      "type": "interior.dt-robot-frame",
+      "props": {
+        "width": 34,
+        "height": 60,
+        "lift": 18,
+        "charge": 0.7,
+        "status": "magenta",
+        "label": "",
+        "seed": 68
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 46,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "racks-right",
+      "type": "interior.dt-neural-rack",
+      "props": {
+        "racks": 2,
+        "height": 100,
+        "glass": true,
+        "coolant": true,
+        "ceiling": 130,
+        "seed": 69,
+        "colorChoice": "cyan"
+      },
+      "placement": {
+        "x": 400,
+        "h": 0
+      },
+      "order": 47,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-street",
+      "type": "level.slab",
+      "props": {
+        "width": 320,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 48,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-f",
+      "type": "level.slab",
+      "props": {
+        "width": 320,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 440,
+        "h": -100
+      },
+      "order": 49,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-m",
+      "type": "level.slab",
+      "props": {
+        "width": 460,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 380,
+        "h": -200
+      },
+      "order": 50,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "slab-y",
+      "type": "level.slab",
+      "props": {
+        "width": 460,
+        "thickness": 12
+      },
+      "placement": {
+        "x": 380,
+        "h": -340
+      },
+      "order": 51,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "roof",
+      "type": "level.slab",
+      "props": {
+        "width": 260,
+        "thickness": 10
+      },
+      "placement": {
+        "x": 440,
+        "h": 100
+      },
+      "order": 52,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west",
+      "type": "level.section-wall",
+      "props": {
+        "height": 310,
+        "thickness": 6
+      },
+      "placement": {
+        "x": 434,
+        "h": -200
+      },
+      "order": 53,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east",
+      "type": "level.section-wall",
+      "props": {
+        "height": 110,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 692,
+        "h": 0
+      },
+      "order": 54,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east-under",
+      "type": "level.section-wall",
+      "props": {
+        "height": 200,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 760,
+        "h": -200
+      },
+      "order": 55,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-west-lab",
+      "type": "level.section-wall",
+      "props": {
+        "height": 152,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 372,
+        "h": -352
+      },
+      "order": 56,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "wall-east-lab",
+      "type": "level.section-wall",
+      "props": {
+        "height": 152,
+        "thickness": 8
+      },
+      "placement": {
+        "x": 840,
+        "h": -352
+      },
+      "order": 57,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-hatch",
+      "type": "level.stairs",
+      "props": {
+        "run": -34,
+        "rise": 100,
+        "style": "ladder",
+        "rail": "timber"
+      },
+      "placement": {
+        "x": 650,
+        "h": -100
+      },
+      "order": 58,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-spiral",
+      "type": "level.stairs",
+      "props": {
+        "run": 26,
+        "rise": 100,
+        "style": "rusty-spiral",
+        "rail": "auto"
+      },
+      "placement": {
+        "x": 723,
+        "h": -200
+      },
+      "order": 59,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "stairs-rungs",
+      "type": "level.stairs",
+      "props": {
+        "run": 16,
+        "rise": 140,
+        "style": "steel-ladder",
+        "rail": "none"
+      },
+      "placement": {
+        "x": 748,
+        "h": -340
+      },
+      "order": 60,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "lab-fog",
+      "type": "interior.dt-fog",
+      "props": {
+        "width": 460,
+        "depth": 22,
+        "density": 0.7,
+        "seed": 70,
+        "colorChoice": "cyan"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 61,
+      "layer": "set",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "annex-shell",
+      "type": "level.shell",
+      "props": {
+        "building": "annex"
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 62,
+      "layer": "logic"
+    },
+    {
+      "id": "annex-front",
+      "type": "building.front",
+      "props": {
+        "width": 260,
+        "skin": "brick",
+        "windows": "none",
+        "roof": "flat",
+        "fascia": false,
+        "gear": [],
+        "escape": "none",
+        "balconies": "none",
+        "density": 0.7,
+        "seed": 910,
+        "bays": [
+          {
+            "kind": "shutter",
+            "from": 40,
+            "width": 70
+          },
+          {
+            "kind": "door",
+            "from": 220,
+            "width": 24
+          }
+        ],
+        "height": 110,
+        "groundFloorHeight": 110,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 63,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-shell",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "back-note",
+      "type": "sign.paper",
+      "props": {
+        "style": "paper",
+        "width": 40,
+        "height": 18,
+        "header": "",
+        "lines": [
+          "RING ONCE"
+        ],
+        "mask": []
+      },
+      "placement": {
+        "x": 196,
+        "h": 62
+      },
+      "order": 64,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "annex-camera",
+      "type": "sign.camera",
+      "props": {
+        "pole": false,
+        "blinkTimeOffset": 0.5
+      },
+      "placement": {
+        "x": 214,
+        "h": 84
+      },
+      "order": 65,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-front",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "front-over",
+      "type": "building.front",
+      "props": {
+        "width": 260,
+        "skin": "tenement",
+        "windows": "curtained",
+        "roof": "parapet",
+        "escape": "left",
+        "balconies": "some",
+        "fascia": false,
+        "density": 0.8,
+        "lit": 0.5,
+        "seed": 905,
+        "bays": [],
+        "height": 410,
+        "groundFloorHeight": 14,
+        "floorHeight": 66
+      },
+      "placement": {
+        "x": 440,
+        "h": 110
+      },
+      "order": 66,
+      "layer": "backdrop"
+    },
+    {
+      "id": "customer",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6101,
+        "act": "sit",
+        "sitting": "side",
+        "archetype": "office",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 330,
+        "h": 0
+      },
+      "order": 67,
+      "layer": "playfield"
+    },
+    {
+      "id": "customer-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6102,
+        "act": "talk",
+        "archetype": "courier",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 412,
+        "h": 0
+      },
+      "order": 68,
+      "layer": "playfield"
+    },
+    {
+      "id": "walker",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6103,
+        "act": "walk",
+        "range": 200,
+        "archetype": "commuter",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 60,
+        "h": 0
+      },
+      "order": 69,
+      "layer": "playfield"
+    },
+    {
+      "id": "waiting",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6104,
+        "act": "wait",
+        "archetype": "drifter",
+        "hair": "hood",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 726,
+        "h": 0
+      },
+      "order": 70,
+      "layer": "playfield"
+    },
+    {
+      "id": "cook",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6111,
+        "act": "vend",
+        "garb": "apron",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 510,
+        "h": 0
+      },
+      "order": 71,
+      "layer": "playfield",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "cellar-hand",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6114,
+        "act": "carry",
+        "archetype": "dockworker",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 160,
+        "h": 0
+      },
+      "order": 72,
+      "layer": "playfield",
+      "attach": {
+        "instance": "room-cellar",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "patient",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6113,
+        "act": "lie",
+        "archetype": "punk",
+        "seat": 13,
+        "lying": "asleep",
+        "cover": "#5a4a32",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 103,
+        "h": 0
+      },
+      "order": 73,
+      "layer": "playfield",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "kessel",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6112,
+        "act": "stand",
+        "archetype": "technician",
+        "garb": "coat",
+        "top": "#d8dcd8",
+        "hair": "bald",
+        "facial": "stubble",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 262,
+        "h": 0
+      },
+      "order": 75,
+      "layer": "playfield",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "spawn",
+      "type": "scene.player",
+      "props": {},
+      "placement": {
+        "x": 240,
+        "h": 0
+      },
+      "order": 77,
+      "layer": "playfield"
+    },
+    {
+      "id": "floor-street",
+      "type": "level.floor",
+      "props": {
+        "width": 1200,
+        "building": "",
+        "label": ""
+      },
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": 78,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-annex",
+      "type": "level.floor",
+      "props": {
+        "width": 260,
+        "building": "annex",
+        "label": "Kitchen · dry store",
+        "entry": "door"
+      },
+      "placement": {
+        "x": 440,
+        "h": 0
+      },
+      "order": 79,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-cellar",
+      "type": "level.floor",
+      "props": {
+        "width": 320,
+        "building": "annex",
+        "label": "Cellar",
+        "indoor": true
+      },
+      "placement": {
+        "x": 440,
+        "h": -100
+      },
+      "order": 80,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-clinic",
+      "type": "level.floor",
+      "props": {
+        "width": 320,
+        "building": "annex",
+        "label": "Back room",
+        "indoor": true
+      },
+      "placement": {
+        "x": 440,
+        "h": -200
+      },
+      "order": 81,
+      "layer": "logic"
+    },
+    {
+      "id": "floor-lab",
+      "type": "level.floor",
+      "props": {
+        "width": 460,
+        "building": "annex",
+        "label": "Theatre",
+        "indoor": true
+      },
+      "placement": {
+        "x": 380,
+        "h": -340
+      },
+      "order": 82,
+      "layer": "logic"
+    },
+    {
+      "id": "door-stall",
+      "type": "level.door",
+      "props": {
+        "building": "annex",
+        "width": 24
+      },
+      "placement": {
+        "x": 452,
+        "h": 0
+      },
+      "order": 83,
+      "layer": "logic"
+    },
+    {
+      "id": "door-back",
+      "type": "level.door",
+      "props": {
+        "building": "annex",
+        "width": 24
+      },
+      "placement": {
+        "x": 672,
+        "h": 0
+      },
+      "order": 84,
+      "layer": "logic"
+    },
+    {
+      "id": "room-cellar",
+      "type": "level.room",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "earth"
+      },
+      "placement": {
+        "x": 440,
+        "h": -100
+      },
+      "order": 23.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-clinic",
+      "type": "level.room",
+      "props": {
+        "width": 320,
+        "height": 90,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "earth"
+      },
+      "placement": {
+        "x": 440,
+        "h": -200
+      },
+      "order": 29.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "room-theatre",
+      "type": "level.room",
+      "props": {
+        "width": 460,
+        "height": 130,
+        "kind": "basement",
+        "lit": 0,
+        "seed": 1,
+        "reveal": "arrival",
+        "keep": "remember",
+        "closed": "earth"
+      },
+      "placement": {
+        "x": 380,
+        "h": -340
+      },
+      "order": 38.5,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "sky-traffic",
+      "type": "environment.sky-traffic",
+      "props": {},
+      "placement": {
+        "x": 0,
+        "h": 0
+      },
+      "order": -100,
+      "layer": "distance"
+    },
+    {
+      "id": "shell-1",
+      "type": "interior.dt-robot-frame",
+      "props": {
+        "width": 26,
+        "height": 58,
+        "lift": 6,
+        "charge": 0,
+        "status": "magenta",
+        "label": "SRV",
+        "seed": 71
+      },
+      "placement": {
+        "x": 128,
+        "h": 0
+      },
+      "order": 37,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "shell-2",
+      "type": "interior.dt-robot-frame",
+      "props": {
+        "width": 26,
+        "height": 54,
+        "lift": 6,
+        "charge": 0.1,
+        "status": "amber",
+        "label": "DLV",
+        "seed": 72
+      },
+      "placement": {
+        "x": 158,
+        "h": 0
+      },
+      "order": 38,
+      "layer": "backdrop",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-kessel",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 262,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set",
+      "attach": {
+        "instance": "room-clinic",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "use-cook",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 510,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "exit-stall",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set"
+    },
+    {
+      "id": "exit-west",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 16,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set"
+    },
+    {
+      "id": "exit-east",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 1184,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set"
+    },
+    {
+      "id": "read-theatre",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 200,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set",
+      "attach": {
+        "instance": "room-theatre",
+        "anchor": "origin"
+      }
+    },
+    {
+      "id": "rest-stool",
+      "type": "dockwork.marker",
+      "props": {
+        "role": "use"
+      },
+      "placement": {
+        "x": 352,
+        "h": 0
+      },
+      "order": 400,
+      "layer": "set"
+    },
+    {
+      "id": "cellar-hatch",
+      "type": "level.barrier",
+      "props": {
+        "style": "door",
+        "width": 16,
+        "refuse": "COOK: Not before dark. He sleeps like the dead till seven, and he hates being woken by the living.",
+        "when": {
+          "time": {
+            "from": "19:00",
+            "to": "06:00"
+          }
+        },
+        "closes": true
+      },
+      "placement": {
+        "x": 600,
+        "h": 0
+      },
+      "order": 265,
+      "layer": "set",
+      "attach": {
+        "instance": "annex-interior",
+        "anchor": "origin"
+      }
+    }
+  ]
+}

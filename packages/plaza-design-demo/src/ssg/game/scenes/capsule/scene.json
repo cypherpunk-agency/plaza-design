@@ -16,8 +16,8 @@
   "exits": [
     {
       "id": "door",
-      "to": "downtown",
-      "at": "capsule",
+      "to": "block7",
+      "at": "7b",
       "label": "",
       "engine": true,
       "sets": "pixel"

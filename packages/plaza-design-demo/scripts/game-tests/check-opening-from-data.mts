@@ -76,7 +76,15 @@ const root = path.resolve('src/ssg/game'),
         json('scenes/' + d + '/scene.json').phases,
     )
     .sort();
-  assert.deepEqual(withPhases, ['capsule', 'downtown', 'metro', 'train']);
+  assert.deepEqual(withPhases, [
+    'block7',
+    'capsule',
+    'downtown',
+    'kessel',
+    'metro',
+    'registry',
+    'train',
+  ]);
   for (const id of withPhases)
     for (const phase of Object.keys(json('scenes/' + id + '/scene.json').phases))
       assert(phase in opening.PHASES, id + ' names the story phase ' + phase);

@@ -75,6 +75,18 @@ import trainComposition from './train/composition.json';
 import trainScene from './train/scene.json';
 import trainGameplay from './train/gameplay.json';
 import trainDevices from './train/devices.json';
+import block7Composition from './block7/composition.json';
+import block7Scene from './block7/scene.json';
+import block7Gameplay from './block7/gameplay.json';
+import block7Devices from './block7/devices.json';
+import registryComposition from './registry/composition.json';
+import registryScene from './registry/scene.json';
+import registryGameplay from './registry/gameplay.json';
+import registryDevices from './registry/devices.json';
+import kesselComposition from './kessel/composition.json';
+import kesselScene from './kessel/scene.json';
+import kesselGameplay from './kessel/gameplay.json';
+import kesselDevices from './kessel/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -194,6 +206,24 @@ export const FOLDER_SOURCES = {
     scene: trainScene,
     gameplay: trainGameplay,
     devices: trainDevices,
+  },
+  block7: {
+    composition: block7Composition,
+    scene: block7Scene,
+    gameplay: block7Gameplay,
+    devices: block7Devices,
+  },
+  registry: {
+    composition: registryComposition,
+    scene: registryScene,
+    gameplay: registryGameplay,
+    devices: registryDevices,
+  },
+  kessel: {
+    composition: kesselComposition,
+    scene: kesselScene,
+    gameplay: kesselGameplay,
+    devices: kesselDevices,
   },
 } satisfies Record<string, SceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */

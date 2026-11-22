@@ -33,7 +33,7 @@ import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
 import { gameSourceIdentity } from '../scene-system/source-identity.mts';
 const game = path.resolve('src/ssg/game'),
   ids = Object.keys(NATIVE_SCENES);
-assert.equal(ids.length, 19, 'Current folder catalogue: retired one-room Harbor Shift is excluded');
+assert.equal(ids.length, 22, 'Current folder catalogue: retired one-room Harbor Shift is excluded');
 const docs = sourceDocuments.map((d) => ({
   id: d.id,
   kind: d.kind,
@@ -232,13 +232,13 @@ const report = {
   scenes: ids,
   documents: 38,
   checks: [
-    'all19 pending use/readable/rest/exit creation and rebinding',
+    'all22 pending use/readable/rest/exit creation and rebinding',
     'actual compiled uses shared refusal and atomic grant',
-    'all19 content removal and undo',
+    'all22 content removal and undo',
     'portable bundle grouped Undo/Redo',
     'invalid grouped edit and Save atomicity',
     'protected 38-document Save and pending reload',
-    'fresh saved JSON shipping imports all19',
+    'fresh saved JSON shipping imports all22',
     'exact-byte transaction Undo',
     'registered Play fixtures',
   ],
@@ -247,6 +247,6 @@ const report = {
 };
 fs.writeFileSync(path.join(root, 'evidence.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(
-  'Scene batch PASS: all19 pending ordinary-content CRUD/rebind, actual shared use permissions/outcomes, bundle/history, protected38-document Save/fresh shipping/byte Undo. Evidence: ' +
+  'Scene batch PASS: all22 pending ordinary-content CRUD/rebind, actual shared use permissions/outcomes, bundle/history, protected38-document Save/fresh shipping/byte Undo. Evidence: ' +
     root,
 );

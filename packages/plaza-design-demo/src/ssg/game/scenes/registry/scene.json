@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "id": "registry",
+  "name": "Registry service point",
+  "intro": [],
+  "uses": [
+    {
+      "id": "ticket",
+      "name": "TICKET MACHINE",
+      "label": "[E] TAKE A NUMBER",
+      "routes": [
+        {
+          "when": {
+            "state": "registry.ticket",
+            "is": true
+          },
+          "pages": [
+            "You already have A-215. The machine is very pleased about it."
+          ]
+        },
+        {
+          "command": "registry.take-ticket",
+          "pages": [
+            "A-215. ESTIMATED WAIT: 4 H 10 MIN. PLEASE REMAIN SEATED.",
+            "It still prints for me. Paper does not ask who you are."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "counter",
+      "name": "COUNTER 3",
+      "label": "[E] COUNTER 3",
+      "routes": [
+        {
+          "when": {
+            "flag": "act1:queued"
+          },
+          "pages": [
+            "YOUR APPOINTMENT IS CONFIRMED. PLEASE DO NOT QUEUE AGAIN BEFORE IT."
+          ]
+        },
+        {
+          "when": {
+            "state": "registry.ticket",
+            "is": false
+          },
+          "pages": [
+            "PLEASE TAKE A NUMBER."
+          ]
+        },
+        {
+          "when": {
+            "state": "registry.metInes",
+            "is": false
+          },
+          "pages": [
+            "NOW SERVING: A-214.",
+            "Not me. The woman at the rail is holding 214 like it might get away."
+          ]
+        },
+        {
+          "when": {
+            "flag": "act1:stall"
+          },
+          "command": "registry.appointment",
+          "pages": [
+            "NOW SERVING: A-215. KIOSK 3: PLEASE PRESENT YOURSELF.",
+            "KIOSK 3: IDENTITY NOT FOUND. YOU DO NOT EXIST. PLEASE HOLD.",
+            "The clerk looks at the screen, then at me, then at the screen.",
+            "CLERK: The system has you as nobody. I can't serve nobody.",
+            "CLERK: But nobody can have an appointment. First free slot: ninety days. Next!"
+          ]
+        },
+        {
+          "pages": [
+            "NOW SERVING: A-216. The numbers move. Mine is not one of them."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ines",
+      "name": "INES VARGA",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.registry.ines"
+        }
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "display",
+      "name": "NUMBER DISPLAY",
+      "pages": [
+        "NOW SERVING A-214 · COUNTER 3 · ESTIMATED WAIT 4 H 10 MIN · PLEASE REMAIN SEATED."
+      ]
+    },
+    {
+      "id": "hold",
+      "name": "HOLD SCREEN",
+      "pages": [
+        "YOUR IDENTITY MATTERS TO US. PLEASE HOLD.",
+        "REGISTRY PREMIUM: be seen everywhere. Never be put on hold again."
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "street",
+      "to": "downtown",
+      "at": "registry",
+      "label": "< DOWNTOWN",
+      "edge": "left"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 1600,
+    "spawn": "spawn",
+    "uses": {
+      "ticket": {
+        "instance": "use-ticket",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 60,
+        "promptAboveFloor": true
+      },
+      "counter": {
+        "instance": "use-counter",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 70,
+        "promptAboveFloor": true
+      },
+      "ines": {
+        "instance": "use-ines",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 62,
+        "promptAboveFloor": true
+      }
+    },
+    "readables": {
+      "display": {
+        "instance": "read-display",
+        "responseH": 0,
+        "responseAboveFloor": true
+      },
+      "hold": {
+        "instance": "read-hold",
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    },
+    "rests": {},
+    "exits": {
+      "street": "exit-street"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true,
+      "elevatedResponses": true
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80
+  },
+  "companion": {
+    "mode": "off"
+  }
+}
