@@ -23,6 +23,8 @@ export interface LiveSnapshot {
   };
   dialogue?: { speaker?: string } | null;
   conversation?: { speaker?: string } | null;
+  /** Gameplay command events still in each session's recent history. */
+  events?: readonly { scene?: string; id: string; command: string; cause?: string }[];
 }
 export interface LiveChange {
   key: string;
@@ -85,7 +87,7 @@ export function clockText(clock?: { day?: number; min?: number; minute?: number 
   );
 }
 export interface LiveEvent {
-  type: 'scene' | 'objective' | 'state' | 'conversation';
+  type: 'scene' | 'objective' | 'state' | 'conversation' | 'interaction';
   message: string;
 }
 const objectiveText = (o: unknown) =>
@@ -105,6 +107,10 @@ export function snapshotEvents(prev: LiveSnapshot, next: LiveSnapshot): LiveEven
   const speaking = (s: LiveSnapshot) => s.conversation?.speaker ?? s.dialogue?.speaker;
   if (speaking(next) && speaking(prev) !== speaking(next))
     events.push({ type: 'conversation', message: speaking(next) + ' speaks' });
+  const seen = new Set((prev.events ?? []).map((e) => e.scene + ':' + e.id));
+  for (const e of next.events ?? [])
+    if (!seen.has(e.scene + ':' + e.id))
+      events.push({ type: 'interaction', message: e.command + (e.cause ? ' · ' + e.cause : '') });
   for (const change of runChanges(prev, next))
     if (change.key !== 'scene')
       events.push({
@@ -161,4 +167,34 @@ export function momentFixture(
   delete fixture.entrance;
   delete fixture.sequence;
   return { fixture, dropped };
+}
+
+export interface WatchRow {
+  key: string;
+  label: string;
+  value: string;
+  /** Differs from the previous snapshot. */
+  changed: boolean;
+}
+/** Pinned values, read from the latest snapshot; a pinned key that is absent reads as "—". */
+export function watchRows(
+  keys: readonly string[],
+  now: LiveSnapshot,
+  prev?: LiveSnapshot,
+): WatchRow[] {
+  const values = liveValues(now),
+    before = prev ? liveValues(prev) : undefined;
+  return keys.map((key) => {
+    const v = values.get(key);
+    return {
+      key,
+      label: v?.label ?? key.replace(/^(flag|item|state)\./, ''),
+      value: show(v?.value),
+      changed: !!before && JSON.stringify(before.get(key)?.value) !== JSON.stringify(v?.value),
+    };
+  });
+}
+/** Keys that can be pinned from a snapshot, grouped for a picker. */
+export function watchChoices(now: LiveSnapshot) {
+  return [...liveValues(now)].map(([key, v]) => ({ key, label: v.label }));
 }

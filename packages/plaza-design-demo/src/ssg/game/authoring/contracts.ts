@@ -210,6 +210,10 @@ export interface WorkbenchContext {
   autostart?: boolean;
   /** In-place Play uses the existing right inspector; labs retain their own framed settings. */
   playSettings?: HTMLElement;
+  /** Left dock for the run's Run and Shortcuts tabs while Play runs in the Scene stage. */
+  playDock?: HTMLElement;
+  /** Open one rule in Logic → Rules (stops a running Play first). */
+  openRule?(scene: string, rule: string): void;
   playStart?: PlayStart;
   stopPlay?(): void;
   authoring?: {
@@ -332,6 +336,8 @@ export interface ComposerConfig {
  */
 export interface WorkbenchConfig {
   selectConversation?(document: string, conversation: string): void;
+  /** Show one rule of a scene (Logic → Rules); used by Play's Pick object → edit. */
+  selectRule?(scene: string, rule: string): void;
   id: string;
   title: string;
   label?: string;

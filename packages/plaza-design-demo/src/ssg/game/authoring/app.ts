@@ -551,6 +551,8 @@ export function mountComposer(host: HTMLElement, config: ComposerConfig) {
   app.locateCameraPending = false;
   app.chunkSignature = '';
   app.runtimeOutline = element('div', 'runtime-chunks');
+  app.playRun = element('div', 'play-run');
+  app.playRun.hidden = true;
   app.runtimeOutline.hidden = true;
   app.lastDirection = '';
   app.lastTool = '';

@@ -115,6 +115,18 @@ export function inspect(game: Game) {
         }))
       : undefined,
     engine: EDITOR_PLAY || PROBE ? game.zh.model.inspect() : undefined,
+    // Where interactions and exits stand, so the editor can draw them over the run and pick one.
+    layout: EDITOR_PLAY
+      ? {
+          uses: (game.def.uses ?? []).map((u) => ({
+            id: u.id,
+            x: u.x,
+            label: u.label,
+            name: u.name,
+          })),
+          exits: game.def.exits.map((e) => ({ id: e.id, x: e.x, label: e.label, to: e.to })),
+        }
+      : undefined,
     gameplay: shared
       ? {
           state: shared.state(),

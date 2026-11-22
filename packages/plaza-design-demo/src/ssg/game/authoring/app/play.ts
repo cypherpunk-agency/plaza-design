@@ -50,6 +50,19 @@ export function playArea(
     if (rows) renderRuntimeChunks(app.runtimeOutline, rows, inspectChunk);
     if (app.editorSelection.chunk) app.refreshRight();
   }
+  /** Pick object → edit: stop the run and show the interaction's rule in Logic → Rules. */
+  function openRule(scene: string, rule: string) {
+    const item = app.workbenches.find((entry) => entry.config.selectRule);
+    if (!item) {
+      app.notice('Logic → Rules is unavailable.', true);
+      return;
+    }
+    stopPlay();
+    if (app.sceneId() !== scene) app.openScene(scene);
+    item.config.selectRule!(scene, rule);
+    if (item.details.open) item.dispose?.refresh?.();
+    else app.openPanel(item.details);
+  }
   const playScene = () => {
     const item = playWorkbench(),
       scene = app.worldState()?.checkpoint?.scene ?? app.sceneId();
@@ -68,6 +81,7 @@ export function playArea(
     app.playHost.style.setProperty('--play-ratio', String(viewport.width / viewport.height));
     app.playCheckpointId = app.worldState()?.id;
     app.playHost.hidden = false;
+    app.playRun.hidden = false;
     app.stage.hidden = true;
     app.viewportTools.hidden = true;
     app.root.dataset.playing = '';
@@ -84,6 +98,8 @@ export function playArea(
         scene,
         autostart: true,
         playSettings: app.playSettings,
+        playDock: app.playRun,
+        openRule,
         stopPlay,
         playStart: {
           mode: app.playStartMode,
@@ -112,6 +128,8 @@ export function playArea(
     const checkpoint = app.playCheckpointId;
     app.playCheckpointId = undefined;
     app.playSettings.replaceChildren();
+    app.playRun.replaceChildren();
+    app.playRun.hidden = true;
     if (checkpoint && checkpoint !== app.activeCheckpointId) {
       app.openCheckpoint(checkpoint);
       return;

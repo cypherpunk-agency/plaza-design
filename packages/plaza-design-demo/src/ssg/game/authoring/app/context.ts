@@ -304,6 +304,8 @@ export interface Composer {
   liveChunkRows: readonly ChunkStatus[] | undefined;
   chunkSignature: string;
   runtimeOutline: HTMLDivElement;
+  /** Play's Run / Shortcuts dock in the left column while a run is going. */
+  playRun: HTMLDivElement;
   lastDirection: string;
   lastTool: string;
   refreshHeaderActions: () => void;

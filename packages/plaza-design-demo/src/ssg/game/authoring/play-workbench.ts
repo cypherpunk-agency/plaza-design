@@ -1,6 +1,6 @@
 import { pendingFixtureVocabulary } from './pending-fixtures';
 import { pendingRegistry } from './pending-registry';
-import { fixtureStateDeclarations } from '../world/checkpoints';
+import { fixtureStateDeclarations, fixtureModules } from '../world/checkpoints';
 import {
   momentFixture,
   runChanges,
@@ -10,6 +10,8 @@ import {
   type LiveEvent,
 } from './play-live-state';
 import { liveSources } from './validation-snapshot';
+import { mountPlayDocks, type PlayDocks, type PlayDockSelection } from './play-docks';
+import { validateReviewStations } from '../demo/review-stations';
 import { chooseProfile } from '../runtime/play-profile';
 import { renderStartingStateControls } from './starting-state-controls';
 import type { NetData } from '../data';
@@ -46,6 +48,8 @@ export function mountPlayWorkbench(
     debugOpen?: boolean;
     /** Result of the last "Save this moment", kept while the run's controls rebuild. */
     momentNote?: string;
+    /** Review arrangement: chosen dock tabs, watched values, trigger overlay. */
+    docks?: PlayDockSelection;
   } = {},
   district = false,
   manifest = false,
@@ -107,6 +111,9 @@ export function mountPlayWorkbench(
   const mobileSummary = document.createElement('section');
   mobileSummary.setAttribute('aria-label', 'Live mobile locations');
   controls.append(mobileSummary);
+  let docks: PlayDocks | undefined;
+  const sources = document.createElement('p'),
+    abilities = document.createElement('div');
   const debug = document.createElement('details'),
     debugTitle = document.createElement('summary');
   debugTitle.textContent = 'Debug · player state and device diagnostics (JSON)';
@@ -127,6 +134,40 @@ export function mountPlayWorkbench(
       { stage: [toolbar, status, error, viewport], inspector: [note, controls, debug] },
       'Play',
     );
+    controls.style.marginTop = '0';
+  } else if (context.playSettings && context.playDock) {
+    // Review arrangement: Run / Shortcuts left, Live state / Watch right, Events under the game.
+    docks = mountPlayDocks({
+      host,
+      left: context.playDock,
+      right: context.playSettings,
+      viewport,
+      status,
+      error,
+      selection: (selection.docks ??= {}),
+      frame: () => frame,
+      scene: () => last?.scene ?? fixture()?.scene,
+      shortcuts: () => {
+        try {
+          return validateReviewStations(api.get('review-stations').value).stations.map((s) => ({
+            id: s.id,
+            label: s.label ?? s.id,
+            ...(s.scene ? { scene: s.scene } : {}),
+          }));
+        } catch {
+          return [];
+        }
+      },
+      ...(context.openRule ? { openRule: context.openRule } : {}),
+    });
+    sources.className = 'muted';
+    abilities.className = 'play-abilities';
+    const footer = document.createElement('p');
+    footer.className = 'muted play-footer';
+    footer.textContent = 'Private run · its saves are thrown away.';
+    docks.runPane.append(toolbar, status, error, sources, abilities, controls, footer);
+    docks.livePane.append(liveState, moment);
+    docks.watchPane.append(mobileSummary, debug);
     controls.style.marginTop = '0';
   } else if (context.playSettings) {
     const title = document.createElement('h2');
@@ -294,13 +335,12 @@ export function mountPlayWorkbench(
   }
   function fixtureControls() {
     controls.replaceChildren(
-      liveState,
-      moment,
-      mobileSummary,
+      ...(docks ? [] : [liveState, moment, mobileSummary]),
       ...(startNote.textContent ? [startNote] : []),
     );
     const f = fixture(),
       all = documents();
+    if (docks) renderAbilities(f);
     if (useTemporary && f) {
       const note = document.createElement('p');
       note.textContent =
@@ -478,6 +518,45 @@ export function mountPlayWorkbench(
     };
     if (details.open) build();
   }
+  /** Ability chips for the starting state (modules and programs); a change applies on the next start. */
+  function renderAbilities(f: PlayFixture | undefined) {
+    abilities.replaceChildren();
+    if (!f) return;
+    let programs: readonly string[] = [];
+    try {
+      const snapshot = currentDocuments();
+      programs = [...pendingFixtureVocabulary(snapshot, pendingRegistry(snapshot)).programs];
+    } catch {
+      programs = f.programs;
+    }
+    const title = document.createElement('h4');
+    title.textContent = 'Abilities';
+    abilities.append(title);
+    const chips = (kind: 'modules' | 'programs', ids: readonly string[]) => {
+      for (const id of ids) {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.textContent = id;
+        chip.setAttribute('aria-pressed', String(f[kind].includes(id)));
+        chip.title = (kind === 'modules' ? 'Module' : 'Program') + ' · applies on Reset play';
+        chip.onclick = () =>
+          form.run(() => {
+            const toggle = (row: PlayFixture) => {
+              row[kind] = row[kind].includes(id)
+                ? row[kind].filter((v) => v !== id)
+                : [...row[kind], id];
+            };
+            if (useTemporary && temporary) {
+              toggle(temporary);
+              renderAbilities(temporary);
+            } else edit('Toggle starting ' + kind.slice(0, -1) + ' ' + id, toggle);
+          });
+        abilities.append(chip);
+      }
+    };
+    chips('modules', fixtureModules);
+    chips('programs', programs);
+  }
   /** A new checkpoint from the running game's latest snapshot: one validated, undoable edit. */
   function saveMoment() {
     if (!last?.save || !last.scene) throw new Error('Play has not reported its state yet.');
@@ -566,6 +645,7 @@ export function mountPlayWorkbench(
     heading('Inventory');
     row(liveState, 'Tokens', String(save.tokens ?? 0));
     row(liveState, 'Carried', carried.length ? carried.join(', ') : 'nothing');
+    if (docks) return;
     heading('Events · ' + runEvents.length);
     const log = document.createElement('ol');
     log.className = 'live-events';
@@ -745,6 +825,23 @@ export function mountPlayWorkbench(
     runEvents = [];
     runClock = performance.now();
     liveState.replaceChildren();
+    docks?.reset();
+    if (docks) {
+      const unsaved = context.documents.filter((d) => {
+        try {
+          return api.dirty?.(d.id);
+        } catch {
+          return false;
+        }
+      }).length;
+      sources.textContent = unsaved
+        ? 'Sources: saved source plus ' +
+          unsaved +
+          ' unsaved document' +
+          (unsaved === 1 ? '' : 's') +
+          ' (pending edits).'
+        : 'Sources: saved source, no pending edits.';
+    }
     selection.momentNote = momentNote.textContent = '';
     deviceSignature = '';
     devices.replaceChildren();
@@ -873,6 +970,7 @@ export function mountPlayWorkbench(
       clearTimeout(timer);
       status.textContent =
         'Playing pending ' + value.scene + ' snapshot · Stop returns to editing.';
+      const previous = last;
       if (!runStart) runStart = value;
       else if (last)
         for (const event of snapshotEvents(last, value))
@@ -881,6 +979,7 @@ export function mountPlayWorkbench(
       last = value;
       renderLiveState();
       diagnostics();
+      docks?.update(value, previous, runEvents);
     } else if (type === 'restart') void start(value.memory);
     else if (type === 'quit') (context.stopPlay ?? stop)();
     else if (type === 'error') {
@@ -924,6 +1023,7 @@ export function mountPlayWorkbench(
     disposed = true;
     stop();
     window.removeEventListener('message', receive);
+    docks?.dispose();
     host.replaceChildren();
     context.playSettings?.replaceChildren();
     host.classList?.remove('framed');

@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { PlayStartup, playStartupWaitingMessage } from '../../src/ssg/game/authoring/play-startup';
+import * as liveState from '../../src/ssg/game/authoring/play-live-state';
 // Execute the real mount lifecycle with a small DOM/clock boundary; game/compiler imports are not invoked.
 const file = 'src/ssg/game/authoring/play-workbench.ts',
   source = fs.readFileSync(file, 'utf8'),
@@ -113,6 +114,11 @@ const docs: any[] = [
 ];
 const globals: any = {
   liveSources,
+  // Live-state comparisons are pure; the Review docks need a playDock and are not mounted here.
+  ...liveState,
+  mountPlayDocks: () => assert.fail('Lifecycle fixture has no play dock'),
+  validateReviewStations: (v: any) => v,
+  performance: { now: () => now },
   defaultPlayFixture,
   renderStartingStateControls: () => {},
   PlayStartup: class extends PlayStartup {
@@ -213,7 +219,13 @@ const flush = async () => {
 button('Play');
 await flush();
 const first = frame()!;
-assert(first);
+assert(
+  first,
+  'no frame; alert: ' +
+    alert() +
+    ' status: ' +
+    all().find((n) => n.attrs.role === 'status')?.textContent,
+);
 assert.equal(first.attrs.sandbox, 'allow-scripts');
 assert.equal((first as any).loading, 'eager');
 assert.equal(startup().phase, 'navigating');

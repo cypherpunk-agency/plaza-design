@@ -199,7 +199,7 @@ export function outlineArea(
     }
     app.outlineVersion = version;
     app.left.replaceChildren();
-    app.left.append(leftDockHead(), app.sceneContext, app.runtimeOutline);
+    app.left.append(leftDockHead(), app.sceneContext, app.playRun, app.runtimeOutline);
     const updates: (() => void)[] = [],
       filters: (() => void)[] = [];
     if (app.workspaceId) {

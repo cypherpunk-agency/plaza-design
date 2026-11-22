@@ -1,7 +1,7 @@
 # Editor redesign phase 7: notes
 
-Authorized by the user on 2026-11-21. **7a, 7b and 7c built 2026-11-22**, plus the 7d live
-state panel (see "Built" under each); the Review workspace arrangement remains. Written 2026-10-28 so the work can resume without repeating the design
+Authorized by the user on 2026-11-21. **7a, 7b, 7c and 7d built 2026-11-22** (see "Built"
+under each; 7d lists what was left out). Written 2026-10-28 so the work can resume without repeating the design
 discussion. Phase 7 fills four workspaces with new content; the
 shell from phases 1–6 shipped on 2026-10-28. Each part should become its own goal, chosen by
 the user. Rules: [Editor UI](../reference/EDITOR-UI.md). Mockups: the
@@ -173,8 +173,27 @@ pure comparisons in `authoring/play-live-state.ts`, check `check-play-live-state
   declared flags, keys and programs (undeclared ones are listed as dropped), items, tokens,
   modules, player name, scalar state that differs from its default, day, minute and spawn x.
   Entrance and sequence are cleared so the run resumes where the player stood.
-- Not built yet: the separate Review workspace arrangement (Run dock, Watch tab, Console and
-  Issues tabs, Show triggers, Pick object → edit).
+
+**Built 2026-11-22 (Review arrangement)** in `authoring/play-docks.ts` (mounted by the Play
+workbench when the editor gives it a left dock; pure helpers checked in `check-play-live-state`):
+- While a run plays in the Scene stage, the left column shows **Run** (Play / Stop / Reset play,
+  status, Sources: saved source plus N unsaved documents, **Abilities** chips for modules and
+  programs that apply on the next start, Run configuration, Checkpoint, Starting state, footer
+  "Private run · its saves are thrown away") and **Shortcuts** (review stations; a click jumps the
+  player inside this run through the frame's only new message, `review`). Live chunks stay below.
+- Right: **Live state** and **Watch** (pin any flag, item, key or scene state from the latest
+  snapshot; pins are per browser; Live triggers, Spatial regions and Debug moved under Watch).
+- Under the game: **Events** (time, type incl. interaction commands, message; up to 200),
+  **Console** (every status and error line with its time) and **Issues** (errors, pending world
+  edit blockers, tripped watchdogs). **Show triggers** draws spatial regions and interaction
+  markers over the run; **Pick object → edit** picks the nearest interaction marker.
+- Decision on the open question: **Pick object → edit stops the run** and opens that interaction
+  in Logic → Rules (switching the editor to the run's scene). Save this moment first to come back.
+- The game's `inspect()` now reports where interactions and exits stand (`layout`, editor Play
+  only) so the editor can draw and pick them.
+- Not built: pause, step and speed controls; picking exits, characters without an interaction or
+  artwork; the header still shows the workspace Play was started from, because Play runs over the
+  Scene stage rather than as a separate Review tab.
 
 ## Order to propose
 

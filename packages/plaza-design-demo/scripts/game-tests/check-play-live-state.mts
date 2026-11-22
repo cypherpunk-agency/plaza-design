@@ -5,9 +5,12 @@ import {
   snapshotEvents,
   clockText,
   momentFixture,
+  watchRows,
+  watchChoices,
   type LiveSnapshot,
 } from '../../src/ssg/game/authoring/play-live-state';
 import { defaultPlayFixture } from '../../src/ssg/game/world/checkpoints';
+import { pickUse, screenFraction } from '../../src/ssg/game/authoring/play-docks';
 import type { StateDeclaration } from '../../src/ssg/game/engine/gameplay/types';
 
 const start: LiveSnapshot = {
@@ -101,4 +104,43 @@ assert.equal(
   true,
   'base fixture is not modified',
 );
+// Interaction events: each gameplay command event is logged once, by scene and id.
+const withEvent = {
+  ...now,
+  events: [{ scene: 'downtown', id: 'e1', command: 'downtown.progress.till', cause: 'till' }],
+};
+assert.deepEqual(
+  snapshotEvents(now, withEvent).filter((e) => e.type === 'interaction'),
+  [{ type: 'interaction', message: 'downtown.progress.till · till' }],
+);
+assert.equal(
+  snapshotEvents(withEvent, withEvent).length,
+  0,
+  'an event already seen is not logged again',
+);
+
+// Watch: pinned values read from the latest snapshot, flagged when they just changed.
+const rows = watchRows(['tokens', 'flag.metFixer', 'flag.missing'], now, start);
+assert.deepEqual(
+  rows.map((r) => [r.label, r.value, r.changed]),
+  [
+    ['Tokens', '4', true],
+    ['metFixer', 'true', true],
+    ['missing', '—', false],
+  ],
+);
+assert.ok(watchChoices(now).some((c) => c.key === 'state.downtown.hints.box'));
+
+// Review overlay: picking finds the nearest interaction within reach; screen fraction follows the camera.
+const layout = {
+  uses: [
+    { id: 'till', x: 300, label: '', name: '' },
+    { id: 'fixer', x: 420, label: '', name: '' },
+  ],
+  exits: [],
+};
+assert.equal(pickUse(layout, 410), 'fixer');
+assert.equal(pickUse(layout, 340), 'till');
+assert.equal(pickUse(layout, 900), undefined);
+assert.equal(screenFraction({ x: 100, width: 400 }, 300), 0.5);
 console.log('play live state: ' + changes.length + ' changes, ' + events.length + ' events');

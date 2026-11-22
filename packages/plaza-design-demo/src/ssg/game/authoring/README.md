@@ -79,9 +79,12 @@ pending graph from default state without saving anything. Card positions you dra
 preferences (Tidy resets them). Both views edit the same sources as Interactions & story and the
 Conversations library form.
 
-**Play** shows a **Live state** column while a private run is going: what the run changed so
-far, inventory, clock and recent events. **Save this moment as a checkpoint** turns the current
-run state into a new Test checkpoint.
+While a private run plays, the editor switches to the Review arrangement: **Run** and
+**Shortcuts** (review stations) on the left, **Live state** and **Watch** on the right, and
+**Events**, **Console** and **Issues** under the game. **Live state** shows what the run changed so
+far, inventory and clock; **Save this moment as a checkpoint** turns the current run state into a
+new Test checkpoint. **Show triggers** draws regions and interaction markers over the game;
+**Pick object → edit** stops the run and opens the clicked interaction in Logic → Rules.
 
 Character dialogue lives in named gameplay conversation graphs. Select the character and use
 **Behaviour → Edit conversation definition**, or **Library → Conversations** to browse definitions

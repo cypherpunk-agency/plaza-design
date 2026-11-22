@@ -620,6 +620,11 @@ async function start() {
           }
           ruleSelection.scene = scene;
         },
+        selectRule(scene, rule) {
+          ruleSelection.scene = scene;
+          ruleSelection.rule = rule;
+          ruleSelection.token = undefined;
+        },
         unsupported:
           'This scene’s interactions, objectives and dialogue are still defined in code. They become editable once the scene is migrated to scene documents.',
         get primaryDocumentId() {

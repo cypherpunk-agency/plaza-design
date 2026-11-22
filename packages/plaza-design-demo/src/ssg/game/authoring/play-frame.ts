@@ -56,6 +56,12 @@ window.addEventListener('editor-runtime-reload', () => {
   if (!resumed && hasSave) game?.checkpoint();
   send('restart', { memory: capturePrivateStorage() });
 });
+// After start, the editor's Shortcuts tab jumps to a review station (the in-game review navigator's bookmarks).
+window.addEventListener('message', (event) => {
+  if (event.source !== parent || event.data?.channel !== 'editor-play' || !game) return;
+  if (event.data.type === 'review' && typeof event.data.value === 'string')
+    game.reviewJump(event.data.value);
+});
 window.addEventListener('message', async (event) => {
   if (
     event.source !== parent ||
