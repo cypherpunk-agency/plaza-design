@@ -955,6 +955,1326 @@
           ]
         }
       ]
+    },
+    "ch1-wait": {
+      "goal": "noodles with Moth at ten (the stall)",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      },
+      "intro": {
+        "pages": [
+          "Downtown. Same street, same screens.",
+          "They used to say hello. This morning they look straight through me."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "targets": {
+        "wait": {
+          "label": "[E] WAIT FOR MOTH",
+          "promptH": 46,
+          "x": 772,
+          "card": "wait-ten"
+        }
+      },
+      "ping": {
+        "target": "wait"
+      }
+    },
+    "ch1-street": {
+      "goal": "the noodle stall: Moth said ten",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      }
+    },
+    "ch1-registry": {
+      "goal": "the Registry service point (open 08:00 to 18:00)",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      },
+      "ping": {
+        "exit": "registry"
+      }
+    },
+    "ch1-referral": {
+      "goal": "back to the stall: tell the fixer",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      }
+    },
+    "ch1-kessel": {
+      "goal": "Kessel: through the fixer's kitchen, after dark",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      },
+      "ping": {
+        "exit": "kessel"
+      }
+    },
+    "ch1-shutter": {
+      "goal": "Kessel's shutter",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      },
+      "ping": {
+        "exit": "kessel"
+      }
+    },
+    "ch1-latch": {
+      "goal": "home: Block 7's side street, the service latch",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      },
+      "ping": {
+        "exit": "block7"
+      }
+    },
+    "ch1-home": {
+      "goal": "get some sleep",
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "You look like you slept in a lift.",
+            "No offence. I have."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "The arch just looked straight through you. I saw.",
+            "Happens. Keep walking like you mean it."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Harbor? Heard they're laying off. Or deleting. Same word, these days."
+          ]
+        }
+      },
+      "exits": {
+        "capsule": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "RESIDENT NOT FOUND.",
+              "The front door is for residents. Please step back from the door."
+            ]
+          }
+        },
+        "shop": {
+          "say": {
+            "name": "FRESHCO",
+            "pages": [
+              "UNEXPECTED ITEM: YOU.",
+              "PLEASE WAIT FOR ASSISTANCE."
+            ]
+          }
+        },
+        "library": {
+          "say": {
+            "name": "LIBRARY DOOR",
+            "pages": [
+              "MEMBERS ONLY. MEMBER NOT FOUND."
+            ]
+          }
+        },
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "RESIDENTS ONLY. PRESENT KEY CHIP.",
+              "FLAT 4C · RESIDENT: MOTH. NO ANSWER."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        },
+        "yard": {
+          "say": {
+            "name": "YOU",
+            "pages": [
+              "The fixer's yard. Not mine to walk into."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ]
+      }
     }
   }
 }

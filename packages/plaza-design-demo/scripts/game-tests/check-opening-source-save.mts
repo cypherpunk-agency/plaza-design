@@ -63,7 +63,7 @@ const downtown = m.get('downtown-scene').value as any,
 downtown.phases.home.exits.capsule.acknowledge.pages = ['Saved concierge.'];
 downtown.phases.free.arrival[0].pages[0].text = 'Saved rainy greeting.';
 train.phases.home.intro.height = 53;
-source.PHASE_RULES[1].phase = 'deleted';
+source.PHASE_RULES.find((r: any) => r.phase === 'uplinked')!.phase = 'deleted';
 m.importDocuments(
   [
     { id: 'opening-story', value: source },

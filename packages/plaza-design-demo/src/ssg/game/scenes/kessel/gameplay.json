@@ -3,7 +3,8 @@
   "flags": [
     "act1:implant",
     "act1:shutter",
-    "kessel:shutterOpen"
+    "kessel:shutterOpen",
+    "act1:referred"
   ],
   "items": [],
   "events": [],
@@ -15,6 +16,17 @@
       "actions": [
         {
           "flag": "act1:shutter",
+          "value": true
+        }
+      ]
+    },
+    "kessel.fit": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:implant",
           "value": true
         }
       ]
@@ -40,10 +52,85 @@
     "talk.kessel.kessel": {
       "entry": [
         {
+          "when": {
+            "flag": "act1:shutter"
+          },
+          "node": "after"
+        },
+        {
+          "when": {
+            "flag": "act1:implant"
+          },
+          "node": "shutter"
+        },
+        {
+          "when": {
+            "flag": "act1:referred"
+          },
+          "node": "meet"
+        },
+        {
           "node": "hello"
         }
       ],
       "nodes": {
+        "meet": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "Mm. The fixer's ghost. Sit. Not there, that one's for the dead. There.",
+            "Deleted overnight? It's going around.",
+            "I can't give you your record back. Nobody can. But I can give you a way to talk to doors that won't hear you."
+          ],
+          "choices": [
+            {
+              "id": "fit",
+              "label": "Do it.",
+              "command": "kessel.fit",
+              "next": "fitted"
+            },
+            {
+              "id": "what",
+              "label": "What is it?",
+              "next": "what"
+            }
+          ]
+        },
+        "what": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "An implant for your deck. It sees the wiring behind a thing, and lets you ask it, in its own language.",
+            "I built half the scanners on that street, once. Consider this an apology to somebody."
+          ],
+          "choices": [
+            {
+              "id": "fit",
+              "label": "Do it.",
+              "command": "kessel.fit",
+              "next": "fitted"
+            }
+          ]
+        },
+        "fitted": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "Hold still. … There.",
+            "Try it on the shutter. H to look behind it, then pick a verb. Open it."
+          ]
+        },
+        "shutter": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "The shutter. H, then open. It will not bite. What is behind it might stare."
+          ]
+        },
+        "after": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "Shells. Robot bodies, empty. People sell me their old ones. People sell me all sorts.",
+            "Don't ask what I do with them. I'll tell you, and you'll stop sleeping.",
+            "Go home. Your front door won't know you, but your block has a service latch down the areaway on the side street. It speaks the same language as that shutter."
+          ]
+        },
         "hello": {
           "speaker": "DR. KESSEL",
           "pages": [

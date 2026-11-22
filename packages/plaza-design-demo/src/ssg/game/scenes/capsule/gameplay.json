@@ -7,7 +7,8 @@
     "capsule:goal.concierge",
     "capsule:observed.conciergeConnected",
     "capsule:goal.pixel",
-    "pixel"
+    "pixel",
+    "act1:on"
   ],
   "items": [],
   "events": [
@@ -613,8 +614,16 @@
     "triggers": {
       "capsule.doorOpened": {
         "when": {
-          "state": "capsule.doorOpen",
-          "is": true
+          "all": [
+            {
+              "state": "capsule.doorOpen",
+              "is": true
+            },
+            {
+              "flag": "act1:on",
+              "is": false
+            }
+          ]
         },
         "command": "capsule.door.unlocked",
         "edge": "rising"

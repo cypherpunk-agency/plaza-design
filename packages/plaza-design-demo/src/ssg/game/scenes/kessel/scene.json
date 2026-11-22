@@ -138,5 +138,34 @@
         "else": 0
       }
     }
+  },
+  "phases": {
+    "ch1-kessel": {
+      "goal": "Kessel: down the hatch, after dark (a stool at the stall to wait on)"
+    },
+    "ch1-shutter": {
+      "goal": "open the shutter: H, then a verb",
+      "ping": {
+        "device": "shutter"
+      }
+    },
+    "ch1-latch": {
+      "goal": "home: the service latch on the side street"
+    },
+    "ch1-wait": {
+      "goal": "noodles with Moth at ten (the stall)"
+    },
+    "ch1-street": {
+      "goal": "the noodle stall: Moth said ten"
+    },
+    "ch1-registry": {
+      "goal": "the Registry service point (open 08:00 to 18:00)"
+    },
+    "ch1-referral": {
+      "goal": "back to the stall: tell the fixer"
+    },
+    "ch1-home": {
+      "goal": "get some sleep"
+    }
   }
 }

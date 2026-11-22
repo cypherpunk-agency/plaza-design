@@ -183,5 +183,31 @@
   },
   "companion": {
     "mode": "off"
+  },
+  "phases": {
+    "ch1-registry": {
+      "goal": "take a ticket, then the counter"
+    },
+    "ch1-referral": {
+      "goal": "back to the stall: tell the fixer"
+    },
+    "ch1-wait": {
+      "goal": "noodles with Moth at ten (the stall)"
+    },
+    "ch1-street": {
+      "goal": "the noodle stall: Moth said ten"
+    },
+    "ch1-kessel": {
+      "goal": "Kessel: through the fixer's kitchen, after dark"
+    },
+    "ch1-shutter": {
+      "goal": "Kessel's shutter"
+    },
+    "ch1-latch": {
+      "goal": "home: Block 7's side street, the service latch"
+    },
+    "ch1-home": {
+      "goal": "get some sleep"
+    }
   }
 }

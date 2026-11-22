@@ -4,10 +4,10 @@
   "artworkVisible": "ddabcd17c48e5055",
   "attention": "d5d4cd07616a5428",
   "companion": "b467f9cc0e278815",
-  "data": "910f9097c343c6aa",
-  "exits": "f62ea88fc2a4bd3e",
+  "data": "d6bab7dade15d140",
+  "exits": "70b3e9d888c1b183",
   "facing": "2d0c8af807ef45ac",
-  "gameplay": "0efac2c7e181b2d5",
+  "gameplay": "a4743cd2dd59cdb2",
   "id": "39a88b64731dcbc4",
   "intro": "e5d626c61ff0816a",
   "introOnFoot": "d5d4cd07616a5428",
@@ -18,7 +18,7 @@
   "people": "97d170e1550eee4a",
   "peopleFlows": "97d170e1550eee4a",
   "perch": "e5d626c61ff0816a",
-  "phases": "257dceb862d3c916",
+  "phases": "81d719a48c5b210c",
   "pixel": "eef38252044cdba2",
   "readables": "d5d4cd07616a5428",
   "rests": "81a457d17327433b",
@@ -34,10 +34,10 @@
   "width": "0b6a63765cf0acb1"
  },
  "paint": {
-  "start": "4e97dafa70d8a4b2",
-  "middle-night": "1df9d3d0d7f176e1",
-  "end": "39b80fe06a908783",
-  "phone": "9ce8d11404b8edf4",
-  "wide-late": "399cd16be9ae2784"
+  "start": "7bdeb883a8dffd21",
+  "middle-night": "c16fff64f44630e1",
+  "end": "0068b60098b35fa3",
+  "phone": "340d03f20f10cff3",
+  "wide-late": "ac6186ced768eb12"
  }
 }

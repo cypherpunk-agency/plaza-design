@@ -707,6 +707,18 @@
           }
         }
       ]
+    },
+    "wait-ten": {
+      "out": 50,
+      "card": 110,
+      "in": 50,
+      "to": "10:00",
+      "label": "THE NOODLE STALL",
+      "mid": [
+        {
+          "waitUntil": "10:00"
+        }
+      ]
     }
   },
   "TRIGGERS": [

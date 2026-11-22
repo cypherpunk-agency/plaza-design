@@ -13,7 +13,11 @@
     "downtown.progress.has.relay",
     "downtown.progress.has.gate",
     "act1:on",
-    "act1:referred"
+    "act1:referred",
+    "act1:ten",
+    "act1:stall",
+    "act1:queued",
+    "act1:implant"
   ],
   "items": [],
   "events": [
@@ -2099,12 +2103,124 @@
           "set": "shut"
         }
       ]
+    },
+    "downtown.act1.fed": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:stall",
+          "value": true
+        }
+      ]
+    },
+    "downtown.act1.referred": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:referred",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
   "conversations": {
     "talk.downtown.fixer": {
       "entry": [
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:implant"
+              }
+            ]
+          },
+          "node": "a1-patched"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:referred"
+              }
+            ]
+          },
+          "node": "a1-afterdark"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:queued"
+              }
+            ]
+          },
+          "node": "a1-referral"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:stall"
+              }
+            ]
+          },
+          "node": "a1-registry"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:ten"
+              },
+              {
+                "time": {
+                  "from": "10:00",
+                  "to": "11:30"
+                }
+              }
+            ]
+          },
+          "node": "a1-noshow"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:ten"
+              }
+            ]
+          },
+          "node": "a1-late"
+        },
+        {
+          "when": {
+            "flag": "act1:on"
+          },
+          "node": "a1-early"
+        },
         {
           "when": {
             "flag": "metFixer",
@@ -2665,6 +2781,109 @@
           "pages": [
             "A delivery robot. Of course. Nobody checks the help.",
             "That's all I know. The rest is yours."
+          ]
+        },
+        "a1-early": {
+          "speaker": "FIXER",
+          "pages": [
+            "You're early. Moth's never early.",
+            "Sit if you like. Ten comes to everyone."
+          ]
+        },
+        "a1-noshow": {
+          "speaker": "FIXER",
+          "pages": [
+            "Ten o'clock. No Moth.",
+            "Moth's never late for free food. Call?"
+          ],
+          "choices": [
+            {
+              "id": "a1-call",
+              "label": "Call Moth",
+              "next": "a1-call"
+            }
+          ]
+        },
+        "a1-late": {
+          "speaker": "FIXER",
+          "pages": [
+            "You missed nobody. Moth never came.",
+            "Been on that stool since ten? No. I'd have seen. Nobody came."
+          ],
+          "choices": [
+            {
+              "id": "a1-call",
+              "label": "Call Moth",
+              "next": "a1-call"
+            }
+          ]
+        },
+        "a1-call": {
+          "speaker": "PHONE",
+          "pages": [
+            "ringing\u2026",
+            "ringing\u2026",
+            "click. NO SERVICE \u00b7 CALLER NOT FOUND."
+          ],
+          "choices": [
+            {
+              "id": "a1-order",
+              "label": "Order a bowl anyway",
+              "next": "a1-till"
+            }
+          ]
+        },
+        "a1-till": {
+          "speaker": "TILL",
+          "pages": [
+            "CUSTOMER UNKNOWN. HAVE WE MET?"
+          ],
+          "choices": [
+            {
+              "id": "a1-sorry",
+              "label": "\u2026",
+              "next": "a1-fed"
+            }
+          ]
+        },
+        "a1-fed": {
+          "speaker": "FIXER",
+          "pages": [
+            "Put that away. Sit.",
+            "Noodles are free for the dead. House rule.",
+            "Moth didn't come, your phone doesn't know you and my till doesn't either. That's not a bad morning. That's your record.",
+            "Registry service point, up the street. Take a ticket. Eight to six. Then come back and tell me what they said."
+          ],
+          "onEnter": "downtown.act1.fed"
+        },
+        "a1-registry": {
+          "speaker": "FIXER",
+          "pages": [
+            "Registry. Up the street, a ticket, a queue. Eight to six.",
+            "Come back and tell me what they said."
+          ]
+        },
+        "a1-referral": {
+          "speaker": "FIXER",
+          "pages": [
+            "Ninety days. Of course.",
+            "You won't last ninety days without a key. Nobody does.",
+            "There's a doctor. Kessel. Back of my kitchen, down the hatch, down again.",
+            "He owes me. Come back after dark. He's not a morning person."
+          ],
+          "onEnter": "downtown.act1.referred"
+        },
+        "a1-afterdark": {
+          "speaker": "FIXER",
+          "pages": [
+            "Kessel. Through the kitchen, after dark. Tell the cook I sent you."
+          ]
+        },
+        "a1-patched": {
+          "speaker": "FIXER",
+          "pages": [
+            "Kessel fixed you up? Then doors can hear you now. Mind what you say to them.",
+            "Go home. Sleep. Tomorrow we work out how a ghost eats."
           ]
         }
       }

@@ -17,12 +17,18 @@ import { SCENES } from '../../src/ssg/game/scenes';
 const sorted = (s: ReadonlySet<string>) => [...s].sort();
 
 // ---------- the story's grants ----------
-// The old campaign (no hackStages on its unlocked phases) keeps everything at once, as before.
+// The old campaign (no hackStages on its unlocked phases) keeps everything at once, as before;
+// the new Act I (ch1-*) grants inspect only once Kessel has fitted the implant.
+const actOne = (phase: string) => phase.startsWith('ch1-');
 for (const [phase, v] of Object.entries(openingStoryModel.PHASES)) {
-  if (!v.hackLocked)
+  if (!v.hackLocked && !actOne(phase))
     assert.equal(v.hackStages, undefined, phase + ': old campaign phase names no stages');
+  if (!v.hackLocked && actOne(phase))
+    assert.deepEqual(v.hackStages, ['inspect'], phase + ': Chapter 1 grants inspect only');
 }
-const unlockedPhase = Object.entries(openingStoryModel.PHASES).find(([, v]) => !v.hackLocked)![0];
+const unlockedPhase = Object.entries(openingStoryModel.PHASES).find(
+  ([p, v]) => !v.hackLocked && !actOne(p),
+)![0];
 const lockedPhase = Object.entries(openingStoryModel.PHASES).find(([, v]) => v.hackLocked)![0];
 // a model whose phase rules always land on the phase under test
 const onPhase = (phase: string, patch?: (p: Record<string, unknown>) => void) => {

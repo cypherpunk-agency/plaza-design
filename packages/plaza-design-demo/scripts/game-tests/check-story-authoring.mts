@@ -202,10 +202,11 @@ try {
   assert.equal(doc('opening-story').TRIGGERS[1].start, 'jack.at');
   panel.click('Remove Story trigger jack timestamp');
   assert.equal(doc('opening-story').TRIGGERS[1].start, undefined);
+  const triggers = doc('opening-story').TRIGGERS.length;
   panel.click('Add story trigger');
-  assert.equal(doc('opening-story').TRIGGERS.length, 4);
+  assert.equal(doc('opening-story').TRIGGERS.length, triggers + 1);
   panel.click('Remove Story trigger trigger-1');
-  assert.equal(doc('opening-story').TRIGGERS.length, 3);
+  assert.equal(doc('opening-story').TRIGGERS.length, triggers);
   settings.change('GOAL_HINTS 0 line', 'a new hint');
   assert.equal(doc('opening-story').GOAL_HINTS[0].line, 'a new hint');
   panel.change('Story logic group', 'Phases');

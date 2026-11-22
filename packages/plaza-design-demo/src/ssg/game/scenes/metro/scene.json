@@ -239,6 +239,110 @@
           ]
         }
       }
+    },
+    "ch1-wait": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "noodles with Moth at ten (the stall)"
+    },
+    "ch1-street": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the noodle stall: Moth said ten"
+    },
+    "ch1-registry": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the Registry service point (open 08:00 to 18:00)"
+    },
+    "ch1-referral": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "back to the stall: tell the fixer"
+    },
+    "ch1-kessel": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "Kessel: through the fixer's kitchen, after dark"
+    },
+    "ch1-shutter": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "Kessel's shutter"
+    },
+    "ch1-latch": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "home: Block 7's side street, the service latch"
+    },
+    "ch1-home": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "get some sleep"
     }
   },
   "introOnFoot": true

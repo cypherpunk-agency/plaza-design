@@ -157,5 +157,232 @@
         "else": 0
       }
     }
+  },
+  "phases": {
+    "ch1-wake": {
+      "goal": "get out of the building",
+      "intro": {
+        "pages": [
+          "Seven floors, and the lift is out. Of course it is."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "The fire exit is to your right. By law it always opens. I checked."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "gate": {
+            "verifying": "FIRE EXIT: push bar",
+            "ok": "FIRE EXIT: open. this door locks behind you.",
+            "verifyFrames": 60,
+            "okFrames": 50,
+            "dotEvery": 20,
+            "begin": [
+              {
+                "sound": "blip"
+              }
+            ],
+            "then": [
+              {
+                "milestone": "ch1.out"
+              },
+              {
+                "sound": "close"
+              },
+              {
+                "say": {
+                  "speaker": "YOU",
+                  "pages": [
+                    "Click. Locked behind me.",
+                    "Out, then. The street is round the front. Moth said ten."
+                  ],
+                  "height": 46
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "ch1-latch": {
+      "goal": "home: the service latch, down the areaway",
+      "ping": {
+        "device": "latch"
+      },
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      }
+    },
+    "ch1-home": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "get some sleep"
+    },
+    "ch1-wait": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      },
+      "goal": "noodles with Moth at ten (the stall)"
+    },
+    "ch1-street": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      },
+      "goal": "the noodle stall: Moth said ten"
+    },
+    "ch1-registry": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      },
+      "goal": "the Registry service point (open 08:00 to 18:00)"
+    },
+    "ch1-referral": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      },
+      "goal": "back to the stall: tell the fixer"
+    },
+    "ch1-kessel": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      },
+      "goal": "Kessel: through the fixer's kitchen, after dark"
+    },
+    "ch1-shutter": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        },
+        "fire-exit-door": {
+          "say": {
+            "name": "FIRE EXIT",
+            "pages": [
+              "NO ENTRY. NO HANDLE ON THIS SIDE."
+            ]
+          }
+        }
+      },
+      "goal": "Kessel's shutter"
+    }
   }
 }
