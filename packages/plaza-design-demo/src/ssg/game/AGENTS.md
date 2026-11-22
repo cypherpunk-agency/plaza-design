@@ -233,7 +233,9 @@ disables it. Do not add a second render or a parallel camera evaluator for follo
 
 1. Inspect current source and choose an existing shared contract before introducing an abstraction.
 2. Make the source, shared behavior and typed controls agree. Ordinary scenes use the existing
-   catalogue/manifest pipeline and must not require a new per-scene TypeScript registry entry.
+   catalogue/manifest pipeline and must not require a new per-scene TypeScript registry entry
+   (the one line a new folder scene adds to `scenes/folder-scenes.ts`, per the engine handbook, is
+   the only list it joins).
 3. Verify the actual pending behavior and applicable history/bundle/protected Save/native reload.
    A source panel, registered JSON, screenshot or green build alone does not prove full authoring.
    For editor changes, demonstrate the complete affected task: find/select, inspect, change,

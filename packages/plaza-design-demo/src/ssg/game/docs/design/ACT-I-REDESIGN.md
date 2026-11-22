@@ -74,6 +74,33 @@ the first clue (the list was stolen that night).
 | 7 | Kessel's room (after dark) | Kessel, guilty and gentle; robot shells on the shelves; the implant; open the privacy shutter | Inspect and one verb |
 | 8 | Capsule lobby | Back home through the service latch; Pixel is waiting | Same, alone |
 
+**Built 2026-11-22 (M4), alongside the old campaign; `?play=act1`.** Story data is in
+`story/opening.json` (flags `act1:*`, phases `ch1-wake` to `ch1-home`, triggers `ch1-ten` and
+`ch1-home`, card `wait-ten`); start checkpoint `new-run-act1` (day 2, 08:00); play profile `act1`.
+New folder scenes `scenes/block7` (lobby, beats 2 and 8), `scenes/registry` (beat 5) and
+`scenes/kessel` (beat 7), each with a README. Each scene's `phases.ch1-*` holds its goals,
+refusals and pings. The fixer's Act I talk is in Downtown's `gameplay.json` (`a1-*` nodes).
+Kessel's is in Kessel's.
+
+- Time: ten o'clock fires wherever you are. Waiting at the stall uses the `wait-ten` card.
+  Office hours and "after dark" are barriers with time conditions, plus a stool to wait on, so
+  the clock is never pinned.
+- Hacking: the `ch1-shutter` phase onward grants stage `inspect`. The shutter and the service latch
+  are first used through their device verbs. Native `reads` turn device state into
+  `act1:shutter` and `act1:latch`.
+- Pixel stays home: the companion `when` excludes `act1:on`.
+- Engine additions (generic):
+  - Devices, uses and text heights may sit down to 400 below the street.
+  - An exit can stand on an upper level floor (`SceneExit.h`).
+  - `piece()` takes a `live` hook, so a level visual field (`opened`, `raised`) changes the
+    picture.
+- Open:
+  - The new places connect to Downtown by exits (fades), not joined zones.
+  - Kessel's art set still repeats the stall street.
+  - The lift prompt reads the engine's "OUT OF ORDER".
+  - Downtown has no rest of its own.
+  - PHASES is at 15 of its 16-row limit, so M5 must raise it.
+
 ### Chapter 2: Getting by
 
 | # | Place | Story and feeling | Hacking |

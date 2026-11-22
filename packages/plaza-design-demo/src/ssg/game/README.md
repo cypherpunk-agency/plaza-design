@@ -33,6 +33,8 @@ this preview has no hot reload. `pnpm dev` serves the separate React design show
   continuous alighting onto the ledge. Galleria and old Harbor also use shared physical berths;
   Downtown also has a shared berth. Station passengers now use shared model-owned flows, retaining
   identity through boarding and alighting. Transport consolidation and its final visual acceptance are complete; see ROADMAP C2.
+- `?play=act1` starts the new Act I (built alongside the old campaign until the M6 switch-over)
+  on the morning after the prologue, with its own saves. Chapter 1 (M4) is playable.
 - `?sudo` opens developer mode with separate saves, unlocks, the LEVELS menu and time controls.
 - `?probe` adds the read-only `window.__game` handle (`probe()`: scene, story phase, flags, clock, dialogue, prompts, captions) to the ordinary game, with no unlocks. `scripts/opening-playthrough/` uses it.
 - `?play=sandbox&sudo` opens the engine's manual demonstration bay.
