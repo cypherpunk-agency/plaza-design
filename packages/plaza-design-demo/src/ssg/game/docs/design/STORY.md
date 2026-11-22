@@ -96,8 +96,8 @@ the bank still charges fees to.
 
 ## The acts
 
-**Act I: Erased** (revised 2026-10-22; the route is in
-[PROLOGUE-ACT-I-PLAN.md](./PROLOGUE-ACT-I-PLAN.md#revised-act-i-route-2026-10-22))
+**Act I: Erased** (redesigned 2026-11-22; story and beat order are in
+[ACT-I-REDESIGN.md](./ACT-I-REDESIGN.md), which replaces the 2026-10-22 route)
 You are stripped of your identity, want it back, and learn hacking to get around every
 obstacle the city puts in the way. Act I stays in Downtown and shows a different Downtown place
 at each step: the capsule lobby, the noodle stall, the Registry service point, Kessel's room
@@ -105,7 +105,9 @@ behind the fixer's kitchen, the supermarket, the yard, Moth's stairwell, the lib
 substation and, with the block's power cut, the dark Registry back office. A forced attempt to
 restore your record trips an alarm. A
 sweep collects "unregistered persons", and an unregistered body is the city's to take. Kessel
-moves your mind into a DLV-9 delivery robot in an emergency transfer, and your body is taken.
+copies your mind into a DLV-9 delivery robot as the sweep breaks in, and dies there; your body,
+with the original you still in it, is taken. Act I runs in four chapters (loss, getting by,
+looking for Moth, forcing the door) in free-running city time.
 
 (The earlier Act I, built and still running: Capsule 7B → Downtown → the yard → Moth's
 computer → the market gate → laundromat → metro → harbor, with Moth found at the harbor.)
@@ -164,3 +166,33 @@ Registry's verification off for one night.
 
 These supersede, where they differ, the Act I finale and transition proposals in
 PROGRESSION-CONCEPT.md and the Act I matrix in PROLOGUE-ACT-I-PLAN.md.
+
+## Decided (Tommi, 2026-11-22)
+
+The Act I redesign; details in [ACT-I-REDESIGN.md](./ACT-I-REDESIGN.md).
+
+1. **Story leads, hacking is one component.** Act I needs story, emotion, exploration and
+   immersion; hacking appears in 10 of 22 beats.
+2. **Four chapters, not days.** Loss, getting by, looking for Moth, forcing the door.
+3. **Time runs freely** from the intro and is never pinned to a quest. The HUD shows the weekday.
+   A beat that needs a time of day lets the player wait for it.
+4. **Moth is a harbor coworker** (replacing Mara) and calls on the ride home: "Noodles at ten."
+   Moth never comes. Built in the prologue on 2026-11-22.
+5. **The deletion speaks in many voices:** rent pending, resident not found, many ACCESS DENIED
+   variants. People still know you; machines do not.
+6. **No self-naming at the fixer.** He already knows you.
+7. **Ines Varga**, a deleted woman in the Registry queue trying to get her daughter's school
+   place back, gives the list a face and is taken in the sweep.
+8. **DLV-9 is a character:** a lost robot you befriend, which gives up its body for you.
+   Something of it survives inside.
+9. **The break-in flickers:** the record comes back briefly, then the backup power trips the
+   alarm and it is revoked again.
+10. **CONCIERGE is a real beat:** during the sweep it lies to the inspectors for you.
+11. **The transfer is a copy.** The original you stays in the human body the city takes.
+12. **Kessel dies in the sweep** while finishing the copy.
+13. **Hacking stages are granted by story** (`inspect`, `wire`, `cut`, `board`, `guard`,
+    `link`); TIMER and the other advanced tools wait for Act II.
+14. **All optional places get built**, then reviewed.
+15. **The new Act I is built alongside the old campaign** and switched over in one go.
+
+Still open before Act II: where the city takes the body.

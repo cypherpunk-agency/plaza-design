@@ -153,6 +153,7 @@ need their appropriate registered contracts.
 - [Composer guide](./authoring/README.md): scene, animation and gameplay authoring.
 - [Progression concept](./docs/design/PROGRESSION-CONCEPT.md) and
   [prologue/Act I](./docs/design/PROLOGUE-ACT-I-PLAN.md): story and teaching design.
+- [Act I redesign](./docs/design/ACT-I-REDESIGN.md): Act I story and beat order (2026-11-22).
 - [Art guide](./docs/reference/ART-GUIDE.md), [module map](./docs/reference/MODULES.md),
   [game data](./docs/reference/GAME-DATA.md): implementation references.
 - [Review guide](./docs/reference/REVIEW-GUIDE.md): compact UX feedback routes.

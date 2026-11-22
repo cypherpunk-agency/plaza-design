@@ -93,6 +93,10 @@ through working badges and transactions; avoid delivering its history in the shi
 
 ## Revised Act I route (2026-10-22)
 
+> **Superseded 2026-11-22** by [ACT-I-REDESIGN.md](./ACT-I-REDESIGN.md) for Act I's story and
+> beat order. The teaching spine, access rules and puzzle dispositions in this file still apply
+> where they do not contradict it.
+
 Agreed with Tommi: Act I is about being stripped of identity, wanting it back and learning
 hacking to circumvent the obstacles. It plays only in Downtown, shows a different Downtown place
 at each step and ends with an emergency transfer into a DLV-9 robot body (see STORY.md,
