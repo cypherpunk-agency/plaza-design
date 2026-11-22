@@ -60,10 +60,9 @@ history. Do not restart a completed track because an intentionally contextual pr
    - Done 2026-11-21: `pnpm test:game:prologue` plays New Game through the night shift, commute,
      Downtown and home to the first morning, asserting scene, story phase and goal at each beat
      (`scripts/opening-playthrough/`, which no longer targets the old train opening).
-   - Open: `check-scene-batch` (about 170 s, most of the suite's time). About 125 s of it is 19
-     single-scene removals plus 19 single undos, each revalidating every source document. Batching
-     those into one grouped edit and one undo would keep the coverage at about 50 s. Waiting on
-     the user's decision.
+   - Done 2026-11-22: `check-scene-batch` removes and restores the review content of all 19
+     scenes in one grouped edit and one undo instead of 19 each; about 170 s down to about 64 s
+     with the same per-scene assertions.
 3. **Editor phase 7, authorized 2026-11-21.** 7a Logic rules and 7b Conversation graph matter
    most for Act I, which is mostly rules and dialogue. 7a, 7b, 7c and the 7d live state were built
    2026-11-22; the separate Review workspace arrangement remains. The
