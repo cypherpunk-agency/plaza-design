@@ -1603,11 +1603,18 @@
           },
           {
             "when": {
+              "state": "shift.nightPassed",
+              "is": true
+            },
+            "minute": 360
+          },
+          {
+            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
             "rate": 3,
-            "until": 370
+            "until": 360
           },
           {
             "minute": 1140
@@ -1616,7 +1623,7 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.checkedOut",
+              "state": "shift.nightPassed",
               "is": true
             },
             "day": 2
@@ -2887,11 +2894,18 @@
           },
           {
             "when": {
+              "state": "shift.nightPassed",
+              "is": true
+            },
+            "minute": 360
+          },
+          {
+            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
             "rate": 3,
-            "until": 370
+            "until": 360
           },
           {
             "minute": 1140
@@ -2900,7 +2914,7 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.checkedOut",
+              "state": "shift.nightPassed",
               "is": true
             },
             "day": 2
@@ -3572,11 +3586,18 @@
           },
           {
             "when": {
+              "state": "shift.nightPassed",
+              "is": true
+            },
+            "minute": 360
+          },
+          {
+            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
             "rate": 3,
-            "until": 370
+            "until": 360
           },
           {
             "minute": 1140
@@ -3585,7 +3606,7 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.checkedOut",
+              "state": "shift.nightPassed",
               "is": true
             },
             "day": 2
@@ -4754,11 +4775,18 @@
           },
           {
             "when": {
+              "state": "shift.nightPassed",
+              "is": true
+            },
+            "minute": 360
+          },
+          {
+            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
             "rate": 3,
-            "until": 370
+            "until": 360
           },
           {
             "minute": 1140
@@ -4767,7 +4795,7 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.checkedOut",
+              "state": "shift.nightPassed",
               "is": true
             },
             "day": 2
@@ -5329,7 +5357,7 @@
                 "speaker": "MARA",
                 "pages": [
                   "Coffee that works. I could get used to this shift.",
-                  "Same train home? Get some sleep when you can."
+                  "I'm on until the day crew comes in. Take the morning train and look out of the window for once. Get some sleep."
                 ]
               }
             }
@@ -6438,11 +6466,18 @@
           },
           {
             "when": {
+              "state": "shift.nightPassed",
+              "is": true
+            },
+            "minute": 360
+          },
+          {
+            "when": {
               "state": "shift.tagReceived",
               "is": true
             },
             "rate": 3,
-            "until": 370
+            "until": 360
           },
           {
             "minute": 1140
@@ -6451,7 +6486,7 @@
         "timeDay": [
           {
             "when": {
-              "state": "shift.checkedOut",
+              "state": "shift.nightPassed",
               "is": true
             },
             "day": 2
@@ -12124,7 +12159,10 @@
         "version": 1,
         "id": "line-harbor-1",
         "name": "LINE 0 · Harbor approach",
-        "intro": [],
+        "intro": [
+          "The harbor drops away behind the train. Cranes, black water, the first pink over the sea. Then the tunnel takes it.",
+          "Nobody talks on the morning train. Twenty minutes where nobody needs anything from me. I like this part."
+        ],
         "uses": [],
         "manifest": {
           "version": 1,

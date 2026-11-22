@@ -396,6 +396,8 @@ export function validateOpeningSource(
     for (const m of refs.milestones)
       if (!Object.prototype.hasOwnProperty.call(workflows, m)) fail(at, 'unknown milestone ' + m);
     for (const s of refs.scenes) scene(s, at);
+    for (const c of refs.cards)
+      if (!Object.prototype.hasOwnProperty.call(d.CARDS ?? {}, c)) fail(at, 'unknown card ' + c);
   };
   const cards = object(d.CARDS, 'CARDS');
   if (Object.keys(cards).length > 16) fail('CARDS', 'card limit');
@@ -406,10 +408,10 @@ export function validateOpeningSource(
         v,
         a,
         ['out', 'card', 'in', 'from', 'to', 'label', 'mid', 'end'],
-        ['out', 'card', 'in', 'from', 'to', 'label'],
+        ['out', 'card', 'in', 'to', 'label'],
       );
     for (const k of ['out', 'card', 'in']) num(c[k], a + '/' + k, 1, 100000);
-    hm(c.from, a + '/from');
+    if (c.from !== undefined) hm(c.from, a + '/from');
     hm(c.to, a + '/to');
     text(c.label, a + '/label');
     for (const k of ['mid', 'end'])
@@ -589,7 +591,7 @@ export function createOpeningModel(value: unknown, context?: OpeningSourceContex
       if (phase.hackLocked) return NO_HACK_STAGES;
       return phase.hackStages ? grantedHackStages(phase.hackStages, f) : ALL_HACK_STAGES;
     },
-    /** Who you are while the phase has a persona (the courier before the deletion): its name, deck, and whether the weather is kept calm. */
+    /** Who you are while the phase has a persona (the harbor worker before the deletion): its name, deck, and whether the weather is kept calm. */
     persona: (f: Flags): Persona | undefined => source.PHASES[openingState(f)].persona,
     isPinned: (f: Flags) => source.PHASES[openingState(f)].pinned,
   };

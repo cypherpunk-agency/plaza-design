@@ -534,14 +534,14 @@
         "hat": {
           "name": "MAN IN A HAT",
           "pages": [
-            "Early or late, courier?",
+            "Harbor shift? You smell of rain and diesel.",
             "At this hour you cannot tell who is going home."
           ]
         },
         "fixer": {
           "name": "FIXER",
           "pages": [
-            "Morning, courier. Long night?",
+            "Morning. Long night at the harbor?",
             "Till takes your key, same as always. It knows you better than I do."
           ]
         }
@@ -596,7 +596,7 @@
           "say": {
             "name": "YOU",
             "pages": [
-              "A sky taxi, on a courier's pay. Sure."
+              "A sky taxi, on harbor pay. Sure."
             ]
           }
         },
@@ -658,7 +658,7 @@
             "label": "open the gate",
             "say": [
               "use gate --open",
-              "REGISTRY PROPERTY: root only. current user: courier, registered.",
+              "REGISTRY PROPERTY: root only. current user: harbor worker, registered.",
               "err"
             ]
           }
@@ -676,7 +676,7 @@
             "label": "look at the screen",
             "say": [
               "cat scanner",
-              "subject: courier, 7B · identity: verified · record: current."
+              "subject: harbor worker, 7B · identity: verified · record: current."
             ]
           }
         ],
@@ -714,14 +714,14 @@
         "hat": {
           "name": "MAN IN A HAT",
           "pages": [
-            "Early or late, courier?",
+            "Harbor shift? You smell of rain and diesel.",
             "At this hour you cannot tell who is going home."
           ]
         },
         "fixer": {
           "name": "FIXER",
           "pages": [
-            "Morning, courier. Long night?",
+            "Morning. Long night at the harbor?",
             "Till takes your key, same as always. It knows you better than I do."
           ]
         }
@@ -776,7 +776,7 @@
           "say": {
             "name": "YOU",
             "pages": [
-              "A sky taxi, on a courier's pay. Sure."
+              "A sky taxi, on harbor pay. Sure."
             ]
           }
         },
@@ -838,7 +838,7 @@
             "label": "open the gate",
             "say": [
               "use gate --open",
-              "REGISTRY PROPERTY: root only. current user: courier, registered.",
+              "REGISTRY PROPERTY: root only. current user: harbor worker, registered.",
               "err"
             ]
           }
@@ -856,7 +856,7 @@
             "label": "look at the screen",
             "say": [
               "cat scanner",
-              "subject: courier, 7B · identity: verified · record: current."
+              "subject: harbor worker, 7B · identity: verified · record: current."
             ]
           }
         ],

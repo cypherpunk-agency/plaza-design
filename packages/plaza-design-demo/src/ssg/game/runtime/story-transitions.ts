@@ -116,7 +116,7 @@ export function runCues(port: StoryTransitionsPort, cues: readonly Cue[]): boole
       city.advance(cue.advance);
       syncClock(port, true);
       changed = true;
-    }
+    } else if ('card' in cue) startCard(port, port.openingStory.CARDS[cue.card], true);
   }
   if (changed) {
     port.persistSave();
@@ -197,7 +197,11 @@ export function startCard(port: StoryTransitionsPort, card: CardSpec, closeAll: 
   port.input.keys.clear();
   port.presentation.bubble = null;
   if (closeAll) port.zh.closeAll();
-  port.presentation.sleep = { start: port.timing.clock, woke: false, card };
+  port.presentation.sleep = {
+    start: port.timing.clock,
+    woke: false,
+    card: { ...card, from: card.from ?? city.text },
+  };
   sound.close();
 }
 

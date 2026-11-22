@@ -9,7 +9,7 @@ import type { Condition } from '../engine/gameplay/types';
  *  - a card transition (`CardSpec`, `cardFrame`): fade out, a card with two clock readings, fade in; shared by the sleep and
  *    "wait until ...";
  *  - cues (`Cue`): the finite list of things a gate, an acknowledgment, a card or a trigger makes happen (a milestone command, speech,
- *    deck lines, a sound, a restaged scene, a timestamp, the clock jumping ahead);
+ *    deck lines, a sound, a restaged scene, a timestamp, the clock jumping ahead, a card);
  *  - conditions and triggers (`Trigger`): a workflow that fires when shared gameplay predicates over state and live presentation observations hold (the morning's message, jacking in);
  *  - the clock pin rule (`clockPin`): what the story holds the city clock at, and what it lets go to;
  *  - the attention rule (`attentionDue`, `attentionAim`): standing still a while points at the next goal;
@@ -40,7 +40,9 @@ export type Cue =
   | { stage: { scene: string; reset?: true; face?: -1 | 1 } }
   | { stamp: string }
   | { clearStamps: string }
-  | { advance: number };
+  | { advance: number }
+  /** Starts a card (opening.json `CARDS`) by name; a card without `from` reads the clock as it starts. */
+  | { card: string };
 export interface GateRule {
   verifying: string;
   ok: string;
@@ -121,7 +123,8 @@ export interface CardSpec {
   out: number;
   card: number;
   in: number;
-  from: string;
+  /** The first clock reading. Absent: the city clock when the card starts (a beat that ends the night from wherever it is). */
+  from?: string;
   to: string;
   label: string;
   mid?: Cue[];

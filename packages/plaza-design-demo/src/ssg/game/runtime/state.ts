@@ -116,7 +116,7 @@ export const createPresentationState = () => ({
     gate: GateRule;
     go: { to: string; at?: string } | { barrier: string } | null;
   } | null,
-  sleep: null as { start: number; woke: boolean; card: CardSpec } | null,
+  sleep: null as { start: number; woke: boolean; card: CardSpec & { from: string } } | null,
   stamps: {} as Record<string, number>,
   still: 0,
   goalAt: null as number | null,

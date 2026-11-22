@@ -38,6 +38,7 @@ const CUE_KINDS = [
   'stamp',
   'clearStamps',
   'advance',
+  'card',
 ];
 const SOUNDS = ['granted', 'blip', 'denied', 'close', 'open'];
 const isObject = (v: unknown) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -56,7 +57,9 @@ const defaultCue = (kind: string, vocab: StoryVocab): Cue =>
               ? { stamp: 'presentation.at' }
               : kind === 'clearStamps'
                 ? { clearStamps: 'presentation' }
-                : { advance: 60 };
+                : kind === 'card'
+                  ? { card: vocab.cards[0] }
+                  : { advance: 60 };
 const cueKind = (cue: object) => Object.keys(cue)[0];
 const defaultRule = (kind: string, device: string): any =>
   kind === 'say'
@@ -432,7 +435,7 @@ export class StoryFields {
       if (!value.persona)
         form.button(parent, 'Add ' + name + ' persona', () =>
           this.set([...path, 'persona'], {
-            name: 'courier',
+            name: 'harbor worker',
             calmWeather: true,
             deck: { files: {}, whoami: 'whoami' },
           }),
@@ -440,6 +443,9 @@ export class StoryFields {
       else drop('persona');
     }
     if (path[0] === 'CARDS' && path.length === 2) {
+      // Without `from` the card reads the city clock as it starts.
+      add('from', '06:00');
+      drop('from');
       add('mid', []);
       add('end', []);
     }

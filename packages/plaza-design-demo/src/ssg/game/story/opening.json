@@ -55,13 +55,13 @@
         }
       ],
       "persona": {
-        "name": "courier",
+        "name": "harbor worker",
         "calmWeather": true,
         "deck": {
           "files": {
-            "shift.txt": "NIGHT SHIFT \u00b7 14 PARCELS \u00b7 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\n1 PARCEL \u00b7 1 CASE \u00b7 1 TROLLEY \u00b7 0 COMPLAINTS\nNEXT SHIFT: 19:00\nREGISTRY STATUS: CURRENT"
           },
-          "whoami": "courier, capsule 7B (registered) \u00b7 night shift"
+          "whoami": "harbor worker, Terminal 2 \u00b7 capsule 7B (registered) \u00b7 night shift"
         },
         "character": {
           "seed": 7303,
@@ -86,13 +86,13 @@
         }
       ],
       "persona": {
-        "name": "courier",
+        "name": "harbor worker",
         "calmWeather": true,
         "deck": {
           "files": {
-            "shift.txt": "NIGHT SHIFT \u00b7 14 PARCELS \u00b7 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\n1 PARCEL \u00b7 1 CASE \u00b7 1 TROLLEY \u00b7 0 COMPLAINTS\nNEXT SHIFT: 19:00\nREGISTRY STATUS: CURRENT"
           },
-          "whoami": "courier, capsule 7B (registered) \u00b7 night shift"
+          "whoami": "harbor worker, Terminal 2 \u00b7 capsule 7B (registered) \u00b7 night shift"
         },
         "character": {
           "seed": 7303,
@@ -144,13 +144,13 @@
         }
       ],
       "persona": {
-        "name": "courier",
+        "name": "harbor worker",
         "calmWeather": true,
         "deck": {
           "files": {
-            "shift.txt": "NIGHT SHIFT \u00b7 14 PARCELS \u00b7 0 COMPLAINTS\nNEXT SHIFT: 22:00\nREGISTRY STATUS: CURRENT"
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\n1 PARCEL \u00b7 1 CASE \u00b7 1 TROLLEY \u00b7 0 COMPLAINTS\nNEXT SHIFT: 19:00\nREGISTRY STATUS: CURRENT"
           },
-          "whoami": "courier, capsule 7B (registered) \u00b7 night shift"
+          "whoami": "harbor worker, Terminal 2 \u00b7 capsule 7B (registered) \u00b7 night shift"
         },
         "character": {
           "seed": 7303,
@@ -272,6 +272,25 @@
             "pages": [
               "Morning. The light is wrong.",
               "Cold. Like the flat forgot who it is heating."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    "shift-end": {
+      "out": 60,
+      "card": 150,
+      "in": 60,
+      "to": "06:00",
+      "label": "TERMINAL 2 \u00b7 THE REST OF THE SHIFT",
+      "end": [
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "The rest of the night is the usual. Tags, trolleys, rain on the crane lights.",
+              "Six o'clock. The floodlights click off one row at a time. Check out, then the morning train."
             ],
             "height": 46
           }
@@ -516,6 +535,51 @@
           "milestone": "jacked"
         }
       ]
+    },
+    {
+      "id": "shift-end",
+      "when": {
+        "all": [
+          {
+            "state": "shift.trolleyMoved",
+            "is": true
+          },
+          {
+            "state": "shift.nightPassed",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "dawn"
+        },
+        {
+          "card": "shift-end"
+        }
+      ]
     }
   ],
   "GOAL_HINTS": [
@@ -529,6 +593,9 @@
   ],
   "GAMEPLAY": {
     "version": 1,
+    "sharedState": [
+      "shift"
+    ],
     "flags": [
       "opening:home",
       "opening:street",
@@ -700,6 +767,17 @@
             "set": false
           }
         ]
+      },
+      "opening.dawn": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "state": "shift.nightPassed",
+            "set": true
+          }
+        ]
       }
     },
     "reactions": [],
@@ -769,6 +847,7 @@
     "resume": "opening.resume",
     "morning.try": "opening.morning.try",
     "morning.due": "opening.morning.due",
-    "morning.reset": "opening.morning.reset"
+    "morning.reset": "opening.morning.reset",
+    "dawn": "opening.dawn"
   }
 }

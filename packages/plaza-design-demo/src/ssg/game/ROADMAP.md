@@ -71,7 +71,13 @@ history. Do not restart a completed track because an intentionally contextual pr
    does the boss guide without rushing, does travel read as one journey, does home give
    breathing room? Mechanics are agent-verified; the user's feedback concerns clarity, appeal
    and pacing.
-5. **Decide the old-campaign cutover**: what happens after home until the redesigned Act I exists.
+   - Polish pass 2026-11-22 (Tommi's direction): the player is a harbor worker; after the trolley
+     a fade card (`shift-end`) passes the rest of the night to 06:00 instead of the clock jumping at
+     checkout; Mara stays on shift and the player rides home alone (a short window monologue as the
+     train leaves); the deck, train and Downtown lines match one parcel, one case, one trolley; the
+     home PC before sleep shows payroll and rent mail instead of Moth's old message.
+5. **Old-campaign cutover, decided 2026-11-22:** no "to be continued" card. The prologue keeps
+   flowing into the old campaign for now; that campaign is to be reworked into the new Act I.
 6. **Build M4**, then M5 and M6, using the build sequence below. Introduce each mechanic through
    a real gameplay need, shared source, typed authoring, a compact demo and a real scene. Keep
    Test District examples reachable and uncluttered.

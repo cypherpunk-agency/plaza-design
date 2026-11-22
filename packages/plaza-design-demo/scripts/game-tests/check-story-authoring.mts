@@ -203,16 +203,16 @@ try {
   panel.click('Remove Story trigger jack timestamp');
   assert.equal(doc('opening-story').TRIGGERS[1].start, undefined);
   panel.click('Add story trigger');
-  assert.equal(doc('opening-story').TRIGGERS.length, 3);
+  assert.equal(doc('opening-story').TRIGGERS.length, 4);
   panel.click('Remove Story trigger trigger-1');
-  assert.equal(doc('opening-story').TRIGGERS.length, 2);
+  assert.equal(doc('opening-story').TRIGGERS.length, 3);
   settings.change('GOAL_HINTS 0 line', 'a new hint');
   assert.equal(doc('opening-story').GOAL_HINTS[0].line, 'a new hint');
   panel.change('Story logic group', 'Phases');
   panel.click('Remove PHASES home persona');
   assert.equal(doc('opening-story').PHASES.home.persona, undefined);
   panel.click('Add PHASES home persona');
-  assert.equal(doc('opening-story').PHASES.home.persona.name, 'courier');
+  assert.equal(doc('opening-story').PHASES.home.persona.name, 'harbor worker');
   panel.change('PHASES home persona name', 'runner');
   assert.equal(doc('opening-story').PHASES.home.persona.name, 'runner');
 

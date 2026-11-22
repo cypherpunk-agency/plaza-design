@@ -118,20 +118,23 @@ export function validateCue(v: unknown, at: string) {
     if (p.face !== undefined && p.face !== -1 && p.face !== 1) fail(at, 'face must be -1 or 1');
   } else if (k === 'stamp' || k === 'clearStamps') id(r[k], at + '/' + k);
   else if (k === 'advance') num(r.advance, at + '/advance', 0, 1440);
+  else if (k === 'card') id(r.card, at + '/card');
   else fail(at, 'unknown cue kind');
 }
 export function validateCues(v: unknown, at: string, max = 24) {
   for (const [i, c] of list(v, at, max).entries()) validateCue(c, at + '/' + i);
 }
-/** Every milestone and scene a cue names, for the opening source's reference checks. */
+/** Every milestone, scene and card a cue names, for the opening source's reference checks. */
 export function cueRefs(cues: readonly Cue[]) {
   const milestones: string[] = [],
-    scenes: string[] = [];
+    scenes: string[] = [],
+    cards: string[] = [];
   for (const c of cues) {
     if ('milestone' in c) milestones.push(c.milestone);
     else if ('stage' in c) scenes.push(c.stage.scene);
+    else if ('card' in c) cards.push(c.card);
   }
-  return { milestones, scenes };
+  return { milestones, scenes, cards };
 }
 
 const optionalCues = (r: Record<string, any>, key: string, at: string) => {

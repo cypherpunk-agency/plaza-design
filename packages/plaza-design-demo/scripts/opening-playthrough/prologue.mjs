@@ -170,7 +170,8 @@ export const segments = [
     async (d, b) => {
       await b.tap('e');
       await d.until('the ride leaves Harbor', (p) => p.here !== 'harbor-station', 30000, 200);
-      await d.beat('ride-tunnel', 'on board, in the tunnel zones');
+      const ride = await d.beat('ride-tunnel', 'on board, in the tunnel zones');
+      ride.said = await d.readBubbles();
       await d.until(
         'the doors open at Downtown Metro',
         (p) =>

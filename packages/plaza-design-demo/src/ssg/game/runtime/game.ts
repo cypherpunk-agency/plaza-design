@@ -1529,7 +1529,7 @@ export class Game {
   get story(): OpeningState {
     return this.openingStory.openingState(this.save.flags);
   }
-  /** Who you are in the HUD and your bubbles: a courier while you still exist, then your handle (or "ghost"). */
+  /** Who you are in the HUD and your bubbles: a harbor worker while you still exist, then your handle (or "ghost"). */
   get me() {
     const fixed = playProfile().player.name;
     if (fixed !== undefined) return fixed;

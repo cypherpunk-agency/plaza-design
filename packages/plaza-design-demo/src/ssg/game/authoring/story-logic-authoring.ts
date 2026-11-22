@@ -72,7 +72,9 @@ export function mountStoryLogicAuthoring(
       if (path[0] === 'TRIGGERS' && path.length === 1) {
         const d = story(),
           h = handle('opening-story'),
-          fields = new StoryFields(form, h, vocab);
+          fields = new StoryFields(form, h, vocab),
+          // Condition pickers see shared owners' declarations (GAMEPLAY.sharedState); source keeps the reference.
+          gameplay = validateGameplay(d.GAMEPLAY);
         d.TRIGGERS.forEach((row, i) => {
           const title = 'Story trigger ' + row.id,
             box = form.section(parent, title);
@@ -89,7 +91,7 @@ export function mountStoryLogicAuthoring(
               h.edit('Edit story trigger condition', (x) => {
                 x.TRIGGERS[i].when = v;
               }),
-            d.GAMEPLAY,
+            gameplay,
             false,
             1,
           );
@@ -107,7 +109,7 @@ export function mountStoryLogicAuthoring(
                 h.edit('Edit story trigger watch', (x) => {
                   x.TRIGGERS[i].watch = v;
                 }),
-              d.GAMEPLAY,
+              gameplay,
               false,
               1,
             );

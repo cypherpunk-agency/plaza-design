@@ -48,6 +48,7 @@
         "shift.clampFound": true,
         "shift.clampReleased": true,
         "shift.trolleyMoved": true,
+        "shift.nightPassed": true,
         "shift.checkedOut": true,
         "shift.statementRead": true,
         "shift.coffeeFixed": true
@@ -496,6 +497,7 @@
         "shift.clampFound": true,
         "shift.clampReleased": true,
         "shift.trolleyMoved": true,
+        "shift.nightPassed": true,
         "shift.checkedOut": true,
         "shift.statementRead": true,
         "shift.coffeeFixed": true

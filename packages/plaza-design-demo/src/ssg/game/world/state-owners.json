@@ -67,6 +67,12 @@
       "type": "boolean",
       "default": false
     },
+    "shift.nightPassed": {
+      "owner": "shift",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
+    },
     "shift.statementRead": {
       "owner": "shift",
       "lifetime": "save",

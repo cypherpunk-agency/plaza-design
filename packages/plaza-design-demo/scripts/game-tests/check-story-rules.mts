@@ -392,7 +392,7 @@ const story = openingStoryModel;
 {
   const home = { [story.OPENING.home]: true },
     free = { ...home, [story.OPENING.jacked]: true };
-  assert.equal(story.persona(home)?.name, 'courier');
+  assert.equal(story.persona(home)?.name, 'harbor worker');
   assert.equal(story.persona(home)?.calmWeather, true);
   assert.equal(Object.keys(story.persona(home)!.deck.files).length > 0, true);
   assert.equal(story.persona(free), undefined);

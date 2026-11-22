@@ -287,7 +287,7 @@ assert.equal(
   undefined,
   'delivery does not jump the clock',
 );
-assert.deepEqual(S['harbor-shed'].storyRun!(save.flags, shed.state()), { rate: 3, until: 370 });
+assert.deepEqual(S['harbor-shed'].storyRun!(save.flags, shed.state()), { rate: 3, until: 360 });
 ok(yard, 'shift.collect-case');
 assert.equal(S['harbor-shed'].dockworkerCarry!(save.flags, save.gameplay), 'case');
 ok(shed, 'shift.return-case');
@@ -310,6 +310,21 @@ assert.equal(
   true,
   'the checkout reads the trolley the yard parked',
 );
+// The opening's shift-end card (story trigger) passes the rest of the night; its milestone sets this.
+assert.equal(
+  S['harbor-yard'].storyMinute!(save.flags, yard.state()),
+  undefined,
+  'parking alone does not jump the clock; the card does',
+);
+{
+  const parked = yard.state(),
+    dawn = {
+      ...parked,
+      values: { ...parked.values, shift: { ...parked.values!.shift, nightPassed: true } },
+    };
+  assert.equal(S['harbor-yard'].storyMinute!(save.flags, dawn), 360, 'after the card: 06:00');
+  assert.equal(S['harbor-yard'].storyDay!(save.flags, dawn), 2, 'the next day');
+}
 // the turnstile on the way out: refused while the shift is open, open once the tag is returned
 const turnstile = S['harbor-checkout'].level!.barriers!.find((b) => b.id === 'turnstile')!;
 assert.equal(
