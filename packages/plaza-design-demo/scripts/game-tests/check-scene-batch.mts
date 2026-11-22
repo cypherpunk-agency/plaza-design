@@ -140,18 +140,21 @@ receiver.undo();
 assert.equal(receiver.dirty(), false);
 receiver.redo();
 inspect(pendingRegistry(values(receiver)), ids);
-for (const id of ids) {
+// One grouped removal across all scenes and one undo: every scene's removal is still checked, but the
+// whole-game validation runs once instead of 19 times each way.
+const removals = ids.map((id) => {
   const ref = deviceSourceIdentity(id),
     scene = structuredClone(receiver.get(ref.scene).value) as any;
   for (const group of ['uses', 'readables', 'rests', 'exits'] as const)
     removeManifestContent(scene, group, 'review-' + group);
-  receiver.edit(ref.scene, 'Delete review content', () => scene);
-}
+  return { id: ref.scene, value: scene };
+});
+receiver.importDocuments(removals, 'Delete review content');
 const removed = pendingRegistry(values(receiver));
 for (const id of ids)
   for (const group of ['uses', 'readables', 'rests', 'exits'])
     assert(!removed[id][group]?.some((r: any) => r.id === 'review-' + group));
-for (const id of ids) receiver.undo();
+receiver.undo();
 inspect(pendingRegistry(values(receiver)), ids);
 for (const scene of playScenes)
   assert.equal(
