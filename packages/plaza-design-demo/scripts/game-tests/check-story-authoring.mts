@@ -232,6 +232,7 @@ try {
   panel.click('Remove phases home barriers gate-in gate then 3');
   panel.change('phases home goal', 'go on home');
   assert.equal(doc('metro-scene').phases.home.goal, 'go on home');
+  panel.click('Add Clock time');
   panel.change('phases home time', '05:50');
   assert.equal(doc('metro-scene').phases.home.time, '05:50');
   panel.change('phases home time', '5:50', false);

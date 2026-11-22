@@ -167,7 +167,6 @@
   "stage": {},
   "phases": {
     "home": {
-      "time": "06:12",
       "goal": "go home",
       "intro": {
         "pages": [
@@ -186,7 +185,7 @@
         "regular": {
           "name": "MAN WITH A PAPER",
           "pages": [
-            "Morning paper. The Registry retired 1,204 records overnight.",
+            "Says here the Registry retired 1,204 records today.",
             "Retired. Lucky records. I have been asking for that for years."
           ]
         },
@@ -228,7 +227,7 @@
         "regular": {
           "name": "MAN WITH A PAPER",
           "pages": [
-            "Morning paper. The Registry retired 1,204 records overnight.",
+            "Says here the Registry retired 1,204 records today.",
             "Retired. Lucky records. I have been asking for that for years."
           ]
         },

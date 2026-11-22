@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { CityClock, CLOCK_RATE } from '../../src/ssg/game/world/clock';
+import { CityClock, CLOCK_RATE, stamp, until, weekday } from '../../src/ssg/game/world/clock';
 const clock = new CityClock(),
   save = { day: 1, min: 1140, seed: 3 };
 clock.bind(save);
@@ -35,4 +35,12 @@ clock.run();
 clock.tick(1);
 assert(clock.min > 370, 'normal pacing resumes');
 assert.equal(clock.pace, 1);
-console.log('Authored running clock: no jump, midnight, cap, preview and reload PASS');
+// The HUD shows the weekday: day 1 is a Monday, and the week wraps.
+assert.equal(weekday(1), 'MON');
+assert.equal(weekday(7), 'SUN');
+assert.equal(weekday(8), 'MON');
+assert.equal(stamp(3, 21 * 60 + 40), 'WED 21:40');
+// A sleep that runs on to 08:00 from whenever you went to bed (the waitUntil cue).
+assert.equal(until(23 * 60 + 30, 8 * 60), 510);
+assert.equal(until(2 * 60, 8 * 60), 360);
+console.log('Authored running clock: no jump, midnight, cap, preview, reload and weekday PASS');

@@ -1,6 +1,6 @@
 // The prologue smoke run: segments that play a NEW GAME in the ordinary game (`?play&probe`, no sudo) from the title to the
 // first morning, asserting the scene, story phase and goal at each beat and recording it (see lib.mjs `beat`).
-//   title -> skip the glide -> Harbor Station -> Shed 3 -> the night shift (parcel, Mara, case, trolley) -> checkout and wage
+//   title -> skip the glide -> Harbor Station -> Shed 3 -> the night shift (parcel, Moth, case, trolley) -> checkout and wage
 //   statement -> back to the platform -> the morning service to Downtown Metro -> turnstile -> west stairs -> Downtown
 //   -> capsule 7B (concierge) -> bed -> the sleep card -> the morning you are deleted.
 // It stops when the morning is established (story phase `deleted`): what follows is the older campaign, not the prologue.
@@ -91,14 +91,14 @@ export const segments = [
       await step(d, 'use:boss', 'shift-briefing', 'the supervisor hands over the work tag');
       await d.expect('the parcel goal', goal('Pick up the blue parcel'));
       await step(d, 'use:parcel', 'shift-parcel', 'dispatch: the blue parcel');
-      await d.expect('the Mara goal', goal('Bring the blue parcel west to Mara'));
+      await d.expect('the Moth goal', goal('Bring the blue parcel west to Moth'));
       await d.find('ArrowLeft', 'use:mara');
       await chipStep(
         d,
         b,
         'use:mara',
-        'give Mara the blue parcel',
-        'shift-mara',
+        'give Moth the blue parcel',
+        'shift-moth',
         'receiving: the handover chip',
       );
       await d.expect('the case goal', goal('Take the empty case'));
@@ -162,7 +162,7 @@ export const segments = [
         60000,
         200,
       );
-      await d.beat('platform-boarding', 'the morning service stands at Harbor Station');
+      await d.beat('platform-boarding', 'the service home stands at Harbor Station');
     },
   ],
   [
@@ -172,6 +172,12 @@ export const segments = [
       await d.until('the ride leaves Harbor', (p) => p.here !== 'harbor-station', 30000, 200);
       const ride = await d.beat('ride-tunnel', 'on board, in the tunnel zones');
       ride.said = await d.readBubbles();
+      // Moth calls once the window line is read, while the train is still in the tunnels
+      if (!ride.said.some((l) => l.startsWith('MOTH'))) {
+        await d.until('Moth calls', (p) => p.bubble?.name?.startsWith('MOTH'), 60000, 200);
+        const call = await d.beat('ride-call', 'Moth calls on the ride home');
+        call.said = await d.readBubbles();
+      }
       await d.until(
         'the doors open at Downtown Metro',
         (p) =>

@@ -45,7 +45,7 @@ export interface StageActorRules {
   cull?: { actor: string; role: string; margin?: number }[];
   /** Artwork of this type (or id) paints the actor attached to it, instead of the actor's own artwork, while it binds `held.<its id>`; `anchor` limits which attachment counts. */
   held?: { type?: string; instance?: string; anchor?: string }[];
-  /** Actors of a presentation role are hidden while the value holds. */
+  /** Actors of a presentation role (or one actor, by its id) are hidden while the value holds. */
   hide?: { actors: string; when: ValueExpr }[];
 }
 /** `world`: the city and line system a world-bound scene was rebuilt with (a scene mechanism with `world`, scene-mechanisms.ts); absent until the game binds them. */
@@ -171,7 +171,10 @@ export function unknownBindingSources(doc: ChunkDocument): string[] {
 }
 const roleList = (source: SceneDocument, role: string): readonly string[] => {
   const ref = (source.presentation?.actors as Record<string, unknown> | undefined)?.[role];
-  return Array.isArray(ref) ? (ref as string[]) : typeof ref === 'string' ? [ref] : [];
+  if (Array.isArray(ref)) return ref as string[];
+  if (typeof ref === 'string') return [ref];
+  // A scene without a registered presentation role of that name names one of its own actors directly.
+  return source.actors?.some((a) => a.id === role) ? [role] : [];
 };
 /** This frame's values for every binding the composition uses. */
 export function bindingValues(

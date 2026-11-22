@@ -198,7 +198,7 @@ export function createCapsuleInteriorArtwork(inputs: ArtworkInputs) {
 
   function drawPoster(x: CanvasRenderingContext2D, v: DrawView, _state: CapsuleVisualState) {
     const { sx, y } = v;
-    // a poster over the bed: the metro line (Moth's "follow the trains")
+    // a poster over the bed: the metro line
     const px = sx(inputs.posterX ?? 487);
     paperSign(x, v.t, px, y(86), 36, 26, {
       fill: '#1c120b',
@@ -355,6 +355,22 @@ export function createCapsuleInteriorArtwork(inputs: ArtworkInputs) {
     x.fillRect(-6, -5, 13, 12);
     x.fillStyle = 'rgba(60,30,10,.7)';
     for (let i = 0; i < 4; i++) x.fillRect(-4, -2 + i * 2.5, 8 - (i % 2) * 3, 1);
+    x.fillStyle = 'rgba(' + RED + ',.9)';
+    x.fillRect(-1, -6, 3, 2);
+    x.restore();
+    // a photo under a magnet: you and Moth at the noodle stall
+    x.save();
+    x.translate(fx + 10, y(32));
+    x.rotate(0.08);
+    x.fillStyle = 'rgba(' + PAPER + ',.9)';
+    x.fillRect(-6, -5, 12, 11);
+    x.fillStyle = 'rgba(120,60,40,.9)';
+    x.fillRect(-5, -4, 10, 7);
+    x.fillStyle = 'rgba(255,170,90,.8)';
+    x.fillRect(-5, -4, 10, 2);
+    x.fillStyle = 'rgba(30,24,30,.95)';
+    x.fillRect(-4, -1, 3, 4);
+    x.fillRect(1, -2, 3, 5);
     x.fillStyle = 'rgba(' + RED + ',.9)';
     x.fillRect(-1, -6, 3, 2);
     x.restore();

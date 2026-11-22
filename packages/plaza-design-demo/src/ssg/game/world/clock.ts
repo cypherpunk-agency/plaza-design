@@ -10,9 +10,10 @@
  *   game decides that each frame (game.ts `clockRuns`) and calls `tick`.
  * - **Travel:** a metro ride is the ride (the car is a scene: the clock runs on board); quick
  *   travel adds `TRAVEL.quick`, the sky taxi `TRAVEL.taxi` (the clock stands still while either plays).
- * - **Pinning:** a story beat pins the clock to a minute (`pin`), and it does not run until
- *   `release`. The opening pins it (each scene's `phases.<phase>.time`, story/story-rules.ts `clockPin`: 05:41 on the train … 09:40 the
- *   morning after) and lets go after uplink.so, from 09:42.
+ * - **Shown** as the weekday and the time (`stamp`: WED 21:40); day 1 is a Monday.
+ * - **Pinning:** a story beat can pin the clock to a minute (`pin`), and it does not run until
+ *   `release` (story/story-rules.ts `clockPin`). The opening no longer does: time runs freely from
+ *   the intro on (Tommi 2026-11-22), and a scene that needs a time lets the player wait for it.
  * - **Waiting:** a bench, a bar stool or your bed offers "wait until…" (`WAITS`): the next hour,
  *   dusk, night, morning. The clock jumps (`advance`) behind a short fade and a time card.
  * - **Sudo:** `speed` (stop, 1×, 10×, 60×) and `setTime`; nothing else touches them.
@@ -61,8 +62,13 @@ export const hm = (min: number) => {
   const m = ((Math.floor(min) % DAY_MIN) + DAY_MIN) % DAY_MIN;
   return pad(Math.floor(m / 60)) + ':' + pad(m % 60);
 };
-/** DAY 3 · 21:40 */
-export const stamp = (day: number, min: number) => 'DAY ' + day + ' · ' + hm(min);
+/** The days of the week; day 1 of a run is a Monday (Tommi 2026-11-22: the HUD shows the weekday). */
+export const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
+/** MON for day 1, TUE for day 2 … */
+export const weekday = (day: number) =>
+  WEEKDAYS[(((Math.floor(day) - 1) % WEEKDAYS.length) + WEEKDAYS.length) % WEEKDAYS.length];
+/** WED 21:40 */
+export const stamp = (day: number, min: number) => weekday(day) + ' ' + hm(min);
 /** "06:00" → 360; null when it is not a time of day. */
 export function parseHM(s: unknown): number | null {
   if (typeof s !== 'string') return null;
@@ -187,6 +193,10 @@ export class CityClock {
   }
   get text() {
     return hm(this.s.min);
+  }
+  /** MON, TUE … */
+  get weekday() {
+    return weekday(this.s.day);
   }
   get stamp() {
     return stamp(this.s.day, this.s.min);

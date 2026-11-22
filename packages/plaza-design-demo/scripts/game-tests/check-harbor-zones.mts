@@ -282,20 +282,15 @@ assert.equal(
 );
 assert.equal(available('harbor-shed', 'rack', shed), true, 'the shed sees the delivery');
 assert.equal(shed.state().values!.shift.parcelDelivered, true);
-assert.equal(
-  S['harbor-shed'].storyMinute!(save.flags, shed.state()),
-  undefined,
-  'delivery does not jump the clock',
-);
-assert.deepEqual(S['harbor-shed'].storyRun!(save.flags, shed.state()), { rate: 3, until: 360 });
+// Time runs freely through the shift (Tommi 2026-11-22): no harbor zone pins or speeds the clock.
+for (const id of ['harbor-station', 'harbor-quay', 'harbor-checkout', 'harbor-yard', 'harbor-shed'])
+  assert.ok(
+    !S[id].storyMinute && !S[id].storyRun && !S[id].storyDay,
+    id + ' leaves the clock to run',
+  );
 ok(yard, 'shift.collect-case');
 assert.equal(S['harbor-shed'].dockworkerCarry!(save.flags, save.gameplay), 'case');
 ok(shed, 'shift.return-case');
-assert.equal(
-  S['harbor-checkout'].storyDay!(save.flags, checkout.state()),
-  undefined,
-  'the running city clock owns midnight',
-);
 assert.equal(
   available('harbor-checkout', 'checkout', checkout),
   false,
@@ -310,21 +305,6 @@ assert.equal(
   true,
   'the checkout reads the trolley the yard parked',
 );
-// The opening's shift-end card (story trigger) passes the rest of the night; its milestone sets this.
-assert.equal(
-  S['harbor-yard'].storyMinute!(save.flags, yard.state()),
-  undefined,
-  'parking alone does not jump the clock; the card does',
-);
-{
-  const parked = yard.state(),
-    dawn = {
-      ...parked,
-      values: { ...parked.values, shift: { ...parked.values!.shift, nightPassed: true } },
-    };
-  assert.equal(S['harbor-yard'].storyMinute!(save.flags, dawn), 360, 'after the card: 06:00');
-  assert.equal(S['harbor-yard'].storyDay!(save.flags, dawn), 2, 'the next day');
-}
 // the turnstile on the way out: refused while the shift is open, open once the tag is returned
 const turnstile = S['harbor-checkout'].level!.barriers!.find((b) => b.id === 'turnstile')!;
 assert.equal(
@@ -344,10 +324,9 @@ assert.equal(checkout.dispatch('shift.checkout', 'interaction').ok, false, 'no s
 assert.equal(
   barrierAccess(turnstile, save.flags, save.keyring, port.read()).ok,
   true,
-  'at dawn, tag returned, it opens',
+  'tag returned, it opens',
 );
 ok(checkout, 'shift.statement');
-assert.equal(S['harbor-checkout'].storyMinute!(save.flags, checkout.state()), 370, 'dawn (06:10)');
 assert.equal(
   shed.state().values!.shift.statementRead,
   true,

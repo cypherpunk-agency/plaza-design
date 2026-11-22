@@ -233,7 +233,6 @@
   },
   "phases": {
     "flat": {
-      "time": "06:20",
       "goal": "get some sleep",
       "intro": {
         "pages": [
@@ -296,6 +295,14 @@
               "note",
               "read"
             ]
+          },
+          {
+            "label": "look at the photo",
+            "say": [
+              "cat photo",
+              "a photo under a magnet: you and Moth at the noodle stall, steam on the lens. Moth is pulling a face. you are laughing at it.",
+              "dim"
+            ]
           }
         ],
         "kettle": [
@@ -316,7 +323,7 @@
             ],
             "say": [
               "use motor --open",
-              "the blinds roll up. dawn, the colour of weak tea.",
+              "the blinds roll up. the city, the colour of weak tea.",
               "ok"
             ]
           },
@@ -371,7 +378,6 @@
       }
     },
     "deleted": {
-      "time": "09:40",
       "goal": "get out",
       "ping": {
         "device": "pc"

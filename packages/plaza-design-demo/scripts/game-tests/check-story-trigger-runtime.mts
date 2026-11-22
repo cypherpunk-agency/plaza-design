@@ -112,6 +112,27 @@ try {
   } finally {
     simultaneous.game.globalGameplaySession?.dispose();
   }
+  // Moth calls once on the ride home, in the tunnels, when nothing else is being said.
+  {
+    const ride = make();
+    try {
+      ride.game.save.flags = { 'prologue:started': true, [openingStoryModel.OPENING.home]: true };
+      assert.equal(ride.game.story, 'home');
+      ride.game.scenes.here = 'line-harbor-1' as any;
+      updateStory(ride.game.storyTransitionsPort);
+      assert.equal(
+        ride.game.save.flags['prologue:called'],
+        undefined,
+        'not at the harbor approach',
+      );
+      ride.game.scenes.here = 'line-harbor-2' as any;
+      updateStory(ride.game.storyTransitionsPort);
+      assert.equal(ride.game.save.flags['prologue:called'], true, 'the call comes in the tunnels');
+      assert.match(String(ride.game.presentation.bubble?.name), /^MOTH/);
+    } finally {
+      ride.game.globalGameplaySession?.dispose();
+    }
+  }
   assert(runCues(game.storyTransitionsPort, [{ milestone: 'morning.reset' }]));
   assert.equal(game.globalGameplay().state().values.story.morningTries, 0);
   console.log(

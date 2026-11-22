@@ -110,7 +110,7 @@ const story = openingStoryModel;
   // the wait card has no cues of its own: the loop builds {advance} for it
   assert.deepEqual(
     card.mid!.map((c) => Object.keys(c)[0]),
-    ['milestone', 'stage', 'milestone', 'clearStamps', 'stamp'],
+    ['waitUntil', 'milestone', 'stage', 'milestone', 'clearStamps', 'stamp'],
   );
   assert.deepEqual(
     card.end!.map((c) => Object.keys(c)[0]),
@@ -216,11 +216,12 @@ const story = openingStoryModel;
       ),
     ]),
   );
-  assert.equal(times.train.home, '05:41');
-  assert.equal(times.metro.home, '06:12');
-  assert.equal(times.downtown.home, '06:14');
-  assert.equal(times.capsule.flat, '06:20');
-  assert.equal(times.capsule.deleted, '09:40');
+  // Time runs freely from the intro on (Tommi 2026-11-22): the opening's phases name no clock time.
+  assert.equal(times.train.home, undefined);
+  assert.equal(times.metro.home, undefined);
+  assert.equal(times.downtown.home, undefined);
+  assert.equal(times.capsule.flat, undefined);
+  assert.equal(times.capsule.deleted, undefined);
   assert.equal(times.capsule.uplinked, '09:42');
   const release = story.CLOCK.release;
   assert.equal(
@@ -228,12 +229,9 @@ const story = openingStoryModel;
     '09:42',
     'the clock is let go to the time the release scene names',
   );
-  assert.equal(story.isPinned({ [story.OPENING.home]: true }), true);
-  assert.equal(
-    story.isPinned({ [story.OPENING.home]: true, [story.OPENING.uplink]: true }),
-    false,
-    'pinned only until the uplink',
-  );
+  assert.equal(story.isPinned({ [story.OPENING.home]: true }), false, 'the commute runs free');
+  assert.equal(story.isPinned({ [story.OPENING.slept]: true }), false, 'so does the morning');
+  assert.equal(story.isPinned({ [story.OPENING.home]: true, [story.OPENING.uplink]: true }), false);
 }
 
 // ---- attention

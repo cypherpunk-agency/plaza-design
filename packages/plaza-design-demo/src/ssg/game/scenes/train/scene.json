@@ -259,7 +259,6 @@
         "mover": "train.car",
         "path": "home"
       },
-      "time": "05:41",
       "goal": "get off at DOWNTOWN",
       "intro": {
         "pages": [

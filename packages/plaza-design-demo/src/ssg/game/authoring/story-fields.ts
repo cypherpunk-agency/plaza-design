@@ -39,6 +39,7 @@ const CUE_KINDS = [
   'clearStamps',
   'advance',
   'card',
+  'waitUntil',
 ];
 const SOUNDS = ['granted', 'blip', 'denied', 'close', 'open'];
 const isObject = (v: unknown) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -59,7 +60,9 @@ const defaultCue = (kind: string, vocab: StoryVocab): Cue =>
                 ? { clearStamps: 'presentation' }
                 : kind === 'card'
                   ? { card: vocab.cards[0] }
-                  : { advance: 60 };
+                  : kind === 'waitUntil'
+                    ? { waitUntil: '07:00' }
+                    : { advance: 60 };
 const cueKind = (cue: object) => Object.keys(cue)[0];
 const defaultRule = (kind: string, device: string): any =>
   kind === 'say'

@@ -119,7 +119,10 @@ export function validateCue(v: unknown, at: string) {
   } else if (k === 'stamp' || k === 'clearStamps') id(r[k], at + '/' + k);
   else if (k === 'advance') num(r.advance, at + '/advance', 0, 1440);
   else if (k === 'card') id(r.card, at + '/card');
-  else fail(at, 'unknown cue kind');
+  else if (k === 'waitUntil') {
+    if (typeof r.waitUntil !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(r.waitUntil))
+      fail(at + '/waitUntil', 'a time of day HH:MM required');
+  } else fail(at, 'unknown cue kind');
 }
 export function validateCues(v: unknown, at: string, max = 24) {
   for (const [i, c] of list(v, at, max).entries()) validateCue(c, at + '/' + i);

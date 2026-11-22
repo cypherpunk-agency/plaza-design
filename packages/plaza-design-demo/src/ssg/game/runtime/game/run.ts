@@ -296,6 +296,8 @@ export function endTitle(game: Game, completed = false) {
   if (directed && !completed)
     game.sequenceActions(game.presentation.opening.timeline.time(), 'cancel');
   game.presentation.opening = null;
+  // The title and the glide hold the clock at their own minute; play starts it again (time runs freely from the intro on).
+  if (city.pinned !== null && !game.presentation.storyPinned) city.release();
   game.scenes.directedZones.clear();
   game.scenes.directedOrigin = undefined;
   if (!directed || !completed) {

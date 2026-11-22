@@ -1508,7 +1508,7 @@
           },
           {
             "id": "step-3",
-            "text": "Bring the blue parcel west to Mara at RECEIVING",
+            "text": "Bring the blue parcel west to Moth at RECEIVING",
             "when": {
               "state": "shift.parcelDelivered",
               "is": false
@@ -1590,45 +1590,8 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the train home."
           }
-        ],
-        "time": [
-          {
-            "when": {
-              "state": "shift.checkedOut",
-              "is": true
-            },
-            "minute": 370
-          },
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "minute": 360
-          },
-          {
-            "when": {
-              "state": "shift.tagReceived",
-              "is": true
-            },
-            "rate": 3,
-            "until": 360
-          },
-          {
-            "minute": 1140
-          }
-        ],
-        "timeDay": [
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "day": 2
-          },
-          {}
         ],
         "uses": [],
         "manifest": {
@@ -2799,7 +2762,7 @@
           },
           {
             "id": "step-3",
-            "text": "Bring the blue parcel west to Mara at RECEIVING",
+            "text": "Bring the blue parcel west to Moth at RECEIVING",
             "when": {
               "state": "shift.parcelDelivered",
               "is": false
@@ -2881,45 +2844,8 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the train home."
           }
-        ],
-        "time": [
-          {
-            "when": {
-              "state": "shift.checkedOut",
-              "is": true
-            },
-            "minute": 370
-          },
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "minute": 360
-          },
-          {
-            "when": {
-              "state": "shift.tagReceived",
-              "is": true
-            },
-            "rate": 3,
-            "until": 360
-          },
-          {
-            "minute": 1140
-          }
-        ],
-        "timeDay": [
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "day": 2
-          },
-          {}
         ],
         "uses": [],
         "readables": [
@@ -3489,7 +3415,7 @@
           },
           {
             "id": "step-3",
-            "text": "Bring the blue parcel west to Mara at RECEIVING",
+            "text": "Bring the blue parcel west to Moth at RECEIVING",
             "when": {
               "state": "shift.parcelDelivered",
               "is": false
@@ -3573,45 +3499,8 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the train home."
           }
-        ],
-        "time": [
-          {
-            "when": {
-              "state": "shift.checkedOut",
-              "is": true
-            },
-            "minute": 370
-          },
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "minute": 360
-          },
-          {
-            "when": {
-              "state": "shift.tagReceived",
-              "is": true
-            },
-            "rate": 3,
-            "until": 360
-          },
-          {
-            "minute": 1140
-          }
-        ],
-        "timeDay": [
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "day": 2
-          },
-          {}
         ],
         "uses": [
           {
@@ -3699,7 +3588,7 @@
                 "pages": [
                   "NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.",
                   "STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.",
-                  "Shift complete. The morning train is next: back west along the quay and up to the platform."
+                  "Shift complete. The train home is next: back west along the quay and up to the platform."
                 ]
               }
             ],
@@ -4675,7 +4564,7 @@
           },
           {
             "id": "step-3",
-            "text": "Bring the blue parcel west to Mara at RECEIVING",
+            "text": "Bring the blue parcel west to Moth at RECEIVING",
             "when": {
               "state": "shift.parcelDelivered",
               "is": false
@@ -4762,64 +4651,45 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the train home."
           }
-        ],
-        "time": [
-          {
-            "when": {
-              "state": "shift.checkedOut",
-              "is": true
-            },
-            "minute": 370
-          },
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "minute": 360
-          },
-          {
-            "when": {
-              "state": "shift.tagReceived",
-              "is": true
-            },
-            "rate": 3,
-            "until": 360
-          },
-          {
-            "minute": 1140
-          }
-        ],
-        "timeDay": [
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "day": 2
-          },
-          {}
         ],
         "uses": [
           {
             "id": "mara",
-            "name": "MARA",
-            "label": "[E] TALK TO MARA",
+            "name": "MOTH",
+            "label": "[E] TALK TO MOTH",
             "routes": [
               {
                 "conversation": "mara"
               }
             ],
             "when": {
-              "state": "shift.tagReceived",
-              "is": true
+              "all": [
+                {
+                  "state": "shift.tagReceived",
+                  "is": true
+                },
+                {
+                  "not": {
+                    "all": [
+                      {
+                        "state": "shift.parcelDelivered",
+                        "is": true
+                      },
+                      {
+                        "state": "shift.trolleyMoved",
+                        "is": false
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "items": [
               {
                 "item": "shift.parcel",
-                "label": "give Mara the blue parcel",
+                "label": "give Moth the blue parcel",
                 "routes": [
                   {
                     "when": {
@@ -4833,8 +4703,9 @@
                   {
                     "command": "shift.deliver",
                     "pages": [
-                      "Thanks. Pump seals. Maybe the floor gets to stay dry tonight.",
-                      "Could you take the empty case on my counter back to CASE RETURNS in the shed?"
+                      "Pump seals. Maybe the floor gets to stay dry tonight.",
+                      "Could you take the empty case on my counter back to CASE RETURNS in the shed?",
+                      "And cover for me. Ten minutes. If he asks, I'm checking the pumps."
                     ],
                     "failure": [
                       "The blue parcel is waiting at dispatch, in the shed to the east."
@@ -4950,12 +4821,16 @@
             "id": "mara",
             "instance": "mara",
             "band": "background",
-            "seed": 7302,
+            "seed": 4510,
             "look": {
-              "body": "tall",
+              "body": "slim",
               "garb": "hivis",
-              "hair": "bun",
-              "top": "#b5903a"
+              "hair": "hood",
+              "top": "#3a3438",
+              "acc": "#5a3a6a",
+              "extras": [
+                "headphones"
+              ]
             },
             "act": "vend",
             "facing": 1
@@ -5032,6 +4907,25 @@
               "color": "255,217,165"
             }
           ],
+          "actors": {
+            "hide": [
+              {
+                "actors": "mara",
+                "when": {
+                  "all": [
+                    {
+                      "state": "shift.parcelDelivered"
+                    },
+                    {
+                      "not": {
+                        "state": "shift.trolleyMoved"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
           "values": {
             "delivered": {
               "state": "shift.parcelDelivered"
@@ -5316,17 +5210,10 @@
               },
               {
                 "when": {
-                  "state": "shift.caseReturned",
-                  "is": false
-                },
-                "node": "case"
-              },
-              {
-                "when": {
                   "state": "shift.coffeeFixed",
                   "is": false
                 },
-                "node": "coffee"
+                "node": "back"
               },
               {
                 "node": "thanks"
@@ -5334,30 +5221,25 @@
             ],
             "nodes": {
               "waiting": {
-                "speaker": "MARA",
+                "speaker": "MOTH",
                 "pages": [
-                  "Blue parcel for me? It comes from dispatch, in the shed. Use “give Mara the blue parcel” when you have it.",
-                  "He makes every shift sound like a national emergency."
+                  "There you are. Blue parcel for me? It comes from dispatch, in the shed. Use “give Moth the blue parcel” when you have it.",
+                  "He makes every shift sound like a national emergency. Tonight the nation is one parcel.",
+                  "And the coffee machine upstairs is dead again. If you love me, you will look at it. Nobody else will."
                 ]
               },
-              "case": {
-                "speaker": "MARA",
+              "back": {
+                "speaker": "MOTH",
                 "pages": [
-                  "The empty case goes back to CASE RETURNS, in the shed to the east. Thank you."
-                ]
-              },
-              "coffee": {
-                "speaker": "MARA",
-                "pages": [
-                  "You got the case back. That is one less thing for the next shift.",
-                  "The coffee machine upstairs in the staff room doesn't work again. Nobody has the time to look at it. Certainly not me."
+                  "Hm? Oh. You. Sorry. Thanks for covering.",
+                  "It's nothing. I'll tell you later. Go home, I'll close up here."
                 ]
               },
               "thanks": {
-                "speaker": "MARA",
+                "speaker": "MOTH",
                 "pages": [
-                  "Coffee that works. I could get used to this shift.",
-                  "I'm on until the day crew comes in. Take the morning train and look out of the window for once. Get some sleep."
+                  "You fixed the coffee. Of course you did.",
+                  "Sorry I disappeared. It's nothing. I'll tell you later. Go home, I'll close up here."
                 ]
               }
             }
@@ -6369,7 +6251,7 @@
           },
           {
             "id": "step-3",
-            "text": "Bring the blue parcel west to Mara at RECEIVING",
+            "text": "Bring the blue parcel west to Moth at RECEIVING",
             "when": {
               "state": "shift.parcelDelivered",
               "is": false
@@ -6453,45 +6335,8 @@
           },
           {
             "id": "step-12",
-            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train."
+            "text": "SHIFT COMPLETE · Walk back to Harbor Station for the train home."
           }
-        ],
-        "time": [
-          {
-            "when": {
-              "state": "shift.checkedOut",
-              "is": true
-            },
-            "minute": 370
-          },
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "minute": 360
-          },
-          {
-            "when": {
-              "state": "shift.tagReceived",
-              "is": true
-            },
-            "rate": 3,
-            "until": 360
-          },
-          {
-            "minute": 1140
-          }
-        ],
-        "timeDay": [
-          {
-            "when": {
-              "state": "shift.nightPassed",
-              "is": true
-            },
-            "day": 2
-          },
-          {}
         ],
         "uses": [
           {
@@ -6522,7 +6367,7 @@
               {
                 "command": "shift.collect",
                 "pages": [
-                  "You pick up the blue parcel. RECEIVING · MARA.",
+                  "You pick up the blue parcel. RECEIVING · MOTH.",
                   "Carry it west, back across the yard to the receiving counter."
                 ],
                 "failure": [
@@ -7050,7 +6895,7 @@
                 "speaker": "SUPERVISOR",
                 "pages": [
                   "You are on transport. Here is your work tag.",
-                  "Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.",
+                  "Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.",
                   "The Registry pays for completed movements. Try to have some."
                 ],
                 "onEnter": "shift.accept",
@@ -7060,7 +6905,8 @@
                 "speaker": "SUPERVISOR",
                 "pages": [
                   "Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.",
-                  "They are very particular about other people doing their work."
+                  "They are very particular about other people doing their work.",
+                  "Where is Moth? No. Don't tell me. I am contractually unable to notice that either."
                 ],
                 "onEnter": "shift.assign-trolley",
                 "onEnterFailure": "assignment-refused"
@@ -12160,8 +12006,7 @@
         "id": "line-harbor-1",
         "name": "LINE 0 · Harbor approach",
         "intro": [
-          "The harbor drops away behind the train. Cranes, black water, the first pink over the sea. Then the tunnel takes it.",
-          "Nobody talks on the morning train. Twenty minutes where nobody needs anything from me. I like this part."
+          "The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it."
         ],
         "uses": [],
         "manifest": {

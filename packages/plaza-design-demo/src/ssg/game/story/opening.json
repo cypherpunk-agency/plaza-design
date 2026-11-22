@@ -40,7 +40,7 @@
   "PHASES": {
     "home": {
       "hackLocked": true,
-      "pinned": true,
+      "pinned": false,
       "resume": [
         {
           "whenFlag": "opening:street",
@@ -77,7 +77,7 @@
     },
     "flat": {
       "hackLocked": true,
-      "pinned": true,
+      "pinned": false,
       "resume": [
         {
           "destination": {
@@ -108,7 +108,7 @@
     },
     "deleted": {
       "hackLocked": true,
-      "pinned": true,
+      "pinned": false,
       "resume": [
         {
           "destination": {
@@ -238,10 +238,12 @@
       "out": 50,
       "card": 110,
       "in": 50,
-      "from": "06:20",
-      "to": "09:40",
+      "to": "08:00",
       "label": "CAPSULE 7B",
       "mid": [
+        {
+          "waitUntil": "08:00"
+        },
         {
           "milestone": "slept"
         },
@@ -272,25 +274,6 @@
             "pages": [
               "Morning. The light is wrong.",
               "Cold. Like the flat forgot who it is heating."
-            ],
-            "height": 46
-          }
-        }
-      ]
-    },
-    "shift-end": {
-      "out": 60,
-      "card": 150,
-      "in": 60,
-      "to": "06:00",
-      "label": "TERMINAL 2 \u00b7 THE REST OF THE SHIFT",
-      "end": [
-        {
-          "say": {
-            "speaker": "YOU",
-            "pages": [
-              "The rest of the night is the usual. Tags, trolleys, rain on the crane lights.",
-              "Six o'clock. The floodlights click off one row at a time. Check out, then the morning train."
             ],
             "height": 46
           }
@@ -537,15 +520,59 @@
       ]
     },
     {
-      "id": "shift-end",
+      "id": "moth-call",
       "when": {
         "all": [
           {
-            "state": "shift.trolleyMoved",
-            "is": true
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "home"
+              }
+            }
           },
           {
-            "state": "shift.nightPassed",
+            "any": [
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.scene"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": "line-harbor-2"
+                  }
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.scene"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": "line-harbor-3"
+                  }
+                }
+              },
+              {
+                "compare": {
+                  "left": {
+                    "query": "story.scene"
+                  },
+                  "op": "eq",
+                  "right": {
+                    "literal": "line-harbor-4"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "flag": "prologue:called",
             "is": false
           },
           {
@@ -574,10 +601,30 @@
       },
       "do": [
         {
-          "milestone": "dawn"
+          "milestone": "call"
         },
         {
-          "card": "shift-end"
+          "sound": "blip"
+        },
+        {
+          "say": {
+            "speaker": "MOTH \u203a CALL",
+            "pages": [
+              "Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.",
+              "I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.",
+              "Don't be late. I mean it."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "And the line is gone. Moth never says goodbye on the phone."
+            ],
+            "height": 46
+          }
         }
       ]
     }
@@ -593,9 +640,6 @@
   ],
   "GAMEPLAY": {
     "version": 1,
-    "sharedState": [
-      "shift"
-    ],
     "flags": [
       "opening:home",
       "opening:street",
@@ -605,7 +649,8 @@
       "opening:jacked",
       "prologue:started",
       "arrived",
-      "schematics"
+      "schematics",
+      "prologue:called"
     ],
     "items": [],
     "events": [],
@@ -768,14 +813,14 @@
           }
         ]
       },
-      "opening.dawn": {
+      "opening.call": {
         "sources": [
           "system"
         ],
         "actions": [
           {
-            "state": "shift.nightPassed",
-            "set": true
+            "flag": "prologue:called",
+            "value": true
           }
         ]
       }
@@ -848,6 +893,6 @@
     "morning.try": "opening.morning.try",
     "morning.due": "opening.morning.due",
     "morning.reset": "opening.morning.reset",
-    "dawn": "opening.dawn"
+    "call": "opening.call"
   }
 }

@@ -39,7 +39,7 @@ import { type MapState } from '../ui/citymap';
 import { Terminal } from '../ui/terminal';
 
 import type { CityModel, MapPlace, Stand } from '../world/city';
-import { city, parseHM, TRAVEL, WAIT_CARD, WAITS, type WaitTo } from '../world/clock';
+import { city, parseHM, TRAVEL, until, WAIT_CARD, WAITS, type WaitTo } from '../world/clock';
 
 import { startRide } from '../engine/gameplay/mechanisms/line-ride';
 
@@ -114,6 +114,11 @@ export function runCues(port: StoryTransitionsPort, cues: readonly Cue[]): boole
     else if ('clearStamps' in cue) clearStoryStamps(port.presentation.stamps, cue.clearStamps);
     else if ('advance' in cue) {
       city.advance(cue.advance);
+      syncClock(port, true);
+      changed = true;
+    } else if ('waitUntil' in cue) {
+      const at = parseHM(cue.waitUntil);
+      if (at !== null) city.advance(until(city.min, at));
       syncClock(port, true);
       changed = true;
     } else if ('card' in cue) startCard(port, port.openingStory.CARDS[cue.card], true);

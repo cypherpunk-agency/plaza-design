@@ -71,11 +71,17 @@ history. Do not restart a completed track because an intentionally contextual pr
    does the boss guide without rushing, does travel read as one journey, does home give
    breathing room? Mechanics are agent-verified; the user's feedback concerns clarity, appeal
    and pacing.
-   - Polish pass 2026-11-22 (Tommi's direction): the player is a harbor worker; after the trolley
-     a fade card (`shift-end`) passes the rest of the night to 06:00 instead of the clock jumping at
-     checkout; Mara stays on shift and the player rides home alone (a short window monologue as the
-     train leaves); the deck, train and Downtown lines match one parcel, one case, one trolley; the
-     home PC before sleep shows payroll and rent mail instead of Moth's old message.
+   - Polish pass 2026-11-22 (Tommi's direction): the player is a harbor worker; the deck, train and
+     Downtown lines match one parcel, one case, one trolley; the home PC before sleep shows payroll
+     and rent mail.
+   - Time runs freely from the intro on (Tommi 2026-11-22): no story beat pins the clock. The run
+     starts at 19:00 on day 1 (a Monday); the HUD shows the weekday (WED 21:40). Bed runs the clock
+     on to 08:00 (`waitUntil` cue in the sleep card). A scene that needs a time of day lets the
+     player wait for it rather than pinning the clock.
+   - Moth replaces Mara at receiving (Act I redesign doc, "Prologue setup"): takes the parcel,
+     nags about the coffee machine, asks you to cover and is gone until the trolley is parked
+     (`stage.actors.hide` by actor id), comes back quiet. Moth calls on the ride home ("noodles
+     at ten"), voice only; the player rides alone. A photo of you and Moth is on the fridge.
 5. **Old-campaign cutover, decided 2026-11-22:** no "to be continued" card. The prologue keeps
    flowing into the old campaign for now; that campaign is to be reworked into the new Act I.
 6. **Build M4**, then M5 and M6, using the build sequence below. Introduce each mechanic through

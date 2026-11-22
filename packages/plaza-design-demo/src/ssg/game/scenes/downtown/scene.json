@@ -499,15 +499,14 @@
   },
   "phases": {
     "home": {
-      "time": "06:14",
       "goal": "go home (7B)",
       "intro": {
         "pages": [
-          "Morning. The street is still warm from the night.",
+          "Downtown. The street never quite sleeps, and neither do the screens.",
           "Home is the capsule tower, past the metro stairs."
         ],
         "touchPages": [
-          "Morning. The street is still warm from the night.",
+          "Downtown. The street never quite sleeps, and neither do the screens.",
           "Home is the capsule tower, past the metro stairs."
         ],
         "consume": true,
@@ -528,7 +527,7 @@
           "name": "HOODED STRANGER",
           "pages": [
             "Night shift?",
-            "You walk like one. Get indoors before the day shift sees you."
+            "You walk like one. Get indoors, get some sleep."
           ]
         },
         "hat": {
@@ -541,7 +540,7 @@
         "fixer": {
           "name": "FIXER",
           "pages": [
-            "Morning. Long night at the harbor?",
+            "Long shift at the harbor?",
             "Till takes your key, same as always. It knows you better than I do."
           ]
         }
@@ -615,7 +614,7 @@
             "label": "push the gate",
             "say": [
               "use lock --open",
-              "NEON MARKET GATE: closed. market hours 07:00 to 02:00.",
+              "NEON MARKET GATE: closed for restocking.",
               "dim"
             ]
           },
@@ -685,14 +684,13 @@
             "label": "watch the ad",
             "say": [
               "cat ads",
-              "REGISTRY PREMIUM. Be seen everywhere. good morning, resident."
+              "REGISTRY PREMIUM. Be seen everywhere. welcome home, resident."
             ]
           }
         ]
       }
     },
     "flat": {
-      "time": "06:04",
       "goal": "go home (7B)",
       "ping": {
         "exit": "capsule"
@@ -708,7 +706,7 @@
           "name": "HOODED STRANGER",
           "pages": [
             "Night shift?",
-            "You walk like one. Get indoors before the day shift sees you."
+            "You walk like one. Get indoors, get some sleep."
           ]
         },
         "hat": {
@@ -721,7 +719,7 @@
         "fixer": {
           "name": "FIXER",
           "pages": [
-            "Morning. Long night at the harbor?",
+            "Long shift at the harbor?",
             "Till takes your key, same as always. It knows you better than I do."
           ]
         }
@@ -795,7 +793,7 @@
             "label": "push the gate",
             "say": [
               "use lock --open",
-              "NEON MARKET GATE: closed. market hours 07:00 to 02:00.",
+              "NEON MARKET GATE: closed for restocking.",
               "dim"
             ]
           },
@@ -865,7 +863,7 @@
             "label": "watch the ad",
             "say": [
               "cat ads",
-              "REGISTRY PREMIUM. Be seen everywhere. good morning, resident."
+              "REGISTRY PREMIUM. Be seen everywhere. welcome home, resident."
             ]
           }
         ]

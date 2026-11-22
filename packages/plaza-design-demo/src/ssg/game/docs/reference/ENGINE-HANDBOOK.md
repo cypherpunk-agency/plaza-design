@@ -641,8 +641,8 @@ model's tick. A second timeline (shift -> commute -> home) is authored in the sa
 
 **Cues** are the finite things a gate, an acknowledgment, a card or a trigger makes happen, run in order: `milestone` (a system command of
 `WORKFLOWS`; a refused one ends the list), `say` (spoken in chain after the other cues), `print` (deck lines), `sound`, `stage` (bring the
-player to a scene's spawn, reset it, companion home), `stamp` / `clearStamps` (pausable presentation timestamps), `advance` (the city clock jumps) and `card` (starts a `CARDS` card by name;
-a card without `from` reads the clock as it starts, as the harbor's `shift-end` card does after the trolley is parked). A new kind of
+player to a scene's spawn, reset it, companion home), `stamp` / `clearStamps` (pausable presentation timestamps), `advance` (the city clock jumps), `waitUntil` (the clock runs on to the next "HH:MM": the sleep card's `08:00`) and `card` (starts a `CARDS` card by name;
+a card without `from` reads the clock as it starts). A new kind of
 effect is one more cue in `story-rules.ts` and one case in `runCues`; the editor offers it from the same list (authoring/story-fields.ts).
 
 To add a phase: add it to `PHASES` and a `PHASE_RULES` row, then give each scene its `phases.<id>` (only the scenes that differ). The source set

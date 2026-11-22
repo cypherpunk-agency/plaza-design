@@ -22,10 +22,10 @@ node scripts/opening-playthrough/summary.mjs <outDir>/trace.json
 ## What it plays
 
 title menu -> NEW GAME, Escape skips the glide -> Harbor Station at dusk -> down the stairs, along the quay, through the staff
-turnstile -> Shed 3 -> the night shift: the supervisor's briefing, the blue parcel, Mara at receiving (handover chip), the empty
+turnstile -> Shed 3 -> the night shift: the supervisor's briefing, the blue parcel, Moth at receiving (handover chip), the empty
 case back to CASE RETURNS, the supervisor's last job, trolley T4 (clamped, release the clamp, park it) -> checkout (tag
-returned, tokens credited) and the wage statement -> back through the turnstile, up to the platform -> the morning service
-through the tunnel zones to Downtown Metro -> off the train, through the turnstile, up the west stairs -> Downtown -> the
+returned, tokens credited) and the wage statement -> back through the turnstile, up to the platform -> the service home
+through the tunnel zones (Moth's call) to Downtown Metro -> off the train, through the turnstile, up the west stairs -> Downtown -> the
 capsule tower (concierge) -> capsule 7B -> bed -> the sleep card -> the morning you are deleted.
 
 At each step it asserts the scene, the story phase (`prologue`, `home`, `flat`, `deleted`) and the HUD goal, so a broken

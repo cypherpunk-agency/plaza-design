@@ -453,14 +453,14 @@ const root = path.resolve('src/ssg/game'),
   rejects(
     'a milestone the story lacks',
     (d) => {
-      d.get('opening-story').CARDS.sleep.mid[0].milestone = 'nowhere';
+      d.get('opening-story').CARDS.sleep.mid[1].milestone = 'nowhere';
     },
     /unknown milestone/,
   );
   rejects(
     'a stage scene the registry lacks',
     (d) => {
-      d.get('opening-story').CARDS.sleep.mid[1].stage.scene = 'nowhere';
+      d.get('opening-story').CARDS.sleep.mid[2].stage.scene = 'nowhere';
     },
     /unknown scene/,
   );

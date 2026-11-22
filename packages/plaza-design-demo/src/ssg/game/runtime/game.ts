@@ -1535,9 +1535,9 @@ export class Game {
     if (fixed !== undefined) return fixed;
     return this.openingStory.persona(this.save.flags)?.name ?? who(this.save);
   }
-  /** The city clock, after the scene's name in the HUD (" · 21:40"; the opening's times are its pins). */
+  /** The city clock, after the scene's name in the HUD (" · WED 21:40"). */
   get clockText() {
-    return playProfile().chrome.minimalHud ? '' : ' · ' + city.text;
+    return playProfile().chrome.minimalHud ? '' : ' · ' + city.stamp;
   }
 
   /** When the player last moved or did something (clock frames), for the attention ping. */
@@ -1577,7 +1577,7 @@ export class Game {
 
   /** Sudo's city clock bar (transport.ts); null without `?sudo`. */
   clockBar: ClockBar | null = null;
-  /** The footer's timestamp in game mode (DAY 3 · 21:40), and what it and the HUD showed last. */
+  /** The footer's timestamp in game mode (WED 21:40), and what it and the HUD showed last. */
   private stampEl: HTMLElement;
 
   // ---------- cutscenes (cutscenes/) ----------
