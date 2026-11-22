@@ -602,6 +602,33 @@
         "id": "glide",
         "time": 0
       }
+    },
+    {
+      "id": "new-run-act1",
+      "name": "Act I \u00b7 new run (the morning after)",
+      "scene": "capsule",
+      "handle": "",
+      "flags": {
+        "prologue:started": true,
+        "opening:home": true,
+        "opening:street": true,
+        "opening:flat": true,
+        "opening:slept": true,
+        "prologue:called": true,
+        "act1:on": true
+      },
+      "items": {},
+      "tokens": 0,
+      "modules": [],
+      "programs": [],
+      "keyring": [],
+      "state": {},
+      "day": 2,
+      "minute": 480,
+      "seed": 1,
+      "weather": "forecast",
+      "clock": "story",
+      "spawn": null
     }
   ]
 }

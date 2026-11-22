@@ -33,6 +33,14 @@
     }
   },
   "when": {
-    "flag": "pixel"
+    "all": [
+      {
+        "flag": "pixel"
+      },
+      {
+        "flag": "act1:on",
+        "is": false
+      }
+    ]
   }
 }

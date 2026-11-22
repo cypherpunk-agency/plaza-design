@@ -41,7 +41,8 @@ assert.deepEqual(
   {
     id: 'pixel',
     speaker: 'pixel',
-    condition: { flag: 'pixel' },
+    // Pixel stays at home through the new Act I (ACT-I-REDESIGN.md, Cast)
+    condition: { all: [{ flag: 'pixel' }, { flag: 'act1:on', is: false }] },
     look: 'pixel',
     modes: ['home', 'along'],
     popups: true,

@@ -162,6 +162,62 @@
       "checkpoint": "new-run-harbor"
     },
     {
+      "id": "act1",
+      "label": "Act I (new)",
+      "select": {
+        "url": {
+          "param": "play",
+          "value": "act1"
+        }
+      },
+      "home": "downtown",
+      "start": {
+        "title": true,
+        "urlScene": false
+      },
+      "routes": "world",
+      "world": "campaign",
+      "namespace": {
+        "save": "access-denied-act1-v1",
+        "resume": "access-denied-act1-resume-v1",
+        "slots": "act1-"
+      },
+      "abilities": {
+        "map": true,
+        "mapKey": true,
+        "deck": true,
+        "jump": false,
+        "hack": true,
+        "sudo": true,
+        "review": false
+      },
+      "player": {
+        "avatar": "person",
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        },
+        "name": "worker"
+      },
+      "guidance": {
+        "style": "shift",
+        "controlHints": true
+      },
+      "clock": {
+        "rule": "opening"
+      },
+      "chrome": {
+        "minimalHud": false
+      },
+      "checkpoint": "new-run-act1"
+    },
+    {
       "id": "full",
       "label": "Full game",
       "home": "downtown",

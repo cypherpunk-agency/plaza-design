@@ -33,8 +33,9 @@ import {
 import { validatePendingPlayProfiles } from '../../src/ssg/game/authoring/play-profile-source';
 import { Game } from '../../src/ssg/game/runtime/game';
 
-// ---- 1. The shipped document: four profiles, each with the capabilities and start the game relied on ----
+// ---- 1. The shipped document: five profiles, each with the capabilities and start the game relied on ----
 assert.deepEqual(SHIPPED_PROFILES.profiles.map((p) => p.id).sort(), [
+  'act1',
   'demo',
   'full',
   'harborShift',
@@ -54,6 +55,17 @@ const expected: Record<
     world: string;
   }
 > = {
+  // the new Act I, built beside the old campaign until the switch-over (ROADMAP M4-M6)
+  act1: {
+    abilities: ['map', 'mapKey', 'deck', 'hack', 'sudo'],
+    routes: 'world',
+    start: 'capsule',
+    avatar: 'person',
+    name: 'worker',
+    clock: 'opening',
+    guidance: 'shift',
+    world: 'campaign',
+  },
   full: {
     abilities: ['map', 'mapKey', 'deck', 'jump', 'hack', 'sudo'],
     routes: 'world',

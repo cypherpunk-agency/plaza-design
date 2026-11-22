@@ -1,7 +1,8 @@
 {
   "version": 1,
   "flags": [
-    "pixel"
+    "pixel",
+    "act1:on"
   ],
   "items": [],
   "events": [],

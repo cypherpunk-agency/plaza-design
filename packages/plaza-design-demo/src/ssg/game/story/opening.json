@@ -163,9 +163,419 @@
           }
         }
       }
+    },
+    "ch1-home": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "capsule"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-latch": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-shutter": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-kessel": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-referral": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-registry": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-street": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-wait": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch1-wake": {
+      "hackLocked": true,
+      "pinned": false,
+      "resume": [
+        {
+          "destination": {
+            "scene": "capsule"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
     }
   },
   "PHASE_RULES": [
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:home"
+          }
+        ]
+      },
+      "phase": "ch1-home"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:shutter"
+          }
+        ]
+      },
+      "phase": "ch1-latch"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:implant"
+          }
+        ]
+      },
+      "phase": "ch1-shutter"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:referred"
+          }
+        ]
+      },
+      "phase": "ch1-kessel"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:queued"
+          }
+        ]
+      },
+      "phase": "ch1-referral"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:stall"
+          }
+        ]
+      },
+      "phase": "ch1-registry"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:ten"
+          },
+          {
+            "flag": "act1:out"
+          }
+        ]
+      },
+      "phase": "ch1-street"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:out"
+          }
+        ]
+      },
+      "phase": "ch1-wait"
+    },
+    {
+      "when": {
+        "flag": "act1:on"
+      },
+      "phase": "ch1-wake"
+    },
     {
       "when": {
         "any": [
@@ -627,6 +1037,136 @@
           }
         }
       ]
+    },
+    {
+      "id": "ch1-ten",
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:ten",
+            "is": false
+          },
+          {
+            "flag": "act1:stall",
+            "is": false
+          },
+          {
+            "time": {
+              "from": "10:00",
+              "to": "08:00"
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "ch1.ten"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Ten o'clock. Moth said ten, at the stall."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "ch1-home",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch1-latch"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "capsule"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "ch1.home"
+        },
+        {
+          "sound": "granted"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Home. In through a hole in the wall, like a rumour.",
+              "Pixel is on the bed, exactly where I left it this morning.",
+              "Pixel does not care what the Registry thinks. Pixel cares that I am late."
+            ],
+            "height": 46
+          }
+        }
+      ]
     }
   ],
   "GOAL_HINTS": [
@@ -650,7 +1190,16 @@
       "prologue:started",
       "arrived",
       "schematics",
-      "prologue:called"
+      "prologue:called",
+      "act1:on",
+      "act1:out",
+      "act1:ten",
+      "act1:stall",
+      "act1:queued",
+      "act1:referred",
+      "act1:implant",
+      "act1:shutter",
+      "act1:home"
     ],
     "items": [],
     "events": [],
@@ -823,6 +1372,39 @@
             "value": true
           }
         ]
+      },
+      "opening.ch1.out": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:out",
+            "value": true
+          }
+        ]
+      },
+      "opening.ch1.ten": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:ten",
+            "value": true
+          }
+        ]
+      },
+      "opening.ch1.home": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:home",
+            "value": true
+          }
+        ]
       }
     },
     "reactions": [],
@@ -893,6 +1475,9 @@
     "morning.try": "opening.morning.try",
     "morning.due": "opening.morning.due",
     "morning.reset": "opening.morning.reset",
-    "call": "opening.call"
+    "call": "opening.call",
+    "ch1.out": "opening.ch1.out",
+    "ch1.ten": "opening.ch1.ten",
+    "ch1.home": "opening.ch1.home"
   }
 }
