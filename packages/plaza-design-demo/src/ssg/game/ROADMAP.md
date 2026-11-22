@@ -35,7 +35,7 @@ roadmaps. The user's current direction takes precedence over anything recorded h
 | Prologue and authoring acceptance (P1–P4) | Complete | [PROLOGUE-AUTHORING-ACCEPTANCE.md](./docs/design/PROLOGUE-AUTHORING-ACCEPTANCE.md). The seven editor tasks listed there are the reference set for "nothing lost" checks. |
 | Location and sequence configuration (L1–L5) | Complete | [LOCAL-PRESENTATION-PROGRESS.md](./docs/design/LOCAL-PRESENTATION-PROGRESS.md). |
 | Editor redesign phases 1–6 | Complete (2026-10-28) | Neutral grey look, workspaces (Layout, Animate, Logic, World, Review, Library), docks, status bar, scene toolbar, inspector anatomy, Ctrl K search and shortcuts. [Plan](./docs/design/EDITOR-REDESIGN-PLAN.md), [Editor UI](./docs/reference/EDITOR-UI.md). |
-| Editor redesign phase 7 | Authorized 2026-11-21, not started | Logic rules, conversation graph, World and Review workspace content. [Notes](./docs/design/EDITOR-PHASE-7-NOTES.md). |
+| Editor redesign phase 7 | 7a Rules and 7b Conversation graph built 2026-11-22; 7c World and 7d Review next | Logic rules, conversation graph, World and Review workspace content. [Notes](./docs/design/EDITOR-PHASE-7-NOTES.md). |
 | M1 Progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route. |
 | M2 Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion in the connected harbor. |
 | M3 Prologue journey and home | Implemented; experience review pending | Title glide → Harbor shift → two-car commute through four tunnel zones → underground Metro → Downtown → home. |

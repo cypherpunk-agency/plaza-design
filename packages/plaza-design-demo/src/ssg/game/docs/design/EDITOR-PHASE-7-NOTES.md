@@ -1,7 +1,8 @@
-# Editor redesign phase 7: notes for later
+# Editor redesign phase 7: notes
 
-Authorized by the user on 2026-11-21; not started. Written 2026-10-28 so the work can resume
-without repeating the design discussion. Phase 7 fills four workspaces with new content; the
+Authorized by the user on 2026-11-21. **7a and 7b built 2026-11-22**, plus the 7d live
+state panel (see "Built" under each); 7c and the rest of 7d follow. Written 2026-10-28 so the work can resume without repeating the design
+discussion. Phase 7 fills four workspaces with new content; the
 shell from phases 1–6 shipped on 2026-10-28. Each part should become its own goal, chosen by
 the user. Rules: [Editor UI](../reference/EDITOR-UI.md). Mockups: the
 [layout canvas](https://claude.ai/artifact/2rJZRN6SeUisTKoTatZ9ZD), page "Chosen · A in neutral
@@ -37,6 +38,22 @@ Mockup copy (fixer lines, district names, state values) is placeholder, not game
   (see the Circuit direction in memory/design docs)?
 - Should "Test this rule" run a private Play from a checkpoint, or simulate the rule in place?
 
+**Built 2026-11-22** (`authoring/rule-view.ts`, pure projection in `authoring/rule-model.ts`,
+check `rule-view-model`). Logic → **Rules** is the first Logic panel. Left: Interactions
+(carried-item variants as their own rows), Triggers, Objectives, Story phases with counts and
+inline `! missing …` lines. Centre: a scene strip (the stage's last picture, cropped to the
+chunk and dimmed, subjects outlined; **Show in Layout** selects the subject), **▶ Test this
+rule**, title, the "Reads as" line and WHEN / IF / DO / ORDER token rows with `＋ condition`
+and `＋ action`, plus the objective chain. Right: the selected token's own fields; **All
+interaction settings** / **All chunk triggers** fold out the complete existing form.
+Decisions on the open questions:
+- The rule view is another layout over the same sources, not a replacement: Interactions &
+  story keeps the complete form, and both write through one shared `scene-logic-source.ts`.
+- Device verbs, nouns and wiring stay in Devices / Starting cables for now.
+- Test this rule starts private Play in the open chunk from the chosen checkpoint (the scene
+  toolbar's Play); it does not simulate the rule in place.
+- Story phases show a read-only summary with the existing phase form in the inspector.
+
 ## 7b · Logic: conversation graph
 
 **Mockup intent**
@@ -60,6 +77,27 @@ Mockup copy (fixer lines, district names, state values) is placeholder, not game
 - Is graph layout saved source (positions) or computed each time (Tidy only)? Saved positions
   add data to the graph documents.
 - Edit text on the card directly, or only in the inspector?
+
+**Built 2026-11-22** (`authoring/conversation-graph.ts`, pure projection in
+`authoring/conversation-graph-model.ts`, check `conversation-graph-model`). Logic →
+**Conversation graph**; "Edit conversation definition" links elsewhere now open it (the
+Conversations form stays as the complete library form). Left: this chunk's graphs, shared ones
+(companion, robots, animals) with use counts, a filter that also searches other chunks, and
+`＋ New conversation`. Centre: start card, page / choice / text input / exit / fallback cards on
+a dotted canvas, curves for routes, choices, jumps (dashed) and fallbacks; conditions as
+`--changed` chips, commands as neutral chips; unreachable pages are dashed and listed.
+Toolbar: breadcrumb with use count, `＋ Page` (from a selected choice it becomes that choice's
+destination), `＋ Choice`, `＋ Condition`, zoom, Frame all, Tidy, **▶ Try conversation**. The
+inspector edits a page (speaker, pages, on-arrival command and failure page, templates, typed
+input, plus the existing Graph structure controls), a choice (label, leads to, shown when, on
+choose, order), a jump, a start route or typed input.
+Decisions on the open questions:
+- Layout is computed (columns by distance from the start, tall columns wrap). Dragged
+  positions are a per-browser view preference in local storage; Tidy forgets them. Nothing is
+  added to the graph source.
+- Text is edited in the inspector only; cards show it read-only.
+- Try conversation runs the shared `ConversationSession` on a private default state in the
+  panel (green frame, "nothing is saved"); private Play remains the full test.
 
 ## 7c · World workspace
 
@@ -105,6 +143,20 @@ Mockup copy (fixer lines, district names, state values) is placeholder, not game
 - "Save this moment as a checkpoint": which state is captured (flags, inventory, scalars,
   position, time) and how does it map onto the Starting state form?
 - Does "Pick object → edit" stop the run, or switch workspace while the run pauses?
+
+**Built 2026-11-22 (live state only)** in the Play workbench (`authoring/play-workbench.ts`,
+pure comparisons in `authoring/play-live-state.ts`, check `check-play-live-state`):
+- Answers to the open questions: live values come only from the detached `game.inspect()`
+  snapshots private Play already posts every 250 ms, so isolation is unchanged.
+- **Live state** shows Story (scene, goal, clock), **Changed this run** against the run's first
+  snapshot (an absent flag equals false, an absent item equals 0), Inventory, and the last 14
+  **Events** (scene, goal, speaker, state changes).
+- **Save this moment as a checkpoint** adds a `moment-N` starting state to Test checkpoints:
+  declared flags, keys and programs (undeclared ones are listed as dropped), items, tokens,
+  modules, player name, scalar state that differs from its default, day, minute and spawn x.
+  Entrance and sequence are cleared so the run resumes where the player stood.
+- Not built yet: the separate Review workspace arrangement (Run dock, Watch tab, Console and
+  Issues tabs, Show triggers, Pick object → edit).
 
 ## Order to propose
 

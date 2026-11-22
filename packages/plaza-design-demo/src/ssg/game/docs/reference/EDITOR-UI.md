@@ -3,7 +3,7 @@
 Current design rules for the composer (local editor and public editor). Chosen 2026-10-28:
 docked panels with task workspaces, in the **neutral grey** look. Phases 1–6 of the
 [migration plan](../design/EDITOR-REDESIGN-PLAN.md) built this shell on 2026-10-28; phase 7
-(workspace content) is next;
+(workspace content) added the Logic rule view and conversation graph on 2026-11-22;
 [ROADMAP.md](../../ROADMAP.md) owns priority. Mockups of every workspace live in the
 [layout mockup canvas](https://claude.ai/artifact/2rJZRN6SeUisTKoTatZ9ZD) (page "Chosen").
 
@@ -49,7 +49,7 @@ or history; it changes what is visible.
 | --- | --- | --- | --- | --- |
 | Layout | Outline · Library | Scene | Inspector | Timeline · Console · Issues (collapsed) |
 | Animate | Outline | Scene, sequence frame | Inspector (keyed fields) | Timeline (open) |
-| Logic | Chunk logic · Conversations · Story logic | Rule view or graph, scene strip above | Inspector | Issues |
+| Logic | Rules list · conversation list | Rule view (scene strip above) or conversation graph | Token / card inspector | — |
 | World | City · Variables · Settings · Networks | City map | Inspector | — |
 | Review | Run · Shortcuts · Test configurations | Private play | Live state · Watch | Events · Console |
 

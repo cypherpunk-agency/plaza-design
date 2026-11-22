@@ -70,6 +70,19 @@ animation at the playhead and creates one Undo command on release. Numeric field
 Apply/Cancel form still change only that draft; use Apply to change source. Touch keeps native
 numeric entry and scrolling. Spinner buttons are hidden; keyboard number entry remains available.
 
+**Logic → Rules** shows the open chunk's interactions, triggers, objectives and story phases as
+WHEN / IF / DO / ORDER rules with a plain-language "Reads as" line. Select a token to edit that
+field in the right column; `＋ condition` and `＋ action` add in place; **▶ Test this rule**
+starts private Play in the chunk. **Logic → Conversation graph** draws one conversation as cards
+and links; select a card, choice or jump to edit it, and **▶ Try conversation** steps through the
+pending graph from default state without saving anything. Card positions you drag are browser
+preferences (Tidy resets them). Both views edit the same sources as Interactions & story and the
+Conversations library form.
+
+**Play** shows a **Live state** column while a private run is going: what the run changed so
+far, inventory, clock and recent events. **Save this moment as a checkpoint** turns the current
+run state into a new Test checkpoint.
+
 Character dialogue lives in named gameplay conversation graphs. Select the character and use
 **Behaviour → Edit conversation definition**, or **Library → Conversations** to browse definitions
 and their source-scoped usages. Character name/prompt and conversation binding remain contextual;

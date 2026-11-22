@@ -189,6 +189,10 @@ export interface WorkbenchContext {
   cityDistrict?: string;
   inspect?: import('./inspector-task').OpenInspector;
   openConversation?(document: string, conversation: string): void;
+  /** Start private Play in the open chunk from the chosen checkpoint (the scene toolbar's Play). */
+  playScene?(): void;
+  /** A copy of the last drawn scene with the given chunk instances outlined, for the Logic scene strip. */
+  sceneSnapshot?(document: string, instances: readonly string[]): SceneSnapshot | undefined;
   checkpoint?: string;
   onCheckpoint?(id: string): void;
   openComposition?(id: string): void;
@@ -219,6 +223,11 @@ export interface WorkbenchContext {
     reload(): Promise<void>;
     dirty(id: string): boolean;
   };
+}
+export interface SceneSnapshot {
+  canvas: HTMLCanvasElement;
+  /** Outlines in the copied canvas's pixels. */
+  boxes: { x: number; y: number; width: number; height: number }[];
 }
 export type WorkbenchHandle = (() => void) & { refresh?(): void };
 export interface ComposerConfig {

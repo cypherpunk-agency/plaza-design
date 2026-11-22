@@ -67,6 +67,8 @@ export type Group = 'world' | 'layout' | 'logic' | 'labs' | 'library';
 export interface Composer {
   // state and parts shared across areas
   config: ComposerConfig;
+  /** The stage's last picture, kept while a Logic panel hides it (rule view scene strip). */
+  stagePicture?: { canvas: HTMLCanvasElement; result: PreviewResult; document: string };
   painting: {
     result: PreviewResult | undefined;
     resultDocument: string;

@@ -1,5 +1,6 @@
 import { renderPolicy } from '../world/render-policy';
 import type { CitySource } from '../world/city';
+import { sceneLogicSource } from './scene-logic-source';
 import { liveSources } from './validation-snapshot';
 import { renderNativeLiveConditionsAuthoring } from './native-live-conditions-authoring';
 import { sourceGameplay } from '../engine/gameplay/shared-state';
@@ -13,7 +14,6 @@ import {
   scenePresentationActorRoles,
 } from '../engine/gameplay/scene-presentation';
 import { renderScenePresentation } from './scene-presentation-authoring';
-import { pendingScene } from './pending-scene';
 import { emptyDeviceSource } from '../engine/empty-data';
 import { projectSceneState } from '../engine/gameplay/scene-state';
 import { deviceSourceIdentity } from './device-document-ids';
@@ -54,7 +54,7 @@ import {
 } from './interaction-content';
 import { pendingNetworkContext } from './pending-network';
 import { pendingDestinations } from './pending-destinations';
-import { gameplayScenes, gameplayScene } from './gameplay-scenes';
+import { gameplayScenes } from './gameplay-scenes';
 import { TypedForm } from './typed-form';
 import { pendingRegistry } from './pending-registry';
 import { validateOpeningSource } from '../story/opening-source';
@@ -116,61 +116,10 @@ export function mountSceneAuthoring(
     for (const child of children) child();
     children.clear();
   };
-  const selected = () => gameplayScene(selection.scene ?? 'downtown', context.documents);
-  const identity = () => deviceSourceIdentity(selected().id);
-  const gameplay = () => selected().validateGameplay(api.get(selected().gameplayId).value);
-  const pendingDocuments = () => liveSources(context);
-  const targetContext = (source: unknown) => {
-    const documents = pendingDocuments(),
-      identity = deviceSourceIdentity(selected().id),
-      network = pendingNetworkContext(documents);
-    return {
-      scene: pendingScene(
-        selected().id,
-        api.get(identity.composition).value,
-        {
-          sceneDocument: source,
-          gameplay: gameplay(),
-          devices: api.get(identity.devices).value,
-          sharedState: documents.get('state-owners'),
-          catalogue: documents.get('authored-scenes'),
-        },
-        network,
-      ),
-      network,
-    };
-  };
-  const validate = (source: unknown) => {
-    if ((source as SceneDocument)?.nativeTargets !== undefined) {
-      const assembled = targetContext(source);
-      return selected().validateScene(source, gameplay(), {
-        phase: 'assembled',
-        data: assembled.scene.data!,
-        network: assembled.network,
-      });
-    }
-    return selected().validateScene(source, gameplay());
-  };
-  const doc = () => validate(api.get(identity().scene).value);
+  const source = sceneLogicSource(context, () => selection.scene ?? 'downtown'),
+    { selected, identity, gameplay, pendingDocuments, targetContext, doc } = source;
   const edit = (label: string, fn: (d: SceneDocument, g: GameplayDefinition) => void) => {
-    const d = doc(),
-      g = sourceGameplay(gameplay()),
-      before = JSON.stringify(g);
-    fn(d, g);
-    if (JSON.stringify(g) !== before) {
-      if (!api.editDocuments)
-        throw new Error('Conversation editing requires grouped source history');
-      api.editDocuments(
-        [
-          { id: identity().scene, value: d },
-          { id: selected().gameplayId, value: g },
-        ],
-        label,
-      );
-    } else {
-      validate(d);
-      api.edit(identity().scene, label, d);
-    }
+    source.edit(label, fn);
     error.textContent = '';
   };
   const actorTransaction = (

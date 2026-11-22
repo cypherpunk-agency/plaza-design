@@ -39,8 +39,7 @@ export function mountConversationLibrary(
       .filter((d) => d.kind === 'composition')
       .map((d) => (d.value as { scene: string }).scene),
   );
-  const api = context.authoring!,
-    heading = element('div'),
+  const heading = element('div'),
     usages = element('details'),
     body = element('section');
   usages.append(element('summary', '', 'Show usages'));
@@ -116,36 +115,7 @@ export function mountConversationLibrary(
     editor?.dispose();
     sourceId = selection.document;
     requested = selection.conversation;
-    const sceneId = documents
-      .filter((d) => d.kind === 'composition')
-      .map((d) => (d.value as { scene: string }).scene)
-      .find((id) => {
-        try {
-          return (nativeGameplayScene(id) ?? gameplayScene(id, documents)).gameplayId === sourceId;
-        } catch {
-          return false;
-        }
-      });
-    const options: GameplayAuthoring = sceneId
-      ? registeredGameplayOptions(
-          context,
-          nativeGameplayScene(sceneId) ?? gameplayScene(sceneId, documents),
-          publicEditor,
-        )
-      : {
-          document: () => api.get(sourceId).value,
-          sharedStateSource: () =>
-            context.documents.some((d) => d.id === 'state-owners')
-              ? api.get('state-owners').value
-              : undefined,
-          onEdit: (value, label) => api.edit(sourceId, label, value),
-          undo: api.undo,
-          redo: api.redo,
-          save: api.save,
-          reload: api.reload,
-          dirty: () => api.dirty(sourceId),
-          saveLabel: publicEditor ? 'Download edits' : 'Save to source',
-        };
+    const options = conversationSourceOptions(context, sourceId, publicEditor);
     body.replaceChildren();
     editor = mountGameplayAuthoring(body, {
       ...options,
@@ -165,6 +135,55 @@ export function mountConversationLibrary(
   dispose.refresh = refresh;
   return dispose;
 }
+
+/** Edit options for one conversation source: a chunk's registered gameplay, or a shared library. */
+export function conversationSourceOptions(
+  context: WorkbenchContext,
+  sourceId: string,
+  publicEditor = false,
+): GameplayAuthoring {
+  const api = context.authoring!,
+    documents = context.documents;
+  const sceneId = documents
+    .filter((d) => d.kind === 'composition')
+    .map((d) => (d.value as { scene: string }).scene)
+    .find((id) => {
+      try {
+        return (nativeGameplayScene(id) ?? gameplayScene(id, documents)).gameplayId === sourceId;
+      } catch {
+        return false;
+      }
+    });
+  return sceneId
+    ? registeredGameplayOptions(
+        context,
+        nativeGameplayScene(sceneId) ?? gameplayScene(sceneId, documents),
+        publicEditor,
+      )
+    : {
+        document: () => api.get(sourceId).value,
+        sharedStateSource: () =>
+          context.documents.some((d) => d.id === 'state-owners')
+            ? api.get('state-owners').value
+            : undefined,
+        onEdit: (value, label) => api.edit(sourceId, label, value),
+        undo: api.undo,
+        redo: api.redo,
+        save: api.save,
+        reload: api.reload,
+        dirty: () => api.dirty(sourceId),
+        saveLabel: publicEditor ? 'Download edits' : 'Save to source',
+      };
+}
+/** Readable name of a conversation source. */
+export const conversationSourceLabel = (id: string) =>
+  id === 'companion-gameplay'
+    ? 'Shared companion conversations'
+    : id === 'bot-gameplay'
+      ? 'Robot conversations'
+      : id === 'critter-gameplay'
+        ? 'Animal conversations'
+        : id;
 
 /** Resolve graph references in their actual gameplay source; equal local IDs in different
  * chunks are different definitions. Projected catalogue sources are counted once. */

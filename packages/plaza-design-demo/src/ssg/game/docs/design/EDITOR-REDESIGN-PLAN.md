@@ -12,7 +12,7 @@ Target rules: [Editor UI](../reference/EDITOR-UI.md). [ROADMAP.md](../../ROADMAP
 | 4 · Inspector | Done 2026-10-28 | `50a3c1d` |
 | 5 · Outline and Library panel | Done 2026-10-28 | `96e44c1` |
 | 6 · Command search and shortcuts | Done 2026-10-28 | `e05473e` |
-| 7 · Workspace content | Authorized 2026-11-21; not started | see [phase 7 notes](./EDITOR-PHASE-7-NOTES.md) |
+| 7 · Workspace content | 7a Rules and 7b Conversation graph built 2026-11-22; 7c, 7d next | see [phase 7 notes](./EDITOR-PHASE-7-NOTES.md) |
 
 Phases 1–6 ran under the [goal contract](./EDITOR-REDESIGN-GOAL.md). Follow-up commits the same
 day (`2b70e23`..`f83d976`) aligned the build with the mockups: scene toolbar row, header search

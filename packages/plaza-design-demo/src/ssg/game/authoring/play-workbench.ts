@@ -1,3 +1,14 @@
+import { pendingFixtureVocabulary } from './pending-fixtures';
+import { pendingRegistry } from './pending-registry';
+import { fixtureStateDeclarations } from '../world/checkpoints';
+import {
+  momentFixture,
+  runChanges,
+  snapshotEvents,
+  clockText,
+  type LiveSnapshot,
+  type LiveEvent,
+} from './play-live-state';
 import { liveSources } from './validation-snapshot';
 import { chooseProfile } from '../runtime/play-profile';
 import { renderStartingStateControls } from './starting-state-controls';
@@ -33,6 +44,8 @@ export function mountPlayWorkbench(
     settingsOpen?: boolean;
     scene?: string;
     debugOpen?: boolean;
+    /** Result of the last "Save this moment", kept while the run's controls rebuild. */
+    momentNote?: string;
   } = {},
   district = false,
   manifest = false,
@@ -86,6 +99,11 @@ export function mountPlayWorkbench(
               ' s'
             : 'in base editing') +
           '. World state comes from the selected checkpoint; editor navigation is not saved game progress.';
+  const liveState = document.createElement('section');
+  liveState.className = 'live-state';
+  liveState.setAttribute('aria-label', 'Live state');
+  const moment = document.createElement('div');
+  moment.className = 'live-moment';
   const mobileSummary = document.createElement('section');
   mobileSummary.setAttribute('aria-label', 'Live mobile locations');
   controls.append(mobileSummary);
@@ -122,6 +140,9 @@ export function mountPlayWorkbench(
     timer: ReturnType<typeof setTimeout> | undefined,
     pending: unknown,
     last: any,
+    runStart: LiveSnapshot | undefined,
+    runClock = 0,
+    runEvents: { at: number; type: LiveEvent['type']; message: string }[] = [],
     deviceSignature = '',
     startup: PlayStartup | undefined;
   const startupDiagnostics = () => {
@@ -272,7 +293,12 @@ export function mountPlayWorkbench(
     api.edit('play-fixtures', 'Add scene Play fixture', validateFixtures(doc));
   }
   function fixtureControls() {
-    controls.replaceChildren(mobileSummary, ...(startNote.textContent ? [startNote] : []));
+    controls.replaceChildren(
+      liveState,
+      moment,
+      mobileSummary,
+      ...(startNote.textContent ? [startNote] : []),
+    );
     const f = fixture(),
       all = documents();
     if (useTemporary && f) {
@@ -452,6 +478,115 @@ export function mountPlayWorkbench(
     };
     if (details.open) build();
   }
+  /** A new checkpoint from the running game's latest snapshot: one validated, undoable edit. */
+  function saveMoment() {
+    if (!last?.save || !last.scene) throw new Error('Play has not reported its state yet.');
+    const scene = last.scene as PlayScene,
+      doc = documents(),
+      current = fixture(),
+      base = current && current.scene === scene ? current : fixtureTemplate(scene),
+      snapshot = currentDocuments(),
+      vocabulary = pendingFixtureVocabulary(snapshot, pendingRegistry(snapshot)),
+      { fixture: next, dropped } = momentFixture(
+        base,
+        last,
+        vocabulary,
+        fixtureStateDeclarations(scene, vocabulary),
+      );
+    let n = 1;
+    while (doc.fixtures.some((row) => row.id === 'moment-' + n)) n++;
+    next.id = 'moment-' + n;
+    next.name = scene + ' · moment ' + clockText(last.save.clock).replace(/^day \d+ · /, '');
+    doc.fixtures.push(next);
+    api.edit('play-fixtures', 'Save this moment as a checkpoint', validateFixtures(doc));
+    selection.momentNote = momentNote.textContent =
+      'Saved checkpoint ' +
+      next.id +
+      '. The run continues; choose it in the toolbar to start from here.' +
+      (dropped.length
+        ? ' Not kept (not declared for checkpoints): ' + dropped.join(', ') + '.'
+        : '');
+  }
+  const momentNote = document.createElement('p');
+  momentNote.className = 'muted';
+  momentNote.textContent = selection.momentNote ?? '';
+  {
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.textContent = 'Save this moment as a checkpoint';
+    save.onclick = () =>
+      form.run(() => {
+        error.textContent = '';
+        saveMoment();
+      });
+    moment.append(save, momentNote);
+  }
+  /** Story, what this run changed and what happened, from the snapshots Play already posts. */
+  function renderLiveState() {
+    if (!last || !runStart) return;
+    liveState.replaceChildren();
+    const heading = (text: string) => {
+      const h = document.createElement('h4');
+      h.textContent = text;
+      liveState.append(h);
+    };
+    const row = (parent: HTMLElement, label: string, value: string, cls = '') => {
+      const line = document.createElement('div');
+      line.className = 'live-row ' + cls;
+      const k = document.createElement('span'),
+        v = document.createElement('span');
+      k.textContent = label;
+      v.textContent = value;
+      line.append(k, v);
+      parent.append(line);
+    };
+    heading('Story');
+    const objective =
+      last.objective && typeof last.objective === 'object' ? last.objective.text : last.objective;
+    row(liveState, 'Scene', String(last.scene ?? '—'));
+    row(liveState, 'Goal', objective ? String(objective) : '—');
+    row(liveState, 'Clock', clockText(last.save?.clock));
+    const changes = runChanges(runStart, last);
+    heading('Changed this run · ' + changes.length);
+    if (!changes.length) {
+      const p = document.createElement('p');
+      p.className = 'muted';
+      p.textContent = 'Nothing yet.';
+      liveState.append(p);
+    }
+    for (const change of changes.slice(0, 40))
+      row(liveState, change.label, change.before + ' → ' + change.after, 'changed');
+    const save = last.save ?? {};
+    const carried = [
+      ...Object.entries(save.items ?? {})
+        .filter(([, n]) => (n as number) > 0)
+        .map(([id, n]) => id + ' ×' + n),
+      ...(save.keyring ?? []),
+    ];
+    heading('Inventory');
+    row(liveState, 'Tokens', String(save.tokens ?? 0));
+    row(liveState, 'Carried', carried.length ? carried.join(', ') : 'nothing');
+    heading('Events · ' + runEvents.length);
+    const log = document.createElement('ol');
+    log.className = 'live-events';
+    for (const event of runEvents.slice(-14).reverse()) {
+      const li = document.createElement('li');
+      const time = document.createElement('span'),
+        type = document.createElement('span');
+      time.textContent = event.at.toFixed(1) + ' s';
+      type.textContent = event.type;
+      type.className = 'live-type ' + event.type;
+      li.append(time, type, document.createTextNode(event.message));
+      log.append(li);
+    }
+    if (!runEvents.length) {
+      const li = document.createElement('li');
+      li.className = 'muted';
+      li.textContent = 'Scene changes, goals, conversations and state changes appear here.';
+      log.append(li);
+    }
+    liveState.append(log);
+  }
   function diagnostics() {
     if (!last) return;
     context.onResidency?.(last.residency?.chunks);
@@ -606,6 +741,11 @@ export function mountPlayWorkbench(
     }, 15000);
     inspect.textContent = engine.textContent = '';
     last = undefined;
+    runStart = undefined;
+    runEvents = [];
+    runClock = performance.now();
+    liveState.replaceChildren();
+    selection.momentNote = momentNote.textContent = '';
     deviceSignature = '';
     devices.replaceChildren();
     try {
@@ -733,7 +873,13 @@ export function mountPlayWorkbench(
       clearTimeout(timer);
       status.textContent =
         'Playing pending ' + value.scene + ' snapshot · Stop returns to editing.';
+      if (!runStart) runStart = value;
+      else if (last)
+        for (const event of snapshotEvents(last, value))
+          runEvents.push({ at: (performance.now() - runClock) / 1000, ...event });
+      if (runEvents.length > 200) runEvents.splice(0, runEvents.length - 200);
       last = value;
+      renderLiveState();
       diagnostics();
     } else if (type === 'restart') void start(value.memory);
     else if (type === 'quit') (context.stopPlay ?? stop)();

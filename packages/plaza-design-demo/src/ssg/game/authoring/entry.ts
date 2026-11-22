@@ -1,3 +1,5 @@
+import { mountConversationGraph } from './conversation-graph';
+import { mountRuleView, type RuleViewSelection } from './rule-view';
 import { mountConversationLibrary, type ConversationSelection } from './conversation-library';
 import { mountChunkConnections } from './chunk-connections';
 import { sequenceCommandTargets } from '../runtime/sequence-commands';
@@ -257,6 +259,7 @@ async function start() {
 
   const manifestSelection: { fixture?: string; device?: string } = {};
   const demoSelection: { fixture?: string; device?: string } = {};
+  const ruleSelection: RuleViewSelection = {};
   const logicSelection: { scene?: string; sourceId?: string; use?: string; fixed?: boolean } = {
       fixed: true,
     },
@@ -593,6 +596,55 @@ async function start() {
       ],
     },
     workbenches: [
+      {
+        id: 'rules',
+        area: 'scene',
+        mode: 'logic',
+        label: 'Rules',
+        title: 'Rules · interactions, triggers, objectives and story phases as WHEN / IF / DO',
+        authoring: true,
+        documentDependent: true,
+        documentIds: [...authoredDocumentIds, 'authored-scenes'],
+        supports: (scene, documents) => {
+          try {
+            gameplayScene(scene, documents);
+            return !scene.startsWith('demo-') || scene === 'demo-manifest';
+          } catch {
+            return false;
+          }
+        },
+        showScene(scene) {
+          if (ruleSelection.scene !== scene) {
+            ruleSelection.rule = undefined;
+            ruleSelection.token = undefined;
+          }
+          ruleSelection.scene = scene;
+        },
+        unsupported:
+          'This scene’s interactions, objectives and dialogue are still defined in code. They become editable once the scene is migrated to scene documents.',
+        get primaryDocumentId() {
+          return logicSelection.sourceId ?? 'downtown-scene';
+        },
+        mount: (host, context) => mountRuleView(host, context, ruleSelection),
+      },
+      {
+        id: 'conversation-graph',
+        area: 'scene',
+        mode: 'logic',
+        label: 'Conversation graph',
+        title: 'Conversation graph · pages, choices and jumps of one conversation',
+        authoring: true,
+        documentDependent: true,
+        get primaryDocumentId() {
+          return conversationSelection.document;
+        },
+        selectConversation(document, conversation) {
+          conversationSelection.document = document;
+          conversationSelection.conversation = conversation;
+        },
+        mount: (host, context) =>
+          mountConversationGraph(host, context, conversationSelection, publicEditor),
+      },
       {
         id: 'conversations',
         area: 'library',

@@ -338,7 +338,7 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .changed>input,.scene-composer .changed>select,.scene-composer .changed>.animated-property>input,.scene-composer .changed>.searchable-select>select{box-shadow:inset 3px 0 0 var(--changed)}
 .scene-composer button.reset-field{flex:none;min-height:0;height:22px;width:22px;padding:0;border:0;background:none;color:var(--changed);font-size:12px}
 .scene-composer .searchable-select{display:inline-flex;gap:4px;min-width:0;flex:0 1 auto;align-items:center}.scene-composer .searchable-select>.select-search{width:84px;flex:none}.scene-composer .searchable-select>select{min-width:0;flex:1}
-.scene-composer label>.searchable-select{width:130px}.scene-composer .inspector-mount label>.searchable-select,.scene-composer .inspector-task label>.searchable-select{width:100%}
+.scene-composer label>.searchable-select{width:130px}.scene-composer :is(.rule-inspector,.graph-inspector) label>.searchable-select{width:100%}.scene-composer .inspector-mount label>.searchable-select,.scene-composer .inspector-task label>.searchable-select{width:100%}
 .scene-composer details.about-notes{margin-top:14px;border-top:1px solid var(--separator);padding-top:8px}.scene-composer details.about-notes>summary{color:var(--muted);font-weight:500}.scene-composer details.about-notes p{color:var(--muted);font-size:12px}
 .scene-composer .inspector-task-actions{position:sticky;bottom:-10px;align-items:center;background:var(--panel);border-top:1px solid var(--separator);padding:10px 0;margin-top:14px}.scene-composer .draft-label{margin-right:auto;color:var(--draft);font-weight:600;font-size:12px}
 .scene-composer p.provenance{margin:-2px 0 8px;font-size:11px;line-height:14px;color:var(--muted)}.scene-composer p.provenance.inherited{font-style:italic}.scene-composer p.provenance.override{color:var(--changed)}
@@ -400,4 +400,93 @@ html[data-numeric-scrubbing],html[data-numeric-scrubbing] *{cursor:ew-resize!imp
 .scene-composer .inspector-dock :is(.inspector-body,.inspector-mount)>details[open]>summary{border-bottom:1px solid var(--separator);margin-bottom:6px}
 /* While a sequence is open the timeline owns playback, so the toolbar's motion controls step aside. */
 .scene-composer[data-mode=sequence] .preview-options .toolbar-group[aria-label='Ambient animation']{display:none}
+/* Logic · rule view: chunk logic list, WHEN / IF / DO / ORDER clauses and the token inspector. */
+.scene-composer .rule-view{display:grid;grid-template-columns:256px minmax(0,1fr) 300px;min-height:calc(100vh - 140px);margin:-10px -12px;background:var(--bg)}
+.scene-composer .rule-list,.scene-composer .rule-inspector{background:var(--panel);overflow:auto;max-height:calc(100vh - 140px)}
+.scene-composer .rule-list{border-right:1px solid var(--separator);padding:8px 0;display:flex;flex-direction:column}
+.scene-composer .rule-inspector{border-left:1px solid var(--separator);padding:12px}
+.scene-composer .rule-group{margin:12px 12px 4px;font:600 11px/14px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.scene-composer .rule-list .rule-group:first-child{margin-top:4px}
+.scene-composer .rule-row{height:auto;flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;white-space:normal;border:0;border-left:2px solid transparent;border-radius:0;background:none;padding:5px 12px;min-height:26px;width:100%}
+.scene-composer .rule-row:hover{background:var(--raised)}.scene-composer .rule-row[aria-pressed=true]{border-left-color:var(--select);background:var(--raised);color:var(--select)}
+.scene-composer .rule-row small{color:var(--faint);font-size:11px;line-height:14px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.scene-composer .rule-row small.rule-issue,.scene-composer .rule-token-issue{color:var(--error)}
+.scene-composer .rule-empty{margin:2px 12px;color:var(--faint);font-size:11px}
+.scene-composer .rule-centre{padding:0 24px 32px;overflow:auto;max-height:calc(100vh - 140px);min-width:0}
+.scene-composer .rule-strip{margin:0 -24px 16px;border-bottom:1px solid var(--separator)}
+.scene-composer .rule-strip-head{display:flex;align-items:center;gap:8px;padding:6px 24px;background:var(--panel)}.scene-composer .rule-strip-head .primary{margin-left:auto}
+.scene-composer .rule-strip-frame{position:relative;height:210px;overflow:hidden;background:var(--stage);display:flex;justify-content:center}
+.scene-composer .rule-strip-picture{position:relative;height:100%;max-width:100%}.scene-composer .rule-strip-picture canvas{display:block;width:100%;height:100%;opacity:.45;filter:saturate(.6)}.scene-composer .rule-strip-note.corner{position:absolute;right:12px;bottom:8px}
+.scene-composer .rule-strip-mark{position:absolute;outline:2px solid var(--select);outline-offset:1px;pointer-events:none}
+.scene-composer .rule-strip-frame{--w:auto}.scene-composer .rule-strip-frame>.rule-strip-note{align-self:center;color:var(--muted);font-size:12px}
+.scene-composer .rule-title{font:600 18px/24px var(--sans);margin:4px 0 6px;color:var(--ink)}
+.scene-composer .rule-reads{margin:0 0 18px;max-width:760px;color:var(--ink);font-size:13px;line-height:1.5}.scene-composer .rule-reads-label{color:var(--muted)}
+.scene-composer .rule-clause{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--separator);max-width:900px}
+.scene-composer .rule-clause-name{font:600 11px/28px var(--mono);letter-spacing:.06em;color:var(--muted)}
+.scene-composer .rule-tokens{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.scene-composer .rule-token{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:3px 10px;border:1px solid var(--control-line);border-radius:6px;background:var(--raised);color:var(--ink);font:12px/16px var(--mono);white-space:normal;text-align:left}
+.scene-composer span.rule-token{cursor:default}
+.scene-composer .rule-token.condition{color:var(--changed);border-color:color-mix(in srgb,var(--changed) 45%,var(--control-line))}
+.scene-composer .rule-token.refusal{border-style:dashed}
+.scene-composer .rule-token.order{background:none}
+.scene-composer .rule-token[aria-pressed=true]{border-color:var(--select);box-shadow:0 0 0 1px var(--select);background:var(--select-bg)}
+.scene-composer .rule-token.broken{border-color:var(--error);background:var(--error-bg)}
+.scene-composer .rule-guard{font-family:var(--sans);color:var(--changed)}
+.scene-composer .rule-then{color:var(--faint)}
+.scene-composer .rule-add{font-size:12px;color:var(--muted)}
+.scene-composer .rule-clause-note{color:var(--faint);font-size:11px;margin-left:4px}
+.scene-composer .rule-chain{margin-top:20px;padding:10px 12px;border:1px solid var(--separator);border-radius:6px;background:var(--panel);max-width:520px}
+.scene-composer .rule-chain .rule-group{margin:0 0 6px}.scene-composer .rule-chain ol{margin:0;padding-left:22px;display:grid;gap:2px}
+.scene-composer .rule-chain button{border:0;background:none;padding:2px 4px;min-height:0;text-align:left;white-space:normal;color:var(--ink)}
+.scene-composer .rule-chain button[aria-current=step]{color:var(--select);font-weight:600}.scene-composer .rule-chain button[aria-current=step]::before{content:'● '}
+.scene-composer .rule-chain small{display:block;color:var(--faint);font:11px var(--mono);padding-left:4px}
+.scene-composer .rule-inspector-title{margin:0 0 8px;font:600 14px/20px var(--mono);color:var(--ink);overflow-wrap:anywhere}
+.scene-composer .rule-inspector-body{padding:0}.scene-composer .rule-inspector-body .row{display:flex;gap:6px;flex-wrap:wrap}
+.scene-composer .rule-inspector .muted{font-size:12px;color:var(--muted);margin:4px 0}
+.scene-composer .rule-full-form{margin-top:16px;border-top:1px solid var(--separator);padding-top:8px}
+/* Logic · conversation graph: cards on a dotted canvas, links as curves, inspector on the right. */
+.scene-composer .conversation-graph{display:grid;grid-template-columns:256px minmax(0,1fr) 300px;height:calc(100vh - 140px);margin:-10px -12px;background:var(--bg)}
+.scene-composer .graph-list{background:var(--panel);border-right:1px solid var(--separator);overflow:auto;padding:8px 0;display:flex;flex-direction:column}
+.scene-composer .graph-filter{margin:4px 12px 4px;width:calc(100% - 24px)}
+.scene-composer .graph-new{display:grid;gap:6px;margin:12px;padding-top:12px;border-top:1px solid var(--separator)}
+.scene-composer .graph-centre{display:flex;flex-direction:column;min-width:0;min-height:0}
+.scene-composer .graph-toolbar{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--separator)}.scene-composer .graph-toolbar>button{flex:none}.scene-composer .graph-crumb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scene-composer .graph-toolbar .grow{flex:1}.scene-composer .graph-crumb{font-size:12px;margin-right:8px}.scene-composer .graph-crumb strong{font:600 12px var(--mono)}
+.scene-composer .graph-zoom{font:12px var(--mono);color:var(--muted);min-width:40px;text-align:center}
+.scene-composer .graph-viewport{position:relative;flex:1;overflow:hidden;cursor:grab;background-color:var(--bg);background-image:radial-gradient(circle,var(--separator) 1px,transparent 1.2px);background-size:20px 20px}
+.scene-composer .graph-plane{position:absolute;left:0;top:0;transform-origin:0 0}
+.scene-composer .graph-links{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.scene-composer .graph-link{fill:none;stroke:var(--control-line);stroke-width:1.5}.scene-composer .graph-link.redirect,.scene-composer .graph-link.failure{stroke-dasharray:5 4}.scene-composer .graph-link.entry{stroke:var(--muted)}.scene-composer .graph-link.selected{stroke:var(--select);stroke-width:2}
+.scene-composer .graph-card{position:absolute;background:var(--panel);border:1px solid var(--control-line);border-radius:6px;cursor:default;user-select:none;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.scene-composer .graph-card[aria-selected=true]{border-color:var(--select);box-shadow:0 0 0 1px var(--select)}
+.scene-composer .graph-card.unreachable{border-style:dashed;opacity:.8}
+.scene-composer .graph-card.entry{background:var(--raised)}
+.scene-composer .graph-card-head{display:flex;align-items:baseline;gap:6px;padding:6px 10px 2px}
+.scene-composer .graph-kind{font:600 11px/14px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.scene-composer .graph-id{font:12px var(--mono);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.scene-composer .graph-speaker{font:11px var(--mono);color:var(--faint)}
+.scene-composer .graph-line{margin:2px 10px 4px;font-size:12px;line-height:16px;color:var(--ink);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.scene-composer .graph-more{display:block;margin:0 10px 4px;color:var(--faint);font-size:11px}
+.scene-composer .graph-chips{display:flex;flex-wrap:wrap;gap:4px;margin:0 10px 6px}
+.scene-composer .graph-chip{font:11px/16px var(--mono);padding:1px 6px;border-radius:3px;border:1px solid var(--separator);background:var(--field);color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scene-composer .graph-chip.condition{color:var(--changed);border-color:color-mix(in srgb,var(--changed) 40%,var(--separator))}
+.scene-composer .graph-port{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:4px;min-height:24px;padding:3px 18px 3px 10px;border-top:1px solid var(--separator);font-size:12px;cursor:pointer}
+.scene-composer .graph-port:hover{background:var(--raised)}.scene-composer .graph-port[aria-selected=true]{background:var(--select-bg);color:var(--select)}
+.scene-composer .graph-port-label{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.scene-composer .graph-port.redirect .graph-port-label,.scene-composer .graph-port.failure .graph-port-label,.scene-composer .graph-port.retry .graph-port-label{color:var(--muted);font-style:italic}
+.scene-composer .graph-port-dot{position:absolute;right:-5px;top:50%;width:9px;height:9px;margin-top:-5px;border-radius:50%;background:var(--panel);border:1.5px solid var(--control-line)}
+.scene-composer .graph-overlay{position:absolute;inset:0;pointer-events:none}
+.scene-composer .graph-note{position:absolute;left:12px;bottom:12px;font-size:12px;color:var(--error);background:var(--overlay);padding:4px 8px;border-radius:6px}
+.scene-composer .graph-try{pointer-events:auto;position:absolute;right:12px;top:12px;width:320px;max-height:calc(100% - 24px);overflow:auto;background:var(--overlay);border:2px solid var(--play);border-radius:6px;padding:10px 12px;display:grid;gap:6px}
+.scene-composer .graph-try-head{color:var(--play);font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase}
+.scene-composer .graph-try p{margin:0;font-size:12px;line-height:16px}.scene-composer .graph-try-log{color:var(--faint)}.scene-composer .graph-try-speaker{font:600 12px var(--mono)!important;color:var(--muted)}
+.scene-composer .graph-try-choices{display:flex;flex-direction:column;gap:4px;margin-top:4px}.scene-composer .graph-try-choices button{text-align:left;white-space:normal;height:auto}
+.scene-composer .graph-inspector{background:var(--panel);border-left:1px solid var(--separator);overflow:auto;padding:12px}
+.scene-composer .graph-footer{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:16px;padding-top:8px;border-top:1px solid var(--separator);font-size:12px}
+/* Review · live state while private Play runs: run changes are marked in the play colour. */
+.scene-composer .live-state h4{margin:12px 0 4px;font:600 11px/14px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.scene-composer .live-state h4:first-child{margin-top:0}
+.scene-composer .live-row{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr);gap:8px;font-size:12px;line-height:18px}.scene-composer .live-row>span:first-child{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.scene-composer .live-row>span:last-child{font-family:var(--mono);overflow-wrap:anywhere}
+.scene-composer .live-row.changed>span:last-child{color:var(--play)}.scene-composer .live-row.changed>span:first-child::before{content:'● ';color:var(--play)}
+.scene-composer .live-events{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:12px}.scene-composer .live-events li{display:grid;grid-template-columns:44px 74px minmax(0,1fr);gap:6px;overflow-wrap:anywhere}.scene-composer .live-events li>span:first-child{font-family:var(--mono);color:var(--faint)}
+.scene-composer .live-events li.muted{display:block}.scene-composer .live-type{color:var(--muted)}.scene-composer .live-type.objective{color:var(--ink)}
 `;

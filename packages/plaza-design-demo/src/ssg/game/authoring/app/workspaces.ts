@@ -3,7 +3,12 @@ import { element, button, select } from '../controls';
 import { workspaceSequences } from '../workspace';
 import { type ChunkDocument } from '../../art/core/composition';
 import { createFrame, sectionNavigator } from '../frame';
-import type { WorkbenchContext, WorkbenchHandle, WorkbenchConfig } from '../contracts';
+import type {
+  WorkbenchContext,
+  WorkbenchHandle,
+  WorkbenchConfig,
+  SceneSnapshot,
+} from '../contracts';
 import { message, type Workspace, type Group, type Composer } from './context';
 
 export function workspacesArea(
@@ -124,6 +129,8 @@ export function workspacesArea(
     const ws = activeWorkspace();
     if (app.root.dataset.tool === 'scene' && app.lastTool !== 'scene' && app.lastTool)
       app.refreshOptions();
+    // A Logic panel hides the stage; keep its last picture for the rule view's scene strip.
+    if (app.lastTool === 'scene' && app.root.dataset.tool !== 'scene') captureStage();
     app.lastTool = app.root.dataset.tool;
     app.tools.replaceChildren();
     for (const item of app.groups) {
@@ -304,6 +311,8 @@ export function workspacesArea(
             return app.documentsForView();
           },
           openConversation: app.openConversation,
+          playScene: app.canPlay() ? app.playScene : undefined,
+          sceneSnapshot,
           openComposition: app.openComposition,
           openCheckpoint: app.openCheckpoint,
           editCheckpoint: app.editCheckpoint,
@@ -321,6 +330,77 @@ export function workspacesArea(
       }
     }
   };
+  /** Copy the stage as last drawn, with its bounds, rather than render the chunk a second time. */
+  function captureStage() {
+    const result = app.painting.result,
+      from = app.canvas;
+    if (!result || !from.width || !from.height || !from.isConnected) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = from.width;
+    canvas.height = from.height;
+    canvas.getContext('2d')?.drawImage(from, 0, 0);
+    app.stagePicture = { canvas, result, document: app.currentId };
+  }
+  function sceneSnapshot(chunk: string, instances: readonly string[]): SceneSnapshot | undefined {
+    if (app.root.dataset.tool === 'scene') captureStage();
+    const picture = app.stagePicture;
+    if (!picture) return undefined;
+    const { result } = picture;
+    // A picture of another chunk would mislead; show none until Layout draws this one.
+    if (
+      picture.document !== chunk &&
+      !Object.values(result.sources ?? {}).some((source) => source.document === chunk)
+    )
+      return undefined;
+    // Crop to the chunk's own region (else everything drawn) so the strip shows the scene, not the workspace margin.
+    const full = { x: 0, y: 0, width: picture.canvas.width, height: picture.canvas.height },
+      region = result.regions?.find((r) => r.document === chunk),
+      drawn = result.bounds.reduce<typeof full | undefined>((box, b) => {
+        if (!box) return { x: b.x, y: b.y, width: b.width, height: b.height };
+        const x = Math.min(box.x, b.x),
+          y = Math.min(box.y, b.y);
+        return {
+          x,
+          y,
+          width: Math.max(box.x + box.width, b.x + b.width) - x,
+          height: Math.max(box.y + box.height, b.y + b.height) - y,
+        };
+      }, undefined),
+      want = region ?? drawn ?? full,
+      x = Math.max(0, Math.floor(want.x)),
+      y = Math.max(0, Math.floor(want.y)),
+      crop = {
+        x,
+        y,
+        width: Math.max(1, Math.min(full.width, Math.ceil(want.x + want.width)) - x),
+        height: Math.max(1, Math.min(full.height, Math.ceil(want.y + want.height)) - y),
+      };
+    const canvas = document.createElement('canvas');
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    canvas
+      .getContext('2d')
+      ?.drawImage(
+        picture.canvas,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        crop.width,
+        crop.height,
+      );
+    const boxes = result.bounds
+      .filter((box) => {
+        const source = result.sources?.[box.id];
+        return source
+          ? source.document === chunk && instances.includes(source.instance)
+          : instances.includes(box.id);
+      })
+      .map(({ x, y, width, height }) => ({ x: x - crop.x, y: y - crop.y, width, height }));
+    return { canvas, boxes };
+  }
   /** One panel at a time: opening any closes the others. */
   const closeOthers = (details: HTMLDetailsElement) => {
     if (details.open)
