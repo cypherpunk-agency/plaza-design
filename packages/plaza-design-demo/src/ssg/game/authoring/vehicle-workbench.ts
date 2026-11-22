@@ -391,7 +391,7 @@ export function prepareVehiclePreview(
                 { x: 300, len: 12, mast: 1 },
                 { x: 500, len: 34, mast: 0 },
               ],
-              water: 60,
+              waterLevel: 60,
             }
           : {};
     const doc: ChunkDocument = {

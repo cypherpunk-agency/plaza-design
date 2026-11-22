@@ -135,7 +135,7 @@ function harness() {
   host.schem = { isOpen: false, known: new Set(), close() {}, resetLayout() {} };
   host.vision = { close() {}, resetLayout() {} };
   host.btns = { hidden: false };
-  host.model = { devices: new Map(), reset() {} };
+  host.model = { devices: new Map(), reset() {}, attachmentOffsets: () => undefined };
   host.persist = () => {};
   host.sync = () => {};
   host.hackLock = () => false;
@@ -293,7 +293,7 @@ try {
   });
   Object.defineProperty(g, 'def', {
     configurable: true,
-    value: { phases: { home: { exits: { capsule: ack(['First.', 'Second.'], 42) } } } },
+    value: { exits: [], phases: { home: { exits: { capsule: ack(['First.', 'Second.'], 42) } } } },
   });
   let travel = 0;
   g.hasScene = () => true;
@@ -349,6 +349,7 @@ try {
   g.presentation.opening = null;
   g.presentation.cut = null;
   g.endCutscene = () => {};
+  g.enter = () => {}; // the title re-enters the saved scene; scene entry has its own checks
   g.term.close = () => {};
   g.syncEnginePause = () => {};
   g.host = { setScene() {} };
@@ -369,14 +370,14 @@ try {
     'exit:capsule',
   );
   const titleAck = (q.host as any).deviceAcknowledgment;
-  g.showTitle();
+  g.showTitle(false, false); // no launch workflow: this exercises acknowledgment cancellation only
   const firstOpening = g.presentation.opening;
   assert(!titleAck.advance());
   assert(!q.host.acknowledgmentPending);
   assert.equal(JSON.stringify(g.save), save);
   assert.equal(g.presentation.beat, beat);
   assert.equal(g.presentation.sleep, sleep);
-  g.showTitle();
+  g.showTitle(false, false); // no launch workflow: this exercises acknowledgment cancellation only
   assert.notEqual(g.presentation.opening, firstOpening);
   assert.equal(travel, 1);
   g.presentation.opening = null;

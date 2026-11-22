@@ -50,13 +50,20 @@ function dispatch(scene: string, exit: any, documents = base) {
       story: 'free',
       openingStory,
       world,
-      save: { flags: {}, keyring: exit.needs ? [exit.needs.key] : [] },
+      // Story-gated exits (requires) are dispatched with their flag already earned.
+      save: {
+        flags: exit.requires ? { [exit.requires]: true } : {},
+        keyring: exit.needs ? [exit.needs.key] : [],
+      },
       hasScene: (id: string) => !!registry[id],
       persistSave: () => calls.push(['persist']),
       travel: (...v: any[]) => calls.push(['travel', ...v]),
       hailTaxi: () => calls.push(['taxi']),
       showMap: () => calls.push(['map']),
-      zh: { react: (...v: any[]) => calls.push(['refused', ...v]) },
+      zh: {
+        react: (...v: any[]) => calls.push(['refused', ...v]),
+        model: { attachmentOffsets: () => undefined },
+      },
       scenes: { here: scene },
       timing: { t: 0 },
     });

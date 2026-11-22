@@ -62,8 +62,8 @@ assert.equal(validateReport(noFrames, source).status, 'INVALID');
 const unfocused = structuredClone(report);
 (unfocused.environment.activation as any).parentTrusted = false;
 assert.equal(validateReport(unfocused, source).status, 'INVALID');
-assert.equal(workloads.length, 6);
-assert.equal(new Set(workloads.map((w) => w.id)).size, 6);
+assert.equal(workloads.length, 7);
+assert.equal(new Set(workloads.map((w) => w.id)).size, 7);
 assert(!performanceRecording());
 const time = new SceneTime();
 let ran = 0;
@@ -87,5 +87,5 @@ assert.equal(measured.invalidEnds, 0);
 time.clear();
 assert(!performanceRecording());
 console.log(
-  'Performance workloads PASS: six finite manifests, raw/summary/source integrity, overflow/incomplete rejection, visibility/render/activation diagnostics, opt-in actual SceneTime callback CPU/lateness and unchanged disabled execution.',
+  'Performance workloads PASS: seven finite manifests, raw/summary/source integrity, overflow/incomplete rejection, visibility/render/activation diagnostics, opt-in actual SceneTime callback CPU/lateness and unchanged disabled execution.',
 );

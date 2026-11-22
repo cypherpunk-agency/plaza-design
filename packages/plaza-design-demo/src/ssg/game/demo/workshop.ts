@@ -14,6 +14,14 @@ import type { SceneDocument } from '../engine/gameplay/scene-document';
 /** The QA bay's artwork: the Test District's devices & wiring area is cut from it. */
 export const sandboxComposition = art.validate(FOLDER_SOURCES.sandbox.composition);
 export const REVIEW_DEVICE_IDS = ['sensor', 'lamp', 'button', 'counter', 'plate', 'hatch', 'fan'];
+function withoutResetGeometry(controller: SceneData['controller']) {
+  const geometry = (controller as { geometry?: Record<string, string> } | undefined)?.geometry;
+  if (!controller || !geometry?.reset) return {};
+  const { reset: _reset, ...rest } = geometry;
+  return {
+    controller: { ...structuredClone(controller), geometry: rest } as SceneData['controller'],
+  };
+}
 export const WORKSHOP_DATA: SceneData = projectSceneState(
   {
     ...structuredClone(data as unknown as SceneData),
@@ -22,6 +30,8 @@ export const WORKSHOP_DATA: SceneData = projectSceneState(
     watchdog: undefined,
     dialogue: {},
     goals: [],
+    // no reset console here (see workshopScene), so its controller names no reset artwork
+    ...withoutResetGeometry((data as unknown as SceneData).controller),
     cables: (data as unknown as SceneData).cables.filter(
       (c) =>
         REVIEW_DEVICE_IDS.includes(c.from.split('.')[0]) &&

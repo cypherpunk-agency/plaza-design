@@ -76,6 +76,7 @@ const DOC = 'authored.tower-annex',
 let handle: any;
 const api = {
   get: (id: string) => model.get(id),
+  snapshot: () => model.list(),
   edit: (id: string, label: string, value: unknown) => {
     model.edit(id, label, () => value);
     handle?.refresh?.();

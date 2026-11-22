@@ -159,7 +159,11 @@ const input = [1, 2],
 input.push(3);
 assert.deepEqual(props.positions, [1, 2], 'structured artwork inputs are copied');
 const bound = { ...env, bindings: { 'lamp.level': 0.25 } };
-drawComposition({} as CanvasRenderingContext2D, registry, world, bound, 'backdrop');
+// drawComposition queues over-player/foreground rows with the current canvas transform.
+const identityContext = {
+  getTransform: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }),
+} as unknown as CanvasRenderingContext2D;
+drawComposition(identityContext, registry, world, bound, 'backdrop');
 assert.deepEqual(
   calls.pop(),
   { nativeView: true, state: { brightness: 0.25 }, x: 25 },
@@ -181,7 +185,7 @@ assert.throws(
   /unknown animation channel/,
 );
 drawComposition(
-  {} as CanvasRenderingContext2D,
+  identityContext,
   registry,
   world,
   { ...bound, visibility: { world: false } },

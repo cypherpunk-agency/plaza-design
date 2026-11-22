@@ -94,7 +94,7 @@ for (const type of ids)
           },
           kernel = createMallArtwork({
             x,
-            width: Number(p.width),
+            width: Number(p.width ?? p.drawingWidth), // shop-stock names its extent drawingWidth
             shop: String(p.shop ?? 'implants'),
             sign: '',
             tint: '',

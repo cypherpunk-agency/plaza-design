@@ -411,7 +411,7 @@ try {
     dirty: () => false,
     saveLabel: 'Save',
   });
-  const use = field('Use shared state owner shift');
+  const use = field('Access world-state prefix shift');
   use.checked = true;
   use.onchange!();
   assert.deepEqual(latest.sharedState, ['shift']);

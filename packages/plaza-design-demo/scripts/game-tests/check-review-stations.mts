@@ -39,7 +39,8 @@ assert.deepEqual(rows(SCENES), [
   ['beach', 'mixer', 'Beach mixer', 626],
   ['vehicle-lab', 'vehicles', 'Vehicles', SCENES['vehicle-lab'].uses![0].x],
   ['vehicle-routes', 'vehicle-routes', 'Curves & drops', 224],
-  ['boundary-west', 'boundary', 'Chunk boundary', 270],
+  // firstUse: boundary-west now has its own uses (shared door, display, camera)
+  ['boundary-west', 'boundary', 'Chunk boundary', SCENES['boundary-west'].uses![0].x],
 ]);
 // the Test District: purchases, conversations, devices, wiring first
 const demo = demoContent() as any;
@@ -50,7 +51,8 @@ assert.deepEqual(rows(demo), [
   ['sandbox', 'wiring', 'Wiring & chains', 550],
   ['vehicle-lab', 'vehicles', 'Vehicles', SCENES['vehicle-lab'].uses![0].x],
   ['vehicle-routes', 'vehicle-routes', 'Curves & drops', 224],
-  ['boundary-west', 'boundary', 'Chunk boundary', 270],
+  // firstUse: boundary-west now has its own uses (shared door, display, camera)
+  ['boundary-west', 'boundary', 'Chunk boundary', SCENES['boundary-west'].uses![0].x],
 ]);
 const stations = reviewStations(demo),
   actions = (id: string, list = stations, content = demo) =>

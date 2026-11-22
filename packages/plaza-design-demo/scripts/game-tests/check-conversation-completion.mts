@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { Game } from '../../src/ssg/game/runtime/game';
+import { runtimeFixture } from './runtime-fixture.mts';
+import * as InteractionRouting from '../../src/ssg/game/runtime/interaction-routing';
 import { Panels } from '../../src/ssg/game/engine/panels';
 import { GameplaySession } from '../../src/ssg/game/engine/gameplay/session';
 import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
@@ -64,34 +66,33 @@ Object.assign(globalThis, {
 try {
   const methods = Game.prototype as any,
     prefills: string[] = [],
-    fake: any = {
-      here: 'downtown',
+    fake: any = runtimeFixture(Game, {
+      scenes: { here: 'downtown' },
       term: { prefill: (text: string) => prefills.push(text), print: () => {} },
       hints: { done: () => {} },
-      completeConversation: methods.completeConversation,
-    };
+    });
   methods.say.call(fake, 'FIXER', ['one', 'two'], 100, 30);
   methods.dialogueCompletion.call(fake, { terminalPrefill: 'call me ' });
-  methods.interact.call(fake);
-  assert.equal(fake.bubble.chars, 3);
+  InteractionRouting.interact(fake.interactionRoutingPort);
+  assert.equal(fake.presentation.bubble.chars, 3);
   assert.deepEqual(prefills, [], 'revealing text is not completion');
-  methods.interact.call(fake);
-  assert.equal(fake.bubble.page, 1);
+  InteractionRouting.interact(fake.interactionRoutingPort);
+  assert.equal(fake.presentation.bubble.page, 1);
   assert.deepEqual(prefills, [], 'advancing an intermediate page is not completion');
-  methods.interact.call(fake);
-  methods.interact.call(fake);
-  assert.equal(fake.bubble, null);
+  InteractionRouting.interact(fake.interactionRoutingPort);
+  InteractionRouting.interact(fake.interactionRoutingPort);
+  assert.equal(fake.presentation.bubble, null);
   assert.deepEqual(prefills, ['call me ']);
   methods.say.call(fake, 'FIXER', ['cancelled'], 100, 30);
   methods.dialogueCompletion.call(fake, { terminalPrefill: 'cancelled' });
   methods.say.call(fake, 'OTHER', ['replacement'], 100, 30);
-  methods.interact.call(fake);
-  methods.interact.call(fake);
+  InteractionRouting.interact(fake.interactionRoutingPort);
+  InteractionRouting.interact(fake.interactionRoutingPort);
   assert.deepEqual(prefills, ['call me '], 'replacement cancels prior completion');
   methods.say.call(fake, 'FIXER', ['stale'], 100, 30);
   methods.dialogueCompletion.call(fake, { terminalPrefill: 'wrong scene' });
-  const stale = fake.bubble.then;
-  fake.here = 'yard';
+  const stale = fake.presentation.bubble.then;
+  fake.scenes.here = 'yard';
   stale();
   assert.deepEqual(prefills, ['call me '], 'scene changes cannot prefill a stale dialogue');
 

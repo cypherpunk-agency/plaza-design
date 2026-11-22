@@ -47,7 +47,7 @@ function fixture() {
     offsets: new Map(),
     unfolded: new Set(),
     folded: new Set(),
-    m: { items: () => [], noun: () => true },
+    m: { items: () => [], noun: () => true, can: () => true },
     render() {},
     show() {},
     presentHint() {},

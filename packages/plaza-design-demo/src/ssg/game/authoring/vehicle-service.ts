@@ -132,7 +132,14 @@ export function newVehicleScene(
           return { id: 'd' + j, x: a.x, w: 36 };
         });
       const bench = id + '-bench';
-      add(bench, 'vehicle.seat', 2, 0, { places: 4, place: 20 }, { instance: id, anchor: 'bay1' });
+      add(
+        bench,
+        'vehicle.seat',
+        2,
+        0,
+        { places: 4, placeWidth: 20 },
+        { instance: id, anchor: 'bay1' },
+      );
       vehicle.cars.push({
         id,
         width: 533,

@@ -33,6 +33,8 @@ const session = new GameplaySession(definition, {
     mergeValues(state.values, next.values ?? {});
     state = { ...next, values: state.values };
   },
+  // intro.hold also moves the opening coast into the harbor world; world membership is checked elsewhere
+  prepareWorld: () => ({ commit() {} }),
 });
 attachNativeGameplay(model, session);
 const frame = () =>

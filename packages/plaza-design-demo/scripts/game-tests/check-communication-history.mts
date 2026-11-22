@@ -8,12 +8,15 @@ import { Panels } from '../../src/ssg/game/engine/panels';
 import { GameplaySession } from '../../src/ssg/game/engine/gameplay/session';
 import { ConversationSession } from '../../src/ssg/game/engine/gameplay/conversation';
 import { Hints } from '../../src/ssg/game/ui/hints';
+import { runtimeFixture } from './runtime-fixture.mts';
+import * as StoryTransitions from '../../src/ssg/game/runtime/story-transitions';
 import type { GameplayState } from '../../src/ssg/game/engine/gameplay/types';
 const methods = Game.prototype as any,
   log: { text: string; kind: string; notify: boolean }[] = [],
   seen: string[] = [],
   fake: any = {
     hackLocked: methods.hackLocked,
+    hackStages: methods.hackStages,
     networkContext: defaultNetworkContext,
     openingStory: openingStoryModel,
     hints: new Hints(() => seen),
@@ -26,6 +29,8 @@ const methods = Game.prototype as any,
     persistSave: () => {},
     syncHud: () => {},
     touch: false,
+    // Game's owned state records (presentation, scenes, timing...) without its constructor.
+    ...runtimeFixture(Game),
   };
 methods.flash.call(fake, '+1 token');
 methods.flash.call(fake, '[ERR] Locked.');
@@ -39,7 +44,7 @@ assert(
   'history is not another notification producer',
 );
 assert.equal(fake.hints.notices.pending, 2);
-assert.deepEqual(fake.bubble.pages, ['First page', 'Second page']);
+assert.deepEqual(fake.presentation.bubble.pages, ['First page', 'Second page']);
 log.length = 0;
 fake.hints.notices.clear();
 methods.grantProgram.call(fake, 'scan.so');
@@ -83,6 +88,7 @@ for (const touch of [false, true]) {
   assert.equal(
     netAvailable.call({
       hackLocked: methods.hackLocked,
+      hackStages: methods.hackStages,
       networkContext: defaultNetworkContext,
       openingStory: openingStoryModel,
       save: JSON.parse(JSON.stringify(acquisition.save)),
@@ -122,33 +128,32 @@ assert.deepEqual(
   'grant before the first ownership snapshot does not announce starting inventory',
 );
 const reactions: unknown[] = [],
-  driver: any = {
+  driver: any = runtimeFixture(Game, {
     world: defaultCity,
     save: { tokens: 0, flags: {} },
     def: { exits: [{ id: 'taxi', action: 'taxi', x: 400 }] },
     zh: { react: (...args: unknown[]) => reactions.push(args) },
-    driverReply: methods.driverReply,
     notify: () => {
       throw new Error('Unexpected status fallback');
     },
-    here: 'downtown',
+    scenes: { here: 'downtown' },
     canvas: { style: {} },
-  };
+  });
 methods.hailTaxi.call(driver);
-methods.fly.call(driver, 'harbor');
+StoryTransitions.fly(driver.storyTransitionsPort, 'harbor');
 assert.equal(reactions.length, 2);
 for (const [source, line] of reactions as any[]) {
   assert.equal(source, 'exit:taxi');
   assert(line[1].startsWith('DRIVER: '));
   assert.equal(line[2], 'err');
 }
-assert.equal(driver.bubble, undefined, 'taxi denials never occupy a character bubble');
+assert.equal(driver.presentation.bubble, null, 'taxi denials never occupy a character bubble');
 const boardLog: unknown[] = [],
   boardStatus: unknown[] = [],
   board: any = {
     hackLock: () => false,
     schem: { known: new Set() },
-    model: { label: () => 'Open a device first.' },
+    model: { label: () => 'Open a device first.', can: () => true },
     print: (...args: unknown[]) => boardLog.push(args),
     store: { notice: (...args: unknown[]) => boardStatus.push(args) },
   };
@@ -160,6 +165,7 @@ const locked: unknown[] = [],
     hackLock: () => false,
     model: {
       devices: new Map([['door', { name: 'DOOR' }]]),
+      can: () => true,
       lockLeft: () => 1200,
       line: () => ['', 'Locked.', 'err'],
     },

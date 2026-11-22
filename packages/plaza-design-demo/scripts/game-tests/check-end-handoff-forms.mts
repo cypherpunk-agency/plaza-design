@@ -57,7 +57,7 @@ try {
   const valid = JSON.stringify(draft);
   set('Handoff 1 presentation', 'none');
   assert.equal(JSON.stringify(draft), valid, 'empty handoff removal rejects atomically');
-  set('Handoff 1 cutscene', 'act2');
+  set('Handoff 1 sequence', 'act2');
   assert.deepEqual(draft.handoffs, [{ event: 'review.end', cutscene: 'act2' }]);
   draft = history.pop();
   editor.refresh();

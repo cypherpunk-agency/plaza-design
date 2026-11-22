@@ -111,7 +111,8 @@ assert.equal(m.movers.at('lift.car'), 'f2', 'E sends the car one stop up on the 
 levelUp(L, p);
 press();
 frames(400);
-assert.equal(levelFloor(L).id, 'floor-3', 'and another');
+// riding, the player stands on the car's own deck (the lift is a vehicle); stepping out lands on floor 3
+assert.equal(m.movers.at('lift.car'), 'f3', 'and another');
 assert.equal(p.y, 200, 'the car carries the player');
 frames(60);
 press();

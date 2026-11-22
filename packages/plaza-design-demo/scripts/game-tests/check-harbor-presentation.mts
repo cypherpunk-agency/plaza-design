@@ -37,6 +37,9 @@ for (const facing of [1, -1] as const) {
   const vertices: number[][] = [];
   const ctx: any = new Proxy(
     {
+      getTransform() {
+        return { a: transform[0], b: 0, c: 0, d: transform[1], e: transform[2], f: transform[3] };
+      },
       save() {
         stack.push([...transform]);
       },

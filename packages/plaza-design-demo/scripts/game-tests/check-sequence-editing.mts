@@ -177,22 +177,28 @@ const piece = (id: string, type: string, props: Properties): AssetInstance => ({
   layer: 'set',
 });
 const ferries = cinematic('act2', [
-  piece('ferry-a', 'sequence.act2.ferry', { paint: '#112233' }),
-  piece('ferry-b', 'sequence.act2.ferry', { paint: '#334455' }),
+  piece('ferry-a', 'sequence.act2.ferry', { paintColor: '#112233' }),
+  piece('ferry-b', 'sequence.act2.ferry', { paintColor: '#334455' }),
 ]);
 for (const color of ['#112233', '#334455'])
   assert.ok(
     ferries.some((c) => c[0] === 'set' && c[2] === color),
     'Independent ferry paint ' + color,
   );
-const towers = cinematic('taxi', [piece('towers', 'sequence.taxi.towers', { fill: '#223344' })]);
+const towers = cinematic('taxi', [
+  piece('towers', 'sequence.taxi.towers', { fillColor: '#223344' }),
+]);
 assert.ok(
   towers.some((c) => c[0] === 'set' && c[2] === '#223344'),
   'Taxi tower fill',
 );
 assert.notDeepEqual(
-  cinematic('taxi', [piece('lights', 'sequence.taxi.lights', { far: 0, middle: 0, near: 0 })]),
-  cinematic('taxi', [piece('lights', 'sequence.taxi.lights', { far: 2, middle: 3, near: 4 })]),
+  cinematic('taxi', [
+    piece('lights', 'sequence.taxi.lights', { farSpeed: 0, middleSpeed: 0, nearSpeed: 0 }),
+  ]),
+  cinematic('taxi', [
+    piece('lights', 'sequence.taxi.lights', { farSpeed: 2, middleSpeed: 3, nearSpeed: 4 }),
+  ]),
   'Light speed fields drive the native motion kernel',
 );
 assert.throws(() => cinematicRegistry.properties('sequence.taxi.lights', { far: -1 }));

@@ -25,6 +25,8 @@ import { SceneModel } from '../../src/ssg/game/engine/model';
 import { deviceRules } from '../../src/ssg/game/authoring/device-sources';
 import { buildEventInspection } from '../../src/ssg/game/authoring/event-inspector-model';
 import { gameClassSource } from './game-source.mts';
+import { runtimeFixture } from './runtime-fixture.mts';
+import { Game } from '../../src/ssg/game/runtime/game';
 const gameFile = 'src/ssg/game/runtime/game.ts',
   gameSource = ts.createSourceFile(gameFile, gameClassSource(), 99, true),
   gameClass = gameSource.statements.find(
@@ -140,17 +142,17 @@ function inspect(documents: ReadonlyMap<string, unknown>) {
   );
   const lines: string[] = [],
     plugs: string[] = [],
-    g: any = {
+    g: any = runtimeFixture(Game, {
       persistSave() {},
       networkContext: ctx,
       def: s,
-      here: 'library',
-      netView: {},
+      scenes: { here: 'library' },
+      presentation: { netView: {} },
       save: { nets: ['foreign-discovery'], controlled: [], programs: [] },
       canvas: { width: 1000, clientWidth: 1000 },
-      k: 1,
+      camera: { k: 1 },
       touch: false,
-      clock: 0,
+      timing: { clock: 0 },
       mapAvoid: () => [],
       hasScene: (id: string) => !!registry[id],
       sceneDefinition: (id: string) => registry[id],
@@ -163,7 +165,7 @@ function inspect(documents: ReadonlyMap<string, unknown>) {
         },
       },
       term: { print: (line: string) => lines.push(line) },
-    };
+    });
   for (const name of ['machineName', 'netState', 'deckScan', 'deckConnect']) g[name] = method(name);
   assert.equal(g.machineName({ id: 'reader', in: ['library'] }), 'Review reader');
   assert.equal(g.machineName({ id: 'review-global', in: ['net'] }), 'Review global node');

@@ -361,6 +361,10 @@ console.log(
 const overhangSources = structuredClone(source),
   overhangScene = overhangSources.scenes.find((s: any) => s.scene.id === 'boundary-west');
 overhangScene.composition.instances.find((n: any) => n.id === 'overhang').placement.x = 4000;
+// The screen-filling world sky (clip none) is visible from any camera; leave only the overhang to measure.
+overhangScene.composition.instances = overhangScene.composition.instances.filter(
+  (n: any) => n.id !== 'world-sky',
+);
 const overhangDocs = new Map(docs);
 overhangDocs.set('authored-scenes', overhangSources);
 const camera = {

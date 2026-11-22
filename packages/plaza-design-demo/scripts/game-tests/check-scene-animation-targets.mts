@@ -40,7 +40,7 @@ const registry = new ArtRegistry().register({
 assert.equal(registry.get('box').fields.size.animatable, true);
 assert.equal(registry.get('box').fields.fixed.animatable, false);
 assert.equal(registry.get('box').fields.list.animatable, false);
-assert.equal(art.get('environment.palm').fields.fill.animatable, true);
+assert.equal(art.get('environment.palm').fields.fillColor.animatable, true);
 const source = (scene: string): ChunkDocument => ({
   version: 1,
   scene,

@@ -53,12 +53,21 @@ for (const [id, kernel] of Object.entries(kernels))
     for (const bound of [false, true])
       for (const t of [0, 137, 301]) {
         const e = art.get('beach.' + id),
-          p = art.properties(e.type, { width }),
-          state = art.visualProperties(e.type, {
-            ...(bound ? { barWidth: width + 20 } : {}),
-            palette: 0.6,
-          }),
           at = { x: 80, h: 20, scale: 1, facing: 1 as const, parallax: 1 },
+          // A bound barWidth replaces the authored width through resolveComposition (stateOverride).
+          [row] = resolveComposition(
+            art,
+            {
+              instances: [{ id: 'piece', type: e.type, props: { width }, placement: at, order: 0 }],
+            } as never,
+            {
+              state: {
+                piece: { ...(bound ? { barWidth: width + 20 } : {}), palette: 0.6 },
+              },
+            } as never,
+          ),
+          p = row.props,
+          state = row.state,
           v = { ...view, t },
           a = record(),
           b = record(),
@@ -104,10 +113,17 @@ for (const width of [226, 320]) {
     rows = resolveComposition(art, doc, env);
   for (const id of Object.keys(kernels)) {
     const row = rows.find((r) => r.element.type === 'beach.' + id)!;
-    assert.equal(row.state.barWidth, width, id + ' uses the actual pending source width');
+    // bar-under owns the width (scene.barWidth reads it), so it never binds barWidth to itself.
+    const controlling = id === 'bar-under';
+    assert.equal(
+      controlling ? row.props.width : row.state.barWidth,
+      width,
+      id + ' uses the actual pending source width',
+    );
+    assert.equal(row.props.width, width, id + ' draws at the source width');
     assert.deepEqual(
       Object.keys(row.instance.bindings ?? {}).sort(),
-      ['barVisible', 'barWidth', 'palette'],
+      controlling ? ['barVisible', 'palette'] : ['barVisible', 'barWidth', 'palette'],
       'unread scene inputs removed',
     );
   }

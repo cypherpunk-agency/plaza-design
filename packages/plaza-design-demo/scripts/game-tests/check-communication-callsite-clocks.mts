@@ -1,119 +1,78 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { Hints } from '../../src/ssg/game/ui/hints';
+import { ShiftGuidance } from '../../src/ssg/game/ui/shift-guidance';
 import { gameClassSource } from './game-source.mts';
+import { Game } from '../../src/ssg/game/runtime/game';
+import * as PresentationFrame from '../../src/ssg/game/runtime/presentation-frame';
+import { runtimeFixture } from './runtime-fixture.mts';
 const file = 'src/ssg/game/runtime/game.ts',
   text = gameClassSource(),
   tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true),
   game = tree.statements.find(
     (n) => ts.isClassDeclaration(n) && n.name?.text === 'Game',
   ) as ts.ClassDeclaration;
-const names = ['communicationCovered', 'interactionHost', 'stepLoop', 'drawHud'],
-  selected = game.members
-    .filter((n) => n.name && names.includes(n.name.getText(tree)))
-    .map((n) => n.getText(tree))
-    .join('\n');
-assert.equal(
-  game.members.filter((n) => n.name && names.includes(n.name.getText(tree))).length,
-  4,
-  'exercise actual Game ownership/getter/loop/HUD methods',
-);
 const document = {
-    hidden: false,
-    documentElement: { classList: { toggle() {} } },
-    createElement: () => ({ className: '', textContent: '', setAttribute() {} }),
-  },
-  context: any = {
-    document,
-    requestAnimationFrame: () => 1,
-    perfSample() {},
-    perfBegin() {},
-    perfEnd() {},
-    city: { tick: () => assert.fail('test fixture holds simulation city clock') },
-    playProfile: () => ({ chrome: { minimalHud: false } }),
-    sceneTitle: () => 'Review',
-    pick: () => undefined,
-    OPENING_GOAL: {},
-  };
-const compile = (source: string) =>
-    vm.runInNewContext(
-      ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022 } })
-        .outputText,
-      context,
-    ),
-  Probe = compile('class Probe{' + selected + '}\nProbe;');
-const guideText = fs.readFileSync('src/ssg/game/ui/shift-guidance.ts', 'utf8'),
-  guideTree = ts.createSourceFile('shift-guidance.ts', guideText, ts.ScriptTarget.Latest, true),
-  guideClass = guideTree.statements.find(
-    (n) => ts.isClassDeclaration(n) && n.name?.text === 'ShiftGuidance',
-  )!,
-  Guidance = compile(guideClass.getText(guideTree).replace(/^export /, '') + '\nShiftGuidance;');
+  hidden: false,
+  documentElement: { classList: { toggle() {} } },
+  createElement: () => ({ className: '', textContent: '', setAttribute() {} }),
+};
+Object.assign(globalThis, { document, requestAnimationFrame: () => 1 });
 const approx = (actual: number, expected: number, label: string) =>
   assert(Math.abs(actual - expected) < 1e-8, label + ': ' + actual + ' != ' + expected);
+/** The actual Game loop (stepLoop), covered-surface getter and HUD over owned state records. */
 function fixture(reduced: boolean) {
   document.hidden = false;
   const hints = new Hints(() => []),
     pings: (number | null)[] = [],
     flags: Record<string, boolean> = {},
-    guidance = new Guidance(
-      { append() {} },
+    guidance = new ShiftGuidance(
+      { append() {} } as never,
       reduced,
       (x: number | null) => pings.push(x),
-      () => (flags.done ? null : { x: 300 }),
+      () => (flags.done ? null : ({ x: 300 } as never)),
       () => (flags.done ? 'Complete' : 'Review the control'),
     );
-  const f: any = Object.assign(Object.create(Probe.prototype), {
-    running: true,
-    gameplayFor: () => undefined,
-    syncEnginePause() {},
-    hosts: new Map(),
-    joinedZones: [],
+  const noop = () => {};
+  const f: any = runtimeFixture(Game, {
     hints,
-    last: 0,
     menu: { open: false },
-    opening: null,
-    cut: null,
-    mapView: null,
-    netView: null,
-    flight: null,
-    showEnd: false,
-    sleep: null,
     term: { isOpen: false, focused: false },
-    zh: { overlayOpen: false, popupOpen: false, visionOn: false, model: { data: { goals: [] } } },
-    save: { flags, playMs: 0 },
-    levelW: 1180,
-    spanW: 1180,
-    syncLevelArrows() {},
-    syncCarList() {},
-    fitW: 1180,
-    visionCamera() {},
-    syncModeUi() {},
-    stepOpening() {},
-    stepCutscene() {},
-    pendingCut: null,
+    zh: {
+      overlayOpen: false,
+      popupOpen: false,
+      acknowledgmentPending: false,
+      visionOn: false,
+      panelOpen: false,
+      model: { data: { goals: [] } },
+    },
+    save: { flags, playMs: 0, clock: { day: 1, min: 0 } },
     reduced,
-    t: 10,
-    clock: 0,
-    pinStory() {},
-    clockRuns: () => false,
-    syncClock() {},
-    update() {},
     shiftGuidance: guidance,
     p: { moving: false, x: 0 },
-    checkGain() {},
-    followHost() {},
-    loop() {},
+    def: { name: 'Review', objective: () => 'Review the control', width: 1180 },
+    story: '',
+    spanW: 1180,
+    enginesPaused: false,
+    gameplayFor: () => undefined,
+    reconcileWorldEdits: noop,
+    syncEnginePause: noop,
+    stepOpening: noop,
+    stepCutscene: noop,
+    syncModeUi: noop,
+    syncLevelArrows: noop,
+    syncCarList: noop,
+    followHost: noop,
+    checkGain: noop,
+    update: noop,
+    loop: noop,
+    syncHud: noop,
+    persistSave: noop,
+    stampEl: { textContent: '' },
     keyBar: { root: { offsetHeight: 0 } },
     canvas: { width: 960, clientWidth: 960 },
-    k: 1,
-    viewW: 960,
-    viewH: 540,
     clockText: '',
-    def: { objective: () => 'Review the control' },
-    story: '',
-    here: 'sandbox',
     x: {
       save() {},
       restore() {},
@@ -121,12 +80,15 @@ function fixture(reduced: boolean) {
       fillRect() {},
       fillText() {},
     },
+    scenes: { here: 'sandbox' },
+    timing: { running: true, t: 10, clock: 0, last: 0 },
+    camera: { fitW: 1180, viewW: 960, viewH: 540, k: 1 },
   });
-  f.draw = () => Probe.prototype.drawHud.call(f);
+  f.draw = () => PresentationFrame.drawHud(f.presentationFramePort);
   let now = 0;
   const step = (ms = 100) => {
     now += ms;
-    Probe.prototype.stepLoop.call(f, now);
+    f.stepLoop(now);
   };
   hints.notices.offer({
     id: 'result',
@@ -137,7 +99,7 @@ function fixture(reduced: boolean) {
     priority: 200,
     duration: 1000,
   });
-  Probe.prototype.stepLoop.call(f, 0);
+  f.stepLoop(0);
   step();
   step();
   return { f, hints, guidance, pings, flags, step };
@@ -158,43 +120,43 @@ const covers = [
   [
     'opening',
     (f: any, on: boolean) => {
-      f.opening = on ? { timeline: null } : null;
+      f.presentation.opening = on ? { timeline: null } : null;
     },
   ],
   [
     'cutscene',
     (f: any, on: boolean) => {
-      f.cut = on ? { timeline: null } : null;
+      f.presentation.cut = on ? { timeline: null, scene: {} } : null;
     },
   ],
   [
     'map',
     (f: any, on: boolean) => {
-      f.mapView = on ? {} : null;
+      f.presentation.mapView = on ? {} : null;
     },
   ],
   [
     'network map',
     (f: any, on: boolean) => {
-      f.netView = on ? {} : null;
+      f.presentation.netView = on ? {} : null;
     },
   ],
   [
     'taxi flight',
     (f: any, on: boolean) => {
-      f.flight = on ? {} : null;
+      f.presentation.flight = on ? {} : null;
     },
   ],
   [
     'end',
     (f: any, on: boolean) => {
-      f.showEnd = on;
+      f.presentation.showEnd = on;
     },
   ],
   [
     'sleep card',
     (f: any, on: boolean) => {
-      f.sleep = on ? {} : null;
+      f.presentation.sleep = on ? {} : null;
     },
   ],
   [
@@ -206,8 +168,8 @@ const covers = [
   [
     'joined conversation',
     (f: any, on: boolean) => {
-      f.joinedZones = [{ id: 'neighbor' }];
-      f.hosts.set('neighbor', { overlayOpen: on, tick() {} });
+      f.scenes.joinedZones = [{ id: 'neighbor' }];
+      f.scenes.hosts.set('neighbor', { overlayOpen: on, tick() {} });
     },
   ],
   [
@@ -224,12 +186,12 @@ for (const reduced of [false, true])
       time = hints.notices.time,
       remaining = (hints.notices as any).current.remaining,
       age = guidance.age,
-      simulation = f.clock,
-      animation = f.t;
+      simulation = f.timing.clock,
+      animation = f.timing.t;
     cover(f, true);
     for (let i = 0; i < 100; i++) step();
     approx(
-      f.clock - simulation,
+      f.timing.clock - simulation,
       ['deck', 'opening', 'cutscene'].includes(label) ? 0 : 300,
       label + ' preserves existing simulation-clock policy',
     );
@@ -263,8 +225,9 @@ for (const reduced of [false, true])
       1,
       label + ' one guidance target is introduced',
     );
-    assert(f.clock >= simulation, 'simulation policy still advances where it did before');
-    if (reduced) assert.equal(f.t, animation, 'reduced-motion artwork clock stays unchanged');
+    assert(f.timing.clock >= simulation, 'simulation policy still advances where it did before');
+    if (reduced)
+      assert.equal(f.timing.t, animation, 'reduced-motion artwork clock stays unchanged');
     cases++;
   }
 const suspended = fixture(true),

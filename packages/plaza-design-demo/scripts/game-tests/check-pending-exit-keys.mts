@@ -117,7 +117,10 @@ try {
   g.sources = { openingStory: { openingState: () => 'act1' } };
   g.scenes.here = 'downtown';
   Object.defineProperty(g, 'def', { value: registry.downtown });
-  g.hostOf = () => ({ react: (...args: any[]) => reactions.push(args) });
+  g.hostOf = () => ({
+    react: (...args: any[]) => reactions.push(args),
+    model: { attachmentOffsets: () => undefined },
+  });
   g.hasScene = (id: string) => !!registry[id];
   g.travel = (...args: any[]) => travels.push(args);
   InteractionRouting.useExit(g.interactionRoutingPort, exit);

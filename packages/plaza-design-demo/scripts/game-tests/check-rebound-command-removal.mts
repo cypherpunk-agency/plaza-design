@@ -68,9 +68,10 @@ try {
   const host = new Element(),
     all = (e: Element): Element[] => [e, ...e.children.flatMap(all)],
     find = (name: string) => {
-      const e = all(host).find(
-        (e) => e.attributes['aria-label'] === name || e.textContent === name,
-      );
+      // a control's aria-label wins over a visible label/legend with the same text
+      const e =
+        all(host).find((e) => e.attributes['aria-label'] === name) ??
+        all(host).find((e) => e.textContent === name);
       assert(e, name);
       return e;
     },

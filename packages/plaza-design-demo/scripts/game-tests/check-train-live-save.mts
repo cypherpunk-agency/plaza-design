@@ -62,7 +62,16 @@ function exercise(scene: any, city: any, metro: any) {
     m = new SceneModel(
       { say: (line, from) => lines.push([line, from]), changed() {}, open() {} },
       scene.data,
-      scene.rules,
+      // scene rules are built per player, as the game does (runtime/game/scenes.ts)
+      typeof scene.rules === 'function'
+        ? scene.rules({
+            save: () => ({ handle: '', tokens: 0, jump: false, controlled: [], flags: {} }),
+            persist: () => {},
+            nodes: () => 0,
+            granted: () => {},
+            end: () => {},
+          })
+        : scene.rules,
     );
   m.setPaused(true);
   let state: any = { flags: {}, items: {}, tokens: 0 };

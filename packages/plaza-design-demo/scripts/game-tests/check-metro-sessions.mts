@@ -106,8 +106,9 @@ for (const id of ['metro', 'galleriaStation', 'harborStation', 'train'] as const
       tm.setPaused(true);
     }
   } else {
-    scene.preparePresentation?.(view, { hover: null } as any);
-    const env = scene.visualEnvironment!(view, { hover: null } as any);
+    // no live engine (model) here: the environment reads the scene's own sources only
+    scene.preparePresentation?.(view);
+    const env = scene.visualEnvironment!(view);
     if (id === 'metro')
       assert(
         env.bindings!['station.pose.regular'],

@@ -107,12 +107,12 @@ function observe(docs: ReadonlyMap<string, unknown>) {
   g.timing.t = 120;
   const session = g.gameplayFor('harbor');
   const before = scene.presentationState!.capture(),
-    environment = scene.visualEnvironment!(frameView(120), {} as any);
+    environment = scene.visualEnvironment!(frameView(120));
   assert(session.dispatch('review.visual', 'interaction').ok);
   assert.equal((scene.presentationState!.capture() as any).craneCall, g.timing.t);
   assert.notDeepEqual(scene.presentationState!.capture(), before);
   assert.notDeepEqual(
-    scene.visualEnvironment!(frameView(120), {} as any).bindings,
+    scene.visualEnvironment!(frameView(120)).bindings,
     environment.bindings,
     'same native artwork input observes authored cue',
   );

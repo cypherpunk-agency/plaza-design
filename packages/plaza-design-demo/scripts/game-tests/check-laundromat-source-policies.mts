@@ -295,9 +295,10 @@ try {
       }).list(),
     ),
   );
+  // talk.laundromat.* are the scene's own people conversations; the device daemon conversation is what changed.
   await fresh(
     'rebound',
-    `assert.deepEqual(Object.keys(scene.data.dialogue),['review.suds']);assert.deepEqual(Object.keys(LAUNDROMAT.dialogue),['review.suds']);assert.equal(scene.gameplay.purchases['review.soap'].basePrice,2);assert(!scene.gameplay.commands['laundromat.buy-soap']);assert(!scene.gameplay.purchases['laundromat.soap']);`,
+    `const own=(d)=>Object.keys(d).filter((k)=>!k.startsWith('talk.laundromat.'));assert.deepEqual(own(scene.data.dialogue),['review.suds']);assert.deepEqual(own(LAUNDROMAT.dialogue),['review.suds']);assert.equal(scene.gameplay.purchases['review.soap'].basePrice,2);assert(!scene.gameplay.commands['laundromat.buy-soap']);assert(!scene.gameplay.purchases['laundromat.soap']);`,
   );
   // Remove the whole ordinary graph through typed current bindings, keeping physical washer behavior.
   for (const [id, reply] of Object.entries(
@@ -323,13 +324,14 @@ try {
     removed = pendingRegistry(stageB).laundromat;
   assert(!removed.uses!.some((u) => u.id === 'soap'));
   assert(!removed.data!.devices.some((d) => d.id === 'suds'));
-  assert.deepEqual(removed.data!.dialogue, {});
+  const own = (d: object) => Object.keys(d).filter((k) => !k.startsWith('talk.laundromat.'));
+  assert.deepEqual(own(removed.data!.dialogue), [], 'only the people conversations remain');
   const saveB = store.save(
     model.edits().map((e) => ({ ...e, revision: store.read(e.id).revision })),
   );
   await fresh(
     'removed',
-    `assert(!scene.uses.some(u=>u.id==='soap'));assert(!scene.data.devices.some(d=>d.id==='suds'));assert.deepEqual(scene.data.dialogue,{});assert.deepEqual(LAUNDROMAT.dialogue,{});assert(!scene.gameplay.conversations.suds);`,
+    `assert(!scene.uses.some(u=>u.id==='soap'));assert(!scene.data.devices.some(d=>d.id==='suds'));const own=(d)=>Object.keys(d).filter((k)=>!k.startsWith('talk.laundromat.'));assert.deepEqual(own(scene.data.dialogue),[]);assert.deepEqual(own(LAUNDROMAT.dialogue),[]);assert(!scene.gameplay.conversations.suds);`,
   );
   store.undo(saveB.transaction, Object.fromEntries(saveB.documents.map((d) => [d.id, d.revision])));
   const undoA = store.undo(

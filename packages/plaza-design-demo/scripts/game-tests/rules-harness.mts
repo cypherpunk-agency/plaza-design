@@ -36,11 +36,15 @@ export class Element {
   onclick?: () => void;
   ontoggle?: () => void;
   onerror?: () => void;
-  append(...n: Element[]) {
+  append(...values: (Element | string)[]) {
+    // Like the DOM, strings become text nodes.
+    const n = values.map((v) =>
+      typeof v === 'string' ? Object.assign(new Element(), { textContent: v }) : v,
+    );
     for (const child of n) child.parentElement = this;
     this.children.push(...n);
   }
-  replaceChildren(...n: Element[]) {
+  replaceChildren(...n: (Element | string)[]) {
     this.children = [];
     this.append(...n);
   }

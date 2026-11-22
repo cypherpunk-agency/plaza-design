@@ -62,10 +62,8 @@ for (const id of [
                     ? { ceilingHeight: ceiling }
                     : {},
             ),
-            state = art.visualProperties(element.type, {
-              frame: frame as never,
-              ...(id.startsWith('seat') ? { width } : {}),
-            }),
+            // fittings read only their own scalars; the native frame feeds the comparison kernel
+            state = art.visualProperties(element.type, id.startsWith('seat') ? { width } : {}),
             before = JSON.stringify(frame);
           const kernel = createTrainInteriorArtwork(frame),
             a = record(),

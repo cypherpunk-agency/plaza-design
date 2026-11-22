@@ -570,8 +570,11 @@ console.log(
   );
   const info = selection.resolved![hit.id];
   assert.equal(info.layer, 'foreground');
-  assert.equal(info.bounds.x, 200);
-  assert.equal(info.bounds.width, 200);
+  // bounds are measured from the drawing (stroke overhang); framingBounds are the declared projection
+  assert.equal(info.boundsSource, 'drawing');
+  assert.equal(info.framingBounds.x, 200);
+  assert.equal(info.framingBounds.width, 200);
+  assert(info.bounds.x <= 200 && info.bounds.x + info.bounds.width >= 400);
   assert.equal(info.clipSource, 'None');
   assert(info.visible);
   assert.equal(selection.deltaToLocal!(hit.id, 20, -10).x, 10, 'drag uses actual canvas transform');
