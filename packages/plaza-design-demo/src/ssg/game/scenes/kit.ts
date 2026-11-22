@@ -47,6 +47,8 @@ export interface SceneExit {
   to: string;
   label: string;
   promptH?: number;
+  /** The height of the floor it stands on (a flat's door up a building); absent: the street. */
+  h?: number;
   at?: string;
   /**
    * Not a walk: 'board' the train standing at this platform (one prompt per open

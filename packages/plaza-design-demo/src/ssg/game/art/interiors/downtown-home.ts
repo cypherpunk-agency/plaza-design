@@ -908,6 +908,9 @@ export const serviceLatchElement = piece({
     tell: appearanceBoolean(bool('Cyan tell on the latch box', true)),
     leaf: appearanceStructure(colour('Steel colour', '#3a4044')),
   },
+  // from the level: 1 swings it open whatever State says (0 or unset: State)
+  visualFields: { opened: num('Opened (from the level)', 0, 0, 1, 1) },
+  live: (p, s) => (Number(s.opened ?? 0) > 0.5 ? { ...p, state: 'open' } : p),
   size: (p) => ({ w: Number(p.width) + 16, tall: Number(p.height) + 16 }),
   bounds: (p) => ({
     x: -2,
@@ -2463,6 +2466,9 @@ export const privacyScreenElement = piece({
     fabric: appearanceStructure(colour('Fabric', '#bfd0c8')),
     seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
+  // from the level: 1 rolls it up whatever Closed says (0 or unset: Closed)
+  visualFields: { raised: num('Raised (from the level)', 0, 0, 1, 1) },
+  live: (p, s) => (Number(s.raised ?? 0) > 0.5 ? { ...p, closed: 0.05 } : p),
   size: (p) => ({ w: Number(p.width), tall: Number(p.height) }),
   bounds: (p) => ({ x: 0, h: Number(p.height), w: Number(p.width), tall: Number(p.height) }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),

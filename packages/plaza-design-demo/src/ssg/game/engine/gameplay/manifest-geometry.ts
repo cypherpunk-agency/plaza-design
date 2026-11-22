@@ -48,7 +48,7 @@ export function resolveManifestPoint(
     !Number.isFinite(h) ||
     x < 12 ||
     x > width - 12 ||
-    h < 0 ||
+    h < -400 || // below the street: basements and areaways
     h > 10000 ||
     (ground && h !== 0)
   )
@@ -58,7 +58,9 @@ export function resolveManifestPoint(
     responseH =
       t.responseH === undefined || (t.responseAboveFloor && h === 0) ? undefined : h + t.responseH;
   if (
-    [promptH, responseH].some((v) => v !== undefined && (!Number.isFinite(v) || v < 0 || v > 10000))
+    [promptH, responseH].some(
+      (v) => v !== undefined && (!Number.isFinite(v) || v < -400 || v > 10000),
+    )
   )
     throw new Error('Manifest text height outside scene bounds');
   return {

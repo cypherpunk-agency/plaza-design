@@ -226,7 +226,7 @@ export function acceptsArtworkRole(spec: ArtworkRole, row: Resolved, width?: num
       row.placement.facing !== 1 ||
       row.placement.x < 12 ||
       (width !== undefined && row.placement.x > width - 12) ||
-      row.placement.h < 0 ||
+      row.placement.h < -400 ||
       row.placement.h > 10000)
   )
     return false;

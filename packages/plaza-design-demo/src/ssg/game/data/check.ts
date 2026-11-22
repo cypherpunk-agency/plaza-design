@@ -1437,8 +1437,9 @@ function checker(
           err(wl + ' › spot', 'presence must name a declared shared query');
         if (![l.spot.x, l.spot.w, l.spot.h].every(num))
           err(wl + ' › spot', 'x, w and h are numbers (world units)');
-        if (l.spot.y !== undefined && !(num(l.spot.y) && l.spot.y >= 0))
-          err(wl + ' › spot', 'y is a height above the street, 0 or more');
+        // below the street (a basement or an areaway) is allowed, down to a few storeys
+        if (l.spot.y !== undefined && !(num(l.spot.y) && l.spot.y >= -400))
+          err(wl + ' › spot', 'y is a height above the street (negative: below it), -400 or more');
       }
       if (l.board) {
         keys(l.board, 'pt', wl + ' › board');

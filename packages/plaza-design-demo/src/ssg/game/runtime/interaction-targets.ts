@@ -126,7 +126,8 @@ export function exitTargets(
       kind: 'exit',
       id: 'exit:' + e.id,
       x: e.x,
-      h: (e as typeof e & { floorH?: number }).floorH ?? 0,
+      // an exit up a building (a flat's door on 7/F) prompts on the floor it stands on
+      h: (e as typeof e & { floorH?: number }).floorH ?? e.h ?? 0,
       label,
       promptH: e.promptH ?? 70,
     });
