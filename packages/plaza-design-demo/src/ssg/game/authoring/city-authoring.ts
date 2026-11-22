@@ -1,5 +1,6 @@
 import { liveSources } from './validation-snapshot';
 import { climateAuthoring } from './climate-authoring';
+import { placeClimate, placeSummaries } from './world-city-model';
 import { validateOpeningSource } from '../story/opening-source';
 import { pendingRegistry } from './pending-registry';
 import { sharedWorldFlags, renameWorldFlagDocuments } from './world-flag-references';
@@ -13,11 +14,15 @@ export interface CityAuthoringSession {
   expanded?: Map<string, boolean>;
   stationDraft?: Pick<CitySource, 'STATIONS' | 'STATION_MAP'>;
   stationSource?: string;
+  /** Place whose climate override controls are open although it still inherits. */
+  climateOverride?: string;
 }
 export interface CityAuthoringScope {
   section: 'place' | 'travel' | 'map';
   place?: string;
   session?: CityAuthoringSession;
+  /** Switch the surrounding panel to another section (the World map's Travel tab). */
+  openSection?(section: 'place' | 'travel' | 'map'): void;
 }
 /** Typed edits use ordinary history, bundle and protected grouped source Save. */
 export function mountCityAuthoring(
@@ -28,7 +33,8 @@ export function mountCityAuthoring(
   const api = context.authoring!;
   let disposed = false,
     flagDraft = '',
-    stationDraftSource = scope.session?.stationSource ?? '';
+    stationDraftSource = scope.session?.stationSource ?? '',
+    climateOverride = scope.session?.climateOverride;
   let stationDraft = scope.session?.stationDraft;
   const error = document.createElement('p');
   error.setAttribute('role', 'alert');
@@ -257,46 +263,10 @@ export function mountCityAuthoring(
       );
     }
     for (const place of places) {
-      const section = host;
-      form.select(
-        section,
-        'Place ' + place.id + ' climate override',
-        ['', ...Object.keys(d.CLIMATES)],
-        place.climate ?? '',
-        (v) =>
-          edit('Edit place climate binding', (d) => {
-            const p = d.PLACES.find((p) => p.id === place.id)!;
-            if (v) p.climate = v;
-            else delete p.climate;
-          }),
-      );
-      if (place.climate)
-        climateAuthoring(form, section, place.climate, d.CLIMATES[place.climate], (change) =>
-          edit('Edit place climate', (d) => change(d.CLIMATES[place.climate!])),
-        );
-
-      form.select(
-        section,
-        'Place ' + place.id + ' access policy',
-        ['', ...Object.keys(d.ACCESS)],
-        place.access ?? '',
-        (v) =>
-          edit('Bind place access', (d) => {
-            const p = d.PLACES.find((p) => p.id === place.id)!;
-            if (v) p.access = v;
-            else delete p.access;
-          }),
-      );
-      {
-        const policy = place.access ? d.ACCESS[place.access] : undefined,
-          note = document.createElement('p');
-        note.textContent = policy
-          ? `Entry rule: ${policy.exit.scene} / ${policy.exit.id}. This is the same physical exit used by the game.`
-          : 'No physical-exit policy linked here. Transport locks are edited under Travel; discovery only controls what the map reveals.';
-        section.append(note);
-        if (policy)
-          form.button(section, 'Open entry-rule chunk', () => context.openScene(policy.exit.scene));
-      }
+      const section = host,
+        look = placeClimate(d, place),
+        summary = placeSummaries(d, place);
+      form.prefix = 'Place ' + place.id + ' ';
       form.text(section, 'Place ' + place.id + ' name', place.name, (name) =>
         edit('Edit place name', (d) => {
           d.PLACES.find((p) => p.id === place.id)!.name = name;
@@ -304,7 +274,7 @@ export function mountCityAuthoring(
       );
       form.select(
         section,
-        'Place ' + place.id + ' entrance',
+        'Place ' + place.id + ' arrive at',
         place.scenes,
         place.entrance,
         (scene) =>
@@ -326,6 +296,167 @@ export function mountCityAuthoring(
             else delete p.at;
           }),
       );
+      form.select(
+        section,
+        'Place ' + place.id + ' district',
+        ['', ...districtIds],
+        place.district ?? '',
+        (v) =>
+          edit('Reassign place district', (d) => {
+            d.PLACES.find((x) => x.id === place.id)!.district = (v ||
+              null) as typeof place.district;
+          }),
+      );
+      // Climate & look follow the district unless this place overrides them.
+      const climate = document.createElement('div'),
+        heading = document.createElement('h4'),
+        line = document.createElement('p');
+      climate.className = 'place-climate';
+      heading.textContent = 'Climate & look';
+      line.textContent = look.inherited
+        ? 'Inherited from ' + look.from + ' · ' + look.summary
+        : 'Overridden here · ' + look.summary;
+      climate.append(heading, line);
+      section.append(climate);
+      const overriding = !look.inherited || climateOverride === place.id;
+      if (!overriding)
+        form.button(climate, 'Override', () => {
+          climateOverride = place.id;
+          if (scope.session) scope.session.climateOverride = place.id;
+          render();
+        });
+      else {
+        form.select(
+          climate,
+          'Place ' + place.id + ' climate override',
+          ['', ...Object.keys(d.CLIMATES)],
+          place.climate ?? '',
+          (v) =>
+            edit('Edit place climate binding', (d) => {
+              const p = d.PLACES.find((p) => p.id === place.id)!;
+              if (v) p.climate = v;
+              else delete p.climate;
+            }),
+        );
+        if (place.climate)
+          climateAuthoring(form, section, place.climate, d.CLIMATES[place.climate], (change) =>
+            edit('Edit place climate', (d) => change(d.CLIMATES[place.climate!])),
+          );
+        if (!look.inherited)
+          form.button(climate, 'Use district climate', () =>
+            edit('Use district climate', (d) => {
+              delete d.PLACES.find((p) => p.id === place.id)!.climate;
+            }),
+          );
+      }
+      const travelHere = form.section(
+        section,
+        'Travel · ' + summary.travel,
+        'place-travel:' + place.id,
+      );
+      {
+        const note = document.createElement('p');
+        note.textContent =
+          'Metro stations and taxi stands that stop in this place. Routes, fares and locks are edited under Travel.';
+        travelHere.append(note);
+        if (scope.openSection)
+          form.button(travelHere, 'Edit travel', () => scope.openSection!('travel'));
+      }
+      const discovery = form.section(
+        section,
+        'Discovery · ' + summary.discovery,
+        'place-discovery:' + place.id,
+      );
+      form.check(discovery, 'Place ' + place.id + ' map point', !!d.PLACE_MAP[place.id], (on) =>
+        edit('Set place map marker', (d) => {
+          if (on)
+            d.PLACE_MAP[place.id] = [
+              ...(Object.entries(d.PLACE_MAP).find(
+                ([id, p]) => p && d.PLACES.find((v) => v.id === id)?.district === place.district,
+              )?.[1] ??
+                (place.district ? d.DISTRICT_MAP[place.district].centre : null) ??
+                Object.values(d.PLACE_MAP).find((p): p is [number, number] => !!p) ??
+                d.STATION_MAP[d.LINE[0]]),
+            ];
+          else delete d.PLACE_MAP[place.id];
+        }),
+      );
+      if (d.PLACE_MAP[place.id])
+        topology(discovery, d.PLACE_MAP[place.id], ['PLACE_MAP', place.id], d);
+      form.check(
+        discovery,
+        'Place ' + place.id + ' reveal rule',
+        !!d.PLACE_IN_VIEW[place.id],
+        (on) =>
+          edit('Set place reveal rule', (d) => {
+            if (on) d.PLACE_IN_VIEW[place.id] = [];
+            else delete d.PLACE_IN_VIEW[place.id];
+          }),
+      );
+      if (d.PLACE_IN_VIEW[place.id])
+        topology(discovery, d.PLACE_IN_VIEW[place.id], ['PLACE_IN_VIEW', place.id], d);
+      const accessHere = form.section(
+        section,
+        'Access · ' + summary.access,
+        'place-access:' + place.id,
+      );
+      form.select(
+        accessHere,
+        'Place ' + place.id + ' access policy',
+        ['', ...Object.keys(d.ACCESS)],
+        place.access ?? '',
+        (v) =>
+          edit('Bind place access', (d) => {
+            const p = d.PLACES.find((p) => p.id === place.id)!;
+            if (v) p.access = v;
+            else delete p.access;
+          }),
+      );
+      {
+        const policy = place.access ? d.ACCESS[place.access] : undefined,
+          note = document.createElement('p');
+        note.textContent = policy
+          ? `Entry rule: ${policy.exit.scene} / ${policy.exit.id}. This is the same physical exit used by the game.`
+          : 'No physical-exit policy linked here. Transport locks are edited under Travel; discovery only controls what the map reveals.';
+        accessHere.append(note);
+        if (policy)
+          form.button(accessHere, 'Open entry-rule chunk', () =>
+            context.openScene(policy.exit.scene),
+          );
+      }
+      const scenesHere = form.section(
+        section,
+        'Scenes · ' + summary.scenes,
+        'place-scenes:' + place.id,
+      );
+      for (const scene of sceneIds) {
+        const owner = d.PLACES.find((p) => p.scenes.includes(scene as (typeof p.scenes)[number]));
+        if (owner?.id === place.id) continue;
+        form.button(
+          scenesHere,
+          'Move ' + scene + ' into ' + place.id,
+          () =>
+            edit('Move scene between places', (d) => {
+              const old = d.PLACES.find((p) =>
+                p.scenes.includes(scene as (typeof p.scenes)[number]),
+              );
+              if (old) {
+                if (old.scenes.length === 1)
+                  throw Error('Merge the owning place instead of leaving it empty');
+                old.scenes = old.scenes.filter((s) => s !== scene);
+                if (old.entrance === scene) {
+                  old.entrance = old.scenes[0];
+                  delete old.at;
+                }
+              }
+              d.PLACES.find((p) => p.id === place.id)!.scenes.push(
+                scene as (typeof place.scenes)[number],
+              );
+            }),
+          owner?.scenes.length === 1,
+        );
+      }
+      form.prefix = undefined;
     }
     if (show('travel'))
       for (const id of d.STAND_IDS) {
@@ -517,71 +648,6 @@ export function mountCityAuthoring(
           }),
         );
       }
-    }
-    for (const place of places) {
-      const section = form.section(host, 'Membership and discovery · ' + place.id);
-      form.select(
-        section,
-        'Place ' + place.id + ' district',
-        ['', ...districtIds],
-        place.district ?? '',
-        (v) =>
-          edit('Reassign place district', (d) => {
-            d.PLACES.find((x) => x.id === place.id)!.district = (v ||
-              null) as typeof place.district;
-          }),
-      );
-      for (const scene of sceneIds) {
-        const owner = d.PLACES.find((p) => p.scenes.includes(scene as (typeof p.scenes)[number]));
-        if (owner?.id === place.id) continue;
-        form.button(
-          section,
-          'Move ' + scene + ' into ' + place.id,
-          () =>
-            edit('Move scene between places', (d) => {
-              const old = d.PLACES.find((p) =>
-                p.scenes.includes(scene as (typeof p.scenes)[number]),
-              );
-              if (old) {
-                if (old.scenes.length === 1)
-                  throw Error('Merge the owning place instead of leaving it empty');
-                old.scenes = old.scenes.filter((s) => s !== scene);
-                if (old.entrance === scene) {
-                  old.entrance = old.scenes[0];
-                  delete old.at;
-                }
-              }
-              d.PLACES.find((p) => p.id === place.id)!.scenes.push(
-                scene as (typeof place.scenes)[number],
-              );
-            }),
-          owner?.scenes.length === 1,
-        );
-      }
-      form.check(section, 'Place ' + place.id + ' map point', !!d.PLACE_MAP[place.id], (on) =>
-        edit('Set place map marker', (d) => {
-          if (on)
-            d.PLACE_MAP[place.id] = [
-              ...(Object.entries(d.PLACE_MAP).find(
-                ([id, p]) => p && d.PLACES.find((v) => v.id === id)?.district === place.district,
-              )?.[1] ??
-                (place.district ? d.DISTRICT_MAP[place.district].centre : null) ??
-                Object.values(d.PLACE_MAP).find((p): p is [number, number] => !!p) ??
-                d.STATION_MAP[d.LINE[0]]),
-            ];
-          else delete d.PLACE_MAP[place.id];
-        }),
-      );
-      if (scope.section === 'place' && d.PLACE_MAP[place.id])
-        topology(section, d.PLACE_MAP[place.id], ['PLACE_MAP', place.id], d);
-      form.check(section, 'Place ' + place.id + ' reveal rule', !!d.PLACE_IN_VIEW[place.id], (on) =>
-        edit('Set place reveal rule', (d) => {
-          if (on) d.PLACE_IN_VIEW[place.id] = [];
-          else delete d.PLACE_IN_VIEW[place.id];
-        }),
-      );
-      if (scope.section === 'place' && d.PLACE_IN_VIEW[place.id])
-        topology(section, d.PLACE_IN_VIEW[place.id], ['PLACE_IN_VIEW', place.id], d);
     }
     if (show('travel')) {
       // A route and its geographic point may need to change together. Keep typed drafts until

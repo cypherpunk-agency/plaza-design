@@ -1,7 +1,7 @@
 # Editor redesign phase 7: notes
 
-Authorized by the user on 2026-11-21. **7a and 7b built 2026-11-22**, plus the 7d live
-state panel (see "Built" under each); 7c and the rest of 7d follow. Written 2026-10-28 so the work can resume without repeating the design
+Authorized by the user on 2026-11-21. **7a, 7b and 7c built 2026-11-22**, plus the 7d live
+state panel (see "Built" under each); the Review workspace arrangement remains. Written 2026-10-28 so the work can resume without repeating the design
 discussion. Phase 7 fills four workspaces with new content; the
 shell from phases 1–6 shipped on 2026-10-28. Each part should become its own goal, chosen by
 the user. Rules: [Editor UI](../reference/EDITOR-UI.md). Mockups: the
@@ -118,6 +118,24 @@ Decisions on the open questions:
 **Open questions**
 - Does Game settings (launch, player, guidance, contacts, ending) belong in World or in Review?
 - Should network editing get its own map-like view?
+
+**Built 2026-11-22** in the existing City map panel (`authoring/world-panel.ts`, place inspector in
+`authoring/city-authoring.ts`, pure list and summaries in `authoring/world-city-model.ts`, check
+`check-world-city-model`):
+- Left column **City**: filter, Places (district colour swatch, district), Districts (climate
+  summary such as "mostly rain, cloudy"), Travel (metro stations, taxi stands, fare). Choosing a
+  district or travel row switches the inspector tab and opens that section.
+- Map: a dashed **Preview only** bar (Discovery: all places / start of game, Keys held and Flags
+  chips) that never changes saves; **＋ Place** splits a scene out of a multi-scene place, or adopts
+  an unplaced scene, as a new place; **Open <place> in Layout →** opens its arrival scene.
+- Place inspector: Name, Arrive at, Arrival exit, District; **Climate & look** shows the inherited
+  district climate with one **Override** button (and **Use district climate** to go back); Travel,
+  Discovery, Access and Scenes are collapsed with one-line summaries. Remaining display options
+  (layer, harbor, reduced motion, flat, frame) moved to **Map display**.
+- Decisions: Game settings stays a World tab for now; networks keep their own tab, no map view.
+  **＋ Route** was not added: metro stations and taxi stands are fixed sets in code (`Station`,
+  `Stand`), so a new route needs a code change first. Variables stay their own World tab rather
+  than a left-dock tab.
 
 ## 7d · Review workspace
 

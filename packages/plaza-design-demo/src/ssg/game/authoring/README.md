@@ -161,14 +161,18 @@ ordinary state-declaration controls. Usages list typed conditions/actions/templa
 checkpoint overrides, with Open context buttons where available. Equal local IDs in different
 sources remain distinct. A default or checkpoint value is not a readout of the live campaign save.
 
-**World → City map** uses the game's map renderer with a source inspector beside it. Click a
-place or use its picker. **Place** edits its name, physical arrival, district membership, map point
+**World → City map** uses the game's map renderer with the City list on the left (places with
+their district colour, districts with climate, travel stops) and a source inspector on the right.
+Click a place on the map or in the list. The dashed **Preview only** bar on the map simulates
+discovery, carried keys or flags without changing the campaign save; **＋ Place** creates a place
+from a scene and **Open <place> in Layout →** opens its arrival scene. A place's climate is shown
+as inherited from its district until you press **Override**. **Place** edits its name, physical arrival, district membership, map point
 and discovery rule; **Districts** edits district geography; **Travel** edits fares, stations, taxi
 routes, locks and references to physical entry rules. **Map layout & discovery** contains broader
 topology and place creation/merge controls. These replace the separate Districts and City & travel
 screens. Station routes are drafts until Apply; Discard changes no source. Drafts and expanded
-sections survive switching map inspector sections. **Preview conditions** is separate from saved
-source: simulating discovery, carried keys or flags there never changes the campaign save.
+sections survive switching map inspector sections. **Map display** holds the remaining preview
+options (layer, harbor, reduced motion, flat map, frame).
 
 Select a chunk or group under **Chunks and groups**, or click its viewport border label. The
 inspector edits its X/Y membership placement, shared group definition, exported endpoints and
