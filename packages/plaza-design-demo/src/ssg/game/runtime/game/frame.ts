@@ -137,7 +137,7 @@ export function inspect(game: Game) {
       : null,
     conversation: game.zh.conversationFrame,
     environment: { weather: game.weatherHere().kind, clock: game.clockMode },
-    capabilities: capabilityView(game.save, !game.hackLocked(), game.networkContext.net),
+    capabilities: capabilityView(game.save, game.hackStages(), game.networkContext.net),
     access: {
       exits: game.def.exits.map((e) => ({
         id: e.id,
@@ -412,7 +412,7 @@ export function ctx(game: Game): Ctx {
     machine: game.termMachine(),
     // the deck's commands reach the scene's machines, when it has any
     shell:
-      zh.model.devices.size && !game.hackLocked()
+      zh.model.devices.size && game.hackStage('inspect')
         ? sceneShell(
             zh,
             scene.buzz
@@ -438,7 +438,7 @@ export function ctx(game: Game): Ctx {
     weather: () =>
       reportLines(sceneClimate(game.scenes.here, game.world.source), 12, game.world.source),
     // the net from where you stand (NET.md): scan, connect (needs scan.so, except what a port here knows)
-    net: game.hackLocked()
+    net: !game.hackStage('link')
       ? undefined
       : {
           scan: () => game.deckScan(),

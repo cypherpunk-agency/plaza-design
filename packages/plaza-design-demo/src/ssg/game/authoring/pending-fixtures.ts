@@ -1,3 +1,4 @@
+import { HACK_STAGE_FLAGS } from '../engine/hack-stages';
 import { pendingNetworkContext } from './pending-network';
 import type { SceneDef } from '../scenes/kit';
 import type { PlayFixtureVocabulary } from '../world/checkpoints';
@@ -69,6 +70,7 @@ export function pendingFixtureVocabulary(
       ...Object.values(opening.OPENING),
       ...opening.GAMEPLAY.flags,
       city.HARBOR_FLAG,
+      ...HACK_STAGE_FLAGS,
       ...Object.values(registry).flatMap((scene) => [
         ...(scene.gameplay?.flags ?? []),
         ...scene.exits.flatMap((e) => [

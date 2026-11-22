@@ -164,7 +164,7 @@ const save = newSave();
 save.jump = true;
 save.programs = ['scan.so'];
 save.keyring = ['chip'];
-const caps = capabilityView(save, false, { scanProgram: 'scan.so' });
+const caps = capabilityView(save, new Set(), { scanProgram: 'scan.so' });
 assert.equal(caps.jump, true);
 assert.equal(caps.network, false);
 caps.jump = false;

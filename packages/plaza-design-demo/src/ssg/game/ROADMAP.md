@@ -75,6 +75,10 @@ history. Do not restart a completed track because an intentionally contextual pr
 6. **Build M4**, then M5 and M6, using the build sequence below. Introduce each mechanic through
    a real gameplay need, shared source, typed authoring, a compact demo and a real scene. Keep
    Test District examples reachable and uncluttered.
+   - Done 2026-11-22, approved by the user: hacking capability stages (`inspect`, `wire`, `cut`,
+     `board`, `guard`, `link`; `engine/hack-stages.ts`, OPENING-PHASE-RULES.md). The story grants
+     them through a phase's `hackStages` or `hack:<stage>` flags; the old campaign still gets every
+     stage at the uplink. Act I's unlock order and where TIMER is first given are still to be decided with the user.
 7. **Continue Downtown sets in parallel.** The precinct's required versus optional role is open.
 8. **Prototype embodiment/remote mechanics when needed.** Before M7, settle body location,
    transfer versus copy, and Kessel's fate. Prove remote rules before building Act III.

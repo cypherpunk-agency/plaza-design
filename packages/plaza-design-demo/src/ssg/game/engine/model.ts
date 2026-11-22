@@ -1,3 +1,4 @@
+import type { HackStage } from './hack-stages';
 import { emptyPeople, stepPeople, restorePeople, type PeopleSource } from './people';
 import type { LevelSource } from './level';
 import { formatNativeText } from './text';
@@ -188,6 +189,8 @@ export interface SceneHooks {
   kick?: (dev: string) => void;
   /** The logic modules the player owns (`timer.so`, …). Default: what a new game starts with. */
   modules?: () => string[];
+  /** Is this hacking stage yours (engine/hack-stages.ts: wire, cut, board, guard, link)? Default: every one. */
+  stage?: (stage: HackStage) => boolean;
   /** The player's keyring (item ids), shared by every scene. Default: the model keeps its own. */
   keyring?: () => string[];
   /** Put an item on the keyring (and save). */
@@ -992,7 +995,17 @@ export class SceneModel {
     );
   }
 
+  /** Is this hacking stage yours (engine/hack-stages.ts)? The story decides; without a store, every one. */
+  can(stage: HackStage) {
+    return this.hooks.stage?.(stage) ?? true;
+  }
+  /** What a stage that is not yours yet says (data/engine.json `stage.<stage>`). */
+  notYet(stage: HackStage, vars?: Vars): Line {
+    return this.line('stage.' + stage, vars);
+  }
+
   connect(from: string, to: string, verb: string): Line {
+    if (!this.can('wire')) return this.notYet('wire', { from, to, verb });
     const result = reduceWireConnect(
       this.captureDomainState(),
       from,
@@ -1021,6 +1034,7 @@ export class SceneModel {
 
   /** Cut a cable, the player's or a pre-wired one. */
   cut(link: Link): Line {
+    if (!this.can('cut')) return this.notYet('cut', { from: link.from, to: link.to });
     const result = reduceWireCut(this.captureDomainState(), link);
     if (!result.ok)
       return this.line('wire.fixed', { from: link.from, to: link.to, verb: link.verb });
@@ -1058,7 +1072,7 @@ export class SceneModel {
    * ('timer1', 'switch1', …), or null when the module is unknown or not owned.
    */
   addLogic(kind: string): string | null {
-    if (!this.owns(kind)) return null;
+    if (!this.owns(kind) || !this.can('wire')) return null;
     const id = this.place(kind);
     this.changed();
     return id;
@@ -1313,6 +1327,7 @@ export class SceneModel {
     if (!g) return;
     if (this.passed.has(key)) return say('guard.passed');
     if (bySignal) return say('guard.signal');
+    if (!this.can('guard')) return this.sayLine(this.notYet('guard', vars));
     const left = this.lockLeft(key);
     if (left) return say('guard.locked', { sec: secs(left) });
     if (list(g.password ?? []).some((p) => norm(p) === norm(text))) return this.pass(dev, noun);
@@ -1976,6 +1991,9 @@ export class SceneModel {
     const reach = this.reachOf(n, c.dev).filter((id) => this.nodeData.has(id)),
       via = c.bySignal ? 'signal → ' : '';
     const id = c.verb.startsWith('connect ') ? c.verb.slice(8) : '';
+    // the player's own scan or connect needs the `link` stage; a signal wired in by the story still runs
+    if ((c.verb === 'scan' || id) && !c.bySignal && !this.can('link'))
+      return this.notYet('link', { verb: c.verb });
     // a link that is down (its `when` does not hold) neither scans nor connects
     if ((c.verb === 'scan' || id) && n.link!.when && !this.test(n.link!.when, c)) {
       return this.line('net.down', {
@@ -2051,6 +2069,7 @@ export class SceneModel {
 
   /** The deck's `scan`, or opening the net map: every node you reach from here shows on the board. Needs scan.so. */
   scanHere(): Line {
+    if (!this.can('link')) return this.notYet('link', { verb: 'scan' });
     if (!this.canScan)
       return this.line('net.noscan.none', {
         via: '',
@@ -2073,6 +2092,7 @@ export class SceneModel {
    */
   plugIn(id: string, place?: (m: MachineData) => string): Line {
     const vars = { via: '', node: id, name: this.nodeName(id) };
+    if (!this.can('link')) return this.notYet('link', { verb: 'connect ' + id });
     const known = this.ports().some((p) =>
       (this.nounData(p.dev, p.noun)!.link!.known ?? []).includes(id),
     );

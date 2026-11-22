@@ -66,6 +66,12 @@
 
     "wire.fixed": ["unwire {from} {to}", "that one is a conduit, not a cable. bolted shut. work around it.", "err"],
 
+    "stage.wire": ["on {from} do {to}", "you can see the event. you do not know how to run a cable from it yet.", "dim"],
+    "stage.cut": ["unwire {from} {to}", "you can see the cable. you do not know how to cut it safely yet.", "dim"],
+    "stage.guard": ["login {noun}", "a login. you do not know how to talk your way past one yet.", "dim"],
+    "stage.link": ["{verb}", "a port to somewhere else. you do not know how to use one yet.", "dim"],
+    "stage.board": "the board is not something you know how to read yet.",
+
     "give.tokens": ["", "+{n} noodle tokens. you have {total}.", "ok"],
     "give.module": ["install {module}", "installed {module}. {name} is in your board's palette now.", "ok"],
     "give.module.have": ["install {module}", "{module} is already installed.", "dim"],

@@ -125,6 +125,7 @@ Object.assign(game, {
     style: {},
   },
   hackLocked: () => false,
+  hackStage: () => true,
   camera: Object.assign(game.camera, { cam: device.x - 200, gy: 300, k: 1 }),
 });
 game.onCanvasPointer(

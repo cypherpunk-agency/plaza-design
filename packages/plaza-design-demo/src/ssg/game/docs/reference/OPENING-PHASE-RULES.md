@@ -10,10 +10,23 @@ row is an unconditional fallback, the first matching row wins. Nothing in the ga
 Story-wide, in `PHASES.<phase>`:
 
 - `hackLocked`: hacking is out of reach (sudo and the play profile still decide the rest);
+- `hackStages` (optional, only on an unlocked phase): the hacking capability stages this phase gives (see below). Left out, an
+  unlocked phase gives every stage at once, which is how the old campaign's uplink works;
 - `pinned`: the story holds the city clock while the phase lasts (see below);
 - `resume`: where a saved game resumes (ordered rows, an optional `whenFlag`, a fallback last);
 - `persona` (optional): who you are while the phase lasts. `name` is what the HUD and your speech bubbles call you ("courier"), `deck`
   is what the deck's files and `whoami` say, `calmWeather` keeps the rain off. A phase without a persona is you, with your handle.
+
+### Hacking capability stages
+
+Hacking unlocks one capability at a time (`engine/hack-stages.ts`): `inspect` (hack vision, tapping a device's verbs; nothing
+else counts without it), `wire` (new cables, and the TIMER/SWITCH logic parts), `cut` (cutting a cable), `board` (B, `⌁ jack
+in`), `guard` (password tries: fragments, typed guesses, the deck's `login`) and `link` (a LINK's `scan`/`connect`, and with the
+scanner program the net map). The stages you have are the phase's `hackStages` plus every stage whose flag `hack:<stage>` is
+set. Any gameplay command grants one with an ordinary flag action (`{ "flag": "hack:wire", "value": true }`, declaring the flag
+in its `flags`), and a starting checkpoint may set them. The device data does not change. A stage that is not yours refuses
+with its `stage.<stage>` line from `data/engine.json`, and the button for it (BOARD, LOGIC) stays hidden. Signals wired by
+the story still run. `capabilityView` exposes `hack` and `hack:<stage>` to access rules. Check: `pnpm test:game hack-stages`.
 
 Per scene, in `scenes/<id>/scene.json` `phases.<phase>` (only scenes that differ say anything):
 

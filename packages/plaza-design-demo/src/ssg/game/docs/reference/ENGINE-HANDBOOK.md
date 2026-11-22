@@ -660,7 +660,7 @@ slot code read it: `can('map'|'mapKey'|'deck'|'jump'|'hack'|'sudo'|'review')`, `
 player/guidance/clock/chrome/checkpoint`, `saveKey()`, `resumeKey()`, `slotPrefix()`. A profile is data plus pure
 helpers; it has no state or tick of its own, and `runtime/game.ts` stays the one loop. The profile decides whether
 an ability exists (`Game.hackLocked()` is `!can('hack')` or the opening's own lock); the story still decides when it
-is locked. To add or change a way of playing, edit the document; to add an ability, add it to `ABILITIES` in
+is locked, and which hacking stages are yours (`Game.hackStages()`, see OPENING-PHASE-RULES.md). To add or change a way of playing, edit the document; to add an ability, add it to `ABILITIES` in
 play-profiles.ts (validated, editor checkbox appears), read it with `can()` where the loop needs it and set it in
 every profile. A new player body is one entry in `AVATAR_PAINTERS` (runtime/avatars.ts) and `AVATARS`. Private Play
 installs the pending document before it builds the game (`installPlayProfiles`). Check:

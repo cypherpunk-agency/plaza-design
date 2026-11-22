@@ -1,4 +1,5 @@
 import { validValue, stateAddress, setStateValue } from '../engine/gameplay/state';
+import { HACK_STAGE_FLAGS } from '../engine/hack-stages';
 import type { StateDeclaration, StateValue } from '../engine/gameplay/types';
 import type { SceneDef } from '../scenes/kit';
 import { validateMetroStart, type MetroStart } from './transport/metro-start';
@@ -115,6 +116,7 @@ export const fixtureFlags = Array.from(
       s.exits.flatMap((e) => [...(e.requires ? [e.requires] : []), ...(e.sets ? [e.sets] : [])]),
     ),
     defaultCity.HARBOR_FLAG,
+    ...HACK_STAGE_FLAGS,
     'shop:bought',
     'end',
     'pixel',

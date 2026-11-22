@@ -114,6 +114,7 @@ export function hostOf(game: Game, id: SceneId): SceneHost {
         if (game.scenes.here === id) game.completeConversation(cue);
       },
       modules: () => game.save.modules,
+      stage: (stage) => game.hackStage(stage),
       keyring: () => game.save.keyring,
       give: (k) => {
         if (!game.save.keyring.includes(k)) game.save.keyring.push(k);
@@ -177,8 +178,9 @@ export function hostOf(game: Game, id: SceneId): SceneHost {
         : undefined;
     return source ? { x: source.x, h: 'h' in source ? (source.h ?? 0) : 0 } : null;
   };
-  // the opening (opening.ts): hacking is not yours until uplink.so, and some everyday actions say something else
-  zh.hackLock = () => game.hackLocked();
+  // the story's hacking stages (engine/hack-stages.ts): no hack vision until `inspect` is yours (the opening:
+  // until uplink.so), and the board only with `board`; some everyday actions say something else
+  zh.hackLock = () => !game.hackStage('inspect');
   zh.story = (dev) => InteractionRouting.storyChips(game.interactionRoutingPort, id, dev);
   zh.extras = () =>
     game.companionDoc.avoidPopups && game.companionPresent

@@ -50,6 +50,7 @@ import { METRO_SOURCE, type MetroSource } from '../world/transport/metro-source'
 import { CRITTER_REACTIONS, CRITTER_GAMEPLAY } from '../engine/gameplay/critter-reactions';
 import { BOT_REACTIONS, type BotReactionDocument } from '../engine/gameplay/bot-conversations';
 import { capabilityView } from '../world/access';
+import type { HackStage } from '../engine/hack-stages';
 import { mountReviewNavigator } from '../demo/review-navigator';
 import { REVIEW_STATIONS, type ReviewActionSource } from '../demo/review-stations';
 
@@ -521,7 +522,8 @@ export class Game {
           return game.camera;
         },
         deviceAt: (...args) => game.deviceAt(...args),
-        hackLocked: (...args) => game.hackLocked(...args),
+        // hover's pink bracket belongs to hack vision: locked until the `inspect` stage is yours
+        hackLocked: () => !game.hackStage('inspect'),
         get zh() {
           return game.zh;
         },
@@ -662,6 +664,14 @@ export class Game {
   /** Hack is out of reach: the profile has no hacking, or the story has not given it yet (the opening's phases). */
   hackLocked() {
     return ReviewMethods.hackLocked(this);
+  }
+  /** The hacking stages that are yours now (engine/hack-stages.ts). */
+  hackStages() {
+    return ReviewMethods.hackStages(this);
+  }
+  /** One hacking stage is yours (hack vision is `inspect`). */
+  hackStage(stage: HackStage) {
+    return this.hackStages().has(stage);
   }
   get reviewDoc() {
     return this.sources?.reviewStations ?? REVIEW_STATIONS;
@@ -1719,7 +1729,7 @@ export class Game {
 
   /** NET is yours: scan.so owned, and hacking yours (not in the opening's locked part). */
   get netOk() {
-    return capabilityView(this.save, !this.hackLocked(), this.networkContext.net).network;
+    return capabilityView(this.save, this.hackStages(), this.networkContext.net).network;
   }
 
   /** A program came (scan.so from the library): saved, and NET shows in hack vision's bar, pinging until used. */

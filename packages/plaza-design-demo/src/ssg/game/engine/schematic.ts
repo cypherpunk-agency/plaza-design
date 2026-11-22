@@ -986,7 +986,9 @@ export class Schematic {
         ? 'SCHEMATIC · ' + this.known.size + ' devices'
         : (d?.name ?? '') + ' · schematic';
     this.modeBtn.textContent = this.mode === 'board' ? 'THIS DEVICE' : 'BOARD · B';
-    this.palette.hidden = this.mode === 'vision' ? !this.drawer : this.mode !== 'board';
+    // logic parts sit between cables: no palette before the `wire` stage (engine/hack-stages.ts)
+    this.palette.hidden =
+      !this.m.can('wire') || (this.mode === 'vision' ? !this.drawer : this.mode !== 'board');
     if (this.info) this.info.textContent = this.drawerInfo();
     // (the help line steps aside while the drawer is open: the two would stack over the scene)
     this.dock?.classList.toggle('drawer', this.drawer);
@@ -1584,6 +1586,11 @@ export class Schematic {
   private startWire(e: PointerEvent, key: string) {
     e.preventDefault();
     e.stopPropagation();
+    // an event shows before you know how to wire it (engine/hack-stages.ts): it says so instead of starting a cable
+    if (!this.m.can('wire')) {
+      this.say(this.m.notYet('wire', { from: key, to: '…', verb: '' }));
+      return;
+    }
     this.cancelGesture?.();
     this.armed = key;
     this.pending = null;

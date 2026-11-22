@@ -25,7 +25,7 @@ export function openDeck(game: Game) {
   if (!can('deck')) return;
   if (!game.term.out.childElementCount)
     game.term.print('[DECK] ' + who(game.save) + ' · type help', 'head');
-  const at = game.hackLocked() ? null : game.termMachine();
+  const at = game.hackStage('inspect') ? game.termMachine() : null;
   if (at)
     game.term.print(
       '[' +

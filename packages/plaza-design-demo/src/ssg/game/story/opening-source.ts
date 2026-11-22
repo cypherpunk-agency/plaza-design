@@ -10,6 +10,14 @@ import type { Condition, GameplayDefinition } from '../engine/gameplay/types';
 import type { Handoff } from '../art/core/timeline';
 import { SUDO } from '../runtime/mode';
 import {
+  ALL_HACK_STAGES,
+  HACK_STAGES,
+  NO_HACK_STAGES,
+  grantedHackStages,
+  isHackStage,
+  type HackStage,
+} from '../engine/hack-stages';
+import {
   fail,
   object,
   fields,
@@ -60,6 +68,11 @@ export type OpeningWorkflow = string;
 export type OpeningState = string;
 export interface OpeningPhase {
   hackLocked: boolean;
+  /**
+   * The hacking stages (engine/hack-stages.ts) this phase gives, besides any a `hack:<stage>` flag grants.
+   * Left out of an unlocked phase: every stage (the old campaign's all-at-once uplink). Not with `hackLocked`.
+   */
+  hackStages?: HackStage[];
   pinned: boolean;
   resume: { whenFlag?: string; destination: Handoff }[];
   persona?: Persona;
@@ -299,10 +312,19 @@ export function validateOpeningSource(
     const r = fields(
       v,
       'PHASES/' + p,
-      ['hackLocked', 'pinned', 'resume', 'persona'],
+      ['hackLocked', 'pinned', 'resume', 'persona', 'hackStages'],
       ['hackLocked', 'pinned', 'resume'],
     );
     for (const k of ['hackLocked', 'pinned']) bool(r[k], 'PHASES/' + p + '/' + k);
+    if (r.hackStages !== undefined) {
+      const a = 'PHASES/' + p + '/hackStages';
+      if (r.hackLocked) fail(a, 'a locked phase gives no hacking stages');
+      const stages = list(r.hackStages, a, HACK_STAGES.length);
+      stages.forEach((s, i) => {
+        if (!isHackStage(s)) fail(a + '/' + i, 'unknown hacking stage');
+      });
+      if (new Set(stages).size !== stages.length) fail(a, 'a stage is listed twice');
+    }
     const rules = list(r.resume, 'PHASES/' + p + '/resume', 8);
     let fallback = false;
     for (const [index, rule] of rules.entries()) {
@@ -560,6 +582,13 @@ export function createOpeningModel(value: unknown, context?: OpeningSourceContex
     openingResume: (f: Flags) => openingResumeDestination(f)?.scene ?? null,
     openingLevel: (id: string) => source.OPENING_LEVELS.find((l) => l.id === id),
     hackLocked: (f: Flags) => (SUDO ? false : source.PHASES[openingState(f)].hackLocked),
+    /** The hacking stages that are yours (engine/hack-stages.ts): none while locked; every one in sudo or a phase that names none. */
+    hackStages: (f: Flags): ReadonlySet<HackStage> => {
+      if (SUDO) return ALL_HACK_STAGES;
+      const phase = source.PHASES[openingState(f)];
+      if (phase.hackLocked) return NO_HACK_STAGES;
+      return phase.hackStages ? grantedHackStages(phase.hackStages, f) : ALL_HACK_STAGES;
+    },
     /** Who you are while the phase has a persona (the courier before the deletion): its name, deck, and whether the weather is kept calm. */
     persona: (f: Flags): Persona | undefined => source.PHASES[openingState(f)].persona,
     isPinned: (f: Flags) => source.PHASES[openingState(f)].pinned,

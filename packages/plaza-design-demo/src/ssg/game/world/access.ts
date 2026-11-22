@@ -1,5 +1,6 @@
 import type { NetData } from '../data';
 import { ownsScanner } from '../engine/net';
+import { HACK_STAGES, hackStageFlag, type HackStage } from '../engine/hack-stages';
 import { nativeAccess } from '../engine/gameplay/access';
 import { matches } from '../engine/gameplay/queries';
 import { validateGameplay } from '../engine/gameplay/validation';
@@ -19,13 +20,14 @@ export interface CapabilitySource {
 /** A detached view over existing owners; it never persists another copy of ability state. */
 export function capabilityView(
   source: CapabilitySource,
-  hacking: boolean,
+  stages: ReadonlySet<HackStage>,
   network: Pick<NetData, 'scanProgram'>,
 ) {
   return Object.fromEntries([
     ['jump', source.jump],
-    ['hack', hacking],
-    ['network', hacking && ownsScanner(source.programs, network.scanProgram)],
+    ['hack', stages.has('inspect')],
+    ...HACK_STAGES.map((s) => [hackStageFlag(s), stages.has(s)]),
+    ['network', stages.has('link') && ownsScanner(source.programs, network.scanProgram)],
     ...source.modules.map((id) => ['module:' + id, true]),
     ...source.programs.map((id) => ['program:' + id, true]),
     ...source.keyring.map((id) => ['key:' + id, true]),

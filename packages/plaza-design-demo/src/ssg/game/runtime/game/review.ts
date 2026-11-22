@@ -10,6 +10,7 @@ import { type SceneId } from '../../scenes/index';
 import { EDITOR_PLAY } from '../mode';
 import { can } from '../play-profile';
 import type { Game } from '../game';
+import { NO_HACK_STAGES, type HackStage } from '../../engine/hack-stages';
 
 export function reviewAllowed(_game: Game) {
   return can('review') || EDITOR_PLAY;
@@ -18,6 +19,11 @@ export function reviewAllowed(_game: Game) {
 /** Hack is out of reach: the profile has no hacking, or the story has not given it yet (the opening's phases). */
 export function hackLocked(game: Game) {
   return !can('hack') || game.openingStory.hackLocked(game.save.flags);
+}
+
+/** The hacking stages that are yours (engine/hack-stages.ts): none while hack is locked, else what the story has given. */
+export function hackStages(game: Game): ReadonlySet<HackStage> {
+  return hackLocked(game) ? NO_HACK_STAGES : game.openingStory.hackStages(game.save.flags);
 }
 
 export function refreshReview(game: Game) {

@@ -1,3 +1,4 @@
+import type { HackStage } from './hack-stages';
 import { NO_RULES } from './scene-rule-contract';
 export { NO_RULES } from './scene-rule-contract';
 import { emptyData } from './empty-data';
@@ -107,6 +108,8 @@ export interface SceneStore {
   conversationCompleted?: (cue: NonNullable<ConversationFrame['completion']>) => void;
   /** Logic modules the player owns. */
   modules: () => string[];
+  /** Is this hacking stage yours (engine/hack-stages.ts)? Default: every one. */
+  stage?: (stage: HackStage) => boolean;
   /** Keyring item ids the player holds. */
   keyring: () => string[];
   /** Put an item on the keyring (and write the save). */
@@ -251,6 +254,7 @@ export class SceneHost {
         if (this.schem.viewing === dev) this.schem.close();
       },
       modules: store ? () => store.modules() : undefined,
+      stage: store?.stage,
       keyring: store ? () => store.keyring() : undefined,
       give: store ? (id) => store.give(id) : undefined,
       grant: store?.grant,
@@ -422,6 +426,7 @@ export class SceneHost {
         open() {},
         changed() {},
         modules: store ? () => store.modules() : undefined,
+        stage: store?.stage,
         keyring: store ? () => store.keyring() : undefined,
         grant: store?.grant,
         tokens: store?.tokens,
@@ -722,6 +727,9 @@ export class SceneHost {
     // HACK and BOARD only where there is something to hack, and only once hacking is yours
     const hide = !this.active || !this.hackable;
     if (this.btns.hidden !== hide) this.btns.hidden = hide;
+    // the board is its own stage (engine/hack-stages.ts): before it, hack vision has no BOARD at all
+    const board = this.model.can('board');
+    if (this.boardBtn.hidden !== !board) this.boardBtn.hidden = !board;
     const none = !this.schem.known.size,
       on = this.vision.isOpen;
     if (this.boardBtn.disabled !== none) {
@@ -735,8 +743,11 @@ export class SceneHost {
       this.hackBtn.setAttribute('aria-pressed', String(on));
       // in hack vision the bar is hack vision's: EXIT, BOARD, LOGIC, NET, UNFOLD
       this.hackBtn.textContent = on ? 'EXIT · H' : 'HACK · H';
-      this.logicBtn.hidden = this.unfoldBtn.hidden = !on;
+      this.unfoldBtn.hidden = !on;
     }
+    // the LOGIC drawer holds logic parts, which need the `wire` stage
+    const logic = !on || !this.model.can('wire');
+    if (this.logicBtn.hidden !== logic) this.logicBtn.hidden = logic;
     // NET once you own scan.so; it pings until the net map has been opened once
     const net = !on || !this.netOk();
     if (this.netBtn.hidden !== net) this.netBtn.hidden = net;
@@ -760,7 +771,7 @@ export class SceneHost {
     const l = this.model.plugIn(id, place),
       d = this.model.devices.get(id);
     this.say(l, d && !d.node ? id : undefined);
-    if (d && l[2] !== 'err' && !this.hackLock()) {
+    if (d && l[2] !== 'err' && !this.hackLock() && this.model.can('board')) {
       this.schem.known.add(id);
       this.popup.close();
       this.panels.close();
@@ -780,7 +791,8 @@ export class SceneHost {
 
   /** L in hack vision: the LOGIC drawer open or shut. */
   toggleLogic() {
-    if (this.vision.isOpen) this.vision.setDrawer(!this.vision.drawerOpen);
+    if (this.vision.isOpen && this.model.can('wire'))
+      this.vision.setDrawer(!this.vision.drawerOpen);
   }
   /** U in hack vision: every circuit unfolded at once, or back to each by hand. */
   toggleUnfold() {
@@ -1216,7 +1228,7 @@ export class SceneHost {
       items.splice(MAX_EVERYDAY);
     }
     if (this.hackLock()) return items;
-    if (d.data.deck)
+    if (d.data.deck && this.model.can('board'))
       items.push({
         label: m.label('menu.jack'),
         hack: true,
@@ -1253,6 +1265,10 @@ export class SceneHost {
   openDevice(id: string) {
     const d = this.model.devices.get(id);
     if (!d || this.hackLock()) return;
+    if (!this.model.can('board')) {
+      this.say(['', this.model.label('stage.board'), 'dim'], id);
+      return;
+    }
     const left = this.model.lockLeft(id);
     if (left) {
       this.say(
@@ -1266,6 +1282,12 @@ export class SceneHost {
   }
   toggleBoard() {
     if (this.hackLock()) return;
+    if (!this.model.can('board')) {
+      const text = this.model.label('stage.board');
+      this.print(text, 'dim');
+      this.store?.notice?.(text, 'info');
+      return;
+    }
     if (!this.schem.known.size) {
       const text = this.model.label('board.empty');
       this.print(text, 'dim');
