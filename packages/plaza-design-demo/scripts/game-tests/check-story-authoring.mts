@@ -322,9 +322,17 @@ try {
       focus: { only: ['phases'] },
     }),
   );
-  scenes.change('Story phase', 'home');
-  scenes.change('phases home exits capsule acknowledge height', '70');
-  assert.equal(doc('downtown-scene').phases.home.exits.capsule.acknowledge.height, 70);
+  // the prologue's CONCIERGE welcome is a phase rule on Block 7's front door
+  const block7 = ui((host, context) =>
+    mountSceneAuthoring(host, context, {
+      scene: 'block7',
+      fixed: true,
+      focus: { only: ['phases'] },
+    }),
+  );
+  block7.change('Story phase', 'home');
+  block7.change('phases home barriers front-door acknowledge height', '70');
+  assert.equal(doc('block7-scene').phases.home.barriers['front-door'].acknowledge.height, 70);
   scenes.change('Story phase', 'free');
   scenes.change('phases free arrival 0 speaker', 'ME');
   assert.equal(doc('downtown-scene').phases.free.arrival[0].speaker, 'ME');

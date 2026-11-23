@@ -72,7 +72,7 @@ the first clue (the list was stolen that night).
 | 5 | Registry service point (office hours) | Ticket, queue, "Please hold". Meet Ines. An appointment in 90 days | None |
 | 6 | Noodle stall | The fixer names Kessel: "Come back after dark" | None |
 | 7 | Kessel's room (after dark) | Kessel, guilty and gentle; robot shells on the shelves; the implant; open the privacy shutter | Inspect and one verb |
-| 8 | Capsule lobby | Back home through the service latch; Pixel is waiting | Same, alone |
+| 8 | Capsule lobby | Back home through the service latch down the areaway; Pixel is waiting | Same, alone |
 
 **Built 2026-11-22 (M4), alongside the old campaign; `?play=act1`.** Story data is in
 `story/opening.json` (flags `act1:*`, phases `ch1-wake` to `ch1-home`, triggers `ch1-ten` and
@@ -94,11 +94,28 @@ Kessel's is in Kessel's.
   - An exit can stand on an upper level floor (`SceneExit.h`).
   - `piece()` takes a `live` hook, so a level visual field (`opened`, `raised`) changes the
     picture.
+- Joined 2026-11-23 (Tommi): the places are one walkable street with Downtown, no cuts
+  (`world/zone-graph.json` seams `registry-block7`, `block7-downtown`, `downtown-kessel`):
+  - Registry, then Block 7, then Downtown, west to east. Block 7 and the Registry sit west of
+    Downtown rather than at the old CAPSULES door: the metro platform and its berthed train lie
+    under Downtown's east end, and the train is drawn over anything joined there.
+  - Kessel's rooms are under the noodle stall: a ladder down a hatch beside the stall (Downtown
+    x 705), then the cellar door (after dark, after the referral) and the stairs down. Kessel's art
+    set no longer carries its own copy of the street; the stool to wait on is Downtown's.
+  - The prologue walks home the same way: off the metro, west past the stall to Block 7, where
+    CONCIERGE welcomes you at the front door (phase `home`, milestone `flat`), then up the
+    stairwell to 7/F.
+  - Engine fixes this needed (generic): a shut barrier in a building's doorway also holds the
+    door (no stepping round it with up or down); a level barrier's lines stand at the barrier;
+    loading a save into the scene the game starts "in" (Downtown) now arrives properly, so its
+    neighbours join; door prompts name the building, not `zone/building`.
 - Open:
-  - The new places connect to Downtown by exits (fades), not joined zones.
-  - Kessel's art set still repeats the stall street.
+  - Downtown's building fronts are hidden behind a grey haze whenever Downtown is drawn as part
+    of a joined level. This predates Act I (it shows after the prologue's metro stairs on main);
+    not investigated to the end.
   - The lift prompt reads the engine's "OUT OF ORDER".
-  - Downtown has no rest of its own.
+  - Saves resume at a scene's spawn, not where you stood (Kessel's spawn is this side of the
+    cellar door).
   - PHASES is at 15 of its 16-row limit, so M5 must raise it.
 
 ### Chapter 2: Getting by

@@ -154,6 +154,44 @@
       },
       "dx": 700,
       "dh": 0
+    },
+    {
+      "id": "block7-downtown",
+      "kind": "walk",
+      "a": {
+        "zone": "block7"
+      },
+      "b": {
+        "zone": "downtown"
+      },
+      "dx": 1260,
+      "dh": 0
+    },
+    {
+      "id": "registry-block7",
+      "kind": "walk",
+      "a": {
+        "zone": "registry"
+      },
+      "b": {
+        "zone": "block7"
+      },
+      "dx": 1600,
+      "dh": 0
+    },
+    {
+      "id": "downtown-kessel",
+      "kind": "stairs",
+      "a": {
+        "zone": "kessel",
+        "piece": "stairs-hatch"
+      },
+      "b": {
+        "zone": "downtown",
+        "piece": "floor-street"
+      },
+      "dx": -265,
+      "dh": 100
     }
   ]
 }

@@ -235,7 +235,7 @@
             "kind": "glass",
             "from": 50,
             "width": 70,
-            "tenant": "noodles"
+            "tenant": "phones"
           }
         ],
         "height": 406,
@@ -3123,19 +3123,6 @@
       "placement": {
         "x": 404,
         "h": 552
-      },
-      "order": 400,
-      "layer": "set"
-    },
-    {
-      "id": "exit-street",
-      "type": "dockwork.marker",
-      "props": {
-        "role": "use"
-      },
-      "placement": {
-        "x": 16,
-        "h": 0
       },
       "order": 400,
       "layer": "set"

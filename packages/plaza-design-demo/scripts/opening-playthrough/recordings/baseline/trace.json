@@ -9,8 +9,8 @@
   "flags": {},
   "clock": {
    "day": 1,
-   "min": 580,
-   "text": "09:40",
+   "min": 1140,
+   "text": "19:00",
    "pinned": null
   },
   "bubble": null,
@@ -32,7 +32,6 @@
    "exit:shop",
    "exit:library",
    "exit:yard",
-   "exit:capsule",
    "exit:moth",
    "exit:taxi",
    "exit:map",
@@ -50,7 +49,8 @@
    "relay",
    "fence",
    "scan",
-   "read:plaque"
+   "read:plaque",
+   "rest:stool"
   ],
   "term": ""
  },
@@ -68,9 +68,9 @@
   },
   "clock": {
    "day": 1,
-   "min": 1140,
+   "min": 1140.12,
    "text": "19:00",
-   "pinned": 1140
+   "pinned": null
   },
   "bubble": {
    "name": "YOU",
@@ -115,9 +115,9 @@
   },
   "clock": {
    "day": 1,
-   "min": 1140,
-   "text": "19:00",
-   "pinned": 1140
+   "min": 1159.72,
+   "text": "19:19",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
@@ -134,7 +134,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 283.7,
+   "x": 283.6,
    "y": 0
   },
   "targets": [
@@ -161,9 +161,9 @@
   },
   "clock": {
    "day": 1,
-   "min": 1140,
-   "text": "19:00",
-   "pinned": 1140
+   "min": 1175.23,
+   "text": "19:35",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
@@ -180,7 +180,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 641.8,
+   "x": 637.8,
    "y": 0
   },
   "targets": [
@@ -208,8 +208,8 @@
   },
   "clock": {
    "day": 1,
-   "min": 1146.1,
-   "text": "19:06",
+   "min": 1177.46,
+   "text": "19:37",
    "pinned": null
   },
   "bubble": null,
@@ -227,7 +227,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 641.8,
+   "x": 637.8,
    "y": 0
   },
   "targets": [
@@ -235,10 +235,10 @@
    "use:parcel",
    "use:coffee"
   ],
-  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tag",
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tag",
   "said": [
    "SUPERVISOR: You are on transport. Here is your work tag.",
-   "SUPERVISOR: Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.",
+   "SUPERVISOR: Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.",
    "SUPERVISOR: The Registry pays for completed movements. Try to have some."
   ]
  },
@@ -261,13 +261,13 @@
   },
   "clock": {
    "day": 1,
-   "min": 1154.62,
-   "text": "19:14",
+   "min": 1180.25,
+   "text": "19:40",
    "pinned": null
   },
   "bubble": null,
   "prompt": null,
-  "goal": "Bring the blue parcel west to Mara at RECEIVING",
+  "goal": "Bring the blue parcel west to Moth at RECEIVING",
   "hint": "+ blue parcel",
   "gate": null,
   "card": null,
@@ -277,24 +277,24 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 458.6,
+   "x": 461,
    "y": 0
   },
   "targets": [
    "use:boss",
    "use:coffee"
   ],
-  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcel",
+  "term": "YOU: Dusk. Off the train, east along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MOTH.Carry it west, back across the yard to the receiving counter.+ blue parcel",
   "said": [
-   "DISPATCH: You pick up the blue parcel. RECEIVING · MARA.",
+   "DISPATCH: You pick up the blue parcel. RECEIVING · MOTH.",
    "DISPATCH: Carry it west, back across the yard to the receiving counter."
   ]
  },
  {
   "n": 7,
-  "name": "shift-mara",
+  "name": "shift-moth",
   "note": "receiving: the handover chip",
-  "shot": "07-shift-mara.png",
+  "shot": "07-shift-moth.png",
   "here": "harbor-yard",
   "phase": "prologue",
   "flags": {
@@ -309,14 +309,14 @@
   },
   "clock": {
    "day": 1,
-   "min": 1173.04,
-   "text": "19:33",
+   "min": 1187.59,
+   "text": "19:47",
    "pinned": null
   },
   "bubble": null,
   "prompt": {
-   "id": "use:mara",
-   "label": "[E] TALK TO MARA"
+   "id": "use:case",
+   "label": "[E] TAKE EMPTY CASE"
   },
   "goal": "Take the empty case from the receiving counter",
   "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
@@ -328,21 +328,21 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 1118.7,
+   "x": 1115.9,
    "y": 0
   },
   "targets": [
-   "use:mara",
    "use:case"
   ],
-  "term": "st along the platform, then down the stairs. East along the quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?",
+  "term": "e quay, in at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MOTH.Carry it west, back across the yard to the receiving counter.+ blue parcelMOTH: Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?And cover for me. Ten minutes. If he asks, I'm checking the pumps.",
   "said": [
-   "MARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.",
-   "MARA: Could you take the empty case on my counter back to CASE RETURNS in the shed?"
+   "MOTH: Pump seals. Maybe the floor gets to stay dry tonight.",
+   "MOTH: Could you take the empty case on my counter back to CASE RETURNS in the shed?",
+   "MOTH: And cover for me. Ten minutes. If he asks, I'm checking the pumps."
   ],
   "chipsSeen": [
-   "give Mara the blue parcel",
-   "talk to mara"
+   "give Moth the blue parcel",
+   "talk to moth"
   ]
  },
  {
@@ -364,15 +364,12 @@
   },
   "clock": {
    "day": 1,
-   "min": 1176.51,
-   "text": "19:36",
+   "min": 1188.78,
+   "text": "19:48",
    "pinned": null
   },
   "bubble": null,
-  "prompt": {
-   "id": "use:mara",
-   "label": "[E] TALK TO MARA"
-  },
+  "prompt": null,
   "goal": "Return the empty case to CASE RETURNS in the shed",
   "hint": "+ empty transport case",
   "gate": null,
@@ -383,13 +380,11 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 1101.8,
+   "x": 1101.6,
    "y": 0
   },
-  "targets": [
-   "use:mara"
-  ],
-  "term": " at the staff gate. Shed 3 is at the far end.YOU: Shed 3. Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport case",
+  "targets": [],
+  "term": "Another night on transport. The supervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MOTH.Carry it west, back across the yard to the receiving counter.+ blue parcelMOTH: Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?And cover for me. Ten minutes. If he asks, I'm checking the pumps.EMPTY CASE: You take the empty transport case.+ empty transport case",
   "said": [
    "EMPTY CASE: You take the empty transport case."
   ]
@@ -413,8 +408,8 @@
   },
   "clock": {
    "day": 1,
-   "min": 1190.38,
-   "text": "19:50",
+   "min": 1193.43,
+   "text": "19:53",
    "pinned": null
   },
   "bubble": null,
@@ -432,7 +427,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 267.6,
+   "x": 267.4,
    "y": 0
   },
   "targets": [
@@ -440,7 +435,7 @@
    "use:rack",
    "use:coffee"
   ],
-  "term": "ervisor is waiting in his booth.SUPERVISOR: You are on transport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Mara at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.",
+  "term": "nsport. Here is your work tag.Pick up the blue parcel at dispatch, just to my left. Bring it to Moth at receiving, back west in the yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MOTH.Carry it west, back across the yard to the receiving counter.+ blue parcelMOTH: Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?And cover for me. Ten minutes. If he asks, I'm checking the pumps.EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.",
   "said": [
    "CASE RACK: The case settles into the rack. RETURN REGISTERED.",
    "CASE RACK: The supervisor has one last job."
@@ -469,8 +464,8 @@
   },
   "clock": {
    "day": 1,
-   "min": 1203.78,
-   "text": "20:03",
+   "min": 1198.67,
+   "text": "19:58",
    "pinned": null
   },
   "bubble": null,
@@ -488,7 +483,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 639.2,
+   "x": 639,
    "y": 0
   },
   "targets": [
@@ -496,10 +491,11 @@
    "use:rack",
    "use:coffee"
   ],
-  "term": "he yard.The Registry pays for completed movements. Try to have some.+ work tagDISPATCH: You pick up the blue parcel. RECEIVING · MARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.",
+  "term": "it west, back across the yard to the receiving counter.+ blue parcelMOTH: Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?And cover for me. Ten minutes. If he asks, I'm checking the pumps.EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.Where is Moth? No. Don't tell me. I am contractually unable to notice that either.",
   "said": [
    "SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.",
-   "SUPERVISOR: They are very particular about other people doing their work."
+   "SUPERVISOR: They are very particular about other people doing their work.",
+   "SUPERVISOR: Where is Moth? No. Don't tell me. I am contractually unable to notice that either."
   ]
  },
  {
@@ -521,8 +517,8 @@
   },
   "clock": {
    "day": 1,
-   "min": 1231.22,
-   "text": "20:31",
+   "min": 1207.78,
+   "text": "20:07",
    "pinned": null
   },
   "bubble": null,
@@ -540,15 +536,14 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 757.4,
+   "x": 758.6,
    "y": 0
   },
   "targets": [
-   "use:mara",
    "use:trolley",
    "use:clamp"
   ],
-  "term": "ARA.Carry it west, back across the yard to the receiving counter.+ blue parcelMARA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.",
+  "term": "ld you take the empty case on my counter back to CASE RETURNS in the shed?And cover for me. Ten minutes. If he asks, I'm checking the pumps.EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.Where is Moth? No. Don't tell me. I am contractually unable to notice that either.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.",
   "said": [
    "LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.",
    "LOADING TROLLEY: A release handle sits just beside it."
@@ -573,8 +568,8 @@
   },
   "clock": {
    "day": 1,
-   "min": 1235.87,
-   "text": "20:35",
+   "min": 1209.47,
+   "text": "20:09",
    "pinned": null
   },
   "bubble": null,
@@ -589,14 +584,13 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 717.2,
+   "x": 713.1,
    "y": 0
   },
   "targets": [
-   "use:mara",
    "use:trolley"
   ],
-  "term": "RA: Thanks. Pump seals. Maybe the floor gets to stay dry tonight.Could you take the empty case on my counter back to CASE RETURNS in the shed?EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.",
+  "term": "ver for me. Ten minutes. If he asks, I'm checking the pumps.EMPTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.Where is Moth? No. Don't tell me. I am contractually unable to notice that either.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.",
   "said": [
    "WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green."
   ]
@@ -620,8 +614,8 @@
   },
   "clock": {
    "day": 1,
-   "min": 1242.72,
-   "text": "20:42",
+   "min": 1211.44,
+   "text": "20:11",
    "pinned": null
   },
   "bubble": null,
@@ -636,13 +630,13 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 758.7,
+   "x": 759.9,
    "y": 0
   },
   "targets": [
    "use:mara"
   ],
-  "term": "PTY CASE: You take the empty transport case.+ empty transport caseCASE RACK: The case settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.",
+  "term": "ase settles into the rack. RETURN REGISTERED.The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.Where is Moth? No. Don't tell me. I am contractually unable to notice that either.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.",
   "said": [
    "LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.",
    "LOADING TROLLEY: LOADING POSITION CONFIRMED. You can check out at the gate."
@@ -666,10 +660,10 @@
    "seen:harbor-yard": true
   },
   "clock": {
-   "day": 2,
-   "min": 370,
-   "text": "06:10",
-   "pinned": 370
+   "day": 1,
+   "min": 1220.47,
+   "text": "20:20",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
@@ -686,14 +680,14 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 339.6,
+   "x": 341.9,
    "y": 0
   },
   "targets": [
    "use:checkout",
    "use:statement"
   ],
-  "term": "The supervisor has one last job.SUPERVISOR: Last job. Trolley T4 in the yard is in the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.",
+  "term": " the day crew's way. Move it into LOADING BAY 2, then check out at the gate.They are very particular about other people doing their work.Where is Moth? No. Don't tell me. I am contractually unable to notice that either.LOADING TROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.",
   "said": [
    "CHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.",
    "CHECKOUT: Three tokens credited. Your wage statement is ready to read."
@@ -722,17 +716,17 @@
    "seen:harbor-yard": true
   },
   "clock": {
-   "day": 2,
-   "min": 370,
-   "text": "06:10",
-   "pinned": 370
+   "day": 1,
+   "min": 1223.26,
+   "text": "20:23",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
    "id": "use:statement",
    "label": "[E] READ STATEMENT"
   },
-  "goal": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train.",
+  "goal": "SHIFT COMPLETE · Walk back to Harbor Station for the train home.",
   "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
   "gate": null,
   "card": null,
@@ -742,24 +736,24 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 400.7,
+   "x": 397.8,
    "y": 0
   },
   "targets": [
    "use:checkout",
    "use:statement"
   ],
-  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.",
+  "term": "ROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The train home is next: back west along the quay and up to the platform.",
   "said": [
    "WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.",
    "WAGE STATEMENT: STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.",
-   "WAGE STATEMENT: Shift complete. The morning train is next: back west along the quay and up to the platform."
+   "WAGE STATEMENT: Shift complete. The train home is next: back west along the quay and up to the platform."
   ]
  },
  {
   "n": 16,
   "name": "platform-boarding",
-  "note": "the morning service stands at Harbor Station",
+  "note": "the service home stands at Harbor Station",
   "shot": "16-platform-boarding.png",
   "here": "harbor-station",
   "phase": "home",
@@ -775,17 +769,17 @@
    "seen:harbor-yard": true
   },
   "clock": {
-   "day": 2,
-   "min": 370,
-   "text": "06:10",
-   "pinned": 370
+   "day": 1,
+   "min": 1249.21,
+   "text": "20:49",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
    "id": "vehicle:harbor-station/service",
    "label": "[E] STEP ABOARD"
   },
-  "goal": "SHIFT COMPLETE · Walk back to Harbor Station for the morning train.",
+  "goal": "SHIFT COMPLETE · Walk back to Harbor Station for the train home.",
   "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
   "gate": null,
   "card": null,
@@ -795,7 +789,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 84.5,
+   "x": 85.9,
    "y": 0
   },
   "targets": [
@@ -803,7 +797,7 @@
    "service",
    "vehicle:harbor-station/service"
   ],
-  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform."
+  "term": "ROLLEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The train home is next: back west along the quay and up to the platform."
  },
  {
   "n": 17,
@@ -817,6 +811,7 @@
    "prologue:started": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
    "seen:harbor-checkout": true,
    "seen:harbor-quay": true,
    "seen:harbor-shed": true,
@@ -825,15 +820,18 @@
    "seen:line-harbor-1": true
   },
   "clock": {
-   "day": 2,
-   "min": 370,
-   "text": "06:10",
-   "pinned": 370
+   "day": 1,
+   "min": 1252.99,
+   "text": "20:52",
+   "pinned": null
   },
-  "bubble": null,
+  "bubble": {
+   "name": "YOU",
+   "text": "The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it."
+  },
   "prompt": null,
   "goal": null,
-  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "hint": "",
   "gate": null,
   "card": null,
   "acknowledging": null,
@@ -842,11 +840,18 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 1651.4,
+   "x": 1642.9,
    "y": 180
   },
   "targets": [],
-  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform."
+  "term": "AMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The train home is next: back west along the quay and up to the platform.YOU: The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.",
+  "said": [
+   "YOU: The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.",
+   "MOTH › CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.",
+   "MOTH › CALL: I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.",
+   "MOTH › CALL: Don't be late. I mean it.",
+   "YOU: And the line is gone. Moth never says goodbye on the phone."
+  ]
  },
  {
   "n": 18,
@@ -857,9 +862,11 @@
   "phase": "home",
   "flags": {
    "opening:home": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
    "seen:harbor-checkout": true,
    "seen:harbor-quay": true,
    "seen:harbor-shed": true,
@@ -872,10 +879,10 @@
    "seen:metro": true
   },
   "clock": {
-   "day": 2,
-   "min": 372,
-   "text": "06:12",
-   "pinned": 372
+   "day": 1,
+   "min": 1257.33,
+   "text": "20:57",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
@@ -892,7 +899,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 764.5,
+   "x": 765.9,
    "y": 0
   },
   "targets": [
@@ -902,6 +909,8 @@
    "read:screen",
    "read:regular",
    "read:poster",
+   "rest:bench0",
+   "rest:bench1",
    "train",
    "read:staff",
    "read:ad",
@@ -912,7 +921,7 @@
    "read:punk",
    "vehicle:harbor-station/service"
   ],
-  "term": "LEY: It will not roll. A red wheel clamp is still fastened around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform."
+  "term": "SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The train home is next: back west along the quay and up to the platform.YOU: The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.MOTH › CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone."
  },
  {
   "n": 19,
@@ -924,9 +933,11 @@
   "flags": {
    "opening:home": true,
    "opening:said:home:metro": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
    "seen:harbor-checkout": true,
    "seen:harbor-quay": true,
    "seen:harbor-shed": true,
@@ -939,10 +950,10 @@
    "seen:metro": true
   },
   "clock": {
-   "day": 2,
-   "min": 372,
-   "text": "06:12",
-   "pinned": 372
+   "day": 1,
+   "min": 1258.01,
+   "text": "20:58",
+   "pinned": null
   },
   "bubble": {
    "name": "YOU",
@@ -962,7 +973,7 @@
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 764.5,
+   "x": 765.9,
    "y": 0
   },
   "targets": [
@@ -972,6 +983,8 @@
    "read:screen",
    "read:regular",
    "read:poster",
+   "rest:bench0",
+   "rest:bench1",
    "train",
    "read:staff",
    "read:ad",
@@ -982,7 +995,7 @@
    "read:punk",
    "vehicle:harbor-station/service"
   ],
-  "term": "d around the near wheel.A release handle sits just beside it.WHEEL CLAMP: You pull the handle. The clamp opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.",
+  "term": "s ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The train home is next: back west along the quay and up to the platform.YOU: The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.MOTH › CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.",
   "said": [
    "YOU: Downtown. The exit is at the far end, by the stairs."
   ]
@@ -999,10 +1012,12 @@
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
    "opening:street": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:downtown": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
    "seen:downtown": true,
    "seen:harbor-checkout": true,
    "seen:harbor-quay": true,
@@ -1016,14 +1031,14 @@
    "seen:metro": true
   },
   "clock": {
-   "day": 2,
-   "min": 374,
-   "text": "06:14",
-   "pinned": 374
+   "day": 1,
+   "min": 1265.27,
+   "text": "21:05",
+   "pinned": null
   },
   "bubble": {
    "name": "YOU",
-   "text": "Morning. The street is still warm from the night."
+   "text": "Downtown. The street never quite sleeps, and neither do the screens."
   },
   "prompt": {
    "id": "down:metro/stairs-west",
@@ -1046,7 +1061,6 @@
    "exit:shop",
    "exit:library",
    "exit:yard",
-   "exit:capsule",
    "exit:moth",
    "exit:taxi",
    "exit:map",
@@ -1065,6 +1079,7 @@
    "fence",
    "scan",
    "read:plaque",
+   "rest:stool",
    "train",
    "read:staff",
    "read:ad",
@@ -1075,28 +1090,31 @@
    "read:punk",
    "down:metro/stairs-west"
   ],
-  "term": "p opens and its indicator turns green.LOADING TROLLEY: The wheels roll freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.",
+  "term": "IDENTITY REMAINS IN GOOD STANDING.Shift complete. The train home is next: back west along the quay and up to the platform.YOU: The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.MOTH › CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Downtown. The street never quite sleeps, and neither do the screens.Home is the capsule tower, past the metro stairs.",
   "said": [
-   "YOU: Morning. The street is still warm from the night.",
+   "YOU: Downtown. The street never quite sleeps, and neither do the screens.",
    "YOU: Home is the capsule tower, past the metro stairs."
   ]
  },
  {
   "n": 21,
   "name": "concierge",
-  "note": "the capsule tower lets you in",
+  "note": "the front door of Block 7 knows you",
   "shot": "21-concierge.png",
-  "here": "downtown",
+  "here": "block7",
   "phase": "home",
   "flags": {
    "opening:home": true,
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
    "opening:street": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:downtown": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
+   "seen:block7": true,
    "seen:downtown": true,
    "seen:harbor-checkout": true,
    "seen:harbor-quay": true,
@@ -1110,62 +1128,114 @@
    "seen:metro": true
   },
   "clock": {
-   "day": 2,
-   "min": 374,
-   "text": "06:14",
-   "pinned": 374
+   "day": 1,
+   "min": 1282.15,
+   "text": "21:22",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
-   "id": "exit:capsule",
-   "label": "[E] HOME · CAPSULE 7B"
+   "id": "barrier:block7/front-door",
+   "label": "[E] OPEN DOOR"
   },
   "goal": "go home (7B)",
   "hint": "",
   "gate": null,
   "card": null,
-  "acknowledging": "welcome home. you are expected. the lift is on its way down.",
+  "acknowledging": "welcome home, 7B. you are expected.",
   "popup": false,
   "captions": [
-   "CONCIERGE: welcome home. you are expected. the lift is on its way down.[E] CONTINUE"
+   "CONCIERGE: welcome home, 7B. you are expected.[E] NEXT"
   ],
   "chips": [],
   "pings": 0,
   "player": {
-   "x": 1232.1,
+   "x": 298.3,
    "y": 0
   },
   "targets": [
-   "exit:shop",
-   "exit:library",
-   "exit:yard",
-   "exit:capsule",
-   "exit:moth",
-   "exit:taxi",
-   "exit:map",
-   "use:fixer",
-   "use:hood",
-   "use:umbrella",
-   "use:hat",
-   "gate",
-   "box",
-   "sign",
-   "cam3",
-   "billboard",
-   "till",
-   "dlv9",
-   "relay",
-   "fence",
-   "scan",
-   "read:plaque"
+   "exit:7b",
+   "latch",
+   "read:notices",
+   "use:concierge",
+   "use:mail",
+   "use:neighbour",
+   "barrier:block7/front-door"
   ],
-  "term": "freely. You push the trolley west into LOADING BAY 2.LOADING POSITION CONFIRMED. You can check out at the gate.+3 tokensCHECKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down."
+  "term": "te. The train home is next: back west along the quay and up to the platform.YOU: The harbor drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.MOTH › CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Downtown. The street never quite sleeps, and neither do the screens.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home, 7B. you are expected."
  },
  {
   "n": 22,
+  "name": "seventh-floor",
+  "note": "7/F, the door of 7B",
+  "shot": "22-seventh-floor.png",
+  "here": "block7",
+  "phase": "flat",
+  "flags": {
+   "opening:flat": true,
+   "opening:home": true,
+   "opening:said:home:downtown": true,
+   "opening:said:home:metro": true,
+   "opening:street": true,
+   "prologue:called": true,
+   "prologue:started": true,
+   "scene:downtown": true,
+   "scene:harbor-shed": true,
+   "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
+   "seen:block7": true,
+   "seen:downtown": true,
+   "seen:harbor-checkout": true,
+   "seen:harbor-quay": true,
+   "seen:harbor-shed": true,
+   "seen:harbor-station": true,
+   "seen:harbor-yard": true,
+   "seen:line-harbor-1": true,
+   "seen:line-harbor-2": true,
+   "seen:line-harbor-3": true,
+   "seen:line-harbor-4": true,
+   "seen:metro": true
+  },
+  "clock": {
+   "day": 1,
+   "min": 1303.99,
+   "text": "21:43",
+   "pinned": null
+  },
+  "bubble": null,
+  "prompt": {
+   "id": "down:block7/stairs-6",
+   "label": "[↓] DOWNSTAIRS"
+  },
+  "goal": "go home (7B): up to the seventh floor",
+  "hint": "ESC OPENS THE DECK: GOALS, WHAT YOU CARRY, CONTROLS",
+  "gate": null,
+  "card": null,
+  "acknowledging": null,
+  "popup": false,
+  "captions": [],
+  "chips": [],
+  "pings": 0,
+  "player": {
+   "x": 669.8,
+   "y": 552
+  },
+  "targets": [
+   "exit:7b",
+   "latch",
+   "read:notices",
+   "use:concierge",
+   "use:mail",
+   "use:neighbour",
+   "down:block7/stairs-6"
+  ],
+  "term": "or drops away behind the train. Cranes, the black water, a ship's lights going out to sea. Then the tunnel takes it.MOTH › CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Downtown. The street never quite sleeps, and neither do the screens.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home, 7B. you are expected.CONCIERGE: the lift is out of order. the stairs are to your right.[ERR] legs.so not found"
+ },
+ {
+  "n": 23,
   "name": "capsule-arrival",
   "note": "home: kettle, blinds, bed",
-  "shot": "22-capsule-arrival.png",
+  "shot": "23-capsule-arrival.png",
   "here": "capsule",
   "phase": "flat",
   "flags": {
@@ -1175,11 +1245,14 @@
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
    "opening:street": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:capsule": true,
    "scene:downtown": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
+   "seen:block7": true,
    "seen:capsule": true,
    "seen:downtown": true,
    "seen:harbor-checkout": true,
@@ -1194,10 +1267,10 @@
    "seen:metro": true
   },
   "clock": {
-   "day": 2,
-   "min": 380,
-   "text": "06:20",
-   "pinned": 380
+   "day": 1,
+   "min": 1306.23,
+   "text": "21:46",
+   "pinned": null
   },
   "bubble": {
    "name": "YOU",
@@ -1229,10 +1302,11 @@
    "pc",
    "plug",
    "router",
+   "rest:bed",
    "story:bed",
    "pixel"
   ],
-  "term": "CKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.",
+  "term": "CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Downtown. The street never quite sleeps, and neither do the screens.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home, 7B. you are expected.CONCIERGE: the lift is out of order. the stairs are to your right.[ERR] legs.so not foundYOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.",
   "said": [
    "YOU: Home. Four walls, one window, one cat.",
    "YOU: Kettle, blinds, bed. In that order, if I am lucky.",
@@ -1240,10 +1314,10 @@
   ]
  },
  {
-  "n": 23,
+  "n": 24,
   "name": "sleep-card",
   "note": "the rest card over the capsule",
-  "shot": "23-sleep-card.png",
+  "shot": "24-sleep-card.png",
   "here": "capsule",
   "phase": "flat",
   "flags": {
@@ -1253,11 +1327,14 @@
    "opening:said:home:downtown": true,
    "opening:said:home:metro": true,
    "opening:street": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:capsule": true,
    "scene:downtown": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
+   "seen:block7": true,
    "seen:capsule": true,
    "seen:downtown": true,
    "seen:harbor-checkout": true,
@@ -1272,10 +1349,10 @@
    "seen:metro": true
   },
   "clock": {
-   "day": 2,
-   "min": 380,
-   "text": "06:20",
-   "pinned": 380
+   "day": 1,
+   "min": 1310.1,
+   "text": "21:50",
+   "pinned": null
   },
   "bubble": null,
   "prompt": {
@@ -1287,7 +1364,7 @@
   "gate": null,
   "card": {
    "stage": "card",
-   "text": "06:20",
+   "text": "21:50",
    "label": "CAPSULE 7B"
   },
   "acknowledging": null,
@@ -1308,16 +1385,17 @@
    "pc",
    "plug",
    "router",
+   "rest:bed",
    "story:bed",
    "pixel"
   ],
-  "term": "CKOUT: IDENTITY VERIFIED · TAG RETURNED · SHIFT CLOSED.Three tokens credited. Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it."
+  "term": "CALL: Hey. It's me. Sorry I vanished on you tonight. Thanks for covering.I can't say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Downtown. The street never quite sleeps, and neither do the screens.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home, 7B. you are expected.CONCIERGE: the lift is out of order. the stairs are to your right.[ERR] legs.so not foundYOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it."
  },
  {
-  "n": 24,
+  "n": 25,
   "name": "morning-deleted",
   "note": "the morning is established; the prologue ends here",
-  "shot": "24-morning-deleted.png",
+  "shot": "25-morning-deleted.png",
   "here": "capsule",
   "phase": "deleted",
   "flags": {
@@ -1328,11 +1406,14 @@
    "opening:said:home:metro": true,
    "opening:slept": true,
    "opening:street": true,
+   "prologue:called": true,
    "prologue:started": true,
    "scene:capsule": true,
    "scene:downtown": true,
    "scene:harbor-shed": true,
    "scene:harbor-station": true,
+   "scene:line-harbor-1": true,
+   "seen:block7": true,
    "seen:capsule": true,
    "seen:downtown": true,
    "seen:harbor-checkout": true,
@@ -1348,9 +1429,9 @@
   },
   "clock": {
    "day": 2,
-   "min": 580,
-   "text": "09:40",
-   "pinned": 580
+   "min": 480.14,
+   "text": "08:00",
+   "pinned": null
   },
   "bubble": {
    "name": "YOU",
@@ -1382,9 +1463,10 @@
    "pc",
    "plug",
    "router",
+   "rest:bed",
    "pixel"
   ],
-  "term": "Your wage statement is ready to read.WAGE STATEMENT: NIGHT SHIFT · GROSS 4 TOKENS · EQUIPMENT ACCESS 1 TOKEN · NET 3 TOKENS.STATUS: PAID. YOUR IDENTITY REMAINS IN GOOD STANDING.Shift complete. The morning train is next: back west along the quay and up to the platform.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Morning. The street is still warm from the night.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home. you are expected. the lift is on its way down.YOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.",
+  "term": "'t say it on the phone. Noodles at ten, the stall by your tower. I've got something to show you.Don't be late. I mean it.YOU: And the line is gone. Moth never says goodbye on the phone.YOU: Downtown. The exit is at the far end, by the stairs.YOU: Downtown. The street never quite sleeps, and neither do the screens.Home is the capsule tower, past the metro stairs.CONCIERGE: welcome home, 7B. you are expected.CONCIERGE: the lift is out of order. the stairs are to your right.[ERR] legs.so not foundYOU: Home. Four walls, one window, one cat.Kettle, blinds, bed. In that order, if I am lucky.E or a tap on a thing: use it.YOU: Morning. The light is wrong.Cold. Like the flat forgot who it is heating.",
   "said": [
    "YOU: Morning. The light is wrong.",
    "YOU: Cold. Like the flat forgot who it is heating."

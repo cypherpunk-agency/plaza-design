@@ -149,7 +149,7 @@
             "kind": "glass",
             "from": 8,
             "width": 58,
-            "tenant": "noodles"
+            "tenant": "repair"
           },
           {
             "kind": "door",
@@ -2039,19 +2039,6 @@
       },
       "placement": {
         "x": 690,
-        "h": 0
-      },
-      "order": 400,
-      "layer": "set"
-    },
-    {
-      "id": "exit-street",
-      "type": "dockwork.marker",
-      "props": {
-        "role": "use"
-      },
-      "placement": {
-        "x": 16,
         "h": 0
       },
       "order": 400,

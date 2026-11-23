@@ -25,8 +25,9 @@ title menu -> NEW GAME, Escape skips the glide -> Harbor Station at dusk -> down
 turnstile -> Shed 3 -> the night shift: the supervisor's briefing, the blue parcel, Moth at receiving (handover chip), the empty
 case back to CASE RETURNS, the supervisor's last job, trolley T4 (clamped, release the clamp, park it) -> checkout (tag
 returned, tokens credited) and the wage statement -> back through the turnstile, up to the platform -> the service home
-through the tunnel zones (Moth's call) to Downtown Metro -> off the train, through the turnstile, up the west stairs -> Downtown -> the
-capsule tower (concierge) -> capsule 7B -> bed -> the sleep card -> the morning you are deleted.
+through the tunnel zones (Moth's call) to Downtown Metro -> off the train, through the turnstile, up the west stairs -> Downtown ->
+west past the noodle stall to Block 7 (CONCIERGE at the front door) -> up the stairwell to 7/F -> capsule 7B -> bed -> the sleep
+card -> the morning you are deleted.
 
 At each step it asserts the scene, the story phase (`prologue`, `home`, `flat`, `deleted`) and the HUD goal, so a broken
 interaction, a moved target or a route that no longer connects fails at the step where it breaks.
@@ -41,7 +42,7 @@ player's position, the target ids of the scene, the deck terminal's tail.
 `compare.mjs` treats scene, phase, flags, talk, prompts, goal, gate, card, acknowledgment, captions, chips, targets and a pinned
 clock as HARD (a difference fails); the hint lane, the running clock within a few minutes, the player's x, the terminal tail
 and the ping count are SOFT notes. Two runs of the same build compare with no hard differences (checked 2026-11-21), so a hard
-difference is a change. `recordings/baseline/trace.json` is the recording of the prologue on 2026-11-21; re-record it when the
+difference is a change. `recordings/baseline/trace.json` is the recording of the prologue on 2026-11-23; re-record it when the
 prologue changes on purpose. Screenshots are not committed.
 
 ## How it reads the game

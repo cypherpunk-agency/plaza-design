@@ -85,13 +85,6 @@
       "promptH": 86
     },
     {
-      "id": "capsule",
-      "to": "capsule",
-      "at": "door",
-      "label": "[E] HOME · CAPSULE 7B",
-      "promptH": 84
-    },
-    {
       "id": "metro",
       "to": "metro",
       "at": "downtown",
@@ -128,30 +121,6 @@
       "action": "map",
       "label": "[E] CITY MAP",
       "promptH": 92
-    },
-    {
-      "id": "block7",
-      "to": "block7",
-      "at": "street",
-      "label": "[E] BLOCK 7 · SIDE STREET",
-      "promptH": 84,
-      "requires": "act1:on"
-    },
-    {
-      "id": "registry",
-      "to": "registry",
-      "at": "street",
-      "label": "[E] REGISTRY OF PERSONS",
-      "promptH": 96,
-      "requires": "act1:on"
-    },
-    {
-      "id": "kessel",
-      "to": "kessel",
-      "at": "stall",
-      "label": "[E] KITCHEN · KESSEL",
-      "promptH": 70,
-      "requires": "act1:referred"
     }
   ],
   "readables": [
@@ -163,6 +132,12 @@
         "The door has no handle. Only a window, very high up."
       ],
       "promptH": 160
+    }
+  ],
+  "rests": [
+    {
+      "id": "stool",
+      "kind": "stool"
     }
   ],
   "manifest": {
@@ -256,20 +231,21 @@
         "responseH": 48
       }
     },
-    "rests": {},
+    "rests": {
+      "stool": {
+        "instance": "rest-stool",
+        "promptH": 40
+      }
+    },
     "exits": {
       "market": "exit-market",
       "shop": "exit-shop",
       "library": "exit-library",
       "yard": "exit-yard",
-      "capsule": "exit-capsule",
       "metro": "exit-metro",
       "moth": "exit-moth",
       "taxi": "exit-taxi",
-      "map": "exit-map",
-      "block7": "exit-block7",
-      "registry": "exit-registry",
-      "kessel": "exit-kessel"
+      "map": "exit-map"
     },
     "readables": {
       "plaque": {
@@ -540,9 +516,6 @@
         "speaker": "YOU",
         "height": 46
       },
-      "ping": {
-        "exit": "capsule"
-      },
       "lines": {
         "umbrella": {
           "name": "UMBRELLA",
@@ -573,25 +546,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "acknowledge": {
-            "speaker": "CONCIERGE",
-            "pages": [
-              "welcome home. you are expected. the lift is on its way down."
-            ],
-            "height": 60,
-            "begin": [
-              {
-                "sound": "granted"
-              }
-            ],
-            "then": [
-              {
-                "milestone": "flat"
-              }
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "SHOP",
@@ -719,9 +673,6 @@
     },
     "flat": {
       "goal": "go home (7B)",
-      "ping": {
-        "exit": "capsule"
-      },
       "lines": {
         "umbrella": {
           "name": "UMBRELLA",
@@ -752,25 +703,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "acknowledge": {
-            "speaker": "CONCIERGE",
-            "pages": [
-              "welcome home. you are expected. the lift is on its way down."
-            ],
-            "height": 60,
-            "begin": [
-              {
-                "sound": "granted"
-              }
-            ],
-            "then": [
-              {
-                "milestone": "flat"
-              }
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "SHOP",
@@ -981,15 +913,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -1162,15 +1085,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -1323,15 +1237,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -1457,9 +1362,6 @@
             ]
           }
         ]
-      },
-      "ping": {
-        "exit": "registry"
       }
     },
     "ch1-referral": {
@@ -1487,15 +1389,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -1624,7 +1517,7 @@
       }
     },
     "ch1-kessel": {
-      "goal": "Kessel: through the fixer's kitchen, after dark",
+      "goal": "Kessel: down the hatch beside the stall, after dark",
       "lines": {
         "umbrella": {
           "name": "UMBRELLA",
@@ -1648,15 +1541,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -1782,9 +1666,6 @@
             ]
           }
         ]
-      },
-      "ping": {
-        "exit": "kessel"
       }
     },
     "ch1-shutter": {
@@ -1812,15 +1693,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -1946,13 +1818,10 @@
             ]
           }
         ]
-      },
-      "ping": {
-        "exit": "kessel"
       }
     },
     "ch1-latch": {
-      "goal": "home: Block 7's side street, the service latch",
+      "goal": "home: the service latch, down Block 7's areaway",
       "lines": {
         "umbrella": {
           "name": "UMBRELLA",
@@ -1976,15 +1845,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",
@@ -2110,9 +1970,6 @@
             ]
           }
         ]
-      },
-      "ping": {
-        "exit": "block7"
       }
     },
     "ch1-home": {
@@ -2140,15 +1997,6 @@
         }
       },
       "exits": {
-        "capsule": {
-          "say": {
-            "name": "CONCIERGE",
-            "pages": [
-              "RESIDENT NOT FOUND.",
-              "The front door is for residents. Please step back from the door."
-            ]
-          }
-        },
         "shop": {
           "say": {
             "name": "FRESHCO",

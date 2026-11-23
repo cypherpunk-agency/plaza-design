@@ -59,8 +59,9 @@ const m = make(),
 source.PHASES.home.resume[0].destination = { scene: 'capsule', entrance: 'door' };
 // what a scene says in a phase lives in its scene.json, saved with the story in one transaction
 const downtown = m.get('downtown-scene').value as any,
+  block7 = m.get('block7-scene').value as any,
   train = m.get('train-scene').value as any;
-downtown.phases.home.exits.capsule.acknowledge.pages = ['Saved concierge.'];
+block7.phases.home.barriers['front-door'].acknowledge.pages = ['Saved concierge.'];
 downtown.phases.free.arrival[0].pages[0].text = 'Saved rainy greeting.';
 train.phases.home.intro.height = 53;
 source.PHASE_RULES.find((r: any) => r.phase === 'uplinked')!.phase = 'deleted';
@@ -68,6 +69,7 @@ m.importDocuments(
   [
     { id: 'opening-story', value: source },
     { id: 'downtown-scene', value: downtown },
+    { id: 'block7-scene', value: block7 },
     { id: 'train-scene', value: train },
   ],
   'Edit opening story inputs',
@@ -81,6 +83,7 @@ receiver.importDocuments(
 );
 assert.deepEqual(receiver.get('opening-story').value, source);
 assert.deepEqual(receiver.get('downtown-scene').value, downtown);
+assert.deepEqual(receiver.get('block7-scene').value, block7);
 assert.deepEqual(receiver.get('train-scene').value, train);
 const saved = store.save(m.edits().map((e) => ({ ...e, revision: store.read(e.id).revision }))),
   fresh = new AuthoringStore({
@@ -92,7 +95,7 @@ const saved = store.save(m.edits().map((e) => ({ ...e, revision: store.read(e.id
 assert.equal((model.TRIGGERS[0].when as any).all[4].any[2].compare.right.literal, 2100);
 assert.deepEqual((model.CARDS.sleep.end![1] as any).say.pages, ['Saved opening wake.']);
 assert.deepEqual(
-  (fresh.read('downtown-scene').value as any).phases.home.exits.capsule.acknowledge.pages,
+  (fresh.read('block7-scene').value as any).phases.home.barriers['front-door'].acknowledge.pages,
   ['Saved concierge.'],
 );
 assert.equal((fresh.read('train-scene').value as any).phases.home.intro.height, 53);

@@ -3697,23 +3697,6 @@
       }
     },
     {
-      "id": "exit-capsule",
-      "type": "downtown.entrance",
-      "props": {
-        "kind": "capsule"
-      },
-      "placement": {
-        "x": 0,
-        "h": 0
-      },
-      "order": 202,
-      "layer": "backdrop",
-      "attach": {
-        "instance": "front-8-bay-0",
-        "anchor": "topCenter"
-      }
-    },
-    {
       "id": "exit-moth",
       "type": "downtown.entrance",
       "props": {
@@ -4714,47 +4697,13 @@
       "layer": "distance"
     },
     {
-      "id": "exit-block7",
+      "id": "rest-stool",
       "type": "downtown.marker",
       "props": {
-        "role": "exit"
+        "role": "use"
       },
       "placement": {
-        "x": 56,
-        "h": 0
-      },
-      "order": 17,
-      "layer": "set",
-      "attach": {
-        "instance": "front-9",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "exit-registry",
-      "type": "downtown.marker",
-      "props": {
-        "role": "exit"
-      },
-      "placement": {
-        "x": 50,
-        "h": 0
-      },
-      "order": 18,
-      "layer": "set",
-      "attach": {
-        "instance": "front-12",
-        "anchor": "origin"
-      }
-    },
-    {
-      "id": "exit-kessel",
-      "type": "downtown.marker",
-      "props": {
-        "role": "exit"
-      },
-      "placement": {
-        "x": 4,
+        "x": 26,
         "h": 0
       },
       "order": 19,

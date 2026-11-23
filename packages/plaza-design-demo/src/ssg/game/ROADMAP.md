@@ -16,7 +16,9 @@ roadmaps. The user's current direction takes precedence over anything recorded h
   campaign** from `story/opening.json` (sleep → deletion → uplink → old districts). The
   redesigned Act I (M4–M6) is designed (agreed 2026-11-22,
   [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md)). **M4 (Chapter 1) is built alongside** the
-  old campaign and playable from `?play=act1` (2026-11-22); M5 is next.
+  old campaign and playable from `?play=act1` (2026-11-22). On 2026-11-23 its places were joined to
+  Downtown as one walkable street (Registry, Block 7, Downtown; Kessel's rooms under the stall), and
+  the prologue now walks home through Block 7's lobby; M5 is next.
 
 ## Status by area
 
@@ -41,7 +43,7 @@ roadmaps. The user's current direction takes precedence over anything recorded h
 | M1 Progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route. |
 | M2 Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion in the connected harbor. |
 | M3 Prologue journey and home | Implemented; experience review pending | Title glide → Harbor shift → two-car commute through four tunnel zones → underground Metro → Downtown → home. |
-| M4–M6 Redesigned Downtown Act I | M4 built 2026-11-22; M5 next | [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md) ("Build notes"). Chapter 1 plays from `?play=act1`; the old campaign still follows the prologue until M6. |
+| M4–M6 Redesigned Downtown Act I | M4 built 2026-11-22, joined 2026-11-23; M5 next | [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md) ("Build notes"). Chapter 1 plays from `?play=act1`; the old campaign still follows the prologue until M6. |
 | M7–M9 Robot body, Act II, remote Act III | Future | Story/body decisions and mechanic prototypes come first. |
 
 Detailed acceptance evidence for completed tracks lives in the linked documents and in Git

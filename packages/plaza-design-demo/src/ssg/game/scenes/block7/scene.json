@@ -75,13 +75,6 @@
       "at": "door",
       "label": "[E] 7B · HOME",
       "promptH": 60
-    },
-    {
-      "id": "street",
-      "to": "downtown",
-      "at": "block7",
-      "label": "< DOWNTOWN",
-      "edge": "left"
     }
   ],
   "manifest": {
@@ -120,8 +113,7 @@
     },
     "rests": {},
     "exits": {
-      "7b": "exit-7b",
-      "street": "exit-street"
+      "7b": "exit-7b"
     },
     "compile": {
       "groups": [
@@ -360,7 +352,7 @@
           }
         }
       },
-      "goal": "Kessel: through the fixer's kitchen, after dark"
+      "goal": "Kessel: down the hatch beside the stall, after dark"
     },
     "ch1-shutter": {
       "barriers": {
@@ -383,6 +375,37 @@
         }
       },
       "goal": "Kessel's shutter"
+    },
+    "home": {
+      "goal": "go home (7B)",
+      "barriers": {
+        "front-door": {
+          "acknowledge": {
+            "speaker": "CONCIERGE",
+            "pages": [
+              "welcome home, 7B. you are expected.",
+              "the lift is out of order. the stairs are to your right."
+            ],
+            "height": 60,
+            "begin": [
+              {
+                "sound": "granted"
+              }
+            ],
+            "then": [
+              {
+                "milestone": "flat"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "flat": {
+      "goal": "go home (7B): up to the seventh floor",
+      "ping": {
+        "exit": "7b"
+      }
     }
   }
 }

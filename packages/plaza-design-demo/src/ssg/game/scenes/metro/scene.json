@@ -303,7 +303,7 @@
           }
         }
       },
-      "goal": "Kessel: through the fixer's kitchen, after dark"
+      "goal": "Kessel: down the hatch beside the stall, after dark"
     },
     "ch1-shutter": {
       "barriers": {
@@ -329,7 +329,7 @@
           }
         }
       },
-      "goal": "home: Block 7's side street, the service latch"
+      "goal": "home: the service latch, down Block 7's areaway"
     },
     "ch1-home": {
       "barriers": {

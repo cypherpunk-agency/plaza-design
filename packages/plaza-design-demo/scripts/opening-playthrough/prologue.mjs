@@ -2,7 +2,8 @@
 // first morning, asserting the scene, story phase and goal at each beat and recording it (see lib.mjs `beat`).
 //   title -> skip the glide -> Harbor Station -> Shed 3 -> the night shift (parcel, Moth, case, trolley) -> checkout and wage
 //   statement -> back to the platform -> the morning service to Downtown Metro -> turnstile -> west stairs -> Downtown
-//   -> capsule 7B (concierge) -> bed -> the sleep card -> the morning you are deleted.
+//   -> west past the stall to Block 7 (concierge at the front door) -> up the stairwell to 7/F -> capsule 7B -> bed
+//   -> the sleep card -> the morning you are deleted.
 // It stops when the morning is established (story phase `deleted`): what follows is the older campaign, not the prologue.
 import { sleep } from './cdp.mjs';
 
@@ -216,11 +217,48 @@ export const segments = [
   [
     'home',
     async (d, b) => {
-      await d.use('exit:capsule');
+      // west along the street, past the noodle stall: Block 7 is the next stretch of it
+      await d.walkUntil('ArrowLeft', 'Block 7', (p) => p.here === 'block7', 60000);
+      await d.find('ArrowLeft', 'barrier:block7/front-door');
+      await b.tap('e');
       await d.until('the concierge', (p) => !!p.acknowledging, 15000, 80);
       await sleep(400);
-      await d.beat('concierge', 'the capsule tower lets you in');
-      await b.tap('e');
+      await d.beat('concierge', 'the front door of Block 7 knows you');
+      for (let i = 0; i < 6 && (await d.probe()).acknowledging; i++) {
+        await b.tap('e');
+        await sleep(600);
+      }
+      await d.expect('the flat phase', (p) => p.phase === 'flat' && goal('go home')(p));
+      // in through the front door, up the stairwell (the lift is out) to the seventh floor
+      await levelStep(d, b, 'ArrowUp', 'door:block7/door-front', 5000);
+      await sleep(600);
+      // the flights zigzag (up to the right from x 542, back left from x 662): stand by a foot and climb with up held
+      const tries = [
+        [545, 'ArrowRight'],
+        [665, 'ArrowLeft'],
+        [565, 'ArrowRight'],
+        [640, 'ArrowLeft'],
+      ];
+      for (let floor = 0; floor < 7; floor++) {
+        const y0 = (await d.probe()).player.y;
+        let climbed = false;
+        for (const [x, dir] of tries) {
+          await d.walkTo(x, { timeout: 15000 }).catch(() => {});
+          await b.keyDown('ArrowUp');
+          await b.keyDown(dir);
+          await sleep(2600);
+          await b.keyUp(dir);
+          await b.keyUp('ArrowUp');
+          await sleep(200);
+          if ((await d.probe()).player.y > y0 + 60) {
+            climbed = true;
+            break;
+          }
+        }
+        if (!climbed) throw new Error('could not climb from floor ' + floor);
+      }
+      await d.beat('seventh-floor', '7/F, the door of 7B');
+      await d.use('exit:7b');
       await d.until('capsule 7B', (p) => p.here === 'capsule', 20000, 100);
       await d.until('home lines', (p) => !!p.bubble, 8000, 80);
       const rec = await d.beat('capsule-arrival', 'home: kettle, blinds, bed');

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "id": "kessel",
-  "name": "Noodle stall kitchen",
+  "name": "Kessel's rooms",
   "intro": [],
   "uses": [
     {
@@ -37,38 +37,9 @@
       ]
     }
   ],
-  "rests": [
-    {
-      "id": "stool",
-      "kind": "stool"
-    }
-  ],
-  "exits": [
-    {
-      "id": "stall",
-      "to": "downtown",
-      "at": "kessel",
-      "label": "[E] THE STALL",
-      "promptH": 60
-    },
-    {
-      "id": "west",
-      "to": "downtown",
-      "at": "kessel",
-      "label": "< DOWNTOWN",
-      "edge": "left"
-    },
-    {
-      "id": "east",
-      "to": "downtown",
-      "at": "kessel",
-      "label": "DOWNTOWN >",
-      "edge": "right"
-    }
-  ],
   "manifest": {
     "version": 1,
-    "width": 1200,
+    "width": 900,
     "spawn": "spawn",
     "uses": {
       "kessel": {
@@ -93,17 +64,6 @@
         "responseAboveFloor": true
       }
     },
-    "rests": {
-      "stool": {
-        "instance": "rest-stool",
-        "promptH": 40
-      }
-    },
-    "exits": {
-      "stall": "exit-stall",
-      "west": "exit-west",
-      "east": "exit-east"
-    },
     "compile": {
       "groups": [
         "uses",
@@ -117,13 +77,11 @@
     }
   },
   "environment": {
+    "outdoor": false,
     "ambient": {
-      "sky": true,
-      "city": true,
-      "street": true,
-      "weather": true
-    },
-    "facing": 80
+      "sky": false,
+      "weather": false
+    }
   },
   "companion": {
     "mode": "off"
@@ -141,7 +99,7 @@
   },
   "phases": {
     "ch1-kessel": {
-      "goal": "Kessel: down the hatch, after dark (a stool at the stall to wait on)"
+      "goal": "Kessel: down the hatch beside the stall, after dark (a stool at the stall to wait on)"
     },
     "ch1-shutter": {
       "goal": "open the shutter: H, then a verb",
@@ -150,7 +108,7 @@
       }
     },
     "ch1-latch": {
-      "goal": "home: the service latch on the side street"
+      "goal": "home: the service latch, down Block 7's areaway"
     },
     "ch1-wait": {
       "goal": "noodles with Moth at ten (the stall)"

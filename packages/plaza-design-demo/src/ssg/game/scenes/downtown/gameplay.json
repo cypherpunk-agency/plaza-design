@@ -2868,7 +2868,7 @@
           "pages": [
             "Ninety days. Of course.",
             "You won't last ninety days without a key. Nobody does.",
-            "There's a doctor. Kessel. Back of my kitchen, down the hatch, down again.",
+            "There's a doctor. Kessel. Down the hatch beside my stall, and down again.",
             "He owes me. Come back after dark. He's not a morning person."
           ],
           "onEnter": "downtown.act1.referred"
@@ -2876,7 +2876,7 @@
         "a1-afterdark": {
           "speaker": "FIXER",
           "pages": [
-            "Kessel. Through the kitchen, after dark. Tell the cook I sent you."
+            "Kessel. Down the hatch beside the stall, after dark. Tell the cook I sent you."
           ]
         },
         "a1-patched": {
