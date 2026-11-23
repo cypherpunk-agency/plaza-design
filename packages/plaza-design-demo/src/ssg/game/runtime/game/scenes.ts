@@ -176,7 +176,14 @@ export function hostOf(game: Game, id: SceneId): SceneHost {
       : from.startsWith('exit:')
         ? movingInteractions(def, zh.model).exits.find((e) => e.id === from.slice(5))
         : undefined;
-    return source ? { x: source.x, h: 'h' in source ? (source.h ?? 0) : 0 } : null;
+    if (source) return { x: source.x, h: 'h' in source ? (source.h ?? 0) : 0 };
+    // a level barrier of this scene (a joined level names it zone/id), while the player is here: a door's line stands at the door
+    const key = from.startsWith('barrier:') ? from.slice(8) : from,
+      barrier =
+        game.scenes.here === id
+          ? game.scenes.level?.source.barriers?.find((g) => g.id === key || g.id === id + '/' + key)
+          : undefined;
+    return barrier ? { x: barrier.x, h: barrier.h } : null;
   };
   // the story's hacking stages (engine/hack-stages.ts): no hack vision until `inspect` is yours (the opening:
   // until uplink.so), and the board only with `board`; some everyday actions say something else

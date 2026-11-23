@@ -193,7 +193,8 @@ export function continueGame(
   }
   if (first && !game.save.scene && scene && scene === start.scene && !resumeEntrance)
     resumeEntrance = start.entrance;
-  if (scene && (game.scenes.here !== scene || resumeEntrance))
+  // the game starts out "in" its default scene without having entered it: a first entry there still arrives (its level, its neighbours)
+  if (scene && (game.scenes.here !== scene || resumeEntrance || (first && !game.scenes.level)))
     game.enter(scene, true, resumeEntrance);
   game.placeStartingPlayer(
     spawn ??

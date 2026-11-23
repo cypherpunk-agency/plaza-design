@@ -750,8 +750,10 @@ function shutBarriers(lv: Level, f: LevelFloor): LevelBarrier[] {
 }
 /** The shut barrier the player stands at (within reach of its near side), if any. */
 function barrierHere(lv: Level, p: LevelPlayer) {
-  return shutBarriers(lv, levelFloor(lv)).find(
-    (g) => Math.abs(p.x - g.x) <= g.w / 2 + BARRIER_REACH,
+  const d = doorHere(lv, p);
+  return (
+    shutBarriers(lv, levelFloor(lv)).find((g) => Math.abs(p.x - g.x) <= g.w / 2 + BARRIER_REACH) ??
+    (d && !levelFloor(lv).building ? doorBarrier(lv, d) : undefined)
   );
 }
 /** What a barrier's prompt says, by its style. */
@@ -818,6 +820,17 @@ function doorHere(lv: Level, p: LevelPlayer) {
       ),
   );
 }
+/** A shut barrier standing in a building's doorway (a locked front door): it holds the door both ways, and is asked from the street too. */
+function doorBarrier(lv: Level, d: LevelDoor): LevelBarrier | undefined {
+  const open = lv.state.opened ?? [];
+  return (lv.source.barriers ?? []).find(
+    (g) =>
+      !open.includes(g.id) &&
+      g.inside === d.building &&
+      near(g.h, d.h, 2) &&
+      Math.abs(g.x - d.x) <= (g.w + d.w) / 2,
+  );
+}
 function linkEnd(lv: Level, p: LevelPlayer, end: 'low' | 'high') {
   const f = levelFloor(lv),
     other = end === 'low' ? 'high' : 'low';
@@ -871,7 +884,8 @@ function stepFor(lv: Level, p: LevelPlayer, dir: 1 | -1): (() => void) | undefin
   if (s.vehicle) return undefined;
   if (ride) return () => {};
   const f = levelFloor(lv),
-    d = doorHere(lv, p);
+    door = doorHere(lv, p),
+    d = door && !doorBarrier(lv, door) ? door : undefined;
   if (d && dir > 0 && !f.building) {
     const inside = floorAt(lv.source, p.x, f.h, d.building);
     if (inside)
@@ -1059,14 +1073,15 @@ export function levelHints(lv: Level, p: LevelPlayer, m: Movers): LevelHint[] {
   }
   if (ride || lv.state.vehicle) return out;
   const d = doorHere(lv, p);
-  if (d)
+  if (d && !doorBarrier(lv, d))
     out.push({
       id: 'door:' + d.id,
       x: d.x,
       h,
       label: f.building
         ? '[↓] STEP OUT'
-        : '[↑] ENTER' + (d.building ? ' · ' + d.building.toUpperCase() : ''),
+        : // a joined level namespaces buildings as zone/building: the prompt names the building only
+          '[↑] ENTER' + (d.building ? ' · ' + d.building.split('/').pop()!.toUpperCase() : ''),
       promptH: h + 56,
     });
   for (const end of ['low', 'high'] as const) {

@@ -386,7 +386,11 @@ validated with the exits' keys. The Tower annex's turnstile is the example. The 
 rule with typed pickers, tries it over a fixture through `barrierAccess`, lists its phase rules and warns of a rule that can never pass.
 A barrier's `when` may also read world-level shared state (world/state-owners.json, e.g. `shift.checkedOut`), never a
 scene's own. `closes` (a turnstile letting one person through) shuts it again once the player has walked on; it is not
-kept on the save, so its rule is asked each time. Check with `pnpm test:game level-barriers barrier-authoring harbor-zones`.
+kept on the save, so its rule is asked each time. A shut barrier standing in a building's doorway (attached inside the
+building, at a `level.door`) also holds that door: no stepping in or out round it with up or down, and E at the door asks
+the barrier (`doorBarrier`, Block 7's front door). A barrier's lines (refusal, a phase's acknowledgment) stand over the
+barrier: the scene host locates a barrier of the active zone by its id. Check with
+`pnpm test:game level-barriers barrier-authoring harbor-zones`.
 
 The street door seen from inside is `level.entrance` (its `building`; `style` glass, shop, flat or service, each the
 inside of the matching street front; a shop door's `sign` reads backwards from inside). It is drawn only while the
