@@ -421,9 +421,12 @@ export function declaredScene(
     const env = environment(queryView, model ? { m: model, hover: null, layer: 'all' } : undefined),
       appearance = compositionAppearance(validated.composition, env);
     return resolveComposition(art, validated.composition, env).some((r) => {
+      // a sky fills every view, so it alone never makes a neighbouring zone visible: the active
+      // zone paints the sky, and a joined zone that showed only sky would be drawn (and ticked) for nothing
       if (
         !r.element.parts.length ||
         r.instance.layer === 'logic' ||
+        r.element.type === 'environment.sky' ||
         (view.artworkScope === 'static' && mobiles.has(r.instance.id)) ||
         (!mobiles.has(r.instance.id) &&
           ['distance', 'backdrop'].includes(r.instance.layer) &&
