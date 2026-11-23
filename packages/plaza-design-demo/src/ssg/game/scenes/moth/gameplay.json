@@ -8,7 +8,10 @@
     "moth:goal.drawer",
     "moth:observed.drawerOpen",
     "moth:goal.journal",
-    "moth:observed.journalOpen"
+    "moth:observed.journalOpen",
+    "act1:door4c",
+    "act1:named",
+    "moth:observed.cacheConnected"
   ],
   "items": [],
   "events": [
@@ -57,6 +60,17 @@
           "emit": "moth.goal.journal"
         }
       ]
+    },
+    "moth.cache.read": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:named",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
@@ -101,7 +115,8 @@
       "moth:goal.drawer": "goal.drawer",
       "moth:observed.drawerOpen": "drawerOpen",
       "moth:goal.journal": "goal.journal",
-      "moth:observed.journalOpen": "journalOpen"
+      "moth:observed.journalOpen": "journalOpen",
+      "moth:observed.cacheConnected": "cacheConnected"
     },
     "triggers": {
       "goal-1": {
@@ -167,6 +182,25 @@
           ]
         },
         "command": "moth.goal.journal.award"
+      },
+      "act1-cache": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "moth:observed.cacheConnected"
+            },
+            {
+              "flag": "act1:door4c"
+            },
+            {
+              "not": {
+                "flag": "act1:named"
+              }
+            }
+          ]
+        },
+        "command": "moth.cache.read"
       }
     }
   }

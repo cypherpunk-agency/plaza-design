@@ -210,7 +210,10 @@
         "h": 158
       },
       "order": 1,
-      "layer": "set"
+      "layer": "set",
+      "bindings": {
+        "steady": "scene.tubeSteady"
+      }
     },
     {
       "id": "tube-2",

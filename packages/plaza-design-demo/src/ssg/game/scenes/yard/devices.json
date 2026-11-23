@@ -342,8 +342,204 @@
             "talk": {
               "do": [
                 {
-                  "open": "talk", "with": "hinge"
+                  "open": "talk",
+                  "with": "hinge"
                 }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "name": "READY LAMP",
+      "look": "The kitchen's ORDER UP lamp over the back window, on the cook's bell. The cook rings it every few seconds and means it every time.",
+      "status": [
+        {
+          "if": "readyLit",
+          "then": "ORDER UP",
+          "else": "waiting for the next order"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 214,
+          "y": 68,
+          "w": 20,
+          "h": 14
+        },
+        "board": {
+          "x": 0.3,
+          "y": 0.72
+        }
+      },
+      "nouns": [
+        {
+          "id": "bell",
+          "layer": "hardware",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "order",
+            "done"
+          ],
+          "clock": {
+            "every": 3000,
+            "first": 2000,
+            "start": true
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat bell",
+                "KITCHEN BELL: an order up every few seconds. the cook is fast. the cook is angry."
+              ]
+            }
+          }
+        },
+        {
+          "id": "lamp",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "events": [
+            "lit"
+          ],
+          "current": "readyLit",
+          "on": {
+            "on": {
+              "do": [
+                {
+                  "set": "readyLit",
+                  "to": true
+                },
+                {
+                  "emit": "lit"
+                }
+              ]
+            },
+            "off": {
+              "do": [
+                {
+                  "set": "readyLit",
+                  "to": false
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "box",
+      "name": "MOTH'S BOX",
+      "look": "A steel box on the yard wall, a moth sticker on the lid. No handle. Moth doesn't believe in handles.",
+      "status": [
+        {
+          "if": "boxOpen",
+          "then": "open · empty now",
+          "else": "locked · bolt on a signal"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 258,
+          "y": 26,
+          "w": 18,
+          "h": 22
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.72
+        }
+      },
+      "nouns": [
+        {
+          "id": "bolt",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "open",
+            "throw"
+          ],
+          "current": "boxOpen",
+          "on": {
+            "open": [
+              {
+                "if": "boxOpen",
+                "say": [
+                  "{via}use bolt --open",
+                  "already open.",
+                  "dim"
+                ]
+              },
+              {
+                "if": "!signal",
+                "say": [
+                  "use bolt --open",
+                  "no handle. Moth's box opens on a signal, not a hand.",
+                  "err"
+                ]
+              },
+              {
+                "if": "thrown",
+                "do": [
+                  {
+                    "set": "thrown",
+                    "to": false
+                  }
+                ],
+                "say": [
+                  "signal → bolt --open",
+                  "the bolt is thrown and pulled in the same breath. it stays shut.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "boxOpen",
+                    "to": true
+                  },
+                  {
+                    "give": "moth.phrase"
+                  }
+                ],
+                "say": [
+                  "signal → bolt --open",
+                  "clunk. the box drops open: a note in Moth's capitals, folded twice.",
+                  "ok"
+                ]
+              }
+            ],
+            "throw": {
+              "do": [
+                {
+                  "set": "thrown",
+                  "to": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "sticker",
+          "layer": "data",
+          "function": "hold",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat sticker",
+                "a moth in sunglasses. under it, tiny: \"wired the wrong way on purpose. you know what to do.\""
               ]
             }
           }
@@ -362,6 +558,12 @@
       "id": "uplink",
       "kind": "key",
       "label": "uplink.so"
+    },
+    {
+      "id": "moth.phrase",
+      "kind": "fragment",
+      "label": "Moth's door phrase",
+      "text": "the fish knows"
     }
   ],
   "camera": {

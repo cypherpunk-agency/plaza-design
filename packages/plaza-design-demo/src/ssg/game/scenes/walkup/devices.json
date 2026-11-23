@@ -1,0 +1,86 @@
+{
+  "id": "walkup",
+  "name": "Moth's walk-up",
+  "tuning": {},
+  "devices": [
+    {
+      "id": "door4c",
+      "name": "DOOR 4C",
+      "look": "Moth's door. The camera over it is taped. The lock has a grille where a keyhole should be: it listens.",
+      "status": [
+        {
+          "if": "door4c",
+          "then": "open · \"welcome back, friend of Moth\"",
+          "else": "locked · listening"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 436,
+          "y": 324,
+          "w": 22,
+          "h": 46
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.3
+        }
+      },
+      "nouns": [
+        {
+          "id": "plate",
+          "layer": "data",
+          "function": "hold",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat plate",
+                "4C · NO CALLERS. underneath, in marker: friends know the words."
+              ]
+            }
+          }
+        },
+        {
+          "id": "lock",
+          "layer": "software",
+          "function": "gate",
+          "events": [
+            "opened"
+          ],
+          "guard": {
+            "password": [
+              "the fish knows"
+            ],
+            "tries": 3,
+            "lockMs": 3000,
+            "near": {
+              "fish": [
+                "say \"fish\"",
+                "the grille hums. close. a whole sentence, Moth would say.",
+                "err"
+              ]
+            },
+            "say": [
+              "say \"the fish knows\"",
+              "the lock listens. a pause. click. \"welcome back, friend of Moth.\"",
+              "ok"
+            ],
+            "do": [
+              {
+                "set": "door4c",
+                "to": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "cables": [],
+  "dialogue": {},
+  "goals": [],
+  "texts": {}
+}

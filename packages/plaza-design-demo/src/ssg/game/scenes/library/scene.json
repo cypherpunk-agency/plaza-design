@@ -337,5 +337,52 @@
       "role": "orientation",
       "prop": "bearing"
     }
+  },
+  "phases": {
+    "ch2-freshco": {
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "intro": {
+        "pages": [
+          "The library. Quiet, warm, and full of people who have nowhere else to be warm.",
+          "Terminal 3: FREE, CARD ONLY. Someone has taped over the card slot. Someone kind."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "terminal"
+      },
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+    }
   }
 }

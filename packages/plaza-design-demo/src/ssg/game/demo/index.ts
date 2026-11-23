@@ -41,6 +41,20 @@ export function validateDemoScene(value: unknown, gameplay: GameplayDefinition =
     throw new Error('Demo exits remain inside district');
   return d;
 }
+/** The review scenes borrow a place's artwork and people, not the story's machines (Act I's shelf light). */
+const STORY_DEVICES = new Set(['light']);
+function withoutStoryDevices<T>(source: T): T {
+  const d = source as unknown as {
+    devices: { id: string }[];
+    cables?: { from: string; to: string }[];
+  };
+  const keep = (end: string) => !STORY_DEVICES.has(end.split('.')[0]);
+  return {
+    ...d,
+    devices: d.devices.filter((x) => !STORY_DEVICES.has(x.id)),
+    ...(d.cables ? { cables: d.cables.filter((c) => keep(c.from) && keep(c.to)) } : {}),
+  } as unknown as T;
+}
 export const DEMO_COUNTER = validateDemoScene(counterSource),
   DEMO_DESK = validateDemoScene(deskSource);
 export function demoCounterScene(
@@ -54,6 +68,7 @@ export function demoCounterScene(
   if (d.id !== 'shop') throw new Error('Counter identity');
   composition = reviewActorArtwork(composition, d);
   const base = sceneSourceDefinition('shop', FOLDER_SOURCES.shop, {
+    devices: withoutStoryDevices(FOLDER_SOURCES.shop.devices),
     composition,
     state,
     options: { ...options, visibility: reviewVisibility(composition, ['counter', 'till']) },

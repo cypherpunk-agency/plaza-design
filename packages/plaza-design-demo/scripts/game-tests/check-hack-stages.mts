@@ -18,13 +18,21 @@ const sorted = (s: ReadonlySet<string>) => [...s].sort();
 
 // ---------- the story's grants ----------
 // The old campaign (no hackStages on its unlocked phases) keeps everything at once, as before;
-// the new Act I (ch1-*) grants inspect only once Kessel has fitted the implant.
-const actOne = (phase: string) => phase.startsWith('ch1-');
+// the new Act I (ch1-* to ch4-*) names its stages: Chapter 1 grants inspect only once Kessel has
+// fitted the implant; later chapters add stages, always starting from inspect.
+const actOne = (phase: string) => /^ch\d-/.test(phase);
 for (const [phase, v] of Object.entries(openingStoryModel.PHASES)) {
   if (!v.hackLocked && !actOne(phase))
     assert.equal(v.hackStages, undefined, phase + ': old campaign phase names no stages');
-  if (!v.hackLocked && actOne(phase))
+  if (!v.hackLocked && phase.startsWith('ch1-'))
     assert.deepEqual(v.hackStages, ['inspect'], phase + ': Chapter 1 grants inspect only');
+  if (!v.hackLocked && actOne(phase) && !phase.startsWith('ch1-')) {
+    assert.equal(v.hackStages?.[0], 'inspect', phase + ': a later chapter still starts at inspect');
+    assert(
+      v.hackStages!.every((s) => new Set<string>(ALL_HACK_STAGES).has(s)),
+      phase + ': names known stages only',
+    );
+  }
 }
 const unlockedPhase = Object.entries(openingStoryModel.PHASES).find(
   ([p, v]) => !v.hackLocked && !actOne(p),

@@ -585,7 +585,7 @@ export function validateGameplay(value: unknown, shared?: unknown): GameplayDefi
     }
     const nodes = object(conversation.nodes),
       nodeIds = new Set(Object.keys(nodes).map(id)),
-      entry = array(conversation.entry, 32);
+      entry = array(conversation.entry, 64);
     if (
       !entry.length ||
       object(entry[entry.length - 1]).when !== undefined ||

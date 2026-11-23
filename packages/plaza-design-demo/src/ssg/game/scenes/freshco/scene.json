@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "id": "freshco",
+  "name": "FRESHCO",
+  "intro": [],
+  "uses": [
+    {
+      "id": "stacker",
+      "name": "SHELF-STACKER",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.freshco.stacker"
+        }
+      ]
+    }
+  ],
+  "readables": [
+    {
+      "id": "notice",
+      "name": "NOTICE",
+      "pages": [
+        "SELF-CHECKOUT ONLY. STAFF ARE NOT PERMITTED TO RESOLVE IDENTITY ISSUES.",
+        "THANK YOU FOR SHOPPING AT FRESHCO. WE KNOW YOU."
+      ]
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 1364,
+    "spawn": "spawn",
+    "uses": {
+      "stacker": {
+        "instance": "use-stacker",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 60,
+        "promptAboveFloor": true
+      }
+    },
+    "readables": {
+      "notice": {
+        "instance": "read-notice",
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    },
+    "rests": {},
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true,
+      "elevatedResponses": true
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80
+  },
+  "companion": {
+    "mode": "off"
+  },
+  "phases": {
+    "ch2-freshco": {
+      "goal": "the self-checkout: H, then wire the scanner's SCANNED to the till's APPROVE",
+      "intro": {
+        "pages": [
+          "FRESHCO. Bright as a dentist's. Self-checkouts all the way down.",
+          "The shelf-stacker is very interested in tins."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "checkout"
+      }
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+    }
+  }
+}

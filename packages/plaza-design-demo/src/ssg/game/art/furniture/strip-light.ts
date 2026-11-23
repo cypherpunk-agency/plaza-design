@@ -18,6 +18,11 @@ export const stripLightElement: AssetDefinition = {
     coneWidth: shapeLength(size('Light cone width', 220)),
     flicker: appearanceBoolean({ kind: 'boolean', label: 'Failing tube', default: false }),
   },
+  // a scene may switch the tube off, or steady a failing one (a fixed sensor): both default to the authored look
+  visualFields: {
+    lit: size('Lit (from the scene)', 1, 0, 1),
+    steady: size('Steady (from the scene)', 0, 0, 1),
+  },
   spatial: combineControls(
     rectangleControls({ width: 'length', originX: 0.5 }),
     rectangleControls({ width: 'coneWidth', originX: 0.5, baseline: (p) => -Number(p.coneDepth) }),
@@ -30,12 +35,19 @@ export const stripLightElement: AssetDefinition = {
     tall: Number(p.coneDepth) + 2,
   }),
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
-  draw(x, v, p, _s, _pass, at) {
+  draw(x, v, p, s, _pass, at) {
     const lx = v.sx(at.x),
       bottom = at.h - Number(p.coneDepth),
-      dying = p.flicker && (v.t % 200 > 180 || (v.t % 200 > 150 && Math.floor(v.t) % 6 < 3)),
+      dying =
+        p.flicker &&
+        !(Number(s.steady ?? 0) > 0.5) &&
+        (v.t % 200 > 180 || (v.t % 200 > 150 && Math.floor(v.t) % 6 < 3)),
       half = Number(p.length) / 2,
       cone = Number(p.coneWidth) / 2;
+    if (Number(s.lit ?? 1) < 0.5) {
+      box(x, lx - half, v.y(at.h), Number(p.length), 3, 'rgba(120,110,100,.55)');
+      return;
+    }
     const g = x.createLinearGradient(0, v.y(at.h - 2), 0, v.y(bottom));
     g.addColorStop(0, 'rgba(255,230,190,' + (dying ? 0.04 : 0.12) + ')');
     g.addColorStop(1, 'rgba(255,230,190,0)');

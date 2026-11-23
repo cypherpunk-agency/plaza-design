@@ -87,6 +87,14 @@ import kesselComposition from './kessel/composition.json';
 import kesselScene from './kessel/scene.json';
 import kesselGameplay from './kessel/gameplay.json';
 import kesselDevices from './kessel/devices.json';
+import freshcoComposition from './freshco/composition.json';
+import freshcoScene from './freshco/scene.json';
+import freshcoGameplay from './freshco/gameplay.json';
+import freshcoDevices from './freshco/devices.json';
+import walkupComposition from './walkup/composition.json';
+import walkupScene from './walkup/scene.json';
+import walkupGameplay from './walkup/gameplay.json';
+import walkupDevices from './walkup/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -224,6 +232,18 @@ export const FOLDER_SOURCES = {
     scene: kesselScene,
     gameplay: kesselGameplay,
     devices: kesselDevices,
+  },
+  freshco: {
+    composition: freshcoComposition,
+    scene: freshcoScene,
+    gameplay: freshcoGameplay,
+    devices: freshcoDevices,
+  },
+  walkup: {
+    composition: walkupComposition,
+    scene: walkupScene,
+    gameplay: walkupGameplay,
+    devices: walkupDevices,
   },
 } satisfies Record<string, SceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */

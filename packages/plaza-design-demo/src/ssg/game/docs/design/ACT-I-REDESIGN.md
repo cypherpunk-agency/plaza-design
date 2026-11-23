@@ -116,7 +116,52 @@ Kessel's is in Kessel's.
   - The lift prompt reads the engine's "OUT OF ORDER".
   - Saves resume at a scene's spawn, not where you stood (Kessel's spawn is this side of the
     cellar door).
-  - PHASES is at 15 of its 16-row limit, so M5 must raise it.
+  - ~~PHASES is at 15 of its 16-row limit, so M5 must raise it.~~ Raised in M5.
+
+M5 (Chapters 2 and 3), built 2026-11-23 from `?play=act1`:
+
+- Phases: `ch2-freshco`, `ch2-kettle`, `ch2-shop`, `ch2-stall`, `ch2-yard`, `ch3-door`,
+  `ch3-moth`, `ch3-library`, `ch3-registry`, `ch3-stall`, `ch3-night`, each opened by one flag
+  (`act1:morning` … `act1:plan`). Sleeping in the capsule after Chapter 1 waits to 08:00 and
+  opens Chapter 2. `ch3-night` is the end of what is built; its goal says Chapter 4 is not.
+- The street now runs walk-up | FRESHCO | Registry | Block 7 | Downtown, west to east (new zones
+  `freshco` and `walkup`, seams `walkup-freshco`, `freshco-registry`).
+- Beats and their hacking:
+  - FRESHCO: the stacker talks you through it; wire the self-checkout's `verify` result into
+    the till's `approve` (guided wire). IDENTITY NOT FOUND on the way.
+  - Capsule: wire the kettle's ready signal to a new counter lamp (wire, alone).
+  - Corner shop: the shelf light's sensor keeps killing the tube; cut its cable, switch the tube
+    on, the relay latches it after a few seconds (cut). Lines from the shopkeeper.
+  - Downtown: notices, the van, the pigeon; DLV-9 "say hi" (sets `act1:dlv9`). The fixer hands
+    over Moth's parcel, which opens the yard.
+  - Yard: Moth's box only opens on a signal and its lock trips on the same bell; cut the lock
+    cable, wire the ready lamp to the bolt, and the box gives the door phrase (cut and rewire
+    alone; the board).
+  - Walk-up: the phrase on Door 4C's guard opens Moth's flat. Inside: the tape, the tank lid
+    (SPRAT · HATCHED 04.12), the desk drawer guard `sprat0412`, a jack with a known connection to
+    `mothcache`. Reading it names the deletion.
+  - Library: public terminal 3, known connection to `regmirror`: the list of 407 (you, Moth,
+    Ines). Sets the shared world state `act1.inesGone`.
+  - Registry: Ines's place in the queue is empty (she is no longer drawn).
+  - Noodle stall: the fixer, DLV-9 and Kessel; ends on the plan for the night.
+- Engine additions (generic): `furniture.strip-light` takes `lit` and `steady` from the scene;
+  `character.resident` takes `present`. Story PHASES limit 48, PHASE_RULES 64, scene phases 48,
+  conversation entries 64. Node state from a connection is read by native triggers through
+  observation aliases (`nodeConnected`), not through `reads`.
+- Engine fix (generic): a joined zone whose only on-screen artwork is its sky no longer counts as
+  visible. Every place draws an unclipped sky, so before this every joined place was drawn and
+  ticked every frame wherever you stood; adding FRESHCO and the walk-up dropped Block 7 below the
+  frame rate the prologue's stair climb needs. Block 7's frame time went from about 43 ms to 22 ms
+  in the headless check (main was 33 ms). It does not explain the grey haze over Downtown.
+- FRESHCO and the walk-up carry no parallax skyline of their own (the joined street shares one).
+- Open (M5):
+  - The shop, yard, library and Moth's flat are still separate interiors behind doors, not joined
+    to the street.
+  - DLV-9 does not visibly follow you after you meet it.
+  - Downtown's old door to Moth's building still exists; in Act I it is refused and points west to
+    the walk-up.
+  - The shop's back room is the shop floor for now.
+  - The grey haze over Downtown (above) is still open.
 
 ### Chapter 2: Getting by
 

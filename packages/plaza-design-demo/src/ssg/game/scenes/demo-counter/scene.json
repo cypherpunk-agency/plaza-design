@@ -359,6 +359,9 @@
           "margin": 60
         }
       ]
+    },
+    "values": {
+      "tubeSteady": 0
     }
   }
 }

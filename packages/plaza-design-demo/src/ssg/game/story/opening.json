@@ -478,9 +478,575 @@
           }
         }
       }
+    },
+    "ch3-night": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch3-stall": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch3-registry": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch3-library": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch3-moth": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch3-door": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch2-yard": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch2-stall": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch2-shop": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch2-kettle": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "capsule"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch2-freshco": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "capsule"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
     }
   },
   "PHASE_RULES": [
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:plan"
+          }
+        ]
+      },
+      "phase": "ch3-night"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:noines"
+          }
+        ]
+      },
+      "phase": "ch3-stall"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:list"
+          }
+        ]
+      },
+      "phase": "ch3-registry"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:named"
+          }
+        ]
+      },
+      "phase": "ch3-library"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:door4c"
+          }
+        ]
+      },
+      "phase": "ch3-moth"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:phrase"
+          }
+        ]
+      },
+      "phase": "ch3-door"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:parcel"
+          }
+        ]
+      },
+      "phase": "ch2-yard"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:shoplight"
+          }
+        ]
+      },
+      "phase": "ch2-stall"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:kettle"
+          }
+        ]
+      },
+      "phase": "ch2-shop"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:groceries"
+          }
+        ]
+      },
+      "phase": "ch2-kettle"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:morning"
+          }
+        ]
+      },
+      "phase": "ch2-freshco"
+    },
     {
       "when": {
         "all": [
@@ -717,6 +1283,40 @@
       "mid": [
         {
           "waitUntil": "10:00"
+        }
+      ]
+    },
+    "sleep-act1": {
+      "out": 50,
+      "card": 110,
+      "in": 50,
+      "to": "08:00",
+      "label": "CAPSULE 7B",
+      "mid": [
+        {
+          "waitUntil": "08:00"
+        },
+        {
+          "milestone": "ch2.morning"
+        },
+        {
+          "stage": {
+            "scene": "capsule",
+            "face": -1
+          }
+        }
+      ],
+      "end": [
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Morning. Still cold. Still nobody, as far as the flat is concerned.",
+              "The fridge won't open for me. Food, then: FRESHCO, west past the Registry.",
+              "Self-checkouts. Machines don't ask questions. They just shout."
+            ],
+            "height": 46
+          }
         }
       ]
     }
@@ -1197,6 +1797,524 @@
           }
         }
       ]
+    },
+    {
+      "id": "a1-groceries",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch2-kettle"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "freshco"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:groceries",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.groceries"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Rice, tins, water. Paid for with a cable. The stacker never looked up.",
+              "Home. The kettle won't boil for a stranger. But if I fill it myself, it'll still say when it's done.",
+              "And something has to be listening when it does. The counter lamp."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-kettle",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch2-shop"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "capsule"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:kettle",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.kettle"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Tea. The long way round, but mine.",
+              "The corner shop's light has been dying for a week. The shopkeeper fed me on credit for a year.",
+              "Maybe I can pay in wiring."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-shoplight",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch2-stall"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "shop"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:shoplight",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.shoplight"
+        },
+        {
+          "say": {
+            "speaker": "SHOPKEEPER",
+            "pages": [
+              "Light. Real light. Sit. Eat. On the house. The house is very grateful.",
+              "You never had to have a name in here. Now you've got a friend instead. It's better. It doesn't expire.",
+              "Oh. The fixer was asking after you. Said come by the stall."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-phrase",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch3-door"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "yard"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:phrase",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.phrase"
+        },
+        {
+          "say": {
+            "speaker": "NOTE",
+            "pages": [
+              "If you're reading this, I went quiet, and you're the friend I meant.",
+              "Building 114, west side, flat 4C. The door listens. Say it like you mean it: THE FISH KNOWS.",
+              "You saw the board? Everything wired to everything. Look at the whole thing before you touch it. \u2014 M"
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-named",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch3-library"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "moth"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:named",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.named"
+        },
+        {
+          "say": {
+            "speaker": "MOTH-CACHE",
+            "pages": [
+              "last entry. they are not losing records. they are deleting them: a batch, a list, a reason.",
+              "the list sits on the Registry's public mirror, REG-MIRROR-7. any public terminal reaches it if you know its name. the library has one.",
+              "if I'm quiet, I'm on it. \u2014M"
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Not lost. Deleted. On a list, and Moth found the list.",
+              "REG-MIRROR-7. Any public terminal. The library has a free one, if the card slot lets me."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-list",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch3-registry"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "library"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:list",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.list"
+        },
+        {
+          "say": {
+            "speaker": "REG-MIRROR-7",
+            "pages": [
+              "DELETIONS \u00b7 BATCH 11 \u00b7 407 RECORDS \u00b7 REASON: RESOURCE REVIEW \u00b7 STATUS: COMPLETE.",
+              "#212 VARGA, INES \u00b7 #213 HARBOR WORKER, CAPSULE 7B \u00b7 #388 \"MOTH\" \u00b7 ...",
+              "AUTHORISED: OFFICE OF THE REGISTRAR. COLLECTION TO FOLLOW DELETION WITHIN 30 DAYS."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Four hundred and seven names. Mine. Moth's. VARGA, INES.",
+              "Not lost. Deleted on purpose, in a batch, with a reason: RESOURCE REVIEW.",
+              "Ines will be in the queue at the Registry. Somebody should tell her."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-noines",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch3-stall"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "registry"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:noines",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.noines"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Nobody stands up for A-214.",
+              "Every day for three weeks. Today, nobody.",
+              "The stall. The fixer. Now."
+            ],
+            "height": 46
+          }
+        }
+      ]
     }
   ],
   "GOAL_HINTS": [
@@ -1229,7 +2347,26 @@
       "act1:referred",
       "act1:implant",
       "act1:shutter",
-      "act1:home"
+      "act1:home",
+      "act1:plan",
+      "act1:noines",
+      "act1:list",
+      "act1:named",
+      "act1:door4c",
+      "act1:phrase",
+      "act1:parcel",
+      "act1:shoplight",
+      "act1:kettle",
+      "act1:groceries",
+      "act1:morning",
+      "act1:dlv9",
+      "act1:said:groceries",
+      "act1:said:kettle",
+      "act1:said:shoplight",
+      "act1:said:phrase",
+      "act1:said:named",
+      "act1:said:list",
+      "act1:said:noines"
     ],
     "items": [],
     "events": [],
@@ -1435,6 +2572,105 @@
             "value": true
           }
         ]
+      },
+      "opening.ch2.morning": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:morning",
+            "value": true
+          }
+        ]
+      },
+      "opening.ch2.dlv9": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:dlv9",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.groceries": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:groceries",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.kettle": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:kettle",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.shoplight": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:shoplight",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.phrase": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:phrase",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.named": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:named",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.list": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:list",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.noines": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:noines",
+            "value": true
+          }
+        ]
       }
     },
     "reactions": [],
@@ -1508,6 +2744,15 @@
     "call": "opening.call",
     "ch1.out": "opening.ch1.out",
     "ch1.ten": "opening.ch1.ten",
-    "ch1.home": "opening.ch1.home"
+    "ch1.home": "opening.ch1.home",
+    "ch2.morning": "opening.ch2.morning",
+    "ch2.dlv9": "opening.ch2.dlv9",
+    "a1.said.groceries": "opening.a1.said.groceries",
+    "a1.said.kettle": "opening.a1.said.kettle",
+    "a1.said.shoplight": "opening.a1.said.shoplight",
+    "a1.said.phrase": "opening.a1.said.phrase",
+    "a1.said.named": "opening.a1.said.named",
+    "a1.said.list": "opening.a1.said.list",
+    "a1.said.noines": "opening.a1.said.noines"
   }
 }

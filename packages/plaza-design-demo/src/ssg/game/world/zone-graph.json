@@ -192,6 +192,30 @@
       },
       "dx": -265,
       "dh": 100
+    },
+    {
+      "id": "freshco-registry",
+      "kind": "walk",
+      "a": {
+        "zone": "freshco"
+      },
+      "b": {
+        "zone": "registry"
+      },
+      "dx": 1364,
+      "dh": 0
+    },
+    {
+      "id": "walkup-freshco",
+      "kind": "walk",
+      "a": {
+        "zone": "walkup"
+      },
+      "b": {
+        "zone": "freshco"
+      },
+      "dx": 1100,
+      "dh": 0
     }
   ]
 }

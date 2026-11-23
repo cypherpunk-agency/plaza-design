@@ -201,9 +201,9 @@ assert(Object.keys(props().when as object).includes('state'));
 assert.deepEqual(
   field('Only while state')
     .children.map((o) => o.value)
-    .filter((v) => !v.startsWith('shift.')),
+    .filter((v) => !v.startsWith('shift.') && !v.startsWith('act1.')),
   [],
-  'only shared shift.* keys are offered',
+  'only shared shift.* and act1.* keys are offered',
 );
 assert.doesNotThrow(() => validateBarrierCondition(props().when));
 change('Only while type', 'flag');

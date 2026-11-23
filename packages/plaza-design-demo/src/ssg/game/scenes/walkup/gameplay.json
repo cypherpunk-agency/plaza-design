@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:phrase",
+    "act1:door4c",
+    "walkup:door4c"
+  ],
+  "items": [],
+  "events": [],
+  "commands": {
+    "walkup.door4c": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:door4c",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.walkup.stoop": {
+      "entry": [
+        {
+          "when": {
+            "flag": "act1:phrase"
+          },
+          "node": "moth"
+        },
+        {
+          "node": "hello"
+        }
+      ],
+      "nodes": {
+        "moth": {
+          "speaker": "ON THE STOOP",
+          "pages": [
+            "Moth? Up on four. Haven't heard the music in days.",
+            "That door listens. Moth taught it manners. Say the right thing and it's anybody's."
+          ]
+        },
+        "hello": {
+          "speaker": "ON THE STOOP",
+          "pages": [
+            "Stairs are fine. Lift is a rumour. Mind the bikes."
+          ]
+        }
+      }
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "walkup:door4c": "door4c"
+    },
+    "triggers": {
+      "watch": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "walkup:door4c"
+            },
+            {
+              "not": {
+                "flag": "act1:door4c"
+              }
+            }
+          ]
+        },
+        "command": "walkup.door4c"
+      }
+    }
+  },
+  "state": {
+    "walkup.door4c": {
+      "owner": "walkup",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    }
+  }
+}

@@ -336,7 +336,7 @@ export function validatePhase(v: unknown, at: string) {
 /** scene.json `phases`: phase id (what the story's PHASES name) → what this scene does in it. */
 export function validateScenePhases(v: unknown, at = 'phases') {
   const rows = Object.entries(object(v, at));
-  if (!rows.length || rows.length > 16) fail(at, 'one to sixteen phases required');
+  if (!rows.length || rows.length > 48) fail(at, 'one to forty-eight phases required');
   for (const [phase, row] of rows) {
     phaseId(phase, at + '/' + phase);
     validatePhase(row, at + '/' + phase);

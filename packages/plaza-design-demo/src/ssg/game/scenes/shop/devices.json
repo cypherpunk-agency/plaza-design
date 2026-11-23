@@ -2,8 +2,207 @@
   "id": "shop",
   "name": "Corner Shop",
   "tuning": {},
-  "devices": [],
-  "cables": [],
+  "devices": [
+    {
+      "id": "light",
+      "name": "SHELF LIGHT",
+      "look": "The tube over the middle shelves, a motion sensor on the ceiling, and a relay that remembers whether the light held.",
+      "everyday": [
+        {
+          "noun": "tube",
+          "verb": "on",
+          "label": "switch the light on"
+        }
+      ],
+      "status": [
+        {
+          "if": "fixed",
+          "then": "on \u00b7 steady",
+          "else": "failing \u00b7 sensor says: room empty"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 400,
+          "y": 132,
+          "w": 64,
+          "h": 28
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.3
+        },
+        "row": [
+          "sensor",
+          "tube",
+          "timer",
+          "relay"
+        ]
+      },
+      "nouns": [
+        {
+          "id": "sensor",
+          "layer": "hardware",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "empty"
+          ],
+          "clock": {
+            "every": 2500,
+            "first": 1500,
+            "start": true
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat sensor",
+                "MOTION SENSOR: room empty. (you are standing in it.)"
+              ]
+            }
+          }
+        },
+        {
+          "id": "tube",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "events": [
+            "switched"
+          ],
+          "current": "lit",
+          "on": {
+            "on": {
+              "do": [
+                {
+                  "set": "lit",
+                  "to": true
+                },
+                {
+                  "emit": "switched"
+                }
+              ],
+              "say": [
+                "{via}use tube --on",
+                "the tube stutters on."
+              ]
+            },
+            "off": [
+              {
+                "if": "!lit"
+              },
+              {
+                "do": [
+                  {
+                    "set": "lit",
+                    "to": false
+                  }
+                ],
+                "say": [
+                  "{via}use tube --off",
+                  "the tube dies. the shopkeeper sighs in the dark.",
+                  "err"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "timer",
+          "layer": "hardware",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "settled"
+          ],
+          "clock": {
+            "every": 6000,
+            "once": true,
+            "start": false
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat timer",
+                "RELAY TIMER: six seconds after the light comes on, it asks whether the light held."
+              ]
+            }
+          }
+        },
+        {
+          "id": "relay",
+          "layer": "hardware",
+          "function": "logic",
+          "verbs": [
+            "latch"
+          ],
+          "current": "fixed",
+          "on": {
+            "latch": [
+              {
+                "if": "fixed",
+                "say": [
+                  "{via}relay --latch",
+                  "holding.",
+                  "dim"
+                ]
+              },
+              {
+                "if": "lit",
+                "do": [
+                  {
+                    "set": "fixed",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}relay --latch",
+                  "the light holds. six seconds, ten, a minute.",
+                  "ok"
+                ]
+              },
+              {
+                "say": [
+                  "{via}relay --latch",
+                  "nothing to hold: the tube is off again.",
+                  "dim"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "cables": [
+    {
+      "id": "light.sensor",
+      "from": "light.sensor:empty",
+      "to": "light.tube",
+      "verb": "off"
+    },
+    {
+      "id": "light.timer",
+      "from": "light.tube:switched",
+      "to": "light.timer",
+      "verb": "start",
+      "fixed": true
+    },
+    {
+      "id": "light.relay",
+      "from": "light.timer:settled",
+      "to": "light.relay",
+      "verb": "latch",
+      "fixed": true
+    }
+  ],
   "dialogue": {},
   "goals": [],
   "texts": {}

@@ -8,7 +8,10 @@
     "capsule:observed.conciergeConnected",
     "capsule:goal.pixel",
     "pixel",
-    "act1:on"
+    "act1:on",
+    "act1:groceries",
+    "act1:kettle",
+    "capsule:lampOn"
   ],
   "items": [],
   "events": [
@@ -155,6 +158,17 @@
       "actions": [
         {
           "emit": "capsule.router.reboot"
+        }
+      ]
+    },
+    "capsule.lamp.lit": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:kettle",
+          "value": true
         }
       ]
     }
@@ -409,6 +423,12 @@
       "min": 0,
       "max": 1000000000000,
       "integer": false
+    },
+    "capsule.lampOn": {
+      "owner": "capsule",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
     }
   },
   "native": {
@@ -484,7 +504,8 @@
       "capsule:goal.router": "goal.router",
       "capsule:goal.concierge": "goal.concierge",
       "capsule:observed.conciergeConnected": "conciergeConnected",
-      "capsule:goal.pixel": "goal.pixel"
+      "capsule:goal.pixel": "goal.pixel",
+      "capsule:lampOn": "lampOn"
     },
     "replies": {
       "capsule.pixel.bed": {
@@ -691,6 +712,25 @@
           ]
         },
         "command": "capsule.goal.pixel.award"
+      },
+      "act1-lamp": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "capsule:lampOn"
+            },
+            {
+              "flag": "act1:groceries"
+            },
+            {
+              "not": {
+                "flag": "act1:kettle"
+              }
+            }
+          ]
+        },
+        "command": "capsule.lamp.lit"
       }
     },
     "inputs": {

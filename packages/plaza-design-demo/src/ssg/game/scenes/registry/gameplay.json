@@ -3,7 +3,9 @@
   "flags": [
     "act1:stall",
     "act1:queued",
-    "registry:staff"
+    "registry:staff",
+    "act1:list",
+    "act1:noines"
   ],
   "items": [],
   "events": [
@@ -59,6 +61,17 @@
         },
         {
           "emit": "registry.appointment.booked"
+        }
+      ]
+    },
+    "registry.ines.gone": {
+      "sources": [
+        "interaction"
+      ],
+      "actions": [
+        {
+          "flag": "act1:noines",
+          "value": true
         }
       ]
     }
@@ -125,5 +138,8 @@
       "lifetime": "save",
       "default": false
     }
-  }
+  },
+  "sharedState": [
+    "act1"
+  ]
 }

@@ -199,7 +199,12 @@ assert.throws(() => validateGameplay(annex), /unknown reference shift.radio/);
 assert(withSharedState(owners, () => validateGameplay(annex)).state!['shift.radio']);
 // Compiled vs source: compiled carries the declarations, source keeps only the reference.
 const compiled = withSharedState(owners, () => validateGameplay(annex));
-assert.deepEqual(Object.keys(compiled.state!).sort(), Object.keys(owners.state).sort());
+assert.deepEqual(
+  Object.keys(compiled.state!).sort(),
+  Object.keys(owners.state)
+    .filter((k) => k.startsWith('shift.'))
+    .sort(),
+);
 assert.deepEqual(sourceGameplay(compiled), JSON.parse(JSON.stringify(annex)));
 assert.deepEqual(
   withSharedState(owners, () => validateGameplay(compiled)),
@@ -235,10 +240,9 @@ const port = {
 const a = withSharedState(owners, () => new GameplaySession(A, port)),
   d = withSharedState(owners, () => new GameplaySession(D, port));
 const defaults = Object.fromEntries(
-  Object.entries(owners.state as Record<string, { default: unknown }>).map(([id, d]) => [
-    id.slice('shift.'.length),
-    d.default,
-  ]),
+  Object.entries(owners.state as Record<string, { default: unknown }>)
+    .filter(([id]) => id.startsWith('shift.'))
+    .map(([id, d]) => [id.slice('shift.'.length), d.default]),
 );
 assert.equal(defaults.radio, false);
 assert.deepEqual(a.state().values!.shift, defaults, 'declared defaults');
@@ -374,7 +378,7 @@ try {
   });
   change('Command', 'deck.checkout');
   change('Command condition type', 'state');
-  for (const key of Object.keys(owners.state))
+  for (const key of Object.keys(owners.state).filter((k) => k.startsWith('shift.')))
     assert(options('Command condition state').includes(key), 'condition picker offers ' + key);
   change('Command condition state', 'shift.caseReturned');
   assert.deepEqual(latest.commands['deck.checkout'].when, {

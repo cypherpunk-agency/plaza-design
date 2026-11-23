@@ -406,6 +406,160 @@
       "ping": {
         "exit": "7b"
       }
+    },
+    "ch2-freshco": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "barriers": {
+        "front-door": {
+          "say": {
+            "name": "CONCIERGE",
+            "pages": [
+              "I am unable to verify you. The front door is for residents.",
+              "If you believe this is an error, the Registry service point is open from eight until six."
+            ]
+          }
+        }
+      },
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
     }
   }
 }

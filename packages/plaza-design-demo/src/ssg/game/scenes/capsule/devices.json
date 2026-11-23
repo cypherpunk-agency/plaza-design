@@ -691,6 +691,95 @@
           }
         }
       ]
+    },
+    {
+      "id": "lamp",
+      "name": "COUNTER LAMP",
+      "look": "A strip light under the cabinet. It used to come on with the kettle. It used to know who you were.",
+      "everyday": [
+        {
+          "noun": "lamp",
+          "verb": "on",
+          "label": "switch on"
+        }
+      ],
+      "status": [
+        {
+          "if": "lampOn",
+          "then": "on",
+          "else": "off · account: not found"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 168,
+          "y": 56,
+          "w": 22,
+          "h": 14
+        },
+        "board": {
+          "x": 0.2,
+          "y": 0.3
+        }
+      },
+      "nouns": [
+        {
+          "id": "lamp",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "on",
+            "off"
+          ],
+          "current": "lampOn",
+          "on": {
+            "on": [
+              {
+                "if": "lampOn",
+                "say": [
+                  "{via}use lamp --on",
+                  "already on.",
+                  "dim"
+                ]
+              },
+              {
+                "if": "!signal",
+                "say": [
+                  "use lamp --on",
+                  "COUNTER LAMP: no account. switch disabled.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "lampOn",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "signal → lamp --on",
+                  "the counter lamp comes on. tea is ready.",
+                  "ok"
+                ]
+              }
+            ],
+            "off": {
+              "do": [
+                {
+                  "set": "lampOn",
+                  "to": false
+                }
+              ],
+              "say": [
+                "{via}use lamp --off",
+                "the counter lamp goes off.",
+                "dim"
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "nodes": [

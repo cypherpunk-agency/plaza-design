@@ -4,7 +4,10 @@
     "library:renewed",
     "library:goal.lan",
     "library:observed.catalogConnected",
-    "library:observed.lendingConnected"
+    "library:observed.lendingConnected",
+    "act1:named",
+    "act1:list",
+    "library:observed.mirrorConnected"
   ],
   "items": [],
   "events": [
@@ -194,6 +197,21 @@
         {
           "state": "talk.library.paper.cursor",
           "set": 0
+        }
+      ]
+    },
+    "library.list.read": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:list",
+          "value": true
+        },
+        {
+          "state": "act1.inesGone",
+          "set": true
         }
       ]
     }
@@ -607,7 +625,8 @@
       "library:renewed": "renewed",
       "library:goal.lan": "goal.lan",
       "library:observed.catalogConnected": "catalogConnected",
-      "library:observed.lendingConnected": "lendingConnected"
+      "library:observed.lendingConnected": "lendingConnected",
+      "library:observed.mirrorConnected": "mirrorConnected"
     },
     "verbs": [],
     "events": {},
@@ -646,6 +665,25 @@
           ]
         },
         "command": "library.goal.lan.award"
+      },
+      "act1-list": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "library:observed.mirrorConnected"
+            },
+            {
+              "flag": "act1:named"
+            },
+            {
+              "not": {
+                "flag": "act1:list"
+              }
+            }
+          ]
+        },
+        "command": "library.list.read"
       }
     }
   },
@@ -712,5 +750,8 @@
       "min": 0,
       "max": 0
     }
-  }
+  },
+  "sharedState": [
+    "act1"
+  ]
 }

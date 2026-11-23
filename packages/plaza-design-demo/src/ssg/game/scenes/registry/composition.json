@@ -1977,7 +1977,10 @@
         "h": 0
       },
       "order": 80,
-      "layer": "playfield"
+      "layer": "playfield",
+      "bindings": {
+        "present": "scene.inesHere"
+      }
     },
     {
       "id": "use-ines",

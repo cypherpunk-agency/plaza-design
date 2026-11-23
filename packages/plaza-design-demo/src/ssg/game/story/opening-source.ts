@@ -251,9 +251,10 @@ export function validateOpeningSource(
   // the phases: data-defined ids, each with its story-wide metadata (hack, clock pin, resume, persona)
   const metadata = object(d.PHASES, 'PHASES'),
     phaseKeys = Object.keys(metadata);
-  if (!phaseKeys.length || phaseKeys.length > 16) fail('PHASES', 'one to sixteen phases required');
+  if (!phaseKeys.length || phaseKeys.length > 48)
+    fail('PHASES', 'one to forty-eight phases required');
   const phases = new Set(phaseKeys);
-  const phaseRules = list(d.PHASE_RULES, 'PHASE_RULES', 32);
+  const phaseRules = list(d.PHASE_RULES, 'PHASE_RULES', 64);
   if (!phaseRules.length) fail('PHASE_RULES', 'ordered rules and final fallback required');
   // Reuse the common condition validator/evaluator. This flags-only lifecycle context does not
   // expose inventory, time, player or scene scalars; the editor uses the same flags-only controls.

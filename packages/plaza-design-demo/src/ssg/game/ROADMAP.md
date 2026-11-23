@@ -18,7 +18,8 @@ roadmaps. The user's current direction takes precedence over anything recorded h
   [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md)). **M4 (Chapter 1) is built alongside** the
   old campaign and playable from `?play=act1` (2026-11-22). On 2026-11-23 its places were joined to
   Downtown as one walkable street (Registry, Block 7, Downtown; Kessel's rooms under the stall), and
-  the prologue now walks home through Block 7's lobby; M5 is next.
+  the prologue now walks home through Block 7's lobby. M5 (Chapters 2 and 3, adding FRESHCO and
+  Moth's walk-up to the street) was built the same day; M6 (Chapter 4 and the switch-over) is next.
 
 ## Status by area
 
@@ -43,7 +44,7 @@ roadmaps. The user's current direction takes precedence over anything recorded h
 | M1 Progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route. |
 | M2 Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion in the connected harbor. |
 | M3 Prologue journey and home | Implemented; experience review pending | Title glide → Harbor shift → two-car commute through four tunnel zones → underground Metro → Downtown → home. |
-| M4–M6 Redesigned Downtown Act I | M4 built 2026-11-22, joined 2026-11-23; M5 next | [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md) ("Build notes"). Chapter 1 plays from `?play=act1`; the old campaign still follows the prologue until M6. |
+| M4–M6 Redesigned Downtown Act I | M4 built 2026-11-22, joined 2026-11-23; M5 built 2026-11-23; M6 next | [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md) ("Build notes"). Chapter 1 plays from `?play=act1`; the old campaign still follows the prologue until M6. |
 | M7–M9 Robot body, Act II, remote Act III | Future | Story/body decisions and mechanic prototypes come first. |
 
 Detailed acceptance evidence for completed tracks lives in the linked documents and in Git
@@ -108,7 +109,7 @@ history. Do not restart a completed track because an intentionally contextual pr
 | 2. Harbor shift | Small work area, boss, coworker, delivery, independent task, physical disruption, checkout | A complete miniature work story teaching movement, interaction and carrying, without hacking or real deadlines | Implemented |
 | 3. Seamless prologue | Glide to the dusk harbor; night shift in joined harbor zones; seamless ride to underground Downtown; Downtown route and home/rest. No hacking view or wiring | One unbroken harbor → commute → Downtown → home experience with recurring people and working services ([SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) §7) | Implemented; experience review pending |
 | 4. Deletion and first agency | Act I Chapter 1 (beats 1–8): the refusals, CONCIERGE, the missed meeting, the Registry and Ines, Kessel's room, the implant, first inspect and its solo use | Loss is legible; no access deadlock; hacking improves a familiar circumstance | Built 2026-11-22 (`?play=act1`); experience review pending |
-| 5. Foundational Downtown hacking | Act I Chapters 2–3 (beats 9–19): getting by, DLV-9, Moth's parcel and flat, the library list; guided and solo wire, cut, board, clue guards, known connections | Each concept is rehearsed before combination; interfaces expand with actual need | After M4 |
+| 5. Foundational Downtown hacking | Act I Chapters 2–3 (beats 9–19): getting by, DLV-9, Moth's parcel and flat, the library list; guided and solo wire, cut, board, clue guards, known connections | Each concept is rehearsed before combination; interfaces expand with actual need | Built 2026-11-23 (`?play=act1`, Chapters 2–3) |
 | 6. Revised Act I | Act I Chapter 4 (beats 20–22): substation, the dark Registry back office, the sweep, CONCIERGE's lie, Kessel's copy into DLV-9's frame; then the switch-over from the old campaign | Complete Downtown arc; the player cannot leave Downtown while the identity is revoked | After M5 |
 | 7. Robot transition and Act II opening | Waking in the DLV-9 body, continuity between bodies, Moth as Act II's lead | Embodiment changes play while knowledge, relationships and progress survive | Settle body questions first |
 | 8. Act II chapters | District leads toward recovering the body; separate lessons for logic, time, resources and security | Each chapter advances body recovery and teaches one manageable new concept | Bounded branching, not all districts at once |

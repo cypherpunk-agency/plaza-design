@@ -78,6 +78,12 @@
       "lifetime": "save",
       "type": "boolean",
       "default": false
+    },
+    "act1.inesGone": {
+      "owner": "act1",
+      "lifetime": "save",
+      "type": "boolean",
+      "default": false
     }
   }
 }

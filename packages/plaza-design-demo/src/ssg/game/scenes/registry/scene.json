@@ -82,9 +82,37 @@
     {
       "id": "ines",
       "name": "INES VARGA",
-      "label": "[E] TALK",
+      "label": "[E] INES",
       "conversationPresentation": "bubble",
       "routes": [
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:list"
+              },
+              {
+                "flag": "act1:noines",
+                "is": false
+              }
+            ]
+          },
+          "speaker": "YOU",
+          "pages": [
+            "Her place in the queue. Nobody in it.",
+            "The display calls A-214. Nobody stands up."
+          ],
+          "command": "registry.ines.gone"
+        },
+        {
+          "when": {
+            "flag": "act1:list"
+          },
+          "speaker": "YOU",
+          "pages": [
+            "Her place in the queue. Still nobody."
+          ]
+        },
         {
           "conversation": "talk.registry.ines"
         }
@@ -196,6 +224,60 @@
     },
     "ch1-home": {
       "goal": "get some sleep"
+    },
+    "ch2-freshco": {
+      "intro": {
+        "pages": [
+          "New notices on the Registry glass since yesterday:",
+          "\"UNREGISTERED PERSONS WILL BE COLLECTED. FOR YOUR SAFETY.\"",
+          "Collected. Like bins."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+    }
+  },
+  "stage": {
+    "values": {
+      "inesHere": {
+        "if": {
+          "state": "act1.inesGone"
+        },
+        "then": 0,
+        "else": 1
+      }
     }
   }
 }

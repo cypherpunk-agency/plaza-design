@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "id": "walkup",
+  "name": "Moth's walk-up",
+  "intro": [],
+  "uses": [
+    {
+      "id": "stoop",
+      "name": "ON THE STOOP",
+      "label": "[E] TALK",
+      "conversationPresentation": "bubble",
+      "routes": [
+        {
+          "conversation": "talk.walkup.stoop"
+        }
+      ]
+    }
+  ],
+  "exits": [
+    {
+      "id": "4c",
+      "to": "moth",
+      "at": "door",
+      "label": "[E] 4C · MOTH",
+      "promptH": 60,
+      "requires": "act1:door4c"
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 1100,
+    "spawn": "spawn",
+    "uses": {
+      "stoop": {
+        "instance": "use-stoop",
+        "responseH": 0,
+        "responseAboveFloor": true,
+        "promptH": 56,
+        "promptAboveFloor": true
+      }
+    },
+    "readables": {},
+    "rests": {},
+    "exits": {
+      "4c": "exit-4c"
+    },
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true,
+      "elevatedResponses": true
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80
+  },
+  "companion": {
+    "mode": "off"
+  },
+  "phases": {
+    "ch2-freshco": {
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "goal": "4C: H, then drag the phrase onto the lock",
+      "intro": {
+        "pages": [
+          "114. Moth's walk-up. Four floors and a stairwell that smells of other people's dinners."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "door4c"
+      }
+    },
+    "ch3-moth": {
+      "ping": {
+        "exit": "4c"
+      },
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "id": "freshco",
+  "name": "FRESHCO",
+  "tuning": {},
+  "devices": [
+    {
+      "id": "checkout",
+      "name": "SELF CHECKOUT",
+      "look": "A self-checkout: a scanner, a bagging scale with opinions, and a till that approves what the identity check lets through.",
+      "everyday": [
+        {
+          "noun": "scanner",
+          "verb": "scan",
+          "label": "scan your shopping"
+        }
+      ],
+      "status": [
+        {
+          "if": "paid",
+          "then": "approved · thank you",
+          "else": "UNEXPECTED ITEM IN BAGGING AREA"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 304,
+          "w": 30,
+          "h": 46
+        },
+        "board": {
+          "x": 0.5,
+          "y": 0.7
+        },
+        "row": [
+          "scanner",
+          "check",
+          "till"
+        ]
+      },
+      "nouns": [
+        {
+          "id": "scanner",
+          "layer": "hardware",
+          "function": "sense",
+          "verbs": [
+            "scan"
+          ],
+          "events": [
+            "scanned"
+          ],
+          "on": {
+            "scan": {
+              "do": [
+                {
+                  "emit": "scanned"
+                }
+              ],
+              "say": [
+                "use scanner --scan",
+                "BEEP. rice, two tins, a bottle of water."
+              ]
+            }
+          }
+        },
+        {
+          "id": "check",
+          "layer": "software",
+          "function": "program",
+          "verbs": [
+            "verify"
+          ],
+          "on": {
+            "verify": {
+              "say": [
+                "{via}verify --customer",
+                "IDENTITY NOT FOUND. UNEXPECTED ITEM: YOU. PLEASE WAIT FOR ASSISTANCE.",
+                "err"
+              ]
+            }
+          }
+        },
+        {
+          "id": "till",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "approve"
+          ],
+          "current": "paid",
+          "on": {
+            "approve": [
+              {
+                "if": "paid",
+                "say": [
+                  "{via}use till --approve",
+                  "already approved. the gate is open.",
+                  "dim"
+                ]
+              },
+              {
+                "if": "!signal",
+                "say": [
+                  "use till --approve",
+                  "TILL: approval comes from the checkout, not from fingers.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "paid",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "signal → till --approve",
+                  "APPROVED. THANK YOU FOR SHOPPING AT FRESHCO. the gate swings open.",
+                  "ok"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "cables": [
+    {
+      "id": "checkout.verify",
+      "from": "checkout.scanner:scanned",
+      "to": "checkout.check",
+      "verb": "verify"
+    }
+  ],
+  "dialogue": {},
+  "goals": [],
+  "texts": {}
+}

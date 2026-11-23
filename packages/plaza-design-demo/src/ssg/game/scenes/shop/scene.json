@@ -321,6 +321,62 @@
           "margin": 60
         }
       ]
+    },
+    "values": {
+      "tubeSteady": {
+        "if": {
+          "state": "shop.fixed"
+        },
+        "then": 1,
+        "else": 0
+      }
+    }
+  },
+  "phases": {
+    "ch2-freshco": {
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the light: H, then cut the sensor's cable (tap it), then switch the light on",
+      "intro": {
+        "pages": [
+          "The shopkeeper is reading by a phone torch. The tube over the shelves stutters and dies, stutters and dies.",
+          "A motion sensor on the ceiling, wired to switch it off whenever the shop is \"empty\". It thinks the shop is always empty."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "light"
+      }
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
     }
   }
 }

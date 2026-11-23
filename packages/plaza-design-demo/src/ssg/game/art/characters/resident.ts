@@ -329,6 +329,19 @@ export const residentElement: AssetDefinition = {
       : fallback;
   },
   anchors: () => ({ origin: { x: 0, h: 0, role: 'origin' } }),
-  draw: (ctx, view, props, _state, _pass, placement) =>
-    drawCharacter(ctx, view, residentCharacter(props, placement)),
+  // a scene may take a resident away (someone who stops coming); bound, 0 draws nothing
+  visualFields: {
+    present: {
+      kind: 'number',
+      label: 'Present (from the scene)',
+      default: 1,
+      min: 0,
+      max: 1,
+      step: 1,
+    },
+  },
+  draw: (ctx, view, props, state, _pass, placement) =>
+    Number(state.present ?? 1) < 0.5
+      ? undefined
+      : drawCharacter(ctx, view, residentCharacter(props, placement)),
 };

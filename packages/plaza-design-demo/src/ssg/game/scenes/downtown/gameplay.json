@@ -17,7 +17,19 @@
     "act1:ten",
     "act1:stall",
     "act1:queued",
-    "act1:implant"
+    "act1:implant",
+    "act1:plan",
+    "act1:noines",
+    "act1:list",
+    "act1:named",
+    "act1:door4c",
+    "act1:phrase",
+    "act1:parcel",
+    "act1:shoplight",
+    "act1:kettle",
+    "act1:groceries",
+    "act1:morning",
+    "act1:dlv9"
   ],
   "items": [],
   "events": [
@@ -2125,12 +2137,151 @@
           "value": true
         }
       ]
+    },
+    "downtown.act1.parcel": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:parcel",
+          "value": true
+        }
+      ]
+    },
+    "downtown.act1.plan": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:plan",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
   "conversations": {
     "talk.downtown.fixer": {
       "entry": [
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:plan"
+              }
+            ]
+          },
+          "node": "a1-tonight"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:noines"
+              }
+            ]
+          },
+          "node": "a1-fight"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:list"
+              }
+            ]
+          },
+          "node": "a1-list"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:named"
+              }
+            ]
+          },
+          "node": "a1-cache"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:door4c"
+              }
+            ]
+          },
+          "node": "a1-flat"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:phrase"
+              }
+            ]
+          },
+          "node": "a1-phrase"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:parcel"
+              }
+            ]
+          },
+          "node": "a1-yard"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:shoplight"
+              }
+            ]
+          },
+          "node": "a1-parcel"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:morning"
+              }
+            ]
+          },
+          "node": "a1-day2"
+        },
         {
           "when": {
             "all": [
@@ -2884,6 +3035,102 @@
           "pages": [
             "Kessel fixed you up? Then doors can hear you now. Mind what you say to them.",
             "Go home. Sleep. Tomorrow we work out how a ghost eats."
+          ]
+        },
+        "a1-day2": {
+          "speaker": "FIXER",
+          "pages": [
+            "Morning, ghost. Eat something that isn't mine.",
+            "FRESHCO's checkouts don't want a name. They want a beep. Give them a beep."
+          ]
+        },
+        "a1-parcel": {
+          "speaker": "FIXER",
+          "pages": [
+            "Sit. I owe you a conversation.",
+            "Moth came by last week. Left a box in my yard. \"For my friend, if I go quiet.\"",
+            "Moth's gone quiet. You're the friend.",
+            "Moth rigged it to my kitchen lamp, because Moth thinks that's funny. Yard's round the side. Don't ask me how it opens."
+          ],
+          "onEnter": "downtown.act1.parcel"
+        },
+        "a1-yard": {
+          "speaker": "FIXER",
+          "pages": [
+            "The box is on the yard wall, by my kitchen window. B shows you the whole mess. Moth's mess."
+          ]
+        },
+        "a1-phrase": {
+          "speaker": "FIXER",
+          "pages": [
+            "A phrase and an address. Very Moth.",
+            "114, west side, past FRESHCO. Go and knock. Politely. It's a door that listens."
+          ]
+        },
+        "a1-flat": {
+          "speaker": "FIXER",
+          "pages": [
+            "Well? Was Moth home?",
+            "No. Of course not. What did Moth leave?"
+          ]
+        },
+        "a1-cache": {
+          "speaker": "FIXER",
+          "pages": [
+            "A list? On the Registry's own mirror?",
+            "The library has public terminals. Public. That's a word they'll regret."
+          ]
+        },
+        "a1-list": {
+          "speaker": "FIXER",
+          "pages": [
+            "Four hundred and seven.",
+            "Ines Varga. The one in the queue? Go and find her before the city does."
+          ]
+        },
+        "a1-fight": {
+          "speaker": "FIXER",
+          "pages": [
+            "Not in the queue. Every day for three weeks, and today not in the queue.",
+            "They're not losing people. They're tidying them.",
+            "So we stop asking. The record lives on a machine. Machines have plugs."
+          ],
+          "choices": [
+            {
+              "id": "a1-dlv",
+              "label": "Then we pull the plug.",
+              "next": "a1-dlv"
+            }
+          ]
+        },
+        "a1-dlv": {
+          "speaker": "DLV-9",
+          "pages": [
+            "DLV-9 IS PRESENT. DLV-9 HAS BEEN FOLLOWING. DLV-9 WOULD LIKE TO HELP PULL.",
+            "DLV-9 HAS ONE GLOVE. IT IS A GOOD GLOVE."
+          ],
+          "choices": [
+            {
+              "id": "a1-kessel",
+              "label": "(Kessel has come up for noodles.)",
+              "next": "a1-kessel"
+            }
+          ]
+        },
+        "a1-kessel": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "You want to force a record back. Mm. You might, for a minute.",
+            "And if it goes wrong? People ask me that. Whether a person can be copied out of the way. Into something that isn't on the list.",
+            "It can be done. It has been done. Hardly anyone survived it, and the ones who did were not quite who they were.",
+            "Don't look at me like that. I said hardly."
+          ],
+          "onEnter": "downtown.act1.plan"
+        },
+        "a1-tonight": {
+          "speaker": "FIXER",
+          "pages": [
+            "Tonight, then. Kessel knows the block's substation. Eat first. Nobody breaks in hungry."
           ]
         }
       }

@@ -343,6 +343,149 @@
         }
       },
       "goal": "get some sleep"
+    },
+    "ch2-freshco": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
     }
   },
   "introOnFoot": true

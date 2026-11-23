@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:morning",
+    "act1:groceries",
+    "freshco:paid"
+  ],
+  "items": [],
+  "events": [],
+  "commands": {
+    "freshco.paid": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:groceries",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {
+    "talk.freshco.stacker": {
+      "entry": [
+        {
+          "when": {
+            "flag": "act1:groceries"
+          },
+          "node": "after"
+        },
+        {
+          "when": {
+            "flag": "act1:morning"
+          },
+          "node": "tip"
+        },
+        {
+          "node": "hello"
+        }
+      ],
+      "nodes": {
+        "tip": {
+          "speaker": "SHELF-STACKER",
+          "pages": [
+            "I'm stacking tins. I'm facing the tins. I'm very interested in tins.",
+            "If somebody ran the checkout scanner straight to the till's APPROVE, bypassing the bit that asks who you are, I would be looking at tins.",
+            "H to see the wiring. Drag from SCANNED to APPROVE. Hypothetically."
+          ]
+        },
+        "after": {
+          "speaker": "SHELF-STACKER",
+          "pages": [
+            "Tins. Fascinating things. Have a nice day, nobody."
+          ]
+        },
+        "hello": {
+          "speaker": "SHELF-STACKER",
+          "pages": [
+            "Aisle three. Everything is in aisle three."
+          ]
+        }
+      }
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "freshco:paid": "paid"
+    },
+    "triggers": {
+      "watch": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "freshco:paid"
+            },
+            {
+              "not": {
+                "flag": "act1:groceries"
+              }
+            }
+          ]
+        },
+        "command": "freshco.paid"
+      }
+    }
+  },
+  "state": {
+    "freshco.paid": {
+      "owner": "freshco",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    }
+  }
+}

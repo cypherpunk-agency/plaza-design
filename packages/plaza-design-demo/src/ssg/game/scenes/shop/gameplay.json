@@ -1,7 +1,10 @@
 {
   "version": 1,
   "flags": [
-    "shop:bought"
+    "shop:bought",
+    "act1:kettle",
+    "act1:shoplight",
+    "shop:fixed"
   ],
   "items": [
     "blue",
@@ -141,6 +144,17 @@
         {
           "state": "talk.shop.android.cursor",
           "set": 1
+        }
+      ]
+    },
+    "shop.light.fixed": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:shoplight",
+          "value": true
         }
       ]
     }
@@ -287,6 +301,18 @@
       "default": 0,
       "min": 0,
       "max": 1
+    },
+    "shop.lit": {
+      "owner": "shop",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    },
+    "shop.fixed": {
+      "owner": "shop",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
     }
   },
   "purchases": {
@@ -300,6 +326,35 @@
           "noodlecup",
           "gum"
         ]
+      }
+    }
+  },
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "shop:fixed": "fixed"
+    },
+    "triggers": {
+      "act1-light": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "shop:fixed"
+            },
+            {
+              "flag": "act1:kettle"
+            },
+            {
+              "not": {
+                "flag": "act1:shoplight"
+              }
+            }
+          ]
+        },
+        "command": "shop.light.fixed"
       }
     }
   }

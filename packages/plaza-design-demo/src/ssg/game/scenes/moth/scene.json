@@ -11,8 +11,8 @@
   "exits": [
     {
       "id": "door",
-      "to": "downtown",
-      "at": "moth",
+      "to": "walkup",
+      "at": "4c",
       "label": "",
       "engine": true
     }
@@ -143,6 +143,188 @@
       "fresh": {
         "picture": "fresh"
       }
+    }
+  },
+  "phases": {
+    "ch2-freshco": {
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "the fixer's yard: Moth's box"
+    },
+    "ch3-door": {
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "Moth's desk drawer: the tape, the tank, then the drawer's lock; then the cache (B, CONNECT)",
+      "intro": {
+        "pages": [
+          "Moth's place. The record player is still going round. The coat is gone. The fish isn't.",
+          "Sprat. Fern. The answering machine is blinking."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "phone"
+      }
+    },
+    "ch3-library": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
     }
   }
 }

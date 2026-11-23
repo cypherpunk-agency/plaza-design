@@ -219,7 +219,62 @@
           "mechanism": "yardCrane",
           "field": "night"
         }
+      },
+      "readyLamp": {
+        "if": {
+          "state": "yard.readyLit"
+        },
+        "then": 1,
+        "else": 0
       }
+    }
+  },
+  "phases": {
+    "ch2-freshco": {
+      "goal": "food: FRESHCO, west past the Registry"
+    },
+    "ch2-kettle": {
+      "goal": "home: tea, the long way (the kettle and the counter lamp)"
+    },
+    "ch2-shop": {
+      "goal": "the corner shop: the shopkeeper's light"
+    },
+    "ch2-stall": {
+      "goal": "the stall: the fixer wants a word"
+    },
+    "ch2-yard": {
+      "goal": "Moth's box: B for the board; cut the bell's cable to the bolt, wire the lamp's LIT to OPEN",
+      "intro": {
+        "pages": [
+          "The fixer's yard. Crates, a crane, a hatch in the fence with a face on it.",
+          "Moth's box is on the wall by the kitchen window. Its bolt is wired to the kitchen bell: every order up, it locks. Moth wired it backwards on purpose.",
+          "B for the board. Everything here, wired to everything."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "box"
+      }
+    },
+    "ch3-door": {
+      "goal": "Moth's walk-up, west past FRESHCO: flat 4C"
+    },
+    "ch3-moth": {
+      "goal": "Moth's flat: what Moth left"
+    },
+    "ch3-library": {
+      "goal": "the library: the public terminal (REG-MIRROR-7)"
+    },
+    "ch3-registry": {
+      "goal": "the Registry: find Ines in the queue (08:00 to 18:00)"
+    },
+    "ch3-stall": {
+      "goal": "the stall: tell the fixer"
+    },
+    "ch3-night": {
+      "goal": "the substation, after dark (Chapter 4 is not built yet)"
     }
   }
 }

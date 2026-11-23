@@ -287,6 +287,12 @@ Ordinary dialogue, access, rewards and timers still use the shared model. See
 [Downtown persistence triggers](../../scenes/downtown/gameplay.json),
 [shared trigger implementation](../../engine/gameplay/native-live-conditions.ts) and registered physical controller modules. Do not add a second scheduler.
 
+A trigger that waits on a device sees device state through `native.reads` (flag name to model
+key). State that a node noun sets when you connect to it is not a device key and does not show up
+there: declare an observation alias in gameplay `observations.aliases` (`nodeConnected`,
+`sectorOpen`, `keyHeld`, `goalComplete`) and test the flag `<scene>:observed.<alias>`. See
+[Moth's cache](../../scenes/moth/gameplay.json) and [the library terminal](../../scenes/library/gameplay.json).
+
 ## Recipe: a scene or editor feature
 
 Create ordinary scenes through the editor catalogue, then edit Scene/Logic and connect routes

@@ -80,10 +80,16 @@ const root = path.resolve('src/ssg/game'),
     'block7',
     'capsule',
     'downtown',
+    'freshco',
     'kessel',
+    'library',
     'metro',
+    'moth',
     'registry',
+    'shop',
     'train',
+    'walkup',
+    'yard',
   ]);
   for (const id of withPhases)
     for (const phase of Object.keys(json('scenes/' + id + '/scene.json').phases))

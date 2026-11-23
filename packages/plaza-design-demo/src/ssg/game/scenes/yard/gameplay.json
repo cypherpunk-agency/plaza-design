@@ -1,6 +1,10 @@
 {
   "version": 1,
-  "flags": [],
+  "flags": [
+    "act1:parcel",
+    "act1:phrase",
+    "yard:boxOpen"
+  ],
   "items": [],
   "events": [
     "yard.talk",
@@ -280,6 +284,17 @@
           "set": 0
         }
       ]
+    },
+    "yard.box.opened": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:phrase",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
@@ -477,6 +492,24 @@
       "default": 0,
       "min": 0,
       "max": 9007199254740991
+    },
+    "yard.readyLit": {
+      "owner": "yard",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    },
+    "yard.boxOpen": {
+      "owner": "yard",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    },
+    "yard.thrown": {
+      "owner": "yard",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
     }
   },
   "native": {
@@ -700,7 +733,28 @@
       "yard.chute.start": "chute",
       "yard.parcel.tray": "gate"
     },
-    "wires": [],
+    "wires": [
+      {
+        "id": "ready.order",
+        "from": "ready.bell:order",
+        "to": "ready.lamp",
+        "verb": "on",
+        "fixed": true
+      },
+      {
+        "id": "ready.done",
+        "from": "ready.bell:done",
+        "to": "ready.lamp",
+        "verb": "off",
+        "fixed": true
+      },
+      {
+        "id": "box.lock",
+        "from": "ready.bell:order",
+        "to": "box.bolt",
+        "verb": "throw"
+      }
+    ],
     "deadlines": {
       "yard.chute": {
         "startOn": [
@@ -787,6 +841,30 @@
           "the parcel hits the closed hatch. the crane fishes it back.",
           "err"
         ]
+      }
+    },
+    "reads": {
+      "yard:boxOpen": "boxOpen"
+    },
+    "triggers": {
+      "act1-box": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "yard:boxOpen"
+            },
+            {
+              "flag": "act1:parcel"
+            },
+            {
+              "not": {
+                "flag": "act1:phrase"
+              }
+            }
+          ]
+        },
+        "command": "yard.box.opened"
       }
     }
   },

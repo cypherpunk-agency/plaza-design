@@ -478,7 +478,7 @@ const story = openingStoryModel;
       ),
     /must be last/,
   );
-  bad(() => validateScenePhases({}, 'phases'), /one to sixteen/);
+  bad(() => validateScenePhases({}, 'phases'), /one to forty-eight/);
   bad(() => validateScenePhases({ 'bad phase': {} }, 'phases'), /phase identifier/);
   validateScenePhases({ anything: {} }, 'phases');
   validateWash([

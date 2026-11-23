@@ -696,6 +696,25 @@
         "instance": "router",
         "anchor": "origin"
       }
+    },
+    {
+      "id": "counter-lamp",
+      "type": "furniture.strip-light",
+      "props": {
+        "length": 18,
+        "coneDepth": 40,
+        "coneWidth": 44,
+        "flicker": false
+      },
+      "placement": {
+        "x": 168,
+        "h": 64
+      },
+      "order": 150,
+      "layer": "backdrop",
+      "bindings": {
+        "lit": "scene.counterLamp"
+      }
     }
   ]
 }

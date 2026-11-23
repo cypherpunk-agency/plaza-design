@@ -755,6 +755,44 @@
       },
       "order": -100,
       "layer": "distance"
+    },
+    {
+      "id": "ready-lamp",
+      "type": "furniture.strip-light",
+      "props": {
+        "length": 14,
+        "coneDepth": 30,
+        "coneWidth": 34,
+        "flicker": false
+      },
+      "placement": {
+        "x": 214,
+        "h": 78
+      },
+      "order": 150,
+      "layer": "backdrop",
+      "bindings": {
+        "lit": "scene.readyLamp"
+      }
+    },
+    {
+      "id": "moth-box",
+      "type": "interior.dt-mailboxes",
+      "props": {
+        "columns": 1,
+        "rows": 1,
+        "bottomY": 26,
+        "metal": "steel",
+        "stuffed": 0,
+        "taped": 0,
+        "parcels": 0
+      },
+      "placement": {
+        "x": 252,
+        "h": 0
+      },
+      "order": 150,
+      "layer": "backdrop"
     }
   ]
 }
