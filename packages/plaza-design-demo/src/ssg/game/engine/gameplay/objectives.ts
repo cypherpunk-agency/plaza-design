@@ -7,6 +7,8 @@ export interface ObjectiveDefinition {
   id: string;
   text: string;
   when?: Condition;
+  /** Show the story's current goal (a phase goal) instead of `text`, which then only names the row. */
+  story?: true;
   target?: string;
   gentle?: boolean;
 }

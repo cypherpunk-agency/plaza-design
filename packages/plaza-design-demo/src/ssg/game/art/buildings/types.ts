@@ -144,6 +144,8 @@ export function piece(
     coordinates: 'world',
     parts: ['backdrop'],
     draw(ctx, v, raw, s, _pass, at) {
+      // a scene may take a piece away (declared as a `present` visual field and bound): 0 draws nothing
+      if (Number((s as Readonly<Record<string, unknown>>).present ?? 1) < 0.5) return;
       const p = live ? live(raw, s as Readonly<Record<string, number>>) : raw;
       const { w } = size(p),
         sx = v.sx(at.x),

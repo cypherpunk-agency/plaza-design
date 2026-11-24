@@ -2594,10 +2594,559 @@
           }
         ]
       },
-      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+      "goal": "the substation, after dark (21:00 on): west end of the street, past the walk-up"
+    },
+    "ch4-dark": {
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR: rent: pending.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the plate",
+            "say": [
+              "cat plate",
+              "7B \u00b7 RESIDENT: NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "fridge": [
+          {
+            "label": "open the fridge",
+            "say": [
+              "open fridge",
+              "FRIDGE: no account. door held shut. the lemon will have to wait.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the photo",
+            "say": [
+              "cat photo",
+              "you and Moth at the noodle stall, steam on the lens. Moth is pulling a face. you are laughing at it.",
+              "dim"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "fill it and boil",
+            "act": [
+              "kettle",
+              "boil"
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "say": [
+              "use motor --open",
+              "BLINDS: privacy mode. account: not found.",
+              "err"
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: no account. schedule: night.",
+              "err"
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HARBOR PAYROLL: night shift, 3 tokens. PAYMENT FAILED \u00b7 PAYEE CLOSED.",
+              "err"
+            ]
+          },
+          {
+            "label": "message Moth",
+            "say": [
+              "msg moth \"on my way\"",
+              "MESSAGE NOT SENT \u00b7 SENDER NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "router": [
+          {
+            "label": "feel how warm it is",
+            "act": [
+              "temp",
+              "read"
+            ]
+          }
+        ],
+        "lamp": [
+          {
+            "label": "switch on",
+            "act": [
+              "lamp",
+              "on"
+            ]
+          }
+        ]
+      },
+      "goal": "the Registry, dark: upstairs, the records node"
+    },
+    "ch4-flagged": {
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR: rent: pending.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the plate",
+            "say": [
+              "cat plate",
+              "7B \u00b7 RESIDENT: NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "fridge": [
+          {
+            "label": "open the fridge",
+            "say": [
+              "open fridge",
+              "FRIDGE: no account. door held shut. the lemon will have to wait.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the photo",
+            "say": [
+              "cat photo",
+              "you and Moth at the noodle stall, steam on the lens. Moth is pulling a face. you are laughing at it.",
+              "dim"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "fill it and boil",
+            "act": [
+              "kettle",
+              "boil"
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "say": [
+              "use motor --open",
+              "BLINDS: privacy mode. account: not found.",
+              "err"
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: no account. schedule: night.",
+              "err"
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HARBOR PAYROLL: night shift, 3 tokens. PAYMENT FAILED \u00b7 PAYEE CLOSED.",
+              "err"
+            ]
+          },
+          {
+            "label": "message Moth",
+            "say": [
+              "msg moth \"on my way\"",
+              "MESSAGE NOT SENT \u00b7 SENDER NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "router": [
+          {
+            "label": "feel how warm it is",
+            "act": [
+              "temp",
+              "read"
+            ]
+          }
+        ],
+        "lamp": [
+          {
+            "label": "switch on",
+            "act": [
+              "lamp",
+              "on"
+            ]
+          }
+        ]
+      },
+      "goal": "home to 7B, the back way, and lie low (bed)",
+      "targets": {
+        "bed": {
+          "label": "[E] LIE LOW",
+          "promptH": 46,
+          "bind": {
+            "kind": "rest",
+            "id": "bed",
+            "offsetX": 6
+          },
+          "card": "sweep-dawn"
+        }
+      },
+      "ping": {
+        "target": "bed"
+      }
+    },
+    "ch4-sweep": {
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR: rent: pending.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the plate",
+            "say": [
+              "cat plate",
+              "7B \u00b7 RESIDENT: NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "fridge": [
+          {
+            "label": "open the fridge",
+            "say": [
+              "open fridge",
+              "FRIDGE: no account. door held shut. the lemon will have to wait.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the photo",
+            "say": [
+              "cat photo",
+              "you and Moth at the noodle stall, steam on the lens. Moth is pulling a face. you are laughing at it.",
+              "dim"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "fill it and boil",
+            "act": [
+              "kettle",
+              "boil"
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "say": [
+              "use motor --open",
+              "BLINDS: privacy mode. account: not found.",
+              "err"
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: no account. schedule: night.",
+              "err"
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HARBOR PAYROLL: night shift, 3 tokens. PAYMENT FAILED \u00b7 PAYEE CLOSED.",
+              "err"
+            ]
+          },
+          {
+            "label": "message Moth",
+            "say": [
+              "msg moth \"on my way\"",
+              "MESSAGE NOT SENT \u00b7 SENDER NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "router": [
+          {
+            "label": "feel how warm it is",
+            "act": [
+              "temp",
+              "read"
+            ]
+          }
+        ],
+        "lamp": [
+          {
+            "label": "switch on",
+            "act": [
+              "lamp",
+              "on"
+            ]
+          }
+        ]
+      },
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR: rent: pending.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the plate",
+            "say": [
+              "cat plate",
+              "7B \u00b7 RESIDENT: NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "fridge": [
+          {
+            "label": "open the fridge",
+            "say": [
+              "open fridge",
+              "FRIDGE: no account. door held shut. the lemon will have to wait.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the photo",
+            "say": [
+              "cat photo",
+              "you and Moth at the noodle stall, steam on the lens. Moth is pulling a face. you are laughing at it.",
+              "dim"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "fill it and boil",
+            "act": [
+              "kettle",
+              "boil"
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "say": [
+              "use motor --open",
+              "BLINDS: privacy mode. account: not found.",
+              "err"
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: no account. schedule: night.",
+              "err"
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HARBOR PAYROLL: night shift, 3 tokens. PAYMENT FAILED \u00b7 PAYEE CLOSED.",
+              "err"
+            ]
+          },
+          {
+            "label": "message Moth",
+            "say": [
+              "msg moth \"on my way\"",
+              "MESSAGE NOT SENT \u00b7 SENDER NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "router": [
+          {
+            "label": "feel how warm it is",
+            "act": [
+              "temp",
+              "read"
+            ]
+          }
+        ],
+        "lamp": [
+          {
+            "label": "switch on",
+            "act": [
+              "lamp",
+              "on"
+            ]
+          }
+        ]
+      },
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "everyday": {
+        "lock": [
+          {
+            "label": "try the door",
+            "say": [
+              "use bolt --open",
+              "DOOR: rent: pending.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the plate",
+            "say": [
+              "cat plate",
+              "7B \u00b7 RESIDENT: NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "fridge": [
+          {
+            "label": "open the fridge",
+            "say": [
+              "open fridge",
+              "FRIDGE: no account. door held shut. the lemon will have to wait.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the photo",
+            "say": [
+              "cat photo",
+              "you and Moth at the noodle stall, steam on the lens. Moth is pulling a face. you are laughing at it.",
+              "dim"
+            ]
+          }
+        ],
+        "kettle": [
+          {
+            "label": "fill it and boil",
+            "act": [
+              "kettle",
+              "boil"
+            ]
+          }
+        ],
+        "blinds": [
+          {
+            "label": "open",
+            "say": [
+              "use motor --open",
+              "BLINDS: privacy mode. account: not found.",
+              "err"
+            ]
+          }
+        ],
+        "plug": [
+          {
+            "label": "switch on",
+            "say": [
+              "use power --on",
+              "SMART PLUG: no account. schedule: night.",
+              "err"
+            ]
+          }
+        ],
+        "pc": [
+          {
+            "label": "check mail",
+            "say": [
+              "cat inbox",
+              "HARBOR PAYROLL: night shift, 3 tokens. PAYMENT FAILED \u00b7 PAYEE CLOSED.",
+              "err"
+            ]
+          },
+          {
+            "label": "message Moth",
+            "say": [
+              "msg moth \"on my way\"",
+              "MESSAGE NOT SENT \u00b7 SENDER NOT FOUND.",
+              "err"
+            ]
+          }
+        ],
+        "router": [
+          {
+            "label": "feel how warm it is",
+            "act": [
+              "temp",
+              "read"
+            ]
+          }
+        ],
+        "lamp": [
+          {
+            "label": "switch on",
+            "act": [
+              "lamp",
+              "on"
+            ]
+          }
+        ]
+      },
+      "goal": "Act II is not built yet"
     }
   },
   "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    },
     {
       "phase": "flat",
       "tone": "warm"

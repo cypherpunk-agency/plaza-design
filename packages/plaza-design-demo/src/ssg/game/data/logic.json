@@ -2,7 +2,7 @@
   "modules": [
     {
       "id": "timer.so",
-      "start": true,
+      "start": false,
       "part": {
         "id": "timer",
         "name": "TIMER",

@@ -901,9 +901,274 @@
           }
         }
       }
+    },
+    "ch4-end": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "kessel"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch4-kessel": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch4-sweep": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "capsule"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch4-flagged": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
+    },
+    "ch4-dark": {
+      "hackLocked": false,
+      "pinned": false,
+      "hackStages": [
+        "inspect",
+        "wire",
+        "cut",
+        "board",
+        "guard",
+        "link"
+      ],
+      "resume": [
+        {
+          "destination": {
+            "scene": "downtown"
+          }
+        }
+      ],
+      "persona": {
+        "name": "harbor worker",
+        "calmWeather": false,
+        "deck": {
+          "files": {
+            "shift.txt": "NIGHT SHIFT \u00b7 TERMINAL 2 \u00b7 TRANSPORT\nWAGES: 3 TOKENS \u00b7 PAYMENT FAILED \u00b7 PAYEE CLOSED\nNEXT SHIFT: NONE SCHEDULED\nREGISTRY STATUS: NOT FOUND",
+            "moth.txt": "MOTH \u203a CALL, 06:12\nnoodles at ten. the stall by your tower. I've got something to show you.\ndon't be late. I mean it."
+          },
+          "whoami": "harbor worker? \u00b7 capsule 7B (resident: not found) \u00b7 identity: not found"
+        },
+        "character": {
+          "seed": 7303,
+          "look": {
+            "body": "avg",
+            "garb": "hivis",
+            "hair": "short",
+            "top": "#b77a29",
+            "bottom": "#303746"
+          }
+        }
+      }
     }
   },
   "PHASE_RULES": [
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:copied"
+          }
+        ]
+      },
+      "phase": "ch4-end"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:hidden"
+          }
+        ]
+      },
+      "phase": "ch4-kessel"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:sweep"
+          }
+        ]
+      },
+      "phase": "ch4-sweep"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:flicker"
+          }
+        ]
+      },
+      "phase": "ch4-flagged"
+    },
+    {
+      "when": {
+        "all": [
+          {
+            "flag": "act1:on"
+          },
+          {
+            "flag": "act1:blackout"
+          }
+        ]
+      },
+      "phase": "ch4-dark"
+    },
     {
       "when": {
         "all": [
@@ -1242,6 +1507,9 @@
           "milestone": "slept"
         },
         {
+          "milestone": "act1.on"
+        },
+        {
           "stage": {
             "scene": "capsule",
             "reset": true,
@@ -1314,6 +1582,59 @@
               "Morning. Still cold. Still nobody, as far as the flat is concerned.",
               "The fridge won't open for me. Food, then: FRESHCO, west past the Registry.",
               "Self-checkouts. Machines don't ask questions. They just shout."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    "sweep-dawn": {
+      "out": 50,
+      "card": 110,
+      "in": 50,
+      "to": "06:00",
+      "label": "CAPSULE 7B",
+      "mid": [
+        {
+          "waitUntil": "06:00"
+        },
+        {
+          "milestone": "ch4.sweep"
+        },
+        {
+          "stage": {
+            "scene": "capsule",
+            "face": -1
+          }
+        }
+      ],
+      "end": [
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Engines. A lot of them, before six. Doors, all the way down the block.",
+              "Boots in the lobby. The intercom is on."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "CONCIERGE",
+            "pages": [
+              "Good morning, inspectors. Capsule Block 7 is fully compliant.",
+              "No unregistered persons on the premises. I would know. I keep forms."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "It lied. The building lied for me.",
+              "The fixer. The stall. Now, before they come back up the street."
             ],
             "height": 46
           }
@@ -2315,6 +2636,376 @@
           }
         }
       ]
+    },
+    {
+      "id": "a1-blackout",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch4-dark"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "substation"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:blackout",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.blackout"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Feeder 3, locked out. The whole block just went dark, and the Registry with it.",
+              "Its doors fail open in a power cut. Fire code. Even they follow the fire code."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-restored",
+      "when": {
+        "all": [
+          {
+            "flag": "act1:restored"
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "registry"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:restored",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.restored"
+        },
+        {
+          "say": {
+            "speaker": "STREET SCREEN",
+            "pages": [
+              "GOOD EVENING, HARBOR WORKER, CAPSULE 7B. WE MISSED YOU."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "My name. On every screen on the street.",
+              "I'm back. I'm actually back."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-flicker",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch4-flagged"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "registry"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:flicker",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.flicker"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "The alarm. The backup cells checked their own work.",
+              "Gone again. Worse: flagged. They know someone did this, and who it was for.",
+              "Out. Home, the back way. Lie low."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-sweep",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch4-sweep"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "downtown"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:sweep",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.sweep"
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "Vans. Floodlights in daylight. The notices meant it.",
+              "Ines. Between two of them, walking to the van. She sees me. She looks away, on purpose.",
+              "She's keeping me out of it. The stall."
+            ],
+            "height": 46
+          }
+        }
+      ]
+    },
+    {
+      "id": "a1-copied",
+      "when": {
+        "all": [
+          {
+            "compare": {
+              "left": {
+                "query": "story.phase"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "ch4-end"
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.scene"
+              },
+              "op": "eq",
+              "right": {
+                "literal": "kessel"
+              }
+            }
+          },
+          {
+            "flag": "act1:said:copied",
+            "is": false
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.bubble"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          },
+          {
+            "compare": {
+              "left": {
+                "query": "story.popup"
+              },
+              "op": "eq",
+              "right": {
+                "literal": false
+              }
+            }
+          }
+        ]
+      },
+      "do": [
+        {
+          "milestone": "a1.said.copied"
+        },
+        {
+          "say": {
+            "speaker": "DR. KESSEL",
+            "pages": [
+              "There. Whatever happens upstairs, you're\u2014"
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "YOU",
+            "pages": [
+              "The hatch. Boots on the ladder. Kessel stands in front of the chair."
+            ],
+            "height": 46
+          }
+        },
+        {
+          "say": {
+            "speaker": "DLV-9",
+            "pages": [
+              "ROUTE SET. DESTINATION: YOU."
+            ],
+            "height": 40
+          }
+        }
+      ]
     }
   ],
   "GOAL_HINTS": [
@@ -2366,7 +3057,18 @@
       "act1:said:phrase",
       "act1:said:named",
       "act1:said:list",
-      "act1:said:noines"
+      "act1:said:noines",
+      "act1:copied",
+      "act1:hidden",
+      "act1:sweep",
+      "act1:flicker",
+      "act1:blackout",
+      "act1:restored",
+      "act1:said:blackout",
+      "act1:said:restored",
+      "act1:said:flicker",
+      "act1:said:sweep",
+      "act1:said:copied"
     ],
     "items": [],
     "events": [],
@@ -2671,6 +3373,83 @@
             "value": true
           }
         ]
+      },
+      "opening.ch4.sweep": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:sweep",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.blackout": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:blackout",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.restored": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:restored",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.flicker": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:flicker",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.sweep": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:sweep",
+            "value": true
+          }
+        ]
+      },
+      "opening.a1.said.copied": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:said:copied",
+            "value": true
+          }
+        ]
+      },
+      "opening.act1.on": {
+        "sources": [
+          "system"
+        ],
+        "actions": [
+          {
+            "flag": "act1:on",
+            "value": true
+          }
+        ]
       }
     },
     "reactions": [],
@@ -2753,6 +3532,13 @@
     "a1.said.phrase": "opening.a1.said.phrase",
     "a1.said.named": "opening.a1.said.named",
     "a1.said.list": "opening.a1.said.list",
-    "a1.said.noines": "opening.a1.said.noines"
+    "a1.said.noines": "opening.a1.said.noines",
+    "ch4.sweep": "opening.ch4.sweep",
+    "a1.said.blackout": "opening.a1.said.blackout",
+    "a1.said.restored": "opening.a1.said.restored",
+    "a1.said.flicker": "opening.a1.said.flicker",
+    "a1.said.sweep": "opening.a1.said.sweep",
+    "a1.said.copied": "opening.a1.said.copied",
+    "act1.on": "opening.act1.on"
   }
 }

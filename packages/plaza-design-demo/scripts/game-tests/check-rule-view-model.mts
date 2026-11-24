@@ -130,7 +130,10 @@ const [triggerId, trigger] = Object.entries(g.native!.triggers!)[0];
 const t = triggerRuleClauses(doc, g, triggerId, trigger);
 assert.equal(t.do[0].text, 'run ' + trigger.command);
 assert.ok(t.if.length >= 1 && t.order[0].text.length > 0);
-const first = objectiveRuleClauses(doc, 0),
+const first = objectiveRuleClauses(
+    doc,
+    doc.objectives!.findIndex((o) => o.id === 'handle'),
+  ),
   last = objectiveRuleClauses(doc, doc.objectives!.length - 1);
 assert.equal(first.if[0].text, 'player has no name');
 assert.equal(last.canAddCondition, false);

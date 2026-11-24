@@ -119,7 +119,8 @@ export interface WashRule {
   phase?: string;
   flag?: string;
   unlessState?: string;
-  tone: 'warm' | 'cold';
+  /** `dark`: the world fades out under the speech bubbles and the HUD (a story that rests in the dark). */
+  tone: 'warm' | 'cold' | 'dark';
 }
 export interface CardSpec {
   out: number;
@@ -275,7 +276,7 @@ export function attentionAim(
 export function washTone(
   rules: readonly WashRule[] | undefined,
   at: { phase: string; flags: Readonly<Record<string, boolean>>; state: (key: string) => unknown },
-): 'warm' | 'cold' | null {
+): WashRule['tone'] | null {
   for (const r of rules ?? []) {
     if (r.phase !== undefined && r.phase !== at.phase) continue;
     if (r.flag !== undefined && !at.flags[r.flag]) continue;

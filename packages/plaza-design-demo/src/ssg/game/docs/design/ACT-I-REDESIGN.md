@@ -163,6 +163,45 @@ M5 (Chapters 2 and 3), built 2026-11-23 from `?play=act1`:
   - The shop's back room is the shop floor for now.
   - The grey haze over Downtown (above) is still open.
 
+M6 (Chapter 4 and the switch-over), built 2026-11-24:
+
+- Switch-over: a new game is Act I. The prologue's sleep card sets `act1:on` (milestone
+  `act1.on`) and the first morning is `ch1-wake`; TIMER is no longer a starting module. The old
+  campaign's phases stay in the data but are not reached from a new game.
+- Phases: `ch4-dark` (`act1:blackout`), `ch4-flagged` (`act1:flicker`), `ch4-sweep`
+  (`act1:sweep`), `ch4-kessel` (`act1:hidden`), `ch4-end` (`act1:copied`). Every Act I phase
+  grants every hack stage from Chapter 4 on.
+- The street now runs substation | walk-up | FRESHCO | Registry | Block 7 | Downtown (new zone
+  `substation`, seam `substation-walkup`). Its gate opens 21:00 to 05:00.
+- Beats and their hacking:
+  - Substation (20): the load monitor only emits SURGE under load; wire it to the breaker's TRIP.
+    The hut's watchdog recloses the breaker every two seconds, so the trip only holds if you
+    also cut the watchdog's reclose cable. Holding open for five seconds latches the cut: the
+    block goes dark (`act1:blackout`) and the floodlights go out.
+  - Registry at night (21): in the blackout the office-hours and staff-only doors stand open.
+    The records terminal's guard takes `resource review`; wire the cells' commit pulse to your
+    sector file's restore. The street screen greets you by name ("GOOD EVENING…"), then the
+    backup cells' checker runs, the record is revoked again and flagged (`act1:flicker`).
+  - Home the back way; sleep. At 06:00 the sweep: engines, boots, and CONCIERGE lying to the
+    inspectors on the intercom (card `sweep-dawn`).
+  - Downtown at dawn (22): vans, floodlights and officers (`present` on the sweep scenery); Ines
+    led to a van. The fixer hides you (`act1:hidden`) and sends you down Kessel's hatch, which
+    now opens in daylight.
+  - Kessel's room: no shell has a working core; DLV-9 offers its frame; Kessel copies you
+    (`act1:copied`). The last lines play as the world fades to black, and the save rests there
+    until Act II is built. There is no end card.
+- Downtown's old goals (tell the fixer your name, and so on) give way to the story's own goal
+  once `act1:on` is set.
+- Engine additions (generic): an objective row can take `story: true` to show the story's
+  current goal instead of its own text; a scene wash can take the tone `dark` (the world and
+  its prompts fade out under the speech bubbles and the HUD); a building piece with a `present`
+  field below 0.5 is not drawn (the Registry van, floodlights); story TRIGGERS limit 48.
+- Open (M6):
+  - Where the city takes the body, and Act II's first beat in DLV-9's frame.
+  - Kessel's death is told, not shown (Kessel stands in front of the chair as the screen goes
+    dark).
+  - The old campaign's content is still in the repository (see "Reusing old content").
+
 ### Chapter 2: Getting by
 
 | # | Place | Story and feeling | Hacking |

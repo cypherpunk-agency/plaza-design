@@ -4712,6 +4712,184 @@
         "instance": "noodle-stall",
         "anchor": "origin"
       }
+    },
+    {
+      "id": "sweep-van-0",
+      "type": "civic.registry-van",
+      "props": {
+        "face": "right",
+        "beacons": true,
+        "rear": true,
+        "lights": true,
+        "fleetNo": "R-114",
+        "timeOffset": 0
+      },
+      "placement": {
+        "x": 470,
+        "h": 0
+      },
+      "order": 360,
+      "layer": "set",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-van-1",
+      "type": "civic.registry-van",
+      "props": {
+        "face": "left",
+        "beacons": true,
+        "rear": false,
+        "side": true,
+        "lights": true,
+        "fleetNo": "R-207",
+        "flood": true,
+        "timeOffset": 0.21666666666666667
+      },
+      "placement": {
+        "x": 1300,
+        "h": 0
+      },
+      "order": 361,
+      "layer": "set",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-flood-0",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "tower",
+        "height": 160,
+        "heads": 4,
+        "aim": "right",
+        "reach": 170,
+        "spread": 200,
+        "strength": 0.9,
+        "seed": 1
+      },
+      "placement": {
+        "x": 300,
+        "h": 0
+      },
+      "order": 362,
+      "layer": "set",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-flood-1",
+      "type": "civic.floodlight",
+      "props": {
+        "kind": "tower",
+        "height": 160,
+        "heads": 4,
+        "aim": "left",
+        "reach": 160,
+        "spread": 190,
+        "strength": 0.85,
+        "seed": 2
+      },
+      "placement": {
+        "x": 1560,
+        "h": 0
+      },
+      "order": 363,
+      "layer": "set",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-officer-0",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6001,
+        "act": "stand",
+        "archetype": "inspector",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 1066,
+        "h": 0,
+        "facing": -1
+      },
+      "order": 366,
+      "layer": "playfield",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-officer-1",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6004,
+        "act": "talk",
+        "archetype": "inspector",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 338,
+        "h": 0
+      },
+      "order": 369,
+      "layer": "playfield",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-officer-2",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 6006,
+        "act": "talk",
+        "archetype": "inspector",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 1236,
+        "h": 0
+      },
+      "order": 371,
+      "layer": "playfield",
+      "bindings": {
+        "present": "scene.sweep"
+      }
+    },
+    {
+      "id": "sweep-ines",
+      "type": "character.resident",
+      "props": {
+        "kind": "human",
+        "district": "downtown",
+        "seed": 4250,
+        "act": "walk",
+        "range": 60,
+        "archetype": "office",
+        "garb": "coat",
+        "hair": "bun",
+        "depthBand": "play"
+      },
+      "placement": {
+        "x": 520,
+        "h": 0
+      },
+      "order": 368,
+      "layer": "playfield",
+      "bindings": {
+        "present": "scene.sweep"
+      }
     }
   ]
 }

@@ -264,7 +264,10 @@ export interface SceneDef {
   /** The room's light cue (scene.json `wash`; story-rules.ts `washTone`). */
   wash?: readonly import('../story/story-rules').WashRule[];
   objectives?: readonly import('../engine/gameplay/objectives').ObjectiveDefinition[];
-  objective?: (flags: Readonly<Record<string, boolean>>, state?: GameplayState) => string;
+  objective?: (
+    flags: Readonly<Record<string, boolean>>,
+    state?: GameplayState,
+  ) => string | undefined;
   id: string;
   /** Shown in the HUD. */
   name: string;

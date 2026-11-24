@@ -266,7 +266,34 @@
       "goal": "the stall: tell the fixer"
     },
     "ch3-night": {
-      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+      "goal": "the substation, after dark (21:00 on): west end of the street, past the walk-up"
+    },
+    "ch4-dark": {
+      "goal": "the records node, upstairs: the staff phrase is the reason on the list; then B, wire the commit clock's PULSE to RESTORE",
+      "intro": {
+        "pages": [
+          "The Registry, dark. The door lock failed open; the emergency lights make everything green.",
+          "Upstairs. The node with the records."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "records"
+      }
+    },
+    "ch4-flagged": {
+      "goal": "home to 7B, the back way, and lie low (bed)"
+    },
+    "ch4-sweep": {
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "goal": "Act II is not built yet"
     }
   },
   "stage": {
@@ -279,5 +306,11 @@
         "else": 1
       }
     }
-  }
+  },
+  "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    }
+  ]
 }

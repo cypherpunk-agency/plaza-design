@@ -95,6 +95,10 @@ import walkupComposition from './walkup/composition.json';
 import walkupScene from './walkup/scene.json';
 import walkupGameplay from './walkup/gameplay.json';
 import walkupDevices from './walkup/devices.json';
+import substationComposition from './substation/composition.json';
+import substationScene from './substation/scene.json';
+import substationGameplay from './substation/gameplay.json';
+import substationDevices from './substation/devices.json';
 /**
  * Scenes made of JSON only (engine/gameplay/folder-scene.ts): their folder holds the composition,
  * scene, gameplay and devices documents and nothing else. Moving a scene here from scenes/index.ts
@@ -244,6 +248,12 @@ export const FOLDER_SOURCES = {
     scene: walkupScene,
     gameplay: walkupGameplay,
     devices: walkupDevices,
+  },
+  substation: {
+    composition: substationComposition,
+    scene: substationScene,
+    gameplay: substationGameplay,
+    devices: substationDevices,
   },
 } satisfies Record<string, SceneSource>;
 /** Folder scenes whose directory is not their scene id (document ids and files use the directory name). */

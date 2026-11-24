@@ -12,14 +12,17 @@ roadmaps. The user's current direction takes precedence over anything recorded h
 - **Editor redesign: phases 1–6 shipped 2026-10-28**; phase 7 is authorized (2026-11-21) and is
   the next editor work.
 - **Story content: the new prologue is implemented** (harbor shift → commute → Downtown → home)
-  and waits for the user's experience review. After home, the game still runs the **old
-  campaign** from `story/opening.json` (sleep → deletion → uplink → old districts). The
+  and waits for the user's experience review. Since M6 (2026-11-24) the prologue's first night
+  opens the **new Act I**; the old campaign's content stays in the data but is no longer reached
+  from a new game. The
   redesigned Act I (M4–M6) is designed (agreed 2026-11-22,
   [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md)). **M4 (Chapter 1) is built alongside** the
   old campaign and playable from `?play=act1` (2026-11-22). On 2026-11-23 its places were joined to
   Downtown as one walkable street (Registry, Block 7, Downtown; Kessel's rooms under the stall), and
   the prologue now walks home through Block 7's lobby. M5 (Chapters 2 and 3, adding FRESHCO and
-  Moth's walk-up to the street) was built the same day; M6 (Chapter 4 and the switch-over) is next.
+  Moth's walk-up to the street) was built the same day. M6 (Chapter 4, the substation joined west of
+  the walk-up, and the switch-over) was built 2026-11-24; Act I ends on Kessel's copy and rests in
+  the dark until Act II exists.
 
 ## Status by area
 
@@ -44,7 +47,7 @@ roadmaps. The user's current direction takes precedence over anything recorded h
 | M1 Progression design | Complete as a design pass | Prologue matrix, teaching spine and revised Act I route. |
 | M2 Harbor shift | Implemented | Boss/coworker, deliveries, trolley/clamp, checkout and completion in the connected harbor. |
 | M3 Prologue journey and home | Implemented; experience review pending | Title glide → Harbor shift → two-car commute through four tunnel zones → underground Metro → Downtown → home. |
-| M4–M6 Redesigned Downtown Act I | M4 built 2026-11-22, joined 2026-11-23; M5 built 2026-11-23; M6 next | [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md) ("Build notes"). Chapter 1 plays from `?play=act1`; the old campaign still follows the prologue until M6. |
+| M4–M6 Redesigned Downtown Act I | M4 built 2026-11-22, joined 2026-11-23; M5 built 2026-11-23; M6 built 2026-11-24 | [ACT-I-REDESIGN.md](./docs/design/ACT-I-REDESIGN.md) ("Build notes"). A new game now runs prologue → Act I; `?play=act1` still starts at Chapter 1. Experience review pending. |
 | M7–M9 Robot body, Act II, remote Act III | Future | Story/body decisions and mechanic prototypes come first. |
 
 Detailed acceptance evidence for completed tracks lives in the linked documents and in Git
@@ -87,8 +90,8 @@ history. Do not restart a completed track because an intentionally contextual pr
      nags about the coffee machine, asks you to cover and is gone until the trolley is parked
      (`stage.actors.hide` by actor id), comes back quiet. Moth calls on the ride home ("noodles
      at ten"), voice only; the player rides alone. A photo of you and Moth is on the fridge.
-5. **Old-campaign cutover, decided 2026-11-22:** no "to be continued" card. The prologue keeps
-   flowing into the old campaign for now; that campaign is to be reworked into the new Act I.
+5. **Old-campaign cutover, decided 2026-11-22, done 2026-11-24 (M6):** no "to be continued" card.
+   The prologue now flows into the new Act I; the old campaign's content waits for reuse in Act II.
 6. **Build M4**, then M5 and M6, using the build sequence below. Introduce each mechanic through
    a real gameplay need, shared source, typed authoring, a compact demo and a real scene. Keep
    Test District examples reachable and uncluttered.
@@ -110,7 +113,7 @@ history. Do not restart a completed track because an intentionally contextual pr
 | 3. Seamless prologue | Glide to the dusk harbor; night shift in joined harbor zones; seamless ride to underground Downtown; Downtown route and home/rest. No hacking view or wiring | One unbroken harbor → commute → Downtown → home experience with recurring people and working services ([SEAMLESS-WORLD.md](./docs/design/SEAMLESS-WORLD.md) §7) | Implemented; experience review pending |
 | 4. Deletion and first agency | Act I Chapter 1 (beats 1–8): the refusals, CONCIERGE, the missed meeting, the Registry and Ines, Kessel's room, the implant, first inspect and its solo use | Loss is legible; no access deadlock; hacking improves a familiar circumstance | Built 2026-11-22 (`?play=act1`); experience review pending |
 | 5. Foundational Downtown hacking | Act I Chapters 2–3 (beats 9–19): getting by, DLV-9, Moth's parcel and flat, the library list; guided and solo wire, cut, board, clue guards, known connections | Each concept is rehearsed before combination; interfaces expand with actual need | Built 2026-11-23 (`?play=act1`, Chapters 2–3) |
-| 6. Revised Act I | Act I Chapter 4 (beats 20–22): substation, the dark Registry back office, the sweep, CONCIERGE's lie, Kessel's copy into DLV-9's frame; then the switch-over from the old campaign | Complete Downtown arc; the player cannot leave Downtown while the identity is revoked | After M5 |
+| 6. Revised Act I | Act I Chapter 4 (beats 20–22): substation, the dark Registry back office, the sweep, CONCIERGE's lie, Kessel's copy into DLV-9's frame; then the switch-over from the old campaign | Complete Downtown arc; the player cannot leave Downtown while the identity is revoked | Built 2026-11-24; experience review pending |
 | 7. Robot transition and Act II opening | Waking in the DLV-9 body, continuity between bodies, Moth as Act II's lead | Embodiment changes play while knowledge, relationships and progress survive | Settle body questions first |
 | 8. Act II chapters | District leads toward recovering the body; separate lessons for logic, time, resources and security | Each chapter advances body recovery and teaches one manageable new concept | Bounded branching, not all districts at once |
 | 9. Remote presence and Act III | Remote precursor in Act II, body-loss transition, network/ally play, resolution (the harbor finale may end it) | Remote rules are understood before play depends on them; the ending addresses personal and Registry stakes | Prototype remote play first |

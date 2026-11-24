@@ -444,6 +444,7 @@ function renderMeasuredFrame(frame: WorldFrame) {
     );
   if (zoom !== 1) x.setTransform(k, 0, 0, k, 0, 0);
   if (passOn(v, 'prompts')) frame.prompts?.(x, v);
+  frame.veil?.(x, v);
   if (passOn(v, 'bubbles')) frame.bubbles?.(x, v);
   if (frame.timeline) {
     const z = frame.zoom ?? 1;

@@ -117,6 +117,7 @@ export function drawWorld(port: PresentationFramePort) {
     roomWash: () => drawLight(port, v),
     actors: () => drawCharacters(port, v),
     prompts: () => drawPrompt(port, v),
+    veil: () => drawVeil(port, v),
     bubbles: () => drawBubble(port, v),
     ...(port.scenes.joinedZones?.length
       ? {
@@ -413,14 +414,29 @@ export function drawSleep(port: PresentationFramePort) {
   x.restore();
 }
 
-function drawLight(port: PresentationFramePort, view = port.view()) {
-  if (port.interactionHost.visionOn) return;
-  const tone = washTone(port.def.wash, {
+function roomTone(port: PresentationFramePort) {
+  return washTone(port.def.wash, {
     phase: port.story,
     flags: port.save.flags,
     state: (key) => port.interactionHost.model.get(key),
   });
-  if (tone) drawCapsuleWash(port.x, view.viewW, view.viewH, tone);
+}
+function drawLight(port: PresentationFramePort, view = port.view()) {
+  if (port.interactionHost.visionOn) return;
+  const tone = roomTone(port);
+  if (tone && tone !== 'dark') drawCapsuleWash(port.x, view.viewW, view.viewH, tone);
+}
+/** When the dark wash began (game clock), per frame port; the world fades out over three seconds. */
+const veils = new WeakMap<PresentationFramePort, number>();
+function drawVeil(port: PresentationFramePort, view = port.view()) {
+  if (roomTone(port) !== 'dark') {
+    veils.delete(port);
+    return;
+  }
+  if (!veils.has(port)) veils.set(port, port.timing.clock);
+  const t = Math.min(1, (port.timing.clock - veils.get(port)!) / 180);
+  port.x.fillStyle = 'rgba(0,0,0,' + 0.97 * t + ')';
+  port.x.fillRect(0, 0, view.viewW, view.viewH);
 }
 
 export function probeGate(port: PresentationFramePort) {

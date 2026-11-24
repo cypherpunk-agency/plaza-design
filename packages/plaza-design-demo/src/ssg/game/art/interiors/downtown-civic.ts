@@ -2750,6 +2750,8 @@ export const registryVanElement = piece({
       step: 0.016666666666666666,
     }),
   },
+  // the sweep's vans come and go with the story (0 draws nothing)
+  visualFields: { present: num('Present (from the scene)', 1, 0, 1, 1) },
   size: () => ({ w: 160, tall: 70 }),
   reach: (p) => (p.flood === true ? 160 : 40),
   bounds: () => ({ x: -82, h: 70, w: 164, tall: 72 }),
@@ -2846,6 +2848,12 @@ export const floodlightElement = piece({
     lightColor: appearanceColor(colourField('Light', '#e8f0ff')),
     seed: generationSeed(num('Seed', 1, 0, 1000000)),
   },
+  // from the scene: present (0 draws nothing) and dark (1 switches the lamps off whatever On says)
+  visualFields: {
+    present: num('Present (from the scene)', 1, 0, 1, 1),
+    dark: num('Dark (from the scene)', 0, 0, 1, 1),
+  },
+  live: (p, s) => (Number(s.dark ?? 0) > 0.5 ? { ...p, on: false } : p),
   size: () => ({ w: 60, tall: 120 }),
   reach: (p) => Number(p.reach) + Number(p.spread),
   bounds: (p) => ({ x: -26, h: Number(p.height) + 8, w: 52, tall: Number(p.height) + 10 }),

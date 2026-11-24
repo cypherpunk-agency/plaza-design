@@ -2,8 +2,251 @@
   "id": "registry",
   "name": "Registry service point",
   "tuning": {},
-  "devices": [],
-  "cables": [],
+  "devices": [
+    {
+      "id": "records",
+      "name": "RECORDS NODE",
+      "look": "The node upstairs that holds this district's records. A staff keypad; behind it, the files and a RESTORE key that takes a commit pulse, not a finger.",
+      "status": [
+        {
+          "if": "flagged",
+          "then": "REVOKED \u00b7 FLAGGED",
+          "else": "staff login"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 830,
+          "y": 176,
+          "w": 30,
+          "h": 44
+        },
+        "board": {
+          "x": 0.35,
+          "y": 0.72
+        }
+      },
+      "sectors": [
+        {
+          "id": "files",
+          "label": "FILES",
+          "seal": {
+            "guard": "lock"
+          }
+        }
+      ],
+      "nouns": [
+        {
+          "id": "lock",
+          "layer": "software",
+          "function": "gate",
+          "events": [
+            "opened"
+          ],
+          "guard": {
+            "password": [
+              "resource review"
+            ],
+            "tries": 3,
+            "lockMs": 4000,
+            "near": {
+              "resource": [
+                "login \"resource\"",
+                "STAFF PHRASE: one more word. the reason they give.",
+                "err"
+              ],
+              "review": [
+                "login \"review\"",
+                "STAFF PHRASE: one word missing. the reason on the list.",
+                "err"
+              ]
+            },
+            "say": [
+              "login \"resource review\"",
+              "STAFF SESSION OPEN. they use the reason as the password. of course they do.",
+              "ok"
+            ]
+          }
+        },
+        {
+          "id": "file",
+          "layer": "data",
+          "function": "hold",
+          "verbs": [
+            "read"
+          ],
+          "sector": "files",
+          "on": {
+            "read": {
+              "say": [
+                "cat records/213",
+                "#213 \u00b7 HARBOR WORKER, CAPSULE 7B \u00b7 STATUS: DELETED \u00b7 BATCH 11 \u00b7 COLLECTION: PENDING."
+              ]
+            }
+          }
+        },
+        {
+          "id": "record",
+          "layer": "software",
+          "function": "act",
+          "verbs": [
+            "restore",
+            "revoke"
+          ],
+          "events": [
+            "written"
+          ],
+          "current": "restored",
+          "sector": "files",
+          "on": {
+            "restore": [
+              {
+                "if": "flagged",
+                "say": [
+                  "{via}restore 213",
+                  "REFUSED. #213 IS FLAGGED.",
+                  "err"
+                ]
+              },
+              {
+                "if": "restored"
+              },
+              {
+                "if": "!signal",
+                "say": [
+                  "restore 213",
+                  "RESTORE waits for a commit pulse. staff do not write records by hand.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "restored",
+                    "to": true
+                  },
+                  {
+                    "emit": "written"
+                  }
+                ],
+                "say": [
+                  "commit \u2192 restore 213",
+                  "#213 \u00b7 STATUS: ACTIVE. outside, every dark screen on the street flickers.",
+                  "ok"
+                ]
+              }
+            ],
+            "revoke": [
+              {
+                "if": "flagged"
+              },
+              {
+                "do": [
+                  {
+                    "set": "restored",
+                    "to": false
+                  },
+                  {
+                    "set": "flagged",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}integrity --check 213",
+                  "BACKUP POWER \u00b7 INTEGRITY CHECK \u00b7 #213 RESTORED WITHOUT AUTHORITY \u00b7 REVOKED \u00b7 FLAGGED. somewhere, an alarm.",
+                  "err"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "cells",
+      "name": "BACKUP CELLS",
+      "look": "The Registry's own backup: a rack of cells behind the plant door, a commit clock that keeps writing in a power cut, and a checker that wakes after every write.",
+      "status": "on backup \u00b7 checking every write",
+      "layout": {
+        "spot": {
+          "x": 1060,
+          "y": 176,
+          "w": 30,
+          "h": 44
+        },
+        "board": {
+          "x": 0.7,
+          "y": 0.3
+        }
+      },
+      "nouns": [
+        {
+          "id": "commit",
+          "layer": "hardware",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "pulse"
+          ],
+          "clock": {
+            "every": 2500,
+            "first": 1200,
+            "start": true
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat commit",
+                "COMMIT CLOCK: pulses every few seconds to write whatever is queued. it runs on the cells."
+              ]
+            }
+          }
+        },
+        {
+          "id": "checker",
+          "layer": "software",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "online"
+          ],
+          "clock": {
+            "every": 8000,
+            "once": true,
+            "start": false
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat checker",
+                "INTEGRITY CHECK: wakes eight seconds after any write and asks who authorised it."
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "cables": [
+    {
+      "id": "records.check",
+      "from": "records.record:written",
+      "to": "cells.checker",
+      "verb": "start",
+      "fixed": true
+    },
+    {
+      "id": "cells.revoke",
+      "from": "cells.checker:online",
+      "to": "records.record",
+      "verb": "revoke",
+      "fixed": true
+    }
+  ],
   "dialogue": {},
   "goals": [],
   "texts": {}

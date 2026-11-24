@@ -230,7 +230,7 @@ export function validateOpeningSource(
   if (gameplay.native || gameplay.checkpoint)
     fail('GAMEPLAY', 'story workflows do not own physical scene bindings or checkpoint policies');
   if (!('home' in workflows)) fail('WORKFLOWS', 'the home milestone (a new game) is required');
-  if (Object.keys(workflows).length > 32) fail('WORKFLOWS', 'milestone limit');
+  if (Object.keys(workflows).length > 48) fail('WORKFLOWS', 'milestone limit');
   for (const [name, command] of Object.entries(workflows)) {
     id(name, 'WORKFLOWS/' + name);
     id(command, 'WORKFLOWS/' + name);
@@ -427,7 +427,7 @@ export function validateOpeningSource(
       !Object.prototype.hasOwnProperty.call(cards, (l as { end: string }).end)
     )
       fail('OPENING_LEVELS/' + (l as { id: string }).id, 'unknown card');
-  const triggers = list(d.TRIGGERS, 'TRIGGERS', 16),
+  const triggers = list(d.TRIGGERS, 'TRIGGERS', 48),
     triggerIds = new Set<string>();
   for (const [index, v] of triggers.entries()) {
     const a = 'TRIGGERS/' + index,

@@ -156,7 +156,28 @@
       "goal": "the stall: tell the fixer"
     },
     "ch3-night": {
-      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+      "goal": "the substation, after dark (21:00 on): west end of the street, past the walk-up"
+    },
+    "ch4-dark": {
+      "goal": "the Registry, dark: upstairs, the records node"
+    },
+    "ch4-flagged": {
+      "goal": "home to 7B, the back way, and lie low (bed)"
+    },
+    "ch4-sweep": {
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "goal": "Act II is not built yet"
     }
-  }
+  },
+  "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    }
+  ]
 }

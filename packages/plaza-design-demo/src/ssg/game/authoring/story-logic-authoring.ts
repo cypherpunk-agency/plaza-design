@@ -146,7 +146,7 @@ export function mountStoryLogicAuthoring(
                 do: [],
               });
             }),
-          d.TRIGGERS.length >= 16,
+          d.TRIGGERS.length >= 48,
         );
         return true;
       }

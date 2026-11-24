@@ -425,10 +425,11 @@ export function validateSceneDocument(
     ordered(objectives);
     const goals = new Set<string>();
     for (const row of objectives) {
-      const g = fields(row, ['id', 'text', 'when', 'target', 'gentle'], ['id', 'text']);
+      const g = fields(row, ['id', 'text', 'when', 'target', 'gentle', 'story'], ['id', 'text']);
       text(g.id);
       if (goals.has(String(g.id))) fail('duplicate objective');
       goals.add(String(g.id));
+      if (g.story !== undefined && g.story !== true) fail('objective story must be true');
       text(g.text);
       condition(g.when);
       if (g.target !== undefined && !ids.has(String(g.target))) fail('guidance target');
@@ -585,10 +586,11 @@ export function validateSceneDocument(
 export interface CompiledSceneDocument {
   uses: SceneUse[];
   objectives?: readonly ObjectiveDefinition[];
+  /** undefined on a `story` row: show the story's goal instead */
   objective?: (
     flags: Readonly<Record<string, boolean>>,
     state?: import('./types').GameplayState,
-  ) => string;
+  ) => string | undefined;
   attention?: (
     flags: Readonly<Record<string, boolean>>,
     positions?: Record<string, number>,
@@ -640,7 +642,11 @@ export function compileSceneDocument(
   const objective = (
     flags: Readonly<Record<string, boolean>>,
     state?: import('./types').GameplayState,
-  ) => objectiveRow(flags, state).text;
+  ) => {
+    // a `story` row hands the line to the story's own goal (callers fall through on undefined)
+    const row = objectiveRow(flags, state);
+    return row.story ? undefined : row.text;
+  };
   const attention = (
     flags: Readonly<Record<string, boolean>>,
     at = positions,
@@ -698,7 +704,11 @@ export function compileSceneDocument(
       ? routes[step % routes.length]
       : routes.find((r) => c.gameplay!.matches(r.when))!;
     if (r.conversation)
-      return talk(c, r.conversation, doc.objectives ? objective(c.flags, c.gameplay.state()) : '');
+      return talk(
+        c,
+        r.conversation,
+        doc.objectives ? (objective(c.flags, c.gameplay.state()) ?? '') : '',
+      );
     const ok = !r.command || c.gameplay.dispatch(r.command, 'interaction').ok;
     const pages = !ok && r.failure ? r.failure : r.pages!,
       rendered = r.template

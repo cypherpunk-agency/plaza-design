@@ -5,7 +5,12 @@
     "act1:queued",
     "registry:staff",
     "act1:list",
-    "act1:noines"
+    "act1:noines",
+    "act1:blackout",
+    "act1:restored",
+    "act1:flicker",
+    "registry:restored",
+    "registry:flagged"
   ],
   "items": [],
   "events": [
@@ -74,6 +79,28 @@
           "value": true
         }
       ]
+    },
+    "registry.restored": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:restored",
+          "value": true
+        }
+      ]
+    },
+    "registry.flagged": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:flicker",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
@@ -137,9 +164,70 @@
       "type": "boolean",
       "lifetime": "save",
       "default": false
+    },
+    "registry.restored": {
+      "owner": "registry",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    },
+    "registry.flagged": {
+      "owner": "registry",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
     }
   },
   "sharedState": [
     "act1"
-  ]
+  ],
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "registry:restored": "restored",
+      "registry:flagged": "flagged"
+    },
+    "triggers": {
+      "act1-restored": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "registry:restored"
+            },
+            {
+              "flag": "act1:blackout"
+            },
+            {
+              "not": {
+                "flag": "act1:restored"
+              }
+            }
+          ]
+        },
+        "command": "registry.restored"
+      },
+      "act1-flagged": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "registry:flagged"
+            },
+            {
+              "flag": "act1:blackout"
+            },
+            {
+              "not": {
+                "flag": "act1:flicker"
+              }
+            }
+          ]
+        },
+        "command": "registry.flagged"
+      }
+    }
+  }
 }

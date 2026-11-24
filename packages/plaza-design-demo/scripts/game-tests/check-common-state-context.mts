@@ -33,7 +33,7 @@ scene.objectives!.unshift({
   when: { state: 'review.active', is: true },
   target: 'hood',
 });
-scene.objectives![1].target = 'fixer';
+scene.objectives!.find((o) => o.id === 'handle')!.target = 'fixer';
 const current = currentStateGame(newSave(), definition, scene);
 assert.equal(current.save.gameplay?.review, undefined);
 assert.equal(

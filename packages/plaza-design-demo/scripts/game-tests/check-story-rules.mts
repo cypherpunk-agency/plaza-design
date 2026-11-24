@@ -110,7 +110,7 @@ const story = openingStoryModel;
   // the wait card has no cues of its own: the loop builds {advance} for it
   assert.deepEqual(
     card.mid!.map((c) => Object.keys(c)[0]),
-    ['waitUntil', 'milestone', 'stage', 'milestone', 'clearStamps', 'stamp'],
+    ['waitUntil', 'milestone', 'milestone', 'stage', 'milestone', 'clearStamps', 'stamp'],
   );
   assert.deepEqual(
     card.end!.map((c) => Object.keys(c)[0]),

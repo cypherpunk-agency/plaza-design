@@ -184,6 +184,8 @@ export interface WorldFrame {
   roomWash?: Draw;
   actors?: Draw;
   prompts?: Draw;
+  /** Over the world and its prompts, under the speech bubbles: a story's blackout. */
+  veil?: Draw;
   bubbles?: Draw;
   /** Evaluated authoring/playback overlays, in logical viewport coordinates. */
   timeline?: TimelineOverlay;

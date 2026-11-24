@@ -4,7 +4,7 @@
 //   statement -> back to the platform -> the morning service to Downtown Metro -> turnstile -> west stairs -> Downtown
 //   -> west past the stall to Block 7 (concierge at the front door) -> up the stairwell to 7/F -> capsule 7B -> bed
 //   -> the sleep card -> the morning you are deleted.
-// It stops when the morning is established (story phase `deleted`): what follows is the older campaign, not the prologue.
+// It stops when the morning is established (story phase `ch1-wake`, Act I's first morning).
 import { sleep } from './cdp.mjs';
 
 const goal = (text) => (p) => (p.goal ?? '').startsWith(text);
@@ -267,7 +267,7 @@ export const segments = [
       await d.use('story:bed');
       await d.until('the sleep card', (p) => p.card?.stage === 'card', 8000, 60);
       await d.beat('sleep-card', 'the rest card over the capsule');
-      await d.until('morning', (p) => p.phase === 'deleted' && !p.card, 20000, 100);
+      await d.until('morning', (p) => p.phase === 'ch1-wake' && !p.card, 20000, 100);
       await d.until('morning lines', (p) => !!p.bubble, 8000, 80);
       const morning = await d.beat(
         'morning-deleted',

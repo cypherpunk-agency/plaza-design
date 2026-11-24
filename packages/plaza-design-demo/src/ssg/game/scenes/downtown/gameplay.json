@@ -29,7 +29,12 @@
     "act1:kettle",
     "act1:groceries",
     "act1:morning",
-    "act1:dlv9"
+    "act1:dlv9",
+    "act1:sweep",
+    "act1:hidden",
+    "act1:blackout",
+    "act1:flicker",
+    "act1:copied"
   ],
   "items": [],
   "events": [
@@ -2159,12 +2164,86 @@
           "value": true
         }
       ]
+    },
+    "downtown.sweep.on": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "state": "downtown.sweep",
+          "set": true
+        }
+      ]
+    },
+    "downtown.act1.hidden": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:hidden",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
   "conversations": {
     "talk.downtown.fixer": {
       "entry": [
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:hidden"
+              }
+            ]
+          },
+          "node": "a1-down"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:sweep"
+              }
+            ]
+          },
+          "node": "a1-hide"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:flicker"
+              }
+            ]
+          },
+          "node": "a1-flagged"
+        },
+        {
+          "when": {
+            "all": [
+              {
+                "flag": "act1:on"
+              },
+              {
+                "flag": "act1:blackout"
+              }
+            ]
+          },
+          "node": "a1-dark"
+        },
         {
           "when": {
             "all": [
@@ -3132,6 +3211,32 @@
           "pages": [
             "Tonight, then. Kessel knows the block's substation. Eat first. Nobody breaks in hungry."
           ]
+        },
+        "a1-dark": {
+          "speaker": "FIXER",
+          "pages": [
+            "Lights out. The Registry's doors fail open in the dark. Go, before somebody notices the fire code."
+          ]
+        },
+        "a1-flagged": {
+          "speaker": "FIXER",
+          "pages": [
+            "I heard the alarm from here. Go home. Lie low. Come by in the morning, the back way."
+          ]
+        },
+        "a1-hide": {
+          "speaker": "FIXER",
+          "pages": [
+            "Don't stand in the street, they're counting faces. Behind the counter. Down.",
+            "Kessel's. The hatch by the stall. I'll keep the noodles loud."
+          ],
+          "onEnter": "downtown.act1.hidden"
+        },
+        "a1-down": {
+          "speaker": "FIXER",
+          "pages": [
+            "Down. Go. I never saw you. I never see anybody."
+          ]
         }
       }
     },
@@ -3388,6 +3493,12 @@
       "default": 0,
       "min": 0,
       "max": 2
+    },
+    "downtown.sweep": {
+      "owner": "downtown",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
     }
   },
   "purchases": {
@@ -4152,6 +4263,21 @@
           ]
         },
         "command": "downtown.progress.gate"
+      },
+      "act1-sweep": {
+        "phase": "beforeNative",
+        "when": {
+          "all": [
+            {
+              "flag": "act1:sweep"
+            },
+            {
+              "state": "downtown.sweep",
+              "is": false
+            }
+          ]
+        },
+        "command": "downtown.sweep.on"
       }
     }
   },

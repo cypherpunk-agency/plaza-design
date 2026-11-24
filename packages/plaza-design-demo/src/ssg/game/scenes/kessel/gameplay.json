@@ -4,7 +4,9 @@
     "act1:implant",
     "act1:shutter",
     "kessel:shutterOpen",
-    "act1:referred"
+    "act1:referred",
+    "act1:hidden",
+    "act1:copied"
   ],
   "items": [],
   "events": [],
@@ -30,6 +32,17 @@
           "value": true
         }
       ]
+    },
+    "kessel.copy": {
+      "sources": [
+        "conversation"
+      ],
+      "actions": [
+        {
+          "flag": "act1:copied",
+          "value": true
+        }
+      ]
     }
   },
   "reactions": [],
@@ -51,6 +64,18 @@
     },
     "talk.kessel.kessel": {
       "entry": [
+        {
+          "when": {
+            "flag": "act1:copied"
+          },
+          "node": "after-copy"
+        },
+        {
+          "when": {
+            "flag": "act1:hidden"
+          },
+          "node": "sweep"
+        },
         {
           "when": {
             "flag": "act1:shutter"
@@ -135,6 +160,64 @@
           "speaker": "DR. KESSEL",
           "pages": [
             "Mm. Not now. I'm between patients, and you are not one yet."
+          ]
+        },
+        "sweep": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "In. Down. Mind the step. The fixer sent you? Good. Sit. Not there. There.",
+            "They're on the street with a list. The ones on it, and anyone standing near.",
+            "I'd put you in a shell, but look at them: not one has a working core. I can't put you anywhere."
+          ],
+          "choices": [
+            {
+              "id": "dlv",
+              "label": "(Something with one glove comes down the ladder.)",
+              "next": "dlv"
+            }
+          ]
+        },
+        "dlv": {
+          "speaker": "DLV-9",
+          "pages": [
+            "DLV-9 HAS A WORKING CORE. DLV-9 HAS ROOM.",
+            "DLV-9 HAS WAITED FORTY-SIX DAYS FOR A DESTINATION.",
+            "ROUTE SET. DESTINATION: YOU."
+          ],
+          "choices": [
+            {
+              "id": "copy",
+              "label": "Kessel?",
+              "next": "copy"
+            }
+          ]
+        },
+        "copy": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "A copy. Not a move: a copy. The you in this chair stays in this chair, and they will take it.",
+            "The one in the frame wakes up. Hardly anyone does. I said hardly.",
+            "Boots on the street. Decide."
+          ],
+          "choices": [
+            {
+              "id": "do",
+              "label": "Do it.",
+              "command": "kessel.copy",
+              "next": "done"
+            }
+          ]
+        },
+        "done": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "Hold still. Look at the glove. … There."
+          ]
+        },
+        "after-copy": {
+          "speaker": "DR. KESSEL",
+          "pages": [
+            "Go on. Both of you."
           ]
         }
       }

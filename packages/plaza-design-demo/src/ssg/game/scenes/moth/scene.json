@@ -324,7 +324,163 @@
           }
         ]
       },
-      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+      "goal": "the substation, after dark (21:00 on): west end of the street, past the walk-up"
+    },
+    "ch4-dark": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "the Registry, dark: upstairs, the records node"
+    },
+    "ch4-flagged": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "home to 7B, the back way, and lie low (bed)"
+    },
+    "ch4-sweep": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "everyday": {
+        "phone": [
+          {
+            "label": "play the message",
+            "say": [
+              "play tape",
+              "MOTH (on tape): \"It's me. If you're hearing this, I went quiet. The drawer in my desk: the one I love most, and the day he hatched. Then ask my cache about me.\""
+            ]
+          }
+        ],
+        "tank": [
+          {
+            "label": "feed Sprat",
+            "act": [
+              "feeder",
+              "feed"
+            ]
+          },
+          {
+            "label": "read the label on the lid",
+            "say": [
+              "cat lid",
+              "SPRAT \u00b7 HATCHED 04.12 \u00b7 DO NOT TAP THE GLASS."
+            ]
+          }
+        ]
+      },
+      "goal": "Act II is not built yet"
     }
-  }
+  },
+  "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    }
+  ]
 }

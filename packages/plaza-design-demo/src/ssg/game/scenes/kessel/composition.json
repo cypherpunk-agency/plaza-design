@@ -1141,15 +1141,22 @@
         "width": 16,
         "refuse": "COOK: Not before dark. He sleeps like the dead till seven, and he hates being woken by the living.",
         "when": {
-          "all": [
+          "any": [
             {
-              "flag": "act1:referred"
+              "all": [
+                {
+                  "flag": "act1:referred"
+                },
+                {
+                  "time": {
+                    "from": "19:00",
+                    "to": "06:00"
+                  }
+                }
+              ]
             },
             {
-              "time": {
-                "from": "19:00",
-                "to": "06:00"
-              }
+              "flag": "act1:hidden"
             }
           ]
         },

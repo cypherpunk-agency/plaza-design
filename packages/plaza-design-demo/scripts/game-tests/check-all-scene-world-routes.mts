@@ -142,7 +142,7 @@ for (const owner of gameplayScenes.filter((s) => s.id in SCENES)) {
     ordinaryDestinationsEdited: ordinary,
   });
 }
-assert.equal(scenes, 24);
+assert.equal(scenes, 25);
 assert(defaults > 19);
 assert(edited > 19);
 const report = {

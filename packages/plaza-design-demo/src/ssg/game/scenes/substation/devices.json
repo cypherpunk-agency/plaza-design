@@ -1,0 +1,288 @@
+{
+  "id": "substation",
+  "name": "Substation DT-4",
+  "tuning": {},
+  "devices": [
+    {
+      "id": "feeder",
+      "name": "FEEDER 3 BREAKER",
+      "look": "The breaker for the block's feeder, on a post at the end of the cable tray. A load monitor beside it reports every surge, and nobody listens.",
+      "status": [
+        {
+          "if": "cut",
+          "then": "LOCKED OUT · blocks 6-9 dark",
+          "else": "closed · supplying"
+        }
+      ],
+      "layout": {
+        "spot": {
+          "x": 846,
+          "w": 24,
+          "h": 44
+        },
+        "board": {
+          "x": 0.35,
+          "y": 0.72
+        },
+        "row": [
+          "load",
+          "breaker",
+          "hold",
+          "latch"
+        ]
+      },
+      "nouns": [
+        {
+          "id": "load",
+          "layer": "hardware",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "surge"
+          ],
+          "clock": {
+            "every": 3000,
+            "first": 1500,
+            "start": true
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat load",
+                "LOAD MONITOR: surge. surge. surge. (it reports every one. the breaker is not wired to care.)"
+              ]
+            }
+          }
+        },
+        {
+          "id": "breaker",
+          "layer": "hardware",
+          "function": "act",
+          "verbs": [
+            "trip",
+            "reset"
+          ],
+          "events": [
+            "dropped",
+            "closed"
+          ],
+          "current": "tripped",
+          "on": {
+            "trip": [
+              {
+                "if": "tripped"
+              },
+              {
+                "if": "!signal",
+                "say": [
+                  "use breaker --trip",
+                  "the handle is padlocked. trips come from the protection, not from hands.",
+                  "err"
+                ]
+              },
+              {
+                "do": [
+                  {
+                    "set": "tripped",
+                    "to": true
+                  },
+                  {
+                    "emit": "dropped"
+                  }
+                ],
+                "say": [
+                  "{via}breaker --trip",
+                  "CLACK. the breaker drops. down the street, a block of windows goes out.",
+                  "ok"
+                ]
+              }
+            ],
+            "reset": [
+              {
+                "if": "!tripped"
+              },
+              {
+                "if": "cut"
+              },
+              {
+                "do": [
+                  {
+                    "set": "tripped",
+                    "to": false
+                  },
+                  {
+                    "emit": "closed"
+                  }
+                ],
+                "say": [
+                  "{via}breaker --reset",
+                  "the auto-reclose slams it back in. the windows come back on.",
+                  "err"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "hold",
+          "layer": "hardware",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "held"
+          ],
+          "clock": {
+            "every": 5000,
+            "once": true,
+            "start": false
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat hold",
+                "LOCKOUT TIMER: if a breaker stays open five seconds, the grid locks the feeder out until morning."
+              ]
+            }
+          }
+        },
+        {
+          "id": "latch",
+          "layer": "hardware",
+          "function": "logic",
+          "verbs": [
+            "confirm"
+          ],
+          "current": "cut",
+          "on": {
+            "confirm": [
+              {
+                "if": "cut",
+                "say": [
+                  "{via}lockout --confirm",
+                  "locked out.",
+                  "dim"
+                ]
+              },
+              {
+                "if": "tripped",
+                "do": [
+                  {
+                    "set": "cut",
+                    "to": true
+                  }
+                ],
+                "say": [
+                  "{via}lockout --confirm",
+                  "FEEDER 3 LOCKED OUT. blocks 6-9, the Registry and the street screens: dark.",
+                  "ok"
+                ]
+              },
+              {
+                "say": [
+                  "{via}lockout --confirm",
+                  "nothing to lock out: the breaker is back in.",
+                  "dim"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "hut",
+      "name": "CONTROL ROOM DT-4",
+      "look": "The control room: a mimic panel, a kettle, an engineer asleep in his chair. One cabinet runs the auto-reclose, which puts any tripped breaker back in.",
+      "status": "night shift · asleep",
+      "layout": {
+        "spot": {
+          "x": 990,
+          "w": 40,
+          "h": 44
+        },
+        "board": {
+          "x": 0.7,
+          "y": 0.3
+        }
+      },
+      "nouns": [
+        {
+          "id": "watchdog",
+          "layer": "software",
+          "function": "time",
+          "verbs": [
+            "read"
+          ],
+          "events": [
+            "check"
+          ],
+          "clock": {
+            "every": 2000,
+            "first": 1000,
+            "start": true
+          },
+          "on": {
+            "read": {
+              "say": [
+                "cat watchdog",
+                "AUTO-RECLOSE: every two seconds, any tripped breaker goes back in. UNINTERRUPTED SUPPLY."
+              ]
+            }
+          }
+        },
+        {
+          "id": "mimic",
+          "layer": "data",
+          "function": "hold",
+          "verbs": [
+            "read"
+          ],
+          "on": {
+            "read": {
+              "say": [
+                "cat mimic",
+                "FEEDER 3 → BLOCKS 6-9 · REGISTRY SP · STREET SCREENS. backup at the Registry: own cells, own checks."
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "cables": [
+    {
+      "id": "feeder.hold",
+      "from": "feeder.breaker:dropped",
+      "to": "feeder.hold",
+      "verb": "start",
+      "fixed": true
+    },
+    {
+      "id": "feeder.latch",
+      "from": "feeder.hold:held",
+      "to": "feeder.latch",
+      "verb": "confirm",
+      "fixed": true
+    },
+    {
+      "id": "feeder.cancel",
+      "from": "feeder.breaker:closed",
+      "to": "feeder.hold",
+      "verb": "stop",
+      "fixed": true
+    },
+    {
+      "id": "hut.reclose",
+      "from": "hut.watchdog:check",
+      "to": "feeder.breaker",
+      "verb": "reset"
+    }
+  ],
+  "dialogue": {},
+  "goals": [],
+  "texts": {}
+}

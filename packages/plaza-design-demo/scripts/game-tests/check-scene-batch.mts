@@ -33,7 +33,7 @@ import { AuthoringStore } from '../../src/ssg/game/authoring/server/store';
 import { gameSourceIdentity } from '../scene-system/source-identity.mts';
 const game = path.resolve('src/ssg/game'),
   ids = Object.keys(NATIVE_SCENES);
-assert.equal(ids.length, 24, 'Current folder catalogue: retired one-room Harbor Shift is excluded');
+assert.equal(ids.length, 25, 'Current folder catalogue: retired one-room Harbor Shift is excluded');
 const docs = sourceDocuments.map((d) => ({
   id: d.id,
   kind: d.kind,

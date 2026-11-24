@@ -285,7 +285,7 @@ export class StoryFields {
         Object.keys(this.at(this.doc.value(), path.slice(0, path.indexOf('ping'))).targets ?? {}),
       );
     } else if (key === 'unlessState') pick(this.states(scene));
-    else if (key === 'tone' && path.includes('wash')) pick(['warm', 'cold']);
+    else if (key === 'tone' && path.includes('wash')) pick(['warm', 'cold', 'dark']);
     else if (key === 'tone') pick(['', 'ok', 'out', 'err', 'dim']);
     else if (key === 'sound') pick(SOUNDS);
     else if (['exceptScene', 'afterScene'].includes(key)) pick(v.scenes);

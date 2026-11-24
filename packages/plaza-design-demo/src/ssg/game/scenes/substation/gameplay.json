@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "flags": [
+    "act1:plan",
+    "act1:blackout",
+    "substation:cut"
+  ],
+  "items": [],
+  "events": [],
+  "commands": {
+    "substation.cut": {
+      "sources": [
+        "system"
+      ],
+      "actions": [
+        {
+          "flag": "act1:blackout",
+          "value": true
+        }
+      ]
+    }
+  },
+  "reactions": [],
+  "conversations": {},
+  "native": {
+    "verbs": [],
+    "events": {},
+    "goals": {},
+    "reads": {
+      "substation:cut": "cut"
+    },
+    "triggers": {
+      "watch": {
+        "phase": "afterNative",
+        "when": {
+          "all": [
+            {
+              "flag": "substation:cut"
+            },
+            {
+              "not": {
+                "flag": "act1:blackout"
+              }
+            },
+            {
+              "flag": "act1:plan"
+            }
+          ]
+        },
+        "command": "substation.cut"
+      }
+    }
+  },
+  "state": {
+    "substation.tripped": {
+      "owner": "substation",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    },
+    "substation.cut": {
+      "owner": "substation",
+      "type": "boolean",
+      "lifetime": "save",
+      "default": false
+    }
+  }
+}

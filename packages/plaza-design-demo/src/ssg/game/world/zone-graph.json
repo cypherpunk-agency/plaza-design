@@ -216,6 +216,18 @@
       },
       "dx": 1100,
       "dh": 0
+    },
+    {
+      "id": "substation-walkup",
+      "kind": "walk",
+      "a": {
+        "zone": "substation"
+      },
+      "b": {
+        "zone": "walkup"
+      },
+      "dx": 1700,
+      "dh": 0
     }
   ]
 }

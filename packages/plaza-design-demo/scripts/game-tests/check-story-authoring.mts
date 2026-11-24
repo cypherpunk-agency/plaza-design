@@ -272,9 +272,9 @@ try {
   // the capsule: wash rules and the bed's card, both typed
   panel.change('Logic scene', 'capsule');
   panel.change('Story phase', 'flat');
-  panel.change('wash 0 tone', 'cold');
-  assert.equal(doc('capsule-scene').wash[0].tone, 'cold');
-  panel.change('wash 1 unlessState', 'doorOpen');
+  panel.change('wash 1 tone', 'cold');
+  assert.equal(doc('capsule-scene').wash[1].tone, 'cold');
+  panel.change('wash 2 unlessState', 'doorOpen');
   panel.change('phases flat targets bed card', 'sleep');
   panel.change('phases flat targets bed promptH', '50');
   assert.equal(doc('capsule-scene').phases.flat.targets.bed.promptH, 50);
@@ -405,7 +405,7 @@ try {
     (registry.metro.phases!.home.barriers!['gate-in'] as any).gate.verifying,
     'HOLD: checking',
   );
-  assert.equal(registry.capsule.wash![0].tone, 'cold');
+  assert.equal(registry.capsule.wash![1].tone, 'cold');
   fresh.undo(saved.transaction, Object.fromEntries(saved.documents.map((d) => [d.id, d.revision])));
   for (const d of sourceDocuments)
     assert.equal(

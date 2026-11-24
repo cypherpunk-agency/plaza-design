@@ -87,6 +87,7 @@ const root = path.resolve('src/ssg/game'),
     'moth',
     'registry',
     'shop',
+    'substation',
     'train',
     'walkup',
     'yard',
@@ -474,7 +475,8 @@ const root = path.resolve('src/ssg/game'),
   rejects(
     'a stage scene the registry lacks',
     (d) => {
-      d.get('opening-story').CARDS.sleep.mid[2].stage.scene = 'nowhere';
+      d.get('opening-story').CARDS.sleep.mid.find((c: { stage?: unknown }) => c.stage).stage.scene =
+        'nowhere';
     },
     /unknown scene/,
   );

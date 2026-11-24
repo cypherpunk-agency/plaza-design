@@ -485,8 +485,79 @@
           }
         }
       },
-      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+      "goal": "the substation, after dark (21:00 on): west end of the street, past the walk-up"
+    },
+    "ch4-dark": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the Registry, dark: upstairs, the records node"
+    },
+    "ch4-flagged": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "home to 7B, the back way, and lie low (bed)"
+    },
+    "ch4-sweep": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "barriers": {
+        "gate-in": {
+          "say": {
+            "name": "TURNSTILE",
+            "pages": [
+              "FARE ACCOUNT: NONE."
+            ]
+          }
+        }
+      },
+      "goal": "Act II is not built yet"
     }
   },
-  "introOnFoot": true
+  "introOnFoot": true,
+  "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    }
+  ]
 }

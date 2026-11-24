@@ -2055,10 +2055,26 @@
         "width": 30,
         "refuse": "REGISTRY SERVICE POINT · OPEN 08:00–18:00. PLEASE QUEUE OUTSIDE.",
         "when": {
-          "time": {
-            "from": "08:00",
-            "to": "18:00"
-          }
+          "any": [
+            {
+              "time": {
+                "from": "08:00",
+                "to": "18:00"
+              }
+            },
+            {
+              "all": [
+                {
+                  "flag": "act1:blackout"
+                },
+                {
+                  "not": {
+                    "flag": "act1:sweep"
+                  }
+                }
+              ]
+            }
+          ]
         },
         "closes": true
       },
@@ -2081,7 +2097,23 @@
         "width": 14,
         "refuse": "STAFF ONLY · AUTHORISED IDENTITIES.",
         "when": {
-          "flag": "registry:staff"
+          "any": [
+            {
+              "flag": "registry:staff"
+            },
+            {
+              "all": [
+                {
+                  "flag": "act1:blackout"
+                },
+                {
+                  "not": {
+                    "flag": "act1:sweep"
+                  }
+                }
+              ]
+            }
+          ]
         }
       },
       "placement": {

@@ -352,7 +352,7 @@ export function validateWash(v: unknown, at = 'wash') {
     if (r.phase !== undefined) phaseId(r.phase, a + '/phase');
     if (r.flag !== undefined) id(r.flag, a + '/flag');
     if (r.unlessState !== undefined) id(r.unlessState, a + '/unlessState');
-    if (!['warm', 'cold'].includes(r.tone)) fail(a, 'registered tone required');
+    if (!['warm', 'cold', 'dark'].includes(r.tone)) fail(a, 'registered tone required');
   }
 }
 export type { ScenePhase, WashRule, ExitRule };

@@ -417,6 +417,14 @@
   },
   "objectives": [
     {
+      "id": "act1",
+      "text": "Act I story goal",
+      "story": true,
+      "when": {
+        "flag": "act1:on"
+      }
+    },
+    {
       "id": "handle",
       "text": "tell the fixer your name",
       "when": {
@@ -498,7 +506,16 @@
       "streetLayers",
       "vehicleRun",
       "streetCamera"
-    ]
+    ],
+    "values": {
+      "sweep": {
+        "if": {
+          "state": "downtown.sweep"
+        },
+        "then": 1,
+        "else": 0
+      }
+    }
   },
   "phases": {
     "home": {
@@ -4097,7 +4114,863 @@
           }
         ]
       },
-      "goal": "the substation, after dark (Chapter 4 is not built yet)"
+      "goal": "the substation, after dark (21:00 on): west end of the street, past the walk-up"
+    },
+    "ch4-dark": {
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Seen the notices? \"Collected.\" Like bins.",
+            "Keep your head down. And your hood up."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "A white van came by at six. No plates.",
+            "Took the man who sleeps by the arch. Very politely."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Billboard's been showing a pigeon since Tuesday.",
+            "Best thing on it in years."
+          ]
+        }
+      },
+      "exits": {
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "FLAT 4C IS NOT AT THIS ADDRESS.",
+              "SEE: BUILDING 114, WEST SIDE, PAST FRESHCO."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ],
+        "dlv9": [
+          {
+            "label": "say hi",
+            "say": [
+              "use speaker --say-hi",
+              "DLV-9: \"I AM NOT LOST.\""
+            ],
+            "cues": [
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "I AM NOT LOST. I AM WAITING FOR A DESTINATION. DAYS WAITING: 41.",
+                    "MY ROUTE WAS CANCELLED. MY DEPOT DOES NOT ANSWER. I HAVE ONE GLOVE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "say": {
+                  "speaker": "YOU",
+                  "pages": [
+                    "Same here, more or less. Come on, then. You can wait with me."
+                  ],
+                  "height": 46
+                }
+              },
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "NEW ROUTE: FOLLOW. ETA: UNKNOWN. THAT IS ACCEPTABLE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "milestone": "ch2.dlv9"
+              }
+            ]
+          }
+        ]
+      },
+      "goal": "the Registry, dark: upstairs, the records node"
+    },
+    "ch4-flagged": {
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Seen the notices? \"Collected.\" Like bins.",
+            "Keep your head down. And your hood up."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "A white van came by at six. No plates.",
+            "Took the man who sleeps by the arch. Very politely."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "Billboard's been showing a pigeon since Tuesday.",
+            "Best thing on it in years."
+          ]
+        }
+      },
+      "exits": {
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "FLAT 4C IS NOT AT THIS ADDRESS.",
+              "SEE: BUILDING 114, WEST SIDE, PAST FRESHCO."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ],
+        "dlv9": [
+          {
+            "label": "say hi",
+            "say": [
+              "use speaker --say-hi",
+              "DLV-9: \"I AM NOT LOST.\""
+            ],
+            "cues": [
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "I AM NOT LOST. I AM WAITING FOR A DESTINATION. DAYS WAITING: 41.",
+                    "MY ROUTE WAS CANCELLED. MY DEPOT DOES NOT ANSWER. I HAVE ONE GLOVE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "say": {
+                  "speaker": "YOU",
+                  "pages": [
+                    "Same here, more or less. Come on, then. You can wait with me."
+                  ],
+                  "height": 46
+                }
+              },
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "NEW ROUTE: FOLLOW. ETA: UNKNOWN. THAT IS ACCEPTABLE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "milestone": "ch2.dlv9"
+              }
+            ]
+          }
+        ]
+      },
+      "goal": "home to 7B, the back way, and lie low (bed)"
+    },
+    "ch4-sweep": {
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Don't stop. Don't look at the vans.",
+            "They took the woman from the Registry queue."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "They have a list. They check your face against it.",
+            "Hood up. Walk like you have somewhere to be."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "The pigeon is gone off the billboard.",
+            "Now it just says: COOPERATE."
+          ]
+        }
+      },
+      "exits": {
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "FLAT 4C IS NOT AT THIS ADDRESS.",
+              "SEE: BUILDING 114, WEST SIDE, PAST FRESHCO."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ],
+        "dlv9": [
+          {
+            "label": "say hi",
+            "say": [
+              "use speaker --say-hi",
+              "DLV-9: \"I AM NOT LOST.\""
+            ],
+            "cues": [
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "I AM NOT LOST. I AM WAITING FOR A DESTINATION. DAYS WAITING: 41.",
+                    "MY ROUTE WAS CANCELLED. MY DEPOT DOES NOT ANSWER. I HAVE ONE GLOVE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "say": {
+                  "speaker": "YOU",
+                  "pages": [
+                    "Same here, more or less. Come on, then. You can wait with me."
+                  ],
+                  "height": 46
+                }
+              },
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "NEW ROUTE: FOLLOW. ETA: UNKNOWN. THAT IS ACCEPTABLE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "milestone": "ch2.dlv9"
+              }
+            ]
+          }
+        ]
+      },
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Don't stop. Don't look at the vans.",
+            "They took the woman from the Registry queue."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "They have a list. They check your face against it.",
+            "Hood up. Walk like you have somewhere to be."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "The pigeon is gone off the billboard.",
+            "Now it just says: COOPERATE."
+          ]
+        }
+      },
+      "exits": {
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "FLAT 4C IS NOT AT THIS ADDRESS.",
+              "SEE: BUILDING 114, WEST SIDE, PAST FRESHCO."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ],
+        "dlv9": [
+          {
+            "label": "say hi",
+            "say": [
+              "use speaker --say-hi",
+              "DLV-9: \"I AM NOT LOST.\""
+            ],
+            "cues": [
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "I AM NOT LOST. I AM WAITING FOR A DESTINATION. DAYS WAITING: 41.",
+                    "MY ROUTE WAS CANCELLED. MY DEPOT DOES NOT ANSWER. I HAVE ONE GLOVE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "say": {
+                  "speaker": "YOU",
+                  "pages": [
+                    "Same here, more or less. Come on, then. You can wait with me."
+                  ],
+                  "height": 46
+                }
+              },
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "NEW ROUTE: FOLLOW. ETA: UNKNOWN. THAT IS ACCEPTABLE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "milestone": "ch2.dlv9"
+              }
+            ]
+          }
+        ]
+      },
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "lines": {
+        "umbrella": {
+          "name": "UMBRELLA",
+          "pages": [
+            "Don't stop. Don't look at the vans.",
+            "They took the woman from the Registry queue."
+          ]
+        },
+        "hood": {
+          "name": "HOODED STRANGER",
+          "pages": [
+            "They have a list. They check your face against it.",
+            "Hood up. Walk like you have somewhere to be."
+          ]
+        },
+        "hat": {
+          "name": "MAN IN A HAT",
+          "pages": [
+            "The pigeon is gone off the billboard.",
+            "Now it just says: COOPERATE."
+          ]
+        }
+      },
+      "exits": {
+        "moth": {
+          "say": {
+            "name": "DOOR",
+            "pages": [
+              "FLAT 4C IS NOT AT THIS ADDRESS.",
+              "SEE: BUILDING 114, WEST SIDE, PAST FRESHCO."
+            ]
+          }
+        },
+        "taxi": {
+          "say": {
+            "name": "SKY TAXI",
+            "pages": [
+              "PAYMENT METHOD: NONE.",
+              "PLEASE STEP AWAY FROM THE VEHICLE."
+            ]
+          }
+        },
+        "market": {
+          "say": {
+            "name": "NEON MARKET",
+            "pages": [
+              "ENTRY SCAN: subject unknown.",
+              "PLEASE STEP ASIDE."
+            ]
+          }
+        }
+      },
+      "everyday": {
+        "till": [
+          {
+            "label": "pay with your key",
+            "say": [
+              "pay --key",
+              "TILL: CUSTOMER UNKNOWN. HAVE WE MET?",
+              "err"
+            ]
+          }
+        ],
+        "scan": [
+          {
+            "label": "walk in",
+            "say": [
+              "enter",
+              "IDENTITY SCAN: subject: unknown. please step aside.",
+              "err"
+            ]
+          },
+          {
+            "label": "look at the screen",
+            "say": [
+              "cat scanner",
+              "subject: unknown · record: none · please step aside."
+            ]
+          }
+        ],
+        "billboard": [
+          {
+            "label": "watch the ad",
+            "say": [
+              "cat ads",
+              "REGISTRY PREMIUM. Be seen everywhere. (it does not say welcome. it does not say anything.)",
+              "dim"
+            ]
+          }
+        ],
+        "fence": [
+          {
+            "label": "read the plate",
+            "act": [
+              "plate",
+              "read"
+            ]
+          },
+          {
+            "label": "open the gate",
+            "say": [
+              "use gate --open",
+              "REGISTRY PROPERTY: root only. current user: not found.",
+              "err"
+            ]
+          }
+        ],
+        "gate": [
+          {
+            "label": "push the gate",
+            "say": [
+              "use lock --open",
+              "NEON MARKET GATE: entry scan required. subject: unknown.",
+              "err"
+            ]
+          },
+          {
+            "label": "read the counter",
+            "say": [
+              "cat door",
+              "COUNTER: today: 212. you: not counted."
+            ]
+          }
+        ],
+        "dlv9": [
+          {
+            "label": "say hi",
+            "say": [
+              "use speaker --say-hi",
+              "DLV-9: \"I AM NOT LOST.\""
+            ],
+            "cues": [
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "I AM NOT LOST. I AM WAITING FOR A DESTINATION. DAYS WAITING: 41.",
+                    "MY ROUTE WAS CANCELLED. MY DEPOT DOES NOT ANSWER. I HAVE ONE GLOVE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "say": {
+                  "speaker": "YOU",
+                  "pages": [
+                    "Same here, more or less. Come on, then. You can wait with me."
+                  ],
+                  "height": 46
+                }
+              },
+              {
+                "say": {
+                  "speaker": "DLV-9",
+                  "pages": [
+                    "NEW ROUTE: FOLLOW. ETA: UNKNOWN. THAT IS ACCEPTABLE."
+                  ],
+                  "height": 40
+                }
+              },
+              {
+                "milestone": "ch2.dlv9"
+              }
+            ]
+          }
+        ]
+      },
+      "goal": "Act II is not built yet"
     }
-  }
+  },
+  "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    }
+  ]
 }

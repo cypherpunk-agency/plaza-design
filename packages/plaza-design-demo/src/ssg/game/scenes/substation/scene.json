@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "id": "substation",
+  "name": "Substation DT-4",
+  "intro": [],
+  "uses": [],
+  "readables": [
+    {
+      "id": "plate",
+      "name": "PLATE",
+      "pages": [
+        "SUBSTATION DT-4 · FEEDS: BLOCKS 6-9, REGISTRY SERVICE POINT, STREET SCREENS.",
+        "DANGER OF DEATH. AUTO-RECLOSE IN OPERATION."
+      ]
+    }
+  ],
+  "manifest": {
+    "version": 1,
+    "width": 1700,
+    "spawn": "spawn",
+    "uses": {},
+    "readables": {
+      "plate": {
+        "instance": "read-plate",
+        "responseH": 0,
+        "responseAboveFloor": true
+      }
+    },
+    "rests": {},
+    "compile": {
+      "groups": [
+        "uses",
+        "readables",
+        "rests",
+        "exits"
+      ],
+      "groundExits": false,
+      "omitGroundRestHeight": true,
+      "elevatedResponses": true
+    }
+  },
+  "environment": {
+    "ambient": {
+      "sky": true,
+      "city": true,
+      "street": true,
+      "weather": true
+    },
+    "facing": 80
+  },
+  "companion": {
+    "mode": "off"
+  },
+  "stage": {
+    "values": {
+      "dark": {
+        "if": {
+          "state": "substation.cut"
+        },
+        "then": 1,
+        "else": 0
+      }
+    }
+  },
+  "phases": {
+    "ch3-night": {
+      "goal": "the breaker: H, wire the load monitor's SURGE to TRIP; B, cut the auto-reclose",
+      "intro": {
+        "pages": [
+          "Substation DT-4. Hum, fence, floodlights. The engineer is asleep in the control room.",
+          "Trip the feeder and something puts it straight back in. The control room, probably. B shows what talks to what."
+        ],
+        "consume": true,
+        "speaker": "YOU",
+        "height": 46
+      },
+      "ping": {
+        "device": "feeder"
+      }
+    },
+    "ch4-dark": {
+      "goal": "the Registry, dark: upstairs, the records node"
+    },
+    "ch4-flagged": {
+      "goal": "home to 7B, the back way, and lie low (bed)"
+    },
+    "ch4-sweep": {
+      "goal": "the stall: the fixer"
+    },
+    "ch4-kessel": {
+      "goal": "Kessel's room: down the hatch beside the stall"
+    },
+    "ch4-end": {
+      "goal": "Act II is not built yet"
+    }
+  },
+  "wash": [
+    {
+      "phase": "ch4-end",
+      "tone": "dark"
+    }
+  ]
+}
